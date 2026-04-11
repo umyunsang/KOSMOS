@@ -1,0 +1,65 @@
+name: Feature request
+description: Propose a new capability for KOSMOS
+title: "feat: "
+labels: ["enhancement", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before filing a feature request, please consider opening a discussion first if the idea is large or exploratory.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What problem does this feature solve? Who experiences it?
+      placeholder: Citizens asking about multi-ministry procedures (e.g. residence transfer) cannot currently chain tool calls across agents.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the feature at a high level. Include API sketches or pseudocode if helpful.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What other approaches did you consider? Why were they rejected?
+    validations:
+      required: false
+  - type: dropdown
+    id: component
+    attributes:
+      label: Affected component
+      options:
+        - Query Engine
+        - Tool System / API adapter
+        - Permission Pipeline
+        - Agent Swarm / Coordinator
+        - Context Assembly
+        - Error Recovery
+        - Documentation
+        - New component
+    validations:
+      required: true
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Scope
+      description: Rough size estimate
+      options:
+        - Small (single file, one day)
+        - Medium (few files, one week)
+        - Large (cross-cutting, multi-week)
+        - Unknown
+    validations:
+      required: true
+  - type: checkboxes
+    id: willingness
+    attributes:
+      label: Willingness to contribute
+      options:
+        - label: I am willing to submit a pull request for this feature
+        - label: I am available to help review a pull request from someone else

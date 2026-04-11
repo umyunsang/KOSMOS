@@ -2,6 +2,11 @@
 
 **KO**rean **S**overeign **M**ulti-agent **O**rchestration **S**ystem
 
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![Code of Conduct](https://img.shields.io/badge/Contributor%20Covenant-2.1-purple.svg)](CODE_OF_CONDUCT.md)
+[![GitHub Discussions](https://img.shields.io/badge/discussions-join-blueviolet)](https://github.com/umyunsang/KOSMOS/discussions)
+
 A conversational national-infrastructure AI agent platform that orchestrates Korean public OpenAPIs (data.go.kr) through a multi-agent architecture inspired by Claude Code's internal patterns, powered by LG AI Research's K-EXAONE.
 
 > Academic R&D project. Not affiliated with Anthropic, LG AI Research, or the Korean government.
@@ -39,6 +44,17 @@ KOSMOS transfers six architectural layers from Claude Code into the public-servi
 
 Early initialization. Architecture design in progress.
 
+## Contributing
+
+Contributions are very welcome — issues, design discussions, tool adapters, and documentation. Start with:
+
+- [CONTRIBUTING.md](CONTRIBUTING.md) — workflow, branch and commit conventions, coding standards
+- [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) — Contributor Covenant 2.1
+- [SECURITY.md](SECURITY.md) — private vulnerability reporting
+- [CHANGELOG.md](CHANGELOG.md) — release history
+
+For questions or design proposals, open a [Discussion](https://github.com/umyunsang/KOSMOS/discussions) before writing code on large ideas.
+
 ## License
 
-TBD
+Licensed under the [Apache License 2.0](LICENSE). By contributing, you agree that your contributions will be licensed under the same terms.

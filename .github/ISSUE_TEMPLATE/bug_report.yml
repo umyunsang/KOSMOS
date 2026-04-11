@@ -1,0 +1,82 @@
+name: Bug report
+description: Report a defect in KOSMOS
+title: "bug: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug report. Please fill out every section — incomplete reports may be closed.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: A clear, concise description of what the bug is.
+      placeholder: When the query engine encounters a tool_use with an empty argument object, it loops indefinitely instead of terminating.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Minimal steps to reproduce the issue. Include sample input where possible.
+      placeholder: |
+        1. Start the query engine with the default config
+        2. Send the user message "..."
+        3. Observe that ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What did you expect to happen?
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: What actually happened? Include logs or stack traces in a code block.
+    validations:
+      required: true
+  - type: dropdown
+    id: component
+    attributes:
+      label: Affected component
+      description: Which architectural layer is impacted?
+      options:
+        - Query Engine
+        - Tool System / API adapter
+        - Permission Pipeline
+        - Agent Swarm / Coordinator
+        - Context Assembly
+        - Error Recovery
+        - Documentation
+        - Other / unsure
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Commit or version
+      description: Git SHA or release tag used when the bug occurred.
+      placeholder: "main @ c15040c"
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, Python/Node version, model provider (FriendliAI / self-hosted vLLM / other).
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-submission checks
+      options:
+        - label: I have searched existing issues and this is not a duplicate
+          required: true
+        - label: I have removed any API keys, tokens, or personal data from logs
+          required: true

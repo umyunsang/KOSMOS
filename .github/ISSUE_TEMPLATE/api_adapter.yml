@@ -1,0 +1,66 @@
+name: New API adapter request
+description: Request a new data.go.kr API adapter
+title: "tool: add adapter for <api name>"
+labels: ["tool-adapter", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template to request or propose a new `data.go.kr` API adapter. One API per issue.
+  - type: input
+    id: api_name
+    attributes:
+      label: API name
+      placeholder: 도로교통공단 교통사고 다발지역 정보
+    validations:
+      required: true
+  - type: input
+    id: provider
+    attributes:
+      label: Providing ministry or agency
+      placeholder: 도로교통공단 (KOROAD)
+    validations:
+      required: true
+  - type: input
+    id: api_url
+    attributes:
+      label: data.go.kr page URL
+      placeholder: https://www.data.go.kr/data/...
+    validations:
+      required: true
+  - type: textarea
+    id: use_case
+    attributes:
+      label: Use case
+      description: What citizen scenario does this API enable? Which agent would use it?
+    validations:
+      required: true
+  - type: dropdown
+    id: auth_type
+    attributes:
+      label: Authentication type
+      options:
+        - Public (no auth)
+        - API key only
+        - API key + citizen identity verification
+        - OAuth
+        - Unknown
+    validations:
+      required: true
+  - type: dropdown
+    id: contains_pii
+    attributes:
+      label: Contains personal data?
+      options:
+        - "No (statistical / aggregated)"
+        - "Yes (individual records)"
+        - Unknown
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Additional notes
+      description: Rate limit, known quirks, similar APIs, field-level translation hints.
+    validations:
+      required: false
