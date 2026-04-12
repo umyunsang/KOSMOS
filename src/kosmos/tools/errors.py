@@ -42,9 +42,7 @@ class RateLimitExceededError(KosmosToolError):
     """Tool's rate limit has been exceeded."""
 
     def __init__(self, tool_id: str, limit: int | float) -> None:
-        super().__init__(
-            f"Rate limit exceeded for tool {tool_id!r}: limit={limit}"
-        )
+        super().__init__(f"Rate limit exceeded for tool {tool_id!r}: limit={limit}")
         self.tool_id = tool_id
         self.limit = limit
 

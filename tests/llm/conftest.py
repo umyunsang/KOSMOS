@@ -86,9 +86,7 @@ def mock_sse_lines() -> list[bytes]:
             },
         },
     ]
-    lines: list[bytes] = [
-        f"data: {json.dumps(chunk)}\n\n".encode() for chunk in chunks
-    ]
+    lines: list[bytes] = [f"data: {json.dumps(chunk)}\n\n".encode() for chunk in chunks]
     lines.append(b"data: [DONE]\n\n")
     return lines
 

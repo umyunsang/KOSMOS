@@ -57,12 +57,8 @@ def test_mixed_query(populated_registry):
     # Mixed query: weather tool score must be >= single-token score
     # (both tokens match the weather hint, so score = 1.0 vs 1.0 for single token —
     # or mixed provides equal/higher score than any partially-matching rival).
-    single_score = next(
-        r.score for r in single_results if r.tool.id == "kma_weather_forecast"
-    )
-    mixed_score = next(
-        r.score for r in mixed_results if r.tool.id == "kma_weather_forecast"
-    )
+    single_score = next(r.score for r in single_results if r.tool.id == "kma_weather_forecast")
+    mixed_score = next(r.score for r in mixed_results if r.tool.id == "kma_weather_forecast")
     assert mixed_score >= single_score
 
 

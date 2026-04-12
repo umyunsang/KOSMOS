@@ -18,7 +18,7 @@ class LLMClientConfig(BaseSettings):
     """
 
     model_config = SettingsConfigDict(
-        env_prefix="",          # each field uses an explicit validation_alias
+        env_prefix="",  # each field uses an explicit validation_alias
         case_sensitive=False,
         extra="ignore",
     )

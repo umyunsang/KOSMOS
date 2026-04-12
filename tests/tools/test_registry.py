@@ -192,7 +192,8 @@ def test_export_core_tools_openai_deterministic(sample_tool_factory):
     second = registry.export_core_tools_openai()
     assert first == second
     assert [item["function"]["name"] for item in first] == [  # type: ignore[index]
-        item["function"]["name"] for item in second  # type: ignore[index]
+        item["function"]["name"]
+        for item in second  # type: ignore[index]
     ]
 
 

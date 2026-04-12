@@ -44,9 +44,7 @@ class ChatMessage(BaseModel):
         if self.role == "tool" and self.tool_call_id is None:
             raise ValueError("ChatMessage with role='tool' must provide tool_call_id")
         if self.role in ("system", "user") and self.content is None:
-            raise ValueError(
-                f"ChatMessage with role='{self.role}' must provide content"
-            )
+            raise ValueError(f"ChatMessage with role='{self.role}' must provide content")
         return self
 
 

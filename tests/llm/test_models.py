@@ -17,6 +17,7 @@ from kosmos.llm.models import (
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _make_tool_call(id: str = "call_abc") -> ToolCall:  # noqa: A002
     return ToolCall(id=id, function=FunctionCall(name="my_tool", arguments="{}"))
 

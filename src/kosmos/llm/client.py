@@ -185,9 +185,7 @@ class LLMClient:
         )
 
         try:
-            async with self._client.stream(
-                "POST", "/chat/completions", json=payload
-            ) as response:
+            async with self._client.stream("POST", "/chat/completions", json=payload) as response:
                 self._raise_for_status(response)
 
                 async for line in response.aiter_lines():
@@ -197,17 +195,11 @@ class LLMClient:
                             return
 
         except httpx.ConnectError as exc:
-            raise StreamInterruptedError(
-                f"Connection lost during streaming: {exc}"
-            ) from exc
+            raise StreamInterruptedError(f"Connection lost during streaming: {exc}") from exc
         except httpx.TimeoutException as exc:
-            raise StreamInterruptedError(
-                f"Stream timed out: {exc}"
-            ) from exc
+            raise StreamInterruptedError(f"Stream timed out: {exc}") from exc
         except httpx.RequestError as exc:
-            raise StreamInterruptedError(
-                f"Stream request failed: {exc}"
-            ) from exc
+            raise StreamInterruptedError(f"Stream request failed: {exc}") from exc
 
     async def close(self) -> None:
         """Close the underlying HTTP client."""
@@ -228,7 +220,7 @@ class LLMClient:
         if not line or not line.startswith("data: "):
             return
 
-        payload_text = line[len("data: "):]
+        payload_text = line[len("data: ") :]
 
         if payload_text == "[DONE]":
             yield StreamEvent(type="done")

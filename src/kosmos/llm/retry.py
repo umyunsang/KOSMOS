@@ -25,9 +25,7 @@ class RetryPolicy(BaseModel):
     base_delay: float = Field(default=1.0, gt=0)
     multiplier: float = Field(default=2.0, ge=1.0)
     max_delay: float = Field(default=60.0, gt=0)
-    retryable_status_codes: frozenset[int] = Field(
-        default_factory=lambda: frozenset({429, 503})
-    )
+    retryable_status_codes: frozenset[int] = Field(default_factory=lambda: frozenset({429, 503}))
 
 
 async def retry_with_backoff[T](

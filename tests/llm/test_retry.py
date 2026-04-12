@@ -23,9 +23,7 @@ fast_policy = RetryPolicy(
 
 def make_http_error(status_code: int) -> httpx.HTTPStatusError:
     """Build an httpx.HTTPStatusError with the given status code."""
-    response = httpx.Response(
-        status_code, request=httpx.Request("POST", "https://test.com")
-    )
+    response = httpx.Response(status_code, request=httpx.Request("POST", "https://test.com"))
     return httpx.HTTPStatusError(
         f"HTTP {status_code}",
         request=response.request,

@@ -89,18 +89,14 @@ class GovAPITool(BaseModel):
     @classmethod
     def _validate_rate_limit(cls, v: int) -> int:
         if v <= 0:
-            raise ValueError(
-                f"rate_limit_per_minute must be > 0, got {v}"
-            )
+            raise ValueError(f"rate_limit_per_minute must be > 0, got {v}")
         return v
 
     @field_validator("cache_ttl_seconds")
     @classmethod
     def _validate_cache_ttl(cls, v: int) -> int:
         if v < 0:
-            raise ValueError(
-                f"cache_ttl_seconds must be >= 0, got {v}"
-            )
+            raise ValueError(f"cache_ttl_seconds must be >= 0, got {v}")
         return v
 
     @field_validator("search_hint")
@@ -144,8 +140,7 @@ class ToolResult(BaseModel):
     """Human-readable error message; populated only on failure."""
 
     error_type: (
-        Literal["validation", "rate_limit", "not_found", "execution", "schema_mismatch"]
-        | None
+        Literal["validation", "rate_limit", "not_found", "execution", "schema_mismatch"] | None
     ) = None
     """Structured error classification; populated only on failure."""
 

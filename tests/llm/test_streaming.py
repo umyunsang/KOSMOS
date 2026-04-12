@@ -193,9 +193,7 @@ async def test_stream_auth_error(
     sample_messages: list[ChatMessage],
 ) -> None:
     """A 401 response raises AuthenticationError before any events are yielded."""
-    respx.post(_COMPLETIONS_URL).mock(
-        return_value=httpx.Response(401, text="Unauthorized")
-    )
+    respx.post(_COMPLETIONS_URL).mock(return_value=httpx.Response(401, text="Unauthorized"))
 
     with pytest.raises(AuthenticationError) as exc_info:
         async for _ in llm_client.stream(sample_messages):
@@ -210,9 +208,7 @@ async def test_stream_connection_error(
     sample_messages: list[ChatMessage],
 ) -> None:
     """A transport-level connection failure raises StreamInterruptedError."""
-    respx.post(_COMPLETIONS_URL).mock(
-        side_effect=httpx.ConnectError("Connection refused")
-    )
+    respx.post(_COMPLETIONS_URL).mock(side_effect=httpx.ConnectError("Connection refused"))
 
     with pytest.raises(StreamInterruptedError):
         async for _ in llm_client.stream(sample_messages):

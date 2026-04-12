@@ -173,9 +173,7 @@ async def test_complete_connection_error(
     sample_messages: list[ChatMessage],
 ) -> None:
     """complete() raises LLMConnectionError when the transport raises ConnectError."""
-    respx.post(CHAT_COMPLETIONS_URL).mock(
-        side_effect=httpx.ConnectError("Connection refused")
-    )
+    respx.post(CHAT_COMPLETIONS_URL).mock(side_effect=httpx.ConnectError("Connection refused"))
 
     config = LLMClientConfig()
     async with LLMClient(config) as client:
