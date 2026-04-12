@@ -54,6 +54,14 @@ class QueryState:
     resolved_tasks: list[str] = field(default_factory=list)
     """Human-readable descriptions of tasks resolved during the session."""
 
+    active_situational_tools: set[str] = field(default_factory=set)
+    """Tool IDs that have been activated for the current session mid-flight.
+
+    Populated by the tool discovery flow (e.g. ``search_tools``).  The
+    context assembler reads this set to build the situational suffix partition
+    of ``AssembledContext.tool_definitions``.
+    """
+
 
 # ---------------------------------------------------------------------------
 # QueryContext
