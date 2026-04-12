@@ -19,7 +19,8 @@ jobs:
     name: Claude Automated Review
     if: |
       github.event_name == 'pull_request' &&
-      github.event.pull_request.draft == false
+      github.event.pull_request.draft == false &&
+      github.event.pull_request.user.login != 'dependabot[bot]'
     runs-on: ubuntu-latest
     continue-on-error: true
     permissions:
@@ -111,7 +112,8 @@ jobs:
     name: Claude Security Review
     if: |
       github.event_name == 'pull_request' &&
-      github.event.pull_request.draft == false
+      github.event.pull_request.draft == false &&
+      github.event.pull_request.user.login != 'dependabot[bot]'
     runs-on: ubuntu-latest
     continue-on-error: true
     permissions:

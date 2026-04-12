@@ -31,6 +31,7 @@ jobs:
 
   branch-name:
     name: Branch naming convention
+    if: github.event.pull_request.user.login != 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
       - name: Validate branch name
