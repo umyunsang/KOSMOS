@@ -26,7 +26,7 @@ def _tool_ids(results) -> list[str]:
 
 def test_korean_keyword_match(populated_registry):
     """Searching '날씨' should return the weather tool among results."""
-    tools = list(populated_registry._tools.values())
+    tools = populated_registry.all_tools()
     results = search_tools(tools, "날씨")
 
     assert results, "Expected at least one result for '날씨'"
@@ -35,7 +35,7 @@ def test_korean_keyword_match(populated_registry):
 
 def test_english_keyword_match(populated_registry):
     """Searching 'weather' (English) should return the weather tool."""
-    tools = list(populated_registry._tools.values())
+    tools = populated_registry.all_tools()
     results = search_tools(tools, "weather")
 
     assert results, "Expected at least one result for 'weather'"
@@ -45,7 +45,7 @@ def test_english_keyword_match(populated_registry):
 def test_mixed_query(populated_registry):
     """Searching '날씨 weather' (two tokens) should score the weather tool higher
     than a single-token query that also matches one other tool."""
-    tools = list(populated_registry._tools.values())
+    tools = populated_registry.all_tools()
 
     single_results = search_tools(tools, "날씨")
     mixed_results = search_tools(tools, "날씨 weather")
@@ -69,7 +69,7 @@ def test_mixed_query(populated_registry):
 
 def test_empty_query_returns_empty(populated_registry):
     """An empty string query must return an empty list."""
-    tools = list(populated_registry._tools.values())
+    tools = populated_registry.all_tools()
     results = search_tools(tools, "")
 
     assert results == []
@@ -77,7 +77,7 @@ def test_empty_query_returns_empty(populated_registry):
 
 def test_whitespace_query_returns_empty(populated_registry):
     """A whitespace-only query must return an empty list."""
-    tools = list(populated_registry._tools.values())
+    tools = populated_registry.all_tools()
     results = search_tools(tools, "   ")
 
     assert results == []
@@ -85,7 +85,7 @@ def test_whitespace_query_returns_empty(populated_registry):
 
 def test_no_match_returns_empty(populated_registry):
     """A query with no overlap against any hint must return an empty list."""
-    tools = list(populated_registry._tools.values())
+    tools = populated_registry.all_tools()
     results = search_tools(tools, "블록체인 blockchain")
 
     assert results == []
@@ -98,7 +98,7 @@ def test_no_match_returns_empty(populated_registry):
 
 def test_max_results_limit(populated_registry):
     """max_results=1 must return at most 1 result even if multiple tools match."""
-    tools = list(populated_registry._tools.values())
+    tools = populated_registry.all_tools()
     # Use a broad query matching multiple tools to verify the cap.
     results = search_tools(tools, "hospital traffic weather business", max_results=1)
 
@@ -113,7 +113,7 @@ def test_max_results_limit(populated_registry):
 def test_score_ranking(populated_registry):
     """A query matching two tokens of the weather hint but only one token of
     another hint should rank the weather tool first."""
-    tools = list(populated_registry._tools.values())
+    tools = populated_registry.all_tools()
 
     # "날씨 weather" both appear only in the weather tool's hint.
     # "hospital" appears only in the hospital tool's hint.
@@ -134,7 +134,7 @@ def test_score_ranking(populated_registry):
 
 def test_substring_matching(populated_registry):
     """Query token '교통' should match hint token '교통사고' via substring matching."""
-    tools = list(populated_registry._tools.values())
+    tools = populated_registry.all_tools()
     results = search_tools(tools, "교통")
 
     assert results, "Expected at least one result for '교통'"
@@ -151,7 +151,7 @@ def test_substring_matching(populated_registry):
 
 def test_case_insensitive(populated_registry):
     """Uppercase query 'WEATHER' should still match lowercase 'weather' in hint."""
-    tools = list(populated_registry._tools.values())
+    tools = populated_registry.all_tools()
     results = search_tools(tools, "WEATHER")
 
     assert results, "Expected at least one result for 'WEATHER'"

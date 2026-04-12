@@ -22,8 +22,9 @@ def search_tools(
     1. Tokenize query into lowercase tokens (split by whitespace).
     2. If query is empty or only whitespace, return empty list.
     3. For each tool, tokenize its search_hint into lowercase tokens.
-    4. Score = number of query tokens that are substring-matched in any
-       search_hint token (case-insensitive substring matching, not exact match).
+    4. Score = number of query tokens that are bidirectionally substring-matched
+       against any search_hint token (case-insensitive, either token may contain
+       the other).
     5. If score > 0, include in results.
     6. Sort by score descending.
     7. Return top max_results.
@@ -57,8 +58,8 @@ def search_tools(
 
         matched: list[str] = []
         for q_token in query_tokens:
-            # Substring match: q_token must appear inside at least one hint token.
-            if any(q_token in h_token for h_token in hint_tokens):
+            # Bidirectional substring match: either token contains the other.
+            if any(q_token in h_token or h_token in q_token for h_token in hint_tokens):
                 matched.append(q_token)
 
         if matched:

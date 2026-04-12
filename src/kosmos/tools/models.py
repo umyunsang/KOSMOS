@@ -155,6 +155,9 @@ class ToolResult(BaseModel):
             if self.error is None or self.error_type is None:
                 msg = "success=False must have both error and error_type set"
                 raise ValueError(msg)
+            if self.data is not None:
+                msg = "success=False must not have data set"
+                raise ValueError(msg)
         return self
 
 
