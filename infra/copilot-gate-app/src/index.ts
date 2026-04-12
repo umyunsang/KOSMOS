@@ -216,7 +216,21 @@ async function handlePullRequest(event: PullRequestEvent, env: Env): Promise<Res
     },
   });
 
-  return new Response("Created pending check run", { status: 200 });
+  // Request Copilot re-review so the gate doesn't stay pending forever
+  const prNumber = pull_request.number;
+  try {
+    await githubApi(
+      token,
+      "POST",
+      `/repos/${owner}/${repo}/pulls/${prNumber}/requested_reviewers`,
+      { reviewers: ["copilot-pull-request-reviewer[bot]"] }
+    );
+  } catch (err) {
+    // Non-fatal: Copilot may already be requested or auto-reviewing
+    console.warn(`[rerequest] Could not request Copilot review for PR #${prNumber}:`, err);
+  }
+
+  return new Response("Created pending check run + requested Copilot review", { status: 200 });
 }
 
 async function handleReview(event: ReviewEvent, env: Env): Promise<Response> {
