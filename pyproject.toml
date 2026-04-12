@@ -25,7 +25,7 @@ dev = [
     "mypy>=1.20.0",
     "ruff>=0.5",
     "pre-commit>=3.7",
-    "pip-audit>=2.7",
+    "pip-audit>=2.10.0",
     "vulture>=2.11",
     "pip-licenses>=5.0",
 ]
