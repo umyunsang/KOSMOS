@@ -41,10 +41,11 @@ jobs:
               }
             });
 
-  # Phase 2: When Copilot submits a review, count its inline comments.
+  # Phase 2: When Copilot submits a review, count inline comments for
+  # THIS specific review only (not cumulative across all reviews).
   # Copilot always uses state="commented" (never "approved"/"changes_requested"),
-  # so we determine pass/fail by checking if it left any inline review comments.
-  #   0 comments → pass (clean review)
+  # so we determine pass/fail by the review's own comment count.
+  #   0 comments → pass (clean review, no issues found)
   #   1+ comments → fail (issues found, fix and push to trigger re-review)
   evaluate-review:
     name: Copilot Review Evaluate
@@ -59,35 +60,37 @@ jobs:
           script: |
             const prNumber = context.payload.pull_request.number;
             const sha = context.payload.pull_request.head.sha;
+            const reviewId = context.payload.review.id;
 
-            // Fetch all review comments from Copilot on this PR
-            const { data: comments } = await github.rest.pulls.listReviewComments({
+            // Fetch inline comments for THIS specific review only.
+            // Using listCommentsForReview (not listReviewComments) ensures
+            // we only count comments from this review, not stale ones
+            // from previous review rounds.
+            const { data: reviewComments } = await github.rest.pulls.listCommentsForReview({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              pull_number: prNumber
+              pull_number: prNumber,
+              review_id: reviewId
             });
 
-            const copilotComments = comments.filter(
-              c => c.user.login === 'copilot-pull-request-reviewer[bot]'
-                && c.commit_id === sha
-            );
-
-            const count = copilotComments.length;
+            const count = reviewComments.length;
             let conclusion, title, summary;
 
             if (count === 0) {
               conclusion = 'success';
               title = 'Copilot review passed — no issues found';
-              summary = 'Copilot Code Review completed with no inline comments on the latest commit.';
+              summary = 'Copilot Code Review completed with no inline comments.';
             } else {
               conclusion = 'failure';
               title = `Copilot found ${count} issue${count > 1 ? 's' : ''}`;
               summary = [
-                `Copilot Code Review left ${count} inline comment${count > 1 ? 's' : ''} on this commit.`,
+                `Copilot Code Review left ${count} inline comment${count > 1 ? 's' : ''}.`,
                 'Address the comments and push fixes to trigger a re-review.',
                 '',
-                '**Comments:**',
-                ...copilotComments.map(c => `- \`${c.path}:${c.line || c.original_line}\` — ${c.body.split('\n')[0].slice(0, 120)}`)
+                '**Issues:**',
+                ...reviewComments.map(c =>
+                  `- \`${c.path}${c.line ? ':' + c.line : ''}\` — ${c.body.split('\n')[0].slice(0, 120)}`
+                )
               ].join('\n');
             }
 
