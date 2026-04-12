@@ -192,6 +192,16 @@ const REQUEST_REVIEW_MUTATION = `
   }
 `;
 
+// File extensions that Copilot will not review (docs, config, assets)
+const SKIP_EXTENSIONS = new Set([
+  ".md", ".txt", ".rst", ".adoc",
+  ".yml", ".yaml", ".toml", ".ini", ".cfg",
+  ".json", ".lock",
+  ".png", ".jpg", ".jpeg", ".gif", ".svg", ".ico",
+  ".license", ".gitignore", ".gitattributes",
+  ".editorconfig",
+]);
+
 // --- Severity classification ---
 
 const CRITICAL_PATTERNS = [
@@ -349,6 +359,31 @@ async function handlePullRequest(event: PullRequestEvent, env: Env): Promise<Res
     return new Response("Auto-passed bot PR", { status: 200 });
   }
 
+  // Auto-pass if PR contains only non-code files (docs, config, assets)
+  try {
+    const prFiles = (await githubApi(
+      token, "GET",
+      `/repos/${owner}/${repo}/pulls/${pull_request.number}/files?per_page=100`
+    )) as Array<{ filename: string }>;
+
+    const hasCode = prFiles.some((f) => {
+      const ext = f.filename.includes(".") ? "." + f.filename.split(".").pop()!.toLowerCase() : "";
+      return !SKIP_EXTENSIONS.has(ext);
+    });
+
+    if (!hasCode) {
+      await createCheckRun(
+        token, owner, repo, sha, "completed", "success",
+        "Skipped — docs/config-only changes",
+        `All ${prFiles.length} changed file${prFiles.length !== 1 ? "s" : ""} are documentation or configuration. Copilot review is not applicable.`
+      );
+      console.log(`[${action}] Auto-passed docs-only PR #${pull_request.number} (${sha.slice(0, 7)})`);
+      return new Response(`${action}: docs-only auto-pass`, { status: 200 });
+    }
+  } catch (err) {
+    console.error(`[${action}] Failed to check PR files: ${err}`);
+  }
+
   if (action === "opened" || action === "reopened") {
     // First open — wait for Copilot's initial review
     await createCheckRun(
@@ -360,6 +395,33 @@ async function handlePullRequest(event: PullRequestEvent, env: Env): Promise<Res
   }
 
   // synchronize — new commits pushed
+  // Check if PR only contains non-code files (docs, config, assets)
+  // Copilot does not review these, so auto-pass to prevent infinite pending
+  try {
+    const files = (await githubApi(
+      token, "GET",
+      `/repos/${owner}/${repo}/pulls/${pull_request.number}/files?per_page=100`
+    )) as Array<{ filename: string }>;
+
+    const hasCodeFiles = files.some((f) => {
+      const ext = f.filename.includes(".") ? "." + f.filename.split(".").pop()!.toLowerCase() : "";
+      return !SKIP_EXTENSIONS.has(ext);
+    });
+
+    if (!hasCodeFiles) {
+      await createCheckRun(
+        token, owner, repo, sha, "completed", "success",
+        "Skipped — docs/config-only changes",
+        `All ${files.length} changed file${files.length !== 1 ? "s" : ""} are documentation or configuration. Copilot review is not applicable.`
+      );
+      console.log(`[sync] Auto-passed docs-only PR #${pull_request.number} (${sha.slice(0, 7)})`);
+      return new Response("Synchronize: docs-only auto-pass", { status: 200 });
+    }
+  } catch (err) {
+    console.error(`[sync] Failed to check PR files: ${err}`);
+    // Continue with normal flow if file check fails
+  }
+
   // Create in_progress check and request Copilot re-review via GraphQL mutation.
   // The requestReviewsByLogin mutation with botLogins field (added 2026-01-22)
   // is the only reliable way to trigger Copilot re-review programmatically.
