@@ -396,16 +396,13 @@ async def test_preprocessing_triggered_with_small_context_window(
         message_counts.append(engine.message_count)
 
     # Without preprocessing, message_count would grow monotonically by 2 per turn.
-    # With preprocessing (collapse stage merging consecutive same-role messages,
-    # microcompact compressing old messages, snip removing stale tool results),
-    # the count should stop growing indefinitely.
-    # The key assertion: after 8 no-tool turns the count must not exceed
-    # 1 (system) + 8*2 (user+assistant) = 17 messages naively.
-    # Preprocessing should keep it below that ceiling at some point.
-    # A safe assertion: the count is less than 20.
+    # Naive maximum: 1 (system) + 8*2 (user+assistant) = 17 messages.
+    # With preprocessing (collapse, microcompact, snip) the count should stay
+    # at or below the naive maximum.
+    naive_max = 1 + 8 * 2  # 17
     final_count = message_counts[-1]
-    assert final_count < 20, (
-        f"Expected preprocessing to bound message history, but got {final_count} messages"
+    assert final_count <= naive_max, (
+        f"Expected preprocessing to bound history at <={naive_max}, got {final_count}"
     )
 
     # All turns completed successfully
@@ -429,11 +426,11 @@ async def test_preprocessing_compresses_stale_tool_results(
     additional turns, the history count should not grow unboundedly.
     """
     config = QueryEngineConfig(
-        context_window=400,
-        preprocessing_threshold=0.5,
+        context_window=100,  # very small so preprocessing fires early
+        preprocessing_threshold=0.5,  # threshold = 50 tokens
         snip_turn_age=1,
         microcompact_turn_age=1,
-        tool_result_budget=50,  # very tight per-result budget forces truncation
+        tool_result_budget=50,
     )
 
     # Turn 1: tool call + text answer
@@ -455,12 +452,13 @@ async def test_preprocessing_compresses_stale_tool_results(
         await _collect(engine, f"Follow-up question {i + 1}.")
 
     final_count = engine.message_count
-    # The final count should be less than an unbounded linear growth would predict.
-    # Unbounded: count_after_tool_turn + 4*2 = count_after_tool_turn + 8
-    # With preprocessing snipping stale tool results the count is bounded.
-    assert final_count <= count_after_tool_turn + 8, (
-        f"History grew unexpectedly to {final_count} messages "
-        f"(started at {count_after_tool_turn} after tool turn)"
+    # Unbounded linear growth would add 4*2 = 8 messages to the post-tool count.
+    # With context_window=100 and snip_turn_age=1, preprocessing fires and
+    # removes stale tool results, keeping the count strictly below unbounded.
+    unbounded = count_after_tool_turn + 8
+    assert final_count < unbounded, (
+        f"Expected preprocessing to reduce history below {unbounded}, "
+        f"but got {final_count} (started at {count_after_tool_turn} after tool turn)"
     )
 
     assert engine.budget.turns_used == 5

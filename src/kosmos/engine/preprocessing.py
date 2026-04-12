@@ -164,6 +164,7 @@ def stage_microcompact(
                     ChatMessage(
                         role=msg.role,
                         content=compacted,
+                        name=msg.name,
                         tool_calls=msg.tool_calls,
                         tool_call_id=msg.tool_call_id,
                     ),
@@ -207,6 +208,7 @@ def stage_collapse(
             and prev.tool_calls is None
             and msg.tool_call_id is None
             and prev.tool_call_id is None
+            and msg.name == prev.name
         )
 
         if can_merge:
@@ -214,6 +216,7 @@ def stage_collapse(
             result[-1] = ChatMessage(
                 role=msg.role,
                 content=merged_content,
+                name=msg.name,
             )
             logger.debug("Collapsed consecutive %s messages", msg.role)
         else:

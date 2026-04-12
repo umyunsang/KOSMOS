@@ -19,6 +19,7 @@ from kosmos.engine.events import QueryEvent, StopReason
 from kosmos.engine.models import QueryContext
 from kosmos.engine.preprocessing import PreprocessingPipeline
 from kosmos.engine.tokens import estimate_tokens
+from kosmos.llm.errors import BudgetExceededError
 from kosmos.llm.models import ChatMessage, FunctionCall, ToolCall, ToolDefinition
 from kosmos.tools.errors import ToolNotFoundError
 from kosmos.tools.executor import ToolExecutor
@@ -158,15 +159,16 @@ async def query(ctx: QueryContext) -> AsyncIterator[QueryEvent]:  # noqa: C901
     1. Create immutable message snapshot: ``list(ctx.state.messages)``
     2. Stream LLM completion with tool definitions
     3. Yield ``text_delta`` events as content streams
-    4. If tool_calls in response:
+    4. Debit token usage from ``ctx.state.usage``
+    5. If tool_calls in response:
        a. Yield ``tool_use`` events for each call
-       b. Dispatch tools sequentially (US1 MVP)
-       c. Yield ``tool_result`` events
+       b. Dispatch via ``dispatch_tool_calls()``; safe groups run concurrently
+       c. Yield ``tool_result`` events in stable input order
        d. Append tool results to ``ctx.state.messages``
        e. Yield ``usage_update``
        f. Continue loop (iteration += 1)
-    5. If no tool_calls: yield ``usage_update``, yield ``stop``, return
-    6. If iteration >= ``config.max_iterations``: yield ``stop(max_iterations_reached)``
+    6. If no tool_calls: yield ``usage_update``, yield ``stop``, return
+    7. If iteration >= ``config.max_iterations``: yield ``stop(max_iterations_reached)``
 
     Args:
         ctx: Per-turn context with references to state, LLM client, tools, config.
@@ -237,6 +239,18 @@ async def query(ctx: QueryContext) -> AsyncIterator[QueryEvent]:  # noqa: C901
                 stop_message=f"LLM stream error: {exc}",
             )
             return
+
+        # --- Debit token usage from session tracker ---
+        if usage:
+            try:
+                ctx.state.usage.debit(usage)
+            except BudgetExceededError:
+                yield QueryEvent(
+                    type="stop",
+                    stop_reason=StopReason.api_budget_exceeded,
+                    stop_message="Token budget exceeded during stream",
+                )
+                return
 
         # --- Assemble assistant message and append to history ---
         assembled_calls = _assemble_tool_calls(pending_calls) if pending_calls else []

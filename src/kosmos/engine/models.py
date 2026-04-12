@@ -148,7 +148,7 @@ class SessionBudget(BaseModel):
         return cls(
             tokens_used=state.usage.total_used,
             tokens_remaining=state.usage.remaining,
-            tokens_budget=state.usage._budget,
+            tokens_budget=state.usage.budget,
             turns_used=state.turn_count,
             turns_remaining=max(0, config.max_turns - state.turn_count),
             turns_budget=config.max_turns,

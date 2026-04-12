@@ -49,12 +49,11 @@ class QueryEngineConfig(BaseModel):
         "tool_result_budget",
         "snip_turn_age",
         "microcompact_turn_age",
-        mode="before",
     )
     @classmethod
-    def int_fields_must_be_positive(cls, value: object) -> object:
+    def int_fields_must_be_positive(cls, value: int) -> int:
         """Reject any integer field that is zero or negative."""
-        if isinstance(value, int) and value <= 0:
+        if value <= 0:
             raise ValueError(f"value must be > 0, got {value}")
         return value
 
