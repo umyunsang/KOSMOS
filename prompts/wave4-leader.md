@@ -44,7 +44,7 @@ This is NOT a new feature — it is an **integration test** that proves all laye
 
 ### Step 1: Verify Epic #12 exists
 ```bash
-gh issue view 12 --repo kosmos-kr/KOSMOS
+gh issue view 12 --repo umyunsang/KOSMOS
 ```
 
 ### Step 2: `/speckit-specify` → spec.md
@@ -120,7 +120,7 @@ The "Copilot Review Gate" required status check is managed by a GitHub App.
 1. Check gate status: `gh pr checks <PR_NUMBER> | grep "Copilot Review Gate"`
 2. If pending: wait 1-2 minutes for Copilot review
 3. If fail:
-   a. Read comments: `gh api repos/kosmos-kr/KOSMOS/pulls/<PR_NUMBER>/comments --jq '.[] | select(.user.login == "Copilot") | {path, line, body}'`
+   a. Read comments: `gh api repos/umyunsang/KOSMOS/pulls/<PR_NUMBER>/comments --jq '.[] | select(.user.login == "Copilot") | {path, line, body}'`
    b. Triage: fix valid issues, skip false positives
    c. Commit fixes and push → gate resets → Copilot re-reviews → **repeat**
 4. If pass: proceed to Step 10

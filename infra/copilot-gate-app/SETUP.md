@@ -33,7 +33,7 @@ Fill in these fields:
 | Field | Value |
 |-------|-------|
 | **GitHub App name** | `KOSMOS Copilot Gate` (or any unique name) |
-| **Homepage URL** | `https://github.com/kosmos-kr/KOSMOS` |
+| **Homepage URL** | `https://github.com/umyunsang/KOSMOS` |
 | **Webhook URL** | `https://kosmos-copilot-gate.<your-subdomain>.workers.dev` |
 | **Webhook secret** | Generate one: `openssl rand -hex 32` |
 | **Permissions** | |
@@ -53,7 +53,7 @@ A `.pem` file will download. Keep it safe.
 
 ## Step 4: Install App on Repository
 
-On the App settings page → **Install App** (left sidebar) → Select `kosmos-kr/KOSMOS` → Install.
+On the App settings page → **Install App** (left sidebar) → Select `umyunsang/KOSMOS` → Install.
 
 ## Step 5: Configure Worker Secrets
 

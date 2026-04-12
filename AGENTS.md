@@ -68,8 +68,8 @@ Every `/speckit-plan` Phase 0 must consult `.specify/memory/constitution.md` and
 Task issues come **only** from reviewed `tasks.md` via `/speckit-taskstoissues`. After creation, link each as a sub-issue of its Epic:
 
 ```bash
-TASK_ID=$(gh api graphql -f query='query{repository(owner:"kosmos-kr",name:"KOSMOS"){issue(number:TASK_NUM){id}}}' --jq '.data.repository.issue.id')
-gh api repos/kosmos-kr/KOSMOS/issues/EPIC_NUM/sub_issues --method POST -f sub_issue_id="$TASK_ID"
+TASK_ID=$(gh api graphql -f query='query{repository(owner:"umyunsang",name:"KOSMOS"){issue(number:TASK_NUM){id}}}' --jq '.data.repository.issue.id')
+gh api repos/umyunsang/KOSMOS/issues/EPIC_NUM/sub_issues --method POST -f sub_issue_id="$TASK_ID"
 ```
 
 ## Agent Teams

@@ -79,7 +79,7 @@ Follow `AGENTS.md § Spec-driven workflow`. 10-step process:
 
 #### Step 1: Verify Epic issue exists
 ```bash
-gh issue view <EPIC_NUMBER> --repo kosmos-kr/KOSMOS
+gh issue view <EPIC_NUMBER> --repo umyunsang/KOSMOS
 ```
 
 #### Step 2: `/speckit-specify` → spec.md
@@ -112,8 +112,8 @@ gh issue view <EPIC_NUMBER> --repo kosmos-kr/KOSMOS
 - Create GitHub issues from tasks.md
 - Link each as sub-issue of the Epic:
 ```bash
-TASK_ID=$(gh api graphql -f query='query{repository(owner:"kosmos-kr",name:"KOSMOS"){issue(number:TASK_NUM){id}}}' --jq '.data.repository.issue.id')
-gh api repos/kosmos-kr/KOSMOS/issues/EPIC_NUM/sub_issues --method POST -f sub_issue_id="$TASK_ID"
+TASK_ID=$(gh api graphql -f query='query{repository(owner:"umyunsang",name:"KOSMOS"){issue(number:TASK_NUM){id}}}' --jq '.data.repository.issue.id')
+gh api repos/umyunsang/KOSMOS/issues/EPIC_NUM/sub_issues --method POST -f sub_issue_id="$TASK_ID"
 ```
 - **STOP and wait for user approval**
 
@@ -154,7 +154,7 @@ Copilot's review: 0 inline comments → pass, 1+ → fail.
 
 1. **Check gate status**:
    ```bash
-   gh pr checks <PR_NUMBER> --repo kosmos-kr/KOSMOS | grep "Copilot Review Gate"
+   gh pr checks <PR_NUMBER> --repo umyunsang/KOSMOS | grep "Copilot Review Gate"
    ```
 
 2. **If gate is pending**: wait 1-2 minutes for Copilot to submit its review.
@@ -162,7 +162,7 @@ Copilot's review: 0 inline comments → pass, 1+ → fail.
 3. **If gate fails** ("Copilot found N issues"):
    a. Read the inline comments:
       ```bash
-      gh api repos/kosmos-kr/KOSMOS/pulls/<PR_NUMBER>/comments \
+      gh api repos/umyunsang/KOSMOS/pulls/<PR_NUMBER>/comments \
         --jq '.[] | select(.user.login == "Copilot") | {path, line, body}'
       ```
    b. Triage each comment:
