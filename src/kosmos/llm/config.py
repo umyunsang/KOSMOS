@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-from pydantic import Field, SecretStr, field_validator
+from pydantic import AnyHttpUrl, Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -28,7 +28,7 @@ class LLMClientConfig(BaseSettings):
         validation_alias="KOSMOS_FRIENDLI_TOKEN",
         description="FriendliAI API token.",
     )
-    base_url: str = Field(
+    base_url: AnyHttpUrl = Field(
         default="https://api.friendli.ai/v1",
         validation_alias="KOSMOS_FRIENDLI_BASE_URL",
         description="FriendliAI API base URL.",

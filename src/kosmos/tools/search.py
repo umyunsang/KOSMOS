@@ -72,7 +72,7 @@ def search_tools(
                 )
             )
 
-    results.sort(key=lambda r: r.score, reverse=True)
+    results.sort(key=lambda r: (-r.score, r.tool.id))
     return results[:max_results]
 
 

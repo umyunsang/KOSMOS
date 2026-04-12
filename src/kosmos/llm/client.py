@@ -52,7 +52,7 @@ class LLMClient:
 
         self._config = config
         self._client = httpx.AsyncClient(
-            base_url=config.base_url,
+            base_url=str(config.base_url),
             headers={"Authorization": f"Bearer {config.token.get_secret_value()}"},
             timeout=httpx.Timeout(config.timeout),
         )

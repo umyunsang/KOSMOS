@@ -51,7 +51,7 @@ def test_default_base_url(monkeypatch: pytest.MonkeyPatch) -> None:
     """base_url defaults to the FriendliAI v1 endpoint."""
     monkeypatch.setenv("KOSMOS_FRIENDLI_TOKEN", "test-token-123")
     config = LLMClientConfig()
-    assert config.base_url == "https://api.friendli.ai/v1"
+    assert str(config.base_url) == "https://api.friendli.ai/v1"
 
 
 def test_default_model(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -92,7 +92,7 @@ def test_override_base_url_via_env(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("KOSMOS_FRIENDLI_TOKEN", "test-token-123")
     monkeypatch.setenv("KOSMOS_FRIENDLI_BASE_URL", "https://custom.example.com/v2")
     config = LLMClientConfig()
-    assert config.base_url == "https://custom.example.com/v2"
+    assert str(config.base_url) == "https://custom.example.com/v2"
 
 
 def test_override_model_via_env(monkeypatch: pytest.MonkeyPatch) -> None:
