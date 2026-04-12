@@ -19,7 +19,6 @@ The codebase now has:
 
 Infrastructure:
 - CI/CD: ruff, mypy --strict, pytest (3.12/3.13), CodeQL, security checks
-- GitHub Copilot Code Review enabled
 - Branch protection: PR required, CI must pass
 - Auto-merge: dependabot only. Feature PRs require user approval.
 
@@ -114,24 +113,8 @@ Same process as Wave 2. For each Epic:
 - PR body: `Closes #N` for all Task issues
 - Monitor CI until pass
 
-#### Step 9: Copilot Review Gate — fix loop
-The "Copilot Review Gate" required status check is managed by a GitHub App.
-It creates a pending check on PR open/push, then evaluates Copilot's review:
-0 inline comments → pass, 1+ → fail.
-
-**You MUST loop until the gate passes:**
-1. Check gate status: `gh pr checks <PR_NUMBER> | grep "Copilot Review Gate"`
-2. If pending: wait 1-2 minutes for Copilot review
-3. If fail:
-   a. Read comments: `gh api repos/umyunsang/KOSMOS/pulls/<PR_NUMBER>/comments --jq '.[] | select(.user.login == "Copilot") | {path, line, body}'`
-   b. Triage: fix valid issues, skip false positives
-   c. Commit fixes and push → gate resets → Copilot re-reviews → **repeat**
-4. If pass: proceed to Step 10
-
-**Max 3 fix rounds.** If still failing, report to user and STOP.
-
-#### Step 10: Final report
-- PR link, CI status, Copilot summary, internal review summary
+#### Step 9: Final report
+- PR link, CI status
 - **STOP and wait for user to merge**
 
 ## Agent Teams rules

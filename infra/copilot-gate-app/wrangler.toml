@@ -1,8 +1,0 @@
-name = "kosmos-copilot-gate"
-main = "src/index.ts"
-compatibility_date = "2025-04-01"
-
-# Secrets (set via `wrangler secret put`):
-#   GITHUB_APP_ID          — GitHub App ID (numeric)
-#   GITHUB_APP_PRIVATE_KEY — GitHub App private key (PEM)
-#   GITHUB_WEBHOOK_SECRET  — Webhook secret for signature verification

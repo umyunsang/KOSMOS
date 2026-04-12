@@ -9,7 +9,7 @@
 
 You are the Lead agent for KOSMOS Phase 1. The project infrastructure is complete:
 - GitHub issue tree: 3 Initiatives + 22 Epics (linked via Sub-Issues API)
-- CI/CD pipeline: ruff, mypy, pytest, CodeQL, GitHub Copilot Code Review
+- CI/CD pipeline: ruff, mypy, pytest, CodeQL
 - API keys registered: `KOSMOS_DATA_GO_KR_KEY`, `KOSMOS_KOROAD_API_KEY`, `KOSMOS_FRIENDLI_TOKEN`, `ANTHROPIC_API_KEY`
 - Technical docs saved under `research/data/` for 6 providers (KOROAD, KMA, NMC, HIRA, SSIS, Gov24)
 - Branch protection on `main`: PR required, CI must pass, no human review required (solo project)
@@ -126,40 +126,8 @@ After all tasks are merged into `feat/<epic-slug>`:
 - Monitor CI: `gh pr checks <PR_NUMBER> --watch --interval 10`
 - If checks fail: investigate and fix
 
-### Step 9: Copilot Review Gate — fix loop
-The "Copilot Review Gate" required status check is managed by a GitHub App
-(Cloudflare Worker). It creates a pending check on PR open/push, then evaluates
-Copilot's review: 0 inline comments → pass, 1+ → fail.
-
-**You MUST loop until the gate passes:**
-
-1. **Check gate status**:
-   ```bash
-   gh pr checks <PR_NUMBER> --repo umyunsang/KOSMOS | grep "Copilot Review Gate"
-   ```
-
-2. **If gate is pending**: wait 1-2 minutes for Copilot to submit its review.
-
-3. **If gate fails** ("Copilot found N issues"):
-   a. Read the inline comments:
-      ```bash
-      gh api repos/umyunsang/KOSMOS/pulls/<PR_NUMBER>/comments \
-        --jq '.[] | select(.user.login == "Copilot") | {path, line, body}'
-      ```
-   b. Triage each comment:
-      - **Valid issue** (bug, security, correctness): fix immediately
-      - **Style suggestion** (naming, formatting): fix if consistent with project conventions
-      - **False positive** (disagree with suggestion): skip, but document reason
-   c. Commit fixes and push
-   d. Gate resets to pending → Copilot re-reviews → **repeat from step 1**
-
-4. **If gate passes** ("no issues found"): proceed to Step 10.
-
-**Max 3 fix rounds.** If still failing after 3 rounds, report remaining issues
-to user and STOP.
-
-### Step 10: Final report
-- Report to user: PR link, CI status, Copilot review summary (issues found/fixed/skipped)
+### Step 9: Final report
+- Report to user: PR link, CI status
 - **STOP and wait for user to merge or approve**
 
 ## Agent Teams rules

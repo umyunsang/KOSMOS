@@ -54,12 +54,8 @@ Non-trivial features use [GitHub Spec Kit](https://github.com/github/spec-kit):
 7. Link Task issues as sub-issues of Epic via `gh api` (see Issue hierarchy)
 8. `/speckit-implement` → Agent Teams parallel execution
 9. Open PR with `Closes #N` → monitor CI checks
-10. Copilot Review Gate fix loop → pass required before merge
 
 Small fixes (typos, one-line bugs, docs-only) skip the cycle.
-
-### Copilot Review Gate rule
-The "Copilot Review Gate" is a required status check managed by a GitHub App (Cloudflare Worker). After PR creation, Copilot auto-reviews and the gate evaluates: 0 inline comments → pass, 1+ → fail. **You MUST loop until the gate passes**: read Copilot comments → fix valid issues → push → Copilot re-reviews → repeat. Max 3 fix rounds; if still failing, report to user and STOP.
 
 ### Reference source rule
 Every `/speckit-plan` Phase 0 must consult `.specify/memory/constitution.md` and `docs/vision.md § Reference materials`. All sources are valid: open-source repos, official docs, reconstructed architecture analyses, and leaked-source review documents. Map each design decision to a concrete reference.

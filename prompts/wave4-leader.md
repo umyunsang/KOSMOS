@@ -112,25 +112,9 @@ uv run pytest tests/e2e/ -v  # E2E tests specifically
 - PR body: `Closes #12` + all Task issue numbers
 - Monitor CI until all checks pass
 
-### Step 9: Copilot Review Gate — fix loop
-The "Copilot Review Gate" required status check is managed by a GitHub App.
-0 inline comments → pass, 1+ → fail.
-
-**You MUST loop until the gate passes:**
-1. Check gate status: `gh pr checks <PR_NUMBER> | grep "Copilot Review Gate"`
-2. If pending: wait 1-2 minutes for Copilot review
-3. If fail:
-   a. Read comments: `gh api repos/umyunsang/KOSMOS/pulls/<PR_NUMBER>/comments --jq '.[] | select(.user.login == "Copilot") | {path, line, body}'`
-   b. Triage: fix valid issues, skip false positives
-   c. Commit fixes and push → gate resets → Copilot re-reviews → **repeat**
-4. If pass: proceed to Step 10
-
-**Max 3 fix rounds.** If still failing, report to user and STOP.
-
-### Step 10: Final report — Phase 1 completion
+### Step 9: Final report — Phase 1 completion
 Report to user:
 - PR link and CI status
-- Copilot review summary
 - **Scenario 1 test result**: PASS or FAIL with details
 - **Phase 1 completion status**:
   - [ ] All 9 Epics (#4-#12) merged
