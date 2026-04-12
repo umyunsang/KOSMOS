@@ -28,55 +28,51 @@ Python 3.12+ · FriendliAI Serverless (OpenAI-compatible) for K-EXAONE · `typer
 
 ## Issue hierarchy
 
-Issues follow a tree structure using GitHub Sub-Issues:
+Issues follow a tree structure using GitHub Sub-Issues (not body mentions):
 
 ```
-GitHub Project (Roadmap view)
-└── Initiative (label: initiative)        — roadmap phase
-    └── Epic (label: epic)                — feature-sized, links to spec
-        └── Task (label: agent-ready)     — agent-executable unit
-            └── Sub-task (optional)       — fine-grained step
+Initiative (label: initiative) → Epic (label: epic) → Task (label: agent-ready)
 ```
 
-Labels: `initiative`, `epic`, `agent-ready`, `needs-spec`, `parallel-safe`, `blocked`, `size/S`, `size/M`, `size/L`, plus layer labels (`query-engine`, `tool-system`, `permission`, `agent-swarm`, `context`, `error-recovery`).
+- **Initiative**: created manually (roadmap phase, e.g. "Phase 1 — CLI MVP")
+- **Epic**: created manually before spec work (feature-sized, label: `epic`, `needs-spec`)
+- **Task**: created ONLY by `/speckit-taskstoissues` from reviewed `tasks.md`
 
-**Creating sub-issue links (required — do not use body mentions as a substitute):**
-
-```bash
-# 1. Get the node ID of the child issue
-CHILD_NODE_ID=$(gh api graphql -f query='
-  query { repository(owner:"umyunsang", name:"KOSMOS") {
-    issue(number: CHILD_NUMBER) { id }
-  }}' --jq '.data.repository.issue.id')
-
-# 2. Attach child as sub-issue of parent
-gh api repos/umyunsang/KOSMOS/issues/PARENT_NUMBER/sub_issues \
-  --method POST -f sub_issue_id="$CHILD_NODE_ID"
-```
-
-Always use this API to build the hierarchy. Never rely on `#N` mentions or markdown checklists for parent-child relationships.
+Labels: `initiative`, `epic`, `agent-ready`, `needs-spec`, `parallel-safe`, `blocked`, `size/{S,M,L}`, plus layer labels. All parent-child links use the Sub-Issues API (see Task-to-issue rule).
 
 ## Spec-driven workflow
 
 Non-trivial features use [GitHub Spec Kit](https://github.com/github/spec-kit):
 
-1. Create/verify GitHub Issue (citizen-facing terms)
-2. `/speckit-specify` → `specs/NNN-slug/spec.md`
-3. Human review
-4. `/speckit-plan` → `plan.md`
-5. `/speckit-tasks` → `tasks.md`
-6. `/speckit-implement` → Agent Teams parallel execution
-7. Open PR with `Closes #N` → monitor CI checks
+1. Create/verify **Epic** issue (citizen-facing terms, label: `epic`)
+2. `/speckit-specify` → `specs/NNN-slug/spec.md` → human review
+3. `/speckit-plan` → `plan.md` → **must read `docs/vision.md § Reference materials`** → human review
+4. `/speckit-tasks` → `tasks.md` → human review
+5. `/speckit-analyze` → constitution compliance check
+6. `/speckit-taskstoissues` → create Task issues from verified tasks.md
+7. Link Task issues as sub-issues of Epic via `gh api` (see Issue hierarchy)
+8. `/speckit-implement` → Agent Teams parallel execution
+9. Open PR with `Closes #N` → monitor CI checks
 
 Small fixes (typos, one-line bugs, docs-only) skip the cycle.
+
+### Reference source rule
+Every `/speckit-plan` Phase 0 must consult `.specify/memory/constitution.md` and `docs/vision.md § Reference materials`. Map each decision to an MIT-licensed source — untraced patterns are a blocker.
+
+### Task-to-issue rule
+Task issues come **only** from reviewed `tasks.md` via `/speckit-taskstoissues`. After creation, link each as a sub-issue of its Epic:
+
+```bash
+TASK_ID=$(gh api graphql -f query='query{repository(owner:"umyunsang",name:"KOSMOS"){issue(number:TASK_NUM){id}}}' --jq '.data.repository.issue.id')
+gh api repos/umyunsang/KOSMOS/issues/EPIC_NUM/sub_issues --method POST -f sub_issue_id="$TASK_ID"
+```
 
 ## Agent Teams
 
 - Lead (Opus, effort=high): planning, spec authoring, code review, synthesis.
 - Teammates (Sonnet): implementation, tests, refactoring — spawned at step 6.
 - 3+ independent tasks → parallel via Agent Teams. 1-2 tasks → Lead handles solo.
-- Each Teammate works in an isolated worktree to avoid file conflicts.
-- Recommended agents per role:
+- Recommended agents per role (each Teammate uses an isolated worktree):
 
 | Role | Agent | Model |
 |------|-------|-------|
@@ -97,7 +93,6 @@ Conventional Commits. Branches: `feat/`, `fix/`, `docs/`, `refactor/`, `test/`, 
 Pydantic v2 I/O · fail-closed defaults · Korean + English `search_hint` · recorded fixture · happy-path + error-path test · no hardcoded keys. Full checklist: `docs/tool-adapters.md`.
 
 ## Testing
-
 `uv run pytest` before every commit. Live-API tests marked `@pytest.mark.live`, skipped by default. Full guide: `docs/testing.md`.
 
 ## Directory layout
@@ -112,22 +107,14 @@ KOSMOS/
 ├── docs/
 │   ├── vision.md, conventions.md, tool-adapters.md, testing.md
 │   └── adr/
-├── research/
-│   ├── papers/           # LaTeX/MD paper drafts
-│   ├── experiments/      # Evaluation scripts and results
-│   ├── figures/          # Charts, architecture diagrams
-│   └── data/             # Evaluation datasets (no PII)
+├── research/             # papers, experiments, figures, data (no PII)
 ├── .specify/, .claude/
 └── .github/
 ```
 
 ## Do not touch
 
-- `.specify/`, `.claude/skills/` — managed by Spec Kit
-- `LICENSE` — Apache-2.0, change requires ADR
-- `docs/vision.md` layer count/names — change requires ADR
-- `.env`, `secrets/` — never commit
+`.specify/`, `.claude/skills/` (Spec Kit) · `LICENSE` (Apache-2.0, ADR required) · `docs/vision.md` layer names (ADR required) · `.env`, `secrets/` (never commit).
 
 ## Conflict resolution
-
 Rules in this file win over individual specs. A spec conflicting with `docs/vision.md` is a blocker — open an issue before proceeding. When stuck, open a GitHub Discussion rather than guessing.

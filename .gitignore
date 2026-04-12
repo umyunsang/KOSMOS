@@ -49,6 +49,7 @@ research/figures/*.pdf
 !research/figures/*.svg
 research/data/*.csv
 research/data/*.json
+research/data/policy/*.pdf
 
 # Model artifacts
 models/

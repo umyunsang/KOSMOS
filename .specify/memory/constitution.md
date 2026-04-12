@@ -1,50 +1,84 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+# KOSMOS Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Clean-Room Development (NON-NEGOTIABLE)
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+All implementation MUST be original Python code. Architectural patterns are adapted — never copied line-for-line — from the MIT-licensed reference sources listed in `docs/vision.md § Reference materials`.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+**Mandatory reference mapping** — every `/speckit-plan` Phase 0 Research MUST read `docs/vision.md` and map each design decision to one of these sources:
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+| Layer | Primary reference | Secondary reference |
+|---|---|---|
+| Query Engine | Claude Agent SDK (async generator loop) | Pydantic AI (graph state machine) |
+| Tool System | Pydantic AI (schema-driven registry) | Claude Agent SDK (tool definitions) |
+| Permission Pipeline | OpenAI Agents SDK (guardrail pipeline) | AutoGen (InterventionHandler) |
+| Agent Swarms | AutoGen (AgentRuntime mailbox IPC) | Anthropic Cookbook (orchestrator-workers) |
+| Context Assembly | Claude Agent SDK (context management) | Anthropic docs (prompt caching) |
+| Error Recovery | OpenAI Agents SDK (retry matrix) | Claude Agent SDK (error handling) |
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+**Prohibited**: cloning, reading, or referencing any reconstructed/decompiled proprietary source repository. Referencing only the public repositories and official documentation listed above.
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+### II. Fail-Closed Security (NON-NEGOTIABLE)
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+Every tool adapter and API integration MUST default to the most restrictive setting:
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+- `requires_auth = True` (not False)
+- `is_personal_data = True` (not False)
+- `is_concurrency_safe = False` (not True)
+- `cache_ttl_seconds = 0` (no caching by default)
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+New adapters created by contributors or agents cannot accidentally expose personal-data APIs as public. The only way to relax a default is an explicit, reviewed override.
+
+Permission pipeline bypass-immune checks MUST NOT be overridable by any mode, including automation, admin, or testing shortcuts. These checks include: querying another citizen's records, accessing medical records without consent, and write actions without required identity verification.
+
+### III. Pydantic v2 Strict Typing (NON-NEGOTIABLE)
+
+All tool inputs and outputs MUST use Pydantic v2 models. The `Any` type is forbidden in all I/O schemas. Every tool adapter MUST include:
+
+- `input_schema`: Pydantic model for request parameters
+- `output_schema`: Pydantic model for response data
+- `search_hint`: bilingual Korean + English discovery keywords
+
+### IV. Government API Compliance
+
+- NEVER call live `data.go.kr` APIs from CI tests; use recorded fixtures only.
+- Every adapter MUST track daily per-key quota via `rate_limit_per_minute` and `usage_tracker`.
+- Happy-path AND error-path tests are required for every adapter.
+- No hardcoded API keys; all credentials via `KOSMOS_`-prefixed environment variables.
+
+### V. Policy Alignment
+
+KOSMOS aligns with the Korea AI Action Plan (2026-2028), specifically:
+
+- **Principle 8**: single conversational window for cross-ministry citizen services
+- **Principle 9**: Open API and OpenMCP for public service integration
+- **Principle 5**: no paper submission required; consent-based data access
+
+The permission pipeline implements the Public AI Impact Assessment (과제 54) requirements: algorithmic bias prevention, explainability, personal data protection, and abuse prevention.
+
+PIPA (Personal Information Protection Act, 개인정보보호법) governs all citizen data handling. Every data flow involving personal identifiers MUST pass through the 7-step permission gauntlet.
+
+## Development Standards
+
+- Python 3.12+, stdlib `logging` only (no `print()` outside CLI layer)
+- `uv` + `pyproject.toml` for dependency management (never `requirements.txt`)
+- Conventional Commits; branches: `feat/`, `fix/`, `docs/`, `refactor/`, `test/`, `chore/`
+- `uv run pytest` before every commit; `@pytest.mark.live` for real API tests (skipped in CI)
+- English source text only; Korean domain data is the sole exception
+
+## Issue and Spec Workflow
+
+- Initiative and Epic issues are created manually before any spec work.
+- `/speckit-specify` is triggered by an existing Epic issue (label: `epic`).
+- `/speckit-plan` Phase 0 Research MUST consult `docs/vision.md § Reference materials` for architectural patterns.
+- `/speckit-analyze` MUST verify constitution compliance before implementation.
+- Task issues are created ONLY via `/speckit-taskstoissues` from a reviewed `tasks.md`.
+- After task issue creation, each task issue MUST be linked as a sub-issue of its parent Epic using the GitHub Sub-Issues API.
+- PRs MUST include `Closes #N` referencing the Task issue number.
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+This constitution supersedes individual spec decisions. Any spec conflicting with these principles is a blocker — open an issue before proceeding. Amendments require an ADR under `docs/adr/` and user approval.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Version**: 1.0.0 | **Ratified**: 2026-04-12 | **Last Amended**: 2026-04-12
