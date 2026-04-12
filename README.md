@@ -6,7 +6,7 @@
 
 # KOSMOS
 
-**KO**rea public **S**erivce **M**ulti-agent **O**rchestration **S**ystem
+**KO**rean public **S**erivce **M**ulti-agent **O**rchestration **S**ystem
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
