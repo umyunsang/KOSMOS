@@ -205,6 +205,8 @@ async function handlePullRequest(event: PullRequestEvent, env: Env): Promise<Res
   }
 
   // Create in_progress check run (pending in UI)
+  // Copilot re-review is triggered automatically by the repository ruleset
+  // ("Review new pushes"), so no API call is needed here.
   await githubApi(token, "POST", `/repos/${owner}/${repo}/check-runs`, {
     name: CHECK_NAME,
     head_sha: sha,
@@ -216,21 +218,7 @@ async function handlePullRequest(event: PullRequestEvent, env: Env): Promise<Res
     },
   });
 
-  // Request Copilot re-review so the gate doesn't stay pending forever
-  const prNumber = pull_request.number;
-  try {
-    await githubApi(
-      token,
-      "POST",
-      `/repos/${owner}/${repo}/pulls/${prNumber}/requested_reviewers`,
-      { reviewers: ["Copilot"] }
-    );
-  } catch (err) {
-    // Non-fatal: Copilot may already be requested or auto-reviewing
-    console.warn(`[rerequest] Could not request Copilot review for PR #${prNumber}:`, err);
-  }
-
-  return new Response("Created pending check run + requested Copilot review", { status: 200 });
+  return new Response("Created pending check run", { status: 200 });
 }
 
 async function handleReview(event: ReviewEvent, env: Env): Promise<Response> {
