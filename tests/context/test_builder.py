@@ -279,10 +279,13 @@ def test_build_assembled_context_performance(benchmark) -> None:  # type: ignore
 
     # Soft assertion: mean latency should be under 10ms
     # pytest-benchmark reports stats.mean in seconds
-    assert benchmark.stats["mean"] < 0.010, (
-        f"build_assembled_context mean latency {benchmark.stats['mean'] * 1000:.2f}ms "
-        "exceeds 10ms budget (SC-006)"
-    )
+    # stats is None when benchmarks are disabled (e.g. under xdist)
+    if benchmark.stats is not None:
+        assert benchmark.stats["mean"] < 0.010, (
+            f"build_assembled_context mean latency "
+            f"{benchmark.stats['mean'] * 1000:.2f}ms "
+            "exceeds 10ms budget (SC-006)"
+        )
 
 
 # ---------------------------------------------------------------------------
