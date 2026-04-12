@@ -116,7 +116,7 @@ init_typed = true
 warn_required_dynamic_aliases = true
 
 [tool.vulture]
-paths = ["src"]
+paths = ["src", "vulture_whitelist.py"]
 min_confidence = 80
 
 [tool.commitizen]
