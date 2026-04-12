@@ -44,7 +44,7 @@ class LLMClient:
         """
         if config is None:
             try:
-                config = LLMClientConfig()  # type: ignore[call-arg]
+                config = LLMClientConfig()
             except ValidationError as exc:
                 raise ConfigurationError(
                     f"Failed to load LLM client configuration from environment: {exc}"
@@ -321,7 +321,7 @@ class LLMClient:
     def _parse_completion_response(data: dict[str, object]) -> ChatCompletionResponse:
         """Parse a raw /chat/completions JSON response into ChatCompletionResponse."""
         choice = data["choices"][0]  # type: ignore[index]
-        message = choice["message"]  # type: ignore[index]
+        message = choice["message"]
 
         # Parse tool calls if present
         tool_calls: list[ToolCall] = []
@@ -342,8 +342,8 @@ class LLMClient:
         # Parse token usage
         raw_usage = data.get("usage") or {}
         usage = TokenUsage(
-            input_tokens=raw_usage.get("prompt_tokens", 0),  # type: ignore[arg-type]
-            output_tokens=raw_usage.get("completion_tokens", 0),  # type: ignore[arg-type]
+            input_tokens=raw_usage.get("prompt_tokens", 0),  # type: ignore[attr-defined]
+            output_tokens=raw_usage.get("completion_tokens", 0),  # type: ignore[attr-defined]
         )
 
         logger.info(
@@ -359,5 +359,5 @@ class LLMClient:
             tool_calls=tool_calls,
             usage=usage,
             model=data["model"],  # type: ignore[arg-type]
-            finish_reason=choice["finish_reason"],  # type: ignore[arg-type]
+            finish_reason=choice["finish_reason"],
         )

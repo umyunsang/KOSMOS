@@ -58,7 +58,7 @@ class TokenUsage(BaseModel):
     cache_read_tokens: int = 0
     cache_write_tokens: int = 0
 
-    @computed_field  # type: ignore[misc]
+    @computed_field  # type: ignore[prop-decorator]
     @property
     def total_tokens(self) -> int:
         """Sum of input and output tokens."""
