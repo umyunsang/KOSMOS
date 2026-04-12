@@ -106,7 +106,7 @@ def populated_registry(sample_tool_factory) -> ToolRegistry:
         provider="기상청",
         category=["날씨", "기상"],
         search_hint="날씨 예보 weather forecast 기상청",
-        core=True,
+        is_core=True,
     )
 
     # 2. Traffic accident statistics

@@ -63,7 +63,7 @@ for result in results:
 ```python
 # Get deterministic core tool list for prompt caching
 openai_tools = registry.export_core_tools_openai()
-# Pass to LLM client:
+# LLMClient.complete() accepts both ToolDefinition models and raw dicts:
 # response = await llm_client.complete(messages, tools=openai_tools)
 ```
 

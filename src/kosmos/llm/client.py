@@ -76,7 +76,7 @@ class LLMClient:
         self,
         messages: list[ChatMessage],
         *,
-        tools: list[ToolDefinition] | None = None,
+        tools: list[ToolDefinition | dict[str, object]] | None = None,
         temperature: float = 0.7,
         max_tokens: int | None = None,
         top_p: float | None = None,
@@ -86,7 +86,7 @@ class LLMClient:
 
         Args:
             messages: Ordered list of conversation messages.
-            tools: Optional list of tool definitions for function calling.
+            tools: Optional tool definitions (ToolDefinition models or raw dicts).
             temperature: Sampling temperature.
             max_tokens: Maximum tokens in the completion.
             top_p: Nucleus sampling parameter.
@@ -101,7 +101,7 @@ class LLMClient:
             LLMResponseError: On 400, 404, or other non-retryable HTTP errors.
             LLMConnectionError: On network / transport failures after all retries.
         """
-        if not self._usage.can_afford(0):
+        if not self._usage.can_afford(max_tokens or 1):
             raise BudgetExceededError("Session token budget exhausted")
 
         payload = self._build_payload(
@@ -138,7 +138,7 @@ class LLMClient:
         self,
         messages: list[ChatMessage],
         *,
-        tools: list[ToolDefinition] | None = None,
+        tools: list[ToolDefinition | dict[str, object]] | None = None,
         temperature: float = 0.7,
         max_tokens: int | None = None,
         top_p: float | None = None,
@@ -150,7 +150,7 @@ class LLMClient:
 
         Args:
             messages: Ordered list of conversation messages.
-            tools: Optional list of tool definitions for function calling.
+            tools: Optional tool definitions (ToolDefinition models or raw dicts).
             temperature: Sampling temperature.
             max_tokens: Maximum tokens in the completion.
             top_p: Nucleus sampling parameter.
@@ -165,7 +165,7 @@ class LLMClient:
             AuthenticationError: On 401 or 403 responses.
             LLMResponseError: On non-retryable HTTP errors.
         """
-        if not self._usage.can_afford(0):
+        if not self._usage.can_afford(max_tokens or 1):
             raise BudgetExceededError("Session token budget exhausted")
 
         payload = self._build_payload(
@@ -275,7 +275,7 @@ class LLMClient:
         max_tokens: int | None,
         top_p: float | None,
         stop: list[str] | None,
-        tools: list[ToolDefinition] | None = None,
+        tools: list[ToolDefinition | dict[str, object]] | None = None,
         stream: bool,
     ) -> dict[str, object]:
         """Construct the JSON payload for a chat completions request."""
@@ -291,7 +291,10 @@ class LLMClient:
         if stop is not None:
             payload["stop"] = stop
         if tools is not None:
-            payload["tools"] = [t.model_dump() for t in tools]
+            payload["tools"] = [
+                t.model_dump() if isinstance(t, ToolDefinition) else t
+                for t in tools
+            ]
         if stream:
             payload["stream"] = True
             payload["stream_options"] = {"include_usage": True}
@@ -306,14 +309,19 @@ class LLMClient:
                 f"Authentication failed (HTTP {status})",
                 status_code=status,
             )
-        if status in (400, 404):
+        if status == 429:
             raise LLMResponseError(
-                f"LLM API returned error (HTTP {status}): {response.text}",
+                f"Rate limited by LLM API (HTTP 429): {response.text}",
                 status_code=status,
             )
         if status >= 500:
             raise LLMResponseError(
                 f"LLM API server error (HTTP {status}): {response.text}",
+                status_code=status,
+            )
+        if status >= 400:
+            raise LLMResponseError(
+                f"LLM API returned error (HTTP {status}): {response.text}",
                 status_code=status,
             )
 

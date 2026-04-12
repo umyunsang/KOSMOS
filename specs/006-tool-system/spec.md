@@ -91,10 +91,10 @@ When the query engine resolves a tool_call from the LLM, it passes the tool name
 ### Edge Cases
 
 - What happens when two tools are registered with the same id? The system rejects the duplicate with a registration error.
-- What happens when search_hint is empty? The tool is registered but never discoverable via search.
+- What happens when search_hint is empty or whitespace-only? The system rejects registration with a validation error.
 - What happens when a tool's API endpoint is unreachable during execution? The executor raises a connection error; error recovery (Layer 6) handles retry.
 - What happens when the rate limit counter overflows (e.g., clock skew)? The counter resets gracefully; stale entries are pruned.
-- What happens when a tool's output does not match the output_schema? The system logs a validation warning and returns the raw data with a schema-mismatch flag.
+- What happens when a tool's output does not match the output_schema? The system logs a validation warning and returns a schema-mismatch error result; raw output is not returned.
 
 ## Requirements
 
