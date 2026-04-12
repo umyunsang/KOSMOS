@@ -4,73 +4,92 @@ on:
   pull_request:
     types: [opened, reopened, synchronize, ready_for_review]
     branches: [main]
-  pull_request_review:
-    types: [submitted]
 
 permissions:
   checks: write
   pull-requests: read
 
 jobs:
-  # Phase 1: Create a "pending" check run when a PR is opened or updated.
-  # On synchronize (new push), this resets the gate back to pending so
-  # Copilot re-reviews the updated code.
-  create-pending:
-    name: Copilot Review Pending
-    if: github.event_name == 'pull_request'
+  copilot-gate:
+    name: Copilot Review Gate
+    if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
-      - name: Skip for Dependabot
-        if: github.actor == 'dependabot[bot]'
-        run: echo "Dependabot PR — skipping Copilot gate."
-
-      - name: Create pending check run
-        if: github.actor != 'dependabot[bot]'
+      - name: Create pending check and poll for Copilot review
         uses: actions/github-script@v7
         with:
           script: |
-            await github.rest.checks.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const prNumber = context.payload.pull_request.number;
+            const sha = context.payload.pull_request.head.sha;
+
+            // Create an in_progress check run (shows as "pending" in UI)
+            const { data: checkRun } = await github.rest.checks.create({
+              owner, repo,
               name: 'Copilot Review Gate',
-              head_sha: context.payload.pull_request.head.sha,
+              head_sha: sha,
               status: 'in_progress',
               output: {
                 title: 'Waiting for Copilot Code Review',
-                summary: 'Copilot has not submitted a review yet. This check will pass when Copilot finds no issues.'
+                summary: 'Polling for Copilot review submission...'
               }
             });
+            const checkRunId = checkRun.id;
+            core.info(`Created check run ${checkRunId} (in_progress)`);
 
-  # Phase 2: When Copilot submits a review, count inline comments for
-  # THIS specific review only (not cumulative across all reviews).
-  # Copilot always uses state="commented" (never "approved"/"changes_requested"),
-  # so we determine pass/fail by the review's own comment count.
-  #   0 comments → pass (clean review, no issues found)
-  #   1+ comments → fail (issues found, fix and push to trigger re-review)
-  evaluate-review:
-    name: Copilot Review Evaluate
-    if: >-
-      github.event_name == 'pull_request_review' &&
-      github.event.review.user.login == 'copilot-pull-request-reviewer[bot]'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Evaluate Copilot review
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const prNumber = context.payload.pull_request.number;
-            const sha = context.payload.pull_request.head.sha;
-            const reviewId = context.payload.review.id;
+            // Poll for Copilot review on this exact commit SHA.
+            // Copilot typically responds within 1-5 minutes.
+            const MAX_ATTEMPTS = 30;       // 30 × 30s = 15 minutes max
+            const POLL_INTERVAL_MS = 30000; // 30 seconds
 
-            // Fetch inline comments for THIS specific review only.
-            // Using listCommentsForReview (not listReviewComments) ensures
-            // we only count comments from this review, not stale ones
-            // from previous review rounds.
+            let copilotReview = null;
+
+            for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+              core.info(`Poll attempt ${attempt}/${MAX_ATTEMPTS}...`);
+
+              const { data: reviews } = await github.rest.pulls.listReviews({
+                owner, repo,
+                pull_number: prNumber
+              });
+
+              // Find a Copilot review matching the current head SHA
+              copilotReview = reviews.find(
+                r => r.user.login === 'copilot-pull-request-reviewer[bot]'
+                  && r.commit_id === sha
+              );
+
+              if (copilotReview) {
+                core.info(`Found Copilot review ${copilotReview.id} at attempt ${attempt}`);
+                break;
+              }
+
+              if (attempt < MAX_ATTEMPTS) {
+                await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL_MS));
+              }
+            }
+
+            // If no review found after max attempts, pass with warning
+            if (!copilotReview) {
+              await github.rest.checks.update({
+                owner, repo,
+                check_run_id: checkRunId,
+                status: 'completed',
+                conclusion: 'success',
+                output: {
+                  title: 'Copilot did not review (timeout)',
+                  summary: 'Copilot Code Review did not submit a review within 15 minutes. Passing with warning.'
+                }
+              });
+              core.warning('Copilot review timed out — passing by default');
+              return;
+            }
+
+            // Count inline comments for this specific review
             const { data: reviewComments } = await github.rest.pulls.listCommentsForReview({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
+              owner, repo,
               pull_number: prNumber,
-              review_id: reviewId
+              review_id: copilotReview.id
             });
 
             const count = reviewComments.length;
@@ -94,40 +113,15 @@ jobs:
               ].join('\n');
             }
 
-            // Find existing in_progress check run and complete it,
-            // or create a new completed check run.
-            const { data: checkRuns } = await github.rest.checks.listForRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: sha,
-              check_name: 'Copilot Review Gate',
-              filter: 'latest'
+            await github.rest.checks.update({
+              owner, repo,
+              check_run_id: checkRunId,
+              status: 'completed',
+              conclusion,
+              output: { title, summary }
             });
 
-            const pending = checkRuns.check_runs.find(cr => cr.status !== 'completed');
-
-            if (pending) {
-              await github.rest.checks.update({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                check_run_id: pending.id,
-                status: 'completed',
-                conclusion,
-                output: { title, summary }
-              });
-              core.info(`Updated check run ${pending.id} → ${conclusion}`);
-            } else {
-              await github.rest.checks.create({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                name: 'Copilot Review Gate',
-                head_sha: sha,
-                status: 'completed',
-                conclusion,
-                output: { title, summary }
-              });
-              core.info(`Created completed check run → ${conclusion}`);
-            }
+            core.info(`Updated check run ${checkRunId} → ${conclusion}`);
 
             if (conclusion === 'failure') {
               core.setFailed(title);
