@@ -1,0 +1,137 @@
+name: Claude Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review]
+  pull_request_review_comment:
+    types: [created]
+  issue_comment:
+    types: [created]
+  issues:
+    types: [opened, assigned]
+
+concurrency:
+  group: claude-${{ github.event.pull_request.number || github.event.issue.number }}-${{ github.event_name }}
+  cancel-in-progress: false
+
+jobs:
+  automated-review:
+    name: Claude Automated Review
+    if: |
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          use_sticky_comment: true
+          prompt: |
+            Review this PR against KOSMOS project standards defined in CLAUDE.md and AGENTS.md.
+
+            ## Critical checks (flag as ERROR)
+            - Any `Any` type in Pydantic tool I/O models
+            - Hardcoded API keys, tokens, or secrets in source code
+            - Environment variables not prefixed with `KOSMOS_`
+            - `print()` calls outside `src/kosmos/cli/` (must use stdlib `logging`)
+            - Live API calls in test files without `@pytest.mark.live` decorator
+            - Personal data (PII) in test fixtures (must use synthetic data)
+            - Permission pipeline bypass or weakening
+            - Cross-layer direct imports violating architecture separation
+
+            ## Important checks (flag as WARNING)
+            - Missing type hints on public function signatures
+            - New tool adapters without both happy-path and error-path tests
+            - Tool adapters missing required fields: requires_auth, is_concurrency_safe,
+              is_personal_data, cache_ttl_seconds, rate_limit_per_minute
+            - Missing bilingual search_hint (Korean + English) on tool adapters
+            - Korean text in comments, logs, error messages, or identifiers
+              (Korean is ONLY acceptable in domain data values)
+            - Functions with cyclomatic complexity > 10
+
+            ## Style checks (flag as INFO)
+            - Import ordering: stdlib → third-party → local
+            - Line length > 100 characters
+            - Missing docstrings on public APIs
+
+            Post findings as inline review comments on the specific lines.
+            Use a summary comment with counts: X errors, Y warnings, Z info.
+          claude_args: |
+            --model claude-sonnet-4-6
+            --max-turns 10
+
+  interactive:
+    name: Claude Interactive
+    if: |
+      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
+      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
+      (github.event_name == 'issues' && contains(github.event.issue.body, '@claude'))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      id-token: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          trigger_phrase: "@claude"
+          claude_args: |
+            --model claude-sonnet-4-6
+            --max-turns 15
+            --allowedTools "Bash(uv run pytest:*),Bash(uv run ruff:*),Bash(uv run mypy:*),Bash(git diff:*),Bash(git log:*),Read,Edit,Write,Glob,Grep"
+          settings: |
+            {
+              "env": {
+                "KOSMOS_DATA_GO_KR_KEY": "test-placeholder",
+                "KOSMOS_KOROAD_API_KEY": "test-placeholder",
+                "KOSMOS_FRIENDLI_TOKEN": "test-placeholder"
+              }
+            }
+
+  security-review:
+    name: Claude Security Review
+    if: |
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Perform a security-focused review of this PR. Check for:
+            1. OWASP Top 10 vulnerabilities (injection, XSS, SSRF, etc.)
+            2. Hardcoded credentials or API keys (especially KOSMOS_* patterns)
+            3. Unsafe deserialization (pickle, yaml.load without SafeLoader)
+            4. Command injection via subprocess or os.system
+            5. Path traversal in file operations
+            6. Insecure HTTP calls (should use httpx with TLS)
+            7. PII exposure in logs or error messages
+            8. Race conditions in async code
+            Tag each finding: CRITICAL / HIGH / MEDIUM / LOW.
+          claude_args: |
+            --model claude-sonnet-4-6
+            --max-turns 8
+            --allowedTools "Read,Glob,Grep"

@@ -1,0 +1,44 @@
+name: PR Lint
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize, ready_for_review]
+    branches: [main]
+
+jobs:
+  pr-title:
+    name: Conventional Commits (PR title)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            feat
+            fix
+            docs
+            refactor
+            test
+            chore
+            perf
+            build
+            ci
+          requireScope: false
+          validateSingleCommit: false
+          subjectPattern: ^[a-z].+$
+          subjectPatternError: "PR title subject must start with lowercase letter"
+
+  branch-name:
+    name: Branch naming convention
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate branch name
+        run: |
+          BRANCH="${{ github.head_ref }}"
+          PATTERN='^(feat|fix|docs|refactor|test|chore)\/[a-z0-9][a-z0-9\-]*$'
+          if ! echo "$BRANCH" | grep -qE "$PATTERN"; then
+            echo "::error::Branch name '$BRANCH' does not match pattern: <type>/<kebab-case-scope>"
+            echo "Valid prefixes: feat/, fix/, docs/, refactor/, test/, chore/"
+            exit 1
+          fi
