@@ -27,6 +27,7 @@ dev = [
     "pre-commit>=3.7",
     "pip-audit>=2.7",
     "vulture>=2.11",
+    "pip-licenses>=5.0",
 ]
 
 [build-system]
@@ -104,7 +105,7 @@ warn_return_any = true
 warn_unused_configs = true
 plugins = ["pydantic.mypy"]
 
-[tool.mypy.overrides]
+[[tool.mypy.overrides]]
 module = "tests.*"
 disallow_untyped_defs = false
 
