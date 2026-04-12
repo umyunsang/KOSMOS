@@ -25,13 +25,13 @@ KOSMOS:   Ministry of Welfare eligibility API + Gov24 application API
 
 The citizen does not learn which ministry runs which API. KOSMOS does the routing.
 
-## Inspiration sources and clean-room stance
+## Inspiration and reference sources
 
-KOSMOS adapts well-known architectural patterns from the conversational AI agent ecosystem to the Korean public-service domain. All implementation is original Python code; no proprietary or reconstructed source is referenced.
+KOSMOS adapts architectural patterns from the conversational AI agent ecosystem to the Korean public-service domain. We actively reference all available sources — open-source repos, official documentation, reconstructed architecture analyses, and leaked-source review documents — to build the best possible implementation.
 
-### Reference materials (all MIT-licensed or publicly documented)
+### Reference materials
 
-| Source | License | What we adapt |
+| Source | License / Type | What we adapt |
 |---|---|---|
 | Claude Agent SDK (`anthropics/claude-agent-sdk-python`) | MIT | Async generator tool loop, permission types, agent definitions, context management |
 | OpenAI Agents SDK (`openai/openai-agents-python`) | MIT | Guardrail pipeline, retry matrix with composable policies, agent handoff patterns |
@@ -39,6 +39,11 @@ KOSMOS adapts well-known architectural patterns from the conversational AI agent
 | AutoGen (`microsoft/autogen`) | MIT | AgentRuntime mailbox IPC, InterventionHandler for permission interception, cooperative cancellation |
 | Anthropic Cookbook (`anthropic-cookbook`) | MIT | Orchestrator-workers pattern, multi-agent coordination examples |
 | Anthropic, OpenAI official documentation | Public | Tool use protocols, prompt caching, context window management |
+| Ink (`vadimdemedes/ink`) | MIT | React-based terminal UI framework — Claude Code's TUI framework |
+| Gemini CLI (`google-gemini/gemini-cli`) | Apache-2.0 | Full Ink + React + Yoga TUI implementation, component hierarchy, hooks, themes |
+| Claude Code sourcemap (`ChinaSiro/claude-code-sourcemap`) | Reconstructed | Tool loop internals, permission model, context assembly, TUI component structure |
+| Claude Reviews Claude (`openedclaude/claude-reviews-claude`) | Analysis | Detailed architectural review, state management, rendering pipeline, design rationale |
+| Claw Code (`ultraworkers/claw-code`) | Harness/Fork | Leaked source repackaged as harness — runtime behavior, hook system, tool execution flow |
 
 ### What is original to KOSMOS
 
@@ -49,8 +54,6 @@ The patterns above are general-purpose. KOSMOS's contribution is adapting them t
 - **Multi-ministry agent coordination** where dependency ordering is dictated by law (e.g., residence transfer must precede vehicle registration)
 - **Prompt cache partitioning** for cost-efficient government AI services (taxpayer-funded budget constraints)
 - **Fail-closed API adapters** where the safe default is deny, not allow
-
-This is a deliberate clean-room stance documented in `AGENTS.md`.
 
 ## Six-layer architecture
 

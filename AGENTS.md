@@ -10,7 +10,9 @@ A conversational multi-agent platform that orchestrates Korean public APIs from 
 
 ## Stack
 
-Python 3.12+ · FriendliAI Serverless (OpenAI-compatible) for K-EXAONE · `typer` + `rich` CLI · `httpx` (async) · `pydantic` v2 · `pytest` + `pytest-asyncio` · `uv` + `pyproject.toml` · Apache-2.0. Changing any requires an ADR under `docs/adr/`.
+**Backend**: Python 3.12+ · FriendliAI Serverless (OpenAI-compatible) for K-EXAONE · `httpx` (async) · `pydantic` v2 · `pytest` + `pytest-asyncio` · `uv` + `pyproject.toml` · Apache-2.0.
+**TUI**: Ink (React for CLIs) + Bun · TypeScript. Ref: Gemini CLI (Apache-2.0) + Claude Code reconstructed architecture.
+Stack changes require an ADR under `docs/adr/`.
 
 ## Hard rules (never violate)
 
@@ -18,13 +20,12 @@ Python 3.12+ · FriendliAI Serverless (OpenAI-compatible) for K-EXAONE · `typer
 - Env vars prefixed `KOSMOS_`. Never commit `.env` or `secrets/`.
 - Stdlib `logging` only; no `print()` outside CLI output layer.
 - Pydantic v2 for all tool I/O. Never `Any`.
-- Clean-room rule: reference only MIT-licensed SDKs and public documentation listed in `docs/vision.md § Reference materials`. Never clone, read, or reference reconstructed/decompiled source repositories. Borrow architectural patterns, never line-for-line code.
 - Never call live `data.go.kr` APIs from CI tests.
 - Never add a dependency outside a spec-driven PR.
 - Never `--force` push `main`, `--no-verify`, or bypass signing.
 - Never create `requirements.txt`, `setup.py`, or `Pipfile`.
 - Never commit a file larger than 1 MB without asking.
-- Never introduce TypeScript, Go, or Rust.
+- Never introduce Go or Rust. TypeScript is allowed only for the TUI layer (Ink + Bun).
 
 ## Issue hierarchy
 
@@ -57,7 +58,7 @@ Non-trivial features use [GitHub Spec Kit](https://github.com/github/spec-kit):
 Small fixes (typos, one-line bugs, docs-only) skip the cycle.
 
 ### Reference source rule
-Every `/speckit-plan` Phase 0 must consult `.specify/memory/constitution.md` and `docs/vision.md § Reference materials`. Map each decision to an MIT-licensed source — untraced patterns are a blocker.
+Every `/speckit-plan` Phase 0 must consult `.specify/memory/constitution.md` and `docs/vision.md § Reference materials`. All sources are valid: open-source repos, official docs, reconstructed architecture analyses, and leaked-source review documents. Map each design decision to a concrete reference.
 
 ### Task-to-issue rule
 Task issues come **only** from reviewed `tasks.md` via `/speckit-taskstoissues`. After creation, link each as a sub-issue of its Epic:
@@ -113,7 +114,6 @@ KOSMOS/
 ```
 
 ## Do not touch
-
 `.specify/`, `.claude/skills/` (Spec Kit) · `LICENSE` (Apache-2.0, ADR required) · `docs/vision.md` layer names (ADR required) · `.env`, `secrets/` (never commit).
 
 ## Conflict resolution

@@ -2,22 +2,23 @@
 
 ## Core Principles
 
-### I. Clean-Room Development (NON-NEGOTIABLE)
+### I. Reference-Driven Development
 
-All implementation MUST be original Python code. Architectural patterns are adapted — never copied line-for-line — from the MIT-licensed reference sources listed in `docs/vision.md § Reference materials`.
+Every design decision MUST trace to a concrete reference source. All sources listed in `docs/vision.md § Reference materials` are valid, including open-source repos, official documentation, reconstructed architecture analyses, and leaked-source review documents.
 
 **Mandatory reference mapping** — every `/speckit-plan` Phase 0 Research MUST read `docs/vision.md` and map each design decision to one of these sources:
 
 | Layer | Primary reference | Secondary reference |
 |---|---|---|
-| Query Engine | Claude Agent SDK (async generator loop) | Pydantic AI (graph state machine) |
+| Query Engine | Claude Agent SDK (async generator loop) | Claude Code reconstructed (tool loop internals) |
 | Tool System | Pydantic AI (schema-driven registry) | Claude Agent SDK (tool definitions) |
-| Permission Pipeline | OpenAI Agents SDK (guardrail pipeline) | AutoGen (InterventionHandler) |
+| Permission Pipeline | OpenAI Agents SDK (guardrail pipeline) | Claude Code reconstructed (permission model) |
 | Agent Swarms | AutoGen (AgentRuntime mailbox IPC) | Anthropic Cookbook (orchestrator-workers) |
-| Context Assembly | Claude Agent SDK (context management) | Anthropic docs (prompt caching) |
+| Context Assembly | Claude Code reconstructed (context assembly) | Anthropic docs (prompt caching) |
 | Error Recovery | OpenAI Agents SDK (retry matrix) | Claude Agent SDK (error handling) |
+| TUI | Ink + Gemini CLI (React terminal UI) | Claude Code reconstructed (TUI components) |
 
-**Prohibited**: cloning, reading, or referencing any reconstructed/decompiled proprietary source repository. Referencing only the public repositories and official documentation listed above.
+**Encouraged**: actively study reconstructed source repositories (`ChinaSiro/claude-code-sourcemap`), architecture review documents (`openedclaude/claude-reviews-claude`), and harness implementations (`ultraworkers/claw-code`) to understand internal patterns. Adapt patterns to KOSMOS's domain — do not copy line-for-line.
 
 ### II. Fail-Closed Security (NON-NEGOTIABLE)
 
