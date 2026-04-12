@@ -81,12 +81,13 @@ async def retry_with_backoff[T](
                 )
                 await asyncio.sleep(delay)
 
-        except httpx.ConnectError as exc:
+        except httpx.RequestError as exc:
             last_exception = exc
             if attempt < policy.max_retries:
                 delay = _compute_delay(attempt, policy)
                 logger.warning(
-                    "Connection error, attempt %d/%d, retrying in %.2fs",
+                    "Transport error (%s), attempt %d/%d, retrying in %.2fs",
+                    type(exc).__name__,
                     attempt + 1,
                     policy.max_retries,
                     delay,

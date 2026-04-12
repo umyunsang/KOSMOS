@@ -40,6 +40,9 @@ def search_tools(
         Ranked list of :class:`ToolSearchResult` with score > 0,
         capped at *max_results* entries.
     """
+    if max_results <= 0:
+        return []
+
     query_stripped = query.strip()
     if not query_stripped:
         return []
