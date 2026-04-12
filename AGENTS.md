@@ -53,7 +53,7 @@ Non-trivial features use [GitHub Spec Kit](https://github.com/github/spec-kit):
 6. `/speckit-taskstoissues` → create Task issues from verified tasks.md
 7. Link Task issues as sub-issues of Epic via `gh api` (see Issue hierarchy)
 8. `/speckit-implement` → Agent Teams parallel execution
-9. Open PR with `Closes #N` → monitor CI checks
+9. Open PR with `Closes #N` → monitor CI checks (if Copilot Review Gate fails, check inline comments — see `docs/conventions.md § Copilot Review Gate`)
 
 Small fixes (typos, one-line bugs, docs-only) skip the cycle.
 
