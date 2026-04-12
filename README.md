@@ -1,3 +1,9 @@
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/kosmos-banner-dark.svg"/>
+  <source media="(prefers-color-scheme: light)" srcset="assets/kosmos-banner-light.svg"/>
+  <img alt="KOSMOS" src="assets/kosmos-banner-light.svg" width="600"/>
+</picture>
+
 # KOSMOS
 
 **KO**rean **S**overeign **M**ulti-agent **O**rchestration **S**ystem

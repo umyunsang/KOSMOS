@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 220" fill="none">
+  <defs>
+    <linearGradient id="ring" x1="60" y1="80" x2="180" y2="140" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#60a5fa"/>
+      <stop offset="100%" stop-color="#a78bfa"/>
+    </linearGradient>
+    <linearGradient id="core" x1="95" y1="85" x2="145" y2="135" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#818cf8"/>
+      <stop offset="100%" stop-color="#6366f1"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="120" cy="110" r="80" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#818cf8" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#818cf8" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="blur2" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="1.5"/>
+    </filter>
+  </defs>
+
+  <!-- Glow -->
+  <circle cx="120" cy="110" r="80" fill="url(#glow)"/>
+
+  <!-- Orbit rings -->
+  <ellipse cx="120" cy="110" rx="90" ry="34" stroke="url(#ring)" stroke-width="1.5" opacity="0.45" transform="rotate(-28 120 110)"/>
+  <ellipse cx="120" cy="110" rx="90" ry="34" stroke="url(#ring)" stroke-width="1.5" opacity="0.3" transform="rotate(32 120 110)"/>
+  <ellipse cx="120" cy="110" rx="90" ry="34" stroke="url(#ring)" stroke-width="1.5" opacity="0.2" transform="rotate(90 120 110)"/>
+
+  <!-- Core -->
+  <circle cx="120" cy="110" r="30" fill="url(#core)"/>
+  <circle cx="112" cy="102" r="12" fill="#a5b4fc" opacity="0.25"/>
+
+  <!-- Orbit nodes -->
+  <circle cx="32" cy="96" r="4.5" fill="#60a5fa" filter="url(#blur2)"/>
+  <circle cx="32" cy="96" r="3" fill="#93c5fd"/>
+  <circle cx="198" cy="78" r="4" fill="#a78bfa" filter="url(#blur2)"/>
+  <circle cx="198" cy="78" r="2.8" fill="#c4b5fd"/>
+  <circle cx="148" cy="24" r="4" fill="#34d399" filter="url(#blur2)"/>
+  <circle cx="148" cy="24" r="2.8" fill="#6ee7b7"/>
+  <circle cx="86" cy="192" r="4" fill="#f472b6" filter="url(#blur2)"/>
+  <circle cx="86" cy="192" r="2.8" fill="#f9a8d4"/>
+
+  <!-- KOSMOS text -->
+  <text x="270" y="105" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="56" font-weight="700" fill="#e0e7ff" letter-spacing="6">KOSMOS</text>
+
+  <!-- Subtitle -->
+  <text x="272" y="138" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="13" font-weight="400" fill="#94a3b8" letter-spacing="3">KOREAN PUBLIC SERVICE MULTI-AGENT OS</text>
+
+  <!-- Accent line -->
+  <rect x="270" y="148" width="45" height="1.5" rx="0.75" fill="#6366f1" opacity="0.6"/>
+</svg>
