@@ -97,6 +97,6 @@ async with LLMClient() as client:
 # Unit tests (uses recorded fixtures, no API access needed)
 uv run pytest tests/llm/
 
-# Live tests (requires valid KOSMOS_FRIENDLI_TOKEN)
-uv run pytest tests/llm/ -m live
+# Live tests are planned for Phase 2 (requires valid KOSMOS_FRIENDLI_TOKEN)
+# uv run pytest tests/llm/ -m live
 ```

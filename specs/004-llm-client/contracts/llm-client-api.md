@@ -54,8 +54,8 @@ class LLMClient:
         Raises:
             BudgetExceededError: If session token budget is exhausted.
             AuthenticationError: If API returns 401/403.
-            LLMConnectionError: If endpoint is unreachable after retries.
-            StreamInterruptedError: If stream is interrupted mid-response.
+            StreamInterruptedError: If the streaming request cannot be established
+                or the stream is interrupted before completion.
         """
 
     @property
