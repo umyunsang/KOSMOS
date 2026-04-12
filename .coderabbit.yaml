@@ -1,0 +1,94 @@
+language: "en-US"
+tone_instructions: "Be concise and direct. Flag KOSMOS convention violations as high priority."
+early_access: false
+
+reviews:
+  profile: "assertive"
+  request_changes_workflow: false
+  high_level_summary: true
+  high_level_summary_instructions: |
+    Summarize: (1) what changed, (2) which KOSMOS layers are affected
+    (query engine / tools / permissions / agents / context / error recovery),
+    (3) any breaking changes to interfaces.
+  poem: false
+  review_status: true
+  collapse_walkthrough: true
+  sequence_diagrams: true
+
+  instructions: |
+    This is KOSMOS, a Korean civil-affairs AI agent platform.
+    Rules from AGENTS.md and docs/conventions.md:
+    - All source code text in English. Korean ONLY in domain data values.
+    - All env vars prefixed KOSMOS_. No hardcoded keys.
+    - stdlib logging only. No print() outside CLI layer.
+    - Pydantic v2. Never bare Any in tool I/O.
+    - Line length 100. Google-style docstrings on public APIs.
+    - Tool adapters must set: requires_auth, is_concurrency_safe,
+      is_personal_data, cache_ttl_seconds, rate_limit_per_minute.
+    - Tests: happy-path + error-path minimum per adapter.
+    - Conventional Commits format.
+
+  path_instructions:
+    - path: "src/kosmos/tools/**"
+      instructions: |
+        Tool adapter review: verify Pydantic v2 I/O (no Any), all 5 required
+        fields set, bilingual search_hint, fail-closed defaults.
+        Check for matching test file in tests/tools/.
+    - path: "src/kosmos/query_engine/**"
+      instructions: |
+        Query engine: check state machine completeness, cache invalidation.
+        No direct imports from tools/ or permissions/ (layer separation).
+    - path: "src/kosmos/permissions/**"
+      instructions: |
+        Permission pipeline: the 7-step gauntlet must stay intact.
+        Any bypass weakening is CRITICAL severity.
+    - path: "src/kosmos/agents/**"
+      instructions: |
+        Agent review: verify handoff contracts.
+        Agents must never call data.go.kr directly — go through tools layer.
+    - path: "tests/**"
+      instructions: |
+        Tests: @pytest.mark.live on live API tests.
+        No real PII in fixtures — synthetic data only.
+        No actual API key values anywhere.
+    - path: ".github/workflows/**"
+      instructions: |
+        CI: secrets via ${{ secrets.* }} only. No hardcoded values.
+        Live tests excluded from CI runs.
+
+  path_filters:
+    - "!uv.lock"
+    - "!**/__pycache__/**"
+    - "!tests/fixtures/**/*.json"
+
+  auto_review:
+    enabled: true
+    auto_incremental_review: true
+    drafts: false
+    ignore_title_keywords: ["WIP", "DO NOT MERGE", "DRAFT"]
+    base_branches: ["main"]
+
+  tools:
+    ruff:
+      enabled: true
+    yamllint:
+      enabled: true
+    actionlint:
+      enabled: true
+    gitleaks:
+      enabled: true
+    semgrep:
+      enabled: true
+
+knowledge_base:
+  code_guidelines:
+    enabled: true
+    filePatterns:
+      - "CLAUDE.md"
+      - "AGENTS.md"
+      - "docs/conventions.md"
+      - "docs/testing.md"
+      - "CONTRIBUTING.md"
+
+chat:
+  auto_reply: true
