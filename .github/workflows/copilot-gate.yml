@@ -13,9 +13,10 @@ permissions:
 
 jobs:
   # Phase 1: Create a "pending" check run when a PR is opened or updated.
-  # This ensures the Copilot Review Gate appears immediately in the Checks tab.
+  # On synchronize (new push), this resets the gate back to pending so
+  # Copilot re-reviews the updated code.
   create-pending:
-    name: Copilot Review Gate
+    name: Copilot Review Pending
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
@@ -36,13 +37,17 @@ jobs:
               status: 'in_progress',
               output: {
                 title: 'Waiting for Copilot Code Review',
-                summary: 'Copilot has not submitted a review yet. This check will pass once Copilot approves the PR.'
+                summary: 'Copilot has not submitted a review yet. This check will pass when Copilot finds no issues.'
               }
             });
 
-  # Phase 2: When Copilot submits a review, update the check run to pass or fail.
+  # Phase 2: When Copilot submits a review, count its inline comments.
+  # Copilot always uses state="commented" (never "approved"/"changes_requested"),
+  # so we determine pass/fail by checking if it left any inline review comments.
+  #   0 comments → pass (clean review)
+  #   1+ comments → fail (issues found, fix and push to trigger re-review)
   evaluate-review:
-    name: Copilot Review Gate
+    name: Copilot Review Evaluate
     if: >-
       github.event_name == 'pull_request_review' &&
       github.event.review.user.login == 'copilot-pull-request-reviewer[bot]'
@@ -52,25 +57,38 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const state = '${{ github.event.review.state }}';
-            const sha = '${{ github.event.pull_request.head.sha }}';
+            const prNumber = context.payload.pull_request.number;
+            const sha = context.payload.pull_request.head.sha;
 
-            // Determine conclusion based on Copilot review state
+            // Fetch all review comments from Copilot on this PR
+            const { data: comments } = await github.rest.pulls.listReviewComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber
+            });
+
+            const copilotComments = comments.filter(
+              c => c.user.login === 'copilot-pull-request-reviewer[bot]'
+                && c.commit_id === sha
+            );
+
+            const count = copilotComments.length;
             let conclusion, title, summary;
 
-            if (state === 'approved') {
+            if (count === 0) {
               conclusion = 'success';
-              title = 'Copilot approved';
-              summary = 'Copilot Code Review approved this PR with no blocking issues.';
+              title = 'Copilot review passed — no issues found';
+              summary = 'Copilot Code Review completed with no inline comments on the latest commit.';
             } else {
-              // 'changes_requested' or 'commented' — both require fixes.
-              // Only an explicit 'approved' after re-review will pass the gate.
-              // Push fix commits to trigger re-review (with "Review new pushes" enabled).
               conclusion = 'failure';
-              title = state === 'changes_requested'
-                ? 'Copilot requested changes'
-                : 'Copilot left review comments';
-              summary = 'Copilot Code Review found issues. Push fix commits to trigger a re-review. The gate passes only when Copilot approves.';
+              title = `Copilot found ${count} issue${count > 1 ? 's' : ''}`;
+              summary = [
+                `Copilot Code Review left ${count} inline comment${count > 1 ? 's' : ''} on this commit.`,
+                'Address the comments and push fixes to trigger a re-review.',
+                '',
+                '**Comments:**',
+                ...copilotComments.map(c => `- \`${c.path}:${c.line || c.original_line}\` — ${c.body.split('\n')[0].slice(0, 120)}`)
+              ].join('\n');
             }
 
             // Find existing in_progress check run and complete it,
