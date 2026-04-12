@@ -6,7 +6,7 @@ from __future__ import annotations
 import re
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 class GovAPITool(BaseModel):
@@ -143,6 +143,19 @@ class ToolResult(BaseModel):
         Literal["validation", "rate_limit", "not_found", "execution", "schema_mismatch"] | None
     ) = None
     """Structured error classification; populated only on failure."""
+
+    @model_validator(mode="after")
+    def _check_success_consistency(self) -> ToolResult:
+        """Enforce invariants between success and error/data fields."""
+        if self.success:
+            if self.error is not None or self.error_type is not None:
+                msg = "success=True must not have error or error_type set"
+                raise ValueError(msg)
+        else:
+            if self.error is None or self.error_type is None:
+                msg = "success=False must have both error and error_type set"
+                raise ValueError(msg)
+        return self
 
 
 class ToolSearchResult(BaseModel):

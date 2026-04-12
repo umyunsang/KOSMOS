@@ -99,8 +99,7 @@ def test_no_match_returns_empty(populated_registry):
 def test_max_results_limit(populated_registry):
     """max_results=1 must return at most 1 result even if multiple tools match."""
     tools = list(populated_registry._tools.values())
-    # "traffic" does not appear in any hint but "accident" appears in koroad hint.
-    # Use a broad term present in multiple hints to guarantee multiple matches.
+    # Use a broad query matching multiple tools to verify the cap.
     results = search_tools(tools, "hospital traffic weather business", max_results=1)
 
     assert len(results) <= 1
