@@ -28,7 +28,7 @@ class LLMClientConfig(BaseSettings):
         validation_alias="KOSMOS_FRIENDLI_TOKEN",
         description="FriendliAI API token.",
     )
-    base_url: AnyHttpUrl = Field(
+    base_url: AnyHttpUrl = Field(  # type: ignore[assignment]
         default="https://api.friendli.ai/v1",
         validation_alias="KOSMOS_FRIENDLI_BASE_URL",
         description="FriendliAI API base URL.",
