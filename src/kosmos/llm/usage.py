@@ -100,6 +100,11 @@ class UsageTracker:
         return self._call_count
 
     @property
+    def budget(self) -> int:
+        """Configured token budget for this session."""
+        return self._budget
+
+    @property
     def total_used(self) -> int:
         """Total tokens consumed so far."""
         return self._input_tokens_used + self._output_tokens_used

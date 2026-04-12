@@ -75,6 +75,52 @@ Examples: `feat/koroad-adapter`, `fix/cache-invalidation`, `docs/vision-layer-3`
 - Ensure CI is green before requesting review
 - Do not force-push after review starts unless asked
 
+## CI checks
+
+All PRs run the following status checks. Ensure CI is green before requesting human review.
+
+### Required checks
+
+| Check | Source | Fail action |
+|---|---|---|
+| Lint & Type Check | GitHub Actions | Fix lint/type errors |
+| Test (Python 3.12) | GitHub Actions | Fix failing tests |
+| Test (Python 3.13) | GitHub Actions | Fix failing tests |
+| Conventional Commits (PR title) | GitHub Actions | Fix PR title format |
+| CodeQL SAST | GitHub Actions | Fix security findings |
+| Secret Detection | GitHub Actions | Remove secrets from code |
+| Dependency Vulnerability Audit | GitHub Actions | Update vulnerable deps |
+
+### Copilot Review Gate (advisory)
+
+The **Copilot Review Gate** is a custom GitHub App (Cloudflare Worker) that bridges Copilot Code Review into the Checks tab. It is currently **non-required** (advisory).
+
+**How it works:**
+1. PR opened → `in_progress` check, waits for Copilot's first review
+2. New commits pushed → `in_progress` check + GraphQL `requestReviewsByLogin` triggers Copilot re-review
+3. Copilot review arrives → check updated based on severity classification
+
+**Pass/fail criteria (severity-based):**
+
+| Condition | Result |
+|---|---|
+| 0 inline comments | **pass** |
+| 1+ `🔴 CRITICAL` comments | **fail** |
+| 3+ `🟡 IMPORTANT` comments (no critical) | **fail** |
+| 1–2 `🟡 IMPORTANT` + any `🟢 SUGGESTION` | **pass** (comments noted) |
+| Only `🟢 SUGGESTION` comments | **pass** |
+
+**When the gate fails:**
+1. Open the PR **Checks** tab → click **Copilot Review Gate** → read the summary
+2. Review Copilot's inline comments on the **Files changed** tab
+3. Address critical/important issues, push fixes → Copilot re-reviews automatically
+4. The `copilot-review-bypass` label skips the gate (emergency hotfixes only)
+
+**Configuration:**
+- Severity prefixes are instructed via `.github/copilot-instructions.md`
+- Worker source: `infra/copilot-gate-app/src/index.ts`
+- Copilot comments without a recognized prefix default to `🟡 IMPORTANT`
+
 ## Git safety
 
 Never:
