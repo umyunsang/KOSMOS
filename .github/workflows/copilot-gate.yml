@@ -1,0 +1,113 @@
+name: Copilot Review Gate
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
+    branches: [main]
+  pull_request_review:
+    types: [submitted]
+
+permissions:
+  checks: write
+  pull-requests: read
+
+jobs:
+  # Phase 1: Create a "pending" check run when a PR is opened or updated.
+  # This ensures the Copilot Review Gate appears immediately in the Checks tab.
+  create-pending:
+    name: Copilot Review Gate
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Skip for Dependabot
+        if: github.actor == 'dependabot[bot]'
+        run: echo "Dependabot PR — skipping Copilot gate."
+
+      - name: Create pending check run
+        if: github.actor != 'dependabot[bot]'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.checks.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: 'Copilot Review Gate',
+              head_sha: context.payload.pull_request.head.sha,
+              status: 'in_progress',
+              output: {
+                title: 'Waiting for Copilot Code Review',
+                summary: 'Copilot has not submitted a review yet. This check will pass once Copilot reviews the PR.'
+              }
+            });
+
+  # Phase 2: When Copilot submits a review, update the check run to pass or fail.
+  evaluate-review:
+    name: Copilot Review Gate
+    if: >-
+      github.event_name == 'pull_request_review' &&
+      github.event.review.user.login == 'copilot-pull-request-reviewer[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Evaluate Copilot review
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const state = '${{ github.event.review.state }}';
+            const sha = '${{ github.event.pull_request.head.sha }}';
+
+            // Determine conclusion based on Copilot review state
+            let conclusion, title, summary;
+
+            if (state === 'changes_requested') {
+              conclusion = 'failure';
+              title = 'Copilot requested changes';
+              summary = 'Copilot Code Review found issues that need to be addressed. Check the review comments and push fixes.';
+            } else if (state === 'approved') {
+              conclusion = 'success';
+              title = 'Copilot approved';
+              summary = 'Copilot Code Review approved this PR with no blocking issues.';
+            } else {
+              // 'commented' or other states — treat as pass
+              conclusion = 'success';
+              title = 'Copilot review completed';
+              summary = `Copilot Code Review completed with state: ${state}. No blocking issues.`;
+            }
+
+            // Find existing in_progress check run and complete it,
+            // or create a new completed check run.
+            const { data: checkRuns } = await github.rest.checks.listForRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: sha,
+              check_name: 'Copilot Review Gate',
+              filter: 'latest'
+            });
+
+            const pending = checkRuns.check_runs.find(cr => cr.status !== 'completed');
+
+            if (pending) {
+              await github.rest.checks.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                check_run_id: pending.id,
+                status: 'completed',
+                conclusion,
+                output: { title, summary }
+              });
+              core.info(`Updated check run ${pending.id} → ${conclusion}`);
+            } else {
+              await github.rest.checks.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'Copilot Review Gate',
+                head_sha: sha,
+                status: 'completed',
+                conclusion,
+                output: { title, summary }
+              });
+              core.info(`Created completed check run → ${conclusion}`);
+            }
+
+            if (conclusion === 'failure') {
+              core.setFailed(title);
+            }
