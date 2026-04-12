@@ -38,9 +38,17 @@ yarn-debug.log*
 # Logs & data
 logs/
 *.log
-data/
 *.sqlite
 *.db
+
+# Research (keep structure, ignore large outputs)
+research/experiments/results/*.csv
+research/experiments/results/*.json
+research/figures/*.png
+research/figures/*.pdf
+!research/figures/*.svg
+research/data/*.csv
+research/data/*.json
 
 # Model artifacts
 models/

@@ -25,11 +25,32 @@ KOSMOS:   Ministry of Welfare eligibility API + Gov24 application API
 
 The citizen does not learn which ministry runs which API. KOSMOS does the routing.
 
-## Inspiration sources (and why this is a clean-room project)
+## Inspiration sources and clean-room stance
 
-KOSMOS is inspired by architectural patterns observable in modern conversational coding agents — in particular, the public behavior and publicly discussed internals of Anthropic's Claude Code. The patterns borrowed are **architectural ideas**, not source code. Every layer in KOSMOS is **independently reimplemented in Python** based on publicly observable behavior and third-party architectural commentary.
+KOSMOS adapts well-known architectural patterns from the conversational AI agent ecosystem to the Korean public-service domain. All implementation is original Python code; no proprietary or reconstructed source is referenced.
 
-We reference the *ideas* (async generator tool loops, prompt-cache-aware tool ordering, bypass-immune permission checks, file-based agent mailboxes, coordinator synthesis) because they have been validated at scale. We do not reference the *code*. This is a deliberate clean-room stance documented in `AGENTS.md`.
+### Reference materials (all MIT-licensed or publicly documented)
+
+| Source | License | What we adapt |
+|---|---|---|
+| Claude Agent SDK (`anthropics/claude-agent-sdk-python`) | MIT | Async generator tool loop, permission types, agent definitions, context management |
+| OpenAI Agents SDK (`openai/openai-agents-python`) | MIT | Guardrail pipeline, retry matrix with composable policies, agent handoff patterns |
+| Pydantic AI (`pydantic/pydantic-ai`) | MIT | Schema-driven tool registry, graph-based state machine, Pydantic v2 message assembly |
+| AutoGen (`microsoft/autogen`) | MIT | AgentRuntime mailbox IPC, InterventionHandler for permission interception, cooperative cancellation |
+| Anthropic Cookbook (`anthropic-cookbook`) | MIT | Orchestrator-workers pattern, multi-agent coordination examples |
+| Anthropic, OpenAI official documentation | Public | Tool use protocols, prompt caching, context window management |
+
+### What is original to KOSMOS
+
+The patterns above are general-purpose. KOSMOS's contribution is adapting them to the government public-service domain, which introduces constraints absent from coding agents:
+
+- **Bilingual tool discovery** over 5,000+ heterogeneous government APIs with inconsistent schemas
+- **Bypass-immune permission pipeline** for citizen PII protection (governed by Korea's PIPA, not developer convenience)
+- **Multi-ministry agent coordination** where dependency ordering is dictated by law (e.g., residence transfer must precede vehicle registration)
+- **Prompt cache partitioning** for cost-efficient government AI services (taxpayer-funded budget constraints)
+- **Fail-closed API adapters** where the safe default is deny, not allow
+
+This is a deliberate clean-room stance documented in `AGENTS.md`.
 
 ## Six-layer architecture
 
