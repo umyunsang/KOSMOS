@@ -36,7 +36,7 @@ jobs:
               status: 'in_progress',
               output: {
                 title: 'Waiting for Copilot Code Review',
-                summary: 'Copilot has not submitted a review yet. This check will pass once Copilot reviews the PR.'
+                summary: 'Copilot has not submitted a review yet. This check will pass once Copilot approves the PR.'
               }
             });
 
@@ -58,19 +58,19 @@ jobs:
             // Determine conclusion based on Copilot review state
             let conclusion, title, summary;
 
-            if (state === 'changes_requested') {
-              conclusion = 'failure';
-              title = 'Copilot requested changes';
-              summary = 'Copilot Code Review found issues that need to be addressed. Check the review comments and push fixes.';
-            } else if (state === 'approved') {
+            if (state === 'approved') {
               conclusion = 'success';
               title = 'Copilot approved';
               summary = 'Copilot Code Review approved this PR with no blocking issues.';
             } else {
-              // 'commented' or other states — treat as pass
-              conclusion = 'success';
-              title = 'Copilot review completed';
-              summary = `Copilot Code Review completed with state: ${state}. No blocking issues.`;
+              // 'changes_requested' or 'commented' — both require fixes.
+              // Only an explicit 'approved' after re-review will pass the gate.
+              // Push fix commits to trigger re-review (with "Review new pushes" enabled).
+              conclusion = 'failure';
+              title = state === 'changes_requested'
+                ? 'Copilot requested changes'
+                : 'Copilot left review comments';
+              summary = 'Copilot Code Review found issues. Push fix commits to trigger a re-review. The gate passes only when Copilot approves.';
             }
 
             // Find existing in_progress check run and complete it,
