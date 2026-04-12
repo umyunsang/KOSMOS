@@ -159,7 +159,7 @@ async def query(ctx: QueryContext) -> AsyncIterator[QueryEvent]:  # noqa: C901
     1. Create immutable message snapshot: ``list(ctx.state.messages)``
     2. Stream LLM completion with tool definitions
     3. Yield ``text_delta`` events as content streams
-    4. Debit token usage from ``ctx.state.usage``
+    4. Token usage is debited by ``LLMClient.stream()`` internally
     5. If tool_calls in response:
        a. Yield ``tool_use`` events for each call
        b. Dispatch via ``dispatch_tool_calls()``; safe groups run concurrently
@@ -192,7 +192,9 @@ async def query(ctx: QueryContext) -> AsyncIterator[QueryEvent]:  # noqa: C901
             ctx.state.messages[:] = pipeline.run(
                 ctx.state.messages,
                 ctx.config,
-                current_turn=ctx.state.turn_count,
+                # turn_count tracks completed turns; preprocessing runs during
+                # the current in-progress turn after the user message is added.
+                current_turn=ctx.state.turn_count + 1,
             )
 
         # --- Immutable snapshot for prompt cache stability (R-003) ---
@@ -212,7 +214,7 @@ async def query(ctx: QueryContext) -> AsyncIterator[QueryEvent]:  # noqa: C901
                 snapshot,
                 tools=tool_defs,
             ):
-                if event.type == "content_delta" and event.content:
+                if event.type == "content_delta" and event.content is not None:
                     content_parts.append(event.content)
                     yield QueryEvent(type="text_delta", content=event.content)
 
@@ -231,6 +233,17 @@ async def query(ctx: QueryContext) -> AsyncIterator[QueryEvent]:  # noqa: C901
                 elif event.type == "usage":
                     usage = event.usage
 
+        except BudgetExceededError:
+            # LLMClient.stream() debits usage internally; budget overflow
+            # raises BudgetExceededError during iteration.
+            yield QueryEvent(
+                type="stop",
+                stop_reason=StopReason.api_budget_exceeded,
+                stop_message="Token budget exceeded during stream",
+            )
+            return
+        except asyncio.CancelledError:
+            raise  # propagate cancellation without masking
         except Exception as exc:
             logger.exception("LLM stream failed: %s", exc)
             yield QueryEvent(
@@ -239,18 +252,6 @@ async def query(ctx: QueryContext) -> AsyncIterator[QueryEvent]:  # noqa: C901
                 stop_message=f"LLM stream error: {exc}",
             )
             return
-
-        # --- Debit token usage from session tracker ---
-        if usage:
-            try:
-                ctx.state.usage.debit(usage)
-            except BudgetExceededError:
-                yield QueryEvent(
-                    type="stop",
-                    stop_reason=StopReason.api_budget_exceeded,
-                    stop_message="Token budget exceeded during stream",
-                )
-                return
 
         # --- Assemble assistant message and append to history ---
         assembled_calls = _assemble_tool_calls(pending_calls) if pending_calls else []
