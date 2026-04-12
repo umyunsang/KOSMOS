@@ -74,7 +74,9 @@ async def stream_chat(self, messages: list[ChatMessage], **kwargs) -> AsyncItera
 
 **Implementation**:
 ```python
-delay = min(base * (multiplier ** attempt) + random.uniform(0, 1), cap)
+# Full jitter: random between 0 and exponential ceiling
+exp_delay = min(max_delay, base_delay * (multiplier ** attempt))
+delay = random.uniform(0, exp_delay)
 ```
 
 ---
@@ -83,9 +85,9 @@ delay = min(base * (multiplier ** attempt) + random.uniform(0, 1), cap)
 
 **Question**: How should token usage be tracked across a session?
 
-**Decision**: In-memory `UsageTracker` with per-call debit and session budget enforcement. Pre-flight check using estimated input tokens before each call.
+**Decision**: In-memory `UsageTracker` with per-call debit and session budget enforcement. Pre-flight check verifies remaining budget can cover `max_tokens` (or 1 token minimum) before each call.
 
-**Rationale**: From `docs/vision.md` Layer 1 — "Every LLM call and every public API call is debited against a session budget." The tracker maintains cumulative input/output token counts and compares against a configurable budget. Pre-flight estimation uses message character count heuristic (1 token ≈ 4 chars for English, ≈ 2 chars for Korean) to reject calls that would likely exceed budget.
+**Rationale**: From `docs/vision.md` Layer 1 — "Every LLM call and every public API call is debited against a session budget." The tracker maintains cumulative input/output token counts and compares against a configurable budget. Pre-flight check uses `can_afford(max_tokens or 1)` to reject calls when budget is exhausted. Input-token estimation via message size heuristics (1 token ≈ 4 chars for English, ≈ 2 chars for Korean) is deferred to Phase 2 pending K-EXAONE tokenizer validation.
 
 **Reference**: Claude Agent SDK — usage tracking and cost accounting.
 

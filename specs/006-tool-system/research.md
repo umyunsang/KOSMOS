@@ -149,11 +149,12 @@ LLM tool_call → ToolExecutor.dispatch(name, args_json)
     "type": "function",
     "function": {
         "name": tool.id,
-        "description": f"{tool.name_ko} — {tool.provider}",
+        "description": tool.name_ko,
         "parameters": tool.input_schema.model_json_schema()
     }
 }
 ```
+Note: `name_ko` alone provides a concise description for the LLM. Provider info is available via the `GovAPITool.provider` field when needed by the orchestrator.
 
 **Reference**: Claude Agent SDK — tool definitions. FriendliAI OpenAI-compatible API.
 
