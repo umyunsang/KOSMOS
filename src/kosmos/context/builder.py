@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import json
 import logging
+from typing import TYPE_CHECKING
 
 from kosmos.context.models import (
     AssembledContext,
@@ -25,9 +26,11 @@ from kosmos.context.models import (
     SystemPromptConfig,
 )
 from kosmos.context.system_prompt import SystemPromptAssembler
-from kosmos.engine.models import QueryState
 from kosmos.llm.models import ChatMessage
 from kosmos.tools.registry import ToolRegistry
+
+if TYPE_CHECKING:
+    from kosmos.engine.models import QueryState
 
 logger = logging.getLogger(__name__)
 

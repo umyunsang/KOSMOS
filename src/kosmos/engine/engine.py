@@ -11,6 +11,7 @@ from __future__ import annotations
 import logging
 from collections.abc import AsyncIterator
 
+from kosmos.context.builder import ContextBuilder
 from kosmos.engine.config import QueryEngineConfig
 from kosmos.engine.events import QueryEvent, StopReason
 from kosmos.engine.models import QueryContext, QueryState, SessionBudget
@@ -21,12 +22,6 @@ from kosmos.tools.executor import ToolExecutor
 from kosmos.tools.registry import ToolRegistry
 
 logger = logging.getLogger(__name__)
-
-_DEFAULT_SYSTEM_PROMPT = (
-    "You are KOSMOS, a Korean public service AI assistant. "
-    "You help citizens access government services through available tools. "
-    "Answer in Korean. Use tools when the citizen's request requires data lookup."
-)
 
 
 class QueryEngine:
@@ -41,8 +36,9 @@ class QueryEngine:
         tool_registry: Registry with registered tools and rate limiters.
         tool_executor: Dispatcher with registered adapters.
         config: Engine configuration. Uses defaults if None.
-        system_prompt: System prompt for the LLM. Uses a minimal
-                      hardcoded prompt for v1 if None.
+        context_builder: Context assembly helper used to build the system
+                         message and per-turn attachments. A default
+                         ContextBuilder is created if None.
     """
 
     def __init__(
@@ -51,17 +47,18 @@ class QueryEngine:
         tool_registry: ToolRegistry,
         tool_executor: ToolExecutor,
         config: QueryEngineConfig | None = None,
-        system_prompt: str | None = None,
+        context_builder: ContextBuilder | None = None,
     ) -> None:
         self._llm_client = llm_client
         self._tool_registry = tool_registry
         self._tool_executor = tool_executor
         self._config = config or QueryEngineConfig()
-        self._system_prompt = system_prompt or _DEFAULT_SYSTEM_PROMPT
+        self._context_builder = context_builder or ContextBuilder(registry=tool_registry)
 
+        system_msg = self._context_builder.build_system_message()
         self._state = QueryState(
             usage=llm_client.usage,
-            messages=[ChatMessage(role="system", content=self._system_prompt)],
+            messages=[system_msg],
         )
 
         logger.info(
@@ -123,6 +120,27 @@ class QueryEngine:
                     f"Token budget exhausted: {budget_snap.tokens_used}"
                     f"/{budget_snap.tokens_budget} tokens used"
                 ),
+            )
+            return
+
+        # --- Context assembly: insert turn attachment if available ---
+        attachment_layer = self._context_builder.build_turn_attachment(
+            self._state, api_health=None
+        )
+        if attachment_layer is not None:
+            self._state.messages.append(
+                ChatMessage(role="user", content=attachment_layer.content),
+            )
+
+        # --- Budget check via context assembly ---
+        assembled = self._context_builder.build_assembled_context(
+            self._state, api_health=None
+        )
+        if assembled.budget and assembled.budget.is_over_limit:
+            yield QueryEvent(
+                type="stop",
+                stop_reason=StopReason.api_budget_exceeded,
+                stop_message="Context token budget exceeded",
             )
             return
 

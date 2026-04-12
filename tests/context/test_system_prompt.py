@@ -4,12 +4,14 @@
 Covers:
 - All four mandatory sections present (FR-009)
 - Determinism: same config → identical output
-- Determinism stress test: 1000 consecutive calls (SC-001, T028)
+- Determinism stress test: 1000 consecutive calls via SystemPromptAssembler (SC-001)
+- Determinism stress test: 1000 consecutive calls via ContextBuilder.build_system_message() (T028)
 - personal_data_warning=False omits section 4
 """
 
 from __future__ import annotations
 
+from kosmos.context.builder import ContextBuilder
 from kosmos.context.models import SystemPromptConfig
 from kosmos.context.system_prompt import SystemPromptAssembler
 
@@ -78,7 +80,7 @@ class TestSystemPromptAssembler:
 
 
 class TestSystemPromptDeterminismStress:
-    """SC-001: 1000 consecutive calls return identical content (T028)."""
+    """SC-001: 1000 consecutive SystemPromptAssembler calls return identical content."""
 
     def test_1000_calls_deterministic(self) -> None:
         cfg = SystemPromptConfig()
@@ -87,3 +89,17 @@ class TestSystemPromptDeterminismStress:
         for _ in range(999):
             result = assembler.assemble(cfg)
             assert result == baseline, "Assemble output changed between calls"
+
+
+class TestContextBuilderDeterminismStress:
+    """SC-001 (T028): 1000 consecutive ContextBuilder.build_system_message() calls produce identical content."""
+
+    def test_system_prompt_determinism_stress(self) -> None:
+        """SC-001: 1000 consecutive build_system_message() calls produce identical content."""
+        builder = ContextBuilder()
+        first = builder.build_system_message()
+
+        for _ in range(999):
+            msg = builder.build_system_message()
+            assert msg.content == first.content
+            assert msg.role == first.role

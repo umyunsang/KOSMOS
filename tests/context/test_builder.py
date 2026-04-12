@@ -13,11 +13,17 @@ Covers:
 - Situational tools appear when activated in state
 - build_assembled_context() returns AssembledContext with budget populated
 - system_layer is always present in AssembledContext
+- SC-006: build_assembled_context() benchmark — 50 tasks / 20 tools (T027)
+- SC-007: No @pytest.mark.live markers in tests/context/ (T030)
+- WARNING log when all registered tools are situational (T031)
 """
 
 from __future__ import annotations
 
-from pydantic import BaseModel
+import logging
+import pathlib
+
+from pydantic import BaseModel, ConfigDict
 
 from kosmos.context.builder import ContextBuilder
 from kosmos.context.models import SystemPromptConfig
@@ -218,3 +224,137 @@ class TestContextBuilderAssembledContext:
         assert ctx.system_layer.role == "system"
         assert ctx.system_layer.layer_name == "system_prompt"
         assert len(ctx.system_layer.content.strip()) > 0
+
+
+# ---------------------------------------------------------------------------
+# T027: SC-006 build_assembled_context() performance benchmark
+# ---------------------------------------------------------------------------
+
+
+class _BenchInput(BaseModel):
+    """Minimal benchmark input schema."""
+
+    model_config = ConfigDict(frozen=True)
+    q: str = ""
+
+
+class _BenchOutput(BaseModel):
+    """Minimal benchmark output schema."""
+
+    model_config = ConfigDict(frozen=True)
+    r: str = ""
+
+
+def test_build_assembled_context_performance(benchmark) -> None:  # type: ignore[no-untyped-def]
+    """SC-006: build_assembled_context() completes in under 10ms with 50 tasks and 20 tools."""
+    # Setup: create registry with 20 tools
+    registry = ToolRegistry()
+    for i in range(20):
+        tool = GovAPITool(
+            id=f"bench_tool_{i:03d}",
+            name_ko=f"벤치마크 도구 {i}",
+            provider="test",
+            category=["test"],
+            endpoint="https://example.com",
+            auth_type="public",
+            input_schema=_BenchInput,
+            output_schema=_BenchOutput,
+            search_hint=f"benchmark test tool {i}",
+            is_core=True,
+        )
+        registry.register(tool)
+
+    # Setup: state with 50 resolved tasks
+    state = QueryState(
+        usage=UsageTracker(budget=1_000_000),
+        resolved_tasks=[f"Task {i} completed" for i in range(50)],
+        turn_count=10,
+    )
+
+    builder = ContextBuilder(registry=registry)
+
+    # Benchmark: real-world pattern — first call caches system message, subsequent calls reuse it
+    result = benchmark(builder.build_assembled_context, state)
+    assert result is not None
+    assert result.budget is not None
+
+    # Soft assertion: mean latency should be under 10ms
+    # pytest-benchmark reports stats.mean in seconds
+    assert benchmark.stats["mean"] < 0.010, (
+        f"build_assembled_context mean latency {benchmark.stats['mean'] * 1000:.2f}ms "
+        "exceeds 10ms budget (SC-006)"
+    )
+
+
+# ---------------------------------------------------------------------------
+# T030: SC-007 No @pytest.mark.live markers in tests/context/
+# ---------------------------------------------------------------------------
+
+
+def test_no_live_markers_in_context_tests() -> None:
+    """SC-007: No @pytest.mark.live decorator usages in tests/context/."""
+    import ast as _ast
+
+    context_test_dir = pathlib.Path(__file__).parent
+    for py_file in sorted(context_test_dir.glob("*.py")):
+        source = py_file.read_text()
+        # Use AST to find actual decorator nodes, avoiding false positives
+        # in docstrings, comments, or test assertions that mention the marker name.
+        try:
+            tree = _ast.parse(source, filename=str(py_file))
+        except SyntaxError:
+            continue
+        for node in _ast.walk(tree):
+            if isinstance(node, (_ast.FunctionDef, _ast.AsyncFunctionDef, _ast.ClassDef)):
+                for deco in node.decorator_list:
+                    deco_src = _ast.unparse(deco)
+                    assert "pytest.mark.live" not in deco_src, (
+                        f"{py_file.name}: found @pytest.mark.live decorator "
+                        f"on line {deco.lineno}"
+                    )
+
+
+# ---------------------------------------------------------------------------
+# T031: WARNING log when all registered tools are situational (no core tools)
+# ---------------------------------------------------------------------------
+
+
+def test_all_tools_situational_warning(caplog) -> None:  # type: ignore[no-untyped-def]
+    """Verify WARNING log fires when no core tools are registered."""
+    # Create registry with only situational (non-core) tools
+
+    class _Input(BaseModel):
+        model_config = ConfigDict(frozen=True)
+        q: str = ""
+
+    class _Output(BaseModel):
+        model_config = ConfigDict(frozen=True)
+        r: str = ""
+
+    registry = ToolRegistry()
+    tool = GovAPITool(
+        id="situational_only",
+        name_ko="상황 도구",
+        provider="test",
+        category=["test"],
+        endpoint="https://example.com",
+        auth_type="public",
+        input_schema=_Input,
+        output_schema=_Output,
+        search_hint="situational test",
+        is_core=False,  # NOT core
+    )
+    registry.register(tool)
+
+    builder = ContextBuilder(registry=registry)
+    state = QueryState(
+        usage=UsageTracker(budget=1_000_000),
+        active_situational_tools={"situational_only"},
+    )
+
+    with caplog.at_level(logging.WARNING, logger="kosmos.context.builder"):
+        builder.build_assembled_context(state)
+
+    assert any("No core tools registered" in r.message for r in caplog.records), (
+        "Expected WARNING about no core tools being registered"
+    )

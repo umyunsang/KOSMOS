@@ -53,7 +53,7 @@ Non-trivial features use [GitHub Spec Kit](https://github.com/github/spec-kit):
 6. `/speckit-taskstoissues` → create Task issues from verified tasks.md
 7. Link Task issues as sub-issues of Epic via `gh api` (see Issue hierarchy)
 8. `/speckit-implement` → Agent Teams parallel execution
-9. Open PR with `Closes #N` → monitor CI checks (if Copilot Review Gate fails, check inline comments — see `docs/conventions.md § Copilot Review Gate`)
+9. Open PR with `Closes #EPIC` and `Closes #TASK` for every sub-issue → monitor CI checks (if Copilot Review Gate fails, check inline comments — see `docs/conventions.md § Copilot Review Gate`)
 
 Small fixes (typos, one-line bugs, docs-only) skip the cycle.
 
@@ -66,6 +66,21 @@ Task issues come **only** from reviewed `tasks.md` via `/speckit-taskstoissues`.
 ```bash
 TASK_ID=$(gh api graphql -f query='query{repository(owner:"umyunsang",name:"KOSMOS"){issue(number:TASK_NUM){id}}}' --jq '.data.repository.issue.id')
 gh api repos/umyunsang/KOSMOS/issues/EPIC_NUM/sub_issues --method POST -f sub_issue_id="$TASK_ID"
+```
+
+### PR close rule
+Every PR must close the **Epic and all its Task sub-issues**. Fetch sub-issues before creating the PR:
+
+```bash
+gh api repos/umyunsang/KOSMOS/issues/EPIC_NUM/sub_issues --jq '.[].number'
+```
+
+Then include in the PR body:
+```
+Closes #EPIC
+Closes #TASK_1
+Closes #TASK_2
+...
 ```
 
 ## Agent Teams

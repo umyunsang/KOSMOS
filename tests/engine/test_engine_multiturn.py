@@ -14,6 +14,8 @@ from collections.abc import AsyncIterator
 
 import pytest
 
+from kosmos.context.builder import ContextBuilder
+from kosmos.context.models import SystemPromptConfig
 from kosmos.engine.config import QueryEngineConfig
 from kosmos.engine.engine import QueryEngine
 from kosmos.engine.events import QueryEvent, StopReason
@@ -673,8 +675,11 @@ async def test_system_prompt_persists_across_turns(
         llm_client=_MockClientAdapter(client),
         tool_registry=populated_registry,
         tool_executor=tool_executor_with_mocks,
-        system_prompt=custom_prompt,
+        context_builder=ContextBuilder(config=SystemPromptConfig(platform_name=custom_prompt)),
     )
+
+    # The assembled system message is derived from SystemPromptConfig (not raw string)
+    expected_content = engine._state.messages[0].content  # noqa: SLF001
 
     for turn_num in range(1, 4):
         await _collect(engine, f"Turn {turn_num} question.")
@@ -682,6 +687,6 @@ async def test_system_prompt_persists_across_turns(
         assert first_msg.role == "system", (
             f"After turn {turn_num}, first message must still be 'system'"
         )
-        assert first_msg.content == custom_prompt, (
+        assert first_msg.content == expected_content, (
             f"After turn {turn_num}, system prompt must be unchanged"
         )

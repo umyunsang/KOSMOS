@@ -16,6 +16,7 @@ Three model types form the session and per-turn state contract:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, ConfigDict
 
@@ -25,6 +26,10 @@ from kosmos.llm.models import ChatMessage
 from kosmos.llm.usage import UsageTracker
 from kosmos.tools.executor import ToolExecutor
 from kosmos.tools.registry import ToolRegistry
+
+if TYPE_CHECKING:
+    from kosmos.permissions.models import SessionContext
+    from kosmos.permissions.pipeline import PermissionPipeline
 
 # ---------------------------------------------------------------------------
 # QueryState
@@ -99,6 +104,21 @@ class QueryContext(BaseModel):
 
     iteration: int = 0
     """Zero-based iteration counter within the current turn."""
+
+    permission_pipeline: Any | None = None
+    """Optional permission pipeline for 7-step gauntlet checks on tool calls.
+
+    Type at runtime: ``kosmos.permissions.pipeline.PermissionPipeline | None``.
+    Annotated as ``Any`` so Pydantic can resolve the field before the permissions
+    package exists; the TYPE_CHECKING guard provides static type safety.
+    """
+
+    session_context: Any | None = None
+    """Optional session context supplied to the permission pipeline per tool call.
+
+    Type at runtime: ``kosmos.permissions.models.SessionContext | None``.
+    Annotated as ``Any`` for the same reason as ``permission_pipeline``.
+    """
 
 
 # ---------------------------------------------------------------------------

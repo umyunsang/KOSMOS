@@ -14,6 +14,7 @@ import json
 import logging
 from collections.abc import AsyncIterator
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 from kosmos.engine.events import QueryEvent, StopReason
 from kosmos.engine.models import QueryContext
@@ -25,6 +26,10 @@ from kosmos.tools.errors import ToolNotFoundError
 from kosmos.tools.executor import ToolExecutor
 from kosmos.tools.models import ToolResult
 from kosmos.tools.registry import ToolRegistry
+
+if TYPE_CHECKING:
+    from kosmos.permissions.models import SessionContext
+    from kosmos.permissions.pipeline import PermissionPipeline
 
 logger = logging.getLogger(__name__)
 
@@ -73,6 +78,9 @@ async def dispatch_tool_calls(  # noqa: C901
     tool_calls: list[ToolCall],
     tool_registry: ToolRegistry,
     tool_executor: ToolExecutor,
+    *,
+    permission_pipeline: PermissionPipeline | None = None,
+    session_context: SessionContext | None = None,
 ) -> list[ToolResult]:
     """Dispatch multiple tool calls with concurrency optimization.
 
@@ -83,10 +91,17 @@ async def dispatch_tool_calls(  # noqa: C901
     4. Execute non-safe tools sequentially.
     5. Return results in the same order as the input ``tool_calls``.
 
+    When both ``permission_pipeline`` and ``session_context`` are provided,
+    each tool call is routed through the permission pipeline instead of the
+    executor directly.  If either is absent the executor is called directly
+    (backward-compatible default).
+
     Args:
         tool_calls: List of ToolCall objects from the LLM response.
         tool_registry: Registry for looking up tool concurrency flags.
         tool_executor: Executor for dispatching individual calls.
+        permission_pipeline: Optional 7-step permission gauntlet pipeline.
+        session_context: Optional session context forwarded to the pipeline.
 
     Returns:
         List of ToolResult objects, one per input tool_call, in order.
@@ -109,6 +124,16 @@ async def dispatch_tool_calls(  # noqa: C901
     group: list[tuple[int, ToolCall]] = []
     group_safe: bool | None = None
 
+    async def _dispatch_one(tc: ToolCall) -> ToolResult:
+        """Dispatch a single tool call, routing through the permission pipeline if available."""
+        if permission_pipeline is not None and session_context is not None:
+            return await permission_pipeline.run(
+                tool_id=tc.function.name,
+                arguments_json=tc.function.arguments,
+                session_context=session_context,
+            )
+        return await tool_executor.dispatch(tc.function.name, tc.function.arguments)
+
     async def _flush_group(items: list[tuple[int, ToolCall]], safe: bool) -> None:
         """Execute a group of tool calls, concurrently if safe."""
         if not items:
@@ -116,22 +141,14 @@ async def dispatch_tool_calls(  # noqa: C901
         if safe and len(items) > 1:
             async with asyncio.TaskGroup() as tg:
                 tasks = [
-                    (
-                        idx,
-                        tg.create_task(
-                            tool_executor.dispatch(tc.function.name, tc.function.arguments),
-                        ),
-                    )
+                    (idx, tg.create_task(_dispatch_one(tc)))
                     for idx, tc in items
                 ]
             for idx, task in tasks:
                 results[idx] = task.result()
         else:
             for idx, tc in items:
-                results[idx] = await tool_executor.dispatch(
-                    tc.function.name,
-                    tc.function.arguments,
-                )
+                results[idx] = await _dispatch_one(tc)
 
     for i, tc, is_safe in indexed:
         if group_safe is not None and is_safe != group_safe:
@@ -286,6 +303,8 @@ async def query(ctx: QueryContext) -> AsyncIterator[QueryEvent]:  # noqa: C901
             assembled_calls,
             ctx.tool_registry,
             ctx.tool_executor,
+            permission_pipeline=ctx.permission_pipeline,
+            session_context=ctx.session_context,
         )
 
         # --- Append results to history and yield tool_result events ---

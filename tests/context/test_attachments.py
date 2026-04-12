@@ -11,6 +11,7 @@ Covers:
 - Reminder skips non-cadence turns
 - Auth expiry warning via backdoor _auth_expiry_at attribute
 - Multiple sections combined in a single attachment string
+- SC-005: 50-turn session with cadence=5 produces exactly 10 reminder blocks (T029)
 """
 
 from __future__ import annotations
@@ -140,3 +141,31 @@ class TestAttachmentCollector:
         assert "Task one completed" in result
         assert "some_api" in result
         assert "[Reminder" in result
+
+
+# ---------------------------------------------------------------------------
+# T029: SC-005 Reminder count — 50-turn session with cadence=5
+# ---------------------------------------------------------------------------
+
+
+class TestAttachmentReminderCadenceStress:
+    """SC-005: 50-turn session with cadence=5 produces exactly 10 reminder blocks."""
+
+    def test_reminder_count_50_turns_cadence_5(self) -> None:
+        """SC-005: 50 turns, cadence=5 → exactly 10 reminder blocks emitted."""
+        config = SystemPromptConfig(reminder_cadence=5)
+        collector = AttachmentCollector(config=config)
+
+        reminder_count = 0
+        for turn in range(1, 51):  # turns 1-50
+            state = _make_state(
+                turn_count=turn,
+                resolved_tasks=["task done"] if turn > 1 else [],
+            )
+            result = collector.collect(state=state)
+            if result is not None and "[Reminder" in result:
+                reminder_count += 1
+
+        assert reminder_count == 10, (
+            f"Expected 10 reminders in 50 turns with cadence=5, got {reminder_count}"
+        )
