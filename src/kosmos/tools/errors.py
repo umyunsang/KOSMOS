@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+import os
+
 
 class KosmosToolError(Exception):
     """Base exception for tool system errors."""
@@ -59,3 +61,34 @@ class ToolExecutionError(KosmosToolError):
         super().__init__(message)
         self.tool_id = tool_id
         self.cause = cause
+
+
+class ConfigurationError(KosmosToolError):
+    """A required environment variable is missing or empty."""
+
+    def __init__(self, var_name: str) -> None:
+        super().__init__(
+            f"Required environment variable {var_name!r} is not set or is empty. "
+            f"Set it before calling this tool."
+        )
+        self.var_name = var_name
+
+
+def _require_env(var_name: str) -> str:
+    """Read an environment variable and raise ConfigurationError if absent or empty.
+
+    Strips surrounding whitespace before the emptiness check.
+
+    Args:
+        var_name: The name of the environment variable to read.
+
+    Returns:
+        The stripped, non-empty value of the variable.
+
+    Raises:
+        ConfigurationError: If the variable is missing or contains only whitespace.
+    """
+    value = os.environ.get(var_name, "").strip()
+    if not value:
+        raise ConfigurationError(var_name)
+    return value
