@@ -47,21 +47,25 @@ Python 3.12+ backend with Pydantic v2 for all data models.
 11. **Async consistency**: HTTP calls via `httpx` should use `AsyncClient`. Flag
     synchronous `httpx.Client` usage in async contexts.
 
-## Style Guidelines — Suggest improvements
+## What NOT to flag — Do NOT comment on these
 
-12. **Error handling**: Prefer specific exception types over bare `except:` or
-    `except Exception:`. Tool adapters should catch provider-specific errors and wrap
-    them in KOSMOS error types.
-
-13. **Logging**: Use structured logging with context (tool name, request ID).
-    Avoid f-strings in log calls; use `%s` formatting for lazy evaluation.
-
-14. **Test coverage**: Each tool adapter needs both happy-path and error-path tests.
-    Flag adapters with only happy-path coverage.
-
-## What NOT to flag
-
+- **Formatting and style**: whitespace, line length, trailing commas, quote style — handled by Ruff
+- **Naming suggestions**: variable/function/class name preferences — skip unless misleading
+- **Minor refactoring**: "could extract to a helper", "consider using X instead of Y" — skip
+- **Documentation**: missing docstrings, comment improvements — skip unless critical to understanding
+- **Import ordering**: handled by Ruff isort — do not flag
+- **Minor optimization**: skip unless it changes algorithmic complexity (O(n) → O(n²))
+- **Type narrowing suggestions**: skip unless it would prevent a runtime error
 - Korean text in `search_hint` fields, domain data fixtures, or test data
 - `KOSMOS_` prefixed environment variable references
 - `@pytest.mark.live` decorated tests that call external APIs
 - TypeScript files under TUI layer (Phase 2+, not yet implemented)
+
+## Review philosophy
+
+Only comment on issues you are **highly confident** about. Prioritize:
+1. Bugs and logic errors that will cause runtime failures
+2. Security vulnerabilities
+3. Violations of the Critical Rules above
+
+Do not leave comments that are merely suggestions or preferences. If in doubt, do not comment.
