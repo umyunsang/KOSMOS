@@ -186,7 +186,7 @@ class LLMClient:
 
         try:
             async with self._client.stream("POST", "/chat/completions", json=payload) as response:
-                self._raise_for_status(response)
+                await self._raise_for_status(response)
 
                 async for line in response.aiter_lines():
                     async for event in self._parse_sse_line(line):
@@ -300,9 +300,17 @@ class LLMClient:
         return payload
 
     @staticmethod
-    def _raise_for_status(response: httpx.Response) -> None:
-        """Map HTTP error status codes to typed KOSMOS exceptions."""
+    async def _raise_for_status(response: httpx.Response) -> None:
+        """Map HTTP error status codes to typed KOSMOS exceptions.
+
+        Reads the response body before accessing text to avoid
+        ``httpx.ResponseNotRead`` on streaming responses.
+        """
         status = response.status_code
+        if status < 400:
+            return
+        # Ensure body is loaded before accessing .text (safe for streaming).
+        await response.aread()
         if status in (401, 403):
             raise AuthenticationError(
                 f"Authentication failed (HTTP {status})",
