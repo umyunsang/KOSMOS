@@ -309,8 +309,9 @@ class LLMClient:
         status = response.status_code
         if status < 400:
             return
-        # Ensure body is loaded before accessing .text (safe for streaming).
+        # Read the full body first so .text is safe on streaming responses.
         await response.aread()
+        body = response.text[:500]
         if status in (401, 403):
             raise AuthenticationError(
                 f"Authentication failed (HTTP {status})",
@@ -318,17 +319,17 @@ class LLMClient:
             )
         if status == 429:
             raise LLMResponseError(
-                f"Rate limited by LLM API (HTTP 429): {response.text}",
+                f"Rate limited by LLM API (HTTP 429): {body}",
                 status_code=status,
             )
         if status >= 500:
             raise LLMResponseError(
-                f"LLM API server error (HTTP {status}): {response.text}",
+                f"LLM API server error (HTTP {status}): {body}",
                 status_code=status,
             )
         if status >= 400:
             raise LLMResponseError(
-                f"LLM API returned error (HTTP {status}): {response.text}",
+                f"LLM API returned error (HTTP {status}): {body}",
                 status_code=status,
             )
 
