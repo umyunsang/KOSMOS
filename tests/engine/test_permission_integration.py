@@ -27,6 +27,7 @@ from kosmos.tools.executor import ToolExecutor
 from kosmos.tools.models import ToolResult
 from kosmos.tools.registry import ToolRegistry
 
+
 # Rebuild QueryContext so forward references to PermissionPipeline / SessionContext
 # are resolved.  The permissions package does not exist yet (TYPE_CHECKING-only),
 # so we supply stub sentinel classes that satisfy Pydantic's type resolution.
@@ -56,7 +57,11 @@ def _make_tool_call(name: str = "echo_tool", arguments: str = "{}") -> ToolCall:
     return ToolCall(id="call_test", function=FunctionCall(name=name, arguments=arguments))
 
 
-def _make_registry(tool_name: str = "echo_tool", *, is_concurrency_safe: bool = False) -> ToolRegistry:
+def _make_registry(
+    tool_name: str = "echo_tool",
+    *,
+    is_concurrency_safe: bool = False,
+) -> ToolRegistry:
     """Return a ToolRegistry populated with a single minimal GovAPITool."""
     from pydantic import BaseModel
 
@@ -146,7 +151,9 @@ async def test_dispatch_with_pipeline() -> None:
     registry = _make_registry()
 
     # Real executor whose adapter should NOT be called
-    executor_dispatch = AsyncMock(side_effect=AssertionError("executor.dispatch should not be called"))
+    executor_dispatch = AsyncMock(
+        side_effect=AssertionError("executor.dispatch should not be called"),
+    )
     executor = MagicMock(spec=ToolExecutor)
     executor.dispatch = executor_dispatch
 
@@ -219,7 +226,7 @@ def test_query_context_accepts_permission_fields() -> None:
 
 
 def test_query_context_defaults_none() -> None:
-    """QueryContext without permission fields has permission_pipeline=None and session_context=None."""
+    """QueryContext without permission fields defaults both to None."""
     registry = _make_registry()
     executor = _make_executor(registry)
     state = QueryState(usage=UsageTracker(budget=100_000))

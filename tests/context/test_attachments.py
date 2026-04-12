@@ -16,16 +16,13 @@ Covers:
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
-
-import pytest
+from datetime import UTC, datetime, timedelta
 
 from kosmos.context.attachments import AttachmentCollector
 from kosmos.context.models import SystemPromptConfig
 from kosmos.engine.config import QueryEngineConfig
 from kosmos.engine.models import QueryState
 from kosmos.llm.usage import UsageTracker
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -121,7 +118,7 @@ class TestAttachmentCollector:
         """Auth expiry set to near-future generates a warning in attachment."""
         state = _make_state(turn_count=0)
         # Backdoor: set _auth_expiry_at to 30 seconds from now
-        state._auth_expiry_at = datetime.now(tz=timezone.utc) + timedelta(seconds=30)  # noqa: SLF001
+        state._auth_expiry_at = datetime.now(tz=UTC) + timedelta(seconds=30)  # noqa: SLF001
         collector = AttachmentCollector()
         result = collector.collect(state=state)
         assert result is not None

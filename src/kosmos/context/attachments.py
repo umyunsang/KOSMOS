@@ -12,7 +12,7 @@ All input comes from ``QueryState`` structured fields — never from
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from kosmos.context.models import SystemPromptConfig
 from kosmos.engine.models import QueryState
@@ -122,7 +122,7 @@ class AttachmentCollector:
         expiry_at: datetime | None = getattr(state, "_auth_expiry_at", None)
         if expiry_at is None:
             return None
-        now = datetime.now(tz=timezone.utc)
+        now = datetime.now(tz=UTC)
         seconds_remaining = (expiry_at - now).total_seconds()
         if 0 < seconds_remaining < _AUTH_EXPIRY_WARN_SECONDS:
             return (

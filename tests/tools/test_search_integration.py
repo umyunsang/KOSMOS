@@ -24,9 +24,7 @@ class TestSearchDiscovery:
         registry = self._setup_registry()
         results = registry.search("오늘 서울 가는 길 안전해", max_results=5)
         tool_ids = [r.tool.id for r in results]
-        assert "road_risk_score" in tool_ids, (
-            f"road_risk_score not in top-5 results: {tool_ids}"
-        )
+        assert "road_risk_score" in tool_ids, f"road_risk_score not in top-5 results: {tool_ids}"
 
     def test_english_query_finds_accident(self) -> None:
         """'accident hotspot' finds koroad_accident_search."""
@@ -41,9 +39,7 @@ class TestSearchDiscovery:
         results = registry.search("weather alert warning", max_results=5)
         tool_ids = [r.tool.id for r in results]
         kma_tools = {"kma_weather_alert_status", "kma_current_observation"}
-        assert kma_tools & set(tool_ids), (
-            f"No KMA tools in results: {tool_ids}"
-        )
+        assert kma_tools & set(tool_ids), f"No KMA tools in results: {tool_ids}"
 
     def test_search_returns_search_result_type(self) -> None:
         """Results are ToolSearchResult instances."""

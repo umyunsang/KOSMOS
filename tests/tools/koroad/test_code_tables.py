@@ -3,8 +3,6 @@
 
 from __future__ import annotations
 
-import pytest
-
 from kosmos.tools.koroad.code_tables import (
     GANGWON_NEW_CODE_YEAR,
     JEONBUK_NEW_CODE_YEAR,
@@ -14,7 +12,6 @@ from kosmos.tools.koroad.code_tables import (
     SearchYearCd,
     SidoCode,
 )
-
 
 # ---------------------------------------------------------------------------
 # SidoCode enum membership tests
@@ -110,9 +107,18 @@ class TestSearchYearCd:
 class TestHazardType:
     def test_all_expected_members(self) -> None:
         expected_values = {
-            "general", "ice", "pedestrian_child", "child_zone",
-            "pedestrian_elderly", "bicycle", "law_violation",
-            "holiday", "motorcycle", "pedestrian", "drunk_driving", "freight",
+            "general",
+            "ice",
+            "pedestrian_child",
+            "child_zone",
+            "pedestrian_elderly",
+            "bicycle",
+            "law_violation",
+            "holiday",
+            "motorcycle",
+            "pedestrian",
+            "drunk_driving",
+            "freight",
         }
         actual_values = {m.value for m in HazardType}
         assert actual_values == expected_values
@@ -132,7 +138,9 @@ class TestHazardType:
     def test_all_hazard_types_have_default_year_cd(self) -> None:
         for ht in HazardType:
             ycd = ht.default_year_cd()
-            assert isinstance(ycd, SearchYearCd), f"{ht.name}.default_year_cd() must return SearchYearCd"
+            assert isinstance(ycd, SearchYearCd), (
+                f"{ht.name}.default_year_cd() must return SearchYearCd"
+            )
 
 
 # ---------------------------------------------------------------------------

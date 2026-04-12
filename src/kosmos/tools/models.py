@@ -140,7 +140,14 @@ class ToolResult(BaseModel):
     """Human-readable error message; populated only on failure."""
 
     error_type: (
-        Literal["validation", "rate_limit", "not_found", "execution", "schema_mismatch", "permission_denied"]
+        Literal[
+            "validation",
+            "rate_limit",
+            "not_found",
+            "execution",
+            "schema_mismatch",
+            "permission_denied",
+        ]
         | None
     ) = None
     """Structured error classification; populated only on failure."""

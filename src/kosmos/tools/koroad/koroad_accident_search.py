@@ -18,13 +18,11 @@ from typing import Any
 import httpx
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from kosmos.tools.errors import ConfigurationError, ToolExecutionError, _require_env
+from kosmos.tools.errors import ToolExecutionError, _require_env
 from kosmos.tools.koroad.code_tables import (
     GANGWON_NEW_CODE_YEAR,
     JEONBUK_NEW_CODE_YEAR,
-    SIDO_GUGUN_MAP,
     GugunCode,
-    HazardType,
     SearchYearCd,
     SidoCode,
 )
@@ -119,7 +117,7 @@ class KoroadAccidentSearchInput(BaseModel):
     """Page number, 1-indexed (pageNo wire parameter)."""
 
     @model_validator(mode="after")
-    def _validate_legacy_sido(self) -> "KoroadAccidentSearchInput":
+    def _validate_legacy_sido(self) -> KoroadAccidentSearchInput:
         """Reject legacy sido codes used with 2023+ year codes."""
         year = self.search_year_cd.year
         if self.si_do == SidoCode.GANGWON_LEGACY and year >= GANGWON_NEW_CODE_YEAR:
@@ -272,7 +270,8 @@ async def _call(
         params["guGun"] = inp.gu_gun.value
 
     own_client = client is None
-    _client = httpx.AsyncClient() if own_client else client
+    _client: httpx.AsyncClient = httpx.AsyncClient() if own_client else client  # type: ignore[assignment]
+    assert _client is not None  # narrowed: always an AsyncClient at this point
 
     try:
         logger.debug(
@@ -335,12 +334,16 @@ def register(registry: object, executor: object) -> None:
         registry: A ToolRegistry instance.
         executor: A ToolExecutor instance.
     """
-    from kosmos.tools.registry import ToolRegistry
     from kosmos.tools.executor import ToolExecutor
+    from kosmos.tools.registry import ToolRegistry
 
     assert isinstance(registry, ToolRegistry)
     assert isinstance(executor, ToolExecutor)
 
+    async def _adapter(inp: BaseModel) -> dict[str, Any]:
+        assert isinstance(inp, KoroadAccidentSearchInput)
+        return await _call(inp)
+
     registry.register(KOROAD_ACCIDENT_SEARCH_TOOL)
-    executor.register_adapter("koroad_accident_search", _call)
+    executor.register_adapter("koroad_accident_search", _adapter)
     logger.info("Registered tool: koroad_accident_search")

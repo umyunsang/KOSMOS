@@ -1,17 +1,16 @@
 # SPDX-License-Identifier: Apache-2.0
 """Tests for Step 7: Audit log writer."""
+
 from __future__ import annotations
 
 import logging
-
-import pytest
 
 from kosmos.permissions.models import (
     AccessTier,
     PermissionDecision,
     PermissionStepResult,
 )
-from kosmos.permissions.steps.step7_audit import audit_logger, write_audit_log
+from kosmos.permissions.steps.step7_audit import write_audit_log
 from kosmos.tools.models import ToolResult
 
 
@@ -19,7 +18,10 @@ def _make_allow_result(step: int = 6) -> PermissionStepResult:
     return PermissionStepResult(decision=PermissionDecision.allow, step=step)
 
 
-def _make_deny_result(step: int = 1, reason: str = "api_key_not_configured") -> PermissionStepResult:
+def _make_deny_result(
+    step: int = 1,
+    reason: str = "api_key_not_configured",
+) -> PermissionStepResult:
     return PermissionStepResult(decision=PermissionDecision.deny, step=step, reason=reason)
 
 

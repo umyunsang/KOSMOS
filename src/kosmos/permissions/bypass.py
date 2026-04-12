@@ -4,6 +4,7 @@
 These rules enforce PIPA compliance regardless of any bypass flags.
 The BYPASS_IMMUNE_RULES frozenset is a module-level constant — not configurable.
 """
+
 from __future__ import annotations
 
 import json
@@ -18,9 +19,11 @@ from kosmos.permissions.models import (
 logger = logging.getLogger(__name__)
 
 # Frozenset of bypass-immune rule names — not configurable at runtime
-BYPASS_IMMUNE_RULES: frozenset[str] = frozenset({
-    "personal_data_citizen_mismatch",
-})
+BYPASS_IMMUNE_RULES: frozenset[str] = frozenset(
+    {
+        "personal_data_citizen_mismatch",
+    }
+)
 
 
 def check_bypass_immune(request: PermissionCheckRequest) -> PermissionStepResult | None:
@@ -47,10 +50,12 @@ def check_bypass_immune(request: PermissionCheckRequest) -> PermissionStepResult
         try:
             args = json.loads(request.arguments_json)
             args_citizen_id = args.get("citizen_id")
-            if args_citizen_id is not None and args_citizen_id != request.session_context.citizen_id:
+            if (
+                args_citizen_id is not None
+                and args_citizen_id != request.session_context.citizen_id
+            ):
                 logger.warning(
-                    "Bypass-immune deny: citizen_id mismatch for tool %s "
-                    "(session=%s, args=%s)",
+                    "Bypass-immune deny: citizen_id mismatch for tool %s (session=%s, args=%s)",
                     request.tool_id,
                     request.session_context.citizen_id,
                     "<redacted>",

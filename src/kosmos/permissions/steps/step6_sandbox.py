@@ -5,6 +5,7 @@ Executes the tool adapter in an isolated environment where only the credentials
 relevant to the tool's access tier are visible. Catches all exceptions and
 converts them to deny results.
 """
+
 from __future__ import annotations
 
 import logging

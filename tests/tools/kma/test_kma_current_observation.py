@@ -99,31 +99,23 @@ class TestKmaCurrentObservationInput:
 
     def test_grid_bounds_nx_min(self):
         """nx=1 is the minimum valid value."""
-        params = KmaCurrentObservationInput(
-            base_date="20260413", base_time="0600", nx=1, ny=1
-        )
+        params = KmaCurrentObservationInput(base_date="20260413", base_time="0600", nx=1, ny=1)
         assert params.nx == 1
 
     def test_grid_bounds_nx_max(self):
         """nx=149 is the maximum valid value."""
-        params = KmaCurrentObservationInput(
-            base_date="20260413", base_time="0600", nx=149, ny=253
-        )
+        params = KmaCurrentObservationInput(base_date="20260413", base_time="0600", nx=149, ny=253)
         assert params.nx == 149
 
     def test_grid_bounds_nx_too_large(self):
         """nx=150 must raise ValidationError."""
         with pytest.raises(ValidationError):
-            KmaCurrentObservationInput(
-                base_date="20260413", base_time="0600", nx=150, ny=126
-            )
+            KmaCurrentObservationInput(base_date="20260413", base_time="0600", nx=150, ny=126)
 
     def test_grid_bounds_ny_too_large(self):
         """ny=254 must raise ValidationError."""
         with pytest.raises(ValidationError):
-            KmaCurrentObservationInput(
-                base_date="20260413", base_time="0600", nx=61, ny=254
-            )
+            KmaCurrentObservationInput(base_date="20260413", base_time="0600", nx=61, ny=254)
 
 
 # ---------------------------------------------------------------------------
@@ -173,16 +165,23 @@ class TestRn1Normalization:
 class TestPivotRowsToOutput:
     """_pivot_rows_to_output converts row format to flat model."""
 
+    _BASE = {
+        "baseDate": "20260413",
+        "baseTime": "0600",
+        "nx": 61,
+        "ny": 126,
+    }
+
     def _make_rows(self, overrides: dict | None = None) -> list[dict]:
         base = [
-            {"baseDate": "20260413", "baseTime": "0600", "nx": 61, "ny": 126, "category": "T1H", "obsrValue": "12.3"},
-            {"baseDate": "20260413", "baseTime": "0600", "nx": 61, "ny": 126, "category": "RN1", "obsrValue": "0"},
-            {"baseDate": "20260413", "baseTime": "0600", "nx": 61, "ny": 126, "category": "UUU", "obsrValue": "-1.2"},
-            {"baseDate": "20260413", "baseTime": "0600", "nx": 61, "ny": 126, "category": "VVV", "obsrValue": "2.5"},
-            {"baseDate": "20260413", "baseTime": "0600", "nx": 61, "ny": 126, "category": "WSD", "obsrValue": "3.1"},
-            {"baseDate": "20260413", "baseTime": "0600", "nx": 61, "ny": 126, "category": "REH", "obsrValue": "65"},
-            {"baseDate": "20260413", "baseTime": "0600", "nx": 61, "ny": 126, "category": "PTY", "obsrValue": "0"},
-            {"baseDate": "20260413", "baseTime": "0600", "nx": 61, "ny": 126, "category": "VEC", "obsrValue": "220"},
+            {**self._BASE, "category": "T1H", "obsrValue": "12.3"},
+            {**self._BASE, "category": "RN1", "obsrValue": "0"},
+            {**self._BASE, "category": "UUU", "obsrValue": "-1.2"},
+            {**self._BASE, "category": "VVV", "obsrValue": "2.5"},
+            {**self._BASE, "category": "WSD", "obsrValue": "3.1"},
+            {**self._BASE, "category": "REH", "obsrValue": "65"},
+            {**self._BASE, "category": "PTY", "obsrValue": "0"},
+            {**self._BASE, "category": "VEC", "obsrValue": "220"},
         ]
         if overrides:
             for row in base:
@@ -260,9 +259,7 @@ class TestCall:
         fixture_data = _load_fixture("kma_obs_success.json")
         mock_client = _make_mock_client(fixture_data)
 
-        params = KmaCurrentObservationInput(
-            base_date="20260413", base_time="0600", nx=61, ny=126
-        )
+        params = KmaCurrentObservationInput(base_date="20260413", base_time="0600", nx=61, ny=126)
         result = await _call(params, client=mock_client)
 
         assert isinstance(result, dict)
@@ -276,9 +273,7 @@ class TestCall:
         """Absent KOSMOS_DATA_GO_KR_API_KEY raises ConfigurationError."""
         monkeypatch.delenv("KOSMOS_DATA_GO_KR_API_KEY", raising=False)
 
-        params = KmaCurrentObservationInput(
-            base_date="20260413", base_time="0600", nx=61, ny=126
-        )
+        params = KmaCurrentObservationInput(base_date="20260413", base_time="0600", nx=61, ny=126)
         with pytest.raises(ConfigurationError):
             await _call(params)
 

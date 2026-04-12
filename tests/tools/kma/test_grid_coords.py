@@ -12,8 +12,23 @@ class TestRegionToGrid:
     def test_has_at_least_17_metro_cities(self) -> None:
         """REGION_TO_GRID must contain at least 17 metropolitan city centroids."""
         metro_cities = [
-            "서울", "부산", "대구", "인천", "광주", "대전", "울산", "세종",
-            "경기", "강원", "충북", "충남", "전북", "전남", "경북", "경남", "제주",
+            "서울",
+            "부산",
+            "대구",
+            "인천",
+            "광주",
+            "대전",
+            "울산",
+            "세종",
+            "경기",
+            "강원",
+            "충북",
+            "충남",
+            "전북",
+            "전남",
+            "경북",
+            "경남",
+            "제주",
         ]
         for city in metro_cities:
             assert city in REGION_TO_GRID, f"REGION_TO_GRID missing key: {city!r}"
@@ -53,8 +68,23 @@ class TestLookupGrid:
 
     def test_all_metro_cities_resolvable(self) -> None:
         metro_cities = [
-            "서울", "부산", "대구", "인천", "광주", "대전", "울산", "세종",
-            "경기", "강원", "충북", "충남", "전북", "전남", "경북", "경남", "제주",
+            "서울",
+            "부산",
+            "대구",
+            "인천",
+            "광주",
+            "대전",
+            "울산",
+            "세종",
+            "경기",
+            "강원",
+            "충북",
+            "충남",
+            "전북",
+            "전남",
+            "경북",
+            "경남",
+            "제주",
         ]
         for city in metro_cities:
             coords = lookup_grid(city)

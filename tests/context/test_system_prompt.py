@@ -92,7 +92,7 @@ class TestSystemPromptDeterminismStress:
 
 
 class TestContextBuilderDeterminismStress:
-    """SC-001 (T028): 1000 consecutive ContextBuilder.build_system_message() calls produce identical content."""
+    """SC-001 (T028): 1000 consecutive build_system_message() calls are identical."""
 
     def test_system_prompt_determinism_stress(self) -> None:
         """SC-001: 1000 consecutive build_system_message() calls produce identical content."""

@@ -308,4 +308,4 @@ class TestRegister:
         tool = registry.lookup("koroad_accident_search")
         assert tool.id == "koroad_accident_search"
         assert "koroad_accident_search" in executor._adapters
-        assert executor._adapters["koroad_accident_search"] is _call
+        assert callable(executor._adapters["koroad_accident_search"])

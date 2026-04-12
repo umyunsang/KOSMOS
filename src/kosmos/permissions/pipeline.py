@@ -50,11 +50,11 @@ _AUTH_TYPE_TO_ACCESS_TIER: dict[str, AccessTier] = {
 
 # Pre-execution steps (1-5), executed in order
 _PRE_EXECUTION_STEPS: list[Callable[..., PermissionStepResult]] = [
-    check_config,   # step 1
-    check_intent,   # step 2 (stub)
-    check_params,   # step 3 (stub)
-    check_authn,    # step 4 (stub)
-    check_terms,    # step 5 (stub)
+    check_config,  # step 1
+    check_intent,  # step 2 (stub)
+    check_params,  # step 3 (stub)
+    check_authn,  # step 4 (stub)
+    check_terms,  # step 5 (stub)
 ]
 
 

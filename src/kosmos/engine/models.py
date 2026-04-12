@@ -16,7 +16,7 @@ Three model types form the session and per-turn state contract:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict
 
@@ -26,10 +26,6 @@ from kosmos.llm.models import ChatMessage
 from kosmos.llm.usage import UsageTracker
 from kosmos.tools.executor import ToolExecutor
 from kosmos.tools.registry import ToolRegistry
-
-if TYPE_CHECKING:
-    from kosmos.permissions.models import SessionContext
-    from kosmos.permissions.pipeline import PermissionPipeline
 
 # ---------------------------------------------------------------------------
 # QueryState

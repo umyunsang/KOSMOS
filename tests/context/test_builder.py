@@ -33,7 +33,6 @@ from kosmos.llm.usage import UsageTracker
 from kosmos.tools.models import GovAPITool
 from kosmos.tools.registry import ToolRegistry
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -309,8 +308,7 @@ def test_no_live_markers_in_context_tests() -> None:
                 for deco in node.decorator_list:
                     deco_src = _ast.unparse(deco)
                     assert "pytest.mark.live" not in deco_src, (
-                        f"{py_file.name}: found @pytest.mark.live decorator "
-                        f"on line {deco.lineno}"
+                        f"{py_file.name}: found @pytest.mark.live decorator on line {deco.lineno}"
                     )
 
 

@@ -7,6 +7,7 @@ Checks the tool's declared AccessTier against the current environment:
 - authenticated → deny (not implemented in v1)
 - restricted → deny (not implemented in v1)
 """
+
 from __future__ import annotations
 
 import logging

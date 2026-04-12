@@ -15,7 +15,7 @@ from __future__ import annotations
 import asyncio
 import logging
 from datetime import UTC, datetime
-from typing import Literal
+from typing import Any, Literal
 
 import httpx
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -82,7 +82,7 @@ class RoadRiskScoreInput(BaseModel):
     """KMA grid Y coordinate."""
 
     @model_validator(mode="after")
-    def _default_search_year(self) -> "RoadRiskScoreInput":
+    def _default_search_year(self) -> RoadRiskScoreInput:
         """Set search_year_cd to GENERAL_2024 if not provided."""
         if self.search_year_cd is None:
             object.__setattr__(self, "search_year_cd", SearchYearCd.GENERAL_2024)
@@ -182,7 +182,7 @@ async def _call(
     inp: RoadRiskScoreInput,
     *,
     client: httpx.AsyncClient | None = None,
-) -> dict[str, object]:
+) -> dict[str, Any]:
     """Fan-out to three inner adapters and compute a road risk score.
 
     Uses ``asyncio.gather(return_exceptions=True)`` for concurrency.
@@ -228,12 +228,19 @@ async def _call(
     )
 
     # Parallel fan-out — exceptions are returned, not raised
-    koroad_result, kma_alert_result, kma_obs_result = await asyncio.gather(
+    _gather_results: tuple[
+        dict[str, Any] | BaseException,
+        dict[str, Any] | BaseException,
+        dict[str, Any] | BaseException,
+    ] = await asyncio.gather(
         _koroad_call(koroad_inp, client=client),
         _kma_alert_call(kma_alert_inp, client=client),
         _kma_obs_call(kma_obs_inp, client=client),
         return_exceptions=True,
     )
+    koroad_result: dict[str, Any] | BaseException = _gather_results[0]
+    kma_alert_result: dict[str, Any] | BaseException = _gather_results[1]
+    kma_obs_result: dict[str, Any] | BaseException = _gather_results[2]
 
     # Check total failure
     all_failed = (
@@ -352,5 +359,8 @@ def register(registry: object, executor: object) -> None:
     assert isinstance(executor, ToolExecutor)
 
     registry.register(ROAD_RISK_SCORE_TOOL)
-    executor.register_adapter("road_risk_score", _call)
+    executor.register_adapter(
+        "road_risk_score",
+        lambda inp: _call(inp),  # type: ignore[arg-type]  # inp narrowed to RoadRiskScoreInput
+    )
     logger.info("Registered tool: road_risk_score")

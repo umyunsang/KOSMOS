@@ -241,7 +241,8 @@ async def _call(
     }
 
     own_client = client is None
-    _client = httpx.AsyncClient() if own_client else client
+    _client: httpx.AsyncClient = httpx.AsyncClient() if own_client else client  # type: ignore[assignment]
+    assert _client is not None  # narrow: either injected or freshly created above
 
     try:
         logger.debug(
@@ -303,12 +304,15 @@ def register(registry: object, executor: object) -> None:
         registry: A ToolRegistry instance.
         executor: A ToolExecutor instance.
     """
-    from kosmos.tools.registry import ToolRegistry
     from kosmos.tools.executor import ToolExecutor
+    from kosmos.tools.registry import ToolRegistry
 
     assert isinstance(registry, ToolRegistry)
     assert isinstance(executor, ToolExecutor)
 
     registry.register(KMA_WEATHER_ALERT_STATUS_TOOL)
-    executor.register_adapter("kma_weather_alert_status", _call)
+    executor.register_adapter(
+        "kma_weather_alert_status",
+        lambda inp: _call(KmaWeatherAlertStatusInput.model_validate(inp.model_dump())),
+    )
     logger.info("Registered tool: kma_weather_alert_status")

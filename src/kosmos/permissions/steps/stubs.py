@@ -5,6 +5,7 @@ Each stub returns PermissionDecision.allow unconditionally and logs a DEBUG
 message recording the pass-through. They have the same function signature as
 active steps, so activation in v2+ is a drop-in replacement.
 """
+
 from __future__ import annotations
 
 import logging

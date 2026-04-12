@@ -19,7 +19,6 @@ import pytest
 from kosmos.context.builder import ContextBuilder
 from kosmos.context.models import SystemPromptConfig
 from kosmos.context.system_prompt import SystemPromptAssembler
-from kosmos.engine.config import QueryEngineConfig
 from kosmos.engine.engine import QueryEngine
 from kosmos.engine.events import QueryEvent, StopReason
 from kosmos.engine.models import QueryContext

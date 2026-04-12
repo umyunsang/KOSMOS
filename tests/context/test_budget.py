@@ -19,7 +19,6 @@ from kosmos.context.budget import BudgetEstimator
 from kosmos.context.models import AssembledContext, ContextLayer
 from kosmos.engine.tokens import estimate_tokens
 
-
 # ---------------------------------------------------------------------------
 # Test helper
 # ---------------------------------------------------------------------------

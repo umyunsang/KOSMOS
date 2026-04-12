@@ -1,11 +1,10 @@
 # SPDX-License-Identifier: Apache-2.0
 """Tests for bypass-immune permission rules."""
+
 from __future__ import annotations
 
 import json
 import logging
-
-import pytest
 
 from kosmos.permissions.bypass import check_bypass_immune
 from kosmos.permissions.models import PermissionDecision
@@ -45,9 +44,7 @@ class TestBypassImmune:
         result = check_bypass_immune(req)
         assert result is None
 
-    def test_bypass_mode_logs_warning(
-        self, make_permission_request, caplog
-    ):
+    def test_bypass_mode_logs_warning(self, make_permission_request, caplog):
         """is_bypass_mode=True should log a WARNING but still enforce rules."""
         req = make_permission_request(is_bypass_mode=True, is_personal_data=False)
 
@@ -56,9 +53,6 @@ class TestBypassImmune:
 
         assert result is None  # No rule fires for non-personal data
         # Verify the bypass warning was emitted
-        bypass_records = [
-            r for r in caplog.records if "bypass" in r.message.lower() or "bypass" in r.name
-        ]
         assert any("bypass" in r.message.lower() for r in caplog.records)
 
     def test_no_citizen_id_in_session_passes(self, make_session_context, make_permission_request):

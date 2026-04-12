@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 """Tests for Steps 2-5: Pass-through stub implementations."""
+
 from __future__ import annotations
 
 from kosmos.permissions.models import PermissionDecision

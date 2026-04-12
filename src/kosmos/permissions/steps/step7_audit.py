@@ -4,10 +4,12 @@
 Writes a structured AuditLogEntry to a dedicated logger after every tool
 invocation, whether approved or denied, succeeded or failed.
 """
+
 from __future__ import annotations
 
 import logging
 from datetime import UTC, datetime
+from typing import Literal
 
 from kosmos.permissions.models import (
     AuditLogEntry,
@@ -39,6 +41,7 @@ def write_audit_log(
         The AuditLogEntry that was logged.
     """
     # Determine outcome
+    outcome: Literal["success", "failure", "denied"]
     if deciding_result.decision == PermissionDecision.deny:
         outcome = "denied"
     elif tool_result is not None and tool_result.success:

@@ -5,6 +5,7 @@ BudgetEstimator computes token estimates for an AssembledContext and produces
 a ContextBudget snapshot.  Token estimation uses the character-based heuristic
 from ``kosmos.engine.tokens.estimate_tokens()``.
 """
+
 from __future__ import annotations
 
 import json

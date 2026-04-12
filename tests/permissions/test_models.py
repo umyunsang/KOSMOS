@@ -17,7 +17,6 @@ from kosmos.permissions.models import (
     SessionContext,
 )
 
-
 # ---------------------------------------------------------------------------
 # AccessTier enum
 # ---------------------------------------------------------------------------
@@ -259,9 +258,7 @@ class TestAuditLogEntry:
         for name, field_info in AuditLogEntry.model_fields.items():
             annotation = field_info.annotation
             # Check string representation for 'Any' as a simple heuristic
-            assert "Any" not in str(annotation), (
-                f"Field {name!r} uses Any type: {annotation}"
-            )
+            assert "Any" not in str(annotation), f"Field {name!r} uses Any type: {annotation}"
 
     def test_outcome_literal(self):
         """outcome must be one of 'success', 'failure', 'denied'."""

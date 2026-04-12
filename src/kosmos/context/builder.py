@@ -214,13 +214,16 @@ class ContextBuilder:
             except Exception:  # noqa: BLE001
                 logger.warning("Active situational tool not found in registry: %s", tool_id)
 
-        if not core_defs and (situational_defs or not active_ids):
-            # Warn when all registered tools (or the only active ones) are situational
-            if self._registry and len(self._registry) > 0:
-                logger.warning(
-                    "No core tools registered; all tools are situational. "
-                    "This breaks prompt-cache prefix assumptions (arXiv 2601.06007)."
-                )
+        if (
+            not core_defs
+            and (situational_defs or not active_ids)
+            and self._registry
+            and len(self._registry) > 0
+        ):
+            logger.warning(
+                "No core tools registered; all tools are situational. "
+                "This breaks prompt-cache prefix assumptions (arXiv 2601.06007)."
+            )
 
         return list(core_defs) + situational_defs
 

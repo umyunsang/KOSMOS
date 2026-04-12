@@ -140,10 +140,7 @@ async def dispatch_tool_calls(  # noqa: C901
             return
         if safe and len(items) > 1:
             async with asyncio.TaskGroup() as tg:
-                tasks = [
-                    (idx, tg.create_task(_dispatch_one(tc)))
-                    for idx, tc in items
-                ]
+                tasks = [(idx, tg.create_task(_dispatch_one(tc))) for idx, tc in items]
             for idx, task in tasks:
                 results[idx] = task.result()
         else:

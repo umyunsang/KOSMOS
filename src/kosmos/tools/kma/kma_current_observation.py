@@ -16,15 +16,15 @@ from __future__ import annotations
 
 import logging
 import re
-from typing import Literal
+from typing import Any, Literal, cast
 
 import httpx
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from kosmos.tools.errors import ConfigurationError, ToolExecutionError, _require_env
+from kosmos.tools.executor import ToolExecutor
 from kosmos.tools.models import GovAPITool
 from kosmos.tools.registry import ToolRegistry
-from kosmos.tools.executor import ToolExecutor
 
 logger = logging.getLogger(__name__)
 
@@ -151,7 +151,7 @@ def _normalize_items(raw: object) -> list[dict[str, object]]:
     if isinstance(raw, dict):
         return [raw]
     if isinstance(raw, list):
-        return raw  # type: ignore[return-value]
+        return [row for row in raw if isinstance(row, dict)]
     return []
 
 
@@ -173,8 +173,8 @@ def _pivot_rows_to_output(items: list[dict[str, object]]) -> KmaCurrentObservati
     first = items[0]
     base_date = str(first["baseDate"])
     base_time = str(first["baseTime"])
-    nx = int(first["nx"])  # type: ignore[arg-type]
-    ny = int(first["ny"])  # type: ignore[arg-type]
+    nx = int(str(first["nx"]))
+    ny = int(str(first["ny"]))
 
     category_map: dict[str, object] = {}
     for row in items:
@@ -186,7 +186,7 @@ def _pivot_rows_to_output(items: list[dict[str, object]]) -> KmaCurrentObservati
         raw = category_map.get(key)
         if raw is None or raw == "" or raw == "-":
             return None
-        return float(raw)  # type: ignore[arg-type]
+        return float(str(raw))
 
     return KmaCurrentObservationOutput(
         base_date=base_date,
@@ -194,12 +194,12 @@ def _pivot_rows_to_output(items: list[dict[str, object]]) -> KmaCurrentObservati
         nx=nx,
         ny=ny,
         t1h=_opt_float("T1H"),
-        rn1=category_map.get("RN1", 0.0),  # field_validator handles normalisation
+        rn1=category_map.get("RN1", 0.0),  # type: ignore[arg-type]  # field_validator normalises
         uuu=_opt_float("UUU"),
         vvv=_opt_float("VVV"),
         wsd=_opt_float("WSD"),
         reh=_opt_float("REH"),
-        pty=int(category_map.get("PTY", 0)),  # type: ignore[arg-type]
+        pty=int(str(category_map.get("PTY", 0))),
         vec=_opt_float("VEC"),
     )
 
@@ -218,21 +218,20 @@ def _parse_response(payload: dict[str, object]) -> KmaCurrentObservationOutput:
             response structure is unexpected.
     """
     try:
-        response = payload["response"]  # type: ignore[index]
-        header = response["header"]  # type: ignore[index]
+        response = cast(dict[str, object], payload["response"])
+        header = cast(dict[str, object], response["header"])
         result_code: str = str(header["resultCode"])
         result_msg: str = str(header.get("resultMsg", ""))
 
         if result_code != "00":
             raise ToolExecutionError(
                 tool_id="kma_current_observation",
-                message=(
-                    f"KMA API error: resultCode={result_code!r} resultMsg={result_msg!r}"
-                ),
+                message=(f"KMA API error: resultCode={result_code!r} resultMsg={result_msg!r}"),
             )
 
-        body = response["body"]  # type: ignore[index]
-        raw_items = body["items"]["item"]  # type: ignore[index]
+        body = cast(dict[str, object], response["body"])
+        items_container = cast(dict[str, object], body["items"])
+        raw_items = items_container["item"]
         items = _normalize_items(raw_items)
 
         if not items:
@@ -262,7 +261,7 @@ async def _call(
     params: KmaCurrentObservationInput,
     *,
     client: httpx.AsyncClient | None = None,
-) -> dict[str, object]:
+) -> dict[str, Any]:
     """Fetch ultra-short-term current observations from the KMA API.
 
     Args:
@@ -284,7 +283,7 @@ async def _call(
             message="XML data_type is not supported; use JSON.",
         )
 
-    query_params: dict[str, object] = {
+    query_params: dict[str, str | int] = {
         "serviceKey": api_key,
         "base_date": params.base_date,
         "base_time": params.base_time,
@@ -310,7 +309,10 @@ async def _call(
 
     try:
         assert client is not None  # noqa: S101 — guaranteed by branch above
-        response = await client.get(_BASE_URL, params=query_params)
+        response = await client.get(
+            _BASE_URL,
+            params=query_params,
+        )
         response.raise_for_status()
 
         content_type = response.headers.get("content-type", "")
@@ -352,7 +354,7 @@ async def _call(
             cause=exc,
         ) from exc
     finally:
-        if own_client:
+        if own_client and client is not None:
             await client.aclose()
 
 
@@ -394,6 +396,8 @@ def register(registry: ToolRegistry, executor: ToolExecutor) -> None:
         registry: The central ``ToolRegistry`` to add the tool to.
         executor: The ``ToolExecutor`` to bind the adapter function to.
     """
+    from kosmos.tools.executor import AdapterFn
+
     registry.register(KMA_CURRENT_OBSERVATION_TOOL)
-    executor.register_adapter("kma_current_observation", _call)
+    executor.register_adapter("kma_current_observation", cast(AdapterFn, _call))
     logger.info("Registered tool: kma_current_observation")

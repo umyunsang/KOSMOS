@@ -1,8 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """Tests for Step 1: Configuration-based access tier enforcement."""
-from __future__ import annotations
 
-import pytest
+from __future__ import annotations
 
 from kosmos.permissions.models import AccessTier, PermissionDecision
 from kosmos.permissions.steps.step1_config import check_config

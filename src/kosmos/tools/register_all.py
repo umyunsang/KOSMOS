@@ -32,10 +32,10 @@ def register_all_tools(registry: ToolRegistry, executor: ToolExecutor) -> None:
         DuplicateToolError: If any tool id is already registered (i.e., this
             function is called a second time on the same registry).
     """
-    from kosmos.tools.koroad.koroad_accident_search import register as reg_koroad
-    from kosmos.tools.kma.kma_weather_alert_status import register as reg_kma_alert
-    from kosmos.tools.kma.kma_current_observation import register as reg_kma_obs
     from kosmos.tools.composite.road_risk_score import register as reg_risk
+    from kosmos.tools.kma.kma_current_observation import register as reg_kma_obs
+    from kosmos.tools.kma.kma_weather_alert_status import register as reg_kma_alert
+    from kosmos.tools.koroad.koroad_accident_search import register as reg_koroad
 
     reg_koroad(registry, executor)
     reg_kma_alert(registry, executor)

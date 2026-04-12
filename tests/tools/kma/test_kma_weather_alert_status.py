@@ -170,7 +170,7 @@ class TestParseResponse:
         raw = _load("kma_alert_error.json")
         with pytest.raises(ToolExecutionError) as exc_info:
             _parse_response(raw)
-        assert "kma_weather_alert_status" == exc_info.value.tool_id
+        assert exc_info.value.tool_id == "kma_weather_alert_status"
         assert "30" in str(exc_info.value)
 
     def test_all_cancelled_returns_empty(self) -> None:
@@ -247,7 +247,9 @@ class TestCall:
         assert len(result["warnings"]) == 2
         mock_client.get.assert_called_once()
         call_kwargs = mock_client.get.call_args
-        assert call_kwargs[0][0] == "https://apis.data.go.kr/1360000/WthrWrnInfoService/getWthrWrnList"
+        assert (
+            call_kwargs[0][0] == "https://apis.data.go.kr/1360000/WthrWrnInfoService/getWthrWrnList"
+        )
         params = call_kwargs[1]["params"]
         assert params["serviceKey"] == "test-key"
         assert params["numOfRows"] == 2000
@@ -321,8 +323,8 @@ class TestToolDefinition:
 class TestRegister:
     def test_register_adds_to_registry_and_executor(self) -> None:
         """register() adds the tool to both registry and executor."""
-        from kosmos.tools.registry import ToolRegistry
         from kosmos.tools.executor import ToolExecutor
+        from kosmos.tools.registry import ToolRegistry
 
         registry = ToolRegistry()
         executor = ToolExecutor(registry)

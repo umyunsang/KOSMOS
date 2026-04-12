@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import pytest
 
-from kosmos.tools.errors import ToolExecutionError
 from kosmos.tools.composite.road_risk_score import (
     ROAD_RISK_SCORE_TOOL,
     RoadRiskScoreInput,
@@ -15,8 +14,8 @@ from kosmos.tools.composite.road_risk_score import (
     _risk_level,
     register,
 )
+from kosmos.tools.errors import ToolExecutionError
 from kosmos.tools.koroad.code_tables import SearchYearCd, SidoCode
-
 
 # ---------------------------------------------------------------------------
 # Unit tests for pure scoring helpers

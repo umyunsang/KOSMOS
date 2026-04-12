@@ -68,7 +68,6 @@ REGION_TO_GRID: dict[str, tuple[int, int]] = {
     "제주": (52, 38),
     "Jeju": (52, 38),
     "제주특별자치도": (52, 38),
-
     # --- Major districts in Seoul ---
     "강남": (61, 125),
     "강남구": (61, 125),
@@ -86,7 +85,6 @@ REGION_TO_GRID: dict[str, tuple[int, int]] = {
     "용산구": (60, 126),
     "노원": (61, 130),
     "노원구": (61, 130),
-
     # --- Other major cities ---
     "수원": (60, 121),
     "Suwon": (60, 121),
@@ -131,6 +129,5 @@ def lookup_grid(region: str) -> tuple[int, int]:
     except KeyError:
         known = sorted(REGION_TO_GRID.keys())
         raise ValueError(
-            f"Unknown region {region!r}. "
-            f"Known regions ({len(known)} total): {known[:10]}..."
+            f"Unknown region {region!r}. Known regions ({len(known)} total): {known[:10]}..."
         ) from None

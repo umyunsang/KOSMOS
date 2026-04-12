@@ -124,18 +124,14 @@ class QueryEngine:
             return
 
         # --- Context assembly: insert turn attachment if available ---
-        attachment_layer = self._context_builder.build_turn_attachment(
-            self._state, api_health=None
-        )
+        attachment_layer = self._context_builder.build_turn_attachment(self._state, api_health=None)
         if attachment_layer is not None:
             self._state.messages.append(
                 ChatMessage(role="user", content=attachment_layer.content),
             )
 
         # --- Budget check via context assembly ---
-        assembled = self._context_builder.build_assembled_context(
-            self._state, api_health=None
-        )
+        assembled = self._context_builder.build_assembled_context(self._state, api_health=None)
         if assembled.budget and assembled.budget.is_over_limit:
             yield QueryEvent(
                 type="stop",

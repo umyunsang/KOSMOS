@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 """Tests for Step 6: Sandboxed execution context."""
+
 from __future__ import annotations
 
 import os

@@ -191,9 +191,7 @@ async def test_step7_always_fires_on_allow(
 
 
 @pytest.mark.asyncio()
-async def test_step7_always_fires_on_deny(
-    authn_tool: GovAPITool, mock_adapter: AsyncMock
-) -> None:
+async def test_step7_always_fires_on_deny(authn_tool: GovAPITool, mock_adapter: AsyncMock) -> None:
     """Audit log is written even when the pipeline denies at step 1."""
     pipeline, _, _ = _build_pipeline(authn_tool, adapter=mock_adapter)
 
