@@ -31,12 +31,16 @@ jobs:
 
   branch-name:
     name: Branch naming convention
-    if: github.event.pull_request.user.login != 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
       - name: Validate branch name
         run: |
           BRANCH="${{ github.head_ref }}"
+          ACTOR="${{ github.actor }}"
+          if [ "$ACTOR" = "dependabot[bot]" ]; then
+            echo "Skipping branch name check for Dependabot"
+            exit 0
+          fi
           PATTERN='^(feat|fix|docs|refactor|test|chore)\/[a-z0-9][a-z0-9\-]*$'
           if ! echo "$BRANCH" | grep -qE "$PATTERN"; then
             echo "::error::Branch name '$BRANCH' does not match pattern: <type>/<kebab-case-scope>"
