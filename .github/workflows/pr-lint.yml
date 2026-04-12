@@ -41,9 +41,9 @@ jobs:
             echo "Skipping branch name check for Dependabot"
             exit 0
           fi
-          PATTERN='^(feat|fix|docs|refactor|test|chore)\/[a-z0-9][a-z0-9\-]*$'
+          PATTERN='^(feat|fix|docs|refactor|test|chore|spec)\/[a-z0-9][a-z0-9\-]*$'
           if ! echo "$BRANCH" | grep -qE "$PATTERN"; then
             echo "::error::Branch name '$BRANCH' does not match pattern: <type>/<kebab-case-scope>"
-            echo "Valid prefixes: feat/, fix/, docs/, refactor/, test/, chore/"
+            echo "Valid prefixes: feat/, fix/, docs/, refactor/, test/, chore/, spec/"
             exit 1
           fi

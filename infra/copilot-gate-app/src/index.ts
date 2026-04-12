@@ -179,11 +179,6 @@ async function handlePullRequest(event: PullRequestEvent, env: Env): Promise<Res
     return new Response("Ignored action: " + action, { status: 200 });
   }
 
-  // Skip dependabot
-  if (pull_request.user.login === "dependabot[bot]") {
-    return new Response("Skipped dependabot", { status: 200 });
-  }
-
   const token = await getInstallationToken(
     env.GITHUB_APP_ID,
     env.GITHUB_APP_PRIVATE_KEY,
@@ -193,6 +188,21 @@ async function handlePullRequest(event: PullRequestEvent, env: Env): Promise<Res
   const owner = repository.owner.login;
   const repo = repository.name;
   const sha = pull_request.head.sha;
+
+  // Auto-pass for bot PRs — no Copilot review needed
+  if (pull_request.user.login.endsWith("[bot]")) {
+    await githubApi(token, "POST", `/repos/${owner}/${repo}/check-runs`, {
+      name: CHECK_NAME,
+      head_sha: sha,
+      status: "completed",
+      conclusion: "success",
+      output: {
+        title: `Skipped — bot PR (${pull_request.user.login})`,
+        summary: "Copilot review is not required for automated bot PRs.",
+      },
+    });
+    return new Response("Auto-passed bot PR: " + pull_request.user.login, { status: 200 });
+  }
 
   // Create in_progress check run (pending in UI)
   await githubApi(token, "POST", `/repos/${owner}/${repo}/check-runs`, {
