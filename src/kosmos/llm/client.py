@@ -292,8 +292,7 @@ class LLMClient:
             payload["stop"] = stop
         if tools is not None:
             payload["tools"] = [
-                t.model_dump() if isinstance(t, ToolDefinition) else t
-                for t in tools
+                t.model_dump() if isinstance(t, ToolDefinition) else t for t in tools
             ]
         if stream:
             payload["stream"] = True
