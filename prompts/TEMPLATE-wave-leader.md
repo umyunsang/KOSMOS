@@ -145,15 +145,37 @@ uv run ruff check src tests && uv run ruff format --check src tests && uv run my
 - Monitor CI: `gh pr checks <PR_NUMBER> --watch --interval 10`
 - If checks fail: investigate and fix
 
-#### Step 9: Copilot Code Review response
-1. Wait for Copilot review (~1-2 min after PR creation)
-2. Read comments:
+#### Step 9: Copilot Review Gate — fix loop
+The "Copilot Review Gate" required status check is managed by a GitHub App
+(Cloudflare Worker). It creates a pending check on PR open/push, then evaluates
+Copilot's review: 0 inline comments → pass, 1+ → fail.
+
+**You MUST loop until the gate passes:**
+
+1. **Check gate status**:
    ```bash
-   gh api repos/umyunsang/KOSMOS/pulls/<PR_NUMBER>/comments \
-     --jq '.[] | select(.user.login == "copilot-pull-request-reviewer[bot]") | {path, line, body}'
+   gh pr checks <PR_NUMBER> --repo umyunsang/KOSMOS | grep "Copilot Review Gate"
    ```
-3. Triage: fix valid issues, skip false positives
-4. Push fixes, verify CI
+
+2. **If gate is pending**: wait 1-2 minutes for Copilot to submit its review.
+
+3. **If gate fails** ("Copilot found N issues"):
+   a. Read the inline comments:
+      ```bash
+      gh api repos/umyunsang/KOSMOS/pulls/<PR_NUMBER>/comments \
+        --jq '.[] | select(.user.login == "Copilot") | {path, line, body}'
+      ```
+   b. Triage each comment:
+      - **Valid issue** (bug, security, correctness): fix immediately
+      - **Style suggestion** (naming, formatting): fix if consistent with project conventions
+      - **False positive** (disagree with suggestion): skip, but document reason
+   c. Commit fixes and push
+   d. Gate resets to pending → Copilot re-reviews → **repeat from step 1**
+
+4. **If gate passes** ("no issues found"): proceed to Step 10.
+
+**Max 3 fix rounds.** If still failing after 3 rounds, report remaining issues
+to user and STOP.
 
 #### Step 10: Final report
 - PR link, CI status, Copilot review summary, internal review summary
