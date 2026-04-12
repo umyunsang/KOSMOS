@@ -87,7 +87,7 @@ class ToolExecutor:
         try:
             raw_args = json.loads(arguments_json)
             validated_input = tool.input_schema.model_validate(raw_args)
-        except (json.JSONDecodeError, ValidationError) as exc:
+        except (TypeError, json.JSONDecodeError, ValidationError) as exc:
             logger.warning("Input validation failed for tool %s: %s", tool_name, exc)
             return ToolResult(
                 tool_id=tool_name,
