@@ -30,9 +30,9 @@ class ToolExecutor:
     The dispatch pipeline (in order):
     1. Lookup tool in registry.
     2. Parse and validate JSON arguments against input_schema.
-    3. Check rate limit.
-    4. Record rate-limit timestamp.
-    5. Execute the registered adapter.
+    3. Verify adapter exists (before consuming a rate-limit slot).
+    4. Check rate limit.
+    5. Record rate-limit timestamp and execute adapter.
     6. Validate adapter output against output_schema.
     7. Return ToolResult(success=True, data=...).
 
@@ -96,7 +96,18 @@ class ToolExecutor:
                 error_type="validation",
             )
 
-        # Step 3: Check rate limit
+        # Step 3: Verify adapter exists before consuming a rate-limit slot
+        adapter = self._adapters.get(tool_name)
+        if adapter is None:
+            logger.warning("No adapter registered for tool: %s", tool_name)
+            return ToolResult(
+                tool_id=tool_name,
+                success=False,
+                error=f"No adapter registered for tool {tool_name!r}",
+                error_type="execution",
+            )
+
+        # Step 4: Check rate limit
         rate_limiter = self._registry.get_rate_limiter(tool_name)
         if not rate_limiter.check():
             logger.warning("Rate limit exceeded for tool: %s", tool_name)
@@ -107,14 +118,10 @@ class ToolExecutor:
                 error_type="rate_limit",
             )
 
-        # Step 4: Record call
+        # Step 5: Record call and execute adapter
         rate_limiter.record()
 
-        # Step 5: Execute adapter
-        adapter = self._adapters.get(tool_name)
         try:
-            if adapter is None:
-                raise RuntimeError(f"No adapter registered for tool {tool_name!r}")
             result_dict = await adapter(validated_input)
         except Exception as exc:
             logger.exception("Adapter execution failed for tool %s: %s", tool_name, exc)

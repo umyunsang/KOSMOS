@@ -1,7 +1,6 @@
 """Shared pytest fixtures for the KOSMOS Tool System module.
 
 All tests use mock tools — no live API calls are made here.
-Imports from kosmos.tools resolve once Phase 3 implementation is complete.
 """
 
 import pytest
