@@ -192,6 +192,44 @@ const REQUEST_REVIEW_MUTATION = `
   }
 `;
 
+// --- Severity classification ---
+
+const CRITICAL_PATTERNS = [
+  /🔴/,
+  /\bCRITICAL\b/i,
+  /\bsecurity\s+vulnerabilit/i,
+  /\bsql\s+injection/i,
+  /\bremote\s+code\s+execution/i,
+  /\bhardcoded\s+(secret|credential|password|key)/i,
+  /\bdata\s+loss/i,
+  /\brace\s+condition/i,
+];
+
+const IMPORTANT_PATTERNS = [
+  /🟡/,
+  /\bIMPORTANT\b/i,
+];
+
+const SUGGESTION_PATTERNS = [
+  /🟢/,
+  /\bSUGGESTION\b/i,
+  /\bconsider\s+(using|adding|replacing)/i,
+  /\bnitpick/i,
+  /\bstyle:/i,
+  /\bminor:/i,
+];
+
+type Severity = "critical" | "important" | "suggestion";
+
+function classifyComment(body: string): Severity {
+  const firstLine = body.split("\n")[0];
+  if (CRITICAL_PATTERNS.some((p) => p.test(firstLine))) return "critical";
+  if (SUGGESTION_PATTERNS.some((p) => p.test(firstLine))) return "suggestion";
+  if (IMPORTANT_PATTERNS.some((p) => p.test(firstLine))) return "important";
+  // Default: unclassified comments are treated as "important"
+  return "important";
+}
+
 // --- Types ---
 
 interface PullRequestEvent {
@@ -203,6 +241,7 @@ interface PullRequestEvent {
     node_id: string;
     user: { login: string };
     head: { sha: string };
+    labels: Array<{ name: string }>;
   };
 }
 
@@ -289,6 +328,17 @@ async function handlePullRequest(event: PullRequestEvent, env: Env): Promise<Res
   const repo = repository.name;
   const sha = pull_request.head.sha;
 
+  // Auto-pass for bypass label
+  const labels = (pull_request.labels ?? []).map((l) => l.name);
+  if (labels.includes("copilot-review-bypass")) {
+    await createCheckRun(
+      token, owner, repo, sha, "completed", "success",
+      "Bypassed — copilot-review-bypass label present",
+      "This PR has been manually exempted from Copilot review gate."
+    );
+    return new Response("Bypass label detected", { status: 200 });
+  }
+
   // Auto-pass for bot PRs
   if (pull_request.user.login.endsWith("[bot]")) {
     await createCheckRun(
@@ -367,14 +417,22 @@ async function handleReview(event: ReviewEvent, env: Env): Promise<Response> {
   const prNumber = pull_request.number;
   const reviewId = review.id;
 
-  // Fetch inline comments for this review
-  const comments = (await githubApi(
+  // Fetch inline comments for this review (top-level only, skip replies)
+  const allComments = (await githubApi(
     token,
     "GET",
     `/repos/${owner}/${repo}/pulls/${prNumber}/reviews/${reviewId}/comments`
-  )) as Array<{ path: string; line: number | null; body: string }>;
+  )) as Array<{ path: string; line: number | null; body: string; in_reply_to_id: number | null }>;
 
+  const comments = allComments.filter((c) => c.in_reply_to_id === null);
   const count = comments.length;
+
+  // Classify by severity
+  const classified = comments.map((c) => ({ ...c, severity: classifyComment(c.body) }));
+  const critical = classified.filter((c) => c.severity === "critical");
+  const important = classified.filter((c) => c.severity === "important");
+  const suggestions = classified.filter((c) => c.severity === "suggestion");
+
   let conclusion: string;
   let title: string;
   let summary: string;
@@ -383,28 +441,50 @@ async function handleReview(event: ReviewEvent, env: Env): Promise<Response> {
     conclusion = "success";
     title = "Copilot review passed — no issues found";
     summary = "Copilot Code Review completed with no inline comments.";
-  } else {
+  } else if (critical.length > 0) {
     conclusion = "failure";
-    title = `Copilot found ${count} issue${count > 1 ? "s" : ""}`;
-    const issues = comments
-      .map(
-        (c) =>
-          `- \`${c.path}${c.line ? ":" + c.line : ""}\` — ${c.body.split("\n")[0].slice(0, 120)}`
-      )
+    title = `Copilot found ${critical.length} critical issue${critical.length > 1 ? "s" : ""}`;
+    const issues = critical
+      .map((c) => `- \`${c.path}${c.line ? ":" + c.line : ""}\` — ${c.body.split("\n")[0].slice(0, 120)}`)
       .join("\n");
     summary = [
-      `Copilot Code Review left ${count} inline comment${count > 1 ? "s" : ""}.`,
-      "Address the comments and push fixes to trigger a re-review.",
+      `Copilot Code Review found ${critical.length} critical issue${critical.length > 1 ? "s" : ""}, ${important.length} important, ${suggestions.length} suggestion${suggestions.length !== 1 ? "s" : ""}.`,
+      "Address the critical issues and push fixes to trigger a re-review.",
       "",
-      "**Issues:**",
+      "**Critical Issues:**",
       issues,
+    ].join("\n");
+  } else if (important.length >= 3) {
+    conclusion = "failure";
+    title = `Copilot found ${important.length} important issues (threshold: 3+)`;
+    const issues = important
+      .map((c) => `- \`${c.path}${c.line ? ":" + c.line : ""}\` — ${c.body.split("\n")[0].slice(0, 120)}`)
+      .join("\n");
+    summary = [
+      `Copilot Code Review found ${important.length} important issue${important.length > 1 ? "s" : ""} and ${suggestions.length} suggestion${suggestions.length !== 1 ? "s" : ""} (no critical).`,
+      "Too many important issues (threshold: 3+). Address them and push fixes.",
+      "",
+      "**Important Issues:**",
+      issues,
+    ].join("\n");
+  } else {
+    conclusion = "success";
+    title = `Copilot review passed (${important.length} important, ${suggestions.length} suggestion${suggestions.length !== 1 ? "s" : ""})`;
+    const noted = [...important, ...suggestions];
+    const issues = noted.length > 0
+      ? noted.map((c) => `- \`${c.path}${c.line ? ":" + c.line : ""}\` — ${c.body.split("\n")[0].slice(0, 120)}`).join("\n")
+      : "";
+    summary = [
+      `Copilot Code Review completed. ${important.length} important, ${suggestions.length} suggestion${suggestions.length !== 1 ? "s" : ""} (no critical).`,
+      "Below threshold — check passed. Review the comments for optional improvements.",
+      ...(issues ? ["", "**Notes:**", issues] : []),
     ].join("\n");
   }
 
   // Update or create check run — this overwrites any optimistic pass
   await updateOrCreateCheckRun(token, owner, repo, sha, conclusion, title, summary);
 
-  console.log(`[review] PR #${prNumber} → ${conclusion} (${count} comments)`);
+  console.log(`[review] PR #${prNumber} → ${conclusion} (${critical.length} critical, ${important.length} important, ${suggestions.length} suggestions)`);
   return new Response(`Check run → ${conclusion}`, { status: 200 });
 }
 
