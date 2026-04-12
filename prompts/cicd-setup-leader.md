@@ -718,7 +718,7 @@ After all files are committed, configure branch protection:
 
 ```bash
 # 1. Branch protection for main
-gh api repos/umyunsang/KOSMOS/branches/main/protection \
+gh api repos/kosmos-kr/KOSMOS/branches/main/protection \
   --method PUT \
   --input - <<'EOF'
 {
@@ -792,7 +792,7 @@ Before creating the PR, Lead must verify:
 1. Configure branch protection via the `gh api` command above
 2. Remind user to register `ANTHROPIC_API_KEY` as GitHub secret
 3. Run `uv run pre-commit install && uv run pre-commit install --hook-type commit-msg` locally
-4. Verify branch protection is active: `gh api repos/umyunsang/KOSMOS/branches/main/protection`
+4. Verify branch protection is active: `gh api repos/kosmos-kr/KOSMOS/branches/main/protection`
 
 ## Future enhancements (Phase 2+ CI/CD)
 

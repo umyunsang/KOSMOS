@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1280" y2="640" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0a0e27"/>
+      <stop offset="100%" stop-color="#1a1040"/>
+    </linearGradient>
+    <linearGradient id="ring" x1="200" y1="260" x2="440" y2="380" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#60a5fa"/>
+      <stop offset="100%" stop-color="#a78bfa"/>
+    </linearGradient>
+    <linearGradient id="core" x1="280" y1="280" x2="360" y2="360" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#818cf8"/>
+      <stop offset="100%" stop-color="#6366f1"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="320" cy="320" r="120" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#818cf8" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#818cf8" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="blur1" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3"/>
+    </filter>
+    <filter id="blur2" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="1.5"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1280" height="640" fill="url(#bg)" rx="32"/>
+
+  <!-- Stars -->
+  <circle cx="80" cy="60" r="1.5" fill="#e0e7ff" opacity="0.7"/>
+  <circle cx="200" cy="100" r="1" fill="#c7d2fe" opacity="0.5"/>
+  <circle cx="150" cy="200" r="1.2" fill="#e0e7ff" opacity="0.6"/>
+  <circle cx="500" cy="80" r="1" fill="#c7d2fe" opacity="0.4"/>
+  <circle cx="700" cy="120" r="1.5" fill="#e0e7ff" opacity="0.5"/>
+  <circle cx="900" cy="60" r="1" fill="#c7d2fe" opacity="0.6"/>
+  <circle cx="1050" cy="150" r="1.2" fill="#e0e7ff" opacity="0.5"/>
+  <circle cx="1200" cy="80" r="1" fill="#c7d2fe" opacity="0.4"/>
+  <circle cx="1100" cy="500" r="1.5" fill="#e0e7ff" opacity="0.5"/>
+  <circle cx="950" cy="550" r="1" fill="#c7d2fe" opacity="0.6"/>
+  <circle cx="100" cy="500" r="1.2" fill="#e0e7ff" opacity="0.4"/>
+  <circle cx="250" cy="560" r="1" fill="#c7d2fe" opacity="0.5"/>
+  <circle cx="600" cy="560" r="1.5" fill="#e0e7ff" opacity="0.4"/>
+  <circle cx="1180" cy="300" r="1" fill="#c7d2fe" opacity="0.5"/>
+
+  <!-- Glow behind the symbol -->
+  <circle cx="320" cy="320" r="120" fill="url(#glow)"/>
+
+  <!-- Outer orbit ring -->
+  <ellipse cx="320" cy="320" rx="130" ry="50" stroke="url(#ring)" stroke-width="2" opacity="0.5" transform="rotate(-25 320 320)"/>
+  <ellipse cx="320" cy="320" rx="130" ry="50" stroke="url(#ring)" stroke-width="2" opacity="0.35" transform="rotate(35 320 320)"/>
+  <ellipse cx="320" cy="320" rx="130" ry="50" stroke="url(#ring)" stroke-width="2" opacity="0.25" transform="rotate(90 320 320)"/>
+
+  <!-- Core sphere -->
+  <circle cx="320" cy="320" r="44" fill="url(#core)"/>
+  <circle cx="308" cy="306" r="18" fill="#a5b4fc" opacity="0.3"/>
+
+  <!-- Orbit dots (agents) -->
+  <circle cx="192" cy="290" r="6" fill="#60a5fa" filter="url(#blur2)"/>
+  <circle cx="192" cy="290" r="4" fill="#93c5fd"/>
+  <circle cx="430" cy="260" r="5" fill="#a78bfa" filter="url(#blur2)"/>
+  <circle cx="430" cy="260" r="3.5" fill="#c4b5fd"/>
+  <circle cx="350" cy="195" r="5.5" fill="#34d399" filter="url(#blur2)"/>
+  <circle cx="350" cy="195" r="3.5" fill="#6ee7b7"/>
+  <circle cx="280" cy="440" r="5" fill="#f472b6" filter="url(#blur2)"/>
+  <circle cx="280" cy="440" r="3.5" fill="#f9a8d4"/>
+
+  <!-- KOSMOS text -->
+  <text x="520" y="300" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="72" font-weight="700" fill="#e0e7ff" letter-spacing="8">KOSMOS</text>
+
+  <!-- Subtitle -->
+  <text x="522" y="345" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="16" font-weight="400" fill="#94a3b8" letter-spacing="4">KOREAN PUBLIC SERVICE MULTI-AGENT OS</text>
+
+  <!-- Accent line -->
+  <rect x="520" y="360" width="60" height="2" rx="1" fill="#6366f1" opacity="0.6"/>
+</svg>

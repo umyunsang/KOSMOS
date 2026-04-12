@@ -123,7 +123,7 @@ It creates a pending check on PR open/push, then evaluates Copilot's review:
 1. Check gate status: `gh pr checks <PR_NUMBER> | grep "Copilot Review Gate"`
 2. If pending: wait 1-2 minutes for Copilot review
 3. If fail:
-   a. Read comments: `gh api repos/umyunsang/KOSMOS/pulls/<PR_NUMBER>/comments --jq '.[] | select(.user.login == "Copilot") | {path, line, body}'`
+   a. Read comments: `gh api repos/kosmos-kr/KOSMOS/pulls/<PR_NUMBER>/comments --jq '.[] | select(.user.login == "Copilot") | {path, line, body}'`
    b. Triage: fix valid issues, skip false positives
    c. Commit fixes and push → gate resets → Copilot re-reviews → **repeat**
 4. If pass: proceed to Step 10

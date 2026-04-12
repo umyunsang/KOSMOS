@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0a0e27"/>
+      <stop offset="100%" stop-color="#1a1040"/>
+    </linearGradient>
+    <linearGradient id="ring" x1="140" y1="200" x2="372" y2="312" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#60a5fa"/>
+      <stop offset="100%" stop-color="#a78bfa"/>
+    </linearGradient>
+    <linearGradient id="core" x1="220" y1="210" x2="292" y2="302" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#818cf8"/>
+      <stop offset="100%" stop-color="#6366f1"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="256" cy="240" r="140" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#818cf8" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#818cf8" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="blur2" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2"/>
+    </filter>
+  </defs>
+
+  <!-- Background circle -->
+  <rect width="512" height="512" rx="256" fill="url(#bg)"/>
+
+  <!-- Glow -->
+  <circle cx="256" cy="240" r="140" fill="url(#glow)"/>
+
+  <!-- Outer orbit rings -->
+  <ellipse cx="256" cy="240" rx="150" ry="56" stroke="url(#ring)" stroke-width="2.5" opacity="0.45" transform="rotate(-30 256 240)"/>
+  <ellipse cx="256" cy="240" rx="150" ry="56" stroke="url(#ring)" stroke-width="2.5" opacity="0.3" transform="rotate(30 256 240)"/>
+  <ellipse cx="256" cy="240" rx="150" ry="56" stroke="url(#ring)" stroke-width="2.5" opacity="0.2" transform="rotate(90 256 240)"/>
+
+  <!-- Core sphere -->
+  <circle cx="256" cy="240" r="52" fill="url(#core)"/>
+  <circle cx="242" cy="224" r="20" fill="#a5b4fc" opacity="0.25"/>
+
+  <!-- Orbit nodes (agents) -->
+  <circle cx="108" cy="212" r="8" fill="#60a5fa" filter="url(#blur2)"/>
+  <circle cx="108" cy="212" r="5.5" fill="#93c5fd"/>
+
+  <circle cx="384" cy="178" r="7" fill="#a78bfa" filter="url(#blur2)"/>
+  <circle cx="384" cy="178" r="5" fill="#c4b5fd"/>
+
+  <circle cx="296" cy="100" r="7.5" fill="#34d399" filter="url(#blur2)"/>
+  <circle cx="296" cy="100" r="5" fill="#6ee7b7"/>
+
+  <circle cx="200" cy="370" r="7" fill="#f472b6" filter="url(#blur2)"/>
+  <circle cx="200" cy="370" r="5" fill="#f9a8d4"/>
+
+  <circle cx="380" cy="310" r="6.5" fill="#fbbf24" filter="url(#blur2)"/>
+  <circle cx="380" cy="310" r="4.5" fill="#fde68a"/>
+
+  <!-- "K" letterform -->
+  <text x="256" y="258" text-anchor="middle" font-family="system-ui, -apple-system, 'SF Pro Display', sans-serif"
+        font-size="52" font-weight="800" fill="#e0e7ff" letter-spacing="-1">K</text>
+
+  <!-- KOSMOS text below -->
+  <text x="256" y="430" text-anchor="middle" font-family="system-ui, -apple-system, 'SF Pro Display', sans-serif"
+        font-size="36" font-weight="700" fill="#c7d2fe" letter-spacing="8">KOSMOS</text>
+
+  <!-- Subtle tagline -->
+  <text x="256" y="462" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif"
+        font-size="11" font-weight="400" fill="#64748b" letter-spacing="3">MULTI-AGENT OS</text>
+</svg>
