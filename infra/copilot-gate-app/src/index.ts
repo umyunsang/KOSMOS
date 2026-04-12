@@ -223,7 +223,7 @@ async function handlePullRequest(event: PullRequestEvent, env: Env): Promise<Res
       token,
       "POST",
       `/repos/${owner}/${repo}/pulls/${prNumber}/requested_reviewers`,
-      { reviewers: ["copilot-pull-request-reviewer[bot]"] }
+      { reviewers: ["Copilot"] }
     );
   } catch (err) {
     // Non-fatal: Copilot may already be requested or auto-reviewing
