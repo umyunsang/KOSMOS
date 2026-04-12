@@ -16,7 +16,7 @@ from typing import Any
 from pydantic import BaseModel, ValidationError
 
 from kosmos.tools.errors import ToolNotFoundError
-from kosmos.tools.models import GovAPITool, ToolResult  # noqa: F401
+from kosmos.tools.models import ToolResult
 from kosmos.tools.registry import ToolRegistry
 
 logger = logging.getLogger(__name__)
