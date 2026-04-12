@@ -1,0 +1,51 @@
+{
+  "response": {
+    "header": {"resultCode": "00", "resultMsg": "NORMAL_CODE"},
+    "body": {
+      "totalCount": 3,
+      "items": {
+        "item": [
+          {
+            "stnId": "108",
+            "tmFc": "202604130600",
+            "tmEf": "202604130900",
+            "tmSeq": 1,
+            "areaCode": "S1151300",
+            "areaName": "서울",
+            "warnVar": 2,
+            "warnStress": 0,
+            "cancel": 0,
+            "command": 1,
+            "warFc": 0
+          },
+          {
+            "stnId": "108",
+            "tmFc": "202604130600",
+            "tmEf": "202604130900",
+            "tmSeq": 2,
+            "areaCode": "S1151300",
+            "areaName": "서울",
+            "warnVar": 7,
+            "warnStress": 1,
+            "cancel": 0,
+            "command": 1,
+            "warFc": 0
+          },
+          {
+            "stnId": "159",
+            "tmFc": "202604120600",
+            "tmEf": "202604121200",
+            "tmSeq": 3,
+            "areaCode": "S2632000",
+            "areaName": "부산",
+            "warnVar": 1,
+            "warnStress": 0,
+            "cancel": 1,
+            "command": 2,
+            "warFc": 0
+          }
+        ]
+      }
+    }
+  }
+}
