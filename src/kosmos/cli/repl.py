@@ -35,6 +35,7 @@ _WELCOME_BANNER = """[bold cyan]
 [/bold cyan]
 [dim]대한민국 공공 API 대화형 플랫폼 · Korean Public API Conversational Platform[/dim]"""
 
+
 def _build_help_text() -> str:
     """Generate /help output dynamically from the COMMANDS registry."""
     lines = ["[bold]사용 가능한 명령어:[/bold]\n"]
