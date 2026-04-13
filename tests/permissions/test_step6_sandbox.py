@@ -30,7 +30,7 @@ class TestStep6Sandbox:
         expected = ToolResult(tool_id=req.tool_id, success=True, data={"data": "result"})
         executor = _make_executor(tool_result=expected)
 
-        step_result, tool_result = await execute_sandboxed(req, executor, req.tool_id, "{}")
+        step_result, tool_result = await execute_sandboxed(req, executor, "{}")
 
         assert step_result.decision == PermissionDecision.allow
         assert step_result.step == 6
@@ -42,7 +42,8 @@ class TestStep6Sandbox:
 
     @pytest.mark.asyncio
     async def test_failed_dispatch_returns_deny(self, make_permission_request):
-        """A dispatch that returns success=False should yield a deny step result."""
+        """A dispatch that returns success=False should yield a deny step result
+        and preserve the failure ToolResult for downstream auditing."""
         req = make_permission_request(access_tier=AccessTier.public)
         failed = ToolResult(
             tool_id=req.tool_id,
@@ -52,26 +53,33 @@ class TestStep6Sandbox:
         )
         executor = _make_executor(tool_result=failed)
 
-        step_result, tool_result = await execute_sandboxed(req, executor, req.tool_id, "{}")
+        step_result, tool_result = await execute_sandboxed(req, executor, "{}")
 
         assert step_result.decision == PermissionDecision.deny
         assert step_result.step == 6
         assert step_result.reason == "execution"
-        assert tool_result is None
+        assert tool_result is not None
+        assert tool_result.success is False
+        assert tool_result.error == "adapter blew up"
+        assert tool_result.error_type == "execution"
 
     @pytest.mark.asyncio
     async def test_exception_in_dispatch(self, make_permission_request):
-        """An unexpected exception in dispatch should return deny with reason execution_error."""
+        """An unexpected exception in dispatch should return deny with a
+        synthetic error ToolResult preserving the exception message."""
         req = make_permission_request(access_tier=AccessTier.public)
         executor = MagicMock()
         executor.dispatch = AsyncMock(side_effect=RuntimeError("unexpected crash"))
 
-        step_result, tool_result = await execute_sandboxed(req, executor, req.tool_id, "{}")
+        step_result, tool_result = await execute_sandboxed(req, executor, "{}")
 
         assert step_result.decision == PermissionDecision.deny
         assert step_result.step == 6
         assert step_result.reason == "execution_error"
-        assert tool_result is None
+        assert tool_result is not None
+        assert tool_result.success is False
+        assert "unexpected crash" in tool_result.error
+        assert tool_result.error_type == "execution"
 
     @pytest.mark.asyncio
     async def test_env_isolation(self, make_permission_request, monkeypatch):
@@ -88,7 +96,7 @@ class TestStep6Sandbox:
         executor = MagicMock()
         executor.dispatch = capturing_dispatch
 
-        await execute_sandboxed(req, executor, req.tool_id, "{}")
+        await execute_sandboxed(req, executor, "{}")
 
         assert "KOSMOS_OTHER_KEY" not in captured_env
 
@@ -102,7 +110,7 @@ class TestStep6Sandbox:
         )
 
         assert os.environ.get("KOSMOS_OTHER_KEY") == "restore-me"
-        await execute_sandboxed(req, executor, req.tool_id, "{}")
+        await execute_sandboxed(req, executor, "{}")
         assert os.environ.get("KOSMOS_OTHER_KEY") == "restore-me"
 
     @pytest.mark.asyncio
@@ -113,7 +121,7 @@ class TestStep6Sandbox:
         executor = MagicMock()
         executor.dispatch = AsyncMock(side_effect=ValueError("error"))
 
-        await execute_sandboxed(req, executor, req.tool_id, "{}")
+        await execute_sandboxed(req, executor, "{}")
         assert os.environ.get("KOSMOS_OTHER_KEY") == "restore-after-error"
 
     @pytest.mark.asyncio
@@ -131,7 +139,7 @@ class TestStep6Sandbox:
         executor = MagicMock()
         executor.dispatch = capturing_dispatch
 
-        await execute_sandboxed(req, executor, req.tool_id, "{}")
+        await execute_sandboxed(req, executor, "{}")
 
         assert captured_env.get("KOSMOS_DATA_GO_KR_API_KEY") == "my-api-key"
 
@@ -154,7 +162,7 @@ class TestStep6Sandbox:
         executor = MagicMock()
         executor.dispatch = capturing_dispatch
 
-        await execute_sandboxed(req, executor, req.tool_id, "{}")
+        await execute_sandboxed(req, executor, "{}")
 
         assert captured_env.get("KOSMOS_KOROAD_API_KEY") == "koroad-secret"
 
@@ -176,6 +184,6 @@ class TestStep6Sandbox:
         executor = MagicMock()
         executor.dispatch = capturing_dispatch
 
-        await execute_sandboxed(req, executor, req.tool_id, "{}")
+        await execute_sandboxed(req, executor, "{}")
 
         assert "KOSMOS_SESSION_TOKEN" not in captured_env

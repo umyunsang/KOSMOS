@@ -51,9 +51,8 @@ def _is_allowed(key: str, patterns: list[re.Pattern[str]]) -> bool:
 async def execute_sandboxed(
     request: PermissionCheckRequest,
     executor: ToolExecutor,
-    tool_id: str,
     arguments_json: str,
-) -> tuple[PermissionStepResult, ToolResult | None]:
+) -> tuple[PermissionStepResult, ToolResult]:
     """Execute the tool via ToolExecutor.dispatch() in an isolated sandbox.
 
     Temporarily removes KOSMOS_* env vars not matched by the tool's access-tier
@@ -61,22 +60,25 @@ async def execute_sandboxed(
     limiting, adapter execution, and output schema validation — then restores all
     env vars.
 
+    The tool_id is always taken from ``request.tool_id`` so that the dispatched
+    tool is guaranteed to match the access-tier used for env filtering.
+
     A module-level asyncio.Lock serializes the env-mutation window so that
     concurrent coroutines cannot observe a partially-filtered environment.
 
     Args:
-        request: The permission check request (used for access-tier env filtering).
+        request: The permission check request (supplies tool_id and access tier).
         executor: The ToolExecutor that handles dispatch, rate limiting, and
             output validation.
-        tool_id: The tool identifier to dispatch.
         arguments_json: Raw JSON string of tool arguments.
 
     Returns:
-        Tuple of (PermissionStepResult, ToolResult or None).
+        Tuple of (PermissionStepResult, ToolResult).
         On successful dispatch: (allow result, ToolResult from executor).
-        On dispatch failure (ToolResult.success is False): (deny result, None).
-        On unexpected exception: (deny result, None).
+        On dispatch failure (ToolResult.success is False): (deny result, failure ToolResult).
+        On unexpected exception: (deny result, synthetic error ToolResult).
     """
+    tool_id = request.tool_id
     allowed_patterns = _TIER_ALLOWED_PATTERNS.get(request.access_tier, [])
 
     async with _sandbox_lock:
@@ -108,7 +110,7 @@ async def execute_sandboxed(
                     step=_STEP,
                     reason=tool_result.error_type or "execution_error",
                 ),
-                None,
+                tool_result,
             )
         except Exception as exc:
             logger.exception(
@@ -123,7 +125,12 @@ async def execute_sandboxed(
                     step=_STEP,
                     reason="execution_error",
                 ),
-                None,
+                ToolResult(
+                    tool_id=tool_id,
+                    success=False,
+                    error=str(exc),
+                    error_type="execution",
+                ),
             )
         finally:
             # Restore all removed env vars

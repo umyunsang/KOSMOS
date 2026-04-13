@@ -150,7 +150,7 @@ class PermissionPipeline:
                 return self._denied_result(tool_id, pre_deny)
 
         # --- Step 6: Execute sandboxed via executor.dispatch() ---
-        return await self._execute_step6(request, tool_id, arguments_json)
+        return await self._execute_step6(request, arguments_json)
 
     async def _run_pre_execution_steps(
         self, request: PermissionCheckRequest
@@ -187,7 +187,6 @@ class PermissionPipeline:
     async def _execute_step6(
         self,
         request: PermissionCheckRequest,
-        tool_id: str,
         arguments_json: str,
     ) -> ToolResult:
         """Route tool execution through the sandboxed executor (step 6).
@@ -195,16 +194,15 @@ class PermissionPipeline:
         Delegates all input validation, rate limiting, adapter execution, and
         output schema validation to executor.dispatch() — called inside the
         env-filtering sandbox so credentials are scoped to the tool's access tier.
+        The tool_id is always derived from request.tool_id to prevent mis-scoping.
         """
-        step6_result, tool_result = await execute_sandboxed(
-            request, self._executor, tool_id, arguments_json
-        )
+        step6_result, tool_result = await execute_sandboxed(request, self._executor, arguments_json)
 
         # --- Step 7: Audit log (ALWAYS fires) ---
         write_audit_log(request, step6_result, tool_result)
 
-        if tool_result is None:
-            return self._denied_result(tool_id, step6_result)
+        if step6_result.decision != PermissionDecision.allow:
+            return self._denied_result(request.tool_id, step6_result)
         return tool_result
 
     @staticmethod
