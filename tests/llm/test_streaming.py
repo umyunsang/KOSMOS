@@ -52,6 +52,21 @@ def _delta_chunk(content: str, finish_reason: str | None = None) -> dict:
     }
 
 
+def _reasoning_chunk(reasoning_content: str) -> dict:
+    """Build an SSE chunk containing only reasoning_content (K-EXAONE CoT)."""
+    return {
+        "id": "chatcmpl-test-123",
+        "object": "chat.completion.chunk",
+        "choices": [
+            {
+                "index": 0,
+                "delta": {"reasoning_content": reasoning_content},
+                "finish_reason": None,
+            }
+        ],
+    }
+
+
 def _stop_chunk(
     prompt_tokens: int = 10,
     completion_tokens: int = 5,
@@ -185,6 +200,35 @@ async def test_stream_content_assembly(
             assembled += event.content
 
     assert assembled == "Hello, world!"
+
+
+@respx.mock
+async def test_stream_drops_reasoning_content(
+    llm_client: LLMClient,
+    sample_messages: list[ChatMessage],
+) -> None:
+    """K-EXAONE reasoning_content chunks are silently dropped (not emitted)."""
+    body = _build_sse_body(
+        _reasoning_chunk("Let me think about this..."),
+        _reasoning_chunk("The user wants a greeting."),
+        _delta_chunk("Hello!"),
+        _stop_chunk(),
+    )
+    respx.post(_COMPLETIONS_URL).mock(return_value=_make_sse_response(body))
+
+    events: list[StreamEvent] = []
+    async for event in llm_client.stream(sample_messages):
+        events.append(event)
+
+    # Only regular content should appear — reasoning_content is dropped
+    content_events = [e for e in events if e.type == "content_delta"]
+    assert len(content_events) == 1
+    assert content_events[0].content == "Hello!"
+
+    # Verify the full event sequence: content_delta, usage, done
+    event_types = [e.type for e in events]
+    assert "content_delta" in event_types
+    assert "done" in event_types
 
 
 @respx.mock
