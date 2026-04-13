@@ -120,7 +120,7 @@ class ObservabilityEventLogger:
 
         Behaviour:
         - Non-whitelisted keys in ``event.metadata`` are stripped and a
-          WARNING is emitted for each stripped key (AC-A10).
+          single WARNING is emitted listing all dropped keys (AC-A10).
         - The (possibly filtered) event is serialised to JSON and logged at
           the level determined by ``(event_type, success)``.
         - Any exception from serialisation or logging is caught and logged as

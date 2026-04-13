@@ -192,8 +192,7 @@ class PermissionPipeline:
         """
         session_id = request.session_context.session_id
 
-        for step_fn in _PRE_EXECUTION_STEPS:
-            step_index = _PRE_EXECUTION_STEPS.index(step_fn) + 1
+        for step_index, step_fn in enumerate(_PRE_EXECUTION_STEPS, start=1):
             try:
                 raw_result = step_fn(request)
                 if inspect.isawaitable(raw_result):
@@ -215,7 +214,7 @@ class PermissionPipeline:
                 _denial_count = record_denial(session_id, request.tool_id)
                 self._metrics_record_decision(step_index, "deny")
                 self._metrics_record_refusal_trip(session_id, request.tool_id, _denial_count)
-                self._event_emit_decision(step_index, "deny", "internal_error")
+                self._event_emit_decision(step_index, "deny", "internal_error", request.tool_id)
                 return deny
 
             decision_str = (
@@ -227,11 +226,13 @@ class PermissionPipeline:
                 _denial_count = record_denial(session_id, request.tool_id)
                 self._metrics_record_decision(step_index, decision_str)
                 self._metrics_record_refusal_trip(session_id, request.tool_id, _denial_count)
-                self._event_emit_decision(step_index, decision_str, step_result.reason)
+                self._event_emit_decision(
+                    step_index, decision_str, step_result.reason, request.tool_id
+                )
                 return step_result
 
             self._metrics_record_decision(step_index, "allow")
-            self._event_emit_decision(step_index, "allow", step_result.reason)
+            self._event_emit_decision(step_index, "allow", step_result.reason, request.tool_id)
 
         # All pre-execution steps passed — reset the denial counter.
         record_success(session_id, request.tool_id)
@@ -294,7 +295,7 @@ class PermissionPipeline:
         if self._metrics is None:
             return
         try:
-            if denial_count >= CONSECUTIVE_DENIAL_THRESHOLD:
+            if denial_count == CONSECUTIVE_DENIAL_THRESHOLD:
                 self._metrics.increment(
                     "permission.refusal_circuit_trips",
                     labels={"tool_id": tool_id},
@@ -317,7 +318,9 @@ class PermissionPipeline:
                 exc_info=True,
             )
 
-    def _event_emit_decision(self, step: int, decision: str, reason: str | None) -> None:
+    def _event_emit_decision(
+        self, step: int, decision: str, reason: str | None, tool_id: str
+    ) -> None:
         """Emit permission_decision event; silently skip if no event_logger."""
         if self._event_logger is None:
             return
@@ -327,8 +330,9 @@ class PermissionPipeline:
             self._event_logger.emit(
                 ObservabilityEvent(
                     event_type="permission_decision",
+                    tool_id=tool_id,
                     success=(decision == "allow"),
-                    metadata={"step": str(step), "decision": decision},
+                    metadata={"step": str(step), "decision": decision, "tool_id": tool_id},
                 )
             )
         except Exception:  # noqa: BLE001

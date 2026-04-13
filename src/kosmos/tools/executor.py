@@ -83,7 +83,7 @@ class ToolExecutor:
         self._adapters[tool_id] = adapter
         logger.debug("Registered adapter for tool: %s", tool_id)
 
-    async def dispatch(self, tool_name: str, arguments_json: str) -> ToolResult:
+    async def dispatch(self, tool_name: str, arguments_json: str) -> ToolResult:  # noqa: C901
         """Execute a tool call end-to-end.
 
         Args:
@@ -227,6 +227,12 @@ class ToolExecutor:
             )
             return _final_result
 
+        except Exception as exc:
+            # Catch unexpected exceptions so dispatch() never raises and the
+            # finally block can still emit the tool_call event (AC-A6).
+            _final_result = self._handle_unexpected_error(tool_name, exc)
+            return _final_result
+
         finally:
             # Emit structured tool_call event (AC-A6).
             if _final_result is not None:
@@ -241,6 +247,17 @@ class ToolExecutor:
     # ------------------------------------------------------------------
     # Private metrics helpers (fail-safe: never raise)
     # ------------------------------------------------------------------
+
+    def _handle_unexpected_error(self, tool_name: str, exc: BaseException) -> ToolResult:
+        """Convert an unexpected exception to a ToolResult (never raises)."""
+        logger.exception("Unexpected error during dispatch of tool %s: %s", tool_name, exc)
+        self._metrics_increment("tool.error_count", tool_name)
+        return ToolResult(
+            tool_id=tool_name,
+            success=False,
+            error=f"Internal error: {exc}",
+            error_type="execution",
+        )
 
     def _metrics_increment(self, name: str, tool_name: str, value: int = 1) -> None:
         if self._metrics is None:

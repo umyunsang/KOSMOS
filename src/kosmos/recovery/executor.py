@@ -292,6 +292,7 @@ class RecoveryExecutor:
                 tool_id,
                 attempt_count=attempt_count,
                 error_class=str(last_error.error_class) if last_error else "",
+                success=result_dict is not None,
             )
 
         # --- 5b. 401 auth-refresh: one extra attempt after credential reload ---
@@ -445,7 +446,9 @@ class RecoveryExecutor:
         except Exception:  # noqa: BLE001
             logger.debug("metrics.increment(error_count) failed", exc_info=True)
 
-    def _event_emit_retry(self, tool_id: str, *, attempt_count: int, error_class: str) -> None:
+    def _event_emit_retry(
+        self, tool_id: str, *, attempt_count: int, error_class: str, success: bool
+    ) -> None:
         """Emit a retry event; silently skip if no event_logger (AC-A7)."""
         if self._event_logger is None:
             return
@@ -456,7 +459,7 @@ class RecoveryExecutor:
                 ObservabilityEvent(
                     event_type="retry",
                     tool_id=tool_id,
-                    success=False,
+                    success=success,
                     metadata={
                         "tool_id": tool_id,
                         "error_class": error_class,

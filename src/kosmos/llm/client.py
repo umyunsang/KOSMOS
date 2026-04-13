@@ -217,6 +217,7 @@ class LLMClient:
 
         _stream_start = time.monotonic()
         _stream_done = False
+        _metrics_recorded = False
 
         try:
             async with self._client.stream("POST", "/chat/completions", json=payload) as response:
@@ -229,25 +230,31 @@ class LLMClient:
                             _stream_done = True
                             _duration_ms = (time.monotonic() - _stream_start) * 1000
                             self._metrics_record_call(success=True, duration_ms=_duration_ms)
+                            _metrics_recorded = True
                             return
 
         except httpx.ConnectError as exc:
             _duration_ms = (time.monotonic() - _stream_start) * 1000
             self._metrics_record_call(success=False, duration_ms=_duration_ms)
+            _metrics_recorded = True
             raise StreamInterruptedError(f"Connection lost during streaming: {exc}") from exc
         except httpx.TimeoutException as exc:
             _duration_ms = (time.monotonic() - _stream_start) * 1000
             self._metrics_record_call(success=False, duration_ms=_duration_ms)
+            _metrics_recorded = True
             raise StreamInterruptedError(f"Stream timed out: {exc}") from exc
         except httpx.RequestError as exc:
             _duration_ms = (time.monotonic() - _stream_start) * 1000
             self._metrics_record_call(success=False, duration_ms=_duration_ms)
+            _metrics_recorded = True
             raise StreamInterruptedError(f"Stream request failed: {exc}") from exc
         finally:
-            # Record call duration for streams that end without explicit "done"
-            # (e.g., cancelled generators).
-            if not _stream_done:
-                pass  # already recorded in except branches above
+            # Record call duration for streams that end without an explicit
+            # "done" event and without a handled exception — e.g. when the
+            # consumer cancels iteration early (GeneratorExit).
+            if not _metrics_recorded:
+                _duration_ms = (time.monotonic() - _stream_start) * 1000
+                self._metrics_record_call(success=False, duration_ms=_duration_ms)
 
     async def close(self) -> None:
         """Close the underlying HTTP client."""
@@ -270,8 +277,9 @@ class LLMClient:
         """
         try:
             if self._metrics is not None:
-                counter_name = "llm.call_count" if success else "llm.error_count"
-                self._metrics.increment(counter_name, labels={"model": self._config.model})
+                self._metrics.increment("llm.call_count", labels={"model": self._config.model})
+                if not success:
+                    self._metrics.increment("llm.error_count", labels={"model": self._config.model})
                 self._metrics.observe(
                     "llm.call_duration_ms",
                     duration_ms,
