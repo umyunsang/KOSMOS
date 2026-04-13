@@ -523,17 +523,17 @@ async function fetchReviewComments(
   if (expectedCount <= 0) return attempt1; // 0 = genuinely none, -1 = unknown → trust first attempt
 
   // Only retry when expectedCount > 0 (review body confirmed comments exist)
-  console.log(`[review] 0 comments but expected ${expectedCount} — retrying after 3s`);
-  await sleep(3000);
+  console.log(`[review] 0 comments but expected ${expectedCount} — retrying after 5s`);
+  await sleep(5000);
 
   const attempt2 = await fetchAllPages<ReviewComment>(
     token, `/repos/${owner}/${repo}/pulls/${prNumber}/reviews/${reviewId}/comments`
   );
   if (attempt2.length > 0) return attempt2;
 
-  // Attempt 3: retry after 5s more
-  console.log(`[review] still 0 comments — retrying after 5s`);
-  await sleep(5000);
+  // Attempt 3: retry after 10s more (total 15s wait)
+  console.log(`[review] still 0 comments — retrying after 10s`);
+  await sleep(10000);
 
   const attempt3 = await fetchAllPages<ReviewComment>(
     token, `/repos/${owner}/${repo}/pulls/${prNumber}/reviews/${reviewId}/comments`
@@ -572,6 +572,17 @@ async function handleReview(event: ReviewEvent, env: Env): Promise<Response> {
   const sha = pull_request.head.sha;
   const prNumber = pull_request.number;
   const reviewId = review.id;
+
+  // Auto-pass for bypass label (check in review handler too, not just PR handler)
+  const labels = (pull_request.labels ?? []).map((l) => l.name);
+  if (labels.includes("copilot-review-bypass")) {
+    await updateOrCreateCheckRun(
+      token, owner, repo, sha, "success",
+      "Bypassed — copilot-review-bypass label present",
+      "This PR has been manually exempted from Copilot review gate."
+    );
+    return new Response("Bypass label detected in review handler", { status: 200 });
+  }
 
   // Parse expected comment count from review body for consistency checking
   const expectedCount = parseExpectedCommentCount(review.body);
