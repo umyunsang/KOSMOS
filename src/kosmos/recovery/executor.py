@@ -478,7 +478,7 @@ class RecoveryExecutor:
                     event_type="circuit_break",
                     tool_id=tool_id,
                     success=False,
-                    metadata={"tool_id": tool_id},
+                    metadata={"tool_id": tool_id, "error_class": circuit_state},
                 )
             )
         except Exception:  # noqa: BLE001
