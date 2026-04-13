@@ -68,9 +68,7 @@ async def test_live_road_risk_score_basic(
     assert isinstance(result["risk_score"], float), (
         f"risk_score must be float, got {type(result['risk_score'])}"
     )
-    assert 0.0 <= result["risk_score"] <= 1.0, (
-        f"risk_score out of range: {result['risk_score']}"
-    )
+    assert 0.0 <= result["risk_score"] <= 1.0, f"risk_score out of range: {result['risk_score']}"
 
     # risk_level: one of the valid literals
     assert result["risk_level"] in _VALID_RISK_LEVELS, (
@@ -99,9 +97,7 @@ async def test_live_road_risk_score_basic(
     )
 
     # summary: non-empty string (Korean summary)
-    assert isinstance(result["summary"], str), (
-        f"summary must be str, got {type(result['summary'])}"
-    )
+    assert isinstance(result["summary"], str), f"summary must be str, got {type(result['summary'])}"
     assert result["summary"], "summary must not be empty"
 
 
@@ -161,8 +157,7 @@ async def test_live_road_risk_score_partial_failure_tolerance(
     # data_gaps is always a list: empty when all adapters succeed,
     # non-empty when one or more fail.
     assert isinstance(result["data_gaps"], list), (
-        f"data_gaps must be list regardless of partial failures, "
-        f"got {type(result['data_gaps'])}"
+        f"data_gaps must be list regardless of partial failures, got {type(result['data_gaps'])}"
     )
 
     # If any gaps were recorded, they must be known adapter names

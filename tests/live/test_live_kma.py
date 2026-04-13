@@ -58,9 +58,7 @@ async def test_live_kma_weather_alert_basic(
     assert isinstance(result["total_count"], int), (
         f"'total_count' must be int, got {type(result['total_count'])!r}"
     )
-    assert result["total_count"] >= 0, (
-        f"'total_count' must be >= 0, got {result['total_count']}"
-    )
+    assert result["total_count"] >= 0, f"'total_count' must be >= 0, got {result['total_count']}"
     assert isinstance(result["warnings"], list), (
         f"'warnings' must be list, got {type(result['warnings'])!r}"
     )
@@ -140,9 +138,7 @@ async def test_live_kma_current_observation_basic(
     assert isinstance(result["t1h"], float) or result["t1h"] is None, (
         f"'t1h' must be float or None, got {type(result['t1h'])!r}"
     )
-    assert isinstance(result["rn1"], float), (
-        f"'rn1' must be float, got {type(result['rn1'])!r}"
-    )
+    assert isinstance(result["rn1"], float), f"'rn1' must be float, got {type(result['rn1'])!r}"
 
 
 @pytest.mark.live

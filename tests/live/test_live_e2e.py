@@ -114,9 +114,7 @@ async def test_live_e2e_scenario1_pipeline_structure(
     assert tracker.call_count >= 1, (
         f"UsageTracker.call_count should be >=1, got {tracker.call_count}"
     )
-    assert tracker.total_used > 0, (
-        f"UsageTracker.total_used should be >0, got {tracker.total_used}"
-    )
+    assert tracker.total_used > 0, f"UsageTracker.total_used should be >0, got {tracker.total_used}"
 
     # ---- Structural assertions -----------------------------------------------
 
@@ -137,8 +135,7 @@ async def test_live_e2e_scenario1_pipeline_structure(
         f"Event types observed: {[e.type for e in events]}"
     )
     successful_results = [
-        e for e in tool_result_events
-        if e.tool_result is not None and e.tool_result.success
+        e for e in tool_result_events if e.tool_result is not None and e.tool_result.success
     ]
     result_summary = [
         (e.tool_result.tool_id, e.tool_result.success)
@@ -151,9 +148,7 @@ async def test_live_e2e_scenario1_pipeline_structure(
     )
 
     # At least one text_delta with non-empty content: LLM must produce output
-    text_delta_events = [
-        e for e in events if e.type == "text_delta" and e.content
-    ]
+    text_delta_events = [e for e in events if e.type == "text_delta" and e.content]
     assert len(text_delta_events) >= 1, (
         f"Expected at least one text_delta event with non-empty content, got 0. "
         f"Event types observed: {[e.type for e in events]}"
@@ -238,14 +233,10 @@ async def test_live_e2e_multi_turn_context(
     # ---- Turn 2 structural assertions ----------------------------------------
 
     # Turn 2 must yield at least some events
-    assert turn2_events, (
-        "Turn 2 engine.run() yielded no events — pipeline failed silently"
-    )
+    assert turn2_events, "Turn 2 engine.run() yielded no events — pipeline failed silently"
 
     # Turn 2 must contain at least one text_delta with non-empty content
-    turn2_text_deltas = [
-        e for e in turn2_events if e.type == "text_delta" and e.content
-    ]
+    turn2_text_deltas = [e for e in turn2_events if e.type == "text_delta" and e.content]
     assert len(turn2_text_deltas) >= 1, (
         f"Expected at least one text_delta event with non-empty content in turn 2, got 0. "
         f"Turn 2 event types observed: {[e.type for e in turn2_events]}"

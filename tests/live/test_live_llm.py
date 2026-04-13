@@ -52,15 +52,11 @@ async def test_live_llm_stream_basic(friendli_token: str) -> None:
     assert len(done_events) == 1, f"Expected exactly one done event, got {len(done_events)}"
 
     # The "done" event must be the last event in the sequence
-    assert events[-1].type == "done", (
-        f"Expected last event to be 'done', got {events[-1].type!r}"
-    )
+    assert events[-1].type == "done", f"Expected last event to be 'done', got {events[-1].type!r}"
 
     # At least one content_delta must carry non-empty text
     non_empty_deltas = [e for e in content_deltas if e.content]
-    assert len(non_empty_deltas) >= 1, (
-        "Expected at least one content_delta with non-empty content"
-    )
+    assert len(non_empty_deltas) >= 1, "Expected at least one content_delta with non-empty content"
 
 
 # ---------------------------------------------------------------------------
@@ -95,9 +91,7 @@ async def test_live_llm_stream_with_tool_definitions(friendli_token: str) -> Non
         ),
     )
 
-    messages = [
-        ChatMessage(role="user", content="What is the current weather in Seoul?")
-    ]
+    messages = [ChatMessage(role="user", content="What is the current weather in Seoul?")]
     events: list[StreamEvent] = []
 
     async with LLMClient() as client:
@@ -158,6 +152,5 @@ async def test_live_llm_complete_basic(friendli_token: str) -> None:
     # finish_reason must be one of the documented values
     valid_finish_reasons = {"stop", "tool_calls", "length"}
     assert result.finish_reason in valid_finish_reasons, (
-        f"Unexpected finish_reason {result.finish_reason!r}; "
-        f"expected one of {valid_finish_reasons}"
+        f"Unexpected finish_reason {result.finish_reason!r}; expected one of {valid_finish_reasons}"
     )

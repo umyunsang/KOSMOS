@@ -8,7 +8,9 @@ environment variables are missing — no silent skips.
 
 from __future__ import annotations
 
+import asyncio
 import os
+from collections.abc import AsyncIterator
 
 import httpx
 import pytest
@@ -62,6 +64,17 @@ def koroad_api_key() -> str:
 # ---------------------------------------------------------------------------
 # HTTP client fixtures
 # ---------------------------------------------------------------------------
+
+
+@pytest_asyncio.fixture(autouse=True)
+async def _live_rate_limit_pause() -> AsyncIterator[None]:
+    """Pause after each live test to avoid FriendliAI 429 rate limiting.
+
+    FriendliAI Serverless has aggressive per-minute rate limits.
+    A 5-second cooling period between tests prevents cascading 429 errors.
+    """
+    yield
+    await asyncio.sleep(5)
 
 
 @pytest_asyncio.fixture
