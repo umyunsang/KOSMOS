@@ -12,8 +12,6 @@ import inspect
 import logging
 from collections.abc import Callable
 
-from pydantic import ValidationError
-
 from kosmos.permissions.bypass import check_bypass_immune
 from kosmos.permissions.models import (
     AccessTier,
@@ -32,7 +30,7 @@ from kosmos.permissions.steps.stubs import (
     check_terms,
 )
 from kosmos.tools.executor import ToolExecutor
-from kosmos.tools.models import GovAPITool, ToolResult
+from kosmos.tools.models import ToolResult
 from kosmos.tools.registry import ToolRegistry
 
 logger = logging.getLogger(__name__)
@@ -151,8 +149,8 @@ class PermissionPipeline:
                 write_audit_log(request, pre_deny, None)
                 return self._denied_result(tool_id, pre_deny)
 
-        # --- Step 6: Validate input and execute sandboxed ---
-        return await self._execute_step6(request, tool, tool_id, arguments_json)
+        # --- Step 6: Execute sandboxed via executor.dispatch() ---
+        return await self._execute_step6(request, tool_id, arguments_json)
 
     async def _run_pre_execution_steps(
         self, request: PermissionCheckRequest
@@ -189,50 +187,18 @@ class PermissionPipeline:
     async def _execute_step6(
         self,
         request: PermissionCheckRequest,
-        tool: GovAPITool,
         tool_id: str,
         arguments_json: str,
     ) -> ToolResult:
-        """Validate input, resolve adapter, and run sandboxed execution (step 6)."""
-        # Validate input
-        try:
-            validated_input = tool.input_schema.model_validate_json(arguments_json)
-        except (ValidationError, ValueError) as exc:
-            logger.warning(
-                "PermissionPipeline: input validation failed for tool %r: %s",
-                tool_id,
-                exc,
-            )
-            validation_deny = PermissionStepResult(
-                step=6,
-                decision=PermissionDecision.deny,
-                reason="validation_error",
-            )
-            write_audit_log(request, validation_deny, None)
-            return ToolResult(
-                tool_id=tool_id,
-                success=False,
-                error=str(exc),
-                error_type="validation",
-            )
+        """Route tool execution through the sandboxed executor (step 6).
 
-        # Resolve adapter
-        adapter_fn = self._executor._adapters.get(tool_id)  # noqa: SLF001
-        if adapter_fn is None:
-            no_adapter = PermissionStepResult(
-                step=6,
-                decision=PermissionDecision.deny,
-                reason="no adapter registered for tool",
-            )
-            write_audit_log(request, no_adapter, None)
-            return ToolResult(
-                tool_id=tool_id,
-                success=False,
-                error=f"No adapter registered for tool {tool_id!r}",
-                error_type="execution",
-            )
-
-        step6_result, tool_result = await execute_sandboxed(request, adapter_fn, validated_input)
+        Delegates all input validation, rate limiting, adapter execution, and
+        output schema validation to executor.dispatch() — called inside the
+        env-filtering sandbox so credentials are scoped to the tool's access tier.
+        """
+        step6_result, tool_result = await execute_sandboxed(
+            request, self._executor, tool_id, arguments_json
+        )
 
         # --- Step 7: Audit log (ALWAYS fires) ---
         write_audit_log(request, step6_result, tool_result)

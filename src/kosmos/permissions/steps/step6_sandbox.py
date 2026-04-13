@@ -1,9 +1,10 @@
 # SPDX-License-Identifier: Apache-2.0
 """Step 6: Sandboxed execution context.
 
-Executes the tool adapter in an isolated environment where only the credentials
-relevant to the tool's access tier are visible. Catches all exceptions and
-converts them to deny results.
+Executes the tool via ToolExecutor.dispatch() in an isolated environment where
+only the credentials relevant to the tool's access tier are visible. Using
+dispatch() ensures rate limiting and output schema validation are always applied.
+Catches all exceptions and converts them to deny results.
 """
 
 from __future__ import annotations
@@ -12,7 +13,6 @@ import asyncio
 import logging
 import os
 import re
-from typing import Any
 
 from kosmos.permissions.models import (
     AccessTier,
@@ -20,6 +20,7 @@ from kosmos.permissions.models import (
     PermissionDecision,
     PermissionStepResult,
 )
+from kosmos.tools.executor import ToolExecutor
 from kosmos.tools.models import ToolResult
 
 logger = logging.getLogger(__name__)
@@ -49,26 +50,32 @@ def _is_allowed(key: str, patterns: list[re.Pattern[str]]) -> bool:
 
 async def execute_sandboxed(
     request: PermissionCheckRequest,
-    adapter_fn: Any,  # Callable[[BaseModel], Awaitable[dict]]
-    validated_input: Any,  # BaseModel
+    executor: ToolExecutor,
+    tool_id: str,
+    arguments_json: str,
 ) -> tuple[PermissionStepResult, ToolResult | None]:
-    """Execute the tool adapter in an isolated sandbox.
+    """Execute the tool via ToolExecutor.dispatch() in an isolated sandbox.
 
     Temporarily removes KOSMOS_* env vars not matched by the tool's access-tier
-    patterns, executes the adapter, then restores all env vars.
+    patterns, calls executor.dispatch() — which applies input validation, rate
+    limiting, adapter execution, and output schema validation — then restores all
+    env vars.
 
     A module-level asyncio.Lock serializes the env-mutation window so that
     concurrent coroutines cannot observe a partially-filtered environment.
 
     Args:
-        request: The permission check request.
-        adapter_fn: The async adapter callable.
-        validated_input: The validated Pydantic input model instance.
+        request: The permission check request (used for access-tier env filtering).
+        executor: The ToolExecutor that handles dispatch, rate limiting, and
+            output validation.
+        tool_id: The tool identifier to dispatch.
+        arguments_json: Raw JSON string of tool arguments.
 
     Returns:
         Tuple of (PermissionStepResult, ToolResult or None).
-        On success: (allow result, ToolResult) — built from the adapter output.
-        On exception: (deny result, None).
+        On successful dispatch: (allow result, ToolResult from executor).
+        On dispatch failure (ToolResult.success is False): (deny result, None).
+        On unexpected exception: (deny result, None).
     """
     allowed_patterns = _TIER_ALLOWED_PATTERNS.get(request.access_tier, [])
 
@@ -82,21 +89,32 @@ async def execute_sandboxed(
                 del os.environ[key]
 
         try:
-            result_data = await adapter_fn(validated_input)
-            logger.debug("Step %d: sandbox execution succeeded for tool %s", _STEP, request.tool_id)
+            tool_result = await executor.dispatch(tool_id, arguments_json)
+            if tool_result.success:
+                logger.debug("Step %d: sandbox execution succeeded for tool %s", _STEP, tool_id)
+                return (
+                    PermissionStepResult(decision=PermissionDecision.allow, step=_STEP),
+                    tool_result,
+                )
+            logger.warning(
+                "Step %d: dispatch returned failure for tool %s: %s",
+                _STEP,
+                tool_id,
+                tool_result.error,
+            )
             return (
-                PermissionStepResult(decision=PermissionDecision.allow, step=_STEP),
-                ToolResult(
-                    tool_id=request.tool_id,
-                    success=True,
-                    data=result_data,
+                PermissionStepResult(
+                    decision=PermissionDecision.deny,
+                    step=_STEP,
+                    reason=tool_result.error_type or "execution_error",
                 ),
+                None,
             )
         except Exception as exc:
-            logger.error(
+            logger.exception(
                 "Step %d: sandbox execution failed for tool %s: %s",
                 _STEP,
-                request.tool_id,
+                tool_id,
                 exc,
             )
             return (

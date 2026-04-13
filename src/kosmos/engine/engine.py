@@ -131,6 +131,9 @@ class QueryEngine:
             api_health=None,
             hard_limit=self._config.context_window,
         )
+        # assembled.tool_definitions is intentionally not used here: tool defs are
+        # exported inside the per-turn query loop via ToolRegistry.export_core_tools_openai()
+        # (see query.py) to ensure the snapshot is taken after the user message is appended.
         if assembled.budget and assembled.budget.is_over_limit:
             yield QueryEvent(
                 type="stop",
@@ -140,10 +143,11 @@ class QueryEngine:
             return
 
         # --- Context assembly: insert turn attachment after passing budget check ---
-        attachment_layer = self._context_builder.build_turn_attachment(self._state, api_health=None)
-        if attachment_layer is not None:
+        # Re-use the turn_attachment already computed in assembled; avoids a second
+        # call to build_turn_attachment() which would duplicate context assembly work.
+        if assembled.turn_attachment is not None:
             self._state.messages.append(
-                ChatMessage(role="user", content=attachment_layer.content),
+                ChatMessage(role="user", content=assembled.turn_attachment.content),
             )
 
         # Append user message to history

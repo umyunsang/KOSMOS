@@ -16,9 +16,13 @@ Three model types form the session and per-turn state contract:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any
+from typing import TYPE_CHECKING
 
 from pydantic import BaseModel, ConfigDict
+
+if TYPE_CHECKING:
+    from kosmos.permissions.models import SessionContext
+    from kosmos.permissions.pipeline import PermissionPipeline
 
 from kosmos.engine.config import QueryEngineConfig
 from kosmos.llm.client import LLMClient
@@ -101,19 +105,18 @@ class QueryContext(BaseModel):
     iteration: int = 0
     """Zero-based iteration counter within the current turn."""
 
-    permission_pipeline: Any | None = None
+    permission_pipeline: PermissionPipeline | None = None
     """Optional permission pipeline for 7-step gauntlet checks on tool calls.
 
-    Type at runtime: ``kosmos.permissions.pipeline.PermissionPipeline | None``.
-    Annotated as ``Any`` so Pydantic can resolve the field before the permissions
-    package exists; the TYPE_CHECKING guard provides static type safety.
+    Only routed through the pipeline when both this field and ``session_context``
+    are non-None (see ``dispatch_tool_calls`` in query.py).
     """
 
-    session_context: Any | None = None
+    session_context: SessionContext | None = None
     """Optional session context supplied to the permission pipeline per tool call.
 
-    Type at runtime: ``kosmos.permissions.models.SessionContext | None``.
-    Annotated as ``Any`` for the same reason as ``permission_pipeline``.
+    Only forwarded to the pipeline when both this field and ``permission_pipeline``
+    are non-None.
     """
 
 
@@ -174,3 +177,23 @@ class SessionBudget(BaseModel):
             turns_budget=config.max_turns,
             is_exhausted=state.usage.is_exhausted or state.turn_count >= config.max_turns,
         )
+
+
+# ---------------------------------------------------------------------------
+# Resolve forward references for QueryContext
+#
+# ``from __future__ import annotations`` defers all annotations as strings.
+# Pydantic v2 evaluates them lazily; calling model_rebuild() here with the
+# real permission types in the namespace ensures forward references are
+# resolved once at import time.  Test-level model_rebuild() calls become
+# no-ops (Pydantic skips a rebuild if the model is already complete).
+# ---------------------------------------------------------------------------
+from kosmos.permissions.models import SessionContext  # noqa: E402
+from kosmos.permissions.pipeline import PermissionPipeline  # noqa: E402
+
+QueryContext.model_rebuild(
+    _types_namespace={
+        "PermissionPipeline": PermissionPipeline,
+        "SessionContext": SessionContext,
+    }
+)
