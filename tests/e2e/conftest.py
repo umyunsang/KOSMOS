@@ -449,21 +449,49 @@ def assert_usage_matches(
     llm_client: MockLLMClient,
     expected_input_tokens: int,
     expected_output_tokens: int,
+    events: list[QueryEvent] | None = None,
 ) -> None:
-    """Assert that UsageTracker totals match expected values exactly.
+    """Assert that token usage totals match expected values exactly.
 
     Args:
-        llm_client: The MockLLMClient whose usage tracker to check.
+        llm_client: The MockLLMClient whose usage tracker may be checked
+            as fallback.
         expected_input_tokens: Expected sum of input tokens.
         expected_output_tokens: Expected sum of output tokens.
+        events: Optional collected QueryEvent list to read usage_update
+            totals from. Preferred over UsageTracker because
+            MockLLMClient does not call debit().
     """
+    expected_total = expected_input_tokens + expected_output_tokens
+
+    if events is not None:
+        # Prefer engine-emitted usage_update events because MockLLMClient
+        # yields usage StreamEvents but does not call UsageTracker.debit().
+        usage_events = [e for e in events if e.type == "usage_update"]
+        if usage_events:
+            total_used = 0
+            for event in usage_events:
+                if event.usage is not None:
+                    total_used += (
+                        (event.usage.input_tokens or 0)
+                        + (event.usage.output_tokens or 0)
+                    )
+            assert total_used == expected_total, (
+                f"Total tokens used {total_used} != "
+                f"expected {expected_total} "
+                f"(input={expected_input_tokens}, "
+                f"output={expected_output_tokens})"
+            )
+            return
+
     tracker = llm_client.usage
-    # Usage tracker debits on each stream() call via the stream events
     total_used = tracker.total_used
-    assert total_used == expected_input_tokens + expected_output_tokens, (
-        f"Total tokens used {total_used} != "
-        f"expected {expected_input_tokens + expected_output_tokens} "
-        f"(input={expected_input_tokens}, output={expected_output_tokens})"
+    assert total_used == expected_total, (
+        f"Total tokens used {total_used} != expected {expected_total} "
+        f"(input={expected_input_tokens}, "
+        f"output={expected_output_tokens}); "
+        "pass events=... to assert against engine-emitted usage_update "
+        "totals when MockLLMClient does not debit UsageTracker"
     )
 
 
@@ -505,11 +533,10 @@ def assert_data_gaps(
     assert risk_results, "No tool_result for road_risk_score found"
 
     result = risk_results[0]
-    if result.success and result.data:
-        actual_gaps = result.data.get("data_gaps", [])
-    else:
-        # On failure, all adapters failed — all are gaps
-        actual_gaps = expected_gaps  # pass-through for total failure case
+    # Fail fast on unsuccessful executions to avoid false positives
+    assert result.success, f"road_risk_score failed: {result.error}"
+    assert result.data is not None, "road_risk_score returned no data"
+    actual_gaps = result.data.get("data_gaps", [])
 
     for gap in expected_gaps:
         assert gap in actual_gaps, (
