@@ -122,6 +122,7 @@ def _run_repl(resume_session_id: str | None = None) -> None:
     from kosmos.engine.engine import QueryEngine
     from kosmos.llm.client import LLMClient
     from kosmos.llm.errors import ConfigurationError
+    from kosmos.observability import MetricsCollector, ObservabilityEventLogger
     from kosmos.tools.executor import ToolExecutor
     from kosmos.tools.register_all import register_all_tools
     from kosmos.tools.registry import ToolRegistry
@@ -135,9 +136,13 @@ def _run_repl(resume_session_id: str | None = None) -> None:
         _stderr_console.print(f"[red]CLI 설정 오류:[/red] {escape(str(exc))}")
         sys.exit(1)
 
+    # --- Initialise observability (shared single instance) ---
+    metrics = MetricsCollector()
+    event_logger = ObservabilityEventLogger()
+
     # --- Initialise LLM client ---
     try:
-        llm_client = LLMClient()
+        llm_client = LLMClient(metrics=metrics, event_logger=event_logger)
     except ConfigurationError as exc:
         _stderr_console.print(
             f"[red]설정 오류:[/red] {escape(str(exc))}\n\n"
@@ -150,7 +155,7 @@ def _run_repl(resume_session_id: str | None = None) -> None:
 
     # --- Initialise tool registry and executor ---
     registry = ToolRegistry()
-    executor = ToolExecutor(registry)
+    executor = ToolExecutor(registry, metrics=metrics, event_logger=event_logger)
     register_all_tools(registry, executor)
 
     # --- Initialise context builder ---
@@ -181,6 +186,7 @@ def _run_repl(resume_session_id: str | None = None) -> None:
         config=config,
         renderer=renderer,
         resume_session_id=resume_session_id,
+        metrics=metrics,
     )
 
     try:

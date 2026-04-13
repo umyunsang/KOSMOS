@@ -45,4 +45,8 @@ COMMANDS: dict[str, SlashCommand] = {
         name="resume",
         description="Resume a previous session by ID  (/resume <session-id>)",
     ),
+    "metrics": SlashCommand(
+        name="metrics",
+        description="Show session metrics snapshot (counters, histograms, gauges)",
+    ),
 }

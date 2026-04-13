@@ -32,8 +32,20 @@ EventType = Literal[
     "cache_miss",
     "error",
     "auth_refresh",
+    "permission_decision",
+    "llm_call",
 ]
-"""Allowed values for ``ObservabilityEvent.event_type``."""
+"""Allowed values for ``ObservabilityEvent.event_type``.
+
+Legacy types (``tool_call``, ``retry``, ``circuit_break``, ``cache_hit``,
+``cache_miss``, ``error``, ``auth_refresh``) are retained for backwards
+compatibility.  New types added in Phase A observability:
+
+* ``permission_decision`` — emitted by ``PermissionPipeline`` after each
+  step decision (allow/deny/degrade).
+* ``llm_call`` — emitted by ``LLMClient`` after each chat completion (both
+  ``complete()`` and ``stream()``).
+"""
 
 
 # ---------------------------------------------------------------------------

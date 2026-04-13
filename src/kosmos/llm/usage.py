@@ -4,9 +4,13 @@
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
 
 from kosmos.llm.errors import BudgetExceededError
 from kosmos.llm.models import TokenUsage
+
+if TYPE_CHECKING:
+    from kosmos.observability.metrics import MetricsCollector
 
 logger = logging.getLogger(__name__)
 
@@ -14,11 +18,17 @@ logger = logging.getLogger(__name__)
 class UsageTracker:
     """Tracks cumulative token usage against a session budget."""
 
-    def __init__(self, budget: int) -> None:
+    def __init__(
+        self,
+        budget: int,
+        metrics: MetricsCollector | None = None,
+    ) -> None:
         """Initialize with a token budget.
 
         Args:
             budget: Maximum total tokens allowed for this session. Must be > 0.
+            metrics: Optional MetricsCollector for recording token counters.
+                When absent, metrics instrumentation is skipped (backward-compatible).
 
         Raises:
             ValueError: If budget is not a positive integer.
@@ -29,6 +39,7 @@ class UsageTracker:
         self._input_tokens_used = 0
         self._output_tokens_used = 0
         self._call_count = 0
+        self._metrics: MetricsCollector | None = metrics
 
     # ------------------------------------------------------------------
     # Public interface
@@ -74,6 +85,14 @@ class UsageTracker:
             new_total,
             self._budget,
         )
+
+        # Record token counters — wrapped in try/except per AC-A9.
+        if self._metrics is not None:
+            try:
+                self._metrics.increment("llm.input_tokens", value=usage.input_tokens)
+                self._metrics.increment("llm.output_tokens", value=usage.output_tokens)
+            except Exception:  # noqa: BLE001
+                logger.debug("UsageTracker: metrics increment failed", exc_info=True)
 
         if new_total > self._budget:
             raise BudgetExceededError(
