@@ -1,0 +1,29 @@
+{
+  "response": {
+    "header": {"resultCode": "00", "resultMsg": "NORMAL_CODE"},
+    "body": {
+      "dataType": "JSON",
+      "items": {
+        "item": [
+          {"baseDate": "20260414", "baseTime": "0800", "nx": 61, "ny": 126, "category": "TMP", "fcstDate": "20260414", "fcstTime": "0900", "fcstValue": "12"},
+          {"baseDate": "20260414", "baseTime": "0800", "nx": 61, "ny": 126, "category": "UUU", "fcstDate": "20260414", "fcstTime": "0900", "fcstValue": "-1.4"},
+          {"baseDate": "20260414", "baseTime": "0800", "nx": 61, "ny": 126, "category": "VVV", "fcstDate": "20260414", "fcstTime": "0900", "fcstValue": "0.9"},
+          {"baseDate": "20260414", "baseTime": "0800", "nx": 61, "ny": 126, "category": "VEC", "fcstDate": "20260414", "fcstTime": "0900", "fcstValue": "237"},
+          {"baseDate": "20260414", "baseTime": "0800", "nx": 61, "ny": 126, "category": "WSD", "fcstDate": "20260414", "fcstTime": "0900", "fcstValue": "1.7"},
+          {"baseDate": "20260414", "baseTime": "0800", "nx": 61, "ny": 126, "category": "SKY", "fcstDate": "20260414", "fcstTime": "0900", "fcstValue": "3"},
+          {"baseDate": "20260414", "baseTime": "0800", "nx": 61, "ny": 126, "category": "PTY", "fcstDate": "20260414", "fcstTime": "0900", "fcstValue": "0"},
+          {"baseDate": "20260414", "baseTime": "0800", "nx": 61, "ny": 126, "category": "POP", "fcstDate": "20260414", "fcstTime": "0900", "fcstValue": "20"},
+          {"baseDate": "20260414", "baseTime": "0800", "nx": 61, "ny": 126, "category": "WAV", "fcstDate": "20260414", "fcstTime": "0900", "fcstValue": "0.3"},
+          {"baseDate": "20260414", "baseTime": "0800", "nx": 61, "ny": 126, "category": "PCP", "fcstDate": "20260414", "fcstTime": "0900", "fcstValue": "강수없음"},
+          {"baseDate": "20260414", "baseTime": "0800", "nx": 61, "ny": 126, "category": "REH", "fcstDate": "20260414", "fcstTime": "0900", "fcstValue": "60"},
+          {"baseDate": "20260414", "baseTime": "0800", "nx": 61, "ny": 126, "category": "SNO", "fcstDate": "20260414", "fcstTime": "0900", "fcstValue": "적설없음"},
+          {"baseDate": "20260414", "baseTime": "0800", "nx": 61, "ny": 126, "category": "TMN", "fcstDate": "20260414", "fcstTime": "0600", "fcstValue": "8"},
+          {"baseDate": "20260414", "baseTime": "0800", "nx": 61, "ny": 126, "category": "TMX", "fcstDate": "20260414", "fcstTime": "1500", "fcstValue": "17"}
+        ]
+      },
+      "numOfRows": 290,
+      "pageNo": 1,
+      "totalCount": 14
+    }
+  }
+}
