@@ -220,10 +220,15 @@ class EventRenderer:
         self._stop_active_status()
 
         if self._streaming_markdown:
-            # Commit any buffered content and close the Live context
             if self._live is not None and self._text_buffer:
+                # Commit buffered content and close the Live context
                 self._live.update(Markdown(self._text_buffer))
-            self._stop_live()
+                self._stop_live()
+            elif self._text_buffer:
+                # Short reply never reached _LIVE_MIN_CHARS_BEFORE_REFRESH —
+                # print the full buffer as Markdown without a Live context.
+                self._stop_live()
+                self._console.print(Markdown(self._text_buffer))
         else:
             # Plain streaming: print a trailing newline after streamed text
             if self._text_buffer:
