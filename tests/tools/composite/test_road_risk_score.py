@@ -317,7 +317,10 @@ async def test_total_failure(monkeypatch: pytest.MonkeyPatch) -> None:
 class TestRoadRiskScoreInput:
     def test_default_search_year(self) -> None:
         inp = RoadRiskScoreInput(
-            si_do=SidoCode.SEOUL, gu_gun=GugunCode.SEOUL_GANGNAM, nx=60, ny=127,
+            si_do=SidoCode.SEOUL,
+            gu_gun=GugunCode.SEOUL_GANGNAM,
+            nx=60,
+            ny=127,
         )
         assert inp.search_year_cd == SearchYearCd.GENERAL_2024
 
