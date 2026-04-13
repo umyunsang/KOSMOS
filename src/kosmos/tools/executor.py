@@ -121,9 +121,10 @@ class ToolExecutor:
 
         # Step 4/5: Execute adapter with rate limiting + optional recovery.
         #
-        # Rate limiting is always enforced regardless of recovery mode.
-        # RecoveryExecutor may short-circuit via a cache hit or circuit-open
-        # check, but the rate limiter still governs overall call frequency.
+        # Rate-limit check runs first to reject early when over quota.
+        # ``record()`` is deferred to just before the actual adapter call so
+        # that RecoveryExecutor short-circuits (cache hit, circuit-open) do
+        # NOT consume a rate-limit slot.
         rate_limiter = self._registry.get_rate_limiter(tool_name)
         if not rate_limiter.check():
             logger.warning("Rate limit exceeded for tool: %s", tool_name)
@@ -133,21 +134,24 @@ class ToolExecutor:
                 error=f"Rate limit exceeded for tool {tool_name!r}",
                 error_type="rate_limit",
             )
-        rate_limiter.record()
 
         if self._recovery_executor is not None:
-            # Delegate to RecoveryExecutor for retry / circuit-breaker / cache.
+            # Pass rate_limiter to RecoveryExecutor so record() is called
+            # only when the adapter is actually invoked (not on cache hit
+            # or circuit-open short-circuit).
             recovery_result = await self._recovery_executor.execute(
                 tool,
                 adapter,
                 validated_input,
                 is_foreground=True,
+                rate_limiter=rate_limiter,
             )
             tool_result = recovery_result.tool_result
             if not tool_result.success:
                 return tool_result
             result_dict = dict(tool_result.data or {})
         else:
+            rate_limiter.record()
             try:
                 result_dict = await adapter(validated_input)
             except Exception as exc:

@@ -38,6 +38,7 @@ from kosmos.recovery.classifier import (
 from kosmos.recovery.messages import build_degradation_message
 from kosmos.recovery.retry import ToolRetryPolicy, retry_tool_call
 from kosmos.tools.models import GovAPITool, ToolResult
+from kosmos.tools.rate_limiter import RateLimiter
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +47,18 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 AdapterFn = Callable[..., Awaitable[dict[str, object]]]
+
+
+class _RateLimitExhaustedInRetryError(Exception):
+    """Raised inside the rate-limited adapter wrapper when a retry attempt
+    would exceed the sliding-window quota.
+
+    Classified as ``APP_ERROR`` / non-retryable by the error classifier,
+    which causes the retry loop to stop immediately.
+    """
+
+    def __init__(self, tool_id: str) -> None:
+        super().__init__(f"Rate limit exhausted during retry for tool {tool_id!r}")
 
 
 # ---------------------------------------------------------------------------
@@ -117,29 +130,34 @@ class RecoveryExecutor:
     # Public interface
     # ------------------------------------------------------------------
 
-    async def execute(
+    async def execute(  # noqa: C901
         self,
         tool: GovAPITool,
         adapter: AdapterFn,
         validated_input: object,
         *,
         is_foreground: bool = True,
+        rate_limiter: RateLimiter | None = None,
     ) -> RecoveryResult:
         """Execute *adapter* with full error-recovery orchestration.
 
         Pipeline:
         1. Cache lookup → return cached data if fresh (no side-effects).
         2. Circuit breaker check → immediate degradation if OPEN.
-        3. Retry loop with exponential back-off.
-        4. On success: update circuit breaker + cache store.
-        5. On exhaustion: try stale cache fallback.
-        6. Last resort: return degradation message as a failed ToolResult.
+        3. Record rate-limit slot (only before the actual adapter call).
+        4. Retry loop with exponential back-off.
+        5. On success: update circuit breaker + cache store.
+        6. On exhaustion: try stale cache fallback.
+        7. Last resort: return degradation message as a failed ToolResult.
 
         Args:
             tool: The GovAPITool being called (used for cache TTL and messages).
             adapter: Async callable that performs the actual API call.
             validated_input: Pre-validated Pydantic model instance to pass to adapter.
             is_foreground: Whether this is a user-facing call (affects retry cap).
+            rate_limiter: Optional rate limiter; ``record()`` is called only
+                when the adapter is actually invoked (not on cache hit or
+                circuit-open short-circuit).
 
         Returns:
             A ``RecoveryResult`` that never represents an un-caught exception.
@@ -150,9 +168,12 @@ class RecoveryExecutor:
 
         # --- 1. Cache lookup (before circuit breaker to avoid wasting a
         #     HALF_OPEN probe allowance on a cache hit) ---
+        # _model_to_dict returns None when serialisation fails; in that case
+        # we skip all caching to avoid degenerate cache keys.
         input_dict = self._model_to_dict(validated_input)
-        args_hash = self._cache.compute_hash(input_dict)
-        if tool.cache_ttl_seconds > 0:
+        args_hash: str | None = None
+        if input_dict is not None and tool.cache_ttl_seconds > 0:
+            args_hash = self._cache.compute_hash(input_dict)
             cached = self._cache.get(tool_id, args_hash)
             if cached is not None:
                 elapsed = time.monotonic() - start
@@ -190,14 +211,30 @@ class RecoveryExecutor:
                     elapsed_seconds=elapsed,
                     error_class=ErrorClass.APP_ERROR,
                     is_cached_fallback=False,
-                    circuit_state=CircuitState.OPEN,
+                    circuit_state=breaker.state,
                     tool_id=tool_id,
                 ),
             )
 
-        # --- 3. Retry loop ---
+        # --- 3. Wrap adapter with per-invocation rate-limit enforcement ---
+        # Each adapter call (including retries) checks AND records a
+        # rate-limit slot so that retry bursts cannot exceed the configured
+        # per-minute quota.
+        if rate_limiter is not None:
+
+            async def _rate_limited_adapter(args: object) -> dict[str, object]:
+                if not rate_limiter.check():
+                    raise _RateLimitExhaustedInRetryError(tool_id)
+                rate_limiter.record()
+                return await adapter(args)
+
+            effective_adapter: AdapterFn = _rate_limited_adapter
+        else:
+            effective_adapter = adapter
+
+        # --- 4. Retry loop ---
         result_dict, last_error, attempt_count = await retry_tool_call(
-            adapter,
+            effective_adapter,
             validated_input,
             self._classifier,
             self._policy,
@@ -206,11 +243,22 @@ class RecoveryExecutor:
 
         elapsed = time.monotonic() - start
 
-        # --- 4. Success path ---
+        # --- 5. Success path ---
         if result_dict is not None:
             breaker.record_success()
-            if tool.cache_ttl_seconds > 0:
-                self._cache.put(tool_id, args_hash, result_dict, tool.cache_ttl_seconds)
+            # Only cache data that passes output_schema validation so that
+            # invalid adapter responses are never served from the cache.
+            # args_hash is None when input serialisation failed — skip caching.
+            if args_hash is not None and tool.cache_ttl_seconds > 0:
+                try:
+                    tool.output_schema.model_validate(result_dict)
+                    self._cache.put(tool_id, args_hash, result_dict, tool.cache_ttl_seconds)
+                except Exception:
+                    logger.debug(
+                        "Skipping cache store for tool %s: output_schema validation failed",
+                        tool_id,
+                        exc_info=True,
+                    )
             return RecoveryResult(
                 tool_result=ToolResult(
                     tool_id=tool_id,
@@ -226,8 +274,8 @@ class RecoveryExecutor:
         if last_error is not None and last_error.is_retryable:
             breaker.record_failure()
 
-        # --- 5. Stale cache fallback (only if cache_ttl_seconds > 0) ---
-        if tool.cache_ttl_seconds > 0:
+        # --- 6. Stale cache fallback (only if cache_ttl_seconds > 0) ---
+        if args_hash is not None and tool.cache_ttl_seconds > 0:
             stale = self._get_stale_cache(tool_id, args_hash)
             if stale is not None:
                 logger.warning(
@@ -251,7 +299,7 @@ class RecoveryExecutor:
                     ),
                 )
 
-        # --- 6. Degradation message ---
+        # --- 7. Degradation message ---
         assert last_error is not None  # retry_tool_call guarantees this when result is None
         degradation = build_degradation_message(tool, last_error)
         error_type = self._error_class_to_error_type(last_error.error_class)
@@ -282,15 +330,24 @@ class RecoveryExecutor:
     # Private helpers
     # ------------------------------------------------------------------
 
-    def _model_to_dict(self, model: object) -> dict[str, object]:
-        """Convert a Pydantic model to a plain dict for cache key computation."""
+    def _model_to_dict(self, model: object) -> dict[str, object] | None:
+        """Convert a Pydantic model to a plain dict for cache key computation.
+
+        Uses ``mode="json"`` to ensure all values (Enums, datetimes, etc.)
+        are JSON-serialisable primitives.  Returns ``None`` on failure so the
+        caller can skip caching rather than produce a degenerate cache key.
+        """
         from pydantic import BaseModel as _BaseModel  # local import to avoid circular
 
-        if isinstance(model, _BaseModel):
-            return dict(model.model_dump())
+        try:
+            if isinstance(model, _BaseModel):
+                return dict(model.model_dump(mode="json"))
+        except Exception:
+            logger.debug("model_dump(mode='json') failed; caching will be skipped")
+            return None
         if isinstance(model, dict):
             return model
-        return {}
+        return None
 
     def _get_stale_cache(self, tool_id: str, args_hash: str) -> dict[str, object] | None:
         """Look up a stale (possibly expired) cache entry via the public API."""
