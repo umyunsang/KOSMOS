@@ -261,6 +261,7 @@ interface ReviewEvent extends PullRequestEvent {
     user: { login: string };
     state: string;
     commit_id: string;
+    body: string | null;
   };
 }
 
@@ -457,6 +458,83 @@ async function handlePullRequest(event: PullRequestEvent, env: Env): Promise<Res
   return new Response("Synchronize: requested Copilot re-review", { status: 200 });
 }
 
+// --- Review comment helpers ---
+
+type ReviewComment = { path: string; line: number | null; body: string; in_reply_to_id: number | null; pull_request_review_id?: number };
+
+/**
+ * Extract the expected comment count from the Copilot review body.
+ * Copilot includes "generated N comments" in its review summary.
+ */
+function parseExpectedCommentCount(reviewBody: string | null): number {
+  if (!reviewBody) return -1; // unknown
+  const match = reviewBody.match(/generated\s+(\d+)\s+comment/i);
+  return match ? parseInt(match[1], 10) : -1;
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
+/**
+ * Fetch review comments with retry for GitHub API eventual consistency.
+ *
+ * The pull_request_review webhook can fire before inline comments are
+ * queryable via the REST API. When the review body indicates comments
+ * were generated but the API returns zero, retry with increasing delays.
+ * Falls back to the general PR comments endpoint filtered by review ID.
+ */
+async function fetchReviewComments(
+  token: string,
+  owner: string,
+  repo: string,
+  prNumber: number,
+  reviewId: number,
+  expectedCount: number,
+): Promise<ReviewComment[]> {
+  // Attempt 1: review-specific endpoint
+  const attempt1 = (await githubApi(
+    token, "GET",
+    `/repos/${owner}/${repo}/pulls/${prNumber}/reviews/${reviewId}/comments`
+  )) as ReviewComment[];
+
+  if (attempt1.length > 0) return attempt1;
+  if (expectedCount === 0) return attempt1; // genuinely no comments
+
+  // Attempt 2: retry after 3s (eventual consistency delay)
+  console.log(`[review] 0 comments but expected ${expectedCount} — retrying after 3s`);
+  await sleep(3000);
+
+  const attempt2 = (await githubApi(
+    token, "GET",
+    `/repos/${owner}/${repo}/pulls/${prNumber}/reviews/${reviewId}/comments`
+  )) as ReviewComment[];
+
+  if (attempt2.length > 0) return attempt2;
+
+  // Attempt 3: retry after 5s more
+  console.log(`[review] still 0 comments — retrying after 5s`);
+  await sleep(5000);
+
+  const attempt3 = (await githubApi(
+    token, "GET",
+    `/repos/${owner}/${repo}/pulls/${prNumber}/reviews/${reviewId}/comments`
+  )) as ReviewComment[];
+
+  if (attempt3.length > 0) return attempt3;
+
+  // Fallback: general PR comments endpoint filtered by review ID
+  console.log(`[review] review endpoint empty — falling back to PR comments endpoint`);
+  const allPrComments = (await githubApi(
+    token, "GET",
+    `/repos/${owner}/${repo}/pulls/${prNumber}/comments?per_page=100`
+  )) as ReviewComment[];
+
+  return allPrComments.filter((c) => c.pull_request_review_id === reviewId);
+}
+
+// --- Review handler ---
+
 async function handleReview(event: ReviewEvent, env: Env): Promise<Response> {
   const { review, installation, repository, pull_request } = event;
 
@@ -479,15 +557,19 @@ async function handleReview(event: ReviewEvent, env: Env): Promise<Response> {
   const prNumber = pull_request.number;
   const reviewId = review.id;
 
-  // Fetch inline comments for this review (top-level only, skip replies)
-  const allComments = (await githubApi(
-    token,
-    "GET",
-    `/repos/${owner}/${repo}/pulls/${prNumber}/reviews/${reviewId}/comments`
-  )) as Array<{ path: string; line: number | null; body: string; in_reply_to_id: number | null }>;
+  // Parse expected comment count from review body for consistency checking
+  const expectedCount = parseExpectedCommentCount(review.body);
+  console.log(`[review] expectedCount=${expectedCount} (from review body)`);
+
+  // Fetch inline comments with retry (handles GitHub API eventual consistency)
+  const allComments = await fetchReviewComments(
+    token, owner, repo, prNumber, reviewId, expectedCount
+  );
 
   const comments = allComments.filter((c) => c.in_reply_to_id === null);
   const count = comments.length;
+
+  console.log(`[review] fetched ${count} top-level comments (expected ${expectedCount})`);
 
   // Classify by severity
   const classified = comments.map((c) => ({ ...c, severity: classifyComment(c.body) }));
@@ -499,7 +581,17 @@ async function handleReview(event: ReviewEvent, env: Env): Promise<Response> {
   let title: string;
   let summary: string;
 
-  if (count === 0) {
+  // Fail-closed: if review body says comments exist but we fetched 0,
+  // treat as failure to prevent false pass from API consistency delays
+  if (count === 0 && expectedCount > 0) {
+    conclusion = "failure";
+    title = `Copilot generated ${expectedCount} comment${expectedCount > 1 ? "s" : ""} but API returned 0 — fail-closed`;
+    summary = [
+      `Copilot's review body indicates ${expectedCount} comment${expectedCount > 1 ? "s were" : " was"} generated, but the GitHub API returned 0 inline comments after retries.`,
+      "This is likely a GitHub API eventual consistency issue. Failing closed for safety.",
+      "Push a new commit to trigger a fresh review, or add the `copilot-review-bypass` label to skip.",
+    ].join("\n");
+  } else if (count === 0) {
     conclusion = "success";
     title = "Copilot review passed — no issues found";
     summary = "Copilot Code Review completed with no inline comments.";
