@@ -87,7 +87,7 @@ async def _resolve_from_kakao(
     address: str,
     *,
     client: httpx.AsyncClient | None = None,
-) -> AddressToGridOutput:
+) -> AddressToGridOutput | None:
     """Attempt to resolve *address* via Kakao and compute the KMA grid.
 
     Args:
@@ -96,18 +96,16 @@ async def _resolve_from_kakao(
 
     Returns:
         A populated :class:`AddressToGridOutput` with ``source="kakao_latlon"``
-        on success, or a no-match output with ``source="not_found"`` when the
-        Kakao API returns no documents.
+        on success.  Returns ``None`` when the Kakao API returns no documents.
 
     Raises:
         ConfigurationError: If ``KOSMOS_KAKAO_API_KEY`` is not set.
-        ToolExecutionError: On non-timeout Kakao API errors.
+        ToolExecutionError: On ambiguous addresses (multiple Kakao documents).
     """
     result = await search_address(address, client=client)
 
     if not result.documents:
-        logger.debug("address_to_grid: no Kakao results")
-        return AddressToGridOutput(resolved_address="", source="not_found")
+        return None
 
     if len(result.documents) > 1:
         raise ToolExecutionError(
@@ -161,9 +159,9 @@ def _fallback_local_lookup(address: str) -> AddressToGridOutput:
         A :class:`AddressToGridOutput` with ``source="table_fallback"`` if a match
         was found, or ``source="not_found"`` otherwise.
     """
-    # Try the full string first, then progressively shorter leading tokens.
+    # Try progressively shorter leading tokens (full string first).
     tokens = address.strip().split()
-    candidates = [address.strip()] + [" ".join(tokens[:i]) for i in range(len(tokens), 0, -1)]
+    candidates = [" ".join(tokens[:i]) for i in range(len(tokens), 0, -1)]
 
     for candidate in candidates:
         try:
@@ -210,22 +208,27 @@ async def _call(
 
     Raises:
         ConfigurationError: If ``KOSMOS_KAKAO_API_KEY`` is not set.
-        ToolExecutionError: On non-timeout Kakao API errors.
+        ToolExecutionError: When neither Kakao nor the static table can
+            resolve the address (fail-closed), or on ambiguous addresses.
     """
-    logger.debug("address_to_grid: resolving address=%r", params.address)
+    logger.debug("address_to_grid: resolving")
+
+    output: AddressToGridOutput | None = None
 
     try:
         output = await _resolve_from_kakao(params.address, client=client)
     except httpx.TimeoutException:
-        # On timeout, attempt static-table fallback.
-        logger.debug("address_to_grid: Kakao timed out, using table fallback")
+        logger.debug("address_to_grid: Kakao timed out, trying table fallback")
+
+    # Kakao returned no results or timed out — try static-table fallback.
+    if output is None:
         output = _fallback_local_lookup(params.address)
 
-    # If Kakao returned no results, also try static-table fallback.
     if output.source == "not_found":
-        fallback = _fallback_local_lookup(params.address)
-        if fallback.source != "not_found":
-            output = fallback
+        raise ToolExecutionError(
+            tool_id="address_to_grid",
+            message="Address not found: neither Kakao API nor static table matched.",
+        )
 
     logger.debug(
         "address_to_grid: resolved nx=%s ny=%s source=%s",

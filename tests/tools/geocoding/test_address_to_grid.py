@@ -95,16 +95,14 @@ class TestResolveFromKakao:
         assert output.ny is not None and output.ny > 0
 
     @pytest.mark.asyncio
-    async def test_no_results_returns_not_found(self, monkeypatch):
+    async def test_no_results_returns_none(self, monkeypatch):
         monkeypatch.setenv("KOSMOS_KAKAO_API_KEY", "test-key")
         fixture = _load_fixture("address_to_region_nonsense.json")
         mock_client = _make_mock_client(fixture)
 
         output = await _resolve_from_kakao("nonsense xyz", client=mock_client)
 
-        assert output.source == "not_found"
-        assert output.nx is None
-        assert output.ny is None
+        assert output is None
 
 
 # ---------------------------------------------------------------------------

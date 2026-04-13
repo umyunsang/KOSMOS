@@ -10,7 +10,7 @@ from unittest.mock import AsyncMock, MagicMock
 import httpx
 import pytest
 
-from kosmos.tools.errors import ConfigurationError
+from kosmos.tools.errors import ConfigurationError, ToolExecutionError
 from kosmos.tools.executor import ToolExecutor
 from kosmos.tools.geocoding.address_to_region import (
     ADDRESS_TO_REGION_TOOL,
@@ -93,18 +93,14 @@ class TestResolve:
         assert output.region_2depth == "해운대구"
 
     @pytest.mark.asyncio
-    async def test_no_results_returns_empty_output(self, monkeypatch):
+    async def test_no_results_raises_tool_execution_error(self, monkeypatch):
         monkeypatch.setenv("KOSMOS_KAKAO_API_KEY", "test-key")
         fixture = _load_fixture("address_to_region_nonsense.json")
         mock_client = _make_mock_client(fixture)
 
-        output = await _resolve("nonsense xyz 12345", client=mock_client)
-
-        assert output.resolved_address == ""
-        assert output.sido_code is None
-        assert output.gugun_code is None
-        assert output.latitude is None
-        assert output.longitude is None
+        with pytest.raises(ToolExecutionError) as exc_info:
+            await _resolve("nonsense xyz 12345", client=mock_client)
+        assert "not found" in str(exc_info.value).lower()
 
 
 # ---------------------------------------------------------------------------

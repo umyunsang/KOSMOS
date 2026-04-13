@@ -10,7 +10,7 @@ from unittest.mock import AsyncMock, MagicMock
 import httpx
 import pytest
 
-from kosmos.tools.errors import ConfigurationError, ToolExecutionError
+from kosmos.tools.errors import ConfigurationError
 from kosmos.tools.geocoding.kakao_client import (
     KakaoAddressDocument,
     KakaoSearchMeta,
@@ -135,32 +135,34 @@ class TestSearchAddress:
             await search_address("서울 강남구")
 
     @pytest.mark.asyncio
-    async def test_http_401_raises_tool_execution_error(self, monkeypatch):
+    async def test_http_401_propagates_as_http_status_error(self, monkeypatch):
         monkeypatch.setenv("KOSMOS_KAKAO_API_KEY", "bad-key")
         mock_response = MagicMock(spec=httpx.Response)
         mock_response.status_code = 401
         mock_response.headers = {"content-type": "application/json"}
-        mock_response.raise_for_status = MagicMock()
+        mock_response.raise_for_status.side_effect = httpx.HTTPStatusError(
+            "401 Unauthorized", request=MagicMock(), response=mock_response
+        )
         mock_client = AsyncMock(spec=httpx.AsyncClient)
         mock_client.get.return_value = mock_response
 
-        with pytest.raises(ToolExecutionError) as exc_info:
+        with pytest.raises(httpx.HTTPStatusError):
             await search_address("서울 강남구", client=mock_client)
-        assert "401" in str(exc_info.value)
 
     @pytest.mark.asyncio
-    async def test_http_429_raises_tool_execution_error(self, monkeypatch):
+    async def test_http_429_propagates_as_http_status_error(self, monkeypatch):
         monkeypatch.setenv("KOSMOS_KAKAO_API_KEY", "test-key")
         mock_response = MagicMock(spec=httpx.Response)
         mock_response.status_code = 429
         mock_response.headers = {"content-type": "application/json"}
-        mock_response.raise_for_status = MagicMock()
+        mock_response.raise_for_status.side_effect = httpx.HTTPStatusError(
+            "429 Too Many Requests", request=MagicMock(), response=mock_response
+        )
         mock_client = AsyncMock(spec=httpx.AsyncClient)
         mock_client.get.return_value = mock_response
 
-        with pytest.raises(ToolExecutionError) as exc_info:
+        with pytest.raises(httpx.HTTPStatusError):
             await search_address("서울 강남구", client=mock_client)
-        assert "429" in str(exc_info.value)
 
     @pytest.mark.asyncio
     async def test_timeout_propagates_as_httpx_exception(self, monkeypatch):

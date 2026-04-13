@@ -169,7 +169,7 @@ def region1_to_sido(region1: str) -> SidoCode | None:
     normalized = region1.strip()
     result = _REGION1_TO_SIDO.get(normalized)
     if result is None:
-        logger.warning("region1_to_sido: no match for %r", normalized)
+        logger.debug("region1_to_sido: no match for %r", normalized)
     return result
 
 
@@ -182,9 +182,8 @@ def region2_to_gugun(region2: str) -> GugunCode | None:
 
     Returns:
         The matching :class:`GugunCode`, or ``None`` if no match is found.
-        Returns ``None`` for districts not yet in the lookup table —
-        callers should use a sido-appropriate default (e.g. the first
-        district code for that sido) as a fallback.
+        Callers must handle the ``None`` case explicitly (e.g. raise
+        an error) rather than guessing a default code.
     """
     normalized = region2.strip()
     result = _REGION2_TO_GUGUN.get(normalized)

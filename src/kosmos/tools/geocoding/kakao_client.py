@@ -8,11 +8,11 @@ coordinate and administrative region data.
 Authentication: REST API key via ``Authorization: KakaoAK {key}`` header.
 Key source: ``KOSMOS_KAKAO_API_KEY`` environment variable.
 
-Error mapping:
-  - HTTP 401  → :exc:`~kosmos.tools.errors.ToolExecutionError` (auth_expired)
-  - HTTP 429  → :exc:`~kosmos.tools.errors.ToolExecutionError` (rate_limit)
-  - timeout   → :exc:`httpx.TimeoutException` (propagated for recovery classifier)
-  - other 4xx/5xx → :exc:`httpx.HTTPStatusError` (propagated for recovery classifier)
+Error mapping (all propagated directly for recovery classifier):
+  - HTTP 401  → :exc:`httpx.HTTPStatusError` (auth_expired)
+  - HTTP 429  → :exc:`httpx.HTTPStatusError` (rate_limit)
+  - timeout   → :exc:`httpx.TimeoutException`
+  - other 4xx/5xx → :exc:`httpx.HTTPStatusError`
 """
 
 from __future__ import annotations
@@ -23,7 +23,7 @@ from typing import Any
 import httpx
 from pydantic import BaseModel, ConfigDict, Field
 
-from kosmos.tools.errors import ConfigurationError, ToolExecutionError, _require_env
+from kosmos.tools.errors import ConfigurationError, _require_env
 
 logger = logging.getLogger(__name__)
 
@@ -187,8 +187,12 @@ async def search_address(
 
     Raises:
         ConfigurationError: If ``KOSMOS_KAKAO_API_KEY`` is not set.
-        ToolExecutionError: On HTTP 401 (auth expired), 429 (rate limit),
-            timeout, or other HTTP errors.
+        ConfigurationError: If ``KOSMOS_KAKAO_API_KEY`` is not set.
+        httpx.TimeoutException: On request timeout.
+        httpx.HTTPStatusError: On HTTP 4xx/5xx responses (including 401
+            auth-expired and 429 rate-limit).  Propagated directly so
+            the recovery classifier can recognise and route them.
+        httpx.RequestError: On connection-level failures.
     """
     api_key = _require_env("KOSMOS_KAKAO_API_KEY")
 
@@ -208,32 +212,21 @@ async def search_address(
         assert client is not None
         response = await client.get(_BASE_URL, headers=headers, params=request_params)
 
-        if response.status_code == 401:
-            raise ToolExecutionError(
-                tool_id="kakao_geocoding",
-                message=(
-                    "Kakao API authentication failed (HTTP 401). Check KOSMOS_KAKAO_API_KEY value."
-                ),
-            )
-        if response.status_code == 429:
-            raise ToolExecutionError(
-                tool_id="kakao_geocoding",
-                message="Kakao API rate limit exceeded (HTTP 429). Try again later.",
-            )
-
+        # Let httpx.HTTPStatusError propagate for ALL status codes (including
+        # 401 auth-expired, 429 rate-limit) so the recovery classifier can
+        # recognise them directly without unwrapping ToolExecutionError.
         response.raise_for_status()
 
         payload: dict[str, Any] = response.json()
         result = KakaoSearchResult(**payload)
 
         logger.debug(
-            "Kakao address search returned %d document(s) for query=%r",
+            "Kakao address search returned %d document(s)",
             result.meta.total_count,
-            query,
         )
         return result
 
-    except (ToolExecutionError, ConfigurationError):
+    except ConfigurationError:
         raise
     # Let httpx exceptions (TimeoutException, HTTPStatusError, RequestError)
     # propagate directly so the recovery classifier can recognise them.

@@ -108,8 +108,10 @@ async def _resolve(
     result = await search_address(address, client=client)
 
     if not result.documents:
-        logger.debug("address_to_region: no Kakao results")
-        return AddressToRegionOutput(resolved_address="")
+        raise ToolExecutionError(
+            tool_id="address_to_region",
+            message="Address not found: Kakao returned no results.",
+        )
 
     if len(result.documents) > 1:
         raise ToolExecutionError(
