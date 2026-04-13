@@ -269,12 +269,20 @@ async def query(ctx: QueryContext) -> AsyncIterator[QueryEvent]:  # noqa: C901
         except StreamInterruptedError as exc:
             stream_interrupted_count += 1
             if stream_interrupted_count == 1:
-                # First interruption: retry the stream once
+                # First interruption: retry the stream once.
+                # If partial content was already yielded to the consumer,
+                # emit a visible restart signal so the output clearly
+                # separates stale fragments from the fresh retry.
                 logger.warning(
                     "LLM stream interrupted (attempt %d), retrying: %s",
                     stream_interrupted_count,
                     exc,
                 )
+                if content_parts:
+                    yield QueryEvent(
+                        type="text_delta",
+                        content="\n[stream interrupted — retrying]\n",
+                    )
                 continue
             # Second interruption: unrecoverable
             logger.error(

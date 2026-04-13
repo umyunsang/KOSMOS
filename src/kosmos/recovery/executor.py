@@ -220,8 +220,11 @@ class RecoveryExecutor:
                 error_context=None,
             )
 
-        # --- Failure: record to circuit breaker ---
-        breaker.record_failure()
+        # --- Failure: record to circuit breaker only for transient/retryable
+        #     errors.  Client errors (INVALID_REQUEST, AUTH_FAILURE, etc.) are
+        #     the caller's fault and should not count against service health. ---
+        if last_error is not None and last_error.is_retryable:
+            breaker.record_failure()
 
         # --- 5. Stale cache fallback (only if cache_ttl_seconds > 0) ---
         if tool.cache_ttl_seconds > 0:

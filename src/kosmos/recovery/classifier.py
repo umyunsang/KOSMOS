@@ -171,7 +171,10 @@ class DataGoKrErrorClassifier:
                 parsed = json.loads(body)
                 result_code = self._extract_result_code(parsed)
                 if result_code is not None:
-                    return self._classify_by_code(result_code, body, source="data_go_kr_json")
+                    result_msg = self._extract_result_msg(parsed)
+                    return self._classify_by_code(
+                        result_code, result_msg, source="data_go_kr_json"
+                    )
             except (json.JSONDecodeError, TypeError, KeyError, ValueError):
                 logger.debug("Failed to parse JSON body for error classification")
 
@@ -261,6 +264,21 @@ class DataGoKrErrorClassifier:
             raw_message=raw_message,
             source="data_go_kr_xml",
         )
+
+    def _extract_result_msg(self, parsed: object) -> str:
+        """Recursively find resultMsg in nested JSON structures.
+
+        Returns the message string, or an empty string if not found.
+        """
+        if isinstance(parsed, dict):
+            if "resultMsg" in parsed:
+                return str(parsed["resultMsg"])
+            for key in ("response", "header", "OpenAPI_ServiceResponse"):
+                if key in parsed:
+                    result = self._extract_result_msg(parsed[key])
+                    if result:
+                        return result
+        return ""
 
     def _extract_result_code(self, parsed: object) -> int | None:
         """Recursively find resultCode in nested JSON structures."""
