@@ -20,6 +20,7 @@ import json
 import logging
 from typing import TYPE_CHECKING
 
+from kosmos.context.compact_models import CompactionConfig, CompactionResult
 from kosmos.context.models import (
     AssembledContext,
     ContextLayer,
@@ -50,9 +51,11 @@ class ContextBuilder:
         self,
         config: SystemPromptConfig | None = None,
         registry: ToolRegistry | None = None,
+        compaction_config: CompactionConfig | None = None,
     ) -> None:
         self._config = config or SystemPromptConfig()
         self._registry = registry
+        self._compaction_config = compaction_config
         self._assembler = SystemPromptAssembler()
 
         # Cached assembled ChatMessage (set on first build_system_message() call).
@@ -186,6 +189,31 @@ class ContextBuilder:
             tool_definitions=tool_definitions,
             budget=budget,
         )
+
+    # ------------------------------------------------------------------
+    # US5 — Context Compaction
+    # ------------------------------------------------------------------
+
+    async def maybe_compact_history(
+        self,
+        messages: list[ChatMessage],
+    ) -> tuple[list[ChatMessage], CompactionResult | None]:
+        """Apply auto-compaction to conversation history when needed.
+
+        Delegates to ``AutoCompactor.maybe_compact()``.  Returns the
+        (possibly compacted) message list and an optional ``CompactionResult``
+        describing what was done (``None`` when no compaction was needed).
+
+        Args:
+            messages: Full conversation history (most recent turn appended).
+
+        Returns:
+            Tuple of (message list, CompactionResult | None).
+        """
+        from kosmos.context.auto_compact import AutoCompactor  # noqa: PLC0415
+
+        compactor = AutoCompactor(config=self._compaction_config)
+        return await compactor.maybe_compact(messages, self._compaction_config)
 
     # ------------------------------------------------------------------
     # Internal helpers

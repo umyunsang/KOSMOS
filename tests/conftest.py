@@ -12,8 +12,11 @@ import pytest
 
 def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
     """Skip live-marked tests unless ``-m live`` is explicitly passed."""
-    marker_expr = config.getoption("-m", default="")
-    if "live" not in marker_expr:
+    marker_expr = str(config.getoption("-m", default=""))
+    # Require explicit `-m live` or `-m "live and ..."` to run live tests.
+    # Reject expressions like `-m "not live"` that merely mention the word.
+    explicitly_selected = marker_expr.strip() == "live" or marker_expr.strip().startswith("live ")
+    if not explicitly_selected:
         skip_live = pytest.mark.skip(reason="live tests require -m live")
         for item in items:
             if "live" in item.keywords:

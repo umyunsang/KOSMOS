@@ -296,9 +296,9 @@ class TestHttpStatusClassification:
         assert result.is_retryable is True
         assert result.source == "http_status"
 
-    def test_401_auth_failure(self, classifier: DataGoKrErrorClassifier) -> None:
+    def test_401_auth_expired(self, classifier: DataGoKrErrorClassifier) -> None:
         result = classifier.classify_response(401, "Unauthorized")
-        assert result.error_class == ErrorClass.AUTH_FAILURE
+        assert result.error_class == ErrorClass.AUTH_EXPIRED
         assert result.is_retryable is False
 
     def test_403_auth_failure(self, classifier: DataGoKrErrorClassifier) -> None:
@@ -373,7 +373,7 @@ class TestExceptionClassification:
         response = httpx.Response(401, request=request)
         exc = httpx.HTTPStatusError("401 Unauthorized", request=request, response=response)
         result = classifier.classify_exception(exc)
-        assert result.error_class == ErrorClass.AUTH_FAILURE
+        assert result.error_class == ErrorClass.AUTH_EXPIRED
         assert result.is_retryable is False
 
     def test_http_status_error_503(self, classifier: DataGoKrErrorClassifier) -> None:

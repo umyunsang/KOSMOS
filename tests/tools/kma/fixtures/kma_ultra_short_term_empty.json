@@ -1,0 +1,12 @@
+{
+  "response": {
+    "header": {"resultCode": "00", "resultMsg": "NORMAL_CODE"},
+    "body": {
+      "dataType": "JSON",
+      "items": "",
+      "numOfRows": 60,
+      "pageNo": 1,
+      "totalCount": 0
+    }
+  }
+}

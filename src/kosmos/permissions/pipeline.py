@@ -20,15 +20,14 @@ from kosmos.permissions.models import (
     PermissionStepResult,
     SessionContext,
 )
+from kosmos.permissions.steps.refusal_circuit_breaker import record_denial, record_success
 from kosmos.permissions.steps.step1_config import check_config
+from kosmos.permissions.steps.step2_intent import check_intent
+from kosmos.permissions.steps.step3_params import check_params
+from kosmos.permissions.steps.step4_authn import check_authn
+from kosmos.permissions.steps.step5_terms import check_terms
 from kosmos.permissions.steps.step6_sandbox import execute_sandboxed
 from kosmos.permissions.steps.step7_audit import write_audit_log
-from kosmos.permissions.steps.stubs import (
-    check_authn,
-    check_intent,
-    check_params,
-    check_terms,
-)
 from kosmos.tools.executor import ToolExecutor
 from kosmos.tools.models import ToolResult
 from kosmos.tools.registry import ToolRegistry
@@ -48,11 +47,11 @@ _AUTH_TYPE_TO_ACCESS_TIER: dict[str, AccessTier] = {
 
 # Pre-execution steps (1-5), executed in order
 _PRE_EXECUTION_STEPS: list[Callable[..., PermissionStepResult]] = [
-    check_config,  # step 1
-    check_intent,  # step 2 (stub)
-    check_params,  # step 3 (stub)
-    check_authn,  # step 4 (stub)
-    check_terms,  # step 5 (stub)
+    check_config,  # step 1: config-based access tier
+    check_intent,  # step 2: rule-based intent analysis
+    check_params,  # step 3: PII parameter inspection
+    check_authn,  # step 4: citizen authentication level
+    check_terms,  # step 5: ministry terms-of-use consent
 ]
 
 
@@ -158,7 +157,11 @@ class PermissionPipeline:
         """Run steps 1-5 in order; return the first deny/escalate result or None.
 
         On exception in a step, fail-closed: return a deny result (FR-013).
+        On deny, the refusal circuit breaker is notified.
+        On all steps passing, the circuit breaker's success counter is reset.
         """
+        session_id = request.session_context.session_id
+
         for step_fn in _PRE_EXECUTION_STEPS:
             try:
                 raw_result = step_fn(request)
@@ -173,15 +176,20 @@ class PermissionPipeline:
                     step_name,
                     exc,
                 )
-                return PermissionStepResult(
+                deny = PermissionStepResult(
                     step=_PRE_EXECUTION_STEPS.index(step_fn) + 1,
                     decision=PermissionDecision.deny,
                     reason="internal_error",
                 )
+                record_denial(session_id, request.tool_id)
+                return deny
 
             if step_result.decision != PermissionDecision.allow:
+                record_denial(session_id, request.tool_id)
                 return step_result
 
+        # All pre-execution steps passed — reset the denial counter.
+        record_success(session_id, request.tool_id)
         return None
 
     async def _execute_step6(

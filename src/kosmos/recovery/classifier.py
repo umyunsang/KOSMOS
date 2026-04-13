@@ -52,6 +52,9 @@ class ErrorClass(StrEnum):
     AUTH_FAILURE = "auth_failure"
     """Authentication/authorization failure; do not retry."""
 
+    AUTH_EXPIRED = "auth_expired"
+    """Token or API key has expired; attempt credential refresh then retry once."""
+
     DATA_MISSING = "data_missing"
     """No data available for the request parameters; do not retry."""
 
@@ -310,7 +313,9 @@ class DataGoKrErrorClassifier:
         """Classify based purely on HTTP status code."""
         if status_code == 429:
             error_class = ErrorClass.RATE_LIMIT
-        elif status_code in (401, 403):
+        elif status_code == 401:
+            error_class = ErrorClass.AUTH_EXPIRED
+        elif status_code == 403:
             error_class = ErrorClass.AUTH_FAILURE
         elif status_code in (502, 503, 504):
             error_class = ErrorClass.TRANSIENT

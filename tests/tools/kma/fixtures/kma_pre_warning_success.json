@@ -1,0 +1,27 @@
+{
+  "response": {
+    "header": {"resultCode": "00", "resultMsg": "NORMAL_CODE"},
+    "body": {
+      "dataType": "JSON",
+      "items": {
+        "item": [
+          {
+            "stnId": "108",
+            "title": "[예비] 제04-3호 : 2026.04.14.08:00",
+            "tmFc": "202604140800",
+            "tmSeq": 3
+          },
+          {
+            "stnId": "159",
+            "title": "[예비] 제04-4호 : 2026.04.14.09:00",
+            "tmFc": "202604140900",
+            "tmSeq": 4
+          }
+        ]
+      },
+      "numOfRows": 100,
+      "pageNo": 1,
+      "totalCount": 2
+    }
+  }
+}

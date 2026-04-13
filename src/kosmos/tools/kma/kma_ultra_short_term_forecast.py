@@ -1,0 +1,317 @@
+# SPDX-License-Identifier: Apache-2.0
+"""KMA ultra-short-term forecast adapter (초단기예보 조회).
+
+Wraps the ``getUltraSrtFcst`` endpoint from the Korea Meteorological Administration
+(기상청) via the shared data.go.kr service key.
+Returns forecast items for the next 6 hours, published every hour at HH:30 KST.
+
+Wire format quirks handled by this module:
+  - Single-item response returns ``item`` as a dict (not array) — normalized to list.
+  - XML is the default; JSON is requested via ``_type=json`` and ``dataType=JSON``.
+  - ``resultCode != "00"`` is always an error regardless of HTTP 200.
+  - Wire fields use camelCase; output model fields use snake_case.
+  - base_time must be HH30 (every hour at the half-hour mark).
+"""
+
+from __future__ import annotations
+
+import logging
+import re
+from typing import Any, Literal, cast
+
+import httpx
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+from kosmos.tools.errors import ConfigurationError, ToolExecutionError, _require_env
+from kosmos.tools.executor import ToolExecutor
+from kosmos.tools.kma.kma_short_term_forecast import (
+    ForecastItem,
+    KmaShortTermForecastOutput,
+    _normalize_items,
+)
+from kosmos.tools.models import GovAPITool
+from kosmos.tools.registry import ToolRegistry
+
+logger = logging.getLogger(__name__)
+
+_BASE_URL = "http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtFcst"
+
+# ---------------------------------------------------------------------------
+# Input model (output reuses ForecastItem / KmaShortTermForecastOutput)
+# ---------------------------------------------------------------------------
+
+
+class KmaUltraShortTermForecastInput(BaseModel):
+    """Input parameters for the KMA ultra-short-term forecast (초단기예보) API."""
+
+    model_config = ConfigDict(frozen=True)
+
+    base_date: str
+    """Forecast base date in YYYYMMDD format."""
+
+    base_time: str
+    """Forecast base time in HH30 format (e.g., 0630, 1130).
+
+    The ultra-short-term forecast is published at every half-hour mark (HH:30).
+    Any HHMM value where MM != 30 will be rejected.
+    """
+
+    nx: int = Field(..., ge=1, le=149)
+    """KMA grid X coordinate (1–149)."""
+
+    ny: int = Field(..., ge=1, le=253)
+    """KMA grid Y coordinate (1–253)."""
+
+    num_of_rows: int = Field(default=60, ge=1)
+    """Number of rows to return per page.
+
+    An ultra-short-term forecast covers 6 hours × ~10 categories = ~60 rows.
+    """
+
+    page_no: int = Field(default=1, ge=1)
+    """Page number (1-based)."""
+
+    data_type: Literal["JSON", "XML"] = "JSON"
+    """Response format; JSON is strongly preferred."""
+
+    @field_validator("base_date")
+    @classmethod
+    def _validate_base_date(cls, v: str) -> str:
+        if not re.fullmatch(r"\d{8}", v):
+            raise ValueError(f"base_date must be YYYYMMDD, got {v!r}")
+        return v
+
+    @field_validator("base_time")
+    @classmethod
+    def _validate_base_time(cls, v: str) -> str:
+        """Validate that base_time is in HH30 format."""
+        if not re.fullmatch(r"\d{4}", v):
+            raise ValueError(f"base_time must be HHMM, got {v!r}")
+        if not v.endswith("30"):
+            raise ValueError(
+                f"Ultra-short-term forecast base_time must end in '30' (e.g. 0630), got {v!r}"
+            )
+        return v
+
+
+# Output reuses the same output model as short-term forecast
+KmaUltraShortTermForecastOutput = KmaShortTermForecastOutput
+
+
+# ---------------------------------------------------------------------------
+# Internal helpers
+# ---------------------------------------------------------------------------
+
+
+def _parse_response(payload: dict[str, object]) -> KmaUltraShortTermForecastOutput:
+    """Parse a full KMA getUltraSrtFcst JSON response.
+
+    Args:
+        payload: Decoded JSON dict from the API.
+
+    Returns:
+        A validated ``KmaUltraShortTermForecastOutput``.
+
+    Raises:
+        ToolExecutionError: If the API returned a non-zero result code or the
+            response structure is unexpected.
+    """
+    try:
+        response = cast(dict[str, object], payload["response"])
+        header = cast(dict[str, object], response["header"])
+        result_code: str = str(header["resultCode"])
+        result_msg: str = str(header.get("resultMsg", ""))
+
+        if result_code != "00":
+            raise ToolExecutionError(
+                tool_id="kma_ultra_short_term_forecast",
+                message=(f"KMA API error: resultCode={result_code!r} resultMsg={result_msg!r}"),
+            )
+
+        body = cast(dict[str, object], response["body"])
+        total_count = int(str(body.get("totalCount", 0)))
+
+        raw_items_container = body.get("items", {})
+        if not raw_items_container or isinstance(raw_items_container, str):
+            return KmaUltraShortTermForecastOutput(total_count=total_count, items=[])
+
+        items_container = cast(dict[str, object], raw_items_container)
+        raw_items = items_container.get("item")
+        item_dicts = _normalize_items(raw_items)
+
+        parsed_items: list[ForecastItem] = []
+        for row in item_dicts:
+            parsed_items.append(
+                ForecastItem(
+                    base_date=str(row["baseDate"]),
+                    base_time=str(row["baseTime"]),
+                    fcst_date=str(row["fcstDate"]),
+                    fcst_time=str(row["fcstTime"]),
+                    nx=int(str(row["nx"])),
+                    ny=int(str(row["ny"])),
+                    category=str(row["category"]),
+                    fcst_value=str(row["fcstValue"]),
+                )
+            )
+
+        return KmaUltraShortTermForecastOutput(total_count=total_count, items=parsed_items)
+
+    except ToolExecutionError:
+        raise
+    except (KeyError, TypeError, ValueError) as exc:
+        raise ToolExecutionError(
+            tool_id="kma_ultra_short_term_forecast",
+            message=f"Unexpected KMA ultra-short-term forecast response structure: {exc}",
+            cause=exc,
+        ) from exc
+
+
+# ---------------------------------------------------------------------------
+# Adapter callable
+# ---------------------------------------------------------------------------
+
+
+async def _call(
+    params: KmaUltraShortTermForecastInput,
+    *,
+    client: httpx.AsyncClient | None = None,
+) -> dict[str, Any]:
+    """Fetch ultra-short-term forecast data from the KMA getUltraSrtFcst API.
+
+    Args:
+        params: Validated input parameters.
+        client: Optional injected ``httpx.AsyncClient`` (for testing).
+
+    Returns:
+        A plain dict matching ``KmaUltraShortTermForecastOutput`` field names.
+
+    Raises:
+        ConfigurationError: If ``KOSMOS_DATA_GO_KR_API_KEY`` is not set.
+        ToolExecutionError: On HTTP errors or unexpected API response shapes.
+    """
+    api_key = _require_env("KOSMOS_DATA_GO_KR_API_KEY")
+
+    if params.data_type == "XML":
+        raise ToolExecutionError(
+            tool_id="kma_ultra_short_term_forecast",
+            message="XML data_type is not supported; use JSON.",
+        )
+
+    query_params: dict[str, str | int] = {
+        "serviceKey": api_key,
+        "base_date": params.base_date,
+        "base_time": params.base_time,
+        "nx": params.nx,
+        "ny": params.ny,
+        "numOfRows": params.num_of_rows,
+        "pageNo": params.page_no,
+        "dataType": params.data_type,
+        "_type": "json",
+    }
+
+    logger.debug(
+        "KMA ultra-short-term forecast request: base_date=%s base_time=%s nx=%d ny=%d",
+        params.base_date,
+        params.base_time,
+        params.nx,
+        params.ny,
+    )
+
+    own_client = client is None
+    if own_client:
+        client = httpx.AsyncClient(timeout=30.0)
+
+    try:
+        assert client is not None  # noqa: S101
+        response = await client.get(_BASE_URL, params=query_params)
+        response.raise_for_status()
+
+        content_type = response.headers.get("content-type", "")
+        if "xml" in content_type.lower() and "json" not in content_type.lower():
+            raise ToolExecutionError(
+                tool_id="kma_ultra_short_term_forecast",
+                message=(
+                    f"Unexpected XML response from KMA API "
+                    f"(content-type={content_type!r}). "
+                    "Check serviceKey validity."
+                ),
+            )
+
+        payload: dict[str, object] = response.json()
+        output = _parse_response(payload)
+
+        logger.info(
+            "KMA ultra-short-term forecast retrieved: base_date=%s base_time=%s "
+            "nx=%d ny=%d items=%d",
+            params.base_date,
+            params.base_time,
+            params.nx,
+            params.ny,
+            len(output.items),
+        )
+        return output.model_dump()
+
+    except (ToolExecutionError, ConfigurationError):
+        raise
+    except httpx.HTTPStatusError as exc:
+        raise ToolExecutionError(
+            tool_id="kma_ultra_short_term_forecast",
+            message=(
+                f"HTTP error from KMA ultra-short-term forecast API: {exc.response.status_code}"
+            ),
+            cause=exc,
+        ) from exc
+    except httpx.RequestError as exc:
+        raise ToolExecutionError(
+            tool_id="kma_ultra_short_term_forecast",
+            message=f"Network error reaching KMA ultra-short-term forecast API: {exc}",
+            cause=exc,
+        ) from exc
+    finally:
+        if own_client and client is not None:
+            await client.aclose()
+
+
+# ---------------------------------------------------------------------------
+# Tool definition
+# ---------------------------------------------------------------------------
+
+KMA_ULTRA_SHORT_TERM_FORECAST_TOOL = GovAPITool(
+    id="kma_ultra_short_term_forecast",
+    name_ko="초단기예보 조회",
+    provider="기상청 (KMA)",
+    category=["기상", "예보", "초단기예보"],
+    endpoint=_BASE_URL,
+    auth_type="api_key",
+    input_schema=KmaUltraShortTermForecastInput,
+    output_schema=KmaUltraShortTermForecastOutput,
+    search_hint=(
+        "초단기예보 단기예보 6시간예보 기온 강수 하늘상태 습도 풍속 "
+        "ultra-short-term forecast 6-hour weather temperature precipitation sky wind"
+    ),
+    requires_auth=False,
+    is_concurrency_safe=True,
+    is_personal_data=False,
+    cache_ttl_seconds=600,
+    rate_limit_per_minute=10,
+    is_core=True,
+)
+
+
+# ---------------------------------------------------------------------------
+# Registration helper
+# ---------------------------------------------------------------------------
+
+
+def register(registry: ToolRegistry, executor: ToolExecutor) -> None:
+    """Register the KMA ultra-short-term forecast tool and its adapter.
+
+    Args:
+        registry: The central ``ToolRegistry`` to add the tool to.
+        executor: The ``ToolExecutor`` to bind the adapter function to.
+    """
+    from kosmos.tools.executor import AdapterFn
+
+    registry.register(KMA_ULTRA_SHORT_TERM_FORECAST_TOOL)
+    executor.register_adapter("kma_ultra_short_term_forecast", cast(AdapterFn, _call))
+    logger.info("Registered tool: kma_ultra_short_term_forecast")

@@ -11,12 +11,12 @@ from kosmos.tools.registry import ToolRegistry
 class TestToolRegistration:
     """Verify register_all_tools() wires all adapters correctly."""
 
-    def test_registers_all_four_tools(self) -> None:
-        """All four tools are registered after calling register_all_tools."""
+    def test_registers_all_tools(self) -> None:
+        """All tools are registered after calling register_all_tools."""
         registry = ToolRegistry()
         executor = ToolExecutor(registry)
         register_all_tools(registry, executor)
-        assert len(registry) == 4
+        assert len(registry) == 7
 
     def test_tool_ids_present(self) -> None:
         """Each expected tool_id is in the registry."""

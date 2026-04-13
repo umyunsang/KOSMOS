@@ -35,4 +35,14 @@ COMMANDS: dict[str, SlashCommand] = {
         aliases=("exit", "quit"),
     ),
     "usage": SlashCommand(name="usage", description="Show token usage for current session"),
+    "save": SlashCommand(name="save", description="Force-save current session to disk"),
+    "sessions": SlashCommand(
+        name="sessions",
+        description="List recent sessions",
+        aliases=("sessions", "ls"),
+    ),
+    "resume": SlashCommand(
+        name="resume",
+        description="Resume a previous session by ID  (/resume <session-id>)",
+    ),
 }
