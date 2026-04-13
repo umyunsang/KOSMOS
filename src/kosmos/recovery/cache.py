@@ -35,7 +35,11 @@ class CacheEntry(BaseModel):
     """The cached response data."""
 
     cached_at: float
-    """Unix timestamp (from ``time.monotonic`` epoch offset) when the entry was stored."""
+    """Monotonic clock value (time.monotonic()) at which the entry was stored.
+
+    This is *not* a wall-clock Unix timestamp; comparisons must use
+    time.monotonic() as the reference.
+    """
 
     ttl_seconds: int
     """Cache lifetime in seconds; 0 means this entry should never be used."""
@@ -44,15 +48,14 @@ class CacheEntry(BaseModel):
 class ResponseCache:
     """Bounded LRU in-memory cache for tool responses.
 
-    Uses ``collections.OrderedDict`` to implement LRU eviction:
-    - On every ``get`` hit the entry is moved to the end (most-recent).
-    - On ``put`` when the cache is full the front entry (least-recent) is evicted.
+    Uses collections.OrderedDict to implement LRU eviction:
+    - On every get hit the entry is moved to the end (most-recent).
+    - On put when the cache is full the front entry (least-recent) is evicted.
     """
 
     def __init__(self, max_entries: int = _DEFAULT_MAX_ENTRIES) -> None:
         self._max = max_entries
         self._store: OrderedDict[str, CacheEntry] = OrderedDict()
-        self._base_time = time.time() - time.monotonic()  # wall-clock offset
 
     # ------------------------------------------------------------------
     # Public API
@@ -75,12 +78,16 @@ class ResponseCache:
     def get(self, tool_id: str, arguments_hash: str) -> dict[str, object] | None:
         """Retrieve a cached response if it exists and has not expired.
 
+        Expired entries are removed from the store so the LRU capacity remains
+        accurate.  Use get_stale() when you want to read an expired entry
+        without deleting it (e.g. for a stale-cache fallback).
+
         Args:
             tool_id: Tool identifier.
-            arguments_hash: SHA-256 hash of the arguments (from ``compute_hash``).
+            arguments_hash: SHA-256 hash of the arguments (from compute_hash).
 
         Returns:
-            The cached data dict, or ``None`` if missing or expired.
+            The cached data dict, or None if missing or expired.
         """
         key = self._make_key(tool_id, arguments_hash)
         entry = self._store.get(key)
@@ -102,6 +109,36 @@ class ResponseCache:
         logger.debug("Cache hit for tool=%s (age=%.1fs)", tool_id, age)
         return dict(entry.data)
 
+    def get_stale(self, tool_id: str, arguments_hash: str) -> dict[str, object] | None:
+        """Retrieve a cached response regardless of expiry, without deleting it.
+
+        This method is intended for the stale-cache fallback path: when a live
+        API call has failed, an expired entry is still better than no data.
+        Unlike get(), this method does **not** delete the entry if it has
+        expired, so the stale data remains available for subsequent fallback
+        calls within the same session.
+
+        Args:
+            tool_id: Tool identifier.
+            arguments_hash: SHA-256 hash of the arguments (from compute_hash).
+
+        Returns:
+            The cached data dict (fresh or stale), or None if no entry
+            exists or the TTL is 0.
+        """
+        key = self._make_key(tool_id, arguments_hash)
+        entry = self._store.get(key)
+        if entry is None or entry.ttl_seconds == 0:
+            return None
+        age = time.monotonic() - entry.cached_at
+        logger.debug(
+            "Stale cache read for tool=%s (age=%.1fs, ttl=%ds)",
+            tool_id,
+            age,
+            entry.ttl_seconds,
+        )
+        return dict(entry.data)
+
     def put(
         self,
         tool_id: str,
@@ -111,7 +148,7 @@ class ResponseCache:
     ) -> None:
         """Store a response in the cache.
 
-        Entries with ``ttl_seconds=0`` are silently discarded (fail-closed).
+        Entries with ttl_seconds=0 are silently discarded (fail-closed).
 
         Args:
             tool_id: Tool identifier.

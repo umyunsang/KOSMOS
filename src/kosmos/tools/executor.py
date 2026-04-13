@@ -33,10 +33,12 @@ class ToolExecutor:
     The dispatch pipeline (in order):
     1. Lookup tool in registry.
     2. Parse and validate JSON arguments against input_schema.
-    3. Verify adapter exists (before consuming a rate-limit slot).
-    4. Check rate limit.
-    5. Record rate-limit timestamp and execute adapter
-       (delegated to RecoveryExecutor when one is present).
+    3. Verify adapter exists.
+    4. If RecoveryExecutor is absent: check and record rate limit, then call
+       adapter directly.
+    5. If RecoveryExecutor is present: delegate to it for retry / circuit-breaker /
+       cache — rate limiting is handled internally by RecoveryExecutor to avoid
+       charging a slot before a circuit-open or cache-hit short-circuit.
     6. Validate adapter output against output_schema.
     7. Return ToolResult(success=True, data=...).
 
@@ -119,22 +121,18 @@ class ToolExecutor:
                 error_type="execution",
             )
 
-        # Step 4: Check rate limit
-        rate_limiter = self._registry.get_rate_limiter(tool_name)
-        if not rate_limiter.check():
-            logger.warning("Rate limit exceeded for tool: %s", tool_name)
-            return ToolResult(
-                tool_id=tool_name,
-                success=False,
-                error=f"Rate limit exceeded for tool {tool_name!r}",
-                error_type="rate_limit",
-            )
-
-        # Step 5: Record call and execute adapter
-        rate_limiter.record()
-
+        # Step 4/5: Execute adapter — rate limiting placement depends on recovery mode.
+        #
+        # When RecoveryExecutor is present, skip rate limiting here and delegate
+        # everything to it.  RecoveryExecutor may short-circuit via a circuit-open
+        # check or a cache hit *before* reaching the actual adapter call, so
+        # charging a rate-limit slot at this point would be premature.
+        #
+        # When RecoveryExecutor is absent, apply rate limiting as usual around
+        # the direct adapter invocation.
         if self._recovery_executor is not None:
-            # Delegate to RecoveryExecutor for retry / circuit-breaker / cache
+            # Delegate to RecoveryExecutor for retry / circuit-breaker / cache.
+            # Rate limiting is handled internally by RecoveryExecutor.
             recovery_result = await self._recovery_executor.execute(
                 tool,
                 adapter,
@@ -146,6 +144,16 @@ class ToolExecutor:
                 return tool_result
             result_dict = dict(tool_result.data or {})
         else:
+            rate_limiter = self._registry.get_rate_limiter(tool_name)
+            if not rate_limiter.check():
+                logger.warning("Rate limit exceeded for tool: %s", tool_name)
+                return ToolResult(
+                    tool_id=tool_name,
+                    success=False,
+                    error=f"Rate limit exceeded for tool {tool_name!r}",
+                    error_type="rate_limit",
+                )
+            rate_limiter.record()
             try:
                 result_dict = await adapter(validated_input)
             except Exception as exc:

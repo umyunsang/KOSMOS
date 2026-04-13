@@ -299,6 +299,11 @@ async def query(ctx: QueryContext) -> AsyncIterator[QueryEvent]:  # noqa: C901
             )
             return
 
+        # Reset per-iteration retry counter so each new iteration gets its own
+        # single-retry budget.  A successful stream clears any previous
+        # interruption count; the counter only matters within a single attempt.
+        stream_interrupted_count = 0
+
         # --- Assemble assistant message and append to history ---
         assembled_calls = _assemble_tool_calls(pending_calls) if pending_calls else []
         assistant_content = "".join(content_parts) or None

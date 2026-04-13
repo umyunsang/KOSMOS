@@ -289,12 +289,8 @@ class RecoveryExecutor:
         return {}
 
     def _get_stale_cache(self, tool_id: str, args_hash: str) -> dict[str, object] | None:
-        """Look up raw cache store for a stale (expired) entry."""
-        key = f"{tool_id}:{args_hash}"
-        entry = self._cache._store.get(key)  # noqa: SLF001
-        if entry is not None and entry.ttl_seconds > 0:
-            return dict(entry.data)
-        return None
+        """Look up a stale (possibly expired) cache entry via the public API."""
+        return self._cache.get_stale(tool_id, args_hash)
 
     @staticmethod
     def _error_class_to_error_type(
