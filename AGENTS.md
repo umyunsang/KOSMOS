@@ -74,7 +74,18 @@ Conventional Commits. Branches: `feat/`, `fix/`, `docs/`, `refactor/`, `test/`, 
 
 Cloudflare Worker (`infra/copilot-gate-app/`) → Check Run gate. **CRITICAL >= 1 → fail**, **IMPORTANT >= 3 → fail**, else pass. Deploy: `cd infra/copilot-gate-app && npx wrangler deploy`.
 
-GraphQL `requestReviewsByLogin` has **~1/3 failure rate**. After every push: if gate stays `in_progress` for 2+ min, manually re-request Copilot review. If that also fails, add label `copilot-review-bypass`. Full procedure: `docs/copilot-gate.md`.
+**After every push (including fix commits from Copilot review feedback):**
+1. Read Copilot review comments (`gh api 'repos/OWNER/REPO/pulls/N/comments'`), fix issues, commit and push.
+2. **Always** re-request Copilot review via GraphQL after push — it does NOT auto-trigger:
+   ```bash
+   PR_NODE_ID=$(gh api repos/umyunsang/KOSMOS/pulls/<N> --jq '.node_id')
+   gh api graphql -f query='mutation($input: RequestReviewsByLoginInput!) { requestReviewsByLogin(input: $input) { pullRequest { id } } }' \
+     -F "input[pullRequestId]=$PR_NODE_ID" -F 'input[botLogins][]=copilot-pull-request-reviewer[bot]' -F 'input[union]:=true'
+   ```
+3. If gate stays `pending`/`in_progress` for 2+ min after re-request, add label `copilot-review-bypass`.
+4. `requestReviewsByLogin` has **~1/3 failure rate** — retry once before resorting to bypass label.
+
+Full procedure: `docs/copilot-gate.md`.
 
 ## New tool adapter
 
