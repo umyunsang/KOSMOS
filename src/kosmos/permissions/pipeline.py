@@ -317,7 +317,7 @@ class PermissionPipeline:
                 exc_info=True,
             )
 
-    def _event_emit_decision(self, step: int, decision: str, reason: str) -> None:
+    def _event_emit_decision(self, step: int, decision: str, reason: str | None) -> None:
         """Emit permission_decision event; silently skip if no event_logger."""
         if self._event_logger is None:
             return

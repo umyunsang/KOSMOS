@@ -537,8 +537,8 @@ class REPLLoop:
             tbl = Table(title="Gauges", show_header=True, header_style="bold green")
             tbl.add_column("Metric", style="green", no_wrap=True)
             tbl.add_column("Value", justify="right")
-            for name, value in sorted(gauges.items()):
-                tbl.add_row(name, f"{value:.2f}")
+            for name, gauge_value in sorted(gauges.items()):
+                tbl.add_row(name, f"{gauge_value:.2f}")
             self._console.print(tbl)
 
     def _show_welcome(self) -> None:
