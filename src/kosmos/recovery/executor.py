@@ -7,9 +7,10 @@ It wraps a tool adapter call with the full recovery pipeline:
     1. Cache lookup (if hit → return cached data, no side-effects)
     2. Circuit breaker check (if open → degradation message immediately)
     3. Retry loop (exponential back-off with full jitter)
-    4. Cache store on success
-    5. Cache fallback on final failure (if stale data available)
-    6. Degradation message as last resort
+    4. 401 auth-refresh attempt (once, before final failure)
+    5. Cache store on success
+    6. Cache fallback on final failure (if stale data available)
+    7. Degradation message as last resort
 
 The ``RecoveryExecutor`` NEVER raises — all error paths are captured in the
 returned ``RecoveryResult``.
@@ -20,10 +21,11 @@ from __future__ import annotations
 import logging
 import time
 from collections.abc import Awaitable, Callable
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 
 from pydantic import BaseModel, ConfigDict
 
+from kosmos.recovery.auth_refresh import attempt_auth_refresh
 from kosmos.recovery.cache import ResponseCache
 from kosmos.recovery.circuit_breaker import (
     CircuitBreakerConfig,
@@ -36,9 +38,13 @@ from kosmos.recovery.classifier import (
     ErrorClass,
 )
 from kosmos.recovery.messages import build_degradation_message
+from kosmos.recovery.policies import RetryPolicy, RetryPolicyRegistry
 from kosmos.recovery.retry import ToolRetryPolicy, retry_tool_call
 from kosmos.tools.models import GovAPITool, ToolResult
 from kosmos.tools.rate_limiter import RateLimiter
+
+if TYPE_CHECKING:
+    from kosmos.observability.metrics import MetricsCollector
 
 logger = logging.getLogger(__name__)
 
@@ -107,6 +113,18 @@ class RecoveryResult(BaseModel):
 # ---------------------------------------------------------------------------
 
 
+def _policy_to_tool_retry_policy(policy: RetryPolicy) -> ToolRetryPolicy:
+    """Convert a ``RetryPolicy`` to the ``ToolRetryPolicy`` used by the retry loop."""
+    retryable_classes = frozenset({ErrorClass.TRANSIENT, ErrorClass.RATE_LIMIT, ErrorClass.TIMEOUT})
+    return ToolRetryPolicy(
+        max_retries=policy.max_retries,
+        base_delay=policy.base_delay,
+        multiplier=policy.exponential_base,
+        max_delay=policy.max_delay,
+        retryable_classes=retryable_classes,
+    )
+
+
 class RecoveryExecutor:
     """Orchestrate retry, circuit breaker, and cache fallback for tool calls.
 
@@ -120,11 +138,31 @@ class RecoveryExecutor:
         retry_policy: ToolRetryPolicy | None = None,
         circuit_config: CircuitBreakerConfig | None = None,
         max_cache_entries: int = 256,
+        policy_registry: RetryPolicyRegistry | None = None,
+        metrics: MetricsCollector | None = None,
     ) -> None:
+        # Legacy single-policy is kept for backwards-compatibility.
+        # When a policy_registry is supplied it takes precedence for
+        # per-tool lookups; the legacy policy becomes the default in a
+        # newly created registry when none is provided.
+        if policy_registry is not None:
+            self._policy_registry = policy_registry
+        else:
+            default_retry = RetryPolicy(
+                max_retries=(retry_policy.max_retries if retry_policy else 3),
+                base_delay=(retry_policy.base_delay if retry_policy else 1.0),
+                max_delay=(retry_policy.max_delay if retry_policy else 30.0),
+                exponential_base=(retry_policy.multiplier if retry_policy else 2.0),
+            )
+            self._policy_registry = RetryPolicyRegistry(default=default_retry)
+
+        # Keep the legacy _policy attribute for backwards-compatibility with
+        # existing code that accesses it directly.
         self._policy = retry_policy or ToolRetryPolicy()
         self._classifier = DataGoKrErrorClassifier()
         self._registry = CircuitBreakerRegistry(default_config=circuit_config)
         self._cache = ResponseCache(max_entries=max_cache_entries)
+        self._metrics: MetricsCollector | None = metrics
 
     # ------------------------------------------------------------------
     # Public interface
@@ -145,10 +183,11 @@ class RecoveryExecutor:
         1. Cache lookup → return cached data if fresh (no side-effects).
         2. Circuit breaker check → immediate degradation if OPEN.
         3. Record rate-limit slot (only before the actual adapter call).
-        4. Retry loop with exponential back-off.
-        5. On success: update circuit breaker + cache store.
-        6. On exhaustion: try stale cache fallback.
-        7. Last resort: return degradation message as a failed ToolResult.
+        4. Retry loop with exponential back-off (per-tool RetryPolicy).
+        5. 401 handling: attempt auth refresh + one extra retry.
+        6. On success: update circuit breaker + cache store.
+        7. On exhaustion: try stale cache fallback.
+        8. Last resort: return degradation message as a failed ToolResult.
 
         Args:
             tool: The GovAPITool being called (used for cache TTL and messages).
@@ -168,16 +207,14 @@ class RecoveryExecutor:
 
         # --- 1. Cache lookup (before circuit breaker to avoid wasting a
         #     HALF_OPEN probe allowance on a cache hit) ---
-        # _model_to_dict returns None when serialisation fails; in that case
-        # we skip all caching to avoid degenerate cache keys.
         input_dict = self._model_to_dict(validated_input)
         args_hash: str | None = None
         if input_dict is not None and tool.cache_ttl_seconds > 0:
             args_hash = self._cache.compute_hash(input_dict)
             cached = self._cache.get(tool_id, args_hash)
             if cached is not None:
-                elapsed = time.monotonic() - start
                 logger.debug("Cache hit for tool %s", tool_id)
+                self._record_metric("recovery.cache_hits", tool_id)
                 return RecoveryResult(
                     tool_result=ToolResult(
                         tool_id=tool_id,
@@ -186,6 +223,7 @@ class RecoveryExecutor:
                     ),
                     error_context=None,
                 )
+            self._record_metric("recovery.cache_misses", tool_id)
 
         # --- 2. Circuit breaker check ---
         if not breaker.allow_request():
@@ -199,6 +237,7 @@ class RecoveryExecutor:
             )
             degradation = build_degradation_message(tool, circuit_open_error)
             logger.warning("Circuit breaker OPEN for tool %s — returning degradation", tool_id)
+            self._record_metric("recovery.circuit_breaker_trips", tool_id)
             return RecoveryResult(
                 tool_result=ToolResult(
                     tool_id=tool_id,
@@ -217,9 +256,6 @@ class RecoveryExecutor:
             )
 
         # --- 3. Wrap adapter with per-invocation rate-limit enforcement ---
-        # Each adapter call (including retries) checks AND records a
-        # rate-limit slot so that retry bursts cannot exceed the configured
-        # per-minute quota.
         if rate_limiter is not None:
 
             async def _rate_limited_adapter(args: object) -> dict[str, object]:
@@ -232,23 +268,61 @@ class RecoveryExecutor:
         else:
             effective_adapter = adapter
 
-        # --- 4. Retry loop ---
+        # --- 4. Resolve per-tool retry policy ---
+        per_tool_policy = self._policy_registry.get(tool_id)
+        tool_retry_policy = _policy_to_tool_retry_policy(per_tool_policy)
+
+        # --- 5. Retry loop ---
         result_dict, last_error, attempt_count = await retry_tool_call(
             effective_adapter,
             validated_input,
             self._classifier,
-            self._policy,
+            tool_retry_policy,
             is_foreground=is_foreground,
         )
 
+        # Record retry metric (attempt_count > 1 means at least one retry happened)
+        if attempt_count > 1:
+            self._record_metric("recovery.retry_count", tool_id, value=attempt_count - 1)
+
+        # --- 5b. 401 auth-refresh: one extra attempt after credential reload ---
+        if (
+            result_dict is None
+            and last_error is not None
+            and last_error.error_class == ErrorClass.AUTH_EXPIRED
+        ):
+            refreshed = await attempt_auth_refresh(tool_id)
+            if refreshed:
+                logger.info(
+                    "Auth refresh succeeded for tool %s — retrying once",
+                    tool_id,
+                )
+                try:
+                    result_dict = await effective_adapter(validated_input)
+                    last_error = None
+                    attempt_count += 1
+                except Exception as exc:  # noqa: BLE001
+                    last_error = self._classifier.classify_exception(exc)
+                    attempt_count += 1
+                    logger.warning(
+                        "Post-auth-refresh retry failed for tool %s: %s",
+                        tool_id,
+                        last_error.raw_message,
+                    )
+            else:
+                logger.warning(
+                    "Auth refresh failed for tool %s — no credentials available",
+                    tool_id,
+                )
+
         elapsed = time.monotonic() - start
 
-        # --- 5. Success path ---
+        # Record duration metric
+        self._observe_duration("recovery.tool_duration_ms", tool_id, elapsed * 1000)
+
+        # --- 6. Success path ---
         if result_dict is not None:
             breaker.record_success()
-            # Only cache data that passes output_schema validation so that
-            # invalid adapter responses are never served from the cache.
-            # args_hash is None when input serialisation failed — skip caching.
             if args_hash is not None and tool.cache_ttl_seconds > 0:
                 try:
                     tool.output_schema.model_validate(result_dict)
@@ -268,13 +342,15 @@ class RecoveryExecutor:
                 error_context=None,
             )
 
-        # --- Failure: record to circuit breaker only for transient/retryable
-        #     errors.  Client errors (INVALID_REQUEST, AUTH_FAILURE, etc.) are
-        #     the caller's fault and should not count against service health. ---
+        # --- Failure: record to circuit breaker for transient/retryable errors ---
         if last_error is not None and last_error.is_retryable:
             breaker.record_failure()
 
-        # --- 6. Stale cache fallback (only if cache_ttl_seconds > 0) ---
+        # Record error metric
+        if last_error is not None:
+            self._record_error_metric(last_error.error_class, tool_id)
+
+        # --- 7. Stale cache fallback ---
         if args_hash is not None and tool.cache_ttl_seconds > 0:
             stale = self._get_stale_cache(tool_id, args_hash)
             if stale is not None:
@@ -299,7 +375,7 @@ class RecoveryExecutor:
                     ),
                 )
 
-        # --- 7. Degradation message ---
+        # --- 8. Degradation message ---
         assert last_error is not None  # retry_tool_call guarantees this when result is None
         degradation = build_degradation_message(tool, last_error)
         error_type = self._error_class_to_error_type(last_error.error_class)
@@ -327,16 +403,45 @@ class RecoveryExecutor:
         )
 
     # ------------------------------------------------------------------
+    # Private metrics helpers (fail-safe: never raise)
+    # ------------------------------------------------------------------
+
+    def _record_metric(self, name: str, tool_id: str, value: int = 1) -> None:
+        """Increment a counter metric; silently skip if no collector is set."""
+        if self._metrics is None:
+            return
+        try:
+            self._metrics.increment(name, value=value, labels={"tool_id": tool_id})
+        except Exception:  # noqa: BLE001
+            logger.debug("metrics.increment failed for %s", name, exc_info=True)
+
+    def _observe_duration(self, name: str, tool_id: str, duration_ms: float) -> None:
+        """Record a duration histogram observation."""
+        if self._metrics is None:
+            return
+        try:
+            self._metrics.observe(name, duration_ms, labels={"tool_id": tool_id})
+        except Exception:  # noqa: BLE001
+            logger.debug("metrics.observe failed for %s", name, exc_info=True)
+
+    def _record_error_metric(self, error_class: ErrorClass, tool_id: str) -> None:
+        """Increment the error count metric."""
+        if self._metrics is None:
+            return
+        try:
+            self._metrics.increment(
+                "recovery.error_count",
+                labels={"tool_id": tool_id, "error_class": str(error_class)},
+            )
+        except Exception:  # noqa: BLE001
+            logger.debug("metrics.increment(error_count) failed", exc_info=True)
+
+    # ------------------------------------------------------------------
     # Private helpers
     # ------------------------------------------------------------------
 
     def _model_to_dict(self, model: object) -> dict[str, object] | None:
-        """Convert a Pydantic model to a plain dict for cache key computation.
-
-        Uses ``mode="json"`` to ensure all values (Enums, datetimes, etc.)
-        are JSON-serialisable primitives.  Returns ``None`` on failure so the
-        caller can skip caching rather than produce a degenerate cache key.
-        """
+        """Convert a Pydantic model to a plain dict for cache key computation."""
         from pydantic import BaseModel as _BaseModel  # local import to avoid circular
 
         try:
@@ -384,6 +489,7 @@ class RecoveryExecutor:
             ErrorClass.TRANSIENT: "api_error",
             ErrorClass.RATE_LIMIT: "rate_limit",
             ErrorClass.AUTH_FAILURE: "auth_expired",
+            ErrorClass.AUTH_EXPIRED: "auth_expired",
             ErrorClass.DATA_MISSING: "not_found",
             ErrorClass.INVALID_REQUEST: "validation",
             ErrorClass.TIMEOUT: "timeout",

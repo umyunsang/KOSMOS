@@ -22,7 +22,10 @@ def register_all_tools(registry: ToolRegistry, executor: ToolExecutor) -> None:
       1. koroad_accident_search — KOROAD accident hotspot search
       2. kma_weather_alert_status — KMA weather alert status
       3. kma_current_observation — KMA ultra-short-term current observation
-      4. road_risk_score — composite road risk score (fans out to all three)
+      4. kma_short_term_forecast — KMA short-term forecast (단기예보)
+      5. kma_ultra_short_term_forecast — KMA ultra-short-term forecast (초단기예보)
+      6. kma_pre_warning — KMA weather pre-warning list (기상예비특보목록)
+      7. road_risk_score — composite road risk score (fans out to all three)
 
     Args:
         registry: The central ToolRegistry to add tools to.
@@ -34,12 +37,18 @@ def register_all_tools(registry: ToolRegistry, executor: ToolExecutor) -> None:
     """
     from kosmos.tools.composite.road_risk_score import register as reg_risk
     from kosmos.tools.kma.kma_current_observation import register as reg_kma_obs
+    from kosmos.tools.kma.kma_pre_warning import register as reg_kma_pre_warning
+    from kosmos.tools.kma.kma_short_term_forecast import register as reg_kma_stf
+    from kosmos.tools.kma.kma_ultra_short_term_forecast import register as reg_kma_ustf
     from kosmos.tools.kma.kma_weather_alert_status import register as reg_kma_alert
     from kosmos.tools.koroad.koroad_accident_search import register as reg_koroad
 
     reg_koroad(registry, executor)
     reg_kma_alert(registry, executor)
     reg_kma_obs(registry, executor)
+    reg_kma_stf(registry, executor)
+    reg_kma_ustf(registry, executor)
+    reg_kma_pre_warning(registry, executor)
     reg_risk(registry, executor)
 
     logger.info("All %d tools registered successfully", len(registry))

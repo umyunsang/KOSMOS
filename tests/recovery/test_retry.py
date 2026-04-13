@@ -154,9 +154,9 @@ async def test_no_retry_on_401(
     )
     assert result is None
     assert err is not None
-    assert err.error_class == ErrorClass.AUTH_FAILURE
+    assert err.error_class == ErrorClass.AUTH_EXPIRED
     assert attempts == 1
-    assert call_count == 1  # no retries
+    assert call_count == 1  # no retries (auth_expired is not in retryable_classes)
 
 
 # ---------------------------------------------------------------------------

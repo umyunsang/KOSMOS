@@ -140,7 +140,11 @@ async def test_t016_permission_pipeline_public_tool_succeeds(
     result = await pipeline.run(
         tool_id="public_test_tool",
         arguments_json=json.dumps({"query": "서울 교통 정보"}),
-        session_context=SessionContext(session_id="t016-unit", auth_level=0),
+        session_context=SessionContext(
+            session_id="t016-unit",
+            auth_level=0,
+            consented_providers=["public"],
+        ),
     )
 
     assert result.success, (

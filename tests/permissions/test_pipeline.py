@@ -102,15 +102,19 @@ def _build_pipeline(
     return pipeline, registry, executor
 
 
-def _anon_session() -> SessionContext:
-    return SessionContext(session_id="test-session")
+def _anon_session(consented_providers: list[str] | None = None) -> SessionContext:
+    return SessionContext(
+        session_id="test-session",
+        consented_providers=consented_providers or ["public"],
+    )
 
 
-def _auth_session() -> SessionContext:
+def _auth_session(consented_providers: list[str] | None = None) -> SessionContext:
     return SessionContext(
         session_id="test-session",
         citizen_id="citizen-42",
         auth_level=1,
+        consented_providers=consented_providers or ["public"],
     )
 
 
@@ -269,6 +273,7 @@ async def test_bypass_mode_still_enforces_immune_rules(
         session_id="test-session",
         citizen_id="citizen-42",
         auth_level=1,
+        consented_providers=["personal"],
     )
     result = await pipeline.run(
         tool_id="personal_tool",
