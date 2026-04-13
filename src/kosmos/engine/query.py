@@ -140,8 +140,9 @@ async def dispatch_tool_calls(  # noqa: C901
         When a permission pipeline is active, the sandbox step mutates
         os.environ across awaits.  Running tools concurrently via TaskGroup
         in that case allows coroutines to observe a partially-filtered
-        environment.  Dispatch sequentially whenever the pipeline is present,
-        regardless of the tool's concurrency-safe flag.
+        environment.  Dispatch sequentially when both ``permission_pipeline``
+        and ``session_context`` are non-None, regardless of the tool's
+        concurrency-safe flag.
         """
         if not items:
             return

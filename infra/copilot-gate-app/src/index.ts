@@ -477,12 +477,34 @@ function sleep(ms: number): Promise<void> {
 }
 
 /**
+ * Fetch all pages from a GitHub REST API list endpoint.
+ * Iterates pages until fewer than 100 results are returned.
+ */
+async function fetchAllPages<T>(token: string, path: string): Promise<T[]> {
+  const results: T[] = [];
+  let page = 1;
+  const separator = path.includes("?") ? "&" : "?";
+  while (true) {
+    const batch = (await githubApi(
+      token, "GET", `${path}${separator}per_page=100&page=${page}`
+    )) as T[];
+    results.push(...batch);
+    if (batch.length < 100) break;
+    page++;
+  }
+  return results;
+}
+
+/**
  * Fetch review comments with retry for GitHub API eventual consistency.
  *
  * The pull_request_review webhook can fire before inline comments are
- * queryable via the REST API. When the review body indicates comments
- * were generated but the API returns zero, retry with increasing delays.
+ * queryable via the REST API. When the review body indicates a positive
+ * expected count but the API returns zero, retry with increasing delays.
  * Falls back to the general PR comments endpoint filtered by review ID.
+ *
+ * When expectedCount is unknown (-1) or zero (0), trust the first
+ * attempt without retrying to avoid unnecessary delay.
  */
 async function fetchReviewComments(
   token: string,
@@ -492,43 +514,37 @@ async function fetchReviewComments(
   reviewId: number,
   expectedCount: number,
 ): Promise<ReviewComment[]> {
-  // Attempt 1: review-specific endpoint
-  const attempt1 = (await githubApi(
-    token, "GET",
-    `/repos/${owner}/${repo}/pulls/${prNumber}/reviews/${reviewId}/comments?per_page=100`
-  )) as ReviewComment[];
+  // Attempt 1: review-specific endpoint (paginated)
+  const attempt1 = await fetchAllPages<ReviewComment>(
+    token, `/repos/${owner}/${repo}/pulls/${prNumber}/reviews/${reviewId}/comments`
+  );
 
   if (attempt1.length > 0) return attempt1;
-  if (expectedCount === 0) return attempt1; // genuinely no comments
+  if (expectedCount <= 0) return attempt1; // 0 = genuinely none, -1 = unknown → trust first attempt
 
-  // Attempt 2: retry after 3s (eventual consistency delay)
+  // Only retry when expectedCount > 0 (review body confirmed comments exist)
   console.log(`[review] 0 comments but expected ${expectedCount} — retrying after 3s`);
   await sleep(3000);
 
-  const attempt2 = (await githubApi(
-    token, "GET",
-    `/repos/${owner}/${repo}/pulls/${prNumber}/reviews/${reviewId}/comments?per_page=100`
-  )) as ReviewComment[];
-
+  const attempt2 = await fetchAllPages<ReviewComment>(
+    token, `/repos/${owner}/${repo}/pulls/${prNumber}/reviews/${reviewId}/comments`
+  );
   if (attempt2.length > 0) return attempt2;
 
   // Attempt 3: retry after 5s more
   console.log(`[review] still 0 comments — retrying after 5s`);
   await sleep(5000);
 
-  const attempt3 = (await githubApi(
-    token, "GET",
-    `/repos/${owner}/${repo}/pulls/${prNumber}/reviews/${reviewId}/comments?per_page=100`
-  )) as ReviewComment[];
-
+  const attempt3 = await fetchAllPages<ReviewComment>(
+    token, `/repos/${owner}/${repo}/pulls/${prNumber}/reviews/${reviewId}/comments`
+  );
   if (attempt3.length > 0) return attempt3;
 
-  // Fallback: general PR comments endpoint filtered by review ID
+  // Fallback: general PR comments endpoint filtered by review ID (paginated)
   console.log(`[review] review endpoint empty — falling back to PR comments endpoint`);
-  const allPrComments = (await githubApi(
-    token, "GET",
-    `/repos/${owner}/${repo}/pulls/${prNumber}/comments?per_page=100`
-  )) as ReviewComment[];
+  const allPrComments = await fetchAllPages<ReviewComment>(
+    token, `/repos/${owner}/${repo}/pulls/${prNumber}/comments`
+  );
 
   return allPrComments.filter((c) => c.pull_request_review_id === reviewId);
 }
