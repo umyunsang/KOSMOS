@@ -226,10 +226,15 @@ class REPLLoop:
         if name == "help":
             self._console.print(_build_help_text())
         elif name == "new":
+            self._engine.reset()
+            self._session_id = str(uuid.uuid4())
+            self._total_input_tokens = 0
+            self._total_output_tokens = 0
+            self._renderer.reset()
             self._console.print(
                 Rule("[dim]새 대화 시작[/dim]", style="dim"),
             )
-            self._console.print("[dim]새 대화가 시작되었습니다.[/dim]")
+            self._console.print(f"[dim]새 대화가 시작되었습니다. 세션 ID: {self._session_id}[/dim]")
         elif name == "usage":
             total = self._total_input_tokens + self._total_output_tokens
             self._console.print(

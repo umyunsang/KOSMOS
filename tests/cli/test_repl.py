@@ -53,6 +53,9 @@ class _MockEngine:
         for event in self._events:
             yield event
 
+    def reset(self) -> None:
+        """Reset mock engine state."""
+
 
 class TestSlashCommands:
     async def test_exit_command_returns_true(self) -> None:

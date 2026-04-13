@@ -184,6 +184,20 @@ class QueryEngine:
                 len(self._state.messages),
             )
 
+    def reset(self) -> None:
+        """Reset the conversation state for a new session.
+
+        Clears the message history (re-initialises with the system message),
+        resets the turn counter, and preserves the existing token usage tracker
+        so that the budget continues from where it left off.
+        """
+        system_msg = self._context_builder.build_system_message()
+        self._state = QueryState(
+            usage=self._llm_client.usage,
+            messages=[system_msg],
+        )
+        logger.info("QueryEngine reset: conversation cleared")
+
     # ------------------------------------------------------------------
     # Properties
     # ------------------------------------------------------------------

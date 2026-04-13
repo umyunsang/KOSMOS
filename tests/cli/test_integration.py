@@ -34,6 +34,10 @@ class _MockEngine:
         for event in events:
             yield event
 
+    def reset(self) -> None:
+        """Reset mock engine state."""
+        self._call_count = 0
+
 
 def _make_repl_with_engine(engine: Any) -> tuple[REPLLoop, Console]:
     console = _make_console()
