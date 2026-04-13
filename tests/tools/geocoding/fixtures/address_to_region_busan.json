@@ -1,0 +1,40 @@
+{
+  "meta": {
+    "total_count": 1,
+    "pageable_count": 1,
+    "is_end": true
+  },
+  "documents": [
+    {
+      "address_name": "부산광역시 해운대구 해운대해변로 264",
+      "address_type": "ROAD_ADDR",
+      "x": "129.162591",
+      "y": "35.158887",
+      "address": {
+        "address_name": "부산광역시 해운대구 우동 1408",
+        "region_1depth_name": "부산광역시",
+        "region_2depth_name": "해운대구",
+        "region_3depth_name": "우동",
+        "mountain_yn": "N",
+        "main_address_no": "1408",
+        "sub_address_no": "",
+        "x": "129.162591",
+        "y": "35.158887"
+      },
+      "road_address": {
+        "address_name": "부산광역시 해운대구 해운대해변로 264",
+        "region_1depth_name": "부산광역시",
+        "region_2depth_name": "해운대구",
+        "region_3depth_name": "우동",
+        "road_name": "해운대해변로",
+        "underground_yn": "N",
+        "main_building_no": "264",
+        "sub_building_no": "",
+        "building_name": "해운대 그랜드 호텔",
+        "zone_no": "48099",
+        "x": "129.162591",
+        "y": "35.158887"
+      }
+    }
+  ]
+}

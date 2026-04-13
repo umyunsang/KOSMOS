@@ -1,0 +1,27 @@
+{
+  "meta": {
+    "total_count": 1,
+    "pageable_count": 1,
+    "is_end": true
+  },
+  "documents": [
+    {
+      "address_name": "부산광역시 해운대구 중동 1415",
+      "address_type": "REGION_ADDR",
+      "x": "129.158780",
+      "y": "35.163030",
+      "address": {
+        "address_name": "부산광역시 해운대구 중동 1415",
+        "region_1depth_name": "부산광역시",
+        "region_2depth_name": "해운대구",
+        "region_3depth_name": "중동",
+        "mountain_yn": "N",
+        "main_address_no": "1415",
+        "sub_address_no": "",
+        "x": "129.158780",
+        "y": "35.163030"
+      },
+      "road_address": null
+    }
+  ]
+}

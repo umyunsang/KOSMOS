@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""KMA (Korea Meteorological Administration) grid coordinate lookup tables.
+"""KMA (Korea Meteorological Administration) grid coordinate lookup tables and conversions.
 
 Maps Korean region names (Korean or Romanized) to KMA 5 km grid (nx, ny) points
 used by the ultra-short-term observation API (getUltraSrtNcst).
@@ -9,6 +9,8 @@ Reference: KMA VilageFcstInfoService_2.0 API technical guide.
 """
 
 from __future__ import annotations
+
+import math
 
 # REGION_TO_GRID: maps region name strings to (nx, ny) KMA grid tuples.
 # Keys include both Korean and common Romanized names for broad matching.
@@ -131,3 +133,59 @@ def lookup_grid(region: str) -> tuple[int, int]:
         raise ValueError(
             f"Unknown region {region!r}. Known regions ({len(known)} total): {known[:10]}..."
         ) from None
+
+
+def latlon_to_grid(lat: float, lon: float) -> tuple[int, int]:
+    """Convert WGS-84 (latitude, longitude) to KMA 5 km Lambert Conformal Conic grid (nx, ny).
+
+    Uses the official KMA VilageFcstInfoService_2.0 projection parameters:
+      - Earth radius Re = 6371.00877 km
+      - Grid resolution = 5.0 km
+      - Standard latitudes slat1 = 30.0°, slat2 = 60.0°
+      - Reference longitude olon = 126.0°, reference latitude olat = 38.0°
+      - Grid origin xo = 43, yo = 136 (in grid units from the projection origin)
+
+    Args:
+        lat: Latitude in decimal degrees (WGS-84).
+        lon: Longitude in decimal degrees (WGS-84).
+
+    Returns:
+        A ``(nx, ny)`` tuple of integer KMA grid coordinates.
+    """
+    # KMA Lambert Conformal Conic projection constants (official KMA parameters)
+    earth_radius_km = 6371.00877  # Earth radius [km]
+    grid_km = 5.0  # Grid resolution [km]
+    slat1_deg = 30.0  # Standard latitude 1 [degrees]
+    slat2_deg = 60.0  # Standard latitude 2 [degrees]
+    olon_deg = 126.0  # Reference (true) longitude [degrees]
+    olat_deg = 38.0  # Reference latitude [degrees]
+    xo = 43.0  # Grid x-origin offset
+    yo = 136.0  # Grid y-origin offset
+
+    degrad = math.pi / 180.0
+
+    re = earth_radius_km / grid_km
+    slat1 = slat1_deg * degrad
+    slat2 = slat2_deg * degrad
+    olon = olon_deg * degrad
+    olat = olat_deg * degrad
+
+    sn = math.tan(math.pi * 0.25 + slat2 * 0.5) / math.tan(math.pi * 0.25 + slat1 * 0.5)
+    sn = math.log(math.cos(slat1) / math.cos(slat2)) / math.log(sn)
+    sf = math.tan(math.pi * 0.25 + slat1 * 0.5)
+    sf = (sf**sn) * math.cos(slat1) / sn
+    ro = math.tan(math.pi * 0.25 + olat * 0.5)
+    ro = re * sf / (ro**sn)
+
+    ra = math.tan(math.pi * 0.25 + lat * degrad * 0.5)
+    ra = re * sf / (ra**sn)
+    theta = lon * degrad - olon
+    if theta > math.pi:
+        theta -= 2.0 * math.pi
+    if theta < -math.pi:
+        theta += 2.0 * math.pi
+    theta *= sn
+
+    nx = int(ra * math.sin(theta) + xo + 1.5)
+    ny = int(ro - ra * math.cos(theta) + yo + 1.5)
+    return nx, ny
