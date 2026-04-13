@@ -121,6 +121,32 @@ The **Copilot Review Gate** is a custom GitHub App (Cloudflare Worker) that brid
 - Worker source: `infra/copilot-gate-app/src/index.ts`
 - Copilot comments without a recognized prefix default to `🟡 IMPORTANT`
 
+## Task linking
+
+Task issues come **only** from reviewed `tasks.md` via `/speckit-taskstoissues`. After creation, link each as a sub-issue of its Epic:
+
+```bash
+TASK_ID=$(gh api graphql -f query='query{repository(owner:"umyunsang",name:"KOSMOS"){issue(number:TASK_NUM){id}}}' --jq '.data.repository.issue.id')
+gh api repos/umyunsang/KOSMOS/issues/EPIC_NUM/sub_issues --method POST -f sub_issue_id="$TASK_ID"
+```
+
+## PR closing
+
+Every PR body must include `Closes #EPIC` for each Epic it completes. **Do NOT include Task sub-issues** — GitHub fails to auto-close when there are too many (50+).
+
+```
+Closes #EPIC_1
+Closes #EPIC_2
+```
+
+After merge, verify Epics are closed and manually close any remaining Task sub-issues:
+
+```bash
+gh api repos/umyunsang/KOSMOS/issues/EPIC_NUM/sub_issues --jq '.[].number' | while read num; do
+  gh issue close "$num" --comment "Completed in PR #NNN"
+done
+```
+
 ## Git safety
 
 Never:

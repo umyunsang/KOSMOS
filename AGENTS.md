@@ -29,66 +29,32 @@ Stack changes require an ADR under `docs/adr/`.
 
 ## Issue hierarchy
 
-Issues follow a tree structure using GitHub Sub-Issues (not body mentions):
-
-```
-Initiative (label: initiative) → Epic (label: epic) → Task (label: agent-ready)
-```
-
-- **Initiative**: created manually (roadmap phase, e.g. "Phase 1 — CLI MVP")
-- **Epic**: created manually before spec work (feature-sized, label: `epic`, `needs-spec`)
-- **Task**: created ONLY by `/speckit-taskstoissues` from reviewed `tasks.md`
-
-Labels: `initiative`, `epic`, `agent-ready`, `needs-spec`, `parallel-safe`, `blocked`, `size/{S,M,L}`, plus layer labels. All parent-child links use the Sub-Issues API (see Task-to-issue rule).
+`Initiative` → `Epic` → `Task` (Sub-Issues API, not body mentions). Initiatives/Epics: manual. Tasks: ONLY from `/speckit-taskstoissues`. Labels: `initiative`, `epic`, `agent-ready`, `needs-spec`, `parallel-safe`, `blocked`, `size/{S,M,L}`, plus layer labels.
 
 ## Spec-driven workflow
 
 Non-trivial features use [GitHub Spec Kit](https://github.com/github/spec-kit):
 
-1. Create/verify **Epic** issue (citizen-facing terms, label: `epic`)
+1. Create/verify **Epic** issue (label: `epic`)
 2. `/speckit-specify` → `specs/NNN-slug/spec.md` → human review
-3. `/speckit-plan` → `plan.md` → **must read `docs/vision.md § Reference materials`** → human review
+3. `/speckit-plan` → `plan.md` → **read `docs/vision.md § Reference materials`** → human review
 4. `/speckit-tasks` → `tasks.md` → human review
 5. `/speckit-analyze` → constitution compliance check
-6. `/speckit-taskstoissues` → create Task issues from verified tasks.md
-7. Link Task issues as sub-issues of Epic via `gh api` (see Issue hierarchy)
-8. `/speckit-implement` → Agent Teams parallel execution
-9. Open PR with `Closes #EPIC` only (not Task sub-issues) → monitor CI checks → close Task sub-issues after merge
+6. `/speckit-taskstoissues` → create Task issues → link as sub-issues of Epic
+7. `/speckit-implement` → Agent Teams parallel execution
+8. PR with `Closes #EPIC` only (not Task sub-issues) → monitor CI → close Task sub-issues after merge
 
 Small fixes (typos, one-line bugs, docs-only) skip the cycle.
 
-### Reference source rule
-Every `/speckit-plan` Phase 0 must consult `.specify/memory/constitution.md` and `docs/vision.md § Reference materials`. All sources are valid: open-source repos, official docs, reconstructed architecture analyses, and leaked-source review documents. Map each design decision to a concrete reference.
-
-### Task-to-issue rule
-Task issues come **only** from reviewed `tasks.md` via `/speckit-taskstoissues`. After creation, link each as a sub-issue of its Epic:
-
-```bash
-TASK_ID=$(gh api graphql -f query='query{repository(owner:"umyunsang",name:"KOSMOS"){issue(number:TASK_NUM){id}}}' --jq '.data.repository.issue.id')
-gh api repos/umyunsang/KOSMOS/issues/EPIC_NUM/sub_issues --method POST -f sub_issue_id="$TASK_ID"
-```
-
-### PR close rule
-Every PR body must include `Closes #EPIC` for each Epic it completes. **Do NOT include Task sub-issues** in closing references — GitHub fails to auto-close when there are too many (50+). Task sub-issues are closed manually after merge, or automatically when their parent Epic is closed.
-
-```
-Closes #EPIC_1
-Closes #EPIC_2
-```
-
-After merge, verify Epics are closed and manually close any remaining Task sub-issues:
-```bash
-gh api repos/umyunsang/KOSMOS/issues/EPIC_NUM/sub_issues --jq '.[].number' | while read num; do
-  gh issue close "$num" --comment "Completed in PR #NNN"
-done
-```
+**Reference source rule**: Every `/speckit-plan` Phase 0 must consult `.specify/memory/constitution.md` and `docs/vision.md § Reference materials`. Map each design decision to a concrete reference.
+**Task-to-issue rule**: Tasks ONLY from `/speckit-taskstoissues`. Link as sub-issues of Epic via `gh api`. Code: `docs/conventions.md § Task linking`.
+**PR close rule**: `Closes #EPIC` only — never Task sub-issues (GitHub fails at 50+). Close sub-issues after merge. Code: `docs/conventions.md § PR closing`.
 
 ## Agent Teams
 
-- Lead (Opus, effort=high): planning, spec authoring, code review, synthesis.
-- Teammates (Sonnet): implementation, tests, refactoring — spawned at step 6.
-- 3+ independent tasks → parallel via Agent Teams. 1-2 tasks → Lead handles solo.
-- Recommended agents per role (each Teammate uses an isolated worktree):
+- Lead (Opus): planning, spec authoring, code review, synthesis.
+- Teammates (Sonnet): implementation, tests, refactoring — spawned at `/speckit-implement`.
+- 3+ independent tasks → parallel Agent Teams. 1-2 tasks → Lead solo.
 
 | Role | Agent | Model |
 |------|-------|-------|
@@ -104,29 +70,18 @@ done
 
 Conventional Commits. Branches: `feat/`, `fix/`, `docs/`, `refactor/`, `test/`, `chore/`. PRs for code; direct `main` commits only for `docs:` / `chore:` touching no source. Full details: `docs/conventions.md`.
 
+## Copilot Review Gate
+
+Cloudflare Worker (`infra/copilot-gate-app/`) → Check Run gate. **CRITICAL >= 1 → fail**, **IMPORTANT >= 3 → fail**, else pass. Deploy: `cd infra/copilot-gate-app && npx wrangler deploy`.
+
+GraphQL `requestReviewsByLogin` has **~1/3 failure rate**. After every push: if gate stays `in_progress` for 2+ min, manually re-request Copilot review. If that also fails, add label `copilot-review-bypass`. Full procedure: `docs/copilot-gate.md`.
+
 ## New tool adapter
 
 Pydantic v2 I/O · fail-closed defaults · Korean + English `search_hint` · recorded fixture · happy-path + error-path test · no hardcoded keys. Full checklist: `docs/tool-adapters.md`.
 
 ## Testing
 `uv run pytest` before every commit. Live-API tests marked `@pytest.mark.live`, skipped by default. Full guide: `docs/testing.md`.
-
-## Directory layout
-
-```
-KOSMOS/
-├── AGENTS.md, CLAUDE.md, README.md
-├── pyproject.toml
-├── src/kosmos/
-├── tests/
-├── specs/NNN-slug/
-├── docs/
-│   ├── vision.md, conventions.md, tool-adapters.md, testing.md
-│   └── adr/
-├── research/             # papers, experiments, figures, data (no PII)
-├── .specify/, .claude/
-└── .github/
-```
 
 ## Do not touch
 `.specify/`, `.claude/skills/` (Spec Kit) · `LICENSE` (Apache-2.0, ADR required) · `docs/vision.md` layer names (ADR required) · `.env`, `secrets/` (never commit).

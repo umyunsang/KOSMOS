@@ -51,6 +51,10 @@ KOSMOS adapts architectural patterns from the conversational AI agent ecosystem 
 | LangGraph (`langchain-ai/langgraph`) | MIT | `RetryPolicy` per-node exponential backoff, `ToolNode(handle_tool_errors=True)` — Pydantic `ValidationError` fail-closed lesson at tool boundary |
 | Mastra (`mastra-ai/mastra`) | Apache-2.0 | TypeScript agent framework — typed tool workflow graphs with loops, branching, human-in-the-loop; Phase 2 TUI layer reference |
 | Korean Public APIs index (`yybmion/public-apis-4Kr`) | MIT | Curated `data.go.kr` API discovery index with auth type annotations — tool registry `search_hint` population |
+| stamina (`hynek/stamina`) | MIT | Production-grade async retry with enforced jitter and capped backoff — Layer 6 retry policy foundation |
+| aiobreaker (`arlyon/aiobreaker`) | MIT | Asyncio-native circuit breaker for per-API failure isolation — Layer 6 circuit breaker pattern |
+| @inkjs/ui (`vadimdemedes/ink-ui`) | MIT | Official Ink component library (TextInput, Spinner, Select, theming) — TUI widget foundation |
+| string-width (`sindresorhus/string-width`) | MIT | CJK full-width character column width calculation — Korean text terminal layout |
 
 ### What is original to KOSMOS
 
