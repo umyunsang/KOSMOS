@@ -19,6 +19,7 @@ dependencies = [
 dev = [
     "pytest>=8.0",
     "pytest-asyncio>=0.24",
+    "pytest-benchmark>=4.0",
     "pytest-cov>=7.1.0",
     "pytest-xdist>=3.5",
     "respx>=0.23.1",
@@ -45,7 +46,10 @@ addopts = "--strict-markers -q --tb=short"
 markers = [
     "live: hits real data.go.kr APIs — skipped in CI (deselect with -m 'not live')",
 ]
-filterwarnings = ["error"]
+filterwarnings = [
+    "error",
+    "ignore::pytest_benchmark.logger.PytestBenchmarkWarning",
+]
 
 [tool.coverage.run]
 source = ["src/kosmos"]

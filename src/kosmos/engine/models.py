@@ -16,6 +16,7 @@ Three model types form the session and per-turn state contract:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict
 
@@ -54,6 +55,14 @@ class QueryState:
     resolved_tasks: list[str] = field(default_factory=list)
     """Human-readable descriptions of tasks resolved during the session."""
 
+    active_situational_tools: set[str] = field(default_factory=set)
+    """Tool IDs that have been activated for the current session mid-flight.
+
+    Populated by the tool discovery flow (e.g. ``search_tools``).  The
+    context assembler reads this set to build the situational suffix partition
+    of ``AssembledContext.tool_definitions``.
+    """
+
 
 # ---------------------------------------------------------------------------
 # QueryContext
@@ -91,6 +100,21 @@ class QueryContext(BaseModel):
 
     iteration: int = 0
     """Zero-based iteration counter within the current turn."""
+
+    permission_pipeline: Any | None = None
+    """Optional permission pipeline for 7-step gauntlet checks on tool calls.
+
+    Type at runtime: ``kosmos.permissions.pipeline.PermissionPipeline | None``.
+    Annotated as ``Any`` so Pydantic can resolve the field before the permissions
+    package exists; the TYPE_CHECKING guard provides static type safety.
+    """
+
+    session_context: Any | None = None
+    """Optional session context supplied to the permission pipeline per tool call.
+
+    Type at runtime: ``kosmos.permissions.models.SessionContext | None``.
+    Annotated as ``Any`` for the same reason as ``permission_pipeline``.
+    """
 
 
 # ---------------------------------------------------------------------------

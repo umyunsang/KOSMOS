@@ -44,6 +44,13 @@ KOSMOS adapts architectural patterns from the conversational AI agent ecosystem 
 | Claude Code sourcemap (`ChinaSiro/claude-code-sourcemap`) | Reconstructed | Tool loop internals, permission model, context assembly, TUI component structure |
 | Claude Reviews Claude (`openedclaude/claude-reviews-claude`) | Analysis | Detailed architectural review, state management, rendering pipeline, design rationale |
 | Claw Code (`ultraworkers/claw-code`) | Harness/Fork | Leaked source repackaged as harness — runtime behavior, hook system, tool execution flow |
+| PublicDataReader (`WooilJeong/PublicDataReader`) | MIT | Korean `data.go.kr` API wire format ground truth — auth patterns, XML/JSON response normalization, inconsistent field names across ministries |
+| "Don't Break the Cache" (arXiv 2601.06007) | Open access | Empirical prompt caching study: dynamic tool results at end preserve cache prefix, 41–80% cost cut in 30–50+ tool-call sessions |
+| NeMo Guardrails (`NVIDIA/NeMo-Guardrails`) | Apache-2.0 | Colang 2.0 declarative tool-call validation rails — whitelist-of-approved-actions model, auditable policy language for PIPA compliance |
+| Google ADK (`google/adk-python`) | Apache-2.0 | Runner-level plugin pattern for centralized permission enforcement, reflect-and-retry tool failure handling |
+| LangGraph (`langchain-ai/langgraph`) | MIT | `RetryPolicy` per-node exponential backoff, `ToolNode(handle_tool_errors=True)` — Pydantic `ValidationError` fail-closed lesson at tool boundary |
+| Mastra (`mastra-ai/mastra`) | Apache-2.0 | TypeScript agent framework — typed tool workflow graphs with loops, branching, human-in-the-loop; Phase 2 TUI layer reference |
+| Korean Public APIs index (`yybmion/public-apis-4Kr`) | MIT | Curated `data.go.kr` API discovery index with auth type annotations — tool registry `search_hint` population |
 
 ### What is original to KOSMOS
 

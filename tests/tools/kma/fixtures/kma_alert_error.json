@@ -1,0 +1,6 @@
+{
+  "response": {
+    "header": {"resultCode": "30", "resultMsg": "NO_DATA"},
+    "body": {}
+  }
+}

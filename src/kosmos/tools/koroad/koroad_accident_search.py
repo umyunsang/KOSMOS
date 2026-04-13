@@ -1,0 +1,349 @@
+# SPDX-License-Identifier: Apache-2.0
+"""KOROAD accident hotspot search adapter.
+
+Wraps the ``getRestFrequentzoneLg`` endpoint from KOROAD (B552061/frequentzoneLg/).
+Returns accident-prone zones by municipality and year category, with full coordinates.
+
+Wire format quirks handled by this module:
+  - Single-item response returns `item` as a dict (not array) — normalized to list.
+  - XML is the default; JSON is requested via ``_type=json``.
+  - ``resultCode != "00"`` is always an error regardless of HTTP 200.
+"""
+
+from __future__ import annotations
+
+import logging
+from typing import Any
+
+import httpx
+from pydantic import BaseModel, ConfigDict, Field, model_validator
+
+from kosmos.tools.errors import ToolExecutionError, _require_env
+from kosmos.tools.koroad.code_tables import (
+    GANGWON_NEW_CODE_YEAR,
+    JEONBUK_NEW_CODE_YEAR,
+    GugunCode,
+    SearchYearCd,
+    SidoCode,
+)
+from kosmos.tools.models import GovAPITool
+
+logger = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+# KOROAD API endpoint constants
+# ---------------------------------------------------------------------------
+
+_BASE_URL = "https://apis.data.go.kr/B552061/frequentzoneLg/getRestFrequentzoneLg"
+
+
+# ---------------------------------------------------------------------------
+# Pydantic v2 I/O Models (T014)
+# ---------------------------------------------------------------------------
+
+
+class AccidentHotspot(BaseModel):
+    """A single accident hotspot zone returned by KOROAD getRestFrequentzoneLg."""
+
+    model_config = ConfigDict(frozen=True)
+
+    spot_cd: str
+    """Unique spot code."""
+
+    spot_nm: str
+    """Location name (Korean)."""
+
+    sido_sgg_nm: str
+    """Province + district combined name (Korean)."""
+
+    bjd_cd: str
+    """Administrative district (법정동) code."""
+
+    occrrnc_cnt: int
+    """Accident occurrence count."""
+
+    caslt_cnt: int
+    """Total casualty count."""
+
+    dth_dnv_cnt: int
+    """Death count."""
+
+    se_dnv_cnt: int
+    """Serious injury count."""
+
+    sl_dnv_cnt: int
+    """Minor injury count."""
+
+    wnd_dnv_cnt: int
+    """Injury count."""
+
+    la_crd: float
+    """Latitude (decimal degrees)."""
+
+    lo_crd: float
+    """Longitude (decimal degrees)."""
+
+    geom_json: str | None = None
+    """GeoJSON polygon string; may be absent in the wire response."""
+
+    afos_id: str
+    """Year-dataset identifier (e.g. '2025119' for 2024 general)."""
+
+    afos_fid: str
+    """Feature ID within the dataset."""
+
+
+class KoroadAccidentSearchInput(BaseModel):
+    """Input parameters for the koroad_accident_search tool.
+
+    Cross-validates legacy sido codes against modern search year codes.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    search_year_cd: SearchYearCd
+    """Dataset year/category code (searchYearCd wire parameter)."""
+
+    si_do: SidoCode
+    """Province/city code (siDo wire parameter)."""
+
+    gu_gun: GugunCode | None = None
+    """Optional district code (guGun wire parameter). None returns entire province data."""
+
+    num_of_rows: int = Field(default=10, ge=1, le=100)
+    """Number of rows per page (numOfRows wire parameter)."""
+
+    page_no: int = Field(default=1, ge=1)
+    """Page number, 1-indexed (pageNo wire parameter)."""
+
+    @model_validator(mode="after")
+    def _validate_legacy_sido(self) -> KoroadAccidentSearchInput:
+        """Reject legacy sido codes used with 2023+ year codes."""
+        year = self.search_year_cd.year
+        if self.si_do == SidoCode.GANGWON_LEGACY and year >= GANGWON_NEW_CODE_YEAR:
+            raise ValueError(
+                "sido=42 (강원도) is only valid for pre-2023 datasets. "
+                "Use sido=51 (강원특별자치도) for 2023+ data."
+            )
+        if self.si_do == SidoCode.JEONBUK_LEGACY and year >= JEONBUK_NEW_CODE_YEAR:
+            raise ValueError(
+                "sido=45 (전라북도) is only valid for pre-2023 datasets. "
+                "Use sido=52 (전북특별자치도) for 2023+ data."
+            )
+        return self
+
+
+class KoroadAccidentSearchOutput(BaseModel):
+    """Output from the koroad_accident_search tool."""
+
+    model_config = ConfigDict(frozen=True)
+
+    total_count: int
+    """Total number of hotspot records matching the query."""
+
+    page_no: int
+    """Current page number."""
+
+    num_of_rows: int
+    """Rows per page requested."""
+
+    hotspots: list[AccidentHotspot]
+    """List of accident hotspot zones. Empty when no results."""
+
+
+# ---------------------------------------------------------------------------
+# Response normalization helpers (T015)
+# ---------------------------------------------------------------------------
+
+
+def _normalize_items(items: object) -> list[dict[str, Any]]:
+    """Normalize the ``items.item`` value from KOROAD wire response.
+
+    The KOROAD API returns:
+    - A list of dicts when multiple results are found.
+    - A single dict (not wrapped in a list) when exactly one result is found.
+    - An empty string, None, or missing key when no results are found.
+
+    This function normalizes all three cases to a plain Python list.
+
+    Args:
+        items: The raw value of ``response.body.items`` (or its ``item`` key).
+
+    Returns:
+        A list of item dicts. Empty list for no-data responses.
+    """
+    if not items:
+        return []
+    if isinstance(items, dict):
+        # Single-item quirk: wrap in list
+        return [items]
+    if isinstance(items, list):
+        return items
+    # Unexpected type; log and treat as empty
+    logger.warning("Unexpected items type %s from KOROAD API; treating as empty", type(items))
+    return []
+
+
+def _parse_response(raw: dict[str, Any]) -> KoroadAccidentSearchOutput:
+    """Parse the full KOROAD JSON response body into a KoroadAccidentSearchOutput.
+
+    Args:
+        raw: Parsed JSON dict from the KOROAD API.
+
+    Returns:
+        Validated KoroadAccidentSearchOutput.
+
+    Raises:
+        ToolExecutionError: If resultCode is not "00".
+    """
+    header = raw.get("response", {}).get("header", {})
+    result_code = str(header.get("resultCode", ""))
+    result_msg = str(header.get("resultMsg", "Unknown error"))
+
+    if result_code != "00":
+        raise ToolExecutionError(
+            "koroad_accident_search",
+            f"KOROAD API returned error: code={result_code!r} msg={result_msg!r}",
+        )
+
+    body = raw.get("response", {}).get("body", {})
+    total_count = int(body.get("totalCount", 0))
+    page_no = int(body.get("pageNo", 1))
+    num_of_rows = int(body.get("numOfRows", 10))
+
+    # items may be {"item": [...]} or {"item": {}} or "" or missing
+    raw_items = body.get("items", {})
+    if isinstance(raw_items, str) or not raw_items:
+        item_list: list[dict[str, Any]] = []
+    else:
+        raw_item = raw_items.get("item", [])
+        item_list = _normalize_items(raw_item)
+
+    hotspots = [AccidentHotspot(**item) for item in item_list]
+
+    return KoroadAccidentSearchOutput(
+        total_count=total_count,
+        page_no=page_no,
+        num_of_rows=num_of_rows,
+        hotspots=hotspots,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Async adapter function (T016)
+# ---------------------------------------------------------------------------
+
+
+async def _call(
+    inp: KoroadAccidentSearchInput,
+    *,
+    client: httpx.AsyncClient | None = None,
+) -> dict[str, Any]:
+    """Async adapter for koroad_accident_search.
+
+    Fetches accident hotspot data from the KOROAD getRestFrequentzoneLg endpoint.
+    Handles JSON vs. XML content-type guard, error code mapping, and response parsing.
+
+    Args:
+        inp: Validated input parameters.
+        client: Optional httpx.AsyncClient for test injection. If None, a new
+                client is created for this call.
+
+    Returns:
+        A plain dict matching KoroadAccidentSearchOutput schema.
+
+    Raises:
+        ConfigurationError: If KOSMOS_KOROAD_API_KEY is not set.
+        ToolExecutionError: If the API returns a non-"00" result code.
+    """
+    api_key = _require_env("KOSMOS_KOROAD_API_KEY")
+
+    params: dict[str, str | int] = {
+        "serviceKey": api_key,
+        "searchYearCd": inp.search_year_cd.value,
+        "siDo": inp.si_do.value,
+        "numOfRows": inp.num_of_rows,
+        "pageNo": inp.page_no,
+        "_type": "json",
+    }
+    if inp.gu_gun is not None:
+        params["guGun"] = inp.gu_gun.value
+
+    own_client = client is None
+    _client: httpx.AsyncClient = httpx.AsyncClient() if own_client else client  # type: ignore[assignment]
+    assert _client is not None  # narrowed: always an AsyncClient at this point
+
+    try:
+        logger.debug(
+            "Calling KOROAD getRestFrequentzoneLg: sido=%s gugun=%s year=%s",
+            inp.si_do.value,
+            inp.gu_gun,
+            inp.search_year_cd.value,
+        )
+        response = await _client.get(_BASE_URL, params=params, timeout=30.0)
+        response.raise_for_status()
+
+        # XML fallback guard: some data.go.kr endpoints ignore _type=json
+        content_type = response.headers.get("content-type", "")
+        if "xml" in content_type.lower() and "json" not in content_type.lower():
+            raise ToolExecutionError(
+                "koroad_accident_search",
+                f"KOROAD API returned XML instead of JSON (Content-Type: {content_type!r}). "
+                "Add Accept: application/json header or check _type parameter.",
+            )
+
+        raw = response.json()
+        output = _parse_response(raw)
+        return output.model_dump()
+
+    finally:
+        if own_client:
+            await _client.aclose()
+
+
+# ---------------------------------------------------------------------------
+# Tool definition and registration helper (T017)
+# ---------------------------------------------------------------------------
+
+KOROAD_ACCIDENT_SEARCH_TOOL = GovAPITool(
+    id="koroad_accident_search",
+    name_ko="교통사고 위험지역 조회",
+    provider="도로교통공단 (KOROAD)",
+    category=["교통안전", "사고통계", "위험지역"],
+    endpoint=_BASE_URL,
+    auth_type="api_key",
+    input_schema=KoroadAccidentSearchInput,
+    output_schema=KoroadAccidentSearchOutput,
+    search_hint=(
+        "교통사고 위험지역 조회 사고다발구역 지자체별 위험지점 "
+        "accident hotspot dangerous zone traffic safety municipality"
+    ),
+    requires_auth=False,
+    is_concurrency_safe=True,
+    is_personal_data=False,
+    cache_ttl_seconds=3600,
+    rate_limit_per_minute=10,
+    is_core=True,
+)
+
+
+def register(registry: object, executor: object) -> None:
+    """Register KOROAD accident search tool and its adapter.
+
+    Args:
+        registry: A ToolRegistry instance.
+        executor: A ToolExecutor instance.
+    """
+    from kosmos.tools.executor import ToolExecutor
+    from kosmos.tools.registry import ToolRegistry
+
+    assert isinstance(registry, ToolRegistry)
+    assert isinstance(executor, ToolExecutor)
+
+    async def _adapter(inp: BaseModel) -> dict[str, Any]:
+        assert isinstance(inp, KoroadAccidentSearchInput)
+        return await _call(inp)
+
+    registry.register(KOROAD_ACCIDENT_SEARCH_TOOL)
+    executor.register_adapter("koroad_accident_search", _adapter)
+    logger.info("Registered tool: koroad_accident_search")
