@@ -133,7 +133,20 @@ Given that feature description, do this:
        Include both quantitative metrics (time, performance, volume) and qualitative measures (user satisfaction, task completion)
        Each criterion must be verifiable without implementation details
     7. Identify Key Entities (if data involved)
-    8. Return: SUCCESS (spec ready for planning)
+    8. **Extract Scope Boundaries & Deferred Items** (MANDATORY):
+       - Scan the feature description and generated requirements for implicit scope exclusions
+       - Identify any capabilities mentioned as "future", "v2", "Phase 2+", "separate epic", or "not in this release"
+       - For each identified item, classify as:
+         - **Out of Scope (Permanent)**: Will never be part of this feature (e.g., platform incompatibilities, architectural constraints)
+         - **Deferred to Future Work**: Will be done but not in this epic
+       - For deferred items, populate the structured table with:
+         - `Item`: What capability is deferred
+         - `Reason for Deferral`: Why it cannot be done now (dependency, complexity, priority)
+         - `Target Epic/Phase`: Best guess at where it belongs (e.g., "Phase 2 — Agent Swarms", "TUI Epic")
+         - `Tracking Issue`: Set to `NEEDS TRACKING` (resolved later by `/speckit-taskstoissues`)
+       - If no scope exclusions exist, write "No items deferred — all requirements are addressed in this epic" in both subsections
+       - **CRITICAL**: Do NOT use free-text phrases like "separate epic" or "future phase" anywhere in the spec without a corresponding entry in the Deferred Items table. This is a constitution violation (Principle VI).
+    9. Return: SUCCESS (spec ready for planning)
 
 6. Write the specification to SPEC_FILE using the template structure, replacing placeholders with concrete details derived from the feature description (arguments) while preserving section order and headings.
 

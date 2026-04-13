@@ -108,7 +108,18 @@ You **MUST** consider the user input before proceeding (if not empty).
    - For each dependency → best practices task
    - For each integration → patterns task
 
-2. **Generate and dispatch research agents**:
+2. **Validate Deferred Items** (Constitution Principle VI gate):
+   - Read the "Scope Boundaries & Deferred Items" section from spec.md
+   - If section is missing: **ERROR** — spec template compliance violation, run `/speckit-specify` again
+   - For each item in the "Deferred to Future Work" table:
+     - If `Tracking Issue` is a GitHub issue number (#NNN): verify the issue exists and is open
+     - If `Tracking Issue` is `NEEDS TRACKING`: flag for resolution (will be resolved by `/speckit-taskstoissues`)
+   - Scan ALL spec.md text for unregistered deferral patterns:
+     - Patterns: "separate epic", "future epic", "Phase [2+]", "v2", "deferred to", "later release", "out of scope for v1"
+     - Any match NOT represented in the Deferred Items table: **ERROR** — add to table before continuing
+   - Report deferred item validation summary in research.md
+
+3. **Generate and dispatch research agents**:
 
    ```text
    For each unknown in Technical Context:
@@ -117,12 +128,12 @@ You **MUST** consider the user input before proceeding (if not empty).
      Task: "Find best practices for {tech} in {domain}"
    ```
 
-3. **Consolidate findings** in `research.md` using format:
+4. **Consolidate findings** in `research.md` using format:
    - Decision: [what was chosen]
    - Rationale: [why chosen]
    - Alternatives considered: [what else evaluated]
 
-**Output**: research.md with all NEEDS CLARIFICATION resolved
+**Output**: research.md with all NEEDS CLARIFICATION resolved, deferred items validated
 
 ### Phase 1: Design & Contracts
 

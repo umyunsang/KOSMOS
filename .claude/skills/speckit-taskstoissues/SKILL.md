@@ -71,6 +71,25 @@ git config --get remote.origin.url
 > [!CAUTION]
 > UNDER NO CIRCUMSTANCES EVER CREATE ISSUES IN REPOSITORIES THAT DO NOT MATCH THE REMOTE URL
 
+## Deferred Item Issue Creation
+
+After all task issues are created, handle deferred items from the spec:
+
+1. Read `FEATURE_DIR/spec.md` and locate the "Scope Boundaries & Deferred Items" section
+2. Parse the "Deferred to Future Work" table
+3. For each row where `Tracking Issue` is `NEEDS TRACKING`:
+   - Create a placeholder GitHub issue with:
+     - **Title**: `[Deferred] {Item}` (e.g., `[Deferred] Full TUI (Ink + React + Bun)`)
+     - **Body**: Include the deferral reason, target epic/phase, and a link back to the originating spec
+     - **Labels**: `needs-spec`, `deferred`
+   - Update the spec.md table: replace `NEEDS TRACKING` with the new issue number (e.g., `#291`)
+4. If the "Deferred to Future Work" table has no `NEEDS TRACKING` entries, skip silently
+5. Report: number of deferred-item issues created, with issue numbers
+
+> [!IMPORTANT]
+> Deferred item issues are placeholders for future epics. They ensure no work is silently dropped.
+> The project lead decides whether to promote them to full Epics or close them as won't-fix.
+
 ## Post-Execution Checks
 
 **Check for extension hooks (after tasks-to-issues conversion)**:

@@ -60,6 +60,18 @@ The permission pipeline implements the Public AI Impact Assessment (과제 54) r
 
 PIPA (Personal Information Protection Act, 개인정보보호법) governs all citizen data handling. Every data flow involving personal identifiers MUST pass through the 7-step permission gauntlet.
 
+### VI. Deferred Work Accountability
+
+Every scope exclusion or deferral MUST be explicitly tracked:
+
+- All deferred items MUST appear in the spec's "Scope Boundaries & Deferred Items" section
+- Each deferred item MUST reference a GitHub issue (Epic or Task) by the end of the speckit cycle
+- `/speckit-analyze` MUST flag untracked deferrals as CRITICAL
+- Free-text references to "separate epic", "future phase", or "v2" without a corresponding entry in the Deferred Items table are constitution violations
+- `/speckit-taskstoissues` creates placeholder issues for any "NEEDS TRACKING" markers and back-fills the spec with the issue number
+
+This prevents "ghost work" — deferred items that exist only in spec prose but have no tracking issue, leading to orphaned features that are never implemented.
+
 ## Development Standards
 
 - Python 3.12+, stdlib `logging` only (no `print()` outside CLI layer)
@@ -82,4 +94,4 @@ PIPA (Personal Information Protection Act, 개인정보보호법) governs all ci
 
 This constitution supersedes individual spec decisions. Any spec conflicting with these principles is a blocker — open an issue before proceeding. Amendments require an ADR under `docs/adr/` and user approval.
 
-**Version**: 1.0.0 | **Ratified**: 2026-04-12 | **Last Amended**: 2026-04-12
+**Version**: 1.1.0 | **Ratified**: 2026-04-12 | **Last Amended**: 2026-04-13

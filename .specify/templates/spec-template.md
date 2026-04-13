@@ -123,6 +123,35 @@
 -->
 
 - [Assumption about target users, e.g., "Users have stable internet connectivity"]
-- [Assumption about scope boundaries, e.g., "Mobile support is out of scope for v1"]
 - [Assumption about data/environment, e.g., "Existing authentication system will be reused"]
 - [Dependency on existing system/service, e.g., "Requires access to the existing user profile API"]
+
+## Scope Boundaries & Deferred Items *(mandatory)*
+
+<!--
+  IMPORTANT: Every feature spec MUST explicitly document what is NOT included
+  in this epic's scope. This section prevents "ghost work" — items mentioned
+  as "separate epic" or "future phase" in prose but never tracked.
+
+  /speckit-analyze flags any deferred item without a tracking issue as CRITICAL.
+-->
+
+### Out of Scope (Permanent)
+
+<!--
+  Items that will NEVER be part of this feature. Brief reason required.
+  Example: "Mobile native app — KOSMOS is a terminal-based platform"
+-->
+
+- [Item permanently excluded, with brief reason]
+
+### Deferred to Future Work
+
+<!--
+  Items that WILL be done but NOT in this epic. Each MUST have a tracking issue.
+  "NEEDS TRACKING" is a temporary marker resolved by /speckit-taskstoissues.
+-->
+
+| Item | Reason for Deferral | Target Epic/Phase | Tracking Issue |
+|------|---------------------|-------------------|----------------|
+| [Deferred capability] | [Why not now] | [Epic name or Phase N] | #NNN or NEEDS TRACKING |

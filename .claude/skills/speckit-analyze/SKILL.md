@@ -154,6 +154,20 @@ Focus on high-signal findings. Limit to 50 findings total; aggregate remainder i
 - Task ordering contradictions (e.g., integration tasks before foundational setup tasks without dependency note)
 - Conflicting requirements (e.g., one requires Next.js while other specifies Vue)
 
+#### G. Deferred Work Audit (Constitution Principle VI)
+
+- Verify spec.md contains "Scope Boundaries & Deferred Items" section
+  - If missing: **CRITICAL** — spec template compliance violation
+- For each "Deferred to Future Work" table entry:
+  - If `Tracking Issue` is `NEEDS TRACKING`: **HIGH** — must be resolved before `/speckit-implement`
+  - If `Tracking Issue` is `#NNN`: verify issue exists and is open (if verifiable via `gh`)
+  - If `Target Epic/Phase` is vague (e.g., "later", "TBD"): **MEDIUM** — should specify concrete target
+- Scan ALL three artifacts (spec.md, plan.md, tasks.md) for unregistered deferral language:
+  - Patterns: `separate epic`, `future epic`, `Phase [2-9]`, `v2`, `deferred to`, `later release`, `out of scope for v1`, `not in this`, `won't implement`
+  - Cross-reference each match against the Deferred Items table
+  - Any unregistered match: **HIGH** — ghost work risk, must be added to table or removed from text
+- Report: total deferred items, tracked vs untracked count, ghost-work risk assessment
+
 ### 5. Severity Assignment
 
 Use this heuristic to prioritize findings:
