@@ -190,7 +190,7 @@ class RecoveryExecutor:
                     elapsed_seconds=elapsed,
                     error_class=ErrorClass.APP_ERROR,
                     is_cached_fallback=False,
-                    circuit_state=CircuitState.OPEN,
+                    circuit_state=breaker.state,
                     tool_id=tool_id,
                 ),
             )
@@ -209,8 +209,17 @@ class RecoveryExecutor:
         # --- 4. Success path ---
         if result_dict is not None:
             breaker.record_success()
+            # Only cache data that passes output_schema validation so that
+            # invalid adapter responses are never served from the cache.
             if tool.cache_ttl_seconds > 0:
-                self._cache.put(tool_id, args_hash, result_dict, tool.cache_ttl_seconds)
+                try:
+                    tool.output_schema.model_validate(result_dict)
+                    self._cache.put(tool_id, args_hash, result_dict, tool.cache_ttl_seconds)
+                except Exception:
+                    logger.debug(
+                        "Skipping cache store for tool %s: output_schema validation failed",
+                        tool_id,
+                    )
             return RecoveryResult(
                 tool_result=ToolResult(
                     tool_id=tool_id,
@@ -283,11 +292,20 @@ class RecoveryExecutor:
     # ------------------------------------------------------------------
 
     def _model_to_dict(self, model: object) -> dict[str, object]:
-        """Convert a Pydantic model to a plain dict for cache key computation."""
+        """Convert a Pydantic model to a plain dict for cache key computation.
+
+        Uses ``mode="json"`` to ensure all values (Enums, datetimes, etc.)
+        are JSON-serialisable primitives.  Falls back to an empty dict on
+        any error to preserve the "never raises" guarantee.
+        """
         from pydantic import BaseModel as _BaseModel  # local import to avoid circular
 
-        if isinstance(model, _BaseModel):
-            return dict(model.model_dump())
+        try:
+            if isinstance(model, _BaseModel):
+                return dict(model.model_dump(mode="json"))
+        except Exception:
+            logger.debug("model_dump(mode='json') failed; falling back to empty dict")
+            return {}
         if isinstance(model, dict):
             return model
         return {}

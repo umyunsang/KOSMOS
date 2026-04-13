@@ -195,7 +195,7 @@ class REPLLoop:
                 sys.exit(130)
             self._last_ctrl_c = now
             await gen.aclose()
-            self._console.print("\n[dim][cancelled][/dim]")
+            self._console.print("\n[dim]\\[cancelled][/dim]")
             self._renderer.reset()
 
     async def _handle_slash_command(self, cmd: str) -> bool:
@@ -241,6 +241,10 @@ class REPLLoop:
         elif name == "new":
             self._engine.reset()
             self._session_id = str(uuid.uuid4())
+            # Reset display-level token counters for the new conversation.
+            # Note: the engine's UsageTracker budget is preserved across /new
+            # resets to enforce a per-session spending cap.  These counters
+            # only track display totals shown by /usage.
             self._total_input_tokens = 0
             self._total_output_tokens = 0
             self._renderer.reset()
