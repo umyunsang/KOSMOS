@@ -204,13 +204,22 @@ class RecoveryExecutor:
                 ),
             )
 
-        # --- 3. Record rate-limit slot (adapter is about to be called) ---
+        # --- 3. Wrap adapter with per-invocation rate-limit recording ---
+        # Each adapter call (including retries) records a rate-limit slot so
+        # the sliding window accurately reflects actual API call volume.
         if rate_limiter is not None:
-            rate_limiter.record()
+
+            async def _rate_limited_adapter(args: object) -> dict[str, object]:
+                rate_limiter.record()
+                return await adapter(args)
+
+            effective_adapter: AdapterFn = _rate_limited_adapter
+        else:
+            effective_adapter = adapter
 
         # --- 4. Retry loop ---
         result_dict, last_error, attempt_count = await retry_tool_call(
-            adapter,
+            effective_adapter,
             validated_input,
             self._classifier,
             self._policy,
