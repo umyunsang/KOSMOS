@@ -104,7 +104,7 @@ _REGION1_TO_SIDO: dict[str, SidoCode] = {
 # Maps district name strings to GugunCode members.
 # Key: Kakao API region_2depth_name value (usually the official Korean name).
 # Value: GugunCode member.  Returns None for unrecognized districts;
-#        callers should use GugunCode.SEOUL_JONGNO (0) or similar safe fallback.
+#        callers should use GugunCode.SEOUL_JONGNO or a similarly safe fallback.
 _REGION2_TO_GUGUN: dict[str, GugunCode] = {
     # --- Seoul (시도코드 11) ---
     "종로구": GugunCode.SEOUL_JONGNO,

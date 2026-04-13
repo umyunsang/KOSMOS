@@ -11,8 +11,8 @@ Key source: ``KOSMOS_KAKAO_API_KEY`` environment variable.
 Error mapping:
   - HTTP 401  → :exc:`~kosmos.tools.errors.ToolExecutionError` (auth_expired)
   - HTTP 429  → :exc:`~kosmos.tools.errors.ToolExecutionError` (rate_limit)
-  - timeout   → :exc:`~kosmos.tools.errors.ToolExecutionError` (timeout)
-  - other 4xx/5xx → :exc:`~kosmos.tools.errors.ToolExecutionError`
+  - timeout   → :exc:`httpx.TimeoutException` (propagated for recovery classifier)
+  - other 4xx/5xx → :exc:`httpx.HTTPStatusError` (propagated for recovery classifier)
 """
 
 from __future__ import annotations
@@ -196,7 +196,7 @@ async def search_address(
         "Authorization": f"KakaoAK {api_key}",
         "Accept": "application/json",
     }
-    request_params: dict[str, str | int] = {"query": query, "size": 1}
+    request_params: dict[str, str | int] = {"query": query, "size": 2}
 
     logger.debug("Kakao address search: query=%r", query)
 
@@ -235,24 +235,8 @@ async def search_address(
 
     except (ToolExecutionError, ConfigurationError):
         raise
-    except httpx.TimeoutException as exc:
-        raise ToolExecutionError(
-            tool_id="kakao_geocoding",
-            message=f"Kakao API request timed out after {_DEFAULT_TIMEOUT}s: {exc}",
-            cause=exc,
-        ) from exc
-    except httpx.HTTPStatusError as exc:
-        raise ToolExecutionError(
-            tool_id="kakao_geocoding",
-            message=f"Kakao API HTTP error: {exc.response.status_code}",
-            cause=exc,
-        ) from exc
-    except httpx.RequestError as exc:
-        raise ToolExecutionError(
-            tool_id="kakao_geocoding",
-            message=f"Network error reaching Kakao API: {exc}",
-            cause=exc,
-        ) from exc
+    # Let httpx exceptions (TimeoutException, HTTPStatusError, RequestError)
+    # propagate directly so the recovery classifier can recognise them.
     finally:
         if own_client and client is not None:
             await client.aclose()

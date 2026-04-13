@@ -198,8 +198,8 @@ class TestToolDefinition:
     def test_tool_id(self):
         assert ADDRESS_TO_GRID_TOOL.id == "address_to_grid"
 
-    def test_requires_auth_true(self):
-        assert ADDRESS_TO_GRID_TOOL.requires_auth is True
+    def test_requires_auth_false(self):
+        assert ADDRESS_TO_GRID_TOOL.requires_auth is False
 
     def test_is_personal_data_false(self):
         assert ADDRESS_TO_GRID_TOOL.is_personal_data is False

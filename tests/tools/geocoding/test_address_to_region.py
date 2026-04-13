@@ -144,8 +144,8 @@ class TestToolDefinition:
     def test_tool_id(self):
         assert ADDRESS_TO_REGION_TOOL.id == "address_to_region"
 
-    def test_requires_auth_true(self):
-        assert ADDRESS_TO_REGION_TOOL.requires_auth is True
+    def test_requires_auth_false(self):
+        assert ADDRESS_TO_REGION_TOOL.requires_auth is False
 
     def test_is_personal_data_false(self):
         assert ADDRESS_TO_REGION_TOOL.is_personal_data is False

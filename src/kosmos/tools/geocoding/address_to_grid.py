@@ -12,10 +12,9 @@ Execution flow:
   2. Extract ``(latitude, longitude)`` from the first document's ``y``/``x`` fields.
   3. Convert (lat, lon) to (nx, ny) using the KMA Lambert Conformal Conic
      projection via :func:`~kosmos.tools.kma.grid_coords.latlon_to_grid`.
-  4. On Kakao API timeout, fall back to
-     :func:`~kosmos.tools.kma.grid_coords.lookup_grid` using the
-     ``region_1depth_name`` from the last successful response (if available),
-     or the raw address string.
+  4. On Kakao API timeout or no results, fall back to
+     :func:`~kosmos.tools.kma.grid_coords.lookup_grid` using progressively
+     shorter prefix tokens of the raw address string.
 
 If the Kakao API returns zero results and the fallback also fails, ``nx``/``ny``
 are ``None`` and ``source`` is ``"not_found"``.
@@ -107,8 +106,17 @@ async def _resolve_from_kakao(
     result = await search_address(address, client=client)
 
     if not result.documents:
-        logger.info("address_to_grid: no Kakao results for query=%r", address)
+        logger.debug("address_to_grid: no Kakao results")
         return AddressToGridOutput(resolved_address="", source="not_found")
+
+    if len(result.documents) > 1:
+        raise ToolExecutionError(
+            tool_id="address_to_grid",
+            message=(
+                f"Ambiguous address: Kakao returned {result.meta.total_count} matches. "
+                "Please provide a more specific address."
+            ),
+        )
 
     doc = result.documents[0]
 
@@ -160,9 +168,8 @@ def _fallback_local_lookup(address: str) -> AddressToGridOutput:
     for candidate in candidates:
         try:
             nx, ny = lookup_grid(candidate)
-            logger.info(
-                "address_to_grid: table fallback matched %r → nx=%d ny=%d",
-                candidate,
+            logger.debug(
+                "address_to_grid: table fallback matched → nx=%d ny=%d",
                 nx,
                 ny,
             )
@@ -175,7 +182,7 @@ def _fallback_local_lookup(address: str) -> AddressToGridOutput:
         except ValueError:
             continue
 
-    logger.warning("address_to_grid: fallback lookup failed for address=%r", address)
+    logger.debug("address_to_grid: fallback lookup found no match")
     return AddressToGridOutput(resolved_address="", source="not_found")
 
 
@@ -192,7 +199,7 @@ async def _call(
     """Adapter entry point for the address_to_grid tool.
 
     Attempts Kakao geocoding first; falls back to the static KMA table on
-    :exc:`~kosmos.tools.errors.ToolExecutionError` caused by a timeout.
+    :exc:`httpx.TimeoutException`.
 
     Args:
         params: Validated input parameters.
@@ -209,16 +216,10 @@ async def _call(
 
     try:
         output = await _resolve_from_kakao(params.address, client=client)
-    except ToolExecutionError as exc:
-        # On timeout, attempt static-table fallback; re-raise other errors.
-        if "timed out" in str(exc).lower():
-            logger.warning(
-                "address_to_grid: Kakao timed out for address=%r, using table fallback",
-                params.address,
-            )
-            output = _fallback_local_lookup(params.address)
-        else:
-            raise
+    except httpx.TimeoutException:
+        # On timeout, attempt static-table fallback.
+        logger.debug("address_to_grid: Kakao timed out, using table fallback")
+        output = _fallback_local_lookup(params.address)
 
     # If Kakao returned no results, also try static-table fallback.
     if output.source == "not_found":
@@ -226,9 +227,8 @@ async def _call(
         if fallback.source != "not_found":
             output = fallback
 
-    logger.info(
-        "address_to_grid: address=%r → nx=%s ny=%s source=%s",
-        params.address,
+    logger.debug(
+        "address_to_grid: resolved nx=%s ny=%s source=%s",
         output.nx,
         output.ny,
         output.source,
@@ -253,7 +253,7 @@ ADDRESS_TO_GRID_TOOL = GovAPITool(
         "주소 기상격자 좌표 변환 nx ny 날씨 위치 기상청 격자 "
         "address kma grid nx ny weather location geocoding"
     ),
-    requires_auth=True,
+    requires_auth=False,
     is_concurrency_safe=True,
     is_personal_data=False,
     cache_ttl_seconds=86400,
@@ -278,4 +278,4 @@ def register(registry: ToolRegistry, executor: ToolExecutor) -> None:
 
     registry.register(ADDRESS_TO_GRID_TOOL)
     executor.register_adapter("address_to_grid", cast(AdapterFn, _call))
-    logger.info("Registered tool: address_to_grid")
+    logger.debug("Registered tool: address_to_grid")

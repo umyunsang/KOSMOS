@@ -29,6 +29,7 @@ from typing import Any, cast
 import httpx
 from pydantic import BaseModel, ConfigDict, Field
 
+from kosmos.tools.errors import ToolExecutionError
 from kosmos.tools.executor import ToolExecutor
 from kosmos.tools.geocoding.kakao_client import search_address
 from kosmos.tools.geocoding.region_mapping import region1_to_sido, region2_to_gugun
@@ -107,8 +108,17 @@ async def _resolve(
     result = await search_address(address, client=client)
 
     if not result.documents:
-        logger.info("address_to_region: no Kakao results for query=%r", address)
+        logger.debug("address_to_region: no Kakao results")
         return AddressToRegionOutput(resolved_address="")
+
+    if len(result.documents) > 1:
+        raise ToolExecutionError(
+            tool_id="address_to_region",
+            message=(
+                f"Ambiguous address: Kakao returned {result.meta.total_count} matches. "
+                "Please provide a more specific address."
+            ),
+        )
 
     doc = result.documents[0]
 
@@ -164,9 +174,8 @@ async def _call(
 
     output = await _resolve(params.address, client=client)
 
-    logger.info(
-        "address_to_region: address=%r → sido_code=%s gugun_code=%s",
-        params.address,
+    logger.debug(
+        "address_to_region: resolved sido_code=%s gugun_code=%s",
         output.sido_code,
         output.gugun_code,
     )
@@ -190,7 +199,7 @@ ADDRESS_TO_REGION_TOOL = GovAPITool(
         "주소 지역코드 변환 시도코드 구군코드 카카오 지오코딩 "
         "address region code geocoding sido gugun kakao location"
     ),
-    requires_auth=True,
+    requires_auth=False,
     is_concurrency_safe=True,
     is_personal_data=False,
     cache_ttl_seconds=86400,
@@ -215,4 +224,4 @@ def register(registry: ToolRegistry, executor: ToolExecutor) -> None:
 
     registry.register(ADDRESS_TO_REGION_TOOL)
     executor.register_adapter("address_to_region", cast(AdapterFn, _call))
-    logger.info("Registered tool: address_to_region")
+    logger.debug("Registered tool: address_to_region")

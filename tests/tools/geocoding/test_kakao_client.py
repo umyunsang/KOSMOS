@@ -163,11 +163,10 @@ class TestSearchAddress:
         assert "429" in str(exc_info.value)
 
     @pytest.mark.asyncio
-    async def test_timeout_raises_tool_execution_error(self, monkeypatch):
+    async def test_timeout_propagates_as_httpx_exception(self, monkeypatch):
         monkeypatch.setenv("KOSMOS_KAKAO_API_KEY", "test-key")
         mock_client = AsyncMock(spec=httpx.AsyncClient)
         mock_client.get.side_effect = httpx.TimeoutException("timed out")
 
-        with pytest.raises(ToolExecutionError) as exc_info:
+        with pytest.raises(httpx.TimeoutException):
             await search_address("서울 강남구", client=mock_client)
-        assert "timed out" in str(exc_info.value).lower()
