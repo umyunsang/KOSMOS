@@ -11,7 +11,7 @@ Marked ``@pytest.mark.live`` and skipped by default. Run with::
 Required environment variables (validated by conftest fixtures):
     KOSMOS_FRIENDLI_TOKEN     — FriendliAI Serverless API token
     KOSMOS_DATA_GO_KR_API_KEY — data.go.kr public data portal key
-    KOSMOS_KOROAD_API_KEY     — KOROAD open data portal key
+    KOSMOS_DATA_GO_KR_API_KEY — data.go.kr public data portal key (shared by KMA + KOROAD)
 """
 
 from __future__ import annotations
@@ -225,8 +225,10 @@ async def test_live_e2e_multi_turn_context(
             f"Turn 1 event types: {[e.type for e in turn1_events]}"
         )
 
-        # Pause between turns to avoid FriendliAI serverless rate limiting
-        await asyncio.sleep(5)
+        # Pause between turns to avoid FriendliAI serverless rate limiting.
+        # K-EXAONE Serverless has aggressive per-minute rate limits; 30s
+        # is needed because turn 1 may have used multiple LLM iterations.
+        await asyncio.sleep(30)
 
         # --- Turn 2: follow-up query with conversation history ---
         async for event in engine.run(_SCENARIO1_FOLLOWUP_QUERY):

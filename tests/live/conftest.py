@@ -22,8 +22,7 @@ import pytest_asyncio
 
 _LIVE_ENV_VARS = {
     "KOSMOS_FRIENDLI_TOKEN": "FriendliAI Serverless API token",
-    "KOSMOS_DATA_GO_KR_API_KEY": "data.go.kr public data portal key",
-    "KOSMOS_KOROAD_API_KEY": "KOROAD open data portal key",
+    "KOSMOS_DATA_GO_KR_API_KEY": "data.go.kr public data portal key (shared by KMA + KOROAD)",
 }
 
 
@@ -57,8 +56,8 @@ def data_go_kr_api_key() -> str:
 
 @pytest.fixture(scope="session")
 def koroad_api_key() -> str:
-    """Return the KOROAD API key from the environment."""
-    return _require_env("KOSMOS_KOROAD_API_KEY")
+    """Return the KOROAD API key (same as data.go.kr key) from the environment."""
+    return _require_env("KOSMOS_DATA_GO_KR_API_KEY")
 
 
 # ---------------------------------------------------------------------------
@@ -71,10 +70,10 @@ async def _live_rate_limit_pause() -> AsyncIterator[None]:
     """Pause after each live test to avoid FriendliAI 429 rate limiting.
 
     FriendliAI Serverless has aggressive per-minute rate limits.
-    A 5-second cooling period between tests prevents cascading 429 errors.
+    A 10-second cooling period between tests prevents cascading 429 errors.
     """
     yield
-    await asyncio.sleep(5)
+    await asyncio.sleep(10)
 
 
 @pytest_asyncio.fixture

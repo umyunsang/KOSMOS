@@ -69,8 +69,8 @@ class RoadRiskScoreInput(BaseModel):
     si_do: SidoCode
     """Province/city code for KOROAD query."""
 
-    gu_gun: GugunCode | None = None
-    """Optional district code."""
+    gu_gun: GugunCode
+    """District code for KOROAD query. Required by the KOROAD API."""
 
     search_year_cd: SearchYearCd | None = None
     """Dataset year code; defaults to GENERAL_2024 when None."""

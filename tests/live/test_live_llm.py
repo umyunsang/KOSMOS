@@ -36,11 +36,14 @@ async def test_live_llm_stream_basic(friendli_token: str) -> None:
     The ``friendli_token`` fixture ensures ``KOSMOS_FRIENDLI_TOKEN`` is set in
     the environment before LLMClient reads it.
     """
-    messages = [ChatMessage(role="user", content="안녕하세요, 간단하게 인사해주세요.")]
+    messages = [ChatMessage(role="user", content="한 문장으로 짧게 인사해주세요.")]
     events: list[StreamEvent] = []
 
     async with LLMClient() as client:
-        async for event in client.stream(messages, max_tokens=50):
+        # K-EXAONE uses reasoning_content tokens before content tokens.
+        # max_tokens must be large enough: reasoning can consume 1000+ tokens
+        # before the model begins emitting actual content deltas.
+        async for event in client.stream(messages, max_tokens=4096):
             events.append(event)
 
     # At least one content_delta event must be present
@@ -95,7 +98,8 @@ async def test_live_llm_stream_with_tool_definitions(friendli_token: str) -> Non
     events: list[StreamEvent] = []
 
     async with LLMClient() as client:
-        async for event in client.stream(messages, tools=[weather_tool], max_tokens=50):
+        # K-EXAONE uses reasoning_content tokens before content tokens.
+        async for event in client.stream(messages, tools=[weather_tool], max_tokens=300):
             events.append(event)
 
     # Either content or tool calls must be present — the model chose one path

@@ -108,7 +108,6 @@ _DEFAULT_FIXTURES: dict[str, tuple[Path, str]] = {
 # ---------------------------------------------------------------------------
 
 _REQUIRED_ENV_VARS: dict[str, str] = {
-    "KOSMOS_KOROAD_API_KEY": "test-koroad-key-e2e",
     "KOSMOS_DATA_GO_KR_API_KEY": "test-data-go-kr-key-e2e",
 }
 
@@ -118,7 +117,7 @@ _REQUIRED_ENV_VARS: dict[str, str] = {
 # ---------------------------------------------------------------------------
 
 # RoadRiskScoreInput JSON: si_do=11 (Seoul), nx=61, ny=126
-_ROAD_RISK_SCORE_ARGS = json.dumps({"si_do": 11, "nx": 61, "ny": 126})
+_ROAD_RISK_SCORE_ARGS = json.dumps({"si_do": 11, "gu_gun": 680, "nx": 61, "ny": 126})
 
 # --- Happy-path: Iteration 1 — LLM requests road_risk_score tool ---
 TOOL_CALL_ROAD_RISK: list[StreamEvent] = [

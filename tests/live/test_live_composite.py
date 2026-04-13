@@ -2,7 +2,7 @@
 """Live validation tests for the road_risk_score composite adapter.
 
 Hits the real KOROAD and KMA APIs — no mocks.  Tests hard-fail if either
-``KOSMOS_KOROAD_API_KEY`` or ``KOSMOS_DATA_GO_KR_API_KEY`` is unset.
+``KOSMOS_DATA_GO_KR_API_KEY`` or ``KOSMOS_DATA_GO_KR_API_KEY`` is unset.
 All assertions are structural (types, ranges, keys); no specific values.
 """
 
@@ -15,7 +15,7 @@ from kosmos.tools.composite.road_risk_score import (
     RoadRiskScoreOutput,
     _call,
 )
-from kosmos.tools.koroad.code_tables import SidoCode
+from kosmos.tools.koroad.code_tables import GugunCode, SidoCode
 
 # Seoul KMA grid coordinates (standard reference point)
 _SEOUL_NX = 60
@@ -47,11 +47,12 @@ async def test_live_road_risk_score_basic(
     Does NOT assert specific values — only structure, types, and valid ranges.
     Hard-fails if any required env var is missing (via conftest fixtures).
     """
-    monkeypatch.setenv("KOSMOS_KOROAD_API_KEY", koroad_api_key)
+    monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", koroad_api_key)
     monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", data_go_kr_api_key)
 
     inp = RoadRiskScoreInput(
         si_do=SidoCode.SEOUL,
+        gu_gun=GugunCode.SEOUL_GANGNAM,
         nx=_SEOUL_NX,
         ny=_SEOUL_NY,
     )
@@ -109,11 +110,12 @@ async def test_live_road_risk_score_parses_to_model(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Verify the raw _call() dict parses cleanly into RoadRiskScoreOutput."""
-    monkeypatch.setenv("KOSMOS_KOROAD_API_KEY", koroad_api_key)
+    monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", koroad_api_key)
     monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", data_go_kr_api_key)
 
     inp = RoadRiskScoreInput(
         si_do=SidoCode.SEOUL,
+        gu_gun=GugunCode.SEOUL_GANGNAM,
         nx=_SEOUL_NX,
         ny=_SEOUL_NY,
     )
@@ -144,11 +146,12 @@ async def test_live_road_risk_score_partial_failure_tolerance(
     The structural contract (partial failure → non-empty data_gaps) is
     covered by unit tests using mocked inner adapters.
     """
-    monkeypatch.setenv("KOSMOS_KOROAD_API_KEY", koroad_api_key)
+    monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", koroad_api_key)
     monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", data_go_kr_api_key)
 
     inp = RoadRiskScoreInput(
         si_do=SidoCode.SEOUL,
+        gu_gun=GugunCode.SEOUL_GANGNAM,
         nx=_SEOUL_NX,
         ny=_SEOUL_NY,
     )

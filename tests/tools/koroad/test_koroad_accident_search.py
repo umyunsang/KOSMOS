@@ -22,7 +22,7 @@ from pydantic import ValidationError
 
 from kosmos.tools.errors import ConfigurationError, ToolExecutionError
 from kosmos.tools.executor import ToolExecutor
-from kosmos.tools.koroad.code_tables import SearchYearCd, SidoCode
+from kosmos.tools.koroad.code_tables import GugunCode, SearchYearCd, SidoCode
 from kosmos.tools.koroad.koroad_accident_search import (
     KOROAD_ACCIDENT_SEARCH_TOOL,
     KoroadAccidentSearchInput,
@@ -113,12 +113,51 @@ class TestParseResponse:
         assert output.total_count == 0
         assert output.hotspots == []
 
+    def test_nodata_error_returns_empty(self) -> None:
+        raw = {"resultCode": "03", "resultMsg": "NODATA_ERROR", "pageNo": 1, "numOfRows": 10}
+        output = _parse_response(raw)
+        assert output.total_count == 0
+        assert output.hotspots == []
+        assert output.page_no == 1
+
     def test_error_code_raises(self) -> None:
         raw = _load_fixture("koroad_error.json")
         with pytest.raises(ToolExecutionError) as exc_info:
             _parse_response(raw)
         assert "30" in str(exc_info.value)
         assert "SERVICE_KEY_IS_NOT_REGISTERED_ERROR" in str(exc_info.value)
+
+    def test_coerce_numeric_string_fields(self) -> None:
+        """Real KOROAD API returns afos_fid as int; Pydantic should coerce to str."""
+        raw = {
+            "resultCode": "00",
+            "resultMsg": "NORMAL_CODE",
+            "items": {
+                "item": {
+                    "spot_cd": "2025119.0001",
+                    "spot_nm": "강남대로 교차로",
+                    "sido_sgg_nm": "서울 강남구",
+                    "bjd_cd": "1168010100",
+                    "occrrnc_cnt": 15,
+                    "caslt_cnt": 22,
+                    "dth_dnv_cnt": 0,
+                    "se_dnv_cnt": 3,
+                    "sl_dnv_cnt": 10,
+                    "wnd_dnv_cnt": 9,
+                    "la_crd": 37.4979,
+                    "lo_crd": 127.0276,
+                    "geom_json": None,
+                    "afos_id": "2025119",
+                    "afos_fid": 7192978,
+                }
+            },
+            "totalCount": 1,
+            "numOfRows": 1,
+            "pageNo": 1,
+        }
+        output = _parse_response(raw)
+        assert len(output.hotspots) == 1
+        assert output.hotspots[0].afos_fid == "7192978"
 
 
 # ---------------------------------------------------------------------------
@@ -133,10 +172,11 @@ class TestKoroadAccidentSearchInput:
         inp = KoroadAccidentSearchInput(
             search_year_cd=SearchYearCd.GENERAL_2024,
             si_do=SidoCode.SEOUL,
+            gu_gun=GugunCode.SEOUL_GANGNAM,
         )
         assert inp.si_do == SidoCode.SEOUL
         assert inp.search_year_cd == SearchYearCd.GENERAL_2024
-        assert inp.gu_gun is None
+        assert inp.gu_gun == GugunCode.SEOUL_GANGNAM
         assert inp.num_of_rows == 10
         assert inp.page_no == 1
 
@@ -145,6 +185,7 @@ class TestKoroadAccidentSearchInput:
             KoroadAccidentSearchInput(
                 search_year_cd=SearchYearCd.GENERAL_2024,
                 si_do=SidoCode.GANGWON_LEGACY,
+                gu_gun=GugunCode.SEOUL_GANGNAM,
             )
         assert "42" in str(exc_info.value) or "강원도" in str(exc_info.value)
 
@@ -153,6 +194,7 @@ class TestKoroadAccidentSearchInput:
             KoroadAccidentSearchInput(
                 search_year_cd=SearchYearCd.GENERAL_2024,
                 si_do=SidoCode.JEONBUK_LEGACY,
+                gu_gun=GugunCode.SEOUL_GANGNAM,
             )
         assert "45" in str(exc_info.value) or "전라북도" in str(exc_info.value)
 
@@ -161,22 +203,24 @@ class TestKoroadAccidentSearchInput:
         inp = KoroadAccidentSearchInput(
             search_year_cd=SearchYearCd.GENERAL_2022,
             si_do=SidoCode.GANGWON_LEGACY,
+            gu_gun=GugunCode.SEOUL_GANGNAM,
         )
         assert inp.si_do == SidoCode.GANGWON_LEGACY
 
-    def test_optional_gugun(self) -> None:
-        inp = KoroadAccidentSearchInput(
-            search_year_cd=SearchYearCd.GENERAL_2024,
-            si_do=SidoCode.SEOUL,
-            gu_gun=None,
-        )
-        assert inp.gu_gun is None
+    def test_missing_gugun_raises(self) -> None:
+        """gu_gun is required by the KOROAD API — omitting it must raise."""
+        with pytest.raises(ValidationError):
+            KoroadAccidentSearchInput(
+                search_year_cd=SearchYearCd.GENERAL_2024,
+                si_do=SidoCode.SEOUL,
+            )
 
     def test_num_of_rows_too_large_raises(self) -> None:
         with pytest.raises(ValidationError):
             KoroadAccidentSearchInput(
                 search_year_cd=SearchYearCd.GENERAL_2024,
                 si_do=SidoCode.SEOUL,
+                gu_gun=GugunCode.SEOUL_GANGNAM,
                 num_of_rows=101,
             )
 
@@ -185,6 +229,7 @@ class TestKoroadAccidentSearchInput:
             KoroadAccidentSearchInput(
                 search_year_cd=SearchYearCd.GENERAL_2024,
                 si_do=SidoCode.SEOUL,
+                gu_gun=GugunCode.SEOUL_GANGNAM,
                 num_of_rows=0,
             )
 
@@ -192,11 +237,13 @@ class TestKoroadAccidentSearchInput:
         inp_low = KoroadAccidentSearchInput(
             search_year_cd=SearchYearCd.GENERAL_2024,
             si_do=SidoCode.SEOUL,
+            gu_gun=GugunCode.SEOUL_GANGNAM,
             num_of_rows=1,
         )
         inp_high = KoroadAccidentSearchInput(
             search_year_cd=SearchYearCd.GENERAL_2024,
             si_do=SidoCode.SEOUL,
+            gu_gun=GugunCode.SEOUL_GANGNAM,
             num_of_rows=100,
         )
         assert inp_low.num_of_rows == 1
@@ -212,7 +259,7 @@ class TestCall:
     """_call async adapter with mocked httpx."""
 
     async def test_success_flow(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.setenv("KOSMOS_KOROAD_API_KEY", "test-key")
+        monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", "test-key")
         fixture_data = _load_fixture("koroad_success.json")
 
         mock_response = MagicMock(spec=httpx.Response)
@@ -227,6 +274,7 @@ class TestCall:
         inp = KoroadAccidentSearchInput(
             search_year_cd=SearchYearCd.GENERAL_2024,
             si_do=SidoCode.SEOUL,
+            gu_gun=GugunCode.SEOUL_GANGNAM,
         )
         result = await _call(inp, client=mock_client)
 
@@ -235,17 +283,18 @@ class TestCall:
         assert result["hotspots"][0]["spot_cd"] == "2025119.0001"
 
     async def test_missing_api_key(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.delenv("KOSMOS_KOROAD_API_KEY", raising=False)
+        monkeypatch.delenv("KOSMOS_DATA_GO_KR_API_KEY", raising=False)
         inp = KoroadAccidentSearchInput(
             search_year_cd=SearchYearCd.GENERAL_2024,
             si_do=SidoCode.SEOUL,
+            gu_gun=GugunCode.SEOUL_GANGNAM,
         )
         with pytest.raises(ConfigurationError) as exc_info:
             await _call(inp)
-        assert "KOSMOS_KOROAD_API_KEY" in str(exc_info.value)
+        assert "KOSMOS_DATA_GO_KR_API_KEY" in str(exc_info.value)
 
     async def test_xml_content_type_guard(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.setenv("KOSMOS_KOROAD_API_KEY", "test-key")
+        monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", "test-key")
 
         mock_response = MagicMock(spec=httpx.Response)
         mock_response.status_code = 200
@@ -258,6 +307,7 @@ class TestCall:
         inp = KoroadAccidentSearchInput(
             search_year_cd=SearchYearCd.GENERAL_2024,
             si_do=SidoCode.SEOUL,
+            gu_gun=GugunCode.SEOUL_GANGNAM,
         )
         with pytest.raises(ToolExecutionError) as exc_info:
             await _call(inp, client=mock_client)

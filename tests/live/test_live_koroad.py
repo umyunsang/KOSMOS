@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import pytest
 
-from kosmos.tools.koroad.code_tables import SearchYearCd, SidoCode
+from kosmos.tools.koroad.code_tables import GugunCode, SearchYearCd, SidoCode
 from kosmos.tools.koroad.koroad_accident_search import (
     KoroadAccidentSearchInput,
     KoroadAccidentSearchOutput,
@@ -20,11 +20,12 @@ async def test_live_koroad_basic_search(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Call the real KOROAD API with Seoul/GENERAL_2024 and verify response structure."""
-    monkeypatch.setenv("KOSMOS_KOROAD_API_KEY", koroad_api_key)
+    monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", koroad_api_key)
 
     inp = KoroadAccidentSearchInput(
         search_year_cd=SearchYearCd.GENERAL_2024,
         si_do=SidoCode.SEOUL,
+        gu_gun=GugunCode.SEOUL_GANGNAM,
         num_of_rows=10,
         page_no=1,
     )
@@ -56,11 +57,12 @@ async def test_live_koroad_response_parses_to_output_model(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Verify the raw _call() dict parses cleanly into KoroadAccidentSearchOutput."""
-    monkeypatch.setenv("KOSMOS_KOROAD_API_KEY", koroad_api_key)
+    monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", koroad_api_key)
 
     inp = KoroadAccidentSearchInput(
         search_year_cd=SearchYearCd.GENERAL_2024,
         si_do=SidoCode.SEOUL,
+        gu_gun=GugunCode.SEOUL_GANGNAM,
         num_of_rows=10,
         page_no=1,
     )
@@ -80,11 +82,12 @@ async def test_live_koroad_pagination(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Request a single-row page and verify pagination fields are respected."""
-    monkeypatch.setenv("KOSMOS_KOROAD_API_KEY", koroad_api_key)
+    monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", koroad_api_key)
 
     inp = KoroadAccidentSearchInput(
         search_year_cd=SearchYearCd.GENERAL_2024,
         si_do=SidoCode.SEOUL,
+        gu_gun=GugunCode.SEOUL_GANGNAM,
         num_of_rows=1,
         page_no=1,
     )

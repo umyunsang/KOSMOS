@@ -1,29 +1,26 @@
 {
-  "response": {
-    "header": {"resultCode": "00", "resultMsg": "NORMAL_CODE"},
-    "body": {
-      "totalCount": 1,
-      "pageNo": 1,
-      "numOfRows": 10,
-      "items": {
-        "item": {
-          "spot_cd": "2025119.0099",
-          "spot_nm": "서초대로 교차로",
-          "sido_sgg_nm": "서울 서초구",
-          "bjd_cd": "1165010100",
-          "occrrnc_cnt": 5,
-          "caslt_cnt": 7,
-          "dth_dnv_cnt": 0,
-          "se_dnv_cnt": 1,
-          "sl_dnv_cnt": 3,
-          "wnd_dnv_cnt": 3,
-          "la_crd": 37.4837,
-          "lo_crd": 127.0089,
-          "geom_json": null,
-          "afos_id": "2025119",
-          "afos_fid": "0099"
-        }
-      }
+  "resultCode": "00",
+  "resultMsg": "NORMAL_CODE",
+  "items": {
+    "item": {
+      "spot_cd": "2025119.0099",
+      "spot_nm": "서초대로 교차로",
+      "sido_sgg_nm": "서울 서초구",
+      "bjd_cd": "1165010100",
+      "occrrnc_cnt": 5,
+      "caslt_cnt": 7,
+      "dth_dnv_cnt": 0,
+      "se_dnv_cnt": 1,
+      "sl_dnv_cnt": 3,
+      "wnd_dnv_cnt": 3,
+      "la_crd": 37.4837,
+      "lo_crd": 127.0089,
+      "geom_json": null,
+      "afos_id": "2025119",
+      "afos_fid": "0099"
     }
-  }
+  },
+  "totalCount": 1,
+  "numOfRows": 10,
+  "pageNo": 1
 }
