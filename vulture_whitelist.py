@@ -6,3 +6,9 @@ cls  # noqa: F821
 
 # __aexit__ protocol requires *args
 args  # noqa: F821
+
+# typer Option with callback — parameter parsed by typer, never read in function body
+version  # noqa: F821
+
+# InMemoryHistory.store_string override — base class uses string before calling super
+string  # noqa: F821

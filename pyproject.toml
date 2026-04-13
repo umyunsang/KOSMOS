@@ -13,7 +13,11 @@ dependencies = [
     "pydantic-settings>=2.0",
     "typer>=0.24.1",
     "rich>=13.0",
+    "prompt-toolkit>=3.0",
 ]
+
+[project.scripts]
+kosmos = "kosmos.cli.app:main"
 
 [project.optional-dependencies]
 dev = [
