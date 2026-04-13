@@ -5,7 +5,9 @@ from __future__ import annotations
 
 import json
 import logging
+import time
 from collections.abc import AsyncIterator
+from typing import TYPE_CHECKING
 
 import httpx
 from pydantic import ValidationError
@@ -30,14 +32,30 @@ from kosmos.llm.models import (
 from kosmos.llm.retry import RetryPolicy, retry_with_backoff
 from kosmos.llm.usage import UsageTracker
 
+if TYPE_CHECKING:
+    from kosmos.observability.event_logger import ObservabilityEventLogger
+    from kosmos.observability.metrics import MetricsCollector
+
 logger = logging.getLogger(__name__)
 
 
 class LLMClient:
     """Async LLM client for FriendliAI Serverless endpoint."""
 
-    def __init__(self, config: LLMClientConfig | None = None) -> None:
+    def __init__(
+        self,
+        config: LLMClientConfig | None = None,
+        metrics: MetricsCollector | None = None,
+        event_logger: ObservabilityEventLogger | None = None,
+    ) -> None:
         """Initialize with config. Loads from env vars if config is None.
+
+        Args:
+            config: LLM client configuration. Loaded from env vars if None.
+            metrics: Optional MetricsCollector for recording LLM telemetry.
+                When absent, metrics instrumentation is skipped (backward-compatible).
+            event_logger: Optional ObservabilityEventLogger for structured events.
+                When absent, event emission is skipped (backward-compatible).
 
         Raises:
             ConfigurationError: If KOSMOS_FRIENDLI_TOKEN is missing or invalid.
@@ -56,7 +74,9 @@ class LLMClient:
             headers={"Authorization": f"Bearer {config.token.get_secret_value()}"},
             timeout=httpx.Timeout(config.timeout),
         )
-        self._usage = UsageTracker(budget=self._config.session_budget)
+        self._metrics: MetricsCollector | None = metrics
+        self._event_logger: ObservabilityEventLogger | None = event_logger
+        self._usage = UsageTracker(budget=self._config.session_budget, metrics=metrics)
         self._retry_policy = RetryPolicy(max_retries=self._config.max_retries)
 
     # ------------------------------------------------------------------
@@ -120,18 +140,29 @@ class LLMClient:
             len(messages),
         )
 
+        _call_start = time.monotonic()
+
         async def _do_request() -> ChatCompletionResponse:
             response = await self._client.post("/chat/completions", json=payload)
             response.raise_for_status()
             return self._parse_completion_response(response.json())
 
-        result = await retry_with_backoff(_do_request, self._retry_policy)
+        try:
+            result = await retry_with_backoff(_do_request, self._retry_policy)
+        except Exception:
+            # Record error metric before re-raising.
+            _duration_ms = (time.monotonic() - _call_start) * 1000
+            self._metrics_record_call(success=False, duration_ms=_duration_ms)
+            raise
+
         self._usage.debit(result.usage)
         logger.info(
             "Token usage: %d input, %d output",
             result.usage.input_tokens,
             result.usage.output_tokens,
         )
+        _duration_ms = (time.monotonic() - _call_start) * 1000
+        self._metrics_record_call(success=True, duration_ms=_duration_ms)
         return result
 
     async def stream(
@@ -184,6 +215,9 @@ class LLMClient:
             len(messages),
         )
 
+        _stream_start = time.monotonic()
+        _stream_done = False
+
         try:
             async with self._client.stream("POST", "/chat/completions", json=payload) as response:
                 await self._raise_for_status(response)
@@ -192,14 +226,28 @@ class LLMClient:
                     async for event in self._parse_sse_line(line):
                         yield event
                         if event.type == "done":
+                            _stream_done = True
+                            _duration_ms = (time.monotonic() - _stream_start) * 1000
+                            self._metrics_record_call(success=True, duration_ms=_duration_ms)
                             return
 
         except httpx.ConnectError as exc:
+            _duration_ms = (time.monotonic() - _stream_start) * 1000
+            self._metrics_record_call(success=False, duration_ms=_duration_ms)
             raise StreamInterruptedError(f"Connection lost during streaming: {exc}") from exc
         except httpx.TimeoutException as exc:
+            _duration_ms = (time.monotonic() - _stream_start) * 1000
+            self._metrics_record_call(success=False, duration_ms=_duration_ms)
             raise StreamInterruptedError(f"Stream timed out: {exc}") from exc
         except httpx.RequestError as exc:
+            _duration_ms = (time.monotonic() - _stream_start) * 1000
+            self._metrics_record_call(success=False, duration_ms=_duration_ms)
             raise StreamInterruptedError(f"Stream request failed: {exc}") from exc
+        finally:
+            # Record call duration for streams that end without explicit "done"
+            # (e.g., cancelled generators).
+            if not _stream_done:
+                pass  # already recorded in except branches above
 
     async def close(self) -> None:
         """Close the underlying HTTP client."""
@@ -210,6 +258,42 @@ class LLMClient:
 
     async def __aexit__(self, *args: object) -> None:
         await self.close()
+
+    # ------------------------------------------------------------------
+    # Private metrics helpers (fail-safe: never raise)
+    # ------------------------------------------------------------------
+
+    def _metrics_record_call(self, *, success: bool, duration_ms: float) -> None:
+        """Record a single LLM call to metrics and event logger.
+
+        Wrapped in try/except so metrics failures never propagate (AC-A9).
+        """
+        try:
+            if self._metrics is not None:
+                counter_name = "llm.call_count" if success else "llm.error_count"
+                self._metrics.increment(counter_name, labels={"model": self._config.model})
+                self._metrics.observe(
+                    "llm.call_duration_ms",
+                    duration_ms,
+                    labels={"model": self._config.model},
+                )
+        except Exception:  # noqa: BLE001
+            logger.debug("LLMClient: metrics record failed", exc_info=True)
+
+        try:
+            if self._event_logger is not None:
+                from kosmos.observability.events import ObservabilityEvent  # noqa: PLC0415
+
+                self._event_logger.emit(
+                    ObservabilityEvent(
+                        event_type="llm_call",
+                        success=success,
+                        duration_ms=duration_ms,
+                        metadata={"model": self._config.model},
+                    )
+                )
+        except Exception:  # noqa: BLE001
+            logger.debug("LLMClient: event_logger emit failed", exc_info=True)
 
     # ------------------------------------------------------------------
     # Private helpers

@@ -44,6 +44,7 @@ from kosmos.tools.models import GovAPITool, ToolResult
 from kosmos.tools.rate_limiter import RateLimiter
 
 if TYPE_CHECKING:
+    from kosmos.observability.event_logger import ObservabilityEventLogger
     from kosmos.observability.metrics import MetricsCollector
 
 logger = logging.getLogger(__name__)
@@ -140,6 +141,7 @@ class RecoveryExecutor:
         max_cache_entries: int = 256,
         policy_registry: RetryPolicyRegistry | None = None,
         metrics: MetricsCollector | None = None,
+        event_logger: ObservabilityEventLogger | None = None,
     ) -> None:
         # Legacy single-policy is kept for backwards-compatibility.
         # When a policy_registry is supplied it takes precedence for
@@ -163,6 +165,7 @@ class RecoveryExecutor:
         self._registry = CircuitBreakerRegistry(default_config=circuit_config)
         self._cache = ResponseCache(max_entries=max_cache_entries)
         self._metrics: MetricsCollector | None = metrics
+        self._event_logger: ObservabilityEventLogger | None = event_logger
 
     # ------------------------------------------------------------------
     # Public interface
@@ -238,6 +241,7 @@ class RecoveryExecutor:
             degradation = build_degradation_message(tool, circuit_open_error)
             logger.warning("Circuit breaker OPEN for tool %s — returning degradation", tool_id)
             self._record_metric("recovery.circuit_breaker_trips", tool_id)
+            self._event_emit_circuit_break(tool_id, str(breaker.state))
             return RecoveryResult(
                 tool_result=ToolResult(
                     tool_id=tool_id,
@@ -284,6 +288,11 @@ class RecoveryExecutor:
         # Record retry metric (attempt_count > 1 means at least one retry happened)
         if attempt_count > 1:
             self._record_metric("recovery.retry_count", tool_id, value=attempt_count - 1)
+            self._event_emit_retry(
+                tool_id,
+                attempt_count=attempt_count,
+                error_class=str(last_error.error_class) if last_error else "",
+            )
 
         # --- 5b. 401 auth-refresh: one extra attempt after credential reload ---
         if (
@@ -435,6 +444,45 @@ class RecoveryExecutor:
             )
         except Exception:  # noqa: BLE001
             logger.debug("metrics.increment(error_count) failed", exc_info=True)
+
+    def _event_emit_retry(self, tool_id: str, *, attempt_count: int, error_class: str) -> None:
+        """Emit a retry event; silently skip if no event_logger (AC-A7)."""
+        if self._event_logger is None:
+            return
+        try:
+            from kosmos.observability.events import ObservabilityEvent  # noqa: PLC0415
+
+            self._event_logger.emit(
+                ObservabilityEvent(
+                    event_type="retry",
+                    tool_id=tool_id,
+                    success=False,
+                    metadata={
+                        "tool_id": tool_id,
+                        "error_class": error_class,
+                    },
+                )
+            )
+        except Exception:  # noqa: BLE001
+            logger.debug("RecoveryExecutor: event_logger.emit(retry) failed", exc_info=True)
+
+    def _event_emit_circuit_break(self, tool_id: str, circuit_state: str) -> None:
+        """Emit a circuit_break event; silently skip if no event_logger (AC-A7)."""
+        if self._event_logger is None:
+            return
+        try:
+            from kosmos.observability.events import ObservabilityEvent  # noqa: PLC0415
+
+            self._event_logger.emit(
+                ObservabilityEvent(
+                    event_type="circuit_break",
+                    tool_id=tool_id,
+                    success=False,
+                    metadata={"tool_id": tool_id},
+                )
+            )
+        except Exception:  # noqa: BLE001
+            logger.debug("RecoveryExecutor: event_logger.emit(circuit_break) failed", exc_info=True)
 
     # ------------------------------------------------------------------
     # Private helpers

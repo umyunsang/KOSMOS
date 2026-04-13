@@ -14,10 +14,12 @@ memory and exposes a ``snapshot()`` for periodic export or health-check
 endpoints.
 """
 
+from kosmos.observability.event_logger import ObservabilityEventLogger
 from kosmos.observability.events import ObservabilityEvent
 from kosmos.observability.metrics import MetricsCollector
 
 __all__ = [
     "MetricsCollector",
     "ObservabilityEvent",
+    "ObservabilityEventLogger",
 ]

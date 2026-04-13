@@ -7,6 +7,7 @@ import sys
 import time
 import uuid
 from collections.abc import AsyncGenerator, Iterable
+from typing import TYPE_CHECKING
 
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import InMemoryHistory
@@ -20,6 +21,9 @@ from kosmos.cli.renderer import EventRenderer
 from kosmos.engine.engine import QueryEngine
 from kosmos.engine.events import QueryEvent
 from kosmos.tools.registry import ToolRegistry
+
+if TYPE_CHECKING:
+    from kosmos.observability.metrics import MetricsCollector
 
 _WELCOME_BANNER = """[bold cyan]
  ██╗  ██╗ ██████╗ ███████╗███╗   ███╗ ██████╗ ███████╗
@@ -109,6 +113,7 @@ class REPLLoop:
         renderer: EventRenderer,
         resume_session_id: str | None = None,
         session_manager: object | None = None,
+        metrics: MetricsCollector | None = None,
     ) -> None:
         self._engine = engine
         self._registry = registry
@@ -123,6 +128,7 @@ class REPLLoop:
         # Lazy-initialised session manager (avoids import at module level for
         # callers that don't need persistence)
         self._session_manager = session_manager
+        self._metrics: MetricsCollector | None = metrics
 
     # ------------------------------------------------------------------
     # Public API
@@ -364,6 +370,9 @@ class REPLLoop:
         elif name == "resume":
             await self._cmd_resume(args)
 
+        elif name == "metrics":
+            self._cmd_metrics()
+
         return False
 
     async def _start_new_session(self) -> None:
@@ -461,6 +470,76 @@ class REPLLoop:
             )
         except (FileNotFoundError, ValueError) as exc:
             self._console.print(f"[yellow]세션을 재개할 수 없습니다:[/yellow] {escape(str(exc))}")
+
+    def _cmd_metrics(self) -> None:
+        """Render a snapshot of the MetricsCollector to the console (AC-A8).
+
+        Displays three sections: COUNTERS, HISTOGRAMS (p50/p95/p99/count),
+        and GAUGES.  Sections with no data are omitted.  When the collector
+        has no data at all, a clear "no data" message is shown.
+        """
+        from rich.table import Table  # noqa: PLC0415
+
+        if self._metrics is None:
+            self._console.print("[dim]Metrics collection is not enabled in this session.[/dim]")
+            return
+
+        try:
+            snap = self._metrics.snapshot()
+        except Exception:  # noqa: BLE001
+            import logging  # noqa: PLC0415
+
+            logging.getLogger(__name__).warning("Failed to snapshot metrics", exc_info=True)
+            self._console.print("[yellow]Failed to retrieve metrics snapshot.[/yellow]")
+            return
+
+        counters: dict[str, int] = snap.get("counters", {})  # type: ignore[assignment]
+        histograms: dict[str, dict[str, float]] = snap.get("histograms", {})  # type: ignore[assignment]
+        gauges: dict[str, float] = snap.get("gauges", {})  # type: ignore[assignment]
+
+        has_data = bool(counters or histograms or gauges)
+
+        if not has_data:
+            self._console.print("[dim]No metrics collected in this session.[/dim]")
+            return
+
+        self._console.print(Rule("[bold]Session Metrics[/bold]", style="cyan"))
+
+        # --- Counters ---
+        if counters:
+            tbl = Table(title="Counters", show_header=True, header_style="bold cyan")
+            tbl.add_column("Metric", style="cyan", no_wrap=True)
+            tbl.add_column("Value", justify="right")
+            for name, value in sorted(counters.items()):
+                tbl.add_row(name, str(value))
+            self._console.print(tbl)
+
+        # --- Histograms ---
+        if histograms:
+            tbl = Table(title="Histograms", show_header=True, header_style="bold magenta")
+            tbl.add_column("Metric", style="magenta", no_wrap=True)
+            tbl.add_column("p50 ms", justify="right")
+            tbl.add_column("p95 ms", justify="right")
+            tbl.add_column("p99 ms", justify="right")
+            tbl.add_column("count", justify="right")
+            for name, stats in sorted(histograms.items()):
+                tbl.add_row(
+                    name,
+                    f"{stats.get('p50', 0.0):.0f}",
+                    f"{stats.get('p95', 0.0):.0f}",
+                    f"{stats.get('p99', 0.0):.0f}",
+                    f"{stats.get('count', 0.0):.0f}",
+                )
+            self._console.print(tbl)
+
+        # --- Gauges ---
+        if gauges:
+            tbl = Table(title="Gauges", show_header=True, header_style="bold green")
+            tbl.add_column("Metric", style="green", no_wrap=True)
+            tbl.add_column("Value", justify="right")
+            for name, value in sorted(gauges.items()):
+                tbl.add_row(name, f"{value:.2f}")
+            self._console.print(tbl)
 
     def _show_welcome(self) -> None:
         """Display the welcome banner with session ID."""
