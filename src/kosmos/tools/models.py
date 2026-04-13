@@ -147,6 +147,10 @@ class ToolResult(BaseModel):
             "execution",
             "schema_mismatch",
             "permission_denied",
+            "timeout",
+            "circuit_open",
+            "api_error",
+            "auth_expired",
         ]
         | None
     ) = None

@@ -20,7 +20,7 @@ from kosmos.engine.events import QueryEvent, StopReason
 from kosmos.engine.models import QueryContext
 from kosmos.engine.preprocessing import PreprocessingPipeline
 from kosmos.engine.tokens import estimate_tokens
-from kosmos.llm.errors import BudgetExceededError
+from kosmos.llm.errors import BudgetExceededError, StreamInterruptedError
 from kosmos.llm.models import ChatMessage, FunctionCall, ToolCall, ToolDefinition
 from kosmos.tools.errors import ToolNotFoundError
 from kosmos.tools.executor import ToolExecutor
@@ -200,6 +200,7 @@ async def query(ctx: QueryContext) -> AsyncIterator[QueryEvent]:  # noqa: C901
         QueryEvent stream as described above.
     """
     iteration = 0
+    stream_interrupted_count = 0
     pipeline = PreprocessingPipeline()
 
     while iteration < ctx.config.max_iterations:
@@ -265,6 +266,36 @@ async def query(ctx: QueryContext) -> AsyncIterator[QueryEvent]:  # noqa: C901
                 stop_message="Token budget exceeded during stream",
             )
             return
+        except StreamInterruptedError as exc:
+            stream_interrupted_count += 1
+            if stream_interrupted_count == 1:
+                # First interruption: retry the stream once.
+                # If partial content was already yielded to the consumer,
+                # emit a visible restart signal so the output clearly
+                # separates stale fragments from the fresh retry.
+                logger.warning(
+                    "LLM stream interrupted (attempt %d), retrying: %s",
+                    stream_interrupted_count,
+                    exc,
+                )
+                if content_parts:
+                    yield QueryEvent(
+                        type="text_delta",
+                        content="\n[stream interrupted — retrying]\n",
+                    )
+                continue
+            # Second interruption: unrecoverable
+            logger.error(
+                "LLM stream interrupted again (attempt %d), giving up: %s",
+                stream_interrupted_count,
+                exc,
+            )
+            yield QueryEvent(
+                type="stop",
+                stop_reason=StopReason.error_unrecoverable,
+                stop_message=f"LLM stream interrupted: {exc}",
+            )
+            return
         except asyncio.CancelledError:
             raise  # propagate cancellation without masking
         except Exception as exc:
@@ -275,6 +306,11 @@ async def query(ctx: QueryContext) -> AsyncIterator[QueryEvent]:  # noqa: C901
                 stop_message=f"LLM stream error: {exc}",
             )
             return
+
+        # Reset per-iteration retry counter so each new iteration gets its own
+        # single-retry budget.  A successful stream clears any previous
+        # interruption count; the counter only matters within a single attempt.
+        stream_interrupted_count = 0
 
         # --- Assemble assistant message and append to history ---
         assembled_calls = _assemble_tool_calls(pending_calls) if pending_calls else []
