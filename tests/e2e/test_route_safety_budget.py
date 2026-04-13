@@ -115,24 +115,15 @@ async def test_t014_budget_exceeded_stops_engine(
     e2e_env: None,
     e2e_builder: E2EFixtureBuilder,
 ) -> None:
-    """When token budget is set to 1, the engine should stop with api_budget_exceeded.
+    """T014: Engine stops with api_budget_exceeded when turn budget is exhausted.
 
-    The engine checks UsageTracker.is_exhausted at the start of run(). With
-    budget=1 and no tokens used yet, remaining=1 and is_exhausted=False, so
-    the engine will proceed.  However, with budget=1 the UsageTracker.remaining
-    is 1, which means can_afford() returns True initially.
+    Uses the engine's turn-budget gate (max_turns=1) to limit runs. The first
+    call consumes the only allowed turn and succeeds. The second call finds the
+    turn budget exhausted and emits stop(api_budget_exceeded).
 
-    The real LLMClient.stream() raises BudgetExceededError when can_afford()
-    returns False (budget already exhausted before streaming). MockLLMClient
-    does not call can_afford(), so it streams freely.
-
-    Strategy: set budget=1 and run the engine once (which does not debit anything
-    via Mock), then call engine.run() a second time after manually verifying state.
-    Since MockLLMClient doesn't debit, we test the pre-turn budget gate by using
-    the engine's max_turns mechanism or by pre-exhausting the tracker manually.
-
-    Alternative: use engine's turn-budget gate (max_turns=1) then call run() twice.
-    This emits stop(api_budget_exceeded) on the second call.
+    Note: MockLLMClient does not call UsageTracker.debit(), so token-level
+    budget enforcement cannot be tested via the mock. This test exercises the
+    turn-level budget gate instead.
     """
     from kosmos.engine.config import QueryEngineConfig
 
