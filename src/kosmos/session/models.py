@@ -32,7 +32,7 @@ class SessionMetadata(BaseModel):
     """Auto-generated from the first user message (first 50 chars)."""
 
     message_count: int = 0
-    """Number of message entries recorded (user + assistant pairs)."""
+    """Individual message entries recorded (each user or assistant msg = 1)."""
 
     total_tokens_used: int = 0
     """Running total of all tokens consumed across the session."""

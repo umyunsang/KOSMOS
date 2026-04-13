@@ -27,6 +27,9 @@ logger = logging.getLogger(__name__)
 # Global fallback env var tried when no tool-specific key is configured.
 _GLOBAL_KEY_VAR: str = "KOSMOS_API_KEY"
 
+# Shared data.go.kr key used by KMA and KOROAD adapters.
+_DATA_GO_KR_KEY_VAR: str = "KOSMOS_DATA_GO_KR_API_KEY"
+
 
 def _env_var_name(tool_id: str) -> str:
     """Return the canonical env var name for *tool_id*.
@@ -64,6 +67,16 @@ async def attempt_auth_refresh(tool_id: str) -> bool:
         )
         return True
 
+    # data.go.kr shared key (used by KMA and KOROAD adapters).
+    data_go_kr_value = os.environ.get(_DATA_GO_KR_KEY_VAR, "").strip()
+    if data_go_kr_value:
+        logger.info(
+            "Auth refresh: found credential in %s (data.go.kr shared key) for tool %s",
+            _DATA_GO_KR_KEY_VAR,
+            tool_id,
+        )
+        return True
+
     global_value = os.environ.get(_GLOBAL_KEY_VAR, "").strip()
     if global_value:
         logger.info(
@@ -74,9 +87,10 @@ async def attempt_auth_refresh(tool_id: str) -> bool:
         return True
 
     logger.warning(
-        "Auth refresh: no credential found for tool %s (checked %s and %s)",
+        "Auth refresh: no credential found for tool %s (checked %s, %s, and %s)",
         tool_id,
         specific_var,
+        _DATA_GO_KR_KEY_VAR,
         _GLOBAL_KEY_VAR,
     )
     return False
@@ -99,5 +113,8 @@ def get_credential(tool_id: str) -> str | None:
     value = os.environ.get(specific_var, "").strip()
     if value:
         return value
+    data_go_kr_value = os.environ.get(_DATA_GO_KR_KEY_VAR, "").strip()
+    if data_go_kr_value:
+        return data_go_kr_value
     global_value = os.environ.get(_GLOBAL_KEY_VAR, "").strip()
     return global_value or None
