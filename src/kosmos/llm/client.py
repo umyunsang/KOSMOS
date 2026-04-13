@@ -255,6 +255,10 @@ class LLMClient:
 
         if "content" in delta and delta["content"] is not None:
             yield StreamEvent(type="content_delta", content=delta["content"])
+        elif "reasoning_content" in delta and delta["reasoning_content"] is not None:
+            # K-EXAONE emits reasoning_content before content (chain-of-thought).
+            # Surface it as content_delta so the pipeline can display it.
+            yield StreamEvent(type="content_delta", content=delta["reasoning_content"])
 
         if "tool_calls" in delta and delta["tool_calls"]:
             for tc_delta in delta["tool_calls"]:

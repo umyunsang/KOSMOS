@@ -19,7 +19,7 @@ from kosmos.llm.models import ChatMessage, StreamEvent
 # Helpers
 # ---------------------------------------------------------------------------
 
-_COMPLETIONS_URL = "https://api.friendli.ai/v1/chat/completions"
+_COMPLETIONS_URL = "https://api.friendli.ai/serverless/v1/chat/completions"
 
 
 def _build_sse_body(*chunks: dict, done: bool = True) -> bytes:

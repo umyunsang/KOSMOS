@@ -172,6 +172,12 @@ def _parse_response(raw: dict[str, Any]) -> KmaWeatherAlertStatusOutput:
     result_code = str(header.get("resultCode", ""))
     result_msg = str(header.get("resultMsg", "Unknown error"))
 
+    # code "03" means NO_DATA — no active weather alerts exist.  This is a
+    # legitimate empty result, not an error (common when no weather events).
+    if result_code == "03":
+        logger.info("KMA weather alert: no active alerts (resultCode=03)")
+        return KmaWeatherAlertStatusOutput(total_count=0, warnings=[])
+
     if result_code != "00":
         raise ToolExecutionError(
             "kma_weather_alert_status",

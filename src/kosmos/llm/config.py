@@ -29,12 +29,12 @@ class LLMClientConfig(BaseSettings):
         description="FriendliAI API token.",
     )
     base_url: AnyHttpUrl = Field(  # type: ignore[assignment]
-        default="https://api.friendli.ai/v1",
+        default="https://api.friendli.ai/serverless/v1",
         validation_alias="KOSMOS_FRIENDLI_BASE_URL",
         description="FriendliAI API base URL.",
     )
     model: str = Field(
-        default="dep89a2fde0e09",
+        default="LGAI-EXAONE/K-EXAONE-236B-A23B",
         validation_alias="KOSMOS_FRIENDLI_MODEL",
         description="FriendliAI model identifier.",
     )

@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import AsyncIterator
+from typing import TYPE_CHECKING
 
 from kosmos.context.builder import ContextBuilder
 from kosmos.engine.config import QueryEngineConfig
@@ -20,6 +21,10 @@ from kosmos.llm.client import LLMClient
 from kosmos.llm.models import ChatMessage
 from kosmos.tools.executor import ToolExecutor
 from kosmos.tools.registry import ToolRegistry
+
+if TYPE_CHECKING:
+    from kosmos.permissions.models import SessionContext
+    from kosmos.permissions.pipeline import PermissionPipeline
 
 logger = logging.getLogger(__name__)
 
@@ -48,12 +53,16 @@ class QueryEngine:
         tool_executor: ToolExecutor,
         config: QueryEngineConfig | None = None,
         context_builder: ContextBuilder | None = None,
+        permission_pipeline: PermissionPipeline | None = None,
+        permission_session: SessionContext | None = None,
     ) -> None:
         self._llm_client = llm_client
         self._tool_registry = tool_registry
         self._tool_executor = tool_executor
         self._config = config or QueryEngineConfig()
         self._context_builder = context_builder or ContextBuilder(registry=tool_registry)
+        self._permission_pipeline = permission_pipeline
+        self._permission_session = permission_session
 
         system_msg = self._context_builder.build_system_message()
         self._state = QueryState(
@@ -162,6 +171,8 @@ class QueryEngine:
             tool_executor=self._tool_executor,
             tool_registry=self._tool_registry,
             config=self._config,
+            permission_pipeline=self._permission_pipeline,
+            session_context=self._permission_session,
         )
 
         # Delegate to per-turn query loop

@@ -27,7 +27,7 @@ def mock_completion_response() -> dict:
     return {
         "id": "chatcmpl-test-123",
         "object": "chat.completion",
-        "model": "dep89a2fde0e09",
+        "model": "LGAI-EXAONE/K-EXAONE-236B-A23B",
         "choices": [
             {
                 "index": 0,
@@ -97,7 +97,7 @@ def mock_tool_call_response() -> dict:
     return {
         "id": "chatcmpl-test-456",
         "object": "chat.completion",
-        "model": "dep89a2fde0e09",
+        "model": "LGAI-EXAONE/K-EXAONE-236B-A23B",
         "choices": [
             {
                 "index": 0,

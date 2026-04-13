@@ -165,6 +165,19 @@ class TestParseResponse:
         assert result.total_count == 0
         assert result.warnings == []
 
+    def test_no_data_code_03_returns_empty(self) -> None:
+        """resultCode '03' (NO_DATA) means zero active alerts — not an error."""
+        raw = {
+            "response": {
+                "header": {"resultCode": "03", "resultMsg": "NO_DATA"},
+                "body": {},
+            }
+        }
+        result = _parse_response(raw)
+        assert isinstance(result, KmaWeatherAlertStatusOutput)
+        assert result.total_count == 0
+        assert result.warnings == []
+
     def test_error_raises(self) -> None:
         """Non-'00' resultCode must raise ToolExecutionError."""
         raw = _load("kma_alert_error.json")
