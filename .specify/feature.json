@@ -1,1 +1,3 @@
-{"feature_directory": "specs/004-llm-client"}
+{
+  "feature_directory": "specs/012-scenario1-e2e-route-safety"
+}
