@@ -136,14 +136,15 @@ class ToolExecutor:
             )
 
         if self._recovery_executor is not None:
-            # Record rate-limit slot before delegating to RecoveryExecutor
-            # which may invoke the adapter (with retries).
-            rate_limiter.record()
+            # Pass rate_limiter to RecoveryExecutor so record() is called
+            # only when the adapter is actually invoked (not on cache hit
+            # or circuit-open short-circuit).
             recovery_result = await self._recovery_executor.execute(
                 tool,
                 adapter,
                 validated_input,
                 is_foreground=True,
+                rate_limiter=rate_limiter,
             )
             tool_result = recovery_result.tool_result
             if not tool_result.success:
