@@ -60,7 +60,7 @@ class TestScenario1FlowSimulation:
         from unittest.mock import AsyncMock, patch
 
         from kosmos.tools.composite.road_risk_score import RoadRiskScoreInput, _call
-        from kosmos.tools.koroad.code_tables import SearchYearCd, SidoCode
+        from kosmos.tools.koroad.code_tables import GugunCode, SearchYearCd, SidoCode
 
         # Mocks return dicts matching model_dump() output of each inner adapter.
         # koroad_accident_search returns KoroadAccidentSearchOutput.model_dump()
@@ -112,6 +112,7 @@ class TestScenario1FlowSimulation:
         ):
             test_input = RoadRiskScoreInput(
                 si_do=SidoCode.SEOUL,
+                gu_gun=GugunCode.SEOUL_GANGNAM,
                 search_year_cd=SearchYearCd.GENERAL_2024,
                 nx=61,
                 ny=126,
@@ -132,7 +133,7 @@ class TestScenario1FlowSimulation:
 
         from kosmos.tools.composite.road_risk_score import RoadRiskScoreInput, _call
         from kosmos.tools.errors import ToolExecutionError
-        from kosmos.tools.koroad.code_tables import SearchYearCd, SidoCode
+        from kosmos.tools.koroad.code_tables import GugunCode, SearchYearCd, SidoCode
 
         kma_alert_response = {
             "total_count": 1,
@@ -172,6 +173,7 @@ class TestScenario1FlowSimulation:
         ):
             test_input = RoadRiskScoreInput(
                 si_do=SidoCode.SEOUL,
+                gu_gun=GugunCode.SEOUL_GANGNAM,
                 search_year_cd=SearchYearCd.GENERAL_2024,
                 nx=61,
                 ny=126,
@@ -189,7 +191,7 @@ class TestScenario1FlowSimulation:
 
         from kosmos.tools.composite.road_risk_score import RoadRiskScoreInput, _call
         from kosmos.tools.errors import ToolExecutionError
-        from kosmos.tools.koroad.code_tables import SearchYearCd, SidoCode
+        from kosmos.tools.koroad.code_tables import GugunCode, SearchYearCd, SidoCode
 
         with (
             patch(
@@ -210,6 +212,7 @@ class TestScenario1FlowSimulation:
         ):
             test_input = RoadRiskScoreInput(
                 si_do=SidoCode.SEOUL,
+                gu_gun=GugunCode.SEOUL_GANGNAM,
                 search_year_cd=SearchYearCd.GENERAL_2024,
                 nx=61,
                 ny=126,

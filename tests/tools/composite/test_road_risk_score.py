@@ -15,7 +15,7 @@ from kosmos.tools.composite.road_risk_score import (
     register,
 )
 from kosmos.tools.errors import ToolExecutionError
-from kosmos.tools.koroad.code_tables import SearchYearCd, SidoCode
+from kosmos.tools.koroad.code_tables import GugunCode, SearchYearCd, SidoCode
 
 # ---------------------------------------------------------------------------
 # Unit tests for pure scoring helpers
@@ -190,7 +190,7 @@ async def test_high_risk_scenario(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(mod, "_kma_alert_call", AsyncMock(return_value=_KMA_ALERT_OK_2))
     monkeypatch.setattr(mod, "_kma_obs_call", AsyncMock(return_value=_KMA_OBS_OK_RAIN))
 
-    inp = RoadRiskScoreInput(si_do=SidoCode.SEOUL, nx=60, ny=127)
+    inp = RoadRiskScoreInput(si_do=SidoCode.SEOUL, gu_gun=GugunCode.SEOUL_GANGNAM, nx=60, ny=127)
     result = await _call(inp)
 
     output = RoadRiskScoreOutput(**result)
@@ -215,7 +215,7 @@ async def test_low_risk_scenario(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(mod, "_kma_alert_call", AsyncMock(return_value=_KMA_ALERT_OK_0))
     monkeypatch.setattr(mod, "_kma_obs_call", AsyncMock(return_value=_KMA_OBS_OK_DRY))
 
-    inp = RoadRiskScoreInput(si_do=SidoCode.SEOUL, nx=60, ny=127)
+    inp = RoadRiskScoreInput(si_do=SidoCode.SEOUL, gu_gun=GugunCode.SEOUL_GANGNAM, nx=60, ny=127)
     result = await _call(inp)
 
     output = RoadRiskScoreOutput(**result)
@@ -242,7 +242,7 @@ async def test_partial_failure_kma_obs(monkeypatch: pytest.MonkeyPatch) -> None:
         AsyncMock(side_effect=ToolExecutionError("kma_current_observation", "network timeout")),
     )
 
-    inp = RoadRiskScoreInput(si_do=SidoCode.SEOUL, nx=60, ny=127)
+    inp = RoadRiskScoreInput(si_do=SidoCode.SEOUL, gu_gun=GugunCode.SEOUL_GANGNAM, nx=60, ny=127)
     result = await _call(inp)
 
     output = RoadRiskScoreOutput(**result)
@@ -270,7 +270,7 @@ async def test_partial_failure_kma_alert(monkeypatch: pytest.MonkeyPatch) -> Non
     )
     monkeypatch.setattr(mod, "_kma_obs_call", AsyncMock(return_value=_KMA_OBS_OK_RAIN))
 
-    inp = RoadRiskScoreInput(si_do=SidoCode.SEOUL, nx=60, ny=127)
+    inp = RoadRiskScoreInput(si_do=SidoCode.SEOUL, gu_gun=GugunCode.SEOUL_GANGNAM, nx=60, ny=127)
     result = await _call(inp)
 
     output = RoadRiskScoreOutput(**result)
@@ -304,7 +304,7 @@ async def test_total_failure(monkeypatch: pytest.MonkeyPatch) -> None:
         AsyncMock(side_effect=ToolExecutionError("kma_current_observation", "HTTP 503")),
     )
 
-    inp = RoadRiskScoreInput(si_do=SidoCode.SEOUL, nx=60, ny=127)
+    inp = RoadRiskScoreInput(si_do=SidoCode.SEOUL, gu_gun=GugunCode.SEOUL_GANGNAM, nx=60, ny=127)
     with pytest.raises(ToolExecutionError):
         await _call(inp)
 
@@ -316,12 +316,18 @@ async def test_total_failure(monkeypatch: pytest.MonkeyPatch) -> None:
 
 class TestRoadRiskScoreInput:
     def test_default_search_year(self) -> None:
-        inp = RoadRiskScoreInput(si_do=SidoCode.SEOUL, nx=60, ny=127)
+        inp = RoadRiskScoreInput(
+            si_do=SidoCode.SEOUL,
+            gu_gun=GugunCode.SEOUL_GANGNAM,
+            nx=60,
+            ny=127,
+        )
         assert inp.search_year_cd == SearchYearCd.GENERAL_2024
 
     def test_explicit_search_year_preserved(self) -> None:
         inp = RoadRiskScoreInput(
             si_do=SidoCode.SEOUL,
+            gu_gun=GugunCode.SEOUL_GANGNAM,
             nx=60,
             ny=127,
             search_year_cd=SearchYearCd.GENERAL_2024,
@@ -332,17 +338,17 @@ class TestRoadRiskScoreInput:
         from pydantic import ValidationError
 
         with pytest.raises(ValidationError):
-            RoadRiskScoreInput(si_do=SidoCode.SEOUL, nx=0, ny=127)
+            RoadRiskScoreInput(si_do=SidoCode.SEOUL, gu_gun=GugunCode.SEOUL_GANGNAM, nx=0, ny=127)
         with pytest.raises(ValidationError):
-            RoadRiskScoreInput(si_do=SidoCode.SEOUL, nx=150, ny=127)
+            RoadRiskScoreInput(si_do=SidoCode.SEOUL, gu_gun=GugunCode.SEOUL_GANGNAM, nx=150, ny=127)
 
     def test_ny_bounds(self) -> None:
         from pydantic import ValidationError
 
         with pytest.raises(ValidationError):
-            RoadRiskScoreInput(si_do=SidoCode.SEOUL, nx=60, ny=0)
+            RoadRiskScoreInput(si_do=SidoCode.SEOUL, gu_gun=GugunCode.SEOUL_GANGNAM, nx=60, ny=0)
         with pytest.raises(ValidationError):
-            RoadRiskScoreInput(si_do=SidoCode.SEOUL, nx=60, ny=254)
+            RoadRiskScoreInput(si_do=SidoCode.SEOUL, gu_gun=GugunCode.SEOUL_GANGNAM, nx=60, ny=254)
 
 
 class TestRoadRiskScoreTool:

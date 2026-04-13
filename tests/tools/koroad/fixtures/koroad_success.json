@@ -1,48 +1,45 @@
 {
-  "response": {
-    "header": {"resultCode": "00", "resultMsg": "NORMAL_CODE"},
-    "body": {
-      "totalCount": 2,
-      "pageNo": 1,
-      "numOfRows": 10,
-      "items": {
-        "item": [
-          {
-            "spot_cd": "2025119.0001",
-            "spot_nm": "강남대로 교차로",
-            "sido_sgg_nm": "서울 강남구",
-            "bjd_cd": "1168010100",
-            "occrrnc_cnt": 15,
-            "caslt_cnt": 22,
-            "dth_dnv_cnt": 0,
-            "se_dnv_cnt": 3,
-            "sl_dnv_cnt": 10,
-            "wnd_dnv_cnt": 9,
-            "la_crd": 37.4979,
-            "lo_crd": 127.0276,
-            "geom_json": null,
-            "afos_id": "2025119",
-            "afos_fid": "0001"
-          },
-          {
-            "spot_cd": "2025119.0002",
-            "spot_nm": "테헤란로 사거리",
-            "sido_sgg_nm": "서울 강남구",
-            "bjd_cd": "1168010300",
-            "occrrnc_cnt": 10,
-            "caslt_cnt": 12,
-            "dth_dnv_cnt": 1,
-            "se_dnv_cnt": 2,
-            "sl_dnv_cnt": 5,
-            "wnd_dnv_cnt": 4,
-            "la_crd": 37.5013,
-            "lo_crd": 127.0396,
-            "geom_json": "{\"type\":\"Polygon\",\"coordinates\":[]}",
-            "afos_id": "2025119",
-            "afos_fid": "0002"
-          }
-        ]
+  "resultCode": "00",
+  "resultMsg": "NORMAL_CODE",
+  "items": {
+    "item": [
+      {
+        "spot_cd": "2025119.0001",
+        "spot_nm": "강남대로 교차로",
+        "sido_sgg_nm": "서울 강남구",
+        "bjd_cd": "1168010100",
+        "occrrnc_cnt": 15,
+        "caslt_cnt": 22,
+        "dth_dnv_cnt": 0,
+        "se_dnv_cnt": 3,
+        "sl_dnv_cnt": 10,
+        "wnd_dnv_cnt": 9,
+        "la_crd": 37.4979,
+        "lo_crd": 127.0276,
+        "geom_json": null,
+        "afos_id": "2025119",
+        "afos_fid": "0001"
+      },
+      {
+        "spot_cd": "2025119.0002",
+        "spot_nm": "테헤란로 사거리",
+        "sido_sgg_nm": "서울 강남구",
+        "bjd_cd": "1168010300",
+        "occrrnc_cnt": 10,
+        "caslt_cnt": 12,
+        "dth_dnv_cnt": 1,
+        "se_dnv_cnt": 2,
+        "sl_dnv_cnt": 5,
+        "wnd_dnv_cnt": 4,
+        "la_crd": 37.5013,
+        "lo_crd": 127.0396,
+        "geom_json": "{\"type\":\"Polygon\",\"coordinates\":[]}",
+        "afos_id": "2025119",
+        "afos_fid": "0002"
       }
-    }
-  }
+    ]
+  },
+  "totalCount": 2,
+  "numOfRows": 10,
+  "pageNo": 1
 }

@@ -24,7 +24,7 @@ from kosmos.llm.models import ChatMessage, FunctionSchema, ToolDefinition
 # Helpers
 # ---------------------------------------------------------------------------
 
-CHAT_COMPLETIONS_URL = "https://api.friendli.ai/v1/chat/completions"
+CHAT_COMPLETIONS_URL = "https://api.friendli.ai/serverless/v1/chat/completions"
 
 
 @pytest.fixture
@@ -102,7 +102,7 @@ async def test_complete_success(
 
     assert response.id == "chatcmpl-test-123"
     assert response.content == "Test response"
-    assert response.model == "dep89a2fde0e09"
+    assert response.model == "LGAI-EXAONE/K-EXAONE-236B-A23B"
     assert response.finish_reason == "stop"
 
 
@@ -195,7 +195,7 @@ async def test_complete_with_tools(
     tool_response = {
         "id": "chatcmpl-tool-test",
         "object": "chat.completion",
-        "model": "dep89a2fde0e09",
+        "model": "LGAI-EXAONE/K-EXAONE-236B-A23B",
         "choices": [
             {
                 "index": 0,
@@ -264,7 +264,7 @@ async def test_complete_tool_result_continuation(
     continuation_response = {
         "id": "chatcmpl-continuation-test",
         "object": "chat.completion",
-        "model": "dep89a2fde0e09",
+        "model": "LGAI-EXAONE/K-EXAONE-236B-A23B",
         "choices": [
             {
                 "index": 0,
@@ -344,7 +344,7 @@ async def test_complete_budget_exhaustion(
     first_response = {
         "id": "chatcmpl-budget-1",
         "object": "chat.completion",
-        "model": "dep89a2fde0e09",
+        "model": "LGAI-EXAONE/K-EXAONE-236B-A23B",
         "choices": [
             {
                 "index": 0,
@@ -359,7 +359,7 @@ async def test_complete_budget_exhaustion(
     second_response = {
         "id": "chatcmpl-budget-2",
         "object": "chat.completion",
-        "model": "dep89a2fde0e09",
+        "model": "LGAI-EXAONE/K-EXAONE-236B-A23B",
         "choices": [
             {
                 "index": 0,

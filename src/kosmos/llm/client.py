@@ -255,6 +255,10 @@ class LLMClient:
 
         if "content" in delta and delta["content"] is not None:
             yield StreamEvent(type="content_delta", content=delta["content"])
+        elif "reasoning_content" in delta and delta["reasoning_content"] is not None:
+            # K-EXAONE emits reasoning_content (chain-of-thought) before content.
+            # Drop it to prevent CoT from persisting into chat history.
+            logger.debug("Dropping reasoning_content chunk from SSE stream")
 
         if "tool_calls" in delta and delta["tool_calls"]:
             for tc_delta in delta["tool_calls"]:

@@ -6,7 +6,7 @@ Returns accident-prone zones by municipality and year category, with full coordi
 
 Wire format quirks handled by this module:
   - Single-item response returns `item` as a dict (not array) — normalized to list.
-  - XML is the default; JSON is requested via ``_type=json``.
+  - XML is the default; JSON is requested via ``type=json``.
   - ``resultCode != "00"`` is always an error regardless of HTTP 200.
 """
 
@@ -45,7 +45,7 @@ _BASE_URL = "https://apis.data.go.kr/B552061/frequentzoneLg/getRestFrequentzoneL
 class AccidentHotspot(BaseModel):
     """A single accident hotspot zone returned by KOROAD getRestFrequentzoneLg."""
 
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, coerce_numbers_to_str=True)
 
     spot_cd: str
     """Unique spot code."""
@@ -107,8 +107,8 @@ class KoroadAccidentSearchInput(BaseModel):
     si_do: SidoCode
     """Province/city code (siDo wire parameter)."""
 
-    gu_gun: GugunCode | None = None
-    """Optional district code (guGun wire parameter). None returns entire province data."""
+    gu_gun: GugunCode
+    """District code (guGun wire parameter). Required by the KOROAD API."""
 
     num_of_rows: int = Field(default=10, ge=1, le=100)
     """Number of rows per page (numOfRows wire parameter)."""
@@ -187,6 +187,11 @@ def _normalize_items(items: object) -> list[dict[str, Any]]:
 def _parse_response(raw: dict[str, Any]) -> KoroadAccidentSearchOutput:
     """Parse the full KOROAD JSON response body into a KoroadAccidentSearchOutput.
 
+    The KOROAD ``type=json`` response is flat::
+
+        {"resultCode": "00", "resultMsg": "NORMAL_CODE",
+         "items": {"item": [...]}, "totalCount": 3, ...}
+
     Args:
         raw: Parsed JSON dict from the KOROAD API.
 
@@ -196,9 +201,18 @@ def _parse_response(raw: dict[str, Any]) -> KoroadAccidentSearchOutput:
     Raises:
         ToolExecutionError: If resultCode is not "00".
     """
-    header = raw.get("response", {}).get("header", {})
-    result_code = str(header.get("resultCode", ""))
-    result_msg = str(header.get("resultMsg", "Unknown error"))
+    result_code = str(raw.get("resultCode", ""))
+    result_msg = str(raw.get("resultMsg", "Unknown error"))
+
+    # NODATA_ERROR (code "03") means no matching records — return empty results.
+    if result_code == "03":
+        logger.info("KOROAD NODATA_ERROR: no matching records for query")
+        return KoroadAccidentSearchOutput(
+            total_count=0,
+            page_no=int(raw.get("pageNo", 1)),
+            num_of_rows=int(raw.get("numOfRows", 10)),
+            hotspots=[],
+        )
 
     if result_code != "00":
         raise ToolExecutionError(
@@ -206,13 +220,12 @@ def _parse_response(raw: dict[str, Any]) -> KoroadAccidentSearchOutput:
             f"KOROAD API returned error: code={result_code!r} msg={result_msg!r}",
         )
 
-    body = raw.get("response", {}).get("body", {})
-    total_count = int(body.get("totalCount", 0))
-    page_no = int(body.get("pageNo", 1))
-    num_of_rows = int(body.get("numOfRows", 10))
+    total_count = int(raw.get("totalCount", 0))
+    page_no = int(raw.get("pageNo", 1))
+    num_of_rows = int(raw.get("numOfRows", 10))
 
     # items may be {"item": [...]} or {"item": {}} or "" or missing
-    raw_items = body.get("items", {})
+    raw_items = raw.get("items", {})
     if isinstance(raw_items, str) or not raw_items:
         item_list: list[dict[str, Any]] = []
     else:
@@ -253,10 +266,12 @@ async def _call(
         A plain dict matching KoroadAccidentSearchOutput schema.
 
     Raises:
-        ConfigurationError: If KOSMOS_KOROAD_API_KEY is not set.
+        ConfigurationError: If KOSMOS_DATA_GO_KR_API_KEY is not set.
         ToolExecutionError: If the API returns a non-"00" result code.
     """
-    api_key = _require_env("KOSMOS_KOROAD_API_KEY")
+    # KOROAD APIs are hosted on apis.data.go.kr and share the same
+    # service key as other data.go.kr APIs (KMA, etc.).
+    api_key = _require_env("KOSMOS_DATA_GO_KR_API_KEY")
 
     params: dict[str, str | int] = {
         "serviceKey": api_key,
@@ -264,10 +279,9 @@ async def _call(
         "siDo": inp.si_do.value,
         "numOfRows": inp.num_of_rows,
         "pageNo": inp.page_no,
-        "_type": "json",
+        "type": "json",
     }
-    if inp.gu_gun is not None:
-        params["guGun"] = inp.gu_gun.value
+    params["guGun"] = inp.gu_gun.value
 
     own_client = client is None
     _client: httpx.AsyncClient = httpx.AsyncClient() if own_client else client  # type: ignore[assignment]
