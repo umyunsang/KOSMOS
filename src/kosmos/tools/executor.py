@@ -11,13 +11,16 @@ from __future__ import annotations
 import json
 import logging
 from collections.abc import Awaitable, Callable
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, ValidationError
 
 from kosmos.tools.errors import ToolNotFoundError
 from kosmos.tools.models import ToolResult
 from kosmos.tools.registry import ToolRegistry
+
+if TYPE_CHECKING:
+    from kosmos.recovery.executor import RecoveryExecutor
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +35,8 @@ class ToolExecutor:
     2. Parse and validate JSON arguments against input_schema.
     3. Verify adapter exists (before consuming a rate-limit slot).
     4. Check rate limit.
-    5. Record rate-limit timestamp and execute adapter.
+    5. Record rate-limit timestamp and execute adapter
+       (delegated to RecoveryExecutor when one is present).
     6. Validate adapter output against output_schema.
     7. Return ToolResult(success=True, data=...).
 
@@ -40,14 +44,22 @@ class ToolExecutor:
     appropriate error_type. The executor itself never raises.
     """
 
-    def __init__(self, registry: ToolRegistry) -> None:
+    def __init__(
+        self,
+        registry: ToolRegistry,
+        recovery_executor: RecoveryExecutor | None = None,
+    ) -> None:
         """Initialize the executor with a ToolRegistry.
 
         Args:
             registry: The tool registry used for lookup and rate-limit access.
+            recovery_executor: Optional RecoveryExecutor providing Layer 6
+                error recovery (retry, circuit breaker, cache fallback).
+                When absent, the adapter is called directly (backward-compatible).
         """
         self._registry = registry
         self._adapters: dict[str, AdapterFn] = {}
+        self._recovery_executor = recovery_executor
 
     def register_adapter(self, tool_id: str, adapter: AdapterFn) -> None:
         """Register an async adapter function for a tool.
@@ -121,16 +133,29 @@ class ToolExecutor:
         # Step 5: Record call and execute adapter
         rate_limiter.record()
 
-        try:
-            result_dict = await adapter(validated_input)
-        except Exception as exc:
-            logger.exception("Adapter execution failed for tool %s: %s", tool_name, exc)
-            return ToolResult(
-                tool_id=tool_name,
-                success=False,
-                error=str(exc),
-                error_type="execution",
+        if self._recovery_executor is not None:
+            # Delegate to RecoveryExecutor for retry / circuit-breaker / cache
+            recovery_result = await self._recovery_executor.execute(
+                tool,
+                adapter,
+                validated_input,
+                is_foreground=True,
             )
+            tool_result = recovery_result.tool_result
+            if not tool_result.success:
+                return tool_result
+            result_dict = dict(tool_result.data or {})
+        else:
+            try:
+                result_dict = await adapter(validated_input)
+            except Exception as exc:
+                logger.exception("Adapter execution failed for tool %s: %s", tool_name, exc)
+                return ToolResult(
+                    tool_id=tool_name,
+                    success=False,
+                    error=str(exc),
+                    error_type="execution",
+                )
 
         # Step 6: Validate output
         try:
