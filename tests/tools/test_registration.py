@@ -16,7 +16,7 @@ class TestToolRegistration:
         registry = ToolRegistry()
         executor = ToolExecutor(registry)
         register_all_tools(registry, executor)
-        assert len(registry) == 7
+        assert len(registry) == 9
 
     def test_tool_ids_present(self) -> None:
         """Each expected tool_id is in the registry."""
@@ -28,6 +28,8 @@ class TestToolRegistration:
             "kma_weather_alert_status",
             "kma_current_observation",
             "road_risk_score",
+            "address_to_region",
+            "address_to_grid",
         }
         for tool_id in expected:
             assert tool_id in registry, f"{tool_id} not found in registry"
@@ -42,6 +44,8 @@ class TestToolRegistration:
             "kma_weather_alert_status",
             "kma_current_observation",
             "road_risk_score",
+            "address_to_region",
+            "address_to_grid",
         }
         for tool_id in expected:
             assert tool_id in executor._adapters, f"No adapter for {tool_id}"

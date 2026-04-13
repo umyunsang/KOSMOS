@@ -1,0 +1,40 @@
+{
+  "meta": {
+    "total_count": 1,
+    "pageable_count": 1,
+    "is_end": true
+  },
+  "documents": [
+    {
+      "address_name": "서울특별시 서초구 반포대로 201",
+      "address_type": "ROAD_ADDR",
+      "x": "127.008941",
+      "y": "37.503888",
+      "address": {
+        "address_name": "서울특별시 서초구 반포동 19-3",
+        "region_1depth_name": "서울특별시",
+        "region_2depth_name": "서초구",
+        "region_3depth_name": "반포동",
+        "mountain_yn": "N",
+        "main_address_no": "19",
+        "sub_address_no": "3",
+        "x": "127.008941",
+        "y": "37.503888"
+      },
+      "road_address": {
+        "address_name": "서울특별시 서초구 반포대로 201",
+        "region_1depth_name": "서울특별시",
+        "region_2depth_name": "서초구",
+        "region_3depth_name": "반포동",
+        "road_name": "반포대로",
+        "underground_yn": "N",
+        "main_building_no": "201",
+        "sub_building_no": "",
+        "building_name": "국립중앙도서관",
+        "zone_no": "06579",
+        "x": "127.008941",
+        "y": "37.503888"
+      }
+    }
+  ]
+}

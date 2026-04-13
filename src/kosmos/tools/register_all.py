@@ -26,6 +26,8 @@ def register_all_tools(registry: ToolRegistry, executor: ToolExecutor) -> None:
       5. kma_ultra_short_term_forecast — KMA ultra-short-term forecast (초단기예보)
       6. kma_pre_warning — KMA weather pre-warning list (기상예비특보목록)
       7. road_risk_score — composite road risk score (fans out to all three)
+      8. address_to_region — Kakao geocoding → KOROAD region codes (시도/구군)
+      9. address_to_grid — Kakao geocoding → KMA grid coordinates (nx/ny)
 
     Args:
         registry: The central ToolRegistry to add tools to.
@@ -36,6 +38,8 @@ def register_all_tools(registry: ToolRegistry, executor: ToolExecutor) -> None:
             function is called a second time on the same registry).
     """
     from kosmos.tools.composite.road_risk_score import register as reg_risk
+    from kosmos.tools.geocoding.address_to_grid import register as reg_addr_grid
+    from kosmos.tools.geocoding.address_to_region import register as reg_addr_region
     from kosmos.tools.kma.kma_current_observation import register as reg_kma_obs
     from kosmos.tools.kma.kma_pre_warning import register as reg_kma_pre_warning
     from kosmos.tools.kma.kma_short_term_forecast import register as reg_kma_stf
@@ -50,5 +54,7 @@ def register_all_tools(registry: ToolRegistry, executor: ToolExecutor) -> None:
     reg_kma_ustf(registry, executor)
     reg_kma_pre_warning(registry, executor)
     reg_risk(registry, executor)
+    reg_addr_region(registry, executor)
+    reg_addr_grid(registry, executor)
 
     logger.info("All %d tools registered successfully", len(registry))

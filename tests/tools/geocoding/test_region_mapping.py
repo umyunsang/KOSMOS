@@ -1,0 +1,141 @@
+# SPDX-License-Identifier: Apache-2.0
+"""Tests for kosmos.tools.geocoding.region_mapping."""
+
+from __future__ import annotations
+
+from kosmos.tools.geocoding.region_mapping import region1_to_sido, region2_to_gugun
+from kosmos.tools.koroad.code_tables import GugunCode, SidoCode
+
+
+class TestRegion1ToSido:
+    """region1_to_sido() covers all 17 sido including post-2023 autonomy names."""
+
+    # --- Basic metro cities ---
+    def test_seoul_short(self):
+        assert region1_to_sido("서울") == SidoCode.SEOUL
+
+    def test_seoul_official(self):
+        assert region1_to_sido("서울특별시") == SidoCode.SEOUL
+
+    def test_busan_short(self):
+        assert region1_to_sido("부산") == SidoCode.BUSAN
+
+    def test_busan_official(self):
+        assert region1_to_sido("부산광역시") == SidoCode.BUSAN
+
+    def test_daegu(self):
+        assert region1_to_sido("대구광역시") == SidoCode.DAEGU
+
+    def test_incheon(self):
+        assert region1_to_sido("인천광역시") == SidoCode.INCHEON
+
+    def test_gwangju(self):
+        assert region1_to_sido("광주광역시") == SidoCode.GWANGJU
+
+    def test_daejeon(self):
+        assert region1_to_sido("대전광역시") == SidoCode.DAEJEON
+
+    def test_ulsan(self):
+        assert region1_to_sido("울산광역시") == SidoCode.ULSAN
+
+    def test_sejong_short(self):
+        assert region1_to_sido("세종") == SidoCode.SEJONG
+
+    def test_sejong_official(self):
+        assert region1_to_sido("세종특별자치시") == SidoCode.SEJONG
+
+    def test_gyeonggi_short(self):
+        assert region1_to_sido("경기") == SidoCode.GYEONGGI
+
+    def test_gyeonggi_official(self):
+        assert region1_to_sido("경기도") == SidoCode.GYEONGGI
+
+    # --- Post-2023 special autonomy names ---
+    def test_gangwon_legacy_name(self):
+        """Old name 강원도 maps to new GANGWON code (51) for 2023+ compatibility."""
+        assert region1_to_sido("강원도") == SidoCode.GANGWON
+
+    def test_gangwon_new_name(self):
+        assert region1_to_sido("강원특별자치도") == SidoCode.GANGWON
+
+    def test_gangwon_short(self):
+        assert region1_to_sido("강원") == SidoCode.GANGWON
+
+    def test_jeonbuk_legacy_name(self):
+        """Old name 전라북도 maps to new JEONBUK code (52) for 2023+ compatibility."""
+        assert region1_to_sido("전라북도") == SidoCode.JEONBUK
+
+    def test_jeonbuk_new_name(self):
+        assert region1_to_sido("전북특별자치도") == SidoCode.JEONBUK
+
+    def test_jeonbuk_short(self):
+        assert region1_to_sido("전북") == SidoCode.JEONBUK
+
+    # --- Other provinces ---
+    def test_chungbuk(self):
+        assert region1_to_sido("충청북도") == SidoCode.CHUNGBUK
+
+    def test_chungnam(self):
+        assert region1_to_sido("충청남도") == SidoCode.CHUNGNAM
+
+    def test_jeonnam(self):
+        assert region1_to_sido("전라남도") == SidoCode.JEONNAM
+
+    def test_gyeongbuk(self):
+        assert region1_to_sido("경상북도") == SidoCode.GYEONGBUK
+
+    def test_gyeongnam(self):
+        assert region1_to_sido("경상남도") == SidoCode.GYEONGNAM
+
+    def test_jeju_short(self):
+        assert region1_to_sido("제주") == SidoCode.JEJU
+
+    def test_jeju_official(self):
+        assert region1_to_sido("제주특별자치도") == SidoCode.JEJU
+
+    # --- Whitespace handling ---
+    def test_strips_whitespace(self):
+        assert region1_to_sido("  서울특별시  ") == SidoCode.SEOUL
+
+    # --- Unknown name ---
+    def test_unknown_returns_none(self):
+        assert region1_to_sido("알수없는도시") is None
+
+    def test_empty_string_returns_none(self):
+        assert region1_to_sido("") is None
+
+    # --- Enum codes ---
+    def test_gangwon_code_is_51(self):
+        sido = region1_to_sido("강원특별자치도")
+        assert sido is not None
+        assert int(sido) == 51
+
+    def test_jeonbuk_code_is_52(self):
+        sido = region1_to_sido("전북특별자치도")
+        assert sido is not None
+        assert int(sido) == 52
+
+
+class TestRegion2ToGugun:
+    """region2_to_gugun() maps Seoul and Busan district names correctly."""
+
+    def test_gangnam(self):
+        assert region2_to_gugun("강남구") == GugunCode.SEOUL_GANGNAM
+
+    def test_seocho(self):
+        assert region2_to_gugun("서초구") == GugunCode.SEOUL_SEOCHO
+
+    def test_jongno(self):
+        assert region2_to_gugun("종로구") == GugunCode.SEOUL_JONGNO
+
+    def test_haeundae(self):
+        assert region2_to_gugun("해운대구") == GugunCode.BUSAN_HAEUNDAE
+
+    def test_strips_whitespace(self):
+        assert region2_to_gugun("  강남구  ") == GugunCode.SEOUL_GANGNAM
+
+    def test_unknown_returns_none(self):
+        assert region2_to_gugun("알수없는구") is None
+
+    def test_empty_returns_none(self):
+        assert region2_to_gugun("") is None

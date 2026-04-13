@@ -1,0 +1,40 @@
+{
+  "meta": {
+    "total_count": 1,
+    "pageable_count": 1,
+    "is_end": true
+  },
+  "documents": [
+    {
+      "address_name": "서울특별시 강남구 테헤란로 152",
+      "address_type": "ROAD_ADDR",
+      "x": "127.036167",
+      "y": "37.500167",
+      "address": {
+        "address_name": "서울특별시 강남구 역삼동 737",
+        "region_1depth_name": "서울특별시",
+        "region_2depth_name": "강남구",
+        "region_3depth_name": "역삼동",
+        "mountain_yn": "N",
+        "main_address_no": "737",
+        "sub_address_no": "",
+        "x": "127.036167",
+        "y": "37.500167"
+      },
+      "road_address": {
+        "address_name": "서울특별시 강남구 테헤란로 152",
+        "region_1depth_name": "서울특별시",
+        "region_2depth_name": "강남구",
+        "region_3depth_name": "역삼동",
+        "road_name": "테헤란로",
+        "underground_yn": "N",
+        "main_building_no": "152",
+        "sub_building_no": "",
+        "building_name": "강남파이낸스센터",
+        "zone_no": "06236",
+        "x": "127.036167",
+        "y": "37.500167"
+      }
+    }
+  ]
+}
