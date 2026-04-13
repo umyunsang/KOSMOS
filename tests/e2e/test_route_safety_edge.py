@@ -12,7 +12,7 @@ Tests cover:
 from __future__ import annotations
 
 import json
-from unittest.mock import AsyncMock, patch
+from unittest.mock import patch
 
 import httpx
 import pytest
@@ -22,14 +22,12 @@ from kosmos.engine.events import StopReason
 from kosmos.llm.errors import StreamInterruptedError
 from kosmos.llm.models import StreamEvent, TokenUsage
 from tests.e2e.conftest import (
-    E2EFixtureBuilder,
     TEXT_ANSWER_ROUTE_SAFETY,
     TOOL_CALL_ROAD_RISK,
+    E2EFixtureBuilder,
     assert_stop_reason,
     run_e2e_query,
 )
-from tests.engine.conftest import MockLLMClient
-
 
 # ---------------------------------------------------------------------------
 # Shared StreamEvent sequences for edge-case tests
@@ -157,7 +155,10 @@ async def test_t018_unknown_tool_graceful_handling(
     failed_results = [e for e in tool_result_events if e.tool_result and not e.tool_result.success]
     assert failed_results, (
         "Expected tool_result with success=False for unknown tool, "
-        f"got results: {[(e.tool_result.success if e.tool_result else None) for e in tool_result_events]}"
+        f"got results: {[
+            (e.tool_result.success if e.tool_result else None)
+            for e in tool_result_events
+        ]}"
     )
     # Error type must be 'not_found'
     not_found_results = [
@@ -266,8 +267,10 @@ async def test_t020_stream_interruption_retry(
         async for event in original_stream(messages, **kwargs):
             yield event
 
-    with patch.object(llm_client, "stream", _stream_with_first_interruption):
-        with patch.object(httpx.AsyncClient, "get", httpx_mock):
+    with (
+        patch.object(llm_client, "stream", _stream_with_first_interruption),
+        patch.object(httpx.AsyncClient, "get", httpx_mock),
+    ):
             events: list = []
             async for event in engine.run("스트림 중단 후 재시도 테스트"):
                 events.append(event)
@@ -347,7 +350,11 @@ async def test_t021_invalid_tool_arguments(
     ]
     assert validation_failures, (
         "Expected ToolResult with success=False and error_type='validation', "
-        f"got: {[(e.tool_result.success, e.tool_result.error_type) if e.tool_result else None for e in road_risk_results]}"
+        f"got: {[
+            (e.tool_result.success, e.tool_result.error_type)
+            if e.tool_result else None
+            for e in road_risk_results
+        ]}"
     )
 
     # Engine must not crash — stop event required

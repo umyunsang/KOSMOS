@@ -31,14 +31,6 @@ import json
 
 import pytest
 
-from tests.e2e.conftest import (
-    E2EFixtureBuilder,
-    TOOL_CALL_ROAD_RISK,
-    TEXT_ANSWER_ROUTE_SAFETY,
-    assert_stop_reason,
-    assert_tool_calls_dispatched,
-    run_e2e_query,
-)
 from kosmos.engine.events import StopReason
 from kosmos.permissions.models import (
     AccessTier,
@@ -50,7 +42,13 @@ from kosmos.permissions.pipeline import PermissionPipeline
 from kosmos.tools.executor import ToolExecutor
 from kosmos.tools.models import GovAPITool
 from kosmos.tools.registry import ToolRegistry
-
+from tests.e2e.conftest import (
+    TEXT_ANSWER_ROUTE_SAFETY,
+    TOOL_CALL_ROAD_RISK,
+    E2EFixtureBuilder,
+    assert_tool_calls_dispatched,
+    run_e2e_query,
+)
 
 # ---------------------------------------------------------------------------
 # T016 [US4] Permission pipeline E2E — public tool, anonymous session
@@ -254,7 +252,6 @@ async def test_t017b_permission_pipeline_denies_restricted_tool(
 
     This verifies the deny path for the restricted tier in isolation.
     """
-    from kosmos.permissions.models import PermissionCheckRequest
     from kosmos.permissions.steps.step1_config import check_config
 
     request = PermissionCheckRequest(

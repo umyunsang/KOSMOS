@@ -10,17 +10,16 @@ from __future__ import annotations
 
 import pytest
 
+from kosmos.engine.events import StopReason
 from tests.e2e.conftest import (
-    E2EFixtureBuilder,
-    TOOL_CALL_ROAD_RISK,
     TEXT_ANSWER_ROUTE_SAFETY,
+    TOOL_CALL_ROAD_RISK,
+    E2EFixtureBuilder,
     assert_final_response_contains,
     assert_no_data_gaps,
-    assert_stop_reason,
     assert_tool_calls_dispatched,
     run_e2e_query,
 )
-from kosmos.engine.events import StopReason
 
 # ---------------------------------------------------------------------------
 # T006 [US1] Happy-path E2E test

@@ -14,16 +14,14 @@ from __future__ import annotations
 
 import pytest
 
+from kosmos.engine.events import StopReason
 from tests.e2e.conftest import (
-    E2EFixtureBuilder,
-    TOOL_CALL_ROAD_RISK,
     TEXT_ANSWER_ROUTE_SAFETY,
+    TOOL_CALL_ROAD_RISK,
+    E2EFixtureBuilder,
     assert_stop_reason,
-    assert_usage_matches,
     run_e2e_query,
 )
-from kosmos.engine.events import StopReason
-
 
 # ---------------------------------------------------------------------------
 # T013 [P] [US3] Token usage tracking

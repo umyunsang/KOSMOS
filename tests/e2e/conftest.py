@@ -36,8 +36,8 @@ from kosmos.permissions.models import SessionContext
 from kosmos.permissions.pipeline import PermissionPipeline
 from kosmos.recovery.executor import RecoveryExecutor
 from kosmos.tools.executor import ToolExecutor
-from kosmos.tools.registry import ToolRegistry
 from kosmos.tools.register_all import register_all_tools
+from kosmos.tools.registry import ToolRegistry
 
 # Re-export MockLLMClient from engine test fixtures for reuse
 from tests.engine.conftest import MockLLMClient
@@ -186,6 +186,25 @@ TEXT_ANSWER_ROUTE_SAFETY_DEGRADED: list[StreamEvent] = [
 # ---------------------------------------------------------------------------
 
 
+def _raise_failure(adapter_id: str, mode: str, url_str: str) -> httpx.Response:
+    """Return an error response or raise an exception for a failed adapter."""
+    if mode == "500":
+        return httpx.Response(
+            status_code=500,
+            json={"error": "Internal Server Error"},
+            request=httpx.Request("GET", url_str),
+        )
+    if mode == "timeout":
+        raise httpx.TimeoutException(
+            f"Timeout for {adapter_id}",
+            request=httpx.Request("GET", url_str),
+        )
+    raise httpx.ConnectError(
+        f"Connection refused for {adapter_id}",
+        request=httpx.Request("GET", url_str),
+    )
+
+
 def _build_httpx_mock(
     fixture_overrides: dict[str, Path],
     failure_modes: dict[str, str],
@@ -222,25 +241,10 @@ def _build_httpx_mock(
             if url_pattern not in url_str:
                 continue
 
-            # Check failure modes first
             if adapter_id in failure_modes:
-                mode = failure_modes[adapter_id]
-                if mode == "500":
-                    return httpx.Response(
-                        status_code=500,
-                        json={"error": "Internal Server Error"},
-                        request=httpx.Request("GET", url_str),
-                    )
-                if mode == "timeout":
-                    raise httpx.TimeoutException(
-                        f"Timeout for {adapter_id}",
-                        request=httpx.Request("GET", url_str),
-                    )
-                if mode == "connection_error":
-                    raise httpx.ConnectError(
-                        f"Connection refused for {adapter_id}",
-                        request=httpx.Request("GET", url_str),
-                    )
+                return _raise_failure(
+                    adapter_id, failure_modes[adapter_id], url_str,
+                )
 
             # Return fixture data
             data = fixture_data.get(adapter_id, {})

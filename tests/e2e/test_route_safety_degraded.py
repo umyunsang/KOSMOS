@@ -13,9 +13,10 @@ inner adapters fail, verifying that:
 
 from __future__ import annotations
 
+from unittest.mock import patch
+
 import httpx
 import pytest
-from unittest.mock import patch
 
 from kosmos.context.builder import ContextBuilder
 from kosmos.engine.config import QueryEngineConfig
@@ -26,21 +27,19 @@ from kosmos.recovery.executor import RecoveryExecutor
 from kosmos.tools.executor import ToolExecutor
 from kosmos.tools.register_all import register_all_tools
 from kosmos.tools.registry import ToolRegistry
-
 from tests.e2e.conftest import (
     TEXT_ANSWER_ROUTE_SAFETY_DEGRADED,
     TOOL_CALL_ROAD_RISK,
     E2EFixtureBuilder,
     MockLLMClient,
-    _MockLLMClientAdapter,
     _build_httpx_mock,
+    _MockLLMClientAdapter,
     assert_data_gaps,
     assert_final_response_contains,
     assert_stop_reason,
     assert_tool_calls_dispatched,
     run_e2e_query,
 )
-
 
 # ---------------------------------------------------------------------------
 # T009 [P] [US2] KOROAD failure — degraded response with accident data gap
