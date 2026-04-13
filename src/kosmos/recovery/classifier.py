@@ -120,8 +120,8 @@ class ClassifiedError(BaseModel):
     """Human-readable error description from the source."""
 
     source: str = ""
-    """Origin of the error (e.g. ``"xml_gateway"``, ``"json_body"``, ``"http_status"``,
-    ``"exception"``)."""
+    """Origin of the error (e.g. ``"data_go_kr_xml"``, ``"data_go_kr_json"``,
+    ``"http_status"``, ``"transport"``, ``"unknown"``)."""
 
 
 class DataGoKrErrorClassifier:
@@ -144,7 +144,7 @@ class DataGoKrErrorClassifier:
         self,
         status_code: int,
         body: str,
-        content_type: str = "",
+        content_type: str | None = None,
     ) -> ClassifiedError:
         """Classify an HTTP response from the data.go.kr gateway.
 
@@ -156,7 +156,7 @@ class DataGoKrErrorClassifier:
         Args:
             status_code: HTTP response status code.
             body: Response body as a decoded string.
-            content_type: Value of the Content-Type header (may be empty).
+            content_type: Value of the Content-Type header (may be None or empty).
 
         Returns:
             A ``ClassifiedError`` describing the error class and retryability.
@@ -171,14 +171,14 @@ class DataGoKrErrorClassifier:
                 parsed = json.loads(body)
                 result_code = self._extract_result_code(parsed)
                 if result_code is not None:
-                    return self._classify_by_code(result_code, body, source="json_body")
+                    return self._classify_by_code(result_code, body, source="data_go_kr_json")
             except (json.JSONDecodeError, TypeError, KeyError, ValueError):
                 logger.debug("Failed to parse JSON body for error classification")
 
         # --- 3. HTTP status code fallback ---
         return self._classify_by_http_status(status_code, body)
 
-    def classify_exception(self, exc: BaseException) -> ClassifiedError:
+    def classify_exception(self, exc: Exception) -> ClassifiedError:
         """Classify a Python exception raised during an API call.
 
         Args:
@@ -187,13 +187,13 @@ class DataGoKrErrorClassifier:
         Returns:
             A ``ClassifiedError`` describing the error class and retryability.
         """
-        if isinstance(exc, (httpx.ConnectTimeout, httpx.ReadTimeout, httpx.PoolTimeout)):
+        if isinstance(exc, (httpx.ConnectTimeout, httpx.ReadTimeout)):
             return ClassifiedError(
                 error_class=ErrorClass.TIMEOUT,
                 is_retryable=True,
                 raw_code=None,
                 raw_message=str(exc),
-                source="exception",
+                source="transport",
             )
 
         if isinstance(exc, httpx.TimeoutException):
@@ -202,18 +202,26 @@ class DataGoKrErrorClassifier:
                 is_retryable=True,
                 raw_code=None,
                 raw_message=str(exc),
-                source="exception",
+                source="transport",
             )
 
         if isinstance(exc, httpx.HTTPStatusError):
-            return self._classify_by_http_status(exc.response.status_code, str(exc))
+            try:
+                content_type = exc.response.headers.get("content-type")
+                return self.classify_response(
+                    exc.response.status_code,
+                    exc.response.text,
+                    content_type,
+                )
+            except Exception:  # noqa: BLE001
+                return self._classify_by_http_status(exc.response.status_code, str(exc))
 
         return ClassifiedError(
             error_class=ErrorClass.APP_ERROR,
             is_retryable=False,
             raw_code=None,
             raw_message=str(exc),
-            source="exception",
+            source="unknown",
         )
 
     # ------------------------------------------------------------------
@@ -244,14 +252,14 @@ class DataGoKrErrorClassifier:
                 raw_message = body[msg_start:msg_end].strip()
 
         if raw_code is not None:
-            return self._classify_by_code(raw_code, raw_message, source="xml_gateway")
+            return self._classify_by_code(raw_code, raw_message, source="data_go_kr_xml")
 
         return ClassifiedError(
             error_class=ErrorClass.UNKNOWN,
             is_retryable=False,
             raw_code=None,
             raw_message=raw_message,
-            source="xml_gateway",
+            source="data_go_kr_xml",
         )
 
     def _extract_result_code(self, parsed: object) -> int | None:
