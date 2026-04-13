@@ -124,7 +124,7 @@ async def test_decision_count_incremented_per_step_allow() -> None:
 
 @pytest.mark.asyncio
 async def test_decision_count_incremented_on_deny_step3() -> None:
-    """When step 3 denies (PII + no auth), decision_count is incremented for deny."""
+    """When step 4 (authn) denies (oauth tool + unauthenticated), decision_count is incremented."""
     mc = MetricsCollector()
     # auth_type="oauth" with auth_level=0 → step4 (authn) denies
     tool = _make_tool(auth_type="oauth", is_personal_data=False)

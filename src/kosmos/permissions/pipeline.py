@@ -213,7 +213,7 @@ class PermissionPipeline:
                 )
                 _denial_count = record_denial(session_id, request.tool_id)
                 self._metrics_record_decision(step_index, "deny")
-                self._metrics_record_refusal_trip(session_id, request.tool_id, _denial_count)
+                self._metrics_record_refusal_trip(request.tool_id, _denial_count)
                 self._event_emit_decision(step_index, "deny", "internal_error", request.tool_id)
                 return deny
 
@@ -225,7 +225,7 @@ class PermissionPipeline:
             if step_result.decision != PermissionDecision.allow:
                 _denial_count = record_denial(session_id, request.tool_id)
                 self._metrics_record_decision(step_index, decision_str)
-                self._metrics_record_refusal_trip(session_id, request.tool_id, _denial_count)
+                self._metrics_record_refusal_trip(request.tool_id, _denial_count)
                 self._event_emit_decision(
                     step_index, decision_str, step_result.reason, request.tool_id
                 )
@@ -288,9 +288,7 @@ class PermissionPipeline:
                 exc_info=True,
             )
 
-    def _metrics_record_refusal_trip(
-        self, session_id: str, tool_id: str, denial_count: int
-    ) -> None:
+    def _metrics_record_refusal_trip(self, tool_id: str, denial_count: int) -> None:
         """Increment refusal circuit trip counter when threshold is hit."""
         if self._metrics is None:
             return

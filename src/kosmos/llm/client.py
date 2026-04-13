@@ -216,7 +216,6 @@ class LLMClient:
         )
 
         _stream_start = time.monotonic()
-        _stream_done = False
         _metrics_recorded = False
 
         try:
@@ -227,7 +226,6 @@ class LLMClient:
                     async for event in self._parse_sse_line(line):
                         yield event
                         if event.type == "done":
-                            _stream_done = True
                             _duration_ms = (time.monotonic() - _stream_start) * 1000
                             self._metrics_record_call(success=True, duration_ms=_duration_ms)
                             _metrics_recorded = True
