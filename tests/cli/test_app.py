@@ -61,9 +61,11 @@ class TestRunReplSuccess:
     def test_repl_launched_on_success(self) -> None:
         """Full REPL init path: mock all dependencies and verify run is called."""
         mock_repl_instance = MagicMock()
+        run_called = False
 
         async def mock_run() -> None:
-            return None
+            nonlocal run_called
+            run_called = True
 
         mock_repl_instance.run = mock_run
 
@@ -74,12 +76,13 @@ class TestRunReplSuccess:
             patch("kosmos.tools.register_all.register_all_tools"),
             patch("kosmos.context.builder.ContextBuilder"),
             patch("kosmos.engine.engine.QueryEngine"),
-            patch("kosmos.cli.renderer.EventRenderer"),
-            patch("kosmos.cli.repl.REPLLoop", return_value=mock_repl_instance),
+            patch("kosmos.cli.app.EventRenderer"),
+            patch("kosmos.cli.app.REPLLoop", return_value=mock_repl_instance) as mock_repl_cls,
         ):
             result = runner.invoke(_app, [])
-        # The REPL exits cleanly
         assert result.exit_code == 0
+        mock_repl_cls.assert_called_once()
+        assert run_called, "REPLLoop.run() was never awaited"
 
     def test_keyboard_interrupt_exits_130(self) -> None:
         """KeyboardInterrupt from the REPL results in exit code 130."""
@@ -111,8 +114,8 @@ class TestRunReplSuccess:
             patch("kosmos.tools.register_all.register_all_tools"),
             patch("kosmos.context.builder.ContextBuilder"),
             patch("kosmos.engine.engine.QueryEngine"),
-            patch("kosmos.cli.renderer.EventRenderer"),
-            patch("kosmos.cli.repl.REPLLoop", return_value=mock_repl_instance),
+            patch("kosmos.cli.app.EventRenderer"),
+            patch("kosmos.cli.app.REPLLoop", return_value=mock_repl_instance),
             patch("kosmos.cli.app.logging.basicConfig") as mock_logging,
         ):
             runner.invoke(_app, ["--debug"])

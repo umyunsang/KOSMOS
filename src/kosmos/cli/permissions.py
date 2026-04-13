@@ -6,6 +6,7 @@ from __future__ import annotations
 import logging
 
 from rich.console import Console
+from rich.markup import escape
 from rich.prompt import Confirm
 
 logger = logging.getLogger(__name__)
@@ -37,9 +38,9 @@ class ConsentPromptHandler:
         """
         self._console.print(
             f"\n[bold yellow]도구 실행 요청[/bold yellow]\n"
-            f"  도구: [cyan]{tool_name}[/cyan]\n"
-            f"  제공: [cyan]{provider}[/cyan]\n"
-            f"  설명: {description}"
+            f"  도구: [cyan]{escape(tool_name)}[/cyan]\n"
+            f"  제공: [cyan]{escape(provider)}[/cyan]\n"
+            f"  설명: {escape(description)}"
         )
         try:
             return Confirm.ask("실행을 허용하시겠습니까?", console=self._console, default=False)
@@ -56,6 +57,6 @@ class ConsentPromptHandler:
         """
         self._console.print(
             f"\n[red]도구 실행이 거부되었습니다.[/red]\n"
-            f"  도구: [cyan]{tool_name}[/cyan]\n"
-            f"  사유: {reason}"
+            f"  도구: [cyan]{escape(tool_name)}[/cyan]\n"
+            f"  사유: {escape(reason)}"
         )

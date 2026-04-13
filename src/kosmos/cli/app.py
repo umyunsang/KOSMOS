@@ -10,6 +10,7 @@ from typing import Annotated
 
 import typer
 from rich.console import Console
+from rich.markup import escape
 
 from kosmos.cli.config import CLIConfig
 from kosmos.cli.renderer import EventRenderer
@@ -36,7 +37,7 @@ def _version_callback(value: bool) -> None:
         raise typer.Exit()
 
 
-@_app.command()
+@_app.callback(invoke_without_command=True)
 def _cli_command(
     version: Annotated[
         bool,
@@ -81,7 +82,7 @@ def _run_repl() -> None:
     try:
         config = CLIConfig()
     except Exception as exc:  # noqa: BLE001
-        _stderr_console.print(f"[red]CLI 설정 오류:[/red] {exc}")
+        _stderr_console.print(f"[red]CLI 설정 오류:[/red] {escape(str(exc))}")
         sys.exit(1)
 
     # --- Initialise LLM client ---
@@ -89,12 +90,12 @@ def _run_repl() -> None:
         llm_client = LLMClient()
     except ConfigurationError as exc:
         _stderr_console.print(
-            f"[red]설정 오류:[/red] {exc}\n\n"
+            f"[red]설정 오류:[/red] {escape(str(exc))}\n\n"
             "[dim]KOSMOS_FRIENDLI_TOKEN 환경 변수가 설정되어 있는지 확인하세요.[/dim]"
         )
         sys.exit(1)
     except Exception as exc:  # noqa: BLE001
-        _stderr_console.print(f"[red]LLM 클라이언트 초기화 오류:[/red] {exc}")
+        _stderr_console.print(f"[red]LLM 클라이언트 초기화 오류:[/red] {escape(str(exc))}")
         sys.exit(1)
 
     # --- Initialise tool registry and executor ---
@@ -130,7 +131,7 @@ def _run_repl() -> None:
         sys.exit(130)
     except Exception as exc:  # noqa: BLE001
         logger.exception("Unexpected error in REPL: %s", exc)
-        _stderr_console.print(f"[red]예상치 못한 오류:[/red] {exc}")
+        _stderr_console.print(f"[red]예상치 못한 오류:[/red] {escape(str(exc))}")
         sys.exit(1)
 
 

@@ -3,7 +3,6 @@
 
 from __future__ import annotations
 
-import logging
 import sys
 import time
 import uuid
@@ -12,6 +11,7 @@ from collections.abc import AsyncGenerator, Iterable
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import InMemoryHistory
 from rich.console import Console
+from rich.markup import escape
 from rich.rule import Rule
 
 from kosmos.cli.config import CLIConfig
@@ -20,8 +20,6 @@ from kosmos.cli.renderer import EventRenderer
 from kosmos.engine.engine import QueryEngine
 from kosmos.engine.events import QueryEvent
 from kosmos.tools.registry import ToolRegistry
-
-logger = logging.getLogger(__name__)
 
 _WELCOME_BANNER = """[bold cyan]
  ██╗  ██╗ ██████╗ ███████╗███╗   ███╗ ██████╗ ███████╗
@@ -208,7 +206,9 @@ class REPLLoop:
 
         if resolved is None:
             self._console.print(
-                f"[yellow]알 수 없는 명령어:[/yellow] {cmd!r}. /help를 입력해 도움말을 확인하세요."
+                "[yellow]알 수 없는 명령어:[/yellow] "
+                f"{escape(repr(cmd))}. "
+                "/help를 입력해 도움말을 확인하세요."
             )
             return False
 

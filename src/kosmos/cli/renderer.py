@@ -6,6 +6,7 @@ from __future__ import annotations
 import logging
 
 from rich.console import Console
+from rich.markup import escape
 from rich.panel import Panel
 from rich.status import Status
 
@@ -95,7 +96,7 @@ class EventRenderer:
         """Append incremental text to the internal buffer and print it."""
         chunk = event.content or ""
         self._text_buffer += chunk
-        self._console.print(chunk, end="", highlight=False)
+        self._console.print(chunk, end="", highlight=False, markup=False)
 
     def _render_tool_use(self, event: QueryEvent) -> None:
         """Show a spinner with the tool's Korean name while it executes."""
@@ -112,7 +113,8 @@ class EventRenderer:
             except Exception:  # noqa: BLE001
                 logger.debug("Could not resolve Korean name for tool %r", tool_id)
 
-        status = Status(f"[bold cyan]{korean_name}[/bold cyan] 조회 중...", console=self._console)
+        label = f"[bold cyan]{escape(str(korean_name))}[/bold cyan] 조회 중..."
+        status = Status(label, console=self._console)
         status.start()
         self._active_status = status
 
@@ -126,14 +128,15 @@ class EventRenderer:
 
         if result.success:
             panel = Panel(
-                f"[green]성공[/green]  tool_id={result.tool_id!r}",
+                f"[green]성공[/green]  tool_id={escape(repr(result.tool_id))}",
                 title="[green]도구 결과[/green]",
                 border_style="green",
             )
         else:
             panel = Panel(
-                f"[red]오류[/red]  {result.error}\n"
-                f"error_type={result.error_type!r}  tool_id={result.tool_id!r}",
+                f"[red]오류[/red]  {escape(str(result.error or ''))}\n"
+                f"error_type={escape(repr(result.error_type))}  "
+                f"tool_id={escape(repr(result.tool_id))}",
                 title="[red]도구 오류[/red]",
                 border_style="red",
             )
