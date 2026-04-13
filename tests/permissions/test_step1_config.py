@@ -55,8 +55,11 @@ class TestStep1Config:
         assert result.reason == "api_key_not_configured"
 
     def test_api_key_tier_denies_when_missing(self, make_permission_request, monkeypatch):
-        """AccessTier.api_key should deny when KOSMOS_DATA_GO_KR_API_KEY is not set."""
-        monkeypatch.delenv("KOSMOS_DATA_GO_KR_API_KEY", raising=False)
+        """AccessTier.api_key should deny when no KOSMOS_*_API_KEY is set."""
+        import os
+
+        for k in [k for k in os.environ if k.startswith("KOSMOS_") and k.endswith("_API_KEY")]:
+            monkeypatch.delenv(k, raising=False)
         req = make_permission_request(access_tier=AccessTier.api_key)
         result = check_config(req)
         assert result.decision == PermissionDecision.deny
@@ -64,7 +67,11 @@ class TestStep1Config:
         assert result.reason == "api_key_not_configured"
 
     def test_api_key_tier_denies_when_empty(self, make_permission_request, monkeypatch):
-        """AccessTier.api_key should deny when all KOSMOS_*_API_KEY vars are empty strings."""
+        """AccessTier.api_key should deny when all KOSMOS_*_API_KEY vars are empty."""
+        import os
+
+        for k in [k for k in os.environ if k.startswith("KOSMOS_") and k.endswith("_API_KEY")]:
+            monkeypatch.delenv(k, raising=False)
         monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", "")
         req = make_permission_request(access_tier=AccessTier.api_key)
         result = check_config(req)
@@ -73,7 +80,11 @@ class TestStep1Config:
         assert result.reason == "api_key_not_configured"
 
     def test_api_key_tier_denies_when_whitespace(self, make_permission_request, monkeypatch):
-        """AccessTier.api_key should deny when all KOSMOS_*_API_KEY vars are whitespace-only."""
+        """AccessTier.api_key should deny when all KOSMOS_*_API_KEY vars are whitespace."""
+        import os
+
+        for k in [k for k in os.environ if k.startswith("KOSMOS_") and k.endswith("_API_KEY")]:
+            monkeypatch.delenv(k, raising=False)
         monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", "   ")
         req = make_permission_request(access_tier=AccessTier.api_key)
         result = check_config(req)
