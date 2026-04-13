@@ -50,11 +50,9 @@ async def test_t013_token_usage_tracking(
       a) The LLM client was called exactly twice.
       b) The correct usage values appear in usage_update QueryEvents.
     """
-    engine, llm_client, httpx_mock = (
-        e2e_builder
-        .with_llm_responses([TOOL_CALL_ROAD_RISK, TEXT_ANSWER_ROUTE_SAFETY])
-        .build()
-    )
+    engine, llm_client, httpx_mock = e2e_builder.with_llm_responses(
+        [TOOL_CALL_ROAD_RISK, TEXT_ANSWER_ROUTE_SAFETY]
+    ).build()
 
     events = await run_e2e_query(
         engine,
@@ -63,15 +61,11 @@ async def test_t013_token_usage_tracking(
     )
 
     # The engine must have invoked the LLM exactly twice
-    assert llm_client.call_count == 2, (
-        f"Expected 2 LLM calls, got {llm_client.call_count}"
-    )
+    assert llm_client.call_count == 2, f"Expected 2 LLM calls, got {llm_client.call_count}"
 
     # Collect usage_update events emitted by the engine query loop
     usage_events = [e for e in events if e.type == "usage_update"]
-    assert len(usage_events) >= 1, (
-        "Expected at least one usage_update event, got none"
-    )
+    assert len(usage_events) >= 1, "Expected at least one usage_update event, got none"
 
     # The first usage_update event (after tool dispatch) must carry iteration-1 usage
     first_usage = usage_events[0].usage
@@ -145,8 +139,7 @@ async def test_t014_budget_exceeded_stops_engine(
     # Build with max_turns=1 so the second call trips the turn-budget gate
     config = QueryEngineConfig(max_turns=1)
     engine, llm_client, httpx_mock = (
-        e2e_builder
-        .with_llm_responses([TOOL_CALL_ROAD_RISK, TEXT_ANSWER_ROUTE_SAFETY])
+        e2e_builder.with_llm_responses([TOOL_CALL_ROAD_RISK, TEXT_ANSWER_ROUTE_SAFETY])
         .with_config(config)
         .build()
     )
@@ -195,8 +188,7 @@ async def test_t014b_token_budget_exhausted_before_stream(
     from kosmos.llm.models import TokenUsage
 
     engine, llm_client, httpx_mock = (
-        e2e_builder
-        .with_budget(100)  # small but non-zero budget
+        e2e_builder.with_budget(100)  # small but non-zero budget
         .with_llm_responses([TOOL_CALL_ROAD_RISK, TEXT_ANSWER_ROUTE_SAFETY])
         .build()
     )
@@ -243,11 +235,9 @@ async def test_t015_rate_limiter_call_count(
     call count for cost-tracking purposes (T015 [US3]: rate limiter / cost
     accounting per adapter call).
     """
-    engine, _llm_client, httpx_mock = (
-        e2e_builder
-        .with_llm_responses([TOOL_CALL_ROAD_RISK, TEXT_ANSWER_ROUTE_SAFETY])
-        .build()
-    )
+    engine, _llm_client, httpx_mock = e2e_builder.with_llm_responses(
+        [TOOL_CALL_ROAD_RISK, TEXT_ANSWER_ROUTE_SAFETY]
+    ).build()
 
     await run_e2e_query(
         engine,

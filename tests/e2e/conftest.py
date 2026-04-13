@@ -80,6 +80,7 @@ class _MockLLMClientAdapter(LLMClient):
         async for event in self._delegate.stream(messages, **kwargs):
             yield event
 
+
 # ---------------------------------------------------------------------------
 # Fixture file paths
 # ---------------------------------------------------------------------------
@@ -243,7 +244,9 @@ def _build_httpx_mock(
 
             if adapter_id in failure_modes:
                 return _raise_failure(
-                    adapter_id, failure_modes[adapter_id], url_str,
+                    adapter_id,
+                    failure_modes[adapter_id],
+                    url_str,
                 )
 
             # Return fixture data
@@ -420,8 +423,7 @@ def assert_tool_calls_dispatched(
     dispatched = [e.tool_name for e in events if e.type == "tool_use"]
     for tool_id in expected_tool_ids:
         assert tool_id in dispatched, (
-            f"Expected tool_use for {tool_id!r}, "
-            f"but only dispatched: {dispatched}"
+            f"Expected tool_use for {tool_id!r}, but only dispatched: {dispatched}"
         )
 
 
@@ -440,8 +442,7 @@ def assert_final_response_contains(
     assert full_text, "No text_delta events found in response"
     for kw in keywords:
         assert kw in full_text, (
-            f"Keyword {kw!r} not found in final response text: "
-            f"{full_text[:200]}..."
+            f"Keyword {kw!r} not found in final response text: {full_text[:200]}..."
         )
 
 
@@ -472,10 +473,7 @@ def assert_usage_matches(
             total_used = 0
             for event in usage_events:
                 if event.usage is not None:
-                    total_used += (
-                        (event.usage.input_tokens or 0)
-                        + (event.usage.output_tokens or 0)
-                    )
+                    total_used += (event.usage.input_tokens or 0) + (event.usage.output_tokens or 0)
             assert total_used == expected_total, (
                 f"Total tokens used {total_used} != "
                 f"expected {expected_total} "
@@ -508,8 +506,7 @@ def assert_stop_reason(
     stop_events = [e for e in events if e.type == "stop"]
     assert stop_events, "No stop event found in response"
     assert stop_events[-1].stop_reason == expected_reason, (
-        f"Stop reason {stop_events[-1].stop_reason!r} != "
-        f"expected {expected_reason!r}"
+        f"Stop reason {stop_events[-1].stop_reason!r} != expected {expected_reason!r}"
     )
 
 
@@ -524,9 +521,7 @@ def assert_data_gaps(
         expected_gaps: Adapter names expected in data_gaps (e.g. ["koroad_accident_search"]).
     """
     tool_results = [
-        e.tool_result
-        for e in events
-        if e.type == "tool_result" and e.tool_result is not None
+        e.tool_result for e in events if e.type == "tool_result" and e.tool_result is not None
     ]
     # Find road_risk_score result
     risk_results = [tr for tr in tool_results if tr.tool_id == "road_risk_score"]
@@ -540,17 +535,14 @@ def assert_data_gaps(
 
     for gap in expected_gaps:
         assert gap in actual_gaps, (
-            f"Expected data_gap {gap!r} not found in "
-            f"actual gaps: {actual_gaps}"
+            f"Expected data_gap {gap!r} not found in actual gaps: {actual_gaps}"
         )
 
 
 def assert_no_data_gaps(events: list[QueryEvent]) -> None:
     """Assert that road_risk_score result has no data_gaps."""
     tool_results = [
-        e.tool_result
-        for e in events
-        if e.type == "tool_result" and e.tool_result is not None
+        e.tool_result for e in events if e.type == "tool_result" and e.tool_result is not None
     ]
     risk_results = [tr for tr in tool_results if tr.tool_id == "road_risk_score"]
     assert risk_results, "No tool_result for road_risk_score found"

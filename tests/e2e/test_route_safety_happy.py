@@ -39,11 +39,9 @@ async def test_t006_happy_path_route_safety(
     - The stop reason is task_complete or end_turn.
     - No data gaps are reported from the composite adapter.
     """
-    engine, _llm_client, httpx_mock = (
-        e2e_builder
-        .with_llm_responses([TOOL_CALL_ROAD_RISK, TEXT_ANSWER_ROUTE_SAFETY])
-        .build()
-    )
+    engine, _llm_client, httpx_mock = e2e_builder.with_llm_responses(
+        [TOOL_CALL_ROAD_RISK, TEXT_ANSWER_ROUTE_SAFETY]
+    ).build()
 
     events = await run_e2e_query(
         engine,
@@ -88,11 +86,9 @@ async def test_t007_conversation_history_accumulates(
     After the second call, llm_client.last_messages must contain the accumulated
     history including a role="user" message and a role="tool" message.
     """
-    engine, llm_client, httpx_mock = (
-        e2e_builder
-        .with_llm_responses([TOOL_CALL_ROAD_RISK, TEXT_ANSWER_ROUTE_SAFETY])
-        .build()
-    )
+    engine, llm_client, httpx_mock = e2e_builder.with_llm_responses(
+        [TOOL_CALL_ROAD_RISK, TEXT_ANSWER_ROUTE_SAFETY]
+    ).build()
 
     await run_e2e_query(
         engine,
@@ -101,9 +97,7 @@ async def test_t007_conversation_history_accumulates(
     )
 
     # The LLM must have been called exactly twice (tool call + text synthesis)
-    assert llm_client.call_count == 2, (
-        f"Expected 2 LLM calls, got {llm_client.call_count}"
-    )
+    assert llm_client.call_count == 2, f"Expected 2 LLM calls, got {llm_client.call_count}"
 
     # last_messages reflects the history sent on the second (text synthesis) call
     assert llm_client.last_messages is not None, "last_messages should not be None"
@@ -111,9 +105,7 @@ async def test_t007_conversation_history_accumulates(
     roles = [msg.role for msg in llm_client.last_messages]
 
     # Must include at least one user message (the citizen's original query)
-    assert "user" in roles, (
-        f"Expected role='user' in message history, got roles: {roles}"
-    )
+    assert "user" in roles, f"Expected role='user' in message history, got roles: {roles}"
 
     # Must include a tool result message fed back to the LLM
     assert "tool" in roles, (
@@ -137,11 +129,9 @@ async def test_t008_multi_tool_fan_out(
     - httpx mock received at least 3 GET calls (one per inner adapter).
     - Each inner adapter URL pattern appears in the call arguments.
     """
-    engine, _llm_client, httpx_mock = (
-        e2e_builder
-        .with_llm_responses([TOOL_CALL_ROAD_RISK, TEXT_ANSWER_ROUTE_SAFETY])
-        .build()
-    )
+    engine, _llm_client, httpx_mock = e2e_builder.with_llm_responses(
+        [TOOL_CALL_ROAD_RISK, TEXT_ANSWER_ROUTE_SAFETY]
+    ).build()
 
     await run_e2e_query(
         engine,
@@ -169,8 +159,8 @@ async def test_t008_multi_tool_fan_out(
     # Verify each inner adapter's URL pattern is present
     expected_patterns = [
         "getRestFrequentzoneLg",  # koroad_accident_search
-        "getWthrWrnList",         # kma_weather_alert_status
-        "getUltraSrtNcst",        # kma_current_observation
+        "getWthrWrnList",  # kma_weather_alert_status
+        "getUltraSrtNcst",  # kma_current_observation
     ]
     for pattern in expected_patterns:
         assert pattern in all_urls, (

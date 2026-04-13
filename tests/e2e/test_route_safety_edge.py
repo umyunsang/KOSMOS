@@ -128,11 +128,9 @@ async def test_t018_unknown_tool_graceful_handling(
     - A tool_result event is emitted with success=False.
     - The engine continues and eventually emits a stop event.
     """
-    engine, _llm_client, httpx_mock = (
-        e2e_builder
-        .with_llm_responses([_UNKNOWN_TOOL_CALL, TEXT_ANSWER_ROUTE_SAFETY])
-        .build()
-    )
+    engine, _llm_client, httpx_mock = e2e_builder.with_llm_responses(
+        [_UNKNOWN_TOOL_CALL, TEXT_ANSWER_ROUTE_SAFETY]
+    ).build()
 
     events = await run_e2e_query(
         engine,
@@ -155,15 +153,13 @@ async def test_t018_unknown_tool_graceful_handling(
     failed_results = [e for e in tool_result_events if e.tool_result and not e.tool_result.success]
     assert failed_results, (
         "Expected tool_result with success=False for unknown tool, "
-        f"got results: {[
-            (e.tool_result.success if e.tool_result else None)
-            for e in tool_result_events
-        ]}"
+        f"got results: {
+            [(e.tool_result.success if e.tool_result else None) for e in tool_result_events]
+        }"
     )
     # Error type must be 'not_found'
     not_found_results = [
-        e for e in failed_results
-        if e.tool_result and e.tool_result.error_type == "not_found"
+        e for e in failed_results if e.tool_result and e.tool_result.error_type == "not_found"
     ]
     assert not_found_results, (
         "Expected error_type='not_found' for unknown tool, "
@@ -219,8 +215,7 @@ async def test_t019_max_iterations_guard(
     # Must have at least max_iterations tool_use events (2 iterations × 1 tool each)
     tool_use_events = [e for e in events if e.type == "tool_use"]
     assert len(tool_use_events) >= config.max_iterations, (
-        f"Expected at least {config.max_iterations} tool_use events, "
-        f"got {len(tool_use_events)}"
+        f"Expected at least {config.max_iterations} tool_use events, got {len(tool_use_events)}"
     )
 
 
@@ -248,11 +243,9 @@ async def test_t020_stream_interruption_retry(
     sequences and cannot raise exceptions. We patch MockLLMClient.stream() via
     unittest.mock to simulate the exception on the first call.
     """
-    engine, llm_client, httpx_mock = (
-        e2e_builder
-        .with_llm_responses([TEXT_ANSWER_ROUTE_SAFETY])
-        .build()
-    )
+    engine, llm_client, httpx_mock = e2e_builder.with_llm_responses(
+        [TEXT_ANSWER_ROUTE_SAFETY]
+    ).build()
 
     call_count = 0
     original_stream = llm_client.stream
@@ -271,9 +264,9 @@ async def test_t020_stream_interruption_retry(
         patch.object(llm_client, "stream", _stream_with_first_interruption),
         patch.object(httpx.AsyncClient, "get", httpx_mock),
     ):
-            events: list = []
-            async for event in engine.run("스트림 중단 후 재시도 테스트"):
-                events.append(event)
+        events: list = []
+        async for event in engine.run("스트림 중단 후 재시도 테스트"):
+            events.append(event)
 
     # The engine must have attempted the stream at least twice (1 fail + 1 retry)
     # call_count tracks both the failed attempt and the successful retry
@@ -316,11 +309,9 @@ async def test_t021_invalid_tool_arguments(
     - A tool_result event is emitted with success=False, error_type="validation".
     - The engine continues (does not crash) and emits a stop event.
     """
-    engine, _llm_client, httpx_mock = (
-        e2e_builder
-        .with_llm_responses([_INVALID_ARGS_TOOL_CALL, TEXT_ANSWER_ROUTE_SAFETY])
-        .build()
-    )
+    engine, _llm_client, httpx_mock = e2e_builder.with_llm_responses(
+        [_INVALID_ARGS_TOOL_CALL, TEXT_ANSWER_ROUTE_SAFETY]
+    ).build()
 
     events = await run_e2e_query(
         engine,
@@ -339,22 +330,25 @@ async def test_t021_invalid_tool_arguments(
     # A tool_result with validation failure must be emitted
     tool_result_events = [e for e in events if e.type == "tool_result"]
     road_risk_results = [
-        e for e in tool_result_events
+        e
+        for e in tool_result_events
         if e.tool_result and e.tool_result.tool_id == "road_risk_score"
     ]
     assert road_risk_results, "Expected tool_result event for road_risk_score"
 
     validation_failures = [
-        e for e in road_risk_results
+        e
+        for e in road_risk_results
         if e.tool_result and not e.tool_result.success and e.tool_result.error_type == "validation"
     ]
     assert validation_failures, (
         "Expected ToolResult with success=False and error_type='validation', "
-        f"got: {[
-            (e.tool_result.success, e.tool_result.error_type)
-            if e.tool_result else None
-            for e in road_risk_results
-        ]}"
+        f"got: {
+            [
+                (e.tool_result.success, e.tool_result.error_type) if e.tool_result else None
+                for e in road_risk_results
+            ]
+        }"
     )
 
     # Engine must not crash — stop event required
@@ -404,14 +398,13 @@ async def test_t022_preprocessing_pipeline_small_context(
     # enough that the budget check passes but small enough that preprocessing
     # is triggered during the iteration loop.
     config = QueryEngineConfig(
-        context_window=8000,        # Passes budget guard for assembled context
+        context_window=8000,  # Passes budget guard for assembled context
         preprocessing_threshold=0.01,  # 1% → ~80 tokens → triggers preprocessing immediately
         max_iterations=10,
     )
 
     engine, _llm_client, httpx_mock = (
-        e2e_builder
-        .with_llm_responses([TOOL_CALL_ROAD_RISK, TEXT_ANSWER_ROUTE_SAFETY])
+        e2e_builder.with_llm_responses([TOOL_CALL_ROAD_RISK, TEXT_ANSWER_ROUTE_SAFETY])
         .with_config(config)
         .build()
     )

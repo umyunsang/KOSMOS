@@ -77,8 +77,7 @@ async def test_t016_permission_pipeline_public_tool_succeeds(
     # ---- Part A: E2E flow succeeds with permission pipeline configured ----
     session_ctx = SessionContext(session_id="e2e-t016", auth_level=0)
     engine, _llm_client, httpx_mock = (
-        e2e_builder
-        .with_permission_pipeline(session_ctx)
+        e2e_builder.with_permission_pipeline(session_ctx)
         .with_llm_responses([TOOL_CALL_ROAD_RISK, TEXT_ANSWER_ROUTE_SAFETY])
         .build()
     )

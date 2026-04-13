@@ -263,12 +263,9 @@ async def test_t012_circuit_breaker_integration(
     assert risk_results, "No road_risk_score tool_result found"
     result = risk_results[0]
 
-    assert not result.success, (
-        "road_risk_score should fail fast when circuit breaker is OPEN"
-    )
+    assert not result.success, "road_risk_score should fail fast when circuit breaker is OPEN"
     assert result.error_type == "circuit_open", (
-        f"Expected error_type='circuit_open' for OPEN circuit, "
-        f"got error_type={result.error_type!r}"
+        f"Expected error_type='circuit_open' for OPEN circuit, got error_type={result.error_type!r}"
     )
 
     # No httpx calls should have been made — the open circuit is a hard gate
