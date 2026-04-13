@@ -172,9 +172,7 @@ class DataGoKrErrorClassifier:
                 result_code = self._extract_result_code(parsed)
                 if result_code is not None:
                     result_msg = self._extract_result_msg(parsed)
-                    return self._classify_by_code(
-                        result_code, result_msg, source="data_go_kr_json"
-                    )
+                    return self._classify_by_code(result_code, result_msg, source="data_go_kr_json")
             except (json.JSONDecodeError, TypeError, KeyError, ValueError):
                 logger.debug("Failed to parse JSON body for error classification")
 
