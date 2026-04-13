@@ -120,7 +120,12 @@ class REPLLoop:
     # ------------------------------------------------------------------
 
     async def run(self) -> None:
-        """Start the REPL loop.  Returns when the user exits."""
+        """Start the REPL loop.
+
+        Returns when the user exits normally (``/exit``, ``/quit``, or EOF).
+        Calls ``sys.exit(130)`` on double Ctrl+C within 1 second at the
+        idle prompt.
+        """
         if self._config.welcome_banner:
             self._show_welcome()
 
@@ -180,7 +185,15 @@ class REPLLoop:
                     self._total_output_tokens += event.usage.output_tokens
                 self._renderer.render(event)
         except KeyboardInterrupt:
-            # Single Ctrl+C during streaming: cancel the generator
+            # Ctrl+C during streaming: cancel the generator.
+            # Update _last_ctrl_c so a second Ctrl+C at the next idle
+            # prompt within 1 second triggers the forced-exit path.
+            now = time.monotonic()
+            if now - self._last_ctrl_c < 1.0:
+                await gen.aclose()
+                self._console.print("\n[dim]종료합니다.[/dim]")
+                sys.exit(130)
+            self._last_ctrl_c = now
             await gen.aclose()
             self._console.print("\n[dim][cancelled][/dim]")
             self._renderer.reset()

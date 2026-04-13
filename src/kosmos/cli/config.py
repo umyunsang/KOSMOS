@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -16,7 +17,7 @@ class CLIConfig(BaseSettings):
 
     model_config = SettingsConfigDict(env_prefix="KOSMOS_CLI_")
 
-    history_size: int = 1000
+    history_size: int = Field(default=1000, ge=0)
     """Maximum number of REPL history entries to persist."""
 
     show_usage: bool = True
