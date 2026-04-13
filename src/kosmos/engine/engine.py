@@ -123,15 +123,14 @@ class QueryEngine:
             )
             return
 
-        # --- Context assembly: insert turn attachment if available ---
-        attachment_layer = self._context_builder.build_turn_attachment(self._state, api_health=None)
-        if attachment_layer is not None:
-            self._state.messages.append(
-                ChatMessage(role="user", content=attachment_layer.content),
-            )
-
-        # --- Budget check via context assembly ---
-        assembled = self._context_builder.build_assembled_context(self._state, api_health=None)
+        # --- Budget check via context assembly (before mutating message history) ---
+        # Build the assembled context first so that a budget-exceeded early exit
+        # does not leave a stray attachment in self._state.messages.
+        assembled = self._context_builder.build_assembled_context(
+            self._state,
+            api_health=None,
+            hard_limit=self._config.context_window,
+        )
         if assembled.budget and assembled.budget.is_over_limit:
             yield QueryEvent(
                 type="stop",
@@ -139,6 +138,13 @@ class QueryEngine:
                 stop_message="Context token budget exceeded",
             )
             return
+
+        # --- Context assembly: insert turn attachment after passing budget check ---
+        attachment_layer = self._context_builder.build_turn_attachment(self._state, api_health=None)
+        if attachment_layer is not None:
+            self._state.messages.append(
+                ChatMessage(role="user", content=attachment_layer.content),
+            )
 
         # Append user message to history
         self._state.messages.append(

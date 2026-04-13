@@ -99,3 +99,42 @@ class TestStep6Sandbox:
         await execute_sandboxed(req, capturing_adapter, object())
 
         assert captured_env.get("KOSMOS_DATA_GO_KR_API_KEY") == "my-api-key"
+
+    @pytest.mark.asyncio
+    async def test_other_api_key_visible_in_api_key_tier(
+        self, make_permission_request, monkeypatch
+    ):
+        """Any KOSMOS_*_API_KEY var (e.g. KOSMOS_KOROAD_API_KEY) must be visible
+        inside the sandbox for api_key tier — the allowlist uses a pattern, not a
+        hardcoded list."""
+        monkeypatch.setenv("KOSMOS_KOROAD_API_KEY", "koroad-secret")
+        req = make_permission_request(access_tier=AccessTier.api_key)
+
+        captured_env: dict[str, str] = {}
+
+        async def capturing_adapter(_input):  # noqa: ANN001
+            captured_env.update(os.environ.copy())
+            return {}
+
+        await execute_sandboxed(req, capturing_adapter, object())
+
+        assert captured_env.get("KOSMOS_KOROAD_API_KEY") == "koroad-secret"
+
+    @pytest.mark.asyncio
+    async def test_non_api_key_var_hidden_in_api_key_tier(
+        self, make_permission_request, monkeypatch
+    ):
+        """A KOSMOS_ var that does NOT match KOSMOS_*_API_KEY must be hidden
+        even in api_key tier."""
+        monkeypatch.setenv("KOSMOS_SESSION_TOKEN", "hidden-token")
+        req = make_permission_request(access_tier=AccessTier.api_key)
+
+        captured_env: dict[str, str] = {}
+
+        async def capturing_adapter(_input):  # noqa: ANN001
+            captured_env.update(os.environ.copy())
+            return {}
+
+        await execute_sandboxed(req, capturing_adapter, object())
+
+        assert "KOSMOS_SESSION_TOKEN" not in captured_env

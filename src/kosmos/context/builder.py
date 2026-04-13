@@ -120,6 +120,7 @@ class ContextBuilder:
         self,
         state: QueryState,
         api_health: dict[str, str] | None = None,
+        hard_limit: int = 128_000,
     ) -> AssembledContext:
         """Assemble the complete context for one LLM turn.
 
@@ -135,6 +136,9 @@ class ContextBuilder:
             state: Current session state supplying active_situational_tools,
                    resolved_tasks, turn_count, etc.
             api_health: Optional dict of tool_id → health status string.
+            hard_limit: Context window size in tokens. Defaults to 128_000 for
+                        backward compatibility; callers should pass the engine's
+                        configured ``context_window`` value.
 
         Returns:
             Frozen ``AssembledContext`` with all fields populated.
@@ -164,8 +168,8 @@ class ContextBuilder:
         )
         budget = estimator.estimate(
             context=assembled_no_budget,
-            hard_limit=128_000,
-            soft_limit=int(128_000 * 0.80),
+            hard_limit=hard_limit,
+            soft_limit=int(hard_limit * 0.80),
         )
 
         if budget.is_near_limit:

@@ -428,8 +428,13 @@ async def test_preprocessing_compresses_stale_tool_results(
     additional turns, the history count should not grow unboundedly.
     """
     config = QueryEngineConfig(
-        context_window=100,  # very small so preprocessing fires early
-        preprocessing_threshold=0.5,  # threshold = 50 tokens
+        # context_window must be large enough that the budget guard
+        # (hard_limit=context_window) does not block turns, while
+        # preprocessing_threshold is small enough that the absolute
+        # threshold fires on typical test message sizes (~500 tokens).
+        # 1000 * 0.05 = 50-token threshold → preprocessing fires early.
+        context_window=1000,
+        preprocessing_threshold=0.05,
         snip_turn_age=1,
         microcompact_turn_age=1,
         tool_result_budget=50,

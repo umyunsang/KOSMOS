@@ -8,8 +8,10 @@ converts them to deny results.
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import os
+import re
 from typing import Any
 
 from kosmos.permissions.models import (
@@ -24,13 +26,25 @@ logger = logging.getLogger(__name__)
 
 _STEP = 6
 
-# Environment variables allowed per access tier
-_TIER_ALLOWED_VARS: dict[AccessTier, list[str]] = {
+# Regex patterns for env vars allowed per access tier.
+# Using patterns instead of a hardcoded list allows any KOSMOS_*_API_KEY
+# variable (e.g. KOSMOS_KOROAD_API_KEY, KOSMOS_DATA_GO_KR_API_KEY) to be
+# visible inside the sandbox for tiers that require API key credentials.
+_TIER_ALLOWED_PATTERNS: dict[AccessTier, list[re.Pattern[str]]] = {
     AccessTier.public: [],
-    AccessTier.api_key: ["KOSMOS_DATA_GO_KR_API_KEY"],
-    AccessTier.authenticated: ["KOSMOS_DATA_GO_KR_API_KEY"],
-    AccessTier.restricted: ["KOSMOS_DATA_GO_KR_API_KEY"],
+    AccessTier.api_key: [re.compile(r"^KOSMOS_.*_API_KEY$")],
+    AccessTier.authenticated: [re.compile(r"^KOSMOS_.*_API_KEY$")],
+    AccessTier.restricted: [re.compile(r"^KOSMOS_.*_API_KEY$")],
 }
+
+# Serialize env-mutation sections so concurrent coroutines cannot observe a
+# partially-filtered environment.
+_sandbox_lock = asyncio.Lock()
+
+
+def _is_allowed(key: str, patterns: list[re.Pattern[str]]) -> bool:
+    """Return True if *key* matches any of the given compiled patterns."""
+    return any(p.match(key) for p in patterns)
 
 
 async def execute_sandboxed(
@@ -40,8 +54,11 @@ async def execute_sandboxed(
 ) -> tuple[PermissionStepResult, ToolResult | None]:
     """Execute the tool adapter in an isolated sandbox.
 
-    Temporarily removes KOSMOS_* env vars not in the tool's allowed set,
-    executes the adapter, then restores all env vars.
+    Temporarily removes KOSMOS_* env vars not matched by the tool's access-tier
+    patterns, executes the adapter, then restores all env vars.
+
+    A module-level asyncio.Lock serializes the env-mutation window so that
+    concurrent coroutines cannot observe a partially-filtered environment.
 
     Args:
         request: The permission check request.
@@ -53,42 +70,44 @@ async def execute_sandboxed(
         On success: (allow result, ToolResult) — built from the adapter output.
         On exception: (deny result, None).
     """
-    # Snapshot and temporarily remove non-allowed KOSMOS_ vars
-    allowed = set(_TIER_ALLOWED_VARS.get(request.access_tier, []))
-    saved_vars: dict[str, str] = {}
+    allowed_patterns = _TIER_ALLOWED_PATTERNS.get(request.access_tier, [])
 
-    for key, value in list(os.environ.items()):
-        if key.startswith("KOSMOS_") and key not in allowed:
-            saved_vars[key] = value
-            del os.environ[key]
+    async with _sandbox_lock:
+        # Snapshot and temporarily remove non-allowed KOSMOS_ vars
+        saved_vars: dict[str, str] = {}
 
-    try:
-        result_data = await adapter_fn(validated_input)
-        logger.debug("Step %d: sandbox execution succeeded for tool %s", _STEP, request.tool_id)
-        return (
-            PermissionStepResult(decision=PermissionDecision.allow, step=_STEP),
-            ToolResult(
-                tool_id=request.tool_id,
-                success=True,
-                data=result_data,
-            ),
-        )
-    except Exception as exc:
-        logger.error(
-            "Step %d: sandbox execution failed for tool %s: %s",
-            _STEP,
-            request.tool_id,
-            exc,
-        )
-        return (
-            PermissionStepResult(
-                decision=PermissionDecision.deny,
-                step=_STEP,
-                reason="execution_error",
-            ),
-            None,
-        )
-    finally:
-        # Restore all removed env vars
-        for key, value in saved_vars.items():
-            os.environ[key] = value
+        for key, value in list(os.environ.items()):
+            if key.startswith("KOSMOS_") and not _is_allowed(key, allowed_patterns):
+                saved_vars[key] = value
+                del os.environ[key]
+
+        try:
+            result_data = await adapter_fn(validated_input)
+            logger.debug("Step %d: sandbox execution succeeded for tool %s", _STEP, request.tool_id)
+            return (
+                PermissionStepResult(decision=PermissionDecision.allow, step=_STEP),
+                ToolResult(
+                    tool_id=request.tool_id,
+                    success=True,
+                    data=result_data,
+                ),
+            )
+        except Exception as exc:
+            logger.error(
+                "Step %d: sandbox execution failed for tool %s: %s",
+                _STEP,
+                request.tool_id,
+                exc,
+            )
+            return (
+                PermissionStepResult(
+                    decision=PermissionDecision.deny,
+                    step=_STEP,
+                    reason="execution_error",
+                ),
+                None,
+            )
+        finally:
+            # Restore all removed env vars
+            for key, value in saved_vars.items():
+                os.environ[key] = value

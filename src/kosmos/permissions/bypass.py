@@ -55,10 +55,9 @@ def check_bypass_immune(request: PermissionCheckRequest) -> PermissionStepResult
                 and args_citizen_id != request.session_context.citizen_id
             ):
                 logger.warning(
-                    "Bypass-immune deny: citizen_id mismatch for tool %s (session=%s, args=%s)",
+                    "Bypass-immune deny: citizen_id mismatch for tool %s"
+                    " (session=<redacted>, args=<redacted>)",
                     request.tool_id,
-                    request.session_context.citizen_id,
-                    "<redacted>",
                 )
                 return PermissionStepResult(
                     decision=PermissionDecision.deny,

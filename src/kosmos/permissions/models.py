@@ -11,7 +11,7 @@ from datetime import datetime
 from enum import StrEnum
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class AccessTier(StrEnum):
@@ -63,8 +63,16 @@ class SessionContext(BaseModel):
     auth_level: int = 0
     """Authentication level: 0=anonymous, 1=basic, 2=verified."""
 
-    consented_providers: list[str] = Field(default_factory=list)
+    consented_providers: tuple[str, ...] = Field(default=())
     """Providers for which the citizen has accepted ToS."""
+
+    @field_validator("consented_providers", mode="before")
+    @classmethod
+    def _coerce_to_tuple(cls, v: object) -> tuple[str, ...]:
+        """Coerce list inputs to tuple to keep the frozen model immutable."""
+        if isinstance(v, list):
+            return tuple(v)
+        return v  # type: ignore[return-value]
 
 
 class PermissionCheckRequest(BaseModel):

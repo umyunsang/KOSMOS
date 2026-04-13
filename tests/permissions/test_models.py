@@ -68,7 +68,7 @@ class TestSessionContext:
         assert ctx.session_id == "s1"
         assert ctx.citizen_id is None
         assert ctx.auth_level == 0
-        assert ctx.consented_providers == []
+        assert ctx.consented_providers == ()
 
     def test_full_construction(self):
         ctx = SessionContext(
@@ -79,7 +79,19 @@ class TestSessionContext:
         )
         assert ctx.citizen_id == "cid-123"
         assert ctx.auth_level == 2
-        assert ctx.consented_providers == ["koroad", "kma"]
+        assert ctx.consented_providers == ("koroad", "kma")
+
+    def test_consented_providers_list_coerced_to_tuple(self):
+        """list input for consented_providers must be coerced to tuple."""
+        ctx = SessionContext(session_id="s1", consented_providers=["prov-a", "prov-b"])
+        assert isinstance(ctx.consented_providers, tuple)
+        assert ctx.consented_providers == ("prov-a", "prov-b")
+
+    def test_consented_providers_is_immutable(self):
+        """consented_providers tuple must not support item assignment."""
+        ctx = SessionContext(session_id="s1", consented_providers=["prov-a"])
+        with pytest.raises(TypeError):
+            ctx.consented_providers[0] = "mutated"  # type: ignore[index]
 
     def test_frozen(self):
         ctx = SessionContext(session_id="s1")

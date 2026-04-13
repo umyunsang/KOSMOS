@@ -3,7 +3,7 @@
 
 Checks the tool's declared AccessTier against the current environment:
 - public → allow unconditionally
-- api_key → allow iff KOSMOS_DATA_GO_KR_API_KEY is set and non-empty
+- api_key → allow iff at least one KOSMOS_*_API_KEY env var is set and non-empty
 - authenticated → deny (not implemented in v1)
 - restricted → deny (not implemented in v1)
 """
@@ -41,10 +41,14 @@ def check_config(request: PermissionCheckRequest) -> PermissionStepResult:
         return PermissionStepResult(decision=PermissionDecision.allow, step=_STEP)
 
     if tier == AccessTier.api_key:
-        key = os.environ.get("KOSMOS_DATA_GO_KR_API_KEY", "").strip()
-        if not key:
+        has_key = any(
+            v.strip()
+            for k, v in os.environ.items()
+            if k.startswith("KOSMOS_") and k.endswith("_API_KEY")
+        )
+        if not has_key:
             logger.warning(
-                "Step %d: api_key tier denied for tool %s — env var not configured",
+                "Step %d: api_key tier denied for tool %s — no KOSMOS_*_API_KEY env var configured",
                 _STEP,
                 request.tool_id,
             )

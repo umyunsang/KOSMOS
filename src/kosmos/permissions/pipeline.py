@@ -107,6 +107,20 @@ class PermissionPipeline:
             tool = self._registry.lookup(tool_id)
         except Exception as exc:
             logger.warning("PermissionPipeline: tool lookup failed for %r: %s", tool_id, exc)
+            not_found_request = PermissionCheckRequest(
+                tool_id=tool_id,
+                access_tier=AccessTier.restricted,
+                arguments_json=arguments_json,
+                session_context=session_context,
+                is_personal_data=False,
+                is_bypass_mode=is_bypass_mode,
+            )
+            not_found_result = PermissionStepResult(
+                decision=PermissionDecision.deny,
+                step=0,
+                reason="not_found",
+            )
+            write_audit_log(not_found_request, not_found_result, None)
             return ToolResult(
                 tool_id=tool_id,
                 success=False,

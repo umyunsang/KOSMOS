@@ -135,10 +135,17 @@ async def dispatch_tool_calls(  # noqa: C901
         return await tool_executor.dispatch(tc.function.name, tc.function.arguments)
 
     async def _flush_group(items: list[tuple[int, ToolCall]], safe: bool) -> None:
-        """Execute a group of tool calls, concurrently if safe."""
+        """Execute a group of tool calls, concurrently if safe.
+
+        When a permission pipeline is active, the sandbox step mutates
+        os.environ across awaits.  Running tools concurrently via TaskGroup
+        in that case allows coroutines to observe a partially-filtered
+        environment.  Dispatch sequentially whenever the pipeline is present,
+        regardless of the tool's concurrency-safe flag.
+        """
         if not items:
             return
-        if safe and len(items) > 1:
+        if safe and len(items) > 1 and permission_pipeline is None:
             async with asyncio.TaskGroup() as tg:
                 tasks = [(idx, tg.create_task(_dispatch_one(tc))) for idx, tc in items]
             for idx, task in tasks:
