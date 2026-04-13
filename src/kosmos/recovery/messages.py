@@ -29,9 +29,8 @@ def build_degradation_message(tool: GovAPITool, error: ClassifiedError) -> str:
     if error.error_class == ErrorClass.AUTH_FAILURE:
         return f"{name} 서비스 인증이 만료되었습니다. 관리자에게 문의해주세요."
 
-    # circuit_open is signalled by the caller passing a specific error_class;
-    # map APP_ERROR used for circuit-open signalling via the executor.
-    # The executor sets error_class=APP_ERROR with source="circuit_open".
+    # Circuit-open is detected via error.source == "circuit_open", set by
+    # RecoveryExecutor when the circuit breaker is OPEN.
     if error.source == "circuit_open":
         return f"{name} 서비스가 현재 점검 중이거나 일시적으로 중단되었습니다."
 

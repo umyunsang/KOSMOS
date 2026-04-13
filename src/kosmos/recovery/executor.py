@@ -4,8 +4,8 @@
 This module is the single integration point for Layer 6 error recovery.
 It wraps a tool adapter call with the full recovery pipeline:
 
-    1. Circuit breaker check (if open → degradation message immediately)
-    2. Cache lookup (if hit → return cached data)
+    1. Cache lookup (if hit → return cached data, no side-effects)
+    2. Circuit breaker check (if open → degradation message immediately)
     3. Retry loop (exponential back-off with full jitter)
     4. Cache store on success
     5. Cache fallback on final failure (if stale data available)
@@ -128,8 +128,8 @@ class RecoveryExecutor:
         """Execute *adapter* with full error-recovery orchestration.
 
         Pipeline:
-        1. Circuit breaker check → immediate degradation if OPEN.
-        2. Cache lookup → return cached data if fresh.
+        1. Cache lookup → return cached data if fresh (no side-effects).
+        2. Circuit breaker check → immediate degradation if OPEN.
         3. Retry loop with exponential back-off.
         4. On success: update circuit breaker + cache store.
         5. On exhaustion: try stale cache fallback.
@@ -148,7 +148,25 @@ class RecoveryExecutor:
         tool_id = tool.id
         breaker = self._registry.get(tool_id)
 
-        # --- 1. Circuit breaker check ---
+        # --- 1. Cache lookup (before circuit breaker to avoid wasting a
+        #     HALF_OPEN probe allowance on a cache hit) ---
+        input_dict = self._model_to_dict(validated_input)
+        args_hash = self._cache.compute_hash(input_dict)
+        if tool.cache_ttl_seconds > 0:
+            cached = self._cache.get(tool_id, args_hash)
+            if cached is not None:
+                elapsed = time.monotonic() - start
+                logger.debug("Cache hit for tool %s", tool_id)
+                return RecoveryResult(
+                    tool_result=ToolResult(
+                        tool_id=tool_id,
+                        success=True,
+                        data=cached,
+                    ),
+                    error_context=None,
+                )
+
+        # --- 2. Circuit breaker check ---
         if not breaker.allow_request():
             elapsed = time.monotonic() - start
             circuit_open_error = ClassifiedError(
@@ -176,23 +194,6 @@ class RecoveryExecutor:
                     tool_id=tool_id,
                 ),
             )
-
-        # --- 2. Cache lookup ---
-        input_dict = self._model_to_dict(validated_input)
-        args_hash = self._cache.compute_hash(input_dict)
-        if tool.cache_ttl_seconds > 0:
-            cached = self._cache.get(tool_id, args_hash)
-            if cached is not None:
-                elapsed = time.monotonic() - start
-                logger.debug("Cache hit for tool %s", tool_id)
-                return RecoveryResult(
-                    tool_result=ToolResult(
-                        tool_id=tool_id,
-                        success=True,
-                        data=cached,
-                    ),
-                    error_context=None,
-                )
 
         # --- 3. Retry loop ---
         result_dict, last_error, attempt_count = await retry_tool_call(

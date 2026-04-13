@@ -78,9 +78,9 @@ class ResponseCache:
     def get(self, tool_id: str, arguments_hash: str) -> dict[str, object] | None:
         """Retrieve a cached response if it exists and has not expired.
 
-        Expired entries are removed from the store so the LRU capacity remains
-        accurate.  Use get_stale() when you want to read an expired entry
-        without deleting it (e.g. for a stale-cache fallback).
+        Expired entries are **not** deleted so that ``get_stale()`` can still
+        return them as a fallback after a failed live API call.  LRU eviction
+        in ``put()`` naturally reclaims capacity over time.
 
         Args:
             tool_id: Tool identifier.
@@ -101,7 +101,6 @@ class ResponseCache:
         age = time.monotonic() - entry.cached_at
         if age > entry.ttl_seconds:
             logger.debug("Cache entry expired for tool=%s (age=%.1fs)", tool_id, age)
-            del self._store[key]
             return None
 
         # Move to end (most-recently used)
