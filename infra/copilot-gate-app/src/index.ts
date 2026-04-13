@@ -495,7 +495,7 @@ async function fetchReviewComments(
   // Attempt 1: review-specific endpoint
   const attempt1 = (await githubApi(
     token, "GET",
-    `/repos/${owner}/${repo}/pulls/${prNumber}/reviews/${reviewId}/comments`
+    `/repos/${owner}/${repo}/pulls/${prNumber}/reviews/${reviewId}/comments?per_page=100`
   )) as ReviewComment[];
 
   if (attempt1.length > 0) return attempt1;
@@ -507,7 +507,7 @@ async function fetchReviewComments(
 
   const attempt2 = (await githubApi(
     token, "GET",
-    `/repos/${owner}/${repo}/pulls/${prNumber}/reviews/${reviewId}/comments`
+    `/repos/${owner}/${repo}/pulls/${prNumber}/reviews/${reviewId}/comments?per_page=100`
   )) as ReviewComment[];
 
   if (attempt2.length > 0) return attempt2;
@@ -518,7 +518,7 @@ async function fetchReviewComments(
 
   const attempt3 = (await githubApi(
     token, "GET",
-    `/repos/${owner}/${repo}/pulls/${prNumber}/reviews/${reviewId}/comments`
+    `/repos/${owner}/${repo}/pulls/${prNumber}/reviews/${reviewId}/comments?per_page=100`
   )) as ReviewComment[];
 
   if (attempt3.length > 0) return attempt3;
