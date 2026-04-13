@@ -227,8 +227,9 @@ def _build_httpx_mock(
             fpath = fixture_overrides[adapter_id]
         else:
             fpath = fixture_dir / default_name
-        if fpath.exists():
-            fixture_data[adapter_id] = json.loads(fpath.read_text())
+        if not fpath.exists():
+            raise AssertionError(f"Missing HTTP fixture for adapter '{adapter_id}': {fpath}")
+        fixture_data[adapter_id] = json.loads(fpath.read_text())
 
     async def _mock_get(
         url: str | httpx.URL,
@@ -275,7 +276,7 @@ class E2EFixtureBuilder:
 
     Usage::
 
-        engine, mock_get = (
+        engine, llm_client, httpx_mock = (
             E2EFixtureBuilder()
             .with_llm_responses([TOOL_CALL_ROAD_RISK, TEXT_ANSWER_ROUTE_SAFETY])
             .build()

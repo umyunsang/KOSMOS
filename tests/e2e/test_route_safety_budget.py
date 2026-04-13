@@ -2,8 +2,8 @@
 """E2E budget and token-tracking tests for the route safety flow (T013-T015).
 
 Tests verify:
-- T013: Token usage is correctly accumulated in MockLLMClient.usage after a
-  full happy-path E2E run.
+- T013: Token usage is correctly tracked via engine-emitted usage_update
+  QueryEvents after a full happy-path E2E run.
 - T014: When the token budget is exhausted before a stream starts, the engine
   emits stop(api_budget_exceeded) rather than attempting the LLM call.
 - T015: The httpx mock records exactly 3 GET calls (one per inner adapter) in
