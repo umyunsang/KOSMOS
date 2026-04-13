@@ -51,6 +51,17 @@ research/data/*.csv
 research/data/*.json
 research/data/policy/*.pdf
 
+# Coverage
+.coverage
+coverage.xml
+htmlcov/
+
+# Cloudflare
+.wrangler/
+
+# Local references (cloned repos)
+.references/
+
 # Model artifacts
 models/
 checkpoints/

@@ -1,15 +1,25 @@
 # SPDX-License-Identifier: Apache-2.0
-"""EventRenderer — converts QueryEvent stream into Rich-formatted terminal output."""
+"""EventRenderer — converts QueryEvent stream into Rich-formatted terminal output.
+
+Supports both plain incremental text rendering and an optional streaming
+markdown mode that uses Rich's :class:`~rich.live.Live` display to re-render
+the response as a :class:`~rich.markdown.Markdown` block while it is being
+streamed.  Korean text is handled correctly because Rich renders full grapheme
+clusters without mid-character splits.
+"""
 
 from __future__ import annotations
 
 import logging
 
 from rich.console import Console
+from rich.live import Live
+from rich.markdown import Markdown
 from rich.markup import escape
 from rich.panel import Panel
 from rich.status import Status
 
+from kosmos.cli.themes import Theme, load_theme
 from kosmos.engine.events import QueryEvent, StopReason
 from kosmos.llm.models import TokenUsage
 from kosmos.tools.registry import ToolRegistry
@@ -31,15 +41,20 @@ _STOP_REASON_MESSAGES: dict[StopReason, str] = {
     StopReason.cancelled: "요청이 취소되었습니다.",
 }
 
+# Minimum number of characters to accumulate before the first Live refresh.
+# This avoids a jarring single-character flash at turn start.
+_LIVE_MIN_CHARS_BEFORE_REFRESH = 10
+
 
 class EventRenderer:
     """Render a stream of ``QueryEvent`` objects to a Rich ``Console``.
 
     The renderer maintains internal state across events within a single turn:
-    - ``_text_buffer`` accumulates all ``text_delta`` content (for internal
-      tracking only; text is printed incrementally as it arrives).
+    - ``_text_buffer`` accumulates all ``text_delta`` content.
     - ``_usage`` accumulates the latest token usage snapshot.
     - ``_active_status`` holds the currently displayed spinner (if any).
+    - ``_live`` holds an active :class:`~rich.live.Live` context when
+      streaming-markdown mode is enabled.
 
     After each turn (``stop`` event), the renderer resets its state so it is
     ready for the next turn.
@@ -49,7 +64,15 @@ class EventRenderer:
         registry: Optional tool registry for resolving Korean tool names.
         show_usage: Whether to display per-turn token usage after each
             response.  Totals are always tracked internally regardless of
-            this flag (so that the ``/usage`` command can report them).
+            this flag.
+        streaming_markdown: When ``True``, assistant text is rendered
+            incrementally as a Markdown block via :class:`~rich.live.Live`.
+            Defaults to ``False`` for compatibility with non-TTY output and
+            test harnesses.  Set to ``True`` when running on a real terminal
+            to enable Rich Markdown rendering.
+        theme: Optional :class:`~kosmos.cli.themes.Theme` override; if
+            ``None``, the theme is loaded from the environment via
+            :func:`~kosmos.cli.themes.load_theme`.
     """
 
     def __init__(
@@ -57,13 +80,18 @@ class EventRenderer:
         console: Console,
         registry: ToolRegistry | None = None,
         show_usage: bool = True,
+        streaming_markdown: bool = False,
+        theme: Theme | None = None,
     ) -> None:
         self._console = console
         self._registry = registry
         self._show_usage = show_usage
+        self._streaming_markdown = streaming_markdown
+        self._theme: Theme = theme if theme is not None else load_theme()
         self._text_buffer: str = ""
         self._usage: TokenUsage | None = None
         self._active_status: Status | None = None
+        self._live: Live | None = None
 
     # ------------------------------------------------------------------
     # Public API
@@ -86,6 +114,7 @@ class EventRenderer:
         """Reset per-turn state.  Called automatically by ``_render_stop``."""
         self._text_buffer = ""
         self._usage = None
+        self._stop_live()
         self._stop_active_status()
 
     # ------------------------------------------------------------------
@@ -93,13 +122,42 @@ class EventRenderer:
     # ------------------------------------------------------------------
 
     def _render_text_delta(self, event: QueryEvent) -> None:
-        """Append incremental text to the internal buffer and print it."""
+        """Append incremental text and render it to the console.
+
+        In streaming-markdown mode the full accumulated buffer is re-rendered
+        as a :class:`~rich.markdown.Markdown` block via a
+        :class:`~rich.live.Live` context.  In plain mode each chunk is printed
+        directly.
+        """
         chunk = event.content or ""
         self._text_buffer += chunk
-        self._console.print(chunk, end="", highlight=False, markup=False)
+
+        if self._streaming_markdown:
+            self._render_live_markdown()
+        else:
+            # Plain streaming: print each chunk immediately without markup
+            self._console.print(chunk, end="", highlight=False, markup=False)
+
+    def _render_live_markdown(self) -> None:
+        """Update the Live display with the current text buffer as Markdown."""
+        # Don't flash a Live context for tiny leading chunks
+        if len(self._text_buffer) < _LIVE_MIN_CHARS_BEFORE_REFRESH and self._live is None:
+            return
+
+        if self._live is None:
+            self._live = Live(
+                console=self._console,
+                refresh_per_second=12,
+                vertical_overflow="visible",
+            )
+            self._live.start()
+
+        self._live.update(Markdown(self._text_buffer))
 
     def _render_tool_use(self, event: QueryEvent) -> None:
         """Show a spinner with the tool's Korean name while it executes."""
+        # Finalize any in-progress Live stream first
+        self._stop_live()
         # Stop any previously active status first
         self._stop_active_status()
 
@@ -113,7 +171,10 @@ class EventRenderer:
             except Exception:  # noqa: BLE001
                 logger.debug("Could not resolve Korean name for tool %r", tool_id)
 
-        label = f"[bold cyan]{escape(str(korean_name))}[/bold cyan] 조회 중..."
+        label = (
+            f"[{self._theme.tool_call}]{escape(str(korean_name))}[/{self._theme.tool_call}]"
+            " 조회 중..."
+        )
         status = Status(label, console=self._console)
         status.start()
         self._active_status = status
@@ -128,17 +189,19 @@ class EventRenderer:
 
         if result.success:
             panel = Panel(
-                f"[green]성공[/green]  tool_id={escape(repr(result.tool_id))}",
-                title="[green]도구 결과[/green]",
-                border_style="green",
+                f"[{self._theme.tool_result_ok}]성공[/{self._theme.tool_result_ok}]"
+                f"  tool_id={escape(repr(result.tool_id))}",
+                title=f"[{self._theme.tool_result_ok}]도구 결과[/{self._theme.tool_result_ok}]",
+                border_style=self._theme.tool_result_ok,
             )
         else:
             panel = Panel(
-                f"[red]오류[/red]  {escape(str(result.error or ''))}\n"
+                f"[{self._theme.tool_result_err}]오류[/{self._theme.tool_result_err}]"
+                f"  {escape(str(result.error or ''))}\n"
                 f"error_type={escape(repr(result.error_type))}  "
                 f"tool_id={escape(repr(result.tool_id))}",
-                title="[red]도구 오류[/red]",
-                border_style="red",
+                title=f"[{self._theme.tool_result_err}]도구 오류[/{self._theme.tool_result_err}]",
+                border_style=self._theme.tool_result_err,
             )
         self._console.print(panel)
 
@@ -148,31 +211,37 @@ class EventRenderer:
             self._usage = event.usage
 
     def _render_stop(self, event: QueryEvent) -> None:
-        """Finalise a turn: print stop reason and (optionally) usage summary.
+        """Finalise a turn: flush Live display, print stop reason and usage.
 
-        Text was already printed incrementally via ``_render_text_delta``; we
-        do NOT re-render the buffer here to avoid duplicating assistant text in
-        the terminal.  The buffer is cleared as part of :meth:`reset`.
+        When streaming-markdown mode is active the final :class:`Markdown`
+        render is committed by stopping the :class:`~rich.live.Live` context.
+        In plain mode a trailing newline is printed after the streamed text.
         """
         self._stop_active_status()
 
-        # Print a trailing newline after the streamed text block (if any)
-        if self._text_buffer:
-            self._console.print()  # newline after streaming deltas
+        if self._streaming_markdown:
+            # Commit any buffered content and close the Live context
+            if self._live is not None and self._text_buffer:
+                self._live.update(Markdown(self._text_buffer))
+            self._stop_live()
+        else:
+            # Plain streaming: print a trailing newline after streamed text
+            if self._text_buffer:
+                self._console.print()
 
         # Show stop reason message (Korean)
         reason = event.stop_reason
         if reason is not None:
             msg = _STOP_REASON_MESSAGES.get(reason, "")
             if msg:
-                self._console.print(f"[dim]{msg}[/dim]")
+                self._console.print(f"[{self._theme.info}]{msg}[/{self._theme.info}]")
 
         # Show per-turn usage summary only when the flag is enabled
         if self._show_usage and self._usage is not None:
             self._console.print(
-                f"[dim]토큰 사용: 입력 {self._usage.input_tokens} "
+                f"[{self._theme.info}]토큰 사용: 입력 {self._usage.input_tokens} "
                 f"/ 출력 {self._usage.output_tokens} "
-                f"/ 합계 {self._usage.total_tokens}[/dim]"
+                f"/ 합계 {self._usage.total_tokens}[/{self._theme.info}]"
             )
 
         # Reset state for next turn
@@ -187,3 +256,13 @@ class EventRenderer:
         if self._active_status is not None:
             self._active_status.stop()
             self._active_status = None
+
+    def _stop_live(self) -> None:
+        """Stop the active Live display if one is running."""
+        if self._live is not None:
+            try:
+                self._live.stop()
+            except Exception:  # noqa: BLE001
+                logger.debug("Error stopping Live display", exc_info=True)
+            finally:
+                self._live = None

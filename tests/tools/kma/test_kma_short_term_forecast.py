@@ -1,0 +1,347 @@
+# SPDX-License-Identifier: Apache-2.0
+"""Tests for kosmos.tools.kma.kma_short_term_forecast."""
+
+from __future__ import annotations
+
+import json
+from pathlib import Path
+from unittest.mock import AsyncMock, MagicMock
+
+import httpx
+import pytest
+from pydantic import ValidationError
+
+from kosmos.tools.errors import ConfigurationError, ToolExecutionError
+from kosmos.tools.executor import ToolExecutor
+from kosmos.tools.kma.kma_short_term_forecast import (
+    KMA_SHORT_TERM_FORECAST_TOOL,
+    KmaShortTermForecastInput,
+    KmaShortTermForecastOutput,
+    _call,
+    _normalize_items,
+    _parse_response,
+    register,
+)
+from kosmos.tools.registry import ToolRegistry
+
+# ---------------------------------------------------------------------------
+# Fixture helpers
+# ---------------------------------------------------------------------------
+
+_FIXTURE_DIR = Path(__file__).parent / "fixtures"
+
+
+def _load_fixture(name: str) -> dict:
+    return json.loads((_FIXTURE_DIR / name).read_text())
+
+
+def _make_mock_client(fixture_data: dict) -> httpx.AsyncClient:
+    mock_response = MagicMock(spec=httpx.Response)
+    mock_response.status_code = 200
+    mock_response.headers = {"content-type": "application/json"}
+    mock_response.json.return_value = fixture_data
+    mock_response.raise_for_status = MagicMock()
+    mock_client = AsyncMock(spec=httpx.AsyncClient)
+    mock_client.get.return_value = mock_response
+    return mock_client
+
+
+# ---------------------------------------------------------------------------
+# TestKmaShortTermForecastInput
+# ---------------------------------------------------------------------------
+
+
+class TestKmaShortTermForecastInput:
+    def test_valid_construction(self):
+        params = KmaShortTermForecastInput(
+            base_date="20260414",
+            base_time="0800",
+            nx=61,
+            ny=126,
+        )
+        assert params.base_date == "20260414"
+        assert params.base_time == "0800"
+        assert params.nx == 61
+        assert params.ny == 126
+        assert params.num_of_rows == 290
+        assert params.page_no == 1
+        assert params.data_type == "JSON"
+
+    def test_all_valid_base_times(self):
+        """All eight published base times must be accepted."""
+        valid_times = ["0200", "0500", "0800", "1100", "1400", "1700", "2000", "2300"]
+        for t in valid_times:
+            params = KmaShortTermForecastInput(base_date="20260414", base_time=t, nx=61, ny=126)
+            assert params.base_time == t
+
+    def test_invalid_base_time_raises(self):
+        """A time not in the published schedule must raise ValidationError."""
+        with pytest.raises(ValidationError):
+            KmaShortTermForecastInput(base_date="20260414", base_time="0600", nx=61, ny=126)
+
+    def test_invalid_base_date_format_raises(self):
+        with pytest.raises(ValidationError):
+            KmaShortTermForecastInput(base_date="2026-04-14", base_time="0800", nx=61, ny=126)
+
+    def test_grid_bounds_nx_min(self):
+        params = KmaShortTermForecastInput(base_date="20260414", base_time="0800", nx=1, ny=1)
+        assert params.nx == 1
+
+    def test_grid_bounds_nx_max(self):
+        params = KmaShortTermForecastInput(base_date="20260414", base_time="0800", nx=149, ny=253)
+        assert params.nx == 149
+
+    def test_grid_bounds_nx_too_large(self):
+        with pytest.raises(ValidationError):
+            KmaShortTermForecastInput(base_date="20260414", base_time="0800", nx=150, ny=126)
+
+    def test_grid_bounds_ny_too_large(self):
+        with pytest.raises(ValidationError):
+            KmaShortTermForecastInput(base_date="20260414", base_time="0800", nx=61, ny=254)
+
+    def test_custom_num_of_rows(self):
+        params = KmaShortTermForecastInput(
+            base_date="20260414", base_time="0800", nx=61, ny=126, num_of_rows=50
+        )
+        assert params.num_of_rows == 50
+
+    def test_num_of_rows_minimum(self):
+        with pytest.raises(ValidationError):
+            KmaShortTermForecastInput(
+                base_date="20260414", base_time="0800", nx=61, ny=126, num_of_rows=0
+            )
+
+
+# ---------------------------------------------------------------------------
+# TestNormalizeItems
+# ---------------------------------------------------------------------------
+
+
+class TestNormalizeItems:
+    def test_list_input_returned_as_is(self):
+        items = [{"a": 1}, {"a": 2}]
+        result = _normalize_items(items)
+        assert result == items
+
+    def test_dict_input_wrapped_in_list(self):
+        """Single-item dict must be wrapped in a list."""
+        item = {"category": "TMP", "fcstValue": "12"}
+        result = _normalize_items(item)
+        assert result == [item]
+
+    def test_empty_string_returns_empty_list(self):
+        assert _normalize_items("") == []
+
+    def test_none_returns_empty_list(self):
+        assert _normalize_items(None) == []
+
+    def test_non_dict_rows_filtered_out(self):
+        items = [{"a": 1}, "unexpected_string", {"b": 2}]
+        result = _normalize_items(items)
+        assert result == [{"a": 1}, {"b": 2}]
+
+
+# ---------------------------------------------------------------------------
+# TestParseResponse
+# ---------------------------------------------------------------------------
+
+
+class TestParseResponse:
+    def test_success(self):
+        """Load the success fixture and verify output structure."""
+        data = _load_fixture("kma_short_term_forecast_success.json")
+        out = _parse_response(data)
+        assert isinstance(out, KmaShortTermForecastOutput)
+        assert out.total_count == 14
+        assert len(out.items) == 14
+
+        tmp_item = next(i for i in out.items if i.category == "TMP")
+        assert tmp_item.base_date == "20260414"
+        assert tmp_item.base_time == "0800"
+        assert tmp_item.fcst_date == "20260414"
+        assert tmp_item.fcst_time == "0900"
+        assert tmp_item.fcst_value == "12"
+        assert tmp_item.nx == 61
+        assert tmp_item.ny == 126
+
+    def test_single_item_response(self):
+        """A single-item dict must be normalized to a one-element list."""
+        data = _load_fixture("kma_short_term_forecast_single_item.json")
+        out = _parse_response(data)
+        assert len(out.items) == 1
+        assert out.items[0].category == "TMP"
+
+    def test_empty_response_returns_empty_items(self):
+        """An items='' response must return an empty items list without error."""
+        data = _load_fixture("kma_short_term_forecast_empty.json")
+        out = _parse_response(data)
+        assert out.total_count == 0
+        assert out.items == []
+
+    def test_error_code_raises_tool_execution_error(self):
+        """An error result code must raise ToolExecutionError."""
+        data = _load_fixture("kma_short_term_forecast_error.json")
+        with pytest.raises(ToolExecutionError) as exc_info:
+            _parse_response(data)
+        assert "03" in str(exc_info.value)
+
+    def test_all_categories_present(self):
+        """All 14 forecast categories in the success fixture must be parsed."""
+        data = _load_fixture("kma_short_term_forecast_success.json")
+        out = _parse_response(data)
+        categories = {item.category for item in out.items}
+        expected = {
+            "TMP",
+            "UUU",
+            "VVV",
+            "VEC",
+            "WSD",
+            "SKY",
+            "PTY",
+            "POP",
+            "WAV",
+            "PCP",
+            "REH",
+            "SNO",
+            "TMN",
+            "TMX",
+        }
+        assert categories == expected
+
+    def test_string_forecast_values_preserved(self):
+        """String values like '강수없음' and '적설없음' must be stored verbatim."""
+        data = _load_fixture("kma_short_term_forecast_success.json")
+        out = _parse_response(data)
+        pcp_item = next(i for i in out.items if i.category == "PCP")
+        assert pcp_item.fcst_value == "강수없음"
+        sno_item = next(i for i in out.items if i.category == "SNO")
+        assert sno_item.fcst_value == "적설없음"
+
+
+# ---------------------------------------------------------------------------
+# TestCall
+# ---------------------------------------------------------------------------
+
+
+class TestCall:
+    @pytest.mark.asyncio
+    async def test_success_flow(self, monkeypatch):
+        """_call with a mocked httpx client returns a dict matching output schema."""
+        monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", "test-key-abc")
+        fixture_data = _load_fixture("kma_short_term_forecast_success.json")
+        mock_client = _make_mock_client(fixture_data)
+
+        params = KmaShortTermForecastInput(base_date="20260414", base_time="0800", nx=61, ny=126)
+        result = await _call(params, client=mock_client)
+
+        assert isinstance(result, dict)
+        assert result["total_count"] == 14
+        assert isinstance(result["items"], list)
+        assert len(result["items"]) == 14
+
+    @pytest.mark.asyncio
+    async def test_missing_api_key(self, monkeypatch):
+        """Absent KOSMOS_DATA_GO_KR_API_KEY raises ConfigurationError."""
+        monkeypatch.delenv("KOSMOS_DATA_GO_KR_API_KEY", raising=False)
+
+        params = KmaShortTermForecastInput(base_date="20260414", base_time="0800", nx=61, ny=126)
+        with pytest.raises(ConfigurationError):
+            await _call(params)
+
+    @pytest.mark.asyncio
+    async def test_xml_content_type_guard(self, monkeypatch):
+        """An XML content-type response must raise ToolExecutionError."""
+        monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", "test-key-abc")
+
+        mock_response = MagicMock(spec=httpx.Response)
+        mock_response.status_code = 200
+        mock_response.headers = {"content-type": "application/xml; charset=UTF-8"}
+        mock_response.raise_for_status = MagicMock()
+        mock_client = AsyncMock(spec=httpx.AsyncClient)
+        mock_client.get.return_value = mock_response
+
+        params = KmaShortTermForecastInput(base_date="20260414", base_time="0800", nx=61, ny=126)
+        with pytest.raises(ToolExecutionError) as exc_info:
+            await _call(params, client=mock_client)
+        assert "XML" in str(exc_info.value)
+
+    @pytest.mark.asyncio
+    async def test_xml_data_type_raises(self, monkeypatch):
+        """Setting data_type='XML' must raise ToolExecutionError immediately."""
+        monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", "test-key-abc")
+
+        params = KmaShortTermForecastInput(
+            base_date="20260414", base_time="0800", nx=61, ny=126, data_type="XML"
+        )
+        with pytest.raises(ToolExecutionError) as exc_info:
+            await _call(params)
+        assert "XML" in str(exc_info.value)
+
+    @pytest.mark.asyncio
+    async def test_http_status_error(self, monkeypatch):
+        """An HTTP 500 must raise ToolExecutionError."""
+        monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", "test-key-abc")
+
+        mock_response = MagicMock(spec=httpx.Response)
+        mock_response.status_code = 500
+        mock_response.raise_for_status.side_effect = httpx.HTTPStatusError(
+            "Server Error", request=MagicMock(), response=mock_response
+        )
+        mock_client = AsyncMock(spec=httpx.AsyncClient)
+        mock_client.get.return_value = mock_response
+
+        params = KmaShortTermForecastInput(base_date="20260414", base_time="0800", nx=61, ny=126)
+        with pytest.raises(ToolExecutionError) as exc_info:
+            await _call(params, client=mock_client)
+        assert "500" in str(exc_info.value)
+
+
+# ---------------------------------------------------------------------------
+# TestToolDefinition
+# ---------------------------------------------------------------------------
+
+
+class TestToolDefinition:
+    def test_tool_id(self):
+        assert KMA_SHORT_TERM_FORECAST_TOOL.id == "kma_short_term_forecast"
+
+    def test_is_core_true(self):
+        assert KMA_SHORT_TERM_FORECAST_TOOL.is_core is True
+
+    def test_provider(self):
+        assert "KMA" in KMA_SHORT_TERM_FORECAST_TOOL.provider
+
+    def test_cache_ttl(self):
+        assert KMA_SHORT_TERM_FORECAST_TOOL.cache_ttl_seconds == 1800
+
+    def test_not_personal_data(self):
+        assert KMA_SHORT_TERM_FORECAST_TOOL.is_personal_data is False
+
+    def test_input_schema(self):
+        assert KMA_SHORT_TERM_FORECAST_TOOL.input_schema is KmaShortTermForecastInput
+
+    def test_output_schema(self):
+        assert KMA_SHORT_TERM_FORECAST_TOOL.output_schema is KmaShortTermForecastOutput
+
+    def test_search_hint_bilingual(self):
+        hint = KMA_SHORT_TERM_FORECAST_TOOL.search_hint
+        assert "단기예보" in hint
+        assert "forecast" in hint
+
+
+# ---------------------------------------------------------------------------
+# TestRegister
+# ---------------------------------------------------------------------------
+
+
+class TestRegister:
+    def test_register_adds_to_registry_and_executor(self):
+        """register() wires the tool into both registry and executor."""
+        registry = ToolRegistry()
+        executor = ToolExecutor(registry)
+
+        register(registry, executor)
+
+        assert "kma_short_term_forecast" in registry
+        assert registry.lookup("kma_short_term_forecast") is KMA_SHORT_TERM_FORECAST_TOOL
+        assert "kma_short_term_forecast" in executor._adapters

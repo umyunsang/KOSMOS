@@ -53,6 +53,23 @@ def _cli_command(
         bool,
         typer.Option("--debug", help="Enable debug logging."),
     ] = False,
+    resume: Annotated[
+        str | None,
+        typer.Option(
+            "--resume",
+            "-r",
+            help="Resume a previous session by its session ID.",
+            metavar="SESSION_ID",
+        ),
+    ] = None,
+    list_sessions: Annotated[
+        bool,
+        typer.Option(
+            "--list-sessions",
+            "-l",
+            help="List recent sessions and exit.",
+        ),
+    ] = False,
 ) -> None:
     """Launch the KOSMOS interactive CLI."""
     if debug:
@@ -60,13 +77,46 @@ def _cli_command(
     else:
         logging.basicConfig(level=logging.WARNING)
 
-    _run_repl()
+    if list_sessions:
+        _run_list_sessions()
+        return
+
+    _run_repl(resume_session_id=resume)
 
 
-def _run_repl() -> None:
+def _run_list_sessions() -> None:
+    """Print recent sessions to stdout and exit."""
+    import asyncio  # noqa: PLC0415
+
+    from kosmos.session.store import list_sessions  # noqa: PLC0415
+
+    console = Console()
+
+    async def _list() -> None:
+        sessions = await list_sessions()
+        if not sessions:
+            console.print("[dim]저장된 세션이 없습니다.[/dim]")
+            return
+        console.print("[bold]최근 세션 목록:[/bold]")
+        for meta in sessions[:30]:
+            title = meta.title or "(제목 없음)"
+            updated = meta.updated_at.strftime("%Y-%m-%d %H:%M")
+            console.print(
+                f"  [cyan]{meta.session_id}[/cyan]  "
+                f"{escape(title)}  "
+                f"[dim]{updated}  메시지 {meta.message_count}개[/dim]"
+            )
+
+    asyncio.run(_list())
+
+
+def _run_repl(resume_session_id: str | None = None) -> None:
     """Initialise the full backend stack and run the REPL.
 
     All initialisation errors are caught and printed as user-friendly messages.
+
+    Args:
+        resume_session_id: Optional session UUID to resume on startup.
     """
     from kosmos.context.builder import ContextBuilder
     from kosmos.engine.engine import QueryEngine
@@ -115,13 +165,22 @@ def _run_repl() -> None:
     )
 
     # --- Launch REPL ---
-    renderer = EventRenderer(console, registry=registry, show_usage=config.show_usage)
+    # Enable streaming markdown only when stdout is a real terminal so that
+    # Rich's Live display is not activated in piped or redirected output.
+    is_tty = sys.stdout.isatty()
+    renderer = EventRenderer(
+        console,
+        registry=registry,
+        show_usage=config.show_usage,
+        streaming_markdown=is_tty,
+    )
     repl = REPLLoop(
         engine=engine,
         registry=registry,
         console=console,
         config=config,
         renderer=renderer,
+        resume_session_id=resume_session_id,
     )
 
     try:
