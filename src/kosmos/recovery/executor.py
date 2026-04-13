@@ -49,6 +49,18 @@ logger = logging.getLogger(__name__)
 AdapterFn = Callable[..., Awaitable[dict[str, object]]]
 
 
+class _RateLimitExhaustedInRetryError(Exception):
+    """Raised inside the rate-limited adapter wrapper when a retry attempt
+    would exceed the sliding-window quota.
+
+    Classified as ``APP_ERROR`` / non-retryable by the error classifier,
+    which causes the retry loop to stop immediately.
+    """
+
+    def __init__(self, tool_id: str) -> None:
+        super().__init__(f"Rate limit exhausted during retry for tool {tool_id!r}")
+
+
 # ---------------------------------------------------------------------------
 # Context models
 # ---------------------------------------------------------------------------
@@ -204,12 +216,15 @@ class RecoveryExecutor:
                 ),
             )
 
-        # --- 3. Wrap adapter with per-invocation rate-limit recording ---
-        # Each adapter call (including retries) records a rate-limit slot so
-        # the sliding window accurately reflects actual API call volume.
+        # --- 3. Wrap adapter with per-invocation rate-limit enforcement ---
+        # Each adapter call (including retries) checks AND records a
+        # rate-limit slot so that retry bursts cannot exceed the configured
+        # per-minute quota.
         if rate_limiter is not None:
 
             async def _rate_limited_adapter(args: object) -> dict[str, object]:
+                if not rate_limiter.check():
+                    raise _RateLimitExhaustedInRetryError(tool_id)
                 rate_limiter.record()
                 return await adapter(args)
 
