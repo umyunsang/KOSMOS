@@ -6,7 +6,6 @@ from __future__ import annotations
 import logging
 
 from rich.console import Console
-from rich.markdown import Markdown
 from rich.panel import Panel
 from rich.status import Status
 
@@ -36,7 +35,8 @@ class EventRenderer:
     """Render a stream of ``QueryEvent`` objects to a Rich ``Console``.
 
     The renderer maintains internal state across events within a single turn:
-    - ``_text_buffer`` accumulates all ``text_delta`` content.
+    - ``_text_buffer`` accumulates all ``text_delta`` content (for internal
+      tracking only; text is printed incrementally as it arrives).
     - ``_usage`` accumulates the latest token usage snapshot.
     - ``_active_status`` holds the currently displayed spinner (if any).
 
@@ -46,11 +46,20 @@ class EventRenderer:
     Args:
         console: Rich console to write output to.
         registry: Optional tool registry for resolving Korean tool names.
+        show_usage: Whether to display per-turn token usage after each
+            response.  Totals are always tracked internally regardless of
+            this flag (so that the ``/usage`` command can report them).
     """
 
-    def __init__(self, console: Console, registry: ToolRegistry | None = None) -> None:
+    def __init__(
+        self,
+        console: Console,
+        registry: ToolRegistry | None = None,
+        show_usage: bool = True,
+    ) -> None:
         self._console = console
         self._registry = registry
+        self._show_usage = show_usage
         self._text_buffer: str = ""
         self._usage: TokenUsage | None = None
         self._active_status: Status | None = None
@@ -136,23 +145,27 @@ class EventRenderer:
             self._usage = event.usage
 
     def _render_stop(self, event: QueryEvent) -> None:
-        """Re-render the complete response as Markdown; show stop reason and usage."""
+        """Finalise a turn: print stop reason and (optionally) usage summary.
+
+        Text was already printed incrementally via ``_render_text_delta``; we
+        do NOT re-render the buffer here to avoid duplicating assistant text in
+        the terminal.  The buffer is cleared as part of :meth:`reset`.
+        """
         self._stop_active_status()
 
-        # Re-render buffered text as Markdown (if any)
-        if self._text_buffer.strip():
+        # Print a trailing newline after the streamed text block (if any)
+        if self._text_buffer:
             self._console.print()  # newline after streaming deltas
-            self._console.print(Markdown(self._text_buffer))
 
         # Show stop reason message (Korean)
         reason = event.stop_reason
         if reason is not None:
             msg = _STOP_REASON_MESSAGES.get(reason, "")
             if msg:
-                self._console.print(f"\n[dim]{msg}[/dim]")
+                self._console.print(f"[dim]{msg}[/dim]")
 
-        # Show usage summary
-        if self._usage is not None:
+        # Show per-turn usage summary only when the flag is enabled
+        if self._show_usage and self._usage is not None:
             self._console.print(
                 f"[dim]토큰 사용: 입력 {self._usage.input_tokens} "
                 f"/ 출력 {self._usage.output_tokens} "

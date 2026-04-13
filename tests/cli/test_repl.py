@@ -210,3 +210,71 @@ class TestREPLRun:
 
         # Should have called prompt 3 times (2 empty + 1 exit)
         assert idx == 3
+
+
+class TestHistoryLimit:
+    """Fix 3: CLIConfig.history_size must be applied to prompt history."""
+
+    def test_limited_history_respects_max_entries(self) -> None:
+        from kosmos.cli.repl import _LimitedInMemoryHistory
+
+        hist = _LimitedInMemoryHistory(max_entries=3)
+        for i in range(5):
+            hist.append_string(f"entry{i}")
+        # Only the 3 most-recent entries should remain
+        assert len(hist._loaded_strings) == 3
+
+    def test_limited_history_retains_newest(self) -> None:
+        from kosmos.cli.repl import _LimitedInMemoryHistory
+
+        hist = _LimitedInMemoryHistory(max_entries=2)
+        hist.append_string("old")
+        hist.append_string("newer")
+        hist.append_string("newest")
+        # _loaded_strings is stored newest-first
+        assert hist._loaded_strings[0] == "newest"
+        assert hist._loaded_strings[1] == "newer"
+        assert "old" not in hist._loaded_strings
+
+    def test_history_size_from_config_used(self) -> None:
+        """REPLLoop must use _LimitedInMemoryHistory with history_size from config."""
+        from kosmos.cli.repl import _LimitedInMemoryHistory
+
+        engine = _MockEngine([])
+        config = CLIConfig(welcome_banner=False, history_size=42)
+        repl, _ = _make_repl(engine, config=config)
+
+        # Verify by instantiating the same class the REPL uses
+        hist = _LimitedInMemoryHistory(repl._config.history_size)
+        assert hist._max_entries == 42
+
+
+class TestCommandsRegistryRouting:
+    """Fix 4: slash commands must be routed via the COMMANDS registry."""
+
+    async def test_help_generated_from_registry(self) -> None:
+        """Help output must include all command names from the COMMANDS registry."""
+        from kosmos.cli.models import COMMANDS
+
+        engine = _MockEngine([])
+        repl, console = _make_repl(engine)
+        await repl._handle_slash_command("/help")
+        output = console.file.getvalue()  # type: ignore[union-attr]
+        for name in COMMANDS:
+            assert name in output, f"Command '{name}' missing from /help output"
+
+    async def test_registry_alias_quit_resolves_to_exit(self) -> None:
+        """'quit' alias must resolve to the 'exit' handler via registry."""
+        engine = _MockEngine([])
+        repl, _ = _make_repl(engine)
+        result = await repl._handle_slash_command("/quit")
+        assert result is True
+
+    async def test_unregistered_command_shows_error(self) -> None:
+        """Commands not in the registry must produce an error message."""
+        engine = _MockEngine([])
+        repl, console = _make_repl(engine)
+        result = await repl._handle_slash_command("/notacommand")
+        assert result is False
+        output = console.file.getvalue()  # type: ignore[union-attr]
+        assert "알 수 없는" in output

@@ -114,7 +114,7 @@ def _run_repl() -> None:
     )
 
     # --- Launch REPL ---
-    renderer = EventRenderer(console, registry=registry)
+    renderer = EventRenderer(console, registry=registry, show_usage=config.show_usage)
     repl = REPLLoop(
         engine=engine,
         registry=registry,

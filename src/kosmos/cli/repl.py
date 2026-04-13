@@ -7,7 +7,7 @@ import logging
 import sys
 import time
 import uuid
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, Iterable
 
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import InMemoryHistory
@@ -15,6 +15,7 @@ from rich.console import Console
 from rich.rule import Rule
 
 from kosmos.cli.config import CLIConfig
+from kosmos.cli.models import COMMANDS
 from kosmos.cli.renderer import EventRenderer
 from kosmos.engine.engine import QueryEngine
 from kosmos.engine.events import QueryEvent
@@ -34,21 +35,54 @@ _WELCOME_BANNER = """[bold cyan]
 [/bold cyan]
 [dim]대한민국 공공 API 대화형 플랫폼 · Korean Public API Conversational Platform[/dim]"""
 
-_HELP_TEXT = """[bold]사용 가능한 명령어:[/bold]
+def _build_help_text() -> str:
+    """Generate /help output dynamically from the COMMANDS registry."""
+    lines = ["[bold]사용 가능한 명령어:[/bold]\n"]
+    for cmd in COMMANDS.values():
+        aliases = ""
+        if cmd.aliases:
+            # Show any aliases that differ from the primary name
+            extra = [a for a in cmd.aliases if a != cmd.name]
+            if extra:
+                aliases = " (또는 " + ", ".join(f"/{a}" for a in extra) + ")"
+        lines.append(f"  [cyan]/{cmd.name}[/cyan]{aliases}  — {cmd.description}")
+    lines.append(
+        "\n[dim]질문을 입력하고 Enter를 누르세요. Ctrl+C를 두 번 누르면 강제 종료됩니다.[/dim]"
+    )
+    return "\n".join(lines)
 
-  [cyan]/help[/cyan]   — 도움말 표시
-  [cyan]/new[/cyan]    — 새 대화 시작
-  [cyan]/usage[/cyan]  — 세션 토큰 사용량 표시
-  [cyan]/exit[/cyan]   — 종료 (또는 /quit)
 
-[dim]질문을 입력하고 Enter를 누르세요. Ctrl+C를 두 번 누르면 강제 종료됩니다.[/dim]"""
+class _LimitedInMemoryHistory(InMemoryHistory):
+    """InMemoryHistory capped at *max_entries* most-recent entries.
+
+    prompt_toolkit's InMemoryHistory grows unbounded.  This subclass overrides
+    ``store_string`` (called by the base class's ``append_string``) to keep
+    only the ``max_entries`` most-recent entries in ``_loaded_strings``.
+
+    Note: ``_loaded_strings`` is stored newest-first by the base class, so we
+    truncate from the end after inserting.
+    """
+
+    def __init__(self, max_entries: int) -> None:
+        super().__init__()
+        self._max_entries = max_entries
+
+    def load_history_strings(self) -> Iterable[str]:
+        return []
+
+    def store_string(self, string: str) -> None:
+        # Base class already inserted string at index 0 before calling us;
+        # nothing extra to do for persisting.  Just enforce the size cap.
+        if len(self._loaded_strings) > self._max_entries:
+            # Drop the oldest entry (last element — it's stored newest-first)
+            del self._loaded_strings[self._max_entries :]
 
 
 class REPLLoop:
     """Async REPL loop for citizen conversation with the KOSMOS engine.
 
     Handles:
-    - Slash command routing (``/help``, ``/new``, ``/exit``, ``/usage``)
+    - Slash command routing via the ``COMMANDS`` registry
     - Empty/whitespace input skipping
     - Streaming event rendering via ``EventRenderer``
     - Interrupt handling:
@@ -92,7 +126,7 @@ class REPLLoop:
             self._show_welcome()
 
         prompt_session: PromptSession[str] = PromptSession(
-            history=InMemoryHistory(),
+            history=_LimitedInMemoryHistory(self._config.history_size),
         )
 
         while True:
@@ -140,7 +174,8 @@ class REPLLoop:
         )
         try:
             async for event in gen:
-                # Track usage for /usage command
+                # Track usage totals for /usage command (always, regardless of
+                # show_usage flag — the renderer controls per-turn display)
                 if event.type == "usage_update" and event.usage is not None:
                     self._total_input_tokens += event.usage.input_tokens
                     self._total_output_tokens += event.usage.output_tokens
@@ -152,17 +187,43 @@ class REPLLoop:
             self._renderer.reset()
 
     async def _handle_slash_command(self, cmd: str) -> bool:
-        """Route a slash command.  Returns ``True`` if the REPL should exit."""
-        # Normalise: strip leading slash
+        """Route a slash command via the COMMANDS registry.
+
+        Returns ``True`` if the REPL should exit.
+        """
+        # Normalise: strip leading slash and lower-case
         name = cmd.lstrip("/").lower()
 
-        # Check aliases for exit
-        if name in ("exit", "quit"):
+        # Resolve name through the COMMANDS registry (check primary name and
+        # aliases so that e.g. "quit" routes to the "exit" handler)
+        resolved: str | None = None
+        if name in COMMANDS:
+            resolved = name
+        else:
+            for cmd_name, cmd_def in COMMANDS.items():
+                if name in cmd_def.aliases:
+                    resolved = cmd_name
+                    break
+
+        if resolved is None:
+            self._console.print(
+                f"[yellow]알 수 없는 명령어:[/yellow] {cmd!r}. /help를 입력해 도움말을 확인하세요."
+            )
+            return False
+
+        return await self._dispatch_command(resolved)
+
+    async def _dispatch_command(self, name: str) -> bool:
+        """Execute the handler for a resolved command name.
+
+        Returns ``True`` if the REPL should exit.
+        """
+        if name == "exit":
             self._console.print("[dim]종료합니다.[/dim]")
             return True
 
         if name == "help":
-            self._console.print(_HELP_TEXT)
+            self._console.print(_build_help_text())
         elif name == "new":
             self._console.print(
                 Rule("[dim]새 대화 시작[/dim]", style="dim"),
@@ -175,10 +236,6 @@ class REPLLoop:
                 f"  입력: {self._total_input_tokens}\n"
                 f"  출력: {self._total_output_tokens}\n"
                 f"  합계: {total}"
-            )
-        else:
-            self._console.print(
-                f"[yellow]알 수 없는 명령어:[/yellow] {cmd!r}. /help를 입력해 도움말을 확인하세요."
             )
 
         return False

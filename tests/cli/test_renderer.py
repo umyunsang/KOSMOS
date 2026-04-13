@@ -149,6 +149,61 @@ class TestToolResultRendering:
         assert "API error" in output
 
 
+class TestStopNoDuplication:
+    """Fix 1: text_delta content must NOT be re-printed as Markdown on stop."""
+
+    def test_stop_does_not_reprint_buffered_text(self) -> None:
+        console = _make_console()
+        renderer = EventRenderer(console)
+        # Stream the text via text_delta
+        renderer.render(QueryEvent(type="text_delta", content="Hello World"))
+        # Record output up to this point
+        output_after_delta = console.file.getvalue()  # type: ignore[union-attr]
+        assert "Hello World" in output_after_delta
+
+        # Now fire the stop event
+        renderer.render(QueryEvent(type="stop", stop_reason=StopReason.end_turn))
+        output_after_stop = console.file.getvalue()  # type: ignore[union-attr]
+
+        # "Hello World" must appear exactly once — not duplicated by stop
+        assert output_after_stop.count("Hello World") == 1
+
+
+class TestShowUsageFlag:
+    """Fix 2: show_usage flag must gate per-turn usage display."""
+
+    def test_usage_shown_when_flag_true(self) -> None:
+        console = _make_console()
+        renderer = EventRenderer(console, show_usage=True)
+        renderer.render(
+            QueryEvent(type="usage_update", usage=TokenUsage(input_tokens=10, output_tokens=5))
+        )
+        renderer.render(QueryEvent(type="stop", stop_reason=StopReason.end_turn))
+        output = console.file.getvalue()  # type: ignore[union-attr]
+        assert "10" in output
+        assert "5" in output
+
+    def test_usage_hidden_when_flag_false(self) -> None:
+        console = _make_console()
+        renderer = EventRenderer(console, show_usage=False)
+        renderer.render(
+            QueryEvent(type="usage_update", usage=TokenUsage(input_tokens=10, output_tokens=5))
+        )
+        renderer.render(QueryEvent(type="stop", stop_reason=StopReason.end_turn))
+        output = console.file.getvalue()  # type: ignore[union-attr]
+        # Usage numbers must not appear in output when show_usage=False
+        assert "토큰 사용" not in output
+
+    def test_usage_still_tracked_when_flag_false(self) -> None:
+        """Internal _usage is still populated even when display is suppressed."""
+        console = _make_console()
+        renderer = EventRenderer(console, show_usage=False)
+        usage = TokenUsage(input_tokens=10, output_tokens=5)
+        renderer.render(QueryEvent(type="usage_update", usage=usage))
+        # _usage is set before stop; check it before reset clears it
+        assert renderer._usage == usage
+
+
 class TestReset:
     def test_reset_clears_state(self) -> None:
         console = _make_console()
