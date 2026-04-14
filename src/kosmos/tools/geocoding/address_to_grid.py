@@ -261,7 +261,7 @@ ADDRESS_TO_GRID_TOOL = GovAPITool(
     is_personal_data=False,
     cache_ttl_seconds=86400,
     rate_limit_per_minute=30,
-    is_core=False,
+    is_core=True,
 )
 
 

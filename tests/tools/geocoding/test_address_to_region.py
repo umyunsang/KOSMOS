@@ -149,8 +149,8 @@ class TestToolDefinition:
     def test_is_concurrency_safe_true(self):
         assert ADDRESS_TO_REGION_TOOL.is_concurrency_safe is True
 
-    def test_is_core_false(self):
-        assert ADDRESS_TO_REGION_TOOL.is_core is False
+    def test_is_core_true(self):
+        assert ADDRESS_TO_REGION_TOOL.is_core is True
 
     def test_cache_ttl_is_positive(self):
         assert ADDRESS_TO_REGION_TOOL.cache_ttl_seconds > 0

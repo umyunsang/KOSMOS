@@ -10,6 +10,8 @@ Mandatory sections (FR-009) in fixed order:
   2. Language policy
   3. Tool-use policy
   4. Personal-data reminder (conditional on config.personal_data_warning)
+  5. Session guidance block (geocoding-first rule + no-memory-fill rule) — always appended last
+     so the cache prefix for sections 1–4 is never disturbed (Entity 5, data-model.md).
 """
 
 from __future__ import annotations
@@ -48,6 +50,11 @@ class SystemPromptAssembler:
         ]
         if config.personal_data_warning:
             sections.append(self._personal_data_reminder_section())
+
+        # Session guidance block is ALWAYS appended last (Entity 5, data-model.md).
+        # Appending at the end preserves the byte-identical cache prefix for
+        # sections 1–4 so the FriendliAI prompt-cache key remains stable (NFR-003).
+        sections.append(self._session_guidance_section())
 
         prompt = _SECTION_SEP.join(sections)
         logger.debug("Assembled system prompt: %d characters", len(prompt))
@@ -89,4 +96,35 @@ class SystemPromptAssembler:
             "Handle personal data with care. Do not log, repeat, or store citizen "
             "personal information beyond what is strictly necessary for the current "
             "request. Comply with all applicable Korean data protection regulations."
+        )
+
+    def _session_guidance_section(self) -> str:
+        """Section 5: Session guidance block — geocoding-first and no-memory-fill rules.
+
+        Always appended last so the cache prefix for sections 1–4 is never
+        disturbed between calls (NFR-003, Entity 5 of data-model.md).
+
+        The two rule sentences are verbatim from Entity 5:
+          - Geocoding-first rule
+          - No-memory-fill rule
+
+        Static text only — no turn-specific interpolation so the cache key
+        remains stable across all turns of a session.
+        """
+        return (
+            "When the citizen's message names a district, neighborhood, landmark, or address, "
+            "invoke the geocoding tool before any tool that takes an administrative code. "
+            "Do not fill administrative region codes from memory; "
+            "pass them only after a geocoding tool has produced them in this session. "
+            "When the citizen's request matches a registered tool's purpose "
+            "(accident statistics, weather observations, forecast data, etc.), "
+            "invoke that tool to fetch the authoritative record; "
+            "do not answer such factual queries from parametric memory. "
+            'Concrete example: for the user message "강남역 근처 사고 정보 알려줘", '
+            "your FIRST tool call MUST be address_to_region with the JSON arguments "
+            '{"address": "강남역"} — extract the place name verbatim from the user '
+            "message into the address field. Then use the returned si_do and gu_gun "
+            "codes to call koroad_accident_search. Always use tools for location-based "
+            "factual queries — even when you recognize the place name. "
+            "Never call a tool with an empty or whitespace-only argument value."
         )

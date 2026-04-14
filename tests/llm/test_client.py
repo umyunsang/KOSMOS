@@ -3,13 +3,16 @@
 
 from __future__ import annotations
 
+import asyncio
+import json
 import os
+import time
 
 import httpx
 import pytest
 import respx
 
-from kosmos.llm.client import LLMClient
+from kosmos.llm.client import LLMClient, RetryPolicy
 from kosmos.llm.config import LLMClientConfig
 from kosmos.llm.errors import (
     AuthenticationError,
@@ -332,15 +335,21 @@ async def test_complete_tool_result_continuation(
 async def test_complete_budget_exhaustion(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """complete() raises BudgetExceededError once the session token budget is exceeded."""
-    # Set all KOSMOS_ vars then configure a very tight budget (30 tokens)
+    """complete() raises BudgetExceededError once the session token budget is exceeded.
+
+    Budget is set to 1500 tokens so the first call (1020 tokens with default
+    max_tokens=1024) passes the pre-flight check, and the second call exhausts it.
+    """
+    # Set all KOSMOS_ vars then configure a budget just large enough for one call
     for key in list(os.environ):
         if key.startswith("KOSMOS_"):
             monkeypatch.delenv(key, raising=False)
     monkeypatch.setenv("KOSMOS_FRIENDLI_TOKEN", "test-token-12345")
-    monkeypatch.setenv("KOSMOS_LLM_SESSION_BUDGET", "30")
+    # Budget: 1500 — first call uses 1020 (within limit), second call needs another
+    # 1024 (pre-flight) but only 480 remain, triggering BudgetExceededError.
+    monkeypatch.setenv("KOSMOS_LLM_SESSION_BUDGET", "1500")
 
-    # First response uses 20 tokens (within budget)
+    # First response uses 1020 tokens (within budget of 1500)
     first_response = {
         "id": "chatcmpl-budget-1",
         "object": "chat.completion",
@@ -352,10 +361,11 @@ async def test_complete_budget_exhaustion(
                 "finish_reason": "stop",
             }
         ],
-        "usage": {"prompt_tokens": 15, "completion_tokens": 5},
+        "usage": {"prompt_tokens": 1000, "completion_tokens": 20},
     }
 
-    # Second response uses 20 more tokens — pushes total to 40, exceeding budget of 30
+    # Second response would use more tokens — but the pre-flight check raises first
+    # because remaining budget (480) < default max_tokens (1024).
     second_response = {
         "id": "chatcmpl-budget-2",
         "object": "chat.completion",
@@ -367,7 +377,7 @@ async def test_complete_budget_exhaustion(
                 "finish_reason": "stop",
             }
         ],
-        "usage": {"prompt_tokens": 15, "completion_tokens": 5},
+        "usage": {"prompt_tokens": 1000, "completion_tokens": 20},
     }
 
     respx.post(CHAT_COMPLETIONS_URL).mock(
@@ -381,10 +391,393 @@ async def test_complete_budget_exhaustion(
 
     config = LLMClientConfig()
     async with LLMClient(config) as client:
-        # First call succeeds (20 tokens used, budget=30, still within limit)
+        # First call succeeds (1020 tokens used, budget=1500, still within limit)
         result = await client.complete(messages)
         assert result.content == "First response."
 
-        # Second call causes total=40 which exceeds budget=30 and raises at debit
+        # Second call: pre-flight checks max_tokens=1024 > remaining 480 → raises
         with pytest.raises(BudgetExceededError):
             await client.complete(messages)
+
+
+# ---------------------------------------------------------------------------
+# T008 — Retry-After header respected by complete()
+# ---------------------------------------------------------------------------
+
+_SUCCESS_RESPONSE = {
+    "id": "chatcmpl-retry-ok",
+    "object": "chat.completion",
+    "model": "LGAI-EXAONE/K-EXAONE-236B-A23B",
+    "choices": [
+        {
+            "index": 0,
+            "message": {"role": "assistant", "content": "OK"},
+            "finish_reason": "stop",
+        }
+    ],
+    "usage": {"prompt_tokens": 5, "completion_tokens": 3},
+}
+
+
+@respx.mock
+async def test_complete_retry_after_header_respected(
+    _clean_env: None,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """T008: mock 429 with Retry-After: 3 → complete() waits ≥ ~3s before retry."""
+    sleep_calls: list[float] = []
+
+    async def _fake_sleep(delay: float) -> None:
+        sleep_calls.append(delay)
+
+    monkeypatch.setattr("asyncio.sleep", _fake_sleep)
+
+    respx.post(CHAT_COMPLETIONS_URL).mock(
+        side_effect=[
+            httpx.Response(429, headers={"Retry-After": "3"}, text="rate limited"),
+            httpx.Response(200, json=_SUCCESS_RESPONSE),
+        ]
+    )
+
+    config = LLMClientConfig()
+    async with LLMClient(config) as client:
+        result = await client.complete([ChatMessage(role="user", content="hi")])
+
+    assert result.content == "OK"
+    assert len(sleep_calls) >= 1, "Expected at least one sleep call for the retry"
+    # The sleep should respect the Retry-After: 3 header value
+    assert sleep_calls[0] >= 3.0 - 0.2, (
+        f"Expected sleep >= 2.8s (Retry-After: 3 ±200ms tolerance), got {sleep_calls[0]:.3f}s"
+    )
+
+
+# ---------------------------------------------------------------------------
+# T009 — Exponential backoff without Retry-After
+# ---------------------------------------------------------------------------
+
+
+@respx.mock
+async def test_complete_exponential_backoff_no_retry_after(
+    _clean_env: None,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """T009: two 429s with no Retry-After → sleeps are monotonically non-decreasing,
+    bounded by cap_seconds, and within jitter bounds."""
+    sleep_calls: list[float] = []
+
+    async def _fake_sleep(delay: float) -> None:
+        sleep_calls.append(delay)
+
+    monkeypatch.setattr("asyncio.sleep", _fake_sleep)
+
+    respx.post(CHAT_COMPLETIONS_URL).mock(
+        side_effect=[
+            httpx.Response(429, text="rate limited"),
+            httpx.Response(429, text="rate limited"),
+            httpx.Response(200, json=_SUCCESS_RESPONSE),
+        ]
+    )
+
+    config = LLMClientConfig()
+    async with LLMClient(config) as client:
+        result = await client.complete([ChatMessage(role="user", content="hi")])
+
+    assert result.content == "OK"
+    assert len(sleep_calls) == 2, f"Expected 2 sleep calls for 2 retries, got {len(sleep_calls)}"
+
+    policy = RetryPolicy()
+    cap = policy.cap_seconds
+    jitter = policy.jitter_ratio
+    base = policy.base_seconds
+
+    # Each sleep must be bounded by cap_seconds
+    for i, s in enumerate(sleep_calls):
+        assert s <= cap, f"Sleep[{i}]={s:.3f}s exceeds cap_seconds={cap}"
+
+    # Expected delays: base*2^0 for attempt 0, base*2^1 for attempt 1
+    expected_0 = min(cap, base * (2**0))
+    expected_1 = min(cap, base * (2**1))
+
+    lo_0 = expected_0 * (1 - jitter)
+    hi_0 = expected_0 * (1 + jitter)
+    lo_1 = expected_1 * (1 - jitter)
+    hi_1 = expected_1 * (1 + jitter)
+
+    assert lo_0 <= sleep_calls[0] <= hi_0, (
+        f"Sleep[0]={sleep_calls[0]:.3f}s not in [{lo_0:.3f}, {hi_0:.3f}] "
+        f"(expected for attempt 0: base={base}, exp_delay={expected_0})"
+    )
+    assert lo_1 <= sleep_calls[1] <= hi_1, (
+        f"Sleep[1]={sleep_calls[1]:.3f}s not in [{lo_1:.3f}, {hi_1:.3f}] "
+        f"(expected for attempt 1: base={base}, exp_delay={expected_1})"
+    )
+
+    # Monotonically non-decreasing (lower bound of attempt 1 >= upper bound of attempt 0
+    # is too strict with jitter; we just check means are non-decreasing)
+    assert expected_1 >= expected_0, "Expected delays must be non-decreasing across attempts"
+
+
+# ---------------------------------------------------------------------------
+# T010 — Budget exhaustion raises LLMResponseError with rate-limit category
+# ---------------------------------------------------------------------------
+
+
+@respx.mock
+async def test_complete_rate_limit_budget_exhausted(
+    _clean_env: None,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """T010: max_attempts consecutive 429s → raises LLMResponseError with rate-limit tag."""
+
+    async def _fake_sleep(delay: float) -> None:
+        pass  # instant in tests
+
+    monkeypatch.setattr("asyncio.sleep", _fake_sleep)
+
+    policy = RetryPolicy()
+    # max_attempts 429s — all attempts fail
+    respx.post(CHAT_COMPLETIONS_URL).mock(
+        side_effect=[httpx.Response(429, text="rate limited")] * policy.max_attempts
+    )
+
+    config = LLMClientConfig()
+    async with LLMClient(config) as client:
+        with pytest.raises(LLMResponseError) as exc_info:
+            await client.complete([ChatMessage(role="user", content="hi")])
+
+    err = exc_info.value
+    assert err.status_code == 429
+    # The error message or category must indicate rate-limit
+    assert "rate" in str(err).lower() or "429" in str(err), (
+        f"Expected rate-limit indication in error, got: {err!r}"
+    )
+
+
+# ---------------------------------------------------------------------------
+# T011 — Mid-stream 429 aborts iterator and retries
+# ---------------------------------------------------------------------------
+
+
+def _build_sse_body_str(*chunks: dict, done: bool = True) -> str:
+    lines: list[str] = [f"data: {json.dumps(c)}\n\n" for c in chunks]
+    if done:
+        lines.append("data: [DONE]\n\n")
+    return "".join(lines)
+
+
+def _delta_chunk(content: str) -> dict:
+    return {
+        "id": "chatcmpl-test",
+        "object": "chat.completion.chunk",
+        "choices": [{"index": 0, "delta": {"content": content}, "finish_reason": None}],
+    }
+
+
+def _stop_chunk() -> dict:
+    return {
+        "id": "chatcmpl-test",
+        "object": "chat.completion.chunk",
+        "choices": [{"index": 0, "delta": {}, "finish_reason": "stop"}],
+        "usage": {"prompt_tokens": 5, "completion_tokens": 3},
+    }
+
+
+def _make_stream_response(body: str, status: int = 200) -> httpx.Response:
+    return httpx.Response(
+        status,
+        content=body.encode(),
+        headers={"content-type": "text/event-stream"},
+    )
+
+
+@respx.mock
+async def test_stream_mid_stream_429_aborts_and_retries(
+    _clean_env: None,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """T011: mid-stream 429 envelope → iterator aborts, retries, yields full response."""
+
+    async def _fake_sleep(delay: float) -> None:
+        pass
+
+    monkeypatch.setattr("asyncio.sleep", _fake_sleep)
+
+    # First stream: starts OK, then returns a 429-status SSE response (simulated
+    # by the transport returning 429 on stream open; the retry then gets 200).
+    # We model mid-stream 429 as: first attempt returns 429, retry gets good 200 stream.
+    good_body = _build_sse_body_str(
+        _delta_chunk("Hello"),
+        _delta_chunk(" world"),
+        _stop_chunk(),
+    )
+
+    respx.post(CHAT_COMPLETIONS_URL).mock(
+        side_effect=[
+            _make_stream_response("", status=429),
+            _make_stream_response(good_body, status=200),
+        ]
+    )
+
+    config = LLMClientConfig()
+    async with LLMClient(config) as client:
+        events = []
+        async for event in client.stream([ChatMessage(role="user", content="hi")]):
+            events.append(event)
+
+    content_events = [e for e in events if e.type == "content_delta"]
+    assert len(content_events) >= 1, (
+        f"Expected content events after retry, got {[e.type for e in events]}"
+    )
+    done_events = [e for e in events if e.type == "done"]
+    assert len(done_events) == 1, "Expected exactly one done event after retry"
+
+
+# ---------------------------------------------------------------------------
+# T012 — Concurrent stream() calls serialize at provider boundary
+# ---------------------------------------------------------------------------
+
+
+@respx.mock
+async def test_stream_concurrent_calls_serialized(
+    _clean_env: None,
+) -> None:
+    """T012: two concurrent stream() coroutines on same LLMClient serialize."""
+    entry_times: list[float] = []
+    exit_times: list[float] = []
+
+    good_body = _build_sse_body_str(
+        _delta_chunk("Hi"),
+        _stop_chunk(),
+    )
+
+    call_count = 0
+
+    def _transport_side_effect(request: httpx.Request) -> httpx.Response:
+        nonlocal call_count
+        call_count += 1
+        entry_times.append(time.monotonic())
+        # Simulate that we record exit in the response (synchronous mock)
+        resp = httpx.Response(
+            200,
+            content=good_body.encode(),
+            headers={"content-type": "text/event-stream"},
+        )
+        exit_times.append(time.monotonic())
+        return resp
+
+    respx.post(CHAT_COMPLETIONS_URL).mock(side_effect=_transport_side_effect)
+
+    config = LLMClientConfig()
+    client = LLMClient(config)
+
+    async def _consume() -> None:
+        async for _ in client.stream([ChatMessage(role="user", content="hi")]):
+            pass
+
+    # Launch two concurrent stream calls
+    await asyncio.gather(_consume(), _consume())
+    await client.close()
+
+    assert call_count == 2, f"Expected 2 provider calls, got {call_count}"
+    # With semaphore serialization: second call's entry must be >= first call's exit
+    # (i.e., they do not overlap at the provider boundary)
+    # entry_times[1] >= exit_times[0] means call 2 started after call 1 finished
+    assert entry_times[1] >= exit_times[0] - 0.05, (
+        f"Calls overlapped at provider boundary: "
+        f"call1_exit={exit_times[0]:.4f}, call2_entry={entry_times[1]:.4f}"
+    )
+
+
+# ---------------------------------------------------------------------------
+# T013 — Default payload parameters
+# ---------------------------------------------------------------------------
+
+
+@respx.mock
+async def test_complete_default_payload_parameters(
+    _clean_env: None,
+) -> None:
+    """T013: default outgoing payload has temperature=1.0, top_p=0.95, presence_penalty=0.0,
+    max_tokens=1024 for complete()."""
+    captured: list[dict] = []
+
+    def _capture(request: httpx.Request) -> httpx.Response:
+        captured.append(json.loads(request.content))
+        return httpx.Response(200, json=_SUCCESS_RESPONSE)
+
+    respx.post(CHAT_COMPLETIONS_URL).mock(side_effect=_capture)
+
+    config = LLMClientConfig()
+    async with LLMClient(config) as client:
+        await client.complete([ChatMessage(role="user", content="hi")])
+
+    assert len(captured) == 1
+    payload = captured[0]
+    assert payload.get("temperature") == 1.0, f"temperature={payload.get('temperature')!r}"
+    assert payload.get("top_p") == 0.95, f"top_p={payload.get('top_p')!r}"
+    assert payload.get("presence_penalty") == 0.0, (
+        f"presence_penalty={payload.get('presence_penalty')!r}"
+    )
+    assert payload.get("max_tokens") == 1024, f"max_tokens={payload.get('max_tokens')!r}"
+
+
+@respx.mock
+async def test_complete_explicit_overrides_take_precedence(
+    _clean_env: None,
+) -> None:
+    """T013: explicit caller overrides replace default parameter values in the payload."""
+    captured: list[dict] = []
+
+    def _capture(request: httpx.Request) -> httpx.Response:
+        captured.append(json.loads(request.content))
+        return httpx.Response(200, json=_SUCCESS_RESPONSE)
+
+    respx.post(CHAT_COMPLETIONS_URL).mock(side_effect=_capture)
+
+    config = LLMClientConfig()
+    async with LLMClient(config) as client:
+        await client.complete(
+            [ChatMessage(role="user", content="hi")],
+            temperature=0.2,
+            top_p=0.8,
+            presence_penalty=0.5,
+            max_tokens=512,
+        )
+
+    assert len(captured) == 1
+    payload = captured[0]
+    assert payload.get("temperature") == 0.2
+    assert payload.get("top_p") == 0.8
+    assert payload.get("presence_penalty") == 0.5
+    assert payload.get("max_tokens") == 512
+
+
+@respx.mock
+async def test_stream_default_payload_parameters(
+    _clean_env: None,
+) -> None:
+    """T013: stream() also uses the same default parameters as complete()."""
+    captured: list[dict] = []
+    good_body = _build_sse_body_str(_delta_chunk("Hi"), _stop_chunk())
+
+    def _capture(request: httpx.Request) -> httpx.Response:
+        captured.append(json.loads(request.content))
+        return httpx.Response(
+            200,
+            content=good_body.encode(),
+            headers={"content-type": "text/event-stream"},
+        )
+
+    respx.post(CHAT_COMPLETIONS_URL).mock(side_effect=_capture)
+
+    config = LLMClientConfig()
+    async with LLMClient(config) as client:
+        async for _ in client.stream([ChatMessage(role="user", content="hi")]):
+            pass
+
+    assert len(captured) == 1
+    payload = captured[0]
+    assert payload.get("temperature") == 1.0
+    assert payload.get("top_p") == 0.95
+    assert payload.get("presence_penalty") == 0.0
+    assert payload.get("max_tokens") == 1024

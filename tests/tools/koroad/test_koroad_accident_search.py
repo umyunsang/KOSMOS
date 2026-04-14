@@ -342,6 +342,110 @@ class TestToolDefinition:
 
 
 # ---------------------------------------------------------------------------
+# TestSchemaContract (T003) — FR-003 / contracts/koroad-tool-schema.md
+# ---------------------------------------------------------------------------
+
+
+class TestSchemaContract:
+    """Assert that KoroadAccidentSearchInput JSON schema contains required guidance text.
+
+    These assertions verify the machine-readable contract exposed to the LLM via
+    model_json_schema(). They MUST fail before T005 lands (schema descriptions not
+    yet strengthened) and MUST pass after T005.
+
+    Pydantic v2 behavior: when Field(description=...) is set on an enum-typed
+    field, the description appears directly in schema["properties"][field_name]
+    alongside the "$ref" key. We assert against both:
+      - model_fields[field_name].description  (Python-level)
+      - schema["properties"][field_name].get("description", "")  (JSON schema level)
+
+    Contract source: specs/019-phase1-hardening/contracts/koroad-tool-schema.md
+    """
+
+    @staticmethod
+    def _property_description(field_name: str) -> str:
+        """Return the description from schema["properties"][field_name]."""
+        schema = KoroadAccidentSearchInput.model_json_schema()
+        return schema.get("properties", {}).get(field_name, {}).get("description", "")
+
+    @staticmethod
+    def _field_description(field_name: str) -> str:
+        """Return the Python-level Field(description=...) value."""
+        return str(KoroadAccidentSearchInput.model_fields[field_name].description or "")
+
+    def test_si_do_description_contains_address_to_region(self) -> None:
+        """si_do schema description must reference the address_to_region geocoding tool."""
+        prop_desc = self._property_description("si_do")
+        field_desc = self._field_description("si_do")
+        combined = prop_desc + field_desc
+        assert "address_to_region" in combined, (
+            "'address_to_region' not found in si_do field description. "
+            "The si_do description must instruct the LLM to derive the value "
+            "from a prior address_to_region geocoding call. "
+            f"schema property description: {prop_desc!r} | field description: {field_desc!r}"
+        )
+
+    def test_si_do_description_contains_never(self) -> None:
+        """si_do description must explicitly forbid filling the value from model memory."""
+        prop_desc = self._property_description("si_do")
+        field_desc = self._field_description("si_do")
+        combined = (prop_desc + field_desc).lower()
+        assert "never" in combined, (
+            "'never' (case-insensitive) not found in si_do description. "
+            "The description must explicitly forbid filling the code from model memory. "
+            f"schema property description: {prop_desc!r} | field description: {field_desc!r}"
+        )
+
+    def test_si_do_description_references_sidocode(self) -> None:
+        """si_do description or schema must reference SidoCode enumeration by name."""
+        schema = KoroadAccidentSearchInput.model_json_schema()
+        schema_text = str(schema)
+        field_desc = self._field_description("si_do")
+        # SidoCode appears in the $defs section by name — this is satisfied by
+        # the enum definition itself. Additional acceptance: it may also appear
+        # in the field description for explicit user-facing guidance.
+        assert "SidoCode" in schema_text or "SidoCode" in field_desc, (
+            "'SidoCode' not found in model_json_schema() output or si_do field description. "
+            "The description must reference SidoCode as the authoritative enumeration. "
+            f"Full schema keys: {list(schema.get('$defs', {}).keys())}"
+        )
+
+    def test_gu_gun_description_contains_address_to_region(self) -> None:
+        """gu_gun schema description must reference the address_to_region geocoding tool."""
+        prop_desc = self._property_description("gu_gun")
+        field_desc = self._field_description("gu_gun")
+        combined = prop_desc + field_desc
+        assert "address_to_region" in combined, (
+            "'address_to_region' not found in gu_gun field description. "
+            "The gu_gun description must instruct the LLM to derive the value "
+            "from a prior address_to_region geocoding call. "
+            f"schema property description: {prop_desc!r} | field description: {field_desc!r}"
+        )
+
+    def test_gu_gun_description_contains_never(self) -> None:
+        """gu_gun description must explicitly forbid filling the value from model memory."""
+        prop_desc = self._property_description("gu_gun")
+        field_desc = self._field_description("gu_gun")
+        combined = (prop_desc + field_desc).lower()
+        assert "never" in combined, (
+            "'never' (case-insensitive) not found in gu_gun description. "
+            "The description must explicitly forbid filling the code from model memory. "
+            f"schema property description: {prop_desc!r} | field description: {field_desc!r}"
+        )
+
+    def test_gu_gun_description_references_guguncode(self) -> None:
+        """gu_gun description or schema must reference GugunCode enumeration by name."""
+        schema = KoroadAccidentSearchInput.model_json_schema()
+        schema_text = str(schema)
+        field_desc = self._field_description("gu_gun")
+        assert "GugunCode" in schema_text or "GugunCode" in field_desc, (
+            "'GugunCode' not found in model_json_schema() output or gu_gun field description. "
+            "The description must reference GugunCode as the authoritative enumeration. "
+            f"Full schema keys: {list(schema.get('$defs', {}).keys())}"
+        )
+
+
+# ---------------------------------------------------------------------------
 # TestRegister
 # ---------------------------------------------------------------------------
 

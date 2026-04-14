@@ -50,7 +50,19 @@ class AddressToRegionInput(BaseModel):
 
     model_config = ConfigDict(frozen=True)
 
-    address: str = Field(..., min_length=1)
+    address: str = Field(
+        ...,
+        min_length=1,
+        description=(
+            "The Korean address, landmark, neighborhood, district, or place name "
+            "extracted directly from the citizen's message. Pass the location string "
+            "verbatim — do not paraphrase, translate, or normalize. "
+            "Examples: '강남역', '서울시 강남구 역삼동', '종로 3가', "
+            "'부산 해운대구', '제주도 서귀포시'. "
+            "Required and must be non-empty — never send whitespace or an empty string."
+        ),
+        examples=["강남역", "서울시 강남구 역삼동", "종로 3가"],
+    )
     """Free-form Korean address string to geocode (e.g. "서울특별시 강남구 테헤란로 152")."""
 
 
@@ -200,6 +212,15 @@ ADDRESS_TO_REGION_TOOL = GovAPITool(
     auth_type="api_key",
     input_schema=AddressToRegionInput,
     output_schema=AddressToRegionOutput,
+    llm_description=(
+        "Resolve a Korean address, landmark, or place name (e.g. '강남역', "
+        "'서울시 강남구', '종로 3가') to authoritative KOROAD si_do/gu_gun "
+        "administrative codes via the Kakao Local API. Always call this tool "
+        "first whenever the citizen mentions any location, then pass the "
+        "returned si_do and gu_gun codes to `koroad_accident_search` or any "
+        "other tool that requires administrative codes. This is the correct "
+        "and reliable source of admin codes — use it in every session."
+    ),
     search_hint=(
         "주소 지역코드 변환 시도코드 구군코드 카카오 지오코딩 "
         "address region code geocoding sido gugun kakao location"
@@ -209,7 +230,7 @@ ADDRESS_TO_REGION_TOOL = GovAPITool(
     is_personal_data=False,
     cache_ttl_seconds=86400,
     rate_limit_per_minute=30,
-    is_core=False,
+    is_core=True,
 )
 
 

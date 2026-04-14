@@ -118,7 +118,17 @@ class ToolExecutor:
                 raw_args = json.loads(arguments_json)
                 validated_input = tool.input_schema.model_validate(raw_args)
             except (TypeError, json.JSONDecodeError, ValidationError) as exc:
-                logger.warning("Input validation failed for tool %s: %s", tool_name, exc)
+                # Avoid logging the raw arguments — they may carry user PII
+                # (addresses, names, IDs). Log only length metadata here;
+                # the corrective-hint payload already surfaces the structural
+                # problem to the model.
+                _raw_len = len(arguments_json) if isinstance(arguments_json, str) else 0
+                logger.warning(
+                    "Input validation failed for tool %s: %s | raw_args_len=%d",
+                    tool_name,
+                    exc,
+                    _raw_len,
+                )
                 self._metrics_increment("tool.error_count", tool_name)
                 _final_result = ToolResult(
                     tool_id=tool_name,

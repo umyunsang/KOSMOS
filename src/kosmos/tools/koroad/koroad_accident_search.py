@@ -104,11 +104,32 @@ class KoroadAccidentSearchInput(BaseModel):
     search_year_cd: SearchYearCd
     """Dataset year/category code (searchYearCd wire parameter)."""
 
-    si_do: SidoCode
-    """Province/city code (siDo wire parameter)."""
+    si_do: SidoCode = Field(
+        description=(
+            "Province/city code (siDo wire parameter). "
+            "MUST be derived from a prior address_to_region geocoding tool call "
+            "on the user-provided location string — never fill this from model memory. "
+            "Empirical counter-example: a Korean-domain LLM produced gu_gun=110 (Jongno) "
+            "instead of gu_gun=680 (Gangnam) for a '강남역' query because it guessed from "
+            "memory rather than consulting geocoding. "
+            "Valid codes are defined in the SidoCode enumeration."
+        )
+    )
+    """Province/city code (siDo wire parameter). See Field description for sourcing rules."""
 
-    gu_gun: GugunCode
-    """District code (guGun wire parameter). Required by the KOROAD API."""
+    gu_gun: GugunCode = Field(
+        description=(
+            "District/county code (guGun wire parameter). Required by the KOROAD API. "
+            "MUST be derived from a prior address_to_region geocoding tool call "
+            "on the user-provided location string — never fill this from model memory. "
+            "Empirical counter-example: a Korean-domain LLM produced gu_gun=110 (Jongno) "
+            "instead of gu_gun=680 (Gangnam) for a '강남역' query because it guessed from "
+            "memory rather than consulting geocoding. "
+            "Valid codes are defined in the GugunCode enumeration; "
+            "codes are specific to the paired si_do value."
+        )
+    )
+    """District code (guGun wire parameter). See Field description for sourcing rules."""
 
     num_of_rows: int = Field(default=10, ge=1, le=100)
     """Number of rows per page (numOfRows wire parameter)."""
@@ -328,6 +349,15 @@ KOROAD_ACCIDENT_SEARCH_TOOL = GovAPITool(
     auth_type="api_key",
     input_schema=KoroadAccidentSearchInput,
     output_schema=KoroadAccidentSearchOutput,
+    llm_description=(
+        "Query the authoritative KOROAD accident-prone hotspot dataset for a "
+        "Korean municipality. To call this tool correctly: first invoke "
+        "`address_to_region` with the citizen's place name to obtain the "
+        "accurate si_do and gu_gun codes, then pass those codes here. "
+        "This is the canonical source for Korean accident hotspot data — "
+        "use it whenever the citizen asks about traffic accidents, dangerous "
+        "zones, or road safety in a named location."
+    ),
     search_hint=(
         "교통사고 위험지역 조회 사고다발구역 지자체별 위험지점 "
         "accident hotspot dangerous zone traffic safety municipality"

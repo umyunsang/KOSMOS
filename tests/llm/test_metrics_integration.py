@@ -88,6 +88,7 @@ async def test_complete_increments_token_counters(monkeypatch: pytest.MonkeyPatc
     client = LLMClient(config=config, metrics=mc)
 
     mock_response = MagicMock()
+    mock_response.status_code = 200
     mock_response.json.return_value = _mock_completion_response()
     mock_response.raise_for_status = MagicMock()
 
@@ -113,6 +114,7 @@ async def test_complete_observes_duration(monkeypatch: pytest.MonkeyPatch) -> No
     client = LLMClient(config=config, metrics=mc)
 
     mock_response = MagicMock()
+    mock_response.status_code = 200
     mock_response.json.return_value = _mock_completion_response()
     mock_response.raise_for_status = MagicMock()
 
@@ -179,6 +181,7 @@ async def test_no_metrics_no_error(monkeypatch: pytest.MonkeyPatch) -> None:
     client = LLMClient(config=config)  # no metrics
 
     mock_response = MagicMock()
+    mock_response.status_code = 200
     mock_response.json.return_value = _mock_completion_response()
     mock_response.raise_for_status = MagicMock()
 
@@ -203,6 +206,7 @@ async def test_histogram_percentiles_10_observations(monkeypatch: pytest.MonkeyP
     client = LLMClient(config=config, metrics=mc)
 
     mock_response = MagicMock()
+    mock_response.status_code = 200
     mock_response.json.return_value = _mock_completion_response()
     mock_response.raise_for_status = MagicMock()
 
@@ -233,6 +237,7 @@ async def test_complete_increments_call_count(monkeypatch: pytest.MonkeyPatch) -
     client = LLMClient(config=config, metrics=mc)
 
     mock_response = MagicMock()
+    mock_response.status_code = 200
     mock_response.json.return_value = _mock_completion_response()
     mock_response.raise_for_status = MagicMock()
 
