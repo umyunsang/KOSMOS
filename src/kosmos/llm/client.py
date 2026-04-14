@@ -558,20 +558,27 @@ class LLMClient:
         elif "reasoning_content" in delta and delta["reasoning_content"] is not None:
             # K-EXAONE emits reasoning_content (chain-of-thought) before content.
             # Drop it to prevent CoT from persisting into chat history.
+            # Log only the chunk length — never the raw content (CoT may contain
+            # user PII or sensitive reasoning about user input).
             logger.debug(
-                "Dropping reasoning_content chunk: %r",
-                delta["reasoning_content"],
+                "Dropping reasoning_content chunk (len=%d)",
+                len(delta["reasoning_content"]),
             )
 
         if "tool_calls" in delta and delta["tool_calls"]:
             for tc_delta in delta["tool_calls"]:
                 func = tc_delta.get("function", {})
+                # Log only tool metadata (index/id/name + arg length).
+                # Raw `arguments` often carries user-provided location strings
+                # or other PII — never log them.
+                _args_field = func.get("arguments")
+                _args_len = len(_args_field) if isinstance(_args_field, str) else 0
                 logger.debug(
-                    "tool_call_delta idx=%s id=%s name=%r args=%r",
+                    "tool_call_delta idx=%s id=%s name=%r args_len=%d",
                     tc_delta.get("index"),
                     tc_delta.get("id"),
                     func.get("name"),
-                    func.get("arguments"),
+                    _args_len,
                 )
                 yield StreamEvent(
                     type="tool_call_delta",
