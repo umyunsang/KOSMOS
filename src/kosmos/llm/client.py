@@ -32,7 +32,6 @@ from kosmos.llm.models import (
     ToolCall,
     ToolDefinition,
 )
-from kosmos.llm.retry import RetryPolicy as _ExponentialRetryPolicy
 from kosmos.llm.usage import UsageTracker
 
 if TYPE_CHECKING:
@@ -116,11 +115,14 @@ class LLMClient:
         self._metrics: MetricsCollector | None = metrics
         self._event_logger: ObservabilityEventLogger | None = event_logger
         self._usage = UsageTracker(budget=self._config.session_budget, metrics=metrics)
-        self._retry_policy = _ExponentialRetryPolicy(max_retries=self._config.max_retries)
         # T014: per-session concurrency gate (Entity 3, data-model.md)
         self._semaphore = asyncio.Semaphore(1)
-        # T015: rate-limit retry policy (Entity 2, data-model.md)
-        self._rate_limit_policy = RetryPolicy()
+        # T015: rate-limit retry policy (Entity 2, data-model.md).
+        # ``max_attempts`` is sourced from config so ``LLMClientConfig.max_retries``
+        # still governs total attempts for transient errors (Retry-After + backoff).
+        self._rate_limit_policy = RetryPolicy(
+            max_attempts=max(1, self._config.max_retries + 1),
+        )
 
     # ------------------------------------------------------------------
     # Properties
@@ -229,11 +231,13 @@ class LLMClient:
                         delay=delay,
                         retry_after_honored=retry_after_honored,
                     )
-                    await asyncio.sleep(delay)
                     last_exc = LLMResponseError(
                         f"Rate limited by LLM API (HTTP 429) on attempt {attempt + 1}",
                         status_code=429,
                     )
+                    # Skip the sleep on the final attempt — we are about to raise.
+                    if attempt < policy.max_attempts - 1:
+                        await asyncio.sleep(delay)
                     continue
 
                 await self._raise_for_status(response)
@@ -248,7 +252,11 @@ class LLMClient:
 
                 raise LLMConnectionError(f"Connection failed: {exc}") from exc
             except httpx.RequestError as exc:
-                raise StreamInterruptedError(f"Request failed: {exc}") from exc
+                # Non-streaming call: surface as a connection/transport failure,
+                # not a stream interruption (reviewer feedback, PR #460).
+                from kosmos.llm.errors import LLMConnectionError  # noqa: PLC0415
+
+                raise LLMConnectionError(f"Request failed: {exc}") from exc
 
         # All attempts exhausted
         raise LLMResponseError(
@@ -350,7 +358,8 @@ class LLMClient:
                                 f"Rate limited (HTTP 429) on stream attempt {attempt + 1}",
                                 status_code=429,
                             )
-                            await asyncio.sleep(delay)
+                            if attempt < policy.max_attempts - 1:
+                                await asyncio.sleep(delay)
                             continue
 
                         await self._raise_for_status(response)
@@ -374,7 +383,8 @@ class LLMClient:
                                     f"attempt {attempt + 1}",
                                     status_code=429,
                                 )
-                                await asyncio.sleep(delay)
+                                if attempt < policy.max_attempts - 1:
+                                    await asyncio.sleep(delay)
                                 break
                             async for event in self._parse_sse_line(line):
                                 yield event
@@ -634,8 +644,19 @@ class LLMClient:
 
     @staticmethod
     def _has_retry_after(response: httpx.Response) -> bool:
-        """Return True when the response carries a parsable Retry-After header."""
-        return "retry-after" in response.headers
+        """Return True when the response carries a parsable Retry-After header.
+
+        A header is considered parsable when it decodes to a non-negative float
+        (``Retry-After: <seconds>``). Malformed values log False so the
+        rate-limit log line does not overstate honouring behaviour.
+        """
+        raw = response.headers.get("retry-after")
+        if raw is None:
+            return False
+        try:
+            return float(raw) >= 0
+        except ValueError:
+            return False
 
     @staticmethod
     def _compute_rate_limit_delay(
