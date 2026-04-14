@@ -347,18 +347,21 @@ async def test_live_scenario1_from_natural_address(
     event_logger = ObservabilityEventLogger()
     log_target = logging.getLogger("kosmos.events")
     handler = _InMemoryEventHandler()
+    prior_level = log_target.level
     log_target.addHandler(handler)
     log_target.setLevel(logging.DEBUG)
 
-    engine, llm_client = _build_live_engine_with_observability(event_logger)
-
+    llm_client = None
     events: list[QueryEvent] = []
     try:
+        engine, llm_client = _build_live_engine_with_observability(event_logger)
         async for event in engine.run(_SCENARIO1_NATURAL_ADDRESS_QUERY):
             events.append(event)
     finally:
-        await llm_client.close()
+        if llm_client is not None:
+            await llm_client.close()
         log_target.removeHandler(handler)
+        log_target.setLevel(prior_level)
 
     # ---- Tool sequence assertions (Assertions 1 & 2) -----------------------
     tool_use_events = [e for e in events if e.type == "tool_use"]

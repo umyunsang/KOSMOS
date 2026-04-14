@@ -112,16 +112,27 @@ class _InMemoryLogHandler(logging.Handler):
 
 
 def _attach_capture_handler(logger_name: str = "kosmos.events") -> _InMemoryLogHandler:
-    """Attach an in-memory handler to *logger_name* and return it."""
+    """Attach an in-memory handler to *logger_name* and return it.
+
+    Captures the prior logger level on the handler so ``_detach_handler`` can
+    restore it — preventing cross-test leakage when the full live suite runs
+    in a single process.
+    """
     target = logging.getLogger(logger_name)
     handler = _InMemoryLogHandler()
+    handler._prior_level = target.level  # type: ignore[attr-defined]
+    handler._logger_name = logger_name  # type: ignore[attr-defined]
     target.addHandler(handler)
     target.setLevel(logging.DEBUG)
     return handler
 
 
 def _detach_handler(handler: _InMemoryLogHandler, logger_name: str = "kosmos.events") -> None:
-    logging.getLogger(logger_name).removeHandler(handler)
+    """Remove *handler* and restore the logger's prior level."""
+    target = logging.getLogger(logger_name)
+    target.removeHandler(handler)
+    prior_level = getattr(handler, "_prior_level", logging.NOTSET)
+    target.setLevel(prior_level)
 
 
 # ---------------------------------------------------------------------------
