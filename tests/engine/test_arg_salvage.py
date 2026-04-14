@@ -16,6 +16,7 @@ import pytest
 
 from kosmos.engine.query import (
     _args_need_salvage,
+    _extract_place_name,
     _latest_user_text,
     _salvage_address_args,
 )
@@ -81,7 +82,9 @@ def test_salvage_repairs_whitespace_arguments_for_address_to_region() -> None:
 
     assert len(repaired) == 1
     args = json.loads(repaired[0].function.arguments)
-    assert args == {"address": "강남역 근처 사고 정보 알려줘"}
+    # Place-name extraction strips the "근처 사고 정보 알려줘" tail so Kakao
+    # receives a clean geocodable address.
+    assert args == {"address": "강남역"}
 
 
 def test_salvage_repairs_address_to_grid_with_empty_string() -> None:
@@ -91,7 +94,28 @@ def test_salvage_repairs_address_to_grid_with_empty_string() -> None:
     repaired = _salvage_address_args(calls, snapshot)
 
     args = json.loads(repaired[0].function.arguments)
-    assert args == {"address": "강남역 근처 날씨"}
+    assert args == {"address": "강남역"}
+
+
+@pytest.mark.parametrize(
+    ("user_text", "expected"),
+    [
+        ("강남역 근처 사고 정보 알려줘", "강남역"),
+        ("서귀포시 날씨 알려줘", "서귀포시"),
+        ("종로3가 주변 교통 상황", "종로3가"),
+        ("서울시 강남구 역삼동", "서울시 강남구 역삼동"),
+        ("강남역", "강남역"),
+        ("부산 해운대구 인근 사고", "부산 해운대구"),
+    ],
+)
+def test_extract_place_name_truncates_at_terminator_tokens(
+    user_text: str, expected: str
+) -> None:
+    assert _extract_place_name(user_text) == expected
+
+
+def test_extract_place_name_empty_string_returns_empty() -> None:
+    assert _extract_place_name("") == ""
 
 
 def test_salvage_leaves_non_geocoding_tools_alone() -> None:
