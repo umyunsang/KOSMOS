@@ -70,9 +70,9 @@ _TOOL_ID = "koroad_accident_search"
 
 _KOROAD_ARGS_JSON = json.dumps(
     {
-        "search_year_cd": "2024001",  # SearchYearCd.GENERAL_2024
-        "si_do": "11",  # SidoCode.SEOUL
-        "gu_gun": "11680",  # GugunCode.SEOUL_GANGNAM
+        "search_year_cd": "2025119",  # SearchYearCd.GENERAL_2024
+        "si_do": 11,  # SidoCode.SEOUL
+        "gu_gun": 680,  # GugunCode.SEOUL_GANGNAM
         "num_of_rows": 1,
         "page_no": 1,
     }
