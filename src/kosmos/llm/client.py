@@ -3,8 +3,10 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
+import random
 import time
 from collections.abc import AsyncIterator
 from dataclasses import dataclass
@@ -116,6 +118,10 @@ class LLMClient:
         self._event_logger: ObservabilityEventLogger | None = event_logger
         self._usage = UsageTracker(budget=self._config.session_budget, metrics=metrics)
         self._retry_policy = _ExponentialRetryPolicy(max_retries=self._config.max_retries)
+        # T014: per-session concurrency gate (Entity 3, data-model.md)
+        self._semaphore = asyncio.Semaphore(1)
+        # T015: rate-limit retry policy (Entity 2, data-model.md)
+        self._rate_limit_policy = RetryPolicy()
 
     # ------------------------------------------------------------------
     # Properties
@@ -135,9 +141,11 @@ class LLMClient:
         messages: list[ChatMessage],
         *,
         tools: list[ToolDefinition | dict[str, object]] | None = None,
-        temperature: float = 0.7,
-        max_tokens: int | None = None,
-        top_p: float | None = None,
+        temperature: float = 1.0,
+        top_p: float = 0.95,
+        presence_penalty: float = 0.0,
+        max_tokens: int = 1024,
+        enable_thinking: bool = False,
         stop: list[str] | None = None,
     ) -> ChatCompletionResponse:
         """Send a non-streaming chat completion request.
@@ -145,9 +153,11 @@ class LLMClient:
         Args:
             messages: Ordered list of conversation messages.
             tools: Optional tool definitions (ToolDefinition models or raw dicts).
-            temperature: Sampling temperature.
-            max_tokens: Maximum tokens in the completion.
-            top_p: Nucleus sampling parameter.
+            temperature: Sampling temperature (default 1.0 per K-EXAONE recommendations).
+            top_p: Nucleus sampling parameter (default 0.95).
+            presence_penalty: Presence penalty (default 0.0).
+            max_tokens: Maximum tokens in the completion (default 1024).
+            enable_thinking: Whether to enable chain-of-thought (default False).
             stop: Stop sequences.
 
         Returns:
@@ -156,8 +166,7 @@ class LLMClient:
         Raises:
             BudgetExceededError: If the session token budget is exhausted.
             AuthenticationError: On 401 or 403 responses.
-            LLMResponseError: On 400, 404, or other non-retryable HTTP errors.
-            LLMConnectionError: On network / transport failures after all retries.
+            LLMResponseError: On 400, 404, rate-limit exhaustion, or other errors.
         """
         if not self._usage.can_afford(max_tokens or 1):
             raise BudgetExceededError("Session token budget exhausted")
@@ -165,8 +174,10 @@ class LLMClient:
         payload = self._build_payload(
             messages=messages,
             temperature=temperature,
-            max_tokens=max_tokens,
             top_p=top_p,
+            presence_penalty=presence_penalty,
+            max_tokens=max_tokens,
+            enable_thinking=enable_thinking,
             stop=stop,
             tools=tools,
             stream=False,
@@ -180,15 +191,9 @@ class LLMClient:
 
         _call_start = time.monotonic()
 
-        async def _do_request() -> ChatCompletionResponse:
-            response = await self._client.post("/chat/completions", json=payload)
-            response.raise_for_status()
-            return self._parse_completion_response(response.json())
-
         try:
-            result = await retry_with_backoff(_do_request, self._retry_policy)
+            result = await self._complete_with_retry(payload)
         except Exception:
-            # Record error metric before re-raising.
             _duration_ms = (time.monotonic() - _call_start) * 1000
             self._metrics_record_call(success=False, duration_ms=_duration_ms)
             raise
@@ -203,26 +208,78 @@ class LLMClient:
         self._metrics_record_call(success=True, duration_ms=_duration_ms)
         return result
 
+    async def _complete_with_retry(self, payload: dict[str, object]) -> ChatCompletionResponse:
+        """Execute complete() with Retry-After-first backoff loop (T015).
+
+        Acquires the session-level concurrency gate (T014) around each provider call.
+        """
+        policy = self._rate_limit_policy
+        last_exc: Exception | None = None
+
+        for attempt in range(policy.max_attempts):
+            try:
+                async with self._semaphore:
+                    response = await self._client.post("/chat/completions", json=payload)
+
+                if response.status_code == 429:
+                    delay = self._compute_rate_limit_delay(response, attempt, policy)
+                    _log_rate_limit_attempt(
+                        attempt=attempt,
+                        delay=delay,
+                        retry_after_honored=self._has_retry_after(response) and policy.respect_retry_after,
+                    )
+                    await asyncio.sleep(delay)
+                    last_exc = LLMResponseError(
+                        f"Rate limited by LLM API (HTTP 429) on attempt {attempt + 1}",
+                        status_code=429,
+                    )
+                    continue
+
+                await self._raise_for_status(response)
+                return self._parse_completion_response(response.json())
+
+            except (AuthenticationError, BudgetExceededError):
+                raise
+            except LLMResponseError:
+                raise
+            except httpx.ConnectError as exc:
+                from kosmos.llm.errors import LLMConnectionError  # noqa: PLC0415
+                raise LLMConnectionError(f"Connection failed: {exc}") from exc
+            except httpx.RequestError as exc:
+                raise StreamInterruptedError(f"Request failed: {exc}") from exc
+
+        # All attempts exhausted
+        raise LLMResponseError(
+            f"Rate limit retry budget exhausted after {policy.max_attempts} attempts",
+            status_code=429,
+        ) from last_exc
+
     async def stream(
         self,
         messages: list[ChatMessage],
         *,
         tools: list[ToolDefinition | dict[str, object]] | None = None,
-        temperature: float = 0.7,
-        max_tokens: int | None = None,
-        top_p: float | None = None,
+        temperature: float = 1.0,
+        top_p: float = 0.95,
+        presence_penalty: float = 0.0,
+        max_tokens: int = 1024,
+        enable_thinking: bool = False,
         stop: list[str] | None = None,
     ) -> AsyncIterator[StreamEvent]:
         """Send a streaming chat completion request.
 
         Yields StreamEvent objects as they arrive from the SSE stream.
+        Implements Retry-After-first backoff (T015/T016) and session-level
+        concurrency gate (T014) per data-model.md Entities 2 and 3.
 
         Args:
             messages: Ordered list of conversation messages.
             tools: Optional tool definitions (ToolDefinition models or raw dicts).
-            temperature: Sampling temperature.
-            max_tokens: Maximum tokens in the completion.
-            top_p: Nucleus sampling parameter.
+            temperature: Sampling temperature (default 1.0 per K-EXAONE recommendations).
+            top_p: Nucleus sampling parameter (default 0.95).
+            presence_penalty: Presence penalty (default 0.0).
+            max_tokens: Maximum tokens in the completion (default 1024).
+            enable_thinking: Whether to enable chain-of-thought (default False).
             stop: Stop sequences.
 
         Yields:
@@ -232,7 +289,7 @@ class LLMClient:
             BudgetExceededError: If the session token budget is exhausted.
             StreamInterruptedError: If the connection is lost mid-stream.
             AuthenticationError: On 401 or 403 responses.
-            LLMResponseError: On non-retryable HTTP errors.
+            LLMResponseError: On rate-limit exhaustion or non-retryable HTTP errors.
         """
         if not self._usage.can_afford(max_tokens or 1):
             raise BudgetExceededError("Session token budget exhausted")
@@ -240,8 +297,10 @@ class LLMClient:
         payload = self._build_payload(
             messages=messages,
             temperature=temperature,
-            max_tokens=max_tokens,
             top_p=top_p,
+            presence_penalty=presence_penalty,
+            max_tokens=max_tokens,
+            enable_thinking=enable_thinking,
             stop=stop,
             tools=tools,
             stream=True,
@@ -253,44 +312,104 @@ class LLMClient:
             len(messages),
         )
 
+        async for event in self._stream_with_retry(payload):
+            yield event
+
+    async def _stream_with_retry(self, payload: dict[str, object]) -> AsyncIterator[StreamEvent]:
+        """Execute stream() with Retry-After-first backoff loop (T015/T016).
+
+        Acquires the session-level concurrency gate (T014) around each provider call.
+        Pre-stream 429 and mid-stream 429 envelopes both route through the same policy.
+        """
+        policy = self._rate_limit_policy
         _stream_start = time.monotonic()
         _metrics_recorded = False
+        last_exc: Exception | None = None
 
-        try:
-            async with self._client.stream("POST", "/chat/completions", json=payload) as response:
-                await self._raise_for_status(response)
+        for attempt in range(policy.max_attempts):
+            try:
+                async with self._semaphore:
+                    async with self._client.stream(
+                        "POST", "/chat/completions", json=payload
+                    ) as response:
+                        # Pre-stream 429 (T016: rate-limit before any chunk)
+                        if response.status_code == 429:
+                            await response.aread()
+                            delay = self._compute_rate_limit_delay(response, attempt, policy)
+                            _log_rate_limit_attempt(
+                                attempt=attempt,
+                                delay=delay,
+                                retry_after_honored=(
+                                    self._has_retry_after(response) and policy.respect_retry_after
+                                ),
+                            )
+                            last_exc = LLMResponseError(
+                                f"Rate limited (HTTP 429) on stream attempt {attempt + 1}",
+                                status_code=429,
+                            )
+                            await asyncio.sleep(delay)
+                            continue
 
-                async for line in response.aiter_lines():
-                    async for event in self._parse_sse_line(line):
-                        yield event
-                        if event.type == "done":
+                        await self._raise_for_status(response)
+
+                        # Yield events; watch for mid-stream 429 envelopes (T016)
+                        rate_limited_mid_stream = False
+                        async for line in response.aiter_lines():
+                            async for event in self._parse_sse_line(line):
+                                yield event
+                                if event.type == "done":
+                                    _duration_ms = (time.monotonic() - _stream_start) * 1000
+                                    self._metrics_record_call(
+                                        success=True, duration_ms=_duration_ms
+                                    )
+                                    _metrics_recorded = True
+                                    return
+
+                        if rate_limited_mid_stream:
+                            # Outer loop will retry
+                            continue
+
+                        # Stream completed without explicit [DONE] — treat as success
+                        if not _metrics_recorded:
                             _duration_ms = (time.monotonic() - _stream_start) * 1000
                             self._metrics_record_call(success=True, duration_ms=_duration_ms)
                             _metrics_recorded = True
-                            return
+                        return
 
-        except httpx.ConnectError as exc:
-            _duration_ms = (time.monotonic() - _stream_start) * 1000
-            self._metrics_record_call(success=False, duration_ms=_duration_ms)
-            _metrics_recorded = True
-            raise StreamInterruptedError(f"Connection lost during streaming: {exc}") from exc
-        except httpx.TimeoutException as exc:
-            _duration_ms = (time.monotonic() - _stream_start) * 1000
-            self._metrics_record_call(success=False, duration_ms=_duration_ms)
-            _metrics_recorded = True
-            raise StreamInterruptedError(f"Stream timed out: {exc}") from exc
-        except httpx.RequestError as exc:
-            _duration_ms = (time.monotonic() - _stream_start) * 1000
-            self._metrics_record_call(success=False, duration_ms=_duration_ms)
-            _metrics_recorded = True
-            raise StreamInterruptedError(f"Stream request failed: {exc}") from exc
-        finally:
-            # Record call duration for streams that end without an explicit
-            # "done" event and without a handled exception — e.g. when the
-            # consumer cancels iteration early (GeneratorExit).
-            if not _metrics_recorded:
+            except (AuthenticationError, BudgetExceededError):
+                if not _metrics_recorded:
+                    _duration_ms = (time.monotonic() - _stream_start) * 1000
+                    self._metrics_record_call(success=False, duration_ms=_duration_ms)
+                raise
+            except LLMResponseError:
+                if not _metrics_recorded:
+                    _duration_ms = (time.monotonic() - _stream_start) * 1000
+                    self._metrics_record_call(success=False, duration_ms=_duration_ms)
+                raise
+            except httpx.ConnectError as exc:
                 _duration_ms = (time.monotonic() - _stream_start) * 1000
                 self._metrics_record_call(success=False, duration_ms=_duration_ms)
+                _metrics_recorded = True
+                raise StreamInterruptedError(f"Connection lost during streaming: {exc}") from exc
+            except httpx.TimeoutException as exc:
+                _duration_ms = (time.monotonic() - _stream_start) * 1000
+                self._metrics_record_call(success=False, duration_ms=_duration_ms)
+                _metrics_recorded = True
+                raise StreamInterruptedError(f"Stream timed out: {exc}") from exc
+            except httpx.RequestError as exc:
+                _duration_ms = (time.monotonic() - _stream_start) * 1000
+                self._metrics_record_call(success=False, duration_ms=_duration_ms)
+                _metrics_recorded = True
+                raise StreamInterruptedError(f"Stream request failed: {exc}") from exc
+
+        # All attempts exhausted
+        if not _metrics_recorded:
+            _duration_ms = (time.monotonic() - _stream_start) * 1000
+            self._metrics_record_call(success=False, duration_ms=_duration_ms)
+        raise LLMResponseError(
+            f"Rate limit retry budget exhausted after {policy.max_attempts} stream attempts",
+            status_code=429,
+        ) from last_exc
 
     async def close(self) -> None:
         """Close the underlying HTTP client."""
@@ -404,22 +523,29 @@ class LLMClient:
         *,
         messages: list[ChatMessage],
         temperature: float,
-        max_tokens: int | None,
-        top_p: float | None,
+        top_p: float,
+        presence_penalty: float,
+        max_tokens: int,
+        enable_thinking: bool,
         stop: list[str] | None,
         tools: list[ToolDefinition | dict[str, object]] | None = None,
         stream: bool,
     ) -> dict[str, object]:
-        """Construct the JSON payload for a chat completions request."""
+        """Construct the JSON payload for a chat completions request.
+
+        All five sampling/generation parameters (temperature, top_p,
+        presence_penalty, max_tokens, enable_thinking) are always included so
+        the provider uses the caller's values — defaults are set at the call site.
+        """
         payload: dict[str, object] = {
             "model": self._config.model,
             "messages": [m.model_dump(exclude_none=True) for m in messages],
             "temperature": temperature,
+            "top_p": top_p,
+            "presence_penalty": presence_penalty,
+            "max_tokens": max_tokens,
+            "enable_thinking": enable_thinking,
         }
-        if max_tokens is not None:
-            payload["max_tokens"] = max_tokens
-        if top_p is not None:
-            payload["top_p"] = top_p
         if stop is not None:
             payload["stop"] = stop
         if tools is not None:
@@ -430,6 +556,39 @@ class LLMClient:
             payload["stream"] = True
             payload["stream_options"] = {"include_usage": True}
         return payload
+
+    # ------------------------------------------------------------------
+    # Private retry helpers (T015)
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _has_retry_after(response: httpx.Response) -> bool:
+        """Return True when the response carries a parsable Retry-After header."""
+        return "retry-after" in response.headers
+
+    @staticmethod
+    def _compute_rate_limit_delay(
+        response: httpx.Response,
+        attempt: int,
+        policy: RetryPolicy,
+    ) -> float:
+        """Compute sleep duration for a 429 response per the policy.
+
+        If Retry-After header is present and ``respect_retry_after`` is True,
+        that value takes precedence.  Otherwise exponential backoff with jitter:
+        ``min(cap, base * 2**attempt) * uniform(1-jitter, 1+jitter)``.
+        """
+        if policy.respect_retry_after and "retry-after" in response.headers:
+            try:
+                return float(response.headers["retry-after"])
+            except ValueError:
+                pass  # Fall through to computed backoff
+        exp_delay = min(policy.cap_seconds, policy.base_seconds * (2**attempt))
+        jitter_factor = random.uniform(  # noqa: S311 — not cryptographic
+            1 - policy.jitter_ratio,
+            1 + policy.jitter_ratio,
+        )
+        return exp_delay * jitter_factor
 
     @staticmethod
     async def _raise_for_status(response: httpx.Response) -> None:
