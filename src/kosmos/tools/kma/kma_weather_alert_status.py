@@ -19,7 +19,7 @@ import logging
 from typing import Any, Literal
 
 import httpx
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from kosmos.tools.errors import ConfigurationError, ToolExecutionError, _require_env  # noqa: F401
 from kosmos.tools.models import GovAPITool
@@ -69,7 +69,15 @@ class KmaWeatherAlertStatusInput(BaseModel):
 
 
 class WeatherWarning(BaseModel):
-    """A single active weather warning or watch from KMA getWthrWrnList."""
+    """A single active weather warning or watch from KMA getWthrWrnList.
+
+    The wire response is inconsistent: some responses return the full 11-field
+    schema, others return only a compact ``{stnId, tmFc, tmSeq}`` triple
+    (observed live on 2026-04-14).  All fields other than ``stn_id`` and
+    ``tm_fc`` are therefore Optional; consumers should handle ``None``.
+    ``tm_fc`` arrives as int (e.g. ``202604141000``) in some responses and is
+    coerced to the canonical YYYYMMDDHHMI string.
+    """
 
     model_config = ConfigDict(frozen=True)
 
@@ -77,36 +85,44 @@ class WeatherWarning(BaseModel):
     """Station/region ID."""
 
     tm_fc: str
-    """Announcement time in YYYYMMDDHHMI format."""
+    """Announcement time in YYYYMMDDHHMI format (coerced from int if needed)."""
 
-    tm_ef: str
-    """Effective time in YYYYMMDDHHMI format."""
+    tm_ef: str | None = None
+    """Effective time in YYYYMMDDHHMI format (absent in compact responses)."""
 
-    tm_seq: int
+    tm_seq: int = 0
     """Sequence number within the announcement."""
 
-    area_code: str
+    area_code: str | None = None
     """Warning zone code (e.g. 'S1151300')."""
 
-    area_name: str
+    area_name: str | None = None
     """Korean warning zone name (e.g. '서울')."""
 
-    warn_var: int
+    warn_var: int | None = None
     """Warning type code.
     1=강풍, 2=호우, 3=한파, 4=건조, 5=해일, 6=태풍, 7=대설, 8=황사, 11=폭염.
     """
 
-    warn_stress: int
+    warn_stress: int | None = None
     """Severity code. 0=주의보 (watch), 1=경보 (warning)."""
 
-    cancel: int
+    cancel: int = 0
     """Cancellation flag. 0=active, 1=cancelled."""
 
-    command: int
+    command: int | None = None
     """Command code from KMA."""
 
-    warn_fc: int
+    warn_fc: int | None = None
     """Warning forecast flag."""
+
+    @field_validator("tm_fc", "tm_ef", mode="before")
+    @classmethod
+    def _coerce_time_to_str(cls, v: object) -> object:
+        """KMA occasionally emits tmFc/tmEf as int; coerce to string."""
+        if isinstance(v, int):
+            return str(v)
+        return v
 
 
 class KmaWeatherAlertStatusOutput(BaseModel):

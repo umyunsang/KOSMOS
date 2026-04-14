@@ -230,9 +230,11 @@ async def test_live_e2e_multi_turn_context(
         )
 
         # Pause between turns to avoid FriendliAI serverless rate limiting.
-        # K-EXAONE Serverless has aggressive per-minute rate limits; 30s
-        # is needed because turn 1 may have used multiple LLM iterations.
-        await asyncio.sleep(30)
+        # K-EXAONE Serverless has aggressive per-minute rate limits.  Turn 1
+        # may have used multiple LLM iterations, and when this test runs after
+        # other live-suite tests the minute-bucket is already partially spent,
+        # so 60s is the empirically-needed cooldown to avoid 429s.
+        await asyncio.sleep(60)
 
         # --- Turn 2: follow-up query with conversation history ---
         async for event in engine.run(_SCENARIO1_FOLLOWUP_QUERY):
