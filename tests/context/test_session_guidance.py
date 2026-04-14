@@ -96,13 +96,15 @@ class TestSessionGuidanceBlock:
         assert geocoding_pos != -1, "Geocoding-first rule not found in prompt"
         assert no_memory_pos != -1, "No-memory-fill rule not found in prompt"
 
-        # Both rule sentences should be in the trailing portion of the prompt.
-        # The prompt ends with the guidance section; verify neither rule appears
-        # earlier than 50% of the total prompt length (they are at the very end).
-        midpoint = len(prompt) // 2
-        assert geocoding_pos > midpoint, (
+        # The session guidance block must be appended last (after sections 1-3 and
+        # the optional personal-data section). Verify by checking that the geocoding
+        # rule appears AFTER the tool-use policy section's distinctive phrase.
+        tool_policy_marker = "Use available tools"
+        tool_policy_pos = prompt.find(tool_policy_marker)
+        assert tool_policy_pos != -1, "Tool-use policy section not found"
+        assert geocoding_pos > tool_policy_pos, (
             f"Geocoding-first rule found at position {geocoding_pos}, "
-            f"expected it after midpoint {midpoint}. "
+            f"expected it after the tool-use policy section at {tool_policy_pos}. "
             f"The guidance block must be appended last."
         )
 

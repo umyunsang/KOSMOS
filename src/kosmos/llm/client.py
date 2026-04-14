@@ -141,6 +141,7 @@ class LLMClient:
         messages: list[ChatMessage],
         *,
         tools: list[ToolDefinition | dict[str, object]] | None = None,
+        tool_choice: str | dict[str, object] | None = None,
         temperature: float = 1.0,
         top_p: float = 0.95,
         presence_penalty: float = 0.0,
@@ -177,6 +178,7 @@ class LLMClient:
             max_tokens=max_tokens,
             stop=stop,
             tools=tools,
+            tool_choice=tool_choice,
             stream=False,
         )
 
@@ -256,6 +258,7 @@ class LLMClient:
         messages: list[ChatMessage],
         *,
         tools: list[ToolDefinition | dict[str, object]] | None = None,
+        tool_choice: str | dict[str, object] | None = None,
         temperature: float = 1.0,
         top_p: float = 0.95,
         presence_penalty: float = 0.0,
@@ -297,6 +300,7 @@ class LLMClient:
             max_tokens=max_tokens,
             stop=stop,
             tools=tools,
+            tool_choice=tool_choice,
             stream=True,
         )
 
@@ -499,11 +503,21 @@ class LLMClient:
         elif "reasoning_content" in delta and delta["reasoning_content"] is not None:
             # K-EXAONE emits reasoning_content (chain-of-thought) before content.
             # Drop it to prevent CoT from persisting into chat history.
-            logger.debug("Dropping reasoning_content chunk from SSE stream")
+            logger.debug(
+                "Dropping reasoning_content chunk: %r",
+                delta["reasoning_content"],
+            )
 
         if "tool_calls" in delta and delta["tool_calls"]:
             for tc_delta in delta["tool_calls"]:
                 func = tc_delta.get("function", {})
+                logger.debug(
+                    "tool_call_delta idx=%s id=%s name=%r args=%r",
+                    tc_delta.get("index"),
+                    tc_delta.get("id"),
+                    func.get("name"),
+                    func.get("arguments"),
+                )
                 yield StreamEvent(
                     type="tool_call_delta",
                     tool_call_index=tc_delta.get("index"),
@@ -522,6 +536,7 @@ class LLMClient:
         max_tokens: int,
         stop: list[str] | None,
         tools: list[ToolDefinition | dict[str, object]] | None = None,
+        tool_choice: str | dict[str, object] | None = None,
         stream: bool,
     ) -> dict[str, object]:
         """Construct the JSON payload for a chat completions request.
@@ -544,6 +559,8 @@ class LLMClient:
             payload["tools"] = [
                 t.model_dump() if isinstance(t, ToolDefinition) else t for t in tools
             ]
+            if tool_choice is not None:
+                payload["tool_choice"] = tool_choice
         if stream:
             payload["stream"] = True
             payload["stream_options"] = {"include_usage": True}
