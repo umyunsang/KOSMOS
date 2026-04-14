@@ -349,9 +349,7 @@ async def test_live_scenario1_from_natural_address(
     tool_use_events = [e for e in events if e.type == "tool_use"]
     tool_names = [e.tool_name for e in tool_use_events]
 
-    geocoding_indices = [
-        i for i, name in enumerate(tool_names) if name in _GEOCODING_TOOL_IDS
-    ]
+    geocoding_indices = [i for i, name in enumerate(tool_names) if name in _GEOCODING_TOOL_IDS]
     koroad_indices = [i for i, name in enumerate(tool_names) if name == _KOROAD_TOOL_ID]
 
     assert geocoding_indices, (
@@ -377,16 +375,13 @@ async def test_live_scenario1_from_natural_address(
     )
     has_hangul = any(ord(ch) in _HANGUL_RANGE for ch in final_response)
     assert has_hangul, (
-        f"Final response must contain ≥1 Hangul character (U+AC00..U+D7AF), "
-        f"got {final_response!r}"
+        f"Final response must contain ≥1 Hangul character (U+AC00..U+D7AF), got {final_response!r}"
     )
 
     # ---- Observability event-chain assertions (Assertion 5) ----------------
     llm_events = [r for r in handler.records if r.get("event_type") == "llm_call"]
     tool_events = [r for r in handler.records if r.get("event_type") == "tool_call"]
-    geocoding_tool_events = [
-        r for r in tool_events if r.get("tool_id") in _GEOCODING_TOOL_IDS
-    ]
+    geocoding_tool_events = [r for r in tool_events if r.get("tool_id") in _GEOCODING_TOOL_IDS]
     koroad_tool_events = [r for r in tool_events if r.get("tool_id") == _KOROAD_TOOL_ID]
 
     assert len(llm_events) >= 1, (
