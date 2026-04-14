@@ -96,7 +96,7 @@ No new dependencies or scaffolding required — this feature edits existing file
 
 ### Implementation for User Story 3
 
-- [ ] T019 [US3] Post a retraction comment on the public discussion thread referenced by Epic #404. The comment MUST (a) cite the empirical counter-example ("강남역" → wrong gu_gun), (b) link to Epic #404 and this spec path `specs/019-phase1-hardening/`, and (c) name the adopted mitigation trio (Pydantic `Field(description=...)` hardening, system-prompt ordering rule, Retry-After-aware retry + per-session semaphore). English source text per repo convention. Confirms FR-014 + SC-006.
+- [X] T019 [US3] Post a retraction comment on the public discussion thread referenced by Epic #404. The comment MUST (a) cite the empirical counter-example ("강남역" → wrong gu_gun), (b) link to Epic #404 and this spec path `specs/019-phase1-hardening/`, and (c) name the adopted mitigation trio (Pydantic `Field(description=...)` hardening, system-prompt ordering rule, Retry-After-aware retry + per-session semaphore). English source text per repo convention. Confirms FR-014 + SC-006.
 
 **Checkpoint**: US3 independently closes the governance loop on the prior public claim.
 
