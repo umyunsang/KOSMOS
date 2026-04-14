@@ -3,7 +3,12 @@
 
 Checks the tool's declared AccessTier against the current environment:
 - public → allow unconditionally
-- api_key → allow iff at least one KOSMOS_*_API_KEY env var is set and non-empty
+- api_key → allow iff the credential for the tool's *specific* provider is
+  configured (Kakao tools require ``KOSMOS_KAKAO_API_KEY``; data.go.kr
+  tools require ``KOSMOS_DATA_GO_KR_API_KEY``). A tool-specific override
+  ``KOSMOS_<TOOL_ID>_API_KEY`` or the legacy global ``KOSMOS_API_KEY``
+  also satisfies the check. Resolution is delegated to
+  :mod:`kosmos.permissions.credentials`.
 - authenticated → deny (not implemented in v1)
 - restricted → deny (not implemented in v1)
 """
@@ -11,8 +16,8 @@ Checks the tool's declared AccessTier against the current environment:
 from __future__ import annotations
 
 import logging
-import os
 
+from kosmos.permissions.credentials import candidate_env_vars, has_credential
 from kosmos.permissions.models import (
     AccessTier,
     PermissionCheckRequest,
@@ -41,16 +46,12 @@ def check_config(request: PermissionCheckRequest) -> PermissionStepResult:
         return PermissionStepResult(decision=PermissionDecision.allow, step=_STEP)
 
     if tier == AccessTier.api_key:
-        has_key = any(
-            v.strip()
-            for k, v in os.environ.items()
-            if k.startswith("KOSMOS_") and k.endswith("_API_KEY")
-        )
-        if not has_key:
+        if not has_credential(request.tool_id):
             logger.warning(
-                "Step %d: api_key tier denied for tool %s — no KOSMOS_*_API_KEY env var configured",
+                "Step %d: api_key tier denied for tool %s — no credential configured (checked %s)",
                 _STEP,
                 request.tool_id,
+                ", ".join(candidate_env_vars(request.tool_id)),
             )
             return PermissionStepResult(
                 decision=PermissionDecision.deny,

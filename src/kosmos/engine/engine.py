@@ -209,6 +209,36 @@ class QueryEngine:
         )
         logger.info("QueryEngine reset: conversation cleared")
 
+    def set_permission_session(self, session: SessionContext | None) -> None:
+        """Update the permission-pipeline session used for subsequent turns.
+
+        The REPL calls this when it creates or resumes a session so that
+        the ``session_id`` recorded in permission audits matches the real
+        REPL session identifier instead of a placeholder.
+
+        Args:
+            session: Fresh :class:`SessionContext`, or ``None`` to disable
+                permission checks (not recommended in production).
+        """
+        self._permission_session = session
+        if session is not None:
+            logger.info(
+                "QueryEngine permission session updated: session_id=%s",
+                session.session_id,
+            )
+        else:
+            logger.warning("QueryEngine permission session cleared")
+
+    @property
+    def permission_session(self) -> SessionContext | None:
+        """Return the currently installed permission :class:`SessionContext`."""
+        return self._permission_session
+
+    @property
+    def permission_pipeline(self) -> PermissionPipeline | None:
+        """Return the installed :class:`PermissionPipeline`, if any."""
+        return self._permission_pipeline
+
     # ------------------------------------------------------------------
     # Properties
     # ------------------------------------------------------------------
