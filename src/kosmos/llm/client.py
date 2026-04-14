@@ -7,6 +7,7 @@ import json
 import logging
 import time
 from collections.abc import AsyncIterator
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 import httpx
@@ -29,7 +30,8 @@ from kosmos.llm.models import (
     ToolCall,
     ToolDefinition,
 )
-from kosmos.llm.retry import RetryPolicy, retry_with_backoff
+from kosmos.llm.retry import RetryPolicy as _ExponentialRetryPolicy
+from kosmos.llm.retry import retry_with_backoff
 from kosmos.llm.usage import UsageTracker
 
 if TYPE_CHECKING:
@@ -37,6 +39,42 @@ if TYPE_CHECKING:
     from kosmos.observability.metrics import MetricsCollector
 
 logger = logging.getLogger(__name__)
+rate_limit_logger = logging.getLogger("kosmos.llm")
+
+
+@dataclass(frozen=True)
+class RetryPolicy:
+    """Rate-limit retry policy (data-model Entity 2).
+
+    Consumed by the Retry-After-first backoff loop landed in T015.
+    """
+
+    max_attempts: int = 5
+    base_seconds: float = 1.0
+    cap_seconds: float = 60.0
+    jitter_ratio: float = 0.2
+    respect_retry_after: bool = True
+
+
+def _log_rate_limit_attempt(
+    *,
+    attempt: int,
+    delay: float,
+    retry_after_honored: bool,
+) -> None:
+    """Emit a structured rate-limit retry log line on logger ``kosmos.llm``."""
+    rate_limit_logger.info(
+        "rate_limit attempt=%d delay=%.3fs retry_after_honored=%s",
+        attempt,
+        delay,
+        retry_after_honored,
+        extra={
+            "category": "rate_limit",
+            "attempt": attempt,
+            "delay_seconds": delay,
+            "retry_after_honored": retry_after_honored,
+        },
+    )
 
 
 class LLMClient:
@@ -77,7 +115,7 @@ class LLMClient:
         self._metrics: MetricsCollector | None = metrics
         self._event_logger: ObservabilityEventLogger | None = event_logger
         self._usage = UsageTracker(budget=self._config.session_budget, metrics=metrics)
-        self._retry_policy = RetryPolicy(max_retries=self._config.max_retries)
+        self._retry_policy = _ExponentialRetryPolicy(max_retries=self._config.max_retries)
 
     # ------------------------------------------------------------------
     # Properties
