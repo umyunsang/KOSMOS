@@ -145,7 +145,6 @@ class LLMClient:
         top_p: float = 0.95,
         presence_penalty: float = 0.0,
         max_tokens: int = 1024,
-        enable_thinking: bool = False,
         stop: list[str] | None = None,
     ) -> ChatCompletionResponse:
         """Send a non-streaming chat completion request.
@@ -157,7 +156,6 @@ class LLMClient:
             top_p: Nucleus sampling parameter (default 0.95).
             presence_penalty: Presence penalty (default 0.0).
             max_tokens: Maximum tokens in the completion (default 1024).
-            enable_thinking: Whether to enable chain-of-thought (default False).
             stop: Stop sequences.
 
         Returns:
@@ -177,7 +175,6 @@ class LLMClient:
             top_p=top_p,
             presence_penalty=presence_penalty,
             max_tokens=max_tokens,
-            enable_thinking=enable_thinking,
             stop=stop,
             tools=tools,
             stream=False,
@@ -263,7 +260,6 @@ class LLMClient:
         top_p: float = 0.95,
         presence_penalty: float = 0.0,
         max_tokens: int = 1024,
-        enable_thinking: bool = False,
         stop: list[str] | None = None,
     ) -> AsyncIterator[StreamEvent]:
         """Send a streaming chat completion request.
@@ -279,7 +275,6 @@ class LLMClient:
             top_p: Nucleus sampling parameter (default 0.95).
             presence_penalty: Presence penalty (default 0.0).
             max_tokens: Maximum tokens in the completion (default 1024).
-            enable_thinking: Whether to enable chain-of-thought (default False).
             stop: Stop sequences.
 
         Yields:
@@ -300,7 +295,6 @@ class LLMClient:
             top_p=top_p,
             presence_penalty=presence_penalty,
             max_tokens=max_tokens,
-            enable_thinking=enable_thinking,
             stop=stop,
             tools=tools,
             stream=True,
@@ -526,16 +520,15 @@ class LLMClient:
         top_p: float,
         presence_penalty: float,
         max_tokens: int,
-        enable_thinking: bool,
         stop: list[str] | None,
         tools: list[ToolDefinition | dict[str, object]] | None = None,
         stream: bool,
     ) -> dict[str, object]:
         """Construct the JSON payload for a chat completions request.
 
-        All five sampling/generation parameters (temperature, top_p,
-        presence_penalty, max_tokens, enable_thinking) are always included so
-        the provider uses the caller's values — defaults are set at the call site.
+        The four sampling/generation parameters (temperature, top_p,
+        presence_penalty, max_tokens) are always included so the provider
+        uses the caller's values — defaults are set at the call site.
         """
         payload: dict[str, object] = {
             "model": self._config.model,
@@ -544,7 +537,6 @@ class LLMClient:
             "top_p": top_p,
             "presence_penalty": presence_penalty,
             "max_tokens": max_tokens,
-            "enable_thinking": enable_thinking,
         }
         if stop is not None:
             payload["stop"] = stop

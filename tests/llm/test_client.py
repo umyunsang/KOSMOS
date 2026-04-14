@@ -699,7 +699,7 @@ async def test_complete_default_payload_parameters(
     _clean_env: None,
 ) -> None:
     """T013: default outgoing payload has temperature=1.0, top_p=0.95, presence_penalty=0.0,
-    max_tokens=1024, enable_thinking=False for complete()."""
+    max_tokens=1024 for complete()."""
     captured: list[dict] = []
 
     def _capture(request: httpx.Request) -> httpx.Response:
@@ -720,9 +720,6 @@ async def test_complete_default_payload_parameters(
         f"presence_penalty={payload.get('presence_penalty')!r}"
     )
     assert payload.get("max_tokens") == 1024, f"max_tokens={payload.get('max_tokens')!r}"
-    assert payload.get("enable_thinking") is False, (
-        f"enable_thinking={payload.get('enable_thinking')!r}"
-    )
 
 
 @respx.mock
@@ -746,7 +743,6 @@ async def test_complete_explicit_overrides_take_precedence(
             top_p=0.8,
             presence_penalty=0.5,
             max_tokens=512,
-            enable_thinking=True,
         )
 
     assert len(captured) == 1
@@ -755,7 +751,6 @@ async def test_complete_explicit_overrides_take_precedence(
     assert payload.get("top_p") == 0.8
     assert payload.get("presence_penalty") == 0.5
     assert payload.get("max_tokens") == 512
-    assert payload.get("enable_thinking") is True
 
 
 @respx.mock
@@ -787,4 +782,3 @@ async def test_stream_default_payload_parameters(
     assert payload.get("top_p") == 0.95
     assert payload.get("presence_penalty") == 0.0
     assert payload.get("max_tokens") == 1024
-    assert payload.get("enable_thinking") is False
