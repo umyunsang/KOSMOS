@@ -14,10 +14,12 @@ Pydantic v2-typed tools through the KOSMOS tool registry.
 | [`kma_ultra_short_term_forecast`](kma-ultra-short-term-forecast.md) | 초단기예보 조회 | 기상청 (KMA) | Retrieve next-6-hour forecast published hourly at HH:30 KST |
 | [`kma_pre_warning`](kma-pre-warning.md) | 기상예비특보목록 조회 | 기상청 (KMA) | List pre-warning announcements that precede formal weather warnings |
 | [`road_risk_score`](road-risk-score.md) | 도로 위험도 종합 평가 | KOSMOS (composite) | Compute a normalized road risk score by fanning out to KOROAD and KMA inner adapters in parallel |
+| [`address_to_region`](geocoding.md#address_to_region) | 주소→지역코드 변환 (시도/구군) | 카카오 (Kakao) | Resolve a free-form Korean address to KOROAD `SidoCode` + `GugunCode` integers |
+| [`address_to_grid`](geocoding.md#address_to_grid) | 주소→기상청 격자좌표 변환 (nx/ny) | 카카오 (Kakao) + 기상청 (KMA) | Resolve a free-form Korean address to KMA 5 km grid (nx, ny) coordinates |
 
 ## Authentication
 
-All seven tools share a single environment variable:
+Tools backed by `data.go.kr` share a single environment variable:
 
 ```
 KOSMOS_DATA_GO_KR_API_KEY
@@ -28,13 +30,27 @@ endpoints. No per-tool or per-provider separate keys exist. All tools have
 `requires_auth=False` — citizen authentication is not required; only the operator API
 key is needed.
 
-Set the variable before running any adapter:
+Set the variable before running any `data.go.kr`-backed adapter:
 
 ```bash
 export KOSMOS_DATA_GO_KR_API_KEY="your_service_key_here"
 ```
 
 Obtain a key by registering at [data.go.kr](https://www.data.go.kr/).
+
+The two geocoding tools (`address_to_region`, `address_to_grid`) use a
+**separate** Kakao REST API key:
+
+```
+KOSMOS_KAKAO_API_KEY
+```
+
+```bash
+export KOSMOS_KAKAO_API_KEY="your_kakao_rest_api_key_here"
+```
+
+Obtain a Kakao REST API key at [developers.kakao.com](https://developers.kakao.com/).
+See [`geocoding.md § Prerequisites`](geocoding.md#prerequisites) for activation steps.
 
 ## Shared Error Codes
 
@@ -71,6 +87,8 @@ The full error code reference lives in [`koroad.md § Error Codes`](koroad.md#er
 | `kma_ultra_short_term_forecast` | KMA getUltraSrtFcst | `apis.data.go.kr/1360000/VilageFcstInfoService_2.0/...` |
 | `kma_pre_warning` | KMA getWthrPwnList | `apis.data.go.kr/1360000/WthrWrnInfoService/...` |
 | `road_risk_score` | Composite (no direct endpoint) | Fans out to KOROAD + KMA |
+| `address_to_region` | Kakao Local API | `dapi.kakao.com/v2/local/search/address.json` |
+| `address_to_grid` | Kakao Local API + KMA LCC table | `dapi.kakao.com/v2/local/search/address.json` |
 
 > **Note on HTTP vs. HTTPS**: KMA forecast endpoints (`getVilageFcst`, `getUltraSrtFcst`,
 > `getWthrPwnList`) use `http://` (not `https://`). Ensure outbound HTTP is allowed in

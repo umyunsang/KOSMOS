@@ -2,15 +2,15 @@
 
 **Epic**: #8
 **Created**: 2026-04-13
-**Status**: Draft
+**Status**: Completed (Phase 1)
 **Layer**: Layer 3 — Permission Pipeline
-**Input**: 7-step permission gauntlet skeleton with active steps 1, 6, 7 and pass-through stubs for steps 2–5; fail-closed defaults; API key management; Pydantic v2 models for all I/O.
+**Input**: 7-step permission gauntlet with all steps fully implemented; fail-closed defaults; API key management; Pydantic v2 models for all I/O.
 
 ---
 
 ## Overview & Context
 
-Every tool invocation in KOSMOS must pass through a permission gauntlet before the adapter executes. This feature implements the skeleton of that gauntlet (all 7 steps defined) with three active steps in v1 and four steps stubbed as pass-through. It integrates with the existing `ToolExecutor.dispatch()` flow from Layer 2.
+Every tool invocation in KOSMOS must pass through a permission gauntlet before the adapter executes. This feature implements all 7 steps of that gauntlet: three core enforcement steps (1, 6, 7) and four additional enforcement steps (2–5) that were initially planned as pass-through stubs but have been fully implemented in v1. It integrates with the existing `ToolExecutor.dispatch()` flow from Layer 2.
 
 ### Why this exists
 
@@ -20,18 +20,18 @@ The permission pipeline is the mechanism that makes KOSMOS's fail-closed securit
 
 ### Scope of v1
 
-v1 ships a working skeleton. The three active steps provide real protection today; the four stubs establish the integration points so v2+ can activate each step independently without refactoring the call chain.
+v1 ships a fully-operational gauntlet with all 7 steps implemented. Steps 2–5 were originally planned as pass-through stubs but have been fully implemented during v1 development, providing comprehensive pre-execution enforcement. All steps follow fail-closed semantics.
 
-**Active in v1**:
+**Active in v1 (original plan)**:
 - Step 1 — Configuration rules (per-API access tier check)
 - Step 6 — Sandboxed execution (isolated context, no ambient credentials)
 - Step 7 — Audit log (structured log of every invocation)
 
-**Pass-through stubs in v1** (return `PermissionDecision.allow` unconditionally):
-- Step 2 — Intent analysis
-- Step 3 — Parameter inspection
-- Step 4 — Citizen authentication
-- Step 5 — Ministry terms-of-use
+**Originally planned as stubs, fully implemented in v1**:
+- Step 2 — Rule-based intent analysis (rapid-call burst detection, payload size limit, personal-data tier mismatch, JSON object validation)
+- Step 3 — Korean PII parameter inspection (주민등록번호, 전화번호, 이메일, 여권번호, 신용카드 regex scan with PII-accepting param allowlist)
+- Step 4 — Citizen authentication level enforcement (auth_level vs. tier requirement; restricted tier also requires citizen_id)
+- Step 5 — Ministry terms-of-use consent tracking (in-memory per-session consent registry; provider extracted from tool_id prefix)
 
 ### Integration point
 
@@ -68,14 +68,18 @@ As the KOSMOS permission pipeline, when a tool call arrives, I want to check the
 
 ---
 
-### US-002 — Stub steps return allow without side effects (P1)
+### US-002 — Steps 2–5 enforce pre-execution safety rules (P1)
 
-As a developer integrating Layer 3 with the query engine, I want steps 2–5 to be callable no-ops in v1, so that the gauntlet call chain is complete and future activation of any step does not require refactoring the caller.
+As a developer integrating Layer 3 with the query engine, I want steps 2–5 to actively enforce safety policies before any tool adapter is invoked, so that suspicious calls are denied before they reach external APIs.
 
 **Acceptance scenarios**:
-1. Given any tool call, when step 2 (intent analysis) is invoked, then it returns `PermissionDecision.allow` and logs a single debug-level message recording that it was a stub pass-through.
-2. Same for steps 3, 4, and 5.
-3. Each stub function has the same signature as an active step (`PermissionCheckRequest` → `PermissionStepResult`), so activating it is a drop-in replacement.
+1. Given a tool call that exceeds RAPID_CALL_THRESHOLD (10) calls in RAPID_CALL_WINDOW_SECONDS (5 s) from the same session, when step 2 is invoked, then it returns `PermissionDecision.deny` with `reason="rapid_call_burst"`.
+2. Given a tool call with a personal-data tool (`is_personal_data=True`) that has `access_tier=public`, when step 2 is invoked, then it returns `PermissionDecision.deny` with `reason="personal_data_public_tier_mismatch"`.
+3. Given a tool call whose `arguments_json` contains a Korean resident registration number (주민등록번호) pattern outside a declared PII-accepting parameter, when step 3 is invoked, then it returns `PermissionDecision.deny` with `reason="pii_detected:rrn"`.
+4. Given a tool with `access_tier=authenticated` and a session with `auth_level < 2`, when step 4 is invoked, then it returns `PermissionDecision.deny` with `reason="insufficient_auth_level"`.
+5. Given a tool call where the tool's provider has not been consented to in the session, when step 5 is invoked, then it returns `PermissionDecision.deny` with `reason="terms_not_accepted:<provider>"`.
+6. Each step function has the same signature (`PermissionCheckRequest` → `PermissionStepResult`) and is individually testable without modifying the gauntlet runner.
+7. A `stubs.py` shim re-exports all four functions to preserve backward-compatible import paths.
 
 ---
 
@@ -109,7 +113,7 @@ As the KOSMOS permission pipeline, when any step raises an unexpected exception 
 **Acceptance scenarios**:
 1. Given step 1 raises a Python exception (not a `PermissionDeniedError`), then the pipeline catches it, logs it at ERROR level, and returns `PermissionDecision.deny` with `reason="internal_error"`.
 2. Given the same scenario, then the executor is never invoked.
-3. Given a stub step (2–5) that raises an exception, then the same fail-closed behavior applies.
+3. Given any of steps 2–5 that raises an exception, then the same fail-closed behavior applies.
 
 ---
 
@@ -166,7 +170,11 @@ As the query engine (Layer 1), I want a single `PermissionPipeline.run(tool_id, 
   - `api_key` → `allow` iff `KOSMOS_DATA_GO_KR_API_KEY` env var is set and non-empty; `deny` otherwise.
   - `authenticated` → `deny` in v1 with `reason="citizen_auth_not_implemented"`.
   - `restricted` → `deny` in v1 with `reason="tier_restricted_not_implemented"`.
-- **FR-010**: Steps 2–5 MUST be synchronous stub functions that accept a `PermissionCheckRequest` and return `PermissionStepResult(decision=PermissionDecision.allow, step=N)` plus a `DEBUG`-level log line of the form `"Step N (stub): pass-through for tool {tool_id}"`.
+- **FR-010**: Steps 2–5 MUST be synchronous functions that accept a `PermissionCheckRequest` and return a `PermissionStepResult`. Each step enforces the following policies:
+  - **Step 2 (intent)**: Denies if rapid-call burst detected (≥ `RAPID_CALL_THRESHOLD` calls in `RAPID_CALL_WINDOW_SECONDS`), argument payload exceeds `MAX_ARGS_BYTES` (16 KiB), a personal-data tool arrives with `access_tier=public` (tier mismatch), or `arguments_json` is not a valid JSON object.
+  - **Step 3 (params)**: Scans all string-typed argument values for Korean PII patterns (주민등록번호, 전화번호, 이메일, 여권번호, 신용카드). Parameters listed in `PII_ACCEPTING_PARAMS` are excluded from the scan. Denies with `reason="pii_detected:<type>"` on match.
+  - **Step 4 (authn)**: Enforces minimum `auth_level` per access tier (public/api_key → 0, authenticated/restricted → 2). Restricted tier additionally requires a non-None `citizen_id`. Denies with `reason="insufficient_auth_level"` or `reason="citizen_id_required"` as appropriate.
+  - **Step 5 (terms)**: Verifies that the session has accepted the tool provider's terms-of-use. Consent may be recorded via `SessionContext.consented_providers` or via the `grant_consent(session_id, provider)` API. Provider is derived from the tool_id prefix (before the first `_`). Denies with `reason="terms_not_accepted:<provider>"` if consent is absent.
 - **FR-011**: Step 6 MUST execute the adapter inside an isolated context:
   - Builds a `dict` containing only the credentials relevant to the tool's `AccessTier`.
   - Calls the adapter function from `ToolExecutor` with the isolated credential context.
@@ -217,10 +225,10 @@ src/kosmos/
     ├── steps/
     │   ├── __init__.py
     │   ├── step1_config.py  # ACTIVE: configuration rules
-    │   ├── step2_intent.py  # STUB: intent analysis
-    │   ├── step3_params.py  # STUB: parameter inspection
-    │   ├── step4_authn.py   # STUB: citizen authentication
-    │   ├── step5_terms.py   # STUB: ministry terms-of-use
+    │   ├── step2_intent.py  # ACTIVE: rule-based intent analysis (burst, payload, tier mismatch, JSON)
+    │   ├── step3_params.py  # ACTIVE: Korean PII parameter inspection (5 pattern categories)
+    │   ├── step4_authn.py   # ACTIVE: citizen authentication level enforcement
+    │   ├── step5_terms.py   # ACTIVE: ministry terms-of-use consent (in-memory registry)
     │   ├── step6_sandbox.py # ACTIVE: sandboxed execution
     │   └── step7_audit.py   # ACTIVE: audit log
     └── bypass.py            # BYPASS_IMMUNE_RULES constant + enforcement
@@ -313,7 +321,7 @@ ToolResult(
 - **SC-001**: A tool with `access_tier=AccessTier.public` is dispatched to the adapter without any credential check, verified by unit test with no env vars set.
 - **SC-002**: A tool with `access_tier=AccessTier.api_key` is denied when `KOSMOS_DATA_GO_KR_API_KEY` is unset, verified by unit test with `os.environ` patched.
 - **SC-003**: A tool with `access_tier=AccessTier.api_key` is allowed when the env var is set, and the key value is not present in any log output, verified by unit test capturing log records.
-- **SC-004**: All 4 stub steps (2–5) emit exactly one DEBUG log line each and return `allow`, verified by unit tests with log capture.
+- **SC-004**: All 4 steps (2–5) return `allow` for clean, compliant requests (no burst, no PII, sufficient auth level, consent granted), verified by unit tests covering both the allow path and each deny condition.
 - **SC-005**: A step 6 adapter exception produces `ToolResult(success=False, error_type="permission_denied")`, verified by injecting a raising mock adapter.
 - **SC-006**: Step 7 audit log entry contains all required fields and omits `arguments_json`, verified by unit test asserting on the logged `AuditLogEntry`.
 - **SC-007**: An unexpected exception in step 1 produces a deny result (not a Python exception propagating to the caller), verified by monkey-patching step 1 to raise.
@@ -327,7 +335,7 @@ ToolResult(
 
 | Scenario | Expected behavior |
 |---|---|
-| `arguments_json` is malformed JSON | Step 1 parses the tier and allows/denies without parsing args; step 3 (param inspection, future) would catch it; step 6 sandbox receives the raw string, and the existing `ToolExecutor` input validation handles JSON parse failure. |
+| `arguments_json` is malformed JSON | Step 1 parses the tier and allows/denies without parsing args; step 2 detects invalid JSON and denies with `reason="invalid_arguments_json"`; step 3 also has a defensive JSON-parse guard. Step 6 is never reached for malformed payloads. |
 | `KOSMOS_DATA_GO_KR_API_KEY` is set but empty string | Treated as absent; step 1 denies with `reason="api_key_not_configured"`. An empty string is not a valid key. |
 | `session_context.citizen_id` is None and tool `is_personal_data=True` | Bypass-immune rule triggers: citizen_id mismatch (None != any value). Pipeline denies. |
 | Step 7 (audit logger) itself raises | Exception is swallowed; a fallback `logging.error()` call is made to the root logger. The audit failure MUST NOT cause the caller to receive an exception. |
@@ -339,13 +347,13 @@ ToolResult(
 
 ## Out of Scope for v1
 
-- **Step 2 (active)** — LLM-based intent analysis classifying whether the natural language request justifies the tool call. Requires a separate LLM call with classifier isolation. Targeted for v2.
-- **Step 3 (active)** — Regex/schema-based parameter inspection for personal identifiers (주민등록번호, phone number patterns). Targeted for v2.
-- **Step 4 (active)** — Citizen identity verification level check against session auth tokens. Requires integration with Gov24 identity API. Targeted for Phase 2.
-- **Step 5 (active)** — Ministry terms-of-use consent tracking per provider. Requires consent storage. Targeted for Phase 2.
+- **LLM-based intent analysis** — Deep semantic classification of whether the natural language request justifies the tool call (distinct from the rule-based step 2 implemented in v1). Requires a separate LLM call with classifier isolation. Targeted for v2.
+- **Extended PII pattern library** — Additional regex patterns beyond the five categories (RRN, phone, email, passport, credit card) implemented in step 3 v1. Targeted for v2.
+- **Gov24 identity API integration** — Dynamic auth level verification against live Gov24 tokens (step 4 v1 uses the static `auth_level` field from `SessionContext`). Targeted for Phase 2.
+- **Persistent consent storage** — Durable across process restarts (step 5 v1 stores consent in-memory only). Targeted for Phase 2.
 - **`escalate` decision path** — The `PermissionDecision.escalate` value is defined in the enum but the gauntlet runner treats it as `deny` in v1.
 - **Refusal circuit breaker** — Consecutive denial counting and routing to human channel. Targeted for v2.
-- **Classifier separation of concerns** — Ensuring LLM classifiers see only tool calls and arguments, not justifying prose. Relevant only when step 2 activates.
+- **Classifier separation of concerns** — Ensuring LLM classifiers see only tool calls and arguments, not justifying prose. Relevant only when LLM-based intent analysis (v2) activates.
 - **Per-ministry credential isolation** — Separate `KOSMOS_KOROAD_API_KEY`, etc. per-provider env vars beyond the shared `KOSMOS_DATA_GO_KR_API_KEY`. Targeted for v2.
 - **Credential rotation / secret management** — Dynamic key rotation, HashiCorp Vault integration. Out of scope for Phase 1.
 

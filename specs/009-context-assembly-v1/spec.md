@@ -2,7 +2,7 @@
 
 **Feature Branch**: `feat/009-context-assembly-v1`
 **Created**: 2026-04-13
-**Status**: Draft
+**Status**: Completed (Phase 1)
 **Input**: Epic #9 — Context Assembly v1 (Layer 5)
 
 ---
@@ -150,6 +150,8 @@ asserts that `QueryEngine` raises (or yields a stop event) when the guard fires.
 ---
 
 ### User Story 5 — Reminder Cadence (Priority: P3)
+
+✅ Implemented in Phase 1 — `src/kosmos/context/attachments.py` (`AttachmentCollector._reminder_section`, lines 135–154), `src/kosmos/context/models.py` (`SystemPromptConfig.reminder_cadence`, lines 31–56). Tests: `tests/context/test_attachments.py` (`TestAttachmentReminderCadenceStress`, `test_reminder_fires_at_cadence`, `test_reminder_skips_turn_0`, `test_reminder_skips_non_cadence`), `tests/context/test_models.py` (`test_reminder_cadence_zero_raises`, `test_reminder_cadence_negative_raises`).
 
 In a long session, the LLM tends to forget earlier unfinished tasks and
 authentication context. Every N turns the system injects a structured reminder
