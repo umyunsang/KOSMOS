@@ -29,6 +29,7 @@ from kosmos.engine.events import QueryEvent, StopReason
 from kosmos.llm.client import LLMClient
 from kosmos.observability.event_logger import ObservabilityEventLogger
 from kosmos.tools.executor import ToolExecutor
+from kosmos.tools.koroad.code_tables import GugunCode, SidoCode
 from kosmos.tools.register_all import register_all_tools
 from kosmos.tools.registry import ToolRegistry
 
@@ -274,7 +275,12 @@ async def test_live_e2e_multi_turn_context(
 
 _SCENARIO1_NATURAL_ADDRESS_QUERY = "강남역 근처 사고 정보 알려줘"
 _KOROAD_TOOL_ID = "koroad_accident_search"
+_GEOCODING_TOOL_ID = "address_to_region"
 _HANGUL_RANGE = range(0xAC00, 0xD7B0)
+# KOROAD admin codes expected for a 강남역 (Gangnam Station, Seoul) query.
+# Source: src/kosmos/tools/koroad/code_tables.py — SidoCode.SEOUL / GugunCode.SEOUL_GANGNAM.
+_SEOUL_SIDO_CODE = SidoCode.SEOUL  # 11
+_GANGNAM_GUGUN_CODE = GugunCode.SEOUL_GANGNAM  # 680
 
 
 class _InMemoryEventHandler(logging.Handler):
@@ -319,24 +325,23 @@ async def test_live_scenario1_from_natural_address(
     friendli_token: str,
     data_go_kr_api_key: str,
 ) -> None:
-    """E2E: natural Korean prompt yields a valid Scenario 1 answer (path-agnostic).
+    """E2E: "강남역 근처 사고 정보 알려줘" routes to Seoul/Gangnam admin codes.
 
-    K-EXAONE, trained by LG AI Research on a Korean-heavy corpus, has memorized
-    sido/gugun admin codes (e.g., SEOUL=11, GANGNAM=680) and frequently fills
-    ``koroad_accident_search`` arguments directly from the prompt without
-    invoking geocoding — an efficiency win (one fewer API round-trip, lower
-    latency, smaller external-failure surface) that is a feature of choosing a
-    Korean-domain LLM, not a defect.  This test therefore asserts the
-    user-observable contract, not a specific tool-call path:
+    Validates the geocoding-first discipline introduced by 019-phase1-hardening
+    (FR-001, FR-002, FR-011, SC-002).  Specific contracts asserted:
 
-      1. KOROAD is called at least once (accident data must come from the
-         authoritative source, never from LLM memory).
-      2. Final response is non-empty and contains at least one Hangul
-         character.
-      3. Observability captured ≥1 llm_call and ≥1 KOROAD tool_call event.
+      1. The first ``koroad_accident_search`` tool invocation carries
+         ``si_do = SidoCode.SEOUL`` (11) and ``gu_gun = GugunCode.SEOUL_GANGNAM``
+         (680) — the authoritative codes for Gangnam Station, Seoul.
+      2. A geocoding tool (``address_to_region``) is invoked BEFORE the first
+         ``koroad_accident_search`` call (FR-001: geocoding-first ordering).
+      3. The final Korean response references "강남" (not any other district).
+      4. Observability captured ≥1 llm_call and ≥1 KOROAD tool_call event.
 
-    Geocoding MAY or MAY NOT appear in the tool sequence depending on the
-    model's confidence in the admin codes; both paths are valid end states.
+    Failure mode this test guards against: the LLM filling ``gu_gun`` from
+    model memory and returning data for the wrong district (e.g., Jongno=110
+    instead of Gangnam=680) — the trust-breaking defect from Phase 1 live
+    validation documented in Epic #404.
     """
     event_logger = ObservabilityEventLogger()
     log_target = logging.getLogger("kosmos.events")
@@ -357,15 +362,50 @@ async def test_live_scenario1_from_natural_address(
         log_target.removeHandler(handler)
         log_target.setLevel(prior_level)
 
-    # ---- Tool sequence assertion (KOROAD required, geocoding optional) -----
+    # ---- Tool sequence assertion (KOROAD required) --------------------------
     tool_use_events = [e for e in events if e.type == "tool_use"]
     tool_names = [e.tool_name for e in tool_use_events]
-    koroad_indices = [i for i, name in enumerate(tool_names) if name == _KOROAD_TOOL_ID]
+    koroad_events = [e for e in tool_use_events if e.tool_name == _KOROAD_TOOL_ID]
+    geocoding_events = [e for e in tool_use_events if e.tool_name == _GEOCODING_TOOL_ID]
 
-    assert koroad_indices, (
+    assert koroad_events, (
         f"Expected ≥1 {_KOROAD_TOOL_ID} tool_use (accident data must come "
         f"from the authoritative source, not LLM memory), got none. "
         f"Observed tool_name sequence: {tool_names!r}"
+    )
+
+    # ---- Geocoding-first ordering check (FR-001) ----------------------------
+    # The system prompt's geocoding-first rule (Entity 5, data-model.md) requires
+    # that address_to_region is invoked BEFORE any koroad_accident_search call
+    # whenever the citizen's message names a location.  "강남역" names a location.
+    assert geocoding_events, (
+        f"Expected ≥1 {_GEOCODING_TOOL_ID} tool_use before {_KOROAD_TOOL_ID} "
+        f"(FR-001 geocoding-first rule), got none. "
+        f"Observed tool_name sequence: {tool_names!r}"
+    )
+    first_geocoding_idx = tool_names.index(_GEOCODING_TOOL_ID)
+    first_koroad_idx = tool_names.index(_KOROAD_TOOL_ID)
+    assert first_geocoding_idx < first_koroad_idx, (
+        f"Geocoding tool must be invoked BEFORE {_KOROAD_TOOL_ID} (FR-001). "
+        f"geocoding at position {first_geocoding_idx}, KOROAD at position {first_koroad_idx}. "
+        f"Observed tool_name sequence: {tool_names!r}"
+    )
+
+    # ---- Admin-code correctness on first KOROAD call (FR-011, SC-002) ------
+    # The prompt names "강남역" (Gangnam Station, Seoul).  The first invocation
+    # of koroad_accident_search MUST carry the Seoul/Gangnam admin code pair;
+    # any other pair means the LLM fabricated a code from memory.
+    first_koroad_args_raw = koroad_events[0].arguments or "{}"
+    first_koroad_args = json.loads(first_koroad_args_raw)
+    si_do = first_koroad_args.get("si_do")
+    gu_gun = first_koroad_args.get("gu_gun")
+    assert si_do == _SEOUL_SIDO_CODE, (
+        f"Expected si_do={_SEOUL_SIDO_CODE!r} (SidoCode.SEOUL) for 강남역 query, got {si_do!r}. "
+        f"First KOROAD call arguments: {first_koroad_args!r}"
+    )
+    assert gu_gun == _GANGNAM_GUGUN_CODE, (
+        f"Expected gu_gun={_GANGNAM_GUGUN_CODE!r} (GugunCode.SEOUL_GANGNAM) for 강남역 query, "
+        f"got {gu_gun!r}. First KOROAD call arguments: {first_koroad_args!r}"
     )
 
     # ---- Final-response assertions ----------------------------------------
@@ -377,6 +417,11 @@ async def test_live_scenario1_from_natural_address(
     has_hangul = any(ord(ch) in _HANGUL_RANGE for ch in final_response)
     assert has_hangul, (
         f"Final response must contain ≥1 Hangul character (U+AC00..U+D7AF), got {final_response!r}"
+    )
+    # The final answer must reference Gangnam (강남) — not any other Seoul district.
+    assert "강남" in final_response, (
+        f"Final response must reference '강남' (Gangnam) since the query asked about "
+        f"강남역. Got response: {final_response[:300]!r}"
     )
 
     # ---- Observability event-chain assertions -----------------------------
