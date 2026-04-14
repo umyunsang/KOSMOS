@@ -114,6 +114,10 @@ class SystemPromptAssembler:
         return (
             "When the citizen's message names a district, neighborhood, landmark, or address, "
             "invoke the geocoding tool before any tool that takes an administrative code. "
+            "Even when you recognize the landmark or believe you know its administrative code, "
+            "you MUST still call the geocoding tool first — "
+            "parametric codes are frequently wrong at the district (gu/gun) level "
+            "and will return data for the wrong district, misleading the citizen. "
             "Do not fill administrative region codes from memory; "
             "pass them only after a geocoding tool has produced them in this session. "
             "When the citizen's request matches a registered tool's purpose "
