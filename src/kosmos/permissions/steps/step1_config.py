@@ -48,8 +48,7 @@ def check_config(request: PermissionCheckRequest) -> PermissionStepResult:
     if tier == AccessTier.api_key:
         if not has_credential(request.tool_id):
             logger.warning(
-                "Step %d: api_key tier denied for tool %s — no credential configured "
-                "(checked %s)",
+                "Step %d: api_key tier denied for tool %s — no credential configured (checked %s)",
                 _STEP,
                 request.tool_id,
                 ", ".join(candidate_env_vars(request.tool_id)),

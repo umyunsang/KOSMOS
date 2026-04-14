@@ -54,28 +54,20 @@ class TestStep1ProviderAwareCredentialCheck:
     def test_kakao_tool_allows_with_kakao_key(self, make_permission_request, monkeypatch):
         _clear_all_kosmos_api_keys(monkeypatch)
         monkeypatch.setenv("KOSMOS_KAKAO_API_KEY", "kakao-value")
-        req = make_permission_request(
-            tool_id="address_to_region", access_tier=AccessTier.api_key
-        )
+        req = make_permission_request(tool_id="address_to_region", access_tier=AccessTier.api_key)
         result = check_config(req)
         assert result.decision == PermissionDecision.allow
 
-    def test_kakao_tool_denied_with_only_data_go_kr_key(
-        self, make_permission_request, monkeypatch
-    ):
+    def test_kakao_tool_denied_with_only_data_go_kr_key(self, make_permission_request, monkeypatch):
         """Regression: Kakao tool must not be satisfied by a data.go.kr key."""
         _clear_all_kosmos_api_keys(monkeypatch)
         monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", "data-only-value")
-        req = make_permission_request(
-            tool_id="address_to_region", access_tier=AccessTier.api_key
-        )
+        req = make_permission_request(tool_id="address_to_region", access_tier=AccessTier.api_key)
         result = check_config(req)
         assert result.decision == PermissionDecision.deny
         assert result.reason == "api_key_not_configured"
 
-    def test_data_go_kr_tool_allows_with_data_go_kr_key(
-        self, make_permission_request, monkeypatch
-    ):
+    def test_data_go_kr_tool_allows_with_data_go_kr_key(self, make_permission_request, monkeypatch):
         _clear_all_kosmos_api_keys(monkeypatch)
         monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", "data-value")
         req = make_permission_request(
@@ -84,9 +76,7 @@ class TestStep1ProviderAwareCredentialCheck:
         result = check_config(req)
         assert result.decision == PermissionDecision.allow
 
-    def test_data_go_kr_tool_denied_with_only_kakao_key(
-        self, make_permission_request, monkeypatch
-    ):
+    def test_data_go_kr_tool_denied_with_only_kakao_key(self, make_permission_request, monkeypatch):
         """Regression: data.go.kr tool must not be satisfied by a Kakao key."""
         _clear_all_kosmos_api_keys(monkeypatch)
         monkeypatch.setenv("KOSMOS_KAKAO_API_KEY", "kakao-only-value")
@@ -111,9 +101,7 @@ class TestStep1ProviderAwareCredentialCheck:
     def test_per_tool_override_satisfies(self, make_permission_request, monkeypatch):
         _clear_all_kosmos_api_keys(monkeypatch)
         monkeypatch.setenv("KOSMOS_ADDRESS_TO_REGION_API_KEY", "tool-override")
-        req = make_permission_request(
-            tool_id="address_to_region", access_tier=AccessTier.api_key
-        )
+        req = make_permission_request(tool_id="address_to_region", access_tier=AccessTier.api_key)
         result = check_config(req)
         assert result.decision == PermissionDecision.allow
 
@@ -121,9 +109,7 @@ class TestStep1ProviderAwareCredentialCheck:
         """Legacy ``KOSMOS_API_KEY`` is still accepted for any registered tool."""
         _clear_all_kosmos_api_keys(monkeypatch)
         monkeypatch.setenv("KOSMOS_API_KEY", "legacy-global")
-        req = make_permission_request(
-            tool_id="address_to_region", access_tier=AccessTier.api_key
-        )
+        req = make_permission_request(tool_id="address_to_region", access_tier=AccessTier.api_key)
         result = check_config(req)
         assert result.decision == PermissionDecision.allow
 

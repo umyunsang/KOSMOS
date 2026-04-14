@@ -198,9 +198,7 @@ class TestRuntimeWiring:
         # The pipeline and the tool executor's recovery layer must share
         # the *same* metrics + event logger instances.
         assert isinstance(pipeline._metrics, MetricsCollector)  # type: ignore[attr-defined]
-        assert isinstance(
-            pipeline._event_logger, ObservabilityEventLogger
-        )  # type: ignore[attr-defined]
+        assert isinstance(pipeline._event_logger, ObservabilityEventLogger)  # type: ignore[attr-defined]
         recovery = tool_exec._recovery_executor
         assert recovery._metrics is pipeline._metrics  # type: ignore[attr-defined]
         assert recovery._event_logger is pipeline._event_logger  # type: ignore[attr-defined]
