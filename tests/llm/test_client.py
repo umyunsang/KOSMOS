@@ -335,15 +335,21 @@ async def test_complete_tool_result_continuation(
 async def test_complete_budget_exhaustion(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """complete() raises BudgetExceededError once the session token budget is exceeded."""
-    # Set all KOSMOS_ vars then configure a very tight budget (30 tokens)
+    """complete() raises BudgetExceededError once the session token budget is exceeded.
+
+    Budget is set to 1500 tokens so the first call (1020 tokens with default
+    max_tokens=1024) passes the pre-flight check, and the second call exhausts it.
+    """
+    # Set all KOSMOS_ vars then configure a budget just large enough for one call
     for key in list(os.environ):
         if key.startswith("KOSMOS_"):
             monkeypatch.delenv(key, raising=False)
     monkeypatch.setenv("KOSMOS_FRIENDLI_TOKEN", "test-token-12345")
-    monkeypatch.setenv("KOSMOS_LLM_SESSION_BUDGET", "30")
+    # Budget: 1500 — first call uses 1020 (within limit), second call needs another
+    # 1024 (pre-flight) but only 480 remain, triggering BudgetExceededError.
+    monkeypatch.setenv("KOSMOS_LLM_SESSION_BUDGET", "1500")
 
-    # First response uses 20 tokens (within budget)
+    # First response uses 1020 tokens (within budget of 1500)
     first_response = {
         "id": "chatcmpl-budget-1",
         "object": "chat.completion",
@@ -355,10 +361,11 @@ async def test_complete_budget_exhaustion(
                 "finish_reason": "stop",
             }
         ],
-        "usage": {"prompt_tokens": 15, "completion_tokens": 5},
+        "usage": {"prompt_tokens": 1000, "completion_tokens": 20},
     }
 
-    # Second response uses 20 more tokens — pushes total to 40, exceeding budget of 30
+    # Second response would use more tokens — but the pre-flight check raises first
+    # because remaining budget (480) < default max_tokens (1024).
     second_response = {
         "id": "chatcmpl-budget-2",
         "object": "chat.completion",
@@ -370,7 +377,7 @@ async def test_complete_budget_exhaustion(
                 "finish_reason": "stop",
             }
         ],
-        "usage": {"prompt_tokens": 15, "completion_tokens": 5},
+        "usage": {"prompt_tokens": 1000, "completion_tokens": 20},
     }
 
     respx.post(CHAT_COMPLETIONS_URL).mock(
@@ -384,11 +391,11 @@ async def test_complete_budget_exhaustion(
 
     config = LLMClientConfig()
     async with LLMClient(config) as client:
-        # First call succeeds (20 tokens used, budget=30, still within limit)
+        # First call succeeds (1020 tokens used, budget=1500, still within limit)
         result = await client.complete(messages)
         assert result.content == "First response."
 
-        # Second call causes total=40 which exceeds budget=30 and raises at debit
+        # Second call: pre-flight checks max_tokens=1024 > remaining 480 → raises
         with pytest.raises(BudgetExceededError):
             await client.complete(messages)
 
