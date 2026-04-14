@@ -16,7 +16,6 @@ Required environment variables (validated by conftest fixtures):
 
 from __future__ import annotations
 
-import asyncio
 import json
 import logging
 from typing import Any
@@ -230,12 +229,9 @@ async def test_live_e2e_multi_turn_context(
             f"Turn 1 event types: {[e.type for e in turn1_events]}"
         )
 
-        # Pause between turns to avoid FriendliAI serverless rate limiting.
-        # K-EXAONE Serverless has aggressive per-minute rate limits.  Turn 1
-        # may have used multiple LLM iterations, and when this test runs after
-        # other live-suite tests the minute-bucket is already partially spent,
-        # so 60s is the empirically-needed cooldown to avoid 429s.
-        await asyncio.sleep(60)
+        # No fixed cooldown between turns: rate-limit handling (Retry-After-first
+        # backoff + session-level concurrency gate) absorbs any 429s from the
+        # FriendliAI Serverless per-minute bucket.  FR-012 / SC-004.
 
         # --- Turn 2: follow-up query with conversation history ---
         async for event in engine.run(_SCENARIO1_FOLLOWUP_QUERY):
