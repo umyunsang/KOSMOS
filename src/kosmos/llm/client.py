@@ -358,6 +358,24 @@ class LLMClient:
                         # Yield events; watch for mid-stream 429 envelopes (T016)
                         rate_limited_mid_stream = False
                         async for line in response.aiter_lines():
+                            if self._is_rate_limit_envelope(line):
+                                rate_limited_mid_stream = True
+                                delay = self._compute_rate_limit_delay(response, attempt, policy)
+                                _log_rate_limit_attempt(
+                                    attempt=attempt,
+                                    delay=delay,
+                                    retry_after_honored=(
+                                        self._has_retry_after(response)
+                                        and policy.respect_retry_after
+                                    ),
+                                )
+                                last_exc = LLMResponseError(
+                                    f"Rate limited (mid-stream SSE 429) on stream "
+                                    f"attempt {attempt + 1}",
+                                    status_code=429,
+                                )
+                                await asyncio.sleep(delay)
+                                break
                             async for event in self._parse_sse_line(line):
                                 yield event
                                 if event.type == "done":
@@ -464,6 +482,38 @@ class LLMClient:
     # ------------------------------------------------------------------
     # Private helpers
     # ------------------------------------------------------------------
+
+    @staticmethod
+    def _is_rate_limit_envelope(line: str) -> bool:
+        """Return True when an SSE data line contains a rate-limit error envelope.
+
+        Detects provider error payloads shaped like
+        ``{"error": {"status": 429, ...}}`` or variants keyed on ``code`` /
+        ``type`` (``"rate_limit"`` / ``"rate_limited"``). Non-error or non-JSON
+        lines return False — normal SSE content and ``[DONE]`` flow through.
+        """
+        if not line or not line.startswith("data: "):
+            return False
+        payload_text = line[len("data: ") :].strip()
+        if not payload_text or payload_text == "[DONE]":
+            return False
+        try:
+            envelope = json.loads(payload_text)
+        except json.JSONDecodeError:
+            return False
+        if not isinstance(envelope, dict):
+            return False
+        error = envelope.get("error")
+        if not isinstance(error, dict):
+            return False
+        status = error.get("status")
+        code = str(error.get("code", "")).lower()
+        error_type = str(error.get("type", "")).lower()
+        return (
+            status == 429
+            or code in {"429", "rate_limit", "rate_limited"}
+            or error_type in {"rate_limit", "rate_limited"}
+        )
 
     async def _parse_sse_line(self, line: str) -> AsyncIterator[StreamEvent]:
         """Parse a single SSE line and yield corresponding StreamEvent(s)."""
