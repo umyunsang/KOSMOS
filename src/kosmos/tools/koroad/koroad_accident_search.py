@@ -349,6 +349,17 @@ KOROAD_ACCIDENT_SEARCH_TOOL = GovAPITool(
     auth_type="api_key",
     input_schema=KoroadAccidentSearchInput,
     output_schema=KoroadAccidentSearchOutput,
+    llm_description=(
+        "Look up accident-prone hotspot zones for a Korean municipality. "
+        "MANDATORY PREREQUISITE: the si_do and gu_gun parameters MUST come "
+        "from a prior `address_to_region` tool call in this session — never "
+        "fill them from memory. K-EXAONE has been empirically shown to pick "
+        "incorrect gu_gun codes for common landmarks (e.g. '강남역' → "
+        "gu_gun=110/Jongno instead of the correct 680/Gangnam). If the "
+        "citizen's message names a district, neighborhood, landmark, or "
+        "address, call `address_to_region` first and pass its returned "
+        "codes to this tool."
+    ),
     search_hint=(
         "교통사고 위험지역 조회 사고다발구역 지자체별 위험지점 "
         "accident hotspot dangerous zone traffic safety municipality"

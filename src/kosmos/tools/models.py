@@ -64,6 +64,16 @@ class GovAPITool(BaseModel):
     is_core: bool = False
     """Whether the tool is included in the core prompt partition."""
 
+    llm_description: str | None = None
+    """Optional richer description shown to the LLM in the OpenAI tool definition.
+
+    When present, ``to_openai_tool()`` emits this string as the ``description``
+    field instead of ``name_ko``. Use this to communicate ordering prerequisites
+    or tool-selection hints that the LLM must see *before* deciding to call the
+    tool — field-level descriptions on the input schema are only seen after the
+    model has already picked this tool, which is too late for ordering rules.
+    """
+
     # ------------------------------------------------------------------
     # Validators
     # ------------------------------------------------------------------
@@ -111,12 +121,17 @@ class GovAPITool(BaseModel):
     # ------------------------------------------------------------------
 
     def to_openai_tool(self) -> dict[str, object]:
-        """Export as an OpenAI function-calling tool definition."""
+        """Export as an OpenAI function-calling tool definition.
+
+        Uses ``llm_description`` when set (richer ordering/prereq guidance),
+        falling back to ``name_ko`` otherwise.
+        """
+        description = self.llm_description or self.name_ko
         return {
             "type": "function",
             "function": {
                 "name": self.id,
-                "description": self.name_ko,
+                "description": description,
                 "parameters": self.input_schema.model_json_schema(),
             },
         }

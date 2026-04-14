@@ -200,6 +200,17 @@ ADDRESS_TO_REGION_TOOL = GovAPITool(
     auth_type="api_key",
     input_schema=AddressToRegionInput,
     output_schema=AddressToRegionOutput,
+    llm_description=(
+        "Convert a Korean address, landmark, or place name (e.g. '강남역', "
+        "'서울시 강남구', '종로 3가') to authoritative KOROAD si_do/gu_gun "
+        "administrative codes. REQUIRED PREREQUISITE: call this tool FIRST "
+        "whenever the citizen names any location before invoking "
+        "`koroad_accident_search` or any other tool that takes administrative "
+        "codes. Never guess si_do/gu_gun from memory — K-EXAONE has been "
+        "empirically shown to return incorrect gu_gun codes for area names "
+        "like '강남역' (guessed 110/Jongno instead of correct 680/Gangnam). "
+        "Pass only codes produced by this tool in the current session."
+    ),
     search_hint=(
         "주소 지역코드 변환 시도코드 구군코드 카카오 지오코딩 "
         "address region code geocoding sido gugun kakao location"
