@@ -129,6 +129,29 @@ class REPLLoop:
         # callers that don't need persistence)
         self._session_manager = session_manager
         self._metrics: MetricsCollector | None = metrics
+        # Push the placeholder session id into the engine's permission pipeline
+        # so the first turn is audited with *some* session id; _init_session()
+        # will overwrite it with the real one before any tool call runs.
+        self._sync_permission_session()
+
+    def _sync_permission_session(self) -> None:
+        """Propagate ``self._session_id`` into the engine's permission session.
+
+        Called whenever ``self._session_id`` is reassigned (new session,
+        resume, fresh REPL boot) so that audit logs and permission step
+        outputs carry the REPL's real session identifier.
+        """
+        set_session = getattr(self._engine, "set_permission_session", None)
+        if set_session is None:
+            return  # mock engine in tests without pipeline wiring
+        from kosmos.permissions.models import SessionContext  # noqa: PLC0415
+
+        existing = getattr(self._engine, "permission_session", None)
+        if existing is not None:
+            session = existing.model_copy(update={"session_id": self._session_id})
+        else:
+            session = SessionContext(session_id=self._session_id)
+        set_session(session)
 
     # ------------------------------------------------------------------
     # Public API
@@ -200,6 +223,7 @@ class REPLLoop:
                 if messages and engine_state is not None:
                     engine_state.messages.extend(messages)
                 self._session_id = self._resume_session_id
+                self._sync_permission_session()
                 self._console.print(f"[dim]세션 재개: {self._resume_session_id}[/dim]")
             except (FileNotFoundError, ValueError) as exc:
                 self._console.print(
@@ -208,9 +232,11 @@ class REPLLoop:
                 )
                 meta = await manager.new_session()
                 self._session_id = meta.session_id
+                self._sync_permission_session()
         else:
             meta = await manager.new_session()
             self._session_id = meta.session_id
+            self._sync_permission_session()
 
     # ------------------------------------------------------------------
     # Private methods
@@ -391,6 +417,7 @@ class REPLLoop:
                 self._session_id = str(uuid.uuid4())
         else:
             self._session_id = str(uuid.uuid4())
+        self._sync_permission_session()
         self._console.print(f"[dim]새 대화가 시작되었습니다. 세션 ID: {self._session_id}[/dim]")
 
     async def _cmd_save(self) -> None:
@@ -459,6 +486,7 @@ class REPLLoop:
             if messages and engine_state is not None:
                 engine_state.messages.extend(messages)
             self._session_id = session_id
+            self._sync_permission_session()
             self._total_input_tokens = 0
             self._total_output_tokens = 0
             self._renderer.reset()
