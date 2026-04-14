@@ -69,94 +69,6 @@ def _assemble_tool_calls(
     ]
 
 
-# Geocoding tools that accept a single required string field named "address".
-# When K-EXAONE emits whitespace/empty arguments (vLLM Hermes parser Korean
-# UTF-8 bug, PR vllm-project/vllm#10979), the address is salvaged verbatim
-# from the latest user message.
-_ADDRESS_SALVAGE_TOOLS: frozenset[str] = frozenset(
-    {"address_to_region", "address_to_grid"}
-)
-
-
-def _latest_user_text(snapshot: list[ChatMessage]) -> str:
-    """Return the text content of the most recent user message (trimmed)."""
-    for msg in reversed(snapshot):
-        if msg.role == "user" and msg.content:
-            return msg.content.strip()
-    return ""
-
-
-def _args_need_salvage(arguments: str) -> bool:
-    """True when arguments are missing/empty/whitespace for the address field.
-
-    Covers the observed K-EXAONE degenerate emissions:
-      - ``''`` (nothing streamed)
-      - ``'{}'``
-      - ``'{"address":  }'`` (invalid JSON — whitespace value)
-      - ``'{"address": ""}'``
-      - ``'{"address": "   "}'``
-    """
-    stripped = arguments.strip()
-    if not stripped:
-        return True
-    try:
-        parsed = json.loads(stripped)
-    except json.JSONDecodeError:
-        return True
-    if not isinstance(parsed, dict):
-        return True
-    value = parsed.get("address")
-    if value is None:
-        return True
-    if isinstance(value, str) and not value.strip():
-        return True
-    return False
-
-
-def _salvage_address_args(
-    tool_calls: list[ToolCall],
-    snapshot: list[ChatMessage],
-) -> list[ToolCall]:
-    """Rebuild degenerate geocoding tool_call arguments.
-
-    Workaround for K-EXAONE emitting whitespace-only Korean arguments via the
-    FriendliAI Serverless vLLM Hermes tool parser. When a known geocoding tool
-    is invoked with missing/empty address, a new ToolCall is constructed with
-    the verbatim location string from the most recent user message.
-
-    Returns a new list; ToolCall / FunctionCall are frozen models so salvage
-    cannot mutate in place.
-    """
-    user_text = _latest_user_text(snapshot)
-    if not user_text:
-        return tool_calls
-    repaired_calls: list[ToolCall] = []
-    for tc in tool_calls:
-        if tc.function.name not in _ADDRESS_SALVAGE_TOOLS:
-            repaired_calls.append(tc)
-            continue
-        if not _args_need_salvage(tc.function.arguments):
-            repaired_calls.append(tc)
-            continue
-        repaired_args = json.dumps({"address": user_text}, ensure_ascii=False)
-        logger.warning(
-            "Salvaged degenerate %s arguments (%r) with user text %r",
-            tc.function.name,
-            tc.function.arguments,
-            user_text,
-        )
-        repaired_calls.append(
-            ToolCall(
-                id=tc.id,
-                function=FunctionCall(
-                    name=tc.function.name,
-                    arguments=repaired_args,
-                ),
-            )
-        )
-    return repaired_calls
-
-
 # ---------------------------------------------------------------------------
 # Concurrent tool dispatch (partition-sort algorithm, R-004)
 # ---------------------------------------------------------------------------
@@ -402,10 +314,6 @@ async def query(ctx: QueryContext) -> AsyncIterator[QueryEvent]:  # noqa: C901
 
         # --- Assemble assistant message and append to history ---
         assembled_calls = _assemble_tool_calls(pending_calls) if pending_calls else []
-        # Salvage degenerate geocoding arguments before dispatch (K-EXAONE
-        # Korean UTF-8 whitespace-arg bug — see _salvage_address_args docstring).
-        if assembled_calls:
-            assembled_calls = _salvage_address_args(assembled_calls, snapshot)
         assistant_content = "".join(content_parts) or None
 
         ctx.state.messages.append(
