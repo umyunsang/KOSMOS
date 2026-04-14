@@ -10,7 +10,8 @@ from __future__ import annotations
 
 import asyncio
 import os
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Callable, Coroutine
+from typing import Any
 
 import httpx
 import pytest
@@ -60,6 +61,22 @@ def koroad_api_key() -> str:
     return _require_env("KOSMOS_DATA_GO_KR_API_KEY")
 
 
+@pytest.fixture(scope="session")
+def kakao_api_key() -> str:
+    """Return the Kakao REST API key from the environment.
+
+    Reads ``KOSMOS_KAKAO_API_KEY``.  Hard-fails with an exact message required
+    by FR-004 / Story 1 AS-8 if the variable is unset or empty.
+
+    Prerequisite: The Kakao Developers app must have the Local API activated
+    (앱 설정 → 제품 설정 → 카카오맵 → 사용 설정 → 상태 ON).
+    """
+    value = os.environ.get("KOSMOS_KAKAO_API_KEY", "").strip()
+    if not value:
+        pytest.fail("set KOSMOS_KAKAO_API_KEY to run live geocoding tests")
+    return value
+
+
 # ---------------------------------------------------------------------------
 # HTTP client fixtures
 # ---------------------------------------------------------------------------
@@ -74,6 +91,38 @@ async def _live_rate_limit_pause() -> AsyncIterator[None]:
     """
     yield
     await asyncio.sleep(10)
+
+
+# Minimum inter-call delay for the Kakao Local API free-tier quota (100k/day).
+# 200 ms × ~20 calls per test run is well within the daily budget.
+_KAKAO_MIN_INTER_CALL_DELAY_S = 0.2
+
+
+@pytest_asyncio.fixture
+async def kakao_rate_limit_delay() -> AsyncIterator[Callable[[], Coroutine[Any, Any, None]]]:
+    """Yield an async delay callable for use between consecutive Kakao API calls.
+
+    The Kakao Local API has a free-tier daily quota of 100,000 requests.
+    Inserting a 200 ms pause between calls within a single test keeps burst
+    rate low and prevents exhausting the quota during a full ``-m live`` run.
+
+    This fixture is NOT autouse — the global ``_live_rate_limit_pause`` already
+    adds a 10-second post-test cooldown.  Use this fixture explicitly inside
+    geocoding tests that make more than one Kakao call within a single test
+    body.
+
+    Usage::
+
+        async def test_foo(kakao_rate_limit_delay):
+            result1 = await search_address("query1")
+            await kakao_rate_limit_delay()
+            result2 = await search_address("query2")
+    """
+
+    async def _delay() -> None:
+        await asyncio.sleep(_KAKAO_MIN_INTER_CALL_DELAY_S)
+
+    yield _delay
 
 
 @pytest_asyncio.fixture
