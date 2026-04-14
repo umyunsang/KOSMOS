@@ -12,7 +12,6 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
-import re
 from collections.abc import AsyncIterator
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
@@ -78,34 +77,6 @@ _ADDRESS_SALVAGE_TOOLS: frozenset[str] = frozenset(
     {"address_to_region", "address_to_grid"}
 )
 
-# Tokens that terminate the location substring in a Korean user query.
-# When the salvage helper rebuilds an address, everything at and after the
-# first match is discarded so Kakao receives a clean place name.
-# Examples:
-#   "강남역 근처 사고 정보 알려줘" -> "강남역"
-#   "서귀포시 날씨 알려줘"         -> "서귀포시"
-#   "서울시 강남구 역삼동"         -> (no match) kept verbatim
-_ADDRESS_TERMINATOR_TOKENS: tuple[str, ...] = (
-    "근처",
-    "주변",
-    "인근",
-    "사고",
-    "교통",
-    "날씨",
-    "기상",
-    "예보",
-    "정보",
-    "상황",
-    "알려줘",
-    "알려주세요",
-    "검색",
-    "찾아",
-    "조회",
-)
-_ADDRESS_TERMINATOR_RE = re.compile(
-    r"\s+(?:" + "|".join(re.escape(t) for t in _ADDRESS_TERMINATOR_TOKENS) + r")\b"
-)
-
 
 def _latest_user_text(snapshot: list[ChatMessage]) -> str:
     """Return the text content of the most recent user message (trimmed)."""
@@ -113,27 +84,6 @@ def _latest_user_text(snapshot: list[ChatMessage]) -> str:
         if msg.role == "user" and msg.content:
             return msg.content.strip()
     return ""
-
-
-def _extract_place_name(user_text: str) -> str:
-    """Extract the leading place-name substring from a Korean user query.
-
-    K-EXAONE's degenerate whitespace-argument emissions (vllm-project/vllm#10979)
-    force us to rebuild the ``address`` field from the user message.  Passing
-    the entire sentence (``"강남역 근처 사고 정보 알려줘"``) to the Kakao Local
-    API returns zero results; we therefore truncate at the first interrogative
-    or topical token (``근처``, ``사고``, ``날씨``, …).
-
-    Whitespace-separated prefix tokens (``서울시 강남구 역삼동``) are kept as
-    long as none is a terminator, so canonical multi-part addresses survive.
-    Returns the original text when no terminator is found.
-    """
-    if not user_text:
-        return user_text
-    match = _ADDRESS_TERMINATOR_RE.search(user_text)
-    if not match:
-        return user_text.strip()
-    return user_text[: match.start()].strip()
 
 
 def _args_need_salvage(arguments: str) -> bool:
@@ -180,9 +130,6 @@ def _salvage_address_args(
     user_text = _latest_user_text(snapshot)
     if not user_text:
         return tool_calls
-    place_name = _extract_place_name(user_text)
-    if not place_name:
-        return tool_calls
     repaired_calls: list[ToolCall] = []
     for tc in tool_calls:
         if tc.function.name not in _ADDRESS_SALVAGE_TOOLS:
@@ -191,13 +138,11 @@ def _salvage_address_args(
         if not _args_need_salvage(tc.function.arguments):
             repaired_calls.append(tc)
             continue
-        repaired_args = json.dumps({"address": place_name}, ensure_ascii=False)
+        repaired_args = json.dumps({"address": user_text}, ensure_ascii=False)
         logger.warning(
-            "Salvaged degenerate %s arguments (%r) with place name %r "
-            "(from user text %r)",
+            "Salvaged degenerate %s arguments (%r) with user text %r",
             tc.function.name,
             tc.function.arguments,
-            place_name,
             user_text,
         )
         repaired_calls.append(
