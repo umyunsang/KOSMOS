@@ -130,7 +130,10 @@ async def _resolve(
     region2 = addr_block.region_2depth_name if addr_block else ""
 
     sido = region1_to_sido(region1) if region1 else None
-    gugun = region2_to_gugun(region2) if region2 else None
+    # Gugun lookup is province-aware: without a resolved sido the same
+    # district name (e.g. "중구") would ambiguously match multiple
+    # metropolitan cities, so fail closed with ``None``.
+    gugun = region2_to_gugun(region2, sido) if region2 else None
 
     try:
         lat = float(doc.y) if doc.y else None

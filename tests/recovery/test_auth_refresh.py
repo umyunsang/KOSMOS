@@ -230,3 +230,62 @@ async def test_403_still_maps_to_auth_failure() -> None:
     clf = DataGoKrErrorClassifier()
     result = clf.classify_response(403, "Forbidden")
     assert result.error_class == ErrorClass.AUTH_FAILURE
+
+
+# ---------------------------------------------------------------------------
+# Provider-aware credential resolution regressions
+# ---------------------------------------------------------------------------
+
+
+async def test_kakao_tool_refresh_uses_kakao_key(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Regression: Kakao-backed tools must discover KOSMOS_KAKAO_API_KEY."""
+    monkeypatch.delenv("KOSMOS_ADDRESS_TO_REGION_API_KEY", raising=False)
+    monkeypatch.delenv("KOSMOS_DATA_GO_KR_API_KEY", raising=False)
+    monkeypatch.delenv("KOSMOS_API_KEY", raising=False)
+    monkeypatch.setenv("KOSMOS_KAKAO_API_KEY", "kakao-key")
+
+    assert await attempt_auth_refresh("address_to_region") is True
+    assert get_credential("address_to_region") == "kakao-key"
+
+
+async def test_data_go_kr_tool_refresh_uses_data_go_kr_key(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Regression: KOROAD/KMA tools discover KOSMOS_DATA_GO_KR_API_KEY."""
+    monkeypatch.delenv("KOSMOS_KOROAD_ACCIDENT_SEARCH_API_KEY", raising=False)
+    monkeypatch.delenv("KOSMOS_KAKAO_API_KEY", raising=False)
+    monkeypatch.delenv("KOSMOS_API_KEY", raising=False)
+    monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", "data-key")
+
+    assert await attempt_auth_refresh("koroad_accident_search") is True
+    assert get_credential("koroad_accident_search") == "data-key"
+
+
+async def test_kakao_tool_rejects_data_go_kr_only_environment(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Regression: Kakao tool must NOT be satisfied by data.go.kr-only env.
+
+    Without a Kakao, per-tool, or legacy global key, the refresh has to
+    fail closed so the caller surfaces ``needs_authentication``.
+    """
+    monkeypatch.delenv("KOSMOS_ADDRESS_TO_REGION_API_KEY", raising=False)
+    monkeypatch.delenv("KOSMOS_KAKAO_API_KEY", raising=False)
+    monkeypatch.delenv("KOSMOS_API_KEY", raising=False)
+    monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", "data-only")
+
+    assert await attempt_auth_refresh("address_to_region") is False
+    assert get_credential("address_to_region") is None
+
+
+async def test_per_tool_override_wins_over_provider_var(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Per-tool override env var beats the provider-level key."""
+    monkeypatch.setenv("KOSMOS_ADDRESS_TO_REGION_API_KEY", "override")
+    monkeypatch.setenv("KOSMOS_KAKAO_API_KEY", "provider")
+    monkeypatch.delenv("KOSMOS_API_KEY", raising=False)
+
+    assert get_credential("address_to_region") == "override"

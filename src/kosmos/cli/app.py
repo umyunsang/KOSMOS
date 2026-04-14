@@ -113,19 +113,35 @@ def _run_list_sessions() -> None:
 def _run_repl(resume_session_id: str | None = None) -> None:
     """Initialise the full backend stack and run the REPL.
 
+    Wiring order (all share the same MetricsCollector / ObservabilityEventLogger):
+
+        MetricsCollector ──┐
+        EventLogger ───────┼──> RecoveryExecutor ──> ToolExecutor ──> QueryEngine
+                           │                                    │
+                           └──> PermissionPipeline ─────────────┘
+
+    The REPL later calls ``engine.set_permission_session`` so that the
+    permission session_id tracks the real REPL session rather than a
+    placeholder.
+
     All initialisation errors are caught and printed as user-friendly messages.
 
     Args:
         resume_session_id: Optional session UUID to resume on startup.
     """
-    from kosmos.context.builder import ContextBuilder
-    from kosmos.engine.engine import QueryEngine
-    from kosmos.llm.client import LLMClient
-    from kosmos.llm.errors import ConfigurationError
-    from kosmos.observability import MetricsCollector, ObservabilityEventLogger
-    from kosmos.tools.executor import ToolExecutor
-    from kosmos.tools.register_all import register_all_tools
-    from kosmos.tools.registry import ToolRegistry
+    import uuid  # noqa: PLC0415
+
+    from kosmos.context.builder import ContextBuilder  # noqa: PLC0415
+    from kosmos.engine.engine import QueryEngine  # noqa: PLC0415
+    from kosmos.llm.client import LLMClient  # noqa: PLC0415
+    from kosmos.llm.errors import ConfigurationError  # noqa: PLC0415
+    from kosmos.observability import MetricsCollector, ObservabilityEventLogger  # noqa: PLC0415
+    from kosmos.permissions.models import SessionContext  # noqa: PLC0415
+    from kosmos.permissions.pipeline import PermissionPipeline  # noqa: PLC0415
+    from kosmos.recovery.executor import RecoveryExecutor  # noqa: PLC0415
+    from kosmos.tools.executor import ToolExecutor  # noqa: PLC0415
+    from kosmos.tools.register_all import register_all_tools  # noqa: PLC0415
+    from kosmos.tools.registry import ToolRegistry  # noqa: PLC0415
 
     console = Console()
 
@@ -153,20 +169,44 @@ def _run_repl(resume_session_id: str | None = None) -> None:
         _stderr_console.print(f"[red]LLM 클라이언트 초기화 오류:[/red] {escape(str(exc))}")
         sys.exit(1)
 
-    # --- Initialise tool registry and executor ---
+    # --- Initialise recovery executor (shared; owns circuit breakers + cache) ---
+    recovery_executor = RecoveryExecutor(
+        metrics=metrics,
+        event_logger=event_logger,
+    )
+
+    # --- Initialise tool registry and executor (tool executor wires recovery) ---
     registry = ToolRegistry()
-    executor = ToolExecutor(registry, metrics=metrics, event_logger=event_logger)
+    executor = ToolExecutor(
+        registry,
+        recovery_executor=recovery_executor,
+        metrics=metrics,
+        event_logger=event_logger,
+    )
     register_all_tools(registry, executor)
+
+    # --- Initialise permission pipeline (shares metrics + event logger) ---
+    permission_pipeline = PermissionPipeline(
+        executor=executor,
+        registry=registry,
+        metrics=metrics,
+        event_logger=event_logger,
+    )
+
+    # --- Bootstrap a SessionContext; REPL updates it with the real session id ---
+    initial_session = SessionContext(session_id=str(uuid.uuid4()))
 
     # --- Initialise context builder ---
     context_builder = ContextBuilder(registry=registry)
 
-    # --- Initialise query engine ---
+    # --- Initialise query engine with pipeline + session injected ---
     engine = QueryEngine(
         llm_client=llm_client,
         tool_registry=registry,
         tool_executor=executor,
         context_builder=context_builder,
+        permission_pipeline=permission_pipeline,
+        permission_session=initial_session,
     )
 
     # --- Launch REPL ---
