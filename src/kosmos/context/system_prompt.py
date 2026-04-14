@@ -115,5 +115,9 @@ class SystemPromptAssembler:
             "When the citizen's message names a district, neighborhood, landmark, or address, "
             "invoke the geocoding tool before any tool that takes an administrative code. "
             "Do not fill administrative region codes from memory; "
-            "pass them only after a geocoding tool has produced them in this session."
+            "pass them only after a geocoding tool has produced them in this session. "
+            "When the citizen's request matches a registered tool's purpose "
+            "(accident statistics, weather observations, forecast data, etc.), "
+            "invoke that tool to fetch the authoritative record; "
+            "do not answer such factual queries from parametric memory."
         )
