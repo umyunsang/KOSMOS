@@ -120,9 +120,9 @@ class SystemPromptAssembler:
             "(accident statistics, weather observations, forecast data, etc.), "
             "invoke that tool to fetch the authoritative record; "
             "do not answer such factual queries from parametric memory. "
-            "Concrete example: for the user message \"강남역 근처 사고 정보 알려줘\", "
+            'Concrete example: for the user message "강남역 근처 사고 정보 알려줘", '
             "your FIRST tool call MUST be address_to_region with the JSON arguments "
-            "{\"address\": \"강남역\"} — extract the place name verbatim from the user "
+            '{"address": "강남역"} — extract the place name verbatim from the user '
             "message into the address field. Then use the returned si_do and gu_gun "
             "codes to call koroad_accident_search. Always use tools for location-based "
             "factual queries — even when you recognize the place name. "

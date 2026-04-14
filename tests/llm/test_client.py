@@ -514,9 +514,7 @@ async def test_complete_exponential_backoff_no_retry_after(
 
     # Monotonically non-decreasing (lower bound of attempt 1 >= upper bound of attempt 0
     # is too strict with jitter; we just check means are non-decreasing)
-    assert expected_1 >= expected_0, (
-        "Expected delays must be non-decreasing across attempts"
-    )
+    assert expected_1 >= expected_0, "Expected delays must be non-decreasing across attempts"
 
 
 # ---------------------------------------------------------------------------
@@ -530,6 +528,7 @@ async def test_complete_rate_limit_budget_exhausted(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """T010: max_attempts consecutive 429s → raises LLMResponseError with rate-limit tag."""
+
     async def _fake_sleep(delay: float) -> None:
         pass  # instant in tests
 
@@ -597,6 +596,7 @@ async def test_stream_mid_stream_429_aborts_and_retries(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """T011: mid-stream 429 envelope → iterator aborts, retries, yields full response."""
+
     async def _fake_sleep(delay: float) -> None:
         pass
 
@@ -644,7 +644,6 @@ async def test_stream_concurrent_calls_serialized(
     """T012: two concurrent stream() coroutines on same LLMClient serialize."""
     entry_times: list[float] = []
     exit_times: list[float] = []
-    entry_event = asyncio.Event()
 
     good_body = _build_sse_body_str(
         _delta_chunk("Hi"),

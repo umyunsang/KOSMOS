@@ -137,7 +137,8 @@ class TestCacheStability:
         assert full_prompt.startswith(prefix_only), (
             f"Assembled prompt does not start with the expected prefix.\n"
             f"Expected prefix (last 100 chars): ...{prefix_only[-100:]!r}\n"
-            f"Full prompt (first {len(prefix_only) + 50} chars): {full_prompt[:len(prefix_only) + 50]!r}"
+            f"Full prompt (first {len(prefix_only) + 50} chars): "
+            f"{full_prompt[: len(prefix_only) + 50]!r}"
         )
 
     def test_prefix_byte_identical_with_personal_data_section(self) -> None:
@@ -149,9 +150,10 @@ class TestCacheStability:
         prefix_only = _prefix_without_guidance(config)
 
         assert full_prompt.startswith(prefix_only), (
-            f"Assembled prompt (personal_data_warning=True) does not start with the expected prefix.\n"
+            f"Assembled prompt (personal_data_warning=True) does not start with "
+            f"the expected prefix.\n"
             f"Expected prefix ends with: ...{prefix_only[-100:]!r}\n"
-            f"Full prompt starts with: {full_prompt[:len(prefix_only) + 50]!r}"
+            f"Full prompt starts with: {full_prompt[: len(prefix_only) + 50]!r}"
         )
 
     def test_guidance_suffix_separated_by_double_newline(self) -> None:

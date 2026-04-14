@@ -33,7 +33,6 @@ from kosmos.llm.models import (
     ToolDefinition,
 )
 from kosmos.llm.retry import RetryPolicy as _ExponentialRetryPolicy
-from kosmos.llm.retry import retry_with_backoff
 from kosmos.llm.usage import UsageTracker
 
 if TYPE_CHECKING:
@@ -222,10 +221,13 @@ class LLMClient:
 
                 if response.status_code == 429:
                     delay = self._compute_rate_limit_delay(response, attempt, policy)
+                    retry_after_honored = (
+                        self._has_retry_after(response) and policy.respect_retry_after
+                    )
                     _log_rate_limit_attempt(
                         attempt=attempt,
                         delay=delay,
-                        retry_after_honored=self._has_retry_after(response) and policy.respect_retry_after,
+                        retry_after_honored=retry_after_honored,
                     )
                     await asyncio.sleep(delay)
                     last_exc = LLMResponseError(
@@ -243,6 +245,7 @@ class LLMClient:
                 raise
             except httpx.ConnectError as exc:
                 from kosmos.llm.errors import LLMConnectionError  # noqa: PLC0415
+
                 raise LLMConnectionError(f"Connection failed: {exc}") from exc
             except httpx.RequestError as exc:
                 raise StreamInterruptedError(f"Request failed: {exc}") from exc
@@ -313,7 +316,9 @@ class LLMClient:
         async for event in self._stream_with_retry(payload):
             yield event
 
-    async def _stream_with_retry(self, payload: dict[str, object]) -> AsyncIterator[StreamEvent]:
+    async def _stream_with_retry(  # noqa: C901
+        self, payload: dict[str, object]
+    ) -> AsyncIterator[StreamEvent]:
         """Execute stream() with Retry-After-first backoff loop (T015/T016).
 
         Acquires the session-level concurrency gate (T014) around each provider call.
@@ -326,7 +331,7 @@ class LLMClient:
 
         for attempt in range(policy.max_attempts):
             try:
-                async with self._semaphore:
+                async with self._semaphore:  # noqa: SIM117
                     async with self._client.stream(
                         "POST", "/chat/completions", json=payload
                     ) as response:
@@ -597,7 +602,7 @@ class LLMClient:
             1 - policy.jitter_ratio,
             1 + policy.jitter_ratio,
         )
-        return exp_delay * jitter_factor
+        return float(exp_delay * jitter_factor)
 
     @staticmethod
     async def _raise_for_status(response: httpx.Response) -> None:
