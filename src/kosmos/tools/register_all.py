@@ -19,15 +19,18 @@ def register_all_tools(registry: ToolRegistry, executor: ToolExecutor) -> None:
     """Register all available government API tool adapters.
 
     Registers the following tools in order:
-      1. koroad_accident_search — KOROAD accident hotspot search
-      2. kma_weather_alert_status — KMA weather alert status
-      3. kma_current_observation — KMA ultra-short-term current observation
-      4. kma_short_term_forecast — KMA short-term forecast (단기예보)
-      5. kma_ultra_short_term_forecast — KMA ultra-short-term forecast (초단기예보)
-      6. kma_pre_warning — KMA weather pre-warning list (기상예비특보목록)
-      7. road_risk_score — composite road risk score (fans out to all three)
-      8. address_to_region — Kakao geocoding → KOROAD region codes (시도/구군)
-      9. address_to_grid — Kakao geocoding → KMA grid coordinates (nx/ny)
+      1. resolve_location — MVP LLM core surface: location resolution (is_core=True)
+      2. lookup — MVP LLM core surface: adapter discovery + invocation (is_core=True)
+      3. koroad_accident_search — KOROAD accident hotspot search (by enum codes)
+      4. koroad_accident_hazard_search — KOROAD accident hazard search (by adm_cd)
+      5. kma_weather_alert_status — KMA weather alert status
+      6. kma_current_observation — KMA ultra-short-term current observation
+      7. kma_short_term_forecast — KMA short-term forecast (단기예보)
+      8. kma_ultra_short_term_forecast — KMA ultra-short-term forecast (초단기예보)
+      9. kma_pre_warning — KMA weather pre-warning list (기상예비특보목록)
+     10. road_risk_score — composite road risk score (fans out to all three)
+     11. address_to_region — Kakao geocoding → KOROAD region codes (시도/구군)
+     12. address_to_grid — Kakao geocoding → KMA grid coordinates (nx/ny)
 
     Args:
         registry: The central ToolRegistry to add tools to.
@@ -45,9 +48,15 @@ def register_all_tools(registry: ToolRegistry, executor: ToolExecutor) -> None:
     from kosmos.tools.kma.kma_short_term_forecast import register as reg_kma_stf
     from kosmos.tools.kma.kma_ultra_short_term_forecast import register as reg_kma_ustf
     from kosmos.tools.kma.kma_weather_alert_status import register as reg_kma_alert
+    from kosmos.tools.koroad.accident_hazard_search import register as reg_koroad_hazard
     from kosmos.tools.koroad.koroad_accident_search import register as reg_koroad
+    from kosmos.tools.mvp_surface import register_mvp_surface
+
+    # Register MVP LLM-visible core surface first (FR-001, SC-003)
+    register_mvp_surface(registry)
 
     reg_koroad(registry, executor)
+    reg_koroad_hazard(registry, executor)
     reg_kma_alert(registry, executor)
     reg_kma_obs(registry, executor)
     reg_kma_stf(registry, executor)

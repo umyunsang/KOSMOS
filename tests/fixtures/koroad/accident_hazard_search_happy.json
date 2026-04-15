@@ -1,0 +1,45 @@
+{
+  "resultCode": "00",
+  "resultMsg": "NORMAL SERVICE.",
+  "numOfRows": 10,
+  "pageNo": 1,
+  "totalCount": 2,
+  "items": {
+    "item": [
+      {
+        "spot_cd": "1168010800",
+        "spot_nm": "서울특별시 강남구 개포동 일대",
+        "sido_sgg_nm": "서울특별시 강남구",
+        "bjd_cd": "1168010800",
+        "occrrnc_cnt": 12,
+        "caslt_cnt": 15,
+        "dth_dnv_cnt": 1,
+        "se_dnv_cnt": 2,
+        "sl_dnv_cnt": 5,
+        "wnd_dnv_cnt": 7,
+        "la_crd": 37.479,
+        "lo_crd": 127.058,
+        "geom_json": null,
+        "afos_id": "2025119",
+        "afos_fid": "1168010800_001"
+      },
+      {
+        "spot_cd": "1168010200",
+        "spot_nm": "서울특별시 강남구 삼성동 일대",
+        "sido_sgg_nm": "서울특별시 강남구",
+        "bjd_cd": "1168010200",
+        "occrrnc_cnt": 9,
+        "caslt_cnt": 11,
+        "dth_dnv_cnt": 0,
+        "se_dnv_cnt": 1,
+        "sl_dnv_cnt": 4,
+        "wnd_dnv_cnt": 6,
+        "la_crd": 37.512,
+        "lo_crd": 127.063,
+        "geom_json": null,
+        "afos_id": "2025119",
+        "afos_fid": "1168010200_001"
+      }
+    ]
+  }
+}
