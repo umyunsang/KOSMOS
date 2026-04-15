@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ResolveLocationInput",
+  "description": "Input to the resolve_location tool. Converts a free-text place query into typed location identifiers.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["query"],
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "Free-text place query, Korean or English (e.g., '서울 강남구', 'Jongno-gu Seoul', '강남역')"
+    },
+    "want": {
+      "type": "string",
+      "enum": ["coords", "adm_cd", "coords_and_admcd", "road_address", "jibun_address", "poi", "all"],
+      "default": "coords_and_admcd",
+      "description": "Which identifier(s) to resolve. Default 'coords_and_admcd' returns a ResolveBundle with both lat/lon and 10-digit 법정동 code."
+    },
+    "near": {
+      "type": "array",
+      "items": {"type": "number"},
+      "minItems": 2,
+      "maxItems": 2,
+      "description": "[lat, lon] tiebreaker when the query is ambiguous (e.g., '강남' → 서울 강남구 vs 인천 남동구 강남동). Optional."
+    }
+  }
+}
