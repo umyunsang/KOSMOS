@@ -14,16 +14,22 @@ class TestToolRegistration:
     def test_registers_all_tools(self) -> None:
         """All tools are registered after calling register_all_tools.
 
-        Count updated for T027/T028: +3 new tools (resolve_location, lookup,
-        koroad_accident_hazard_search) over the previous 9.
+        Count updated for T049 (Epic #507): -2 tools (address_to_region,
+        address_to_grid removed; resolution now internal to resolve_location
+        via backend-only juso/sgis helpers).  Total: 10.
         """
         registry = ToolRegistry()
         executor = ToolExecutor(registry)
         register_all_tools(registry, executor)
-        assert len(registry) == 12
+        assert len(registry) == 10
 
     def test_tool_ids_present(self) -> None:
-        """Each expected tool_id is in the registry."""
+        """Each expected tool_id is in the registry.
+
+        Note: address_to_region and address_to_grid were removed in T049 (Epic
+        #507).  Administrative code and grid resolution are now backend-only
+        (juso/sgis helpers and latlon_to_lcc respectively).
+        """
         registry = ToolRegistry()
         executor = ToolExecutor(registry)
         register_all_tools(registry, executor)
@@ -37,8 +43,6 @@ class TestToolRegistration:
             "kma_weather_alert_status",
             "kma_current_observation",
             "road_risk_score",
-            "address_to_region",
-            "address_to_grid",
         }
         for tool_id in expected:
             assert tool_id in registry, f"{tool_id} not found in registry"
@@ -48,6 +52,8 @@ class TestToolRegistration:
 
         Note: resolve_location and lookup are core surface tools — they are
         handled directly by the orchestrator and do NOT have executor adapters.
+        Note: address_to_region and address_to_grid were removed in T049 (Epic
+        #507) — they are no longer LLM-visible tools.
         """
         registry = ToolRegistry()
         executor = ToolExecutor(registry)
@@ -58,8 +64,6 @@ class TestToolRegistration:
             "kma_weather_alert_status",
             "kma_current_observation",
             "road_risk_score",
-            "address_to_region",
-            "address_to_grid",
         }
         for tool_id in expected:
             assert tool_id in executor._adapters, f"No adapter for {tool_id}"
