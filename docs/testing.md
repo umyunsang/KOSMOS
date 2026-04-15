@@ -111,3 +111,7 @@ markers = ["live: hits real data.go.kr APIs, skipped by default"]
 ## Test data language
 
 Test values may include Korean strings when they represent real domain data a citizen would send (e.g., `"홍길동"`, `"부산광역시"`). Test names, docstrings, and assertion messages stay English per the source code language rule.
+
+## CI OTEL suppression
+
+CI sets `OTEL_SDK_DISABLED=true` at the job level (`jobs.test.env`) so no OTLP exporter, `BatchSpanProcessor`, or network activity is ever initialised during test runs (FR-009, SC-003).

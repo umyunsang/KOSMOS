@@ -33,6 +33,8 @@ jobs:
     name: Test (Python ${{ matrix.python-version }})
     needs: lint
     runs-on: ubuntu-latest
+    env:
+      OTEL_SDK_DISABLED: "true"
     strategy:
       fail-fast: false
       matrix:

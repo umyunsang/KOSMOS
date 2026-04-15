@@ -14,6 +14,9 @@ dependencies = [
     "typer>=0.24.1",
     "rich>=13.0",
     "prompt-toolkit>=3.0",
+    "opentelemetry-sdk>=1.25",
+    "opentelemetry-exporter-otlp-proto-http>=1.25",
+    "opentelemetry-semantic-conventions>=0.46b0",
 ]
 
 [project.scripts]

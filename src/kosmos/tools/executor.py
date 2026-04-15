@@ -14,8 +14,18 @@ import time
 from collections.abc import Awaitable, Callable
 from typing import TYPE_CHECKING, Any
 
+from opentelemetry import trace
+from opentelemetry.trace import Status, StatusCode
 from pydantic import BaseModel, ValidationError
 
+from kosmos.observability import (
+    ERROR_TYPE,
+    GEN_AI_OPERATION_NAME,
+    GEN_AI_TOOL_CALL_ID,
+    GEN_AI_TOOL_NAME,
+    GEN_AI_TOOL_TYPE,
+    filter_metadata,
+)
 from kosmos.tools.errors import ToolNotFoundError
 from kosmos.tools.models import ToolResult
 from kosmos.tools.registry import ToolRegistry
@@ -26,6 +36,8 @@ if TYPE_CHECKING:
     from kosmos.recovery.executor import RecoveryExecutor
 
 logger = logging.getLogger(__name__)
+
+_tracer = trace.get_tracer(__name__)
 
 AdapterFn = Callable[[BaseModel], Awaitable[dict[str, Any]]]
 
@@ -83,176 +95,205 @@ class ToolExecutor:
         self._adapters[tool_id] = adapter
         logger.debug("Registered adapter for tool: %s", tool_id)
 
-    async def dispatch(self, tool_name: str, arguments_json: str) -> ToolResult:  # noqa: C901
+    async def dispatch(  # noqa: C901
+        self,
+        tool_name: str,
+        arguments_json: str,
+        tool_call_id: str | None = None,
+    ) -> ToolResult:
         """Execute a tool call end-to-end.
 
         Args:
             tool_name: The tool identifier to look up in the registry.
             arguments_json: JSON string of the tool arguments.
+            tool_call_id: Optional LLM-assigned tool call identifier; when
+                provided it is attached to the OTel span as
+                ``gen_ai.tool.call.id`` (contract § Span 3).
 
         Returns:
             ToolResult with success=True and data on success, or
             success=False with error/error_type on any failure.
         """
-        dispatch_start = time.monotonic()
-        self._metrics_increment("tool.call_count", tool_name)
-        _final_result: ToolResult | None = None
+        with _tracer.start_as_current_span(f"execute_tool {tool_name}") as span:
+            span.set_attribute(GEN_AI_OPERATION_NAME, "execute_tool")
+            span.set_attribute(GEN_AI_TOOL_NAME, tool_name)
+            span.set_attribute(GEN_AI_TOOL_TYPE, "function")
+            if tool_call_id is not None:
+                span.set_attribute(GEN_AI_TOOL_CALL_ID, tool_call_id)
 
-        try:
-            # Step 1: Lookup tool
+            dispatch_start = time.monotonic()
+            self._metrics_increment("tool.call_count", tool_name)
+            _final_result: ToolResult | None = None
+
             try:
-                tool = self._registry.lookup(tool_name)
-            except ToolNotFoundError as exc:
-                logger.warning("Tool not found: %s", tool_name)
-                self._metrics_increment("tool.error_count", tool_name)
-                _final_result = ToolResult(
-                    tool_id=tool_name,
-                    success=False,
-                    error=str(exc),
-                    error_type="not_found",
-                )
-                return _final_result
-
-            # Step 2: Parse and validate input
-            try:
-                raw_args = json.loads(arguments_json)
-                validated_input = tool.input_schema.model_validate(raw_args)
-            except (TypeError, json.JSONDecodeError, ValidationError) as exc:
-                # Avoid logging the raw arguments — they may carry user PII
-                # (addresses, names, IDs). Log only length metadata here;
-                # the corrective-hint payload already surfaces the structural
-                # problem to the model.
-                _raw_len = len(arguments_json) if isinstance(arguments_json, str) else 0
-                logger.warning(
-                    "Input validation failed for tool %s: %s | raw_args_len=%d",
-                    tool_name,
-                    exc,
-                    _raw_len,
-                )
-                self._metrics_increment("tool.error_count", tool_name)
-                _final_result = ToolResult(
-                    tool_id=tool_name,
-                    success=False,
-                    error=str(exc),
-                    error_type="validation",
-                )
-                return _final_result
-
-            # Step 3: Verify adapter exists before consuming a rate-limit slot
-            adapter = self._adapters.get(tool_name)
-            if adapter is None:
-                logger.warning("No adapter registered for tool: %s", tool_name)
-                self._metrics_increment("tool.error_count", tool_name)
-                _final_result = ToolResult(
-                    tool_id=tool_name,
-                    success=False,
-                    error=f"No adapter registered for tool {tool_name!r}",
-                    error_type="execution",
-                )
-                return _final_result
-
-            # Step 4/5: Execute adapter with rate limiting + optional recovery.
-            #
-            # Rate-limit check runs first to reject early when over quota.
-            # ``record()`` is deferred to just before the actual adapter call so
-            # that RecoveryExecutor short-circuits (cache hit, circuit-open) do
-            # NOT consume a rate-limit slot.
-            rate_limiter = self._registry.get_rate_limiter(tool_name)
-            if not rate_limiter.check():
-                logger.warning("Rate limit exceeded for tool: %s", tool_name)
-                self._metrics_increment("tool.error_count", tool_name)
-                _final_result = ToolResult(
-                    tool_id=tool_name,
-                    success=False,
-                    error=f"Rate limit exceeded for tool {tool_name!r}",
-                    error_type="rate_limit",
-                )
-                return _final_result
-
-            if self._recovery_executor is not None:
-                # Pass rate_limiter to RecoveryExecutor so record() is called
-                # only when the adapter is actually invoked (not on cache hit
-                # or circuit-open short-circuit).
-                recovery_result = await self._recovery_executor.execute(
-                    tool,
-                    adapter,
-                    validated_input,
-                    is_foreground=True,
-                    rate_limiter=rate_limiter,
-                )
-                tool_result = recovery_result.tool_result
-                if not tool_result.success:
-                    self._metrics_increment("tool.error_count", tool_name)
-                    self._metrics_observe_duration(
-                        "tool.duration_ms", tool_name, (time.monotonic() - dispatch_start) * 1000
-                    )
-                    _final_result = tool_result
-                    return _final_result
-                result_dict = dict(tool_result.data or {})
-            else:
-                rate_limiter.record()
+                # Step 1: Lookup tool
                 try:
-                    result_dict = await adapter(validated_input)
-                except Exception as exc:
-                    logger.exception("Adapter execution failed for tool %s: %s", tool_name, exc)
+                    tool = self._registry.lookup(tool_name)
+                except ToolNotFoundError as exc:
+                    logger.warning("Tool not found: %s", tool_name)
+                    self._metrics_increment("tool.error_count", tool_name)
+                    _final_result = ToolResult(
+                        tool_id=tool_name,
+                        success=False,
+                        error=str(exc),
+                        error_type="not_found",
+                    )
+                    return _final_result
+
+                # Step 2: Parse and validate input
+                try:
+                    raw_args = json.loads(arguments_json)
+                    validated_input = tool.input_schema.model_validate(raw_args)
+                except (TypeError, json.JSONDecodeError, ValidationError) as exc:
+                    # Avoid logging the raw arguments — they may carry user PII
+                    # (addresses, names, IDs). Log only length metadata here;
+                    # the corrective-hint payload already surfaces the structural
+                    # problem to the model.
+                    _raw_len = len(arguments_json) if isinstance(arguments_json, str) else 0
+                    logger.warning(
+                        "Input validation failed for tool %s: %s | raw_args_len=%d",
+                        tool_name,
+                        exc,
+                        _raw_len,
+                    )
+                    self._metrics_increment("tool.error_count", tool_name)
+                    _final_result = ToolResult(
+                        tool_id=tool_name,
+                        success=False,
+                        error=str(exc),
+                        error_type="validation",
+                    )
+                    return _final_result
+
+                # Step 3: Verify adapter exists before consuming a rate-limit slot
+                adapter = self._adapters.get(tool_name)
+                if adapter is None:
+                    logger.warning("No adapter registered for tool: %s", tool_name)
+                    self._metrics_increment("tool.error_count", tool_name)
+                    _final_result = ToolResult(
+                        tool_id=tool_name,
+                        success=False,
+                        error=f"No adapter registered for tool {tool_name!r}",
+                        error_type="execution",
+                    )
+                    return _final_result
+
+                # Step 4/5: Execute adapter with rate limiting + optional recovery.
+                #
+                # Rate-limit check runs first to reject early when over quota.
+                # ``record()`` is deferred to just before the actual adapter call so
+                # that RecoveryExecutor short-circuits (cache hit, circuit-open) do
+                # NOT consume a rate-limit slot.
+                rate_limiter = self._registry.get_rate_limiter(tool_name)
+                if not rate_limiter.check():
+                    logger.warning("Rate limit exceeded for tool: %s", tool_name)
+                    self._metrics_increment("tool.error_count", tool_name)
+                    _final_result = ToolResult(
+                        tool_id=tool_name,
+                        success=False,
+                        error=f"Rate limit exceeded for tool {tool_name!r}",
+                        error_type="rate_limit",
+                    )
+                    return _final_result
+
+                if self._recovery_executor is not None:
+                    # Pass rate_limiter to RecoveryExecutor so record() is called
+                    # only when the adapter is actually invoked (not on cache hit
+                    # or circuit-open short-circuit).
+                    recovery_result = await self._recovery_executor.execute(
+                        tool,
+                        adapter,
+                        validated_input,
+                        is_foreground=True,
+                        rate_limiter=rate_limiter,
+                    )
+                    tool_result = recovery_result.tool_result
+                    if not tool_result.success:
+                        self._metrics_increment("tool.error_count", tool_name)
+                        self._metrics_observe_duration(
+                            "tool.duration_ms",
+                            tool_name,
+                            (time.monotonic() - dispatch_start) * 1000,
+                        )
+                        _final_result = tool_result
+                        return _final_result
+                    result_dict = dict(tool_result.data or {})
+                else:
+                    rate_limiter.record()
+                    try:
+                        result_dict = await adapter(validated_input)
+                    except Exception as exc:
+                        logger.exception("Adapter execution failed for tool %s: %s", tool_name, exc)
+                        self._metrics_increment("tool.error_count", tool_name)
+                        self._metrics_observe_duration(
+                            "tool.duration_ms",
+                            tool_name,
+                            (time.monotonic() - dispatch_start) * 1000,
+                        )
+                        _final_result = ToolResult(
+                            tool_id=tool_name,
+                            success=False,
+                            error=str(exc),
+                            error_type="execution",
+                        )
+                        return _final_result
+
+                # Step 6: Validate output
+                try:
+                    validated_output = tool.output_schema.model_validate(result_dict)
+                except ValidationError as exc:
+                    logger.warning("Output schema mismatch for tool %s: %s", tool_name, exc)
                     self._metrics_increment("tool.error_count", tool_name)
                     self._metrics_observe_duration(
-                        "tool.duration_ms", tool_name, (time.monotonic() - dispatch_start) * 1000
+                        "tool.duration_ms",
+                        tool_name,
+                        (time.monotonic() - dispatch_start) * 1000,
                     )
                     _final_result = ToolResult(
                         tool_id=tool_name,
                         success=False,
                         error=str(exc),
-                        error_type="execution",
+                        error_type="schema_mismatch",
                     )
                     return _final_result
 
-            # Step 6: Validate output
-            try:
-                validated_output = tool.output_schema.model_validate(result_dict)
-            except ValidationError as exc:
-                logger.warning("Output schema mismatch for tool %s: %s", tool_name, exc)
-                self._metrics_increment("tool.error_count", tool_name)
+                # Step 7: Return success
+                logger.info("Tool dispatch succeeded: %s", tool_name)
+                self._metrics_increment("tool.success_count", tool_name)
                 self._metrics_observe_duration(
                     "tool.duration_ms", tool_name, (time.monotonic() - dispatch_start) * 1000
                 )
                 _final_result = ToolResult(
                     tool_id=tool_name,
-                    success=False,
-                    error=str(exc),
-                    error_type="schema_mismatch",
+                    success=True,
+                    data=validated_output.model_dump(),
                 )
                 return _final_result
 
-            # Step 7: Return success
-            logger.info("Tool dispatch succeeded: %s", tool_name)
-            self._metrics_increment("tool.success_count", tool_name)
-            self._metrics_observe_duration(
-                "tool.duration_ms", tool_name, (time.monotonic() - dispatch_start) * 1000
-            )
-            _final_result = ToolResult(
-                tool_id=tool_name,
-                success=True,
-                data=validated_output.model_dump(),
-            )
-            return _final_result
+            except Exception as exc:
+                # Catch unexpected exceptions so dispatch() never raises and the
+                # finally block can still emit the tool_call event (AC-A6).
+                _final_result = self._handle_unexpected_error(tool_name, exc)
+                return _final_result
 
-        except Exception as exc:
-            # Catch unexpected exceptions so dispatch() never raises and the
-            # finally block can still emit the tool_call event (AC-A6).
-            _final_result = self._handle_unexpected_error(tool_name, exc)
-            return _final_result
+            finally:
+                # Map ToolResult.success=False → OTel ERROR status (contract § Span 3).
+                if _final_result is not None and not _final_result.success:
+                    span.set_status(Status(StatusCode.ERROR))
+                    if _final_result.error_type is not None:
+                        filtered = filter_metadata({"error_class": _final_result.error_type})
+                        if "error_class" in filtered:
+                            span.set_attribute(ERROR_TYPE, str(filtered["error_class"]))
 
-        finally:
-            # Emit structured tool_call event (AC-A6).
-            if _final_result is not None:
-                _duration_ms = (time.monotonic() - dispatch_start) * 1000
-                self._event_emit_tool_call(
-                    tool_name=tool_name,
-                    success=_final_result.success,
-                    duration_ms=_duration_ms,
-                    error_type=_final_result.error_type,
-                )
+                # Emit structured tool_call event (AC-A6).
+                if _final_result is not None:
+                    _duration_ms = (time.monotonic() - dispatch_start) * 1000
+                    self._event_emit_tool_call(
+                        tool_name=tool_name,
+                        success=_final_result.success,
+                        duration_ms=_duration_ms,
+                        error_type=_final_result.error_type,
+                    )
 
     # ------------------------------------------------------------------
     # Private metrics helpers (fail-safe: never raise)

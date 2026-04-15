@@ -16,12 +16,22 @@ from collections.abc import AsyncIterator
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
+from opentelemetry import context as _otel_context
+from opentelemetry import trace
+from opentelemetry.trace import Status, StatusCode
+
 from kosmos.engine.events import QueryEvent, StopReason
 from kosmos.engine.models import QueryContext
 from kosmos.engine.preprocessing import PreprocessingPipeline
 from kosmos.engine.tokens import estimate_tokens
 from kosmos.llm.errors import BudgetExceededError, StreamInterruptedError
 from kosmos.llm.models import ChatMessage, FunctionCall, ToolCall, ToolDefinition
+from kosmos.observability import (
+    ERROR_TYPE,
+    GEN_AI_AGENT_NAME,
+    GEN_AI_CONVERSATION_ID,
+    GEN_AI_OPERATION_NAME,
+)
 from kosmos.tools.errors import ToolNotFoundError
 from kosmos.tools.executor import ToolExecutor
 from kosmos.tools.models import ToolResult
@@ -32,6 +42,8 @@ if TYPE_CHECKING:
     from kosmos.permissions.pipeline import PermissionPipeline
 
 logger = logging.getLogger(__name__)
+
+_tracer = trace.get_tracer(__name__)
 
 
 # ---------------------------------------------------------------------------
@@ -198,6 +210,52 @@ async def query(ctx: QueryContext) -> AsyncIterator[QueryEvent]:  # noqa: C901
 
     Yields:
         QueryEvent stream as described above.
+    """
+    # Open the parent OTel span manually (not via context manager) so that the
+    # span lifetime covers the entire async-generator consumption, including
+    # every yield point.  A context-manager approach would close the span at the
+    # first ``yield``, which is incorrect for async generators.
+    span = _tracer.start_span("invoke_agent kosmos-query")
+
+    # Required attributes (contracts § Span 1)
+    span.set_attribute(GEN_AI_OPERATION_NAME, "invoke_agent")
+    span.set_attribute(GEN_AI_AGENT_NAME, "kosmos-query")
+
+    # Conditional attribute: conversation ID — only when session_context is present.
+    # FR-011: do NOT include user_message/query_text (PII).  session_id is a
+    # random UUID and is not personal data under PIPA.
+    if ctx.session_context is not None:
+        span.set_attribute(GEN_AI_CONVERSATION_ID, str(ctx.session_context.session_id))
+
+    # Attach the span as the current span in this asyncio context so that all
+    # child coroutines (LLM client, tool executor) inherit the parent via
+    # contextvars propagation.  Using context_api.attach/detach rather than
+    # start_as_current_span avoids premature span closure at the first ``yield``,
+    # which is the central problem with async generators and context managers.
+    ctx_with_span = trace.set_span_in_context(span)
+    token = _otel_context.attach(ctx_with_span)
+
+    try:
+        async for event in _query_inner(ctx):
+            yield event
+    except Exception as exc:
+        # Map exception → ERROR status per contracts § Span 1 status mapping.
+        span.set_status(Status(StatusCode.ERROR))
+        span.record_exception(exc)
+        span.set_attribute(ERROR_TYPE, exc.__class__.__name__)
+        raise
+    finally:
+        # Detach then close span — always, regardless of normal exit, exception,
+        # or mid-stream generator abandonment (generator.close() / .throw()).
+        _otel_context.detach(token)
+        span.end()
+
+
+async def _query_inner(ctx: QueryContext) -> AsyncIterator[QueryEvent]:  # noqa: C901
+    """Inner async generator: core query loop without span management.
+
+    Separated so that ``query()`` can manage the OTel span lifetime across the
+    full generator consumption while keeping the loop logic self-contained.
     """
     iteration = 0
     stream_interrupted_count = 0

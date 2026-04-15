@@ -24,6 +24,8 @@ This project's agent instructions live in [`AGENTS.md`](./AGENTS.md). Read that 
 - N/A (test-only; observability snapshots are in-memory test state) (018-phase1-live-extension)
 - Python 3.12+ + `httpx >=0.27` (async HTTP + streaming 429 detection), `pydantic >=2.0` (tool I/O schemas with `Field(description=...)` exposed as JSON schema to the LLM), `pytest` + `pytest-asyncio` (unit + `@pytest.mark.live` gated E2E). No new runtime dependencies introduced. (019-phase1-hardening)
 - N/A (no persistent state; rate-limit retry counters and semaphore live in `LLMClient` instance memory for the session's lifetime). (019-phase1-hardening)
+- Python 3.12+ + `httpx>=0.27` (async HTTP, 기존), `pydantic>=2.13` (모델, 기존), `opentelemetry-sdk` (신규), `opentelemetry-exporter-otlp-proto-http` (신규), `opentelemetry-semantic-conventions` (신규, GenAI v1.40 experimental opt-in) (021-observability-otel-genai)
+- N/A (span 메모리 버퍼 + OTLP 전송, 로컬 Langfuse는 Docker 스택의 Postgres/ClickHouse/MinIO가 담당) (021-observability-otel-genai)
 
 ## Recent Changes
 - 019-phase1-hardening: LLM 429 resilience (Retry-After + exponential backoff + per-session semaphore) and KOROAD tool-input discipline (Field descriptions + session guidance)
