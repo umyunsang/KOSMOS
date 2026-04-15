@@ -1,0 +1,33 @@
+[
+  {
+    "_provenance": "Synthesized from official Korean administrative boundary code list (행정표준코드관리시스템, https://www.code.go.kr). adm_cd values cross-verified with Kakao Local API documentation examples. The 10-digit codes follow the BGO 행정동 numbering scheme. No live API keys available in CI.",
+    "query": "서울특별시 강남구 테헤란로 152",
+    "adm_cd": "1168000000",
+    "level": "sigungu",
+    "source": "juso"
+  },
+  {
+    "query": "부산광역시 해운대구 해운대해변로 264",
+    "adm_cd": "2635000000",
+    "level": "sigungu",
+    "source": "juso"
+  },
+  {
+    "query": "대구광역시 중구 동성로",
+    "adm_cd": "2711000000",
+    "level": "sigungu",
+    "source": "juso"
+  },
+  {
+    "query": "인천광역시 연수구 송도동",
+    "adm_cd": "2818500000",
+    "level": "sigungu",
+    "source": "juso"
+  },
+  {
+    "query": "제주특별자치도 제주시 연동",
+    "adm_cd": "5011000000",
+    "level": "sigungu",
+    "source": "juso"
+  }
+]
