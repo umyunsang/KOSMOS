@@ -1,0 +1,6 @@
+# 30-query BM25 retrieval evaluation set.
+# Schema per entry:
+#   query: str         # Natural-language Korean or English query
+#   expected_tool_id: str  # The adapter that should rank top-K
+#   notes: str (optional)  # Rationale for the expected match
+# Populated in T038.

@@ -17,6 +17,8 @@ dependencies = [
     "opentelemetry-sdk>=1.25",
     "opentelemetry-exporter-otlp-proto-http>=1.25",
     "opentelemetry-semantic-conventions>=0.46b0",
+    "rank-bm25>=0.2.2",
+    "kiwipiepy>=0.17",
 ]
 
 [project.scripts]
