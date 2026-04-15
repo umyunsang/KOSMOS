@@ -13,7 +13,7 @@
 [![Code of Conduct](https://img.shields.io/badge/Contributor%20Covenant-2.1-purple.svg)](CODE_OF_CONDUCT.md)
 [![GitHub Discussions](https://img.shields.io/badge/discussions-join-blueviolet)](https://github.com/umyunsang/KOSMOS/discussions)
 
-A conversational national-infrastructure AI agent platform that orchestrates Korean public OpenAPIs (data.go.kr) through a multi-agent architecture inspired by Claude Code's internal patterns, powered by LG AI Research's K-EXAONE.
+A conversational multi-agent harness that orchestrates data.go.kr's 5,000+ public APIs around LG AI Research's K-EXAONE through a Claude Code-style tool loop.
 
 > Academic R&D project. Not affiliated with Anthropic, LG AI Research, or the Korean government.
 
