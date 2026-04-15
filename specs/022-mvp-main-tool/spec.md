@@ -217,16 +217,16 @@ The `GovAPITool` registration contract is frozen for this epic: every adapter de
 | Item | Reason for Deferral | Target Epic/Phase | Tracking Issue |
 |------|---------------------|-------------------|----------------|
 | Full Layer 3 permission gauntlet (7-step pipeline, session identity, consent ledger) | MVP only needs the `auth_required` short-circuit interface; the full gauntlet is a separate epic per `docs/vision.md § Layer 3` | Layer 3 Permission Pipeline epic | #16 |
-| NMC freshness SLO enforcement (`stale_data` reason + `hvidate` check) | Requires the Layer 3 gate to be lifted first; documented now for continuity | NMC live-data enablement epic | NEEDS TRACKING |
-| Retry matrix for upstream 5xx / transient failures | MVP wraps errors but does not retry; retry policy is part of Error Recovery layer | Layer 6 Error Recovery epic | NEEDS TRACKING |
-| Scenario graph / multi-turn planning | Scenario-level orchestration is a separate layer above the two-tool surface | Scenario Graph / Agent Swarm epic | NEEDS TRACKING |
-| Agent Swarm / orchestrator-workers composition | Depends on stable two-tool facade landing first | Layer 4 Agent Swarms epic | NEEDS TRACKING |
-| Prompt-cache instrumentation for repeated `resolve_location` queries | Caching is intentionally disabled (cache_ttl_seconds=0 fail-closed default); caching strategy is a separate concern | Context Assembly / cache epic | NEEDS TRACKING |
-| TUI surface for the two-tool flow | TUI (Ink + Bun) is Phase 2+ per `docs/vision.md`; MVP ships headless | TUI Phase 2 epic | NEEDS TRACKING |
-| Additional adapters beyond the 4 seeds (air quality, public holidays, etc.) | Seed set proves the registration contract; expansion happens after eval gate is green | Adapter expansion epic | NEEDS TRACKING |
-| OpenTelemetry GenAI spans on the two-tool surface | Spec 021 already observability-ready; integration is additive and non-blocking | Observability integration epic | NEEDS TRACKING |
-| `parallel_safe` parallelization of candidate adapters in search mode | Current search only returns candidates for the model to pick from; true parallel fan-out is a future optimization | Parallelization epic | NEEDS TRACKING |
-| Full internationalization of `search_hint` beyond ko+en | Bilingual is sufficient for MVP target users (Korean citizens) | I18n epic | NEEDS TRACKING |
-| Rate-limit orchestration beyond per-adapter `rate_limit_per_minute` (account-wide budget) | Per-adapter quota is sufficient for MVP; account-wide budget is part of Error Recovery | Layer 6 Error Recovery epic | NEEDS TRACKING |
-| Write-capable adapters (POST endpoints on `data.go.kr`) | All four seed adapters are read-only; write paths need additional identity-verification wiring | Post-Layer-3 write-path epic | NEEDS TRACKING |
-| Tokenizer replacement / alternative retrieval backends (dense embeddings) | BM25 + kiwipiepy is the MVP retrieval baseline per Q2 decision; dense retrieval is optimization | Retrieval quality epic | NEEDS TRACKING |
+| NMC freshness SLO enforcement (`stale_data` reason + `hvidate` check) | Requires the Layer 3 gate to be lifted first; documented now for continuity | NMC live-data enablement epic | #573 |
+| Retry matrix for upstream 5xx / transient failures | MVP wraps errors but does not retry; retry policy is part of Error Recovery layer | Layer 6 Error Recovery epic | #574 |
+| Scenario graph / multi-turn planning | Scenario-level orchestration is a separate layer above the two-tool surface | Scenario Graph / Agent Swarm epic | #575 |
+| Agent Swarm / orchestrator-workers composition | Depends on stable two-tool facade landing first | Layer 4 Agent Swarms epic | #576 |
+| Prompt-cache instrumentation for repeated `resolve_location` queries | Caching is intentionally disabled (cache_ttl_seconds=0 fail-closed default); caching strategy is a separate concern | Context Assembly / cache epic | #577 |
+| TUI surface for the two-tool flow | TUI (Ink + Bun) is Phase 2+ per `docs/vision.md`; MVP ships headless | TUI Phase 2 epic | #578 |
+| Additional adapters beyond the 4 seeds (air quality, public holidays, etc.) | Seed set proves the registration contract; expansion happens after eval gate is green | Adapter expansion epic | #579 |
+| OpenTelemetry GenAI spans on the two-tool surface | Spec 021 already observability-ready; integration is additive and non-blocking | Observability integration epic | #580 |
+| `parallel_safe` parallelization of candidate adapters in search mode | Current search only returns candidates for the model to pick from; true parallel fan-out is a future optimization | Parallelization epic | #581 |
+| Full internationalization of `search_hint` beyond ko+en | Bilingual is sufficient for MVP target users (Korean citizens) | I18n epic | #582 |
+| Rate-limit orchestration beyond per-adapter `rate_limit_per_minute` (account-wide budget) | Per-adapter quota is sufficient for MVP; account-wide budget is part of Error Recovery | Layer 6 Error Recovery epic | #583 |
+| Write-capable adapters (POST endpoints on `data.go.kr`) | All four seed adapters are read-only; write paths need additional identity-verification wiring | Post-Layer-3 write-path epic | #584 |
+| Tokenizer replacement / alternative retrieval backends (dense embeddings) | BM25 + kiwipiepy is the MVP retrieval baseline per Q2 decision; dense retrieval is optimization | Retrieval quality epic | #585 |
