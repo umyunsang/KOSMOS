@@ -1,0 +1,57 @@
+{
+  "_provenance": "Synthesized from published HIRA getHospBasisList API docs (OpenAPI v2.0, B551182/hospInfoServicev2). Field names, envelope shape, and resultCode semantics sourced from HIRA hospital-info guide v2 (research/data/hira/). Coordinate values represent real Seoul locations; ykiho identifiers are representative examples in the documented format. Captured: 2026-04-16.",
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL SERVICE."
+    },
+    "body": {
+      "totalCount": 3,
+      "pageNo": 1,
+      "numOfRows": 20,
+      "items": {
+        "item": [
+          {
+            "ykiho": "JDQ5Mzg=",
+            "yadmNm": "서울대학교병원",
+            "addr": "서울특별시 종로구 대학로 101",
+            "telno": "02-2072-2114",
+            "clCd": "01",
+            "clCdNm": "상급종합",
+            "XPos": "126.998",
+            "YPos": "37.5797",
+            "distance": "843",
+            "sidoCdNm": "서울특별시",
+            "sgguCdNm": "종로구"
+          },
+          {
+            "ykiho": "JDQ1NjE=",
+            "yadmNm": "서울특별시보라매병원",
+            "addr": "서울특별시 동작구 보라매로5길 20",
+            "telno": "02-840-2114",
+            "clCd": "01",
+            "clCdNm": "상급종합",
+            "XPos": "126.924",
+            "YPos": "37.4946",
+            "distance": "1254",
+            "sidoCdNm": "서울특별시",
+            "sgguCdNm": "동작구"
+          },
+          {
+            "ykiho": "JDQ3MzI=",
+            "yadmNm": "연세대학교의과대학강남세브란스병원",
+            "addr": "서울특별시 강남구 언주로 211",
+            "telno": "02-2019-3114",
+            "clCd": "01",
+            "clCdNm": "상급종합",
+            "XPos": "127.048",
+            "YPos": "37.4981",
+            "distance": "1890",
+            "sidoCdNm": "서울특별시",
+            "sgguCdNm": "강남구"
+          }
+        ]
+      }
+    }
+  }
+}

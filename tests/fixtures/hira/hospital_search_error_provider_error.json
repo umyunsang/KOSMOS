@@ -1,0 +1,10 @@
+{
+  "_provenance": "Synthesized from published HIRA getHospBasisList API docs — upstream provider error case. resultCode '99' is documented as SYSTEM_ERROR in the HIRA OpenAPI spec (B551182/hospInfoServicev2). Captured: 2026-04-16.",
+  "response": {
+    "header": {
+      "resultCode": "99",
+      "resultMsg": "SYSTEM ERROR."
+    },
+    "body": {}
+  }
+}

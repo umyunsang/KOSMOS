@@ -1,0 +1,281 @@
+# SPDX-License-Identifier: Apache-2.0
+"""HIRA hospital search adapter — T054.
+
+Wraps the ``getHospBasisList`` endpoint from HIRA
+(건강보험심사평가원, Health Insurance Review and Assessment Service).
+
+Input: WGS84 coordinates (xPos, yPos) + radius in meters.
+Output: LookupCollection of hospital records.
+
+Endpoint: https://apis.data.go.kr/B551182/hospInfoServicev2/getHospBasisList
+
+FR-021: Accepts (xPos, yPos, radius) — native coord+radius spatial input.
+FR-023: Ships happy-path AND error-path tests with recorded fixtures.
+FR-024: Fail-closed defaults (requires_auth=False, is_personal_data=False,
+        is_concurrency_safe=True, cache_ttl_seconds=0).
+FR-037: Adapter is an async coroutine.
+"""
+
+from __future__ import annotations
+
+import logging
+from typing import Any
+
+import httpx
+from pydantic import BaseModel, ConfigDict, Field, RootModel
+
+from kosmos.tools.errors import _require_env
+from kosmos.tools.models import GovAPITool
+
+logger = logging.getLogger(__name__)
+
+_BASE_URL = (
+    "https://apis.data.go.kr/B551182/hospInfoServicev2/getHospBasisList"
+)
+
+# ---------------------------------------------------------------------------
+# Input schema (T054 — xPos + yPos + radius)
+# ---------------------------------------------------------------------------
+
+
+class HiraHospitalSearchInput(BaseModel):
+    """Input schema for hira_hospital_search.
+
+    Queries HIRA's hospital basis list endpoint by WGS84 coordinate and
+    radius. All three parameters are required.
+
+    Obtain xPos / yPos from resolve_location(want='coords') before calling
+    this tool — never guess coordinate values from model memory.
+    """
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    xPos: float = Field(
+        ge=124.0,
+        le=132.0,
+        description=(
+            "Longitude (WGS84, decimal degrees). Korean peninsula range: 124–132. "
+            "Obtain from resolve_location(want='coords'). Never guess."
+        ),
+    )
+    yPos: float = Field(
+        ge=33.0,
+        le=39.0,
+        description=(
+            "Latitude (WGS84, decimal degrees). Korean peninsula range: 33–39. "
+            "Obtain from resolve_location(want='coords'). Never guess."
+        ),
+    )
+    radius: int = Field(
+        ge=1,
+        le=10000,
+        default=2000,
+        description=(
+            "Search radius in meters. Maximum 10 000 m. "
+            "Default 2 000 m (2 km). Increase only if initial results are empty."
+        ),
+    )
+    pageNo: int = Field(
+        default=1,
+        ge=1,
+        description="Page number for pagination (1-based). Default 1.",
+    )
+    numOfRows: int = Field(
+        default=20,
+        ge=1,
+        le=100,
+        description="Number of rows per page (1–100). Default 20.",
+    )
+
+
+# ---------------------------------------------------------------------------
+# Async adapter handler
+# ---------------------------------------------------------------------------
+
+
+async def handle(
+    inp: HiraHospitalSearchInput,
+    *,
+    client: httpx.AsyncClient | None = None,
+) -> dict[str, Any]:
+    """Invoke the HIRA hospital search endpoint and return a LookupCollection dict.
+
+    FR-037: This is an async coroutine.
+    FR-021: Returns LookupCollection with yadmNm, addr, telno, clCd, etc.
+
+    Args:
+        inp: Validated HiraHospitalSearchInput.
+        client: Optional httpx.AsyncClient for test injection.
+
+    Returns:
+        A dict suitable for envelope normalization into LookupCollection.
+
+    Raises:
+        ConfigurationError: If KOSMOS_DATA_GO_KR_API_KEY is not set.
+        RuntimeError: On upstream API errors (non-00 resultCode or HTTP error).
+    """
+    api_key = _require_env("KOSMOS_DATA_GO_KR_API_KEY")
+
+    params: dict[str, str | int | float] = {
+        "serviceKey": api_key,
+        "xPos": inp.xPos,
+        "yPos": inp.yPos,
+        "radius": inp.radius,
+        "pageNo": inp.pageNo,
+        "numOfRows": inp.numOfRows,
+        "type": "json",
+    }
+
+    logger.debug(
+        "hira_hospital_search: xPos=%.5f yPos=%.5f radius=%d page=%d rows=%d",
+        inp.xPos,
+        inp.yPos,
+        inp.radius,
+        inp.pageNo,
+        inp.numOfRows,
+    )
+
+    own_client = client is None
+    _client: httpx.AsyncClient = (
+        httpx.AsyncClient(timeout=30.0) if own_client else client  # type: ignore[assignment]
+    )
+
+    try:
+        response = await _client.get(_BASE_URL, params=params)
+        response.raise_for_status()
+
+        content_type = response.headers.get("content-type", "")
+        if "xml" in content_type.lower() and "json" not in content_type.lower():
+            raise RuntimeError(
+                f"HIRA API returned XML instead of JSON "
+                f"(Content-Type: {content_type!r}). "
+                "Append '&type=json' to the request or check the serviceKey."
+            )
+
+        raw: dict[str, Any] = response.json()
+    finally:
+        if own_client:
+            await _client.aclose()
+
+    # HIRA uses a nested response envelope: response → body → items / totalCount
+    response_body = raw.get("response", {})
+    header = response_body.get("header", {})
+    result_code = str(header.get("resultCode", ""))
+    result_msg = str(header.get("resultMsg", "Unknown"))
+
+    if result_code == "03":
+        # NODATA_ERROR — return empty collection
+        return {
+            "kind": "collection",
+            "items": [],
+            "total_count": 0,
+        }
+
+    if result_code != "00":
+        raise RuntimeError(
+            f"HIRA API error: resultCode={result_code!r} resultMsg={result_msg!r}"
+        )
+
+    body = response_body.get("body", {})
+    total_count = int(body.get("totalCount", 0))
+    raw_items = body.get("items", {})
+
+    item_list: list[dict[str, Any]] = []
+    if raw_items and not isinstance(raw_items, str):
+        raw_item = raw_items.get("item", [])
+        if isinstance(raw_item, dict):
+            item_list = [raw_item]
+        elif isinstance(raw_item, list):
+            item_list = raw_item
+
+    items = [
+        {
+            "ykiho": item.get("ykiho", ""),
+            "yadmNm": item.get("yadmNm", ""),
+            "addr": item.get("addr", ""),
+            "telno": item.get("telno", ""),
+            "clCd": item.get("clCd", ""),
+            "clCdNm": item.get("clCdNm", ""),
+            "xPos": item.get("XPos"),
+            "yPos": item.get("YPos"),
+            "distance": item.get("distance"),
+            "sidoCdNm": item.get("sidoCdNm", ""),
+            "sgguCdNm": item.get("sgguCdNm", ""),
+        }
+        for item in item_list
+    ]
+
+    return {
+        "kind": "collection",
+        "items": items,
+        "total_count": total_count,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Tool definition and registration helper (T054)
+# ---------------------------------------------------------------------------
+
+
+class _HiraHospitalSearchOutput(RootModel[dict[str, Any]]):
+    """Placeholder output schema for GovAPITool registration."""
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+
+HIRA_HOSPITAL_SEARCH_TOOL = GovAPITool(
+    id="hira_hospital_search",
+    name_ko="병원 기본정보 조회 (좌표+반경)",
+    provider="건강보험심사평가원 (HIRA)",
+    category=["의료", "병원", "의료기관", "진료"],
+    endpoint=_BASE_URL,
+    auth_type="api_key",
+    input_schema=HiraHospitalSearchInput,
+    output_schema=_HiraHospitalSearchOutput,
+    llm_description=(
+        "Search HIRA's hospital registry by WGS84 coordinate and radius. "
+        "Obtain coordinates first via resolve_location(want='coords'). "
+        "Returns a ranked list of hospitals within the specified radius, "
+        "including hospital name (yadmNm), address (addr), phone (telno), "
+        "institution type (clCdNm), and coordinates (xPos, yPos). "
+        "Use the returned ykiho identifier for follow-up detail queries. "
+        "Use this when a user asks about nearby hospitals, clinics, "
+        "medical facilities, or healthcare providers in a Korean area."
+    ),
+    search_hint=(
+        "병원 검색 진료과목 의료기관 정보 근처 병원 내과 외과 소아과 "
+        "hospital search medical specialty clinic nearby HIRA healthcare Korea"
+    ),
+    requires_auth=False,
+    is_concurrency_safe=True,
+    is_personal_data=False,
+    cache_ttl_seconds=0,
+    rate_limit_per_minute=10,
+    is_core=False,
+)
+
+
+def register(registry: object, executor: object) -> None:
+    """Register HIRA hospital search tool and its adapter.
+
+    Call this from register_all.py (Stage 3 / T056) to wire the adapter
+    into the global registry and executor. Do NOT call from this module
+    directly — the global registry is managed by register_all.py.
+
+    Args:
+        registry: A ToolRegistry instance.
+        executor: A ToolExecutor instance.
+    """
+    from kosmos.tools.executor import ToolExecutor
+    from kosmos.tools.registry import ToolRegistry
+
+    assert isinstance(registry, ToolRegistry)
+    assert isinstance(executor, ToolExecutor)
+
+    async def _adapter(inp: BaseModel) -> dict[str, Any]:
+        assert isinstance(inp, HiraHospitalSearchInput)
+        return await handle(inp)
+
+    registry.register(HIRA_HOSPITAL_SEARCH_TOOL)
+    executor.register_adapter("hira_hospital_search", _adapter)
+    logger.info("Registered tool: hira_hospital_search")
