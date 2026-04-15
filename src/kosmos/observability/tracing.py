@@ -130,9 +130,7 @@ class TracingSettings(BaseModel):
     )
     service_version: str = Field(
         default="0.0.0",
-        description=(
-            "OTel resource service.version attribute.  Read from pyproject.toml at boot."
-        ),
+        description=("OTel resource service.version attribute.  Read from pyproject.toml at boot."),
     )
     environment: str = Field(
         default="dev",
@@ -240,9 +238,7 @@ def _settings_from_env() -> TracingSettings:
     endpoint = os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT") or None
     headers = os.environ.get("OTEL_EXPORTER_OTLP_HEADERS") or None
     environment = os.environ.get("OTEL_DEPLOYMENT_ENVIRONMENT", "dev")
-    semconv_opt_in = os.environ.get(
-        "OTEL_SEMCONV_STABILITY_OPT_IN", "gen_ai_latest_experimental"
-    )
+    semconv_opt_in = os.environ.get("OTEL_SEMCONV_STABILITY_OPT_IN", "gen_ai_latest_experimental")
 
     return TracingSettings(
         endpoint=endpoint,

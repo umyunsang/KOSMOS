@@ -223,9 +223,7 @@ class ToolExecutor:
                     try:
                         result_dict = await adapter(validated_input)
                     except Exception as exc:
-                        logger.exception(
-                            "Adapter execution failed for tool %s: %s", tool_name, exc
-                        )
+                        logger.exception("Adapter execution failed for tool %s: %s", tool_name, exc)
                         self._metrics_increment("tool.error_count", tool_name)
                         self._metrics_observe_duration(
                             "tool.duration_ms",

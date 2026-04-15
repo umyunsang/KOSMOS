@@ -383,9 +383,7 @@ class LLMClient:
                         GEN_AI_RESPONSE_MODEL: str(
                             _finalize.get("response_model", self._config.model)
                         ),
-                        GEN_AI_RESPONSE_FINISH_REASONS: list(
-                            _finalize.get("finish_reasons", [])
-                        ),
+                        GEN_AI_RESPONSE_FINISH_REASONS: list(_finalize.get("finish_reasons", [])),
                     }
                 )
         finally:
@@ -528,8 +526,8 @@ class LLMClient:
                                     _finalize["output_tokens"] = (
                                         self._usage.output_tokens_used - _usage_output_before
                                     )
-                                    _finalize["response_model"] = (
-                                        _response_model or payload.get("model", self._config.model)
+                                    _finalize["response_model"] = _response_model or payload.get(
+                                        "model", self._config.model
                                     )
                                     _finalize["finish_reasons"] = sorted(_finish_reasons)
                                     return
@@ -555,8 +553,8 @@ class LLMClient:
                         _finalize["output_tokens"] = (
                             self._usage.output_tokens_used - _usage_output_before
                         )
-                        _finalize["response_model"] = (
-                            _response_model or payload.get("model", self._config.model)
+                        _finalize["response_model"] = _response_model or payload.get(
+                            "model", self._config.model
                         )
                         _finalize["finish_reasons"] = sorted(_finish_reasons)
                         return
@@ -658,7 +656,7 @@ class LLMClient:
         result: dict[str, str | None] = {"finish_reason": None, "model": None}
         if not line or not line.startswith("data: "):
             return result
-        payload_text = line[len("data: "):].strip()
+        payload_text = line[len("data: ") :].strip()
         if not payload_text or payload_text == "[DONE]":
             return result
         try:

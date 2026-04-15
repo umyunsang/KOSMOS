@@ -223,9 +223,7 @@ async def test_query_produces_root_span_with_correct_attributes(
     assert attrs.get("gen_ai.operation.name") == "invoke_agent", (
         f"gen_ai.operation.name mismatch: {attrs}"
     )
-    assert attrs.get("gen_ai.agent.name") == "kosmos-query", (
-        f"gen_ai.agent.name mismatch: {attrs}"
-    )
+    assert attrs.get("gen_ai.agent.name") == "kosmos-query", f"gen_ai.agent.name mismatch: {attrs}"
     assert attrs.get("gen_ai.conversation.id") == SESSION_ID, (
         f"gen_ai.conversation.id mismatch: {attrs}"
     )
@@ -237,9 +235,7 @@ async def test_query_produces_root_span_with_correct_attributes(
 
     # --- Assert: at least one 'chat' child span ---
     chat_spans = [s for s in spans if s.name == "chat"]
-    assert len(chat_spans) >= 1, (
-        f"Expected at least one 'chat' child span. All spans: {span_names}"
-    )
+    assert len(chat_spans) >= 1, f"Expected at least one 'chat' child span. All spans: {span_names}"
 
     # --- Assert: at least one 'execute_tool *' child span ---
     tool_spans = [s for s in spans if s.name.startswith("execute_tool")]
@@ -250,9 +246,7 @@ async def test_query_produces_root_span_with_correct_attributes(
     # --- Assert: execute_tool spans have root as parent ---
     root_span_id = root.context.span_id
     for child_span in tool_spans:
-        parent_id = (
-            child_span.parent.span_id if child_span.parent is not None else None
-        )
+        parent_id = child_span.parent.span_id if child_span.parent is not None else None
         assert parent_id == root_span_id, (
             f"Span '{child_span.name}' has parent_id {parent_id}, "
             f"expected root span_id {root_span_id}"

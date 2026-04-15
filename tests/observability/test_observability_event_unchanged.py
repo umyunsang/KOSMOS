@@ -48,9 +48,7 @@ def _event_field_snapshot(cls: type) -> dict[str, Any]:
     fields = cls.model_fields  # type: ignore[attr-defined]
     return {
         "field_names": sorted(fields.keys()),
-        "field_types": {
-            name: str(field.annotation) for name, field in fields.items()
-        },
+        "field_types": {name: str(field.annotation) for name, field in fields.items()},
     }
 
 
@@ -124,9 +122,7 @@ class TestAllowedMetadataKeysConstant:
             f"_ALLOWED_METADATA_KEYS must contain exactly 5 keys, got {len(_ALLOWED_METADATA_KEYS)}"
         )
 
-    def test_whitelist_unchanged_after_setup_tracing(
-        self, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_whitelist_unchanged_after_setup_tracing(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """setup_tracing() must not modify _ALLOWED_METADATA_KEYS."""
         snapshot_before = frozenset(_ALLOWED_METADATA_KEYS)
 
@@ -157,17 +153,19 @@ class TestObservabilityEventSchemaUnchanged:
     def test_field_names_present(self) -> None:
         """All expected fields exist on ObservabilityEvent."""
         expected_fields = {
-            "timestamp", "event_type", "tool_id", "duration_ms", "success", "metadata"
+            "timestamp",
+            "event_type",
+            "tool_id",
+            "duration_ms",
+            "success",
+            "metadata",
         }
         actual_fields = set(ObservabilityEvent.model_fields.keys())
         assert expected_fields == actual_fields, (
-            f"ObservabilityEvent field set changed! "
-            f"Expected {expected_fields}, got {actual_fields}"
+            f"ObservabilityEvent field set changed! Expected {expected_fields}, got {actual_fields}"
         )
 
-    def test_schema_unchanged_after_setup_tracing(
-        self, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_schema_unchanged_after_setup_tracing(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Field snapshot must be byte-identical before and after setup_tracing()."""
         snapshot_before = _event_field_snapshot(ObservabilityEvent)
 

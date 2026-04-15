@@ -132,16 +132,10 @@ async def test_execute_tool_success_span_attributes(
     assert attrs.get("gen_ai.operation.name") == "execute_tool", (
         f"gen_ai.operation.name mismatch: {attrs}"
     )
-    assert attrs.get("gen_ai.tool.name") == TOOL_ID, (
-        f"gen_ai.tool.name mismatch: {attrs}"
-    )
-    assert attrs.get("gen_ai.tool.type") == "function", (
-        f"gen_ai.tool.type mismatch: {attrs}"
-    )
+    assert attrs.get("gen_ai.tool.name") == TOOL_ID, f"gen_ai.tool.name mismatch: {attrs}"
+    assert attrs.get("gen_ai.tool.type") == "function", f"gen_ai.tool.type mismatch: {attrs}"
     # tool_call_id is set when provided
-    assert attrs.get("gen_ai.tool.call.id") == "call-abc", (
-        f"gen_ai.tool.call.id mismatch: {attrs}"
-    )
+    assert attrs.get("gen_ai.tool.call.id") == "call-abc", f"gen_ai.tool.call.id mismatch: {attrs}"
 
     # Status must be UNSET on success (contracts § Span 3)
     assert span.status.status_code == StatusCode.UNSET, (
@@ -175,8 +169,7 @@ async def test_execute_tool_failure_span_error_status(
     spans = mem_exporter.get_finished_spans()
     tool_spans = [s for s in spans if s.name == f"execute_tool {TOOL_ID}"]
     assert len(tool_spans) == 1, (
-        f"Expected 1 'execute_tool {TOOL_ID}' span. "
-        f"All spans: {[s.name for s in spans]}"
+        f"Expected 1 'execute_tool {TOOL_ID}' span. All spans: {[s.name for s in spans]}"
     )
     span = tool_spans[0]
     attrs = dict(span.attributes or {})
@@ -187,9 +180,7 @@ async def test_execute_tool_failure_span_error_status(
     )
 
     # error.type attribute must be set (contracts § Span 3)
-    assert "error.type" in attrs, (
-        f"Expected 'error.type' attribute on failure span. attrs: {attrs}"
-    )
+    assert "error.type" in attrs, f"Expected 'error.type' attribute on failure span. attrs: {attrs}"
     assert attrs["error.type"] is not None, "error.type must not be None"
 
     # Span events: executor catches exception internally; if any events were
@@ -266,9 +257,7 @@ async def test_execute_tool_no_pii_in_span_attributes(
 
     # No attribute key or value must contain 'user_email' or the raw email address.
     for key, val in attrs.items():
-        assert "user_email" not in key.lower(), (
-            f"Span attribute key leaks PII: {key!r}"
-        )
+        assert "user_email" not in key.lower(), f"Span attribute key leaks PII: {key!r}"
         if isinstance(val, str):
             assert "user_email" not in val.lower(), (
                 f"Span attribute value leaks PII field name in key={key!r}: {val!r}"

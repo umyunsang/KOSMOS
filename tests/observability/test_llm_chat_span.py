@@ -231,9 +231,7 @@ async def test_chat_span_stop_finish_reason(
     assert GEN_AI_USAGE_OUTPUT_TOKENS in attrs, (
         f"{GEN_AI_USAGE_OUTPUT_TOKENS!r} missing. attrs={attrs}"
     )
-    assert GEN_AI_RESPONSE_MODEL in attrs, (
-        f"{GEN_AI_RESPONSE_MODEL!r} missing. attrs={attrs}"
-    )
+    assert GEN_AI_RESPONSE_MODEL in attrs, f"{GEN_AI_RESPONSE_MODEL!r} missing. attrs={attrs}"
     assert GEN_AI_RESPONSE_FINISH_REASONS in attrs, (
         f"{GEN_AI_RESPONSE_FINISH_REASONS!r} missing. attrs={attrs}"
     )
@@ -242,8 +240,7 @@ async def test_chat_span_stop_finish_reason(
         f"input_tokens mismatch: expected {INPUT_TOKENS}, got {attrs[GEN_AI_USAGE_INPUT_TOKENS]}"
     )
     assert attrs[GEN_AI_USAGE_OUTPUT_TOKENS] == OUTPUT_TOKENS, (
-        f"output_tokens mismatch: expected {OUTPUT_TOKENS}, "
-        f"got {attrs[GEN_AI_USAGE_OUTPUT_TOKENS]}"
+        f"output_tokens mismatch: expected {OUTPUT_TOKENS}, got {attrs[GEN_AI_USAGE_OUTPUT_TOKENS]}"
     )
     assert attrs[GEN_AI_RESPONSE_MODEL] == RESPONSE_MODEL, (
         f"response_model mismatch: expected {RESPONSE_MODEL!r}, "
@@ -332,13 +329,10 @@ async def test_chat_span_tool_calls_finish_reason(
         f"input_tokens mismatch: expected {INPUT_TOKENS}, got {attrs[GEN_AI_USAGE_INPUT_TOKENS]}"
     )
     assert attrs[GEN_AI_USAGE_OUTPUT_TOKENS] == OUTPUT_TOKENS, (
-        f"output_tokens mismatch: expected {OUTPUT_TOKENS}, "
-        f"got {attrs[GEN_AI_USAGE_OUTPUT_TOKENS]}"
+        f"output_tokens mismatch: expected {OUTPUT_TOKENS}, got {attrs[GEN_AI_USAGE_OUTPUT_TOKENS]}"
     )
 
     # --- Assert: a tool_call_delta event was emitted ---
     tool_events = [e for e in events if e.type == "tool_call_delta"]
-    assert len(tool_events) == 1, (
-        f"Expected 1 tool_call_delta event, got {len(tool_events)}"
-    )
+    assert len(tool_events) == 1, f"Expected 1 tool_call_delta event, got {len(tool_events)}"
     assert tool_events[0].function_name == "search_traffic"

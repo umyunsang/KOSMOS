@@ -64,9 +64,9 @@ def _snapshot_instance_behavior(mc: MetricsCollector) -> dict[str, Any]:
 
     return {
         "counter": mc.get_counter("test_counter", labels={"tool_id": "guard"}),
-        "histogram_avg": mc.get_histogram_stats(
-            "test_histogram", labels={"tool_id": "guard"}
-        )["avg"],
+        "histogram_avg": mc.get_histogram_stats("test_histogram", labels={"tool_id": "guard"})[
+            "avg"
+        ],
         "gauge": mc.snapshot()["gauges"]["test_gauge"],
         "snapshot_keys": sorted(mc.snapshot().keys()),
     }

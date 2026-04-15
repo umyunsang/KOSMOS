@@ -73,8 +73,7 @@ def test_sdk_disabled_no_batch_processor() -> None:
     # cleanest indicator that no BatchSpanProcessor was registered.
     # We verify by asserting the returned type directly.
     assert isinstance(provider, NoOpTracerProvider), (
-        "Expected NoOpTracerProvider (no BatchSpanProcessor path taken); "
-        f"got {type(provider)!r}"
+        f"Expected NoOpTracerProvider (no BatchSpanProcessor path taken); got {type(provider)!r}"
     )
     # Additionally confirm the SDK TracerProvider subclass was NOT used.
     from opentelemetry.sdk.trace import TracerProvider as SDKTracerProvider

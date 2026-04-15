@@ -114,9 +114,9 @@ def test_setup_tracing_with_endpoint_returns_real_provider(
         processors = getattr(span_processor, "_span_processors", None)
         if processors is not None:
             processor_types = [type(p).__name__ for p in processors]
-            assert any(
-                "BatchSpanProcessor" in t for t in processor_types
-            ), f"Expected BatchSpanProcessor in processors, found: {processor_types}"
+            assert any("BatchSpanProcessor" in t for t in processor_types), (
+                f"Expected BatchSpanProcessor in processors, found: {processor_types}"
+            )
 
 
 def test_setup_tracing_real_provider_has_batch_processor(
@@ -172,9 +172,7 @@ def test_setup_tracing_missing_endpoint_warns_once(
     with caplog.at_level(logging.WARNING, logger="kosmos.observability.tracing"):
         provider1 = setup_tracing(settings_no_endpoint)
 
-    warning_messages = [
-        r.message for r in caplog.records if r.levelno == logging.WARNING
-    ]
+    warning_messages = [r.message for r in caplog.records if r.levelno == logging.WARNING]
     assert len(warning_messages) >= 1, "Expected at least one WARNING on first call"
     assert any("OTEL_EXPORTER_OTLP_ENDPOINT" in m for m in warning_messages), (
         "WARNING should mention OTEL_EXPORTER_OTLP_ENDPOINT"
@@ -214,6 +212,5 @@ def test_setup_tracing_missing_endpoint_no_repeat_warn(
     ]
 
     assert len(second_call_warnings) == 0, (
-        "Subsequent call must not re-emit the endpoint warning; "
-        f"got: {second_call_warnings}"
+        f"Subsequent call must not re-emit the endpoint warning; got: {second_call_warnings}"
     )

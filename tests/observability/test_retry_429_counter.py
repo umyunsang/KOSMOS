@@ -222,8 +222,7 @@ async def test_midstream_429_counter_and_single_chat_span(
     """
     # A body that begins streaming normally, then hits a rate-limit envelope.
     mid_stream_429_body = (
-        f"data: {json.dumps(_delta_chunk('partial'))}\n\n"
-        + _sse_rate_limit_envelope()
+        f"data: {json.dumps(_delta_chunk('partial'))}\n\n" + _sse_rate_limit_envelope()
     ).encode()
 
     success_body = _sse_body(_delta_chunk("done"), _stop_chunk())
@@ -311,6 +310,5 @@ async def test_no_metrics_increment_when_metrics_is_none(
     spans = mem_exporter.get_finished_spans()
     chat_spans = [s for s in spans if s.name == "chat"]
     assert len(chat_spans) == 1, (
-        f"Expected 1 'chat' span even with metrics=None. "
-        f"All spans: {[s.name for s in spans]}"
+        f"Expected 1 'chat' span even with metrics=None. All spans: {[s.name for s in spans]}"
     )

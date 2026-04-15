@@ -49,9 +49,7 @@ def test_filter_metadata_output_keys_match_whitelist_intersection() -> None:
     result = filter_metadata(_RAW)
 
     expected = _ALLOWED_METADATA_KEYS & _RAW.keys()
-    assert set(result.keys()) == expected, (
-        f"Expected keys {expected}, got {set(result.keys())}"
-    )
+    assert set(result.keys()) == expected, f"Expected keys {expected}, got {set(result.keys())}"
     assert set(result.keys()) == _EXPECTED_KEYS
 
 
@@ -111,9 +109,7 @@ def test_filter_metadata_drops_dict_value_for_whitelisted_key() -> None:
         "step": 2,
     }
     result = filter_metadata(raw)
-    assert "tool_id" not in result, (
-        "Dict value under whitelisted key must be dropped"
-    )
+    assert "tool_id" not in result, "Dict value under whitelisted key must be dropped"
     assert result.get("step") == 2
 
 
@@ -128,9 +124,7 @@ def test_filter_metadata_drops_object_value() -> None:
         "model": "K-EXAONE",
     }
     result = filter_metadata(raw)
-    assert "tool_id" not in result, (
-        "Object value under whitelisted key must be dropped"
-    )
+    assert "tool_id" not in result, "Object value under whitelisted key must be dropped"
     assert result.get("model") == "K-EXAONE"
 
 
@@ -141,9 +135,7 @@ def test_filter_metadata_drops_list_of_mixed_types() -> None:
         "step": 3,
     }
     result = filter_metadata(raw)
-    assert "tool_id" not in result, (
-        "Mixed-type list under whitelisted key must be dropped"
-    )
+    assert "tool_id" not in result, "Mixed-type list under whitelisted key must be dropped"
     assert result.get("step") == 3
 
 
@@ -154,9 +146,7 @@ def test_filter_metadata_accepts_homogeneous_primitive_list() -> None:
         "step": 1,
     }
     result = filter_metadata(raw)
-    assert result.get("tool_id") == ["a", "b", "c"], (
-        "Homogeneous primitive list must pass through"
-    )
+    assert result.get("tool_id") == ["a", "b", "c"], "Homogeneous primitive list must pass through"
 
 
 # ---------------------------------------------------------------------------
@@ -169,9 +159,7 @@ def test_filter_metadata_full_reference_input() -> None:
     result = filter_metadata(_RAW)
 
     assert result == _EXPECTED_VALUES, (
-        f"filter_metadata output mismatch.\n"
-        f"Expected: {_EXPECTED_VALUES}\n"
-        f"Got:      {result}"
+        f"filter_metadata output mismatch.\nExpected: {_EXPECTED_VALUES}\nGot:      {result}"
     )
 
 
@@ -194,9 +182,7 @@ def test_filter_metadata_all_pii_input() -> None:
         "ssn": "900101-1234567",
     }
     result = filter_metadata(raw)
-    assert result == {}, (
-        f"Expected empty output for all-PII input, got: {result}"
-    )
+    assert result == {}, f"Expected empty output for all-PII input, got: {result}"
 
 
 # ---------------------------------------------------------------------------
