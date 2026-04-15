@@ -12,6 +12,7 @@ import typer
 from rich.console import Console
 from rich.markup import escape
 
+from kosmos._dotenv import load_repo_dotenv
 from kosmos.cli.config import CLIConfig
 from kosmos.cli.renderer import EventRenderer
 from kosmos.cli.repl import REPLLoop
@@ -242,4 +243,5 @@ def _run_repl(resume_session_id: str | None = None) -> None:
 
 def main() -> None:
     """Public entry point called by ``[project.scripts]`` and ``__main__.py``."""
+    load_repo_dotenv()
     _app()
