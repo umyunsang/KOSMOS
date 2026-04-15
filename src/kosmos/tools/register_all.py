@@ -10,8 +10,11 @@ removed in User Story 4.  Administrative code resolution is now handled by
 helpers.  Grid coordinate resolution is handled internally by
 ``kma_forecast_fetch`` via ``latlon_to_lcc()``.
 
-NOTE (T048 / Stage 3): ``kma_forecast_fetch`` registration will be added here
-in Stage 3 when it is wired into the MVP tool surface.
+NOTE (Stage 3 / T033, T048, T056): Three seed adapters added to the registry:
+``nmc_emergency_search`` (Layer 3 gated stub), ``kma_forecast_fetch`` (short-term
+forecast via LCC-projected grid), and ``hira_hospital_search`` (hospital search
+by radius).  All three are discoverable via ``lookup(mode="search")`` and
+invocable via ``lookup(mode="fetch")``.
 """
 
 from __future__ import annotations
@@ -38,6 +41,9 @@ def register_all_tools(registry: ToolRegistry, executor: ToolExecutor) -> None:
       8. kma_ultra_short_term_forecast — KMA ultra-short-term forecast (초단기예보)
       9. kma_pre_warning — KMA weather pre-warning list (기상예비특보목록)
      10. road_risk_score — composite road risk score (fans out to all three)
+     11. nmc_emergency_search — NMC emergency room bed availability (Layer 3 gated)
+     12. kma_forecast_fetch — KMA short-term forecast by (lat, lon) → LCC grid
+     13. hira_hospital_search — HIRA hospital search by coordinates + radius
 
     Args:
         registry: The central ToolRegistry to add tools to.
@@ -48,6 +54,12 @@ def register_all_tools(registry: ToolRegistry, executor: ToolExecutor) -> None:
             function is called a second time on the same registry).
     """
     from kosmos.tools.composite.road_risk_score import register as reg_risk
+    from kosmos.tools.hira.hospital_search import register as reg_hira
+    from kosmos.tools.kma.forecast_fetch import (
+        KMA_FORECAST_FETCH_TOOL,
+        KmaForecastFetchInput,
+        _fetch as kma_forecast_fetch_adapter,
+    )
     from kosmos.tools.kma.kma_current_observation import register as reg_kma_obs
     from kosmos.tools.kma.kma_pre_warning import register as reg_kma_pre_warning
     from kosmos.tools.kma.kma_short_term_forecast import register as reg_kma_stf
@@ -56,6 +68,7 @@ def register_all_tools(registry: ToolRegistry, executor: ToolExecutor) -> None:
     from kosmos.tools.koroad.accident_hazard_search import register as reg_koroad_hazard
     from kosmos.tools.koroad.koroad_accident_search import register as reg_koroad
     from kosmos.tools.mvp_surface import register_mvp_surface
+    from kosmos.tools.nmc.emergency_search import register as reg_nmc
 
     # Register MVP LLM-visible core surface first (FR-001, SC-003)
     register_mvp_surface(registry)
@@ -68,5 +81,21 @@ def register_all_tools(registry: ToolRegistry, executor: ToolExecutor) -> None:
     reg_kma_ustf(registry, executor)
     reg_kma_pre_warning(registry, executor)
     reg_risk(registry, executor)
+
+    # Seed adapters for MVP Main-Tool (Epic #507, Stage 3)
+    reg_nmc(registry, executor)  # T033 — NMC (Layer 3 gated stub)
+    reg_hira(registry, executor)  # T056 — HIRA hospital search
+
+    # T048 — KMA forecast_fetch: register tool + bind executor adapter.
+    # The module's register(registry) only covers the registry; the executor
+    # binding lives here so _fetch is reachable via lookup(mode="fetch").
+    registry.register(KMA_FORECAST_FETCH_TOOL)
+
+    async def _kma_forecast_fetch_adapter(inp: object) -> object:
+        assert isinstance(inp, KmaForecastFetchInput)
+        return await kma_forecast_fetch_adapter(inp)
+
+    executor.register_adapter("kma_forecast_fetch", _kma_forecast_fetch_adapter)
+    logger.info("Registered tool: kma_forecast_fetch")
 
     logger.info("All %d tools registered successfully", len(registry))

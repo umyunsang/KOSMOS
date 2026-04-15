@@ -14,14 +14,16 @@ class TestToolRegistration:
     def test_registers_all_tools(self) -> None:
         """All tools are registered after calling register_all_tools.
 
-        Count updated for T049 (Epic #507): -2 tools (address_to_region,
-        address_to_grid removed; resolution now internal to resolve_location
-        via backend-only juso/sgis helpers).  Total: 10.
+        Count history (Epic #507):
+          T049  —2 (address_to_region, address_to_grid removed)
+          Stage 3 (T033/T048/T056)  +3 (nmc_emergency_search,
+            kma_forecast_fetch, hira_hospital_search)
+        Total: 13 (= 2 MVP core + 8 legacy adapters + 3 seed adapters).
         """
         registry = ToolRegistry()
         executor = ToolExecutor(registry)
         register_all_tools(registry, executor)
-        assert len(registry) == 10
+        assert len(registry) == 13
 
     def test_tool_ids_present(self) -> None:
         """Each expected tool_id is in the registry.
@@ -43,6 +45,10 @@ class TestToolRegistration:
             "kma_weather_alert_status",
             "kma_current_observation",
             "road_risk_score",
+            # Stage 3 seed adapters (Epic #507)
+            "nmc_emergency_search",
+            "kma_forecast_fetch",
+            "hira_hospital_search",
         }
         for tool_id in expected:
             assert tool_id in registry, f"{tool_id} not found in registry"
@@ -64,6 +70,10 @@ class TestToolRegistration:
             "kma_weather_alert_status",
             "kma_current_observation",
             "road_risk_score",
+            # Stage 3 seed adapters (Epic #507)
+            "nmc_emergency_search",
+            "kma_forecast_fetch",
+            "hira_hospital_search",
         }
         for tool_id in expected:
             assert tool_id in executor._adapters, f"No adapter for {tool_id}"
