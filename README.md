@@ -21,9 +21,35 @@ A conversational national-infrastructure AI agent platform that orchestrates Kor
 
 Turn the 5,000+ fragmented public APIs on data.go.kr into a single conversational interface where citizens can resolve cross-ministry civil affairs (민원) in natural language — route safety, emergency services, welfare benefits, residence transfer, and more.
 
+## Citizen Scenarios
+
+Five end-to-end flows the platform must handle for the vision to be considered met:
+
+```text
+시민:   "내일 부산에서 서울 가는데, 안전한 경로 추천해줘"
+KOSMOS: KOROAD accident data + KMA weather alerts + road-risk index
+        → "Gyeongbu Expressway Daejeon-Cheonan section: high risk,
+           fog advisory. Suggest Jungbu-Naeryuk detour."
+
+시민:   "아이가 열이 나는데 근처 야간 응급실 어디야?"
+KOSMOS: 119 emergency API + HIRA hospital info
+        → Available ERs ranked by location + current wait time
+
+시민:   "이사 준비 중인데, 전입신고랑 자동차 주소변경이랑
+        건강보험 주소변경 다 해야 하는데"
+KOSMOS: Coordinator dispatches Civil-affairs / Transport / Welfare workers
+        → "전입신고 선행 → 자동차·건강보험 병렬"
+```
+
+Citizens never learn which ministry runs which API. **KOSMOS does the routing.**
+
 ## Architecture
 
 KOSMOS transfers six architectural layers from Claude Code into the public-service domain:
+
+<img src="docs/diagrams/kosmos_6_layer_architecture.svg" alt="KOSMOS 6-Layer Architecture" width="100%">
+
+The lineage of each layer:
 
 | Layer | Claude Code Origin | KOSMOS Adaptation |
 |---|---|---|
@@ -34,6 +60,8 @@ KOSMOS transfers six architectural layers from Claude Code into the public-servi
 | **Context Assembly** | CLAUDE.md 6-tier memory + per-turn attachments | `CITIZEN.md` profile + live API status attachments |
 | **Error Recovery** | `withRetry` with 429/529/401 matrix | Public-API outage fallback + cross-ministry verification |
 
+For deep dives into the Query Engine loop, the Permission Pipeline gauntlet, and the Agent Swarm coordination model, see [`docs/presentation.md`](docs/presentation.md) and [`docs/vision.md`](docs/vision.md).
+
 ## Model Stack
 
 - **Orchestrator** — K-EXAONE 236B (reasoning mode) for multi-agent synthesis and long-context civil-affairs flows
@@ -42,13 +70,22 @@ KOSMOS transfers six architectural layers from Claude Code into the public-servi
 
 ## Roadmap
 
-- **Phase 1 — Prototype (3 months)** — FriendliAI Serverless + 10 high-value APIs + single query engine
-- **Phase 2 — Swarm (6 months)** — Ministry agents, mailbox IPC, multi-API synthesis
-- **Phase 3 — Production (12 months)** — Full permission pipeline, identity verification, audit logging
+- **Phase 1 — Prototype** ✅ — FriendliAI Serverless + 10 high-value APIs + single query engine + CLI. Scenario 1 (route safety) end-to-end working with **33/33 live tests passing**.
+- **Phase 2 — Swarm** — Ministry-specialist agents, mailbox IPC, multi-API synthesis. Scenarios 1–3.
+- **Phase 3 — Production** — Full permission pipeline, identity verification, audit logging, all five scenarios, public beta.
 
 ## Status
 
-Early initialization. Architecture design in progress.
+**Phase 1 complete.** Live integration validated against `data.go.kr` (33/33 pass). Phase 2 swarm work staged behind the Infra Initiative (Observability, Evals, Cost gateway, Safety rails, CI/CD, Secrets — see Issues #462–#468).
+
+## Policy Alignment
+
+KOSMOS's mission directly mirrors **Korea AI Action Plan 2026-2028** (국가인공지능전략위원회, 2026.2.25), Strategic Area 7 (공공AX), Task 58, Principle 9:
+
+> "Open API와 OpenMCP를 제공해 민간에서도 공공서비스를 손쉽게 결합해서 국민들에게 제공할 수 있어야 한다."
+> *(Open API and OpenMCP must be provided so that the private sector can easily combine public services and deliver them to citizens.)*
+
+Full citation set: [`docs/presentation.md § 1.5 정책 정합성`](docs/presentation.md#15-정책-정합성--대한민국-ai-행동계획-2026-2028).
 
 ## Contributing
 
