@@ -33,9 +33,9 @@ Checked against `.specify/memory/constitution.md` v1.1.0.
 | III | Pydantic v2 Strict (NON-NEGOTIABLE) | PASS | FR-007 forbids `Any` in the schema; the single loose field is `LookupFetchInput.params: dict[str, object]` validated against the target adapter's `input_schema` at fetch time (per frozen §5.2). |
 | IV | Government API Compliance | PASS | FR-023 (happy + error-path tests with recorded fixtures for every seed adapter); SC-006 (NMC = 0 live calls); `KOSMOS_`-prefixed env vars enforced (FR-032). |
 | V  | Policy Alignment | PASS | Two-tool facade = Principle 8 (single conversational window); `search_hint` bilingual ko+en = Principle 9 (discoverable Open API). Layer 3 auth-gate interface = Principle 5 / PIPA foundation (even without a real Provider, the short-circuit is unconditional per FR-026). |
-| VI | Deferred Work Accountability | **WARN** | 14-row Deferred Items table populated. 8 rows carry `#N` refs and 6 carry `NEEDS TRACKING`. **Known issue**: 6 of 8 tracking refs are semantically mismatched (see research.md § Deferred Items Validation) and MUST be corrected before `/speckit-taskstoissues` or via explicit spec amendment. Does not block Phase 0 but is flagged as CRITICAL for `/speckit-analyze`. |
+| VI | Deferred Work Accountability | PASS (deferred to taskstoissues) | 14-row Deferred Items table populated. 1 row carries a verified `#16` ref (Permission Pipeline v2) + 13 rows carry `NEEDS TRACKING`. Pre-remediation mismatches were downgraded per research.md §2. Resolution path: `/speckit-taskstoissues` will materialize placeholder issues for all 13 `NEEDS TRACKING` rows before `/speckit-implement`. |
 
-**Gate decision**: PASS with one WARN (VI). Proceeding to Phase 0; mismatch remediation is Phase 0 research.md output, to be resolved before `/speckit-taskstoissues`.
+**Gate decision**: PASS. Proceeding to Phase 0; the 13 `NEEDS TRACKING` rows are resolved by `/speckit-taskstoissues` prior to implementation.
 
 ## Project Structure
 

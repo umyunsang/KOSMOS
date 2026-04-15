@@ -108,7 +108,7 @@ The `GovAPITool` registration contract is frozen for this epic: every adapter de
 #### Tool surface (LLM-visible)
 
 - **FR-001**: The system MUST expose exactly two MVP tools to the LLM: `resolve_location` and `lookup`. No seed adapter may be registered as an LLM-visible top-level tool.
-- **FR-002**: `resolve_location` MUST accept `query: str` and `want: list[Literal["point","adm_code","address","poi"]]` and return a discriminated union `CoordResult | AdmCodeResult | AddressResult | POIResult | ResolveBundle | ResolveError` on a `kind` discriminator.
+- **FR-002**: `resolve_location` MUST accept `query: str` and a scalar `want: Literal["coords","adm_cd","coords_and_admcd","road_address","jibun_address","poi","all"]` (default `"coords_and_admcd"`) plus an optional `near: tuple[float, float]` tiebreaker, and return a discriminated union `CoordResult | AdmCodeResult | AddressResult | POIResult | ResolveBundle | ResolveError` on a `kind` discriminator. Field shape and enum values are binding per `contracts/resolve_location.input.schema.json`.
 - **FR-003**: `resolve_location` MUST never expose Kakao, JUSO, or SGIS as separate tools — the resolver backends are selected internally and reported via the `source` field of each result.
 - **FR-004**: `lookup` MUST accept a `mode: Literal["search","fetch"]` discriminator and route to the retrieval gate (search) or the adapter invoker (fetch).
 - **FR-005**: `lookup(mode="search")` MUST accept `query: str` and optional `top_k: int` and return `LookupSearchResult` containing a ranked list of `AdapterCandidate` entries (`tool_id`, `score`, `required_params`, `search_hint`, `why_matched`).
