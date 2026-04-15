@@ -127,3 +127,13 @@ class UsageTracker:
     def total_used(self) -> int:
         """Total tokens consumed so far."""
         return self._input_tokens_used + self._output_tokens_used
+
+    @property
+    def input_tokens_used(self) -> int:
+        """Total input tokens consumed so far in this session."""
+        return self._input_tokens_used
+
+    @property
+    def output_tokens_used(self) -> int:
+        """Total output tokens consumed so far in this session."""
+        return self._output_tokens_used

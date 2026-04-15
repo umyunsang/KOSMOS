@@ -13,6 +13,8 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 import httpx
+from opentelemetry import trace
+from opentelemetry.trace import Status, StatusCode
 from pydantic import ValidationError
 
 from kosmos.llm.config import LLMClientConfig
@@ -33,6 +35,16 @@ from kosmos.llm.models import (
     ToolDefinition,
 )
 from kosmos.llm.usage import UsageTracker
+from kosmos.observability.semconv import (
+    ERROR_TYPE,
+    GEN_AI_OPERATION_NAME,
+    GEN_AI_PROVIDER_NAME,
+    GEN_AI_REQUEST_MODEL,
+    GEN_AI_RESPONSE_FINISH_REASONS,
+    GEN_AI_RESPONSE_MODEL,
+    GEN_AI_USAGE_INPUT_TOKENS,
+    GEN_AI_USAGE_OUTPUT_TOKENS,
+)
 
 if TYPE_CHECKING:
     from kosmos.observability.event_logger import ObservabilityEventLogger
@@ -40,6 +52,8 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 rate_limit_logger = logging.getLogger("kosmos.llm")
+
+_tracer = trace.get_tracer(__name__)
 
 
 @dataclass(frozen=True)
@@ -321,21 +335,91 @@ class LLMClient:
             len(messages),
         )
 
-        async for event in self._stream_with_retry(payload):
-            yield event
+        # T010: open a single "chat" span for the entire logical streaming call
+        # (including all retry attempts — see T020 for per-retry counter).
+        # Use start_span + explicit end() so the span stays alive across yield
+        # boundaries in the async generator lifetime.
+        span = _tracer.start_span("chat")
+        span.set_attribute(GEN_AI_OPERATION_NAME, "chat")
+        span.set_attribute(GEN_AI_PROVIDER_NAME, "friendliai")
+        span.set_attribute(GEN_AI_REQUEST_MODEL, self._config.model)
+        # Optional attributes — only when present in this call's payload.
+        if temperature is not None:
+            span.set_attribute("gen_ai.request.temperature", float(temperature))
+        if max_tokens is not None:
+            span.set_attribute("gen_ai.request.max_tokens", int(max_tokens))
+        if top_p is not None:
+            span.set_attribute("gen_ai.request.top_p", float(top_p))
+
+        # Attach span as the active context for child spans (execute_tool, etc.)
+        # while preserving the caller's context on generator close.
+        ctx = trace.use_span(span, end_on_exit=False)
+        ctx.__enter__()
+
+        # T019: mutable container to collect finalize info from _stream_with_retry().
+        # Populated on the success path only; remains empty if an exception is raised.
+        _finalize: dict[str, object] = {}
+
+        try:
+            async for event in self._stream_with_retry(payload, _finalize):
+                yield event
+        except Exception as exc:
+            span.set_status(Status(StatusCode.ERROR))
+            span.record_exception(exc)
+            span.set_attribute(ERROR_TYPE, exc.__class__.__name__)
+            raise
+        else:
+            # T019: success path — write span attributes exactly once.
+            # Guard: only write when _finalize was populated (stream completed normally).
+            if _finalize:
+                span.set_attributes(
+                    {
+                        GEN_AI_USAGE_INPUT_TOKENS: int(
+                            _finalize.get("input_tokens", self._usage.input_tokens_used)
+                        ),
+                        GEN_AI_USAGE_OUTPUT_TOKENS: int(
+                            _finalize.get("output_tokens", self._usage.output_tokens_used)
+                        ),
+                        GEN_AI_RESPONSE_MODEL: str(
+                            _finalize.get("response_model", self._config.model)
+                        ),
+                        GEN_AI_RESPONSE_FINISH_REASONS: list(
+                            _finalize.get("finish_reasons", [])
+                        ),
+                    }
+                )
+        finally:
+            ctx.__exit__(None, None, None)
+            span.end()
 
     async def _stream_with_retry(  # noqa: C901
-        self, payload: dict[str, object]
+        self,
+        payload: dict[str, object],
+        _finalize: dict[str, object],
     ) -> AsyncIterator[StreamEvent]:
         """Execute stream() with Retry-After-first backoff loop (T015/T016).
 
         Acquires the session-level concurrency gate (T014) around each provider call.
         Pre-stream 429 and mid-stream 429 envelopes both route through the same policy.
+
+        Args:
+            payload: The request payload dict.
+            _finalize: Mutable container populated on success with keys
+                ``input_tokens``, ``output_tokens``, ``response_model``,
+                ``finish_reasons`` — consumed by ``stream()`` for T019 span
+                attributes.  Must be an empty dict on entry; written at most once.
         """
         policy = self._rate_limit_policy
         _stream_start = time.monotonic()
         _metrics_recorded = False
         last_exc: Exception | None = None
+
+        # T019: per-stream accumulators (reset on each successful attempt).
+        _finish_reasons: set[str] = set()
+        _response_model: str | None = None
+        # Snapshot usage before stream starts so we can compute the delta.
+        _usage_input_before = self._usage.input_tokens_used
+        _usage_output_before = self._usage.output_tokens_used
 
         for attempt in range(policy.max_attempts):
             try:
@@ -358,8 +442,28 @@ class LLMClient:
                                 f"Rate limited (HTTP 429) on stream attempt {attempt + 1}",
                                 status_code=429,
                             )
+                            # T020: increment retry counter before sleeping/retrying.
                             if attempt < policy.max_attempts - 1:
+                                if self._metrics is not None:
+                                    try:
+                                        self._metrics.increment(
+                                            "kosmos_llm_rate_limit_retries_total",
+                                            labels={
+                                                "provider": "friendliai",
+                                                "model": self._config.model,
+                                            },
+                                        )
+                                    except Exception:  # noqa: BLE001
+                                        logger.debug(
+                                            "LLMClient: rate_limit counter increment failed",
+                                            exc_info=True,
+                                        )
                                 await asyncio.sleep(delay)
+                            # Reset accumulators for the next attempt.
+                            _finish_reasons = set()
+                            _response_model = None
+                            _usage_input_before = self._usage.input_tokens_used
+                            _usage_output_before = self._usage.output_tokens_used
                             continue
 
                         await self._raise_for_status(response)
@@ -383,9 +487,32 @@ class LLMClient:
                                     f"attempt {attempt + 1}",
                                     status_code=429,
                                 )
+                                # T020: increment retry counter before sleeping/retrying.
                                 if attempt < policy.max_attempts - 1:
+                                    if self._metrics is not None:
+                                        try:
+                                            self._metrics.increment(
+                                                "kosmos_llm_rate_limit_retries_total",
+                                                labels={
+                                                    "provider": "friendliai",
+                                                    "model": self._config.model,
+                                                },
+                                            )
+                                        except Exception:  # noqa: BLE001
+                                            logger.debug(
+                                                "LLMClient: rate_limit counter increment failed",
+                                                exc_info=True,
+                                            )
                                     await asyncio.sleep(delay)
                                 break
+
+                            # T019: intercept chunk metadata before/after yielding.
+                            chunk_info = self._extract_chunk_metadata(line)
+                            if chunk_info.get("finish_reason"):
+                                _finish_reasons.add(chunk_info["finish_reason"])  # type: ignore[arg-type]
+                            if chunk_info.get("model"):
+                                _response_model = chunk_info["model"]  # type: ignore[assignment]
+
                             async for event in self._parse_sse_line(line):
                                 yield event
                                 if event.type == "done":
@@ -394,9 +521,25 @@ class LLMClient:
                                         success=True, duration_ms=_duration_ms
                                     )
                                     _metrics_recorded = True
+                                    # T019: populate finalize container on clean EOF.
+                                    _finalize["input_tokens"] = (
+                                        self._usage.input_tokens_used - _usage_input_before
+                                    )
+                                    _finalize["output_tokens"] = (
+                                        self._usage.output_tokens_used - _usage_output_before
+                                    )
+                                    _finalize["response_model"] = (
+                                        _response_model or payload.get("model", self._config.model)
+                                    )
+                                    _finalize["finish_reasons"] = sorted(_finish_reasons)
                                     return
 
                         if rate_limited_mid_stream:
+                            # Reset accumulators for the next attempt.
+                            _finish_reasons = set()
+                            _response_model = None
+                            _usage_input_before = self._usage.input_tokens_used
+                            _usage_output_before = self._usage.output_tokens_used
                             # Outer loop will retry
                             continue
 
@@ -405,6 +548,17 @@ class LLMClient:
                             _duration_ms = (time.monotonic() - _stream_start) * 1000
                             self._metrics_record_call(success=True, duration_ms=_duration_ms)
                             _metrics_recorded = True
+                        # T019: populate finalize container (no [DONE] path).
+                        _finalize["input_tokens"] = (
+                            self._usage.input_tokens_used - _usage_input_before
+                        )
+                        _finalize["output_tokens"] = (
+                            self._usage.output_tokens_used - _usage_output_before
+                        )
+                        _finalize["response_model"] = (
+                            _response_model or payload.get("model", self._config.model)
+                        )
+                        _finalize["finish_reasons"] = sorted(_finish_reasons)
                         return
 
             except (AuthenticationError, BudgetExceededError):
@@ -492,6 +646,38 @@ class LLMClient:
     # ------------------------------------------------------------------
     # Private helpers
     # ------------------------------------------------------------------
+
+    @staticmethod
+    def _extract_chunk_metadata(line: str) -> dict[str, str | None]:
+        """Extract ``finish_reason`` and ``model`` from a raw SSE data line.
+
+        Returns a dict with keys ``"finish_reason"`` and ``"model"`` (both may
+        be ``None`` when absent or unparseable).  Used by ``_stream_with_retry``
+        to accumulate T019 finalize data without duplicating JSON parsing.
+        """
+        result: dict[str, str | None] = {"finish_reason": None, "model": None}
+        if not line or not line.startswith("data: "):
+            return result
+        payload_text = line[len("data: "):].strip()
+        if not payload_text or payload_text == "[DONE]":
+            return result
+        try:
+            chunk = json.loads(payload_text)
+        except json.JSONDecodeError:
+            return result
+        if not isinstance(chunk, dict):
+            return result
+        # Extract model field.
+        model_val = chunk.get("model")
+        if isinstance(model_val, str) and model_val:
+            result["model"] = model_val
+        # Extract finish_reason from the first choice.
+        choices = chunk.get("choices")
+        if isinstance(choices, list) and choices:
+            fr = choices[0].get("finish_reason")
+            if isinstance(fr, str) and fr:
+                result["finish_reason"] = fr
+        return result
 
     @staticmethod
     def _is_rate_limit_envelope(line: str) -> bool:
