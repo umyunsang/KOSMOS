@@ -12,11 +12,15 @@ class TestToolRegistration:
     """Verify register_all_tools() wires all adapters correctly."""
 
     def test_registers_all_tools(self) -> None:
-        """All tools are registered after calling register_all_tools."""
+        """All tools are registered after calling register_all_tools.
+
+        Count updated for T027/T028: +3 new tools (resolve_location, lookup,
+        koroad_accident_hazard_search) over the previous 9.
+        """
         registry = ToolRegistry()
         executor = ToolExecutor(registry)
         register_all_tools(registry, executor)
-        assert len(registry) == 9
+        assert len(registry) == 12
 
     def test_tool_ids_present(self) -> None:
         """Each expected tool_id is in the registry."""
@@ -24,7 +28,12 @@ class TestToolRegistration:
         executor = ToolExecutor(registry)
         register_all_tools(registry, executor)
         expected = {
+            # MVP LLM-visible core surface (T028)
+            "resolve_location",
+            "lookup",
+            # Adapters
             "koroad_accident_search",
+            "koroad_accident_hazard_search",
             "kma_weather_alert_status",
             "kma_current_observation",
             "road_risk_score",
@@ -35,12 +44,17 @@ class TestToolRegistration:
             assert tool_id in registry, f"{tool_id} not found in registry"
 
     def test_adapters_bound(self) -> None:
-        """Each tool has a corresponding adapter in the executor."""
+        """Each adapter tool has a corresponding adapter in the executor.
+
+        Note: resolve_location and lookup are core surface tools — they are
+        handled directly by the orchestrator and do NOT have executor adapters.
+        """
         registry = ToolRegistry()
         executor = ToolExecutor(registry)
         register_all_tools(registry, executor)
         expected = {
             "koroad_accident_search",
+            "koroad_accident_hazard_search",
             "kma_weather_alert_status",
             "kma_current_observation",
             "road_risk_score",
@@ -56,6 +70,15 @@ class TestToolRegistration:
         executor = ToolExecutor(registry)
         # Should not raise
         register_all_tools(registry, executor)
+
+    def test_core_tools_include_mvp_surface(self) -> None:
+        """resolve_location and lookup must appear in core_tools() (T028, FR-001)."""
+        registry = ToolRegistry()
+        executor = ToolExecutor(registry)
+        register_all_tools(registry, executor)
+        core_ids = {t.id for t in registry.core_tools()}
+        assert "resolve_location" in core_ids
+        assert "lookup" in core_ids
 
     def test_idempotent_fails_on_duplicate(self) -> None:
         """Calling register_all_tools twice raises DuplicateToolError."""
