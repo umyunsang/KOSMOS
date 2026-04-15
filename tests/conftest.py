@@ -1,13 +1,20 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Root test configuration — live marker skip logic.
+"""Root test configuration — live marker skip logic and .env loading.
 
 Ensures ``@pytest.mark.live`` tests are skipped by default and only run
-when explicitly selected via ``pytest -m live``.
+when explicitly selected via ``pytest -m live``. Also loads ``.env`` from
+the repository root into ``os.environ`` so tool adapters that read env
+vars via ``os.environ.get()`` (e.g. Kakao, data.go.kr) see the same
+configuration the CLI entry point sees.
 """
 
 from __future__ import annotations
 
 import pytest
+
+from kosmos._dotenv import load_repo_dotenv
+
+load_repo_dotenv()
 
 
 def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
