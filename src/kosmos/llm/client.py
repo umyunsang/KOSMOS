@@ -10,7 +10,7 @@ import random
 import time
 from collections.abc import AsyncIterator
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 import httpx
 from opentelemetry import trace
@@ -375,15 +375,23 @@ class LLMClient:
                 span.set_attributes(
                     {
                         GEN_AI_USAGE_INPUT_TOKENS: int(
-                            _finalize.get("input_tokens", self._usage.input_tokens_used)
+                            cast(
+                                int,
+                                _finalize.get("input_tokens", self._usage.input_tokens_used),
+                            )
                         ),
                         GEN_AI_USAGE_OUTPUT_TOKENS: int(
-                            _finalize.get("output_tokens", self._usage.output_tokens_used)
+                            cast(
+                                int,
+                                _finalize.get("output_tokens", self._usage.output_tokens_used),
+                            )
                         ),
                         GEN_AI_RESPONSE_MODEL: str(
                             _finalize.get("response_model", self._config.model)
                         ),
-                        GEN_AI_RESPONSE_FINISH_REASONS: list(_finalize.get("finish_reasons", [])),
+                        GEN_AI_RESPONSE_FINISH_REASONS: list(
+                            cast(list[str], _finalize.get("finish_reasons", []))
+                        ),
                     }
                 )
         finally:
@@ -509,7 +517,7 @@ class LLMClient:
                             if chunk_info.get("finish_reason"):
                                 _finish_reasons.add(chunk_info["finish_reason"])  # type: ignore[arg-type]
                             if chunk_info.get("model"):
-                                _response_model = chunk_info["model"]  # type: ignore[assignment]
+                                _response_model = chunk_info["model"]
 
                             async for event in self._parse_sse_line(line):
                                 yield event

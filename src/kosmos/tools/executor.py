@@ -283,7 +283,7 @@ class ToolExecutor:
                     if _final_result.error_type is not None:
                         filtered = filter_metadata({"error_class": _final_result.error_type})
                         if "error_class" in filtered:
-                            span.set_attribute(ERROR_TYPE, filtered["error_class"])
+                            span.set_attribute(ERROR_TYPE, str(filtered["error_class"]))
 
                 # Emit structured tool_call event (AC-A6).
                 if _final_result is not None:

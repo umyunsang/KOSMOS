@@ -213,7 +213,7 @@ def setup_tracing(settings: TracingSettings | None = None) -> TracerProvider | N
 
     exporter_kwargs: dict[str, str] = {"endpoint": settings.endpoint}
     if settings.headers:
-        exporter_kwargs["headers"] = settings.headers  # type: ignore[assignment]
+        exporter_kwargs["headers"] = settings.headers
 
     exporter = OTLPSpanExporter(**exporter_kwargs)  # type: ignore[arg-type]
     processor = BatchSpanProcessor(exporter)
