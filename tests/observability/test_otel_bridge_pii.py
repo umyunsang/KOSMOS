@@ -11,11 +11,8 @@ Verifies:
 
 from __future__ import annotations
 
-import pytest
-
-from kosmos.observability.otel_bridge import filter_metadata
 from kosmos.observability.event_logger import _ALLOWED_METADATA_KEYS
-
+from kosmos.observability.otel_bridge import filter_metadata
 
 # ---------------------------------------------------------------------------
 # Reference input from task spec

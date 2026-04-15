@@ -17,6 +17,7 @@ from __future__ import annotations
 import inspect
 import json
 import logging
+from datetime import UTC
 from typing import Any
 from unittest.mock import MagicMock
 
@@ -26,7 +27,7 @@ from kosmos.observability.event_logger import (
     _ALLOWED_METADATA_KEYS,
     ObservabilityEventLogger,
 )
-from kosmos.observability.events import ObservabilityEvent, EventType
+from kosmos.observability.events import ObservabilityEvent
 
 # ---------------------------------------------------------------------------
 # Expected whitelist (single source of truth in this guard)
@@ -43,7 +44,6 @@ _EXPECTED_ALLOWED_KEYS: frozenset[str] = frozenset(
 
 def _event_field_snapshot(cls: type) -> dict[str, Any]:
     """Return a snapshot of Pydantic model fields: names and outer type strings."""
-    import pydantic
 
     fields = cls.model_fields  # type: ignore[attr-defined]
     return {
@@ -131,12 +131,14 @@ class TestAllowedMetadataKeysConstant:
         snapshot_before = frozenset(_ALLOWED_METADATA_KEYS)
 
         monkeypatch.setenv("OTEL_SDK_DISABLED", "true")
-        from kosmos.observability.tracing import setup_tracing, TracingSettings
+        from kosmos.observability.tracing import TracingSettings, setup_tracing
 
         setup_tracing(TracingSettings(disabled=True))
 
         # Re-import to pick up any potential modification
-        from kosmos.observability.event_logger import _ALLOWED_METADATA_KEYS as after_keys
+        from kosmos.observability.event_logger import (
+            _ALLOWED_METADATA_KEYS as after_keys,  # noqa: N811
+        )
 
         assert snapshot_before == frozenset(after_keys), (
             f"_ALLOWED_METADATA_KEYS was modified by setup_tracing()! "
@@ -154,7 +156,9 @@ class TestObservabilityEventSchemaUnchanged:
 
     def test_field_names_present(self) -> None:
         """All expected fields exist on ObservabilityEvent."""
-        expected_fields = {"timestamp", "event_type", "tool_id", "duration_ms", "success", "metadata"}
+        expected_fields = {
+            "timestamp", "event_type", "tool_id", "duration_ms", "success", "metadata"
+        }
         actual_fields = set(ObservabilityEvent.model_fields.keys())
         assert expected_fields == actual_fields, (
             f"ObservabilityEvent field set changed! "
@@ -168,7 +172,7 @@ class TestObservabilityEventSchemaUnchanged:
         snapshot_before = _event_field_snapshot(ObservabilityEvent)
 
         monkeypatch.setenv("OTEL_SDK_DISABLED", "true")
-        from kosmos.observability.tracing import setup_tracing, TracingSettings
+        from kosmos.observability.tracing import TracingSettings, setup_tracing
 
         setup_tracing(TracingSettings(disabled=True))
 
@@ -182,7 +186,7 @@ class TestObservabilityEventSchemaUnchanged:
     def test_model_is_frozen(self) -> None:
         """ObservabilityEvent must remain frozen (immutable)."""
         event = ObservabilityEvent(event_type="tool_call")
-        with pytest.raises(Exception):
+        with pytest.raises(Exception):  # noqa: B017
             event.success = False  # type: ignore[misc]
 
     def test_default_success_is_true(self) -> None:
@@ -222,7 +226,7 @@ class TestObservabilityEventLoggerSignatureUnchanged:
         sig_before = str(inspect.signature(ObservabilityEventLogger.emit))
 
         monkeypatch.setenv("OTEL_SDK_DISABLED", "true")
-        from kosmos.observability.tracing import setup_tracing, TracingSettings
+        from kosmos.observability.tracing import TracingSettings, setup_tracing
 
         setup_tracing(TracingSettings(disabled=True))
 
@@ -299,9 +303,9 @@ class TestMetadataWhitelistEnforcement:
         which is pinned), emit them through the logger, and compare the captured JSON
         strings.  The timestamp is set explicitly to avoid drift.
         """
-        from datetime import datetime, timezone
+        from datetime import datetime
 
-        fixed_ts = datetime(2026, 4, 15, 0, 0, 0, tzinfo=timezone.utc)
+        fixed_ts = datetime(2026, 4, 15, 0, 0, 0, tzinfo=UTC)
 
         def _make_event() -> ObservabilityEvent:
             return ObservabilityEvent(
@@ -343,7 +347,7 @@ class TestMetadataWhitelistEnforcement:
 
         # --- call setup_tracing (no-op) ---
         monkeypatch.setenv("OTEL_SDK_DISABLED", "true")
-        from kosmos.observability.tracing import setup_tracing, TracingSettings
+        from kosmos.observability.tracing import TracingSettings, setup_tracing
 
         setup_tracing(TracingSettings(disabled=True))
 

@@ -12,12 +12,10 @@ from __future__ import annotations
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 from opentelemetry import trace as otel_trace
 from opentelemetry.trace import NoOpTracerProvider
 
-from kosmos.observability.tracing import _settings_from_env, setup_tracing, TracingSettings
-
+from kosmos.observability.tracing import TracingSettings, _settings_from_env, setup_tracing
 
 # ---------------------------------------------------------------------------
 # Helpers

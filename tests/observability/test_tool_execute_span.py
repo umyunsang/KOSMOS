@@ -17,17 +17,15 @@ from __future__ import annotations
 import json
 
 import pytest
-from pydantic import BaseModel
-
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import SimpleSpanProcessor
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
 from opentelemetry.trace import StatusCode
+from pydantic import BaseModel
 
 from kosmos.tools.executor import ToolExecutor
 from kosmos.tools.models import GovAPITool
 from kosmos.tools.registry import ToolRegistry
-
 
 # ---------------------------------------------------------------------------
 # Per-test InMemorySpanExporter fixture using _tracer monkeypatching
@@ -110,7 +108,7 @@ async def test_execute_tool_success_span_attributes(
     mem_exporter: InMemorySpanExporter,
 ) -> None:
     """Success path: span has gen_ai attributes and UNSET status."""
-    TOOL_ID = "test_success_tool"
+    TOOL_ID = "test_success_tool"  # noqa: N806
     registry, executor = _build_registry_and_executor(TOOL_ID)
 
     async def _adapter(inp: _SimpleInput) -> dict:
@@ -161,7 +159,7 @@ async def test_execute_tool_failure_span_error_status(
     mem_exporter: InMemorySpanExporter,
 ) -> None:
     """Failure path: adapter raises → span has ERROR status and error.type set."""
-    TOOL_ID = "test_fail_tool"
+    TOOL_ID = "test_fail_tool"  # noqa: N806
     registry, executor = _build_registry_and_executor(TOOL_ID)
 
     async def _failing_adapter(inp: _SimpleInput) -> dict:
@@ -210,7 +208,7 @@ async def test_execute_tool_not_found_span_error(
     mem_exporter: InMemorySpanExporter,
 ) -> None:
     """ToolNotFoundError path: span has ERROR status, error.type is set."""
-    TOOL_ID = "nonexistent_tool"
+    TOOL_ID = "nonexistent_tool"  # noqa: N806
     registry = ToolRegistry()  # empty registry
     executor = ToolExecutor(registry=registry)
 
@@ -241,7 +239,7 @@ async def test_execute_tool_no_pii_in_span_attributes(
     mem_exporter: InMemorySpanExporter,
 ) -> None:
     """Tool input with user_email must not leak into span attributes."""
-    TOOL_ID = "pii_test_tool"
+    TOOL_ID = "pii_test_tool"  # noqa: N806
     registry, executor = _build_registry_and_executor(
         TOOL_ID,
         input_model=_PiiInput,

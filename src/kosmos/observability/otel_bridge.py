@@ -19,12 +19,10 @@ Usage::
 
 from __future__ import annotations
 
-from typing import Union
-
 from kosmos.observability.event_logger import _ALLOWED_METADATA_KEYS
 
 # Primitive types accepted by the OTel AttributeValue spec.
-_Primitive = Union[str, bool, int, float]
+_Primitive = str | bool | int | float
 
 
 def _is_primitive(value: object) -> bool:

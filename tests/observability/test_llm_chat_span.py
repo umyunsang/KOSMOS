@@ -30,7 +30,6 @@ from typing import Any
 from unittest.mock import patch
 
 import pytest
-
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import SimpleSpanProcessor
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
@@ -173,10 +172,10 @@ async def test_chat_span_stop_finish_reason(
 ) -> None:
     """stream() with finish_reason='stop' must produce exactly one 'chat' span
     with all 4 usage attributes set exactly once, values matching the mock totals."""
-    INPUT_TOKENS = 42
-    OUTPUT_TOKENS = 17
-    RESPONSE_MODEL = "LGAI-EXAONE/K-EXAONE-236B-A23B"
-    FINISH_REASONS = ["stop"]
+    INPUT_TOKENS = 42  # noqa: N806
+    OUTPUT_TOKENS = 17  # noqa: N806
+    RESPONSE_MODEL = "LGAI-EXAONE/K-EXAONE-236B-A23B"  # noqa: N806
+    FINISH_REASONS = ["stop"]  # noqa: N806
 
     client = _make_client()
 
@@ -277,10 +276,10 @@ async def test_chat_span_tool_calls_finish_reason(
 ) -> None:
     """stream() with finish_reason='tool_calls' must export a 'chat' span with
     finish_reasons=['tool_calls'] and correct token counts."""
-    INPUT_TOKENS = 100
-    OUTPUT_TOKENS = 30
-    RESPONSE_MODEL = "LGAI-EXAONE/K-EXAONE-236B-A23B"
-    FINISH_REASONS = ["tool_calls"]
+    INPUT_TOKENS = 100  # noqa: N806
+    OUTPUT_TOKENS = 30  # noqa: N806
+    RESPONSE_MODEL = "LGAI-EXAONE/K-EXAONE-236B-A23B"  # noqa: N806
+    FINISH_REASONS = ["tool_calls"]  # noqa: N806
 
     client = _make_client()
 

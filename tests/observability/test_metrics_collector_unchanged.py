@@ -13,13 +13,11 @@ Guard covers:
 from __future__ import annotations
 
 import inspect
-import os
 from typing import Any
 
 import pytest
 
 from kosmos.observability.metrics import MetricsCollector
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -66,7 +64,9 @@ def _snapshot_instance_behavior(mc: MetricsCollector) -> dict[str, Any]:
 
     return {
         "counter": mc.get_counter("test_counter", labels={"tool_id": "guard"}),
-        "histogram_avg": mc.get_histogram_stats("test_histogram", labels={"tool_id": "guard"})["avg"],
+        "histogram_avg": mc.get_histogram_stats(
+            "test_histogram", labels={"tool_id": "guard"}
+        )["avg"],
         "gauge": mc.snapshot()["gauges"]["test_gauge"],
         "snapshot_keys": sorted(mc.snapshot().keys()),
     }
@@ -87,7 +87,7 @@ class TestMetricsCollectorUnchanged:
 
         # Call setup_tracing with SDK disabled (no network, no background thread)
         monkeypatch.setenv("OTEL_SDK_DISABLED", "true")
-        from kosmos.observability.tracing import setup_tracing, TracingSettings
+        from kosmos.observability.tracing import TracingSettings, setup_tracing
 
         setup_tracing(TracingSettings(disabled=True))
 
@@ -105,7 +105,7 @@ class TestMetricsCollectorUnchanged:
         snapshot_before = _snapshot_api(MetricsCollector)
 
         monkeypatch.setenv("OTEL_SDK_DISABLED", "true")
-        from kosmos.observability.tracing import setup_tracing, TracingSettings
+        from kosmos.observability.tracing import TracingSettings, setup_tracing
 
         setup_tracing(TracingSettings(disabled=True))
 
@@ -113,7 +113,7 @@ class TestMetricsCollectorUnchanged:
 
         assert snapshot_before["method_signatures"] == snapshot_after["method_signatures"], (
             "MetricsCollector method signatures changed after setup_tracing()! "
-            f"Diff: {set(snapshot_before['method_signatures'].items()) ^ set(snapshot_after['method_signatures'].items())}"
+            f"Diff: {set(snapshot_before['method_signatures'].items()) ^ set(snapshot_after['method_signatures'].items())}"  # noqa: E501
         )
 
     def test_class_level_attrs_unchanged(self, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -121,7 +121,7 @@ class TestMetricsCollectorUnchanged:
         snapshot_before = _snapshot_api(MetricsCollector)
 
         monkeypatch.setenv("OTEL_SDK_DISABLED", "true")
-        from kosmos.observability.tracing import setup_tracing, TracingSettings
+        from kosmos.observability.tracing import TracingSettings, setup_tracing
 
         setup_tracing(TracingSettings(disabled=True))
 
@@ -155,7 +155,7 @@ class TestMetricsCollectorBehaviorUnchanged:
     def test_instance_behavior_after_setup_tracing(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """MetricsCollector works identically after OTel has been initialized (no-op mode)."""
         monkeypatch.setenv("OTEL_SDK_DISABLED", "true")
-        from kosmos.observability.tracing import setup_tracing, TracingSettings
+        from kosmos.observability.tracing import TracingSettings, setup_tracing
 
         setup_tracing(TracingSettings(disabled=True))
 
@@ -173,7 +173,7 @@ class TestMetricsCollectorBehaviorUnchanged:
         behavior_before = _snapshot_instance_behavior(mc_before)
 
         monkeypatch.setenv("OTEL_SDK_DISABLED", "true")
-        from kosmos.observability.tracing import setup_tracing, TracingSettings
+        from kosmos.observability.tracing import TracingSettings, setup_tracing
 
         setup_tracing(TracingSettings(disabled=True))
 
@@ -190,7 +190,7 @@ class TestMetricsCollectorBehaviorUnchanged:
     ) -> None:
         """reset() must clear all state identically before and after OTel init."""
         monkeypatch.setenv("OTEL_SDK_DISABLED", "true")
-        from kosmos.observability.tracing import setup_tracing, TracingSettings
+        from kosmos.observability.tracing import TracingSettings, setup_tracing
 
         setup_tracing(TracingSettings(disabled=True))
 

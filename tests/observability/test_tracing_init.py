@@ -13,11 +13,9 @@ from __future__ import annotations
 import logging
 
 import pytest
-
-from opentelemetry.trace import NoOpTracerProvider
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
-
+from opentelemetry.trace import NoOpTracerProvider
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -42,13 +40,13 @@ def test_setup_tracing_disabled_returns_noop(monkeypatch: pytest.MonkeyPatch) ->
     monkeypatch.delenv("OTEL_EXPORTER_OTLP_ENDPOINT", raising=False)
     _reset_warn_sentinel()
 
-    from kosmos.observability.tracing import setup_tracing, TracingSettings
+    from kosmos.observability.tracing import TracingSettings, setup_tracing
 
     settings = TracingSettings(disabled=True)
     provider = setup_tracing(settings)
 
     assert isinstance(provider, NoOpTracerProvider), (
-        "Expected NoOpTracerProvider when disabled=True, got %s" % type(provider)
+        f"Expected NoOpTracerProvider when disabled=True, got {type(provider)}"
     )
 
     # Spans from a NoOp provider must be non-recording.
@@ -85,7 +83,7 @@ def test_setup_tracing_with_endpoint_returns_real_provider(
     monkeypatch.setenv("OTEL_SDK_DISABLED", "false")
     _reset_warn_sentinel()
 
-    from kosmos.observability.tracing import setup_tracing, TracingSettings
+    from kosmos.observability.tracing import TracingSettings, setup_tracing
 
     # Do not pass headers to avoid SDK header-parsing ValueError in test env.
     settings = TracingSettings(
@@ -97,7 +95,7 @@ def test_setup_tracing_with_endpoint_returns_real_provider(
     provider = setup_tracing(settings)
 
     assert isinstance(provider, TracerProvider), (
-        "Expected SDK TracerProvider when endpoint is set, got %s" % type(provider)
+        f"Expected SDK TracerProvider when endpoint is set, got {type(provider)}"
     )
 
     # Verify that a BatchSpanProcessor is registered on the provider.
@@ -127,7 +125,7 @@ def test_setup_tracing_real_provider_has_batch_processor(
     """Directly construct settings and assert BatchSpanProcessor is attached."""
     _reset_warn_sentinel()
 
-    from kosmos.observability.tracing import setup_tracing, TracingSettings
+    from kosmos.observability.tracing import TracingSettings, setup_tracing
 
     settings = TracingSettings(
         endpoint="http://localhost:4318",
@@ -147,10 +145,9 @@ def test_setup_tracing_real_provider_has_batch_processor(
             if isinstance(proc, BatchSpanProcessor):
                 found_batch = True
                 break
-        if not found_batch:
+        if not found_batch and isinstance(sp, BatchSpanProcessor):
             # Some SDK versions wrap in a single-processor structure
-            if isinstance(sp, BatchSpanProcessor):
-                found_batch = True
+            found_batch = True
     assert found_batch, "Expected at least one BatchSpanProcessor registered on provider"
 
 
@@ -168,7 +165,7 @@ def test_setup_tracing_missing_endpoint_warns_once(
     monkeypatch.setenv("OTEL_SDK_DISABLED", "false")
     _reset_warn_sentinel()
 
-    from kosmos.observability.tracing import setup_tracing, TracingSettings
+    from kosmos.observability.tracing import TracingSettings, setup_tracing
 
     settings_no_endpoint = TracingSettings(endpoint=None, disabled=False)
 
@@ -196,18 +193,13 @@ def test_setup_tracing_missing_endpoint_no_repeat_warn(
     monkeypatch.setenv("OTEL_SDK_DISABLED", "false")
     _reset_warn_sentinel()
 
-    from kosmos.observability.tracing import setup_tracing, TracingSettings
-    import kosmos.observability.tracing as tracing_mod
+    from kosmos.observability.tracing import TracingSettings, setup_tracing
 
     settings_no_endpoint = TracingSettings(endpoint=None, disabled=False)
 
     # First call: emits the warning and flips the sentinel to False.
     with caplog.at_level(logging.WARNING, logger="kosmos.observability.tracing"):
         setup_tracing(settings_no_endpoint)
-
-    first_call_warnings = [
-        r.message for r in caplog.records if r.levelno == logging.WARNING
-    ]
 
     caplog.clear()
 

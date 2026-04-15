@@ -18,11 +18,9 @@ the global provider.
 from __future__ import annotations
 
 import json
-from typing import AsyncIterator
 from unittest.mock import MagicMock
 
 import pytest
-
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import SimpleSpanProcessor
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
@@ -38,7 +36,6 @@ from kosmos.permissions.models import SessionContext
 from kosmos.tools.executor import ToolExecutor
 from kosmos.tools.models import GovAPITool
 from kosmos.tools.registry import ToolRegistry
-
 
 # ---------------------------------------------------------------------------
 # Per-test InMemorySpanExporter fixture using dedicated TracerProvider
@@ -140,8 +137,8 @@ async def test_query_produces_root_span_with_correct_attributes(
     # Import after monkeypatch so _tracer is already patched.
     from kosmos.engine.query import query
 
-    TOOL_ID = "dummy_tool"
-    SESSION_ID = "test-uuid"
+    TOOL_ID = "dummy_tool"  # noqa: N806
+    SESSION_ID = "test-uuid"  # noqa: N806
 
     registry = _make_registry_with_tool(TOOL_ID)
     executor = _make_executor(registry, TOOL_ID)

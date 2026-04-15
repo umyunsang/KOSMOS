@@ -30,10 +30,10 @@ from functools import lru_cache
 from typing import Literal
 
 from opentelemetry import trace
+from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
-from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
 from opentelemetry.trace import NoOpTracerProvider
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -54,15 +54,15 @@ def _read_project_version() -> str:
     and finally falls back to ``"0.0.0"`` if neither succeeds.
     """
     try:
-        from importlib.metadata import version, PackageNotFoundError
+        from importlib.metadata import version
 
         return version("kosmos")
-    except Exception:  # noqa: BLE001
+    except Exception:  # noqa: BLE001, S110
         pass
 
     try:
-        import tomllib
         import pathlib
+        import tomllib
 
         # Walk up from this file to the repo root and find pyproject.toml.
         root = pathlib.Path(__file__).parent
@@ -73,7 +73,7 @@ def _read_project_version() -> str:
                     data = tomllib.load(fh)
                 return str(data["project"]["version"])
             root = root.parent
-    except Exception:  # noqa: BLE001
+    except Exception:  # noqa: BLE001, S110
         pass
 
     return "0.0.0"
