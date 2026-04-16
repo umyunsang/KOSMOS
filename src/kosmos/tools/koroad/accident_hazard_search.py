@@ -25,7 +25,7 @@ from typing import Any
 import httpx
 from pydantic import BaseModel, ConfigDict, Field, RootModel
 
-from kosmos.tools.errors import _require_env
+from kosmos.tools.errors import ToolExecutionError, _require_env
 from kosmos.tools.models import GovAPITool
 
 logger = logging.getLogger(__name__)
@@ -786,8 +786,9 @@ async def handle(
 
         content_type = response.headers.get("content-type", "")
         if "xml" in content_type.lower() and "json" not in content_type.lower():
-            raise RuntimeError(
-                f"KOROAD API returned XML instead of JSON (Content-Type: {content_type!r})."
+            raise ToolExecutionError(
+                "koroad_accident_hazard_search",
+                f"KOROAD API returned XML instead of JSON (Content-Type: {content_type!r}).",
             )
 
         raw: dict[str, Any] = response.json()
@@ -807,7 +808,10 @@ async def handle(
         }
 
     if result_code != "00":
-        raise RuntimeError(f"KOROAD API error: code={result_code!r} msg={result_msg!r}")
+        raise ToolExecutionError(
+            "koroad_accident_hazard_search",
+            f"KOROAD API error: code={result_code!r} msg={result_msg!r}",
+        )
 
     total_count = int(raw.get("totalCount", 0))
     raw_items = raw.get("items", {})

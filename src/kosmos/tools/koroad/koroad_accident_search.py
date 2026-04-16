@@ -107,7 +107,7 @@ class KoroadAccidentSearchInput(BaseModel):
     si_do: SidoCode = Field(
         description=(
             "Province/city code (siDo wire parameter). "
-            "MUST be derived from a prior address_to_region geocoding tool call "
+            "MUST be derived from a prior resolve_location geocoding tool call "
             "on the user-provided location string — never fill this from model memory. "
             "Empirical counter-example: a Korean-domain LLM produced gu_gun=110 (Jongno) "
             "instead of gu_gun=680 (Gangnam) for a '강남역' query because it guessed from "
@@ -120,7 +120,7 @@ class KoroadAccidentSearchInput(BaseModel):
     gu_gun: GugunCode = Field(
         description=(
             "District/county code (guGun wire parameter). Required by the KOROAD API. "
-            "MUST be derived from a prior address_to_region geocoding tool call "
+            "MUST be derived from a prior resolve_location geocoding tool call "
             "on the user-provided location string — never fill this from model memory. "
             "Empirical counter-example: a Korean-domain LLM produced gu_gun=110 (Jongno) "
             "instead of gu_gun=680 (Gangnam) for a '강남역' query because it guessed from "
@@ -352,7 +352,7 @@ KOROAD_ACCIDENT_SEARCH_TOOL = GovAPITool(
     llm_description=(
         "Query the authoritative KOROAD accident-prone hotspot dataset for a "
         "Korean municipality. To call this tool correctly: first invoke "
-        "`address_to_region` with the citizen's place name to obtain the "
+        "`resolve_location` with the citizen's place name to obtain the "
         "accurate si_do and gu_gun codes, then pass those codes here. "
         "This is the canonical source for Korean accident hotspot data — "
         "use it whenever the citizen asks about traffic accidents, dangerous "

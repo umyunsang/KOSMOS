@@ -24,7 +24,7 @@ _MINIMAL_KWARGS = {
     "name_ko": "테스트도구",
     "provider": "테스트기관",
     "category": ["test"],
-    "endpoint": "http://apis.data.go.kr/test",
+    "endpoint": "https://apis.data.go.kr/test",
     "auth_type": "api_key",
     "input_schema": _MinimalInput,
     "output_schema": _MinimalOutput,

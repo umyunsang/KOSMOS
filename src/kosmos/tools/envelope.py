@@ -21,7 +21,7 @@ from typing import TYPE_CHECKING
 
 from pydantic import TypeAdapter, ValidationError
 
-from kosmos.tools.errors import EnvelopeNormalizationError
+from kosmos.tools.errors import EnvelopeNormalizationError, LookupErrorReason
 from kosmos.tools.models import (
     LookupError as LookupErrorModel,
 )
@@ -99,7 +99,7 @@ def normalize(
 
 def make_error_envelope(
     tool_id: str,
-    reason: str,
+    reason: LookupErrorReason,
     message: str,
     request_id: str,
     elapsed_ms: int,
@@ -121,7 +121,7 @@ def make_error_envelope(
     )
     return LookupErrorModel(
         kind="error",
-        reason=reason,  # type: ignore[arg-type]
+        reason=reason,
         message=message,
         retryable=retryable,
         upstream_code=upstream_code,

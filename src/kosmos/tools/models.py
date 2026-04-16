@@ -9,6 +9,8 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from kosmos.tools.errors import LookupErrorReason
+
 
 class GovAPITool(BaseModel):
     """Government API tool definition with fail-closed security defaults.
@@ -513,16 +515,7 @@ class LookupError(BaseModel):  # noqa: A001
     model_config = ConfigDict(extra="forbid")
 
     kind: Literal["error"]
-    reason: Literal[
-        "auth_required",
-        "stale_data",
-        "timeout",
-        "upstream_unavailable",
-        "unknown_tool",
-        "invalid_params",
-        "out_of_domain",
-        "empty_registry",
-    ]
+    reason: LookupErrorReason
     message: str
     upstream_code: str | None = None
     upstream_message: str | None = None

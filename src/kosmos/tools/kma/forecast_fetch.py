@@ -38,7 +38,7 @@ from kosmos.tools.models import GovAPITool, LookupError, LookupTimeseries  # noq
 
 logger = logging.getLogger(__name__)
 
-_BASE_URL = "http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst"
+_BASE_URL = "https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst"
 
 _VALID_BASE_TIMES: frozenset[str] = frozenset(
     {"0200", "0500", "0800", "1100", "1400", "1700", "2000", "2300"}
@@ -188,7 +188,7 @@ async def _fetch(
     if inp.base_time not in _VALID_BASE_TIMES:
         return LookupError(
             kind="error",
-            reason=LookupErrorReason.invalid_params.value,
+            reason=LookupErrorReason.invalid_params,
             message=(
                 f"base_time {inp.base_time!r} is not a valid KMA forecast base time. "
                 f"Must be one of: {', '.join(sorted(_VALID_BASE_TIMES))}."
@@ -201,7 +201,7 @@ async def _fetch(
     except KMADomainError as exc:
         return LookupError(
             kind="error",
-            reason=LookupErrorReason.out_of_domain.value,
+            reason=LookupErrorReason.out_of_domain,
             message=str(exc),
         )
 
@@ -243,7 +243,7 @@ async def _fetch(
         if "xml" in content_type.lower() and "json" not in content_type.lower():
             return LookupError(
                 kind="error",
-                reason=LookupErrorReason.upstream_unavailable.value,
+                reason=LookupErrorReason.upstream_unavailable,
                 message=(
                     f"KMA API returned XML instead of JSON "
                     f"(content-type={content_type!r}). "
@@ -256,13 +256,13 @@ async def _fetch(
     except httpx.HTTPStatusError as exc:
         return LookupError(
             kind="error",
-            reason=LookupErrorReason.upstream_unavailable.value,
+            reason=LookupErrorReason.upstream_unavailable,
             message=f"HTTP error from KMA forecast API: {exc.response.status_code}",
         )
     except httpx.RequestError as exc:
         return LookupError(
             kind="error",
-            reason=LookupErrorReason.timeout.value,
+            reason=LookupErrorReason.timeout,
             message=f"Network error reaching KMA forecast API: {exc}",
             retryable=True,
         )
@@ -279,14 +279,14 @@ async def _fetch(
     except (KeyError, TypeError) as exc:
         return LookupError(
             kind="error",
-            reason=LookupErrorReason.upstream_unavailable.value,
+            reason=LookupErrorReason.upstream_unavailable,
             message=f"Unexpected KMA response structure: {exc}",
         )
 
     if result_code != "00":
         return LookupError(
             kind="error",
-            reason=LookupErrorReason.upstream_unavailable.value,
+            reason=LookupErrorReason.upstream_unavailable,
             message=f"KMA API error: resultCode={result_code!r} resultMsg={result_msg!r}",
             upstream_code=result_code,
             upstream_message=result_msg,

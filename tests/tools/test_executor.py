@@ -132,7 +132,7 @@ async def test_dispatch_adapter_exception(sample_tool_factory):
 
     assert result.success is False
     assert result.error_type == "execution"
-    assert "upstream service unavailable" in (result.error or "")
+    assert result.error == "Tool execution failed."
     assert result.data is None
 
 

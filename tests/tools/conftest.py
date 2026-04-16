@@ -48,7 +48,7 @@ def sample_tool_factory():
         name_ko: str = "날씨예보",
         provider: str = "기상청",
         category: list[str] | None = None,
-        endpoint: str = "http://apis.data.go.kr/test",
+        endpoint: str = "https://apis.data.go.kr/test",
         auth_type: str = "api_key",
         search_hint: str = "날씨 예보 weather forecast 기상청",
         **overrides,
@@ -114,7 +114,7 @@ def populated_registry(sample_tool_factory) -> ToolRegistry:
         name_ko="교통사고통계",
         provider="도로교통공단",
         category=["교통", "사고"],
-        endpoint="http://apis.data.go.kr/koroad/accident",
+        endpoint="https://apis.data.go.kr/koroad/accident",
         search_hint="교통사고 통계 traffic accident road safety",
     )
 
@@ -124,7 +124,7 @@ def populated_registry(sample_tool_factory) -> ToolRegistry:
         name_ko="병원정보조회",
         provider="건강보험심사평가원",
         category=["의료", "병원"],
-        endpoint="http://apis.data.go.kr/hira/hospital",
+        endpoint="https://apis.data.go.kr/hira/hospital",
         search_hint="병원 의원 의료기관 hospital clinic HIRA",
     )
 
@@ -134,7 +134,7 @@ def populated_registry(sample_tool_factory) -> ToolRegistry:
         name_ko="사업자등록정보조회",
         provider="국세청",
         category=["사업자", "세금"],
-        endpoint="http://apis.data.go.kr/nts/business",
+        endpoint="https://apis.data.go.kr/nts/business",
         search_hint="사업자등록 법인 business registration NTS tax",
     )
 

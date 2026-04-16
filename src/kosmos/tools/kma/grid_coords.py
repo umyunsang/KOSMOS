@@ -10,7 +10,7 @@ Reference: KMA VilageFcstInfoService_2.0 API technical guide.
 
 from __future__ import annotations
 
-import math
+from kosmos.tools.kma.projection import latlon_to_lcc
 
 # REGION_TO_GRID: maps region name strings to (nx, ny) KMA grid tuples.
 # Keys include both Korean and common Romanized names for broad matching.
@@ -152,40 +152,4 @@ def latlon_to_grid(lat: float, lon: float) -> tuple[int, int]:
     Returns:
         A ``(nx, ny)`` tuple of integer KMA grid coordinates.
     """
-    # KMA Lambert Conformal Conic projection constants (official KMA parameters)
-    earth_radius_km = 6371.00877  # Earth radius [km]
-    grid_km = 5.0  # Grid resolution [km]
-    slat1_deg = 30.0  # Standard latitude 1 [degrees]
-    slat2_deg = 60.0  # Standard latitude 2 [degrees]
-    olon_deg = 126.0  # Reference (true) longitude [degrees]
-    olat_deg = 38.0  # Reference latitude [degrees]
-    xo = 43.0  # Grid x-origin offset
-    yo = 136.0  # Grid y-origin offset
-
-    degrad = math.pi / 180.0
-
-    re = earth_radius_km / grid_km
-    slat1 = slat1_deg * degrad
-    slat2 = slat2_deg * degrad
-    olon = olon_deg * degrad
-    olat = olat_deg * degrad
-
-    sn = math.tan(math.pi * 0.25 + slat2 * 0.5) / math.tan(math.pi * 0.25 + slat1 * 0.5)
-    sn = math.log(math.cos(slat1) / math.cos(slat2)) / math.log(sn)
-    sf = math.tan(math.pi * 0.25 + slat1 * 0.5)
-    sf = (sf**sn) * math.cos(slat1) / sn
-    ro = math.tan(math.pi * 0.25 + olat * 0.5)
-    ro = re * sf / (ro**sn)
-
-    ra = math.tan(math.pi * 0.25 + lat * degrad * 0.5)
-    ra = re * sf / (ra**sn)
-    theta = lon * degrad - olon
-    if theta > math.pi:
-        theta -= 2.0 * math.pi
-    if theta < -math.pi:
-        theta += 2.0 * math.pi
-    theta *= sn
-
-    nx = int(ra * math.sin(theta) + xo + 1.5)
-    ny = int(ro - ra * math.cos(theta) + yo + 1.5)
-    return nx, ny
+    return latlon_to_lcc(lat, lon)

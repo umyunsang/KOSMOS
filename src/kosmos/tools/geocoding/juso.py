@@ -90,7 +90,12 @@ async def lookup_adm_cd(
         }
 
     except Exception as exc:
-        logger.debug("juso.lookup_adm_cd failed for %r: %s", query, exc)
+        logger.warning(
+            "juso.lookup_adm_cd failed (query_len=%d): %s",
+            len(query),
+            type(exc).__name__,
+            exc_info=True,
+        )
         return None
 
     finally:

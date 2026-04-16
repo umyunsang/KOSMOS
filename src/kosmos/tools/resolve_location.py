@@ -16,7 +16,6 @@ FR-036: ``ResolveBundle`` carries per-backend provenance.
 from __future__ import annotations
 
 import logging
-import re
 
 import httpx
 
@@ -31,20 +30,6 @@ from kosmos.tools.models import (
 )
 
 logger = logging.getLogger(__name__)
-
-# Regex patterns for input classification (FR-004 dispatch rules §4.4)
-_COORD_RE = re.compile(r"^-?\d+\.?\d*\s*,\s*-?\d+\.?\d*$")
-_ROAD_ADDR_RE = re.compile(r"[로길]\s*\d+")
-
-
-def _classify_query(query: str) -> str:
-    """Classify a query as 'coord', 'address', or 'place'."""
-    stripped = query.strip()
-    if _COORD_RE.match(stripped):
-        return "coord"
-    if _ROAD_ADDR_RE.search(stripped):
-        return "address"
-    return "place"
 
 
 async def _kakao_geocode(
@@ -291,13 +276,16 @@ async def resolve_location(  # noqa: C901
                 reason="not_found",
                 message=f"Could not resolve address for query {query!r}.",
             )
-        # Convert juso result to AddressResult (juso returns road address in admCd call)
-        return AddressResult(
-            kind="address",
-            road_address=adm.name,
-            jibun_address=None,
-            postal_code=None,
-            source="juso",
+        # adm.name is an administrative area name (e.g. "서울특별시 강남구"), not a
+        # specific road or jibun address.  Returning it in road_address would
+        # mislead callers, so we surface an honest not_found error instead.
+        return ResolveError(
+            kind="error",
+            reason="not_found",
+            message=(
+                f"JUSO resolved only an administrative area ({adm.name!r}) for"
+                f" query {query!r}, not a specific road or jibun address."
+            ),
         )
 
     # --- poi path ---
@@ -315,10 +303,10 @@ async def resolve_location(  # noqa: C901
                     lat = lon = None  # type: ignore[assignment]
 
                 if lat is not None and lon is not None:
-                    addr_block = doc.road_address or doc.address
-                    category = ""
-                    if addr_block:
-                        category = getattr(addr_block, "region_1depth_name", "")
+                    # address_type gives "REGION"|"ROAD"|"REGION_ADDR"|"ROAD_ADDR"
+                    # which is a more meaningful category than the province name
+                    # that region_1depth_name would return.
+                    category = getattr(doc, "address_type", "")
 
                     return POIResult(
                         kind="poi",
@@ -344,26 +332,15 @@ async def resolve_location(  # noqa: C901
         address_result: AddressResult | None = None
         poi_result: POIResult | None = None
 
-        # Resolve coordinates via kakao
-        coords_bundle = await _kakao_coords(query, client=client)
-
-        # Resolve adm_cd via juso (preferred) or sgis (fallback)
-        adm_bundle = await _juso_adm_cd(query, client=client)
-        if adm_bundle is None:
-            adm_bundle = await _sgis_adm_cd(query, coords=coords_bundle, client=client)
-
         if want == "all":
-            # Also resolve address and POI
-            geo = await _kakao_geocode(query, client=client)
-            if isinstance(geo, AddressResult):
-                address_result = geo
-
+            # Single Kakao call for coords, address, and POI — avoids the
+            # redundant _kakao_coords() + search_address() double-call.
             try:
                 from kosmos.tools.geocoding.kakao_client import search_address
 
-                result = await search_address(query, client=client)
-                if result.documents:
-                    doc = result.documents[0]
+                kakao_result = await search_address(query, client=client)
+                if kakao_result.documents:
+                    doc = kakao_result.documents[0]
                     try:
                         lat = float(doc.y)
                         lon = float(doc.x)
@@ -371,16 +348,47 @@ async def resolve_location(  # noqa: C901
                         lat = lon = None  # type: ignore[assignment]
 
                     if lat is not None and lon is not None:
+                        total = kakao_result.meta.total_count
+                        confidence = "high" if total == 1 else ("medium" if total <= 3 else "low")
+                        coords_bundle = CoordResult(
+                            kind="coords",
+                            lat=lat,
+                            lon=lon,
+                            confidence=confidence,  # type: ignore[arg-type]
+                            source="kakao",
+                        )
+
                         poi_result = POIResult(
                             kind="poi",
                             name=doc.address_name,
-                            category="",
+                            category=getattr(doc, "address_type", ""),
                             lat=lat,
                             lon=lon,
                             source="kakao",
                         )
+
+                    if doc.road_address or doc.address:
+                        address_result = AddressResult(
+                            kind="address",
+                            road_address=(
+                                doc.road_address.address_name if doc.road_address else None
+                            ),
+                            jibun_address=(doc.address.address_name if doc.address else None),
+                            postal_code=(doc.road_address.zone_no if doc.road_address else None),
+                            source="kakao",
+                        )
             except Exception:
-                logger.debug("POI extraction failed; continuing without POI result", exc_info=True)
+                logger.debug(
+                    "Kakao resolution failed; continuing without address/POI",
+                    exc_info=True,
+                )
+        else:
+            coords_bundle = await _kakao_coords(query, client=client)
+
+        # Resolve adm_cd via juso (preferred) or sgis (fallback)
+        adm_bundle = await _juso_adm_cd(query, client=client)
+        if adm_bundle is None:
+            adm_bundle = await _sgis_adm_cd(query, coords=coords_bundle, client=client)
 
         if coords_bundle is None and adm_bundle is None:
             return ResolveError(

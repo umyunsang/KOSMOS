@@ -24,7 +24,7 @@ from typing import Any
 import httpx
 from pydantic import BaseModel, ConfigDict, Field, RootModel
 
-from kosmos.tools.errors import _require_env
+from kosmos.tools.errors import ToolExecutionError, _require_env
 from kosmos.tools.models import GovAPITool
 
 logger = logging.getLogger(__name__)
@@ -144,10 +144,11 @@ async def handle(
 
         content_type = response.headers.get("content-type", "")
         if "xml" in content_type.lower() and "json" not in content_type.lower():
-            raise RuntimeError(
+            raise ToolExecutionError(
+                "hira_hospital_search",
                 f"HIRA API returned XML instead of JSON "
                 f"(Content-Type: {content_type!r}). "
-                "Append '&type=json' to the request or check the serviceKey."
+                "Append '&type=json' to the request or check the serviceKey.",
             )
 
         raw: dict[str, Any] = response.json()
@@ -170,7 +171,10 @@ async def handle(
         }
 
     if result_code != "00":
-        raise RuntimeError(f"HIRA API error: resultCode={result_code!r} resultMsg={result_msg!r}")
+        raise ToolExecutionError(
+            "hira_hospital_search",
+            f"HIRA API error: resultCode={result_code!r} resultMsg={result_msg!r}",
+        )
 
     body = response_body.get("body", {})
     total_count = int(body.get("totalCount", 0))

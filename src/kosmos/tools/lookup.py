@@ -14,6 +14,7 @@ from __future__ import annotations
 import logging
 import uuid
 
+from kosmos.tools.errors import LookupErrorReason
 from kosmos.tools.models import (
     LookupCollection,
     LookupError,  # noqa: A004
@@ -32,6 +33,7 @@ async def lookup(
     *,
     registry: object | None = None,
     executor: object | None = None,
+    session_identity: str | None = None,
 ) -> LookupSearchResult | LookupRecord | LookupCollection | LookupTimeseries | LookupError:
     """Dispatch a lookup call by mode.
 
@@ -39,6 +41,8 @@ async def lookup(
         inp: Validated LookupSearchInput or LookupFetchInput.
         registry: ToolRegistry instance (required for search mode).
         executor: ToolExecutor instance (required for fetch mode).
+        session_identity: Caller identity token.  None = unauthenticated.
+            Forwarded to executor.invoke() to enable the Layer 3 auth gate.
 
     Returns:
         One of the 5 LookupOutput variants.
@@ -46,7 +50,7 @@ async def lookup(
     if isinstance(inp, LookupSearchInput):
         return await _lookup_search(inp, registry=registry)
     else:
-        return await _lookup_fetch(inp, executor=executor)
+        return await _lookup_fetch(inp, executor=executor, session_identity=session_identity)
 
 
 async def _lookup_search(
@@ -122,6 +126,7 @@ async def _lookup_fetch(
     inp: LookupFetchInput,
     *,
     executor: object | None = None,
+    session_identity: str | None = None,
 ) -> LookupRecord | LookupCollection | LookupTimeseries | LookupError:
     """Handle fetch mode: typed adapter invocation via executor.
 
@@ -133,7 +138,7 @@ async def _lookup_fetch(
     if executor is None or not isinstance(executor, ToolExecutor):
         return LookupError(
             kind="error",
-            reason="unknown_tool",
+            reason=LookupErrorReason.unknown_tool,
             message=f"No executor available to invoke tool {inp.tool_id!r}.",
             retryable=False,
         )
@@ -144,6 +149,7 @@ async def _lookup_fetch(
         tool_id=inp.tool_id,
         params=inp.params,
         request_id=request_id,
+        session_identity=session_identity,
     )
 
     # executor.invoke() always returns a LookupOutput variant — pass through
