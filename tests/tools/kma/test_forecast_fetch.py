@@ -19,7 +19,7 @@ from kosmos.tools.kma.forecast_fetch import (
     _parse_forecast_items,
     register,
 )
-from kosmos.tools.models import LookupError, LookupTimeseries
+from kosmos.tools.models import LookupError, LookupTimeseries  # noqa: A004
 
 _FIXTURE_DIR = Path(__file__).parent.parent.parent.parent / "tests" / "fixtures" / "kma"
 
@@ -103,12 +103,36 @@ class TestNormalizeItems:
 class TestParseForecastItems:
     def test_groups_by_time_slot(self) -> None:
         raw = [
-            {"baseDate": "20260416", "baseTime": "0800", "nx": "60", "ny": "127",
-             "category": "TMP", "fcstDate": "20260416", "fcstTime": "0900", "fcstValue": "14"},
-            {"baseDate": "20260416", "baseTime": "0800", "nx": "60", "ny": "127",
-             "category": "POP", "fcstDate": "20260416", "fcstTime": "0900", "fcstValue": "10"},
-            {"baseDate": "20260416", "baseTime": "0800", "nx": "60", "ny": "127",
-             "category": "TMP", "fcstDate": "20260416", "fcstTime": "1000", "fcstValue": "16"},
+            {
+                "baseDate": "20260416",
+                "baseTime": "0800",
+                "nx": "60",
+                "ny": "127",
+                "category": "TMP",
+                "fcstDate": "20260416",
+                "fcstTime": "0900",
+                "fcstValue": "14",
+            },
+            {
+                "baseDate": "20260416",
+                "baseTime": "0800",
+                "nx": "60",
+                "ny": "127",
+                "category": "POP",
+                "fcstDate": "20260416",
+                "fcstTime": "0900",
+                "fcstValue": "10",
+            },
+            {
+                "baseDate": "20260416",
+                "baseTime": "0800",
+                "nx": "60",
+                "ny": "127",
+                "category": "TMP",
+                "fcstDate": "20260416",
+                "fcstTime": "1000",
+                "fcstValue": "16",
+            },
         ]
         points = _parse_forecast_items(raw)
         assert len(points) == 2
@@ -161,7 +185,7 @@ class TestFetch:
     ) -> None:
         monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", "test-key")
         inp = KmaForecastFetchInput(
-            lat=5.0,   # outside KMA domain (< 22°)
+            lat=5.0,  # outside KMA domain (< 22°)
             lon=127.0,
             base_date="20260416",
             base_time="0800",

@@ -11,14 +11,13 @@ All tests are pure-Python; no network calls.
 from __future__ import annotations
 
 import json
-from datetime import UTC, datetime, timezone
 
 import pytest
 from pydantic import TypeAdapter, ValidationError
 
 from kosmos.tools.models import (
     LookupCollection,
-    LookupError,
+    LookupError,  # noqa: A004
     LookupOutput,  # type: ignore[attr-defined]
     LookupRecord,
     LookupSearchResult,

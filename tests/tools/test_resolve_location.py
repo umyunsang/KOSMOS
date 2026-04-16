@@ -12,8 +12,8 @@ from unittest.mock import AsyncMock, patch
 import pytest
 
 from kosmos.tools.models import (
-    AdmCodeResult,
     AddressResult,
+    AdmCodeResult,
     CoordResult,
     POIResult,
     ResolveBundle,
@@ -26,10 +26,35 @@ from kosmos.tools.resolve_location import resolve_location
 # Shared mock return values
 # ---------------------------------------------------------------------------
 
-_COORD = CoordResult(kind="coords", lat=37.5665, lon=126.9780, confidence="high", source="kakao")
-_ADM = AdmCodeResult(kind="adm_cd", code="1168000000", name="강남구", level="sigungu", source="juso")
-_ADDRESS = AddressResult(kind="address", road_address="서울 강남구 테헤란로 152", jibun_address=None, postal_code=None, source="kakao")
-_POI = POIResult(kind="poi", name="강남역", category="지하철역", lat=37.4979, lon=127.0276, source="kakao")
+_COORD = CoordResult(
+    kind="coords",
+    lat=37.5665,
+    lon=126.9780,
+    confidence="high",
+    source="kakao",
+)
+_ADM = AdmCodeResult(
+    kind="adm_cd",
+    code="1168000000",
+    name="강남구",
+    level="sigungu",
+    source="juso",
+)
+_ADDRESS = AddressResult(
+    kind="address",
+    road_address="서울 강남구 테헤란로 152",
+    jibun_address=None,
+    postal_code=None,
+    source="kakao",
+)
+_POI = POIResult(
+    kind="poi",
+    name="강남역",
+    category="지하철역",
+    lat=37.4979,
+    lon=127.0276,
+    source="kakao",
+)
 
 
 # ---------------------------------------------------------------------------

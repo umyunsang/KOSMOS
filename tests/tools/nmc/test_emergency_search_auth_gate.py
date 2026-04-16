@@ -21,10 +21,9 @@ import respx
 
 from kosmos.tools.executor import ToolExecutor
 from kosmos.tools.lookup import lookup
-from kosmos.tools.models import LookupError, LookupFetchInput
+from kosmos.tools.models import LookupError, LookupFetchInput  # noqa: A004
 from kosmos.tools.nmc.emergency_search import register
 from kosmos.tools.registry import ToolRegistry
-
 
 # ---------------------------------------------------------------------------
 # Fixture: test-local registry + executor with NMC registered
@@ -94,9 +93,7 @@ class TestNmcAuthGate:
         assert result.reason == "auth_required", (
             f"Expected reason='auth_required', got {result.reason!r}"
         )
-        assert result.retryable is False, (
-            f"Expected retryable=False, got {result.retryable!r}"
-        )
+        assert result.retryable is False, f"Expected retryable=False, got {result.retryable!r}"
 
     @pytest.mark.asyncio
     @respx.mock

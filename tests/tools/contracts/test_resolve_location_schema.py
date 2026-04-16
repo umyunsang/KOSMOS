@@ -16,8 +16,8 @@ import pytest
 from pydantic import TypeAdapter, ValidationError
 
 from kosmos.tools.models import (
-    AdmCodeResult,
     AddressResult,
+    AdmCodeResult,
     CoordResult,
     POIResult,
     ResolveBundle,

@@ -15,7 +15,7 @@ from __future__ import annotations
 import pytest
 
 from kosmos.tools.executor import ToolExecutor
-from kosmos.tools.models import LookupError, LookupFetchInput
+from kosmos.tools.models import LookupError, LookupFetchInput  # noqa: A004
 from kosmos.tools.registry import ToolRegistry
 
 

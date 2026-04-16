@@ -20,7 +20,6 @@ from __future__ import annotations
 import pytest
 from pydantic import BaseModel, ValidationError
 
-from kosmos.tools.executor import ToolExecutor
 from kosmos.tools.lookup import lookup
 from kosmos.tools.models import (
     LookupSearchInput,

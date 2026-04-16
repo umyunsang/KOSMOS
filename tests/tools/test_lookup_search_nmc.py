@@ -25,7 +25,6 @@ from kosmos.tools.models import AdapterCandidate, LookupSearchInput, LookupSearc
 from kosmos.tools.nmc.emergency_search import NMC_EMERGENCY_SEARCH_TOOL, register
 from kosmos.tools.registry import ToolRegistry
 
-
 # ---------------------------------------------------------------------------
 # Fixtures: test-local registry with only NMC registered
 # ---------------------------------------------------------------------------

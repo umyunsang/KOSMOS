@@ -27,7 +27,7 @@ from kosmos.tools.hira.hospital_search import (
     register,
 )
 from kosmos.tools.lookup import lookup
-from kosmos.tools.models import LookupCollection, LookupError, LookupFetchInput
+from kosmos.tools.models import LookupCollection, LookupError, LookupFetchInput  # noqa: A004
 from kosmos.tools.registry import ToolRegistry
 
 _FIXTURES_DIR = Path(__file__).parent.parent.parent / "fixtures" / "hira"
@@ -131,9 +131,7 @@ class TestHiraHospitalSearchHappy:
             )
             result = await lookup(inp, executor=executor)
 
-        assert isinstance(result, LookupCollection), (
-            f"Expected LookupCollection, got: {result}"
-        )
+        assert isinstance(result, LookupCollection), f"Expected LookupCollection, got: {result}"
         assert result.kind == "collection"
         assert len(result.items) == 3
         assert result.total_count == 3
@@ -196,9 +194,7 @@ class TestHiraHospitalSearchErrorPath:
             )
             result = await lookup(inp, executor=executor)
 
-        assert isinstance(result, LookupError), (
-            f"Expected LookupError, got: {result}"
-        )
+        assert isinstance(result, LookupError), f"Expected LookupError, got: {result}"
         assert result.reason == "upstream_unavailable"
         assert result.retryable is True
 

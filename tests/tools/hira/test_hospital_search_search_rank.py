@@ -23,7 +23,6 @@ from kosmos.tools.lookup import lookup
 from kosmos.tools.models import LookupSearchInput, LookupSearchResult
 from kosmos.tools.registry import ToolRegistry
 
-
 # ---------------------------------------------------------------------------
 # Fixture: test-local registry with KOROAD + HIRA
 # ---------------------------------------------------------------------------

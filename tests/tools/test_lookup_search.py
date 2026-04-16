@@ -45,7 +45,7 @@ def full_executor(full_registry) -> ToolExecutor:
 class TestLookupSearchHazardRanking:
     @pytest.mark.asyncio
     async def test_korean_query_surfaces_hazard_search(self, full_registry, full_executor):
-        """Korean query for accident hazard must return koroad_accident_hazard_search as candidate."""
+        """Korean accident hazard query must return koroad_accident_hazard_search."""
         inp = LookupSearchInput(mode="search", query="교통사고 위험지점 행정동코드")
         result = await lookup(inp, registry=full_registry, executor=full_executor)
         assert isinstance(result, LookupSearchResult)

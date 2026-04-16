@@ -20,7 +20,6 @@ from kosmos.tools.errors import RegistrationError
 from kosmos.tools.models import GovAPITool
 from kosmos.tools.registry import ToolRegistry
 
-
 # ---------------------------------------------------------------------------
 # Minimal stub schemas for test tools
 # ---------------------------------------------------------------------------

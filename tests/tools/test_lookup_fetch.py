@@ -18,7 +18,7 @@ from kosmos.tools.executor import ToolExecutor
 from kosmos.tools.lookup import lookup
 from kosmos.tools.models import (
     LookupCollection,
-    LookupError,
+    LookupError,  # noqa: A004
     LookupFetchInput,
 )
 from kosmos.tools.register_all import register_all_tools
@@ -161,9 +161,7 @@ class TestLookupFetchUnknownTool:
 
 class TestLookupFetchAuthGate:
     @pytest.mark.asyncio
-    async def test_auth_required_tool_returns_error_without_identity(
-        self, registry_and_executor
-    ):
+    async def test_auth_required_tool_returns_error_without_identity(self, registry_and_executor):
         """A tool with requires_auth=True + no session identity → LookupError(auth_required)."""
         registry, executor = registry_and_executor
         # kma_weather_alert_status uses requires_auth default (True per fail-closed)

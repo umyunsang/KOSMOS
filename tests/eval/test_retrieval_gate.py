@@ -73,9 +73,7 @@ class TestRetrievalGate:
 
     def test_queries_yaml_exists(self) -> None:
         """The committed queries YAML file must exist."""
-        assert _QUERIES_PATH.exists(), (
-            f"eval/retrieval_queries.yaml not found at {_QUERIES_PATH}"
-        )
+        assert _QUERIES_PATH.exists(), f"eval/retrieval_queries.yaml not found at {_QUERIES_PATH}"
 
     def test_queries_yaml_has_30_entries(self) -> None:
         """The queries YAML must contain exactly 30 queries."""
@@ -142,9 +140,7 @@ class TestRetrievalGate:
 
         if not missing:
             # All adapters registered — no warning expected; skip this check.
-            pytest.skip(
-                "All 4 seed adapters are registered; warning check is not applicable."
-            )
+            pytest.skip("All 4 seed adapters are registered; warning check is not applicable.")
 
         import yaml
 
@@ -189,9 +185,7 @@ class TestRetrievalGate:
             "timestamp",
         }
         missing_fields = required_fields - set(report.keys())
-        assert not missing_fields, (
-            f"Report is missing required fields: {missing_fields}"
-        )
+        assert not missing_fields, f"Report is missing required fields: {missing_fields}"
 
     def test_report_values_are_in_range(
         self,

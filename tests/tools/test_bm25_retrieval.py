@@ -14,7 +14,6 @@ from __future__ import annotations
 
 from kosmos.tools.bm25_index import BM25Index
 
-
 # ---------------------------------------------------------------------------
 # Fixtures — small synthetic corpora
 #
@@ -35,9 +34,7 @@ _CORPUS_MULTI = {
         "단기예보 날씨예보 기온 강수확률 하늘상태 습도 풍속 풍향 "
         "short-term forecast weather temperature precipitation sky humidity wind"
     ),
-    "hira_hospital": (
-        "병원 의원 의료기관 hospital clinic HIRA 근처 nearby"
-    ),
+    "hira_hospital": ("병원 의원 의료기관 hospital clinic HIRA 근처 nearby"),
     "nmc_emergency": (
         "응급실 실시간 병상 응급의료센터 국립중앙의료원 "
         "emergency room bed availability nearest ER NMC"
@@ -76,9 +73,7 @@ class TestBM25PositiveScores:
         assert results, "Expected at least one result"
         tool_id, score = results[0]
         assert tool_id == "koroad_accident_hazard_search"
-        assert score > 0.0, (
-            f"Expected positive BM25 score for matching Korean query, got {score}"
-        )
+        assert score > 0.0, f"Expected positive BM25 score for matching Korean query, got {score}"
 
     def test_english_matching_query_has_positive_score(self) -> None:
         """English query term in one of 4 corpus docs should produce score > 0."""
@@ -87,9 +82,7 @@ class TestBM25PositiveScores:
         assert results, "Expected at least one result"
         tool_id, score = results[0]
         assert tool_id == "koroad_accident_hazard_search"
-        assert score > 0.0, (
-            f"Expected positive BM25 score for matching English query, got {score}"
-        )
+        assert score > 0.0, f"Expected positive BM25 score for matching English query, got {score}"
 
     def test_best_matching_tool_ranks_first(self) -> None:
         """The most relevant tool must have the highest score."""
@@ -119,9 +112,7 @@ class TestBM25PositiveScores:
         results = index.score("응급실 병상")
         assert results, "Expected results"
         top_id, top_score = results[0]
-        assert top_id == "nmc_emergency", (
-            f"Expected nmc_emergency first for ER query, got {top_id}"
-        )
+        assert top_id == "nmc_emergency", f"Expected nmc_emergency first for ER query, got {top_id}"
         assert top_score > 0.0
 
 
@@ -168,7 +159,7 @@ class TestBM25ZeroScoresForDisjointTerms:
         corpus["disjoint_tool"] = "blockchain cryptocurrency decentralized ledger"
         index = BM25Index(corpus)
         results = index.score("교통사고 위험지점 accident")
-        score_map = {tid: s for tid, s in results}
+        score_map = dict(results)
         assert "disjoint_tool" in score_map, "Expected disjoint_tool in results"
         assert score_map["disjoint_tool"] == 0.0, (
             f"Expected zero score for disjoint_tool, got {score_map['disjoint_tool']}"
@@ -205,9 +196,7 @@ class TestBM25Determinism:
         first_run = results_runs[0]
 
         for i, run in enumerate(results_runs[1:], start=2):
-            assert run == first_run, (
-                f"Run {i} differs from run 1: {run} != {first_run}"
-            )
+            assert run == first_run, f"Run {i} differs from run 1: {run} != {first_run}"
 
     def test_zero_score_tie_break_by_tool_id_asc(self) -> None:
         """When all scores are zero, results must be sorted by tool_id ASC (FR-013)."""
@@ -228,9 +217,7 @@ class TestBM25Determinism:
             index = BM25Index(_CORPUS_MULTI)
             results = index.score(query)
             tool_ids = [tid for tid, _ in results]
-            assert tool_ids == sorted(tool_ids), (
-                f"Tie-break order not consistently ASC: {tool_ids}"
-            )
+            assert tool_ids == sorted(tool_ids), f"Tie-break order not consistently ASC: {tool_ids}"
 
     def test_rebuild_does_not_change_determinism(self) -> None:
         """After rebuild, the same query must produce the same order."""

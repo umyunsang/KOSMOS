@@ -23,10 +23,9 @@ from kosmos.tools.errors import EnvelopeNormalizationError
 from kosmos.tools.models import (
     GovAPITool,
     LookupCollection,
-    LookupError,
+    LookupError,  # noqa: A004
     LookupRecord,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers: minimal GovAPITool fixture
