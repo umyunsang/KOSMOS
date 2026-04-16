@@ -1,0 +1,36 @@
+{
+  "_comment": "NMC stale response fixture for freshness validation tests (T002).",
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL SERVICE"
+    },
+    "body": {
+      "items": [
+        {
+          "dutyName": "서울대학교병원 응급의료센터",
+          "dutyAddr": "서울특별시 종로구 대학로 101",
+          "dutyTel3": "02-2072-2222",
+          "hvec": 5,
+          "hvoc": 3,
+          "hvs1": 2,
+          "wgs84Lat": 37.5796,
+          "wgs84Lon": 127.0010,
+          "hvidate": "2026-04-16 13:00:00"
+        },
+        {
+          "dutyName": "세브란스병원 응급의료센터",
+          "dutyAddr": "서울특별시 서대문구 연세로 50-1",
+          "dutyTel3": "02-2228-8888",
+          "hvec": 8,
+          "hvoc": 4,
+          "hvs1": 1,
+          "wgs84Lat": 37.5622,
+          "wgs84Lon": 126.9410,
+          "hvidate": "2026-04-16 13:00:00"
+        }
+      ],
+      "totalCount": 2
+    }
+  }
+}

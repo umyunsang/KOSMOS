@@ -449,6 +449,9 @@ class LookupMeta(BaseModel):
     rate_limit_remaining: int | None = None
     """Remaining rate-limit slots for this adapter, if known."""
 
+    freshness_status: Literal["fresh"] | None = None
+    """'fresh' when adapter freshness check passes; None otherwise."""
+
 
 class AdapterCandidate(BaseModel):
     """A single search-result entry from lookup(mode='search')."""

@@ -38,6 +38,8 @@ logger = logging.getLogger(__name__)
 # TypeAdapter for validating arbitrary dicts against LookupOutput.
 _LOOKUP_OUTPUT_ADAPTER: TypeAdapter[object] = TypeAdapter(LookupOutput)
 
+_SYSTEM_META = frozenset({"source", "fetched_at", "request_id", "elapsed_ms"})
+
 
 def normalize(
     output: object,
@@ -81,10 +83,14 @@ def normalize(
             "expected dict or BaseModel",
         )
 
-    # Always overwrite meta so that adapters cannot return stale or forged
-    # meta values.
     if isinstance(raw, dict):
-        raw = {**raw, "meta": meta.model_dump(mode="json")}
+        adapter_meta = raw.get("meta") if isinstance(raw.get("meta"), dict) else {}
+        meta_dict = meta.model_dump(mode="json")
+        if adapter_meta:
+            for key, val in adapter_meta.items():
+                if key not in _SYSTEM_META and key in LookupMeta.model_fields:
+                    meta_dict[key] = val
+        raw = {**raw, "meta": meta_dict}
 
     try:
         validated = _LOOKUP_OUTPUT_ADAPTER.validate_python(raw)

@@ -1,16 +1,18 @@
 # SPDX-License-Identifier: Apache-2.0
 """NMC emergency room search adapter — T032.
 
-Interface-only adapter. The Layer 3 auth-gate in ``executor.invoke()`` unconditionally
-short-circuits every fetch call to ``LookupError(reason="auth_required")`` before the
-handler body is reached (FR-025, FR-026, SC-006). The handler body is therefore
-unreachable in practice and raises ``Layer3GateViolation`` as a defence-in-depth
-guard against programming errors.
+Calls the NMC real-time bed availability endpoint and enforces data freshness
+via ``check_freshness()`` before returning results to the caller.
 
-FR-034: Freshness check via ``KOSMOS_NMC_FRESHNESS_MINUTES`` env var is deferred to a
-future epic. No freshness check is implemented here.
+FR-034: Freshness enforcement via check_freshness() — see freshness.py.
+Stale responses are rejected with ``LookupError(reason="stale_data")`` so the
+LLM is informed of data age and threshold rather than receiving silently-stale data.
 
 auth contract: ``requires_auth=True``, ``is_personal_data=True``.
+The Layer 3 auth-gate in ``executor.invoke()`` short-circuits unauthenticated
+calls to ``LookupError(reason="auth_required")`` before handle() is reached
+(FR-025, FR-026, SC-006). handle() is therefore only invoked when a valid
+session identity is present.
 """
 
 from __future__ import annotations
@@ -18,10 +20,12 @@ from __future__ import annotations
 import logging
 from typing import Any
 
+import httpx
 from pydantic import BaseModel, ConfigDict, Field, RootModel
 
-from kosmos.tools.errors import Layer3GateViolation
+from kosmos.tools.errors import LookupErrorReason
 from kosmos.tools.models import GovAPITool
+from kosmos.tools.nmc.freshness import FreshnessResult
 
 logger = logging.getLogger(__name__)
 
@@ -87,29 +91,159 @@ class _NmcEmergencySearchOutput(RootModel[dict[str, Any]]):
 
 
 # ---------------------------------------------------------------------------
-# Handler — unreachable in practice due to Layer 3 auth-gate
+# Handler helpers
+# ---------------------------------------------------------------------------
+
+
+def _evaluate_freshness(items: list[dict[str, Any]]) -> FreshnessResult:
+    """Return the worst-case freshness across all items (fail-closed).
+
+    If any item is missing hvidate or is stale, the entire batch is stale.
+    """
+    from kosmos.tools.nmc.freshness import check_freshness
+
+    if not items:
+        return check_freshness(None)
+
+    worst: FreshnessResult | None = None
+    for item in items:
+        hv = item.get("hvidate")
+        if not hv:
+            return check_freshness(None)
+        result = check_freshness(hv)
+        if worst is None or not result.is_fresh:
+            worst = result
+            if not result.is_fresh:
+                break
+
+    assert worst is not None
+    return worst
+
+
+def _stale_message(freshness: FreshnessResult) -> str:
+    """Build a human-readable stale-data message."""
+    if freshness.data_age_minutes == float("inf"):
+        return (
+            f"NMC data is stale: hvidate missing or unparseable "
+            f"(threshold: {freshness.threshold_minutes} min)"
+        )
+    if freshness.data_age_minutes < 0:
+        return (
+            f"NMC data is stale: hvidate is in the future "
+            f"(age={freshness.data_age_minutes:.1f} min, "
+            f"threshold: {freshness.threshold_minutes} min)"
+        )
+    return (
+        f"NMC data is stale: {freshness.data_age_minutes:.0f} min old "
+        f"(threshold: {freshness.threshold_minutes} min)"
+    )
+
+
+# ---------------------------------------------------------------------------
+# Handler
 # ---------------------------------------------------------------------------
 
 
 async def handle(inp: NmcEmergencySearchInput) -> dict[str, Any]:
     """Handle an NMC emergency search request.
 
-    Should never reach here — Layer 3 gate short-circuits on requires_auth=True.
-    See ``executor.invoke()`` FR-025 / FR-026 / SC-006. If this body is ever
-    reached it indicates a programming error (gate was bypassed), so we raise
-    ``Layer3GateViolation`` as a hard fail rather than silently making an
-    unauthenticated upstream call.
+    Fetches real-time emergency room bed availability from the NMC API,
+    evaluates freshness across all returned items, and enforces the
+    freshness SLO via check_freshness().
 
-    FR-034: ``KOSMOS_NMC_FRESHNESS_MINUTES`` freshness check is intentionally
-    omitted here and deferred to a future epic.
-
-    Args:
-        inp: Validated NmcEmergencySearchInput (lat, lon, limit).
+    Returns a LookupCollection dict when data is fresh, or a LookupError
+    dict (reason=stale_data) when the data exceeds the freshness threshold.
 
     Raises:
-        Layer3GateViolation: Always — this handler body must never be invoked.
+        httpx.HTTPStatusError: When the upstream NMC API returns a non-2xx status.
+        httpx.TimeoutException: When the upstream NMC API does not respond within 10 s.
     """
-    raise Layer3GateViolation("nmc_emergency_search")
+    from kosmos.settings import settings
+
+    if not settings.data_go_kr_api_key:
+        return {
+            "kind": "error",
+            "reason": LookupErrorReason.upstream_unavailable,
+            "message": "KOSMOS_DATA_GO_KR_API_KEY is not configured",
+            "retryable": False,
+        }
+
+    params: dict[str, str | int | float] = {
+        "serviceKey": settings.data_go_kr_api_key,
+        "page": 1,
+        "perPage": inp.limit,
+        "wgs84Lat": inp.lat,
+        "wgs84Lon": inp.lon,
+    }
+
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        resp = await client.get(
+            _BASE_URL,
+            params=params,
+            headers={"Accept": "application/json"},
+        )
+        resp.raise_for_status()
+
+        content_type = resp.headers.get("content-type", "")
+        if "json" not in content_type.lower():
+            return {
+                "kind": "error",
+                "reason": LookupErrorReason.upstream_unavailable,
+                "message": f"NMC API returned non-JSON content-type: {content_type!r}",
+                "retryable": True,
+            }
+
+        try:
+            data = resp.json()
+        except ValueError:
+            return {
+                "kind": "error",
+                "reason": LookupErrorReason.upstream_unavailable,
+                "message": "NMC API returned invalid JSON body",
+                "retryable": True,
+            }
+
+    header = data.get("response", {}).get("header", {})
+    result_code = header.get("resultCode", "")
+    if result_code != "00":
+        return {
+            "kind": "error",
+            "reason": LookupErrorReason.upstream_unavailable,
+            "message": (
+                f"NMC API error: resultCode={result_code!r}, "
+                f"resultMsg={header.get('resultMsg', 'unknown')!r}"
+            ),
+            "retryable": True,
+        }
+
+    body = data.get("response", {}).get("body", {})
+    items = body.get("items", [])
+    upstream_total = body.get("totalCount")
+
+    if not items:
+        return {
+            "kind": "collection",
+            "items": [],
+            "total_count": 0,
+            "meta": {"freshness_status": "fresh"},
+        }
+
+    freshness = _evaluate_freshness(items)
+
+    if freshness.is_fresh:
+        return {
+            "kind": "collection",
+            "items": items,
+            "total_count": upstream_total if upstream_total is not None else len(items),
+            "meta": {"freshness_status": "fresh"},
+        }
+
+    return {
+        "kind": "error",
+        "reason": LookupErrorReason.stale_data,
+        "message": _stale_message(freshness),
+        "retryable": False,
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -154,16 +288,15 @@ NMC_EMERGENCY_SEARCH_TOOL = GovAPITool(
 
 
 def register(registry: object, executor: object) -> None:
-    """Register the NMC emergency search tool and its stub adapter.
+    """Register the NMC emergency search tool and its adapter.
 
     Called by ``register_all.py`` in Stage 3 (T033). Do NOT call this
     function from Stage 2 — it is intentionally left unregistered until
     Stage 3 serial integration.
 
-    The adapter is registered as a stub: it satisfies the executor's
-    adapter contract but the handler body is never reachable because the
-    Layer 3 auth-gate short-circuits every fetch on ``requires_auth=True``
-    before invoking the adapter (FR-025, SC-006).
+    The Layer 3 auth-gate short-circuits unauthenticated calls on
+    ``requires_auth=True`` before invoking the adapter (FR-025, SC-006).
+    handle() is only reached when a valid session identity is present.
 
     Args:
         registry: A ToolRegistry instance.
@@ -181,4 +314,4 @@ def register(registry: object, executor: object) -> None:
 
     registry.register(NMC_EMERGENCY_SEARCH_TOOL)
     executor.register_adapter("nmc_emergency_search", _adapter)
-    logger.info("Registered tool: nmc_emergency_search (stub — auth_required gate)")
+    logger.info("Registered tool: nmc_emergency_search (auth_required gate — freshness SLO active)")

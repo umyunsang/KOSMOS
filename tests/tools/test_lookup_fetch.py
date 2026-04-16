@@ -62,6 +62,7 @@ def registry_and_executor():
 # ---------------------------------------------------------------------------
 
 
+@pytest.mark.filterwarnings("ignore::pytest.PytestUnraisableExceptionWarning")
 class TestLookupFetchHappy:
     @pytest.mark.asyncio
     async def test_fetch_happy_fixture(self, registry_and_executor, monkeypatch):

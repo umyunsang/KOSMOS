@@ -53,6 +53,7 @@ jobs:
           KOSMOS_DATA_GO_KR_KEY: "test-placeholder"
           KOSMOS_KOROAD_API_KEY: "test-placeholder"
           KOSMOS_FRIENDLI_TOKEN: "test-placeholder"
+          OTEL_SDK_DISABLED: "true"
       - name: Upload coverage
         if: matrix.python-version == '3.12'
         uses: actions/upload-artifact@v7

@@ -63,6 +63,7 @@ def _registered_ids(registry: object) -> frozenset[str]:
 # ---------------------------------------------------------------------------
 
 
+@pytest.mark.filterwarnings("ignore::pytest.PytestUnraisableExceptionWarning")
 class TestRetrievalGate:
     """Recall@5 gate against the committed 30-query eval set."""
 

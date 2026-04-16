@@ -346,6 +346,7 @@ class TestToolDefinition:
 # ---------------------------------------------------------------------------
 
 
+@pytest.mark.filterwarnings("ignore::pytest.PytestUnraisableExceptionWarning")
 class TestSchemaContract:
     """Assert that KoroadAccidentSearchInput JSON schema contains required guidance text.
 
