@@ -205,6 +205,15 @@ async def handle(inp: NmcEmergencySearchInput) -> dict[str, Any]:
     body = data.get("response", {}).get("body", {})
     items = body.get("items", [])
     upstream_total = body.get("totalCount")
+
+    if not items:
+        return {
+            "kind": "collection",
+            "items": [],
+            "total_count": 0,
+            "meta": {"freshness_status": "fresh"},
+        }
+
     freshness = _evaluate_freshness(items)
 
     if freshness.is_fresh:

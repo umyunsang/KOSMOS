@@ -430,6 +430,38 @@ class TestFreshnessIntegration:
         assert result.reason == "upstream_unavailable"
         assert "non-JSON" in result.message
 
+    @pytest.mark.asyncio
+    @respx.mock
+    @patch("kosmos.settings.settings")
+    async def test_empty_items_returns_empty_collection(self, mock_settings, nmc_reg_exec) -> None:
+        """resultCode=00 with empty items → LookupCollection (not stale_data)."""
+        mock_settings.data_go_kr_api_key = "test-key"
+        mock_settings.nmc_freshness_minutes = 30
+        _, executor = nmc_reg_exec
+
+        empty_payload = {
+            "response": {
+                "header": {"resultCode": "00", "resultMsg": "NORMAL SERVICE"},
+                "body": {"items": [], "totalCount": 0},
+            }
+        }
+        respx.get(url__regex=r".*odcloud\.kr.*").respond(200, json=empty_payload)
+
+        from kosmos.tools.models import LookupCollection
+
+        result = await executor.invoke(
+            "nmc_emergency_search",
+            {"lat": 37.5, "lon": 127.0, "limit": 5},
+            request_id="test-req-empty",
+            session_identity=object(),
+        )
+
+        assert isinstance(result, LookupCollection), (
+            f"Expected LookupCollection for empty results, got {type(result).__name__}"
+        )
+        assert result.items == []
+        assert result.total_count == 0
+
 
 # ---------------------------------------------------------------------------
 # T010 — Threshold integration test [US3]
