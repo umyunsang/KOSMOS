@@ -25,6 +25,7 @@ import json
 from datetime import datetime
 from pathlib import Path
 from unittest.mock import patch
+from zoneinfo import ZoneInfo
 
 import pytest
 import respx
@@ -38,8 +39,6 @@ from kosmos.tools.registry import ToolRegistry
 # ---------------------------------------------------------------------------
 # Shared constants
 # ---------------------------------------------------------------------------
-
-from zoneinfo import ZoneInfo
 
 _KST = ZoneInfo("Asia/Seoul")
 FIXED_NOW = datetime(2026, 4, 16, 14, 10, 0, tzinfo=_KST)
