@@ -1,0 +1,20 @@
+{
+  "_comment": "Schema documentation fixture for nmc_emergency_search auth-gate response (T034).",
+  "_description": "This is NOT an HTTP tape. It documents the expected LookupError envelope shape returned when lookup(mode='fetch', tool_id='nmc_emergency_search') is called without a valid session identity. The Layer 3 auth-gate in executor.invoke() short-circuits before any upstream NMC HTTP call is made (SC-006, FR-025, FR-026).",
+  "_binding_fields": ["kind", "reason", "retryable"],
+  "_variable_fields": ["meta.request_id", "meta.fetched_at", "meta.elapsed_ms", "message"],
+
+  "kind": "error",
+  "reason": "auth_required",
+  "message": "Tool 'nmc_emergency_search' requires authentication. Provide a session identity to proceed.",
+  "retryable": false,
+  "upstream_code": null,
+  "upstream_message": null,
+  "meta": {
+    "source": "nmc_emergency_search",
+    "fetched_at": "2026-04-16T00:00:00+00:00",
+    "request_id": "00000000-0000-0000-0000-000000000000",
+    "elapsed_ms": 0,
+    "rate_limit_remaining": null
+  }
+}

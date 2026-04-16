@@ -1,54 +1,30 @@
 # SPDX-License-Identifier: Apache-2.0
-"""KOSMOS Geocoding adapter package.
+"""KOSMOS Geocoding backend helper package.
 
-Provides two tools that convert Korean addresses into structured location data:
+Provides backend-only helpers for resolving Korean addresses to
+administrative codes and geographic coordinates:
 
-  * ``address_to_region`` — resolves a free-form Korean address string to
-    province (시도) and district (구군) codes used by KOROAD and other APIs.
-  * ``address_to_grid`` — resolves a free-form Korean address string to the
-    KMA 5 km grid (nx, ny) coordinates used by weather APIs.
+  * ``juso_lookup_adm_cd`` — queries Juso API for administrative codes (adm_cd)
+  * ``sgis_lookup_adm_cd_by_coords`` — queries SGIS API to reverse-geocode
+    coordinates to administrative codes
 
-Both tools use the Kakao Local API (``dapi.kakao.com``) for geocoding and fall
-back to the built-in KMA region lookup table when the Kakao API is unavailable.
+These helpers are NOT LLM-visible tools. They are available as public
+re-exports for programmatic use by adapters and internal services.
+The ``resolve_location`` tool currently uses ``kakao_client`` directly
+for its geocoding chain.
 
 Public re-exports
 -----------------
-- :class:`AddressToRegionInput`
-- :class:`AddressToRegionOutput`
-- :class:`ADDRESS_TO_REGION_TOOL`
-- :func:`register_address_to_region`
-- :class:`AddressToGridInput`
-- :class:`AddressToGridOutput`
-- :class:`ADDRESS_TO_GRID_TOOL`
-- :func:`register_address_to_grid`
+- :func:`juso_lookup_adm_cd`
+- :func:`sgis_lookup_adm_cd_by_coords`
 """
 
 from __future__ import annotations
 
-from kosmos.tools.geocoding.address_to_grid import (
-    ADDRESS_TO_GRID_TOOL,
-    AddressToGridInput,
-    AddressToGridOutput,
-)
-from kosmos.tools.geocoding.address_to_grid import (
-    register as register_address_to_grid,
-)
-from kosmos.tools.geocoding.address_to_region import (
-    ADDRESS_TO_REGION_TOOL,
-    AddressToRegionInput,
-    AddressToRegionOutput,
-)
-from kosmos.tools.geocoding.address_to_region import (
-    register as register_address_to_region,
-)
+from kosmos.tools.geocoding.juso import lookup_adm_cd as juso_lookup_adm_cd
+from kosmos.tools.geocoding.sgis import lookup_adm_cd_by_coords as sgis_lookup_adm_cd_by_coords
 
 __all__ = [
-    "AddressToRegionInput",
-    "AddressToRegionOutput",
-    "ADDRESS_TO_REGION_TOOL",
-    "register_address_to_region",
-    "AddressToGridInput",
-    "AddressToGridOutput",
-    "ADDRESS_TO_GRID_TOOL",
-    "register_address_to_grid",
+    "juso_lookup_adm_cd",
+    "sgis_lookup_adm_cd_by_coords",
 ]

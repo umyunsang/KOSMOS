@@ -4,7 +4,8 @@
 from __future__ import annotations
 
 import re
-from typing import Literal
+from datetime import datetime
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -249,3 +250,288 @@ class SearchToolsOutput(BaseModel):
 
     total_registered: int
     """Total number of tools currently registered in the registry."""
+
+
+# ---------------------------------------------------------------------------
+# T005 — ResolveLocationInput
+# ---------------------------------------------------------------------------
+
+
+class ResolveLocationInput(BaseModel):
+    """Input to the resolve_location tool.
+
+    Converts a free-text place query into typed location identifiers.
+    Field shapes and enum values are binding per contracts/resolve_location.input.schema.json.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    query: str = Field(min_length=1, max_length=200)
+    """Free-text place query, Korean or English (e.g., '서울 강남구')."""
+
+    want: Literal[
+        "coords",
+        "adm_cd",
+        "coords_and_admcd",
+        "road_address",
+        "jibun_address",
+        "poi",
+        "all",
+    ] = "coords_and_admcd"
+    """Which identifier(s) to resolve. Default 'coords_and_admcd' returns a
+    ResolveBundle with both lat/lon and 10-digit 법정동 code."""
+
+    near: tuple[float, float] | None = None
+    """[lat, lon] tiebreaker when the query is ambiguous. Optional."""
+
+
+# ---------------------------------------------------------------------------
+# T006 — ResolveLocationOutput (6-variant discriminated union)
+# ---------------------------------------------------------------------------
+
+
+class CoordResult(BaseModel):
+    """Geocoding result: latitude + longitude."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    kind: Literal["coords"]
+    lat: float = Field(ge=-90, le=90)
+    lon: float = Field(ge=-180, le=180)
+    confidence: Literal["high", "medium", "low"]
+    source: Literal["kakao", "juso", "sgis"]
+
+
+class AdmCodeResult(BaseModel):
+    """Administrative division code result (10-digit 법정동 code)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    kind: Literal["adm_cd"]
+    code: str = Field(pattern=r"^[0-9]{10}$")
+    name: str
+    level: Literal["sido", "sigungu", "eupmyeondong"]
+    source: Literal["sgis", "juso"]
+
+
+class AddressResult(BaseModel):
+    """Structured address result."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    kind: Literal["address"]
+    road_address: str | None = None
+    jibun_address: str | None = None
+    postal_code: str | None = None
+    source: Literal["kakao", "juso"]
+
+
+class POIResult(BaseModel):
+    """Point of interest result."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    kind: Literal["poi"]
+    name: str
+    category: str
+    lat: float
+    lon: float
+    source: Literal["kakao"]
+
+
+class ResolveBundle(BaseModel):
+    """Bundle of multiple resolve results with provenance."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    kind: Literal["bundle"]
+    source: Literal["bundle"]
+    coords: CoordResult | None = None
+    adm_cd: AdmCodeResult | None = None
+    address: AddressResult | None = None
+    poi: POIResult | None = None
+
+
+class ResolveError(BaseModel):
+    """Location resolution error with reason and optional candidates."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    kind: Literal["error"]
+    reason: Literal[
+        "not_found",
+        "ambiguous",
+        "upstream_unavailable",
+        "invalid_query",
+        "empty_query",
+        "out_of_domain",
+    ]
+    message: str
+    candidates: list[CoordResult | AdmCodeResult | AddressResult | POIResult] = Field(
+        default_factory=list
+    )
+
+
+ResolveLocationOutput = Annotated[
+    CoordResult | AdmCodeResult | AddressResult | POIResult | ResolveBundle | ResolveError,
+    Field(discriminator="kind"),
+]
+"""Discriminated union on `kind`. Binding variant names from docs/design/mvp-tools.md §4."""
+
+
+# ---------------------------------------------------------------------------
+# T007 — LookupInput (discriminated on `mode`)
+# ---------------------------------------------------------------------------
+
+
+class LookupSearchInput(BaseModel):
+    """Input for lookup(mode='search'): BM25 gate over adapter registry."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    mode: Literal["search"]
+    query: str = Field(min_length=1, max_length=200)
+    """Korean or English free-text describing the data you want."""
+
+    domain: str | None = None
+    """Optional facet filter (matches GovAPITool.category)."""
+
+    top_k: int | None = Field(default=None, ge=1, le=20)
+    """Per-call override; server-side clamp [1, 20]. If None, uses KOSMOS_LOOKUP_TOPK default."""
+
+
+class LookupFetchInput(BaseModel):
+    """Input for lookup(mode='fetch'): typed invocation of a specific adapter."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    mode: Literal["fetch"]
+    tool_id: str = Field(pattern=r"^[a-z][a-z0-9_]*$")
+    """Must come from a previous `search` result. Never guess."""
+
+    params: dict[str, object]
+    """Validated against the target adapter's input_schema at fetch time."""
+
+    page: int | None = Field(default=None, ge=1)
+
+
+LookupInput = Annotated[
+    LookupSearchInput | LookupFetchInput,
+    Field(discriminator="mode"),
+]
+"""Discriminated union on `mode`. search → BM25; fetch → typed adapter invocation."""
+
+
+# ---------------------------------------------------------------------------
+# T008 — LookupOutput (5-variant discriminated union) + supporting types
+# ---------------------------------------------------------------------------
+
+
+class LookupMeta(BaseModel):
+    """Metadata injected into every lookup(mode='fetch') response envelope."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    source: str
+    """tool_id of the adapter that handled this request."""
+
+    fetched_at: datetime
+    """UTC timestamp when the response was fetched."""
+
+    request_id: str
+    """UUID for this request, for tracing."""
+
+    elapsed_ms: int = Field(ge=0)
+    """Total elapsed time in milliseconds."""
+
+    rate_limit_remaining: int | None = None
+    """Remaining rate-limit slots for this adapter, if known."""
+
+
+class AdapterCandidate(BaseModel):
+    """A single search-result entry from lookup(mode='search')."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    tool_id: str
+    score: float = Field(ge=0)
+    required_params: list[str]
+    search_hint: str
+    why_matched: str
+    requires_auth: bool = False
+    is_personal_data: bool = False
+
+
+class LookupSearchResult(BaseModel):
+    """Result from lookup(mode='search'): ranked adapter candidates."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    kind: Literal["search"]
+    candidates: list[AdapterCandidate]
+    total_registry_size: int = Field(ge=0)
+    effective_top_k: int = Field(ge=0, le=20)
+    reason: Literal["ok", "empty_registry", "below_threshold"] = "ok"
+
+
+class LookupRecord(BaseModel):
+    """Single-record fetch result."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    kind: Literal["record"]
+    item: dict[str, object]
+    meta: LookupMeta
+
+
+class LookupCollection(BaseModel):
+    """Collection fetch result (list of records)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    kind: Literal["collection"]
+    items: list[dict[str, object]]
+    total_count: int | None = None
+    next_cursor: str | None = None
+    meta: LookupMeta
+
+
+class LookupTimeseries(BaseModel):
+    """Time-series fetch result."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    kind: Literal["timeseries"]
+    points: list[dict[str, object]]
+    interval: Literal["minute", "hour", "day"]
+    meta: LookupMeta
+
+
+class LookupError(BaseModel):  # noqa: A001
+    """Structured error result from lookup operations."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    kind: Literal["error"]
+    reason: Literal[
+        "auth_required",
+        "stale_data",
+        "timeout",
+        "upstream_unavailable",
+        "unknown_tool",
+        "invalid_params",
+        "out_of_domain",
+        "empty_registry",
+    ]
+    message: str
+    upstream_code: str | None = None
+    upstream_message: str | None = None
+    retryable: bool = False
+    meta: LookupMeta | None = None
+
+
+LookupOutput = Annotated[
+    LookupSearchResult | LookupRecord | LookupCollection | LookupTimeseries | LookupError,
+    Field(discriminator="kind"),
+]
+"""Discriminated union on `kind`. Variant names are BINDING per docs/design/mvp-tools.md §5.4."""

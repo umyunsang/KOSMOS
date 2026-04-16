@@ -1,0 +1,38 @@
+[
+  {
+    "_provenance": "Synthesized from KMA VilageFcstInfoService_2.0 technical guide (2021-12). Parameters: RE=6371.00877, GRID=5.0, SLAT1=30, SLAT2=60, OLON=126, OLAT=38, XO=43, YO=136. All (nx, ny) values are the direct output of the reference LCC formula (latlon_to_grid in grid_coords.py). The KMA docs cite 서울청사 as a canonical example; the exact coordinates used here produce (62, 128) with the KMA formula.",
+    "description": "서울청사 area (KMA LCC formula reference)",
+    "lat": 37.5665,
+    "lon": 127.0495,
+    "nx": 62,
+    "ny": 128
+  },
+  {
+    "description": "서울 강남구 역삼동 centroid",
+    "lat": 37.5007,
+    "lon": 127.0368,
+    "nx": 62,
+    "ny": 126
+  },
+  {
+    "description": "부산 해운대구 centroid",
+    "lat": 35.1631,
+    "lon": 129.1636,
+    "nx": 100,
+    "ny": 76
+  },
+  {
+    "description": "제주시 연동 centroid",
+    "lat": 33.4996,
+    "lon": 126.5312,
+    "nx": 54,
+    "ny": 39
+  },
+  {
+    "description": "광주광역시 서구 centroid",
+    "lat": 35.1536,
+    "lon": 126.8526,
+    "nx": 59,
+    "ny": 75
+  }
+]

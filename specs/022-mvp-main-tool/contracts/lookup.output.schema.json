@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "LookupOutput",
+  "description": "Discriminated union on `kind`. Variant names are BINDING per docs/design/mvp-tools.md §5.4.",
+  "oneOf": [
+    {"$ref": "#/$defs/LookupSearchResult"},
+    {"$ref": "#/$defs/LookupRecord"},
+    {"$ref": "#/$defs/LookupCollection"},
+    {"$ref": "#/$defs/LookupTimeseries"},
+    {"$ref": "#/$defs/LookupError"}
+  ],
+  "$defs": {
+    "LookupMeta": {
+      "type": "object",
+      "required": ["source", "fetched_at", "request_id", "elapsed_ms"],
+      "properties": {
+        "source": {"type": "string"},
+        "fetched_at": {"type": "string", "format": "date-time"},
+        "request_id": {"type": "string", "format": "uuid"},
+        "elapsed_ms": {"type": "integer", "minimum": 0},
+        "rate_limit_remaining": {"type": ["integer", "null"]}
+      }
+    },
+    "AdapterCandidate": {
+      "type": "object",
+      "required": ["tool_id", "score", "required_params", "search_hint", "why_matched"],
+      "properties": {
+        "tool_id": {"type": "string"},
+        "score": {"type": "number", "minimum": 0},
+        "required_params": {"type": "array", "items": {"type": "string"}},
+        "search_hint": {"type": "string"},
+        "why_matched": {"type": "string"}
+      }
+    },
+    "LookupSearchResult": {
+      "type": "object",
+      "required": ["kind", "candidates", "total_registry_size", "effective_top_k"],
+      "properties": {
+        "kind": {"const": "search"},
+        "candidates": {"type": "array", "items": {"$ref": "#/$defs/AdapterCandidate"}},
+        "total_registry_size": {"type": "integer", "minimum": 0},
+        "effective_top_k": {"type": "integer", "minimum": 0, "maximum": 20},
+        "reason": {"enum": ["ok", "empty_registry", "below_threshold"], "default": "ok"}
+      }
+    },
+    "LookupRecord": {
+      "type": "object",
+      "required": ["kind", "item", "meta"],
+      "properties": {
+        "kind": {"const": "record"},
+        "item": {"type": "object"},
+        "meta": {"$ref": "#/$defs/LookupMeta"}
+      }
+    },
+    "LookupCollection": {
+      "type": "object",
+      "required": ["kind", "items", "meta"],
+      "properties": {
+        "kind": {"const": "collection"},
+        "items": {"type": "array", "items": {"type": "object"}},
+        "total_count": {"type": ["integer", "null"]},
+        "next_cursor": {"type": ["string", "null"]},
+        "meta": {"$ref": "#/$defs/LookupMeta"}
+      }
+    },
+    "LookupTimeseries": {
+      "type": "object",
+      "required": ["kind", "points", "interval", "meta"],
+      "properties": {
+        "kind": {"const": "timeseries"},
+        "points": {"type": "array", "items": {"type": "object"}},
+        "interval": {"enum": ["minute", "hour", "day"]},
+        "meta": {"$ref": "#/$defs/LookupMeta"}
+      }
+    },
+    "LookupError": {
+      "type": "object",
+      "required": ["kind", "reason", "message"],
+      "properties": {
+        "kind": {"const": "error"},
+        "reason": {"enum": ["auth_required", "stale_data", "timeout", "upstream_unavailable", "unknown_tool", "invalid_params", "out_of_domain", "empty_registry"]},
+        "message": {"type": "string"},
+        "upstream_code": {"type": ["string", "null"]},
+        "upstream_message": {"type": ["string", "null"]},
+        "retryable": {"type": "boolean", "default": false},
+        "meta": {"oneOf": [{"$ref": "#/$defs/LookupMeta"}, {"type": "null"}]}
+      }
+    }
+  }
+}

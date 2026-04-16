@@ -1,14 +1,103 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Bilingual (Korean + English) token-overlap search for the KOSMOS Tool System."""
+"""BM25-based search for the KOSMOS Tool System.
+
+Public API (for external callers):
+- ``search(query, bm25_index, registry, top_k)`` — BM25 facade returning ``AdapterCandidate``
+  objects; accepts the instance-owned ``BM25Index`` from ``ToolRegistry``.
+- ``search_tools(tools, query, max_results)`` — legacy token-overlap function kept for
+  backward compatibility with ``ToolRegistry.search()``; will be removed in a follow-on epic.
+- ``create_search_meta_tool()`` — factory for the ``search_tools`` meta-tool definition.
+"""
 
 from __future__ import annotations
 
+import logging
+from typing import TYPE_CHECKING
+
+from kosmos.tools.bm25_index import BM25Index
 from kosmos.tools.models import (
+    AdapterCandidate,
     GovAPITool,
     SearchToolsInput,
     SearchToolsOutput,
     ToolSearchResult,
 )
+
+if TYPE_CHECKING:
+    from kosmos.tools.registry import ToolRegistry
+
+logger = logging.getLogger(__name__)
+
+
+def search(
+    query: str,
+    bm25_index: BM25Index,
+    registry: ToolRegistry,
+    top_k: int | None = None,
+) -> list[AdapterCandidate]:
+    """BM25-ranked adapter search over the tool registry.
+
+    Replaces the legacy token-overlap scoring.  Uses the instance-owned
+    ``BM25Index`` passed in from ``ToolRegistry`` so that multiple registry
+    instances (e.g. in parallel tests) never share state.
+
+    Adaptive top_k clamp (FR-009):
+        effective_top_k = max(1, min(top_k if top_k else 5, len(registry), 20))
+
+    Args:
+        query: Free-text query in Korean or English.
+        bm25_index: The ``BM25Index`` owned by the calling ``ToolRegistry``.
+        registry: The live ToolRegistry to search.
+        top_k: Per-call override.  None → use default (5).
+
+    Returns:
+        Ranked list of AdapterCandidate entries.
+    """
+    registry_size = len(registry)
+    default_k = 5
+    raw_k = top_k if top_k is not None else default_k
+    effective_top_k = max(1, min(raw_k, registry_size, 20))
+
+    if registry_size == 0:
+        return []
+
+    scored = bm25_index.score(query)
+    results: list[AdapterCandidate] = []
+
+    for tool_id, score in scored[:effective_top_k]:
+        try:
+            tool = registry.lookup(tool_id)
+        except Exception:  # pragma: no cover
+            logger.warning("search: tool %r in BM25 index but not in registry", tool_id)
+            continue
+
+        required_params = _required_params(tool)
+        candidate = AdapterCandidate(
+            tool_id=tool_id,
+            score=max(0.0, float(score)),
+            required_params=required_params,
+            search_hint=tool.search_hint,
+            why_matched=f"BM25 score {score:.4f} on search_hint",
+            requires_auth=tool.requires_auth,
+            is_personal_data=tool.is_personal_data,
+        )
+        results.append(candidate)
+
+    return results
+
+
+def _required_params(tool: GovAPITool) -> list[str]:
+    """Extract required parameter names from a tool's input_schema."""
+    try:
+        schema = tool.input_schema.model_json_schema()
+        return list(schema.get("required", []))
+    except Exception:  # pragma: no cover
+        return []
+
+
+# ---------------------------------------------------------------------------
+# Legacy token-overlap function — kept for ToolRegistry.search() backward compat
+# ---------------------------------------------------------------------------
 
 
 def search_tools(
@@ -17,6 +106,9 @@ def search_tools(
     max_results: int = 5,
 ) -> list[ToolSearchResult]:
     """Search tools by Korean or English keywords in search_hint.
+
+    Legacy token-overlap algorithm retained for ToolRegistry.search() backward
+    compatibility.  New code should use ``search()`` instead.
 
     Algorithm:
     1. Tokenize query into lowercase tokens (split by whitespace).
@@ -28,9 +120,6 @@ def search_tools(
     5. If score > 0, include in results.
     6. Sort by score descending.
     7. Return top max_results.
-
-    Score normalization: score = matched_count / total_query_tokens
-    This gives a 0.0 to 1.0 range.
 
     Args:
         tools: All registered tool definitions to search over.

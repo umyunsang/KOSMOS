@@ -5,7 +5,8 @@ from __future__ import annotations
 
 import logging
 
-from kosmos.tools.errors import DuplicateToolError, ToolNotFoundError
+from kosmos.tools.bm25_index import BM25Index
+from kosmos.tools.errors import DuplicateToolError, RegistrationError, ToolNotFoundError
 from kosmos.tools.models import GovAPITool, ToolSearchResult
 from kosmos.tools.rate_limiter import RateLimiter
 from kosmos.tools.search import search_tools
@@ -19,15 +20,38 @@ class ToolRegistry:
     def __init__(self) -> None:
         self._tools: dict[str, GovAPITool] = {}
         self._rate_limiters: dict[str, RateLimiter] = {}
+        self.bm25_index: BM25Index = BM25Index({})
 
     def register(self, tool: GovAPITool) -> None:
-        """Register a tool. Raises DuplicateToolError if id already registered."""
+        """Register a tool.
+
+        Raises:
+            DuplicateToolError: If tool.id is already registered.
+            RegistrationError: If ``is_personal_data=True`` without ``requires_auth=True``
+                (FR-038 — fail-closed PII invariant).
+        """
         if tool.id in self._tools:
             raise DuplicateToolError(tool.id)
+
+        # FR-038: PII-flagged adapters MUST also require authentication.
+        if tool.is_personal_data and not tool.requires_auth:
+            raise RegistrationError(
+                tool.id,
+                "is_personal_data=True requires requires_auth=True (Constitution §II / FR-038)",
+            )
+
         self._tools[tool.id] = tool
         self._rate_limiters[tool.id] = RateLimiter(
             limit=tool.rate_limit_per_minute,
         )
+
+        # Rebuild the instance-owned BM25 index from the full current
+        # search_hint corpus so that subsequent search() calls reflect the
+        # newly registered adapter.  Using an instance attribute instead of a
+        # module-level global prevents cross-contamination between registry
+        # instances (e.g. parallel pytest workers).
+        self.bm25_index.rebuild({tid: t.search_hint for tid, t in self._tools.items()})
+
         logger.info("Registered tool: %s", tool.id)
 
     def lookup(self, tool_id: str) -> GovAPITool:

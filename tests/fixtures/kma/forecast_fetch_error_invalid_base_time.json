@@ -1,0 +1,10 @@
+{
+  "_comment": "Normalized LookupError envelope for invalid base_time. The adapter raises before calling the upstream KMA API. reason=invalid_params per LookupErrorReason.",
+  "kind": "error",
+  "reason": "invalid_params",
+  "message": "base_time '0600' is not a valid KMA forecast base time. Must be one of: 0200, 0500, 0800, 1100, 1400, 1700, 2000, 2300.",
+  "upstream_code": null,
+  "upstream_message": null,
+  "retryable": false,
+  "meta": null
+}

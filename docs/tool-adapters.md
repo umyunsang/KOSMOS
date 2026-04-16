@@ -149,3 +149,60 @@ Include: Korean noun, English gloss, ministry name in both languages, synonyms a
 ## Personal data flag
 
 `is_personal_data=True` triggers the permission pipeline's stricter gate (Layer 3). Set to `False` only if the endpoint returns aggregate statistics with no individual records. When in doubt, leave it `True` — the default is fail-closed for a reason.
+
+## FR-038 invariant: `is_personal_data=True` requires `requires_auth=True`
+
+**Rule**: Any tool registered with `is_personal_data=True` must also set `requires_auth=True`. Registering a PII-flagged tool without auth enabled is a hard error enforced in `ToolRegistry.register()` at startup:
+
+```python
+# src/kosmos/tools/registry.py — enforced at registration time
+if tool.is_personal_data and not tool.requires_auth:
+    raise RegistrationError(
+        "is_personal_data=True requires requires_auth=True (Constitution §II / FR-038)"
+    )
+```
+
+This invariant is Constitution §II (fail-closed principle): personal data must never be accessible to unauthenticated sessions. The registry acts as the last line of defence against mis-configured adapters reaching production.
+
+**PR checklist additions for PII-flagged adapters**:
+
+- [ ] `is_personal_data=True` is paired with `requires_auth=True` — never declare one without the other
+- [ ] The `llm_description` field warns the LLM that unauthenticated calls will be rejected (`auth_required`)
+
+## Layer 3 auth-gate contract for `requires_auth=True` adapters
+
+When `requires_auth=True`, `ToolExecutor.invoke()` short-circuits unconditionally before the adapter handler body is reached (FR-025, FR-026, SC-006):
+
+```
+session_identity is None  →  LookupError(reason="auth_required")
+                              ↑ returned immediately; handle() never called
+```
+
+This means:
+
+1. The handler body of an auth-gated adapter is **unreachable** for unauthenticated sessions — no HTTP call to the upstream API is ever made.
+2. The adapter **implementation can be a stub** (interface-only): a full `GovAPITool` registration with valid Pydantic I/O schemas, but a `handle()` body that raises `Layer3GateViolation` as a defence-in-depth guard.
+3. The stub is sufficient to satisfy the executor's adapter contract, pass the test suite, and expose the tool to the LLM for discovery — execution is gated at the platform level, not the adapter level.
+
+### Interface-only adapter pattern (NMC reference implementation)
+
+`src/kosmos/tools/nmc/emergency_search.py` is the canonical example. The handler raises `Layer3GateViolation` unconditionally:
+
+```python
+async def handle(inp: NmcEmergencySearchInput) -> dict[str, Any]:
+    """Should never reach here — Layer 3 gate short-circuits on requires_auth=True."""
+    raise Layer3GateViolation("nmc_emergency_search")
+```
+
+Use this pattern when:
+- The upstream API requires citizen auth credentials not yet provisioned (e.g., NMC live auth pending)
+- The output schema is not yet finalized but the tool must be discoverable and registered
+- You want to assert a future implementation contract without risking an accidental unauthenticated upstream call
+
+**When using the interface-only pattern**, the PR checklist items for "recorded fixture" and "happy-path unit test" are replaced by:
+
+- [ ] `handle()` raises `Layer3GateViolation` unconditionally
+- [ ] A unit test asserts `Layer3GateViolation` is raised when `handle()` is called directly (defence-in-depth)
+- [ ] A unit test asserts the executor returns `LookupError(reason="auth_required")` when called with `session_identity=None` (gate contract)
+- [ ] A `# TODO` comment in `handle()` references the Epic that will implement the real upstream call
+- [ ] The placeholder `output_schema` documents why it is a stub (`RootModel[dict]` is acceptable until real schema is known)

@@ -77,8 +77,15 @@ def authn_tool() -> GovAPITool:
 
 @pytest.fixture()
 def personal_tool() -> GovAPITool:
-    """A public tool that returns personal data — immune rule applies."""
-    return _make_tool(tool_id="personal_tool", auth_type="public", is_personal_data=True)
+    """An auth-gated tool that returns personal data — immune rule applies.
+
+    Note: FR-038 (Epic #507) prohibits ``is_personal_data=True`` without
+    ``requires_auth=True`` at registration, so this fixture uses
+    ``auth_type="oauth"`` to satisfy the invariant.  The bypass-immune rule
+    tested here (personal_data_citizen_mismatch) still fires regardless of
+    auth_type — the immune behavior is driven by ``is_personal_data=True``.
+    """
+    return _make_tool(tool_id="personal_tool", auth_type="oauth", is_personal_data=True)
 
 
 @pytest.fixture()

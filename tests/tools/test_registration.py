@@ -12,40 +12,68 @@ class TestToolRegistration:
     """Verify register_all_tools() wires all adapters correctly."""
 
     def test_registers_all_tools(self) -> None:
-        """All tools are registered after calling register_all_tools."""
+        """All tools are registered after calling register_all_tools.
+
+        Count history (Epic #507):
+          T049  —2 (address_to_region, address_to_grid removed)
+          Stage 3 (T033/T048/T056)  +3 (nmc_emergency_search,
+            kma_forecast_fetch, hira_hospital_search)
+        Total: 13 (= 2 MVP core + 8 legacy adapters + 3 seed adapters).
+        """
         registry = ToolRegistry()
         executor = ToolExecutor(registry)
         register_all_tools(registry, executor)
-        assert len(registry) == 9
+        assert len(registry) == 13
 
     def test_tool_ids_present(self) -> None:
-        """Each expected tool_id is in the registry."""
+        """Each expected tool_id is in the registry.
+
+        Note: address_to_region and address_to_grid were removed in T049 (Epic
+        #507).  Administrative code and grid resolution are now backend-only
+        (juso/sgis helpers and latlon_to_lcc respectively).
+        """
         registry = ToolRegistry()
         executor = ToolExecutor(registry)
         register_all_tools(registry, executor)
         expected = {
+            # MVP LLM-visible core surface (T028)
+            "resolve_location",
+            "lookup",
+            # Adapters
             "koroad_accident_search",
+            "koroad_accident_hazard_search",
             "kma_weather_alert_status",
             "kma_current_observation",
             "road_risk_score",
-            "address_to_region",
-            "address_to_grid",
+            # Stage 3 seed adapters (Epic #507)
+            "nmc_emergency_search",
+            "kma_forecast_fetch",
+            "hira_hospital_search",
         }
         for tool_id in expected:
             assert tool_id in registry, f"{tool_id} not found in registry"
 
     def test_adapters_bound(self) -> None:
-        """Each tool has a corresponding adapter in the executor."""
+        """Each adapter tool has a corresponding adapter in the executor.
+
+        Note: resolve_location and lookup are core surface tools — they are
+        handled directly by the orchestrator and do NOT have executor adapters.
+        Note: address_to_region and address_to_grid were removed in T049 (Epic
+        #507) — they are no longer LLM-visible tools.
+        """
         registry = ToolRegistry()
         executor = ToolExecutor(registry)
         register_all_tools(registry, executor)
         expected = {
             "koroad_accident_search",
+            "koroad_accident_hazard_search",
             "kma_weather_alert_status",
             "kma_current_observation",
             "road_risk_score",
-            "address_to_region",
-            "address_to_grid",
+            # Stage 3 seed adapters (Epic #507)
+            "nmc_emergency_search",
+            "kma_forecast_fetch",
+            "hira_hospital_search",
         }
         for tool_id in expected:
             assert tool_id in executor._adapters, f"No adapter for {tool_id}"
@@ -56,6 +84,15 @@ class TestToolRegistration:
         executor = ToolExecutor(registry)
         # Should not raise
         register_all_tools(registry, executor)
+
+    def test_core_tools_include_mvp_surface(self) -> None:
+        """resolve_location and lookup must appear in core_tools() (T028, FR-001)."""
+        registry = ToolRegistry()
+        executor = ToolExecutor(registry)
+        register_all_tools(registry, executor)
+        core_ids = {t.id for t in registry.core_tools()}
+        assert "resolve_location" in core_ids
+        assert "lookup" in core_ids
 
     def test_idempotent_fails_on_duplicate(self) -> None:
         """Calling register_all_tools twice raises DuplicateToolError."""

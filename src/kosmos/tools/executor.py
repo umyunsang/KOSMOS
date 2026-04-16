@@ -26,6 +26,7 @@ from kosmos.observability import (
     GEN_AI_TOOL_TYPE,
     filter_metadata,
 )
+from kosmos.tools.envelope import make_error_envelope
 from kosmos.tools.errors import ToolNotFoundError
 from kosmos.tools.models import ToolResult
 from kosmos.tools.registry import ToolRegistry
@@ -40,6 +41,21 @@ logger = logging.getLogger(__name__)
 _tracer = trace.get_tracer(__name__)
 
 AdapterFn = Callable[[BaseModel], Awaitable[dict[str, Any]]]
+
+
+def _classify_adapter_exception(exc: Exception) -> tuple[str, bool]:
+    """Map adapter exceptions to (reason, retryable) for the error envelope."""
+    import httpx  # noqa: PLC0415
+
+    from kosmos.tools.kma.projection import KMADomainError  # noqa: PLC0415
+
+    if isinstance(exc, (ValueError, TypeError, KMADomainError)):
+        return ("invalid_params", False)
+    if isinstance(exc, httpx.TimeoutException):
+        return ("timeout", True)
+    if isinstance(exc, (httpx.HTTPStatusError, httpx.RequestError)):
+        return ("upstream_unavailable", True)
+    return ("upstream_unavailable", True)
 
 
 class ToolExecutor:
@@ -94,6 +110,140 @@ class ToolExecutor:
         """
         self._adapters[tool_id] = adapter
         logger.debug("Registered adapter for tool: %s", tool_id)
+
+    async def invoke(
+        self,
+        tool_id: str,
+        params: dict[str, object],
+        request_id: str,
+        *,
+        session_identity: object | None = None,
+    ) -> object:
+        """Invoke an adapter handler through the Layer 3 auth-gate + envelope normalizer.
+
+        This is the typed invocation path for ``lookup(mode='fetch')``.  The
+        legacy ``dispatch()`` path remains for backward compatibility with
+        existing callers that pass JSON strings.
+
+        Layer 3 short-circuit (FR-025, FR-026):
+            If ``tool.requires_auth`` is True and ``session_identity`` is None,
+            return ``LookupError(reason="auth_required")`` with ZERO upstream
+            calls.  This check is unconditional — no bypass, no test shortcut.
+
+        Args:
+            tool_id: Stable adapter identifier.
+            params: Raw parameter dict (validated against adapter input_schema).
+            request_id: UUID string for tracing (injected into meta).
+            session_identity: Caller identity token.  None = unauthenticated.
+
+        Returns:
+            A validated LookupOutput instance (LookupRecord / LookupCollection /
+            LookupTimeseries / LookupError).
+        """
+        import time  # noqa: PLC0415
+
+        from pydantic import ValidationError  # noqa: PLC0415
+
+        from kosmos.tools.envelope import normalize  # noqa: PLC0415
+        from kosmos.tools.errors import EnvelopeNormalizationError  # noqa: PLC0415
+
+        start_ns = time.monotonic_ns()
+
+        def _elapsed() -> int:
+            return (time.monotonic_ns() - start_ns) // 1_000_000
+
+        # --- Tool lookup -------------------------------------------------------
+        try:
+            tool = self._registry.lookup(tool_id)
+        except ToolNotFoundError:
+            logger.warning("invoke: tool not found: %s", tool_id)
+            return make_error_envelope(
+                tool_id=tool_id,
+                reason="unknown_tool",
+                message=f"No tool registered with id {tool_id!r}.",
+                request_id=request_id,
+                elapsed_ms=_elapsed(),
+                retryable=False,
+            )
+
+        # --- Layer 3 auth-gate (FR-025, FR-026) — UNCONDITIONAL ----------------
+        if tool.requires_auth and session_identity is None:
+            logger.info(
+                "invoke: auth_required short-circuit for tool %s (zero upstream calls)",
+                tool_id,
+            )
+            return make_error_envelope(
+                tool_id=tool_id,
+                reason="auth_required",
+                message=(
+                    f"Tool {tool_id!r} requires authentication. "
+                    "Provide a session identity to proceed."
+                ),
+                request_id=request_id,
+                elapsed_ms=_elapsed(),
+                retryable=False,
+            )
+
+        # --- Adapter lookup -----------------------------------------------------
+        adapter = self._adapters.get(tool_id)
+        if adapter is None:
+            logger.warning("invoke: no adapter registered for tool: %s", tool_id)
+            return make_error_envelope(
+                tool_id=tool_id,
+                reason="unknown_tool",
+                message=f"No adapter registered for tool {tool_id!r}.",
+                request_id=request_id,
+                elapsed_ms=_elapsed(),
+                retryable=False,
+            )
+
+        # --- Input validation ---------------------------------------------------
+        try:
+            validated_input = tool.input_schema.model_validate(params)
+        except ValidationError as exc:
+            logger.warning("invoke: input validation failed for %s: %s", tool_id, exc)
+            return make_error_envelope(
+                tool_id=tool_id,
+                reason="invalid_params",
+                message=str(exc),
+                request_id=request_id,
+                elapsed_ms=_elapsed(),
+                retryable=False,
+            )
+
+        # --- Handler invocation -------------------------------------------------
+        try:
+            raw_output = await adapter(validated_input)
+        except Exception as exc:
+            logger.exception("invoke: adapter raised exception for %s: %s", tool_id, exc)
+            reason, retryable = _classify_adapter_exception(exc)
+            return make_error_envelope(
+                tool_id=tool_id,
+                reason=reason,
+                message=str(exc),
+                request_id=request_id,
+                elapsed_ms=_elapsed(),
+                retryable=retryable,
+            )
+
+        # --- Envelope normalisation (FR-015, FR-014) ----------------------------
+        try:
+            return normalize(
+                output=raw_output,
+                tool=tool,
+                request_id=request_id,
+                elapsed_ms=_elapsed(),
+            )
+        except EnvelopeNormalizationError as exc:
+            logger.error("invoke: envelope normalisation failed for %s: %s", tool_id, exc)
+            return make_error_envelope(
+                tool_id=tool_id,
+                reason="upstream_unavailable",
+                message=str(exc),
+                request_id=request_id,
+                elapsed_ms=_elapsed(),
+                retryable=False,
+            )
 
     async def dispatch(  # noqa: C901
         self,

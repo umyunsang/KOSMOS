@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "LookupInput",
+  "description": "Discriminated union on `mode`. search → BM25 over adapter registry. fetch → typed invocation of a specific adapter by id.",
+  "oneOf": [
+    {"$ref": "#/$defs/LookupSearchInput"},
+    {"$ref": "#/$defs/LookupFetchInput"}
+  ],
+  "$defs": {
+    "LookupSearchInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "query"],
+      "properties": {
+        "mode": {"const": "search"},
+        "query": {"type": "string", "minLength": 1, "maxLength": 200, "description": "Korean or English free-text describing the data you want."},
+        "domain": {"type": ["string", "null"], "description": "Optional facet filter (matches GovAPITool.category)."},
+        "top_k": {"type": ["integer", "null"], "minimum": 1, "maximum": 20, "description": "Per-call override; server-side clamp [1, 20]. If null, uses KOSMOS_LOOKUP_TOPK default (5)."}
+      }
+    },
+    "LookupFetchInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "tool_id", "params"],
+      "properties": {
+        "mode": {"const": "fetch"},
+        "tool_id": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$", "description": "Must come from a previous `search` result. Never guess."},
+        "params": {"type": "object", "description": "Validated against the target adapter's input_schema at fetch time."},
+        "page": {"type": ["integer", "null"], "minimum": 1}
+      }
+    }
+  }
+}

@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ResolveLocationOutput",
+  "description": "Discriminated union on `kind`. Binding variant names from docs/design/mvp-tools.md §4.",
+  "oneOf": [
+    {"$ref": "#/$defs/CoordResult"},
+    {"$ref": "#/$defs/AdmCodeResult"},
+    {"$ref": "#/$defs/AddressResult"},
+    {"$ref": "#/$defs/POIResult"},
+    {"$ref": "#/$defs/ResolveBundle"},
+    {"$ref": "#/$defs/ResolveError"}
+  ],
+  "$defs": {
+    "CoordResult": {
+      "type": "object",
+      "required": ["kind", "lat", "lon", "confidence", "source"],
+      "properties": {
+        "kind": {"const": "coords"},
+        "lat": {"type": "number", "minimum": -90, "maximum": 90},
+        "lon": {"type": "number", "minimum": -180, "maximum": 180},
+        "confidence": {"enum": ["high", "medium", "low"]},
+        "source": {"enum": ["kakao", "juso", "sgis"]}
+      }
+    },
+    "AdmCodeResult": {
+      "type": "object",
+      "required": ["kind", "code", "name", "level", "source"],
+      "properties": {
+        "kind": {"const": "adm_cd"},
+        "code": {"type": "string", "pattern": "^[0-9]{10}$"},
+        "name": {"type": "string"},
+        "level": {"enum": ["sido", "sigungu", "eupmyeondong"]},
+        "source": {"enum": ["sgis", "juso"]}
+      }
+    },
+    "AddressResult": {
+      "type": "object",
+      "required": ["kind", "source"],
+      "properties": {
+        "kind": {"const": "address"},
+        "road_address": {"type": ["string", "null"]},
+        "jibun_address": {"type": ["string", "null"]},
+        "postal_code": {"type": ["string", "null"]},
+        "source": {"enum": ["kakao", "juso"]}
+      }
+    },
+    "POIResult": {
+      "type": "object",
+      "required": ["kind", "name", "category", "lat", "lon", "source"],
+      "properties": {
+        "kind": {"const": "poi"},
+        "name": {"type": "string"},
+        "category": {"type": "string"},
+        "lat": {"type": "number"},
+        "lon": {"type": "number"},
+        "source": {"const": "kakao"}
+      }
+    },
+    "ResolveBundle": {
+      "type": "object",
+      "required": ["kind", "source"],
+      "properties": {
+        "kind": {"const": "bundle"},
+        "coords": {"$ref": "#/$defs/CoordResult"},
+        "adm_cd": {"$ref": "#/$defs/AdmCodeResult"},
+        "address": {"$ref": "#/$defs/AddressResult"},
+        "poi": {"$ref": "#/$defs/POIResult"},
+        "source": {"const": "bundle"}
+      }
+    },
+    "ResolveError": {
+      "type": "object",
+      "required": ["kind", "reason", "message"],
+      "properties": {
+        "kind": {"const": "error"},
+        "reason": {"enum": ["not_found", "ambiguous", "upstream_unavailable", "invalid_query", "empty_query", "out_of_domain"]},
+        "message": {"type": "string"},
+        "candidates": {"type": "array", "items": {"oneOf": [
+          {"$ref": "#/$defs/CoordResult"},
+          {"$ref": "#/$defs/AdmCodeResult"},
+          {"$ref": "#/$defs/AddressResult"},
+          {"$ref": "#/$defs/POIResult"}
+        ]}}
+      }
+    }
+  }
+}
