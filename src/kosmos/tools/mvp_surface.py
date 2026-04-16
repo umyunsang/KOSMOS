@@ -15,6 +15,7 @@ from pydantic import RootModel
 
 from kosmos.tools.models import (
     GovAPITool,
+    LookupFetchInput,
     LookupSearchInput,
     ResolveLocationInput,
 )
@@ -33,6 +34,10 @@ class _ResolveLocationOutput(RootModel[object]):
 
 class _LookupOutput(RootModel[object]):
     """Placeholder output schema for lookup tool registration."""
+
+
+class _LookupInput(RootModel[LookupSearchInput | LookupFetchInput]):
+    """Combined input schema covering both search and fetch modes."""
 
 
 # ---------------------------------------------------------------------------
@@ -86,7 +91,7 @@ LOOKUP_SEARCH_TOOL = GovAPITool(
     category=["시스템", "도구검색", "데이터조회"],
     endpoint="internal://lookup",
     auth_type="public",
-    input_schema=LookupSearchInput,
+    input_schema=_LookupInput,
     output_schema=_LookupOutput,
     llm_description=(
         "Two-mode tool for discovering and invoking KOSMOS data adapters.\n\n"

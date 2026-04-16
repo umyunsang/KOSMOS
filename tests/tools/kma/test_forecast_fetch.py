@@ -62,9 +62,13 @@ class TestKmaForecastFetchInput:
             inp = KmaForecastFetchInput(lat=37.0, lon=127.0, base_date="20260416", base_time=bt)
             assert inp.base_time == bt
 
-    def test_invalid_base_time_raises(self) -> None:
-        with pytest.raises(ValidationError):
-            KmaForecastFetchInput(lat=37.0, lon=127.0, base_date="20260416", base_time="0600")
+    @pytest.mark.asyncio
+    async def test_invalid_base_time_returns_lookup_error(self) -> None:
+        """Invalid base_time is accepted by the model; handler returns LookupError."""
+        inp = KmaForecastFetchInput(lat=37.0, lon=127.0, base_date="20260416", base_time="0600")
+        result = await _fetch(inp)
+        assert isinstance(result, LookupError)
+        assert result.reason == "invalid_params"
 
     def test_invalid_base_date_pattern_raises(self) -> None:
         with pytest.raises(ValidationError):

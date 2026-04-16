@@ -30,7 +30,7 @@ from datetime import UTC
 from typing import Any
 
 import httpx
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field
 
 from kosmos.tools.errors import LookupErrorReason, _require_env
 from kosmos.tools.kma.projection import KMADomainError, latlon_to_lcc
@@ -90,16 +90,6 @@ class KmaForecastFetchInput(BaseModel):
             "Data is published approximately 10 minutes after each base time."
         ),
     )
-
-    @field_validator("base_time")
-    @classmethod
-    def _validate_base_time(cls, v: str) -> str:
-        if v not in _VALID_BASE_TIMES:
-            raise ValueError(
-                f"base_time {v!r} is not valid. Must be one of: {sorted(_VALID_BASE_TIMES)}"
-            )
-        return v
-
 
 # ---------------------------------------------------------------------------
 # Internal response parsing helpers

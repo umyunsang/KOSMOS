@@ -8,7 +8,7 @@ for secrets, conservative integers for rate/freshness windows.
 Usage::
 
     from kosmos.settings import settings
-    key = settings.kosmos_kakao_rest_key
+    key = settings.kosmos_kakao_api_key
 """
 
 from __future__ import annotations
@@ -35,8 +35,8 @@ class KosmosSettings(BaseSettings):
     """Max acceptable age of NMC hvidate field in minutes."""
 
     # --- External API keys (FR-032) ---
-    kakao_rest_key: str = Field(default="")
-    """Kakao REST API key (KOSMOS_KAKAO_REST_KEY)."""
+    kakao_api_key: str = Field(default="")
+    """Kakao REST API key (KOSMOS_KAKAO_API_KEY)."""
 
     juso_confm_key: str = Field(default="")
     """행정안전부 도로명주소 확인키 (KOSMOS_JUSO_CONFM_KEY)."""
