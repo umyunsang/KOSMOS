@@ -127,6 +127,12 @@ def _stale_message(freshness: FreshnessResult) -> str:
             f"NMC data is stale: hvidate missing or unparseable "
             f"(threshold: {freshness.threshold_minutes} min)"
         )
+    if freshness.data_age_minutes < 0:
+        return (
+            f"NMC data is stale: hvidate is in the future "
+            f"(age={freshness.data_age_minutes:.1f} min, "
+            f"threshold: {freshness.threshold_minutes} min)"
+        )
     return (
         f"NMC data is stale: {freshness.data_age_minutes:.0f} min old "
         f"(threshold: {freshness.threshold_minutes} min)"
@@ -187,7 +193,15 @@ async def handle(inp: NmcEmergencySearchInput) -> dict[str, Any]:
                 "retryable": True,
             }
 
-        data = resp.json()
+        try:
+            data = resp.json()
+        except ValueError:
+            return {
+                "kind": "error",
+                "reason": LookupErrorReason.upstream_unavailable,
+                "message": "NMC API returned invalid JSON body",
+                "retryable": True,
+            }
 
     header = data.get("response", {}).get("header", {})
     result_code = header.get("resultCode", "")
