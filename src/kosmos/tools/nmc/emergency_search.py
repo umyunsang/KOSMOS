@@ -118,7 +118,7 @@ async def handle(inp: NmcEmergencySearchInput) -> dict[str, Any]:
     from kosmos.settings import settings
     from kosmos.tools.nmc.freshness import check_freshness
 
-    params = {
+    params: dict[str, str | int | float] = {
         "serviceKey": settings.data_go_kr_api_key,
         "page": 1,
         "perPage": inp.limit,
