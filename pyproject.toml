@@ -57,7 +57,6 @@ markers = [
 ]
 filterwarnings = [
     "error",
-    "ignore::pytest.PytestUnraisableExceptionWarning",
     "ignore::pytest_benchmark.logger.PytestBenchmarkWarning",
 ]
 
