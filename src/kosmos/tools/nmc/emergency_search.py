@@ -118,6 +118,14 @@ async def handle(inp: NmcEmergencySearchInput) -> dict[str, Any]:
     from kosmos.settings import settings
     from kosmos.tools.nmc.freshness import check_freshness
 
+    if not settings.data_go_kr_api_key:
+        return {
+            "kind": "error",
+            "reason": LookupErrorReason.upstream_unavailable,
+            "message": "KOSMOS_DATA_GO_KR_API_KEY is not configured",
+            "retryable": False,
+        }
+
     params: dict[str, str | int | float] = {
         "serviceKey": settings.data_go_kr_api_key,
         "page": 1,
@@ -127,9 +135,36 @@ async def handle(inp: NmcEmergencySearchInput) -> dict[str, Any]:
     }
 
     async with httpx.AsyncClient(timeout=10.0) as client:
-        resp = await client.get(_BASE_URL, params=params)
+        resp = await client.get(
+            _BASE_URL,
+            params=params,
+            headers={"Accept": "application/json"},
+        )
         resp.raise_for_status()
+
+        content_type = resp.headers.get("content-type", "")
+        if "json" not in content_type.lower():
+            return {
+                "kind": "error",
+                "reason": LookupErrorReason.upstream_unavailable,
+                "message": f"NMC API returned non-JSON content-type: {content_type!r}",
+                "retryable": True,
+            }
+
         data = resp.json()
+
+    header = data.get("response", {}).get("header", {})
+    result_code = header.get("resultCode", "")
+    if result_code != "00":
+        return {
+            "kind": "error",
+            "reason": LookupErrorReason.upstream_unavailable,
+            "message": (
+                f"NMC API error: resultCode={result_code!r}, "
+                f"resultMsg={header.get('resultMsg', 'unknown')!r}"
+            ),
+            "retryable": True,
+        }
 
     items = data.get("response", {}).get("body", {}).get("items", [])
     hvidate_str = items[0].get("hvidate") if items else None
@@ -149,8 +184,7 @@ async def handle(inp: NmcEmergencySearchInput) -> dict[str, Any]:
         "reason": LookupErrorReason.stale_data,
         "message": (
             f"NMC data is stale: {freshness.data_age_minutes:.0f} min old "
-            f"(threshold: {freshness.threshold_minutes} min). "
-            f"hvidate={freshness.hvidate_raw!r}"
+            f"(threshold: {freshness.threshold_minutes} min)"
         ),
         "retryable": False,
     }

@@ -175,6 +175,15 @@ class TestStalePath:
             f"Expected stale for hvidate={hvidate!r}, got is_fresh=True"
         )
 
+    @patch("kosmos.tools.nmc.freshness.datetime")
+    def test_stale_future_timestamp(self, mock_dt: object) -> None:
+        """hvidate 5 min in the future → fail-closed: is_fresh=False, age < 0."""
+        _mock_dt(mock_dt)
+        result = check_freshness("2026-04-16 14:15:00", threshold_minutes=30)
+
+        assert result.is_fresh is False
+        assert result.data_age_minutes < 0
+
 
 # ---------------------------------------------------------------------------
 # T009 — Threshold config tests [US3]
@@ -358,6 +367,68 @@ class TestFreshnessIntegration:
             f"Expected LookupError, got {type(result).__name__}: {result!r}"
         )
         assert result.reason == "stale_data"
+
+    @pytest.mark.asyncio
+    @respx.mock
+    @patch("kosmos.settings.settings")
+    async def test_upstream_error_resultcode_returns_upstream_unavailable(
+        self, mock_settings, nmc_reg_exec
+    ) -> None:
+        """NMC API resultCode != '00' → LookupError(reason='upstream_unavailable')."""
+        mock_settings.data_go_kr_api_key = "test-key"
+        mock_settings.nmc_freshness_minutes = 30
+        _, executor = nmc_reg_exec
+
+        error_payload = {
+            "response": {
+                "header": {"resultCode": "99", "resultMsg": "SERVICE_KEY_IS_NOT_REGISTERED_ERROR"},
+                "body": {"items": [], "totalCount": 0},
+            }
+        }
+        respx.get(url__regex=r".*odcloud\.kr.*").respond(200, json=error_payload)
+
+        from kosmos.tools.models import LookupError as LookupErrorModel
+
+        result = await executor.invoke(
+            "nmc_emergency_search",
+            {"lat": 37.5, "lon": 127.0, "limit": 5},
+            request_id="test-req-rc-err",
+            session_identity=object(),
+        )
+
+        assert isinstance(result, LookupErrorModel)
+        assert result.reason == "upstream_unavailable"
+        assert "resultCode" in result.message
+
+    @pytest.mark.asyncio
+    @respx.mock
+    @patch("kosmos.settings.settings")
+    async def test_non_json_response_returns_upstream_unavailable(
+        self, mock_settings, nmc_reg_exec
+    ) -> None:
+        """NMC API returns HTML instead of JSON → LookupError(reason='upstream_unavailable')."""
+        mock_settings.data_go_kr_api_key = "test-key"
+        mock_settings.nmc_freshness_minutes = 30
+        _, executor = nmc_reg_exec
+
+        respx.get(url__regex=r".*odcloud\.kr.*").respond(
+            200,
+            content=b"<html>Service Unavailable</html>",
+            headers={"content-type": "text/html"},
+        )
+
+        from kosmos.tools.models import LookupError as LookupErrorModel
+
+        result = await executor.invoke(
+            "nmc_emergency_search",
+            {"lat": 37.5, "lon": 127.0, "limit": 5},
+            request_id="test-req-html",
+            session_identity=object(),
+        )
+
+        assert isinstance(result, LookupErrorModel)
+        assert result.reason == "upstream_unavailable"
+        assert "non-JSON" in result.message
 
 
 # ---------------------------------------------------------------------------

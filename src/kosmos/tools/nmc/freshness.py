@@ -68,6 +68,20 @@ def check_freshness(
     now = datetime.now(tz=_KST)
     age_minutes = (now - hvidate).total_seconds() / 60.0
 
+    # Future timestamps are physically impossible — treat as stale (fail-closed).
+    if age_minutes < 0:
+        logger.warning(
+            "hvidate %r is in the future (age=%.1f min) — treating as stale (fail-closed)",
+            hvidate_str,
+            age_minutes,
+        )
+        return FreshnessResult(
+            is_fresh=False,
+            data_age_minutes=round(age_minutes, 2),
+            threshold_minutes=threshold_minutes,
+            hvidate_raw=hvidate_str,
+        )
+
     return FreshnessResult(
         is_fresh=age_minutes <= threshold_minutes,
         data_age_minutes=round(age_minutes, 2),
