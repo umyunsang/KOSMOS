@@ -25,6 +25,7 @@ from pydantic import BaseModel, ConfigDict, Field, RootModel
 
 from kosmos.tools.errors import LookupErrorReason
 from kosmos.tools.models import GovAPITool
+from kosmos.tools.nmc.freshness import FreshnessResult
 
 logger = logging.getLogger(__name__)
 
@@ -90,6 +91,49 @@ class _NmcEmergencySearchOutput(RootModel[dict[str, Any]]):
 
 
 # ---------------------------------------------------------------------------
+# Handler helpers
+# ---------------------------------------------------------------------------
+
+
+def _evaluate_freshness(items: list[dict[str, Any]]) -> FreshnessResult:
+    """Return the worst-case freshness across all items (fail-closed).
+
+    If any item is missing hvidate or is stale, the entire batch is stale.
+    """
+    from kosmos.tools.nmc.freshness import check_freshness
+
+    if not items:
+        return check_freshness(None)
+
+    worst: FreshnessResult | None = None
+    for item in items:
+        hv = item.get("hvidate")
+        if not hv:
+            return check_freshness(None)
+        result = check_freshness(hv)
+        if worst is None or not result.is_fresh:
+            worst = result
+            if not result.is_fresh:
+                break
+
+    assert worst is not None
+    return worst
+
+
+def _stale_message(freshness: FreshnessResult) -> str:
+    """Build a human-readable stale-data message."""
+    if freshness.data_age_minutes == float("inf"):
+        return (
+            f"NMC data is stale: hvidate missing or unparseable "
+            f"(threshold: {freshness.threshold_minutes} min)"
+        )
+    return (
+        f"NMC data is stale: {freshness.data_age_minutes:.0f} min old "
+        f"(threshold: {freshness.threshold_minutes} min)"
+    )
+
+
+# ---------------------------------------------------------------------------
 # Handler
 # ---------------------------------------------------------------------------
 
@@ -98,25 +142,17 @@ async def handle(inp: NmcEmergencySearchInput) -> dict[str, Any]:
     """Handle an NMC emergency search request.
 
     Fetches real-time emergency room bed availability from the NMC API,
-    extracts the hvidate freshness timestamp from the first item, and
-    enforces the freshness SLO via check_freshness().
+    evaluates freshness across all returned items, and enforces the
+    freshness SLO via check_freshness().
 
     Returns a LookupCollection dict when data is fresh, or a LookupError
     dict (reason=stale_data) when the data exceeds the freshness threshold.
-
-    Args:
-        inp: Validated NmcEmergencySearchInput (lat, lon, limit).
-
-    Returns:
-        dict matching LookupCollection shape on fresh data, or LookupError
-        shape on stale data.
 
     Raises:
         httpx.HTTPStatusError: When the upstream NMC API returns a non-2xx status.
         httpx.TimeoutException: When the upstream NMC API does not respond within 10 s.
     """
     from kosmos.settings import settings
-    from kosmos.tools.nmc.freshness import check_freshness
 
     if not settings.data_go_kr_api_key:
         return {
@@ -166,26 +202,23 @@ async def handle(inp: NmcEmergencySearchInput) -> dict[str, Any]:
             "retryable": True,
         }
 
-    items = data.get("response", {}).get("body", {}).get("items", [])
-    hvidate_str = items[0].get("hvidate") if items else None
-
-    freshness = check_freshness(hvidate_str)
+    body = data.get("response", {}).get("body", {})
+    items = body.get("items", [])
+    upstream_total = body.get("totalCount")
+    freshness = _evaluate_freshness(items)
 
     if freshness.is_fresh:
         return {
             "kind": "collection",
             "items": items,
-            "total_count": len(items),
+            "total_count": upstream_total if upstream_total is not None else len(items),
             "meta": {"freshness_status": "fresh"},
         }
 
     return {
         "kind": "error",
         "reason": LookupErrorReason.stale_data,
-        "message": (
-            f"NMC data is stale: {freshness.data_age_minutes:.0f} min old "
-            f"(threshold: {freshness.threshold_minutes} min)"
-        ),
+        "message": _stale_message(freshness),
         "retryable": False,
     }
 
