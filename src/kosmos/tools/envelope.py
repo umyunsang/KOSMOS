@@ -4,12 +4,13 @@
 Every adapter handler output MUST pass through ``normalize()`` before being
 returned to the model.  ``normalize()`` validates the output against the
 frozen 5-variant ``LookupOutput`` discriminated union, injects the ``meta``
-block, and converts exceptions to ``LookupError``.
+block, and raises EnvelopeNormalizationError on discriminator mismatches.
 
 FR-014: Inject ``meta.source``, ``meta.fetched_at``, ``meta.request_id``,
         ``meta.elapsed_ms`` on every envelope.
 FR-015: Reject discriminator mismatches with ``EnvelopeNormalizationError``.
-FR-017: Catch handler exceptions and convert to ``LookupError``.
+FR-017: Catch handler exceptions and convert to ``LookupError`` — implemented
+        in ``ToolExecutor.invoke()``, not here.
 """
 
 from __future__ import annotations
@@ -80,9 +81,9 @@ def normalize(
             "expected dict or BaseModel",
         )
 
-    # Inject meta into the raw payload before validation so that any variant
-    # that carries a ``meta`` field receives the enriched block.
-    if isinstance(raw, dict) and "meta" not in raw:
+    # Always overwrite meta so that adapters cannot return stale or forged
+    # meta values.
+    if isinstance(raw, dict):
         raw = {**raw, "meta": meta.model_dump(mode="json")}
 
     try:

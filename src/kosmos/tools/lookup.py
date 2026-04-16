@@ -91,6 +91,7 @@ async def _lookup_search(
 
     candidates = search(
         query=inp.query,
+        bm25_index=registry.bm25_index,
         registry=registry,
         top_k=effective_top_k,
     )

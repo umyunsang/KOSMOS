@@ -5,10 +5,11 @@ from __future__ import annotations
 
 import logging
 
+from kosmos.tools.bm25_index import BM25Index
 from kosmos.tools.errors import DuplicateToolError, RegistrationError, ToolNotFoundError
 from kosmos.tools.models import GovAPITool, ToolSearchResult
 from kosmos.tools.rate_limiter import RateLimiter
-from kosmos.tools.search import _registry_bm25_index, search_tools
+from kosmos.tools.search import search_tools
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +20,7 @@ class ToolRegistry:
     def __init__(self) -> None:
         self._tools: dict[str, GovAPITool] = {}
         self._rate_limiters: dict[str, RateLimiter] = {}
+        self.bm25_index: BM25Index = BM25Index({})
 
     def register(self, tool: GovAPITool) -> None:
         """Register a tool.
@@ -43,9 +45,12 @@ class ToolRegistry:
             limit=tool.rate_limit_per_minute,
         )
 
-        # Rebuild BM25 index from the full current search_hint corpus so that
-        # subsequent search() calls reflect the newly registered adapter.
-        _registry_bm25_index.rebuild({tid: t.search_hint for tid, t in self._tools.items()})
+        # Rebuild the instance-owned BM25 index from the full current
+        # search_hint corpus so that subsequent search() calls reflect the
+        # newly registered adapter.  Using an instance attribute instead of a
+        # module-level global prevents cross-contamination between registry
+        # instances (e.g. parallel pytest workers).
+        self.bm25_index.rebuild({tid: t.search_hint for tid, t in self._tools.items()})
 
         logger.info("Registered tool: %s", tool.id)
 

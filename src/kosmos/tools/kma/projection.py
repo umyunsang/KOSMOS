@@ -19,7 +19,7 @@ Canonical constants (from KMA 단기예보 격자 기술 문서, 2021-12):
   XO    = 43          Grid x-origin offset [grid cells]
   YO    = 136         Grid y-origin offset [grid cells]
 
-Cross-check: 서울청사 (127.0495 E, 37.5665 N) → (nx=60, ny=127).
+Cross-check: 서울청사 (127.0495 E, 37.5665 N) → (nx=62, ny=128).
 """
 
 from __future__ import annotations

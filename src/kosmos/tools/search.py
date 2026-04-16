@@ -2,7 +2,8 @@
 """BM25-based search for the KOSMOS Tool System.
 
 Public API (for external callers):
-- ``search(query, registry, top_k)`` — new BM25 facade returning ``AdapterCandidate`` objects.
+- ``search(query, bm25_index, registry, top_k)`` — BM25 facade returning ``AdapterCandidate``
+  objects; accepts the instance-owned ``BM25Index`` from ``ToolRegistry``.
 - ``search_tools(tools, query, max_results)`` — legacy token-overlap function kept for
   backward compatibility with ``ToolRegistry.search()``; will be removed in a follow-on epic.
 - ``create_search_meta_tool()`` — factory for the ``search_tools`` meta-tool definition.
@@ -27,27 +28,25 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-# Module-level BM25 index shared with the registry rebuild path.
-# The registry calls ``_registry_bm25_index.rebuild(corpus)`` on every
-# ``register()`` call; ``search()`` reads from it.
-_registry_bm25_index: BM25Index = BM25Index({})
-
 
 def search(
     query: str,
+    bm25_index: BM25Index,
     registry: ToolRegistry,
     top_k: int | None = None,
 ) -> list[AdapterCandidate]:
     """BM25-ranked adapter search over the tool registry.
 
-    Replaces the legacy token-overlap scoring.  Delegates scoring to the
-    shared module-level ``BM25Index`` (kept in sync by ``registry.register()``).
+    Replaces the legacy token-overlap scoring.  Uses the instance-owned
+    ``BM25Index`` passed in from ``ToolRegistry`` so that multiple registry
+    instances (e.g. in parallel tests) never share state.
 
     Adaptive top_k clamp (FR-009):
         effective_top_k = max(1, min(top_k if top_k else 5, len(registry), 20))
 
     Args:
         query: Free-text query in Korean or English.
+        bm25_index: The ``BM25Index`` owned by the calling ``ToolRegistry``.
         registry: The live ToolRegistry to search.
         top_k: Per-call override.  None → use default (5).
 
@@ -62,7 +61,7 @@ def search(
     if registry_size == 0:
         return []
 
-    scored = _registry_bm25_index.score(query)
+    scored = bm25_index.score(query)
     results: list[AdapterCandidate] = []
 
     for tool_id, score in scored[:effective_top_k]:

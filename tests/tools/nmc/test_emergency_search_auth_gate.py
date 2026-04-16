@@ -43,11 +43,21 @@ def nmc_registry() -> ToolRegistry:
 def nmc_executor(nmc_registry: ToolRegistry) -> ToolExecutor:
     """ToolExecutor bound to the NMC-only registry."""
     executor = ToolExecutor(nmc_registry)
-    # Re-register adapter into the second executor instance so invoke() finds it.
-    # (The module-scope fixture above already registered into a private executor;
-    # we create a fresh executor here that shares the registry but needs its own
-    # adapter map wired up.)
-    register(nmc_registry, executor)
+    # Only register the adapter binding on the new executor — the tool is already
+    # present in nmc_registry (registered by the nmc_registry fixture above).
+    # Calling register() again would invoke registry.register() a second time and
+    # raise DuplicateToolError.
+    from typing import Any
+
+    from pydantic import BaseModel
+
+    from kosmos.tools.nmc.emergency_search import NmcEmergencySearchInput, handle
+
+    async def _adapter(inp: BaseModel) -> dict[str, Any]:
+        assert isinstance(inp, NmcEmergencySearchInput)
+        return await handle(inp)
+
+    executor.register_adapter("nmc_emergency_search", _adapter)
     return executor
 
 
