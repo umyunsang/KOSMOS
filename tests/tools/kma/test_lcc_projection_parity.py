@@ -18,15 +18,6 @@ import pytest
 
 from kosmos.tools.kma.projection import KMADomainError, latlon_to_lcc
 
-_FIXTURE_PATH = (
-    Path(__file__).parent.parent.parent.parent
-    / "tests"
-    / "fixtures"
-    / "legacy"
-    / "address_to_grid_baseline.json"
-)
-
-# Resolve relative to repo root rather than relying on __file__ depth
 _REPO_ROOT = Path(__file__).parent.parent.parent.parent
 _BASELINE_FILE = _REPO_ROOT / "tests" / "fixtures" / "legacy" / "address_to_grid_baseline.json"
 

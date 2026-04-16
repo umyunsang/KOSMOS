@@ -29,7 +29,7 @@ from kosmos.tools.registry import ToolRegistry
 
 
 @pytest.fixture(scope="module")
-def two_adapter_registry() -> tuple[ToolRegistry, None]:
+def two_adapter_registry() -> tuple[ToolRegistry, ToolExecutor]:
     """Test-local registry with koroad_accident_hazard_search + hira_hospital_search."""
     from kosmos.tools.koroad.accident_hazard_search import register as register_koroad
 

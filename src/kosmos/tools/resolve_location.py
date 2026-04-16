@@ -152,73 +152,28 @@ async def _juso_adm_cd(
 ) -> AdmCodeResult | None:
     """Try to resolve 10-digit adm_cd via juso.go.kr API.
 
+    Delegates to the shared ``geocoding.juso.lookup_adm_cd`` backend helper.
     Returns AdmCodeResult on success, None on failure/no result.
     """
-    try:
-        from kosmos.settings import settings
+    from kosmos.settings import settings  # noqa: PLC0415
+    from kosmos.tools.geocoding.juso import lookup_adm_cd  # noqa: PLC0415
 
-        confm_key = settings.juso_confm_key
-        if not confm_key:
-            logger.debug("juso: KOSMOS_JUSO_CONFM_KEY not set, skipping")
-            return None
-
-        params = {
-            "confmKey": confm_key,
-            "currentPage": "1",
-            "countPerPage": "1",
-            "keyword": query,
-            "resultType": "json",
-        }
-
-        own_client = client is None
-        _client = httpx.AsyncClient(timeout=10.0) if own_client else client
-        assert _client is not None
-
-        try:
-            resp = await _client.get(
-                "https://business.juso.go.kr/addrlink/addrLinkApi.do",
-                params=params,
-            )
-            resp.raise_for_status()
-            data = resp.json()
-
-            results = data.get("results", {})
-            juso_list = results.get("juso", [])
-
-            if not juso_list:
-                return None
-
-            item = juso_list[0]
-            adm_cd = item.get("admCd", "")
-            if not adm_cd or len(adm_cd) != 10:
-                return None
-
-            road_addr = item.get("roadAddr", "")
-            sgg_nm = item.get("siNm", "") + " " + item.get("sggNm", "")
-
-            # Determine level from admCd trailing digits
-            # 10-digit: xxxx000000=sido, xxxxxx0000=sigungu, xxxxxxxxxx=emd
-            if adm_cd.endswith("00000000"):
-                level = "sido"
-            elif adm_cd.endswith("0000"):
-                level = "sigungu"
-            else:
-                level = "eupmyeondong"
-
-            return AdmCodeResult(
-                kind="adm_cd",
-                code=adm_cd,
-                name=sgg_nm.strip() or road_addr,
-                level=level,  # type: ignore[arg-type]
-                source="juso",
-            )
-        finally:
-            if own_client and _client:
-                await _client.aclose()
-
-    except Exception as exc:
-        logger.debug("juso adm_cd failed for %r: %s", query, exc)
+    confm_key = settings.juso_confm_key
+    if not confm_key:
+        logger.debug("juso: KOSMOS_JUSO_CONFM_KEY not set, skipping")
         return None
+
+    result = await lookup_adm_cd(query, confm_key=confm_key, client=client)
+    if result is None:
+        return None
+
+    return AdmCodeResult(
+        kind="adm_cd",
+        code=result["adm_cd"],
+        name=result["name"],
+        level=result["level"],  # type: ignore[arg-type]
+        source="juso",
+    )
 
 
 async def _sgis_adm_cd(
@@ -229,89 +184,39 @@ async def _sgis_adm_cd(
 ) -> AdmCodeResult | None:
     """Try to resolve 10-digit adm_cd via SGIS API.
 
-    If coords are available, uses coord2region endpoint.
-    Otherwise, returns None (SGIS needs coordinates for adm_cd lookup).
+    Delegates to the shared ``geocoding.sgis.lookup_adm_cd_by_coords`` backend
+    helper.  Requires coordinates — returns None if not available.
     """
-    # SGIS adm_cd lookup requires coordinates; fall through if not available
     if coords is None:
         logger.debug("sgis adm_cd: no coords available, skipping")
         return None
 
-    try:
-        from kosmos.settings import settings
+    from kosmos.settings import settings  # noqa: PLC0415
+    from kosmos.tools.geocoding.sgis import lookup_adm_cd_by_coords  # noqa: PLC0415
 
-        consumer_key = settings.sgis_key
-        consumer_secret = settings.sgis_secret
-        if not consumer_key or not consumer_secret:
-            logger.debug("sgis: KOSMOS_SGIS_KEY/SECRET not set, skipping")
-            return None
-
-        own_client = client is None
-        _client = httpx.AsyncClient(timeout=10.0) if own_client else client
-        assert _client is not None
-
-        try:
-            # Step 1: obtain access token
-            token_resp = await _client.get(
-                "https://sgisapi.kostat.go.kr/OpenAPI3/auth/authentication.json",
-                params={
-                    "consumer_key": consumer_key,
-                    "consumer_secret": consumer_secret,
-                },
-            )
-            token_resp.raise_for_status()
-            token_data = token_resp.json()
-            access_token = token_data.get("result", {}).get("accessToken", "")
-            if not access_token:
-                return None
-
-            # Step 2: coord2region
-            coord_resp = await _client.get(
-                "https://sgisapi.kostat.go.kr/OpenAPI3/addr/rgeocode.json",
-                params={
-                    "accessToken": access_token,
-                    "x_coor": str(coords.lon),
-                    "y_coor": str(coords.lat),
-                    "addr_type": "20",  # 행정동
-                },
-            )
-            coord_resp.raise_for_status()
-            coord_data = coord_resp.json()
-
-            result_list = coord_data.get("result", [])
-            if not result_list:
-                return None
-
-            item = result_list[0]
-            adm_cd_raw = str(item.get("adm_cd", ""))
-            if not adm_cd_raw or len(adm_cd_raw) < 8:
-                return None
-
-            # SGIS returns 8-digit code; pad to 10
-            adm_cd = adm_cd_raw.ljust(10, "0")[:10]
-            adm_nm = item.get("adm_nm", "")
-
-            if adm_cd.endswith("00000000"):
-                level = "sido"
-            elif adm_cd.endswith("0000"):
-                level = "sigungu"
-            else:
-                level = "eupmyeondong"
-
-            return AdmCodeResult(
-                kind="adm_cd",
-                code=adm_cd,
-                name=adm_nm,
-                level=level,  # type: ignore[arg-type]
-                source="sgis",
-            )
-        finally:
-            if own_client and _client:
-                await _client.aclose()
-
-    except Exception as exc:
-        logger.debug("sgis adm_cd failed for %r: %s", query, exc)
+    consumer_key = settings.sgis_key
+    consumer_secret = settings.sgis_secret
+    if not consumer_key or not consumer_secret:
+        logger.debug("sgis: KOSMOS_SGIS_KEY/SECRET not set, skipping")
         return None
+
+    result = await lookup_adm_cd_by_coords(
+        lat=coords.lat,
+        lon=coords.lon,
+        consumer_key=consumer_key,
+        consumer_secret=consumer_secret,
+        client=client,
+    )
+    if result is None:
+        return None
+
+    return AdmCodeResult(
+        kind="adm_cd",
+        code=result["adm_cd"],
+        name=result["name"],
+        level=result["level"],  # type: ignore[arg-type]
+        source="sgis",
+    )
 
 
 async def resolve_location(  # noqa: C901

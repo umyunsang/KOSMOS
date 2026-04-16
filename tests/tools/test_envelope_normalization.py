@@ -104,11 +104,9 @@ class TestNormalizeHappyPath:
                 "elapsed_ms": 10,
             },
         )
-        # normalize() should overwrite meta with the current request's meta
+        # normalize() always overwrites meta with the current request's meta
         result = normalize(collection, tool=_TOOL, request_id=_REQUEST_ID, elapsed_ms=75)
         assert isinstance(result, LookupCollection)
-        # meta is injected only if not already present in raw; since model_dump
-        # includes meta, the existing meta is preserved — this is the current behavior
         assert result.meta is not None
 
     def test_elapsed_ms_clamped_to_zero_minimum(self):

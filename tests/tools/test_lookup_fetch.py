@@ -72,8 +72,6 @@ class TestLookupFetchHappy:
 
         # Patch httpx.AsyncClient inside the handler
         monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", "test-key-12345")
-        with pytest.MonkeyPatch.context() as mp:
-            mp.setenv("KOSMOS_DATA_GO_KR_API_KEY", "test-key-12345")
 
         from unittest.mock import patch
 
