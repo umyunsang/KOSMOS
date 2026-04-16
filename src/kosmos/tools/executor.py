@@ -26,7 +26,7 @@ from kosmos.observability import (
     GEN_AI_TOOL_TYPE,
     filter_metadata,
 )
-from kosmos.tools.envelope import make_error_envelope
+from kosmos.tools.envelope import LookupErrorReason, make_error_envelope
 from kosmos.tools.errors import ToolNotFoundError
 from kosmos.tools.models import ToolResult
 from kosmos.tools.registry import ToolRegistry
@@ -43,7 +43,7 @@ _tracer = trace.get_tracer(__name__)
 AdapterFn = Callable[[BaseModel], Awaitable[dict[str, Any]]]
 
 
-def _classify_adapter_exception(exc: Exception) -> tuple[str, bool]:
+def _classify_adapter_exception(exc: Exception) -> tuple[LookupErrorReason, bool]:
     """Map adapter exceptions to (reason, retryable) for the error envelope."""
     import httpx  # noqa: PLC0415
 
