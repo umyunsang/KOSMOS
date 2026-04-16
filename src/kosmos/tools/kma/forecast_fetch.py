@@ -26,6 +26,7 @@ Registration:
 from __future__ import annotations
 
 import logging
+from datetime import UTC
 from typing import Any
 
 import httpx
@@ -33,7 +34,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from kosmos.tools.errors import LookupErrorReason, _require_env
 from kosmos.tools.kma.projection import KMADomainError, latlon_to_lcc
-from kosmos.tools.models import GovAPITool, LookupError, LookupTimeseries
+from kosmos.tools.models import GovAPITool, LookupError, LookupTimeseries  # noqa: A004
 
 logger = logging.getLogger(__name__)
 
@@ -95,8 +96,7 @@ class KmaForecastFetchInput(BaseModel):
     def _validate_base_time(cls, v: str) -> str:
         if v not in _VALID_BASE_TIMES:
             raise ValueError(
-                f"base_time {v!r} is not valid. "
-                f"Must be one of: {sorted(_VALID_BASE_TIMES)}"
+                f"base_time {v!r} is not valid. Must be one of: {sorted(_VALID_BASE_TIMES)}"
             )
         return v
 
@@ -167,9 +167,7 @@ def _normalize_items(raw: object) -> list[dict[str, object]]:
         return [raw]
     if isinstance(raw, list):
         return [r for r in raw if isinstance(r, dict)]
-    logger.warning(
-        "kma_forecast_fetch: unexpected items type %s; treating as empty", type(raw)
-    )
+    logger.warning("kma_forecast_fetch: unexpected items type %s; treating as empty", type(raw))
     return []
 
 
@@ -193,7 +191,7 @@ async def _fetch(
         LookupTimeseries on success, LookupError on domain/upstream errors.
     """
     import uuid
-    from datetime import datetime, timezone
+    from datetime import datetime
 
     # Validate base_time before touching the network
     if inp.base_time not in _VALID_BASE_TIMES:
@@ -244,7 +242,7 @@ async def _fetch(
     _client: httpx.AsyncClient = httpx.AsyncClient(timeout=30.0) if own_client else client  # type: ignore[assignment]
 
     request_id = str(uuid.uuid4())
-    t_start = datetime.now(tz=timezone.utc)
+    t_start = datetime.now(tz=UTC)
 
     try:
         response = await _client.get(_BASE_URL, params=query_params)
@@ -313,7 +311,7 @@ async def _fetch(
 
     points = _parse_forecast_items(item_list)
 
-    elapsed_ms = int((datetime.now(tz=timezone.utc) - t_start).total_seconds() * 1000)
+    elapsed_ms = int((datetime.now(tz=UTC) - t_start).total_seconds() * 1000)
 
     from kosmos.tools.models import LookupMeta
 

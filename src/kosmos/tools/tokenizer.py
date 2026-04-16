@@ -80,7 +80,7 @@ def tokenize(text: str) -> list[str]:
 
     try:
         tokens: list[str] = []
-        for token in kiwi.tokenize(stripped):
+        for token in kiwi.tokenize(stripped):  # type: ignore[attr-defined]
             if token.tag in _KEEP_POS:
                 tokens.append(token.form.lower())
         return tokens

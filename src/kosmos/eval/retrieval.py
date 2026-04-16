@@ -188,8 +188,8 @@ async def _run_query(
     Returns:
         Ordered list of tool_id strings (rank 1 first).
     """
-    from kosmos.tools.models import LookupSearchInput
     from kosmos.tools.lookup import lookup
+    from kosmos.tools.models import LookupSearchInput
 
     inp = LookupSearchInput(mode="search", query=query, top_k=top_k)
     result = await lookup(inp, registry=registry)
@@ -387,7 +387,7 @@ def main(argv: list[str] | None = None) -> None:
     status = {0: "PASS", 1: "WARN", 2: "FAIL"}[code]
 
     # Single-line stdout summary (only print() allowed per spec)
-    print(
+    print(  # noqa: T201
         f"[{status}] recall@5={recall5:.2%} recall@1={recall1:.2%} "
         f"total={report['total_queries']} registry={report['registry_size']}"
     )

@@ -807,9 +807,7 @@ async def handle(
         }
 
     if result_code != "00":
-        raise RuntimeError(
-            f"KOROAD API error: code={result_code!r} msg={result_msg!r}"
-        )
+        raise RuntimeError(f"KOROAD API error: code={result_code!r} msg={result_msg!r}")
 
     total_count = int(raw.get("totalCount", 0))
     raw_items = raw.get("items", {})
@@ -851,6 +849,7 @@ async def handle(
 # Output schema placeholder — the handler returns LookupCollection-shaped dicts.
 # We reuse AccidentHazardSearchInput for input_schema; output_schema is
 # declared using a lightweight placeholder model so that GovAPITool is valid.
+
 
 class _AccidentHazardSearchOutput(RootModel[dict[str, Any]]):
     """Placeholder output schema for GovAPITool registration."""

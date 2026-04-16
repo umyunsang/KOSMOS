@@ -113,9 +113,7 @@ class EnvelopeNormalizationError(KosmosToolError):
     """Handler returned a payload that does not match the LookupOutput discriminated union."""
 
     def __init__(self, tool_id: str, detail: str) -> None:
-        super().__init__(
-            f"Envelope normalization failed for tool {tool_id!r}: {detail}"
-        )
+        super().__init__(f"Envelope normalization failed for tool {tool_id!r}: {detail}")
         self.tool_id = tool_id
         self.detail = detail
 

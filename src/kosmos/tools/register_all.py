@@ -58,6 +58,8 @@ def register_all_tools(registry: ToolRegistry, executor: ToolExecutor) -> None:
     from kosmos.tools.kma.forecast_fetch import (
         KMA_FORECAST_FETCH_TOOL,
         KmaForecastFetchInput,
+    )
+    from kosmos.tools.kma.forecast_fetch import (
         _fetch as kma_forecast_fetch_adapter,
     )
     from kosmos.tools.kma.kma_current_observation import register as reg_kma_obs

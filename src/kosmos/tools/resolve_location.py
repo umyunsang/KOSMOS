@@ -21,8 +21,8 @@ import re
 import httpx
 
 from kosmos.tools.models import (
-    AdmCodeResult,
     AddressResult,
+    AdmCodeResult,
     CoordResult,
     POIResult,
     ResolveBundle,
@@ -184,7 +184,6 @@ async def _juso_adm_cd(
 
             results = data.get("results", {})
             juso_list = results.get("juso", [])
-            common = results.get("common", {})
 
             if not juso_list:
                 return None
@@ -315,18 +314,11 @@ async def _sgis_adm_cd(
         return None
 
 
-async def resolve_location(
+async def resolve_location(  # noqa: C901
     inp: ResolveLocationInput,
     *,
     client: httpx.AsyncClient | None = None,
-) -> (
-    CoordResult
-    | AdmCodeResult
-    | AddressResult
-    | POIResult
-    | ResolveBundle
-    | ResolveError
-):
+) -> CoordResult | AdmCodeResult | AddressResult | POIResult | ResolveBundle | ResolveError:
     """Resolve a natural-language place reference to structured location data.
 
     Deterministic resolver chain: kakao → juso → sgis.
@@ -442,18 +434,18 @@ async def resolve_location(
 
     # --- coords_and_admcd (default MVP bundle) ---
     if want in ("coords_and_admcd", "all"):
-        coords: CoordResult | None = None
-        adm: AdmCodeResult | None = None
+        coords_bundle: CoordResult | None = None
+        adm_bundle: AdmCodeResult | None = None
         address_result: AddressResult | None = None
         poi_result: POIResult | None = None
 
         # Resolve coordinates via kakao
-        coords = await _kakao_coords(query, client=client)
+        coords_bundle = await _kakao_coords(query, client=client)
 
         # Resolve adm_cd via juso (preferred) or sgis (fallback)
-        adm = await _juso_adm_cd(query, client=client)
-        if adm is None:
-            adm = await _sgis_adm_cd(query, coords=coords, client=client)
+        adm_bundle = await _juso_adm_cd(query, client=client)
+        if adm_bundle is None:
+            adm_bundle = await _sgis_adm_cd(query, coords=coords_bundle, client=client)
 
         if want == "all":
             # Also resolve address and POI
@@ -483,9 +475,9 @@ async def resolve_location(
                             source="kakao",
                         )
             except Exception:
-                pass
+                logger.debug("POI extraction failed; continuing without POI result", exc_info=True)
 
-        if coords is None and adm is None:
+        if coords_bundle is None and adm_bundle is None:
             return ResolveError(
                 kind="error",
                 reason="not_found",
@@ -495,8 +487,8 @@ async def resolve_location(
         return ResolveBundle(
             kind="bundle",
             source="bundle",
-            coords=coords,
-            adm_cd=adm,
+            coords=coords_bundle,
+            adm_cd=adm_bundle,
             address=address_result if want == "all" else None,
             poi=poi_result if want == "all" else None,
         )

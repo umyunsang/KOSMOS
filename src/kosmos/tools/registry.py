@@ -45,9 +45,7 @@ class ToolRegistry:
 
         # Rebuild BM25 index from the full current search_hint corpus so that
         # subsequent search() calls reflect the newly registered adapter.
-        _registry_bm25_index.rebuild(
-            {tid: t.search_hint for tid, t in self._tools.items()}
-        )
+        _registry_bm25_index.rebuild({tid: t.search_hint for tid, t in self._tools.items()})
 
         logger.info("Registered tool: %s", tool.id)
 

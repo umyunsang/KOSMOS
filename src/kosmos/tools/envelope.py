@@ -26,7 +26,7 @@ from kosmos.tools.models import (
 )
 from kosmos.tools.models import (
     LookupMeta,
-    LookupOutput,  # type: ignore[attr-defined]  # TypeAlias / Annotated alias
+    LookupOutput,
 )
 
 if TYPE_CHECKING:
@@ -35,7 +35,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 # TypeAdapter for validating arbitrary dicts against LookupOutput.
-_LOOKUP_OUTPUT_ADAPTER: TypeAdapter[object] = TypeAdapter(LookupOutput)  # type: ignore[arg-type]
+_LOOKUP_OUTPUT_ADAPTER: TypeAdapter[object] = TypeAdapter(LookupOutput)
 
 
 def normalize(
@@ -70,7 +70,7 @@ def normalize(
 
     # Convert Pydantic model → dict so TypeAdapter can work uniformly.
     if hasattr(output, "model_dump"):
-        raw = output.model_dump()  # type: ignore[union-attr]
+        raw = output.model_dump()
     elif isinstance(output, dict):
         raw = output
     else:

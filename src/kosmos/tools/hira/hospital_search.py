@@ -29,9 +29,7 @@ from kosmos.tools.models import GovAPITool
 
 logger = logging.getLogger(__name__)
 
-_BASE_URL = (
-    "https://apis.data.go.kr/B551182/hospInfoServicev2/getHospBasisList"
-)
+_BASE_URL = "https://apis.data.go.kr/B551182/hospInfoServicev2/getHospBasisList"
 
 # ---------------------------------------------------------------------------
 # Input schema (T054 — xPos + yPos + radius)
@@ -50,7 +48,7 @@ class HiraHospitalSearchInput(BaseModel):
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 
-    xPos: float = Field(
+    xPos: float = Field(  # noqa: N815
         ge=124.0,
         le=132.0,
         description=(
@@ -58,7 +56,7 @@ class HiraHospitalSearchInput(BaseModel):
             "Obtain from resolve_location(want='coords'). Never guess."
         ),
     )
-    yPos: float = Field(
+    yPos: float = Field(  # noqa: N815
         ge=33.0,
         le=39.0,
         description=(
@@ -75,12 +73,12 @@ class HiraHospitalSearchInput(BaseModel):
             "Default 2 000 m (2 km). Increase only if initial results are empty."
         ),
     )
-    pageNo: int = Field(
+    pageNo: int = Field(  # noqa: N815
         default=1,
         ge=1,
         description="Page number for pagination (1-based). Default 1.",
     )
-    numOfRows: int = Field(
+    numOfRows: int = Field(  # noqa: N815
         default=20,
         ge=1,
         le=100,
@@ -172,9 +170,7 @@ async def handle(
         }
 
     if result_code != "00":
-        raise RuntimeError(
-            f"HIRA API error: resultCode={result_code!r} resultMsg={result_msg!r}"
-        )
+        raise RuntimeError(f"HIRA API error: resultCode={result_code!r} resultMsg={result_msg!r}")
 
     body = response_body.get("body", {})
     total_count = int(body.get("totalCount", 0))

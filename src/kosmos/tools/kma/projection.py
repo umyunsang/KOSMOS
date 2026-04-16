@@ -59,26 +59,25 @@ _LON_MAX = 146.0
 # KMA LCC constants
 # ---------------------------------------------------------------------------
 
-_RE = 6371.00877   # Earth radius [km]
-_GRID = 5.0        # Grid resolution [km]
-_SLAT1 = 30.0      # Standard latitude 1 [degrees]
-_SLAT2 = 60.0      # Standard latitude 2 [degrees]
-_OLON = 126.0      # Reference longitude [degrees]
-_OLAT = 38.0       # Reference latitude [degrees]
-_XO = 43.0         # Grid x-origin [cells]
-_YO = 136.0        # Grid y-origin [cells]
+_RE = 6371.00877  # Earth radius [km]
+_GRID = 5.0  # Grid resolution [km]
+_SLAT1 = 30.0  # Standard latitude 1 [degrees]
+_SLAT2 = 60.0  # Standard latitude 2 [degrees]
+_OLON = 126.0  # Reference longitude [degrees]
+_OLAT = 38.0  # Reference latitude [degrees]
+_XO = 43.0  # Grid x-origin [cells]
+_YO = 136.0  # Grid y-origin [cells]
 
 # Pre-compute projection constants at module load time (no I/O)
 _DEGRAD = math.pi / 180.0
-_RE_GRID = _RE / _GRID          # re in grid units
+_RE_GRID = _RE / _GRID  # re in grid units
 _SLAT1_RAD = _SLAT1 * _DEGRAD
 _SLAT2_RAD = _SLAT2 * _DEGRAD
 _OLON_RAD = _OLON * _DEGRAD
 _OLAT_RAD = _OLAT * _DEGRAD
 
 _SN = math.log(math.cos(_SLAT1_RAD) / math.cos(_SLAT2_RAD)) / math.log(
-    math.tan(math.pi * 0.25 + _SLAT2_RAD * 0.5)
-    / math.tan(math.pi * 0.25 + _SLAT1_RAD * 0.5)
+    math.tan(math.pi * 0.25 + _SLAT2_RAD * 0.5) / math.tan(math.pi * 0.25 + _SLAT1_RAD * 0.5)
 )
 _SF = (math.tan(math.pi * 0.25 + _SLAT1_RAD * 0.5) ** _SN) * math.cos(_SLAT1_RAD) / _SN
 _RO = _RE_GRID * _SF / (math.tan(math.pi * 0.25 + _OLAT_RAD * 0.5) ** _SN)

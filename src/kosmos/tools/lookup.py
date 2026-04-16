@@ -16,7 +16,7 @@ import uuid
 
 from kosmos.tools.models import (
     LookupCollection,
-    LookupError,
+    LookupError,  # noqa: A004
     LookupFetchInput,
     LookupRecord,
     LookupSearchInput,
@@ -32,13 +32,7 @@ async def lookup(
     *,
     registry: object | None = None,
     executor: object | None = None,
-) -> (
-    LookupSearchResult
-    | LookupRecord
-    | LookupCollection
-    | LookupTimeseries
-    | LookupError
-):
+) -> LookupSearchResult | LookupRecord | LookupCollection | LookupTimeseries | LookupError:
     """Dispatch a lookup call by mode.
 
     Args:

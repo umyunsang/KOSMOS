@@ -68,7 +68,7 @@ class BM25Index:
             return [(tid, 0.0) for tid in sorted(self._tool_ids)]
 
         try:
-            raw_scores: list[float] = self._bm25.get_scores(query_tokens).tolist()  # type: ignore[union-attr]
+            raw_scores: list[float] = self._bm25.get_scores(query_tokens).tolist()  # type: ignore[attr-defined]
         except Exception as exc:  # pragma: no cover
             logger.warning("BM25 scoring failed: %s", exc)
             return [(tid, 0.0) for tid in sorted(self._tool_ids)]

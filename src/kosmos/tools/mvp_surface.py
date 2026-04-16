@@ -15,11 +15,9 @@ from pydantic import RootModel
 
 from kosmos.tools.models import (
     GovAPITool,
-    LookupFetchInput,
     LookupSearchInput,
     ResolveLocationInput,
 )
-
 
 # ---------------------------------------------------------------------------
 # Minimal output schema placeholders
@@ -96,20 +94,19 @@ LOOKUP_SEARCH_TOOL = GovAPITool(
         "  BM25-ranked discovery over the adapter registry. Returns ranked candidates "
         "  with tool_id, required_params, and search_hint.\n"
         "  Use this FIRST to discover what tools are available for the user's request.\n"
-        "  Example: {\"mode\": \"search\", \"query\": \"교통사고 위험지역\"}\n\n"
+        '  Example: {"mode": "search", "query": "교통사고 위험지역"}\n\n'
         "MODE 2 — fetch (mode='fetch'):\n"
         "  Invokes a specific adapter by tool_id. The params dict must match the "
         "  adapter's input_schema exactly. tool_id MUST come from a prior search result.\n"
         "  Example: {\n"
-        "    \"mode\": \"fetch\",\n"
-        "    \"tool_id\": \"koroad_accident_hazard_search\",\n"
-        "    \"params\": {\"adm_cd\": \"1168000000\", \"year\": 2024}\n"
+        '    "mode": "fetch",\n'
+        '    "tool_id": "koroad_accident_hazard_search",\n'
+        '    "params": {"adm_cd": "1168000000", "year": 2024}\n'
         "  }\n\n"
         "ORDERING RULE: search → fetch. Never guess a tool_id; always search first."
     ),
     search_hint=(
-        "데이터 조회 도구 호출 검색 패치 "
-        "lookup search fetch invoke tool adapter data query"
+        "데이터 조회 도구 호출 검색 패치 lookup search fetch invoke tool adapter data query"
     ),
     requires_auth=False,
     is_personal_data=False,
