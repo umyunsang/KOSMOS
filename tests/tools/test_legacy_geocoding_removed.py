@@ -16,31 +16,33 @@ import pytest
 
 from kosmos.tools.executor import ToolExecutor
 from kosmos.tools.models import LookupError, LookupFetchInput  # noqa: A004
+from kosmos.tools.register_all import register_all_tools
 from kosmos.tools.registry import ToolRegistry
 
 
 @pytest.fixture()
-def empty_registry_and_executor() -> tuple[ToolRegistry, ToolExecutor]:
-    """Fresh registry + executor with no tools registered."""
+def full_registry_and_executor() -> tuple[ToolRegistry, ToolExecutor]:
+    """Full registry populated via register_all_tools."""
     registry = ToolRegistry()
     executor = ToolExecutor(registry)
+    register_all_tools(registry, executor)
     return registry, executor
 
 
 class TestLegacyToolsNotInRegistry:
     def test_address_to_region_not_in_all_tools(
-        self, empty_registry_and_executor: tuple[ToolRegistry, ToolExecutor]
+        self, full_registry_and_executor: tuple[ToolRegistry, ToolExecutor]
     ) -> None:
-        registry, _ = empty_registry_and_executor
+        registry, _ = full_registry_and_executor
         tool_ids = {t.id for t in registry.all_tools()}
         assert "address_to_region" not in tool_ids, (
             "address_to_region was found in the registry — it must be deleted (T049)."
         )
 
     def test_address_to_grid_not_in_all_tools(
-        self, empty_registry_and_executor: tuple[ToolRegistry, ToolExecutor]
+        self, full_registry_and_executor: tuple[ToolRegistry, ToolExecutor]
     ) -> None:
-        registry, _ = empty_registry_and_executor
+        registry, _ = full_registry_and_executor
         tool_ids = {t.id for t in registry.all_tools()}
         assert "address_to_grid" not in tool_ids, (
             "address_to_grid was found in the registry — it must be deleted (T049)."
@@ -60,11 +62,11 @@ class TestLegacyToolsNotInRegistry:
 class TestLookupFetchReturnsUnknownTool:
     @pytest.mark.asyncio
     async def test_address_to_region_fetch_returns_unknown_tool_error(
-        self, empty_registry_and_executor: tuple[ToolRegistry, ToolExecutor]
+        self, full_registry_and_executor: tuple[ToolRegistry, ToolExecutor]
     ) -> None:
         from kosmos.tools.lookup import lookup
 
-        registry, executor = empty_registry_and_executor
+        registry, executor = full_registry_and_executor
         inp = LookupFetchInput(mode="fetch", tool_id="address_to_region", params={})
         result = await lookup(inp, registry=registry, executor=executor)
         assert isinstance(result, LookupError), f"Expected LookupError, got {type(result)}"
@@ -72,11 +74,11 @@ class TestLookupFetchReturnsUnknownTool:
 
     @pytest.mark.asyncio
     async def test_address_to_grid_fetch_returns_unknown_tool_error(
-        self, empty_registry_and_executor: tuple[ToolRegistry, ToolExecutor]
+        self, full_registry_and_executor: tuple[ToolRegistry, ToolExecutor]
     ) -> None:
         from kosmos.tools.lookup import lookup
 
-        registry, executor = empty_registry_and_executor
+        registry, executor = full_registry_and_executor
         inp = LookupFetchInput(mode="fetch", tool_id="address_to_grid", params={})
         result = await lookup(inp, registry=registry, executor=executor)
         assert isinstance(result, LookupError), f"Expected LookupError, got {type(result)}"

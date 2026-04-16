@@ -43,6 +43,21 @@ _tracer = trace.get_tracer(__name__)
 AdapterFn = Callable[[BaseModel], Awaitable[dict[str, Any]]]
 
 
+def _classify_adapter_exception(exc: Exception) -> tuple[str, bool]:
+    """Map adapter exceptions to (reason, retryable) for the error envelope."""
+    import httpx  # noqa: PLC0415
+
+    from kosmos.tools.kma.projection import KMADomainError  # noqa: PLC0415
+
+    if isinstance(exc, (ValueError, TypeError, KMADomainError)):
+        return ("invalid_params", False)
+    if isinstance(exc, httpx.TimeoutException):
+        return ("timeout", True)
+    if isinstance(exc, (httpx.HTTPStatusError, httpx.RequestError)):
+        return ("upstream_unavailable", True)
+    return ("upstream_unavailable", True)
+
+
 class ToolExecutor:
     """Dispatch LLM tool calls through validation, rate-limiting, and execution.
 
@@ -201,13 +216,14 @@ class ToolExecutor:
             raw_output = await adapter(validated_input)
         except Exception as exc:
             logger.exception("invoke: adapter raised exception for %s: %s", tool_id, exc)
+            reason, retryable = _classify_adapter_exception(exc)
             return make_error_envelope(
                 tool_id=tool_id,
-                reason="upstream_unavailable",
+                reason=reason,
                 message=str(exc),
                 request_id=request_id,
                 elapsed_ms=_elapsed(),
-                retryable=True,
+                retryable=retryable,
             )
 
         # --- Envelope normalisation (FR-015, FR-014) ----------------------------
