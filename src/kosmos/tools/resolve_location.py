@@ -360,9 +360,7 @@ async def resolve_location(  # noqa: C901
                         # Overwrite coords_bundle with fresh values from this call
                         # so all "all"-mode data shares the same source response.
                         total = kakao_result.meta.total_count
-                        confidence = (
-                            "high" if total == 1 else ("medium" if total <= 3 else "low")
-                        )
+                        confidence = "high" if total == 1 else ("medium" if total <= 3 else "low")
                         coords_bundle = CoordResult(
                             kind="coords",
                             lat=lat,
@@ -386,12 +384,8 @@ async def resolve_location(  # noqa: C901
                             road_address=(
                                 doc.road_address.address_name if doc.road_address else None
                             ),
-                            jibun_address=(
-                                doc.address.address_name if doc.address else None
-                            ),
-                            postal_code=(
-                                doc.road_address.zone_no if doc.road_address else None
-                            ),
+                            jibun_address=(doc.address.address_name if doc.address else None),
+                            postal_code=(doc.road_address.zone_no if doc.road_address else None),
                             source="kakao",
                         )
             except Exception:

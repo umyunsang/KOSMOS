@@ -215,9 +215,7 @@ class ToolExecutor:
         try:
             raw_output = await adapter(validated_input)
         except Exception as exc:
-            logger.warning(
-                "invoke: adapter %s raised %s: %s", tool_id, type(exc).__name__, exc
-            )
+            logger.warning("invoke: adapter %s raised %s: %s", tool_id, type(exc).__name__, exc)
             reason, retryable = _classify_adapter_exception(exc)
             return make_error_envelope(
                 tool_id=tool_id,
@@ -237,9 +235,7 @@ class ToolExecutor:
                 elapsed_ms=_elapsed(),
             )
         except EnvelopeNormalizationError as exc:
-            logger.error(
-                "invoke: envelope normalisation failed for %s: %s", tool_id, exc
-            )
+            logger.error("invoke: envelope normalisation failed for %s: %s", tool_id, exc)
             return make_error_envelope(
                 tool_id=tool_id,
                 reason="upstream_unavailable",
