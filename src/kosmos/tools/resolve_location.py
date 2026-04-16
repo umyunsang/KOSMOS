@@ -332,18 +332,9 @@ async def resolve_location(  # noqa: C901
         address_result: AddressResult | None = None
         poi_result: POIResult | None = None
 
-        # Resolve coordinates via kakao
-        coords_bundle = await _kakao_coords(query, client=client)
-
-        # Resolve adm_cd via juso (preferred) or sgis (fallback)
-        adm_bundle = await _juso_adm_cd(query, client=client)
-        if adm_bundle is None:
-            adm_bundle = await _sgis_adm_cd(query, coords=coords_bundle, client=client)
-
         if want == "all":
-            # Single Kakao call to extract address, coords, and POI together,
-            # avoiding the three separate calls (_kakao_geocode, _kakao_coords,
-            # search_address) that would hit the same endpoint with the same query.
+            # Single Kakao call for coords, address, and POI — avoids the
+            # redundant _kakao_coords() + search_address() double-call.
             try:
                 from kosmos.tools.geocoding.kakao_client import search_address
 
@@ -357,8 +348,6 @@ async def resolve_location(  # noqa: C901
                         lat = lon = None  # type: ignore[assignment]
 
                     if lat is not None and lon is not None:
-                        # Overwrite coords_bundle with fresh values from this call
-                        # so all "all"-mode data shares the same source response.
                         total = kakao_result.meta.total_count
                         confidence = "high" if total == 1 else ("medium" if total <= 3 else "low")
                         coords_bundle = CoordResult(
@@ -390,10 +379,16 @@ async def resolve_location(  # noqa: C901
                         )
             except Exception:
                 logger.debug(
-                    "Kakao resolution failed for %r; continuing without address/POI",
-                    query,
+                    "Kakao resolution failed; continuing without address/POI",
                     exc_info=True,
                 )
+        else:
+            coords_bundle = await _kakao_coords(query, client=client)
+
+        # Resolve adm_cd via juso (preferred) or sgis (fallback)
+        adm_bundle = await _juso_adm_cd(query, client=client)
+        if adm_bundle is None:
+            adm_bundle = await _sgis_adm_cd(query, coords=coords_bundle, client=client)
 
         if coords_bundle is None and adm_bundle is None:
             return ResolveError(

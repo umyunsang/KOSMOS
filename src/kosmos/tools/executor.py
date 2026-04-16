@@ -26,8 +26,8 @@ from kosmos.observability import (
     GEN_AI_TOOL_TYPE,
     filter_metadata,
 )
-from kosmos.tools.envelope import LookupErrorReason, make_error_envelope
-from kosmos.tools.errors import ToolNotFoundError
+from kosmos.tools.envelope import make_error_envelope
+from kosmos.tools.errors import LookupErrorReason, ToolNotFoundError
 from kosmos.tools.models import ToolResult
 from kosmos.tools.registry import ToolRegistry
 
@@ -50,12 +50,12 @@ def _classify_adapter_exception(exc: Exception) -> tuple[LookupErrorReason, bool
     from kosmos.tools.kma.projection import KMADomainError  # noqa: PLC0415
 
     if isinstance(exc, (ValueError, TypeError, KMADomainError)):
-        return ("invalid_params", False)
+        return (LookupErrorReason.invalid_params, False)
     if isinstance(exc, httpx.TimeoutException):
-        return ("timeout", True)
+        return (LookupErrorReason.timeout, True)
     if isinstance(exc, (httpx.HTTPStatusError, httpx.RequestError)):
-        return ("upstream_unavailable", True)
-    return ("upstream_unavailable", True)
+        return (LookupErrorReason.upstream_unavailable, True)
+    return (LookupErrorReason.upstream_unavailable, True)
 
 
 class ToolExecutor:
@@ -159,7 +159,7 @@ class ToolExecutor:
             logger.warning("invoke: tool not found: %s", tool_id)
             return make_error_envelope(
                 tool_id=tool_id,
-                reason="unknown_tool",
+                reason=LookupErrorReason.unknown_tool,
                 message=f"No tool registered with id {tool_id!r}.",
                 request_id=request_id,
                 elapsed_ms=_elapsed(),
@@ -174,7 +174,7 @@ class ToolExecutor:
             )
             return make_error_envelope(
                 tool_id=tool_id,
-                reason="auth_required",
+                reason=LookupErrorReason.auth_required,
                 message=(
                     f"Tool {tool_id!r} requires authentication. "
                     "Provide a session identity to proceed."
@@ -190,7 +190,7 @@ class ToolExecutor:
             logger.warning("invoke: no adapter registered for tool: %s", tool_id)
             return make_error_envelope(
                 tool_id=tool_id,
-                reason="unknown_tool",
+                reason=LookupErrorReason.unknown_tool,
                 message=f"No adapter registered for tool {tool_id!r}.",
                 request_id=request_id,
                 elapsed_ms=_elapsed(),
@@ -201,10 +201,16 @@ class ToolExecutor:
         try:
             validated_input = tool.input_schema.model_validate(params)
         except ValidationError as exc:
-            logger.warning("invoke: input validation failed for %s: %s", tool_id, exc)
+            field_paths = [".".join(str(p) for p in e["loc"]) for e in exc.errors()]
+            logger.warning(
+                "invoke: input validation failed for %s (%d errors, fields: %s)",
+                tool_id,
+                exc.error_count(),
+                ", ".join(field_paths),
+            )
             return make_error_envelope(
                 tool_id=tool_id,
-                reason="invalid_params",
+                reason=LookupErrorReason.invalid_params,
                 message="Invalid parameters for tool.",
                 request_id=request_id,
                 elapsed_ms=_elapsed(),
@@ -215,7 +221,12 @@ class ToolExecutor:
         try:
             raw_output = await adapter(validated_input)
         except Exception as exc:
-            logger.warning("invoke: adapter %s raised %s: %s", tool_id, type(exc).__name__, exc)
+            logger.warning(
+                "invoke: adapter %s raised %s",
+                tool_id,
+                type(exc).__name__,
+                exc_info=True,
+            )
             reason, retryable = _classify_adapter_exception(exc)
             return make_error_envelope(
                 tool_id=tool_id,
@@ -238,7 +249,7 @@ class ToolExecutor:
             logger.error("invoke: envelope normalisation failed for %s: %s", tool_id, exc)
             return make_error_envelope(
                 tool_id=tool_id,
-                reason="upstream_unavailable",
+                reason=LookupErrorReason.upstream_unavailable,
                 message="Response processing failed.",
                 request_id=request_id,
                 elapsed_ms=_elapsed(),
@@ -294,7 +305,7 @@ class ToolExecutor:
                 # dispatch() has no session_identity parameter, so the auth gate in
                 # invoke() can never fire here — flag this for operational visibility.
                 if tool.requires_auth:
-                    logger.warning(
+                    logger.debug(
                         "dispatch() called for auth-required tool %r without auth gate",
                         tool_name,
                     )
@@ -383,10 +394,10 @@ class ToolExecutor:
                         result_dict = await adapter(validated_input)
                     except Exception as exc:
                         logger.warning(
-                            "Adapter %s raised %s: %s",
+                            "Adapter %s raised %s",
                             tool_name,
                             type(exc).__name__,
-                            exc,
+                            exc_info=True,
                         )
                         self._metrics_increment("tool.error_count", tool_name)
                         self._metrics_observe_duration(
