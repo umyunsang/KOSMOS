@@ -14,6 +14,7 @@ from __future__ import annotations
 import logging
 import uuid
 
+from kosmos.tools.errors import LookupErrorReason
 from kosmos.tools.models import (
     LookupCollection,
     LookupError,  # noqa: A004
@@ -137,7 +138,7 @@ async def _lookup_fetch(
     if executor is None or not isinstance(executor, ToolExecutor):
         return LookupError(
             kind="error",
-            reason="unknown_tool",
+            reason=LookupErrorReason.unknown_tool,
             message=f"No executor available to invoke tool {inp.tool_id!r}.",
             retryable=False,
         )
