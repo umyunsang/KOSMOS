@@ -30,7 +30,7 @@ from kosmos.tools.registry import ToolRegistry
 
 logger = logging.getLogger(__name__)
 
-_BASE_URL = "http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst"
+_BASE_URL = "https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst"
 
 # Valid base times for the short-term forecast service (KST)
 _VALID_BASE_TIMES = frozenset({"0200", "0500", "0800", "1100", "1400", "1700", "2000", "2300"})

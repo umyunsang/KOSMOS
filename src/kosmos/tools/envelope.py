@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import logging
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 from pydantic import TypeAdapter, ValidationError
 
@@ -29,6 +29,17 @@ from kosmos.tools.models import (
     LookupMeta,
     LookupOutput,
 )
+
+LookupErrorReason = Literal[
+    "auth_required",
+    "stale_data",
+    "timeout",
+    "upstream_unavailable",
+    "unknown_tool",
+    "invalid_params",
+    "out_of_domain",
+    "empty_registry",
+]
 
 if TYPE_CHECKING:
     from kosmos.tools.models import GovAPITool
@@ -99,7 +110,7 @@ def normalize(
 
 def make_error_envelope(
     tool_id: str,
-    reason: str,
+    reason: LookupErrorReason,
     message: str,
     request_id: str,
     elapsed_ms: int,
@@ -121,7 +132,7 @@ def make_error_envelope(
     )
     return LookupErrorModel(
         kind="error",
-        reason=reason,  # type: ignore[arg-type]
+        reason=reason,
         message=message,
         retryable=retryable,
         upstream_code=upstream_code,

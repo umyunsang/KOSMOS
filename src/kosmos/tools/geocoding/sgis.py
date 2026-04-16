@@ -115,7 +115,7 @@ async def lookup_adm_cd_by_coords(
         }
 
     except Exception as exc:
-        logger.debug("sgis.lookup_adm_cd_by_coords failed for (%s, %s): %s", lat, lon, exc)
+        logger.warning("sgis.lookup_adm_cd_by_coords failed for (%s, %s): %s", lat, lon, exc)
         return None
 
     finally:

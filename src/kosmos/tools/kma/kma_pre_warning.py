@@ -29,7 +29,7 @@ from kosmos.tools.registry import ToolRegistry
 
 logger = logging.getLogger(__name__)
 
-_BASE_URL = "http://apis.data.go.kr/1360000/WthrWrnInfoService/getWthrPwnList"
+_BASE_URL = "https://apis.data.go.kr/1360000/WthrWrnInfoService/getWthrPwnList"
 
 # ---------------------------------------------------------------------------
 # Input / Output models

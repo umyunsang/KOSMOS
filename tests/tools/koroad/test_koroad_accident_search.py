@@ -373,15 +373,15 @@ class TestSchemaContract:
         """Return the Python-level Field(description=...) value."""
         return str(KoroadAccidentSearchInput.model_fields[field_name].description or "")
 
-    def test_si_do_description_contains_address_to_region(self) -> None:
-        """si_do schema description must reference the address_to_region geocoding tool."""
+    def test_si_do_description_contains_resolve_location(self) -> None:
+        """si_do schema description must reference the resolve_location geocoding tool."""
         prop_desc = self._property_description("si_do")
         field_desc = self._field_description("si_do")
         combined = prop_desc + field_desc
-        assert "address_to_region" in combined, (
-            "'address_to_region' not found in si_do field description. "
+        assert "resolve_location" in combined, (
+            "'resolve_location' not found in si_do field description. "
             "The si_do description must instruct the LLM to derive the value "
-            "from a prior address_to_region geocoding call. "
+            "from a prior resolve_location geocoding call. "
             f"schema property description: {prop_desc!r} | field description: {field_desc!r}"
         )
 
@@ -410,15 +410,15 @@ class TestSchemaContract:
             f"Full schema keys: {list(schema.get('$defs', {}).keys())}"
         )
 
-    def test_gu_gun_description_contains_address_to_region(self) -> None:
-        """gu_gun schema description must reference the address_to_region geocoding tool."""
+    def test_gu_gun_description_contains_resolve_location(self) -> None:
+        """gu_gun schema description must reference the resolve_location geocoding tool."""
         prop_desc = self._property_description("gu_gun")
         field_desc = self._field_description("gu_gun")
         combined = prop_desc + field_desc
-        assert "address_to_region" in combined, (
-            "'address_to_region' not found in gu_gun field description. "
+        assert "resolve_location" in combined, (
+            "'resolve_location' not found in gu_gun field description. "
             "The gu_gun description must instruct the LLM to derive the value "
-            "from a prior address_to_region geocoding call. "
+            "from a prior resolve_location geocoding call. "
             f"schema property description: {prop_desc!r} | field description: {field_desc!r}"
         )
 

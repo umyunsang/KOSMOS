@@ -22,7 +22,9 @@ import httpx
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from kosmos.tools.errors import ConfigurationError, ToolExecutionError, _require_env  # noqa: F401
+from kosmos.tools.executor import ToolExecutor
 from kosmos.tools.models import GovAPITool
+from kosmos.tools.registry import ToolRegistry
 
 logger = logging.getLogger(__name__)
 
@@ -319,22 +321,17 @@ KMA_WEATHER_ALERT_STATUS_TOOL = GovAPITool(
 )
 
 
-def register(registry: object, executor: object) -> None:
+def register(registry: ToolRegistry, executor: ToolExecutor) -> None:
     """Register KMA weather alert status tool and its adapter.
 
     Args:
-        registry: A ToolRegistry instance.
-        executor: A ToolExecutor instance.
+        registry: The central ``ToolRegistry`` to add the tool to.
+        executor: The ``ToolExecutor`` to bind the adapter function to.
     """
-    from kosmos.tools.executor import ToolExecutor
-    from kosmos.tools.registry import ToolRegistry
+    from typing import cast
 
-    assert isinstance(registry, ToolRegistry)
-    assert isinstance(executor, ToolExecutor)
+    from kosmos.tools.executor import AdapterFn
 
     registry.register(KMA_WEATHER_ALERT_STATUS_TOOL)
-    executor.register_adapter(
-        "kma_weather_alert_status",
-        lambda inp: _call(KmaWeatherAlertStatusInput.model_validate(inp.model_dump())),
-    )
+    executor.register_adapter("kma_weather_alert_status", cast(AdapterFn, _call))
     logger.info("Registered tool: kma_weather_alert_status")

@@ -205,7 +205,7 @@ class ToolExecutor:
             return make_error_envelope(
                 tool_id=tool_id,
                 reason="invalid_params",
-                message=str(exc),
+                message="Invalid parameters for tool.",
                 request_id=request_id,
                 elapsed_ms=_elapsed(),
                 retryable=False,
@@ -215,12 +215,14 @@ class ToolExecutor:
         try:
             raw_output = await adapter(validated_input)
         except Exception as exc:
-            logger.exception("invoke: adapter raised exception for %s: %s", tool_id, exc)
+            logger.warning(
+                "invoke: adapter %s raised %s: %s", tool_id, type(exc).__name__, exc
+            )
             reason, retryable = _classify_adapter_exception(exc)
             return make_error_envelope(
                 tool_id=tool_id,
                 reason=reason,
-                message=str(exc),
+                message="Tool execution failed.",
                 request_id=request_id,
                 elapsed_ms=_elapsed(),
                 retryable=retryable,
@@ -235,11 +237,13 @@ class ToolExecutor:
                 elapsed_ms=_elapsed(),
             )
         except EnvelopeNormalizationError as exc:
-            logger.error("invoke: envelope normalisation failed for %s: %s", tool_id, exc)
+            logger.error(
+                "invoke: envelope normalisation failed for %s: %s", tool_id, exc
+            )
             return make_error_envelope(
                 tool_id=tool_id,
                 reason="upstream_unavailable",
-                message=str(exc),
+                message="Response processing failed.",
                 request_id=request_id,
                 elapsed_ms=_elapsed(),
                 retryable=False,
@@ -289,6 +293,15 @@ class ToolExecutor:
                         error_type="not_found",
                     )
                     return _final_result
+
+                # Warn when the legacy dispatch() path is used for auth-required tools.
+                # dispatch() has no session_identity parameter, so the auth gate in
+                # invoke() can never fire here — flag this for operational visibility.
+                if tool.requires_auth:
+                    logger.warning(
+                        "dispatch() called for auth-required tool %r without auth gate",
+                        tool_name,
+                    )
 
                 # Step 2: Parse and validate input
                 try:
@@ -373,7 +386,12 @@ class ToolExecutor:
                     try:
                         result_dict = await adapter(validated_input)
                     except Exception as exc:
-                        logger.exception("Adapter execution failed for tool %s: %s", tool_name, exc)
+                        logger.warning(
+                            "Adapter %s raised %s: %s",
+                            tool_name,
+                            type(exc).__name__,
+                            exc,
+                        )
                         self._metrics_increment("tool.error_count", tool_name)
                         self._metrics_observe_duration(
                             "tool.duration_ms",
@@ -383,7 +401,7 @@ class ToolExecutor:
                         _final_result = ToolResult(
                             tool_id=tool_name,
                             success=False,
-                            error=str(exc),
+                            error="Tool execution failed.",
                             error_type="execution",
                         )
                         return _final_result
@@ -451,12 +469,14 @@ class ToolExecutor:
 
     def _handle_unexpected_error(self, tool_name: str, exc: BaseException) -> ToolResult:
         """Convert an unexpected exception to a ToolResult (never raises)."""
-        logger.exception("Unexpected error during dispatch of tool %s: %s", tool_name, exc)
+        logger.error(
+            "Unexpected error during dispatch of tool %s: %s", tool_name, exc, exc_info=True
+        )
         self._metrics_increment("tool.error_count", tool_name)
         return ToolResult(
             tool_id=tool_name,
             success=False,
-            error=f"Internal error: {exc}",
+            error="Internal error occurred.",
             error_type="execution",
         )
 

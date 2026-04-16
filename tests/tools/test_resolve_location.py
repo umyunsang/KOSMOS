@@ -171,6 +171,9 @@ class TestResolveAddress:
 
     @pytest.mark.asyncio
     async def test_falls_back_to_juso_when_kakao_fails(self):
+        # When Kakao fails and JUSO only resolves an administrative area name,
+        # the facade must return ResolveError rather than a misleading AddressResult
+        # with an admin area name in the road_address field.
         inp = ResolveLocationInput(query="서울 강남구 테헤란로 152", want="road_address")
         juso_adm = AdmCodeResult(
             kind="adm_cd",
@@ -190,8 +193,9 @@ class TestResolveAddress:
             ),
         ):
             result = await resolve_location(inp)
-        assert isinstance(result, AddressResult)
-        assert result.source == "juso"
+        assert isinstance(result, ResolveError)
+        assert result.reason == "not_found"
+        assert "administrative area" in result.message
 
     @pytest.mark.asyncio
     async def test_error_when_all_fail(self):
@@ -219,6 +223,7 @@ class TestResolvePOI:
         mock_doc.y = "37.4979"
         mock_doc.x = "127.0276"
         mock_doc.address_name = "강남역"
+        mock_doc.address_type = "REGION_ADDR"  # must be a plain string for Pydantic validation
         mock_doc.road_address = None
         mock_doc.address = None
 
@@ -232,6 +237,7 @@ class TestResolvePOI:
             result = await resolve_location(inp)
         assert isinstance(result, POIResult)
         assert result.name == "강남역"
+        assert result.category == "REGION_ADDR"
 
     @pytest.mark.asyncio
     async def test_poi_no_documents_returns_error(self):
@@ -324,12 +330,20 @@ class TestResolveCoordsAndAdmCd:
 class TestResolveAll:
     @pytest.mark.asyncio
     async def test_all_bundle_includes_address_and_poi(self):
+        # want="all" now makes a single consolidated Kakao call instead of three
+        # separate calls.  _kakao_geocode is no longer invoked for this path.
         inp = ResolveLocationInput(query="강남역", want="all")
+
+        mock_road_address = AsyncMock()
+        mock_road_address.address_name = "서울 강남구 테헤란로 152"
+        mock_road_address.zone_no = "06236"
+
         mock_doc = AsyncMock()
         mock_doc.y = "37.4979"
         mock_doc.x = "127.0276"
         mock_doc.address_name = "강남역"
-        mock_doc.road_address = None
+        mock_doc.address_type = "ROAD_ADDR"  # plain string required for Pydantic
+        mock_doc.road_address = mock_road_address
         mock_doc.address = None
 
         mock_search_result = AsyncMock()
@@ -345,10 +359,6 @@ class TestResolveAll:
             patch(
                 "kosmos.tools.resolve_location._juso_adm_cd",
                 new=AsyncMock(return_value=_ADM),
-            ),
-            patch(
-                "kosmos.tools.resolve_location._kakao_geocode",
-                new=AsyncMock(return_value=_ADDRESS),
             ),
             patch(
                 "kosmos.tools.geocoding.kakao_client.search_address",

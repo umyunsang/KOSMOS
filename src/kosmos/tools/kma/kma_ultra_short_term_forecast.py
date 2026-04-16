@@ -34,7 +34,7 @@ from kosmos.tools.registry import ToolRegistry
 
 logger = logging.getLogger(__name__)
 
-_BASE_URL = "http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtFcst"
+_BASE_URL = "https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtFcst"
 
 # ---------------------------------------------------------------------------
 # Input model (output reuses ForecastItem / KmaShortTermForecastOutput)
