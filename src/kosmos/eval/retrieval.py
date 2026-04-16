@@ -31,7 +31,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-import yaml
+import yaml  # type: ignore[import-untyped]
 
 logger = logging.getLogger(__name__)
 
@@ -289,7 +289,7 @@ async def _evaluate(
     recall_at_5 = hits_at_5 / total if total > 0 else 0.0
 
     # Check which seed adapters are missing from the registry
-    registered_ids: set[str] = {t.id for t in registry.all_tools()}  # type: ignore[union-attr]
+    registered_ids: set[str] = {t.id for t in registry.all_tools()}  # type: ignore[attr-defined]
     missing_adapters = sorted(_SEED_ADAPTER_IDS - registered_ids)
 
     # Compute per-adapter recall metrics

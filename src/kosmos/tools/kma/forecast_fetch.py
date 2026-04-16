@@ -197,7 +197,7 @@ async def _fetch(
     if inp.base_time not in _VALID_BASE_TIMES:
         return LookupError(
             kind="error",
-            reason=LookupErrorReason.invalid_params,
+            reason=LookupErrorReason.invalid_params.value,
             message=(
                 f"base_time {inp.base_time!r} is not a valid KMA forecast base time. "
                 f"Must be one of: {', '.join(sorted(_VALID_BASE_TIMES))}."
@@ -210,7 +210,7 @@ async def _fetch(
     except KMADomainError as exc:
         return LookupError(
             kind="error",
-            reason=LookupErrorReason.out_of_domain,
+            reason=LookupErrorReason.out_of_domain.value,
             message=str(exc),
         )
 
@@ -252,7 +252,7 @@ async def _fetch(
         if "xml" in content_type.lower() and "json" not in content_type.lower():
             return LookupError(
                 kind="error",
-                reason=LookupErrorReason.upstream_unavailable,
+                reason=LookupErrorReason.upstream_unavailable.value,
                 message=(
                     f"KMA API returned XML instead of JSON "
                     f"(content-type={content_type!r}). "
@@ -265,13 +265,13 @@ async def _fetch(
     except httpx.HTTPStatusError as exc:
         return LookupError(
             kind="error",
-            reason=LookupErrorReason.upstream_unavailable,
+            reason=LookupErrorReason.upstream_unavailable.value,
             message=f"HTTP error from KMA forecast API: {exc.response.status_code}",
         )
     except httpx.RequestError as exc:
         return LookupError(
             kind="error",
-            reason=LookupErrorReason.timeout,
+            reason=LookupErrorReason.timeout.value,
             message=f"Network error reaching KMA forecast API: {exc}",
             retryable=True,
         )
@@ -288,14 +288,14 @@ async def _fetch(
     except (KeyError, TypeError) as exc:
         return LookupError(
             kind="error",
-            reason=LookupErrorReason.upstream_unavailable,
+            reason=LookupErrorReason.upstream_unavailable.value,
             message=f"Unexpected KMA response structure: {exc}",
         )
 
     if result_code != "00":
         return LookupError(
             kind="error",
-            reason=LookupErrorReason.upstream_unavailable,
+            reason=LookupErrorReason.upstream_unavailable.value,
             message=f"KMA API error: resultCode={result_code!r} resultMsg={result_msg!r}",
             upstream_code=result_code,
             upstream_message=result_msg,
@@ -306,7 +306,7 @@ async def _fetch(
     if not raw_items_container or isinstance(raw_items_container, str):
         item_list: list[dict[str, object]] = []
     else:
-        raw_items = raw_items_container.get("item")  # type: ignore[union-attr]
+        raw_items = raw_items_container.get("item")
         item_list = _normalize_items(raw_items)
 
     points = _parse_forecast_items(item_list)

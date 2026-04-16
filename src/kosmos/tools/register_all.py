@@ -20,6 +20,9 @@ invocable via ``lookup(mode="fetch")``.
 from __future__ import annotations
 
 import logging
+from typing import Any
+
+from pydantic import BaseModel
 
 from kosmos.tools.executor import ToolExecutor
 from kosmos.tools.registry import ToolRegistry
@@ -93,9 +96,10 @@ def register_all_tools(registry: ToolRegistry, executor: ToolExecutor) -> None:
     # binding lives here so _fetch is reachable via lookup(mode="fetch").
     registry.register(KMA_FORECAST_FETCH_TOOL)
 
-    async def _kma_forecast_fetch_adapter(inp: object) -> object:
+    async def _kma_forecast_fetch_adapter(inp: BaseModel) -> dict[str, Any]:
         assert isinstance(inp, KmaForecastFetchInput)
-        return await kma_forecast_fetch_adapter(inp)
+        result = await kma_forecast_fetch_adapter(inp)
+        return result.model_dump() if hasattr(result, "model_dump") else dict(result)
 
     executor.register_adapter("kma_forecast_fetch", _kma_forecast_fetch_adapter)
     logger.info("Registered tool: kma_forecast_fetch")
