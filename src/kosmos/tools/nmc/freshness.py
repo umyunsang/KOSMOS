@@ -40,6 +40,7 @@ def check_freshness(
     """
     if threshold_minutes is None:
         from kosmos.settings import settings
+
         threshold_minutes = settings.nmc_freshness_minutes
 
     if not hvidate_str or not hvidate_str.strip():

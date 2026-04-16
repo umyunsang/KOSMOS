@@ -294,9 +294,7 @@ class TestFreshnessIntegration:
     @respx.mock
     @patch("kosmos.tools.nmc.freshness.datetime")
     @patch("kosmos.settings.settings")
-    async def test_stale_response_returns_error(
-        self, mock_settings, mock_dt, nmc_reg_exec
-    ) -> None:
+    async def test_stale_response_returns_error(self, mock_settings, mock_dt, nmc_reg_exec) -> None:
         """Stale fixture → executor returns LookupError with reason='stale_data'."""
         mock_settings.data_go_kr_api_key = "test-key"
         mock_settings.nmc_freshness_minutes = 30
