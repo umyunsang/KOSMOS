@@ -1,0 +1,14 @@
+{
+  "corpus_size": 231,
+  "false_positives": 0,
+  "per_category": {
+    "role_assumption": 0,
+    "system_override": 0,
+    "exfiltration_lure": 0,
+    "entropy_only": 0
+  },
+  "weights": [0.6, 0.25, 0.15],
+  "block_threshold": 0.20,
+  "timestamp": "2026-04-17",
+  "notes": "Proxy corpus of 231 string-valued leaves from 12 recorded adapter fixture files (koroad/kma/hira/nmc/legacy). The target 500-turn corpus directory contains only a README; this proxy covers all available recorded outputs. Threshold tuned from 0.50 to 0.20 — single-category structural hits score ~0.235, max clean-corpus score is 0.035, margin ~0.17. Weights [0.6, 0.25, 0.15] unchanged from spec seed."
+}

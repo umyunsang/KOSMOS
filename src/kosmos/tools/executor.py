@@ -111,7 +111,7 @@ class ToolExecutor:
         self._adapters[tool_id] = adapter
         logger.debug("Registered adapter for tool: %s", tool_id)
 
-    async def invoke(
+    async def invoke(  # noqa: C901
         self,
         tool_id: str,
         params: dict[str, object],
@@ -236,6 +236,38 @@ class ToolExecutor:
                 elapsed_ms=_elapsed(),
                 retryable=retryable,
             )
+
+        # --- Epic #466 Layers A+C: ingress safety (FR-006, FR-013) --------------
+        # Detector first, then redactor. BaseModel outputs are dumped to dict so
+        # the scanners see every field value — a trusted schema does not imply
+        # trusted data (adapter responses can still carry PII or injected
+        # directives from upstream). The sanitized dict is handed back to
+        # normalize(), which accepts dicts equivalently to BaseModels.
+        from kosmos.safety._ingress import apply_ingress_safety  # noqa: PLC0415
+        from kosmos.safety._span import emit_safety_event  # noqa: PLC0415
+        from kosmos.settings import settings  # noqa: PLC0415
+
+        scan_dict: dict[str, Any] | None = None
+        if isinstance(raw_output, BaseModel):
+            scan_dict = raw_output.model_dump(mode="python")
+        elif isinstance(raw_output, dict):
+            scan_dict = raw_output
+
+        if scan_dict is not None:
+            sanitized, safety_event = apply_ingress_safety(scan_dict, settings.safety)
+            if safety_event is not None:
+                emit_safety_event(safety_event)
+            if sanitized is None:
+                # Injection detector blocked — short-circuit via error envelope.
+                return make_error_envelope(
+                    tool_id=tool_id,
+                    reason=LookupErrorReason.injection_detected,
+                    message="Tool output blocked by injection detector.",
+                    request_id=request_id,
+                    elapsed_ms=_elapsed(),
+                    retryable=False,
+                )
+            raw_output = sanitized
 
         # --- Envelope normalisation (FR-015, FR-014) ----------------------------
         try:
@@ -412,6 +444,34 @@ class ToolExecutor:
                             error_type="execution",
                         )
                         return _final_result
+
+                # --- Epic #466 Layers A+C: ingress safety (FR-006, FR-013) ------
+                # Detector first, then redactor; applies to BOTH the recovery
+                # branch (result_dict derived from ToolResult.data) and the direct
+                # adapter branch above.
+                from kosmos.safety._ingress import apply_ingress_safety  # noqa: PLC0415
+                from kosmos.safety._span import emit_safety_event  # noqa: PLC0415
+                from kosmos.settings import settings  # noqa: PLC0415
+
+                sanitized_dict, safety_event = apply_ingress_safety(result_dict, settings.safety)
+                if safety_event is not None:
+                    emit_safety_event(safety_event)
+                if sanitized_dict is None:
+                    # Injection detector blocked — surface as ToolResult failure.
+                    self._metrics_increment("tool.error_count", tool_name)
+                    self._metrics_observe_duration(
+                        "tool.duration_ms",
+                        tool_name,
+                        (time.monotonic() - dispatch_start) * 1000,
+                    )
+                    _final_result = ToolResult(
+                        tool_id=tool_name,
+                        success=False,
+                        error="Tool output blocked by injection detector.",
+                        error_type="injection_detected",
+                    )
+                    return _final_result
+                result_dict = sanitized_dict
 
                 # Step 6: Validate output
                 try:

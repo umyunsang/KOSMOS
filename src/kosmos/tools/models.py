@@ -332,6 +332,8 @@ class ToolResult(BaseModel):
             "circuit_open",
             "api_error",
             "auth_expired",
+            "injection_detected",
+            "content_blocked",
         ]
         | None
     ) = None

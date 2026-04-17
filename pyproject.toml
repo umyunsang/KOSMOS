@@ -19,6 +19,8 @@ dependencies = [
     "opentelemetry-semantic-conventions>=0.46b0",
     "rank-bm25>=0.2.2",
     "kiwipiepy>=0.17",
+    "openai>=2.32.0",
+    "presidio-analyzer>=2.2",
 ]
 
 [project.scripts]
