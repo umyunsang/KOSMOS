@@ -29,48 +29,19 @@ from __future__ import annotations
 
 import json
 import logging
-import re
 
 from kosmos.permissions.models import (
     PermissionCheckRequest,
     PermissionDecision,
     PermissionStepResult,
 )
+from kosmos.safety._patterns import _PII_PATTERNS, PII_ACCEPTING_PARAMS
+
+__all__ = ["PII_ACCEPTING_PARAMS", "check_params"]
 
 logger = logging.getLogger(__name__)
 
 _STEP = 3
-
-# ---------------------------------------------------------------------------
-# PII regex patterns
-# ---------------------------------------------------------------------------
-
-# Mapping of PII type label to compiled pattern.
-# Patterns use re.search so they catch PII embedded inside longer strings.
-_PII_PATTERNS: dict[str, re.Pattern[str]] = {
-    "rrn": re.compile(r"\d{6}-[1-4]\d{6}"),
-    "phone_kr": re.compile(r"01[016789]-?\d{3,4}-?\d{4}"),
-    "email": re.compile(r"[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}"),
-    "passport_kr": re.compile(r"[A-Z]\d{8}"),
-    "credit_card": re.compile(r"\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}"),
-}
-
-# ---------------------------------------------------------------------------
-# PII-accepting parameter names
-# ---------------------------------------------------------------------------
-
-# Parameter names that are explicitly declared as PII-accepting.  Tools that
-# legitimately take these values (e.g., identity-verification endpoints) list
-# the parameter names here so step 3 skips the scan for those keys.
-# This set is intentionally conservative and kept small.
-PII_ACCEPTING_PARAMS: frozenset[str] = frozenset(
-    {
-        "citizen_id",  # Citizen identifier field in personal-data tools
-        "resident_number",  # RRN parameter for identity verification tools
-        "phone_number",  # Explicit phone-number input fields
-        "passport_number",  # Passport number for travel/identity APIs
-    }
-)
 
 
 def _scan_value_for_pii(value: str) -> str | None:

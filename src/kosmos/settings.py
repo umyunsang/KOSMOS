@@ -16,6 +16,8 @@ from __future__ import annotations
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from kosmos.safety._settings import SafetySettings
+
 
 class KosmosSettings(BaseSettings):
     """KOSMOS runtime configuration loaded from environment / .env file."""
@@ -49,6 +51,10 @@ class KosmosSettings(BaseSettings):
 
     data_go_kr_api_key: str = Field(default="")
     """공공데이터포털 통합 API 키, shared by KOROAD / KMA / HIRA (KOSMOS_DATA_GO_KR_API_KEY)."""
+
+    # --- Safety pipeline (Epic #466) ---
+    safety: SafetySettings = Field(default_factory=SafetySettings)
+    """Four-layer safety pipeline configuration (KOSMOS_SAFETY_* env vars)."""
 
 
 settings: KosmosSettings = KosmosSettings()
