@@ -83,7 +83,7 @@ uv run pytest
 
 ```bash
 ./scripts/audit-secrets.sh              # workflow secret hygiene
-uv run python scripts/audit-env-registry.py --json | jq .verdict
+uv run python scripts/audit-env-registry.py | jq .verdict
 ```
 
 Both should exit `0` / print `"clean"`. CI runs them as pre-test gates; running locally gives you the same signal pre-push.

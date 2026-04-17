@@ -80,7 +80,7 @@ description: "Task list for Epic #468 — Secrets & Config: Infisical OIDC + 12-
 
 **Goal**: `docs/configuration.md` becomes the single human-facing truth for every `KOSMOS_*` variable; `scripts/audit-env-registry.py` + `scripts/audit-secrets.sh` lock the registry to the code so drift fails CI.
 
-**Independent Test**: `uv run python scripts/audit-env-registry.py --json | jq .verdict` prints `"clean"`; `./scripts/audit-secrets.sh` exits 0 on current `ci.yml`. Adding an undocumented `KOSMOS_FOO` to any `src/*.py` flips audit to `drift`/exit 1.
+**Independent Test**: `uv run python scripts/audit-env-registry.py | jq .verdict` prints `"clean"`; `./scripts/audit-secrets.sh` exits 0 on current `ci.yml`. Adding an undocumented `KOSMOS_FOO` to any `src/*.py` flips audit to `drift`/exit 1.
 
 ### Implementation for User Story 2
 
@@ -94,7 +94,7 @@ description: "Task list for Epic #468 — Secrets & Config: Infisical OIDC + 12-
 
 - [ ] T008 [P] [US2] Regenerate `.env.example` (overwrite) per `spec.md §FR-018..019` + `research.md §R6`. Format: dotenv (`KOSMOS_X=<redacted>`, no `export` prefix) — matches `src/kosmos/_dotenv.py` parser. Every required + conditional-required variable from the registry (T005) MUST appear with `<redacted>` value and a single trailing comment `# consumed by <module path>`. No real secret formats (no hex-looking placeholders). Preserve file header comment block explaining `<redacted>` convention + pointer to `docs/configuration.md`. Do NOT write to `.env` (symlink — AGENTS.md hard rule + spec FR-042).
 
-**Checkpoint**: US2 fully functional. `./scripts/audit-secrets.sh && uv run python scripts/audit-env-registry.py --json | jq -e '.verdict == "clean"'` exits 0. SC-003, SC-005, SC-007 met.
+**Checkpoint**: US2 fully functional. `./scripts/audit-secrets.sh && uv run python scripts/audit-env-registry.py | jq -e '.verdict == "clean"'` exits 0. SC-003, SC-005, SC-007 met.
 
 ---
 

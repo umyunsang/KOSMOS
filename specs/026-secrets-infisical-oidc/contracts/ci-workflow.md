@@ -98,7 +98,7 @@ Before any test invocation, the CI job MUST run:
   run: ./scripts/audit-secrets.sh
 
 - name: Env registry drift check
-  run: uv run python scripts/audit-env-registry.py --json
+  run: uv run python scripts/audit-env-registry.py
 ```
 
 Non-zero exit from either gate fails the job (FR-025, SC-005).
@@ -141,7 +141,7 @@ jobs:
         run: ./scripts/audit-secrets.sh
 
       - name: Env registry drift check
-        run: uv run python scripts/audit-env-registry.py --json
+        run: uv run python scripts/audit-env-registry.py
 
       - name: Fetch secrets from Infisical
         uses: Infisical/secrets-action@v1

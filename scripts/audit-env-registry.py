@@ -15,7 +15,6 @@ import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
 
 # ---------------------------------------------------------------------------
 # Regex constants
@@ -373,7 +372,7 @@ def _discover_repo_root(start: Path) -> Path:
 def audit(
     repo_root: Path,
     registry_path: Path,
-) -> tuple[int, dict[str, Any]]:
+) -> tuple[int, dict[str, object]]:
     """Run the full audit.
 
     Returns (exit_code, report_dict).
@@ -390,7 +389,7 @@ def audit(
         err_msg = str(exc)
         if exc.line_no is not None:
             err_msg = f"{err_msg} (line {exc.line_no})"
-        report: dict[str, Any] = {
+        report: dict[str, object] = {
             "schema_version": "1",
             "generated_at": _utcnow(),
             "verdict": "malformed",
@@ -484,7 +483,7 @@ def audit(
             prefix_violations_out[name] = locs
 
     # --- Build findings ---
-    findings: dict[str, list[Any]] = {
+    findings: dict[str, list[object]] = {
         "in_code_not_in_registry": [
             {
                 "name": name,
@@ -560,16 +559,6 @@ def _build_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
-        "--json",
-        dest="emit_json",
-        action="store_true",
-        default=True,
-        help=(
-            "Emit machine-readable JSON report to stdout "
-            "(reserved flag; JSON is always emitted in current version)."
-        ),
-    )
-    parser.add_argument(
         "--repo-root",
         metavar="PATH",
         default=None,
@@ -609,7 +598,6 @@ def main(argv: list[str] | None = None) -> int:
 
     exit_code, report = audit(repo_root, registry_path)
 
-    # Always emit JSON (--json flag reserved for future non-JSON mode).
     print(json.dumps(report, indent=2, ensure_ascii=False))
 
     if exit_code == 2:

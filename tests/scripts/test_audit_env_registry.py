@@ -50,7 +50,6 @@ def _run(repo_root: Path, registry_path: Path | None = None) -> tuple[int, dict]
     cmd = [
         sys.executable,
         str(_SCRIPT),
-        "--json",
         "--repo-root",
         str(repo_root),
     ]

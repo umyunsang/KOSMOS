@@ -8,13 +8,12 @@
 ## CLI
 
 ```
-usage: audit-env-registry.py [--json] [--repo-root PATH] [--registry PATH]
+usage: audit-env-registry.py [--repo-root PATH] [--registry PATH]
 
 Cross-check KOSMOS_* env-var surface vs. the registry in docs/configuration.md.
+Always emits a JSON report on stdout (see §"Drift report shape").
 
 options:
-  --json             emit machine-readable JSON report to stdout
-                     (see §"Drift report shape"). Default: human text.
   --repo-root PATH   repo root to scan (default: current working dir ancestor
                      containing pyproject.toml).
   --registry PATH    registry markdown file (default: docs/configuration.md).
@@ -57,7 +56,7 @@ Parse algorithm:
 
 Malformed table → exit 2 (see §Exit codes) with a single-line error identifying the offending line number.
 
-## Drift report shape (`--json` mode)
+## Drift report shape
 
 ```json
 {
@@ -87,7 +86,7 @@ Malformed table → exit 2 (see §Exit codes) with a single-line error identifyi
 }
 ```
 
-In human (non-JSON) mode, each finding prints one line; summary counts last.
+The JSON report is the sole output format; there is no human-readable alternative mode.
 
 ## Exit codes
 
@@ -118,7 +117,7 @@ Invoked as a pre-test step (see `contracts/ci-workflow.md §Pre-test gates`):
 
 ```yaml
 - name: Env registry drift check
-  run: uv run python scripts/audit-env-registry.py --json
+  run: uv run python scripts/audit-env-registry.py
 ```
 
 Non-zero exit fails the CI job.

@@ -8,15 +8,21 @@
 ## CLI
 
 ```
-usage: scripts/audit-secrets.sh [--workflow-dir .github/workflows]
+usage: scripts/audit-secrets.sh [--repo-root PATH]
 
 POSIX-compliant bash (requires bash 4+); no dependencies beyond `grep`, `awk`,
 `sed`, and `find` available on Ubuntu CI runners and macOS developer laptops.
 
+Options:
+  --repo-root PATH   repo root to scan from (default: script's grandparent,
+                     i.e. the worktree root). Scan scope is the fixed
+                     `_SCANNED_FILES` list inside the script, resolved
+                     relative to this root.
+
 Exit codes:
   0  no forbidden patterns found in scanned workflows.
   1  one or more forbidden patterns found (violation report on stderr).
-  2  scan error (workflow dir missing, unreadable file).
+  2  scan error (usage error, workflow file missing, unreadable file).
 ```
 
 POSIX-portable. Written to pass `shellcheck -x` with zero warnings.

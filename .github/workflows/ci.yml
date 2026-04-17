@@ -53,7 +53,7 @@ jobs:
       - name: Secrets audit (block long-lived tokens in workflows)
         run: ./scripts/audit-secrets.sh
       - name: Env registry drift check
-        run: uv run python scripts/audit-env-registry.py --json
+        run: uv run python scripts/audit-env-registry.py
       - name: Fetch secrets from Infisical (OIDC federation)
         uses: Infisical/secrets-action@8802effbe453d0576cd923567dcc2c97a1f54058  # v1.0.15
         with:
