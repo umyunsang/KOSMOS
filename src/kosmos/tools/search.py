@@ -1,9 +1,12 @@
 # SPDX-License-Identifier: Apache-2.0
-"""BM25-based search for the KOSMOS Tool System.
+"""Retriever-based search for the KOSMOS Tool System.
 
 Public API (for external callers):
-- ``search(query, bm25_index, registry, top_k)`` — BM25 facade returning ``AdapterCandidate``
-  objects; accepts the instance-owned ``BM25Index`` from ``ToolRegistry``.
+- ``search(query, bm25_index, registry, top_k)`` — retrieval facade returning
+  ``AdapterCandidate`` objects. The ``bm25_index`` parameter is kept for
+  backward-compatible signatures (FR-009); the scoring call is routed through
+  ``registry._retriever`` (spec 026) so Dense / Hybrid backends are honoured
+  without any caller-side change.
 - ``search_tools(tools, query, max_results)`` — legacy token-overlap function kept for
   backward compatibility with ``ToolRegistry.search()``; will be removed in a follow-on epic.
 - ``create_search_meta_tool()`` — factory for the ``search_tools`` meta-tool definition.
@@ -35,24 +38,30 @@ def search(
     registry: ToolRegistry,
     top_k: int | None = None,
 ) -> list[AdapterCandidate]:
-    """BM25-ranked adapter search over the tool registry.
+    """Retrieval-backend-ranked adapter search over the tool registry.
 
-    Replaces the legacy token-overlap scoring.  Uses the instance-owned
-    ``BM25Index`` passed in from ``ToolRegistry`` so that multiple registry
-    instances (e.g. in parallel tests) never share state.
+    Spec 026 rewires scoring through ``registry._retriever`` so the active
+    backend (bm25 | dense | hybrid) determines the ranking. The
+    ``bm25_index`` parameter is kept in the signature for FR-009
+    backward compatibility — when the active backend is BM25 it points
+    at the same index the retriever wraps; when the backend is Dense or
+    Hybrid it is ignored. External signature and contract are unchanged.
 
     Adaptive top_k clamp (FR-009):
         effective_top_k = max(1, min(top_k if top_k else 5, len(registry), 20))
 
     Args:
         query: Free-text query in Korean or English.
-        bm25_index: The ``BM25Index`` owned by the calling ``ToolRegistry``.
+        bm25_index: Compatibility parameter retained per FR-009; not
+            consulted when the registry's active backend is non-BM25.
         registry: The live ToolRegistry to search.
         top_k: Per-call override.  None → use default (5).
 
     Returns:
         Ranked list of AdapterCandidate entries.
     """
+    del bm25_index  # retained for FR-009 signature compat; routing happens via registry._retriever
+
     registry_size = len(registry)
     default_k = 5
     raw_k = top_k if top_k is not None else default_k
@@ -61,14 +70,17 @@ def search(
     if registry_size == 0:
         return []
 
-    scored = bm25_index.score(query)
+    scored = registry._retriever.score(query)
+    # Enforce the deterministic tie-break once, here. Backend-internal
+    # orderings are not trusted (HybridBackend returns unordered union).
+    scored = sorted(scored, key=lambda pair: (-pair[1], pair[0]))
     results: list[AdapterCandidate] = []
 
     for tool_id, score in scored[:effective_top_k]:
         try:
             tool = registry.lookup(tool_id)
         except Exception:  # pragma: no cover
-            logger.warning("search: tool %r in BM25 index but not in registry", tool_id)
+            logger.warning("search: tool %r in retriever but not in registry", tool_id)
             continue
 
         required_params = _required_params(tool)

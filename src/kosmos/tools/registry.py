@@ -10,6 +10,10 @@ from kosmos.tools.bm25_index import BM25Index
 from kosmos.tools.errors import DuplicateToolError, RegistrationError, ToolNotFoundError
 from kosmos.tools.models import _AUTH_TYPE_LEVEL_MAPPING, GovAPITool, ToolSearchResult
 from kosmos.tools.rate_limiter import RateLimiter
+from kosmos.tools.retrieval.backend import Retriever, build_retriever_from_env
+from kosmos.tools.retrieval.bm25_backend import BM25Backend
+from kosmos.tools.retrieval.degrade import DegradationRecord
+from kosmos.tools.retrieval.dense_backend import DenseBackendLoadError
 from kosmos.tools.search import search_tools
 
 logger = logging.getLogger(__name__)
@@ -21,7 +25,28 @@ class ToolRegistry:
     def __init__(self) -> None:
         self._tools: dict[str, GovAPITool] = {}
         self._rate_limiters: dict[str, RateLimiter] = {}
-        self.bm25_index: BM25Index = BM25Index({})
+
+        # Spec 026: dependency-injection seam. The registry no longer
+        # depends on a concrete BM25Index; it depends on the Retriever
+        # protocol and lets the environment (via KOSMOS_RETRIEVAL_BACKEND)
+        # pick the implementation. Default path is bm25 — byte-identical
+        # to pre-#585 behaviour (FR-009, SC-04).
+        default_bm25_index = BM25Index({})
+        self._degradation_record = DegradationRecord()
+        self._retriever: Retriever = build_retriever_from_env(
+            bm25_index_factory=lambda: default_bm25_index,
+            degradation_record=self._degradation_record,
+        )
+
+        # FR-009 compatibility alias: external call sites that read the
+        # legacy ``bm25_index`` attribute (e.g., kosmos.tools.search) keep
+        # working while we migrate them. The alias is retired in a
+        # follow-on spec; during #585 it always references the BM25Index
+        # owned by the active retriever when the active backend is BM25.
+        if isinstance(self._retriever, BM25Backend):
+            self.bm25_index: BM25Index = self._retriever._index
+        else:
+            self.bm25_index = default_bm25_index
 
     def register(self, tool: GovAPITool) -> None:
         """Register a tool.
@@ -122,12 +147,30 @@ class ToolRegistry:
             limit=tool.rate_limit_per_minute,
         )
 
-        # Rebuild the instance-owned BM25 index from the full current
-        # search_hint corpus so that subsequent search() calls reflect the
-        # newly registered adapter.  Using an instance attribute instead of a
-        # module-level global prevents cross-contamination between registry
-        # instances (e.g. parallel pytest workers).
-        self.bm25_index.rebuild({tid: t.search_hint for tid, t in self._tools.items()})
+        # Spec 026: rebuild via the injected Retriever. The BM25 default
+        # path delegates straight to BM25Index.rebuild, preserving the
+        # legacy behaviour; Dense / Hybrid backends recompute embeddings
+        # here. Using the instance-owned retriever keeps cross-registry
+        # isolation intact (parallel pytest workers see independent
+        # state).
+        corpus = {tid: t.search_hint for tid, t in self._tools.items()}
+        try:
+            self._retriever.rebuild(corpus)
+        except (DenseBackendLoadError, ImportError, RuntimeError, OSError) as exc:
+            # FR-002 fail-open: dense/hybrid model load failed at first real
+            # rebuild. Degrade to pure BM25 and emit exactly one WARN via the
+            # registry-scoped DegradationRecord latch.
+            requested = type(self._retriever).__name__.lower().replace("backend", "")
+            self._degradation_record.emit_if_needed(
+                logger,
+                requested_backend=requested,
+                effective_backend="bm25",
+                reason=f"dense load failed: {type(exc).__name__}: {exc}",
+            )
+            fallback = BM25Backend(BM25Index({}))
+            fallback.rebuild(corpus)
+            self._retriever = fallback
+            self.bm25_index = fallback._index
 
         logger.info("Registered tool: %s", tool.id)
 

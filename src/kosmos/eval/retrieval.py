@@ -14,6 +14,12 @@ Exit codes:
     1 — warn  (0.60 <= recall@5 < 0.80)
     2 — fail  (recall@5 < 0.60)
 
+Extended gate exit codes (run_extended_gate / --backend flag):
+    0 — pass  (recall@5 >= 0.80, sc_01_status is not PENDING_#22)
+    1 — warn  (0.60 <= recall@5 < 0.80)
+    2 — PENDING_#22  (registry_size < 8 or no Phase-3 adapters detected)
+    2 — fail  (recall@5 < 0.60, when sc_01 is not PENDING)
+
 NOTE: As of Stage 2a, only ``koroad_accident_hazard_search`` is registered.
 The other 3 seed adapters (kma_forecast_fetch, hira_hospital_search,
 nmc_emergency_search) land in Stage 3.  When fewer than 4 adapters are
@@ -24,8 +30,10 @@ and zero for the others — the JSON report emits a WARN in that case.
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import json
 import logging
+import os
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
@@ -52,6 +60,75 @@ _SEED_ADAPTER_IDS: frozenset[str] = frozenset(
         "nmc_emergency_search",
     }
 )
+
+# Minimum registry size required for a meaningful A/B eval (SC-001, FR-013).
+# Until Epic #22 lands (≥ 4 new adapters), the combined registry will be < 8.
+_SC01_MIN_REGISTRY_SIZE = 8
+
+# The four seed-adapter prefixes.  When every registered tool_id starts with
+# one of these, no Phase-3 adapters are present and SC-01 is PENDING_#22.
+_SEED_PREFIXES: tuple[str, ...] = ("koroad_", "kma_", "hira_", "nmc_")
+
+
+@contextlib.contextmanager
+def _backend_env_overlay(backend: str):  # type: ignore[return]
+    """Context manager that overlays KOSMOS_RETRIEVAL_BACKEND for the duration.
+
+    Restores the previous value (or removes the key entirely if it was absent)
+    when the block exits.  This ensures that callers that set the env var via
+    this function do not pollute the process environment after the harness run.
+
+    Args:
+        backend: One of ``bm25``, ``dense``, ``hybrid``.
+
+    Yields:
+        None
+    """
+    key = "KOSMOS_RETRIEVAL_BACKEND"
+    previous = os.environ.get(key)
+    os.environ[key] = backend
+    try:
+        yield
+    finally:
+        if previous is None:
+            os.environ.pop(key, None)
+        else:
+            os.environ[key] = previous
+
+
+def _compute_sc01_status(registry: object) -> tuple[str, str]:
+    """Determine SC-01 status for the current registry.
+
+    Returns:
+        (status, reason) where status is ``"PENDING_#22"`` or ``"EVALUATED"``.
+
+    The PENDING_#22 status is emitted when:
+    1. ``registry_size < _SC01_MIN_REGISTRY_SIZE`` — not enough adapters for
+       a meaningful A/B comparison between BM25 and hybrid backends, OR
+    2. Every registered tool_id starts with one of the four seed-adapter
+       prefixes — meaning no Phase-3 adapters from Epic #22 are present.
+
+    When either condition holds, SC-01 MUST NOT be marked green (FR-013).
+    """
+    registry_size = len(registry)  # type: ignore[arg-type]
+
+    if registry_size < _SC01_MIN_REGISTRY_SIZE:
+        return (
+            "PENDING_#22",
+            f"registry_size < 8 (require >= 8 adapters from #22 for meaningful A/B); "
+            f"current registry_size={registry_size}",
+        )
+
+    tool_ids: list[str] = [t.id for t in registry.all_tools()]  # type: ignore[attr-defined]
+    if tool_ids and all(
+        any(tid.startswith(prefix) for prefix in _SEED_PREFIXES) for tid in tool_ids
+    ):
+        return (
+            "PENDING_#22",
+            "no Phase-3 adapter ids detected — awaiting #22",
+        )
+
+    return ("EVALUATED", "")
 
 
 def _load_queries(yaml_path: Path) -> list[dict[str, Any]]:
@@ -338,29 +415,196 @@ def _exit_code(recall_at_5: float) -> int:
     return 2
 
 
+# Sentinel that distinguishes "caller omitted report_path" from
+# "caller explicitly passed report_path=None (no file write)".
+_REPORT_PATH_DEFAULT = object()
+
+
+def run_extended_gate(
+    *,
+    backend: str = "bm25",
+    queries_path: Path | None = None,
+    report_path: object = _REPORT_PATH_DEFAULT,
+    registry: object | None = None,
+) -> dict[str, Any]:
+    """Run the extended retrieval gate with backend selection and SC-01 status.
+
+    This function extends the baseline ``_evaluate()`` harness with:
+    - Pluggable backend selection via ``KOSMOS_RETRIEVAL_BACKEND`` env overlay.
+    - ``sc_01_status`` / ``sc_01_reason`` fields added to the report dict.
+    - ``sc_02_status`` placeholder (evaluated when adversarial file exists).
+
+    The existing baseline schema fields (``total_queries``, ``recall_at_1``,
+    ``recall_at_5``, ``per_adapter``, ``registry_size``, ``warnings``,
+    ``timestamp``) are preserved byte-identical so ``test_retrieval_gate.py``
+    contract continues to pass.
+
+    SC-01 PENDING_#22 conditions (FR-013, T032):
+    - ``registry_size < 8`` — not enough adapters from Epic #22.
+    - All tool_ids start with a seed prefix — no Phase-3 adapters detected.
+
+    Args:
+        backend: Retrieval backend to activate (``bm25``, ``dense``, ``hybrid``).
+        queries_path: Path to the queries YAML file.  Defaults to the committed
+            ``eval/retrieval_queries.yaml`` in the repo root.
+        report_path: Path to write the JSON report, or ``None`` to skip writing.
+            When omitted entirely, defaults to
+            ``.eval-artifacts/retrieval_extended.json``.
+        registry: Pre-built registry to use (for testing).  When ``None``,
+            builds the 4-seed registry via ``_build_registry()`` under the
+            backend env overlay so the retriever is initialised correctly.
+
+    Returns:
+        Report dict containing all baseline fields PLUS new SC-status fields.
+        The caller is responsible for interpreting ``sc_01_status`` and
+        deciding whether to ``sys.exit(2)`` at the CLI layer.
+    """
+    if queries_path is None:
+        queries_path = (
+            Path(__file__).parent.parent.parent.parent / "eval" / "retrieval_queries.yaml"
+        )
+
+    # Resolve the effective report path:
+    # - sentinel (omitted by caller) → use default file path
+    # - None (explicitly passed) → no file write
+    # - Path instance → write to that path
+    if report_path is _REPORT_PATH_DEFAULT:
+        effective_report_path: Path | None = Path(".eval-artifacts/retrieval_extended.json")
+    elif report_path is None:
+        effective_report_path = None
+    else:
+        effective_report_path = report_path  # type: ignore[assignment]
+
+    with _backend_env_overlay(backend):
+        if registry is None:
+            built_registry, _ = _build_registry()
+        else:
+            built_registry = registry
+
+        queries = _load_queries(queries_path)
+        report: dict[str, Any] = asyncio.run(_evaluate(queries, built_registry))
+
+    # Compute SC-01 status outside the env overlay — depends on registry
+    # composition, not on the backend in use.
+    sc01_status, sc01_reason = _compute_sc01_status(built_registry)
+    report["sc_01_status"] = sc01_status
+    report["sc_01_reason"] = sc01_reason
+
+    # SC-02 placeholder — evaluated against adversarial file in a follow-on task.
+    report["sc_02_status"] = "PENDING_ADVERSARIAL_EVAL"
+
+    if effective_report_path is not None:
+        _write_report(report, effective_report_path)
+
+    return report
+
+
 def main(argv: list[str] | None = None) -> None:
     """CLI entry point for retrieval evaluation.
 
-    Usage::
+    Usage (baseline, backward-compatible)::
 
         python -m kosmos.eval.retrieval eval/retrieval_queries.yaml
+
+    Usage (extended gate with backend selection)::
+
+        python -m kosmos.eval.retrieval \\
+            --backend hybrid \\
+            --queries eval/retrieval_queries.yaml \\
+            --report .eval-artifacts/retrieval_extended.json
+
+    When ``--backend`` is supplied, the extended gate runs via
+    ``run_extended_gate()`` and the exit code follows the extended scheme:
+        0 — pass   (recall@5 >= 0.80, sc_01 is not PENDING_#22)
+        1 — warn   (0.60 <= recall@5 < 0.80)
+        2 — PENDING_#22  (registry too small / no Phase-3 adapters)
+        2 — fail   (recall@5 < 0.60)
+
+    Without ``--backend``, the legacy positional-arg path runs.
 
     Args:
         argv: Argument list (default: sys.argv[1:]).
     """
+    import argparse
+
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s %(levelname)s %(name)s: %(message)s",
         stream=sys.stderr,
     )
 
-    args = argv if argv is not None else sys.argv[1:]
+    raw_args = argv if argv is not None else sys.argv[1:]
 
-    if not args:
+    # Detect extended mode: any arg that starts with "--" triggers argparse.
+    # The legacy positional mode (first arg is a yaml path, no flags) still
+    # works so existing scripts / tests are not broken.
+    if raw_args and raw_args[0].startswith("--"):
+        parser = argparse.ArgumentParser(
+            prog="kosmos.eval.retrieval",
+            description="Retrieval quality evaluation harness (extended gate).",
+        )
+        parser.add_argument(
+            "--backend",
+            choices=["bm25", "dense", "hybrid"],
+            default="bm25",
+            help="Retrieval backend to activate (default: bm25).",
+        )
+        parser.add_argument(
+            "--queries",
+            type=Path,
+            default=None,
+            help="Path to retrieval_queries.yaml (default: eval/retrieval_queries.yaml).",
+        )
+        parser.add_argument(
+            "--report",
+            type=Path,
+            default=None,
+            help=(
+                "Path to write the JSON report (default: .eval-artifacts/retrieval_extended.json)."
+            ),
+        )
+        parsed = parser.parse_args(raw_args)
+
+        logger.info("Running extended gate with backend=%s", parsed.backend)
+        report = run_extended_gate(
+            backend=parsed.backend,
+            queries_path=parsed.queries,
+            report_path=parsed.report,
+        )
+
+        recall5 = report["recall_at_5"]
+        recall1 = report["recall_at_1"]
+        sc01 = report.get("sc_01_status", "EVALUATED")
+
+        if report.get("warnings"):
+            for w in report["warnings"]:
+                logger.warning("WARN: %s", w)
+
+        if sc01 == "PENDING_#22":
+            reason = report.get("sc_01_reason", "")
+            logger.warning("SC-01 PENDING_#22: %s", reason)
+            print(  # noqa: T201
+                f"[PENDING_#22] recall@5={recall5:.2%} recall@1={recall1:.2%} "
+                f"total={report['total_queries']} registry={report['registry_size']} "
+                f"sc_01={sc01}"
+            )
+            sys.exit(2)
+
+        code = _exit_code(float(recall5))
+        status = {0: "PASS", 1: "WARN", 2: "FAIL"}[code]
+        print(  # noqa: T201
+            f"[{status}] recall@5={recall5:.2%} recall@1={recall1:.2%} "
+            f"total={report['total_queries']} registry={report['registry_size']} "
+            f"sc_01={sc01}"
+        )
+        sys.exit(code)
+
+    # Legacy positional mode — byte-identical to the pre-T031 behaviour.
+    if not raw_args:
         logger.error("Usage: python -m kosmos.eval.retrieval <queries.yaml>")
         sys.exit(2)
 
-    queries_path = Path(args[0])
+    queries_path = Path(raw_args[0])
     output_path = Path(".eval-artifacts/retrieval.json")
 
     logger.info("Loading queries from %s", queries_path)

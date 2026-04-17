@@ -36,6 +36,7 @@ This project's agent instructions live in [`AGENTS.md`](./AGENTS.md). Read that 
 - N/A — this is a validator + backstop spec; no persistent state. The canonical mapping lives as code (validator module-level constant) and as documentation (`docs/security/tool-template-security-spec-v1.md` v1.1 matrix). (025-tool-security-v6)
 - Python 3.12+ (existing project baseline; no bump). + `pydantic >= 2.13` (existing, type validation), `pydantic-settings >= 2.0` (existing, `BaseSettings`), `pytest` + `pytest-asyncio` (existing, tests), stdlib `os`/`sys`/`time`/`pathlib`/`argparse`/`re`. **No new runtime dependencies** — AGENTS.md hard rule. (feat/468-secrets-config)
 - N/A (in-memory configuration only; `.env` is source-of-truth on disk, read-only from the guard's perspective). (feat/468-secrets-config)
+- N/A — in-memory vector matrix + in-memory BM25 doc vectors; HF hub cache at `~/.cache/huggingface/hub/` for weights (user-scoped, not repo-committed). (feat/585-retrieval-dense)
 
 ## Recent Changes
 - 025-tool-security-v6: V6 `auth_type` ↔ `auth_level` consistency invariant (FR-039–FR-048) layered on V1–V5; canonical allow-list mapping `{public⇒{public,AAL1}, api_key⇒{AAL1,AAL2,AAL3}, oauth⇒{AAL1,AAL2,AAL3}}`; two-layer defense (pydantic `@model_validator` + `ToolRegistry.register()` backstop against `model_construct` bypass); registry-wide regression scan; `docs/security/tool-template-security-spec-v1.md` v1.1 worked examples; MVP meta-tool pattern `(public, AAL1) + requires_auth=True` documented as compliant (not an exemption)
