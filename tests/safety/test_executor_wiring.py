@@ -44,6 +44,11 @@ from kosmos.tools.registry import ToolRegistry
 def span_capture(
     monkeypatch: pytest.MonkeyPatch,
 ) -> tuple[InMemorySpanExporter, TracerProvider]:
+    # TracerProvider reads OTEL_SDK_DISABLED at construction and returns
+    # NoOpTracer from get_tracer() when it's "true".  CI sets this flag
+    # globally to suppress OTLP export during tests, so we must clear it
+    # here before constructing the in-memory provider.
+    monkeypatch.delenv("OTEL_SDK_DISABLED", raising=False)
     exporter = InMemorySpanExporter()
     provider = TracerProvider()
     provider.add_span_processor(SimpleSpanProcessor(exporter))

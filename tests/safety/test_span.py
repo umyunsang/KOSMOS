@@ -29,13 +29,26 @@ from kosmos.safety._models import (
 from kosmos.safety._span import emit_safety_event
 
 # ---------------------------------------------------------------------------
-# Module-level TracerProvider + InMemorySpanExporter (shared across tests)
+# Module-level TracerProvider + InMemorySpanExporter (shared across tests).
+#
+# The SDK's TracerProvider reads OTEL_SDK_DISABLED at construction time — when
+# it's "true" (CI default, to suppress OTLP export), get_tracer() returns a
+# NoOpTracer and spans are never recorded.  We temporarily remove that env var
+# just long enough to build the in-memory provider, then restore it so the
+# rest of the process sees the original value.
 # ---------------------------------------------------------------------------
 
-_EXPORTER = InMemorySpanExporter()
-_PROVIDER = TracerProvider()
-_PROVIDER.add_span_processor(SimpleSpanProcessor(_EXPORTER))
-_TRACER = _PROVIDER.get_tracer("kosmos.safety.test_span")
+import os as _os
+
+_prev_otel_disabled = _os.environ.pop("OTEL_SDK_DISABLED", None)
+try:
+    _EXPORTER = InMemorySpanExporter()
+    _PROVIDER = TracerProvider()
+    _PROVIDER.add_span_processor(SimpleSpanProcessor(_EXPORTER))
+    _TRACER = _PROVIDER.get_tracer("kosmos.safety.test_span")
+finally:
+    if _prev_otel_disabled is not None:
+        _os.environ["OTEL_SDK_DISABLED"] = _prev_otel_disabled
 
 _ALLOWED_KINDS = {"redacted", "injection_blocked", "moderation_blocked", "moderation_warned"}
 
