@@ -190,9 +190,9 @@ def _parse_registry(
         if not (name.startswith("KOSMOS_") or name.startswith("LANGFUSE_")):
             continue
 
-        # Classify by Required cell.
+        # Classify by Required cell (case-insensitive to tolerate **Deprecated**).
         required_cell = cells[2].strip() if len(cells) > 2 else ""
-        is_deprecated = _DEPRECATED_MARKER in required_cell
+        is_deprecated = _DEPRECATED_MARKER in required_cell.lower()
 
         if is_deprecated:
             deprecated_vars.add(name)

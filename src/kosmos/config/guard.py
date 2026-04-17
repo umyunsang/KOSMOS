@@ -59,19 +59,19 @@ _REQUIRED_VARS: Final[tuple[RequiredVar, ...]] = (
     RequiredVar(
         name="LANGFUSE_PUBLIC_KEY",
         consumer="kosmos.observability.langfuse (#501)",
-        required_in=frozenset({"prod"}),
+        required_in=frozenset({"ci", "prod"}),
         doc_anchor="#langfuse_public_key",
     ),
     RequiredVar(
         name="LANGFUSE_SECRET_KEY",
         consumer="kosmos.observability.langfuse (#501)",
-        required_in=frozenset({"prod"}),
+        required_in=frozenset({"ci", "prod"}),
         doc_anchor="#langfuse_secret_key",
     ),
     RequiredVar(
         name="KOSMOS_OTEL_ENDPOINT",
         consumer="kosmos.observability.otel (#501)",
-        required_in=frozenset({"prod"}),
+        required_in=frozenset({"ci", "prod"}),
         doc_anchor="#kosmos_otel_endpoint",
     ),
 )

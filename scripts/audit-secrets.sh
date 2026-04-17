@@ -44,23 +44,27 @@ _SCANNED_FILES=(".github/workflows/ci.yml")
 
 # ---------------------------------------------------------------------------
 # Forbidden patterns (denylist) — from contracts/audit-secrets.md §Forbidden patterns
+# Patterns match BOTH dot-notation (secrets.NAME) and bracket-notation
+# (secrets['NAME'] / secrets["NAME"]) because GitHub accepts both. Grep runs
+# case-insensitively (-i) because GitHub secret names are case-insensitive
+# when referenced.
 # ---------------------------------------------------------------------------
 # 1. Any *_TOKEN secret reference
-PATTERN_TOKEN='\$\{\{ *secrets\.[A-Z_]+_TOKEN *\}\}'
+PATTERN_TOKEN='\$\{\{ *secrets[.[][^}]*_TOKEN[^}]*\}\}'
 # 2. Any *_API_KEY secret reference
-PATTERN_API_KEY='\$\{\{ *secrets\.[A-Z_]+_API_KEY *\}\}'
+PATTERN_API_KEY='\$\{\{ *secrets[.[][^}]*_API_KEY[^}]*\}\}'
 # 3. Any *_SECRET secret reference
-PATTERN_SECRET='\$\{\{ *secrets\.[A-Z_]+_SECRET *\}\}'
+PATTERN_SECRET='\$\{\{ *secrets[.[][^}]*_SECRET[^}]*\}\}'
 # 4. Any KOSMOS_* secret reference (long-lived by definition)
-PATTERN_KOSMOS='\$\{\{ *secrets\.KOSMOS_[A-Z_]+ *\}\}'
+PATTERN_KOSMOS='\$\{\{ *secrets[.[][^}]*KOSMOS_[^}]*\}\}'
 # 5. Legacy FRIENDLI_* token references
-PATTERN_FRIENDLI='\$\{\{ *secrets\.FRIENDLI[A-Z_]* *\}\}'
+PATTERN_FRIENDLI='\$\{\{ *secrets[.[][^}]*FRIENDLI[^}]*\}\}'
 # 6. Langfuse secrets (must come via Infisical, not GH Secrets)
-PATTERN_LANGFUSE='\$\{\{ *secrets\.LANGFUSE_[A-Z_]+ *\}\}'
+PATTERN_LANGFUSE='\$\{\{ *secrets[.[][^}]*LANGFUSE_[^}]*\}\}'
 
 # Allowlisted literal strings (skip violation for these)
 # - ${{ secrets.GITHUB_TOKEN }}  — GitHub-issued, short-lived
-ALLOW_GITHUB_TOKEN='secrets\.GITHUB_TOKEN'
+ALLOW_GITHUB_TOKEN='secrets[.[][^}]*GITHUB_TOKEN'
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -85,11 +89,12 @@ _is_allowed() {
 
     # Suppress ${{ secrets.GITHUB_TOKEN }} — short-lived, GitHub-managed.
     # Allow only when GITHUB_TOKEN is the sole secrets.* reference on the line.
-    if echo "${line}" | grep -qE "${ALLOW_GITHUB_TOKEN}"; then
-        # Count total secrets.* occurrences; if only GITHUB_TOKEN, suppress.
+    # Grep is case-insensitive; covers both dot and bracket notation.
+    if echo "${line}" | grep -iqE "${ALLOW_GITHUB_TOKEN}"; then
+        # Count total secrets references; if only GITHUB_TOKEN, suppress.
         local total_refs github_refs
-        total_refs="$(echo "${line}"  | grep -oE '\$\{\{ *secrets\.[A-Z_]+ *\}\}' | wc -l)"
-        github_refs="$(echo "${line}" | grep -oE '\$\{\{ *secrets\.GITHUB_TOKEN *\}\}' | wc -l)"
+        total_refs="$(echo "${line}"  | grep -ioE '\$\{\{ *secrets[.[][^}]*\}\}' | wc -l)"
+        github_refs="$(echo "${line}" | grep -ioE '\$\{\{ *secrets[.[][^}]*GITHUB_TOKEN[^}]*\}\}' | wc -l)"
         if [[ "${total_refs}" -eq "${github_refs}" ]]; then
             return 0
         fi
@@ -105,12 +110,15 @@ _check_pattern() {
     local pattern="$3"
 
     local lineno=0
-    while IFS= read -r line; do
+    # `|| [[ -n "${line}" ]]` ensures we still process the final line when the
+    # file has no trailing newline — otherwise a forbidden secret on EOF would
+    # silently bypass the gate.
+    while IFS= read -r line || [[ -n "${line}" ]]; do
         lineno=$(( lineno + 1 ))
-        if echo "${line}" | grep -qE "${pattern}"; then
+        if echo "${line}" | grep -iqE "${pattern}"; then
             if ! _is_allowed "${line}"; then
                 local snippet
-                snippet="$(echo "${line}" | grep -oE "${pattern}" | head -1)"
+                snippet="$(echo "${line}" | grep -ioE "${pattern}" | head -1)"
                 _violation_lines="${_violation_lines}${file}:${lineno}:1:${rule_id}:${snippet}"$'\n'
                 _violations=$(( _violations + 1 ))
             fi
