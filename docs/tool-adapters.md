@@ -96,7 +96,7 @@ Each adapter is a tool module that registers a `GovAPITool` instance. The exact 
 | `is_irreversible` | `True` when invocation cannot be undone (e.g., payment, certificate issuance). Drives FR-007 live-introspection. | required |
 | `dpa_reference` | DPA template identifier governing the §26 processor chain. MUST be non-null when `pipa_class != "non_personal"` (validator V2). | required |
 
-**Fail-closed defaults**: a new adapter only declares fields that deviate from the conservative defaults. Forgetting a field never accidentally exposes personal data as public.
+**Fail-closed defaults**: fields with defaults (`requires_auth`, `is_personal_data`, etc.) default conservative — forgetting them never accidentally exposes personal data as public. Fields without defaults (`auth_level`, `pipa_class`, `is_irreversible`, `dpa_reference`) MUST always be declared explicitly; Pydantic rejects adapters that omit them.
 
 ## PR checklist
 

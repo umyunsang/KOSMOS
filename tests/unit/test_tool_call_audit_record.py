@@ -7,9 +7,11 @@ Covers:
 - (c) Invariant I2: public_path_marker → check_eligibility + AAL1 + non_personal.
 - (d) Invariant I3: pipa_class != non_personal → dpa_reference non-null.
 - (e) Invariant I4: naive datetime rejected; timezone-aware accepted.
-- (f) Hex SHA-256 shape validation (64-char lowercase hex).
-- (g) Field-shape constraints (empty strings, negative cost_tokens, bad tool_id).
-- (h) JSON Schema validation of the three worked examples from §6 of the normative spec.
+- (f) Invariant I5: permission_decision=='allow' AND pipa_class != non_personal
+  implies sanitized_output_hash is non-null (Merkle coverage binds the redacted view).
+- (g) Hex SHA-256 shape validation (64-char lowercase hex).
+- (h) Field-shape constraints (empty strings, negative cost_tokens, bad tool_id).
+- (i) JSON Schema validation of the three worked examples from §6 of the normative spec.
 - (perf) model_validate < 5 ms per call, averaged over 1000 iterations.
 """
 
