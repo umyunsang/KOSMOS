@@ -59,13 +59,9 @@ def _parse_frontmatter(raw: str) -> dict[str, Any]:
     if not lines or lines[0].strip() != "---":
         raise ValueError("compact_v1 template missing opening '---' frontmatter delimiter")
     try:
-        closing = next(
-            i for i in range(1, len(lines)) if lines[i].strip() == "---"
-        )
+        closing = next(i for i in range(1, len(lines)) if lines[i].strip() == "---")
     except StopIteration as exc:
-        raise ValueError(
-            "compact_v1 template missing closing '---' frontmatter delimiter"
-        ) from exc
+        raise ValueError("compact_v1 template missing closing '---' frontmatter delimiter") from exc
     fm_text = "\n".join(lines[1:closing])
     parsed = yaml.safe_load(fm_text)
     if not isinstance(parsed, dict):
@@ -125,6 +121,7 @@ def __getattr__(name: str) -> Any:
     if name in _LEGACY_ATTRS:
         return _LEGACY_ATTRS[name]()
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
 
 # ---------------------------------------------------------------------------
 # Algorithmic constants — intentionally NOT externalised (FR-X02).
