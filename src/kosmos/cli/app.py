@@ -14,6 +14,7 @@ from rich.markup import escape
 
 from kosmos._dotenv import load_repo_dotenv
 from kosmos.cli.config import CLIConfig
+from kosmos.config.guard import verify_startup
 from kosmos.cli.renderer import EventRenderer
 from kosmos.cli.repl import REPLLoop
 from kosmos.observability import setup_tracing
@@ -245,5 +246,6 @@ def _run_repl(resume_session_id: str | None = None) -> None:
 def main() -> None:
     """Public entry point called by ``[project.scripts]`` and ``__main__.py``."""
     load_repo_dotenv()
+    verify_startup()  # fail-fast guard — exits 78 if required KOSMOS_* vars missing
     setup_tracing()  # configure global TracerProvider once before any query dispatch
     _app()

@@ -30,7 +30,7 @@ description: "Task list for Epic #468 — Secrets & Config: Infisical OIDC + 12-
 
 **Purpose**: Create the new `kosmos.config` Python package and matching test package — minimal scaffolding that unblocks all user stories.
 
-- [ ] T001 [P] Create `src/kosmos/config/__init__.py` (empty module init) and `tests/config/__init__.py` (empty test-package init) per plan.md §Project Structure. No logic — these are package markers so subsequent tasks can import `from kosmos.config import guard` and pytest can collect `tests/config/test_guard.py`. Confirm the two files exist with `ls -la src/kosmos/config/ tests/config/`.
+- [X] T001 [P] Create `src/kosmos/config/__init__.py` (empty module init) and `tests/config/__init__.py` (empty test-package init) per plan.md §Project Structure. No logic — these are package markers so subsequent tasks can import `from kosmos.config import guard` and pytest can collect `tests/config/test_guard.py`. Confirm the two files exist with `ls -la src/kosmos/config/ tests/config/`.
 
 **Checkpoint**: `kosmos.config` package importable; `tests/config` is a valid pytest collection root.
 
@@ -52,7 +52,7 @@ description: "Task list for Epic #468 — Secrets & Config: Infisical OIDC + 12-
 
 ### Tests for User Story 1 (TDD — write FIRST, must FAIL before T003) ⚠️
 
-- [ ] T002 [P] [US1] Write failing unit tests in `tests/config/test_guard.py` covering the 10-scenario matrix from `contracts/guard.md §Test matrix`:
+- [X] T002 [P] [US1] Write failing unit tests in `tests/config/test_guard.py` covering the 10-scenario matrix from `contracts/guard.md §Test matrix`:
   - T-G01: empty env → exit 78, all `required_in ⊇ {dev}` vars listed, `env=dev` tag
   - T-G02: all required set → returns `None`, no stderr
   - T-G03: `KOSMOS_ENV=prod` + `LANGFUSE_PUBLIC_KEY` missing → `LANGFUSE_PUBLIC_KEY` in list
@@ -68,9 +68,9 @@ description: "Task list for Epic #468 — Secrets & Config: Infisical OIDC + 12-
 
 ### Implementation for User Story 1
 
-- [ ] T003 [US1] Implement `src/kosmos/config/guard.py` per `contracts/guard.md §Public surface`. Create: `Env = Literal["dev", "ci", "prod"]`; dataclasses `RequiredVar`, `GuardDiagnostic` (both `frozen=True, slots=True`); module-level `_REQUIRED_VARS: Final[tuple[RequiredVar, ...]]` seeded from `data-model.md §Registry table` — at minimum the dev-required `KOSMOS_FRIENDLI_TOKEN`, `KOSMOS_KAKAO_API_KEY`, `KOSMOS_DATA_GO_KR_API_KEY`, plus prod-conditional `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, `KOSMOS_OTEL_ENDPOINT`; functions `current_env()`, `check_required()` (pure, no I/O), `verify_startup()` (CLI wrapper; writes single stderr line via `print(..., file=sys.stderr)`, then `sys.exit(78)`). Stdlib-only: `os`, `sys`, `dataclasses`, `typing`. No logging, no OTel, no file I/O. Hard-code `doc_url = "https://github.com/umyunsang/KOSMOS/blob/main/docs/configuration.md"`. All 10 T002 tests MUST pass after this task.
+- [X] T003 [US1] Implement `src/kosmos/config/guard.py` per `contracts/guard.md §Public surface`. Create: `Env = Literal["dev", "ci", "prod"]`; dataclasses `RequiredVar`, `GuardDiagnostic` (both `frozen=True, slots=True`); module-level `_REQUIRED_VARS: Final[tuple[RequiredVar, ...]]` seeded from `data-model.md §Registry table` — at minimum the dev-required `KOSMOS_FRIENDLI_TOKEN`, `KOSMOS_KAKAO_API_KEY`, `KOSMOS_DATA_GO_KR_API_KEY`, plus prod-conditional `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, `KOSMOS_OTEL_ENDPOINT`; functions `current_env()`, `check_required()` (pure, no I/O), `verify_startup()` (CLI wrapper; writes single stderr line via `print(..., file=sys.stderr)`, then `sys.exit(78)`). Stdlib-only: `os`, `sys`, `dataclasses`, `typing`. No logging, no OTel, no file I/O. Hard-code `doc_url = "https://github.com/umyunsang/KOSMOS/blob/main/docs/configuration.md"`. All 10 T002 tests MUST pass after this task.
 
-- [ ] T004 [US1] Wire `verify_startup()` into `src/kosmos/cli/app.py:main()` between `load_repo_dotenv()` and `setup_tracing()` per `research.md §R1`. Import `from kosmos.config.guard import verify_startup` and insert a single call `verify_startup()` after the `.env` merge and before any tracing/LLM-client/tool-loop code. Add one integration test `tests/config/test_cli_wiring.py::test_guard_runs_before_tracing` using `monkeypatch` to assert call-order invariant (stub `setup_tracing` and `verify_startup`, assert guard invoked first). Do NOT edit `kosmos.cli.config.CLIConfig` or `_dotenv.py` — guard is additive.
+- [X] T004 [US1] Wire `verify_startup()` into `src/kosmos/cli/app.py:main()` between `load_repo_dotenv()` and `setup_tracing()` per `research.md §R1`. Import `from kosmos.config.guard import verify_startup` and insert a single call `verify_startup()` after the `.env` merge and before any tracing/LLM-client/tool-loop code. Add one integration test `tests/config/test_cli_wiring.py::test_guard_runs_before_tracing` using `monkeypatch` to assert call-order invariant (stub `setup_tracing` and `verify_startup`, assert guard invoked first). Do NOT edit `kosmos.cli.config.CLIConfig` or `_dotenv.py` — guard is additive.
 
 **Checkpoint**: User Story 1 fully functional. `uv run pytest tests/config/` green. Empty-env CLI invocation exits 78 < 100 ms with the mandated single-line stderr message. SC-006 met.
 
