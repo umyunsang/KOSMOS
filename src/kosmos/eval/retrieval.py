@@ -35,6 +35,7 @@ import json
 import logging
 import os
 import sys
+from collections.abc import Iterator
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -71,7 +72,7 @@ _SEED_PREFIXES: tuple[str, ...] = ("koroad_", "kma_", "hira_", "nmc_")
 
 
 @contextlib.contextmanager
-def _backend_env_overlay(backend: str):  # type: ignore[return]
+def _backend_env_overlay(backend: str) -> Iterator[None]:
     """Context manager that overlays KOSMOS_RETRIEVAL_BACKEND for the duration.
 
     Restores the previous value (or removes the key entirely if it was absent)
@@ -97,7 +98,7 @@ def _backend_env_overlay(backend: str):  # type: ignore[return]
 
 
 @contextlib.contextmanager
-def _eager_cold_start_overlay():  # type: ignore[return]
+def _eager_cold_start_overlay() -> Iterator[None]:
     """Force ``KOSMOS_RETRIEVAL_COLD_START=eager`` for the duration of a block.
 
     The eval harness always issues queries immediately after build, so there
