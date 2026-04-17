@@ -119,7 +119,7 @@ jobs:
           fi
       - name: Verify non-root user is UID 1000
         run: |
-          UID_IN_CONTAINER=$(docker run --rm kosmos:ci id -u)
+          UID_IN_CONTAINER=$(docker run --rm --entrypoint id kosmos:ci -u)
           echo "Container UID: $UID_IN_CONTAINER"
           if [ "$UID_IN_CONTAINER" != "1000" ]; then
             echo "::error::Expected UID 1000, got $UID_IN_CONTAINER"
