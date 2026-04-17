@@ -197,8 +197,8 @@ class TestGovAPIToolValidatorV3:
         with pytest.raises(ValidationError) as exc_info:
             _make(
                 id="issue_certificate",
-                auth_level="AAL1",       # conflicts with TOOL_MIN_AAL["issue_certificate"] = "AAL3"
-                pipa_class="identifier", # realistic for certificate issuance
+                auth_level="AAL1",  # conflicts with TOOL_MIN_AAL["issue_certificate"] = "AAL3"
+                pipa_class="identifier",  # realistic for certificate issuance
                 dpa_reference="dpa-mois-v1",
                 is_irreversible=True,
             )
@@ -213,7 +213,7 @@ class TestGovAPIToolValidatorV3:
         with pytest.raises(ValidationError) as exc_info:
             _make(
                 id="pay",
-                auth_level="AAL2",       # conflicts with TOOL_MIN_AAL["pay"] = "AAL3"
+                auth_level="AAL2",  # conflicts with TOOL_MIN_AAL["pay"] = "AAL3"
                 pipa_class="personal",
                 dpa_reference="dpa-payment-v1",
                 is_irreversible=True,
@@ -227,7 +227,7 @@ class TestGovAPIToolValidatorV3:
         """id=lookup (AAL1 in TOOL_MIN_AAL) + auth_level=AAL1 must succeed (V3 green)."""
         tool = _make(
             id="lookup",
-            auth_level="AAL1",   # correct — matches TOOL_MIN_AAL["lookup"]
+            auth_level="AAL1",  # correct — matches TOOL_MIN_AAL["lookup"]
             pipa_class="non_personal",
             dpa_reference=None,
             is_irreversible=False,
@@ -251,7 +251,7 @@ class TestGovAPIToolValidatorV4:
             _make(
                 id="test_v4_violation",
                 is_irreversible=True,
-                auth_level="public",   # V4 trigger: irreversible + public
+                auth_level="public",  # V4 trigger: irreversible + public
                 pipa_class="non_personal",
                 dpa_reference=None,
             )
@@ -265,7 +265,7 @@ class TestGovAPIToolValidatorV4:
         tool = _make(
             id="test_v4_aal1_ok",
             is_irreversible=True,
-            auth_level="AAL1",     # non-public, so V4 does not apply
+            auth_level="AAL1",  # non-public, so V4 does not apply
             pipa_class="personal",
             dpa_reference="dpa-test-v4",
             requires_auth=True,  # V5: AAL1 requires requires_auth=True

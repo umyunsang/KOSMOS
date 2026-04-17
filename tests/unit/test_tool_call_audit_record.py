@@ -537,6 +537,5 @@ def test_model_validate_under_5ms_p_avg():
     budget_ns = 5_000_000  # 5 ms = 5,000,000 ns — from data-model.md §3
 
     assert avg_ns < budget_ns, (
-        f"model_validate average {avg_ns / 1_000_000:.3f} ms "
-        f"exceeds 5 ms budget (data-model.md §3)"
+        f"model_validate average {avg_ns / 1_000_000:.3f} ms exceeds 5 ms budget (data-model.md §3)"
     )

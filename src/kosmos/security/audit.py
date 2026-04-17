@@ -167,9 +167,7 @@ class ToolCallAuditRecord(BaseModel):
         # Field-shape checks that JSON Schema enforces via pattern/minLength.
         # ASCII-only regex rejects non-ASCII letters that str.islower() would accept.
         if not _TOOL_ID_PATTERN.fullmatch(self.tool_id):
-            raise ValueError(
-                f"tool_id must match ^[a-z][a-z0-9_]*$; got {self.tool_id!r}"
-            )
+            raise ValueError(f"tool_id must match ^[a-z][a-z0-9_]*$; got {self.tool_id!r}")
         if not self.session_id:
             raise ValueError("session_id must be non-empty")
         if not self.caller_identity:
@@ -177,17 +175,11 @@ class ToolCallAuditRecord(BaseModel):
         if not self.rate_limit_bucket:
             raise ValueError("rate_limit_bucket must be non-empty")
         if self.cost_tokens < 0:
-            raise ValueError(
-                f"cost_tokens must be >= 0; got {self.cost_tokens}"
-            )
+            raise ValueError(f"cost_tokens must be >= 0; got {self.cost_tokens}")
         if not _is_hex_sha256(self.input_hash):
-            raise ValueError(
-                "input_hash must be a lowercase hex SHA-256 digest (64 chars)"
-            )
+            raise ValueError("input_hash must be a lowercase hex SHA-256 digest (64 chars)")
         if not _is_hex_sha256(self.output_hash):
-            raise ValueError(
-                "output_hash must be a lowercase hex SHA-256 digest (64 chars)"
-            )
+            raise ValueError("output_hash must be a lowercase hex SHA-256 digest (64 chars)")
         if self.sanitized_output_hash is not None and not _is_hex_sha256(
             self.sanitized_output_hash
         ):
@@ -232,15 +224,12 @@ class ToolCallAuditRecord(BaseModel):
         # I3: pipa_class != non_personal implies dpa_reference is non-null.
         if self.pipa_class != "non_personal" and not self.dpa_reference:
             raise ValueError(
-                "I3 violation: pipa_class="
-                f"{self.pipa_class!r} requires a non-empty dpa_reference."
+                f"I3 violation: pipa_class={self.pipa_class!r} requires a non-empty dpa_reference."
             )
 
         # I4: timestamps must be timezone-aware (RFC 3339 with tz).
         if self.timestamp.tzinfo is None:
-            raise ValueError(
-                "I4 violation: timestamp must be timezone-aware (RFC 3339)."
-            )
+            raise ValueError("I4 violation: timestamp must be timezone-aware (RFC 3339).")
 
         return self
 
