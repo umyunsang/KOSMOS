@@ -246,11 +246,11 @@ HIRA_HOSPITAL_SEARCH_TOOL = GovAPITool(
         "병원 검색 진료과목 의료기관 정보 근처 병원 내과 외과 소아과 "
         "hospital search medical specialty clinic nearby HIRA healthcare Korea"
     ),
-    auth_level="public",
+    auth_level="AAL1",
     pipa_class="non_personal",
     is_irreversible=False,
     dpa_reference=None,
-    requires_auth=False,
+    requires_auth=True,
     is_concurrency_safe=True,
     is_personal_data=False,
     cache_ttl_seconds=0,

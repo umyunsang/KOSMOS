@@ -51,12 +51,14 @@ def sample_tool_factory():
         endpoint: str = "https://apis.data.go.kr/test",
         auth_type: str = "api_key",
         search_hint: str = "날씨 예보 weather forecast 기상청",
-        auth_level: str = "public",
+        auth_level: str = "AAL1",
         pipa_class: str = "non_personal",
         is_irreversible: bool = False,
         dpa_reference: str | None = None,
         **overrides,
     ) -> GovAPITool:
+        # V6: auth_type='api_key' requires auth_level in {AAL1, AAL2, AAL3}.
+        # Default changed from 'public' to 'AAL1' (spec-025 V6 invariant).
         # Spec-024 V5: auth_level=='public' ⇔ requires_auth==False.
         # Derive requires_auth from auth_level unless caller overrode it.
         if "requires_auth" not in overrides:

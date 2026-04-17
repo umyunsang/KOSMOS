@@ -252,6 +252,24 @@ class GovAPITool(BaseModel):
                 "be bypassed."
             )
 
+        # V6 (FR-039 / FR-040): auth_type ↔ auth_level consistency invariant.
+        # Rejects any (auth_type, auth_level) pair outside the canonical mapping.
+        # Fail-closed (FR-048): unknown auth_type values also raise.
+        if self.auth_type not in _AUTH_TYPE_LEVEL_MAPPING:
+            raise ValueError(
+                f"V6 violation (FR-048): unknown auth_type={self.auth_type!r}; "
+                "canonical mapping has no entry. Extend _AUTH_TYPE_LEVEL_MAPPING "
+                "in the same PR that adds a new auth_type value."
+            )
+        _v6_allowed = _AUTH_TYPE_LEVEL_MAPPING[self.auth_type]
+        if self.auth_level not in _v6_allowed:
+            raise ValueError(
+                f"V6 violation (FR-039/FR-040): tool {self.id!r} declares "
+                f"auth_type={self.auth_type!r} with auth_level={self.auth_level!r}; "
+                f"auth_type={self.auth_type!r} permits auth_level in "
+                f"{sorted(_v6_allowed)}."
+            )
+
         return self
 
     # ------------------------------------------------------------------

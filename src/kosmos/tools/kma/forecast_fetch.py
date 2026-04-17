@@ -357,11 +357,11 @@ KMA_FORECAST_FETCH_TOOL = GovAPITool(
         "base_time must be one of: 0200, 0500, 0800, 1100, 1400, 1700, 2000, 2300 (KST)."
     ),
     search_hint="단기예보 날씨 기온 강수 short-term weather forecast temperature precipitation",
-    auth_level="public",
+    auth_level="AAL1",
     pipa_class="non_personal",
     is_irreversible=False,
     dpa_reference=None,
-    requires_auth=False,
+    requires_auth=True,
     is_personal_data=False,
     is_concurrency_safe=True,
     cache_ttl_seconds=0,
