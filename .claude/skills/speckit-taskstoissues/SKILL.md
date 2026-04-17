@@ -77,18 +77,30 @@ After all task issues are created, handle deferred items from the spec:
 
 1. Read `FEATURE_DIR/spec.md` and locate the "Scope Boundaries & Deferred Items" section
 2. Parse the "Deferred to Future Work" table
-3. For each row where `Tracking Issue` is `NEEDS TRACKING`:
+3. **Resolve the originating Epic number** (ORIGINATING_EPIC):
+   - Scan `spec.md` for the first `#NNN` reference next to the tokens `Epic`, `Parent Epic`, or `Originating Epic` (case-insensitive)
+   - If none found, scan `plan.md` for the same pattern
+   - If still not found: **STOP** and ask the user for the Epic number — do NOT create orphan deferred issues
+4. For each row where `Tracking Issue` is `NEEDS TRACKING`:
    - Create a placeholder GitHub issue with:
      - **Title**: `[Deferred] {Item}` (e.g., `[Deferred] Full TUI (Ink + React + Bun)`)
-     - **Body**: Include the deferral reason, target epic/phase, and a link back to the originating spec
+     - **Body**: Include the deferral reason, target epic/phase, a link back to the originating spec, and `**Originating Epic**: #ORIGINATING_EPIC`
      - **Labels**: `needs-spec`, `deferred`
+   - **Link as sub-issue of ORIGINATING_EPIC** (mandatory, per `AGENTS.md § Issue hierarchy`):
+     ```bash
+     NEW_ID=$(gh api repos/OWNER/REPO/issues/NEW_NUM --jq '.id')
+     gh api repos/OWNER/REPO/issues/ORIGINATING_EPIC/sub_issues --method POST -F sub_issue_id=$NEW_ID
+     ```
+     Note: use `-F` (integer), not `-f` (string) — the API rejects string IDs.
    - Update the spec.md table: replace `NEEDS TRACKING` with the new issue number (e.g., `#291`)
-4. If the "Deferred to Future Work" table has no `NEEDS TRACKING` entries, skip silently
-5. Report: number of deferred-item issues created, with issue numbers
+5. If the "Deferred to Future Work" table has no `NEEDS TRACKING` entries, skip silently
+6. **Verify linkage**: run `gh api repos/OWNER/REPO/issues/ORIGINATING_EPIC/sub_issues --jq '.[].number'` and confirm every newly created deferred issue number appears in the output
+7. Report: number of deferred-item issues created, with issue numbers AND the Epic they are linked under
 
 > [!IMPORTANT]
 > Deferred item issues are placeholders for future epics. They ensure no work is silently dropped.
-> The project lead decides whether to promote them to full Epics or close them as won't-fix.
+> Sub-issue linkage to the originating Epic is **mandatory** — orphan deferred issues violate `AGENTS.md § Issue hierarchy`.
+> The project lead decides whether to later promote a placeholder to a full Epic (apply `epic` label, detach from parent, re-attach to an Initiative) or close it as won't-fix.
 
 ## Post-Execution Checks
 
