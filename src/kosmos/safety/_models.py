@@ -107,9 +107,6 @@ class ModerationWarnedEvent(BaseModel):
 # ---------------------------------------------------------------------------
 
 SafetyEvent = Annotated[
-    RedactedEvent
-    | InjectionBlockedEvent
-    | ModerationBlockedEvent
-    | ModerationWarnedEvent,
+    RedactedEvent | InjectionBlockedEvent | ModerationBlockedEvent | ModerationWarnedEvent,
     Field(discriminator="kind"),
 ]

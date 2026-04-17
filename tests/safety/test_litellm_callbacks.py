@@ -143,9 +143,7 @@ def test_block_returns_block_decision(
     from kosmos.safety._litellm_callbacks import ModerationBlockError, pre_call
 
     with respx.mock(base_url="https://api.openai.com") as mock:
-        mock.post("/v1/moderations").mock(
-            return_value=httpx.Response(200, json=mock_response)
-        )
+        mock.post("/v1/moderations").mock(return_value=httpx.Response(200, json=mock_response))
         kwargs = _make_kwargs(fixture["input_text"])
         with pytest.raises(ModerationBlockError) as exc_info:
             pre_call(kwargs)
@@ -172,9 +170,7 @@ def test_self_harm_substitutes_crisis_hotline(
     from kosmos.safety._litellm_callbacks import ModerationBlockError, pre_call
 
     with respx.mock(base_url="https://api.openai.com") as mock:
-        mock.post("/v1/moderations").mock(
-            return_value=httpx.Response(200, json=mock_response)
-        )
+        mock.post("/v1/moderations").mock(return_value=httpx.Response(200, json=mock_response))
         kwargs = _make_kwargs(self_harm_fixture["input_text"])
         with pytest.raises(ModerationBlockError) as exc_info:
             pre_call(kwargs)
@@ -205,9 +201,7 @@ def test_pass_returns_allow(
     from kosmos.safety._litellm_callbacks import pre_call
 
     with respx.mock(base_url="https://api.openai.com") as mock:
-        mock.post("/v1/moderations").mock(
-            return_value=httpx.Response(200, json=mock_response)
-        )
+        mock.post("/v1/moderations").mock(return_value=httpx.Response(200, json=mock_response))
         kwargs = _make_kwargs(fixture["input_text"])
         result = pre_call(kwargs)
 
@@ -262,9 +256,7 @@ def test_post_call_output_moderation_block(
     from kosmos.safety._litellm_callbacks import ModerationBlockError, post_call
 
     with respx.mock(base_url="https://api.openai.com") as mock:
-        mock.post("/v1/moderations").mock(
-            return_value=httpx.Response(200, json=mock_response)
-        )
+        mock.post("/v1/moderations").mock(return_value=httpx.Response(200, json=mock_response))
         kwargs = _make_kwargs("irrelevant")
         with pytest.raises(ModerationBlockError):
             post_call(kwargs, "혐오 발언이 포함된 응답 텍스트")
@@ -280,9 +272,7 @@ def test_post_call_output_moderation_allow(
     from kosmos.safety._litellm_callbacks import post_call
 
     with respx.mock(base_url="https://api.openai.com") as mock:
-        mock.post("/v1/moderations").mock(
-            return_value=httpx.Response(200, json=mock_response)
-        )
+        mock.post("/v1/moderations").mock(return_value=httpx.Response(200, json=mock_response))
         kwargs = _make_kwargs("irrelevant")
         clean_response = "안전한 공공서비스 응답입니다."
         result = post_call(kwargs, clean_response)
@@ -338,9 +328,7 @@ def test_emit_safety_event_called_once_on_block(
     mock_response = _make_moderation_response(["violence"])
 
     with respx.mock(base_url="https://api.openai.com") as mock:
-        mock.post("/v1/moderations").mock(
-            return_value=httpx.Response(200, json=mock_response)
-        )
+        mock.post("/v1/moderations").mock(return_value=httpx.Response(200, json=mock_response))
         with pytest.raises(ModerationBlockError):
             pre_call(_make_kwargs("폭력적인 내용"))
 
@@ -384,9 +372,7 @@ def test_emit_safety_event_not_called_on_allow(
     mock_response = _make_moderation_response([])
 
     with respx.mock(base_url="https://api.openai.com") as mock:
-        mock.post("/v1/moderations").mock(
-            return_value=httpx.Response(200, json=mock_response)
-        )
+        mock.post("/v1/moderations").mock(return_value=httpx.Response(200, json=mock_response))
         pre_call(_make_kwargs("자살 예방 상담 전화"))
 
     assert len(emitted_events) == 0, "No events emitted on allow path"
@@ -409,9 +395,7 @@ def test_post_call_emit_once_on_block(
     mock_response = _make_moderation_response(["sexual/minors"])
 
     with respx.mock(base_url="https://api.openai.com") as mock:
-        mock.post("/v1/moderations").mock(
-            return_value=httpx.Response(200, json=mock_response)
-        )
+        mock.post("/v1/moderations").mock(return_value=httpx.Response(200, json=mock_response))
         with pytest.raises(ModerationBlockError):
             post_call(_make_kwargs("irrelevant"), "flagged completion text")
 
@@ -435,9 +419,7 @@ def test_post_call_emit_zero_on_allow(
     mock_response = _make_moderation_response([])
 
     with respx.mock(base_url="https://api.openai.com") as mock:
-        mock.post("/v1/moderations").mock(
-            return_value=httpx.Response(200, json=mock_response)
-        )
+        mock.post("/v1/moderations").mock(return_value=httpx.Response(200, json=mock_response))
         post_call(_make_kwargs("irrelevant"), "clean response text")
 
     assert len(emitted_events) == 0

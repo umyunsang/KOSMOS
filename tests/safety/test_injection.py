@@ -5,6 +5,7 @@ Validates T021 fixtures and ensures clean tool outputs do not false-positive
 (SC-004).  Tests are written before _injection.py exists (T022) so they fail
 on first run and become the acceptance gate for T023.
 """
+
 from __future__ import annotations
 
 import json

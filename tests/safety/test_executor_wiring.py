@@ -50,9 +50,7 @@ def span_capture(
 
     import kosmos.tools.executor as executor_mod
 
-    monkeypatch.setattr(
-        executor_mod, "_tracer", provider.get_tracer("kosmos.tools.executor")
-    )
+    monkeypatch.setattr(executor_mod, "_tracer", provider.get_tracer("kosmos.tools.executor"))
 
     exporter.clear()
     return exporter, provider
@@ -181,9 +179,7 @@ class TestInvokeWiring:
         executor = _make_executor(_invoke_adapter_clean)
 
         with tracer.start_as_current_span("invoke-clean"):
-            result = await executor.invoke(
-                "safety_wiring_probe", {"q": "probe"}, "req-1"
-            )
+            result = await executor.invoke("safety_wiring_probe", {"q": "probe"}, "req-1")
 
         assert not isinstance(result, LookupErrorModel)
         assert getattr(result, "kind", None) == "record"
@@ -199,9 +195,7 @@ class TestInvokeWiring:
         executor = _make_executor(_invoke_adapter_with_pii)
 
         with tracer.start_as_current_span("invoke-pii"):
-            result = await executor.invoke(
-                "safety_wiring_probe", {"q": "probe"}, "req-2"
-            )
+            result = await executor.invoke("safety_wiring_probe", {"q": "probe"}, "req-2")
 
         assert not isinstance(result, LookupErrorModel)
         serialized = json.dumps(result.model_dump(), ensure_ascii=False, default=str)
@@ -219,9 +213,7 @@ class TestInvokeWiring:
         executor = _make_executor(_invoke_adapter_injection)
 
         with tracer.start_as_current_span("invoke-injection"):
-            result = await executor.invoke(
-                "safety_wiring_probe", {"q": "probe"}, "req-3"
-            )
+            result = await executor.invoke("safety_wiring_probe", {"q": "probe"}, "req-3")
 
         assert isinstance(result, LookupErrorModel)
         assert result.reason == "injection_detected"
@@ -243,9 +235,7 @@ class TestDispatchWiring:
         exporter, _ = span_capture
         executor = _make_executor(_dispatch_adapter_clean)
 
-        result = await executor.dispatch(
-            "safety_wiring_probe", json.dumps({"q": "probe"})
-        )
+        result = await executor.dispatch("safety_wiring_probe", json.dumps({"q": "probe"}))
 
         assert result.success is True
         assert result.error_type is None
@@ -258,9 +248,7 @@ class TestDispatchWiring:
         exporter, _ = span_capture
         executor = _make_executor(_dispatch_adapter_with_pii)
 
-        result = await executor.dispatch(
-            "safety_wiring_probe", json.dumps({"q": "probe"})
-        )
+        result = await executor.dispatch("safety_wiring_probe", json.dumps({"q": "probe"}))
 
         assert result.success is True
         serialized = json.dumps(result.data, ensure_ascii=False, default=str)
@@ -275,9 +263,7 @@ class TestDispatchWiring:
         exporter, _ = span_capture
         executor = _make_executor(_dispatch_adapter_injection)
 
-        result = await executor.dispatch(
-            "safety_wiring_probe", json.dumps({"q": "probe"})
-        )
+        result = await executor.dispatch("safety_wiring_probe", json.dumps({"q": "probe"}))
 
         assert result.success is False
         assert result.error_type == "injection_detected"

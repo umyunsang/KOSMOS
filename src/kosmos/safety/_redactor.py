@@ -147,18 +147,14 @@ def _collect_matches_via_presidio(text: str) -> list[tuple[str, int, int]]:
     return raw
 
 
-def _apply_luhn_gate(
-    raw: list[tuple[str, int, int]], text: str
-) -> list[tuple[str, int, int]]:
+def _apply_luhn_gate(raw: list[tuple[str, int, int]], text: str) -> list[tuple[str, int, int]]:
     """Filter credit_card matches: keep only those that pass luhn_valid()."""
     filtered: list[tuple[str, int, int]] = []
     for category, start, end in raw:
         if category == "credit_card":
             digits = re.sub(r"\D", "", text[start:end])
             if not luhn_valid(digits):
-                logger.debug(
-                    "Luhn gate rejected credit_card match at [%d:%d]", start, end
-                )
+                logger.debug("Luhn gate rejected credit_card match at [%d:%d]", start, end)
                 continue
         filtered.append((category, start, end))
     return filtered

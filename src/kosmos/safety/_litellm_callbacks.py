@@ -71,9 +71,7 @@ _CATEGORY_ATTR_TO_LABEL: dict[str, str] = {
 }
 
 # Attribute names that belong to the self-harm family.
-_SELF_HARM_ATTRS = frozenset(
-    {"self_harm", "self_harm_instructions", "self_harm_intent"}
-)
+_SELF_HARM_ATTRS = frozenset({"self_harm", "self_harm_instructions", "self_harm_intent"})
 
 
 class ModerationBlockError(LookupError):
@@ -205,6 +203,7 @@ def pre_call(kwargs: dict[str, Any]) -> dict[str, Any]:
 
         try:
             import openai as _openai  # noqa: PLC0415
+
             _connection_errors = (_openai.APIConnectionError, httpx.TransportError)
         except ImportError:
             _connection_errors = (httpx.TransportError,)  # type: ignore[assignment]
@@ -266,6 +265,7 @@ def post_call(kwargs: dict[str, Any], response: object) -> object:
 
         try:
             import openai as _openai  # noqa: PLC0415
+
             _connection_errors = (_openai.APIConnectionError, httpx.TransportError)
         except ImportError:
             _connection_errors = (httpx.TransportError,)  # type: ignore[assignment]

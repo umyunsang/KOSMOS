@@ -22,11 +22,7 @@ from kosmos.safety._redactor import run_redactor
 # ---------------------------------------------------------------------------
 
 _FIXTURES_PATH = (
-    Path(__file__).resolve().parents[2]
-    / "tests"
-    / "fixtures"
-    / "safety"
-    / "pii_samples.json"
+    Path(__file__).resolve().parents[2] / "tests" / "fixtures" / "safety" / "pii_samples.json"
 )
 
 _FIXTURES: list[dict] = json.loads(_FIXTURES_PATH.read_text(encoding="utf-8"))

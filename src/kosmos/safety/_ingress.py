@@ -109,9 +109,7 @@ def apply_ingress_safety(
         counter: list[int] = [0]
         redacted = _redact_leaves(raw_output, counter)
         if counter[0] > 0:
-            logger.info(
-                "safety.ingress: redactor replaced %d PII match(es)", counter[0]
-            )
+            logger.info("safety.ingress: redactor replaced %d PII match(es)", counter[0])
             return (redacted, RedactedEvent(match_count=counter[0]))
         return (redacted, None)
 

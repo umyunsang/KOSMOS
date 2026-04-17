@@ -23,6 +23,7 @@ block below for rationale), else ``"allow"``.
 # weights [0.6, 0.25, 0.15] produce zero false positives.  Do NOT change the
 # weights without re-running the SC-004 audit and updating fp_audit.json.
 """
+
 from __future__ import annotations
 
 import math
@@ -146,11 +147,7 @@ def run_detector(text: str) -> InjectionSignalSet:
     entropy = _compute_entropy_score(text)
     length_dev = _compute_length_deviation(text)
 
-    combined = (
-        _W_STRUCTURAL * structural
-        + _W_ENTROPY * entropy
-        + _W_LENGTH * length_dev
-    )
+    combined = _W_STRUCTURAL * structural + _W_ENTROPY * entropy + _W_LENGTH * length_dev
 
     decision: str = "block" if combined >= _BLOCK_THRESHOLD else "allow"
 

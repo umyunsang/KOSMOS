@@ -453,9 +453,7 @@ class ToolExecutor:
                 from kosmos.safety._span import emit_safety_event  # noqa: PLC0415
                 from kosmos.settings import settings  # noqa: PLC0415
 
-                sanitized_dict, safety_event = apply_ingress_safety(
-                    result_dict, settings.safety
-                )
+                sanitized_dict, safety_event = apply_ingress_safety(result_dict, settings.safety)
                 if safety_event is not None:
                     emit_safety_event(safety_event)
                 if sanitized_dict is None:
