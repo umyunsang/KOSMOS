@@ -21,7 +21,10 @@ jobs:
       - name: Resolve merge-base (main vs PR head)
         id: merge-base
         run: |
-          git fetch origin "${{ github.base_ref }}" --depth=0
+          # actions/checkout@v6 with fetch-depth: 0 already provides full history,
+          # so a plain fetch is enough to refresh origin/<base_ref>. Do NOT pass
+          # --depth=0 (git rejects 0 as non-positive).
+          git fetch origin "${{ github.base_ref }}"
           MERGE_BASE=$(git merge-base "origin/${{ github.base_ref }}" "${{ github.event.pull_request.head.sha }}")
           echo "sha=${MERGE_BASE}" >> "$GITHUB_OUTPUT"
           echo "Merge-base for main run: ${MERGE_BASE}"

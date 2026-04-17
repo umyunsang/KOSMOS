@@ -83,7 +83,14 @@ def _make_mock_transport() -> httpx.MockTransport:
 
 
 def _make_exporter_and_provider() -> tuple[InMemorySpanExporter, TracerProvider]:
-    """Create a new in-memory exporter + SDK TracerProvider for one battery run."""
+    """Create a new in-memory exporter + SDK TracerProvider for one battery run.
+
+    The caller is responsible for invoking ``provider.shutdown()`` once the
+    spans have been inspected.  Skipping shutdown leaks the background export
+    worker thread and, under Python 3.13's stricter unraisable-exception
+    reporting, surfaces as ``ResourceWarning`` sub-exceptions that fail the
+    pytest ``filterwarnings = ["error"]`` gate.
+    """
     exporter = InMemorySpanExporter()
     provider = TracerProvider()
     provider.add_span_processor(SimpleSpanProcessor(exporter))
@@ -108,20 +115,24 @@ async def test_battery_emits_main_environment_spans(
     import tests.shadow_eval.battery as battery_mod
 
     exporter, provider = _make_exporter_and_provider()
-    tracer = provider.get_tracer("tests.shadow_eval.battery")
-    monkeypatch.setattr(battery_mod, "_tracer", tracer)
+    try:
+        tracer = provider.get_tracer("tests.shadow_eval.battery")
+        monkeypatch.setattr(battery_mod, "_tracer", tracer)
 
-    await battery_run(environment=_ENV_MAIN, transport=_make_mock_transport())
+        await battery_run(environment=_ENV_MAIN, transport=_make_mock_transport())
 
-    finished = exporter.get_finished_spans()
-    assert finished, (
-        "Expected at least one finished span from the battery (environment=main), got none."
-    )
+        finished = exporter.get_finished_spans()
+        assert finished, (
+            "Expected at least one finished span from the battery (environment=main), got none."
+        )
 
-    env_values = [dict(span.attributes or {}).get(_ATTR_DEPLOYMENT_ENV) for span in finished]
-    assert _ENV_MAIN in env_values, (
-        f"No span carries {_ATTR_DEPLOYMENT_ENV!r}={_ENV_MAIN!r}. Observed values: {env_values}"
-    )
+        env_values = [dict(span.attributes or {}).get(_ATTR_DEPLOYMENT_ENV) for span in finished]
+        assert _ENV_MAIN in env_values, (
+            f"No span carries {_ATTR_DEPLOYMENT_ENV!r}={_ENV_MAIN!r}. "
+            f"Observed values: {env_values}"
+        )
+    finally:
+        provider.shutdown()
 
 
 # ---------------------------------------------------------------------------
@@ -142,20 +153,24 @@ async def test_battery_emits_shadow_environment_spans(
     import tests.shadow_eval.battery as battery_mod
 
     exporter, provider = _make_exporter_and_provider()
-    tracer = provider.get_tracer("tests.shadow_eval.battery")
-    monkeypatch.setattr(battery_mod, "_tracer", tracer)
+    try:
+        tracer = provider.get_tracer("tests.shadow_eval.battery")
+        monkeypatch.setattr(battery_mod, "_tracer", tracer)
 
-    await battery_run(environment=_ENV_SHADOW, transport=_make_mock_transport())
+        await battery_run(environment=_ENV_SHADOW, transport=_make_mock_transport())
 
-    finished = exporter.get_finished_spans()
-    assert finished, (
-        "Expected at least one finished span from the battery (environment=shadow), got none."
-    )
+        finished = exporter.get_finished_spans()
+        assert finished, (
+            "Expected at least one finished span from the battery (environment=shadow), got none."
+        )
 
-    env_values = [dict(span.attributes or {}).get(_ATTR_DEPLOYMENT_ENV) for span in finished]
-    assert _ENV_SHADOW in env_values, (
-        f"No span carries {_ATTR_DEPLOYMENT_ENV!r}={_ENV_SHADOW!r}. Observed values: {env_values}"
-    )
+        env_values = [dict(span.attributes or {}).get(_ATTR_DEPLOYMENT_ENV) for span in finished]
+        assert _ENV_SHADOW in env_values, (
+            f"No span carries {_ATTR_DEPLOYMENT_ENV!r}={_ENV_SHADOW!r}. "
+            f"Observed values: {env_values}"
+        )
+    finally:
+        provider.shutdown()
 
 
 # ---------------------------------------------------------------------------
@@ -180,17 +195,23 @@ async def test_both_environments_share_battery_input_ids(
 
     # --- main run ---
     exporter_main, provider_main = _make_exporter_and_provider()
-    tracer_main = provider_main.get_tracer("tests.shadow_eval.battery")
-    monkeypatch.setattr(battery_mod, "_tracer", tracer_main)
-    await battery_run(environment=_ENV_MAIN, transport=_make_mock_transport())
-    spans_main = exporter_main.get_finished_spans()
+    try:
+        tracer_main = provider_main.get_tracer("tests.shadow_eval.battery")
+        monkeypatch.setattr(battery_mod, "_tracer", tracer_main)
+        await battery_run(environment=_ENV_MAIN, transport=_make_mock_transport())
+        spans_main = exporter_main.get_finished_spans()
+    finally:
+        provider_main.shutdown()
 
     # --- shadow run ---
     exporter_shadow, provider_shadow = _make_exporter_and_provider()
-    tracer_shadow = provider_shadow.get_tracer("tests.shadow_eval.battery")
-    monkeypatch.setattr(battery_mod, "_tracer", tracer_shadow)
-    await battery_run(environment=_ENV_SHADOW, transport=_make_mock_transport())
-    spans_shadow = exporter_shadow.get_finished_spans()
+    try:
+        tracer_shadow = provider_shadow.get_tracer("tests.shadow_eval.battery")
+        monkeypatch.setattr(battery_mod, "_tracer", tracer_shadow)
+        await battery_run(environment=_ENV_SHADOW, transport=_make_mock_transport())
+        spans_shadow = exporter_shadow.get_finished_spans()
+    finally:
+        provider_shadow.shutdown()
 
     # Collect input ids from each run — only spans that carry the attribute.
     def _input_ids(spans: list) -> set[str]:  # type: ignore[type-arg]

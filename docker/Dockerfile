@@ -29,8 +29,10 @@ ENV UV_LINK_MODE=copy \
 WORKDIR /app
 
 # Layer 1: sync dependencies only (pyproject + lockfile), without the project src.
-# This layer is cache-stable as long as pyproject.toml and uv.lock are unchanged.
-COPY pyproject.toml uv.lock ./
+# README.md must be present because pyproject.toml declares `readme = "README.md"`;
+# hatchling reads it during metadata build even under --no-install-project.
+# This layer is cache-stable as long as pyproject.toml, uv.lock, and README.md are unchanged.
+COPY pyproject.toml uv.lock README.md ./
 RUN uv sync --frozen --no-install-project --no-dev
 
 # Layer 2: install the project itself now that its source is present.
