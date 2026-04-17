@@ -133,7 +133,7 @@ def _build_transcript() -> list[ChatMessage]:
             content="서울대병원 응급실, 연세세브란스 응급실 검색 결과",
             tool_call_id="call_1",
         ),
-        # [4] assistant short reply (< 40 chars) — below _extract_assistant_decisions threshold, compacted
+        # [4] assistant short reply (< 40 chars) — below decision threshold, compacted
         ChatMessage(role="assistant", content="확인했어요."),
         # [5] second user turn — compacted
         ChatMessage(role="user", content="그럼 부산 쪽은?"),

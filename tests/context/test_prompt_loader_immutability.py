@@ -6,10 +6,10 @@ Uses the shared `valid_prompt_tree` fixture from tests/context/conftest.py.
 
 from __future__ import annotations
 
-import pytest
-
-from kosmos.context.prompt_loader import PromptLoader, PromptRegistryError  # noqa: F401 — RED import
-
+from kosmos.context.prompt_loader import (  # noqa: F401 — RED import
+    PromptLoader,
+    PromptRegistryError,
+)
 
 # ---------------------------------------------------------------------------
 # Tests

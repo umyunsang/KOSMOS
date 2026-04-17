@@ -193,7 +193,7 @@ class TestCIPreservesExistingJobs:
     _EXPECTED_JOB_NAMES = ["lint", "test", "dead-code"]
 
     # Coverage gate token — present in the `run:` step of the `test` job
-    _COVERAGE_TOKEN = "--cov=src/kosmos"
+    _COVERAGE_TOKEN = "--cov=src/kosmos"  # noqa: S105 — CLI flag, not a credential
 
     def test_ci_preserves_existing_jobs_and_coverage_gate(self):
         """T023e (FR-F01): ci.yml must retain lint, test, dead-code jobs and the

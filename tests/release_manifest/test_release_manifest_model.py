@@ -16,7 +16,6 @@ from __future__ import annotations
 
 import pytest
 from pydantic import ValidationError
-
 from tools.release_manifest.models import ReleaseManifest
 
 # ---------------------------------------------------------------------------

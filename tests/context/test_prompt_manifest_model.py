@@ -31,7 +31,12 @@ _SHA2 = "ba7816bf8f01cfea414140de5dae2ec73b00361bbef0469348423f656b6418f4"
 _SHA3 = "2c624232cdd221771294dfbb310acbc8f21f97b7b0b9e96d1a3a6a29b9faa8df"
 
 
-def _entry(prompt_id: str, version: int, sha256: str = _SHA, path: str | None = None) -> PromptManifestEntry:
+def _entry(
+    prompt_id: str,
+    version: int,
+    sha256: str = _SHA,
+    path: str | None = None,
+) -> PromptManifestEntry:
     """Build a valid PromptManifestEntry, defaulting path to prompts/<prompt_id>.md."""
     return PromptManifestEntry(
         prompt_id=prompt_id,

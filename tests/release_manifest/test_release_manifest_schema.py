@@ -156,7 +156,9 @@ def test_uv_lock_hash_without_sha256_prefix_rejected(schema: dict, valid_example
 # ---------------------------------------------------------------------------
 
 
-def test_litellm_proxy_version_allows_unknown_placeholder(schema: dict, valid_example: dict) -> None:
+def test_litellm_proxy_version_allows_unknown_placeholder(
+    schema: dict, valid_example: dict
+) -> None:
     """The literal string ``"unknown"`` must pass validation.
 
     The schema pattern is ``^(unknown|[0-9]+\\.[0-9]+\\.[0-9]+)$``, explicitly

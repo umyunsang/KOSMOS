@@ -51,7 +51,6 @@ from __future__ import annotations
 import hashlib
 import json
 import os
-from collections.abc import AsyncIterator
 from typing import Any
 from unittest.mock import patch
 
@@ -63,7 +62,7 @@ from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanE
 
 from kosmos.context.models import SystemPromptConfig
 from kosmos.context.system_prompt import SystemPromptAssembler
-from kosmos.llm.models import ChatMessage, StreamEvent, TokenUsage
+from kosmos.llm.models import ChatMessage, StreamEvent
 
 # ---------------------------------------------------------------------------
 # Attempt to import PromptLoader — this import will FAIL RED until T025 lands.
@@ -85,8 +84,8 @@ _FAKE_ENV = {"KOSMOS_FRIENDLI_TOKEN": "test-token-for-t012"}
 
 # Fixed streaming SSE response that MockTransport returns for every POST.
 _SSE_LINES = [
-    b'data: {"id":"cmpl-t012","object":"chat.completion.chunk","model":"LGAI-EXAONE/K-EXAONE-236B-A23B","choices":[{"index":0,"delta":{"role":"assistant","content":"OK."},"finish_reason":null}]}\n\n',
-    b'data: {"id":"cmpl-t012","object":"chat.completion.chunk","model":"LGAI-EXAONE/K-EXAONE-236B-A23B","choices":[{"index":0,"delta":{},"finish_reason":"stop"}],"usage":{"prompt_tokens":10,"completion_tokens":3}}\n\n',
+    b'data: {"id":"cmpl-t012","object":"chat.completion.chunk","model":"LGAI-EXAONE/K-EXAONE-236B-A23B","choices":[{"index":0,"delta":{"role":"assistant","content":"OK."},"finish_reason":null}]}\n\n',  # noqa: E501 — SSE wire fixture; breaking alters payload
+    b'data: {"id":"cmpl-t012","object":"chat.completion.chunk","model":"LGAI-EXAONE/K-EXAONE-236B-A23B","choices":[{"index":0,"delta":{},"finish_reason":"stop"}],"usage":{"prompt_tokens":10,"completion_tokens":3}}\n\n',  # noqa: E501 — SSE wire fixture; breaking alters payload
     b"data: [DONE]\n\n",
 ]
 

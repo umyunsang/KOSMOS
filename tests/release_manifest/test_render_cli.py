@@ -17,7 +17,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-import pytest
 from jsonschema import validate
 
 # ---------------------------------------------------------------------------
@@ -74,7 +73,7 @@ def _run_render_cli(*extra_args: str, tmp_path: Path) -> subprocess.CompletedPro
         "--out",
         str(out_path),
     ]
-    return subprocess.run(
+    return subprocess.run(  # noqa: S603 — sys.executable + test-literal argv
         cmd,
         cwd=str(REPO_ROOT),
         capture_output=True,
@@ -105,7 +104,7 @@ def test_happy_path_emits_schema_valid_yaml(tmp_path: Path) -> None:
     prompt_hashes_file = _write_prompt_hashes_file(tmp_path)
     out_path = tmp_path / "release-manifest.yaml"
 
-    proc = subprocess.run(
+    proc = subprocess.run(  # noqa: S603 — sys.executable + test-literal argv
         [
             sys.executable,
             "-m",
@@ -153,7 +152,7 @@ def test_uv_lock_hash_without_sha256_prefix_exits_nonzero(tmp_path: Path) -> Non
     prompt_hashes_file = _write_prompt_hashes_file(tmp_path)
     raw_hex_no_prefix = "a" * 64  # missing "sha256:" prefix
 
-    proc = subprocess.run(
+    proc = subprocess.run(  # noqa: S603 — sys.executable + test-literal argv
         [
             sys.executable,
             "-m",
@@ -192,7 +191,7 @@ def test_omitting_prompt_hashes_file_exits_nonzero(tmp_path: Path) -> None:
     The prompt-hashes file is a required argument per tasks.md T017c.
     The CLI must reject the invocation and write a helpful error to stderr.
     """
-    proc = subprocess.run(
+    proc = subprocess.run(  # noqa: S603 — sys.executable + test-literal argv
         [
             sys.executable,
             "-m",
@@ -258,7 +257,7 @@ def test_uv_lock_drift_surrogate_exits_nonzero(tmp_path: Path) -> None:
     # sha256: prefix present but only 63 hex chars — wrong length, pattern mismatch.
     malformed_hash = "sha256:" + "a" * 63  # one char short of the required 64
 
-    proc = subprocess.run(
+    proc = subprocess.run(  # noqa: S603 — sys.executable + test-literal argv
         [
             sys.executable,
             "-m",

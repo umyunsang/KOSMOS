@@ -33,9 +33,9 @@ import hashlib
 import logging
 import os
 import sys
+from collections.abc import Mapping
 from pathlib import Path
 from types import MappingProxyType
-from typing import Mapping
 
 import yaml
 
@@ -227,11 +227,11 @@ class PromptLoader:
         # Lazy import — must NOT happen at module load time (FR-C08).
         try:
             import langfuse as _langfuse_mod  # noqa: PLC0415
-        except (ImportError, TypeError):
+        except (ImportError, TypeError) as exc:
             raise PromptRegistryError(
                 "KOSMOS_PROMPT_REGISTRY_LANGFUSE=true but the langfuse package is "
                 "not installed. Install it with: uv sync --extra langfuse"
-            )
+            ) from exc
 
         host = os.environ.get("KOSMOS_LANGFUSE_HOST", "")
         public_key = os.environ.get("KOSMOS_LANGFUSE_PUBLIC_KEY", "")
@@ -312,14 +312,14 @@ def _cli_regenerate_manifest(prompts_dir: Path, manifest_path: Path) -> None:
                 "path": md_file.name,
             }
         )
-        print(f"  {stem}: {digest}")  # stdout is allowed in CLI layer
+        print(f"  {stem}: {digest}")  # noqa: T201 — CLI stdout output
 
     manifest_data = {"version": 1, "entries": entries}
     manifest_path.write_text(
         yaml.safe_dump(manifest_data, default_flow_style=False, sort_keys=False),
         encoding="utf-8",
     )
-    print(f"Manifest written to {manifest_path}")
+    print(f"Manifest written to {manifest_path}")  # noqa: T201 — CLI stdout output
 
 
 def _cli_emit_hashes(manifest_path: Path) -> None:
@@ -327,7 +327,7 @@ def _cli_emit_hashes(manifest_path: Path) -> None:
     raw = yaml.safe_load(manifest_path.read_text(encoding="utf-8"))
     manifest = PromptManifest.model_validate(raw)
     for entry in manifest.entries:
-        print(f"{entry.prompt_id}: {entry.sha256}")
+        print(f"{entry.prompt_id}: {entry.sha256}")  # noqa: T201 — CLI stdout output
 
 
 def main(argv: list[str] | None = None) -> None:

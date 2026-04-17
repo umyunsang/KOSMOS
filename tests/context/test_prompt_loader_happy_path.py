@@ -10,10 +10,10 @@ import collections.abc
 import hashlib
 import logging
 
-import pytest
-
-from kosmos.context.prompt_loader import PromptLoader, PromptRegistryError  # noqa: F401 — RED import
-
+from kosmos.context.prompt_loader import (  # noqa: F401 — RED import
+    PromptLoader,
+    PromptRegistryError,
+)
 
 # ---------------------------------------------------------------------------
 # Helpers

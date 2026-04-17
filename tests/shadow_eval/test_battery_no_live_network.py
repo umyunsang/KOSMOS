@@ -22,15 +22,14 @@ The three test cases cover:
 
 from __future__ import annotations
 
-import pytest
 import httpx
+import pytest
 
 # ---------------------------------------------------------------------------
 # Module under test — does NOT exist until T040.  ImportError is the expected
 # RED failure for this entire file until Phase 3.4 completes T040.
 # ---------------------------------------------------------------------------
 from tests.shadow_eval import battery  # type: ignore[import]  # noqa: E402
-
 
 # ---------------------------------------------------------------------------
 # Shared recording transport factory

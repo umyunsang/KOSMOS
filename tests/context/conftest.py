@@ -58,7 +58,9 @@ def _write_valid_prompt_tree(tmp_path: Path) -> Path:
 
     manifest_data = {"version": 1, "entries": entries}
     manifest_path = prompts_dir / "manifest.yaml"
-    manifest_path.write_text(yaml.safe_dump(manifest_data, default_flow_style=False), encoding="utf-8")
+    manifest_path.write_text(
+        yaml.safe_dump(manifest_data, default_flow_style=False), encoding="utf-8"
+    )
 
     return manifest_path
 

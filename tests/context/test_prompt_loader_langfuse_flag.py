@@ -25,8 +25,10 @@ import types
 
 import pytest
 
-from kosmos.context.prompt_loader import PromptLoader, PromptRegistryError  # noqa: F401 — RED import
-
+from kosmos.context.prompt_loader import (  # noqa: F401 — RED import
+    PromptLoader,
+    PromptRegistryError,
+)
 
 # ---------------------------------------------------------------------------
 # Test 1: flag unset — langfuse must NEVER be imported
@@ -123,5 +125,6 @@ def test_flag_true_with_mock_client_hash_disagreement_fails_closed(valid_prompt_
         kw in msg.lower()
         for kw in ("mismatch", "disagree", "langfuse", "hash")
     ), (
-        f"Expected error message to indicate a hash mismatch between repo and Langfuse, got: {msg!r}"
+        f"Expected error message to indicate a hash mismatch between repo and Langfuse, "
+        f"got: {msg!r}"
     )

@@ -71,7 +71,7 @@ class PromptManifestEntry(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid", str_strip_whitespace=True)
 
     prompt_id: PromptId = Field(
-        description="Stable identifier for this prompt. The numeric suffix after _v is the version.",
+        description="Stable prompt identifier. Numeric suffix after _v is the version.",
     )
     version: int = Field(
         ge=1,
@@ -103,7 +103,9 @@ class PromptManifestEntry(BaseModel):
         """I4: path must not be absolute and must not contain '..' traversal segments."""
         p = Path(self.path)
         if p.is_absolute():
-            raise ValueError(f"I4 violation: path {self.path!r} is absolute; only relative paths are accepted")
+            raise ValueError(
+                f"I4 violation: path {self.path!r} is absolute; only relative paths accepted"
+            )
         if ".." in p.parts:
             raise ValueError(f"I4 violation: path {self.path!r} contains forbidden '..' segment")
         return self

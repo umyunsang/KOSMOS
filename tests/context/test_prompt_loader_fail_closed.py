@@ -11,8 +11,10 @@ from __future__ import annotations
 
 import pytest
 
-from kosmos.context.prompt_loader import PromptLoader, PromptRegistryError  # noqa: F401 — RED import
-
+from kosmos.context.prompt_loader import (  # noqa: F401 — RED import
+    PromptLoader,
+    PromptRegistryError,
+)
 
 # ---------------------------------------------------------------------------
 # R1: manifest lists a path whose file is missing -> PromptRegistryError

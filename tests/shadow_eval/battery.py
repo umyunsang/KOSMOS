@@ -60,7 +60,7 @@ class _AwaitableDict(dict):  # type: ignore[type-arg]
     def __await__(self):  # type: ignore[override]
         return self._as_coroutine().__await__()
 
-    async def _as_coroutine(self) -> "_AwaitableDict":
+    async def _as_coroutine(self) -> _AwaitableDict:
         return self
 
 
@@ -115,7 +115,10 @@ def run(
             with httpx.Client(transport=transport) as client:
                 resp = client.post(
                     "https://mock.local/v1/chat/completions",
-                    json={"model": "kosmos-eval", "messages": [{"role": "user", "content": case["prompt"]}]},
+                    json={
+                        "model": "kosmos-eval",
+                        "messages": [{"role": "user", "content": case["prompt"]}],
+                    },
                 )
 
             status = resp.status_code
