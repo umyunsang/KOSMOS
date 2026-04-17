@@ -13,6 +13,8 @@ Tests:
 
 from __future__ import annotations
 
+import os as _os
+
 import pytest
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import SimpleSpanProcessor
@@ -37,8 +39,6 @@ from kosmos.safety._span import emit_safety_event
 # just long enough to build the in-memory provider, then restore it so the
 # rest of the process sees the original value.
 # ---------------------------------------------------------------------------
-
-import os as _os
 
 _prev_otel_disabled = _os.environ.pop("OTEL_SDK_DISABLED", None)
 try:
