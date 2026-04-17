@@ -68,6 +68,14 @@ jobs:
         run: uv run python -m tests.shadow_eval.battery --environment main --out /tmp/main.json
 
       # --- shadow environment run: executes against PR head checkout ---
+      # The graft step above left tests/shadow_eval/ as untracked files in the
+      # merge-base working tree.  PR head has those same paths tracked, so a
+      # plain `git checkout` aborts with "untracked working tree files would be
+      # overwritten".  Remove the graft before switching so checkout can
+      # restore the tracked originals cleanly.
+      - name: Clean grafted battery before PR-head checkout
+        run: rm -rf tests/shadow_eval
+
       - name: Checkout PR head for shadow run
         run: git checkout "${{ github.event.pull_request.head.sha }}"
 
