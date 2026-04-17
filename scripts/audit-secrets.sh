@@ -13,11 +13,19 @@ _REPO_ROOT=""
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --repo-root)
+            if [[ $# -lt 2 || -z "${2:-}" ]]; then
+                echo "audit-secrets: usage error — --repo-root requires a PATH argument" >&2
+                exit 2
+            fi
             _REPO_ROOT="$2"
             shift 2
             ;;
         --repo-root=*)
             _REPO_ROOT="${1#--repo-root=}"
+            if [[ -z "${_REPO_ROOT}" ]]; then
+                echo "audit-secrets: usage error — --repo-root= requires a PATH value" >&2
+                exit 2
+            fi
             shift
             ;;
         *)
@@ -63,8 +71,10 @@ PATTERN_FRIENDLI='\$\{\{ *secrets[.[][^}]*FRIENDLI[^}]*\}\}'
 PATTERN_LANGFUSE='\$\{\{ *secrets[.[][^}]*LANGFUSE_[^}]*\}\}'
 
 # Allowlisted literal strings (skip violation for these)
-# - ${{ secrets.GITHUB_TOKEN }}  — GitHub-issued, short-lived
-ALLOW_GITHUB_TOKEN='secrets[.[][^}]*GITHUB_TOKEN'
+# - ${{ secrets.GITHUB_TOKEN }}  — GitHub-issued, short-lived.
+# Anchored to exact identifier so `MY_GITHUB_TOKEN`-style substrings cannot
+# bypass the denylist. Supports both dot- and bracket-notation.
+ALLOW_GITHUB_TOKEN='secrets(\.GITHUB_TOKEN\b|\[["'"'"']GITHUB_TOKEN["'"'"']\])'
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -78,23 +88,24 @@ _is_allowed() {
     local line="$1"
 
     # Suppress YAML block comments
-    if echo "${line}" | grep -qE '^\s*#'; then
+    if echo "${line}" | grep -qE '^[[:space:]]*#'; then
         return 0
     fi
 
     # Suppress uses: action-reference lines
-    if echo "${line}" | grep -qE '^\s*uses:'; then
+    if echo "${line}" | grep -qE '^[[:space:]]*uses:'; then
         return 0
     fi
 
     # Suppress ${{ secrets.GITHUB_TOKEN }} — short-lived, GitHub-managed.
     # Allow only when GITHUB_TOKEN is the sole secrets.* reference on the line.
-    # Grep is case-insensitive; covers both dot and bracket notation.
+    # Anchor to exact identifier (dot- or bracket-notation); substring tokens
+    # like MY_GITHUB_TOKEN are NOT suppressed. Case-insensitive match.
     if echo "${line}" | grep -iqE "${ALLOW_GITHUB_TOKEN}"; then
         # Count total secrets references; if only GITHUB_TOKEN, suppress.
         local total_refs github_refs
         total_refs="$(echo "${line}"  | grep -ioE '\$\{\{ *secrets[.[][^}]*\}\}' | wc -l)"
-        github_refs="$(echo "${line}" | grep -ioE '\$\{\{ *secrets[.[][^}]*GITHUB_TOKEN[^}]*\}\}' | wc -l)"
+        github_refs="$(echo "${line}" | grep -ioE "\\\$\\{\\{ *${ALLOW_GITHUB_TOKEN} *\\}\\}" | wc -l)"
         if [[ "${total_refs}" -eq "${github_refs}" ]]; then
             return 0
         fi
@@ -164,7 +175,7 @@ if [[ ${_violations} -gt 0 ]]; then
             echo "audit-secrets: FORBIDDEN pattern in ${_vfile}:${_vline}:"
             echo "  ${_vsnip}"
             printf "  \342\206\222 Long-lived GH Encrypted Secret (%s). Move to Infisical + OIDC.\n" "${_vrule}"
-            echo "    See docs/configuration.md#infisical-migration"
+            echo "    See docs/configuration.md#infisical-operator-runbook"
         } >&2
     done <<< "${_sorted}"
 

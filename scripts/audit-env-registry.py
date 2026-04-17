@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import re
 import sys
 import time
@@ -412,6 +411,12 @@ def audit(
     override_family_unmatched: dict[str, list[str]] = {}
 
     for name, locs in list(all_code_vars.items()):
+        # Canonical registry rows take precedence over the override-family
+        # regex — KOSMOS_KAKAO_API_KEY and KOSMOS_DATA_GO_KR_API_KEY match
+        # _OVERRIDE_KEY_RE but are first-class registry entries, not
+        # per-tool overrides.
+        if name in registry_vars or name in deprecated_vars:
+            continue
         m = _OVERRIDE_KEY_RE.match(name)
         if m:
             if has_override_family:
