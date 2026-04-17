@@ -162,13 +162,27 @@ class DenseBackend:
         q_text = self._query_prefix + query
         assert self._encoder is not None  # guaranteed by rebuild() having populated embeddings
         encoder = self._encoder
-        q_raw: np.ndarray = encoder.encode(  # type: ignore[attr-defined]
-            [q_text],
-            convert_to_numpy=True,
-            normalize_embeddings=False,
-            batch_size=1,
-            show_progress_bar=False,
-        )
+        try:
+            q_raw: np.ndarray = encoder.encode(  # type: ignore[attr-defined]
+                [q_text],
+                convert_to_numpy=True,
+                normalize_embeddings=False,
+                batch_size=1,
+                show_progress_bar=False,
+            )
+        except (RuntimeError, OSError, ValueError, MemoryError) as exc:
+            # FR-002 fail-open: mid-session encoder failure (CUDA OOM, tokenizer
+            # crash, corrupted weight buffer) must degrade to empty ranking so
+            # HybridBackend can reuse its BM25 fallback and the citizen path
+            # never surfaces 5xx. search.py also wraps .score() as a belt-and-
+            # suspenders backstop; both layers log independently so the WARN
+            # nearest the root cause is preserved.
+            logger.warning(
+                "DenseBackend.score: encoder failed (%s: %s) — returning empty ranking",
+                type(exc).__name__,
+                exc,
+            )
+            return []
         q_vec = self._l2_normalise(q_raw)[0]  # shape (d,)
 
         # Cosine = dot product of unit vectors.

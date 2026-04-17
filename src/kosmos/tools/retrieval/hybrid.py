@@ -125,7 +125,11 @@ class HybridBackend:
                     effective_backend="bm25",
                     reason=f"dense score failed: {type(exc).__name__}: {exc}",
                 )
-            return self._bm25.score(query)
+            # Reuse the BM25 ranking we already computed; calling .score() a
+            # second time would double tokenisation cost on every degraded
+            # query and risk diverging from the BM25 list the degradation
+            # latch was reported against.
+            return bm25_scores
 
         n_bm25 = len(bm25_scores)
         n_dense = len(dense_scores)

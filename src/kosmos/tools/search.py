@@ -70,12 +70,32 @@ def search(
     if registry_size == 0:
         return []
 
-    scored = registry._retriever.score(query)
+    retriever = registry._retriever
+    try:
+        scored = retriever.score(query)
+    except Exception as exc:
+        # FR-002 fail-open: a mid-session retriever failure (dense OOM,
+        # tokenizer crash, encoder corruption) must not surface as a 5xx
+        # on the citizen path. The Retriever protocol does not forbid
+        # score() from raising, so this is the last defensive boundary
+        # before the public ``lookup`` contract.
+        logger.warning(
+            "search: retriever.score failed (%s: %s) — returning empty ranking",
+            type(exc).__name__,
+            exc,
+        )
+        return []
+
     # Enforce the deterministic tie-break once, here. Backend-internal
     # orderings are not trusted (HybridBackend returns unordered union).
     scored = sorted(scored, key=lambda pair: (-pair[1], pair[0]))
-    results: list[AdapterCandidate] = []
 
+    # Derive the backend label from the active retriever class so
+    # ``why_matched`` reflects reality when operators opt into dense or
+    # hybrid backends via ``KOSMOS_RETRIEVAL_BACKEND`` (spec 026 FR-001).
+    backend_label = type(retriever).__name__.removesuffix("Backend").lower() or "retrieval"
+
+    results: list[AdapterCandidate] = []
     for tool_id, score in scored[:effective_top_k]:
         try:
             tool = registry.lookup(tool_id)
@@ -89,7 +109,7 @@ def search(
             score=max(0.0, float(score)),
             required_params=required_params,
             search_hint=tool.search_hint,
-            why_matched=f"BM25 score {score:.4f} on search_hint",
+            why_matched=f"{backend_label} score {score:.4f} on search_hint",
             requires_auth=tool.requires_auth,
             is_personal_data=tool.is_personal_data,
         )

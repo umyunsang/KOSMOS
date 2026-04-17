@@ -422,7 +422,7 @@ _REPORT_PATH_DEFAULT = object()
 
 def run_extended_gate(
     *,
-    backend: str = "bm25",
+    backend: str | None = None,
     queries_path: Path | None = None,
     report_path: object = _REPORT_PATH_DEFAULT,
     registry: object | None = None,
@@ -445,6 +445,10 @@ def run_extended_gate(
 
     Args:
         backend: Retrieval backend to activate (``bm25``, ``dense``, ``hybrid``).
+            When ``None`` (default), the ambient ``KOSMOS_RETRIEVAL_BACKEND``
+            env var — or ``bm25`` if unset — is honoured. Only meaningful when
+            ``registry`` is also ``None``; an injected registry already has a
+            retriever bound at construction time and the env overlay is a no-op.
         queries_path: Path to the queries YAML file.  Defaults to the committed
             ``eval/retrieval_queries.yaml`` in the repo root.
         report_path: Path to write the JSON report, or ``None`` to skip writing.
@@ -475,14 +479,22 @@ def run_extended_gate(
     else:
         effective_report_path = report_path  # type: ignore[assignment]
 
-    with _backend_env_overlay(backend):
-        if registry is None:
+    # The env overlay only influences ``ToolRegistry.__init__`` (which reads
+    # ``KOSMOS_RETRIEVAL_BACKEND`` to bind a retriever). Scope it narrowly so
+    # it is not leaked across the scoring phase, and skip it entirely when the
+    # caller has injected a pre-built registry whose retriever is already set,
+    # or when ``backend`` is ``None`` (honour ambient env var, defaulting to
+    # ``bm25`` inside ``build_retriever_from_env``).
+    if registry is None and backend is not None:
+        with _backend_env_overlay(backend):
             built_registry, _ = _build_registry()
-        else:
-            built_registry = registry
+    elif registry is None:
+        built_registry, _ = _build_registry()
+    else:
+        built_registry = registry
 
-        queries = _load_queries(queries_path)
-        report: dict[str, Any] = asyncio.run(_evaluate(queries, built_registry))
+    queries = _load_queries(queries_path)
+    report: dict[str, Any] = asyncio.run(_evaluate(queries, built_registry))
 
     # Compute SC-01 status outside the env overlay — depends on registry
     # composition, not on the backend in use.
@@ -546,8 +558,12 @@ def main(argv: list[str] | None = None) -> None:
         parser.add_argument(
             "--backend",
             choices=["bm25", "dense", "hybrid"],
-            default="bm25",
-            help="Retrieval backend to activate (default: bm25).",
+            default=None,
+            help=(
+                "Retrieval backend to activate. "
+                "Defaults to honouring KOSMOS_RETRIEVAL_BACKEND "
+                "(or bm25 when that env var is unset)."
+            ),
         )
         parser.add_argument(
             "--queries",
@@ -565,12 +581,18 @@ def main(argv: list[str] | None = None) -> None:
         )
         parsed = parser.parse_args(raw_args)
 
-        logger.info("Running extended gate with backend=%s", parsed.backend)
+        effective_backend = parsed.backend or os.environ.get("KOSMOS_RETRIEVAL_BACKEND", "bm25")
+        logger.info("Running extended gate with backend=%s", effective_backend)
         # Only forward ``report_path`` when the operator actually passed
         # ``--report``. If we always forwarded ``parsed.report`` (which is
         # ``None`` when omitted), ``run_extended_gate`` would interpret that
         # as "skip writing" and silently drop the default artifact at
         # ``.eval-artifacts/retrieval_extended.json``.
+        #
+        # Likewise for ``--backend``: when the operator omits it, we forward
+        # ``None`` so ``run_extended_gate`` honours the ambient
+        # ``KOSMOS_RETRIEVAL_BACKEND`` env var rather than force-overlaying a
+        # CLI default that would silently override an operator's export.
         gate_kwargs: dict[str, Any] = {
             "backend": parsed.backend,
             "queries_path": parsed.queries,
