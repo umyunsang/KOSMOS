@@ -1,0 +1,10 @@
+[Session Summary — older turns compacted]
+User requests in this session:
+  - user: 서울 강남구 응급실 알려줘
+  - user: 그럼 부산 쪽은?
+Tool calls executed:
+  - tool_call:nmc_emergency_search({"region":"서울"})
+  - tool_call:nmc_emergency_search({"region":"부산"})
+Key tool results:
+  - tool_result[call_1]: 서울대병원 응급실, 연세세브란스 응급실 검색 결과
+  - tool_result[call_2]: 부산대병원 응급실 검색 결과
