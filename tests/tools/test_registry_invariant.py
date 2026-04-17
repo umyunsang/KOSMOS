@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Registry invariant tests — T030 (FR-038) + T008–T011 (V6 FR-042/FR-043/FR-048).
+"""Registry invariant tests — T030 (FR-038) + T008–T011 + T014 (V6 FR-042/FR-043/FR-047/FR-048).
 
 FR-038: Registering a GovAPITool with is_personal_data=True and requires_auth=False
 must raise RegistrationError at register time (fail-closed PII invariant).
