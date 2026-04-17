@@ -36,7 +36,12 @@ COPY pyproject.toml uv.lock README.md ./
 RUN uv sync --frozen --no-install-project --no-dev
 
 # Layer 2: install the project itself now that its source is present.
+# prompts/ is required here because pyproject.toml [tool.hatch.build.targets.wheel.force-include]
+# bundles the repo-root prompts/ directory into the wheel as kosmos/prompts/ — hatchling
+# resolves force-include paths at build time and fails with FileNotFoundError if they are
+# absent from the build context.
 COPY src/ ./src/
+COPY prompts/ ./prompts/
 RUN uv sync --frozen --no-dev
 
 # ---------------------------------------------------------------------------
