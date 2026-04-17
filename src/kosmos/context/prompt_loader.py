@@ -97,8 +97,7 @@ class PromptLoader:
         # Resolve the Langfuse flag once so we don't repeatedly touch os.environ.
         if langfuse_enabled is None:
             langfuse_enabled = (
-                os.environ.get("KOSMOS_PROMPT_REGISTRY_LANGFUSE", "").strip().lower()
-                == "true"
+                os.environ.get("KOSMOS_PROMPT_REGISTRY_LANGFUSE", "").strip().lower() == "true"
             )
         self._langfuse_enabled = langfuse_enabled
 
@@ -158,17 +157,13 @@ class PromptLoader:
         try:
             raw = yaml.safe_load(self._manifest_path.read_text(encoding="utf-8"))
         except FileNotFoundError as exc:
-            raise PromptRegistryError(
-                f"Prompt manifest not found: {self._manifest_path}"
-            ) from exc
+            raise PromptRegistryError(f"Prompt manifest not found: {self._manifest_path}") from exc
 
         # --- Validate with Pydantic model (M1, M2, I1–I4) --------------------
         try:
             manifest = PromptManifest.model_validate(raw)
         except Exception as exc:
-            raise PromptRegistryError(
-                f"Invalid manifest at {self._manifest_path}: {exc}"
-            ) from exc
+            raise PromptRegistryError(f"Invalid manifest at {self._manifest_path}: {exc}") from exc
 
         # --- R3: detect orphan .md files not listed in the manifest -----------
         listed_paths: set[str] = {entry.path for entry in manifest.entries}
@@ -244,9 +239,7 @@ class PromptLoader:
                 host=host or None,
             )
         except Exception as exc:
-            raise PromptRegistryError(
-                f"Failed to initialise Langfuse client: {exc}"
-            ) from exc
+            raise PromptRegistryError(f"Failed to initialise Langfuse client: {exc}") from exc
 
         for prompt_id, repo_hash in self._hashes.items():
             try:
@@ -283,6 +276,7 @@ class PromptLoader:
 # ---------------------------------------------------------------------------
 # CLI entry point
 # ---------------------------------------------------------------------------
+
 
 def _cli_regenerate_manifest(prompts_dir: Path, manifest_path: Path) -> None:
     """Scan prompts_dir for *_v*.md files, compute SHA-256 for each, and write

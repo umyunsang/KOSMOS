@@ -1,4 +1,5 @@
 """Schema validation tests for .devcontainer/devcontainer.json (T022 / FR-B01..B04)."""
+
 import json
 from pathlib import Path
 
@@ -47,9 +48,7 @@ def test_forward_ports():
 def test_vscode_extensions():
     """FR-B04: required VS Code extensions must be listed."""
     data = _load()
-    extensions = (
-        data.get("customizations", {}).get("vscode", {}).get("extensions", [])
-    )
+    extensions = data.get("customizations", {}).get("vscode", {}).get("extensions", [])
     assert "ms-python.python" in extensions
     assert "ms-python.vscode-pylance" in extensions
 
@@ -57,9 +56,7 @@ def test_vscode_extensions():
 def test_python_interpreter_path():
     """FR-B04: defaultInterpreterPath must point to .venv in workspaces mount."""
     data = _load()
-    settings = (
-        data.get("customizations", {}).get("vscode", {}).get("settings", {})
-    )
+    settings = data.get("customizations", {}).get("vscode", {}).get("settings", {})
     assert settings.get("python.defaultInterpreterPath") == "/workspaces/KOSMOS/.venv/bin/python"
 
 

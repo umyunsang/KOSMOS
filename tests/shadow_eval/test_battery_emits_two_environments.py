@@ -56,6 +56,7 @@ _ENV_SHADOW = "shadow"
 
 def _make_mock_transport() -> httpx.MockTransport:
     """Return a no-op mock transport so no live HTTP calls are made."""
+
     def _handler(request: httpx.Request) -> httpx.Response:
         return httpx.Response(
             200,
@@ -72,6 +73,7 @@ def _make_mock_transport() -> httpx.MockTransport:
                 "usage": {"prompt_tokens": 10, "completion_tokens": 5, "total_tokens": 15},
             },
         )
+
     return httpx.MockTransport(_handler)
 
 
@@ -116,13 +118,9 @@ async def test_battery_emits_main_environment_spans(
         "Expected at least one finished span from the battery (environment=main), got none."
     )
 
-    env_values = [
-        dict(span.attributes or {}).get(_ATTR_DEPLOYMENT_ENV)
-        for span in finished
-    ]
+    env_values = [dict(span.attributes or {}).get(_ATTR_DEPLOYMENT_ENV) for span in finished]
     assert _ENV_MAIN in env_values, (
-        f"No span carries {_ATTR_DEPLOYMENT_ENV!r}={_ENV_MAIN!r}. "
-        f"Observed values: {env_values}"
+        f"No span carries {_ATTR_DEPLOYMENT_ENV!r}={_ENV_MAIN!r}. Observed values: {env_values}"
     )
 
 
@@ -154,13 +152,9 @@ async def test_battery_emits_shadow_environment_spans(
         "Expected at least one finished span from the battery (environment=shadow), got none."
     )
 
-    env_values = [
-        dict(span.attributes or {}).get(_ATTR_DEPLOYMENT_ENV)
-        for span in finished
-    ]
+    env_values = [dict(span.attributes or {}).get(_ATTR_DEPLOYMENT_ENV) for span in finished]
     assert _ENV_SHADOW in env_values, (
-        f"No span carries {_ATTR_DEPLOYMENT_ENV!r}={_ENV_SHADOW!r}. "
-        f"Observed values: {env_values}"
+        f"No span carries {_ATTR_DEPLOYMENT_ENV!r}={_ENV_SHADOW!r}. Observed values: {env_values}"
     )
 
 

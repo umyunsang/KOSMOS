@@ -194,7 +194,9 @@ class TestReleaseManifestRM4ExtraForbid:
     def test_extra_field_rejected(self) -> None:
         """An unknown field (slack_webhook) must raise ValidationError (RM4, extra='forbid')."""
         with pytest.raises(ValidationError):
-            ReleaseManifest(**_valid_kwargs(slack_webhook="https://hooks.slack.com/services/T000/B000/secret"))
+            ReleaseManifest(
+                **_valid_kwargs(slack_webhook="https://hooks.slack.com/services/T000/B000/secret")
+            )
 
     def test_extra_credential_field_rejected(self) -> None:
         """A credential-bearing extra field (api_key) must raise ValidationError (RM4)."""

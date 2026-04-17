@@ -19,6 +19,7 @@ from kosmos.context.prompt_loader import (  # noqa: F401 — RED import
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _sha256_bytes(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
@@ -26,6 +27,7 @@ def _sha256_bytes(data: bytes) -> str:
 # ---------------------------------------------------------------------------
 # Tests
 # ---------------------------------------------------------------------------
+
 
 def test_load_returns_str(valid_prompt_tree):
     """PromptLoader.load() must return a non-empty str."""
@@ -66,9 +68,7 @@ def test_info_log_emitted_per_resolved_prompt(valid_prompt_tree, caplog):
     with caplog.at_level(logging.INFO, logger="kosmos.context.prompt_loader"):
         _loader = PromptLoader(manifest_path=valid_prompt_tree)
 
-    loader_records = [
-        r for r in caplog.records if r.name == "kosmos.context.prompt_loader"
-    ]
+    loader_records = [r for r in caplog.records if r.name == "kosmos.context.prompt_loader"]
     assert len(loader_records) >= 3, (
         f"Expected >= 3 INFO records from 'kosmos.context.prompt_loader', "
         f"got {len(loader_records)}: {[r.message for r in loader_records]}"

@@ -34,6 +34,7 @@ from kosmos.context.prompt_loader import (  # noqa: F401 — RED import
 # Test 1: flag unset — langfuse must NEVER be imported
 # ---------------------------------------------------------------------------
 
+
 def test_flag_unset_never_imports_langfuse(valid_prompt_tree, monkeypatch):
     """With KOSMOS_PROMPT_REGISTRY_LANGFUSE unset, PromptLoader must not import langfuse."""
     monkeypatch.delenv("KOSMOS_PROMPT_REGISTRY_LANGFUSE", raising=False)
@@ -50,6 +51,7 @@ def test_flag_unset_never_imports_langfuse(valid_prompt_tree, monkeypatch):
 # ---------------------------------------------------------------------------
 # Test 2: flag true, extras absent -> PromptRegistryError with install hint
 # ---------------------------------------------------------------------------
+
 
 def test_flag_true_without_extras_raises_with_install_hint(valid_prompt_tree, monkeypatch):
     """FR-C08: with flag=true and langfuse extras absent, PromptLoader must raise
@@ -72,6 +74,7 @@ def test_flag_true_without_extras_raises_with_install_hint(valid_prompt_tree, mo
 # ---------------------------------------------------------------------------
 # Test 3: flag true, mock client returns mismatched hash -> fail-closed (FR-C09)
 # ---------------------------------------------------------------------------
+
 
 def _make_fake_langfuse_module(disagreeing_hash: str) -> types.ModuleType:
     """Build a minimal fake 'langfuse' module whose Client.get_prompt returns an
@@ -117,14 +120,9 @@ def test_flag_true_with_mock_client_hash_disagreement_fails_closed(valid_prompt_
         PromptLoader(manifest_path=valid_prompt_tree)
 
     msg = str(exc_info.value)
-    assert "system_v1" in msg, (
-        f"Expected error message to name 'system_v1', got: {msg!r}"
-    )
+    assert "system_v1" in msg, f"Expected error message to name 'system_v1', got: {msg!r}"
     # Accept any phrasing that indicates a two-source hash disagreement.
-    assert any(
-        kw in msg.lower()
-        for kw in ("mismatch", "disagree", "langfuse", "hash")
-    ), (
+    assert any(kw in msg.lower() for kw in ("mismatch", "disagree", "langfuse", "hash")), (
         f"Expected error message to indicate a hash mismatch between repo and Langfuse, "
         f"got: {msg!r}"
     )

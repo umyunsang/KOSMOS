@@ -65,9 +65,7 @@ class SystemPromptAssembler:
 
         # Split system_v1.md into its four paragraphs once so assemble() can
         # conditionally include or exclude the personal-data section (§4).
-        self._system_paragraphs: list[str] = self._system_template.rstrip(
-            "\n"
-        ).split(_SECTION_SEP)
+        self._system_paragraphs: list[str] = self._system_template.rstrip("\n").split(_SECTION_SEP)
 
     def assemble(self, config: SystemPromptConfig) -> str:
         """Assemble all mandatory sections into a single system prompt string.

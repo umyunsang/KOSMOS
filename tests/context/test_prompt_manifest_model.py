@@ -210,9 +210,7 @@ class TestManifestIsFrozen:
     def test_manifest_is_frozen(self) -> None:
         manifest = PromptManifest(
             version=1,
-            entries=(
-                _entry("system_v1", 1, _SHA),
-            ),
+            entries=(_entry("system_v1", 1, _SHA),),
         )
         with pytest.raises((ValidationError, TypeError)):
             manifest.entries = ()  # type: ignore[misc]
@@ -220,9 +218,7 @@ class TestManifestIsFrozen:
     def test_manifest_version_is_frozen(self) -> None:
         manifest = PromptManifest(
             version=1,
-            entries=(
-                _entry("system_v1", 1, _SHA),
-            ),
+            entries=(_entry("system_v1", 1, _SHA),),
         )
         with pytest.raises((ValidationError, TypeError)):
             manifest.version = 99  # type: ignore[misc]
@@ -240,9 +236,7 @@ class TestExtraFieldForbidden:
         with pytest.raises(ValidationError):
             PromptManifest(
                 version=1,
-                entries=(
-                    _entry("system_v1", 1, _SHA),
-                ),
+                entries=(_entry("system_v1", 1, _SHA),),
                 unknown_field="should_be_rejected",  # type: ignore[call-arg]
             )
 

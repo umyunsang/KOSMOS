@@ -25,17 +25,13 @@ from jsonschema import validate
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 _SCHEMA_PATH = (
-    REPO_ROOT
-    / "specs"
-    / "026-cicd-prompt-registry"
-    / "contracts"
-    / "release-manifest.schema.json"
+    REPO_ROOT / "specs" / "026-cicd-prompt-registry" / "contracts" / "release-manifest.schema.json"
 )
 
 # Fixed synthetic values — all match their respective schema patterns.
-_COMMIT_SHA = "1" * 40                    # ^[0-9a-f]{40}$
-_UV_LOCK_HASH = "sha256:" + "a" * 64     # ^sha256:[0-9a-f]{64}$
-_DOCKER_DIGEST = "sha256:" + "b" * 64   # ^sha256:[0-9a-f]{64}$
+_COMMIT_SHA = "1" * 40  # ^[0-9a-f]{40}$
+_UV_LOCK_HASH = "sha256:" + "a" * 64  # ^sha256:[0-9a-f]{64}$
+_DOCKER_DIGEST = "sha256:" + "b" * 64  # ^sha256:[0-9a-f]{64}$
 _PROMPT_HASHES = {
     "system_v1": "a" * 64,
     "session_guidance_v1": "b" * 64,
@@ -109,13 +105,20 @@ def test_happy_path_emits_schema_valid_yaml(tmp_path: Path) -> None:
             sys.executable,
             "-m",
             "tools.release_manifest.render",
-            "--commit-sha", _COMMIT_SHA,
-            "--uv-lock-hash", _UV_LOCK_HASH,
-            "--docker-digest", _DOCKER_DIGEST,
-            "--prompt-hashes-file", str(prompt_hashes_file),
-            "--friendli-model-id", _FRIENDLI_MODEL_ID,
-            "--litellm-proxy-version", _LITELLM_PROXY_VERSION,
-            "--out", str(out_path),
+            "--commit-sha",
+            _COMMIT_SHA,
+            "--uv-lock-hash",
+            _UV_LOCK_HASH,
+            "--docker-digest",
+            _DOCKER_DIGEST,
+            "--prompt-hashes-file",
+            str(prompt_hashes_file),
+            "--friendli-model-id",
+            _FRIENDLI_MODEL_ID,
+            "--litellm-proxy-version",
+            _LITELLM_PROXY_VERSION,
+            "--out",
+            str(out_path),
         ],
         cwd=str(REPO_ROOT),
         capture_output=True,
@@ -157,13 +160,20 @@ def test_uv_lock_hash_without_sha256_prefix_exits_nonzero(tmp_path: Path) -> Non
             sys.executable,
             "-m",
             "tools.release_manifest.render",
-            "--commit-sha", _COMMIT_SHA,
-            "--uv-lock-hash", raw_hex_no_prefix,   # ← invalid: no prefix
-            "--docker-digest", _DOCKER_DIGEST,
-            "--prompt-hashes-file", str(prompt_hashes_file),
-            "--friendli-model-id", _FRIENDLI_MODEL_ID,
-            "--litellm-proxy-version", _LITELLM_PROXY_VERSION,
-            "--out", str(tmp_path / "out.yaml"),
+            "--commit-sha",
+            _COMMIT_SHA,
+            "--uv-lock-hash",
+            raw_hex_no_prefix,  # ← invalid: no prefix
+            "--docker-digest",
+            _DOCKER_DIGEST,
+            "--prompt-hashes-file",
+            str(prompt_hashes_file),
+            "--friendli-model-id",
+            _FRIENDLI_MODEL_ID,
+            "--litellm-proxy-version",
+            _LITELLM_PROXY_VERSION,
+            "--out",
+            str(tmp_path / "out.yaml"),
         ],
         cwd=str(REPO_ROOT),
         capture_output=True,
@@ -175,9 +185,7 @@ def test_uv_lock_hash_without_sha256_prefix_exits_nonzero(tmp_path: Path) -> Non
         "CLI should have exited non-zero for a uv-lock-hash without 'sha256:' prefix, "
         f"but got returncode={proc.returncode}."
     )
-    assert proc.stderr, (
-        "CLI produced no stderr output; a diagnostic message is required."
-    )
+    assert proc.stderr, "CLI produced no stderr output; a diagnostic message is required."
 
 
 # ---------------------------------------------------------------------------
@@ -196,13 +204,19 @@ def test_omitting_prompt_hashes_file_exits_nonzero(tmp_path: Path) -> None:
             sys.executable,
             "-m",
             "tools.release_manifest.render",
-            "--commit-sha", _COMMIT_SHA,
-            "--uv-lock-hash", _UV_LOCK_HASH,
-            "--docker-digest", _DOCKER_DIGEST,
+            "--commit-sha",
+            _COMMIT_SHA,
+            "--uv-lock-hash",
+            _UV_LOCK_HASH,
+            "--docker-digest",
+            _DOCKER_DIGEST,
             # --prompt-hashes-file intentionally omitted
-            "--friendli-model-id", _FRIENDLI_MODEL_ID,
-            "--litellm-proxy-version", _LITELLM_PROXY_VERSION,
-            "--out", str(tmp_path / "out.yaml"),
+            "--friendli-model-id",
+            _FRIENDLI_MODEL_ID,
+            "--litellm-proxy-version",
+            _LITELLM_PROXY_VERSION,
+            "--out",
+            str(tmp_path / "out.yaml"),
         ],
         cwd=str(REPO_ROOT),
         capture_output=True,
@@ -214,9 +228,7 @@ def test_omitting_prompt_hashes_file_exits_nonzero(tmp_path: Path) -> None:
         "CLI should have exited non-zero when --prompt-hashes-file is omitted, "
         f"but got returncode={proc.returncode}."
     )
-    assert proc.stderr, (
-        "CLI produced no stderr output; a diagnostic message is required."
-    )
+    assert proc.stderr, "CLI produced no stderr output; a diagnostic message is required."
 
 
 # ---------------------------------------------------------------------------
@@ -262,13 +274,20 @@ def test_uv_lock_drift_surrogate_exits_nonzero(tmp_path: Path) -> None:
             sys.executable,
             "-m",
             "tools.release_manifest.render",
-            "--commit-sha", _COMMIT_SHA,
-            "--uv-lock-hash", malformed_hash,   # ← drift-check surrogate
-            "--docker-digest", _DOCKER_DIGEST,
-            "--prompt-hashes-file", str(prompt_hashes_file),
-            "--friendli-model-id", _FRIENDLI_MODEL_ID,
-            "--litellm-proxy-version", _LITELLM_PROXY_VERSION,
-            "--out", str(tmp_path / "out.yaml"),
+            "--commit-sha",
+            _COMMIT_SHA,
+            "--uv-lock-hash",
+            malformed_hash,  # ← drift-check surrogate
+            "--docker-digest",
+            _DOCKER_DIGEST,
+            "--prompt-hashes-file",
+            str(prompt_hashes_file),
+            "--friendli-model-id",
+            _FRIENDLI_MODEL_ID,
+            "--litellm-proxy-version",
+            _LITELLM_PROXY_VERSION,
+            "--out",
+            str(tmp_path / "out.yaml"),
         ],
         cwd=str(REPO_ROOT),
         capture_output=True,

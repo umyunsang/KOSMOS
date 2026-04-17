@@ -97,9 +97,7 @@ def _parse_env_example_keys(path: Path) -> set[str]:
 def test_devcontainer_image_is_microsoft_python_312(config: dict) -> None:
     """Assert image starts with the Microsoft devcontainers Python 3.12 base."""
     image: str = config["image"]
-    assert image.startswith(
-        "mcr.microsoft.com/devcontainers/python:3.12"
-    ), (
+    assert image.startswith("mcr.microsoft.com/devcontainers/python:3.12"), (
         f"Expected image to start with 'mcr.microsoft.com/devcontainers/python:3.12', "
         f"got: {image!r}"
     )
@@ -128,9 +126,7 @@ def test_devcontainer_features_include_uv(config: dict) -> None:
 def test_postcreatecommand_is_uv_sync(config: dict) -> None:
     """Assert postCreateCommand is exactly 'uv sync'."""
     cmd = config.get("postCreateCommand")
-    assert cmd == "uv sync", (
-        f"Expected postCreateCommand == 'uv sync', got: {cmd!r}"
-    )
+    assert cmd == "uv sync", f"Expected postCreateCommand == 'uv sync', got: {cmd!r}"
 
 
 # ---------------------------------------------------------------------------

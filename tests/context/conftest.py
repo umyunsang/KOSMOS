@@ -35,8 +35,7 @@ def _write_valid_prompt_tree(tmp_path: Path) -> Path:
     contents: dict[str, bytes] = {
         "system_v1.md": b"# System Prompt v1\nYou are KOSMOS, a Korean public-service assistant.\n",
         "session_guidance_v1.md": (
-            b"# Session Guidance v1\n"
-            b"Use resolve_location for address-to-region conversion.\n"
+            b"# Session Guidance v1\nUse resolve_location for address-to-region conversion.\n"
         ),
         "compact_v1.md": b"# Compact v1\nSummarise the session for context compaction.\n",
     }

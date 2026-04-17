@@ -40,18 +40,14 @@ def test_dockerfile_has_builder_and_runtime_stages() -> None:
     """
     text = _read_dockerfile()
 
-    from_as_pattern = re.compile(
-        r"^\s*FROM\s+\S+\s+AS\s+(\w+)", re.IGNORECASE | re.MULTILINE
-    )
+    from_as_pattern = re.compile(r"^\s*FROM\s+\S+\s+AS\s+(\w+)", re.IGNORECASE | re.MULTILINE)
     stage_names = [m.group(1).lower() for m in from_as_pattern.finditer(text)]
 
     assert "builder" in stage_names, (
-        "Dockerfile must contain a 'FROM … AS builder' stage; found stages: "
-        f"{stage_names}"
+        f"Dockerfile must contain a 'FROM … AS builder' stage; found stages: {stage_names}"
     )
     assert "runtime" in stage_names, (
-        "Dockerfile must contain a distinct 'FROM … AS runtime' stage; found stages: "
-        f"{stage_names}"
+        f"Dockerfile must contain a distinct 'FROM … AS runtime' stage; found stages: {stage_names}"
     )
     assert stage_names.index("builder") != stage_names.index("runtime"), (
         "'builder' and 'runtime' must be distinct FROM stages"
@@ -111,9 +107,7 @@ def test_dockerfile_sets_uv_env_flags() -> None:
     text = _read_dockerfile()
 
     link_mode_pattern = re.compile(r"\bUV_LINK_MODE\s*=\s*copy\b")
-    assert link_mode_pattern.search(text) is not None, (
-        "Dockerfile must set ENV UV_LINK_MODE=copy"
-    )
+    assert link_mode_pattern.search(text) is not None, "Dockerfile must set ENV UV_LINK_MODE=copy"
 
     bytecode_pattern = re.compile(r"\bUV_COMPILE_BYTECODE\s*=\s*1\b")
     assert bytecode_pattern.search(text) is not None, (
@@ -161,8 +155,7 @@ def test_dockerfile_pins_uv_version() -> None:
 
     latest_pattern = re.compile(r"ghcr\.io/astral-sh/uv:latest")
     assert latest_pattern.search(text) is None, (
-        "Dockerfile must not reference 'ghcr.io/astral-sh/uv:latest'; "
-        "pin to an explicit semver tag"
+        "Dockerfile must not reference 'ghcr.io/astral-sh/uv:latest'; pin to an explicit semver tag"
     )
 
     semver_pattern = re.compile(r"ghcr\.io/astral-sh/uv:\d+\.\d+\.\d+")

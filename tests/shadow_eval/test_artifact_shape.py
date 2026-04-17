@@ -36,6 +36,7 @@ from tests.shadow_eval import battery  # noqa: F401  # type: ignore[import]
 
 def _make_mock_transport() -> httpx.MockTransport:
     """Return a minimal mock transport for artifact-shape tests."""
+
     def _handler(request: httpx.Request) -> httpx.Response:
         return httpx.Response(
             200,
@@ -52,6 +53,7 @@ def _make_mock_transport() -> httpx.MockTransport:
                 "usage": {"prompt_tokens": 10, "completion_tokens": 5, "total_tokens": 15},
             },
         )
+
     return httpx.MockTransport(_handler)
 
 
@@ -148,8 +150,7 @@ def test_deployment_environment_values_are_valid(artifact: dict[str, Any]) -> No
         if span.get("attributes", {}).get("deployment.environment") not in valid_values
     ]
     assert not invalid, (
-        f"spans with invalid deployment.environment values: {invalid}. "
-        f"Allowed: {valid_values}"
+        f"spans with invalid deployment.environment values: {invalid}. Allowed: {valid_values}"
     )
 
 

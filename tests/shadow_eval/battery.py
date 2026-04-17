@@ -99,9 +99,7 @@ def run(
             "httpx client.  Pass an httpx.MockTransport to run()."
         )
     if environment not in ("main", "shadow"):
-        raise ValueError(
-            f"environment must be 'main' or 'shadow', got {environment!r}"
-        )
+        raise ValueError(f"environment must be 'main' or 'shadow', got {environment!r}")
 
     span_records: list[dict[str, Any]] = []
     results: list[dict[str, Any]] = []

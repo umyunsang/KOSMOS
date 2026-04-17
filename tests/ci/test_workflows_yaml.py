@@ -46,6 +46,7 @@ _CI_YML = _WORKFLOWS_DIR / "ci.yml"
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _load_workflow(path: pathlib.Path) -> dict:
     """Load a GitHub Actions workflow YAML.  Raises pytest.fail if file absent."""
     if not path.exists():
@@ -68,8 +69,8 @@ def _get_triggers(wf: dict) -> dict:
 # shadow-eval.yml triggers on prompts/** path filter
 # ---------------------------------------------------------------------------
 
-class TestShadowEvalWorkflow:
 
+class TestShadowEvalWorkflow:
     def test_shadow_eval_triggers_on_prompts_path(self):
         """T023a (FR-D01): shadow-eval must trigger when prompts/** changes."""
         wf = _load_workflow(_SHADOW_EVAL_YML)
@@ -79,8 +80,7 @@ class TestShadowEvalWorkflow:
         paths = pr_trigger.get("paths", [])
 
         assert "prompts/**" in paths, (
-            f"Expected 'prompts/**' in shadow-eval.yml on.pull_request.paths, "
-            f"got: {paths}"
+            f"Expected 'prompts/**' in shadow-eval.yml on.pull_request.paths, got: {paths}"
         )
 
     def test_shadow_eval_has_15min_timeout(self):
@@ -91,9 +91,7 @@ class TestShadowEvalWorkflow:
         assert jobs, "shadow-eval.yml has no jobs defined"
 
         found = any(
-            job.get("timeout-minutes") == 15
-            for job in jobs.values()
-            if isinstance(job, dict)
+            job.get("timeout-minutes") == 15 for job in jobs.values() if isinstance(job, dict)
         )
         assert found, (
             f"No job in shadow-eval.yml has timeout-minutes: 15.  "
@@ -107,8 +105,8 @@ class TestShadowEvalWorkflow:
 # release-manifest.yml triggers only on push.tags v*.*.*
 # ---------------------------------------------------------------------------
 
-class TestReleaseManifestWorkflow:
 
+class TestReleaseManifestWorkflow:
     def test_release_manifest_triggers_on_version_tags(self):
         """T023c (FR-F04): release-manifest must trigger on push.tags v*.*.* and
         must NOT have a pull_request trigger."""
@@ -117,9 +115,7 @@ class TestReleaseManifestWorkflow:
 
         # Must have push trigger
         push_trigger = triggers.get("push", {})
-        assert push_trigger, (
-            "release-manifest.yml on.push trigger is missing"
-        )
+        assert push_trigger, "release-manifest.yml on.push trigger is missing"
 
         tags: list = push_trigger.get("tags", [])
         assert "v*.*.*" in tags, (
@@ -144,8 +140,8 @@ class TestReleaseManifestWorkflow:
 # proxy for "the docker-build job only runs when Docker-related files change."
 # ---------------------------------------------------------------------------
 
-class TestCIDockerBuildJob:
 
+class TestCIDockerBuildJob:
     def test_ci_has_docker_build_job_with_path_filters(self):
         """T023d (FR-F02): ci.yml must define a docker-build job and the workflow-level
         pull_request trigger must include docker/**, pyproject.toml, uv.lock paths."""
@@ -154,8 +150,7 @@ class TestCIDockerBuildJob:
 
         # Assert docker-build job exists
         assert "docker-build" in jobs, (
-            f"ci.yml does not have a 'docker-build' job.  "
-            f"Current jobs: {list(jobs.keys())}"
+            f"ci.yml does not have a 'docker-build' job.  Current jobs: {list(jobs.keys())}"
         )
 
         # Assert workflow-level path filters cover Docker-related files
@@ -167,8 +162,7 @@ class TestCIDockerBuildJob:
         required_paths = ["docker/**", "pyproject.toml", "uv.lock"]
         missing = [p for p in required_paths if p not in pr_paths]
         assert not missing, (
-            f"ci.yml on.pull_request.paths is missing: {missing}.  "
-            f"Current paths: {pr_paths}"
+            f"ci.yml on.pull_request.paths is missing: {missing}.  Current paths: {pr_paths}"
         )
 
 
@@ -187,8 +181,8 @@ class TestCIDockerBuildJob:
 # which confirms the coverage collection step is preserved in the test job.
 # ---------------------------------------------------------------------------
 
-class TestCIPreservesExistingJobs:
 
+class TestCIPreservesExistingJobs:
     # Job names confirmed by reading .github/workflows/ci.yml before T039
     _EXPECTED_JOB_NAMES = ["lint", "test", "dead-code"]
 
@@ -219,9 +213,7 @@ class TestCIPreservesExistingJobs:
                 if isinstance(step, dict) and isinstance(step.get("run"), str):
                     all_run_strings.append(step["run"])
 
-        found_coverage = any(
-            self._COVERAGE_TOKEN in run_str for run_str in all_run_strings
-        )
+        found_coverage = any(self._COVERAGE_TOKEN in run_str for run_str in all_run_strings)
         assert found_coverage, (
             f"Coverage gate token '{self._COVERAGE_TOKEN}' not found in any "
             f"ci.yml job step run command.  "

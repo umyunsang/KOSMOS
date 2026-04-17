@@ -260,9 +260,7 @@ async def test_prompt_hash_equals_sha256_of_sent_bytes(
     EXPECTED FAILURE (RED): Attribute not yet stamped (T032) and PromptLoader
     not yet importable (T025).
     """
-    assert _PROMPT_LOADER_AVAILABLE, (
-        "PromptLoader not importable — T025 must be implemented first."
-    )
+    assert _PROMPT_LOADER_AVAILABLE, "PromptLoader not importable — T025 must be implemented first."
 
     transport = _CapturingTransport()
     client = _make_client_with_transport(transport)

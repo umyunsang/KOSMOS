@@ -66,9 +66,7 @@ from kosmos.llm.models import ChatMessage, FunctionCall, ToolCall
 # (T031) can load section labels from it.  The test module-level assert below
 # enforces that — it deliberately fails RED until T028 authors the file and
 # T031 wires it into session_compact() via PromptLoader.
-_COMPACT_PROMPT_PATH = (
-    pathlib.Path(__file__).parent.parent.parent / "prompts" / "compact_v1.md"
-)
+_COMPACT_PROMPT_PATH = pathlib.Path(__file__).parent.parent.parent / "prompts" / "compact_v1.md"
 
 # Raise at collection time so the test runner shows a clear RED error.
 if not _COMPACT_PROMPT_PATH.exists():
@@ -84,9 +82,7 @@ if not _COMPACT_PROMPT_PATH.exists():
 # Fixture path
 # ---------------------------------------------------------------------------
 
-_FIXTURE_PATH = (
-    pathlib.Path(__file__).parent / "fixtures" / "session_compact_pre_refactor.txt"
-)
+_FIXTURE_PATH = pathlib.Path(__file__).parent / "fixtures" / "session_compact_pre_refactor.txt"
 
 # ---------------------------------------------------------------------------
 # Transcript reconstruction
