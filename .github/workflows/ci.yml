@@ -7,6 +7,11 @@ on:
       - "docker/**"
       - "pyproject.toml"
       - "uv.lock"
+      - "src/**"
+      - "tests/**"
+      - "prompts/**"
+      - "tools/**"
+      - ".github/workflows/ci.yml"
   push:
     branches: [main]
   merge_group:
