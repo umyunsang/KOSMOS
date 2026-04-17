@@ -1,5 +1,11 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Tests for scripts/audit-env-registry.py — T-AR01 through T-AR07.
+"""Tests for scripts/audit-env-registry.py — T-AR01 through T-AR07 (contract) + extras.
+
+Test IDs T-AR01..T-AR07 mirror
+`specs/026-secrets-infisical-oidc/contracts/audit-env-registry.md §Test matrix`
+exactly. Additional cases (T-AR08, T-AR09) cover behaviour documented in the
+contract body (§Allowlisted prefixes, §OverrideFamily suppression) but not
+listed in the matrix — they are regression guards, not contract assertions.
 
 Uses subprocess to invoke the script so it remains stdlib-only at runtime.
 All fixtures are synthetic; no real credentials or secret values.
@@ -79,7 +85,7 @@ def _write_registry(repo_root: Path, rows: list[str]) -> Path:
 
 
 # ---------------------------------------------------------------------------
-# T-AR01: Clean state — every code var in registry → exit 0, verdict clean
+# T-AR01 (contract): Clean state — every code var in registry → exit 0, verdict clean
 # ---------------------------------------------------------------------------
 
 
@@ -109,7 +115,7 @@ def test_ar01_clean_state(tmp_path: Path) -> None:
 
 
 # ---------------------------------------------------------------------------
-# T-AR02: Code var not in registry → exit 1, in_code_not_in_registry
+# T-AR02 (contract): Code var not in registry → exit 1, in_code_not_in_registry
 # ---------------------------------------------------------------------------
 
 
@@ -135,7 +141,7 @@ def test_ar02_code_var_not_in_registry(tmp_path: Path) -> None:
 
 
 # ---------------------------------------------------------------------------
-# T-AR03: Registry var not in code → exit 1, in_registry_not_in_code
+# T-AR03 (contract): Registry var not in code → exit 1, in_registry_not_in_code
 # ---------------------------------------------------------------------------
 
 
@@ -162,46 +168,77 @@ def test_ar03_registry_var_not_in_code(tmp_path: Path) -> None:
 
 
 # ---------------------------------------------------------------------------
-# T-AR04: Prefix violation — non-KOSMOS env var in .env.example → exit 1
+# T-AR04 (contract): Malformed registry (missing header) → exit 2
 # ---------------------------------------------------------------------------
 
 
-def test_ar04_prefix_violation(tmp_path: Path) -> None:
-    """T-AR04: NON_KOSMOS_VAR in .env.example → exit 1, prefix_violations."""
-    # Populate registry with one known var so the code scan won't drift.
+def test_ar04_malformed_registry_missing_header(tmp_path: Path) -> None:
+    """T-AR04: Registry with no `| Variable | Required |` header → exit 2."""
     _write_src_py(tmp_path, _make_py_source(["KOSMOS_SYNTHETIC_OK"]))
-    _write_registry(
-        tmp_path,
-        [
-            "| `KOSMOS_SYNTHETIC_OK` | yes (all envs) | — | string | `kosmos.test` | — |",
-        ],
-    )
 
-    # Write .env.example with a non-KOSMOS_, non-LANGFUSE_ assignment.
-    env_example = tmp_path / ".env.example"
-    env_example.write_text(
+    # Write a registry file that has no recognisable header.
+    docs = tmp_path / "docs"
+    docs.mkdir(exist_ok=True)
+    reg = docs / "configuration.md"
+    reg.write_text(
         textwrap.dedent("""\
-            # Example env
-            KOSMOS_SYNTHETIC_OK=
-            MY_TOTALLY_DIFFERENT_VAR=secret
+            # Configuration
+
+            This registry is intentionally malformed — no table header.
+            Random prose goes here with no `|` table markers.
         """),
         encoding="utf-8",
     )
 
     exit_code, report = _run(tmp_path)
 
-    assert exit_code == 1, f"Expected exit 1, got {exit_code}"
+    assert exit_code == 2, f"Expected exit 2 (malformed), got {exit_code}. Report: {report}"
+    assert report.get("verdict") == "malformed", (
+        f"Expected malformed, got: {report.get('verdict')}"
+    )
+
+
+# ---------------------------------------------------------------------------
+# T-AR05 (contract): LANGFUSE_ in code + in registry → exit 0 (allowlisted prefix)
+# ---------------------------------------------------------------------------
+
+
+def test_ar05_langfuse_allowlist_clean(tmp_path: Path) -> None:
+    """T-AR05: LANGFUSE_PUBLIC_KEY in code + registry → exit 0 (allowlist)."""
+    _write_src_py(
+        tmp_path,
+        _make_py_source(["KOSMOS_SYNTHETIC_BASE", "LANGFUSE_PUBLIC_KEY"]),
+    )
+    _write_registry(
+        tmp_path,
+        [
+            "| `KOSMOS_SYNTHETIC_BASE` | yes (all envs) | — | string | `kosmos.test` | — |",
+            "| `LANGFUSE_PUBLIC_KEY` | yes (prod only) | — | string "
+            "| `kosmos.observability.langfuse` | — |",
+        ],
+    )
+
+    exit_code, report = _run(tmp_path)
+
+    assert exit_code == 0, (
+        f"Expected exit 0 (LANGFUSE_ allowlisted), got {exit_code}. "
+        f"Findings: {report.get('findings')}"
+    )
+    assert report.get("verdict") == "clean"
+    # LANGFUSE_ must NOT trigger a prefix_violation (it's in the allowlist).
     violations = [f["name"] for f in report["findings"]["prefix_violations"]]
-    assert "MY_TOTALLY_DIFFERENT_VAR" in violations, f"Violation not flagged: {violations}"
+    assert "LANGFUSE_PUBLIC_KEY" not in violations, (
+        f"LANGFUSE_PUBLIC_KEY wrongly flagged as prefix violation: {violations}"
+    )
 
 
 # ---------------------------------------------------------------------------
-# T-AR05: Override-family member + pattern row in registry → clean
+# T-AR06 (contract): Override-family member + pattern row in registry → clean
 # ---------------------------------------------------------------------------
 
 
-def test_ar05_override_family_clean(tmp_path: Path) -> None:
-    """T-AR05: KOSMOS_KOROAD_ACCIDENT_SEARCH_API_KEY in code + family row → exit 0."""
+def test_ar06_override_family_clean(tmp_path: Path) -> None:
+    """T-AR06: KOSMOS_KOROAD_ACCIDENT_SEARCH_API_KEY in code + family row → exit 0."""
     _write_src_py(
         tmp_path,
         _make_py_source(["KOSMOS_KOROAD_ACCIDENT_SEARCH_API_KEY", "KOSMOS_SYNTHETIC_BASE"]),
@@ -225,35 +262,7 @@ def test_ar05_override_family_clean(tmp_path: Path) -> None:
 
 
 # ---------------------------------------------------------------------------
-# T-AR06: Override-family member WITHOUT pattern row → override_family_unmatched
-# ---------------------------------------------------------------------------
-
-
-def test_ar06_override_family_unmatched(tmp_path: Path) -> None:
-    """T-AR06: KOSMOS_KOROAD_ACCIDENT_SEARCH_API_KEY in code, NO family row → exit 1."""
-    _write_src_py(
-        tmp_path,
-        _make_py_source(["KOSMOS_KOROAD_ACCIDENT_SEARCH_API_KEY", "KOSMOS_SYNTHETIC_BASE"]),
-    )
-    # Registry has no family row.
-    _write_registry(
-        tmp_path,
-        [
-            "| `KOSMOS_SYNTHETIC_BASE` | yes (all envs) | — | string | `kosmos.test` | — |",
-        ],
-    )
-
-    exit_code, report = _run(tmp_path)
-
-    assert exit_code == 1, f"Expected exit 1, got {exit_code}"
-    unmatched = [f["name"] for f in report["findings"]["override_family_unmatched"]]
-    assert "KOSMOS_KOROAD_ACCIDENT_SEARCH_API_KEY" in unmatched, (
-        f"Expected override_family_unmatched entry; got: {unmatched}"
-    )
-
-
-# ---------------------------------------------------------------------------
-# T-AR07: Performance — >1000 synthetic Python files, duration_seconds < 10
+# T-AR07 (contract): Performance — >1000 synthetic Python files, duration < 10 s
 # ---------------------------------------------------------------------------
 
 
@@ -283,4 +292,73 @@ def test_ar07_performance(tmp_path: Path) -> None:
     # Should be clean since all vars are registered.
     assert exit_code == 0, (
         f"Expected clean run in perf test, got exit {exit_code}. Findings: {report.get('findings')}"
+    )
+
+
+# ---------------------------------------------------------------------------
+# T-AR08 (beyond contract): Prefix violation — non-KOSMOS_/non-LANGFUSE_ in .env.example
+#
+# Contract matrix does not list this as a numbered test, but §Allowlisted
+# prefixes mandates `prefix_violations` reporting. This is a regression guard.
+# ---------------------------------------------------------------------------
+
+
+def test_ar08_prefix_violation(tmp_path: Path) -> None:
+    """T-AR08: NON_KOSMOS_VAR in .env.example → exit 1, prefix_violations."""
+    # Populate registry with one known var so the code scan won't drift.
+    _write_src_py(tmp_path, _make_py_source(["KOSMOS_SYNTHETIC_OK"]))
+    _write_registry(
+        tmp_path,
+        [
+            "| `KOSMOS_SYNTHETIC_OK` | yes (all envs) | — | string | `kosmos.test` | — |",
+        ],
+    )
+
+    # Write .env.example with a non-KOSMOS_, non-LANGFUSE_ assignment.
+    env_example = tmp_path / ".env.example"
+    env_example.write_text(
+        textwrap.dedent("""\
+            # Example env
+            KOSMOS_SYNTHETIC_OK=
+            MY_TOTALLY_DIFFERENT_VAR=secret
+        """),
+        encoding="utf-8",
+    )
+
+    exit_code, report = _run(tmp_path)
+
+    assert exit_code == 1, f"Expected exit 1, got {exit_code}"
+    violations = [f["name"] for f in report["findings"]["prefix_violations"]]
+    assert "MY_TOTALLY_DIFFERENT_VAR" in violations, f"Violation not flagged: {violations}"
+
+
+# ---------------------------------------------------------------------------
+# T-AR09 (beyond contract): Override-family member WITHOUT pattern row →
+#                           override_family_unmatched
+#
+# Contract §OverrideFamily suppression mandates this behaviour; matrix does
+# not assign it a numbered test. Regression guard for the negative path.
+# ---------------------------------------------------------------------------
+
+
+def test_ar09_override_family_unmatched(tmp_path: Path) -> None:
+    """T-AR09: KOSMOS_KOROAD_ACCIDENT_SEARCH_API_KEY in code, NO family row → exit 1."""
+    _write_src_py(
+        tmp_path,
+        _make_py_source(["KOSMOS_KOROAD_ACCIDENT_SEARCH_API_KEY", "KOSMOS_SYNTHETIC_BASE"]),
+    )
+    # Registry has no family row.
+    _write_registry(
+        tmp_path,
+        [
+            "| `KOSMOS_SYNTHETIC_BASE` | yes (all envs) | — | string | `kosmos.test` | — |",
+        ],
+    )
+
+    exit_code, report = _run(tmp_path)
+
+    assert exit_code == 1, f"Expected exit 1, got {exit_code}"
+    unmatched = [f["name"] for f in report["findings"]["override_family_unmatched"]]
+    assert "KOSMOS_KOROAD_ACCIDENT_SEARCH_API_KEY" in unmatched, (
+        f"Expected override_family_unmatched entry; got: {unmatched}"
     )

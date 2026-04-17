@@ -38,10 +38,12 @@ Rationale: see `research.md §R4`.
 
 ```
 Settings → Secrets and variables → Actions → Variables (not Secrets):
-  INFISICAL_CLIENT_ID = <public UUID of the Infisical machine identity>
+  INFISICAL_CLIENT_ID = <Infisical machine-identity ID>
 ```
 
 This is a **variable**, not a secret. Storing as a secret is harmless but semantically wrong (it's a public identifier). Workflow references via `${{ vars.INFISICAL_CLIENT_ID }}`.
+
+**Note on naming**: the variable is kept named `INFISICAL_CLIENT_ID` for backward compatibility with earlier drafts, but its value is passed to the action's `identity-id` input (the authoritative name per the `Infisical/secrets-action@v1` `action.yaml` schema — the action does not expose a `client-id` input for the OIDC flow in the current published version).
 
 ## Required workflow block
 
@@ -52,18 +54,19 @@ In every CI job that needs KOSMOS secrets, insert the following step **before** 
   uses: Infisical/secrets-action@v1
   with:
     method: oidc
-    client-id: ${{ vars.INFISICAL_CLIENT_ID }}
-    project-id: <KOSMOS project UUID>
+    identity-id: ${{ vars.INFISICAL_CLIENT_ID }}
+    project-slug: kosmos-3f-zs
     env-slug: dev    # or 'prod' for release jobs
     secret-path: '/'
     export-type: env  # inject into job env
 ```
 
-Inputs:
+Inputs (authoritative schema — `Infisical/secrets-action@v1` `action.yaml`):
 - `method: oidc` — use OIDC federation (no bootstrap secret).
-- `client-id` — from repo variable.
-- `project-id` — hard-coded UUID of the Infisical project (public; not sensitive).
-- `env-slug` — which Infisical environment to pull from. CI test runs use `dev` (the default env created by Infisical Cloud for every new project).
+- `identity-id` — the Infisical machine-identity ID, from repo variable.
+- `project-slug` — **required**: human-readable Infisical project slug (`kosmos-3f-zs` for this repo). The action does not accept a `project-id` / UUID input.
+- `env-slug` — **required**: which Infisical environment to pull from. CI test runs use `dev` (the default env created by Infisical Cloud for every new project).
+- `secret-path` — path within the env tree; `/` pulls everything at project root.
 - `export-type: env` — injects fetched secrets as environment variables for subsequent steps in the same job.
 
 ## Env injection surface
@@ -147,8 +150,8 @@ jobs:
         uses: Infisical/secrets-action@v1
         with:
           method: oidc
-          client-id: ${{ vars.INFISICAL_CLIENT_ID }}
-          project-id: <KOSMOS project UUID>
+          identity-id: ${{ vars.INFISICAL_CLIENT_ID }}
+          project-slug: kosmos-3f-zs
           env-slug: dev
           secret-path: '/'
           export-type: env
