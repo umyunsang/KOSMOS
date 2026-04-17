@@ -93,9 +93,9 @@ class LookupErrorReason(StrEnum):
         out_of_domain: Input parameters are valid shape but outside the tool's supported domain.
         empty_registry: Registry was queried with no tools registered.
         content_blocked: LLM pre/post-call content violated the moderation policy
-            (spec/026-safety-rails § FR-006..FR-011).
+            (specs/026-safety-rails § FR-008..FR-011).
         injection_detected: Tool output carried indirect-injection signals and was
-            blocked before reaching the LLM context (spec/026-safety-rails § FR-012..FR-017).
+            blocked before reaching the LLM context (specs/026-safety-rails § FR-012..FR-015).
     """
 
     auth_required = "auth_required"
