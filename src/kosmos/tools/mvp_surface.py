@@ -71,6 +71,11 @@ RESOLVE_LOCATION_TOOL = GovAPITool(
         "위치 조회 주소 변환 행정동 코드 좌표 지오코딩 POI 장소 검색 "
         "resolve location address geocode coordinates adm_cd administrative code place"
     ),
+    # TOOL_MIN_AAL row: AAL1 (canonical). Public geocoding; no PII linkage.
+    auth_level="AAL1",
+    pipa_class="non_personal",
+    is_irreversible=False,
+    dpa_reference=None,
     requires_auth=False,
     is_personal_data=False,
     is_concurrency_safe=True,
@@ -113,6 +118,12 @@ LOOKUP_SEARCH_TOOL = GovAPITool(
     search_hint=(
         "데이터 조회 도구 호출 검색 패치 lookup search fetch invoke tool adapter data query"
     ),
+    # TOOL_MIN_AAL row: AAL1 (canonical). Meta-surface; sub-tool ACLs
+    # are enforced when the concrete adapter is dispatched.
+    auth_level="AAL1",
+    pipa_class="non_personal",
+    is_irreversible=False,
+    dpa_reference=None,
     requires_auth=False,
     is_personal_data=False,
     is_concurrency_safe=True,

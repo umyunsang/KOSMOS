@@ -29,6 +29,10 @@ _MINIMAL_KWARGS = {
     "input_schema": _MinimalInput,
     "output_schema": _MinimalOutput,
     "search_hint": "test 테스트 sample",
+    "auth_level": "public",
+    "pipa_class": "non_personal",
+    "is_irreversible": False,
+    "dpa_reference": None,
 }
 
 

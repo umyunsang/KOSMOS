@@ -51,6 +51,10 @@ def sample_tool_factory():
         endpoint: str = "https://apis.data.go.kr/test",
         auth_type: str = "api_key",
         search_hint: str = "날씨 예보 weather forecast 기상청",
+        auth_level: str = "public",
+        pipa_class: str = "non_personal",
+        is_irreversible: bool = False,
+        dpa_reference: str | None = None,
         **overrides,
     ) -> GovAPITool:
         return GovAPITool(
@@ -63,6 +67,10 @@ def sample_tool_factory():
             input_schema=MockInput,
             output_schema=MockOutput,
             search_hint=search_hint,
+            auth_level=auth_level,
+            pipa_class=pipa_class,
+            is_irreversible=is_irreversible,
+            dpa_reference=dpa_reference,
             **overrides,
         )
 

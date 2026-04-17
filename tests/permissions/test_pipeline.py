@@ -47,6 +47,9 @@ def _make_tool(
     is_personal_data: bool = False,
 ) -> GovAPITool:
     """Build a minimal GovAPITool for testing."""
+    pipa_class = "personal" if is_personal_data else "non_personal"
+    auth_level = "AAL1" if is_personal_data else "public"
+    dpa_reference = "dpa-test-v1" if is_personal_data else None
     return GovAPITool(
         id=tool_id,
         name_ko="테스트도구",
@@ -57,6 +60,10 @@ def _make_tool(
         input_schema=_DummyInput,
         output_schema=_DummyOutput,
         search_hint="test tool 테스트",
+        auth_level=auth_level,  # type: ignore[arg-type]
+        pipa_class=pipa_class,  # type: ignore[arg-type]
+        is_irreversible=False,
+        dpa_reference=dpa_reference,
         requires_auth=auth_type != "public",
         is_personal_data=is_personal_data,
         rate_limit_per_minute=60,

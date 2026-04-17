@@ -273,6 +273,14 @@ NMC_EMERGENCY_SEARCH_TOOL = GovAPITool(
         "응급실 실시간 병상 응급의료센터 국립중앙의료원 가까운 응급실 "
         "emergency room bed availability nearest ER NMC real-time Korea"
     ),
+    # Security spec v1 fields (specs/024-tool-security-v1):
+    # Real-time ER bed availability combined with session identity yields
+    # location-linked health context → PIPA-personal. AAL2 per §2 table baseline
+    # (authenticated citizen); irreversible=False (read-only lookup).
+    auth_level="AAL2",
+    pipa_class="personal",
+    is_irreversible=False,
+    dpa_reference="dpa:nmc:v1",
     # Metadata for T033 registration:
     requires_auth=True,
     is_personal_data=True,

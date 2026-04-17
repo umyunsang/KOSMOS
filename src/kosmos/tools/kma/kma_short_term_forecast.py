@@ -349,6 +349,10 @@ KMA_SHORT_TERM_FORECAST_TOOL = GovAPITool(
         "단기예보 날씨예보 기온 강수확률 하늘상태 습도 풍속 풍향 "
         "short-term forecast weather temperature precipitation sky humidity wind"
     ),
+    auth_level="public",
+    pipa_class="non_personal",
+    is_irreversible=False,
+    dpa_reference=None,
     requires_auth=False,
     is_concurrency_safe=True,
     is_personal_data=False,

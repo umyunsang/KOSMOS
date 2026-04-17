@@ -58,6 +58,10 @@ def _make_tool(tool_id: str = "test_tool", is_core: bool = False) -> GovAPITool:
         input_schema=_MockInput,
         output_schema=_MockOutput,
         search_hint="test search hint",
+        auth_level="public",
+        pipa_class="non_personal",
+        is_irreversible=False,
+        dpa_reference=None,
         is_core=is_core,
     )
 
@@ -259,6 +263,10 @@ def test_build_assembled_context_performance(benchmark) -> None:  # type: ignore
             input_schema=_BenchInput,
             output_schema=_BenchOutput,
             search_hint=f"benchmark test tool {i}",
+            auth_level="public",
+            pipa_class="non_personal",
+            is_irreversible=False,
+            dpa_reference=None,
             is_core=True,
         )
         registry.register(tool)
@@ -343,6 +351,10 @@ def test_all_tools_situational_warning(caplog) -> None:  # type: ignore[no-untyp
         input_schema=_Input,
         output_schema=_Output,
         search_hint="situational test",
+        auth_level="public",
+        pipa_class="non_personal",
+        is_irreversible=False,
+        dpa_reference=None,
         is_core=False,  # NOT core
     )
     registry.register(tool)

@@ -25,6 +25,39 @@ KOSMOS:   Ministry of Welfare eligibility API + Gov24 application API
 
 The citizen does not learn which ministry runs which API. KOSMOS does the routing.
 
+## The thesis — harness migration from developer to citizen
+
+KOSMOS's deeper claim is not "connect 5,000 APIs." It is: **the Claude Code harness — the tool loop, the permission gauntlet, the context assembly, the TUI — is a general substrate for any domain that reduces to "call the right tools in the right order." Claude Code proved it for software development. KOSMOS migrates that harness from the developer domain to the Korean public-service domain.**
+
+| | Claude Code | KOSMOS |
+|---|---|---|
+| Who is it for? | Software developers | Citizens using national infrastructure |
+| Tool surface | File system, shell, git, editors | `data.go.kr` public APIs, civil-affairs portals |
+| Primitive verbs | Read, Edit, Bash, Grep, WebFetch | lookup, pay, issue, apply, reserve, subscribe |
+| Permission concerns | Dangerous shell commands, file overwrites | PIPA (PII protection), identity verification, legal ordering |
+| Deployment | Developer laptop + IDE | Citizen laptop (TUI) → eventually mobile/web |
+
+This framing has three consequences for every decision in this document:
+
+1. **Claude Code is the first reference.** When the right design is unclear, read Claude Code (via the reconstructed sourcemaps in `Reference materials`) before inventing something new. Most Layer 1, 5, and 6 patterns come directly from Claude Code; they are not open for redesign without cause.
+2. **Domain additions require justification.** Public-service constraints (PIPA, identity verification, ministry-specific consent, legally-ordered multi-step workflows) force additions Claude Code does not need — most visibly Layer 3 (Permission Pipeline) and the `browser_cdp`-style auth flows for `pay`/`issue_certificate` tools. These additions must be documented via ADR, not scattered as implicit design choices.
+3. **Success is measured by citizen experience parity with developer Claude Code experience.** If a citizen asking "출산 보조금 신청하고 싶어" does not feel as magical as a developer typing `claude "fix the failing test"`, the harness migration is incomplete — regardless of how many APIs are wired up.
+
+### Methodology parity — how main tools are discovered
+
+Claude Code's ~5 main tools (Read, Edit, Bash, Grep, Glob, WebFetch) were not designed from first principles. They were **distilled from empirical observation of the most frequent, most general categories of developer work** — file reading, file editing, shell execution, content search, path matching, web fetching cover the bulk of what developers do; everything else is composition of these primitives.
+
+KOSMOS must apply the identical method to citizen-government interaction — not copy Claude Code's verbs, but copy Claude Code's **discovery method**:
+
+1. **Survey the full space.** All 16 major public-service domains, not cherry-picked demo scenarios. Rare but critical workflows (disaster response, legal disputes) must not be excluded by the survey boundary.
+2. **Extract cross-domain verbs.** What actions recur across ministries regardless of topic? (조회·신청·납부·발급·예약·알림 등)
+3. **Weight by empirical frequency.** Back-of-envelope annual transaction volume per verb, grounded in e-나라지표, ministry statistics, and `data.go.kr` usage metrics — not designer intuition.
+4. **Distill to 6–8 always-loaded verbs.** Everything else is lazily discovered via `search_tools`. The upper bound matches Claude Code's cognitive budget for tool schemas in the system prompt.
+
+Discussion [#506](https://github.com/umyunsang/KOSMOS/discussions/506) executes this method. Its six axes (`lookup`, `pay`, `issue_certificate`, `submit_application`, `reserve_slot`, `subscribe_alert`) plus two resolvers (`resolve_location`, `check_eligibility`) are canonical **because the method that produced them is canonical**. If a later survey contradicts them, we re-run the method and update — we do not patch the conclusion while keeping stale premises.
+
+The ambition above describes **what** this migration enables. The methodology here fixes **how we decide which tools serve it**. The six layers below describe **how the migration is structured**. All three serve the same thesis.
+
 ## Inspiration and reference sources
 
 KOSMOS adapts architectural patterns from the conversational AI agent ecosystem to the Korean public-service domain. We actively reference all available sources — open-source repos, official documentation, reconstructed architecture analyses, and leaked-source review documents — to build the best possible implementation.
@@ -55,6 +88,7 @@ KOSMOS adapts architectural patterns from the conversational AI agent ecosystem 
 | aiobreaker (`arlyon/aiobreaker`) | MIT | Asyncio-native circuit breaker for per-API failure isolation — Layer 6 circuit breaker pattern |
 | @inkjs/ui (`vadimdemedes/ink-ui`) | MIT | Official Ink component library (TextInput, Spinner, Select, theming) — TUI widget foundation |
 | string-width (`sindresorhus/string-width`) | MIT | CJK full-width character column width calculation — Korean text terminal layout |
+| K-AI2026 (`hollobit/K-AI2026`) | Public dashboard | 국가인공지능전략위원회 · 대한민국 인공지능행동계획 (AI Action Plan 2026-2028) live tracker — authoritative source for 공공AX 원칙 8/9 task alignment and ministry-program traceability |
 
 ### What is original to KOSMOS
 

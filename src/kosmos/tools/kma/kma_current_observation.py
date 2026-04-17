@@ -375,6 +375,10 @@ KMA_CURRENT_OBSERVATION_TOOL = GovAPITool(
         "현재 날씨 기온 강수 습도 풍속 초단기실황 관측 "
         "current weather temperature precipitation humidity wind observation"
     ),
+    auth_level="public",
+    pipa_class="non_personal",
+    is_irreversible=False,
+    dpa_reference=None,
     requires_auth=False,
     is_concurrency_safe=True,
     is_personal_data=False,

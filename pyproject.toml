@@ -54,6 +54,7 @@ asyncio_mode = "auto"
 addopts = "--strict-markers -q --tb=short"
 markers = [
     "live: hits real data.go.kr APIs — skipped in CI (deselect with -m 'not live')",
+    "performance: timing assertions against perf budgets — opt-out via KOSMOS_SKIP_PERF=1",
 ]
 filterwarnings = [
     "error",
@@ -136,3 +137,8 @@ min_confidence = 80
 name = "cz_conventional_commits"
 version = "0.1.0"
 tag_format = "v$version"
+
+[dependency-groups]
+dev = [
+    "jsonschema>=4.26.0",
+]

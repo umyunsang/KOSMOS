@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import logging
 
+from kosmos.security.audit import TOOL_MIN_AAL
 from kosmos.tools.bm25_index import BM25Index
 from kosmos.tools.errors import DuplicateToolError, RegistrationError, ToolNotFoundError
 from kosmos.tools.models import GovAPITool, ToolSearchResult
@@ -38,6 +39,26 @@ class ToolRegistry:
             raise RegistrationError(
                 tool.id,
                 "is_personal_data=True requires requires_auth=True (Constitution §II / FR-038)",
+            )
+
+        # Security spec v1 (specs/024-tool-security-v1) — validator V3.
+        # GovAPITool's @model_validator already enforces V3 at construction time;
+        # we re-check here so registration emits a structured log if an out-of-tree
+        # caller bypassed pydantic validation (e.g., model_construct) and re-raises
+        # as ValueError to match the data-model.md §1 contract.
+        expected_aal = TOOL_MIN_AAL.get(tool.id)
+        if expected_aal is not None and tool.auth_level != expected_aal:
+            logger.error(
+                "V3 violation at registry.register: tool_id=%s declared_aal=%s "
+                "expected_aal=%s (TOOL_MIN_AAL single-source-of-truth)",
+                tool.id,
+                tool.auth_level,
+                expected_aal,
+            )
+            raise ValueError(
+                f"V3 violation (FR-001/FR-005): tool {tool.id!r} declares "
+                f"auth_level={tool.auth_level!r} but TOOL_MIN_AAL requires "
+                f"{expected_aal!r}."
             )
 
         self._tools[tool.id] = tool

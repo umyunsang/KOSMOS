@@ -51,6 +51,10 @@ def _make_tool(tool_id: str = "test_tool") -> GovAPITool:
         input_schema=_MinInput,
         output_schema=_MinOutput,
         search_hint="test 테스트",
+        auth_level="public",
+        pipa_class="non_personal",
+        is_irreversible=False,
+        dpa_reference=None,
         requires_auth=False,
         is_personal_data=False,
     )

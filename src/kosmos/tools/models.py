@@ -9,7 +9,10 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from kosmos.security.audit import TOOL_MIN_AAL, AALLevel
 from kosmos.tools.errors import LookupErrorReason
+
+PIPAClass = Literal["non_personal", "personal", "sensitive", "identifier"]
 
 
 class GovAPITool(BaseModel):
@@ -47,6 +50,37 @@ class GovAPITool(BaseModel):
 
     search_hint: str
     """Bilingual (Korean + English) discovery keywords for semantic search."""
+
+    # --- Security spec v1 (specs/024-tool-security-v1) — required, no defaults ---
+    auth_level: AALLevel
+    """Minimum NIST SP 800-63-4 AAL required to invoke the tool.
+
+    MUST equal this tool's row in ``kosmos.security.audit.TOOL_MIN_AAL``
+    (validator V3 enforces at registration). Drift is a load-time failure.
+    """
+
+    pipa_class: PIPAClass
+    """PIPA classification of input-or-output data.
+
+    ``non_personal``: no PII in request or response.
+    ``personal``: 개인정보 per PIPA §2.1.
+    ``sensitive``: 민감정보 per PIPA §23.
+    ``identifier``: 고유식별정보 per PIPA §24.
+    """
+
+    is_irreversible: bool
+    """True when invocation produces a side effect the citizen cannot undo via
+    a second tool call (e.g., ``pay``, ``submit_application``).
+
+    Drives FR-007 live-introspection requirement.
+    """
+
+    dpa_reference: str | None
+    """Identifier of the DPA template governing the §26 processor chain for
+    this tool's scope.
+
+    MUST be non-null whenever ``pipa_class != "non_personal"`` (validator V2).
+    """
 
     # --- Fail-closed defaults (Constitution § II) ---
     requires_auth: bool = True
@@ -118,6 +152,50 @@ class GovAPITool(BaseModel):
         if not v.strip():
             raise ValueError("search_hint must not be empty or whitespace-only")
         return v
+
+    # --- Security spec v1 cross-field validators (V1–V4) ---
+    # specs/024-tool-security-v1 § data-model.md §1.
+
+    @model_validator(mode="after")
+    def _validate_security_invariants(self) -> GovAPITool:
+        """Enforce V1–V4 from data-model.md §1.
+
+        V1 (FR-004): ``pipa_class != "non_personal"`` → ``auth_level != "public"``.
+        V2 (FR-014 docs gap): ``pipa_class != "non_personal"`` → ``dpa_reference is not None``.
+        V3 (FR-001 / FR-005): ``auth_level`` MUST equal this tool's row in ``TOOL_MIN_AAL``
+            when the tool id is a canonical entry in that table.
+        V4 (FR-004 ext): ``is_irreversible`` → ``auth_level != "public"``.
+        """
+        if self.pipa_class != "non_personal":
+            if self.auth_level == "public":
+                raise ValueError(
+                    f"V1 violation (FR-004): tool {self.id!r} has "
+                    f"pipa_class={self.pipa_class!r} but auth_level='public'; "
+                    "PII-class data MUST require authentication."
+                )
+            if self.dpa_reference is None:
+                raise ValueError(
+                    f"V2 violation (FR-014): tool {self.id!r} has "
+                    f"pipa_class={self.pipa_class!r} but dpa_reference is None; "
+                    "PIPA §26 위탁 MUST cite a DPA template."
+                )
+
+        expected_aal = TOOL_MIN_AAL.get(self.id)
+        if expected_aal is not None and self.auth_level != expected_aal:
+            raise ValueError(
+                f"V3 violation (FR-001/FR-005): tool {self.id!r} declares "
+                f"auth_level={self.auth_level!r} but TOOL_MIN_AAL requires "
+                f"{expected_aal!r}; the single-source-of-truth table MUST match."
+            )
+
+        if self.is_irreversible and self.auth_level == "public":
+            raise ValueError(
+                f"V4 violation (FR-004 ext): tool {self.id!r} is_irreversible=True "
+                "cannot run at auth_level='public'; irreversible actions MUST be "
+                "authenticated."
+            )
+
+        return self
 
     # ------------------------------------------------------------------
     # Export helpers

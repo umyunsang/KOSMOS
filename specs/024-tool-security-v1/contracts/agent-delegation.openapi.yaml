@@ -1,0 +1,320 @@
+openapi: 3.0.3
+info:
+  title: KOSMOS Agent Delegation API (skeleton)
+  version: 0.1.0-skeleton
+  description: |
+    Skeleton OpenAPI 3.0 definition for KOSMOS's `/agent-delegation` endpoint family.
+    This skeleton lands with Tool Template Security Spec v1 (spec 024) and cites ONLY
+    IETF RFCs, W3C recommendations, and Korean statutory artifacts. Full server-side
+    implementation is deferred (spec.md Deferred Items table, row D2).
+
+    Normative references (all external):
+      - RFC 8628 — OAuth 2.0 Device Authorization Grant
+      - RFC 8693 — OAuth 2.0 Token Exchange
+      - RFC 9068 — JSON Web Token (JWT) Profile for OAuth 2.0 Access Tokens
+      - RFC 7636 — Proof Key for Code Exchange (PKCE)
+      - RFC 7662 — OAuth 2.0 Token Introspection
+      - RFC 7009 — OAuth 2.0 Token Revocation
+      - W3C Verifiable Credentials Data Model v2.0
+      - W3C Decentralized Identifiers (DIDs) v1.0
+      - PIPA §17, §22, §26, §28-2 (Korean Personal Information Protection Act)
+  contact:
+    name: KOSMOS project
+    url: https://github.com/umyunsang/KOSMOS
+  license:
+    name: Apache-2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+
+servers:
+  - url: https://{host}/agent-delegation
+    description: Delegation endpoint family (host filled at deployment)
+    variables:
+      host:
+        default: kosmos.example.gov.kr
+
+tags:
+  - name: consent
+    description: Citizen consent collection (PIPA §17/§22).
+  - name: token
+    description: OAuth 2.1 token lifecycle (RFC 8628/8693/9068/7636).
+  - name: introspection
+    description: Active-token introspection (RFC 7662) — required for irreversible actions.
+  - name: revocation
+    description: Token revocation (RFC 7009).
+
+paths:
+  /consent:
+    post:
+      operationId: createConsentRecord
+      tags: [consent]
+      summary: Create a consent record binding a citizen to one or more tool scopes.
+      description: |
+        Citizen-signed consent artifact. MUST include `dpa_reference` whenever any requested
+        scope touches a PII-bound tool (PIPA §26 위탁 documentation gap closure).
+        MUST include `synthesis_consent` as a separate boolean reflecting the LLM-synthesis
+        controller-level carve-out.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConsentRequest'
+      responses:
+        '201':
+          description: Consent recorded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsentRecord'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /token:
+    post:
+      operationId: issueDelegationToken
+      tags: [token]
+      summary: Issue a delegation token (device grant or token exchange).
+      description: |
+        Issues a `DelegationToken` bound to a citizen authentication event.
+        Supports two grant flows:
+          - Device Authorization Grant per RFC 8628 (agent-first flows).
+          - Token Exchange per RFC 8693 (ministry-to-ministry hand-off).
+        PKCE per RFC 7636 is REQUIRED on all grant types. The issued token is a JWT
+        per RFC 9068 with `aal_asserted` claim carrying NIST SP 800-63-4 AAL.
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRequest'
+      responses:
+        '200':
+          description: Token issued.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DelegationToken'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /introspect:
+    post:
+      operationId: introspectDelegationToken
+      tags: [introspection]
+      summary: Introspect a delegation token (RFC 7662).
+      description: |
+        MUST be called by the permission pipeline before any invocation of a tool whose
+        `is_irreversible = True`, regardless of local cache state (FR-007).
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/IntrospectionRequest'
+      responses:
+        '200':
+          description: Introspection response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntrospectionResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /revoke:
+    post:
+      operationId: revokeDelegationToken
+      tags: [revocation]
+      summary: Revoke a delegation token (RFC 7009).
+      description: |
+        Revokes a token immediately. The spec declares a maximum propagation window
+        (documented in the normative spec, not this skeleton) after which all downstream
+        caches MUST reject the token.
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RevocationRequest'
+      responses:
+        '200':
+          description: Revocation accepted.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+components:
+  securitySchemes:
+    mtls:
+      # NOTE: mutualTLS type is OpenAPI 3.1-only. In OpenAPI 3.0.3 mTLS is a transport-layer
+      # control documented here via extension; enforcement is described per-endpoint and in the
+      # normative spec (NIST SP 800-207 Zero Trust). Upgrade to openapi: 3.1.0 to use
+      # type: mutualTLS formally.
+      type: http
+      scheme: bearer
+      description: >
+        Placeholder for mTLS requirement (NIST SP 800-207 Zero Trust). All endpoints MUST be
+        served over a mutual-TLS channel. The `http/bearer` type is used here because OpenAPI
+        3.0.3 does not define a `mutualTLS` security scheme type (introduced in OpenAPI 3.1.0).
+        Adopting ministries MUST configure their gateway to require client certificate
+        authentication independent of this bearer-token scheme declaration.
+      x-mutualTLS: true
+
+  schemas:
+    ConsentRequest:
+      type: object
+      required: [citizen_identity, scopes, synthesis_consent, expires_at]
+      properties:
+        citizen_identity:
+          type: string
+          description: Opaque citizen identifier bound by PASS/공동인증서 at collection time.
+        scopes:
+          type: array
+          items: { type: string, pattern: '^[a-z_]+:[a-z_]+(:[a-z0-9_]+)?$' }
+          description: Scope entries shaped as `<tool_id>:<verb>[:resource]`.
+        dpa_reference:
+          type: string
+          nullable: true
+          description: Non-null when any scope is PII-bound (FR-014).
+        synthesis_consent:
+          type: boolean
+          description: Separate consent for the LLM-synthesis controller-level carve-out (FR-015).
+        expires_at:
+          type: string
+          format: date-time
+
+    ConsentRecord:
+      allOf:
+        - $ref: '#/components/schemas/ConsentRequest'
+        - type: object
+          required: [consent_id, collected_at]
+          properties:
+            consent_id: { type: string }
+            collected_at: { type: string, format: date-time }
+            revoked_at:
+              type: string
+              format: date-time
+              nullable: true
+
+    TokenRequest:
+      type: object
+      required: [grant_type, code_verifier]
+      properties:
+        grant_type:
+          type: string
+          enum:
+            - urn:ietf:params:oauth:grant-type:device_code
+            - urn:ietf:params:oauth:grant-type:token-exchange
+          description: Device grant (RFC 8628) or token exchange (RFC 8693).
+        code_verifier:
+          type: string
+          description: PKCE code verifier (RFC 7636).
+        device_code: { type: string, nullable: true }
+        subject_token: { type: string, nullable: true }
+        subject_token_type: { type: string, nullable: true }
+        audience:
+          type: string
+          default: kosmos-agent
+        scope:
+          type: string
+          description: Space-separated scope string.
+
+    DelegationToken:
+      type: object
+      required: [access_token, token_type, expires_in, aal_asserted, scope, introspection_endpoint, revocation_endpoint, issuer, audience]
+      properties:
+        access_token:
+          type: string
+          description: JWT per RFC 9068. MUST carry `aal_asserted` claim.
+        token_type:
+          type: string
+          enum: [Bearer]
+        expires_in:
+          type: integer
+          minimum: 1
+        aal_asserted:
+          type: string
+          enum: [AAL1, AAL2, AAL3]
+        scope:
+          type: array
+          items: { type: string }
+        introspection_endpoint:
+          type: string
+          format: uri
+        revocation_endpoint:
+          type: string
+          format: uri
+        issuer:
+          type: string
+        audience:
+          type: string
+        dpa_reference:
+          type: string
+          nullable: true
+          description: Non-null when any scope is PII-bound.
+
+    IntrospectionRequest:
+      type: object
+      required: [token]
+      properties:
+        token: { type: string }
+        token_type_hint:
+          type: string
+          enum: [access_token]
+
+    IntrospectionResponse:
+      type: object
+      required: [active]
+      description: RFC 7662 shape.
+      properties:
+        active: { type: boolean }
+        scope:
+          type: string
+          nullable: true
+        exp:
+          type: integer
+          nullable: true
+        iss:
+          type: string
+          nullable: true
+        aud:
+          type: string
+          nullable: true
+        aal_asserted:
+          type: string
+          nullable: true
+          enum: [null, AAL1, AAL2, AAL3]
+
+    RevocationRequest:
+      type: object
+      required: [token]
+      properties:
+        token: { type: string }
+        token_type_hint:
+          type: string
+          enum: [access_token]
+
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error: { type: string }
+        error_description: { type: string, nullable: true }
+
+  responses:
+    BadRequest:
+      description: Malformed request.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Unauthorized:
+      description: Authentication failed or insufficient AAL.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+
+security:
+  - mtls: []

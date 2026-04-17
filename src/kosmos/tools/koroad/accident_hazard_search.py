@@ -882,6 +882,10 @@ KOROAD_ACCIDENT_HAZARD_SEARCH_TOOL = GovAPITool(
         "교통사고 위험지점 사고다발구역 행정동코드 연도별 위험지역 "
         "accident hazard spot dangerous zone adm_cd year traffic safety Korea"
     ),
+    auth_level="public",
+    pipa_class="non_personal",
+    is_irreversible=False,
+    dpa_reference=None,
     requires_auth=False,
     is_concurrency_safe=True,
     is_personal_data=False,

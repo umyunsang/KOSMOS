@@ -91,6 +91,10 @@ Each adapter is a tool module that registers a `GovAPITool` instance. The exact 
 | `cache_ttl_seconds` | Response cache lifetime | `0` |
 | `rate_limit_per_minute` | Client-side limit | `10` |
 | `search_hint` | Korean + English discovery keywords | required |
+| `auth_level` | Minimum NIST SP 800-63-4 AAL required (`public` \| `AAL1` \| `AAL2` \| `AAL3`). MUST equal the tool's row in `TOOL_MIN_AAL` (validator V3). | required |
+| `pipa_class` | PIPA data classification (`non_personal` \| `personal` \| `sensitive` \| `identifier`). | required |
+| `is_irreversible` | `True` when invocation cannot be undone (e.g., payment, certificate issuance). Drives FR-007 live-introspection. | required |
+| `dpa_reference` | DPA template identifier governing the §26 processor chain. MUST be non-null when `pipa_class != "non_personal"` (validator V2). | required |
 
 **Fail-closed defaults**: a new adapter only declares fields that deviate from the conservative defaults. Forgetting a field never accidentally exposes personal data as public.
 
@@ -206,3 +210,13 @@ Use this pattern when:
 - [ ] A unit test asserts the executor returns `LookupError(reason="auth_required")` when called with `session_identity=None` (gate contract)
 - [ ] A `# TODO` comment in `handle()` references the Epic that will implement the real upstream call
 - [ ] The placeholder `output_schema` documents why it is a stub (`RootModel[dict]` is acceptable until real schema is known)
+
+## Security PR checklist (spec v1)
+
+This checklist is normative for every adapter PR opened against the KOSMOS repository. It unifies the six research lanes surveyed in specs/024-tool-security-v1: Korean legal compliance (PIPA, 전자정부법, 전자서명법), international identity standards (NIST SP 800-63-4, OWASP ASVS), LLM-tool security (OWASP Top 10 for LLMs), identity and delegation (OAuth 2.1, RFC 7662, RFC 9068), public-sector security precedents (K-ISMS-P, eGovFramework, Singapore IMDA MGF), and supply-chain provenance (SLSA v1.0, NIST SP 800-218). Applying this checklist once gives a reviewer confidence across all six domains without requiring lane-specific expertise. It supersedes any ad-hoc lane-specific notes that may appear in earlier sections of this document.
+
+- [ ] **AAL alignment**: The adapter's `auth_level` field exactly matches the tool's row in `TOOL_MIN_AAL` (validator V3 enforces this at load time). `pipa_class` is one of `non_personal | personal | sensitive | identifier` per PIPA §24 / PIPA §23 / PIPA §2.1. `is_irreversible` and `dpa_reference` are populated per the rules in quickstart.md §1. Cross-link: [FR-001, FR-005](./security/tool-template-security-spec-v1.md#govapitool-field-contract).
+- [ ] **Audit shape parity**: The happy-path test emits a `ToolCallAuditRecord` that validates against `docs/security/tool-call-audit-record.schema.json`. The error-path (insufficient AAL) test emits a record with `permission_decision="deny_aal"` that also validates. Mock and live adapter modes MUST produce records that differ only in the `adapter_mode` field — all other fields must carry identical shapes. Cross-link: [FR-012](./security/tool-template-security-spec-v1.md#audit-trail).
+- [ ] **Output sanitization declaration**: If the adapter may return PII (`pipa_class != "non_personal"`), it MUST produce a sanitized output variant and set `sanitized_output_hash` + `merkle_covered_hash="sanitized_output_hash"` in the emitted audit record (invariant I1). If the adapter never returns PII, `sanitized_output_hash` stays `None` and `merkle_covered_hash="output_hash"`. This declaration MUST appear as a comment in the adapter registration block. Cross-link: [FR-009, FR-010](./security/tool-template-security-spec-v1.md#audit-trail).
+- [ ] **Irreversible-action introspection**: If `is_irreversible=True`, the adapter's permission wiring MUST invoke live token introspection per RFC 7662 before the handler body executes, regardless of any token cache. A test MUST cover the expired-token rejection path. This applies to every invocation — no caching exception. Cross-link: [FR-007](./security/tool-template-security-spec-v1.md#permission-pipeline), OWASP ASVS V4.1.5.
+- [ ] **DPA + synthesis consent**: If `pipa_class != "non_personal"`, the adapter registration block MUST document the `dpa_reference` identifier it expects at call time (validator V2 enforces non-null). Any downstream LLM synthesis that consumes the adapter's output MUST be gated by `synthesis_consent=True` in the originating consent record (FR-015). Cross-link: [FR-014, FR-015](./security/tool-template-security-spec-v1.md#pipa-role), PIPA §26 수탁자 + LLM-synthesis controller-level carve-out.
