@@ -50,7 +50,24 @@ def _make_tool(
     is_personal_data: bool = False,
     is_concurrency_safe: bool = False,
 ) -> GovAPITool:
-    """Return a GovAPITool instance with MockInput/MockOutput schemas."""
+    """Return a GovAPITool instance with MockInput/MockOutput schemas.
+
+    Maintains spec-024 V5 biconditional ``auth_level=='public' ⇔ requires_auth==False``
+    and FR-038 PII ⇒ auth by deriving ``auth_level`` + ``pipa_class`` from the
+    ``requires_auth`` / ``is_personal_data`` flags.
+    """
+    if is_personal_data:
+        auth_level = "AAL2"
+        pipa_class = "personal"
+        dpa_reference = "dpa-mock-engine-conftest"
+    elif requires_auth:
+        auth_level = "AAL1"
+        pipa_class = "non_personal"
+        dpa_reference = None
+    else:
+        auth_level = "public"
+        pipa_class = "non_personal"
+        dpa_reference = None
     return GovAPITool(
         id=tool_id,
         name_ko=name_ko,
@@ -61,10 +78,10 @@ def _make_tool(
         input_schema=MockInput,
         output_schema=MockOutput,
         search_hint=f"{name_ko} mock tool for testing",
-        auth_level="public",
-        pipa_class="non_personal",
+        auth_level=auth_level,
+        pipa_class=pipa_class,
         is_irreversible=False,
-        dpa_reference=None,
+        dpa_reference=dpa_reference,
         is_core=is_core,
         requires_auth=requires_auth,
         is_personal_data=is_personal_data,

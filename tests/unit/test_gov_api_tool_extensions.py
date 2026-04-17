@@ -61,6 +61,10 @@ _MINIMAL_KWARGS: dict[str, object] = {
     "pipa_class": "non_personal",
     "is_irreversible": False,
     "dpa_reference": None,
+    # V5 biconditional: auth_level='public' ⇔ requires_auth=False.
+    "requires_auth": False,
+    # FR-038: pipa_class=non_personal implies no PII, so is_personal_data=False.
+    "is_personal_data": False,
 }
 
 
@@ -227,6 +231,7 @@ class TestGovAPIToolValidatorV3:
             pipa_class="non_personal",
             dpa_reference=None,
             is_irreversible=False,
+            requires_auth=True,  # V5: AAL1 requires requires_auth=True
         )
         assert tool.id == "lookup"
         assert tool.auth_level == "AAL1"
@@ -263,6 +268,7 @@ class TestGovAPIToolValidatorV4:
             auth_level="AAL1",     # non-public, so V4 does not apply
             pipa_class="personal",
             dpa_reference="dpa-test-v4",
+            requires_auth=True,  # V5: AAL1 requires requires_auth=True
         )
         assert tool.is_irreversible is True
         assert tool.auth_level == "AAL1"
@@ -344,7 +350,7 @@ class TestAdapterRegistryScan:
     kma_forecast_fetch, hira_hospital_search, nmc_emergency_search per T008).
     """
 
-    def test_all_in_tree_adapters_register_cleanly(self) -> None:
+    def test_all_in_tree_adapters_register_cleanly(self) -> None:  # noqa: C901 — walks 4 provider packages × module-level GovAPITool instances; splitting would obscure the SC-003 invariant
         """Every in-tree GovAPITool instance must register without exception (SC-003)."""
         # Provider packages that house the 4 seed adapters
         provider_packages = [

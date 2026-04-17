@@ -46,9 +46,15 @@ def _make_tool(
     auth_type: str = "public",
     is_personal_data: bool = False,
 ) -> GovAPITool:
-    """Build a minimal GovAPITool for testing."""
+    """Build a minimal GovAPITool for testing.
+
+    Spec-024 V5: ``auth_level=='public' ⇔ requires_auth==False``. Any non-public
+    ``auth_type`` (e.g. ``"oauth"``) implies authentication is required, which
+    means ``auth_level`` must be at least AAL1.
+    """
     pipa_class = "personal" if is_personal_data else "non_personal"
-    auth_level = "AAL1" if is_personal_data else "public"
+    requires_auth = auth_type != "public"
+    auth_level = "AAL1" if is_personal_data or requires_auth else "public"
     dpa_reference = "dpa-test-v1" if is_personal_data else None
     return GovAPITool(
         id=tool_id,
@@ -64,7 +70,7 @@ def _make_tool(
         pipa_class=pipa_class,  # type: ignore[arg-type]
         is_irreversible=False,
         dpa_reference=dpa_reference,
-        requires_auth=auth_type != "public",
+        requires_auth=requires_auth,
         is_personal_data=is_personal_data,
         rate_limit_per_minute=60,
     )

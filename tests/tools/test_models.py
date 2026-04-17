@@ -33,6 +33,10 @@ _MINIMAL_KWARGS = {
     "pipa_class": "non_personal",
     "is_irreversible": False,
     "dpa_reference": None,
+    # Spec-024 V5 biconditional: auth_level='public' ⇔ requires_auth==False.
+    "requires_auth": False,
+    # FR-038: pipa_class='non_personal' ⇒ no PII → is_personal_data=False.
+    "is_personal_data": False,
 }
 
 
@@ -48,8 +52,18 @@ def _make(**overrides) -> GovAPITool:
 
 class TestFailClosedDefaults:
     def test_fail_closed_defaults(self, sample_tool_factory):
-        """All boolean security fields must default to the restrictive value."""
-        tool = sample_tool_factory()
+        """All boolean security fields must default to the restrictive value.
+
+        Under Spec-024 V5 the factory's public defaults are auto-aligned to
+        requires_auth=False / is_personal_data=False (public tools cannot
+        require auth). To exercise the *model-level* fail-closed defaults we
+        request an AAL1 PII-class tool so the True/True model defaults apply.
+        """
+        tool = sample_tool_factory(
+            auth_level="AAL1",
+            pipa_class="personal",
+            dpa_reference="dpa-mock-fail-closed",
+        )
 
         assert tool.requires_auth is True
         assert tool.is_personal_data is True

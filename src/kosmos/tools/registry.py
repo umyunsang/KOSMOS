@@ -30,6 +30,8 @@ class ToolRegistry:
             DuplicateToolError: If tool.id is already registered.
             RegistrationError: If ``is_personal_data=True`` without ``requires_auth=True``
                 (FR-038 — fail-closed PII invariant).
+            ValueError: If ``tool.auth_level`` disagrees with ``TOOL_MIN_AAL`` (V3 drift
+                backstop for callers that bypass pydantic validation via ``model_construct``).
         """
         if tool.id in self._tools:
             raise DuplicateToolError(tool.id)

@@ -17,14 +17,14 @@ The ``audit`` submodule exports:
 from __future__ import annotations
 
 from kosmos.security.audit import (
+    PUBLIC_PATH_META,
+    TOOL_MIN_AAL,
     AALLevel,
     AdapterMode,
     MerkleCoveredHash,
     PermissionDecision,
     PIPAClass,
-    PUBLIC_PATH_META,
     PublicPathMeta,
-    TOOL_MIN_AAL,
     ToolCallAuditRecord,
 )
 

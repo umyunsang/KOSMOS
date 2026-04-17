@@ -18,7 +18,7 @@ from __future__ import annotations
 import json
 import os
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 from pydantic import ValidationError
@@ -32,7 +32,7 @@ from kosmos.security.audit import ToolCallAuditRecord
 _VALID_HASH_A = "a" * 64  # lowercase hex, 64 chars — valid SHA-256 placeholder
 _VALID_HASH_B = "b" * 64
 _VALID_HASH_C = "c" * 64
-_VALID_TS = datetime(2026, 4, 17, 10, 30, 0, tzinfo=timezone.utc)
+_VALID_TS = datetime(2026, 4, 17, 10, 30, 0, tzinfo=UTC)
 
 _SCHEMA_PATH = (
     __file__.replace("tests/unit/test_tool_call_audit_record.py", "")
@@ -117,7 +117,7 @@ class TestMinimalRoundTrip:
 
 class TestInvariantI1:
     def test_i1_sanitized_set_and_covered_by_sanitized(self):
-        """(i) sanitized_output_hash=<hex> + merkle_covered_hash='sanitized_output_hash' succeeds."""
+        """(i) sanitized_output_hash=<hex> + merkle_covered_hash=sanitized_output_hash succeeds."""
         record = ToolCallAuditRecord(
             **_minimal_record(
                 sanitized_output_hash=_VALID_HASH_C,
@@ -280,7 +280,7 @@ class TestInvariantI4:
             ToolCallAuditRecord(**_minimal_record(timestamp=naive_ts))
 
     def test_i4_aware_datetime_accepted(self):
-        aware_ts = datetime(2026, 4, 17, 10, 30, 0, tzinfo=timezone.utc)
+        aware_ts = datetime(2026, 4, 17, 10, 30, 0, tzinfo=UTC)
         record = ToolCallAuditRecord(**_minimal_record(timestamp=aware_ts))
         assert record.timestamp.tzinfo is not None
 

@@ -43,8 +43,19 @@ def _make_tool(
     is_personal_data: bool,
     requires_auth: bool,
 ) -> GovAPITool:
-    """Build a minimal GovAPITool for invariant testing."""
-    return GovAPITool(
+    """Build a minimal GovAPITool for invariant testing.
+
+    Post Spec-024 V5 the model enforces ``auth_level=='public' ⇔ requires_auth==False``,
+    so we first construct a V5-consistent tool (auth_level/pipa_class/dpa_reference
+    derived from ``is_personal_data``; ``requires_auth`` matches ``auth_level``),
+    then use ``object.__setattr__`` to re-apply the caller-requested
+    ``requires_auth`` so the *registry-level* FR-038 backstop is what gets
+    tested (matching the purpose of this file — exercising the registry
+    check, not the model validator).
+    """
+    auth_level = "AAL1" if is_personal_data else "public"
+    consistent_requires_auth = auth_level != "public"
+    tool = GovAPITool(
         id=tool_id,
         name_ko=f"테스트 도구 {tool_id}",
         provider="Test Provider",
@@ -54,17 +65,20 @@ def _make_tool(
         input_schema=_StubInput,
         output_schema=_StubOutput,
         search_hint="test stub tool",
-        auth_level="AAL1" if is_personal_data else "public",
+        auth_level=auth_level,
         pipa_class="personal" if is_personal_data else "non_personal",
         is_irreversible=False,
         dpa_reference="dpa-test-v1" if is_personal_data else None,
-        requires_auth=requires_auth,
+        requires_auth=consistent_requires_auth,
         is_personal_data=is_personal_data,
         is_concurrency_safe=False,
         cache_ttl_seconds=0,
         rate_limit_per_minute=10,
         is_core=False,
     )
+    if requires_auth != consistent_requires_auth:
+        object.__setattr__(tool, "requires_auth", requires_auth)
+    return tool
 
 
 # ---------------------------------------------------------------------------

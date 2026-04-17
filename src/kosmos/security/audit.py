@@ -31,11 +31,14 @@ failure enforced by validator ``V3`` in ``kosmos.tools.models``.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Final, Literal
 
 from pydantic import BaseModel, ConfigDict, model_validator
+
+_TOOL_ID_PATTERN: Final[re.Pattern[str]] = re.compile(r"^[a-z][a-z0-9_]*$")
 
 AALLevel = Literal["public", "AAL1", "AAL2", "AAL3"]
 PIPAClass = Literal["non_personal", "personal", "sensitive", "identifier"]
@@ -117,7 +120,7 @@ class ToolCallAuditRecord(BaseModel):
 
     Schema version ``v1``. Authoritative field spec and invariants live in
     ``specs/024-tool-security-v1/data-model.md`` §3 and the JSON Schema at
-    ``contracts/tool-call-audit-record.schema.json``.
+    ``docs/security/tool-call-audit-record.schema.json``.
 
     Invariants enforced via ``model_validator(mode="after")``:
 
@@ -160,17 +163,13 @@ class ToolCallAuditRecord(BaseModel):
     public_path_marker: bool
 
     @model_validator(mode="after")
-    def _validate_invariants(self) -> ToolCallAuditRecord:
+    def _validate_invariants(self) -> ToolCallAuditRecord:  # noqa: C901 — I1..I4 invariants + field-shape checks form an intentionally flat single-pass validator (spec 024 §3.2)
         # Field-shape checks that JSON Schema enforces via pattern/minLength.
-        if not self.tool_id or not self.tool_id[0].islower():
+        # ASCII-only regex rejects non-ASCII letters that str.islower() would accept.
+        if not _TOOL_ID_PATTERN.fullmatch(self.tool_id):
             raise ValueError(
                 f"tool_id must match ^[a-z][a-z0-9_]*$; got {self.tool_id!r}"
             )
-        for ch in self.tool_id:
-            if not (ch.islower() or ch.isdigit() or ch == "_"):
-                raise ValueError(
-                    f"tool_id must match ^[a-z][a-z0-9_]*$; got {self.tool_id!r}"
-                )
         if not self.session_id:
             raise ValueError("session_id must be non-empty")
         if not self.caller_identity:

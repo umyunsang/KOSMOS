@@ -161,10 +161,15 @@ class GovAPITool(BaseModel):
         """Enforce V1–V4 from data-model.md §1.
 
         V1 (FR-004): ``pipa_class != "non_personal"`` → ``auth_level != "public"``.
-        V2 (FR-014 docs gap): ``pipa_class != "non_personal"`` → ``dpa_reference is not None``.
+        V2 (FR-014 docs gap): ``pipa_class != "non_personal"`` →
+            ``dpa_reference`` is a non-empty string (None AND ``""`` both rejected).
         V3 (FR-001 / FR-005): ``auth_level`` MUST equal this tool's row in ``TOOL_MIN_AAL``
             when the tool id is a canonical entry in that table.
         V4 (FR-004 ext): ``is_irreversible`` → ``auth_level != "public"``.
+        V5 (FR-004 Layer-3 auth-gate consistency):
+            ``auth_level == "public"`` ⇔ ``requires_auth is False``. AAL1+ tools MUST set
+            ``requires_auth=True`` so the existing ``ToolExecutor.invoke`` auth gate
+            cannot be bypassed on a tool declaring a non-public AAL.
         """
         if self.pipa_class != "non_personal":
             if self.auth_level == "public":
@@ -173,11 +178,12 @@ class GovAPITool(BaseModel):
                     f"pipa_class={self.pipa_class!r} but auth_level='public'; "
                     "PII-class data MUST require authentication."
                 )
-            if self.dpa_reference is None:
+            if self.dpa_reference is None or not self.dpa_reference.strip():
                 raise ValueError(
                     f"V2 violation (FR-014): tool {self.id!r} has "
-                    f"pipa_class={self.pipa_class!r} but dpa_reference is None; "
-                    "PIPA §26 위탁 MUST cite a DPA template."
+                    f"pipa_class={self.pipa_class!r} but dpa_reference is "
+                    f"{self.dpa_reference!r}; PIPA §26 위탁 MUST cite a non-empty "
+                    "DPA template identifier."
                 )
 
         expected_aal = TOOL_MIN_AAL.get(self.id)
@@ -193,6 +199,20 @@ class GovAPITool(BaseModel):
                 f"V4 violation (FR-004 ext): tool {self.id!r} is_irreversible=True "
                 "cannot run at auth_level='public'; irreversible actions MUST be "
                 "authenticated."
+            )
+
+        if self.auth_level == "public" and self.requires_auth:
+            raise ValueError(
+                f"V5 violation (FR-004): tool {self.id!r} has auth_level='public' "
+                "but requires_auth=True; public tools MUST NOT require authentication "
+                "or the Layer-3 auth gate will deadlock."
+            )
+        if self.auth_level != "public" and not self.requires_auth:
+            raise ValueError(
+                f"V5 violation (FR-004): tool {self.id!r} declares "
+                f"auth_level={self.auth_level!r} but requires_auth=False; AAL1+ "
+                "tools MUST set requires_auth=True so the Layer-3 auth gate cannot "
+                "be bypassed."
             )
 
         return self
