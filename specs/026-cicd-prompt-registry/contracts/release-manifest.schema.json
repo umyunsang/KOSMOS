@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kosmos.umyunsang.dev/schemas/026-cicd-prompt-registry/release-manifest.schema.json",
+  "title": "KOSMOS Release Manifest",
+  "description": "Schema for docs/release-manifests/<commit_sha>.yaml. One file per release tag push. Mirrors the Pydantic v2 ReleaseManifest model in data-model.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "commit_sha",
+    "uv_lock_hash",
+    "docker_digest",
+    "prompt_hashes",
+    "friendli_model_id",
+    "litellm_proxy_version"
+  ],
+  "properties": {
+    "commit_sha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$",
+      "minLength": 40,
+      "maxLength": 40,
+      "description": "40-char lowercase hex git commit sha this release was built from."
+    },
+    "uv_lock_hash": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "minLength": 71,
+      "maxLength": 71,
+      "description": "sha256:<hex> of uv.lock bytes at commit_sha."
+    },
+    "docker_digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "minLength": 71,
+      "maxLength": 71,
+      "description": "sha256:<hex> of the published Docker image manifest."
+    },
+    "prompt_hashes": {
+      "type": "object",
+      "minProperties": 3,
+      "description": "Mapping from prompt_id to sha256 hex. MUST include system_v1, session_guidance_v1, compact_v1.",
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9_]*_v[0-9]+$"
+      },
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{64}$",
+        "minLength": 64,
+        "maxLength": 64
+      },
+      "required": ["system_v1", "session_guidance_v1", "compact_v1"]
+    },
+    "friendli_model_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.\\-]+/[A-Za-z0-9_.\\-]+$",
+      "minLength": 3,
+      "maxLength": 128,
+      "description": "FriendliAI-hosted model identifier in use at release time."
+    },
+    "litellm_proxy_version": {
+      "type": "string",
+      "pattern": "^(unknown|[0-9]+\\.[0-9]+\\.[0-9]+)$",
+      "minLength": 3,
+      "maxLength": 32,
+      "description": "Gateway proxy version. Placeholder 'unknown' until Epic #465 ships."
+    }
+  },
+  "examples": [
+    {
+      "commit_sha": "0123456789abcdef0123456789abcdef01234567",
+      "uv_lock_hash": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "docker_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "prompt_hashes": {
+        "system_v1": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "session_guidance_v1": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "compact_v1": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "friendli_model_id": "LGAI-EXAONE/exaone-3.5-32b-instruct",
+      "litellm_proxy_version": "unknown"
+    }
+  ]
+}

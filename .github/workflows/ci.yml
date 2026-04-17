@@ -3,6 +3,15 @@ name: CI
 on:
   pull_request:
     branches: [main]
+    paths:
+      - "docker/**"
+      - "pyproject.toml"
+      - "uv.lock"
+      - "src/**"
+      - "tests/**"
+      - "prompts/**"
+      - "tools/**"
+      - ".github/workflows/ci.yml"
   push:
     branches: [main]
   merge_group:
@@ -28,6 +37,17 @@ jobs:
         run: uv run ruff format --check src tests
       - name: Mypy strict
         run: uv run mypy src
+      - name: Validate prompts/manifest.yaml against JSON Schema
+        run: |
+          uv run python -c "
+          import json, sys, yaml
+          from pathlib import Path
+          from jsonschema import validate
+          manifest = yaml.safe_load(Path('prompts/manifest.yaml').read_text())
+          schema = json.loads(Path('specs/026-cicd-prompt-registry/contracts/prompts-manifest.schema.json').read_text())
+          validate(instance=manifest, schema=schema)
+          print('prompts/manifest.yaml validates against schema')
+          "
 
   test:
     name: Test (Python ${{ matrix.python-version }})
@@ -83,3 +103,29 @@ jobs:
           enable-cache: true
       - run: uv sync --frozen --all-extras --dev
       - run: uv run vulture src vulture_whitelist.py --min-confidence 80
+
+  docker-build:
+    name: Docker Build
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Build image
+        run: docker build -f docker/Dockerfile -t kosmos:ci .
+      - name: Verify image size <= 2 GB
+        run: |
+          size_bytes=$(docker inspect kosmos:ci --format='{{.Size}}')
+          max_bytes=$((2 * 1024 * 1024 * 1024))
+          echo "Image size: $size_bytes bytes (limit: $max_bytes bytes)"
+          if [ "$size_bytes" -gt "$max_bytes" ]; then
+            echo "::error::Image size $size_bytes exceeds 2 GB limit"
+            exit 1
+          fi
+      - name: Verify non-root user is UID 1000
+        run: |
+          uid_in_container=$(docker run --rm --entrypoint id kosmos:ci -u)
+          echo "Container UID: $uid_in_container"
+          if [ "$uid_in_container" != "1000" ]; then
+            echo "::error::Expected UID 1000, got $uid_in_container"
+            exit 1
+          fi

@@ -68,10 +68,14 @@ Column definitions:
 | `KOSMOS_OTEL_ENDPOINT` | Yes (prod only) | — | Valid HTTPS URL | `kosmos.observability.otel (#501)` | Epic #501 |
 | `LANGFUSE_PUBLIC_KEY` | Yes (prod only) | — | `pk-lf-…` format string | `kosmos.observability.langfuse (#501)` | [Langfuse Cloud](https://cloud.langfuse.com) |
 | `LANGFUSE_SECRET_KEY` | Yes (prod only) | — | `sk-lf-…` format string | `kosmos.observability.langfuse (#501)` | [Langfuse Cloud](https://cloud.langfuse.com) |
+| `KOSMOS_PROMPT_REGISTRY_LANGFUSE` | No | `false` | `true` \| `false` | `kosmos.context.prompt_loader.PromptLoader` | Epic #467 |
+| `KOSMOS_LANGFUSE_HOST` | No | — | Valid HTTPS URL | `kosmos.context.prompt_loader.PromptLoader` | Epic #467 |
+| `KOSMOS_LANGFUSE_PUBLIC_KEY` | No | — | `pk-lf-…` format string | `kosmos.context.prompt_loader.PromptLoader` | [Langfuse Cloud](https://cloud.langfuse.com) |
+| `KOSMOS_LANGFUSE_SECRET_KEY` | No | — | `sk-lf-…` format string | `kosmos.context.prompt_loader.PromptLoader` | [Langfuse Cloud](https://cloud.langfuse.com) |
 | `KOSMOS_{TOOL_ID}_API_KEY` | Override pattern | — | API key string | `kosmos.permissions.credentials._tool_specific_var` | [Per-tool override pattern](#per-tool-override-pattern) |
 | `KOSMOS_API_KEY` | **Deprecated** | — | API key string | `kosmos.permissions.credentials.resolve_credential` (global fallback) | [Deprecation notice](#kosmos_api_key-deprecated) |
 
-> **Row count**: 27 rows (22 `KOSMOS_*` active + 2 `LANGFUSE_*` + 1 `KOSMOS_OTEL_ENDPOINT` +
+> **Row count**: 31 rows (26 `KOSMOS_*` active + 2 `LANGFUSE_*` + 1 `KOSMOS_OTEL_ENDPOINT` +
 > 1 override-family pattern + 1 deprecated). `KOSMOS_KOROAD_API_KEY` and
 > `KOSMOS_KOROAD_ACCIDENT_SEARCH_API_KEY` are concrete expansions of the
 > `KOSMOS_{TOOL_ID}_API_KEY` override-family pattern and are covered by that row.

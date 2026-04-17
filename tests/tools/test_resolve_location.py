@@ -7,7 +7,7 @@ No live API calls are made.
 
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -218,8 +218,14 @@ class TestResolvePOI:
     @pytest.mark.asyncio
     async def test_poi_success(self):
         inp = ResolveLocationInput(query="강남역", want="poi")
-        # search_address is imported locally inside resolve_location.py; patch at source
-        mock_doc = AsyncMock()
+        # search_address is imported locally inside resolve_location.py; patch at source.
+        # Use MagicMock (not AsyncMock) for attribute-bag mocks: AsyncMock auto-wraps
+        # every child attribute as an awaitable coroutine factory, and Pydantic's
+        # introspection during POIResult construction triggers unittest.mock's
+        # _mock_set_magics, leaving unawaited coroutines that leak sockets/event
+        # loops. Python 3.13's stricter unraisable handler surfaces those as
+        # ResourceWarning sub-exceptions that fail the filterwarnings=["error"] gate.
+        mock_doc = MagicMock()
         mock_doc.y = "37.4979"
         mock_doc.x = "127.0276"
         mock_doc.address_name = "강남역"
@@ -227,7 +233,7 @@ class TestResolvePOI:
         mock_doc.road_address = None
         mock_doc.address = None
 
-        mock_result = AsyncMock()
+        mock_result = MagicMock()
         mock_result.documents = [mock_doc]
 
         with patch(
@@ -242,7 +248,7 @@ class TestResolvePOI:
     @pytest.mark.asyncio
     async def test_poi_no_documents_returns_error(self):
         inp = ResolveLocationInput(query="알수없는POI", want="poi")
-        mock_result = AsyncMock()
+        mock_result = MagicMock()
         mock_result.documents = []
 
         with patch(

@@ -20,17 +20,112 @@ KOSMOS v1 uses deterministic extraction rather than a background summary agent.
 from __future__ import annotations
 
 import logging
-from typing import Final
+from typing import Any, Final
+
+import yaml
 
 from kosmos.context.compact_models import CompactionConfig, CompactionResult
+from kosmos.context.prompt_loader import PromptLoader, default_manifest_path
 from kosmos.engine.tokens import estimate_tokens
 from kosmos.llm.models import ChatMessage
 
 logger = logging.getLogger(__name__)
 
+# ---------------------------------------------------------------------------
+# Lazy loader for compact_v1 template.  The manifest + template are resolved
+# on first use via ``default_manifest_path()`` (which prefers the wheel-bundled
+# resource and falls back to the repo-root copy in editable installs).
+#
+# Deferring resolution keeps import side-effect free — important for packaged
+# installs where ``prompts/`` may only exist at runtime once the wheel is on
+# the filesystem, and for test harnesses that monkeypatch the manifest path.
+# ---------------------------------------------------------------------------
+
 # Marker prefixed to summaries so downstream code can detect injected summaries.
 _SUMMARY_ROLE: Final[str] = "system"
-_SUMMARY_HEADER: Final[str] = "[Session Summary — older turns compacted]"
+
+_template_cache: dict[str, Any] | None = None
+
+
+def _parse_frontmatter(raw: str) -> dict[str, Any]:
+    """Extract the YAML frontmatter block from a markdown template.
+
+    The template MUST begin with a ``---`` line, then YAML, then a closing
+    ``---`` line.  We validate the delimiters explicitly rather than relying
+    on ``split("---")[1]`` which would silently misinterpret templates whose
+    body contains extra ``---`` sequences.
+    """
+    lines = raw.splitlines()
+    if not lines or lines[0].strip() != "---":
+        raise ValueError("compact_v1 template missing opening '---' frontmatter delimiter")
+    try:
+        closing = next(i for i in range(1, len(lines)) if lines[i].strip() == "---")
+    except StopIteration as exc:
+        raise ValueError("compact_v1 template missing closing '---' frontmatter delimiter") from exc
+    fm_text = "\n".join(lines[1:closing])
+    parsed = yaml.safe_load(fm_text)
+    if not isinstance(parsed, dict):
+        raise ValueError(
+            f"compact_v1 frontmatter must be a YAML mapping, got {type(parsed).__name__}"
+        )
+    return parsed
+
+
+def _get_template() -> dict[str, Any]:
+    """Return the cached compact_v1 frontmatter dict, loading on first call."""
+    global _template_cache
+    if _template_cache is None:
+        loader = PromptLoader(manifest_path=default_manifest_path())
+        _template_cache = _parse_frontmatter(loader.load("compact_v1"))
+    return _template_cache
+
+
+def _summary_header() -> str:
+    return str(_get_template()["summary_header"])
+
+
+def _section_labels() -> dict[str, str]:
+    return dict(_get_template()["section_labels"])
+
+
+def _empty_state() -> str:
+    return str(_get_template()["empty_state"])
+
+
+def _truncation_marker() -> str:
+    return str(_get_template()["truncation_marker"])
+
+
+def _line_prefix() -> str:
+    return str(_get_template()["line_prefix"])
+
+
+def _formatters() -> dict[str, str]:
+    return dict(_get_template()["formatters"])
+
+
+# Backwards-compat: older tests and callers imported ``_SUMMARY_HEADER`` etc.
+# as module attributes.  A module-level ``__getattr__`` preserves those names
+# by proxying to the lazy accessors above — no I/O happens until first access.
+_LEGACY_ATTRS: Final[dict[str, Any]] = {
+    "_SUMMARY_HEADER": _summary_header,
+    "_SECTION_LABELS": _section_labels,
+    "_EMPTY_STATE": _empty_state,
+    "_TRUNCATION_MARKER": _truncation_marker,
+    "_LINE_PREFIX": _line_prefix,
+    "_FORMATTERS": _formatters,
+}
+
+
+def __getattr__(name: str) -> Any:
+    if name in _LEGACY_ATTRS:
+        return _LEGACY_ATTRS[name]()
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+
+# ---------------------------------------------------------------------------
+# Algorithmic constants — intentionally NOT externalised (FR-X02).
+# ---------------------------------------------------------------------------
 
 # Maximum characters extracted from a single tool-result for the summary.
 _MAX_RESULT_EXCERPT_CHARS: Final[int] = 200
@@ -67,6 +162,7 @@ def _protected_slice_start(messages: list[ChatMessage], preserve_turns: int) -> 
 def _extract_tool_calls(messages: list[ChatMessage]) -> list[str]:
     """Extract a brief description of each tool call from assistant messages."""
     results: list[str] = []
+    fmt = _formatters()["tool_call"]
     for msg in messages:
         if msg.role != "assistant" or not msg.tool_calls:
             continue
@@ -75,13 +171,14 @@ def _extract_tool_calls(messages: list[ChatMessage]) -> list[str]:
             args_excerpt = (tc.function.arguments or "")[:80]
             if len(tc.function.arguments or "") > 80:
                 args_excerpt += "…"
-            results.append(f"tool_call:{tc.function.name}({args_excerpt})")
+            results.append(fmt.format(name=tc.function.name, args_excerpt=args_excerpt))
     return results
 
 
 def _extract_tool_results(messages: list[ChatMessage]) -> list[str]:
     """Extract brief excerpts from tool-result messages."""
     results: list[str] = []
+    fmt = _formatters()["tool_result"]
     for msg in messages:
         if msg.role != "tool" or not msg.content:
             continue
@@ -89,13 +186,14 @@ def _extract_tool_results(messages: list[ChatMessage]) -> list[str]:
         if len(msg.content) > _MAX_RESULT_EXCERPT_CHARS:
             excerpt += "…"
         call_id = msg.tool_call_id or "unknown"
-        results.append(f"tool_result[{call_id}]: {excerpt}")
+        results.append(fmt.format(call_id=call_id, excerpt=excerpt))
     return results
 
 
 def _extract_assistant_decisions(messages: list[ChatMessage]) -> list[str]:
     """Extract non-trivial assistant message excerpts as decision records."""
     results: list[str] = []
+    fmt = _formatters()["assistant"]
     for msg in messages:
         if msg.role != "assistant" or not msg.content:
             continue
@@ -108,13 +206,14 @@ def _extract_assistant_decisions(messages: list[ChatMessage]) -> list[str]:
         excerpt = content[:_MAX_ASSISTANT_EXCERPT_CHARS]
         if len(content) > _MAX_ASSISTANT_EXCERPT_CHARS:
             excerpt += "…"
-        results.append(f"assistant: {excerpt}")
+        results.append(fmt.format(excerpt=excerpt))
     return results
 
 
 def _extract_user_intents(messages: list[ChatMessage]) -> list[str]:
     """Extract user messages as intent records."""
     results: list[str] = []
+    fmt = _formatters()["user"]
     for msg in messages:
         if msg.role != "user" or not msg.content:
             continue
@@ -125,7 +224,7 @@ def _extract_user_intents(messages: list[ChatMessage]) -> list[str]:
         excerpt = content[:200]
         if len(content) > 200:
             excerpt += "…"
-        results.append(f"user: {excerpt}")
+        results.append(fmt.format(excerpt=excerpt))
     return results
 
 
@@ -150,38 +249,40 @@ def _build_summary_text(
     Returns:
         A non-empty summary string.
     """
-    sections: list[str] = [_SUMMARY_HEADER]
+    labels = _section_labels()
+    line_prefix = _line_prefix()
+    sections: list[str] = [_summary_header()]
 
     user_intents = _extract_user_intents(compacted_messages)
     if user_intents:
-        sections.append("User requests in this session:")
-        sections.extend(f"  - {line}" for line in user_intents)
+        sections.append(labels["user_requests"])
+        sections.extend(f"{line_prefix}{line}" for line in user_intents)
 
     tool_calls = _extract_tool_calls(compacted_messages)
     if tool_calls:
-        sections.append("Tool calls executed:")
-        sections.extend(f"  - {line}" for line in tool_calls)
+        sections.append(labels["tool_calls"])
+        sections.extend(f"{line_prefix}{line}" for line in tool_calls)
 
     tool_results = _extract_tool_results(compacted_messages)
     if tool_results:
-        sections.append("Key tool results:")
-        sections.extend(f"  - {line}" for line in tool_results)
+        sections.append(labels["tool_results"])
+        sections.extend(f"{line_prefix}{line}" for line in tool_results)
 
     decisions = _extract_assistant_decisions(compacted_messages)
     if decisions:
-        sections.append("Assistant responses:")
-        sections.extend(f"  - {line}" for line in decisions)
+        sections.append(labels["assistant_responses"])
+        sections.extend(f"{line_prefix}{line}" for line in decisions)
 
     if len(sections) == 1:
         # Nothing extracted — produce a minimal placeholder.
-        sections.append("(No significant content found in compacted turns.)")
+        sections.append(_empty_state())
 
     full_text = "\n".join(sections)
 
     # Truncate to summary_max_tokens budget (crude character-based).
     char_budget = config.summary_max_tokens * 4
     if len(full_text) > char_budget:
-        full_text = full_text[:char_budget] + "\n[Summary truncated]"
+        full_text = full_text[:char_budget] + f"\n{_truncation_marker()}"
 
     return full_text
 

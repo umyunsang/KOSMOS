@@ -1,0 +1,50 @@
+# KOSMOS .dockerignore — FR-A05
+# Keep the build context small so the runtime image stays <= 2 GB.
+# Everything listed here is excluded from `docker build` context.
+
+# Version control
+.git
+.gitignore
+.gitattributes
+
+# Virtual environments + caches
+.venv
+.pytest_cache
+.mypy_cache
+.ruff_cache
+__pycache__
+*.py[cod]
+*$py.class
+
+# Test + spec + docs (not needed at runtime)
+tests/
+specs/
+docs/
+.specify/
+
+# CI / tooling
+.github/
+.claude/
+.vscode/
+.idea/
+
+# Node artifacts (kept out of Python image)
+node_modules/
+
+# Logs + ephemeral files
+*.log
+*.pid
+*.swp
+.DS_Store
+
+# Coverage
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+
+# Environment files (never bake secrets into the image)
+.env
+.env.*
+secrets/

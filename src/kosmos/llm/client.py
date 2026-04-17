@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import json
 import logging
 import random
@@ -350,6 +351,15 @@ class LLMClient:
             span.set_attribute("gen_ai.request.max_tokens", int(max_tokens))
         if top_p is not None:
             span.set_attribute("gen_ai.request.top_p", float(top_p))
+
+        # T032: kosmos.prompt.hash — SHA-256 of the system-prompt bytes actually
+        # sent on the wire. KOSMOS extension namespace per Spec 021; consumed by
+        # Epic #501. Satisfies FR-C07 / SC-007.
+        if messages and messages[0].role == "system" and messages[0].content is not None:
+            span.set_attribute(
+                "kosmos.prompt.hash",
+                hashlib.sha256(messages[0].content.encode("utf-8")).hexdigest(),
+            )
 
         # Attach span as the active context for child spans (execute_tool, etc.)
         # while preserving the caller's context on generator close.

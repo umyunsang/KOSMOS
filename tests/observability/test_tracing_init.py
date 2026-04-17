@@ -93,30 +93,37 @@ def test_setup_tracing_with_endpoint_returns_real_provider(
         disabled=False,
     )
     provider = setup_tracing(settings)
+    try:
+        assert isinstance(provider, TracerProvider), (
+            f"Expected SDK TracerProvider when endpoint is set, got {type(provider)}"
+        )
 
-    assert isinstance(provider, TracerProvider), (
-        f"Expected SDK TracerProvider when endpoint is set, got {type(provider)}"
-    )
+        # Verify that a BatchSpanProcessor is registered on the provider.
+        # SDK TracerProvider stores processors in ._active_span_processor which is
+        # a SynchronousMultiSpanProcessor (or similar).  We inspect the internal
+        # list; the exact attribute name varies by SDK version, so we fall back to
+        # checking that the tracer can produce a recording span.
+        tracer = provider.get_tracer("test")
+        span = tracer.start_span("probe")
+        assert span.is_recording(), "Span from real TracerProvider must be recording"
+        span.end()
 
-    # Verify that a BatchSpanProcessor is registered on the provider.
-    # SDK TracerProvider stores processors in ._active_span_processor which is
-    # a SynchronousMultiSpanProcessor (or similar).  We inspect the internal
-    # list; the exact attribute name varies by SDK version, so we fall back to
-    # checking that the tracer can produce a recording span.
-    tracer = provider.get_tracer("test")
-    span = tracer.start_span("probe")
-    assert span.is_recording(), "Span from real TracerProvider must be recording"
-    span.end()
-
-    # Best-effort: inspect processor list for BatchSpanProcessor presence.
-    span_processor = getattr(provider, "_active_span_processor", None)
-    if span_processor is not None:
-        processors = getattr(span_processor, "_span_processors", None)
-        if processors is not None:
-            processor_types = [type(p).__name__ for p in processors]
-            assert any("BatchSpanProcessor" in t for t in processor_types), (
-                f"Expected BatchSpanProcessor in processors, found: {processor_types}"
-            )
+        # Best-effort: inspect processor list for BatchSpanProcessor presence.
+        span_processor = getattr(provider, "_active_span_processor", None)
+        if span_processor is not None:
+            processors = getattr(span_processor, "_span_processors", None)
+            if processors is not None:
+                processor_types = [type(p).__name__ for p in processors]
+                assert any("BatchSpanProcessor" in t for t in processor_types), (
+                    f"Expected BatchSpanProcessor in processors, found: {processor_types}"
+                )
+    finally:
+        # Drain BatchSpanProcessor background export thread before teardown.
+        # Python 3.13's stricter unraisable-exception handler surfaces any
+        # socket/thread leak from a retrying OTLP exporter as a
+        # ResourceWarning sub-exception on the next test's setup (pytest-xdist
+        # GC timing), which fails the filterwarnings=["error"] gate.
+        provider.shutdown()
 
 
 def test_setup_tracing_real_provider_has_batch_processor(
@@ -132,23 +139,26 @@ def test_setup_tracing_real_provider_has_batch_processor(
         disabled=False,
     )
     provider = setup_tracing(settings)
+    try:
+        assert isinstance(provider, TracerProvider)
 
-    assert isinstance(provider, TracerProvider)
-
-    # Traverse the processor chain and confirm at least one BatchSpanProcessor.
-    found_batch = False
-    sp = getattr(provider, "_active_span_processor", None)
-    if sp is not None:
-        # SynchronousMultiSpanProcessor stores list in ._span_processors
-        inner = getattr(sp, "_span_processors", [])
-        for proc in inner:
-            if isinstance(proc, BatchSpanProcessor):
+        # Traverse the processor chain and confirm at least one BatchSpanProcessor.
+        found_batch = False
+        sp = getattr(provider, "_active_span_processor", None)
+        if sp is not None:
+            # SynchronousMultiSpanProcessor stores list in ._span_processors
+            inner = getattr(sp, "_span_processors", [])
+            for proc in inner:
+                if isinstance(proc, BatchSpanProcessor):
+                    found_batch = True
+                    break
+            if not found_batch and isinstance(sp, BatchSpanProcessor):
+                # Some SDK versions wrap in a single-processor structure
                 found_batch = True
-                break
-        if not found_batch and isinstance(sp, BatchSpanProcessor):
-            # Some SDK versions wrap in a single-processor structure
-            found_batch = True
-    assert found_batch, "Expected at least one BatchSpanProcessor registered on provider"
+        assert found_batch, "Expected at least one BatchSpanProcessor registered on provider"
+    finally:
+        # See rationale in test_setup_tracing_with_endpoint_returns_real_provider.
+        provider.shutdown()
 
 
 # ---------------------------------------------------------------------------

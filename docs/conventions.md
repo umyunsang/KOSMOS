@@ -163,3 +163,20 @@ Never:
 - **Line length**: 100 characters (ruff default)
 - **Docstrings**: Google style, one-liner for trivial functions, full form for public APIs
 - **Pydantic**: v2 only, never `Any` for tool inputs or outputs
+
+## Prompt Registry (Spec 026 / Epic #467)
+
+Runtime prompts live under `prompts/` and are addressed by a SHA-256-integrity manifest.
+
+Every prompt change follows this loop:
+1. Edit or add a file under `prompts/` (e.g., `prompts/system_v2.md`).
+2. Regenerate `prompts/manifest.yaml` via `uv run python -m kosmos.context.prompt_loader --regenerate-manifest`.
+3. Open the PR — the `shadow-eval` workflow fires automatically on any PR touching `prompts/**` and emits twin `deployment.environment=main` / `deployment.environment=shadow` OTEL span batches for diff review.
+4. The `lint` lane validates `prompts/manifest.yaml` against `specs/026-cicd-prompt-registry/contracts/prompts-manifest.schema.json`; schema drift fails the PR.
+
+Fail-closed rules at boot (enforced by `PromptLoader`):
+- Missing file listed in manifest → `PromptRegistryError`.
+- SHA-256 mismatch between file bytes and manifest entry → `PromptRegistryError`.
+- Orphan `.md` under `prompts/` not listed in manifest → `PromptRegistryError`.
+
+Korean content is permitted inside prompt bodies only. All other source text remains English.
