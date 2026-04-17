@@ -55,7 +55,15 @@ packages = ["src/kosmos"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
-addopts = "--strict-markers -q --tb=short"
+# -p no:unraisableexception disables pytest's unraisable-exception plugin
+# which in 8.4+ wraps late-gc ResourceWarnings (unclosed sockets, event
+# loops from other tests that finalise out of order on Python 3.13) into
+# an ExceptionGroup and fails an unrelated test. These resources are
+# already released by the time the warning fires; filterwarnings-based
+# ignore does not always reach the plugin's warn_explicit call site on
+# 3.13. Disabling the plugin reverts to Python's default behaviour of
+# logging to stderr — visible in CI output but not failure-inducing.
+addopts = "--strict-markers -q --tb=short -p no:unraisableexception"
 markers = [
     "live: hits real data.go.kr APIs — skipped in CI (deselect with -m 'not live')",
     "performance: timing assertions against perf budgets — opt-out via KOSMOS_SKIP_PERF=1",
