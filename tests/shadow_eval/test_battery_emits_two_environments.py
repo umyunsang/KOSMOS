@@ -128,8 +128,7 @@ async def test_battery_emits_main_environment_spans(
 
         env_values = [dict(span.attributes or {}).get(_ATTR_DEPLOYMENT_ENV) for span in finished]
         assert _ENV_MAIN in env_values, (
-            f"No span carries {_ATTR_DEPLOYMENT_ENV!r}={_ENV_MAIN!r}. "
-            f"Observed values: {env_values}"
+            f"No span carries {_ATTR_DEPLOYMENT_ENV!r}={_ENV_MAIN!r}. Observed values: {env_values}"
         )
     finally:
         provider.shutdown()

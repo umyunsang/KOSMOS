@@ -29,6 +29,22 @@ jobs:
           echo "sha=${MERGE_BASE}" >> "$GITHUB_OUTPUT"
           echo "Merge-base for main run: ${MERGE_BASE}"
 
+      # Preserve the battery code from PR head before we rewind the working
+      # tree to merge-base.  The battery is a test harness: its *code* must be
+      # PR-head-pinned so it behaves identically across both runs, while the
+      # *target* it evaluates (prompts, model config) is what legitimately
+      # differs between main and shadow.  On the bootstrap PR that introduces
+      # the battery, merge-base has no `tests/shadow_eval/` directory at all,
+      # so without this step `python -m tests.shadow_eval.battery` would fail
+      # with ModuleNotFoundError during the main-environment run.
+      - name: Preserve battery code from PR head
+        run: |
+          mkdir -p /tmp/battery-code/tests
+          cp -r tests/shadow_eval /tmp/battery-code/tests/shadow_eval
+          # Ensure the `tests` package is importable from the preserved tree
+          # even if merge-base's tests/__init__.py is absent.
+          : > /tmp/battery-code/tests/__init__.py
+
       - uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
@@ -42,6 +58,11 @@ jobs:
         run: uv sync --frozen --all-extras --dev
 
       - name: Run battery (main environment)
+        env:
+          # Import the PR-head battery even though the working tree is at
+          # merge-base.  PYTHONPATH is prepended so the preserved copy wins
+          # over any (non-existent) merge-base tests/ package.
+          PYTHONPATH: /tmp/battery-code
         run: uv run python -m tests.shadow_eval.battery --environment main --out /tmp/main.json
 
       # --- shadow environment run: executes against PR head checkout ---

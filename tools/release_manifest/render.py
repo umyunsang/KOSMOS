@@ -108,9 +108,7 @@ def _load_prompt_hashes(file_path: str) -> dict[str, str]:
         data = json.loads(raw)
     except json.JSONDecodeError as exc:
         logger.error("--prompt-hashes-file %r is not valid JSON: %s", file_path, exc)
-        sys.stderr.write(
-            f"ERROR: --prompt-hashes-file {file_path!r} is not valid JSON: {exc}\n"
-        )
+        sys.stderr.write(f"ERROR: --prompt-hashes-file {file_path!r} is not valid JSON: {exc}\n")
         sys.exit(1)
 
     if not isinstance(data, dict):
