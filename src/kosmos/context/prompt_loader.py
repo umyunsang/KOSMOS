@@ -221,7 +221,7 @@ class PromptLoader:
         """
         # Lazy import — must NOT happen at module load time (FR-C08).
         try:
-            import langfuse as _langfuse_mod  # noqa: PLC0415
+            import langfuse as _langfuse_mod  # type: ignore[import-untyped]  # noqa: PLC0415
         except (ImportError, TypeError) as exc:
             raise PromptRegistryError(
                 "KOSMOS_PROMPT_REGISTRY_LANGFUSE=true but the langfuse package is "

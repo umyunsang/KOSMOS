@@ -355,7 +355,7 @@ class LLMClient:
         # T032: kosmos.prompt.hash — SHA-256 of the system-prompt bytes actually
         # sent on the wire. KOSMOS extension namespace per Spec 021; consumed by
         # Epic #501. Satisfies FR-C07 / SC-007.
-        if messages and messages[0].role == "system":
+        if messages and messages[0].role == "system" and messages[0].content is not None:
             span.set_attribute(
                 "kosmos.prompt.hash",
                 hashlib.sha256(messages[0].content.encode("utf-8")).hexdigest(),

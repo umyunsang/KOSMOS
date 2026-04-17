@@ -21,7 +21,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Final
+from typing import Any, Final
 
 import yaml
 
@@ -49,7 +49,7 @@ _compact_raw: str = _loader.load("compact_v1")
 # top of the file; yaml.safe_load of the block between the first two "---"
 # markers gives us the template dict.
 _fm_text = _compact_raw.split("---")[1]  # block between first and second "---"
-_COMPACT_TEMPLATE: dict = yaml.safe_load(_fm_text)
+_COMPACT_TEMPLATE: dict[str, Any] = yaml.safe_load(_fm_text)
 
 # ---------------------------------------------------------------------------
 # Text constants sourced from compact_v1.md frontmatter.
@@ -59,11 +59,11 @@ _COMPACT_TEMPLATE: dict = yaml.safe_load(_fm_text)
 _SUMMARY_ROLE: Final[str] = "system"
 _SUMMARY_HEADER: str = _COMPACT_TEMPLATE["summary_header"]
 
-_SECTION_LABELS: dict = _COMPACT_TEMPLATE["section_labels"]
+_SECTION_LABELS: dict[str, str] = _COMPACT_TEMPLATE["section_labels"]
 _EMPTY_STATE: str = _COMPACT_TEMPLATE["empty_state"]
 _TRUNCATION_MARKER: str = _COMPACT_TEMPLATE["truncation_marker"]
 _LINE_PREFIX: str = _COMPACT_TEMPLATE["line_prefix"]
-_FORMATTERS: dict = _COMPACT_TEMPLATE["formatters"]
+_FORMATTERS: dict[str, str] = _COMPACT_TEMPLATE["formatters"]
 
 # ---------------------------------------------------------------------------
 # Algorithmic constants — intentionally NOT externalised (FR-X02).
