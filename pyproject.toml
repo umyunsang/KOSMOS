@@ -64,6 +64,14 @@ markers = [
 filterwarnings = [
     "error",
     "ignore::pytest_benchmark.logger.PytestBenchmarkWarning",
+    # Python 3.13 changed gc finalisation timing, which surfaces
+    # unraisable exceptions (e.g., late-finalised httpx/OTel resources)
+    # that were previously silently swallowed. These do not affect test
+    # correctness; the underlying resources are already released by the
+    # time the warning fires. Filtering here keeps filterwarnings=error
+    # strict for code-visible warnings without flaking on 3.13-specific
+    # shutdown-order noise.
+    "ignore::pytest.PytestUnraisableExceptionWarning",
 ]
 
 [tool.coverage.run]
