@@ -30,7 +30,10 @@ This project's agent instructions live in [`AGENTS.md`](./AGENTS.md). Read that 
 - N/A — in-memory registry; BM25 index rebuilt at registry boot and on registration; no persistent state (022-mvp-main-tool)
 - Python 3.12+ + pydantic >= 2.13, httpx >= 0.27 (existing) (023-nmc-freshness-slo)
 - N/A (in-memory validation only) (023-nmc-freshness-slo)
+- Python 3.12+ (existing project baseline; no version bump required for this spec). + Pydantic v2 (existing), `httpx >=0.27` (existing, not exercised by this spec's code seed), `pytest` + `pytest-asyncio` (existing). No new runtime dependencies introduced. JSON Schema Draft 2020-12 and OpenAPI 3.0 are specification targets, not dependencies; they are validated externally. (024-tool-security-v1)
+- N/A at this layer. `ToolCallAuditRecord` is a schema contract. Actual append-only audit storage and Merkle chain construction are explicitly deferred. (024-tool-security-v1)
 
 ## Recent Changes
+- 024-tool-security-v1: Tool Template Security Spec v1 normative doc; ToolCallAuditRecord schema v1 + I1–I4 invariants; GovAPITool field extensions (auth_level, pipa_class, is_irreversible, dpa_reference); SBOM workflow scaffold (SPDX 2.3 + CycloneDX 1.6, FR-019 divergence gate); /agent-delegation OpenAPI 3.0 skeleton
 - 019-phase1-hardening: LLM 429 resilience (Retry-After + exponential backoff + per-session semaphore) and KOROAD tool-input discipline (Field descriptions + session guidance)
 - spec/wave-1: Added Python 3.12+ + httpx >=0.27 (async HTTP), pydantic >=2.0 (models), pydantic-settings >=2.0 (config)

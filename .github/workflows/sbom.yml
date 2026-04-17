@@ -1,0 +1,132 @@
+name: SBOM Generation
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+  pull_request:
+    paths:
+      - pyproject.toml
+      - uv.lock
+      - .github/workflows/sbom.yml
+  workflow_dispatch:
+
+concurrency:
+  group: sbom-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  generate-sbom:
+    name: Generate SBOM (SPDX 2.3 + CycloneDX 1.6)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+          python-version: "3.12"
+
+      - name: Install dependencies (lockfile authoritative)
+        run: uv sync --frozen --all-extras --dev
+
+      - name: Generate SPDX 2.3 SBOM (run 1)
+        uses: anchore/sbom-action@v0
+        with:
+          path: .
+          format: spdx-json
+          output-file: sbom-spdx-run1.json
+          upload-artifact: false
+
+      - name: Generate CycloneDX 1.6 SBOM (run 1)
+        uses: anchore/sbom-action@v0
+        with:
+          path: .
+          format: cyclonedx-json
+          output-file: sbom-cyclonedx-run1.json
+          upload-artifact: false
+
+      - name: Generate SPDX 2.3 SBOM (run 2 — divergence detection)
+        uses: anchore/sbom-action@v0
+        with:
+          path: .
+          format: spdx-json
+          output-file: sbom-spdx-run2.json
+          upload-artifact: false
+
+      - name: Generate CycloneDX 1.6 SBOM (run 2 — divergence detection)
+        uses: anchore/sbom-action@v0
+        with:
+          path: .
+          format: cyclonedx-json
+          output-file: sbom-cyclonedx-run2.json
+          upload-artifact: false
+
+      # FR-019: Build-gate-on-divergence — SBOM mismatch between generator runs
+      # fails the build. Recovery requires deliberate regeneration with a
+      # reviewer-authored note. Non-deterministic fields (timestamps, document
+      # UUIDs, tool-version metadata) are stripped by jq before diffing.
+      # Reference: specs/024-tool-security-v1/research.md §3.7 "Supply-chain posture"
+      - name: Divergence gate — SPDX (FR-019)
+        run: |
+          strip_spdx() {
+            jq 'del(
+              .creationInfo.created,
+              .documentNamespace,
+              .SPDXID
+            )' "$1"
+          }
+          diff <(strip_spdx sbom-spdx-run1.json) <(strip_spdx sbom-spdx-run2.json) \
+            || { echo "ERROR: SPDX 2.3 SBOM diverged between runs (FR-019)."; \
+                 echo "       Regenerate with a deliberate lockfile change and a reviewer note."; \
+                 exit 1; }
+          echo "SPDX divergence gate: PASS"
+
+      - name: Divergence gate — CycloneDX (FR-019)
+        run: |
+          strip_cdx() {
+            jq 'del(
+              .metadata.timestamp,
+              .serialNumber,
+              .metadata.tools
+            )' "$1"
+          }
+          diff <(strip_cdx sbom-cyclonedx-run1.json) <(strip_cdx sbom-cyclonedx-run2.json) \
+            || { echo "ERROR: CycloneDX 1.6 SBOM diverged between runs (FR-019)."; \
+                 echo "       Regenerate with a deliberate lockfile change and a reviewer note."; \
+                 exit 1; }
+          echo "CycloneDX divergence gate: PASS"
+
+      - name: Promote final SBOM artifacts
+        run: |
+          cp sbom-spdx-run1.json sbom-spdx.json
+          cp sbom-cyclonedx-run1.json sbom-cyclonedx.json
+
+      - name: Upload SPDX 2.3 SBOM artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: sbom-spdx.json
+          path: sbom-spdx.json
+          retention-days: 90
+
+      - name: Upload CycloneDX 1.6 SBOM artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: sbom-cyclonedx.json
+          path: sbom-cyclonedx.json
+          retention-days: 90
+
+      # TODO(spec 024 §3.8): invoke sigstore cosign sign-blob when signing infra lands.
+      # Rekor transparency-log attestation is explicitly deferred per research.md §3.8.
+      # Tracking: open a follow-up issue under Epic #612 before any ministry-pilot launch.
+      - name: Sign SBOM (stub)
+        run: |
+          echo "# TODO(spec 024 §3.8): invoke sigstore cosign sign-blob when signing infra lands"

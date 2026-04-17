@@ -4,9 +4,9 @@
 
 ## What KOSMOS is
 
-A conversational multi-agent platform that orchestrates Korean public APIs from `data.go.kr` through a Claude Code-style tool loop, powered by LG AI Research's K-EXAONE. Student portfolio project. Not affiliated with Anthropic, LG AI Research, or the Korean government.
+A conversational multi-agent platform that **migrates the Claude Code harness** (tool loop, permission gauntlet, context assembly, TUI) from the developer domain to the Korean public-service domain. It orchestrates Korean public APIs from `data.go.kr` through a Claude Code-style tool loop, powered by LG AI Research's K-EXAONE. Student portfolio project. Not affiliated with Anthropic, LG AI Research, or the Korean government.
 
-**Canonical vision**: `docs/vision.md` — six-layer design. Read before any architectural change.
+**Canonical vision**: `docs/vision.md` — thesis + six-layer design. Read before any architectural change. The thesis section fixes Claude Code as the first reference for any unclear design decision.
 
 ## Stack
 

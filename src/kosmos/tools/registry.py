@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import logging
 
+from kosmos.security.audit import TOOL_MIN_AAL
 from kosmos.tools.bm25_index import BM25Index
 from kosmos.tools.errors import DuplicateToolError, RegistrationError, ToolNotFoundError
 from kosmos.tools.models import GovAPITool, ToolSearchResult
@@ -29,15 +30,52 @@ class ToolRegistry:
             DuplicateToolError: If tool.id is already registered.
             RegistrationError: If ``is_personal_data=True`` without ``requires_auth=True``
                 (FR-038 — fail-closed PII invariant).
+            ValueError: If ``tool.auth_level`` disagrees with ``TOOL_MIN_AAL`` (V3 drift
+                backstop for callers that bypass pydantic validation via ``model_construct``).
         """
         if tool.id in self._tools:
             raise DuplicateToolError(tool.id)
 
-        # FR-038: PII-flagged adapters MUST also require authentication.
+        # FR-038 (auth_level backstop): PII-flagged adapters MUST NOT declare
+        # auth_level='public' regardless of the requires_auth flag. Pydantic V1
+        # already rejects this at construction time; re-check here because a
+        # caller that bypassed validation via model_construct could otherwise
+        # reach the registry with an inconsistent pair.
+        if tool.is_personal_data and tool.auth_level == "public":
+            raise RegistrationError(
+                tool.id,
+                "is_personal_data=True is incompatible with auth_level='public' "
+                "(Constitution §II / FR-038 / Spec-024 V1)",
+            )
+
+        # FR-038 (requires_auth backstop): PII-flagged adapters MUST also
+        # require authentication. Kept as a second independent check so that a
+        # tool constructed with auth_level='public' AND requires_auth=True
+        # (V5 violation that slipped past validation) still fails closed.
         if tool.is_personal_data and not tool.requires_auth:
             raise RegistrationError(
                 tool.id,
                 "is_personal_data=True requires requires_auth=True (Constitution §II / FR-038)",
+            )
+
+        # Security spec v1 (specs/024-tool-security-v1) — validator V3.
+        # GovAPITool's @model_validator already enforces V3 at construction time;
+        # we re-check here so registration emits a structured log if an out-of-tree
+        # caller bypassed pydantic validation (e.g., model_construct) and re-raises
+        # as ValueError to match the data-model.md §1 contract.
+        expected_aal = TOOL_MIN_AAL.get(tool.id)
+        if expected_aal is not None and tool.auth_level != expected_aal:
+            logger.error(
+                "V3 violation at registry.register: tool_id=%s declared_aal=%s "
+                "expected_aal=%s (TOOL_MIN_AAL single-source-of-truth)",
+                tool.id,
+                tool.auth_level,
+                expected_aal,
+            )
+            raise ValueError(
+                f"V3 violation (FR-001/FR-005): tool {tool.id!r} declares "
+                f"auth_level={tool.auth_level!r} but TOOL_MIN_AAL requires "
+                f"{expected_aal!r}."
             )
 
         self._tools[tool.id] = tool

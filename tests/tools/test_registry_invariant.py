@@ -43,8 +43,19 @@ def _make_tool(
     is_personal_data: bool,
     requires_auth: bool,
 ) -> GovAPITool:
-    """Build a minimal GovAPITool for invariant testing."""
-    return GovAPITool(
+    """Build a minimal GovAPITool for invariant testing.
+
+    Post Spec-024 V5 the model enforces ``auth_level=='public' ⇔ requires_auth==False``,
+    so we first construct a V5-consistent tool (auth_level/pipa_class/dpa_reference
+    derived from ``is_personal_data``; ``requires_auth`` matches ``auth_level``),
+    then use ``object.__setattr__`` to re-apply the caller-requested
+    ``requires_auth`` so the *registry-level* FR-038 backstop is what gets
+    tested (matching the purpose of this file — exercising the registry
+    check, not the model validator).
+    """
+    auth_level = "AAL1" if is_personal_data else "public"
+    consistent_requires_auth = auth_level != "public"
+    tool = GovAPITool(
         id=tool_id,
         name_ko=f"테스트 도구 {tool_id}",
         provider="Test Provider",
@@ -54,13 +65,20 @@ def _make_tool(
         input_schema=_StubInput,
         output_schema=_StubOutput,
         search_hint="test stub tool",
-        requires_auth=requires_auth,
+        auth_level=auth_level,
+        pipa_class="personal" if is_personal_data else "non_personal",
+        is_irreversible=False,
+        dpa_reference="dpa-test-v1" if is_personal_data else None,
+        requires_auth=consistent_requires_auth,
         is_personal_data=is_personal_data,
         is_concurrency_safe=False,
         cache_ttl_seconds=0,
         rate_limit_per_minute=10,
         is_core=False,
     )
+    if requires_auth != consistent_requires_auth:
+        object.__setattr__(tool, "requires_auth", requires_auth)
+    return tool
 
 
 # ---------------------------------------------------------------------------
@@ -166,3 +184,37 @@ class TestRegistryInvariantFR038:
         # Must not raise
         registry.register(NMC_EMERGENCY_SEARCH_TOOL)
         assert "nmc_emergency_search" in registry
+
+
+# ---------------------------------------------------------------------------
+# B2 — Registry defense: auth_level='public' + is_personal_data=True rejected
+# independently of requires_auth (defense-in-depth against V5 bypass).
+# ---------------------------------------------------------------------------
+
+
+class TestRegistryInvariantB2:
+    """Even if requires_auth=True slips past V5, auth_level='public' alone fails closed."""
+
+    def test_public_auth_level_with_pii_rejected(self) -> None:
+        """auth_level='public' + is_personal_data=True must raise even when requires_auth=True."""
+        registry = ToolRegistry()
+        # Construct a PII tool with consistent AAL1 + requires_auth=True + dpa,
+        # then downgrade auth_level to 'public' via bypass to simulate a V5
+        # violation that reached the registry through model_construct.
+        tool = _make_tool(
+            "stub_public_pii_bypass",
+            is_personal_data=True,
+            requires_auth=True,
+        )
+        object.__setattr__(tool, "auth_level", "public")
+        with pytest.raises(RegistrationError) as exc_info:
+            registry.register(tool)
+
+        err = exc_info.value
+        assert err.tool_id == "stub_public_pii_bypass"
+        msg = str(err)
+        assert "auth_level" in msg or "public" in msg or "FR-038" in msg, (
+            f"RegistrationError must cite auth_level/public invariant; got {msg!r}"
+        )
+        assert "stub_public_pii_bypass" not in registry
+        assert len(registry) == 0

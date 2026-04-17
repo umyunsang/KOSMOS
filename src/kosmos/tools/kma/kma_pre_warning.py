@@ -262,6 +262,10 @@ KMA_PRE_WARNING_TOOL = GovAPITool(
         "기상예비특보 예비특보 태풍예고 호우예고 대설예고 한파예고 폭염예고 강풍예고 "
         "weather pre-warning preliminary alert typhoon heavy-rain snow cold-wave heat wind"
     ),
+    auth_level="public",
+    pipa_class="non_personal",
+    is_irreversible=False,
+    dpa_reference=None,
     requires_auth=False,
     is_concurrency_safe=True,
     is_personal_data=False,

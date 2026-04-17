@@ -110,6 +110,9 @@ class _DummyOutput(BaseModel):
 
 @pytest.fixture()
 def auth_tool() -> GovAPITool:
+    # Spec-024 V5: requires_auth=True ⇒ auth_level must be at least AAL1 (not
+    # 'public'). This tool exercises 401-refresh flow, so it is correctly
+    # authenticated.
     return GovAPITool(
         id="auth_test_tool",
         name_ko="인증 테스트 도구",
@@ -120,6 +123,10 @@ def auth_tool() -> GovAPITool:
         input_schema=_DummyInput,
         output_schema=_DummyOutput,
         search_hint="auth test",
+        auth_level="AAL1",
+        pipa_class="non_personal",
+        is_irreversible=False,
+        dpa_reference=None,
         requires_auth=True,
         is_concurrency_safe=False,
         is_personal_data=False,
