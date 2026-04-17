@@ -28,7 +28,7 @@ _SHA = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 
 # Alternative digest for entries that need a distinct sha256 value.
 _SHA2 = "ba7816bf8f01cfea414140de5dae2ec73b00361bbef0469348423f656b6418f4"
-_SHA3 = "2c624232cdd221771294dfbb310acbc8f21f97b7b0b9e96d1a3a6a29b9faa8d"
+_SHA3 = "2c624232cdd221771294dfbb310acbc8f21f97b7b0b9e96d1a3a6a29b9faa8df"
 
 
 def _entry(prompt_id: str, version: int, sha256: str = _SHA, path: str | None = None) -> PromptManifestEntry:
@@ -49,18 +49,17 @@ def _entry(prompt_id: str, version: int, sha256: str = _SHA, path: str | None = 
 class TestValidManifestWithThreeEntries:
     """A manifest with three distinct v1 families constructs without error."""
 
-    def test_valid_manifest_with_three_entries(self) -> None:
-        manifest = PromptManifest(
-            version=1,
-            entries=(
-                _entry("system_v1", 1, _SHA),
-                _entry("session_guidance_v1", 2, _SHA2),  # version must match _v suffix
-                _entry("compact_v1", 1, _SHA3),
-            ),
-        )
-        # session_guidance_v1 has version suffix 1, so version field must also be 1.
-        # Correct the fixture: suffix and field must agree.
-        assert manifest is not None  # unreachable with the above; see corrected test below
+    def test_version_field_must_match_suffix(self) -> None:
+        """Negative: version field mismatching _v{N} suffix must raise."""
+        with pytest.raises(ValidationError, match="version"):
+            PromptManifest(
+                version=1,
+                entries=(
+                    _entry("system_v1", 1, _SHA),
+                    _entry("session_guidance_v1", 2, _SHA2),  # version must match _v suffix
+                    _entry("compact_v1", 1, _SHA3),
+                ),
+            )
 
     def test_valid_manifest_correct_versions(self) -> None:
         """Proper happy path: each entry's version field matches its _v{N} suffix."""

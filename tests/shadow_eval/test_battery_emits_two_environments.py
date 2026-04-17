@@ -23,6 +23,7 @@ Expected RED failure:
 
 from __future__ import annotations
 
+import httpx
 import pytest
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import SimpleSpanProcessor
@@ -46,6 +47,26 @@ _ATTR_BATTERY_INPUT_ID = "kosmos.eval.input_id"
 
 _ENV_MAIN = "main"
 _ENV_SHADOW = "shadow"
+
+
+# ---------------------------------------------------------------------------
+# Helper: minimal mock transport for isolation tests
+# ---------------------------------------------------------------------------
+
+
+def _make_mock_transport() -> httpx.MockTransport:
+    """Return a no-op mock transport so no live HTTP calls are made."""
+    def _handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            200,
+            json={
+                "id": "mock-0",
+                "object": "chat.completion",
+                "choices": [{"index": 0, "message": {"role": "assistant", "content": "ok"}, "finish_reason": "stop"}],
+                "usage": {"prompt_tokens": 10, "completion_tokens": 5, "total_tokens": 15},
+            },
+        )
+    return httpx.MockTransport(_handler)
 
 
 # ---------------------------------------------------------------------------
@@ -75,13 +96,14 @@ async def test_battery_emits_main_environment_spans(
 
     RED until T040 creates tests/shadow_eval/battery.py.
     """
+    monkeypatch.delenv("OTEL_SDK_DISABLED", raising=False)
     import tests.shadow_eval.battery as battery_mod
 
     exporter, provider = _make_exporter_and_provider()
     tracer = provider.get_tracer("tests.shadow_eval.battery")
     monkeypatch.setattr(battery_mod, "_tracer", tracer)
 
-    await battery_run(environment=_ENV_MAIN)
+    await battery_run(environment=_ENV_MAIN, transport=_make_mock_transport())
 
     finished = exporter.get_finished_spans()
     assert finished, (
@@ -112,13 +134,14 @@ async def test_battery_emits_shadow_environment_spans(
 
     RED until T040 creates tests/shadow_eval/battery.py.
     """
+    monkeypatch.delenv("OTEL_SDK_DISABLED", raising=False)
     import tests.shadow_eval.battery as battery_mod
 
     exporter, provider = _make_exporter_and_provider()
     tracer = provider.get_tracer("tests.shadow_eval.battery")
     monkeypatch.setattr(battery_mod, "_tracer", tracer)
 
-    await battery_run(environment=_ENV_SHADOW)
+    await battery_run(environment=_ENV_SHADOW, transport=_make_mock_transport())
 
     finished = exporter.get_finished_spans()
     assert finished, (
@@ -152,20 +175,21 @@ async def test_both_environments_share_battery_input_ids(
 
     RED until T040 creates tests/shadow_eval/battery.py.
     """
+    monkeypatch.delenv("OTEL_SDK_DISABLED", raising=False)
     import tests.shadow_eval.battery as battery_mod
 
     # --- main run ---
     exporter_main, provider_main = _make_exporter_and_provider()
     tracer_main = provider_main.get_tracer("tests.shadow_eval.battery")
     monkeypatch.setattr(battery_mod, "_tracer", tracer_main)
-    await battery_run(environment=_ENV_MAIN)
+    await battery_run(environment=_ENV_MAIN, transport=_make_mock_transport())
     spans_main = exporter_main.get_finished_spans()
 
     # --- shadow run ---
     exporter_shadow, provider_shadow = _make_exporter_and_provider()
     tracer_shadow = provider_shadow.get_tracer("tests.shadow_eval.battery")
     monkeypatch.setattr(battery_mod, "_tracer", tracer_shadow)
-    await battery_run(environment=_ENV_SHADOW)
+    await battery_run(environment=_ENV_SHADOW, transport=_make_mock_transport())
     spans_shadow = exporter_shadow.get_finished_spans()
 
     # Collect input ids from each run — only spans that carry the attribute.

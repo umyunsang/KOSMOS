@@ -3,6 +3,11 @@ name: CI
 on:
   pull_request:
     branches: [main]
+    paths:
+      - "docker/**"
+      - "pyproject.toml"
+      - "uv.lock"
+      - "**"
   push:
     branches: [main]
   merge_group:
@@ -28,6 +33,17 @@ jobs:
         run: uv run ruff format --check src tests
       - name: Mypy strict
         run: uv run mypy src
+      - name: Validate prompts/manifest.yaml against JSON Schema
+        run: |
+          uv run python -c "
+          import json, sys, yaml
+          from pathlib import Path
+          from jsonschema import validate
+          manifest = yaml.safe_load(Path('prompts/manifest.yaml').read_text())
+          schema = json.loads(Path('specs/026-cicd-prompt-registry/contracts/prompts-manifest.schema.json').read_text())
+          validate(instance=manifest, schema=schema)
+          print('prompts/manifest.yaml validates against schema')
+          "
 
   test:
     name: Test (Python ${{ matrix.python-version }})
@@ -83,3 +99,29 @@ jobs:
           enable-cache: true
       - run: uv sync --frozen --all-extras --dev
       - run: uv run vulture src vulture_whitelist.py --min-confidence 80
+
+  docker-build:
+    name: Docker Build
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Build image
+        run: docker build -f docker/Dockerfile -t kosmos:ci .
+      - name: Verify image size <= 2 GB
+        run: |
+          SIZE_BYTES=$(docker inspect kosmos:ci --format='{{.Size}}')
+          MAX_BYTES=$((2 * 1024 * 1024 * 1024))
+          echo "Image size: $SIZE_BYTES bytes (limit: $MAX_BYTES bytes)"
+          if [ "$SIZE_BYTES" -gt "$MAX_BYTES" ]; then
+            echo "::error::Image size $SIZE_BYTES exceeds 2 GB limit"
+            exit 1
+          fi
+      - name: Verify non-root user is UID 1000
+        run: |
+          UID_IN_CONTAINER=$(docker run --rm kosmos:ci id -u)
+          echo "Container UID: $UID_IN_CONTAINER"
+          if [ "$UID_IN_CONTAINER" != "1000" ]; then
+            echo "::error::Expected UID 1000, got $UID_IN_CONTAINER"
+            exit 1
+          fi

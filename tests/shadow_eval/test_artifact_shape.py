@@ -20,6 +20,7 @@ from collections import Counter
 from pathlib import Path
 from typing import Any
 
+import httpx
 import pytest
 
 # ---------------------------------------------------------------------------
@@ -34,6 +35,21 @@ from tests.shadow_eval import battery  # noqa: F401  # type: ignore[import]
 # ---------------------------------------------------------------------------
 
 
+def _make_mock_transport() -> httpx.MockTransport:
+    """Return a minimal mock transport for artifact-shape tests."""
+    def _handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            200,
+            json={
+                "id": "mock-0",
+                "object": "chat.completion",
+                "choices": [{"index": 0, "message": {"role": "assistant", "content": "ok"}, "finish_reason": "stop"}],
+                "usage": {"prompt_tokens": 10, "completion_tokens": 5, "total_tokens": 15},
+            },
+        )
+    return httpx.MockTransport(_handler)
+
+
 def _build_artifact(tmp_path: Path) -> dict[str, Any]:
     """Run battery for both environments, merge spans, write JSON, return parsed dict.
 
@@ -44,8 +60,8 @@ def _build_artifact(tmp_path: Path) -> dict[str, Any]:
     main_out = tmp_path / "main.json"
     shadow_out = tmp_path / "shadow.json"
 
-    battery.run(environment="main", out=main_out)
-    battery.run(environment="shadow", out=shadow_out)
+    battery.run(environment="main", transport=_make_mock_transport(), out=main_out)
+    battery.run(environment="shadow", transport=_make_mock_transport(), out=shadow_out)
 
     main_data: dict[str, Any] = json.loads(main_out.read_text(encoding="utf-8"))
     shadow_data: dict[str, Any] = json.loads(shadow_out.read_text(encoding="utf-8"))

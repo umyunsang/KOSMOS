@@ -1,0 +1,21 @@
+{
+  "name": "KOSMOS Dev",
+  "image": "mcr.microsoft.com/devcontainers/python:3.12",
+  "features": {
+    "ghcr.io/astral-sh/uv-devcontainer-feature/uv:1": {}
+  },
+  "postCreateCommand": "uv sync",
+  "forwardPorts": [4000, 4318],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/workspaces/KOSMOS/.venv/bin/python"
+      }
+    }
+  },
+  "remoteUser": "vscode"
+}

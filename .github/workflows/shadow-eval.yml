@@ -1,0 +1,43 @@
+name: shadow-eval
+
+on:
+  pull_request:
+    paths:
+      - "prompts/**"
+
+permissions:
+  contents: read
+
+jobs:
+  shadow-eval:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Install dependencies
+        run: uv sync --frozen --all-extras --dev
+
+      - name: Run battery (main environment)
+        run: uv run python -m tests.shadow_eval.battery --environment main --out /tmp/main.json
+
+      - name: Run battery (shadow environment)
+        run: uv run python -m tests.shadow_eval.battery --environment shadow --out /tmp/shadow.json
+
+      - name: Merge eval reports
+        run: |
+          jq -s '{ main: .[0], shadow: .[1] }' /tmp/main.json /tmp/shadow.json > eval-report.json
+
+      - name: Upload eval report
+        uses: actions/upload-artifact@v4
+        with:
+          name: shadow-eval-report
+          path: eval-report.json
+          retention-days: 14

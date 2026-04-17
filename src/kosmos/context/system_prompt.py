@@ -6,34 +6,68 @@ system prompt string from a ``SystemPromptConfig``.  The output is identical
 for equal config inputs, ensuring FriendliAI prompt-cache stability (NFR-003).
 
 Mandatory sections in fixed order:
-  1. Platform identity (FR-009)
-  2. Language policy (FR-009)
-  3. Tool-use policy (FR-009)
-  3a. Trust hierarchy (Epic #466, FR-016/FR-017/FR-018 — unconditional, inserted
-      between sections 3 and 4 so sections 1–3a form a stable cache prefix).
-  4. Personal-data reminder (FR-009, conditional on config.personal_data_warning)
+  1. Platform identity (FR-009)         ┐
+  2. Language policy (FR-009)           │  loaded from prompts/system_v1.md
+  3. Tool-use policy (FR-009)           │  via PromptLoader (paragraphs 1–3;
+  3a. Trust hierarchy (Epic #466,       │  paragraph 4 is conditional)
+      FR-016/FR-017/FR-018 — unconditional, inserted between sections 3 and 4
+      so sections 1–3a form a stable cache prefix).
+  4. Personal-data reminder (FR-009, conditional on config.personal_data_warning;
+     loaded from prompts/system_v1.md paragraph 4)
   5. Session guidance block (geocoding-first rule + no-memory-fill rule) — always appended last
      so the cache prefix for sections 1–4 is never disturbed (Entity 5, data-model.md).
+     Loaded from prompts/session_guidance_v1.md via PromptLoader (FR-X03 correction applied).
 """
 
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 
 from kosmos.context.models import SystemPromptConfig
+from kosmos.context.prompt_loader import PromptLoader
 
 logger = logging.getLogger(__name__)
 
 # Section separator — two newlines produce paragraph breaks in the LLM view.
 _SECTION_SEP = "\n\n"
 
+# Repo-root-relative path to the prompts manifest.  Resolved at import time so
+# that the loader can be instantiated per-assembler without re-computing it.
+_MANIFEST_PATH = Path(__file__).parent.parent.parent.parent / "prompts" / "manifest.yaml"
+
 
 class SystemPromptAssembler:
     """Assembles the system prompt from a frozen ``SystemPromptConfig``.
 
-    The assembler is stateless: ``assemble()`` accepts a config and returns a
-    string. Caching is handled by the caller (``ContextBuilder``).
+    The assembler uses ``PromptLoader`` to serve sections 1–4 from
+    ``prompts/system_v1.md`` and section 5 from
+    ``prompts/session_guidance_v1.md``.  Both files are SHA-256 verified at
+    construction time (fail-closed, FR-C04).
+
+    Parameters
+    ----------
+    loader:
+        Optional ``PromptLoader`` instance.  When omitted a default loader is
+        constructed from ``prompts/manifest.yaml`` relative to the repository
+        root.  Pass an explicit loader in tests to avoid filesystem I/O.
     """
+
+    def __init__(self, loader: PromptLoader | None = None) -> None:
+        if loader is None:
+            loader = PromptLoader(manifest_path=_MANIFEST_PATH)
+        self._loader = loader
+
+        # Pre-load and cache the raw template texts at construction time so that
+        # assemble() is free of any I/O and remains deterministic (NFR-003).
+        self._system_template: str = self._loader.load("system_v1")
+        self._session_guidance: str = self._loader.load("session_guidance_v1")
+
+        # Split system_v1.md into its four paragraphs once so assemble() can
+        # conditionally include or exclude the personal-data section (§4).
+        self._system_paragraphs: list[str] = self._system_template.rstrip(
+            "\n"
+        ).split(_SECTION_SEP)
 
     def assemble(self, config: SystemPromptConfig) -> str:
         """Assemble all mandatory sections into a single system prompt string.
@@ -64,34 +98,27 @@ class SystemPromptAssembler:
         return prompt
 
     # ------------------------------------------------------------------
-    # Mandatory section builders (FR-009)
+    # Section accessors — preserved for backward-compat with test helpers
+    # that reconstruct partial prompts (e.g. TestCacheStability).
+    # These delegate to the pre-loaded paragraph cache so no extra I/O
+    # occurs and the text is always consistent with assemble().
     # ------------------------------------------------------------------
 
     def _platform_identity_section(self, config: SystemPromptConfig) -> str:
-        """Section 1: Platform identity."""
-        return (
-            f"You are {config.platform_name}, a Korean public service AI assistant. "
-            "You help citizens access government services and public information "
-            "through available tools. Your goal is to provide accurate, helpful "
-            "guidance based solely on verified government data sources."
+        """Section 1: Platform identity (delegated to system_v1.md paragraph 0)."""
+        return self._system_paragraphs[0].format(
+            platform_name=config.platform_name, language=config.language
         )
 
     def _language_policy_section(self, config: SystemPromptConfig) -> str:
-        """Section 2: Language policy."""
-        return (
-            f"Always respond in {config.language} unless the citizen explicitly writes "
-            "in another language. Use clear, accessible language appropriate for "
-            "citizens unfamiliar with government procedures."
+        """Section 2: Language policy (delegated to system_v1.md paragraph 1)."""
+        return self._system_paragraphs[1].format(
+            platform_name=config.platform_name, language=config.language
         )
 
     def _tool_use_policy_section(self) -> str:
-        """Section 3: Tool-use policy."""
-        return (
-            "Use available tools when the citizen's request requires live data lookup "
-            "from government APIs. Do not fabricate or estimate government data, "
-            "regulations, or service availability. When a tool call is needed, "
-            "invoke it before providing the final answer."
-        )
+        """Section 3: Tool-use policy (delegated to system_v1.md paragraph 2)."""
+        return self._system_paragraphs[2]
 
     def _trust_hierarchy_section(self) -> str:
         """Section 3a: Trust hierarchy (Epic #466 Layer D, FR-016–FR-018).
@@ -107,40 +134,9 @@ class SystemPromptAssembler:
         )
 
     def _personal_data_reminder_section(self) -> str:
-        """Section 4: Personal-data handling reminder (conditional)."""
-        return (
-            "Handle personal data with care. Do not log, repeat, or store citizen "
-            "personal information beyond what is strictly necessary for the current "
-            "request. Comply with all applicable Korean data protection regulations."
-        )
+        """Section 4: Personal-data handling reminder (delegated to system_v1.md paragraph 3)."""
+        return self._system_paragraphs[3]
 
     def _session_guidance_section(self) -> str:
-        """Section 5: Session guidance block — geocoding-first and no-memory-fill rules.
-
-        Always appended last so the cache prefix for sections 1–4 is never
-        disturbed between calls (NFR-003, Entity 5 of data-model.md).
-
-        The two rule sentences are verbatim from Entity 5:
-          - Geocoding-first rule
-          - No-memory-fill rule
-
-        Static text only — no turn-specific interpolation so the cache key
-        remains stable across all turns of a session.
-        """
-        return (
-            "When the citizen's message names a district, neighborhood, landmark, or address, "
-            "invoke the geocoding tool before any tool that takes an administrative code. "
-            "Do not fill administrative region codes from memory; "
-            "pass them only after a geocoding tool has produced them in this session. "
-            "When the citizen's request matches a registered tool's purpose "
-            "(accident statistics, weather observations, forecast data, etc.), "
-            "invoke that tool to fetch the authoritative record; "
-            "do not answer such factual queries from parametric memory. "
-            'Concrete example: for the user message "강남역 근처 사고 정보 알려줘", '
-            "your FIRST tool call MUST be address_to_region with the JSON arguments "
-            '{"address": "강남역"} — extract the place name verbatim from the user '
-            "message into the address field. Then use the returned si_do and gu_gun "
-            "codes to call koroad_accident_search. Always use tools for location-based "
-            "factual queries — even when you recognize the place name. "
-            "Never call a tool with an empty or whitespace-only argument value."
-        )
+        """Section 5: Session guidance block (delegated to session_guidance_v1.md)."""
+        return self._session_guidance

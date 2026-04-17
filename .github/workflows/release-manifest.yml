@@ -1,0 +1,62 @@
+name: release-manifest
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write  # to commit the manifest back to main
+  packages: read   # to read GHCR digests if needed
+
+jobs:
+  build-manifest:
+    name: Build & Commit Release Manifest
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Install dependencies (lockfile drift gate — FR-E04)
+        run: uv sync --frozen
+
+      - name: Compute uv.lock hash
+        run: |
+          UV_LOCK_HASH="sha256:$(sha256sum uv.lock | cut -d' ' -f1)"
+          echo "UV_LOCK_HASH=$UV_LOCK_HASH" >> "$GITHUB_ENV"
+
+      - name: Emit prompt hashes
+        run: |
+          mkdir -p docs/release-manifests
+          uv run python -m kosmos.context.prompt_loader --emit-hashes > /tmp/prompt_hashes.json
+
+      - name: Render release manifest
+        run: |
+          uv run python -m tools.release_manifest.render \
+            --commit-sha "$GITHUB_SHA" \
+            --uv-lock-hash "$UV_LOCK_HASH" \
+            --docker-digest "${DOCKER_DIGEST:-unknown}" \
+            --prompt-hashes-file /tmp/prompt_hashes.json \
+            --friendli-model-id "${FRIENDLI_MODEL_ID:-EXAONE-3.5-32B-Instruct}" \
+            --litellm-proxy-version unknown \
+            --out "docs/release-manifests/${GITHUB_SHA}.yaml"
+
+      - name: Commit manifest to main
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/release-manifests/
+          git commit -m "chore(release): add release manifest for ${GITHUB_REF_NAME}" || echo "no changes"
+          git push origin HEAD:main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

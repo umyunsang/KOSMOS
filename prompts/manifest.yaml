@@ -1,0 +1,14 @@
+version: 1
+entries:
+- prompt_id: compact_v1
+  version: 1
+  sha256: 2f5f2e914f95ac08b1f83001e225fcefbd6f9e6cbe947252bb035494a0f5d3d5
+  path: compact_v1.md
+- prompt_id: session_guidance_v1
+  version: 1
+  sha256: 98b085e0f8dbf5384bf5c1863cb06dd963aa1547f2b073e9396f6de6ed0f9684
+  path: session_guidance_v1.md
+- prompt_id: system_v1
+  version: 1
+  sha256: 6675ee2a64dcdf5071f2f8d8eb3efa4f7f561cac78cb8a2a227b1b5d5596015a
+  path: system_v1.md
