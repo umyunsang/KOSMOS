@@ -57,24 +57,6 @@ _REQUIRED_VARS: Final[tuple[RequiredVar, ...]] = (
         doc_anchor="#kosmos_data_go_kr_api_key",
     ),
     RequiredVar(
-        name="KOSMOS_JUSO_CONFM_KEY",
-        consumer="kosmos.settings.KosmosSettings.juso_confm_key",
-        required_in=frozenset({"dev", "ci", "prod"}),
-        doc_anchor="#kosmos_juso_confm_key",
-    ),
-    RequiredVar(
-        name="KOSMOS_SGIS_KEY",
-        consumer="kosmos.settings.KosmosSettings.sgis_key",
-        required_in=frozenset({"dev", "ci", "prod"}),
-        doc_anchor="#kosmos_sgis_key",
-    ),
-    RequiredVar(
-        name="KOSMOS_SGIS_SECRET",
-        consumer="kosmos.settings.KosmosSettings.sgis_secret",
-        required_in=frozenset({"dev", "ci", "prod"}),
-        doc_anchor="#kosmos_sgis_secret",
-    ),
-    RequiredVar(
         name="LANGFUSE_PUBLIC_KEY",
         consumer="kosmos.observability.langfuse (#501)",
         required_in=frozenset({"prod"}),

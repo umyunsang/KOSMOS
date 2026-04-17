@@ -47,9 +47,9 @@ Column definitions:
 | `KOSMOS_KAKAO_API_KEY` | Yes (dev/ci/prod) | — | REST API key string | `kosmos.settings.KosmosSettings.kakao_api_key` | [Kakao Developers Console](https://developers.kakao.com) |
 | `KOSMOS_FRIENDLI_TOKEN` | Yes (dev/ci/prod) | — | Bearer token | `kosmos.llm.config.LLMClientConfig.token` | [FriendliAI Suite](https://suite.friendli.ai) |
 | `KOSMOS_DATA_GO_KR_API_KEY` | Yes (dev/ci/prod) | — | API key string | `kosmos.settings.KosmosSettings.data_go_kr_api_key` | [공공데이터포털](https://www.data.go.kr) |
-| `KOSMOS_JUSO_CONFM_KEY` | Yes (dev/ci/prod) | — | Confirmation key string | `kosmos.settings.KosmosSettings.juso_confm_key` | [도로명주소 개발자센터](https://business.juso.go.kr) |
-| `KOSMOS_SGIS_KEY` | Yes (dev/ci/prod) | — | Consumer key string | `kosmos.settings.KosmosSettings.sgis_key` | [SGIS API](https://sgis.kostat.go.kr) |
-| `KOSMOS_SGIS_SECRET` | Yes (dev/ci/prod) | — | Consumer secret string | `kosmos.settings.KosmosSettings.sgis_secret` | [SGIS API](https://sgis.kostat.go.kr) |
+| `KOSMOS_JUSO_CONFM_KEY` | No (optional fallback) | — | Confirmation key string | `kosmos.settings.KosmosSettings.juso_confm_key` | [도로명주소 개발자센터](https://business.juso.go.kr) |
+| `KOSMOS_SGIS_KEY` | No (optional fallback) | — | Consumer key string | `kosmos.settings.KosmosSettings.sgis_key` | [SGIS API](https://sgis.kostat.go.kr) |
+| `KOSMOS_SGIS_SECRET` | No (optional fallback) | — | Consumer secret string | `kosmos.settings.KosmosSettings.sgis_secret` | [SGIS API](https://sgis.kostat.go.kr) |
 | `KOSMOS_FRIENDLI_BASE_URL` | No | `https://api.friendli.ai/serverless/v1` | Valid HTTPS URL | `kosmos.llm.config.LLMClientConfig.base_url` | FriendliAI Suite |
 | `KOSMOS_FRIENDLI_MODEL` | No | `LGAI-EXAONE/K-EXAONE-236B-A23B` | Model identifier string | `kosmos.llm.config.LLMClientConfig.model` | FriendliAI Suite |
 | `KOSMOS_LLM_SESSION_BUDGET` | No | `100000` | Integer > 0 (tokens) | `kosmos.llm.config.LLMClientConfig.session_budget` | This doc |
@@ -123,8 +123,9 @@ Source: [공공데이터포털](https://www.data.go.kr) → 마이페이지 → 
 
 ### <a id="kosmos_juso_confm_key"></a>`KOSMOS_JUSO_CONFM_KEY`
 
-행정안전부 도로명주소 API 확인키. Required in all environments. Used by the JUSO geocoding tool
-adapter and `KosmosSettings.juso_confm_key`.
+행정안전부 도로명주소 API 확인키. **Optional fallback** — when unset, the JUSO geocoding branch
+in `resolve_location.py` logs-and-skips gracefully (the adapter falls through to SGIS / Kakao).
+Consumed by `KosmosSettings.juso_confm_key`.
 
 Source: [도로명주소 개발자센터](https://business.juso.go.kr) → 신청 및 현황 → 개발자 확인키.
 
@@ -132,8 +133,8 @@ Source: [도로명주소 개발자센터](https://business.juso.go.kr) → 신�
 
 ### <a id="kosmos_sgis_key"></a>`KOSMOS_SGIS_KEY`
 
-SGIS (통계지리정보서비스) consumer key. Required in all environments together with
-`KOSMOS_SGIS_SECRET`.
+SGIS (통계지리정보서비스) consumer key, paired with `KOSMOS_SGIS_SECRET`. **Optional fallback** —
+when either is unset, the SGIS branch in `resolve_location.py` logs-and-skips gracefully.
 
 Source: [SGIS API](https://sgis.kostat.go.kr) → 활용신청 → 서비스ID/인증키.
 
@@ -141,7 +142,8 @@ Source: [SGIS API](https://sgis.kostat.go.kr) → 활용신청 → 서비스ID/�
 
 ### <a id="kosmos_sgis_secret"></a>`KOSMOS_SGIS_SECRET`
 
-SGIS consumer secret paired with `KOSMOS_SGIS_KEY`. Required in all environments.
+SGIS consumer secret paired with `KOSMOS_SGIS_KEY`. **Optional fallback** — see
+`KOSMOS_SGIS_KEY` above for the skip-when-unset behaviour.
 
 Source: [SGIS API](https://sgis.kostat.go.kr) → 활용신청 → 서비스ID/인증키.
 
@@ -297,11 +299,14 @@ the [Quick Reference Table](#quick-reference-table) whose `Required` column is `
 Use the real credential values retrieved from the respective source portals. Never paste these
 values into any file committed to the repository.
 
-At minimum, the `test` environment must contain:
+At minimum, the `test` environment must contain the guard-required variables:
 
 - `KOSMOS_FRIENDLI_TOKEN`
 - `KOSMOS_KAKAO_API_KEY`
 - `KOSMOS_DATA_GO_KR_API_KEY`
+
+Optional fallback variables (if unset, the corresponding geocoding branch logs-and-skips):
+
 - `KOSMOS_JUSO_CONFM_KEY`
 - `KOSMOS_SGIS_KEY`
 - `KOSMOS_SGIS_SECRET`
@@ -435,13 +440,18 @@ as GitHub Encrypted Secrets at:
 Settings → Secrets and variables → Actions → New repository secret
 ```
 
-Minimum set required for CI to pass:
+Minimum set required for CI to pass (guard-required; missing = startup EX_CONFIG):
 
 | Secret name | Source |
 |-------------|--------|
 | `KOSMOS_FRIENDLI_TOKEN` | Infisical export |
 | `KOSMOS_KAKAO_API_KEY` | Infisical export |
 | `KOSMOS_DATA_GO_KR_API_KEY` | Infisical export |
+
+Optional fallbacks (add only if the live geocoding suite needs them):
+
+| Secret name | Source |
+|-------------|--------|
 | `KOSMOS_JUSO_CONFM_KEY` | Infisical export |
 | `KOSMOS_SGIS_KEY` | Infisical export |
 | `KOSMOS_SGIS_SECRET` | Infisical export |
