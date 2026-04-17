@@ -81,7 +81,22 @@ class ConfigurationError(KosmosToolError):
 
 
 class LookupErrorReason(StrEnum):
-    """Closed set of reasons for a LookupError envelope."""
+    """Closed set of reasons for a LookupError envelope.
+
+    Members (10 total):
+        auth_required: Tool requires an auth credential not yet provided.
+        stale_data: Upstream data breached the freshness SLO (e.g., NMC hvidate).
+        timeout: Upstream request exceeded the per-tool timeout budget.
+        upstream_unavailable: Upstream transport failure or non-2xx response.
+        unknown_tool: Requested tool id is not in the registry.
+        invalid_params: Input parameters failed schema validation.
+        out_of_domain: Input parameters are valid shape but outside the tool's supported domain.
+        empty_registry: Registry was queried with no tools registered.
+        content_blocked: LLM pre/post-call content violated the moderation policy
+            (specs/026-safety-rails § FR-008..FR-011).
+        injection_detected: Tool output carried indirect-injection signals and was
+            blocked before reaching the LLM context (specs/026-safety-rails § FR-012..FR-015).
+    """
 
     auth_required = "auth_required"
     stale_data = "stale_data"
@@ -91,6 +106,8 @@ class LookupErrorReason(StrEnum):
     invalid_params = "invalid_params"
     out_of_domain = "out_of_domain"
     empty_registry = "empty_registry"
+    content_blocked = "content_blocked"
+    injection_detected = "injection_detected"
 
 
 class ResolveErrorReason(StrEnum):
