@@ -166,9 +166,12 @@ class TestPiiRegistrationInvariant:
         we build the violating shape with pydantic's validation disabled.
         """
         registry = ToolRegistry()
-        # Build a V5-valid AAL2 PII tool, then downgrade requires_auth via
-        # model_construct to fabricate the FR-038 violation that the registry
-        # must still catch. GovAPITool is not frozen, so we can assign after.
+        # Build a V5-valid AAL2 PII tool, then downgrade requires_auth to
+        # fabricate the FR-038 violation that the registry must still catch.
+        # GovAPITool is frozen (ConfigDict(frozen=True)), so normal assignment
+        # is blocked — we use object.__setattr__ to bypass the freeze, which is
+        # precisely the "bypassed validation" scenario the registry backstop
+        # exists to defend against.
         good_base = sample_tool_factory(
             id="bad_pii_tool",
             auth_level="AAL2",

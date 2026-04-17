@@ -71,7 +71,10 @@ RESOLVE_LOCATION_TOOL = GovAPITool(
         "위치 조회 주소 변환 행정동 코드 좌표 지오코딩 POI 장소 검색 "
         "resolve location address geocode coordinates adm_cd administrative code place"
     ),
-    # TOOL_MIN_AAL row: AAL1 (canonical). Public geocoding; no PII linkage.
+    # TOOL_MIN_AAL row: AAL1 (canonical). Geocoding produces no PII
+    # (pipa_class=non_personal) but still requires an authenticated session at
+    # AAL1 — we want every lookup call linked to a citizen session for rate
+    # limiting and abuse tracking, even though the payload itself is not PII.
     auth_level="AAL1",
     pipa_class="non_personal",
     is_irreversible=False,
