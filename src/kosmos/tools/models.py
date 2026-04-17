@@ -180,7 +180,12 @@ class GovAPITool(BaseModel):
     # specs/024-tool-security-v1 § data-model.md §1.
 
     @model_validator(mode="after")
-    def _validate_security_invariants(self) -> GovAPITool:
+    def _validate_security_invariants(self) -> GovAPITool:  # noqa: C901
+        # C901: The V1–V6 chain is deliberately kept as a single method. Each
+        # block is straight-line and simple; the load-bearing property is the
+        # ORDERING (V1 → V2 → V3 → V4 → V5 → V6), which is spec-fixed so that
+        # the earliest violation wins. Splitting into helpers would hide the
+        # chain and invite ordering drift across future Vn additions.
         """Enforce V1–V4 from data-model.md §1.
 
         V1 (FR-004): ``pipa_class != "non_personal"`` → ``auth_level != "public"``.

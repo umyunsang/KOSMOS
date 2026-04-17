@@ -308,10 +308,11 @@ class TestRegistryV6Backstop:
     def test_v6_backstop_rejects_setattr_mutation(self) -> None:  # T009
         """object.__setattr__ mutation of a compliant tool into a disallowed pair is caught.
 
-        Start with (public, AAL1, requires_auth=False) which is V6-compliant,
-        then mutate auth_level to "AAL2" post-construction to simulate an
-        out-of-tree caller bypassing validation. The registry backstop must
-        catch this and raise RegistrationError with the required substrings.
+        Start with (public, AAL1, requires_auth=True) which is V6-compliant
+        and V5-compliant (AAL1 MUST require auth), then mutate auth_level to
+        "AAL2" post-construction to simulate an out-of-tree caller bypassing
+        validation. The registry backstop must catch this and raise
+        RegistrationError with the required substrings.
         """
         # Build a fully valid tool via the normal constructor.
         tool = GovAPITool(

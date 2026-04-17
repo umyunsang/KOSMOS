@@ -14,7 +14,7 @@ from __future__ import annotations
 import pytest
 from pydantic import BaseModel, ConfigDict, RootModel, ValidationError
 
-from kosmos.tools.models import GovAPITool, _AUTH_TYPE_LEVEL_MAPPING
+from kosmos.tools.models import _AUTH_TYPE_LEVEL_MAPPING, GovAPITool
 
 # ---------------------------------------------------------------------------
 # Minimal stub schemas
@@ -172,10 +172,12 @@ def test_v6_rejects_disallowed_auth_pairs(
 def test_v6_fail_closed_on_unknown_auth_type() -> None:
     """T005: FR-048 fail-closed branch fires when auth_type is not in the canonical mapping.
 
-    Technique: construct via model_construct (bypasses Literal validation), then
-    mutate auth_type via object.__setattr__ to an unknown value, and call the
-    validator method directly. This simulates a future widening of the Literal
-    without a matching _AUTH_TYPE_LEVEL_MAPPING update.
+    Technique: GovAPITool.model_construct directly with auth_type='bogus_type'
+    — this bypasses pydantic Literal validation at construction time, so the
+    unknown auth_type is already present on the instance. Then call the
+    validator method directly to prove the FR-048 fail-closed branch raises.
+    This simulates a future widening of the Literal without a matching
+    _AUTH_TYPE_LEVEL_MAPPING update.
     """
     # Build a valid tool first to get a proper GovAPITool instance
     valid_tool = _make_tool("public", "public", requires_auth=False, tool_id="stub_v6_fr048")

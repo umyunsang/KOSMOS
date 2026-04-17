@@ -8,7 +8,7 @@ import logging
 from kosmos.security.audit import TOOL_MIN_AAL
 from kosmos.tools.bm25_index import BM25Index
 from kosmos.tools.errors import DuplicateToolError, RegistrationError, ToolNotFoundError
-from kosmos.tools.models import GovAPITool, ToolSearchResult, _AUTH_TYPE_LEVEL_MAPPING
+from kosmos.tools.models import _AUTH_TYPE_LEVEL_MAPPING, GovAPITool, ToolSearchResult
 from kosmos.tools.rate_limiter import RateLimiter
 from kosmos.tools.search import search_tools
 
