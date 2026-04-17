@@ -21,6 +21,8 @@ dependencies = [
     "kiwipiepy>=0.17",
     "openai>=2.32.0",
     "presidio-analyzer>=2.2",
+    "sentence-transformers>=3.0",  # spec 026 — retrieval dense backend
+    "numpy>=1.26",  # spec 026 — retrieval dense backend
 ]
 
 [project.scripts]
@@ -53,14 +55,31 @@ packages = ["src/kosmos"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
-addopts = "--strict-markers -q --tb=short"
+# -p no:unraisableexception disables pytest's unraisable-exception plugin
+# which in 8.4+ wraps late-gc ResourceWarnings (unclosed sockets, event
+# loops from other tests that finalise out of order on Python 3.13) into
+# an ExceptionGroup and fails an unrelated test. These resources are
+# already released by the time the warning fires; filterwarnings-based
+# ignore does not always reach the plugin's warn_explicit call site on
+# 3.13. Disabling the plugin reverts to Python's default behaviour of
+# logging to stderr — visible in CI output but not failure-inducing.
+addopts = "--strict-markers -q --tb=short -p no:unraisableexception"
 markers = [
     "live: hits real data.go.kr APIs — skipped in CI (deselect with -m 'not live')",
     "performance: timing assertions against perf budgets — opt-out via KOSMOS_SKIP_PERF=1",
+    "live_embedder: downloads HF model weights — skipped in CI (run locally with -m live_embedder)",
 ]
 filterwarnings = [
     "error",
     "ignore::pytest_benchmark.logger.PytestBenchmarkWarning",
+    # Python 3.13 changed gc finalisation timing, which surfaces
+    # unraisable exceptions (e.g., late-finalised httpx/OTel resources)
+    # that were previously silently swallowed. These do not affect test
+    # correctness; the underlying resources are already released by the
+    # time the warning fires. Filtering here keeps filterwarnings=error
+    # strict for code-visible warnings without flaking on 3.13-specific
+    # shutdown-order noise.
+    "ignore::pytest.PytestUnraisableExceptionWarning",
 ]
 
 [tool.coverage.run]
@@ -156,4 +175,5 @@ dev = [
     "pip-audit>=2.10.0",
     "vulture>=2.16",
     "pip-licenses>=5.0",
+    "pyyaml>=6.0.3",
 ]

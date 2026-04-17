@@ -55,6 +55,11 @@ Column definitions:
 | `KOSMOS_LLM_SESSION_BUDGET` | No | `100000` | Integer > 0 (tokens) | `kosmos.llm.config.LLMClientConfig.session_budget` | This doc |
 | `KOSMOS_LOOKUP_TOPK` | No | `5` | Integer [1, 20] | `kosmos.settings.KosmosSettings.lookup_topk` | This doc |
 | `KOSMOS_NMC_FRESHNESS_MINUTES` | No | `30` | Integer [1, 1440] (minutes) | `kosmos.settings.KosmosSettings.nmc_freshness_minutes` | Epic #507 |
+| `KOSMOS_RETRIEVAL_BACKEND` | No | `bm25` | `bm25` \| `dense` \| `hybrid` | `kosmos.tools.retrieval.backend.build_retriever_from_env` | Epic #585 |
+| `KOSMOS_RETRIEVAL_COLD_START` | No | `lazy` | `eager` \| `lazy` | `kosmos.tools.retrieval.backend._parse_cold_start` | Epic #585 |
+| `KOSMOS_RETRIEVAL_FUSION` | No | `rrf` | `rrf` | `kosmos.tools.retrieval.backend._parse_fusion_config` | Epic #585 |
+| `KOSMOS_RETRIEVAL_FUSION_K` | No | `60` | Integer >= 1 | `kosmos.tools.retrieval.backend._parse_fusion_config` | Epic #585 |
+| `KOSMOS_RETRIEVAL_MODEL_ID` | No | `intfloat/multilingual-e5-small` | Hugging Face model ID string | `kosmos.tools.retrieval.backend.build_retriever_from_env` | Epic #585 |
 | `KOSMOS_CLI_HISTORY_SIZE` | No | `1000` | Integer >= 0 | `kosmos.cli.config.CLIConfig.history_size` | This doc |
 | `KOSMOS_CLI_SHOW_USAGE` | No | `true` | `true` \| `false` | `kosmos.cli.config.CLIConfig.show_usage` | This doc |
 | `KOSMOS_CLI_WELCOME_BANNER` | No | `true` | `true` \| `false` | `kosmos.cli.config.CLIConfig.welcome_banner` | This doc |
@@ -66,7 +71,7 @@ Column definitions:
 | `KOSMOS_{TOOL_ID}_API_KEY` | Override pattern | — | API key string | `kosmos.permissions.credentials._tool_specific_var` | [Per-tool override pattern](#per-tool-override-pattern) |
 | `KOSMOS_API_KEY` | **Deprecated** | — | API key string | `kosmos.permissions.credentials.resolve_credential` (global fallback) | [Deprecation notice](#kosmos_api_key-deprecated) |
 
-> **Row count**: 22 rows (17 `KOSMOS_*` active + 2 `LANGFUSE_*` + 1 `KOSMOS_OTEL_ENDPOINT` +
+> **Row count**: 27 rows (22 `KOSMOS_*` active + 2 `LANGFUSE_*` + 1 `KOSMOS_OTEL_ENDPOINT` +
 > 1 override-family pattern + 1 deprecated). `KOSMOS_KOROAD_API_KEY` and
 > `KOSMOS_KOROAD_ACCIDENT_SEARCH_API_KEY` are concrete expansions of the
 > `KOSMOS_{TOOL_ID}_API_KEY` override-family pattern and are covered by that row.
