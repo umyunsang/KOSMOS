@@ -47,8 +47,16 @@ class Retriever(Protocol):
         """Replace the index with a new corpus.
 
         Empty dict is legal and resets the index. MUST be idempotent on
-        repeated identical input. Implementations MUST NOT raise on
-        internal failure — they latch into a degraded state instead.
+        repeated identical input.
+
+        Implementations MAY raise on unrecoverable init failure
+        (e.g. ``DenseBackendLoadError`` when the encoder weights cannot
+        be loaded or hashed). Fail-open degradation to pure BM25 is
+        handled one layer up by ``build_retriever_from_env``, which
+        catches these exceptions and emits a single structured WARN via
+        ``DegradationRecord`` (FR-002 / SC-005). Once ``rebuild`` has
+        returned successfully, subsequent calls on the same instance
+        MUST NOT raise.
         """
         ...
 

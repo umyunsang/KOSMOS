@@ -244,7 +244,7 @@ Excluded (unless licence confirmation arrives before `/speckit-plan`):
 | Pydantic v2; stdlib logging; no `print()` outside CLI | All new code conforms. WARN on degradation uses `logger.warning(...)` with structured kwargs. |
 | No dependency added outside a spec-driven PR | This IS the spec-driven PR. Proposed new deps: one embedding-model library (`sentence-transformers` or HF `transformers` CPU stack), optionally `faiss-cpu` or `hnswlib`, plus `torch` CPU wheel transitively. Final selection in `/speckit-plan`. |
 | No Go / Rust; TypeScript only for TUI | All additions are Python. |
-| Apache-2.0-compatible model weights only | NFR-License — enforced; ko-sroberta / KR-SBERT excluded by default. |
+| Apache-2.0-compatible model weights only | NFR-License — enforced at **design time** via the shortlist in `research.md` §Models; ko-sroberta / KR-SBERT excluded by default. No runtime licence validation is performed at load; operators who override `KOSMOS_RETRIEVAL_MODEL_ID` take responsibility for the chosen slug's licence. |
 | CPU-only | NFR-CPU — enforced. |
 | No model weights committed to repo (> 1 MB) | FR-010 — enforced; CI MUST NOT download weights. |
 | Korean chat output, English source, no Claude co-author trailer | Session-scoped; not codified in spec. |

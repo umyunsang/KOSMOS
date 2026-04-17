@@ -164,7 +164,7 @@ The harness output schema is preserved (see
 | Variable | Values | Default | Owner | Purpose |
 |----------|--------|---------|-------|---------|
 | `KOSMOS_RETRIEVAL_BACKEND` | `bm25` \| `dense` \| `hybrid` | `bm25` | #468 | Select ranking backend. Unknown values fail-closed at registry construction (FR-001). |
-| `KOSMOS_RETRIEVAL_MODEL_ID` | HF model slug (Apache-2.0-compatible only) | `intfloat/multilingual-e5-small` | #468 | Dense model identifier. Licence checked at load; non-allow-listed slugs reject. |
+| `KOSMOS_RETRIEVAL_MODEL_ID` | HF model slug (Apache-2.0-compatible only) | `intfloat/multilingual-e5-small` | #468 | Dense model identifier. Licence is vetted during spec review (shortlist in `research.md` §Models); operators overriding to a non-vetted slug take responsibility for compatibility. No runtime licence enforcement is performed at load time. |
 | `KOSMOS_RETRIEVAL_FUSION` | `rrf` | `rrf` | #468 | Fusion algorithm for hybrid mode. RSF is deferred (`NEEDS TRACKING`). |
 | `KOSMOS_RETRIEVAL_FUSION_K` | integer ≥ 1 | `60` | #468 | RRF dampening constant. `k=60` per Cormack SIGIR 2009. |
 | `KOSMOS_LOOKUP_TOPK` | 1..20 | `5` | #022 | Adaptive top-k clamp (FROZEN — preserved by FR-005). |
