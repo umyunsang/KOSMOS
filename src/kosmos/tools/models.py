@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import re
 from datetime import datetime
-from typing import Annotated, Literal
+from typing import Annotated, Final, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -20,6 +20,22 @@ from kosmos.tools.errors import LookupErrorReason
 _DPA_REFERENCE_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9_-]{5,63}$")
 
 PIPAClass = Literal["non_personal", "personal", "sensitive", "identifier"]
+
+# V6 canonical mapping — single source of truth for the (auth_type, auth_level)
+# consistency invariant owned by FR-039 / FR-040 / FR-042
+# (specs/025-tool-security-v6). Imported by the V6 model validator and the
+# ``ToolRegistry.register`` backstop; the two layers MUST consult this one
+# dictionary to stay drift-free.
+#
+# Read as: ``auth_type`` key ⇒ the frozenset of ``auth_level`` values that are
+# permitted for adapters declaring that ``auth_type``. Any pair outside this
+# mapping is rejected at construction (pydantic) and at registration
+# (registry backstop) per contracts/v6-error-contract.md.
+_AUTH_TYPE_LEVEL_MAPPING: Final[dict[str, frozenset[str]]] = {
+    "public": frozenset({"public", "AAL1"}),
+    "api_key": frozenset({"AAL1", "AAL2", "AAL3"}),
+    "oauth": frozenset({"AAL1", "AAL2", "AAL3"}),
+}
 
 
 class GovAPITool(BaseModel):
