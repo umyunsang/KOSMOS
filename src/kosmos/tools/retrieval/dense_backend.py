@@ -202,10 +202,18 @@ class DenseBackend:
         Lazy cold-start semantics: if a corpus was buffered by a prior
         ``rebuild()`` under ``cold_start="lazy"``, this method triggers
         the encoder load and embeds the buffered passages before
-        scoring. On load failure the pending buffer is cleared and an
-        empty ranking is returned (FR-002 fail-open) so HybridBackend
-        can re-use its BM25 fallback instead of surfacing a 5xx to the
-        citizen path.
+        scoring. On load failure the pending buffer is cleared and a
+        ``DenseBackendLoadError`` is re-raised so the outer fail-open
+        wrapper (``_DenseFailOpenWrapper`` for pure-dense, or
+        ``HybridBackend`` for hybrid) can swap in its BM25 companion.
+        Without this re-raise, pure-dense lazy-load failure would
+        silently return ``[]`` forever — a hard regression surfaced by
+        Codex review round 5 on #837.
+
+        After buffers are cleared, subsequent ``.score()`` calls return
+        ``[]`` (not raise), because ``_pending_corpus is None`` on the
+        degraded instance. The wrapper remembers its degraded state and
+        serves BM25 from the first failure onward.
 
         Args:
             query: Free-text citizen query.
@@ -214,12 +222,21 @@ class DenseBackend:
             Unordered list of ``(tool_id, score)`` pairs; downstream
             tie-break (score DESC, tool_id ASC) is applied by
             ``kosmos.tools.search``.
+
+        Raises:
+            DenseBackendLoadError: On the first lazy load failure only.
+                Wrapped exceptions (RuntimeError, OSError, ValueError,
+                MemoryError) raised by sentence-transformers are
+                re-packaged under this type so callers can catch a
+                single class.
         """
         # Lazy fire: pending corpus → load encoder + embed before scoring.
-        # Failures here collapse to an empty ranking so the citizen path
-        # continues via BM25 fallback (FR-002). We clear _pending_corpus
-        # on failure so subsequent queries do NOT retry the load on every
-        # call — a single WARN per degraded instance is the contract.
+        # Failures here clear the buffers and re-raise as
+        # DenseBackendLoadError so the outer fail-open wrapper can swap
+        # in BM25 for this AND all subsequent queries. Clearing the
+        # buffers means the retry branch (``_pending_corpus is not None``)
+        # does not fire again — the single WARN contract is preserved by
+        # the wrapper latching its own ``_degraded`` flag.
         if self._pending_corpus is not None and self._encoder is None:
             try:
                 self._encoder = self._load_encoder()
@@ -233,14 +250,19 @@ class DenseBackend:
             ) as exc:
                 logger.warning(
                     "DenseBackend.score: lazy encoder load failed "
-                    "(%s: %s) — clearing pending corpus, returning empty ranking",
+                    "(%s: %s) — clearing pending corpus, re-raising for "
+                    "fail-open wrapper",
                     type(exc).__name__,
                     exc,
                 )
                 self._pending_corpus = None
                 self._embeddings = None
                 self._tool_ids = []
-                return []
+                if isinstance(exc, DenseBackendLoadError):
+                    raise
+                raise DenseBackendLoadError(
+                    f"Lazy encoder load failed: {type(exc).__name__}: {exc}"
+                ) from exc
 
         if self._embeddings is None or not self._tool_ids:
             return []

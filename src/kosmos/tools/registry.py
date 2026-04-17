@@ -160,7 +160,16 @@ class ToolRegistry:
             # FR-002 fail-open: dense/hybrid model load failed at first real
             # rebuild. Degrade to pure BM25 and emit exactly one WARN via the
             # registry-scoped DegradationRecord latch.
-            requested = type(self._retriever).__name__.lower().replace("backend", "")
+            #
+            # The retriever may be a wrapper (``_DenseFailOpenWrapper``)
+            # whose type name does not match the user-facing backend
+            # label. Prefer the wrapper's declared ``_requested_backend_label``
+            # when present, otherwise fall back to the class name heuristic.
+            requested = getattr(
+                self._retriever,
+                "_requested_backend_label",
+                type(self._retriever).__name__.lower().replace("backend", ""),
+            )
             self._degradation_record.emit_if_needed(
                 logger,
                 requested_backend=requested,

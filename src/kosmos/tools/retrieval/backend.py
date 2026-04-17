@@ -68,6 +68,86 @@ class Retriever(Protocol):
         ...
 
 
+class _DenseFailOpenWrapper:
+    """Pure-dense backend wrapper that fail-opens to BM25 on load failure.
+
+    When ``KOSMOS_RETRIEVAL_BACKEND=dense`` and cold-start is ``lazy``
+    (the default), a model-load failure does not manifest until the
+    first ``.score()`` call. Without this wrapper the failure would
+    produce an empty ranking forever (no BM25 fallback) because
+    ``ToolRegistry.register()`` already ran successfully at registry
+    construction time, so its built-in fail-open path never fires.
+
+    This wrapper holds a companion ``BM25Backend`` kept in sync with
+    the dense backend's corpus via ``rebuild()``. On the first
+    ``DenseBackendLoadError`` from ``.score()`` it:
+
+    1. Emits exactly one structured WARN via ``DegradationRecord``
+       (FR-002 / SC-005 — one-shot latch).
+    2. Flips an internal ``_degraded`` flag.
+    3. Returns the BM25 companion's ranking for this query.
+
+    Every subsequent ``.score()`` short-circuits to the BM25 companion
+    without re-invoking dense. This preserves the "serve citizen with
+    BM25 results, never 5xx" contract and guarantees a single WARN per
+    degraded instance.
+
+    Hybrid does not need this wrapper because ``HybridBackend.score()``
+    already computes BM25 first and can reuse it on dense failure.
+    """
+
+    # Logical backend label for structured WARN logs. The registry's
+    # fail-open path (registry.py) and the wrapper's own lazy-path
+    # emit_if_needed() must both report ``requested_backend='dense'``
+    # even though the Python type is ``_DenseFailOpenWrapper``. The
+    # registry reads this attribute via ``getattr(retriever, ...)``
+    # instead of deriving the label from ``type(retriever).__name__``.
+    _requested_backend_label = "dense"
+
+    def __init__(
+        self,
+        *,
+        dense: DenseBackend,
+        bm25: BM25Backend,
+        degradation_record: DegradationRecord | None,
+    ) -> None:
+        self._dense = dense
+        self._bm25 = bm25
+        self._degradation_record = degradation_record
+        self._degraded = False
+
+    def rebuild(self, corpus: dict[str, str]) -> None:
+        # Keep BM25 companion in sync so it can serve the degraded path
+        # with the same corpus snapshot the dense backend would have
+        # embedded. Rebuilding BM25 is cheap (pure Python, no model).
+        self._bm25.rebuild(corpus)
+        # Dense rebuild() under lazy mode just buffers the corpus;
+        # under eager it embeds. Either path is safe to call.
+        self._dense.rebuild(corpus)
+
+    def score(self, query: str) -> list[tuple[str, float]]:
+        if self._degraded:
+            return self._bm25.score(query)
+        try:
+            return self._dense.score(query)
+        except (
+            DenseBackendLoadError,
+            RuntimeError,
+            OSError,
+            ValueError,
+            MemoryError,
+        ) as exc:
+            if self._degradation_record is not None:
+                self._degradation_record.emit_if_needed(
+                    logger,
+                    requested_backend="dense",
+                    effective_backend="bm25",
+                    reason=f"dense score failed: {type(exc).__name__}: {exc}",
+                )
+            self._degraded = True
+            return self._bm25.score(query)
+
+
 def _resolve_cold_start() -> Literal["lazy", "eager"]:
     """Parse and validate ``KOSMOS_RETRIEVAL_COLD_START``.
 
@@ -158,12 +238,11 @@ def build_retriever_from_env(
 
     if backend == "dense":
         try:
-            return DenseBackend(model_id=model_id, cold_start=cold_start)
+            dense_backend = DenseBackend(model_id=model_id, cold_start=cold_start)
         except (DenseBackendLoadError, ImportError, RuntimeError, OSError) as exc:
-            # DenseBackend.__init__ itself does not hit HF — these branches
-            # only fire if sentence-transformers fails to import. Kept for
-            # defence-in-depth; the real load-failure path is score() under
-            # lazy cold-start, which fail-opens to [] internally.
+            # Construction-time failure (e.g. sentence-transformers import
+            # failure) → fail-open to pure BM25 immediately. The lazy-load
+            # failure path at first .score() is handled by the wrapper below.
             if degradation_record is not None:
                 degradation_record.emit_if_needed(
                     logger,
@@ -172,6 +251,14 @@ def build_retriever_from_env(
                     reason=f"dense load failed: {type(exc).__name__}: {exc}",
                 )
             return BM25Backend(index_factory())
+        # Wrap pure-dense with a BM25 companion so lazy-load failure at
+        # first .score() degrades to BM25 instead of silently serving
+        # empty rankings forever (Codex review round 5 on #837).
+        return _DenseFailOpenWrapper(
+            dense=dense_backend,
+            bm25=BM25Backend(index_factory()),
+            degradation_record=degradation_record,
+        )
 
     # backend == "hybrid"
     fusion_k = _resolve_hybrid_fusion_k()

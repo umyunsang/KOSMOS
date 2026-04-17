@@ -434,14 +434,19 @@ class TestLazyBehavior:
         backend.score("다른 질의")
         assert init_count["n"] == 1, "Encoder must be loaded exactly once across calls"
 
-    def test_lazy_score_load_failure_returns_empty_and_clears_pending(
+    def test_lazy_score_load_failure_raises_and_clears_pending(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        """If lazy encoder load fails, score() must return [] and clear pending state.
+        """Lazy encoder load failure must raise DenseBackendLoadError + clear buffers.
 
-        FR-002 fail-open: citizen path must not surface 5xx. Subsequent
-        score() calls on the same degraded instance must NOT retry the
-        load — a single WARN per instance is the contract (SC-005).
+        Codex review round 5 on #837: the previous contract (return [])
+        silently 0-recalled under ``KOSMOS_RETRIEVAL_BACKEND=dense``
+        because ``ToolRegistry.register()``'s fail-open path already
+        ran at register-time. The new contract re-raises so the outer
+        wrapper (``_DenseFailOpenWrapper`` for pure-dense, or
+        ``HybridBackend`` for hybrid) can swap in BM25. Subsequent
+        calls on the same bare instance still return [] safely because
+        ``_pending_corpus`` has been cleared.
         """
 
         def _failing_transformer(model_id: str) -> None:
@@ -462,16 +467,18 @@ class TestLazyBehavior:
         backend = _make_backend(cold_start="lazy")
         backend.rebuild({"tool_a": "교통사고"})  # buffers corpus, no load yet
 
-        # First score() triggers load — must return [] on failure, not raise.
-        result = backend.score("도로 위험")
+        # First score() triggers load — must raise DenseBackendLoadError.
+        with pytest.raises(DenseBackendLoadError):
+            backend.score("도로 위험")
 
-        assert result == [], "Lazy load failure must collapse to empty ranking, not raise"
-        # Pending state must be cleared to prevent retry storms on subsequent calls.
+        # Pending state must be cleared so subsequent queries do NOT retry.
         assert backend._pending_corpus is None
         assert backend._embeddings is None
         assert backend._tool_ids == []
         assert backend._encoder is None
 
-        # Subsequent score() must remain an empty no-op (no retry).
+        # Subsequent score() on the same (now-degraded) bare instance
+        # returns [] — no retry, no raise — so outer wrappers that miss
+        # the first raise still behave safely.
         result2 = backend.score("다른 질의")
         assert result2 == []

@@ -27,7 +27,7 @@ import logging
 
 from kosmos.tools.retrieval.bm25_backend import BM25Backend
 from kosmos.tools.retrieval.degrade import DegradationRecord
-from kosmos.tools.retrieval.dense_backend import DenseBackend
+from kosmos.tools.retrieval.dense_backend import DenseBackend, DenseBackendLoadError
 
 logger = logging.getLogger(__name__)
 
@@ -117,7 +117,13 @@ class HybridBackend:
         bm25_scores = self._bm25.score(query)
         try:
             dense_scores = self._dense.score(query)
-        except (RuntimeError, OSError, ValueError, MemoryError) as exc:
+        except (
+            DenseBackendLoadError,
+            RuntimeError,
+            OSError,
+            ValueError,
+            MemoryError,
+        ) as exc:
             if self._degradation_record is not None:
                 self._degradation_record.emit_if_needed(
                     logger,
