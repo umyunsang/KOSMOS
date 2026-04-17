@@ -29,9 +29,9 @@ class ToolRegistry:
         Raises:
             DuplicateToolError: If tool.id is already registered.
             RegistrationError: If ``is_personal_data=True`` without ``requires_auth=True``
-                (FR-038 — fail-closed PII invariant).
-            ValueError: If ``tool.auth_level`` disagrees with ``TOOL_MIN_AAL`` (V3 drift
-                backstop for callers that bypass pydantic validation via ``model_construct``).
+                (FR-038 — fail-closed PII invariant), or if ``tool.auth_level`` disagrees
+                with ``TOOL_MIN_AAL`` (V3 drift backstop for callers that bypass pydantic
+                validation via ``model_construct``).
         """
         if tool.id in self._tools:
             raise DuplicateToolError(tool.id)
@@ -62,7 +62,7 @@ class ToolRegistry:
         # GovAPITool's @model_validator already enforces V3 at construction time;
         # we re-check here so registration emits a structured log if an out-of-tree
         # caller bypassed pydantic validation (e.g., model_construct) and re-raises
-        # as ValueError to match the data-model.md §1 contract.
+        # as RegistrationError for consistency with the other FR-038 backstops above.
         expected_aal = TOOL_MIN_AAL.get(tool.id)
         if expected_aal is not None and tool.auth_level != expected_aal:
             logger.error(
@@ -72,10 +72,10 @@ class ToolRegistry:
                 tool.auth_level,
                 expected_aal,
             )
-            raise ValueError(
-                f"V3 violation (FR-001/FR-005): tool {tool.id!r} declares "
-                f"auth_level={tool.auth_level!r} but TOOL_MIN_AAL requires "
-                f"{expected_aal!r}."
+            raise RegistrationError(
+                tool.id,
+                f"V3 violation (FR-001/FR-005): declares auth_level={tool.auth_level!r} "
+                f"but TOOL_MIN_AAL requires {expected_aal!r}.",
             )
 
         self._tools[tool.id] = tool

@@ -39,19 +39,6 @@ _VALID_HASH_C = "c" * 64
 # drift on the host. Truncate microseconds for stable serialization.
 _VALID_TS = datetime.now(UTC).replace(microsecond=0)
 
-_SCHEMA_PATH = (
-    __file__.replace("tests/unit/test_tool_call_audit_record.py", "")
-    + "docs/security/tool-call-audit-record.schema.json"
-)
-
-
-def _abs_schema_path() -> str:
-    """Return the absolute path to the JSON Schema artifact."""
-    import pathlib
-
-    repo_root = pathlib.Path(__file__).parent.parent.parent
-    return str(repo_root / "docs" / "security" / "tool-call-audit-record.schema.json")
-
 
 def _minimal_record(**overrides) -> dict:
     """Return a dict that satisfies every required field with valid values."""
