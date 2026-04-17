@@ -148,7 +148,7 @@ def test_battery_refuses_when_no_mock_transport_injected() -> None:
     This test enforces that T040 exposes transport injection as an explicit,
     mandatory argument — not an optional convenience.
     """
-    with pytest.raises((TypeError, ValueError, Exception)) as exc_info:
+    with pytest.raises((TypeError, ValueError)) as exc_info:
         # Call WITHOUT transport kwarg.  If T040 makes transport required,
         # this raises TypeError immediately.  If the battery validates at
         # runtime, it raises ValueError or a custom error.

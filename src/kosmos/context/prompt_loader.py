@@ -30,6 +30,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import json
 import logging
 import os
 import sys
@@ -317,11 +318,15 @@ def _cli_regenerate_manifest(prompts_dir: Path, manifest_path: Path) -> None:
 
 
 def _cli_emit_hashes(manifest_path: Path) -> None:
-    """Print ``prompt_id: sha256_hex`` lines for each entry in the manifest."""
+    """Emit a JSON object ``{prompt_id: sha256_hex}`` for every manifest entry.
+
+    Output is consumed by ``tools.release_manifest.render`` via
+    ``--prompt-hashes-file``, which requires a JSON ``dict[str, str]`` payload.
+    """
     raw = yaml.safe_load(manifest_path.read_text(encoding="utf-8"))
     manifest = PromptManifest.model_validate(raw)
-    for entry in manifest.entries:
-        print(f"{entry.prompt_id}: {entry.sha256}")  # noqa: T201 — CLI stdout output
+    payload = {entry.prompt_id: entry.sha256 for entry in manifest.entries}
+    print(json.dumps(payload, indent=2, sort_keys=True))  # noqa: T201 — CLI stdout output
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -339,7 +344,8 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument(
         "--emit-hashes",
         action="store_true",
-        help="Print 'prompt_id: sha256_hex' for every entry in prompts/manifest.yaml.",
+        help="Emit a JSON object '{prompt_id: sha256_hex}' on stdout for every "
+        "entry in prompts/manifest.yaml (consumed by tools.release_manifest.render).",
     )
     parser.add_argument(
         "--prompts-dir",

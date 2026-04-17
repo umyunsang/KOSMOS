@@ -36,7 +36,7 @@ from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanE
 # phase raises ``ModuleNotFoundError`` immediately, producing the required RED
 # failure before T040 is implemented.
 # ---------------------------------------------------------------------------
-from tests.shadow_eval.battery import run as battery_run  # noqa: E402 — RED until T040
+from tests.shadow_eval.battery import run_async as battery_run  # noqa: E402 — RED until T040
 
 # ---------------------------------------------------------------------------
 # Attribute names (KOSMOS extension namespace per Spec 021 / FR-D03)

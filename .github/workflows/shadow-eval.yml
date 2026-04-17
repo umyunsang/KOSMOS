@@ -13,20 +13,40 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v6
+      - name: Checkout PR head
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
+
+      - name: Resolve merge-base (main vs PR head)
+        id: merge-base
+        run: |
+          git fetch origin "${{ github.base_ref }}" --depth=0
+          MERGE_BASE=$(git merge-base "origin/${{ github.base_ref }}" "${{ github.event.pull_request.head.sha }}")
+          echo "sha=${MERGE_BASE}" >> "$GITHUB_OUTPUT"
+          echo "Merge-base for main run: ${MERGE_BASE}"
 
       - uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
           cache-dependency-glob: "uv.lock"
 
-      - name: Install dependencies
+      # --- main environment run: executes against merge-base checkout ---
+      - name: Checkout merge-base for main run
+        run: git checkout "${{ steps.merge-base.outputs.sha }}"
+
+      - name: Install dependencies (merge-base)
         run: uv sync --frozen --all-extras --dev
 
       - name: Run battery (main environment)
         run: uv run python -m tests.shadow_eval.battery --environment main --out /tmp/main.json
+
+      # --- shadow environment run: executes against PR head checkout ---
+      - name: Checkout PR head for shadow run
+        run: git checkout "${{ github.event.pull_request.head.sha }}"
+
+      - name: Install dependencies (PR head)
+        run: uv sync --frozen --all-extras --dev
 
       - name: Run battery (shadow environment)
         run: uv run python -m tests.shadow_eval.battery --environment shadow --out /tmp/shadow.json

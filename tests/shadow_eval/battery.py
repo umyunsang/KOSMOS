@@ -42,30 +42,13 @@ _BATTERY_INPUTS: tuple[dict[str, str], ...] = (
 )
 
 # ---------------------------------------------------------------------------
-# AwaitableDict — synchronous dict subclass that can also be ``await``-ed.
-#
-# This resolves the sync/async contract tension:
-#   - test_battery_no_live_network.py  (sync def tests) calls run() directly
-#   - test_artifact_shape.py           (sync fixture)    calls run() directly
-#   - test_battery_emits_two_environments.py (async def) does ``await run()``
-#
-# With asyncio_mode = "auto" and pytest-asyncio 1.3.0, awaiting a plain dict
-# raises TypeError.  Returning an AwaitableDict satisfies both callers.
-# ---------------------------------------------------------------------------
-
-
-class _AwaitableDict(dict):  # type: ignore[type-arg]
-    """A ``dict`` subclass that supports ``await``."""
-
-    def __await__(self):  # type: ignore[override]
-        return self._as_coroutine().__await__()
-
-    async def _as_coroutine(self) -> _AwaitableDict:
-        return self
-
-
-# ---------------------------------------------------------------------------
 # Public API
+#
+# ``run(...)`` is the synchronous primary entry point — it performs no awaitable
+# work and returns a plain ``dict``.  ``run_async(...)`` is a thin coroutine
+# wrapper for callers inside ``async def`` tests; it invokes ``run`` and returns
+# the same dict.  Keeping the two APIs explicit avoids the earlier
+# ``_AwaitableDict`` hack that conflated sync and async contracts.
 # ---------------------------------------------------------------------------
 
 
@@ -74,7 +57,7 @@ def run(
     environment: str,
     transport: httpx.MockTransport | None = None,
     out: pathlib.Path | None = None,
-) -> _AwaitableDict:
+) -> dict[str, Any]:
     """Run the shadow-eval battery for *environment* and return the result dict.
 
     Parameters
@@ -89,9 +72,8 @@ def run(
 
     Returns
     -------
-    _AwaitableDict
-        A ``dict`` subclass carrying ``{"environment": ..., "spans": [...], "results": [...]}``.
-        It is also awaitable so ``async def`` test callers can do ``await run(...)``.
+    dict[str, Any]
+        ``{"environment": ..., "spans": [...], "results": [...]}``.
     """
     if transport is None:
         raise TypeError(
@@ -135,19 +117,33 @@ def run(
 
         logger.debug("battery case %s: status=%d env=%s", case["id"], status, environment)
 
-    artifact: _AwaitableDict = _AwaitableDict(
-        {
-            "environment": environment,
-            "spans": span_records,
-            "results": results,
-        }
-    )
+    artifact: dict[str, Any] = {
+        "environment": environment,
+        "spans": span_records,
+        "results": results,
+    }
 
     if out is not None:
-        out.write_text(json.dumps(dict(artifact), indent=2, ensure_ascii=False), encoding="utf-8")
+        out.write_text(json.dumps(artifact, indent=2, ensure_ascii=False), encoding="utf-8")
         logger.debug("battery artifact written to %s", out)
 
     return artifact
+
+
+async def run_async(
+    *,
+    environment: str,
+    transport: httpx.MockTransport | None = None,
+    out: pathlib.Path | None = None,
+) -> dict[str, Any]:
+    """Async wrapper around :func:`run` for ``async def`` test callers.
+
+    The battery itself performs no I/O beyond the injected ``httpx.MockTransport``
+    and therefore does not need to be genuinely asynchronous; this coroutine
+    exists so ``await`` sites remain ergonomic without forcing sync callers to
+    manage an event loop.
+    """
+    return run(environment=environment, transport=transport, out=out)
 
 
 # ---------------------------------------------------------------------------

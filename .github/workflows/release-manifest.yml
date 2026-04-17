@@ -40,14 +40,22 @@ jobs:
           mkdir -p docs/release-manifests
           uv run python -m kosmos.context.prompt_loader --emit-hashes > /tmp/prompt_hashes.json
 
+      - name: Verify required release inputs
+        env:
+          DOCKER_DIGEST: ${{ env.DOCKER_DIGEST }}
+          FRIENDLI_MODEL_ID: ${{ env.FRIENDLI_MODEL_ID }}
+        run: |
+          : "${DOCKER_DIGEST:?DOCKER_DIGEST must be set (sha256:<64-hex>) for release manifest}"
+          : "${FRIENDLI_MODEL_ID:?FRIENDLI_MODEL_ID must be set (LGAI-EXAONE/...) for release manifest}"
+
       - name: Render release manifest
         run: |
           uv run python -m tools.release_manifest.render \
             --commit-sha "$GITHUB_SHA" \
             --uv-lock-hash "$UV_LOCK_HASH" \
-            --docker-digest "${DOCKER_DIGEST:-unknown}" \
+            --docker-digest "$DOCKER_DIGEST" \
             --prompt-hashes-file /tmp/prompt_hashes.json \
-            --friendli-model-id "${FRIENDLI_MODEL_ID:-EXAONE-3.5-32B-Instruct}" \
+            --friendli-model-id "$FRIENDLI_MODEL_ID" \
             --litellm-proxy-version unknown \
             --out "docs/release-manifests/${GITHUB_SHA}.yaml"
 

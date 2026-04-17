@@ -104,15 +104,20 @@ class SystemPromptAssembler:
 
     def _platform_identity_section(self, config: SystemPromptConfig) -> str:
         """Section 1: Platform identity (delegated to system_v1.md paragraph 0)."""
-        return self._system_paragraphs[0].format(
-            platform_name=config.platform_name, language=config.language
-        )
+        return self._format_if_templated(self._system_paragraphs[0], config)
 
     def _language_policy_section(self, config: SystemPromptConfig) -> str:
         """Section 2: Language policy (delegated to system_v1.md paragraph 1)."""
-        return self._system_paragraphs[1].format(
-            platform_name=config.platform_name, language=config.language
-        )
+        return self._format_if_templated(self._system_paragraphs[1], config)
+
+    @staticmethod
+    def _format_if_templated(paragraph: str, config: SystemPromptConfig) -> str:
+        if "{platform_name}" in paragraph or "{language}" in paragraph:
+            return paragraph.format(
+                platform_name=config.platform_name,
+                language=config.language,
+            )
+        return paragraph
 
     def _tool_use_policy_section(self) -> str:
         """Section 3: Tool-use policy (delegated to system_v1.md paragraph 2)."""
