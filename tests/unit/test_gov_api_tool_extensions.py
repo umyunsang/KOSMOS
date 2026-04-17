@@ -52,7 +52,11 @@ _MINIMAL_KWARGS: dict[str, object] = {
     "provider": "Test Provider",
     "category": ["test"],
     "endpoint": "https://apis.data.go.kr/test_ext",
-    "auth_type": "api_key",
+    # V6 (FR-039/FR-040): baseline uses auth_type='public' so that the default
+    # (public, public) pair is V6-allowed. V1–V5 negative tests that override
+    # auth_level to AAL1/AAL2 also override auth_type where needed (or rely on
+    # the earlier validator in the chain raising first).
+    "auth_type": "public",
     "input_schema": _StubInput,
     "output_schema": _StubOutput,
     "search_hint": "test extension security 보안",

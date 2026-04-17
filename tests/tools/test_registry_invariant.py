@@ -23,7 +23,9 @@ import pytest
 from pydantic import BaseModel, ConfigDict, RootModel, ValidationError
 
 from kosmos.tools.errors import RegistrationError
-from kosmos.tools.models import GovAPITool
+from kosmos.tools.executor import ToolExecutor
+from kosmos.tools.models import _AUTH_TYPE_LEVEL_MAPPING, GovAPITool
+from kosmos.tools.register_all import register_all_tools
 from kosmos.tools.registry import ToolRegistry
 
 # ---------------------------------------------------------------------------
@@ -456,4 +458,57 @@ class TestRegistryV6Backstop:
         )
         assert not isinstance(layer2_err, ValueError), (
             "Layer-2 error must not be an instance of ValueError"
+        )
+
+
+# ---------------------------------------------------------------------------
+# T014 — Registry-wide V6 regression scan (FR-042 / FR-047)
+# ---------------------------------------------------------------------------
+
+
+class TestAllAdaptersSatisfyV6:
+    """FR-047 regression guard: every production-registered adapter passes V6.
+
+    Builds the full production registry via ``register_all_tools`` and asserts
+    that each ``(auth_type, auth_level)`` pair lies inside the canonical
+    ``_AUTH_TYPE_LEVEL_MAPPING``.  If a future adapter drifts outside the
+    allow-list, this test fails with the offending tool id, the declared pair,
+    and the set of permitted ``auth_level`` values for that ``auth_type`` —
+    so the fix lives in the adapter, not in the test.
+
+    Deterministic: no network calls, no randomness.  ``register_all_tools``
+    only imports adapter modules and calls ``registry.register(...)``; no
+    live HTTP requests are made.
+    """
+
+    def test_all_registered_adapters_satisfy_v6(self) -> None:  # T014
+        registry = ToolRegistry()
+        executor = ToolExecutor(registry)
+        register_all_tools(registry, executor)
+
+        tools = registry.all_tools()
+        assert tools, "register_all_tools produced an empty registry"
+
+        violations: list[str] = []
+        for tool in tools:
+            if tool.auth_type not in _AUTH_TYPE_LEVEL_MAPPING:
+                violations.append(
+                    f"{tool.id!r}: unknown auth_type={tool.auth_type!r} "
+                    f"(not in _AUTH_TYPE_LEVEL_MAPPING keys "
+                    f"{sorted(_AUTH_TYPE_LEVEL_MAPPING)})"
+                )
+                continue
+            allowed = _AUTH_TYPE_LEVEL_MAPPING[tool.auth_type]
+            if tool.auth_level not in allowed:
+                violations.append(
+                    f"{tool.id!r}: auth_type={tool.auth_type!r} with "
+                    f"auth_level={tool.auth_level!r} is outside permitted "
+                    f"set {sorted(allowed)}"
+                )
+
+        assert not violations, (
+            "V6 registry-wide regression — one or more adapters drifted outside "
+            "the canonical _AUTH_TYPE_LEVEL_MAPPING:\n  - "
+            + "\n  - ".join(violations)
+            + "\nFix the adapter(s), not this test."
         )

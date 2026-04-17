@@ -30,7 +30,7 @@ def tool() -> GovAPITool:
         provider="기관",
         category=["test"],
         endpoint="https://api.example.com/",
-        auth_type="api_key",
+        auth_type="public",
         input_schema=_In,
         output_schema=_Out,
         search_hint="integration test 통합테스트",
