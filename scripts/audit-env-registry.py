@@ -67,6 +67,7 @@ _GITHUB_BUILTINS = frozenset({
     "OTEL_SDK_DISABLED",
     "OTEL_SERVICE_NAME",
     "OTEL_RESOURCE_ATTRIBUTES",
+    "OTEL_DEPLOYMENT_ENVIRONMENT",
     # pytest / uv / Python infrastructure
     "PYTHONPATH",
     "PYTHONDONTWRITEBYTECODE",
@@ -85,7 +86,6 @@ _GITHUB_BUILTINS = frozenset({
 # Prefix string indicating "GITHUB_" family — all such names are builtins.
 _GITHUB_PREFIX = "GITHUB_"
 _RUNNER_PREFIX = "RUNNER_"
-_OTEL_PREFIX = "OTEL_"
 
 # The registry table header literal used as anchor.
 _REGISTRY_HEADER = "| Variable | Required |"
@@ -251,6 +251,7 @@ def _classify_file(path: Path) -> str:
 
 def _scan_file(
     path: Path,
+    repo_root: Path,
     kosmos_findings: dict[str, list[str]],
     langfuse_findings: dict[str, list[str]],
     prefix_violations: dict[str, list[str]],
@@ -266,7 +267,13 @@ def _scan_file(
         return 0
 
     token_count = 0
-    rel_path = str(path)
+    # Emit repo-relative locations (e.g., `src/kosmos/foo.py:42`) so the JSON
+    # report is machine-independent and matches contract examples. Fall back
+    # to absolute on the off chance `path` sits outside repo_root.
+    try:
+        rel_path = str(path.relative_to(repo_root))
+    except ValueError:
+        rel_path = str(path)
     file_kind = _classify_file(path)
 
     for lineno, line in enumerate(text.splitlines(), start=1):
@@ -309,8 +316,10 @@ def _scan_file(
                     continue
                 if token.startswith(_RUNNER_PREFIX):
                     continue
-                if token.startswith(_OTEL_PREFIX):
-                    continue
+                # OTEL_ is NOT a blanket-skip prefix — only the exact-name
+                # allowlist in `_GITHUB_BUILTINS` (OTEL_EXPORTER_OTLP_*,
+                # OTEL_SERVICE_NAME, etc.) is recognised. Any other OTEL_*
+                # token must be catalogued in docs/configuration.md.
                 if token in _GITHUB_BUILTINS:
                     continue
                 # Skip very short tokens likely to be noise (e.g., "CI").
@@ -419,6 +428,7 @@ def audit(
     for path in targets:
         total_tokens += _scan_file(
             path,
+            repo_root,
             kosmos_findings,
             langfuse_findings,
             prefix_violations_raw,

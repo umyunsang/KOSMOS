@@ -3,7 +3,8 @@
 
 Mirrors Claude Code's permissions gauntlet: boundary check runs **before** the
 tool loop (or in our case, before setup_tracing/app bootstrap) and exits the
-process with EX_CONFIG (78) on first missing variable.
+process with EX_CONFIG (78) after aggregating **all** missing required
+variables for the active environment into a single-line remediation message.
 
 Contract: specs/026-secrets-infisical-oidc/contracts/guard.md
 """
@@ -56,22 +57,27 @@ _REQUIRED_VARS: Final[tuple[RequiredVar, ...]] = (
         required_in=frozenset({"dev", "ci", "prod"}),
         doc_anchor="#kosmos_data_go_kr_api_key",
     ),
+    # Observability vars are required in `prod` only — matches the
+    # `docs/configuration.md` registry ("Yes (prod only)") and contract
+    # test T-G06. CI runs pull these via Infisical when live-suite tests
+    # execute, but the guard treats them as optional there so unit CI
+    # jobs do not need to seed them.
     RequiredVar(
         name="LANGFUSE_PUBLIC_KEY",
         consumer="kosmos.observability.langfuse (#501)",
-        required_in=frozenset({"ci", "prod"}),
+        required_in=frozenset({"prod"}),
         doc_anchor="#langfuse_public_key",
     ),
     RequiredVar(
         name="LANGFUSE_SECRET_KEY",
         consumer="kosmos.observability.langfuse (#501)",
-        required_in=frozenset({"ci", "prod"}),
+        required_in=frozenset({"prod"}),
         doc_anchor="#langfuse_secret_key",
     ),
     RequiredVar(
         name="KOSMOS_OTEL_ENDPOINT",
         consumer="kosmos.observability.otel (#501)",
-        required_in=frozenset({"ci", "prod"}),
+        required_in=frozenset({"prod"}),
         doc_anchor="#kosmos_otel_endpoint",
     ),
 )

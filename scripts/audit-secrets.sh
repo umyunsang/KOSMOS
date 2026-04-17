@@ -131,8 +131,13 @@ _check_pattern() {
         lineno=$(( lineno + 1 ))
         if echo "${line}" | grep -iqE "${pattern}"; then
             if ! _is_allowed "${line}"; then
+                # Trailing `|| true` keeps `set -euo pipefail` from aborting
+                # when snippet extraction fails on a pipeline internal (e.g.,
+                # head closing the pipe before grep flushes). The outer
+                # `grep -iqE` above already confirmed the match; the snippet
+                # is only for the violation report.
                 local snippet
-                snippet="$(echo "${line}" | grep -ioE "${pattern}" | head -1)"
+                snippet="$( { echo "${line}" | grep -ioE "${pattern}" | head -1; } || true )"
                 _violation_lines="${_violation_lines}${file}:${lineno}:1:${rule_id}:${snippet}"$'\n'
                 _violations=$(( _violations + 1 ))
             fi
