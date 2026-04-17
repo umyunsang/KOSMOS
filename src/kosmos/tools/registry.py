@@ -36,7 +36,22 @@ class ToolRegistry:
         if tool.id in self._tools:
             raise DuplicateToolError(tool.id)
 
-        # FR-038: PII-flagged adapters MUST also require authentication.
+        # FR-038 (auth_level backstop): PII-flagged adapters MUST NOT declare
+        # auth_level='public' regardless of the requires_auth flag. Pydantic V1
+        # already rejects this at construction time; re-check here because a
+        # caller that bypassed validation via model_construct could otherwise
+        # reach the registry with an inconsistent pair.
+        if tool.is_personal_data and tool.auth_level == "public":
+            raise RegistrationError(
+                tool.id,
+                "is_personal_data=True is incompatible with auth_level='public' "
+                "(Constitution §II / FR-038 / Spec-024 V1)",
+            )
+
+        # FR-038 (requires_auth backstop): PII-flagged adapters MUST also
+        # require authentication. Kept as a second independent check so that a
+        # tool constructed with auth_level='public' AND requires_auth=True
+        # (V5 violation that slipped past validation) still fails closed.
         if tool.is_personal_data and not tool.requires_auth:
             raise RegistrationError(
                 tool.id,

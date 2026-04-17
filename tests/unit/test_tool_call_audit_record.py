@@ -18,12 +18,12 @@ from __future__ import annotations
 import json
 import os
 import time
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
 import pytest
 from pydantic import ValidationError
 
-from kosmos.security.audit import ToolCallAuditRecord
+from kosmos.security.audit import MAX_CLOCK_SKEW_SECONDS, ToolCallAuditRecord
 
 # ---------------------------------------------------------------------------
 # Shared fixtures
@@ -32,7 +32,10 @@ from kosmos.security.audit import ToolCallAuditRecord
 _VALID_HASH_A = "a" * 64  # lowercase hex, 64 chars — valid SHA-256 placeholder
 _VALID_HASH_B = "b" * 64
 _VALID_HASH_C = "c" * 64
-_VALID_TS = datetime(2026, 4, 17, 10, 30, 0, tzinfo=UTC)
+# I4 (extended) binds timestamps to ±MAX_CLOCK_SKEW_SECONDS of UTC now; use a
+# near-now timestamp so the test suite remains green regardless of wall-clock
+# drift on the host. Truncate microseconds for stable serialization.
+_VALID_TS = datetime.now(UTC).replace(microsecond=0)
 
 _SCHEMA_PATH = (
     __file__.replace("tests/unit/test_tool_call_audit_record.py", "")
@@ -258,11 +261,15 @@ class TestInvariantI3:
         assert record.dpa_reference is None
 
     def test_i3_personal_with_dpa_succeeds(self):
+        # I5 additionally requires sanitized_output_hash for allow+PII; satisfy
+        # it here so that the test isolates the I3 success path.
         record = ToolCallAuditRecord(
             **_minimal_record(
                 pipa_class="personal",
                 dpa_reference="DPA-TEST-001",
                 auth_level_presented="AAL2",
+                sanitized_output_hash=_VALID_HASH_C,
+                merkle_covered_hash="sanitized_output_hash",
             )
         )
         assert record.dpa_reference == "DPA-TEST-001"
@@ -275,14 +282,100 @@ class TestInvariantI3:
 
 class TestInvariantI4:
     def test_i4_naive_datetime_rejected(self):
-        naive_ts = datetime(2026, 4, 17, 10, 30, 0)  # no tzinfo
+        naive_ts = datetime.now().replace(microsecond=0)  # no tzinfo
         with pytest.raises(ValidationError, match="I4"):
             ToolCallAuditRecord(**_minimal_record(timestamp=naive_ts))
 
     def test_i4_aware_datetime_accepted(self):
-        aware_ts = datetime(2026, 4, 17, 10, 30, 0, tzinfo=UTC)
+        aware_ts = datetime.now(UTC).replace(microsecond=0)
         record = ToolCallAuditRecord(**_minimal_record(timestamp=aware_ts))
         assert record.timestamp.tzinfo is not None
+
+
+# ---------------------------------------------------------------------------
+# (e2) Invariant I4 extension — clock-skew bound (NIST SP 800-92 §2.3.2)
+# ---------------------------------------------------------------------------
+
+
+class TestClockSkewBound:
+    """MAX_CLOCK_SKEW_SECONDS (M6) — timestamps drifting > 300s rejected."""
+
+    def test_past_skew_outside_bound_rejected(self):
+        stale_ts = datetime.now(UTC) - timedelta(seconds=MAX_CLOCK_SKEW_SECONDS + 10)
+        with pytest.raises(ValidationError, match="I4"):
+            ToolCallAuditRecord(**_minimal_record(timestamp=stale_ts))
+
+    def test_future_skew_outside_bound_rejected(self):
+        future_ts = datetime.now(UTC) + timedelta(seconds=MAX_CLOCK_SKEW_SECONDS + 10)
+        with pytest.raises(ValidationError, match="I4"):
+            ToolCallAuditRecord(**_minimal_record(timestamp=future_ts))
+
+    def test_within_bound_accepted(self):
+        near_ts = datetime.now(UTC) - timedelta(seconds=MAX_CLOCK_SKEW_SECONDS - 10)
+        record = ToolCallAuditRecord(**_minimal_record(timestamp=near_ts))
+        assert record.timestamp is not None
+
+
+# ---------------------------------------------------------------------------
+# (e3) Invariant I5 — allow + PII → sanitized_output_hash mandatory
+# ---------------------------------------------------------------------------
+
+
+class TestInvariantI5:
+    """Merkle coverage must bind the redacted view, never raw PII (spec 024 §3.2 I5)."""
+
+    @pytest.mark.parametrize("pipa_class", ["personal", "sensitive", "identifier"])
+    def test_i5_allow_pii_without_sanitized_rejected(self, pipa_class: str):
+        with pytest.raises(ValidationError, match="I5"):
+            ToolCallAuditRecord(
+                **_minimal_record(
+                    permission_decision="allow",
+                    pipa_class=pipa_class,
+                    dpa_reference="DPA-TEST-001",
+                    auth_level_presented="AAL3" if pipa_class == "identifier" else "AAL2",
+                    sanitized_output_hash=None,
+                    merkle_covered_hash="output_hash",
+                )
+            )
+
+    def test_i5_allow_pii_with_sanitized_succeeds(self):
+        record = ToolCallAuditRecord(
+            **_minimal_record(
+                permission_decision="allow",
+                pipa_class="personal",
+                dpa_reference="DPA-TEST-001",
+                auth_level_presented="AAL2",
+                sanitized_output_hash=_VALID_HASH_C,
+                merkle_covered_hash="sanitized_output_hash",
+            )
+        )
+        assert record.sanitized_output_hash == _VALID_HASH_C
+
+    def test_i5_deny_pii_without_sanitized_allowed(self):
+        """Denied calls never produce output, so I5 does not apply."""
+        record = ToolCallAuditRecord(
+            **_minimal_record(
+                permission_decision="deny_aal",
+                pipa_class="identifier",
+                dpa_reference="DPA-TEST-001",
+                auth_level_presented="AAL1",
+                sanitized_output_hash=None,
+                merkle_covered_hash="output_hash",
+            )
+        )
+        assert record.sanitized_output_hash is None
+
+    def test_i5_allow_non_personal_without_sanitized_allowed(self):
+        """Non-personal output bypasses the sanitization mandate."""
+        record = ToolCallAuditRecord(
+            **_minimal_record(
+                permission_decision="allow",
+                pipa_class="non_personal",
+                sanitized_output_hash=None,
+                merkle_covered_hash="output_hash",
+            )
+        )
+        assert record.sanitized_output_hash is None
 
 
 # ---------------------------------------------------------------------------
@@ -385,6 +478,133 @@ class TestFieldShapeConstraints:
     def test_tool_id_starting_with_hyphen_rejected(self):
         with pytest.raises(ValidationError):
             ToolCallAuditRecord(**_minimal_record(tool_id="-lookup"))
+
+
+# ---------------------------------------------------------------------------
+# (g2) DPA reference pattern (M4)
+# ---------------------------------------------------------------------------
+
+
+class TestDpaReferencePattern:
+    """dpa_reference must be letter-led, 6..64 chars, no placeholders or whitespace."""
+
+    @pytest.mark.parametrize("placeholder", ["TBD", "N/A", "tbd", "n/a", "TODO"])
+    def test_placeholder_rejected(self, placeholder: str):
+        with pytest.raises(ValidationError, match="dpa_reference"):
+            ToolCallAuditRecord(
+                **_minimal_record(
+                    pipa_class="personal",
+                    dpa_reference=placeholder,
+                    auth_level_presented="AAL2",
+                    sanitized_output_hash=_VALID_HASH_C,
+                    merkle_covered_hash="sanitized_output_hash",
+                )
+            )
+
+    def test_leading_whitespace_rejected(self):
+        with pytest.raises(ValidationError, match="dpa_reference"):
+            ToolCallAuditRecord(
+                **_minimal_record(
+                    pipa_class="personal",
+                    dpa_reference=" DPA-TEST-001",
+                    auth_level_presented="AAL2",
+                    sanitized_output_hash=_VALID_HASH_C,
+                    merkle_covered_hash="sanitized_output_hash",
+                )
+            )
+
+    def test_trailing_whitespace_rejected(self):
+        with pytest.raises(ValidationError, match="dpa_reference"):
+            ToolCallAuditRecord(
+                **_minimal_record(
+                    pipa_class="personal",
+                    dpa_reference="DPA-TEST-001 ",
+                    auth_level_presented="AAL2",
+                    sanitized_output_hash=_VALID_HASH_C,
+                    merkle_covered_hash="sanitized_output_hash",
+                )
+            )
+
+    def test_digit_led_rejected(self):
+        with pytest.raises(ValidationError, match="dpa_reference"):
+            ToolCallAuditRecord(
+                **_minimal_record(
+                    pipa_class="personal",
+                    dpa_reference="1DPA-TEST",
+                    auth_level_presented="AAL2",
+                    sanitized_output_hash=_VALID_HASH_C,
+                    merkle_covered_hash="sanitized_output_hash",
+                )
+            )
+
+    def test_too_short_rejected(self):
+        # 5 chars, below the minimum of 6
+        with pytest.raises(ValidationError, match="dpa_reference"):
+            ToolCallAuditRecord(
+                **_minimal_record(
+                    pipa_class="personal",
+                    dpa_reference="DPA-1",
+                    auth_level_presented="AAL2",
+                    sanitized_output_hash=_VALID_HASH_C,
+                    merkle_covered_hash="sanitized_output_hash",
+                )
+            )
+
+    def test_valid_identifier_accepted(self):
+        record = ToolCallAuditRecord(
+            **_minimal_record(
+                pipa_class="personal",
+                dpa_reference="DPA-MOIS-2026-01",
+                auth_level_presented="AAL2",
+                sanitized_output_hash=_VALID_HASH_C,
+                merkle_covered_hash="sanitized_output_hash",
+            )
+        )
+        assert record.dpa_reference == "DPA-MOIS-2026-01"
+
+
+# ---------------------------------------------------------------------------
+# (g3) maxLength DoS hardening (M5) — 64-char cap on unbounded string fields
+# ---------------------------------------------------------------------------
+
+
+class TestMaxLengthDoS:
+    """String fields must reject payloads exceeding _MAX_AUDIT_STRING_LEN (64)."""
+
+    def test_session_id_65_chars_rejected(self):
+        with pytest.raises(ValidationError, match="session_id"):
+            ToolCallAuditRecord(**_minimal_record(session_id="s" * 65))
+
+    def test_caller_identity_65_chars_rejected(self):
+        with pytest.raises(ValidationError, match="caller_identity"):
+            ToolCallAuditRecord(**_minimal_record(caller_identity="c" * 65))
+
+    def test_rate_limit_bucket_65_chars_rejected(self):
+        with pytest.raises(ValidationError, match="rate_limit_bucket"):
+            ToolCallAuditRecord(**_minimal_record(rate_limit_bucket="r" * 65))
+
+    def test_tool_id_65_chars_rejected(self):
+        # Pattern-valid but length-invalid: starts with a-z and uses a-z0-9_
+        with pytest.raises(ValidationError, match="tool_id"):
+            ToolCallAuditRecord(**_minimal_record(tool_id="a" + "b" * 64))
+
+    def test_merkle_leaf_id_65_chars_rejected(self):
+        with pytest.raises(ValidationError, match="merkle_leaf_id"):
+            ToolCallAuditRecord(**_minimal_record(merkle_leaf_id="m" * 65))
+
+    def test_dpa_reference_65_chars_rejected(self):
+        # 65-char dpa_reference fails the pattern ({5,63}) before the length check,
+        # so we assert on the pattern/dpa_reference match rather than maxLength wording.
+        with pytest.raises(ValidationError, match="dpa_reference"):
+            ToolCallAuditRecord(
+                **_minimal_record(
+                    pipa_class="personal",
+                    dpa_reference="A" + "B" * 64,
+                    auth_level_presented="AAL2",
+                    sanitized_output_hash=_VALID_HASH_C,
+                    merkle_covered_hash="sanitized_output_hash",
+                )
+            )
 
 
 # ---------------------------------------------------------------------------

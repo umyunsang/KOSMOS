@@ -280,7 +280,7 @@ NMC_EMERGENCY_SEARCH_TOOL = GovAPITool(
     auth_level="AAL2",
     pipa_class="personal",
     is_irreversible=False,
-    dpa_reference="dpa:nmc:v1",
+    dpa_reference="dpa-nmc-v1",
     # Metadata for T033 registration:
     requires_auth=True,
     is_personal_data=True,

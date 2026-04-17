@@ -12,6 +12,13 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 from kosmos.security.audit import TOOL_MIN_AAL, AALLevel
 from kosmos.tools.errors import LookupErrorReason
 
+# DPA reference identifiers MUST satisfy the same shape as the audit layer
+# (kosmos.security.audit._DPA_REFERENCE_PATTERN): letter-led, 6..64 chars,
+# alphanumeric + dash/underscore. Keeping the regex duplicated (rather than
+# importing the private constant) is intentional — it documents the contract
+# at the model boundary where upstream callers first encounter it.
+_DPA_REFERENCE_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9_-]{5,63}$")
+
 PIPAClass = Literal["non_personal", "personal", "sensitive", "identifier"]
 
 
@@ -184,6 +191,20 @@ class GovAPITool(BaseModel):
                     f"pipa_class={self.pipa_class!r} but dpa_reference is "
                     f"{self.dpa_reference!r}; PIPA §26 위탁 MUST cite a non-empty "
                     "DPA template identifier."
+                )
+            if self.dpa_reference.strip() != self.dpa_reference:
+                raise ValueError(
+                    f"V2 violation (FR-014): tool {self.id!r} has dpa_reference "
+                    f"{self.dpa_reference!r} with leading/trailing whitespace; "
+                    "DPA identifiers MUST be submitted trimmed."
+                )
+            if not _DPA_REFERENCE_PATTERN.fullmatch(self.dpa_reference):
+                raise ValueError(
+                    f"V2 violation (FR-014): tool {self.id!r} dpa_reference "
+                    f"{self.dpa_reference!r} must match "
+                    r"^[A-Za-z][A-Za-z0-9_-]{5,63}$ "
+                    "(letter-led, 6..64 chars, alphanumeric + '-_'); "
+                    "placeholders like 'TBD' or 'N/A' are rejected."
                 )
 
         expected_aal = TOOL_MIN_AAL.get(self.id)

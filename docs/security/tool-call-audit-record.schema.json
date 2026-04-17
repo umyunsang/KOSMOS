@@ -30,6 +30,7 @@
     "tool_id": {
       "type": "string",
       "pattern": "^[a-z][a-z0-9_]*$",
+      "maxLength": 64,
       "description": "Matches GovAPITool.id."
     },
     "adapter_mode": {
@@ -39,11 +40,13 @@
     "session_id": {
       "type": "string",
       "minLength": 1,
+      "maxLength": 64,
       "description": "Opaque session identifier; UUIDv7 recommended."
     },
     "caller_identity": {
       "type": "string",
       "minLength": 1,
+      "maxLength": 64,
       "description": "Opaque identity token. MUST NOT be a Korean resident registration number."
     },
     "permission_decision": {
@@ -66,7 +69,9 @@
     },
     "dpa_reference": {
       "type": ["string", "null"],
-      "description": "DPA template identifier; non-null whenever pipa_class != 'non_personal'."
+      "pattern": "^[A-Za-z][A-Za-z0-9_-]{5,63}$",
+      "maxLength": 64,
+      "description": "DPA template identifier; non-null whenever pipa_class != 'non_personal'. Letter-led, 6..64 chars, alphanumeric plus '-_'. Placeholders like 'TBD' or 'N/A' are rejected."
     },
     "input_hash": {
       "type": "string",
@@ -89,6 +94,7 @@
     },
     "merkle_leaf_id": {
       "type": ["string", "null"],
+      "maxLength": 64,
       "description": "Leaf identifier in the external Merkle chain; chain construction is deferred."
     },
     "timestamp": {
@@ -104,6 +110,7 @@
     "rate_limit_bucket": {
       "type": "string",
       "minLength": 1,
+      "maxLength": 64,
       "description": "Bucket identifier for per-provider/per-key quota accounting."
     },
     "public_path_marker": {
@@ -156,6 +163,22 @@
           "dpa_reference": { "type": "string", "minLength": 1 }
         },
         "required": ["dpa_reference"]
+      }
+    },
+    {
+      "description": "I5: permission_decision=='allow' AND pipa_class != non_personal implies sanitized_output_hash is non-null (Merkle coverage must bind the redacted view).",
+      "if": {
+        "properties": {
+          "permission_decision": { "const": "allow" },
+          "pipa_class": { "not": { "const": "non_personal" } }
+        },
+        "required": ["permission_decision", "pipa_class"]
+      },
+      "then": {
+        "properties": {
+          "sanitized_output_hash": { "type": "string", "minLength": 1 }
+        },
+        "required": ["sanitized_output_hash"]
       }
     }
   ]
