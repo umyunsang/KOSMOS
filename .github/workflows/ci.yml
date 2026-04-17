@@ -3,11 +3,6 @@ name: CI
 on:
   pull_request:
     branches: [main]
-    paths:
-      - "docker/**"
-      - "pyproject.toml"
-      - "uv.lock"
-      - "**"
   push:
     branches: [main]
   merge_group:

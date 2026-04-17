@@ -35,15 +35,34 @@ jobs:
           UV_LOCK_HASH="sha256:$(sha256sum uv.lock | cut -d' ' -f1)"
           echo "UV_LOCK_HASH=$UV_LOCK_HASH" >> "$GITHUB_ENV"
 
+      - name: Build docker image and capture digest
+        # GHCR push is deferred to Epic #468; until then, compute the local image
+        # content-address via `docker image inspect --format '{{.Id}}'`, which
+        # yields `sha256:<64hex>` matching the ReleaseManifest docker_digest
+        # validator.  The digest is still cryptographically bound to the image
+        # bytes produced from this commit — swapping GHCR push in later does not
+        # change the schema contract.
+        run: |
+          docker build -f docker/Dockerfile -t kosmos:release .
+          DOCKER_DIGEST=$(docker image inspect kosmos:release --format '{{.Id}}')
+          echo "DOCKER_DIGEST=$DOCKER_DIGEST" >> "$GITHUB_ENV"
+
+      - name: Resolve Friendli model id
+        # Epic #468 (env registry) will formalize this key.  Until then, allow
+        # `vars.FRIENDLI_MODEL_ID` override with the documented default from
+        # AGENTS.md / plan.md.  The default matches the schema pattern
+        # `<vendor>/<model>` so the ReleaseManifest validator passes even when
+        # the repo-level variable is not configured.
+        run: |
+          FRIENDLI_MODEL_ID="${{ vars.FRIENDLI_MODEL_ID || 'LGAI-EXAONE/EXAONE-3.5-32B-Instruct' }}"
+          echo "FRIENDLI_MODEL_ID=$FRIENDLI_MODEL_ID" >> "$GITHUB_ENV"
+
       - name: Emit prompt hashes
         run: |
           mkdir -p docs/release-manifests
           uv run python -m kosmos.context.prompt_loader --emit-hashes > /tmp/prompt_hashes.json
 
       - name: Verify required release inputs
-        env:
-          DOCKER_DIGEST: ${{ env.DOCKER_DIGEST }}
-          FRIENDLI_MODEL_ID: ${{ env.FRIENDLI_MODEL_ID }}
         run: |
           : "${DOCKER_DIGEST:?DOCKER_DIGEST must be set (sha256:<64-hex>) for release manifest}"
           : "${FRIENDLI_MODEL_ID:?FRIENDLI_MODEL_ID must be set (LGAI-EXAONE/...) for release manifest}"
