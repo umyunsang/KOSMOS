@@ -196,18 +196,29 @@ class DenseBackend:
             from sentence_transformers import SentenceTransformer
 
             logger.info("DenseBackend: loading encoder %r (CPU)", self._model_id)
-            encoder = SentenceTransformer(self._model_id)
+            # CPU-only contract (AGENTS.md): pass explicit device to prevent
+            # SentenceTransformer from auto-selecting CUDA/MPS when available.
+            encoder = SentenceTransformer(self._model_id, device="cpu")
         except Exception as exc:
             raise DenseBackendLoadError(
                 f"Failed to load SentenceTransformer({self._model_id!r}): {exc}"
             ) from exc
 
-        # Capture tokenizer version for RetrievalManifest.
+        # Capture tokenizer library version for RetrievalManifest (FR-004).
+        # Use actual installed tokenizers/transformers package version so the
+        # release manifest can pin the exact tokenisation behaviour — not the
+        # model slug, which says nothing about tokenisation code.
         try:
-            tokenizer = encoder.tokenizer
-            self._tokenizer_version = str(tokenizer.init_kwargs.get("name_or_path", self._model_id))
+            import tokenizers as _tokenizers_pkg  # type: ignore[import-untyped]
+
+            self._tokenizer_version = f"tokenizers=={_tokenizers_pkg.__version__}"
         except Exception:  # pragma: no cover
-            self._tokenizer_version = self._model_id
+            try:
+                import transformers as _transformers_pkg
+
+                self._tokenizer_version = f"transformers=={_transformers_pkg.__version__}"
+            except Exception:
+                self._tokenizer_version = "unknown"
 
         # Hash the primary weight file for RetrievalManifest.
         try:
@@ -264,17 +275,24 @@ class DenseBackend:
                     f"Cannot locate HF cache dir for {model_id!r}: {inner}"
                 ) from inner
 
-        candidates = [
-            Path(local_dir) / "model.safetensors",
-            Path(local_dir) / "pytorch_model.bin",
-            # sentence-transformers stores the transformer sub-model here
-            Path(local_dir) / "1_Pooling" / "config.json",  # final fallback: hash any file
-        ]
-        for candidate in candidates:
-            if candidate.exists():
-                return str(candidate)
+        # Only actual weight files are acceptable — hashing a config.json
+        # would produce a stable digest that is meaningless for manifest
+        # pinning. Scan shallowly and recursively (sentence-transformers
+        # sometimes nests weights under a transformer sub-module dir).
+        local_root = Path(local_dir)
+        for filename in ("model.safetensors", "pytorch_model.bin"):
+            direct = local_root / filename
+            if direct.exists():
+                return str(direct)
+        for filename in ("model.safetensors", "pytorch_model.bin"):
+            for nested in local_root.rglob(filename):
+                if nested.is_file():
+                    return str(nested)
 
-        raise FileNotFoundError(f"No weight file found in {local_dir!r} for model {model_id!r}")
+        raise FileNotFoundError(
+            f"No weight file (model.safetensors or pytorch_model.bin) found in "
+            f"{local_dir!r} for model {model_id!r}"
+        )
 
     @staticmethod
     def _sha256_file(path: str) -> str:

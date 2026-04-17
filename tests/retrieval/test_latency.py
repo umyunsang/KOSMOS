@@ -76,9 +76,10 @@ class _DeterministicEncoder384:
 
     _DIM = 384
 
-    def __init__(self, model_id: str) -> None:  # noqa: ARG002
+    def __init__(self, model_id: str, *, device: str | None = None) -> None:  # noqa: ARG002
         self._rng = np.random.RandomState(0)
         self._dim = self._DIM
+        self.device = device
         # Fake tokenizer so DenseBackend._load_encoder can read init_kwargs.
         self.tokenizer = _FakeTokenizer(model_id)
 

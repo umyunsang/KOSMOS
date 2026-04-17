@@ -132,12 +132,11 @@ def build_retriever_from_env(
             dense = DenseBackend(model_id=model_id)
             cold_start = os.getenv("KOSMOS_RETRIEVAL_COLD_START", "lazy").strip().lower()
             if cold_start == "eager":
-                # Pre-load weights now with an empty corpus so the encoder is
-                # warm. rebuild({}) is a no-op for embedding but triggers load.
+                # Pre-load the encoder now (rebuild({}) short-circuits on empty
+                # corpus and never calls _load_encoder()). Eager-load failures
+                # are non-fatal here — they surface again at first real rebuild.
                 with contextlib.suppress(Exception):
-                    # Non-empty errors are surfaced at first real rebuild;
-                    # eager cold-start failure is non-fatal here.
-                    dense.rebuild({})
+                    dense._encoder = dense._load_encoder()  # noqa: SLF001 — deliberate warmup
             return dense
         except (DenseBackendLoadError, ImportError, RuntimeError, OSError) as exc:
             if degradation_record is not None:

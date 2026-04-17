@@ -566,11 +566,18 @@ def main(argv: list[str] | None = None) -> None:
         parsed = parser.parse_args(raw_args)
 
         logger.info("Running extended gate with backend=%s", parsed.backend)
-        report = run_extended_gate(
-            backend=parsed.backend,
-            queries_path=parsed.queries,
-            report_path=parsed.report,
-        )
+        # Only forward ``report_path`` when the operator actually passed
+        # ``--report``. If we always forwarded ``parsed.report`` (which is
+        # ``None`` when omitted), ``run_extended_gate`` would interpret that
+        # as "skip writing" and silently drop the default artifact at
+        # ``.eval-artifacts/retrieval_extended.json``.
+        gate_kwargs: dict[str, Any] = {
+            "backend": parsed.backend,
+            "queries_path": parsed.queries,
+        }
+        if parsed.report is not None:
+            gate_kwargs["report_path"] = parsed.report
+        report = run_extended_gate(**gate_kwargs)
 
         recall5 = report["recall_at_5"]
         recall1 = report["recall_at_1"]

@@ -43,8 +43,9 @@ class _FixedStubTransformer:
     _query_vec: np.ndarray = np.array([0.0, 1.0, 0.0], dtype=np.float32)
     _no_prefix_vec: np.ndarray = np.array([0.0, 0.0, 1.0], dtype=np.float32)
 
-    def __init__(self, model_id: str) -> None:  # noqa: ARG002
+    def __init__(self, model_id: str, *, device: str | None = None) -> None:  # noqa: ARG002
         self.model_id = model_id
+        self.device = device
         self.tokenizer = _FakeTokenizer(model_id)
 
     def encode(  # noqa: PLR0913
@@ -82,7 +83,8 @@ class _FakeTokenizer:
 class _NegativeScoreStub:
     """Returns vectors whose dot product yields a negative cosine."""
 
-    def __init__(self, model_id: str) -> None:  # noqa: ARG002
+    def __init__(self, model_id: str, *, device: str | None = None) -> None:  # noqa: ARG002
+        self.device = device
         self.tokenizer = _FakeTokenizer(model_id)
 
     def encode(
