@@ -149,9 +149,14 @@ class HybridBackend:
 
         all_tool_ids: set[str] = {tid for tid, _ in bm25_scores} | {tid for tid, _ in dense_scores}
 
+        # Iterate in deterministic (sorted) order so identical inputs produce
+        # identical output lists across processes with different PYTHONHASHSEED.
+        # Downstream ``kosmos.tools.search`` re-sorts by (score DESC, tool_id ASC)
+        # so the iteration order does not affect the final ranking, but the raw
+        # list returned here is part of the reproducibility contract (NFR-Reproducibility).
         k = self._rrf_k
         fused: list[tuple[str, float]] = []
-        for tool_id in all_tool_ids:
+        for tool_id in sorted(all_tool_ids):
             rank_b = bm25_ranks.get(tool_id, n_bm25 + 1)
             rank_d = dense_ranks.get(tool_id, n_dense + 1)
             fused_score = 1.0 / (k + rank_b) + 1.0 / (k + rank_d)

@@ -505,12 +505,20 @@ def run_extended_gate(
     # - sentinel (omitted by caller) → use default file path
     # - None (explicitly passed) → no file write
     # - Path instance → write to that path
+    # A runtime isinstance check replaces the prior ``# type: ignore`` so
+    # bad caller types (e.g. str) fail loudly here rather than deep in
+    # the JSON writer.
     if report_path is _REPORT_PATH_DEFAULT:
         effective_report_path: Path | None = Path(".eval-artifacts/retrieval_extended.json")
     elif report_path is None:
         effective_report_path = None
+    elif isinstance(report_path, Path):
+        effective_report_path = report_path
     else:
-        effective_report_path = report_path  # type: ignore[assignment]
+        raise TypeError(
+            f"report_path must be pathlib.Path, None, or omitted "
+            f"(got {type(report_path).__name__})"
+        )
 
     # The env overlay only influences ``ToolRegistry.__init__`` (which reads
     # ``KOSMOS_RETRIEVAL_BACKEND`` to bind a retriever). Scope it narrowly so

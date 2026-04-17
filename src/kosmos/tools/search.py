@@ -78,22 +78,47 @@ def search(
         # tokenizer crash, encoder corruption) must not surface as a 5xx
         # on the citizen path. The Retriever protocol does not forbid
         # score() from raising, so this is the last defensive boundary
-        # before the public ``lookup`` contract.
+        # before the public ``lookup`` contract. Try the retriever's BM25
+        # companion (present on ``_DenseFailOpenWrapper`` and
+        # ``HybridBackend``) before falling back to an empty ranking so
+        # citizens still see lexical matches when the dense path crashes
+        # outside its own catch-blocks.
         logger.warning(
-            "search: retriever.score failed (%s: %s) — returning empty ranking",
+            "search: retriever.score failed (%s: %s) — attempting BM25 companion fallback",
             type(exc).__name__,
             exc,
         )
-        return []
+        bm25_companion = getattr(retriever, "_bm25", None)
+        if bm25_companion is None:
+            logger.warning(
+                "search: no BM25 companion on retriever %s — returning empty ranking",
+                type(retriever).__name__,
+            )
+            return []
+        try:
+            scored = bm25_companion.score(query)
+        except Exception as bm25_exc:
+            logger.warning(
+                "search: BM25 companion also failed (%s: %s) — returning empty ranking",
+                type(bm25_exc).__name__,
+                bm25_exc,
+            )
+            return []
 
     # Enforce the deterministic tie-break once, here. Backend-internal
     # orderings are not trusted (HybridBackend returns unordered union).
     scored = sorted(scored, key=lambda pair: (-pair[1], pair[0]))
 
-    # Derive the backend label from the active retriever class so
-    # ``why_matched`` reflects reality when operators opt into dense or
-    # hybrid backends via ``KOSMOS_RETRIEVAL_BACKEND`` (spec 026 FR-001).
-    backend_label = type(retriever).__name__.removesuffix("Backend").lower() or "retrieval"
+    # Derive the backend label from the active retriever. Prefer the
+    # explicit ``_requested_backend_label`` attribute (set on wrappers
+    # like ``_DenseFailOpenWrapper`` that report a logical backend name
+    # distinct from their Python class name) so ``why_matched`` reflects
+    # the operator's configured backend, not an internal wrapper type.
+    backend_label = getattr(
+        retriever,
+        "_requested_backend_label",
+        type(retriever).__name__.removesuffix("Backend").lower() or "retrieval",
+    )
 
     results: list[AdapterCandidate] = []
     for tool_id, score in scored[:effective_top_k]:
