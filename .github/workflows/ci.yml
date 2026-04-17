@@ -60,7 +60,7 @@ jobs:
           method: oidc
           client-id: ${{ vars.INFISICAL_CLIENT_ID }}
           project-id: de83ba22-a456-4551-b835-802da5694765
-          env-slug: test
+          env-slug: dev
           secret-path: "/"
           export-type: env
       - name: Run tests with coverage
