@@ -40,12 +40,8 @@ _CORPUS = {
     "koroad_accident_hazard_search": (
         "교통사고 위험지점 사고다발구역 accident hazard spot dangerous zone"
     ),
-    "kma_forecast_fetch": (
-        "단기예보 날씨예보 기온 강수 short-term forecast weather temperature"
-    ),
-    "nmc_emergency_search": (
-        "응급실 실시간 병상 emergency room bed availability"
-    ),
+    "kma_forecast_fetch": ("단기예보 날씨예보 기온 강수 short-term forecast weather temperature"),
+    "nmc_emergency_search": ("응급실 실시간 병상 emergency room bed availability"),
 }
 
 

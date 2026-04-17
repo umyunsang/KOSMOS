@@ -516,8 +516,7 @@ def run_extended_gate(
         effective_report_path = report_path
     else:
         raise TypeError(
-            f"report_path must be pathlib.Path, None, or omitted "
-            f"(got {type(report_path).__name__})"
+            f"report_path must be pathlib.Path, None, or omitted (got {type(report_path).__name__})"
         )
 
     # The env overlay only influences ``ToolRegistry.__init__`` (which reads
