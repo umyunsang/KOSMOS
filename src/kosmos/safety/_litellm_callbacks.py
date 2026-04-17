@@ -13,8 +13,11 @@ Exports two LiteLLM-compatible callback functions:
     post_call(kwargs: dict, response: object) -> object
         Intercepts the LLM's completed response.
         On a flagged completion, raises ModerationBlockError.
-        On a self-harm flag, injects the crisis-hotline body into the response
-        before raising.
+        On a self-harm flag, the raised exception's ``substitution`` attribute
+        carries the crisis-hotline Korean text so downstream code can swap it
+        into the user-visible payload before surfacing the block.  The hook
+        itself does NOT mutate ``response`` — the caller owns that substitution
+        step.
 
 Block signal contract (non-self-harm categories):
     Both hooks raise ``ModerationBlockError``, a ``LookupError`` subclass, so
@@ -24,12 +27,16 @@ Block signal contract (non-self-harm categories):
     ``ModerationBlockError``.
 
 Fail-open deviation (FR-011):
-    When the OpenAI Moderation API is unreachable (``httpx.TransportError`` or
-    ``openai.APIConnectionError``), the request is **allowed through unchanged**
+    When the OpenAI Moderation API is unreachable (``httpx.TransportError``,
+    ``openai.APIConnectionError``), rate-limited (``openai.RateLimitError`` —
+    HTTP 429), or returning a 5xx upstream fault (``openai.APIStatusError``
+    with ``status_code >= 500``), the request is **allowed through unchanged**
     and a ``ModerationWarnedEvent(detail="outage")`` is emitted on the active
     span.  This is a deliberate deviation from the general fail-closed posture
     because moderation outages must not bring the entire public-service platform
-    offline.  See specs/026-safety-rails/spec.md § Edge Cases.
+    offline.  4xx errors other than 429 (auth, bad request) still fail closed —
+    they indicate a misconfiguration, not an outage.  See
+    specs/026-safety-rails/spec.md § Edge Cases.
 
 Reference: specs/026-safety-rails/spec.md FR-008..FR-011, FR-016, FR-022.
 """
@@ -92,25 +99,6 @@ class ModerationBlockError(LookupError):
         self.substitution = substitution
 
 
-def _build_all_false_categories() -> dict[str, Any]:
-    """Return a JSON-serialisable dict with every moderation category set False."""
-    return {
-        "harassment": False,
-        "harassment/threatening": False,
-        "hate": False,
-        "hate/threatening": False,
-        "illicit": False,
-        "illicit/violent": False,
-        "self-harm": False,
-        "self-harm/instructions": False,
-        "self-harm/intent": False,
-        "sexual": False,
-        "sexual/minors": False,
-        "violence": False,
-        "violence/graphic": False,
-    }
-
-
 def _call_moderation_api(content: str) -> tuple[tuple[str, ...], bool]:
     """Call the OpenAI Moderation API and return (flagged_categories, is_self_harm).
 
@@ -161,6 +149,36 @@ def _ensure_enabled() -> bool:
     return settings.safety.moderation_enabled
 
 
+def _is_outage_error(exc: BaseException) -> bool:
+    """Classify *exc* as a moderation-outage condition that should fail open.
+
+    Returns True for transport faults, 429 rate-limits, and 5xx upstream errors
+    from the OpenAI SDK.  4xx auth / bad-request failures return False — those
+    are configuration errors, not outages, and must fail closed so the operator
+    sees them.
+    """
+    import httpx  # noqa: PLC0415
+
+    if isinstance(exc, httpx.TransportError):
+        return True
+
+    try:
+        import openai as _openai  # noqa: PLC0415
+    except ImportError:
+        return False
+
+    if isinstance(exc, (_openai.APIConnectionError, _openai.RateLimitError)):
+        return True
+
+    # APIStatusError covers every non-2xx response.  Only treat 5xx as outage;
+    # 4xx (auth, invalid input, content-policy misconfig) must fail closed.
+    if isinstance(exc, _openai.APIStatusError):
+        status = getattr(exc, "status_code", None)
+        return isinstance(status, int) and status >= 500
+
+    return False
+
+
 def _extract_last_user_content(kwargs: dict[str, Any]) -> str | None:
     """Extract the content string from the last user-role message in kwargs."""
     messages: list[dict[str, Any]] = kwargs.get("messages", [])
@@ -197,18 +215,8 @@ def pre_call(kwargs: dict[str, Any]) -> dict[str, Any]:
     try:
         flagged_categories, is_self_harm = _call_moderation_api(content)
     except Exception as exc:  # noqa: BLE001
-        # FR-011 explicit fail-open deviation: any outage → allow + warn event.
-        # See module docstring for the rationale.
-        import httpx  # noqa: PLC0415
-
-        try:
-            import openai as _openai  # noqa: PLC0415
-
-            _connection_errors = (_openai.APIConnectionError, httpx.TransportError)
-        except ImportError:
-            _connection_errors = (httpx.TransportError,)  # type: ignore[assignment]
-
-        if isinstance(exc, _connection_errors):
+        # FR-011 explicit fail-open deviation — see module docstring.
+        if _is_outage_error(exc):
             emit_safety_event(ModerationWarnedEvent(detail="outage"))
             return kwargs
         raise
@@ -261,16 +269,7 @@ def post_call(kwargs: dict[str, Any], response: object) -> object:
     try:
         flagged_categories, is_self_harm = _call_moderation_api(content)
     except Exception as exc:  # noqa: BLE001
-        import httpx  # noqa: PLC0415
-
-        try:
-            import openai as _openai  # noqa: PLC0415
-
-            _connection_errors = (_openai.APIConnectionError, httpx.TransportError)
-        except ImportError:
-            _connection_errors = (httpx.TransportError,)  # type: ignore[assignment]
-
-        if isinstance(exc, _connection_errors):
+        if _is_outage_error(exc):
             emit_safety_event(ModerationWarnedEvent(detail="outage"))
             return response
         raise

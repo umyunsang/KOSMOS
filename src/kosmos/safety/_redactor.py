@@ -17,11 +17,11 @@ Public API
 
 Presidio path (optional)
 ------------------------
-If ``presidio_analyzer`` is importable the function builds an
-``AnalyzerEngine`` with one ``PatternRecognizer`` per category and a stub
-NLP engine so that only regex-level matching is used (no spaCy model is
-required).  This path is active once T039 adds the dependency to
-``pyproject.toml``.
+If ``presidio_analyzer`` is importable the function instantiates one
+``PatternRecognizer`` per category and calls each recogniser's ``analyze()``
+directly — no ``AnalyzerEngine`` and no NLP lane (``nlp_artifacts=None``),
+so no spaCy model is required.  This path is active once T039 adds the
+dependency to ``pyproject.toml``.
 
 Fallback path (current)
 -----------------------

@@ -111,6 +111,10 @@ def apply_ingress_safety(
         if counter[0] > 0:
             logger.info("safety.ingress: redactor replaced %d PII match(es)", counter[0])
             return (redacted, RedactedEvent(match_count=counter[0]))
-        return (redacted, None)
+        # No matches — return the original identity so callers can detect a
+        # genuine no-op and skip the RedactedEvent path.  Rebuilding the dict
+        # via _redact_leaves when counter == 0 would contradict the docstring
+        # contract ("raw_output, None when clean") and waste allocations.
+        return (raw_output, None)
 
     return (raw_output, None)

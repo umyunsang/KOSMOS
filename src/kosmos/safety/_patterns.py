@@ -72,7 +72,10 @@ _INJECTION_PATTERNS: dict[str, list[re.Pattern[str]]] = {
         re.compile(r"ignore\s+(all\s+)?previous\s+instructions", re.IGNORECASE),
         re.compile(r"you\s+are\s+now\s+\w+", re.IGNORECASE),
         re.compile(r"act\s+as\s+(an?\s+)?\w+", re.IGNORECASE),
-        # Korean: "이전 지시를 도모" — role-assumption variant (Edge Case E-2)
+        # Korean canonical: "이전 지시를 무시" (ignore previous instructions)
+        # — direct LLM01 jailbreak phrasing, matches arXiv 2504.11168 taxonomy.
+        re.compile(r"\uc774\uc804\s*\uc9c0\uc2dc\ub97c?\s*\ubb34\uc2dc", re.IGNORECASE),
+        # Korean variant: "이전 지시를 도모" — role-assumption signal (Edge Case E-2)
         re.compile(r"\uc774\uc804\s*\uc9c0\uc2dc\ub97c?\s*\ub3c4\ubaa8", re.IGNORECASE),
     ],
     "system_override": [

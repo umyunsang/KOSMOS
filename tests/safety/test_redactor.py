@@ -10,6 +10,7 @@ Validates:
 from __future__ import annotations
 
 import json
+import os
 import time
 from pathlib import Path
 
@@ -117,6 +118,10 @@ def test_redactor_fixture(fixture: dict) -> None:
 
 
 @pytest.mark.performance
+@pytest.mark.skipif(
+    os.environ.get("KOSMOS_SKIP_PERF") == "1",
+    reason="KOSMOS_SKIP_PERF=1 — performance gates disabled on constrained runners",
+)
 def test_redactor_latency_p95_100kb() -> None:  # SC-003
     """SC-003: p95 latency of run_redactor() must be ≤ 50 ms on a 100 KB payload.
 

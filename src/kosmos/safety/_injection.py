@@ -46,6 +46,15 @@ _W_ENTROPY: float = 0.25
 _W_LENGTH: float = 0.15
 _BLOCK_THRESHOLD: float = 0.20  # SC-004: tuned from 0.5; see fp_audit.json
 
+# Float-edge tolerance for the block comparison.
+# Rationale: a single-category structural hit computes `0.6 * (1/3)` which
+# evaluates to `0.19999999999999998` under IEEE-754 — just below the nominal
+# 0.20 threshold.  Subtracting a small epsilon from the threshold keeps the
+# intended decision boundary (single-category hit ⇒ block) stable without
+# widening the allow-side margin.  Value chosen to be well below the observed
+# clean-corpus max score (0.035) per the SC-004 audit.
+_BLOCK_EPS: float = 1e-9
+
 # Substrings of at least this many characters are examined for entropy.
 _MIN_ENCODED_LEN: int = 32
 
@@ -149,7 +158,9 @@ def run_detector(text: str) -> InjectionSignalSet:
 
     combined = _W_STRUCTURAL * structural + _W_ENTROPY * entropy + _W_LENGTH * length_dev
 
-    decision: str = "block" if combined >= _BLOCK_THRESHOLD else "allow"
+    # Use float-tolerant comparison so a single-category structural hit
+    # (0.6 × 1/3 = 0.19999…) still trips the 0.20 threshold; see _BLOCK_EPS.
+    decision: str = "block" if combined >= _BLOCK_THRESHOLD - _BLOCK_EPS else "allow"
 
     return InjectionSignalSet(
         structural_score=structural,
