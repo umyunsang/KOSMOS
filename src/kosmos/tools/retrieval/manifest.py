@@ -37,7 +37,13 @@ class RetrievalManifest(BaseModel):
     )
     weight_sha256: str | None = Field(
         default=None,
-        pattern="^([a-f0-9]{64})?$",
+        # Reject empty string: pydantic v2 skips ``pattern`` on None-valued
+        # optional fields, so ``None`` still passes untouched while any
+        # supplied value MUST be a 64-char lowercase hex digest. The
+        # previous regex ``^([a-f0-9]{64})?$`` admitted ``""`` because the
+        # whole group was optional, which let degraded manifests (weight
+        # file not hashed) slip through the reproducibility gate (FR-004).
+        pattern="^[a-f0-9]{64}$",
         description="SHA-256 of the primary weight file; None for bm25.",
     )
     tokenizer_version: str | None = Field(

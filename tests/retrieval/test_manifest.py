@@ -32,7 +32,7 @@ from kosmos.tools.retrieval.manifest import RetrievalManifest
 # Helpers / fixtures
 # ---------------------------------------------------------------------------
 
-_VALID_SHA256 = "a" * 64  # 64 lowercase hex chars — matches ^([a-f0-9]{64})?$
+_VALID_SHA256 = "a" * 64  # 64 lowercase hex chars — matches ^[a-f0-9]{64}$
 
 _DENSE_KWARGS: dict = {
     "backend": "dense",
@@ -187,11 +187,27 @@ def test_invalid_sha_pattern_too_long() -> None:
 def test_invalid_sha_pattern_uppercase() -> None:
     """weight_sha256 containing uppercase hex chars raises ValidationError.
 
-    The pattern ^([a-f0-9]{64})?$ is lowercase-only.
+    The pattern ^[a-f0-9]{64}$ is lowercase-only.
     """
     uppercase_sha = "A" * 64
     with pytest.raises(ValidationError):
         RetrievalManifest(**_dense_kwargs(weight_sha256=uppercase_sha))
+
+
+def test_invalid_sha_pattern_empty_string() -> None:
+    """weight_sha256='' must be rejected — empty is NOT a valid digest.
+
+    Regression for Codex round-4 P2: the previous pattern
+    ``^([a-f0-9]{64})?$`` accepted the empty string because the whole
+    capture group was optional, which let a dense/hybrid manifest pass
+    construction with no real weight digest — weakening the
+    reproducibility contract (FR-004).  The tightened pattern
+    ``^[a-f0-9]{64}$`` requires exactly 64 hex chars when the field is
+    supplied; None remains valid for the bm25 backend via the optional
+    type annotation.
+    """
+    with pytest.raises(ValidationError):
+        RetrievalManifest(**_dense_kwargs(weight_sha256=""))
 
 
 def test_invalid_backend_value() -> None:

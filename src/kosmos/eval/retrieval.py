@@ -96,6 +96,32 @@ def _backend_env_overlay(backend: str):  # type: ignore[return]
             os.environ[key] = previous
 
 
+@contextlib.contextmanager
+def _eager_cold_start_overlay():  # type: ignore[return]
+    """Force ``KOSMOS_RETRIEVAL_COLD_START=eager`` for the duration of a block.
+
+    The eval harness always issues queries immediately after build, so there
+    is no boot-cost benefit to the production lazy default (FR-011 /
+    NFR-BootBudget). Eager cold-start lets ``ToolRegistry.register()`` observe
+    dense-load failures synchronously and fire the single structured WARN via
+    ``DegradationRecord`` at build time — the contract
+    ``tests/retrieval/test_fail_open.py`` locks in.
+
+    Production ``ToolRegistry`` instances constructed outside this harness
+    continue to honour the lazy default.
+    """
+    key = "KOSMOS_RETRIEVAL_COLD_START"
+    previous = os.environ.get(key)
+    os.environ[key] = "eager"
+    try:
+        yield
+    finally:
+        if previous is None:
+            os.environ.pop(key, None)
+        else:
+            os.environ[key] = previous
+
+
 def _compute_sc01_status(registry: object) -> tuple[str, str]:
     """Determine SC-01 status for the current registry.
 
@@ -183,38 +209,45 @@ def _build_registry() -> tuple[object, object]:
     from kosmos.tools.executor import ToolExecutor
     from kosmos.tools.registry import ToolRegistry
 
-    registry = ToolRegistry()
-    executor = ToolExecutor(registry)
+    # Force eager cold-start for the eval harness: every register() call below
+    # triggers ``Retriever.rebuild(corpus)``, and the fail-open contract in
+    # ``tests/retrieval/test_fail_open.py`` requires dense-load failures to
+    # surface synchronously at build time (single WARN via ``DegradationRecord``).
+    # Production ToolRegistry instances outside this harness retain the
+    # production lazy default (FR-011 / NFR-BootBudget).
+    with _eager_cold_start_overlay():
+        registry = ToolRegistry()
+        executor = ToolExecutor(registry)
 
-    # Attempt to register each seed adapter; log warnings on failure.
-    _try_register_adapter(
-        "kosmos.tools.koroad.accident_hazard_search",
-        "register",
-        registry,
-        executor,
-        requires_executor=True,
-    )
-    _try_register_adapter(
-        "kosmos.tools.kma.forecast_fetch",
-        "register",
-        registry,
-        executor,
-        requires_executor=False,
-    )
-    _try_register_adapter(
-        "kosmos.tools.hira.hospital_search",
-        "register",
-        registry,
-        executor,
-        requires_executor=True,
-    )
-    _try_register_adapter(
-        "kosmos.tools.nmc.emergency_search",
-        "register",
-        registry,
-        executor,
-        requires_executor=True,
-    )
+        # Attempt to register each seed adapter; log warnings on failure.
+        _try_register_adapter(
+            "kosmos.tools.koroad.accident_hazard_search",
+            "register",
+            registry,
+            executor,
+            requires_executor=True,
+        )
+        _try_register_adapter(
+            "kosmos.tools.kma.forecast_fetch",
+            "register",
+            registry,
+            executor,
+            requires_executor=False,
+        )
+        _try_register_adapter(
+            "kosmos.tools.hira.hospital_search",
+            "register",
+            registry,
+            executor,
+            requires_executor=True,
+        )
+        _try_register_adapter(
+            "kosmos.tools.nmc.emergency_search",
+            "register",
+            registry,
+            executor,
+            requires_executor=True,
+        )
 
     return registry, executor
 

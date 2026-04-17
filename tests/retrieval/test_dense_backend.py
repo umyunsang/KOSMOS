@@ -15,7 +15,7 @@ Verifies:
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Literal
 
 import numpy as np
 import pytest
@@ -139,8 +139,19 @@ def stub_encoder(monkeypatch: pytest.MonkeyPatch) -> None:
 # ---------------------------------------------------------------------------
 
 
-def _make_backend(model_id: str = "intfloat/multilingual-e5-small") -> DenseBackend:
-    return DenseBackend(model_id=model_id)
+def _make_backend(
+    model_id: str = "intfloat/multilingual-e5-small",
+    *,
+    cold_start: Literal["lazy", "eager"] = "lazy",
+) -> DenseBackend:
+    """Build a ``DenseBackend`` instance for tests.
+
+    ``cold_start`` defaults to ``"lazy"`` to match the production default
+    (FR-011 / NFR-BootBudget). Tests that inspect post-rebuild state
+    (weight hash, tokenizer version, or encoder-call side effects during
+    rebuild) must pass ``cold_start="eager"`` to force synchronous load.
+    """
+    return DenseBackend(model_id=model_id, cold_start=cold_start)
 
 
 # ---------------------------------------------------------------------------
@@ -188,7 +199,8 @@ class TestDenseBackendPrefixes:
                 return super().encode(texts, **kwargs)
 
         monkeypatch.setattr("sentence_transformers.SentenceTransformer", _PassageTracker)
-        backend = _make_backend()
+        # Eager so rebuild() actually invokes the encoder (lazy would defer to score()).
+        backend = _make_backend(cold_start="eager")
         corpus = {"tool_a": "교통사고", "tool_b": "날씨 예보"}
         backend.rebuild(corpus)
 
@@ -311,7 +323,8 @@ class TestDenseBackendWeightHash:
 
     def test_weight_sha256_populated_after_rebuild(self, stub_encoder: None) -> None:
         """_weight_sha256 must be a 64-char hex string after first rebuild()."""
-        backend = _make_backend()
+        # Eager mode so hashing fires synchronously in rebuild (lazy would defer).
+        backend = _make_backend(cold_start="eager")
         backend.rebuild({"tool_a": "some hint"})
 
         assert isinstance(backend._weight_sha256, str)
@@ -321,7 +334,8 @@ class TestDenseBackendWeightHash:
 
     def test_tokenizer_version_populated_after_rebuild(self, stub_encoder: None) -> None:
         """_tokenizer_version must be a non-empty string after rebuild()."""
-        backend = _make_backend()
+        # Eager mode so metadata capture fires synchronously in rebuild.
+        backend = _make_backend(cold_start="eager")
         backend.rebuild({"tool_a": "some hint"})
 
         assert isinstance(backend._tokenizer_version, str)
@@ -332,13 +346,132 @@ class TestDenseBackendLoadError:
     """Verify DenseBackendLoadError is raised on encoder failure."""
 
     def test_load_error_raised_when_encoder_fails(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        """DenseBackendLoadError must be raised if SentenceTransformer raises on init."""
+        """DenseBackendLoadError must be raised if SentenceTransformer raises on init.
+
+        Uses eager cold-start so the load attempt happens inside rebuild().
+        Lazy-mode load failures are exercised by TestLazyBehavior below,
+        where they collapse to an empty ranking instead of raising
+        (FR-002 fail-open on the score path).
+        """
 
         def _failing_transformer(model_id: str) -> None:
             raise RuntimeError("simulated encoder failure")
 
         monkeypatch.setattr("sentence_transformers.SentenceTransformer", _failing_transformer)
 
-        backend = _make_backend()
+        backend = _make_backend(cold_start="eager")
         with pytest.raises(DenseBackendLoadError):
             backend.rebuild({"tool_a": "some hint"})
+
+
+class TestLazyBehavior:
+    """Verify FR-011 lazy cold-start semantics.
+
+    Under ``cold_start="lazy"`` (the production default), ``rebuild()``
+    must buffer the corpus and defer encoder load + embedding to the
+    first ``.score()`` call. This keeps boot paths that register tools
+    (and thus force ``rebuild`` during startup) from paying the model-
+    load cost before any query arrives.
+    """
+
+    def test_lazy_rebuild_defers_encoder_load(
+        self, stub_encoder: None, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """rebuild() under lazy cold-start must NOT instantiate the encoder."""
+        init_count = {"n": 0}
+
+        class _CountingStub(_FixedStubTransformer):
+            def __init__(self, model_id: str, *, device: str | None = None) -> None:
+                init_count["n"] += 1
+                super().__init__(model_id, device=device)
+
+        monkeypatch.setattr("sentence_transformers.SentenceTransformer", _CountingStub)
+
+        backend = _make_backend(cold_start="lazy")
+        backend.rebuild({"tool_a": "교통사고", "tool_b": "날씨"})
+
+        assert init_count["n"] == 0, (
+            f"Lazy rebuild must not load the encoder; got {init_count['n']} init(s)"
+        )
+        # Embeddings must NOT be populated yet.
+        assert backend._embeddings is None
+        assert backend._weight_sha256 == ""
+        assert backend._tokenizer_version == ""
+        # But tool_ids must be visible so upstream callers see the planned corpus.
+        assert backend._tool_ids == ["tool_a", "tool_b"]
+        # Pending corpus must be buffered for score() to consume.
+        assert backend._pending_corpus == {"tool_a": "교통사고", "tool_b": "날씨"}
+
+    def test_lazy_score_triggers_load_and_populates_hash(
+        self, stub_encoder: None, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """First score() call under lazy mode must load encoder and populate metadata."""
+        init_count = {"n": 0}
+
+        class _CountingStub(_FixedStubTransformer):
+            def __init__(self, model_id: str, *, device: str | None = None) -> None:
+                init_count["n"] += 1
+                super().__init__(model_id, device=device)
+
+        monkeypatch.setattr("sentence_transformers.SentenceTransformer", _CountingStub)
+
+        backend = _make_backend(cold_start="lazy")
+        backend.rebuild({"tool_a": "교통사고"})
+        assert init_count["n"] == 0  # precondition: lazy hasn't fired yet
+
+        result = backend.score("도로 위험")
+
+        assert init_count["n"] == 1, "Lazy score() must load encoder exactly once"
+        assert len(result) == 1 and result[0][0] == "tool_a"
+        # Metadata must now be populated via _load_encoder().
+        assert len(backend._weight_sha256) == 64
+        assert backend._tokenizer_version != ""
+        assert backend._embeddings is not None
+        # Pending buffer must be cleared after successful embed.
+        assert backend._pending_corpus is None
+
+        # A second score() call must reuse the already-loaded encoder — no re-init.
+        backend.score("다른 질의")
+        assert init_count["n"] == 1, "Encoder must be loaded exactly once across calls"
+
+    def test_lazy_score_load_failure_returns_empty_and_clears_pending(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """If lazy encoder load fails, score() must return [] and clear pending state.
+
+        FR-002 fail-open: citizen path must not surface 5xx. Subsequent
+        score() calls on the same degraded instance must NOT retry the
+        load — a single WARN per instance is the contract (SC-005).
+        """
+
+        def _failing_transformer(model_id: str) -> None:
+            raise RuntimeError("simulated encoder failure")
+
+        monkeypatch.setattr("sentence_transformers.SentenceTransformer", _failing_transformer)
+        # _find_weight_file / _sha256_file won't be reached because load fails first,
+        # but we patch them defensively so the test can't accidentally hit disk.
+        monkeypatch.setattr(
+            "kosmos.tools.retrieval.dense_backend.DenseBackend._find_weight_file",
+            staticmethod(lambda model_id: "/fake/path/model.safetensors"),  # noqa: ARG005
+        )
+        monkeypatch.setattr(
+            "kosmos.tools.retrieval.dense_backend.DenseBackend._sha256_file",
+            staticmethod(lambda path: _FAKE_SHA256),  # noqa: ARG005
+        )
+
+        backend = _make_backend(cold_start="lazy")
+        backend.rebuild({"tool_a": "교통사고"})  # buffers corpus, no load yet
+
+        # First score() triggers load — must return [] on failure, not raise.
+        result = backend.score("도로 위험")
+
+        assert result == [], "Lazy load failure must collapse to empty ranking, not raise"
+        # Pending state must be cleared to prevent retry storms on subsequent calls.
+        assert backend._pending_corpus is None
+        assert backend._embeddings is None
+        assert backend._tool_ids == []
+        assert backend._encoder is None
+
+        # Subsequent score() must remain an empty no-op (no retry).
+        result2 = backend.score("다른 질의")
+        assert result2 == []

@@ -19,11 +19,10 @@ Hard rule:
 
 from __future__ import annotations
 
-import contextlib
 import logging
 import os
 from collections.abc import Callable
-from typing import Protocol, runtime_checkable
+from typing import Literal, Protocol, runtime_checkable
 
 from kosmos.tools.bm25_index import BM25Index
 from kosmos.tools.retrieval.bm25_backend import BM25Backend
@@ -67,6 +66,27 @@ class Retriever(Protocol):
         corpus is empty or every document scores zero.
         """
         ...
+
+
+def _resolve_cold_start() -> Literal["lazy", "eager"]:
+    """Parse and validate ``KOSMOS_RETRIEVAL_COLD_START``.
+
+    Defaults to ``"lazy"`` (FR-011 / NFR-BootBudget): encoder load is
+    deferred to the first ``.score()`` call so boot paths that register
+    tools (and thus force rebuild during startup) do not pay model-load
+    cost before any query arrives.
+
+    Raises:
+        ValueError: On any value other than ``lazy`` or ``eager``.
+            Unknown strings fail-closed at registry construction.
+    """
+    raw = os.getenv("KOSMOS_RETRIEVAL_COLD_START", "lazy").strip().lower()
+    if raw not in {"lazy", "eager"}:
+        raise ValueError(
+            f"KOSMOS_RETRIEVAL_COLD_START={raw!r} is not recognised "
+            "(allowed: lazy, eager). Fail-closed per FR-011."
+        )
+    return raw  # type: ignore[return-value]
 
 
 def _resolve_hybrid_fusion_k() -> int:
@@ -134,19 +154,16 @@ def build_retriever_from_env(
 
     # --- Dense and Hybrid paths (T023) -----------------------------------
     model_id = os.getenv("KOSMOS_RETRIEVAL_MODEL_ID", "intfloat/multilingual-e5-small").strip()
+    cold_start = _resolve_cold_start()
 
     if backend == "dense":
         try:
-            dense = DenseBackend(model_id=model_id)
-            cold_start = os.getenv("KOSMOS_RETRIEVAL_COLD_START", "lazy").strip().lower()
-            if cold_start == "eager":
-                # Pre-load the encoder now (rebuild({}) short-circuits on empty
-                # corpus and never calls _load_encoder()). Eager-load failures
-                # are non-fatal here — they surface again at first real rebuild.
-                with contextlib.suppress(Exception):
-                    dense._encoder = dense._load_encoder()  # noqa: SLF001 — deliberate warmup
-            return dense
+            return DenseBackend(model_id=model_id, cold_start=cold_start)
         except (DenseBackendLoadError, ImportError, RuntimeError, OSError) as exc:
+            # DenseBackend.__init__ itself does not hit HF — these branches
+            # only fire if sentence-transformers fails to import. Kept for
+            # defence-in-depth; the real load-failure path is score() under
+            # lazy cold-start, which fail-opens to [] internally.
             if degradation_record is not None:
                 degradation_record.emit_if_needed(
                     logger,
@@ -160,7 +177,7 @@ def build_retriever_from_env(
     fusion_k = _resolve_hybrid_fusion_k()
     try:
         bm25_backend = BM25Backend(index_factory())
-        dense_backend = DenseBackend(model_id=model_id)
+        dense_backend = DenseBackend(model_id=model_id, cold_start=cold_start)
         return HybridBackend(
             bm25=bm25_backend,
             dense=dense_backend,
