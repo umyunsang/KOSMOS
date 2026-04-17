@@ -27,6 +27,12 @@ dependencies = [
     # pulls torch transitively; declaring it explicitly here lets tool.uv.sources route
     # the resolver to download.pytorch.org/whl/cpu instead of the GPU-by-default pypi.
     "torch>=2.5",
+    # spec 026 — PyYAML is loaded at module import time by prompt_loader,
+    # session_compact, and tools/release_manifest/render. The Docker runtime
+    # stage (`uv sync --frozen --no-dev`) and the release-manifest workflow
+    # (`uv sync --frozen`) do not install dev/extras groups, so yaml MUST be
+    # a core runtime dependency or those entrypoints crash at import.
+    "pyyaml>=6.0.3",
 ]
 
 [project.scripts]
@@ -62,6 +68,14 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/kosmos"]
+
+# spec 026 — bundle the repo-root prompts/ directory into the wheel as
+# `kosmos/prompts/` so that PromptLoader can resolve manifest.yaml via
+# importlib.resources when KOSMOS is installed as a wheel (the default
+# packages= only ships src/kosmos; without this include the Docker
+# runtime stage cannot find prompts/manifest.yaml at startup).
+[tool.hatch.build.targets.wheel.force-include]
+"prompts" = "kosmos/prompts"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -200,6 +214,5 @@ dev = [
     "pip-audit>=2.10.0",
     "vulture>=2.16",
     "pip-licenses>=5.0",
-    "pyyaml>=6.0.3",
     "types-pyyaml>=6.0.12",
 ]

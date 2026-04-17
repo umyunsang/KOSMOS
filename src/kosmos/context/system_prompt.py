@@ -22,19 +22,14 @@ Mandatory sections in fixed order:
 from __future__ import annotations
 
 import logging
-from pathlib import Path
 
 from kosmos.context.models import SystemPromptConfig
-from kosmos.context.prompt_loader import PromptLoader
+from kosmos.context.prompt_loader import PromptLoader, default_manifest_path
 
 logger = logging.getLogger(__name__)
 
 # Section separator — two newlines produce paragraph breaks in the LLM view.
 _SECTION_SEP = "\n\n"
-
-# Repo-root-relative path to the prompts manifest.  Resolved at import time so
-# that the loader can be instantiated per-assembler without re-computing it.
-_MANIFEST_PATH = Path(__file__).parent.parent.parent.parent / "prompts" / "manifest.yaml"
 
 
 class SystemPromptAssembler:
@@ -55,7 +50,7 @@ class SystemPromptAssembler:
 
     def __init__(self, loader: PromptLoader | None = None) -> None:
         if loader is None:
-            loader = PromptLoader(manifest_path=_MANIFEST_PATH)
+            loader = PromptLoader(manifest_path=default_manifest_path())
         self._loader = loader
 
         # Pre-load and cache the raw template texts at construction time so that

@@ -35,6 +35,7 @@ import logging
 import os
 import sys
 from collections.abc import Mapping
+from importlib.resources import files
 from pathlib import Path
 from types import MappingProxyType
 
@@ -42,7 +43,7 @@ import yaml
 
 from kosmos.context.prompt_models import PromptManifest
 
-__all__ = ["PromptLoader", "PromptRegistryError"]
+__all__ = ["PromptLoader", "PromptRegistryError", "default_manifest_path"]
 
 logger = logging.getLogger(__name__)
 
@@ -58,6 +59,33 @@ class PromptRegistryError(RuntimeError):
     Covers R1 (missing file), R2 (hash mismatch), R3 (orphan file), and
     Langfuse opt-in failures (FR-C09).
     """
+
+
+def default_manifest_path() -> Path:
+    """Return the default path to ``prompts/manifest.yaml``.
+
+    Resolution order:
+      1. Package-bundled resource at ``kosmos/prompts/manifest.yaml``
+         (shipped into the wheel via ``[tool.hatch.build.targets.wheel.force-include]``).
+      2. Repo-root ``prompts/manifest.yaml`` — used in editable / dev installs
+         where the repo tree is the working directory.
+
+    Raising the manifest-not-found error is deferred to :class:`PromptLoader`
+    (R1/R2 path) so this helper stays side-effect free and callable at import.
+    """
+    # Prefer the package-bundled copy (wheel install).
+    try:
+        bundled = Path(str(files("kosmos").joinpath("prompts", "manifest.yaml")))
+        if bundled.is_file():
+            return bundled
+    except (ModuleNotFoundError, TypeError, FileNotFoundError):
+        # files() can raise if the package lookup fails or the joinpath target
+        # is not a concrete filesystem path — fall through to the dev path.
+        pass
+
+    # Editable / source checkout: four levels above this file
+    # (src/kosmos/context/prompt_loader.py → repo root).
+    return Path(__file__).resolve().parents[3] / "prompts" / "manifest.yaml"
 
 
 # ---------------------------------------------------------------------------
