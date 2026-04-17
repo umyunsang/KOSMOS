@@ -55,7 +55,7 @@ jobs:
       - name: Env registry drift check
         run: uv run python scripts/audit-env-registry.py --json
       - name: Fetch secrets from Infisical (OIDC federation)
-        uses: Infisical/secrets-action@v1
+        uses: Infisical/secrets-action@8802effbe453d0576cd923567dcc2c97a1f54058  # v1.0.15
         with:
           method: oidc
           client-id: ${{ vars.INFISICAL_CLIENT_ID }}
