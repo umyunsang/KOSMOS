@@ -639,7 +639,7 @@ This preserves the architectural shape for KSC 2026 evaluation while keeping sco
 | Rule (`AGENTS.md § Hard rules`) | Status |
 |---|---|
 | All source text in English | ✓ (Korean only in domain data — place names, `name_ko`) |
-| `KOSMOS_` env prefix | ✓ (`KOSMOS_KAKAO_REST_KEY`, `KOSMOS_JUSO_CONFM_KEY`, `KOSMOS_SGIS_KEY`, `KOSMOS_SGIS_SECRET`, `KOSMOS_LOOKUP_TOPK`, `KOSMOS_NMC_FRESHNESS_MINUTES`) |
+| `KOSMOS_` env prefix | ✓ (`KOSMOS_KAKAO_API_KEY`, `KOSMOS_JUSO_CONFM_KEY`, `KOSMOS_SGIS_KEY`, `KOSMOS_SGIS_SECRET`, `KOSMOS_LOOKUP_TOPK`, `KOSMOS_NMC_FRESHNESS_MINUTES`) |
 | Stdlib logging only | ✓ |
 | Pydantic v2, never `Any` | ✓ (all schemas typed; `args: dict[str, object]` in `LookupInput` is the only loose field, validated against adapter schema at fetch time) |
 | No live API from CI | ✓ (recorded fixtures per `docs/tool-adapters.md § Recording fixtures`) |
