@@ -13,8 +13,6 @@ import sys
 import textwrap
 from pathlib import Path
 
-import pytest
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -41,7 +39,7 @@ def _make_registry(rows: list[str]) -> str:
 
 def _make_py_source(vars_: list[str]) -> str:
     """Build minimal Python source that references the given env var names."""
-    lines = [f'import os\n']
+    lines = ["import os\n"]
     for v in vars_:
         lines.append(f'x_{v} = os.environ.get("{v}")\n')
     return "".join(lines)
@@ -53,12 +51,13 @@ def _run(repo_root: Path, registry_path: Path | None = None) -> tuple[int, dict]
         sys.executable,
         str(_SCRIPT),
         "--json",
-        "--repo-root", str(repo_root),
+        "--repo-root",
+        str(repo_root),
     ]
     if registry_path is not None:
         cmd += ["--registry", str(registry_path)]
 
-    result = subprocess.run(cmd, capture_output=True, text=True)
+    result = subprocess.run(cmd, capture_output=True, text=True)  # noqa: S603
     try:
         report = json.loads(result.stdout)
     except json.JSONDecodeError:
@@ -83,6 +82,7 @@ def _write_registry(repo_root: Path, rows: list[str]) -> Path:
 # ---------------------------------------------------------------------------
 # T-AR01: Clean state — every code var in registry → exit 0, verdict clean
 # ---------------------------------------------------------------------------
+
 
 def test_ar01_clean_state(tmp_path: Path) -> None:
     """T-AR01: 1:1 code↔registry match → exit 0, verdict=clean."""
@@ -113,6 +113,7 @@ def test_ar01_clean_state(tmp_path: Path) -> None:
 # T-AR02: Code var not in registry → exit 1, in_code_not_in_registry
 # ---------------------------------------------------------------------------
 
+
 def test_ar02_code_var_not_in_registry(tmp_path: Path) -> None:
     """T-AR02: KOSMOS_SYNTHETIC_NEW in code but not in registry → exit 1."""
     _write_src_py(
@@ -137,6 +138,7 @@ def test_ar02_code_var_not_in_registry(tmp_path: Path) -> None:
 # ---------------------------------------------------------------------------
 # T-AR03: Registry var not in code → exit 1, in_registry_not_in_code
 # ---------------------------------------------------------------------------
+
 
 def test_ar03_registry_var_not_in_code(tmp_path: Path) -> None:
     """T-AR03: KOSMOS_SYNTHETIC_STALE in registry but not in code → exit 1."""
@@ -163,6 +165,7 @@ def test_ar03_registry_var_not_in_code(tmp_path: Path) -> None:
 # ---------------------------------------------------------------------------
 # T-AR04: Prefix violation — non-KOSMOS env var in .env.example → exit 1
 # ---------------------------------------------------------------------------
+
 
 def test_ar04_prefix_violation(tmp_path: Path) -> None:
     """T-AR04: NON_KOSMOS_VAR in .env.example → exit 1, prefix_violations."""
@@ -197,27 +200,26 @@ def test_ar04_prefix_violation(tmp_path: Path) -> None:
 # T-AR05: Override-family member + pattern row in registry → clean
 # ---------------------------------------------------------------------------
 
+
 def test_ar05_override_family_clean(tmp_path: Path) -> None:
     """T-AR05: KOSMOS_KOROAD_ACCIDENT_SEARCH_API_KEY in code + family row → exit 0."""
     _write_src_py(
         tmp_path,
-        _make_py_source(
-            ["KOSMOS_KOROAD_ACCIDENT_SEARCH_API_KEY", "KOSMOS_SYNTHETIC_BASE"]
-        ),
+        _make_py_source(["KOSMOS_KOROAD_ACCIDENT_SEARCH_API_KEY", "KOSMOS_SYNTHETIC_BASE"]),
     )
     _write_registry(
         tmp_path,
         [
             "| `KOSMOS_SYNTHETIC_BASE` | yes (all envs) | — | string | `kosmos.test` | — |",
-            "| `KOSMOS_{TOOL_ID}_API_KEY` | conditional (see note) | — | string | `kosmos.permissions.credentials` | — |",
+            "| `KOSMOS_{TOOL_ID}_API_KEY` | conditional (see note) | — | string "
+            "| `kosmos.permissions.credentials` | — |",
         ],
     )
 
     exit_code, report = _run(tmp_path)
 
     assert exit_code == 0, (
-        f"Expected exit 0 (family suppressed), got {exit_code}. "
-        f"Findings: {report.get('findings')}"
+        f"Expected exit 0 (family suppressed), got {exit_code}. Findings: {report.get('findings')}"
     )
     assert report.get("verdict") == "clean"
     assert report["findings"]["override_family_unmatched"] == []
@@ -227,13 +229,12 @@ def test_ar05_override_family_clean(tmp_path: Path) -> None:
 # T-AR06: Override-family member WITHOUT pattern row → override_family_unmatched
 # ---------------------------------------------------------------------------
 
+
 def test_ar06_override_family_unmatched(tmp_path: Path) -> None:
     """T-AR06: KOSMOS_KOROAD_ACCIDENT_SEARCH_API_KEY in code, NO family row → exit 1."""
     _write_src_py(
         tmp_path,
-        _make_py_source(
-            ["KOSMOS_KOROAD_ACCIDENT_SEARCH_API_KEY", "KOSMOS_SYNTHETIC_BASE"]
-        ),
+        _make_py_source(["KOSMOS_KOROAD_ACCIDENT_SEARCH_API_KEY", "KOSMOS_SYNTHETIC_BASE"]),
     )
     # Registry has no family row.
     _write_registry(
@@ -255,6 +256,7 @@ def test_ar06_override_family_unmatched(tmp_path: Path) -> None:
 # ---------------------------------------------------------------------------
 # T-AR07: Performance — >1000 synthetic Python files, duration_seconds < 10
 # ---------------------------------------------------------------------------
+
 
 def test_ar07_performance(tmp_path: Path) -> None:
     """T-AR07: >1000 code files scanned within 10 s wall-clock (NFR-006)."""
@@ -278,11 +280,8 @@ def test_ar07_performance(tmp_path: Path) -> None:
 
     # Clean or drift both acceptable here — we only care about timing.
     duration = report.get("scan_stats", {}).get("duration_seconds", 9999)
-    assert duration < 10.0, (
-        f"Performance budget exceeded: {duration:.3f}s >= 10s"
-    )
+    assert duration < 10.0, f"Performance budget exceeded: {duration:.3f}s >= 10s"
     # Should be clean since all vars are registered.
     assert exit_code == 0, (
-        f"Expected clean run in perf test, got exit {exit_code}. "
-        f"Findings: {report.get('findings')}"
+        f"Expected clean run in perf test, got exit {exit_code}. Findings: {report.get('findings')}"
     )

@@ -15,13 +15,10 @@ import sys
 from dataclasses import dataclass
 from typing import Final, Literal
 
-
 Env = Literal["dev", "ci", "prod"]
 
 
-_DOC_URL: Final[str] = (
-    "https://github.com/umyunsang/KOSMOS/blob/main/docs/configuration.md"
-)
+_DOC_URL: Final[str] = "https://github.com/umyunsang/KOSMOS/blob/main/docs/configuration.md"
 _VALID_ENVS: Final[frozenset[str]] = frozenset({"dev", "ci", "prod"})
 
 
@@ -140,5 +137,5 @@ def verify_startup() -> None:
         f"missing required variables: {', '.join(diag.missing)}. "
         f"See {diag.doc_url}"
     )
-    print(message, file=sys.stderr)
+    sys.stderr.write(message + "\n")
     sys.exit(78)

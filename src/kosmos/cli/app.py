@@ -14,9 +14,9 @@ from rich.markup import escape
 
 from kosmos._dotenv import load_repo_dotenv
 from kosmos.cli.config import CLIConfig
-from kosmos.config.guard import verify_startup
 from kosmos.cli.renderer import EventRenderer
 from kosmos.cli.repl import REPLLoop
+from kosmos.config.guard import verify_startup
 from kosmos.observability import setup_tracing
 
 logger = logging.getLogger(__name__)

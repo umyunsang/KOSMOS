@@ -7,12 +7,11 @@ Fixtures build synthetic .github/workflows/ci.yml under tmp_path so the real
 workflow is never touched.  No token values — only <redacted> placeholders and
 synthetic test strings.
 """
+
 from __future__ import annotations
 
 import subprocess
 from pathlib import Path
-
-import pytest
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -23,7 +22,7 @@ SCRIPT = Path(__file__).parent.parent.parent / "scripts" / "audit-secrets.sh"
 
 def _run(repo_root: Path) -> subprocess.CompletedProcess[str]:
     """Run audit-secrets.sh pointing at the synthetic repo root."""
-    return subprocess.run(
+    return subprocess.run(  # noqa: S603
         [str(SCRIPT), "--repo-root", str(repo_root)],
         capture_output=True,
         text=True,

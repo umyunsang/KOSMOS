@@ -7,7 +7,6 @@ Written before guard.py implementation (TDD).
 
 from __future__ import annotations
 
-import io
 import os
 import time
 from collections.abc import Iterator
@@ -15,7 +14,6 @@ from collections.abc import Iterator
 import pytest
 
 from kosmos.config import guard
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -160,9 +158,10 @@ def test_t_g10_verify_startup_emits_no_otel_spans(
     _set_all(monkeypatch)
     monkeypatch.setenv("KOSMOS_ENV", "dev")
     # Scrub any OTel modules loaded by other tests to prove the guard doesn't re-import.
-    preloaded = {name for name in list(__import__("sys").modules) if name.startswith("opentelemetry")}
+    modules = __import__("sys").modules
+    preloaded = {name for name in list(modules) if name.startswith("opentelemetry")}
     guard.verify_startup()
-    after = {name for name in list(__import__("sys").modules) if name.startswith("opentelemetry")}
+    after = {name for name in list(modules) if name.startswith("opentelemetry")}
     # The guard itself must introduce zero new opentelemetry.* modules.
     assert after <= preloaded
 

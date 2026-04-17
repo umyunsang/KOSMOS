@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import os
-from unittest.mock import patch
 
 import pytest
 
@@ -28,6 +27,7 @@ def test_main_invokes_verify_startup_between_dotenv_and_tracing(
     def _record(name: str):
         def _fn(*_a, **_kw):
             call_order.append(name)
+
         return _fn
 
     monkeypatch.setattr(cli_app, "load_repo_dotenv", _record("dotenv"))
