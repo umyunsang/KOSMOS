@@ -65,7 +65,7 @@ _PLACEHOLDER: dict[str, str] = {
 # ---------------------------------------------------------------------------
 
 try:
-    from presidio_analyzer import (  # type: ignore[import-untyped]
+    from presidio_analyzer import (
         Pattern as PresidioPattern,
     )
     from presidio_analyzer import (

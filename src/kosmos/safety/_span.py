@@ -21,7 +21,7 @@ from kosmos.safety._models import SafetyEvent
 _ATTRIBUTE_NAME = "gen_ai.safety.event"
 
 
-def emit_safety_event(event: SafetyEvent, span: Span | None = None) -> None:  # type: ignore[type-arg]
+def emit_safety_event(event: SafetyEvent, span: Span | None = None) -> None:
     """Set ``gen_ai.safety.event`` on *span* (or the current active span).
 
     Args:

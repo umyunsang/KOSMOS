@@ -253,7 +253,7 @@ def post_call(kwargs: dict[str, Any], response: object) -> object:
         import contextlib  # noqa: PLC0415
 
         with contextlib.suppress(AttributeError, IndexError):
-            content = response.choices[0].message.content  # type: ignore[union-attr]
+            content = response.choices[0].message.content  # type: ignore[attr-defined]
 
     if content is None:
         return response
