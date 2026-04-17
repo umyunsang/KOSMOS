@@ -141,4 +141,17 @@ tag_format = "v$version"
 [dependency-groups]
 dev = [
     "jsonschema>=4.26.0",
+    "pytest>=9.0.3",
+    "pytest-asyncio>=1.3.0",
+    "pytest-benchmark>=5.2.3",
+    "pytest-cov>=7.1.0",
+    "pytest-xdist>=3.5",
+    "respx>=0.23.1",
+    "hypothesis[pydantic]>=6.100",
+    "mypy>=1.20.0",
+    "ruff>=0.5",
+    "pre-commit>=3.7",
+    "pip-audit>=2.10.0",
+    "vulture>=2.16",
+    "pip-licenses>=5.0",
 ]
