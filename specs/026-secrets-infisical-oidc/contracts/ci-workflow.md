@@ -54,7 +54,7 @@ In every CI job that needs KOSMOS secrets, insert the following step **before** 
     method: oidc
     client-id: ${{ vars.INFISICAL_CLIENT_ID }}
     project-id: <KOSMOS project UUID>
-    env-slug: test    # or 'prod' for release jobs
+    env-slug: dev    # or 'prod' for release jobs
     secret-path: '/'
     export-type: env  # inject into job env
 ```
@@ -63,7 +63,7 @@ Inputs:
 - `method: oidc` — use OIDC federation (no bootstrap secret).
 - `client-id` — from repo variable.
 - `project-id` — hard-coded UUID of the Infisical project (public; not sensitive).
-- `env-slug` — which Infisical environment to pull from. CI test runs use `test`.
+- `env-slug` — which Infisical environment to pull from. CI test runs use `dev` (the default env created by Infisical Cloud for every new project).
 - `export-type: env` — injects fetched secrets as environment variables for subsequent steps in the same job.
 
 ## Env injection surface
@@ -149,7 +149,7 @@ jobs:
           method: oidc
           client-id: ${{ vars.INFISICAL_CLIENT_ID }}
           project-id: <KOSMOS project UUID>
-          env-slug: test
+          env-slug: dev
           secret-path: '/'
           export-type: env
 

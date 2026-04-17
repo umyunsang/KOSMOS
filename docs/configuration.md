@@ -348,12 +348,12 @@ This value is a public identifier and does not need secret protection.
 
 | CI context | Infisical env slug |
 |------------|--------------------|
-| Unit tests (no live APIs) | `test` |
-| Live-suite tests | `test` |
+| Unit tests (no live APIs) | `dev` |
+| Live-suite tests | `dev` |
 | Release builds | `prod` (when applicable) |
 
-The `env-slug: test` value in `.github/workflows/ci.yml` pulls from the Infisical `test`
-environment.
+The `env-slug: dev` value in `.github/workflows/ci.yml` pulls from the Infisical `dev`
+environment (the default environment created by Infisical Cloud for every new project).
 
 ### Step 6 — Verify the OIDC trust
 
@@ -362,7 +362,7 @@ output looks like:
 
 ```
 ✓ Authenticated with Infisical using OIDC
-✓ Fetched 6 secrets from project kosmos / environment test
+✓ Fetched 6 secrets from project kosmos / environment dev
 ```
 
 If you see a `401 Unauthorized` error, the claim binding is misconfigured. Re-check the

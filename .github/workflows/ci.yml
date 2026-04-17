@@ -60,7 +60,7 @@ jobs:
           method: oidc
           identity-id: ${{ vars.INFISICAL_CLIENT_ID }}
           project-slug: kosmos-3f-zs
-          env-slug: test
+          env-slug: dev
           secret-path: "/"
           export-type: env
       - name: Run tests with coverage
