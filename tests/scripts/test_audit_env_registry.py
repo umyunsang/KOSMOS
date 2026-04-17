@@ -193,9 +193,7 @@ def test_ar04_malformed_registry_missing_header(tmp_path: Path) -> None:
     exit_code, report = _run(tmp_path)
 
     assert exit_code == 2, f"Expected exit 2 (malformed), got {exit_code}. Report: {report}"
-    assert report.get("verdict") == "malformed", (
-        f"Expected malformed, got: {report.get('verdict')}"
-    )
+    assert report.get("verdict") == "malformed", f"Expected malformed, got: {report.get('verdict')}"
 
 
 # ---------------------------------------------------------------------------
