@@ -1,5 +1,5 @@
 <!-- SPDX-License-Identifier: Apache-2.0 -->
-# Tool Template Security Spec v1 — Ministry-PR-Ready Hardening
+# Tool Template Security Spec v1.1 — Ministry-PR-Ready Hardening
 
 **Feature**: 024-tool-security-v1  
 **Status**: Normative  
@@ -597,6 +597,65 @@ The following items are explicitly outside the scope of this section and of the 
 - **Runtime vulnerability scanning** — tracked separately as the dependency-scanning Epic. SBOM generation in this section provides the input artifact for that scanning pipeline; the scanning logic, advisory enrichment, and VEX workflow are deferred.
 - **Binary reproducibility** — not in scope until SLSA L4 consideration. SLSA L4 mandates hermetic, reproducible builds from a source snapshot; KOSMOS targets L3 as documented in §10.2, and L4 requirements are not yet stabilized in SLSA v1.0.
 - **SBOM signing** — deferred per `research.md §3.8` pending sigstore infrastructure decision (Epic #647). The signing stub in `.github/workflows/sbom.yml` is a forward-reference marker; production signing is out of scope for this spec.
+
+---
+
+## V6 — `auth_type` ↔ `auth_level` consistency
+
+`GovAPITool.auth_type` and `GovAPITool.auth_level` MUST form a pair drawn from the canonical mapping defined by FR-039 and FR-040; any pairing outside that mapping is a misconfiguration that MUST be rejected at the earliest defensible point. This invariant is enforced at two independent layers: (1) a pydantic `@model_validator(mode="after")` on `GovAPITool` (Layer 1, FR-039) and (2) an independent re-check inside `ToolRegistry.register()` (Layer 2, FR-042). For the full FR text and precise error-message contracts, see [`../../specs/025-tool-security-v6/spec.md`](../../specs/025-tool-security-v6/spec.md) and [`../../specs/025-tool-security-v6/contracts/v6-error-contract.md`](../../specs/025-tool-security-v6/contracts/v6-error-contract.md).
+
+### Canonical mapping matrix
+
+The table below is the single source of truth for which `(auth_type, auth_level)` pairs are permitted. Everything not listed is rejected (FR-048 fail-closed). Eight pairs are allowed in total.
+
+| `auth_type` | Allowed `auth_level` values |
+|---|---|
+| `public` | `public`, `AAL1` |
+| `api_key` | `AAL1`, `AAL2`, `AAL3` |
+| `oauth` | `AAL1`, `AAL2`, `AAL3` |
+
+Allowed pairs in full: `(public, public)`, `(public, AAL1)`, `(api_key, AAL1)`, `(api_key, AAL2)`, `(api_key, AAL3)`, `(oauth, AAL1)`, `(oauth, AAL2)`, `(oauth, AAL3)`.
+
+**FR-048 fail-closed** — if a new `auth_type` value is introduced without updating the canonical mapping, both layers refuse construction/registration with an "unknown auth_type" error. This forces every `auth_type` extension to be a coordinated PR that updates the mapping in the same change.
+
+### Worked example — MVP meta-tools are an APPROVED combination, not an exception
+
+`resolve_location` and `lookup` are declared with `auth_type="public"`, `auth_level="AAL1"`, and `requires_auth=True`. This combination is compliant under both V5 and V6 with no carve-out, no exemption, and no special-case code:
+
+- **V5 check**: V5 enforces `auth_level == "public"` ⇔ `requires_auth == False`. Here `auth_level` is `"AAL1"` (not `"public"`), so V5 imposes no constraint — `requires_auth=True` is not only permitted but expected. Check passes.
+- **V6 check**: `(public, AAL1)` is explicitly in the canonical allow-list. Check passes.
+
+The orchestrator calls these meta-tools directly, not through `PermissionPipeline.dispatch()`. They require an authenticated session for rate-limit accounting and audit continuity, even though the upstream geocoder and BM25 index require no government-API credential. This session-auth requirement is precisely why `requires_auth=True` is set despite `auth_type="public"`. The pattern is fully endorsed by V5+V6.
+
+Any future meta-tool that follows the same `(public, AAL1, requires_auth=True)` shape is automatically compliant; no per-tool exception machinery is involved.
+
+### Rationale — why V6 exists
+
+V5 enforces the biconditional `auth_level == "public"` ⇔ `requires_auth == False`. This closes one gap: a tool cannot claim no authentication is required while being classified at a non-`public` assurance level. However, the legacy `PermissionPipeline.dispatch()` runtime path derives its **access tier** from `auth_type`, not from `requires_auth`. Without V6, a future adapter declaring `auth_type="public"` + `auth_level="AAL2"` + `requires_auth=True` would:
+
+1. Pass V1–V5 cleanly — `auth_level` is `"AAL2"` (not `"public"`), so V5's biconditional fires no violation; V1–V4 check PII class, DPA, irreversibility, and `TOOL_MIN_AAL` drift — none of those address the `auth_type`/`auth_level` cross-field pairing.
+2. Be correctly auth-gated by `executor.invoke()`, which reads `requires_auth` and would require a session credential.
+3. But be **anonymously callable through `dispatch()`**, which reads `auth_type="public"` as the access tier and concludes that no authentication is needed — bypassing the `requires_auth` gating entirely.
+
+V6 closes this class of misconfiguration at the model layer, regardless of which runtime path dispatches the tool. The deeper `dispatch()` refactor (switching it to read `requires_auth` directly) is deferred to a separate Epic and is NOT covered by V6.
+
+### Two-layer defense architecture
+
+**Layer 1 — pydantic `@model_validator(mode="after")` on `GovAPITool`** (FR-039): checks the `(auth_type, auth_level)` pair against `_AUTH_TYPE_LEVEL_MAPPING` at the earliest point in the object lifecycle. Violations raise `ValueError` (wrapped by pydantic into `ValidationError`) with a message prefixed `V6 violation (FR-039/FR-040): ...` that names both offending fields and lists the allowed levels for the given `auth_type`. See `src/kosmos/tools/models.py`.
+
+**Layer 2 — independent re-check inside `ToolRegistry.register()`** (FR-042): imports `_AUTH_TYPE_LEVEL_MAPPING` from `kosmos.tools.models` and re-runs the same check before accepting a tool into the registry. Violations raise `RegistrationError` with a message prefixed `V6 violation (FR-042): ...` and suffixed `(registry backstop — bypass of pydantic V6 detected)`. A structured log at `ERROR` level is emitted before the raise, mirroring the V3 FR-038 precedent at `src/kosmos/tools/registry.py`.
+
+Layer 2 exists to defend against `GovAPITool.model_construct(...)` (which skips validators) and post-construction `object.__setattr__(tool, "auth_level", ...)` mutations. The two errors are distinguishable by type and message (FR-043), enabling observability tooling and debugging to identify which defense layer triggered.
+
+---
+
+---
+
+## Changelog
+
+| Version | Date | Summary |
+|---|---|---|
+| v1.1 | 2026-04-17 | Added V6 invariant (Epic #654). No changes to V1–V5. |
 
 ---
 
