@@ -23,6 +23,10 @@ dependencies = [
     "presidio-analyzer>=2.2",
     "sentence-transformers>=3.0",  # spec 026 — retrieval dense backend
     "numpy>=1.26",  # spec 026 — retrieval dense backend
+    # torch pinned to CPU-only wheel via [tool.uv.sources] below — sentence-transformers
+    # pulls torch transitively; declaring it explicitly here lets tool.uv.sources route
+    # the resolver to download.pytorch.org/whl/cpu instead of the GPU-by-default pypi.
+    "torch>=2.5",
 ]
 
 [project.scripts]
@@ -158,6 +162,20 @@ min_confidence = 80
 name = "cz_conventional_commits"
 version = "0.1.0"
 tag_format = "v$version"
+
+# PyTorch CPU-only wheel for Docker image size discipline (SC-1: ≤ 2 GB).
+# sentence-transformers pulls torch; GPU wheels are ~2.5 GB + CUDA runtime layers
+# push the final image above the 2 GB SC-1 hard cap. KOSMOS has no GPU workload
+# at runtime (embedding inference is CPU-bound, batch-size 1), so CPU wheel is
+# functionally identical for our workload.
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu" }]
+torchvision = [{ index = "pytorch-cpu" }]
 
 [dependency-groups]
 dev = [
