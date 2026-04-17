@@ -361,8 +361,9 @@ class TestRoadRiskScoreTool:
     def test_tool_not_personal_data(self) -> None:
         assert ROAD_RISK_SCORE_TOOL.is_personal_data is False
 
-    def test_tool_requires_no_auth(self) -> None:
-        assert ROAD_RISK_SCORE_TOOL.requires_auth is False
+    def test_tool_requires_auth(self) -> None:
+        # V6: auth_type='api_key' delegates to api_key inner tools; requires AAL1+.
+        assert ROAD_RISK_SCORE_TOOL.requires_auth is True
 
     def test_tool_has_search_hint(self) -> None:
         assert ROAD_RISK_SCORE_TOOL.search_hint.strip() != ""

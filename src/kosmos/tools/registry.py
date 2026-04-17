@@ -8,7 +8,7 @@ import logging
 from kosmos.security.audit import TOOL_MIN_AAL
 from kosmos.tools.bm25_index import BM25Index
 from kosmos.tools.errors import DuplicateToolError, RegistrationError, ToolNotFoundError
-from kosmos.tools.models import GovAPITool, ToolSearchResult
+from kosmos.tools.models import _AUTH_TYPE_LEVEL_MAPPING, GovAPITool, ToolSearchResult
 from kosmos.tools.rate_limiter import RateLimiter
 from kosmos.tools.search import search_tools
 
@@ -31,7 +31,10 @@ class ToolRegistry:
             RegistrationError: If ``is_personal_data=True`` without ``requires_auth=True``
                 (FR-038 — fail-closed PII invariant), or if ``tool.auth_level`` disagrees
                 with ``TOOL_MIN_AAL`` (V3 drift backstop for callers that bypass pydantic
-                validation via ``model_construct``).
+                validation via ``model_construct``), or if the ``(auth_type, auth_level)``
+                pair is outside the canonical ``_AUTH_TYPE_LEVEL_MAPPING`` (V6 backstop —
+                FR-042/FR-048 — defense against ``model_construct`` / ``object.__setattr__``
+                bypass of the pydantic V6 model validator).
         """
         if tool.id in self._tools:
             raise DuplicateToolError(tool.id)
@@ -76,6 +79,42 @@ class ToolRegistry:
                 tool.id,
                 f"V3 violation (FR-001/FR-005): declares auth_level={tool.auth_level!r} "
                 f"but TOOL_MIN_AAL requires {expected_aal!r}.",
+            )
+
+        # Security spec v1 v1.1 (specs/025-tool-security-v6) — validator V6.
+        # GovAPITool's @model_validator appends a V6 block at construction time;
+        # we re-check here as a second independent layer so that a caller who
+        # bypassed pydantic via model_construct or mutated a frozen field with
+        # object.__setattr__ cannot land a (auth_type, auth_level) pair outside
+        # the canonical _AUTH_TYPE_LEVEL_MAPPING.  Mirrors the V3 FR-038 pattern.
+        if tool.auth_type not in _AUTH_TYPE_LEVEL_MAPPING:
+            logger.error(
+                "V6 violation at registry.register: tool_id=%s auth_type=%s (unknown) "
+                "— fail-closed",
+                tool.id,
+                tool.auth_type,
+            )
+            raise RegistrationError(
+                tool.id,
+                f"V6 violation (FR-048): unknown auth_type={tool.auth_type!r} at "
+                "registry.register; refusing to allow ambiguous registration.",
+            )
+        allowed = _AUTH_TYPE_LEVEL_MAPPING[tool.auth_type]
+        if tool.auth_level not in allowed:
+            logger.error(
+                "V6 violation at registry.register: tool_id=%s auth_type=%s "
+                "auth_level=%s allowed=%s",
+                tool.id,
+                tool.auth_type,
+                tool.auth_level,
+                sorted(allowed),
+            )
+            raise RegistrationError(
+                tool.id,
+                f"V6 violation (FR-042): tool {tool.id!r} declares "
+                f"auth_type={tool.auth_type!r} with auth_level={tool.auth_level!r}; "
+                f"permitted auth_levels are {sorted(allowed)}. "
+                "(registry backstop — bypass of pydantic V6 detected)",
             )
 
         self._tools[tool.id] = tool

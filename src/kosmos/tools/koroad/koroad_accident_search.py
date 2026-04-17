@@ -362,11 +362,11 @@ KOROAD_ACCIDENT_SEARCH_TOOL = GovAPITool(
         "교통사고 위험지역 조회 사고다발구역 지자체별 위험지점 "
         "accident hotspot dangerous zone traffic safety municipality"
     ),
-    auth_level="public",
+    auth_level="AAL1",
     pipa_class="non_personal",
     is_irreversible=False,
     dpa_reference=None,
-    requires_auth=False,
+    requires_auth=True,
     is_concurrency_safe=True,
     is_personal_data=False,
     cache_ttl_seconds=3600,

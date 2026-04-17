@@ -86,7 +86,9 @@ class TestLookupFetchHappy:
                 tool_id="koroad_accident_hazard_search",
                 params={"adm_cd": "1168000000", "year": 2024},
             )
-            result = await lookup(inp, executor=executor)
+            # V6: koroad_accident_hazard_search now requires auth_level=AAL1 + requires_auth=True.
+            # Provide a test session identity so the executor auth gate passes.
+            result = await lookup(inp, executor=executor, session_identity="test-session")
 
         assert isinstance(result, LookupCollection), f"Expected LookupCollection, got: {result}"
         assert result.kind == "collection"
@@ -113,7 +115,8 @@ class TestLookupFetchHappy:
                 tool_id="koroad_accident_hazard_search",
                 params={"adm_cd": "1168000000", "year": 2024},
             )
-            result = await lookup(inp, executor=executor)
+            # V6: requires_auth=True; provide session identity to pass auth gate.
+            result = await lookup(inp, executor=executor, session_identity="test-session")
 
         assert isinstance(result, LookupCollection)
         for item in result.items:
@@ -196,6 +199,8 @@ class TestLookupFetchInvalidParams:
             tool_id="koroad_accident_hazard_search",
             params={"adm_cd": "INVALID", "year": 2024},
         )
-        result = await lookup(inp, executor=executor)
+        # V6: requires_auth=True; provide session identity so auth gate passes,
+        # then the input validation gate returns invalid_params.
+        result = await lookup(inp, executor=executor, session_identity="test-session")
         assert isinstance(result, LookupError)
         assert result.reason == "invalid_params"

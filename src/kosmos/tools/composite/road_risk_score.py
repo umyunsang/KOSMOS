@@ -336,11 +336,11 @@ ROAD_RISK_SCORE_TOOL = GovAPITool(
         "도로 위험도 종합 평가 교통사고 기상 날씨 안전 "
         "road risk score composite accident weather safety"
     ),
-    auth_level="public",
+    auth_level="AAL1",
     pipa_class="non_personal",
     is_irreversible=False,
     dpa_reference=None,
-    requires_auth=False,
+    requires_auth=True,
     is_concurrency_safe=True,
     is_personal_data=False,
     cache_ttl_seconds=300,

@@ -312,11 +312,11 @@ KMA_WEATHER_ALERT_STATUS_TOOL = GovAPITool(
         "기상특보 기상경보 태풍 호우 대설 한파 폭염 강풍 "
         "weather warning alert typhoon heavy rain snow cold wave heat wind"
     ),
-    auth_level="public",
+    auth_level="AAL1",
     pipa_class="non_personal",
     is_irreversible=False,
     dpa_reference=None,
-    requires_auth=False,
+    requires_auth=True,
     is_concurrency_safe=True,
     is_personal_data=False,
     cache_ttl_seconds=300,

@@ -56,25 +56,31 @@ def _make_tool(
     and FR-038 PII ⇒ auth by deriving ``auth_level`` + ``pipa_class`` from the
     ``requires_auth`` / ``is_personal_data`` flags.
     """
+    # V6 (FR-039/FR-040): auth_type must be consistent with auth_level.
+    #   public   → {public, AAL1}
+    #   api_key  → {AAL1, AAL2, AAL3}
     if is_personal_data:
         auth_level = "AAL2"
         pipa_class = "personal"
         dpa_reference = "dpa-mock-engine-conftest"
+        auth_type = "api_key"
     elif requires_auth:
         auth_level = "AAL1"
         pipa_class = "non_personal"
         dpa_reference = None
+        auth_type = "public"
     else:
         auth_level = "public"
         pipa_class = "non_personal"
         dpa_reference = None
+        auth_type = "public"
     return GovAPITool(
         id=tool_id,
         name_ko=name_ko,
         provider="mock_provider",
         category=["mock"],
         endpoint="https://mock.example.com/api",
-        auth_type="public",
+        auth_type=auth_type,
         input_schema=MockInput,
         output_schema=MockOutput,
         search_hint=f"{name_ko} mock tool for testing",

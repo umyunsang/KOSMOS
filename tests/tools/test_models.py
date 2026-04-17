@@ -25,7 +25,9 @@ _MINIMAL_KWARGS = {
     "provider": "테스트기관",
     "category": ["test"],
     "endpoint": "https://apis.data.go.kr/test",
-    "auth_type": "api_key",
+    # V6: auth_type='public' is consistent with auth_level='public'.
+    # (api_key requires AAL1+; use 'public' for a no-auth test stub.)
+    "auth_type": "public",
     "input_schema": _MinimalInput,
     "output_schema": _MinimalOutput,
     "search_hint": "test 테스트 sample",
@@ -74,7 +76,10 @@ class TestFailClosedDefaults:
 
     def test_explicit_overrides(self, sample_tool_factory):
         """Caller-supplied values must override every security default."""
+        # V6: auth_type='public' permits auth_level='public' + requires_auth=False.
         tool = sample_tool_factory(
+            auth_type="public",
+            auth_level="public",
             requires_auth=False,
             is_personal_data=False,
             is_concurrency_safe=True,

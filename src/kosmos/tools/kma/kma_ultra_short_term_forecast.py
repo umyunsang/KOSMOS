@@ -289,11 +289,11 @@ KMA_ULTRA_SHORT_TERM_FORECAST_TOOL = GovAPITool(
         "초단기예보 단기예보 6시간예보 기온 강수 하늘상태 습도 풍속 "
         "ultra-short-term forecast 6-hour weather temperature precipitation sky wind"
     ),
-    auth_level="public",
+    auth_level="AAL1",
     pipa_class="non_personal",
     is_irreversible=False,
     dpa_reference=None,
-    requires_auth=False,
+    requires_auth=True,
     is_concurrency_safe=True,
     is_personal_data=False,
     cache_ttl_seconds=600,

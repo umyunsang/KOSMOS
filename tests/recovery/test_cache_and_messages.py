@@ -118,7 +118,7 @@ def sample_tool() -> GovAPITool:
         provider="기관",
         category=["test"],
         endpoint="https://api.example.com/",
-        auth_type="api_key",
+        auth_type="public",
         input_schema=_In,
         output_schema=_Out,
         search_hint="test 테스트",

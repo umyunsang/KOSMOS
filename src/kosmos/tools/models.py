@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import re
 from datetime import datetime
-from typing import Annotated, Literal
+from typing import Annotated, Final, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -20,6 +20,22 @@ from kosmos.tools.errors import LookupErrorReason
 _DPA_REFERENCE_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9_-]{5,63}$")
 
 PIPAClass = Literal["non_personal", "personal", "sensitive", "identifier"]
+
+# V6 canonical mapping — single source of truth for the (auth_type, auth_level)
+# consistency invariant owned by FR-039 / FR-040 / FR-042
+# (specs/025-tool-security-v6). Imported by the V6 model validator and the
+# ``ToolRegistry.register`` backstop; the two layers MUST consult this one
+# dictionary to stay drift-free.
+#
+# Read as: ``auth_type`` key ⇒ the frozenset of ``auth_level`` values that are
+# permitted for adapters declaring that ``auth_type``. Any pair outside this
+# mapping is rejected at construction (pydantic) and at registration
+# (registry backstop) per contracts/v6-error-contract.md.
+_AUTH_TYPE_LEVEL_MAPPING: Final[dict[str, frozenset[str]]] = {
+    "public": frozenset({"public", "AAL1"}),
+    "api_key": frozenset({"AAL1", "AAL2", "AAL3"}),
+    "oauth": frozenset({"AAL1", "AAL2", "AAL3"}),
+}
 
 
 class GovAPITool(BaseModel):
@@ -160,12 +176,18 @@ class GovAPITool(BaseModel):
             raise ValueError("search_hint must not be empty or whitespace-only")
         return v
 
-    # --- Security spec v1 cross-field validators (V1–V4) ---
-    # specs/024-tool-security-v1 § data-model.md §1.
+    # --- Security spec v1 cross-field validators (V1–V6) ---
+    # specs/024-tool-security-v1 § data-model.md §1 (V1–V5).
+    # specs/025-tool-security-v6 § data-model.md §1 (V6).
 
     @model_validator(mode="after")
-    def _validate_security_invariants(self) -> GovAPITool:
-        """Enforce V1–V4 from data-model.md §1.
+    def _validate_security_invariants(self) -> GovAPITool:  # noqa: C901
+        # C901: The V1–V6 chain is deliberately kept as a single method. Each
+        # block is straight-line and simple; the load-bearing property is the
+        # ORDERING (V1 → V2 → V3 → V4 → V5 → V6), which is spec-fixed so that
+        # the earliest violation wins. Splitting into helpers would hide the
+        # chain and invite ordering drift across future Vn additions.
+        """Enforce V1–V6 from data-model.md §1.
 
         V1 (FR-004): ``pipa_class != "non_personal"`` → ``auth_level != "public"``.
         V2 (FR-014 docs gap): ``pipa_class != "non_personal"`` →
@@ -177,6 +199,10 @@ class GovAPITool(BaseModel):
             ``auth_level == "public"`` ⇔ ``requires_auth is False``. AAL1+ tools MUST set
             ``requires_auth=True`` so the existing ``ToolExecutor.invoke`` auth gate
             cannot be bypassed on a tool declaring a non-public AAL.
+        V6 (FR-039 / FR-040): ``(auth_type, auth_level)`` MUST match the canonical
+            allow-list in ``_AUTH_TYPE_LEVEL_MAPPING``. Closes the Spec-024 V5 gap
+            where ``PermissionPipeline.dispatch()`` tiers on ``auth_type`` rather than
+            ``requires_auth``. FR-048 fail-closed on unknown ``auth_type``.
         """
         if self.pipa_class != "non_personal":
             if self.auth_level == "public":
@@ -234,6 +260,24 @@ class GovAPITool(BaseModel):
                 f"auth_level={self.auth_level!r} but requires_auth=False; AAL1+ "
                 "tools MUST set requires_auth=True so the Layer-3 auth gate cannot "
                 "be bypassed."
+            )
+
+        # V6 (FR-039 / FR-040): auth_type ↔ auth_level consistency invariant.
+        # Rejects any (auth_type, auth_level) pair outside the canonical mapping.
+        # Fail-closed (FR-048): unknown auth_type values also raise.
+        if self.auth_type not in _AUTH_TYPE_LEVEL_MAPPING:
+            raise ValueError(
+                f"V6 violation (FR-048): unknown auth_type={self.auth_type!r}; "
+                "canonical mapping has no entry. Extend _AUTH_TYPE_LEVEL_MAPPING "
+                "in the same PR that adds a new auth_type value."
+            )
+        _v6_allowed = _AUTH_TYPE_LEVEL_MAPPING[self.auth_type]
+        if self.auth_level not in _v6_allowed:
+            raise ValueError(
+                f"V6 violation (FR-039/FR-040): tool {self.id!r} declares "
+                f"auth_type={self.auth_type!r} with auth_level={self.auth_level!r}; "
+                f"auth_type={self.auth_type!r} permits auth_level in "
+                f"{sorted(_v6_allowed)}."
             )
 
         return self

@@ -129,7 +129,9 @@ class TestHiraHospitalSearchHappy:
                 tool_id="hira_hospital_search",
                 params={"xPos": 127.028, "yPos": 37.498, "radius": 2000},
             )
-            result = await lookup(inp, executor=executor)
+            # V6: hira_hospital_search now requires auth_level=AAL1 + requires_auth=True.
+            # Provide a test session identity so the executor auth gate passes.
+            result = await lookup(inp, executor=executor, session_identity="test-session")
 
         assert isinstance(result, LookupCollection), f"Expected LookupCollection, got: {result}"
         assert result.kind == "collection"
@@ -157,7 +159,8 @@ class TestHiraHospitalSearchHappy:
                 tool_id="hira_hospital_search",
                 params={"xPos": 127.028, "yPos": 37.498, "radius": 2000},
             )
-            result = await lookup(inp, executor=executor)
+            # V6: requires_auth=True; provide session identity to pass auth gate.
+            result = await lookup(inp, executor=executor, session_identity="test-session")
 
         assert isinstance(result, LookupCollection)
         for item in result.items:
@@ -192,7 +195,8 @@ class TestHiraHospitalSearchErrorPath:
                 tool_id="hira_hospital_search",
                 params={"xPos": 127.028, "yPos": 37.498, "radius": 2000},
             )
-            result = await lookup(inp, executor=executor)
+            # V6: requires_auth=True; provide session identity to pass auth gate.
+            result = await lookup(inp, executor=executor, session_identity="test-session")
 
         assert isinstance(result, LookupError), f"Expected LookupError, got: {result}"
         assert result.reason == "upstream_unavailable"
@@ -218,7 +222,8 @@ class TestHiraHospitalSearchErrorPath:
                 tool_id="hira_hospital_search",
                 params={"xPos": 127.028, "yPos": 37.498, "radius": 2000},
             )
-            result = await lookup(inp, executor=executor)
+            # V6: requires_auth=True; provide session identity to pass auth gate.
+            result = await lookup(inp, executor=executor, session_identity="test-session")
 
         assert isinstance(result, LookupError)
         assert result.reason == "upstream_unavailable"
@@ -243,7 +248,9 @@ class TestHiraHospitalSearchInputValidation:
             tool_id="hira_hospital_search",
             params={"xPos": 127.028, "yPos": 37.498, "radius": 99999},
         )
-        result = await lookup(inp, executor=executor)
+        # V6: requires_auth=True; provide session identity so auth gate passes,
+        # then the input validation gate runs and returns invalid_params.
+        result = await lookup(inp, executor=executor, session_identity="test-session")
 
         assert isinstance(result, LookupError)
         assert result.reason == "invalid_params"
@@ -259,7 +266,8 @@ class TestHiraHospitalSearchInputValidation:
             tool_id="hira_hospital_search",
             params={"xPos": 0.0, "yPos": 37.498, "radius": 2000},
         )
-        result = await lookup(inp, executor=executor)
+        # V6: requires_auth=True; provide session identity so auth gate passes.
+        result = await lookup(inp, executor=executor, session_identity="test-session")
 
         assert isinstance(result, LookupError)
         assert result.reason == "invalid_params"
@@ -275,7 +283,8 @@ class TestHiraHospitalSearchInputValidation:
             tool_id="hira_hospital_search",
             params={"yPos": 37.498, "radius": 2000},  # xPos omitted
         )
-        result = await lookup(inp, executor=executor)
+        # V6: requires_auth=True; provide session identity so auth gate passes.
+        result = await lookup(inp, executor=executor, session_identity="test-session")
 
         assert isinstance(result, LookupError)
         assert result.reason == "invalid_params"
@@ -292,8 +301,9 @@ class TestHiraHospitalSearchToolDefinition:
     def test_tool_id(self) -> None:
         assert HIRA_HOSPITAL_SEARCH_TOOL.id == "hira_hospital_search"
 
-    def test_requires_auth_false(self) -> None:
-        assert HIRA_HOSPITAL_SEARCH_TOOL.requires_auth is False
+    def test_requires_auth_true(self) -> None:
+        # V6: auth_type='api_key' requires AAL1+; requires_auth=True per V5 biconditional.
+        assert HIRA_HOSPITAL_SEARCH_TOOL.requires_auth is True
 
     def test_is_personal_data_false(self) -> None:
         assert HIRA_HOSPITAL_SEARCH_TOOL.is_personal_data is False
