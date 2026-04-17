@@ -36,11 +36,13 @@ class SafetySettings(BaseSettings):
     moderation_enabled: bool = False
     openai_moderation_api_key: SecretStr | None = Field(
         default=None,
-        alias="KOSMOS_OPENAI_MODERATION_API_KEY",
+        validation_alias="KOSMOS_OPENAI_MODERATION_API_KEY",
     )
 
     @model_validator(mode="after")
     def _fail_closed_on_missing_moderation_key(self) -> SafetySettings:
-        if self.moderation_enabled and self.openai_moderation_api_key is None:
-            raise ConfigurationError("KOSMOS_OPENAI_MODERATION_API_KEY")
+        if self.moderation_enabled:
+            key = self.openai_moderation_api_key
+            if key is None or not key.get_secret_value().strip():
+                raise ConfigurationError("KOSMOS_OPENAI_MODERATION_API_KEY")
         return self

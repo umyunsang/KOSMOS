@@ -15,7 +15,9 @@ Three-signal model
    clamped to [0, 1].  Unusually short or long inputs are suspicious.
 
 Combined score = 0.6 × structural + 0.25 × entropy + 0.15 × length_deviation.
-Decision: ``"block"`` if combined ≥ 0.5, else ``"allow"``.
+Decision: ``"block"`` if combined ≥ ``_BLOCK_THRESHOLD`` (currently 0.20 —
+tuned down from the 0.50 spec seed after the SC-004 audit; see the weights
+block below for rationale), else ``"allow"``.
 
 # SC-004: False-positive audit (T025) on the recorded adapter corpus confirmed
 # weights [0.6, 0.25, 0.15] produce zero false positives.  Do NOT change the
@@ -101,8 +103,9 @@ def _compute_entropy_score(text: str) -> float:
             score = min(ent / _BASE64_ENTROPY_CEIL, 1.0)
             max_score = max(max_score, score)
 
-    # Pure hex candidates — only consider strings not already captured by
-    # the base64 scan (hex is a strict subset of base64 alphabet minus +/=).
+    # Pure hex candidates — scanned independently (hex is a strict subset of
+    # the base64 alphabet, so these ranges overlap, but we keep the per-
+    # candidate ``max_score`` so the stronger of the two ceilings wins).
     for match in _RE_HEX_CANDIDATE.finditer(text):
         candidate = match.group()
         if len(candidate) >= _MIN_ENCODED_LEN:
@@ -136,7 +139,8 @@ def run_detector(text: str) -> InjectionSignalSet:
 
         combined = 0.6 × structural + 0.25 × entropy + 0.15 × length_deviation
 
-    Decision is ``"block"`` when ``combined ≥ 0.5``.
+    Decision is ``"block"`` when ``combined ≥ _BLOCK_THRESHOLD`` (see the
+    module-level constant, currently ``0.20``).
     """
     structural = _compute_structural_score(text)
     entropy = _compute_entropy_score(text)

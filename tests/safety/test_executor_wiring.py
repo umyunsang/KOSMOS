@@ -29,9 +29,9 @@ from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanE
 from pydantic import BaseModel
 
 from kosmos.tools.executor import ToolExecutor
-from kosmos.tools.models import GovAPITool, LookupError as LookupErrorModel
+from kosmos.tools.models import GovAPITool
+from kosmos.tools.models import LookupError as LookupErrorModel
 from kosmos.tools.registry import ToolRegistry
-
 
 # ---------------------------------------------------------------------------
 # OTel span-capture fixture — monkeypatches the executor module's _tracer and

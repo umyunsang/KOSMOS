@@ -65,8 +65,12 @@ _PLACEHOLDER: dict[str, str] = {
 # ---------------------------------------------------------------------------
 
 try:
-    from presidio_analyzer import PatternRecognizer  # type: ignore[import-untyped]
-    from presidio_analyzer import Pattern as PresidioPattern  # type: ignore[import-untyped]
+    from presidio_analyzer import (  # type: ignore[import-untyped]
+        Pattern as PresidioPattern,
+    )
+    from presidio_analyzer import (
+        PatternRecognizer,
+    )
 
     _PRESIDIO_AVAILABLE = True
 except ImportError:
