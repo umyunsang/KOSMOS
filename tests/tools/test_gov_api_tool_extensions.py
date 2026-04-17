@@ -254,9 +254,7 @@ def test_v6_does_not_regress_v5_interaction() -> None:
         _make_tool("public", "AAL2", requires_auth=True, tool_id="stub_v6_v5v6")
 
     err_str = str(exc_info.value)
-    assert "V6 violation" in err_str, (
-        f"Error should be from V6, not V5; got: {err_str!r}"
-    )
+    assert "V6 violation" in err_str, f"Error should be from V6, not V5; got: {err_str!r}"
     assert "V5 violation" not in err_str, (
         f"Error should be V6 only, but V5 message appeared; got: {err_str!r}"
     )
