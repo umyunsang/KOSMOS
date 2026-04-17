@@ -114,18 +114,18 @@ jobs:
         run: docker build -f docker/Dockerfile -t kosmos:ci .
       - name: Verify image size <= 2 GB
         run: |
-          SIZE_BYTES=$(docker inspect kosmos:ci --format='{{.Size}}')
-          MAX_BYTES=$((2 * 1024 * 1024 * 1024))
-          echo "Image size: $SIZE_BYTES bytes (limit: $MAX_BYTES bytes)"
-          if [ "$SIZE_BYTES" -gt "$MAX_BYTES" ]; then
-            echo "::error::Image size $SIZE_BYTES exceeds 2 GB limit"
+          size_bytes=$(docker inspect kosmos:ci --format='{{.Size}}')
+          max_bytes=$((2 * 1024 * 1024 * 1024))
+          echo "Image size: $size_bytes bytes (limit: $max_bytes bytes)"
+          if [ "$size_bytes" -gt "$max_bytes" ]; then
+            echo "::error::Image size $size_bytes exceeds 2 GB limit"
             exit 1
           fi
       - name: Verify non-root user is UID 1000
         run: |
-          UID_IN_CONTAINER=$(docker run --rm --entrypoint id kosmos:ci -u)
-          echo "Container UID: $UID_IN_CONTAINER"
-          if [ "$UID_IN_CONTAINER" != "1000" ]; then
-            echo "::error::Expected UID 1000, got $UID_IN_CONTAINER"
+          uid_in_container=$(docker run --rm --entrypoint id kosmos:ci -u)
+          echo "Container UID: $uid_in_container"
+          if [ "$uid_in_container" != "1000" ]; then
+            echo "::error::Expected UID 1000, got $uid_in_container"
             exit 1
           fi
