@@ -206,19 +206,48 @@ def _parse_registry(
 # ---------------------------------------------------------------------------
 
 
-def _is_assignment_line(line: str) -> bool:
-    """Return True if line looks like an env assignment (VAR=value or VAR: value)."""
+_PY_ENV_CONTEXT_RE = re.compile(
+    r"os\.environ|os\.getenv|env_prefix|validation_alias"
+)
+
+
+def _is_assignment_line(line: str, file_kind: str) -> bool:
+    """Return True if line looks like an env read/assignment, scoped per file kind.
+
+    file_kind is one of:
+      - 'shell'  : .env* files. Matches shell/dotenv `VAR=value` assignments.
+      - 'yaml'   : workflow YAML. Matches `VAR: value` env-block lines and
+                   shell assignments (which may appear inside `run:` blocks).
+      - 'python' : src/**/*.py. Matches ONLY explicit env-read patterns
+                   (os.environ / os.getenv / pydantic env_prefix /
+                   validation_alias). Python module-level ALL_CAPS constants
+                   are NOT flagged, because they are not env variables.
+    """
+    if file_kind == "python":
+        return bool(_PY_ENV_CONTEXT_RE.search(line))
+
     stripped = line.strip()
-    # Shell/dotenv assignment: VAR=value (possibly with leading export)
-    if re.match(r"^(?:export\s+)?[A-Z][A-Z0-9_]*=", stripped):
-        return True
-    # YAML key-value under env: block: '  VAR: value'
-    if re.match(r"^[A-Z][A-Z0-9_]*:\s", stripped):
-        return True
-    # Python os.environ.get(...) / os.environ[...] / env_prefix / validation_alias
-    if re.search(r'os\.environ|env_prefix|validation_alias|env_prefix', line):
-        return True
+    if file_kind == "shell":
+        return bool(re.match(r"^(?:export\s+)?[A-Z][A-Z0-9_]*=", stripped))
+
+    if file_kind == "yaml":
+        if re.match(r"^[A-Z][A-Z0-9_]*:\s", stripped):
+            return True
+        if re.match(r"^(?:export\s+)?[A-Z][A-Z0-9_]*=", stripped):
+            return True
     return False
+
+
+def _classify_file(path: Path) -> str:
+    """Map a path to a file_kind for `_is_assignment_line`."""
+    name = path.name
+    if name == ".env.example" or name.startswith(".env"):
+        return "shell"
+    if name.endswith((".yml", ".yaml")):
+        return "yaml"
+    if name.endswith(".py"):
+        return "python"
+    return "other"
 
 
 def _scan_file(
@@ -226,7 +255,6 @@ def _scan_file(
     kosmos_findings: dict[str, list[str]],
     langfuse_findings: dict[str, list[str]],
     prefix_violations: dict[str, list[str]],
-    is_example_or_workflow: bool,
 ) -> int:
     """Scan a single file for env-var tokens.
 
@@ -240,6 +268,7 @@ def _scan_file(
 
     token_count = 0
     rel_path = str(path)
+    file_kind = _classify_file(path)
 
     for lineno, line in enumerate(text.splitlines(), start=1):
         location = f"{rel_path}:{lineno}"
@@ -263,30 +292,33 @@ def _scan_file(
             langfuse_findings.setdefault(name, []).append(location)
             token_count += 1
 
-        # Prefix-violation sweep — only in .env.example and workflow YAML.
-        if is_example_or_workflow:
-            # Only flag assignment-context lines.
-            if _is_assignment_line(line):
-                for match in _ALL_CAPS_RE.finditer(line):
-                    token = match.group()
-                    # Skip allowlisted prefixes and known builtins.
-                    if token.startswith("KOSMOS_"):
-                        continue
-                    if token.startswith("LANGFUSE_"):
-                        continue
-                    if token.startswith(_GITHUB_PREFIX):
-                        continue
-                    if token.startswith(_RUNNER_PREFIX):
-                        continue
-                    if token.startswith(_OTEL_PREFIX):
-                        continue
-                    if token in _GITHUB_BUILTINS:
-                        continue
-                    # Skip very short tokens likely to be noise (e.g., "CI").
-                    if len(token) <= 2:
-                        continue
-                    prefix_violations.setdefault(token, []).append(location)
-                    token_count += 1
+        # Prefix-violation sweep — runs on all scanned file kinds, but the
+        # assignment context is scoped by file kind (shell/yaml/python) so
+        # Python module-level ALL_CAPS constants are not mis-flagged as env
+        # variable references. Python coverage remains meaningful via the
+        # explicit env-read patterns (os.environ / os.getenv / env_prefix /
+        # validation_alias).
+        if _is_assignment_line(line, file_kind):
+            for match in _ALL_CAPS_RE.finditer(line):
+                token = match.group()
+                # Skip allowlisted prefixes and known builtins.
+                if token.startswith("KOSMOS_"):
+                    continue
+                if token.startswith("LANGFUSE_"):
+                    continue
+                if token.startswith(_GITHUB_PREFIX):
+                    continue
+                if token.startswith(_RUNNER_PREFIX):
+                    continue
+                if token.startswith(_OTEL_PREFIX):
+                    continue
+                if token in _GITHUB_BUILTINS:
+                    continue
+                # Skip very short tokens likely to be noise (e.g., "CI").
+                if len(token) <= 2:
+                    continue
+                prefix_violations.setdefault(token, []).append(location)
+                token_count += 1
 
     return token_count
 
@@ -311,11 +343,6 @@ def _collect_scan_targets(repo_root: Path) -> list[Path]:
         targets.append(env_example)
 
     return targets
-
-
-def _is_example_or_workflow(path: Path) -> bool:
-    name = path.name
-    return name == ".env.example" or name.endswith(".yml") or name.endswith(".yaml")
 
 
 # ---------------------------------------------------------------------------
@@ -391,13 +418,11 @@ def audit(
     total_tokens = 0
 
     for path in targets:
-        is_special = _is_example_or_workflow(path)
         total_tokens += _scan_file(
             path,
             kosmos_findings,
             langfuse_findings,
             prefix_violations_raw,
-            is_special,
         )
 
     # Merge LANGFUSE_ into the full set for registry lookups.

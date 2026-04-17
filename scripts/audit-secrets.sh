@@ -121,10 +121,13 @@ _check_pattern() {
     local pattern="$3"
 
     local lineno=0
-    # `|| [[ -n "${line}" ]]` ensures we still process the final line when the
+    # Initialize `line` so the trailing-line guard below cannot trip `set -u`
+    # when the scanned file is empty (first `read` fails before `line` is set).
+    local line=""
+    # `|| [[ -n "${line-}" ]]` ensures we still process the final line when the
     # file has no trailing newline — otherwise a forbidden secret on EOF would
-    # silently bypass the gate.
-    while IFS= read -r line || [[ -n "${line}" ]]; do
+    # silently bypass the gate. Default expansion tolerates unset `line`.
+    while IFS= read -r line || [[ -n "${line-}" ]]; do
         lineno=$(( lineno + 1 ))
         if echo "${line}" | grep -iqE "${pattern}"; then
             if ! _is_allowed "${line}"; then
