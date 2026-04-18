@@ -8,6 +8,7 @@ Epic: #13
 from kosmos.agents.consent import AlwaysGrantConsentGateway, ConsentGateway
 from kosmos.agents.context import AgentContext
 from kosmos.agents.coordinator import Coordinator
+from kosmos.agents.mailbox.file_mailbox import FileMailbox
 from kosmos.agents.mailbox.messages import AgentMessage
 from kosmos.agents.plan import CoordinatorPlan, PlanStep
 from kosmos.agents.worker import Worker
@@ -19,6 +20,7 @@ __all__ = [
     "ConsentGateway",
     "Coordinator",
     "CoordinatorPlan",
+    "FileMailbox",
     "PlanStep",
     "Worker",
 ]
