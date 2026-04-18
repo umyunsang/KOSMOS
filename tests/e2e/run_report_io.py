@@ -64,8 +64,21 @@ def dump_run_report(report: RunReport, dump_dir: Path | None) -> Path | None:
     filename = f"030-{report.scenario_id}-{unix_ms}.json"
     output_path = dump_dir / filename
 
-    # JSON serialization via RunReport.model_dump_json() only — no bespoke encoders
-    json_str = report.model_dump_json(indent=2)
+    # JSON serialization: remap TokenUsage field names to match eval-output.schema.json.
+    # The schema requires total_input_tokens/total_output_tokens; TokenUsage uses
+    # input_tokens/output_tokens.  We remap at the boundary here to avoid changing
+    # production model field names.
+    import json as _json
+
+    raw = _json.loads(report.model_dump_json())
+    if "usage_totals" in raw and isinstance(raw["usage_totals"], dict):
+        ut = raw["usage_totals"]
+        raw["usage_totals"] = {
+            "total_input_tokens": ut.get("input_tokens", 0),
+            "total_output_tokens": ut.get("output_tokens", 0),
+        }
+    # attribute_keys: schema expects array (JSON), Pydantic serializes frozenset as array already
+    json_str = _json.dumps(raw, indent=2, ensure_ascii=False)
     output_path.write_text(json_str, encoding="utf-8")
 
     logger.info("dump_run_report: wrote %s (%d bytes)", output_path, len(json_str))
