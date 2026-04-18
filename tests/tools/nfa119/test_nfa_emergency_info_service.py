@@ -20,7 +20,12 @@ from pydantic import ValidationError
 from kosmos.tools.errors import Layer3GateViolation
 from kosmos.tools.executor import ToolExecutor
 from kosmos.tools.lookup import lookup
-from kosmos.tools.models import LookupError, LookupFetchInput, LookupSearchInput, LookupSearchResult  # noqa: A004
+from kosmos.tools.models import (
+    LookupError,  # noqa: A004
+    LookupFetchInput,
+    LookupSearchInput,
+    LookupSearchResult,
+)
 from kosmos.tools.nfa119.emergency_info_service import (
     NFA_EMERGENCY_INFO_SERVICE_TOOL,
     NfaActivityItem,

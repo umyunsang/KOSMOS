@@ -21,7 +21,13 @@ from pydantic import ValidationError
 from kosmos.tools.errors import Layer3GateViolation
 from kosmos.tools.executor import ToolExecutor
 from kosmos.tools.lookup import lookup
-from kosmos.tools.models import LookupError, LookupFetchInput, LookupSearchInput, LookupSearchResult  # noqa: A004
+from kosmos.tools.models import (
+    LookupError,  # noqa: A004
+    LookupFetchInput,
+    LookupSearchInput,
+    LookupSearchResult,
+)
+from kosmos.tools.registry import ToolRegistry
 from kosmos.tools.ssis.codes import (
     CallType,
     IntrsThemaCode,
@@ -36,7 +42,6 @@ from kosmos.tools.ssis.welfare_eligibility_search import (
     handle,
     register,
 )
-from kosmos.tools.registry import ToolRegistry
 
 # ---------------------------------------------------------------------------
 # Fixtures
