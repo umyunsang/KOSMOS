@@ -221,4 +221,13 @@ class RunReport(BaseModel):
         # I8
         if self.stop_reason == "end_turn" and not self.final_response:
             raise ValueError("I8: stop_reason='end_turn' requires non-empty final_response")
+        # I9: stop_reason="error_unrecoverable" => final_response is None OR graceful Korean msg.
+        if self.stop_reason == "error_unrecoverable" and self.final_response is not None:
+            korean_apology_markers = ["죄송", "장애", "일시적", "다시", "이용할 수 없"]
+            if not any(marker in self.final_response for marker in korean_apology_markers):
+                raise ValueError(
+                    "I9: stop_reason='error_unrecoverable' with non-None final_response "
+                    "must be a graceful Korean apology message containing one of: "
+                    f"{korean_apology_markers!r}"
+                )
         return self
