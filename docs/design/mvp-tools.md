@@ -1,8 +1,9 @@
 # KOSMOS MVP — Main Tools Precision Design
 
-> **Status**: Pre-spec design. This document grounds the next `/speckit-specify` cycle for KOSMOS MVP. Evidence-backed, not final code.
-> **Scope**: MVP ships **1 main tool** (`lookup`) and **1 primitive** (`resolve_location`) on top of the existing 6-layer architecture in `docs/vision.md`.
-> **Last updated**: 2026-04-16.
+> **Status**: Shipped design (Spec 022 merged). This document is the historical record for the MVP 2-tool facade as shipped.
+> **Scope (as shipped)**: MVP ships **1 main tool** (`lookup`) and **1 primitive** (`resolve_location`) on top of the existing 6-layer architecture in `docs/vision.md`.
+> **Expansion**: The remaining 6 canonical verbs (`check_eligibility`, `reserve_slot`, `subscribe_alert`, `pay`, `issue_certificate`, `submit_application`) are planned under **Mock Facade Epic #994** — a ministry-PR-ready 8-verb tool template with real-flow fidelity to Korean DX government infrastructure. See [Discussion #506](https://github.com/umyunsang/KOSMOS/discussions/506) for canonical verb taxonomy and `docs/scenarios.md` §4 for MOCK-required scenarios.
+> **Last updated**: 2026-04-18 (header pointer added for Mock Epic #994; body preserved at 2026-04-16 frozen state).
 
 ## 1. Scope and non-goals
 
@@ -12,7 +13,7 @@
 - A seed set of **4 per-API adapters** (KOROAD · KMA · HIRA · NMC) that exercise every canonical return shape (`collection`, `timeseries`) and every spatial-parameter convention (sido/gugun codes, KMA LCC grid, WGS84 coord+radius, distance-sorted WGS84) so `lookup` is validated end-to-end against real provider heterogeneity.
 
 ### Explicit non-goals
-- `pay`, `issue_certificate`, `submit_application`, `reserve_slot`, `subscribe_alert` — deferred (legal/auth barriers for a student project; see `docs/vision.md § access matrix`).
+- `pay`, `issue_certificate`, `submit_application`, `reserve_slot`, `subscribe_alert`, `check_eligibility` — **deferred at shipped-MVP time (2026-04-16)**. Now tracked under **Epic #994 (Mock Facade)** as ministry-PR-ready 8-verb mock contracts with real-flow fidelity. Legal/auth barriers for live promotion remain (student project, PASS TEE-bound, 공동인증서 NDA-closed); see `docs/vision.md § access matrix` + `docs/scenarios.md` §4.
 - Writing/mutating endpoints. MVP is **read-only**.
 - Full coverage of `data.go.kr`. MVP needs only enough adapters to prove the retrieval pattern works.
 - Multi-turn planning, permission pipeline depth beyond fail-closed defaults.
