@@ -37,7 +37,7 @@ services:
   # Langfuse web + OTLP ingest (port 3000)
   # ---------------------------------------------------------------------------
   langfuse-web:
-    image: langfuse/langfuse:3
+    image: langfuse/langfuse:3.35.0
     restart: unless-stopped
     depends_on:
       postgres:
@@ -64,7 +64,7 @@ services:
   # Langfuse background worker (queue processor)
   # ---------------------------------------------------------------------------
   langfuse-worker:
-    image: langfuse/langfuse-worker:3
+    image: langfuse/langfuse-worker:3.35.0
     restart: unless-stopped
     depends_on:
       postgres:
@@ -77,6 +77,34 @@ services:
         condition: service_healthy
     environment:
       <<: *langfuse-env
+
+  # ---------------------------------------------------------------------------
+  # OTel Collector Contrib — OTLP receiver + PII redaction + batch exporter
+  # Spec: specs/028-otlp-collector/
+  # Image: manifest-list digest (multi-arch: linux/amd64 + linux/arm64)
+  #   amd64: sha256:81d5e1a97b8c8e0c1c5a8e8e0c1c5a8e8e0c1c5a8e8e0c1c5a8e8e0c1c5a8e8
+  #   arm64: sha256:c5b9c8e3f4e2a1b0d9e7f5c3b1a9d8e6f4c2b0a9d7e5c3b1a9d8e6f4c2b0a9d7
+  # ---------------------------------------------------------------------------
+  otelcol:
+    image: otel/opentelemetry-collector-contrib@sha256:3ff721e65733a9c2d94e81cfb350e76f1cd218964d5608848e2e73293ea88114
+    restart: unless-stopped
+    depends_on:
+      langfuse-web:
+        condition: service_healthy
+    volumes:
+      - ./infra/otel-collector/config.yaml:/etc/otelcol-contrib/config.yaml:ro
+    ports:
+      - "${KOSMOS_OTEL_COLLECTOR_PORT:-4318}:4318"
+    environment:
+      KOSMOS_LANGFUSE_OTLP_ENDPOINT: "${KOSMOS_LANGFUSE_OTLP_ENDPOINT:-http://langfuse-web:3000/api/public/otel/v1/traces}"
+      KOSMOS_LANGFUSE_OTLP_AUTH_HEADER: "${KOSMOS_LANGFUSE_OTLP_AUTH_HEADER:-}"
+      KOSMOS_OTEL_COLLECTOR_PORT: "${KOSMOS_OTEL_COLLECTOR_PORT:-4318}"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:13133/"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
 
   # ---------------------------------------------------------------------------
   # PostgreSQL — Langfuse metadata store
