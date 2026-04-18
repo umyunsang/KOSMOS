@@ -51,15 +51,15 @@ Single Python package layout per `plan.md § Project Structure`:
 
 **⚠️ CRITICAL**: Every US in Phase 3+ depends on these.
 
-- [ ] T007 Extend `src/kosmos/tools/registry.py` with `AdapterPrimitive` StrEnum (`lookup`, `resolve_location`, `submit`, `subscribe`, `verify`) matching `data-model.md § 4`
-- [ ] T008 Extend `src/kosmos/tools/registry.py` with module-level type aliases `PublishedTier` (18-label `Literal[...]` enum) + `NistAalHint` (`Literal["AAL1","AAL2","AAL3"]`) matching `data-model.md § 2` and `research.md § 3.1`
-- [ ] T009 Extend `src/kosmos/tools/registry.py::AdapterRegistration` with `primitive: AdapterPrimitive`, `source_mode: AdapterSourceMode`, `published_tier_minimum: PublishedTier | None = None`, `nist_aal_hint: NistAalHint | None = None`; preserve Spec 024 / 025 V1–V6 invariants verbatim
-- [ ] T010 Extend `src/kosmos/tools/registry.py::ToolRegistry.register()` backstop to reject `tool_id` collisions with a structured `AdapterIdCollisionError` (FR-020) — first-wins
-- [ ] T011 Create `src/kosmos/primitives/_errors.py` with Pydantic models `AdapterNotFoundError`, `AdapterInvocationError`, and `SubscriptionBackpressureDrop` matching `data-model.md § 7`
-- [ ] T012 [P] Create `src/kosmos/security/v12_dual_axis.py` post-init backstop that enforces FR-030 (both `published_tier_minimum` and `nist_aal_hint` required on/after v1.2 GA) — gated by a module-level constant `V12_GA_ACTIVE: bool = False` so pre-v1.2 compatibility window (FR-028) remains open
-- [ ] T013 [P] Re-export Spec 022's existing `lookup` + `resolve_location` from `src/kosmos/primitives/__init__.py` without modifying their source modules (FR-016/FR-017 byte-identical preservation)
-- [ ] T014 [P] Unit test `tests/unit/registry/test_adapter_primitive_field.py` — asserts `AdapterRegistration` accepts new `primitive` + dual-axis fields and rejects unknown primitive strings
-- [ ] T015 [P] Unit test `tests/unit/registry/test_tool_id_collision.py` — asserts FR-020: second registration with an existing `tool_id` raises `AdapterIdCollisionError`
+- [X] T007 Extend `src/kosmos/tools/registry.py` with `AdapterPrimitive` StrEnum (`lookup`, `resolve_location`, `submit`, `subscribe`, `verify`) matching `data-model.md § 4`
+- [X] T008 Extend `src/kosmos/tools/registry.py` with module-level type aliases `PublishedTier` (18-label `Literal[...]` enum) + `NistAalHint` (`Literal["AAL1","AAL2","AAL3"]`) matching `data-model.md § 2` and `research.md § 3.1`
+- [X] T009 Extend `src/kosmos/tools/registry.py::AdapterRegistration` with `primitive: AdapterPrimitive`, `source_mode: AdapterSourceMode`, `published_tier_minimum: PublishedTier | None = None`, `nist_aal_hint: NistAalHint | None = None`; preserve Spec 024 / 025 V1–V6 invariants verbatim
+- [X] T010 Extend `src/kosmos/tools/registry.py::ToolRegistry.register()` backstop to reject `tool_id` collisions with a structured `AdapterIdCollisionError` (FR-020) — first-wins
+- [X] T011 Create `src/kosmos/primitives/_errors.py` with Pydantic models `AdapterNotFoundError`, `AdapterInvocationError`, and `SubscriptionBackpressureDrop` matching `data-model.md § 7`
+- [X] T012 [P] Create `src/kosmos/security/v12_dual_axis.py` post-init backstop that enforces FR-030 (both `published_tier_minimum` and `nist_aal_hint` required on/after v1.2 GA) — gated by a module-level constant `V12_GA_ACTIVE: bool = False` so pre-v1.2 compatibility window (FR-028) remains open
+- [X] T013 [P] Re-export Spec 022's existing `lookup` + `resolve_location` from `src/kosmos/primitives/__init__.py` without modifying their source modules (FR-016/FR-017 byte-identical preservation)
+- [X] T014 [P] Unit test `tests/unit/registry/test_adapter_primitive_field.py` — asserts `AdapterRegistration` accepts new `primitive` + dual-axis fields and rejects unknown primitive strings
+- [X] T015 [P] Unit test `tests/unit/registry/test_tool_id_collision.py` — asserts FR-020: second registration with an existing `tool_id` raises `AdapterIdCollisionError`
 
 **Checkpoint**: Registry schema + error envelope + primitive scaffolding ready. US1–US6 can now begin in parallel.
 

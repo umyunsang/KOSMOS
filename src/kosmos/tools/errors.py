@@ -19,6 +19,20 @@ class DuplicateToolError(KosmosToolError):
         self.tool_id = tool_id
 
 
+class AdapterIdCollisionError(DuplicateToolError):
+    """Spec 031 FR-020 — second registration with an existing ``tool_id`` is rejected.
+
+    Subclasses :class:`DuplicateToolError` so existing call sites that catch the
+    parent class keep working. The first successful registration wins; every
+    subsequent attempt on the same ``tool_id`` surfaces this structured error so
+    callers can distinguish harness collisions from unrelated duplicate registrations.
+    """
+
+    def __init__(self, tool_id: str, existing_module: str | None = None) -> None:
+        super().__init__(tool_id)
+        self.existing_module = existing_module
+
+
 class ToolNotFoundError(KosmosToolError):
     """No tool with this id in the registry."""
 
