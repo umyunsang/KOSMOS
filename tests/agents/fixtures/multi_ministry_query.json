@@ -1,0 +1,44 @@
+{
+  "description": "Scripted 3-worker dispatch for multi-ministry query test",
+  "citizen_request": "이사 준비 중인데, 전입신고랑 자동차 주소변경이랑 건강보험 주소변경 다 해야 하는데",
+  "coordinator_responses": [
+    {
+      "phase": "research_intent_classification",
+      "content": "I need to spawn three workers for: civil_affairs (residence transfer), transport (vehicle address change), health_insurance (health insurance update).",
+      "specialist_roles": ["civil_affairs", "transport", "health_insurance"],
+      "usage": {"input_tokens": 50, "output_tokens": 30}
+    },
+    {
+      "phase": "synthesis",
+      "content": "Based on worker results, here is the unified plan.",
+      "usage": {"input_tokens": 80, "output_tokens": 40}
+    }
+  ],
+  "worker_responses": {
+    "civil_affairs": [
+      {
+        "content": "Residence transfer requires visiting the district office.",
+        "usage": {"input_tokens": 20, "output_tokens": 15}
+      }
+    ],
+    "transport": [
+      {
+        "content": "Vehicle address change can be done online.",
+        "usage": {"input_tokens": 20, "output_tokens": 15}
+      }
+    ],
+    "health_insurance": [
+      {
+        "content": "Health insurance address change is automatic after residence transfer.",
+        "usage": {"input_tokens": 20, "output_tokens": 15}
+      }
+    ]
+  },
+  "responses": [
+    {
+      "content": "I need to dispatch three specialist workers for this multi-ministry request.",
+      "tool_calls": [],
+      "usage": {"input_tokens": 50, "output_tokens": 30}
+    }
+  ]
+}

@@ -13,7 +13,9 @@ Usage::
 
 from __future__ import annotations
 
-from pydantic import Field
+from pathlib import Path
+
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from kosmos.safety._settings import SafetySettings
@@ -55,6 +57,46 @@ class KosmosSettings(BaseSettings):
     # --- Safety pipeline (Epic #466) ---
     safety: SafetySettings = Field(default_factory=SafetySettings)
     """Four-layer safety pipeline configuration (KOSMOS_SAFETY_* env vars)."""
+
+    # --- Agent Swarm (Epic #13) ---
+    agent_mailbox_root: Path = Field(
+        default_factory=lambda: Path.home() / ".kosmos" / "mailbox",
+    )
+    """Root directory for FileMailbox (KOSMOS_AGENT_MAILBOX_ROOT).
+
+    MUST be an absolute path. Relative paths are rejected at validation time.
+    Default: ~/.kosmos/mailbox
+    """
+
+    agent_mailbox_max_messages: int = Field(default=1000, ge=100, le=10_000)
+    """Per-session message cap (KOSMOS_AGENT_MAILBOX_MAX_MESSAGES).
+
+    Clamped to [100, 10000]. Default: 1000.
+    """
+
+    agent_max_workers: int = Field(default=4, ge=1, le=16)
+    """Max concurrent workers per coordinator session (KOSMOS_AGENT_MAX_WORKERS).
+
+    Clamped to [1, 16]. Default: 4.
+    """
+
+    agent_worker_timeout_seconds: int = Field(default=120, ge=10, le=600)
+    """Worker timeout before coordinator cancels (KOSMOS_AGENT_WORKER_TIMEOUT_SECONDS).
+
+    A worker that does not post a result or error message within this timeout
+    is cancelled by the coordinator and treated as an error.
+    Clamped to [10, 600]. Default: 120.
+    """
+
+    @field_validator("agent_mailbox_root", mode="after")
+    @classmethod
+    def _agent_mailbox_root_must_be_absolute(cls, v: Path) -> Path:
+        """Reject relative paths for agent_mailbox_root (FR-032)."""
+        if not v.is_absolute():
+            raise ValueError(
+                f"agent_mailbox_root must be an absolute path, got: {v!r}"
+            )
+        return v
 
 
 settings: KosmosSettings = KosmosSettings()
