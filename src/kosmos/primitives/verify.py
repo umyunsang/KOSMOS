@@ -18,11 +18,14 @@ import logging
 from datetime import datetime
 from typing import Annotated, Literal
 
+from opentelemetry import trace
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from kosmos.tools.registry import NistAalHint, PublishedTier
 
 logger = logging.getLogger(__name__)
+
+_tracer = trace.get_tracer("kosmos.primitives.verify")
 
 # ---------------------------------------------------------------------------
 # VerifyInput
@@ -304,77 +307,86 @@ async def verify(
     if session_context is None:
         session_context = {}
 
-    adapter = _VERIFY_ADAPTERS.get(family_hint)
-    if adapter is None:
-        logger.warning("verify: no adapter registered for family=%s", family_hint)
-        return VerifyMismatchError(
-            family="mismatch_error",
-            reason="family_mismatch",
-            expected_family=family_hint,
-            observed_family="<no_adapter>",
-            message=(
-                f"No verify adapter registered for family {family_hint!r}. "
-                "Register a mock or live adapter via register_verify_adapter()."
+    with _tracer.start_as_current_span("gen_ai.tool_loop.iteration") as span:
+        span.set_attribute("gen_ai.tool.name", f"verify:{family_hint}")
+        span.set_attribute("kosmos.verify.family_hint", family_hint)
+
+        adapter = _VERIFY_ADAPTERS.get(family_hint)
+        if adapter is None:
+            logger.warning("verify: no adapter registered for family=%s", family_hint)
+            span.set_attribute("error.type", "adapter_not_found")
+            return VerifyMismatchError(
+                family="mismatch_error",
+                reason="family_mismatch",
+                expected_family=family_hint,
+                observed_family="<no_adapter>",
+                message=(
+                    f"No verify adapter registered for family {family_hint!r}. "
+                    "Register a mock or live adapter via register_verify_adapter()."
+                ),
+            )
+
+        import asyncio
+        import inspect
+
+        if inspect.iscoroutinefunction(adapter):
+            result = await adapter(session_context)  # type: ignore[operator]
+        else:
+            result = adapter(session_context)  # type: ignore[operator]
+            if asyncio.isfuture(result) or asyncio.iscoroutine(result):
+                result = await result
+
+        # FR-010: guard against coercion — reject a returned context whose family
+        # does not match family_hint.
+        if isinstance(result, VerifyMismatchError):
+            span.set_attribute("error.type", "verify_mismatch")
+            return result
+
+        # Validate it is a known AuthContext variant
+        if not isinstance(
+            result,
+            (
+                GongdongInjeungseoContext,
+                GeumyungInjeungseoContext,
+                GanpyeonInjeungContext,
+                DigitalOnepassContext,
+                MobileIdContext,
+                MyDataContext,
             ),
-        )
+        ):
+            span.set_attribute("error.type", "unexpected_adapter_return_type")
+            return VerifyMismatchError(
+                family="mismatch_error",
+                reason="family_mismatch",
+                expected_family=family_hint,
+                observed_family=str(type(result)),
+                message=(
+                    f"Adapter for {family_hint!r} returned unexpected type "
+                    f"{type(result).__name__!r}. Expected an AuthContext variant."
+                ),
+            )
 
-    import asyncio
-    import inspect
+        observed = getattr(result, "family", None)
+        if observed != family_hint:
+            logger.error(
+                "verify FR-010: family_hint=%s but adapter returned family=%s — coercion blocked",
+                family_hint,
+                observed,
+            )
+            span.set_attribute("error.type", "family_mismatch")
+            return VerifyMismatchError(
+                family="mismatch_error",
+                reason="family_mismatch",
+                expected_family=family_hint,
+                observed_family=str(observed),
+                message=(
+                    f"Adapter returned family={observed!r} but caller specified "
+                    f"family_hint={family_hint!r}. Coercion is prohibited (FR-010)."
+                ),
+            )
 
-    if inspect.iscoroutinefunction(adapter):
-        result = await adapter(session_context)  # type: ignore[operator]
-    else:
-        result = adapter(session_context)  # type: ignore[operator]
-        if asyncio.isfuture(result) or asyncio.iscoroutine(result):
-            result = await result
-
-    # FR-010: guard against coercion — reject a returned context whose family
-    # does not match family_hint.
-    if isinstance(result, VerifyMismatchError):
+        span.set_attribute("kosmos.verify.observed_family", str(observed))
         return result
-
-    # Validate it is a known AuthContext variant
-    if not isinstance(
-        result,
-        (
-            GongdongInjeungseoContext,
-            GeumyungInjeungseoContext,
-            GanpyeonInjeungContext,
-            DigitalOnepassContext,
-            MobileIdContext,
-            MyDataContext,
-        ),
-    ):
-        return VerifyMismatchError(
-            family="mismatch_error",
-            reason="family_mismatch",
-            expected_family=family_hint,
-            observed_family=str(type(result)),
-            message=(
-                f"Adapter for {family_hint!r} returned unexpected type "
-                f"{type(result).__name__!r}. Expected an AuthContext variant."
-            ),
-        )
-
-    observed = getattr(result, "family", None)
-    if observed != family_hint:
-        logger.error(
-            "verify FR-010: family_hint=%s but adapter returned family=%s — coercion blocked",
-            family_hint,
-            observed,
-        )
-        return VerifyMismatchError(
-            family="mismatch_error",
-            reason="family_mismatch",
-            expected_family=family_hint,
-            observed_family=str(observed),
-            message=(
-                f"Adapter returned family={observed!r} but caller specified "
-                f"family_hint={family_hint!r}. Coercion is prohibited (FR-010)."
-            ),
-        )
-
-    return result
 
 
 __all__ = [

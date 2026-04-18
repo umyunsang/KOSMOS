@@ -22,11 +22,14 @@ import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Annotated, AsyncIterator, Literal
 
+from opentelemetry import trace
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from kosmos.primitives._errors import SubscriptionBackpressureDrop
 
 logger = logging.getLogger(__name__)
+
+_tracer = trace.get_tracer("kosmos.primitives.subscribe")
 
 # ---------------------------------------------------------------------------
 # T051 — Data models
@@ -389,16 +392,25 @@ class _SubscribeIterator:
             closes_at=now + timedelta(seconds=inp.lifetime_seconds),
         )
 
-        if inp.tool_id not in _SUBSCRIBE_ADAPTERS:
-            from kosmos.primitives._errors import AdapterNotFoundError
-            err = AdapterNotFoundError(
-                tool_id=inp.tool_id,
-                message=f"No subscribe adapter registered for tool_id={inp.tool_id!r}",
-            )
-            # Surface as error event then terminate
-            await self._queue.put(err)
-            await self._queue.put(_DRIVER_DONE)
-            return
+        # FR-031: emit a single gen_ai.tool_loop.iteration span at handle-open
+        # to mirror submit/verify parity. Subsequent event delivery happens on
+        # the driver task; per-event spans would flood the exporter.
+        with _tracer.start_as_current_span("gen_ai.tool_loop.iteration") as span:
+            span.set_attribute("gen_ai.tool.name", inp.tool_id)
+            span.set_attribute("kosmos.subscribe.subscription_id", self._handle.subscription_id)
+            span.set_attribute("kosmos.subscribe.lifetime_seconds", float(inp.lifetime_seconds))
+
+            if inp.tool_id not in _SUBSCRIBE_ADAPTERS:
+                from kosmos.primitives._errors import AdapterNotFoundError
+                span.set_attribute("error.type", "adapter_not_found")
+                err = AdapterNotFoundError(
+                    tool_id=inp.tool_id,
+                    message=f"No subscribe adapter registered for tool_id={inp.tool_id!r}",
+                )
+                # Surface as error event then terminate
+                await self._queue.put(err)
+                await self._queue.put(_DRIVER_DONE)
+                return
 
         modality, adapter_fn = _SUBSCRIBE_ADAPTERS[inp.tool_id]
         drop_counter = self._drop_counter
