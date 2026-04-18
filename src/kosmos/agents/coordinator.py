@@ -18,7 +18,7 @@ import json
 import logging
 from datetime import UTC, datetime
 from enum import StrEnum
-from typing import Literal
+from typing import Any, Literal
 from uuid import UUID, uuid4
 
 from opentelemetry import trace
@@ -530,7 +530,9 @@ class Coordinator:
             message=plan_data.get("message"),
         )
 
-    async def _call_synthesis_llm(self, citizen_request: str, result_summaries: list[str]) -> dict:  # type: ignore[type-arg]
+    async def _call_synthesis_llm(
+        self, citizen_request: str, result_summaries: list[str]
+    ) -> dict[str, Any]:
         """Call the LLM for synthesis WITHOUT any tools injected (FR-004).
 
         The LLM generates a JSON plan as text. Tool definitions are
@@ -598,7 +600,8 @@ class Coordinator:
             start = text.find("{")
             end = text.rfind("}")
             if start >= 0 and end > start:
-                return json.loads(text[start : end + 1])
+                parsed: dict[str, Any] = json.loads(text[start : end + 1])
+                return parsed
         except (json.JSONDecodeError, ValueError):
             logger.warning("Coordinator: could not parse synthesis LLM response: %r", text)
         return {}
