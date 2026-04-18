@@ -11,3 +11,9 @@ Six mock system sub-packages (byte- or shape-mirror-able public systems):
 OPAQUE systems (gov24 submission, KEC XML signature, NPKI portal session)
 live in docs/scenarios/ only — no mock adapter implementations (FR-026).
 """
+
+# T027 — US1 submit adapters. Import triggers self-registration in
+# kosmos.primitives.submit._ADAPTER_REGISTRY at module load time.
+# APPEND ONLY — do not remove or reorder existing entries.
+import kosmos.tools.mock.data_go_kr.fines_pay  # noqa: F401, E402
+import kosmos.tools.mock.mydata.welfare_application  # noqa: F401, E402
