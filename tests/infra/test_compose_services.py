@@ -48,7 +48,40 @@ def compose_data() -> dict:
     """Return the parsed docker-compose.dev.yml as a dict."""
     yaml = pytest.importorskip("yaml", reason="PyYAML not installed; skipping compose assertions")
     raw = _COMPOSE_FILE.read_text(encoding="utf-8")
-    return yaml.safe_load(raw)  # type: ignore[return-value]
+    data = yaml.safe_load(raw)
+    assert isinstance(data, dict), (
+        f"docker-compose.dev.yml must parse to a YAML mapping; got {type(data).__name__}"
+    )
+    return data  # type: ignore[return-value]
+
+
+@pytest.fixture(scope="module")
+def otelcol(compose_data: dict) -> dict:
+    """Return the ``otelcol`` service block, failing with a clear message if absent."""
+    services = compose_data.get("services", {})
+    assert "otelcol" in services, (
+        "Expected 'otelcol' service in docker-compose.dev.yml — "
+        "run tests/infra/test_otelcol_service_exists first or check the compose file."
+    )
+    return services["otelcol"]
+
+
+@pytest.fixture(scope="module")
+def langfuse_web(compose_data: dict) -> dict:
+    """Return the ``langfuse-web`` service block, failing with a clear message if absent."""
+    services = compose_data.get("services", {})
+    assert "langfuse-web" in services, "Expected 'langfuse-web' service in docker-compose.dev.yml"
+    return services["langfuse-web"]
+
+
+@pytest.fixture(scope="module")
+def langfuse_worker(compose_data: dict) -> dict:
+    """Return the ``langfuse-worker`` service block, failing with a clear message if absent."""
+    services = compose_data.get("services", {})
+    assert "langfuse-worker" in services, (
+        "Expected 'langfuse-worker' service in docker-compose.dev.yml"
+    )
+    return services["langfuse-worker"]
 
 
 # ---------------------------------------------------------------------------
@@ -63,9 +96,9 @@ def test_otelcol_service_exists(compose_data: dict) -> None:
     )
 
 
-def test_otelcol_image_pinned_to_digest(compose_data: dict) -> None:
+def test_otelcol_image_pinned_to_digest(otelcol: dict) -> None:
     """(b) otelcol image uses manifest-list digest pin."""
-    image = compose_data["services"]["otelcol"]["image"]
+    image = otelcol.get("image", "")
     assert image == _OTELCOL_IMAGE_DIGEST, (
         f"otelcol image must be digest-pinned.\n"
         f"  Expected: {_OTELCOL_IMAGE_DIGEST}\n"
@@ -73,9 +106,9 @@ def test_otelcol_image_pinned_to_digest(compose_data: dict) -> None:
     )
 
 
-def test_otelcol_depends_on_langfuse_web_healthy(compose_data: dict) -> None:
+def test_otelcol_depends_on_langfuse_web_healthy(otelcol: dict) -> None:
     """(c) otelcol depends_on langfuse-web with condition service_healthy."""
-    depends_on = compose_data["services"]["otelcol"].get("depends_on", {})
+    depends_on = otelcol.get("depends_on", {})
     assert "langfuse-web" in depends_on, "otelcol must declare depends_on.langfuse-web"
     condition = depends_on["langfuse-web"].get("condition")
     assert condition == "service_healthy", (
@@ -83,9 +116,9 @@ def test_otelcol_depends_on_langfuse_web_healthy(compose_data: dict) -> None:
     )
 
 
-def test_otelcol_config_volume_is_readonly(compose_data: dict) -> None:
+def test_otelcol_config_volume_is_readonly(otelcol: dict) -> None:
     """(d) Config volume mount ends with ':ro'."""
-    volumes: list[str] = compose_data["services"]["otelcol"].get("volumes", [])
+    volumes: list[str] = otelcol.get("volumes", [])
     config_mounts = [v for v in volumes if "config.yaml" in str(v)]
     assert config_mounts, "No config.yaml volume mount found for otelcol"
     mount = str(config_mounts[0])
@@ -110,9 +143,9 @@ def _container_port(mapping: str) -> str:
     return str(mapping).rsplit(":", 1)[-1]
 
 
-def test_otelcol_only_exposes_otlp_http_port(compose_data: dict) -> None:
+def test_otelcol_only_exposes_otlp_http_port(otelcol: dict) -> None:
     """(e) Only port 4318 is exposed; gRPC port 4317 must NOT be present."""
-    ports: list = compose_data["services"]["otelcol"].get("ports", [])
+    ports: list = otelcol.get("ports", [])
     container_ports = [_container_port(str(p)) for p in ports]
 
     # At least one entry exposes container port 4318
@@ -126,9 +159,9 @@ def test_otelcol_only_exposes_otlp_http_port(compose_data: dict) -> None:
     )
 
 
-def test_langfuse_image_pinned(compose_data: dict) -> None:
+def test_langfuse_image_pinned(langfuse_web: dict) -> None:
     """(f) langfuse/langfuse image is pinned to 3.35.0 or a digest (no floating tag)."""
-    image: str = compose_data["services"]["langfuse-web"]["image"]
+    image: str = langfuse_web.get("image", "")
     # Accept either an exact version tag (:3.35.0) or a digest pin (@sha256:...)
     has_version_tag = f":{_LANGFUSE_IMAGE_TAG}" in image
     has_digest_pin = "@sha256:" in image
@@ -142,9 +175,9 @@ def test_langfuse_image_pinned(compose_data: dict) -> None:
     )
 
 
-def test_langfuse_worker_image_pinned(compose_data: dict) -> None:
+def test_langfuse_worker_image_pinned(langfuse_worker: dict) -> None:
     """(g) langfuse/langfuse-worker image is pinned to 3.35.0 or a digest (no floating tag)."""
-    image: str = compose_data["services"]["langfuse-worker"]["image"]
+    image: str = langfuse_worker.get("image", "")
     # Accept either an exact version tag (:3.35.0) or a digest pin (@sha256:...)
     has_version_tag = f":{_LANGFUSE_WORKER_IMAGE_TAG}" in image
     has_digest_pin = "@sha256:" in image
