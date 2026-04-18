@@ -25,7 +25,12 @@ import { MessageList } from '../components/conversation/MessageList'
 import { CrashNotice } from '../components/CrashNotice'
 import { createBridge } from '../ipc/bridge'
 import type { IPCBridge } from '../ipc/bridge'
-import type { IPCFrame, UserInputFrame, SessionEventFrame } from '../ipc/frames.generated'
+import type {
+  IPCFrame,
+  UserInputFrame,
+  SessionEventFrame,
+  PermissionResponseFrame,
+} from '../ipc/frames.generated'
 import { useI18n } from '../i18n'
 import {
   buildDefaultRegistry,
@@ -36,6 +41,9 @@ import {
 import type { DispatchResult } from '../commands'
 import type { CommandDefinition } from '../commands/types'
 import { HelpView } from '../commands/help'
+import { PhaseIndicator } from '../components/coordinator/PhaseIndicator'
+import { WorkerStatusRow } from '../components/coordinator/WorkerStatusRow'
+import { PermissionGauntletModal } from '../components/coordinator/PermissionGauntletModal'
 
 // ---------------------------------------------------------------------------
 // Frame dispatcher — maps IPCFrame arms to SessionAction
@@ -147,6 +155,25 @@ interface HelpState {
 }
 
 // ---------------------------------------------------------------------------
+// WorkerStatusList — selector-isolated on workers Map keys (FR-050/FR-051).
+// Only re-renders when the set of worker IDs changes, not on per-row updates.
+// ---------------------------------------------------------------------------
+
+function WorkerStatusList(): React.ReactElement | null {
+  const workerIds = useSessionStore((s) =>
+    Array.from(s.workers.keys()).sort(),
+  )
+  if (workerIds.length === 0) return null
+  return (
+    <Box flexDirection="column" marginBottom={1}>
+      {workerIds.map((id) => (
+        <WorkerStatusRow key={id} workerId={id} />
+      ))}
+    </Box>
+  )
+}
+
+// ---------------------------------------------------------------------------
 // App inner — consumes theme/i18n hooks (must be inside ThemeProvider)
 // ---------------------------------------------------------------------------
 
@@ -160,6 +187,7 @@ function AppInner({ bridge }: AppInnerProps): React.ReactElement {
   const { exit } = useApp()
   const crash = useSessionStore((s) => s.crash)
   const messageOrder = useSessionStore((s) => s.message_order)
+  const pendingPermission = useSessionStore((s) => s.pending_permission)
 
   const registry = useMemo(() => buildDefaultRegistry(), [])
   const [inputBuffer, setInputBuffer] = useState('')
@@ -186,6 +214,11 @@ function AppInner({ bridge }: AppInnerProps): React.ReactElement {
       ts: new Date().toISOString(),
       text,
     }
+    bridge.send(frame)
+  }
+
+  // DI callback for PermissionGauntletModal — keeps the modal bridge-free.
+  const sendPermissionResponse = (frame: PermissionResponseFrame): void => {
     bridge.send(frame)
   }
 
@@ -217,7 +250,17 @@ function AppInner({ bridge }: AppInnerProps): React.ReactElement {
   }
 
   // Keyboard handling — Ctrl-C closes bridge; otherwise build the input buffer.
+  // When the permission modal is open it owns all keystrokes (FR-046): we
+  // short-circuit here so y/n/Escape reach PermissionGauntletModal exclusively.
   useInput((input, key) => {
+    if (pendingPermission !== null) {
+      // Still allow Ctrl-C to tear down the bridge even while the modal is open.
+      if (key.ctrl && input === 'c') {
+        bridge.close().then(() => exit())
+      }
+      return
+    }
+
     if (key.ctrl && input === 'c') {
       bridge.close().then(() => exit())
       return
@@ -251,11 +294,24 @@ function AppInner({ bridge }: AppInnerProps): React.ReactElement {
 
   return (
     <Box flexDirection="column" paddingX={1}>
+      {/* Coordinator phase indicator (US4 scenario 1, FR-043) */}
+      <PhaseIndicator />
+
+      {/* Per-worker status rows (US4 scenario 2, FR-044) */}
+      <WorkerStatusList />
+
       {/* Conversation history */}
       <MessageList />
 
       {/* Crash notice (renders when store.crash is set) */}
       <CrashNotice />
+
+      {/* Permission gauntlet modal (US4 scenario 3, FR-045/FR-046).
+          Renders only when pending_permission is set; swallows y/n input. */}
+      <PermissionGauntletModal
+        sendFrame={sendPermissionResponse}
+        sessionId={sessionId}
+      />
 
       {/* Ready hint — shown before any interaction */}
       {isEmpty && (

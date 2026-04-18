@@ -189,21 +189,21 @@ description: "Task list for Spec 287 TUI (Ink + React + Bun)"
 
 ### Tests for User Story 4
 
-- [ ] T089 [P] [US4] Component test `tui/tests/components/coordinator/PhaseIndicator.test.tsx` — all 4 phase values; assert active streaming message is not disrupted (US4 scenario 1; FR-043)
-- [ ] T090 [P] [US4] Component test `tui/tests/components/coordinator/WorkerStatusRow.test.tsx` — role_id label + primitive iteration indicator (US4 scenario 2; FR-044)
-- [ ] T091 [P] [US4] Component test `tui/tests/components/coordinator/PermissionGauntletModal.test.tsx` — assert modal renders, all input blocks, `y` emits `permission_response: granted`, `n` emits `denied`; round-trip `request_id` (US4 scenarios 3, 4; FR-045, FR-046)
-- [ ] T092 [P] [US4] Integration test `tui/tests/fixtures/coordinator/three-specialist.jsonl` (scripted Transport + Health + Emergency scenario from #14) replayed via fixture bridge; assert all 3 worker rows visible concurrently + independent updates (US4 scenario 5; SC-7)
+- [X] T089 [P] [US4] Component test `tui/tests/components/coordinator/PhaseIndicator.test.tsx` — all 4 phase values; assert active streaming message is not disrupted (US4 scenario 1; FR-043)
+- [X] T090 [P] [US4] Component test `tui/tests/components/coordinator/WorkerStatusRow.test.tsx` — role_id label + primitive iteration indicator (US4 scenario 2; FR-044)
+- [X] T091 [P] [US4] Component test `tui/tests/components/coordinator/PermissionGauntletModal.test.tsx` — assert modal renders, all input blocks, `y` emits `permission_response: granted`, `n` emits `denied`; round-trip `request_id` (US4 scenarios 3, 4; FR-045, FR-046)
+- [X] T092 [P] [US4] Integration test `tui/tests/fixtures/coordinator/three-specialist.jsonl` (scripted Transport + Health + Emergency scenario from #14) replayed via fixture bridge; assert all 3 worker rows visible concurrently + independent updates (US4 scenario 5; SC-7)
 
 ### Implementation for User Story 4
 
-- [ ] T093 [P] [US4] Lift `tui/src/components/coordinator/PhaseIndicator.tsx` from `restored-src/src/components/` coordinator phase component(s) with attribution header (FR-047)
-- [ ] T094 [P] [US4] Lift `tui/src/components/coordinator/WorkerStatusRow.tsx` from `restored-src/src/components/CoordinatorAgentStatus.tsx` + `AgentProgressLine.tsx` with attribution header (FR-044, FR-047)
-- [ ] T095 [P] [US4] Lift `tui/src/components/coordinator/PermissionGauntletModal.tsx` from `restored-src/src/components/ToolPermission*.tsx` + `BypassPermissionsModeDialog.tsx` with attribution header (FR-045)
-- [ ] T096 [P] [US4] Lift `tui/src/hooks/useCanUseTool.ts` from `restored-src/src/hooks/useCanUseTool.tsx` with attribution header
-- [ ] T097 [US4] Wire the coordinator frames into `tui/src/store/session-store.ts` reducer: `coordinator_phase` → overwrite `coordinator_phase`; `worker_status` → upsert worker; `permission_request` → set `pending_permission` (blocks input)
-- [ ] T098 [US4] Wire `PhaseIndicator` + `WorkerStatusRow` + `PermissionGauntletModal` into the root layout in `tui/src/components/conversation/MessageList.tsx` / `tui/src/entrypoints/tui.tsx`
-- [ ] T099 [US4] Emit `permission_response` IPC frame from modal's granted/denied callbacks; clear `pending_permission` in store reducer (FR-046)
-- [ ] T100 [US4] Create `tui/tests/fixtures/coordinator/three-specialist.jsonl` scripting Transport + Health + Emergency workers concurrently (SC-7)
+- [X] T093 [P] [US4] Lift `tui/src/components/coordinator/PhaseIndicator.tsx` from `restored-src/src/components/` coordinator phase component(s) with attribution header (FR-047)
+- [X] T094 [P] [US4] Lift `tui/src/components/coordinator/WorkerStatusRow.tsx` from `restored-src/src/components/CoordinatorAgentStatus.tsx` + `AgentProgressLine.tsx` with attribution header (FR-044, FR-047)
+- [X] T095 [P] [US4] Lift `tui/src/components/coordinator/PermissionGauntletModal.tsx` from `restored-src/src/components/ToolPermission*.tsx` + `BypassPermissionsModeDialog.tsx` with attribution header (FR-045)
+- [X] T096 [P] [US4] Lift `tui/src/hooks/useCanUseTool.ts` from `restored-src/src/hooks/useCanUseTool.tsx` with attribution header
+- [X] T097 [US4] Wire the coordinator frames into `tui/src/store/session-store.ts` reducer: `coordinator_phase` → overwrite `coordinator_phase`; `worker_status` → upsert worker; `permission_request` → set `pending_permission` (blocks input)
+- [X] T098 [US4] Wire `PhaseIndicator` + `WorkerStatusRow` + `PermissionGauntletModal` into the root layout in `tui/src/components/conversation/MessageList.tsx` / `tui/src/entrypoints/tui.tsx`
+- [X] T099 [US4] Emit `permission_response` IPC frame from modal's granted/denied callbacks; clear `pending_permission` in store reducer (FR-046)
+- [X] T100 [US4] Create `tui/tests/fixtures/coordinator/three-specialist.jsonl` scripting Transport + Health + Emergency workers concurrently (SC-7)
 
 **Checkpoint**: Scripted 3-specialist scenario runs end-to-end with visible phase + worker rows + approval modal.
 
