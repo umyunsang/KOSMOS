@@ -77,9 +77,7 @@ def test_otelcol_image_pinned_to_digest(compose_data: dict) -> None:
 def test_otelcol_depends_on_langfuse_web_healthy(compose_data: dict) -> None:
     """(c) otelcol depends_on langfuse-web with condition service_healthy."""
     depends_on = compose_data["services"]["otelcol"].get("depends_on", {})
-    assert "langfuse-web" in depends_on, (
-        "otelcol must declare depends_on.langfuse-web"
-    )
+    assert "langfuse-web" in depends_on, "otelcol must declare depends_on.langfuse-web"
     condition = depends_on["langfuse-web"].get("condition")
     assert condition == "service_healthy", (
         f"depends_on.langfuse-web.condition must be 'service_healthy', got: {condition!r}"
@@ -93,8 +91,7 @@ def test_otelcol_config_volume_is_readonly(compose_data: dict) -> None:
     assert config_mounts, "No config.yaml volume mount found for otelcol"
     mount = str(config_mounts[0])
     assert mount.endswith(":ro"), (
-        f"Config volume mount must end with ':ro' (fail-closed invariant).\n"
-        f"  Got: {mount}"
+        f"Config volume mount must end with ':ro' (fail-closed invariant).\n  Got: {mount}"
     )
 
 

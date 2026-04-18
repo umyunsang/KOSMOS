@@ -129,10 +129,13 @@ def _emit_test_span(trace_id_hex: str) -> None:
     link_ctx = trace.use_span(NonRecordingSpan(ctx))
 
     tracer = provider.get_tracer("kosmos.test.pii_redaction")
-    with link_ctx, tracer.start_as_current_span(
-        "test.pii_redaction_smoke",
-        context=trace.set_span_in_context(NonRecordingSpan(ctx)),
-    ) as span:
+    with (
+        link_ctx,
+        tracer.start_as_current_span(
+            "test.pii_redaction_smoke",
+            context=trace.set_span_in_context(NonRecordingSpan(ctx)),
+        ) as span,
+    ):
         span.set_attribute("patient.name", "TEST_OPERATOR")
         span.set_attribute("patient.phone", "010-0000-0000")
         span.set_attribute("kosmos.location.query", "서울역")
