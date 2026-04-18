@@ -232,9 +232,9 @@ Single Python package layout per `plan.md § Project Structure`:
 
 **Purpose**: Enforce SC-001 / SC-008 / SC-009 / SC-010, run the full quickstart smoke-test, update the agent-context file, and leave the feature ship-ready.
 
-- [ ] T081 [P] Unit test `tests/unit/primitives/test_registry_count.py` — asserts exactly 5 primitives are registered on the main surface (SC-001)
-- [ ] T082 [P] Lint test `tests/lint/test_no_legacy_verbs.py` — regex-scans `src/kosmos/primitives/` + `src/kosmos/tools/` + adapter registrations for any of the 6 banned legacy top-level verb names (`check_eligibility`, `reserve_slot`, `subscribe_alert`, `pay`, `issue_certificate`, `submit_application`). Zero top-level registrations may match (SC-010)
-- [ ] T083 [P] Dependency-diff test `tests/lint/test_no_new_runtime_deps.py` — uses `git diff main -- pyproject.toml` subprocess; asserts zero new entries under `[project].dependencies` (SC-008)
+- [X] T081 [P] Unit test `tests/unit/primitives/test_registry_count.py` — asserts exactly 5 primitives are registered on the main surface (SC-001)
+- [X] T082 [P] Lint test `tests/lint/test_no_legacy_verbs.py` — regex-scans `src/kosmos/primitives/` + `src/kosmos/tools/` + adapter registrations for any of the 6 banned legacy top-level verb names (`check_eligibility`, `reserve_slot`, `subscribe_alert`, `pay`, `issue_certificate`, `submit_application`). Zero top-level registrations may match (SC-010)
+- [X] T083 [P] Dependency-diff test `tests/lint/test_no_new_runtime_deps.py` — uses `git diff main -- pyproject.toml` subprocess; asserts zero new entries under `[project].dependencies` (SC-008)
 - [X] T084 [P] Onboarding checklist — add `docs/onboarding/five-primitive-harness.md` pointing at `specs/031-five-primitive-harness/quickstart.md` + the `docs/vision.md § Claude Code` analog table (SC-009)
 - [ ] T085 [P] OTEL span parity test `tests/integration/test_otel_span_emission.py` — asserts `submit`, `subscribe`, `verify` emit `gen_ai.tool_loop.iteration` spans with the same attribute shape as Spec 022's `lookup` / `resolve_location` (FR-031)
 - [ ] T086 Run `uv run pytest` locally; fix any failures; then run the full quickstart smoke-test (`quickstart.md § 5`) and confirm every SC-00X pytest invocation returns exit code 0
