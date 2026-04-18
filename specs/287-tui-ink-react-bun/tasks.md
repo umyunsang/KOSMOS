@@ -31,18 +31,18 @@ description: "Task list for Spec 287 TUI (Ink + React + Bun)"
 
 **Purpose**: Create the TUI workspace, pin toolchain, register environment variables, stub the Python IPC entrypoint, and author the three blocking ADRs (FR-057 gates SC-1).
 
-- [ ] T001 Create `tui/` directory at repo root with `.gitignore` (node_modules, bun.lockb if non-committed, `*.generated.ts`) in `tui/.gitignore`
-- [ ] T002 [P] Author ADR `docs/adr/NNN-bun-ink-react-tui-stack.md` approving Bun + TypeScript + Ink 7 + React 19.2 stack with explicit rejection of Node+pnpm+vitest alternative (FR-057, SC-1)
-- [ ] T003 [P] Author ADR `docs/adr/NNN-claude-code-sourcemap-port.md` documenting research-use + attribution + diff-script policy for files lifted from `.references/claude-code-sourcemap/restored-src/` (FR-011, FR-012, FR-013, SC-9)
-- [ ] T004 [P] Author ADR `docs/adr/NNN-korean-ime-strategy.md` forcing choice between (a) `@jrichman/ink@6.6.9` fork and (b) Node readline hybrid; recommendation is option (a) per research.md § 2.6 (FR-014, R1)
-- [ ] T005 Create `tui/package.json` pinning `bun@1.2.x`, `typescript@^5.6`, `react@^19.2`, `@inkjs/ui@^2`, `zod@^3.23`, `ink-testing-library@^4`; `ink` pin resolved post-ADR T004 (either `ink@^7` or `npm:@jrichman/ink@6.6.9`)
-- [ ] T006 Create `tui/tsconfig.json` with `"strict": true`, `"jsx": "react-jsx"`, `"moduleResolution": "bundler"`, `"target": "es2022"`, `"types": ["bun-types"]`
-- [ ] T007 Create `tui/NOTICE` declaring research-use reconstruction and attributing Anthropic (FR-012)
-- [ ] T008 [P] Create `tui/docs/cjk-width-known-issues.md` documenting ink#688 / ink#759 CJK width edge cases (spec Edge Cases, Assumption #3)
-- [ ] T009 [P] Create `tui/docs/accessibility-checklist.md` skeleton covering keyboard-only navigation + screen-reader manual smoke (FR-055, FR-056)
-- [ ] T010 [P] Register `KOSMOS_TUI_THEME`, `KOSMOS_TUI_LOG_LEVEL`, `KOSMOS_TUI_SUBSCRIBE_TIMEOUT_S`, `KOSMOS_TUI_IME_STRATEGY`, `KOSMOS_TUI_SOAK_EVENTS_PER_SEC` in `src/kosmos/config/env_registry.py` per #468 registry pattern (FR-041)
-- [ ] T011 [P] Add `bun run tui`, `bun run gen:ipc`, `bun run diff:upstream`, `bun run tui:fixture`, `bun test:soak` scripts to `tui/package.json`
-- [ ] T012 Run `bun install` from `tui/` to generate `tui/bun.lockb`; verify Ink + React + @inkjs/ui resolve under the ADR-pinned strategy
+- [X] T001 Create `tui/` directory at repo root with `.gitignore` (node_modules, bun.lockb if non-committed, `*.generated.ts`) in `tui/.gitignore`
+- [X] T002 [P] Author ADR `docs/adr/NNN-bun-ink-react-tui-stack.md` approving Bun + TypeScript + Ink 7 + React 19.2 stack with explicit rejection of Node+pnpm+vitest alternative (FR-057, SC-1)
+- [X] T003 [P] Author ADR `docs/adr/NNN-claude-code-sourcemap-port.md` documenting research-use + attribution + diff-script policy for files lifted from `.references/claude-code-sourcemap/restored-src/` (FR-011, FR-012, FR-013, SC-9)
+- [X] T004 [P] Author ADR `docs/adr/NNN-korean-ime-strategy.md` forcing choice between (a) `@jrichman/ink@6.6.9` fork and (b) Node readline hybrid; recommendation is option (a) per research.md § 2.6 (FR-014, R1)
+- [X] T005 Create `tui/package.json` pinning `bun@1.2.x`, `typescript@^5.6`, `react@^19.2`, `@inkjs/ui@^2`, `zod@^3.23`, `ink-testing-library@^4`; `ink` pin resolved post-ADR T004 (either `ink@^7` or `npm:@jrichman/ink@6.6.9`)
+- [X] T006 Create `tui/tsconfig.json` with `"strict": true`, `"jsx": "react-jsx"`, `"moduleResolution": "bundler"`, `"target": "es2022"`, `"types": ["bun-types"]`
+- [X] T007 Create `tui/NOTICE` declaring research-use reconstruction and attributing Anthropic (FR-012)
+- [X] T008 [P] Create `tui/docs/cjk-width-known-issues.md` documenting ink#688 / ink#759 CJK width edge cases (spec Edge Cases, Assumption #3)
+- [X] T009 [P] Create `tui/docs/accessibility-checklist.md` skeleton covering keyboard-only navigation + screen-reader manual smoke (FR-055, FR-056)
+- [X] T010 [P] Register `KOSMOS_TUI_THEME`, `KOSMOS_TUI_LOG_LEVEL`, `KOSMOS_TUI_SUBSCRIBE_TIMEOUT_S`, `KOSMOS_TUI_IME_STRATEGY`, `KOSMOS_TUI_SOAK_EVENTS_PER_SEC` in `src/kosmos/config/env_registry.py` per #468 registry pattern (FR-041)
+- [X] T011 [P] Add `bun run tui`, `bun run gen:ipc`, `bun run diff:upstream`, `bun run tui:fixture`, `bun test:soak` scripts to `tui/package.json`
+- [X] T012 Run `bun install` from `tui/` to generate `tui/bun.lockb`; verify Ink + React + @inkjs/ui resolve under the ADR-pinned strategy
 
 **Checkpoint**: Workspace bootstraps; lockfile is committed-ready; ADRs are in place to unblock all lift work.
 
