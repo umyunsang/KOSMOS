@@ -78,6 +78,13 @@ Column definitions:
 | `KOSMOS_AGENT_MAILBOX_MAX_MESSAGES` | No | `1000` | Integer [100, 10000] | `kosmos.settings.KosmosSettings.agent_mailbox_max_messages` | [Agent Swarm (Epic #13)](#agent-swarm-epic-13) |
 | `KOSMOS_AGENT_MAX_WORKERS` | No | `4` | Integer [1, 16] | `kosmos.settings.KosmosSettings.agent_max_workers` | [Agent Swarm (Epic #13)](#agent-swarm-epic-13) |
 | `KOSMOS_AGENT_WORKER_TIMEOUT_SECONDS` | No | `120` | Integer [10, 600] | `kosmos.settings.KosmosSettings.agent_worker_timeout_seconds` | [Agent Swarm (Epic #13)](#agent-swarm-epic-13) |
+| `KOSMOS_AGENT_COORDINATOR_PHASE` | OTel span attr | n/a | String span attribute key | `kosmos.observability.semconv.KOSMOS_AGENT_COORDINATOR_PHASE` | [Agent Swarm (Epic #13)](#agent-swarm-epic-13) |
+| `KOSMOS_AGENT_ROLE` | OTel span attr | n/a | String span attribute key | `kosmos.observability.semconv.KOSMOS_AGENT_ROLE` | [Agent Swarm (Epic #13)](#agent-swarm-epic-13) |
+| `KOSMOS_AGENT_SESSION_ID` | OTel span attr | n/a | String span attribute key | `kosmos.observability.semconv.KOSMOS_AGENT_SESSION_ID` | [Agent Swarm (Epic #13)](#agent-swarm-epic-13) |
+| `KOSMOS_AGENT_MAILBOX_MSG_TYPE` | OTel span attr | n/a | String span attribute key | `kosmos.observability.semconv.KOSMOS_AGENT_MAILBOX_MSG_TYPE` | [Agent Swarm (Epic #13)](#agent-swarm-epic-13) |
+| `KOSMOS_AGENT_MAILBOX_CORRELATION_ID` | OTel span attr | n/a | String span attribute key | `kosmos.observability.semconv.KOSMOS_AGENT_MAILBOX_CORRELATION_ID` | [Agent Swarm (Epic #13)](#agent-swarm-epic-13) |
+| `KOSMOS_AGENT_MAILBOX_SENDER` | OTel span attr | n/a | String span attribute key | `kosmos.observability.semconv.KOSMOS_AGENT_MAILBOX_SENDER` | [Agent Swarm (Epic #13)](#agent-swarm-epic-13) |
+| `KOSMOS_AGENT_MAILBOX_RECIPIENT` | OTel span attr | n/a | String span attribute key | `kosmos.observability.semconv.KOSMOS_AGENT_MAILBOX_RECIPIENT` | [Agent Swarm (Epic #13)](#agent-swarm-epic-13) |
 
 > **Row count**: 35 rows (30 `KOSMOS_*` active + 2 `LANGFUSE_*` + 1 `KOSMOS_OTEL_ENDPOINT` +
 > 1 override-family pattern + 1 deprecated). `KOSMOS_KOROAD_API_KEY` and
