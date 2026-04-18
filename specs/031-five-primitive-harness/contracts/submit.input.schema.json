@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SubmitInput",
+  "description": "Main-surface input envelope for the submit primitive. No ministry / service / transaction-category fields — adapters own typed params per FR-002/FR-003.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["tool_id", "params"],
+  "properties": {
+    "tool_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[a-z][a-z0-9_]*$",
+      "description": "Globally unique adapter id registered in the tool registry. Collisions rejected at boot (FR-020)."
+    },
+    "params": {
+      "type": "object",
+      "description": "Opaque adapter-specific parameters. Adapter validates against its own Pydantic model at invocation time. Main envelope does NOT narrow this shape (harness-not-reimplementation).",
+      "additionalProperties": true,
+      "default": {}
+    }
+  }
+}
