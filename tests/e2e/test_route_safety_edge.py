@@ -154,7 +154,9 @@ async def test_edge_unregistered_tool_id() -> None:
     """Edge 1: lookup(mode="fetch", tool_id="nonexistent_adapter_xyz") → LookupError.
 
     The executor must return LookupError(reason="unknown_tool") without crashing.
-    Engine continues to the next LLM turn which produces a recovery text.
+    lookup() returns a structured LookupError payload (kind="error") as tool data
+    rather than raising — this preserves the error context so the LLM can reason
+    about it.  Engine continues to the next LLM turn which produces recovery text.
     """
     engine, httpx_mock = _build_engine([_LOOKUP_UNREGISTERED_TOOL, _TEXT_RECOVERY])
 
@@ -167,10 +169,21 @@ async def test_edge_unregistered_tool_id() -> None:
     stop_events = [e for e in events if e.type == "stop"]
     assert stop_events, "No stop event — engine crashed on unknown adapter"
 
-    # Tool result must be a failed result
+    # Tool result must carry a structured LookupError payload (kind="error").
+    # LookupError is returned as data (ToolResult.success=True) so the LLM
+    # receives the full structured context rather than an opaque error string.
     tool_results = [e for e in events if e.type == "tool_result" and e.tool_result is not None]
-    failed = [r for r in tool_results if r.tool_result and not r.tool_result.success]
-    assert failed, "Expected ToolResult(success=False) for unknown adapter"
+    lookup_errors = [
+        r
+        for r in tool_results
+        if r.tool_result
+        and r.tool_result.data is not None
+        and r.tool_result.data.get("kind") == "error"
+    ]
+    assert lookup_errors, (
+        "Expected ToolResult with data.kind='error' for unknown adapter; "
+        f"got tool_results={[r.tool_result for r in tool_results]!r}"
+    )
 
 
 # ---------------------------------------------------------------------------

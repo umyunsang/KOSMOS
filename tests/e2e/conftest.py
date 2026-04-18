@@ -102,10 +102,6 @@ _KMA_FIXTURE_DIR = _FIXTURE_BASE / "kma"
 # T008: httpx.AsyncClient.get AsyncMock seam with per-scenario error injection
 # ---------------------------------------------------------------------------
 
-# call_count tracker per adapter per scenario — used by degraded-path tests
-# to distinguish first-call vs retry-call behaviour.
-_CALL_COUNTERS: dict[str, int] = {}
-
 
 def _resolve_tape_path(
     adapter_id: str,
@@ -999,17 +995,13 @@ def _build_registry_and_executor() -> tuple[ToolRegistry, ToolExecutor]:
     # registry and executor are captured here so lookup() can perform BM25 search
     # (search mode) and executor.invoke() dispatch (fetch mode).
     # Use model_dump(mode="json") so all fields are JSON-safe (no datetime/UUID objects).
-    # Raise RuntimeError when lookup() returns LookupError so dispatch() records
-    # success=False and the engine sees a failed tool result (mirrors the adapter
-    # contract: error outcomes must propagate as ToolResult.success=False).
-    from kosmos.tools.models import LookupError as _LookupError
-
+    # LookupError is returned as structured data (kind="error") rather than raised as
+    # an exception — this preserves the structured error payload so the LLM receives
+    # the full context and downstream assertions can check kind=="error" in the result.
     async def _lookup_adapter(inp: BaseModel) -> dict[str, Any]:
         actual_inp = inp.root if hasattr(inp, "root") else inp  # type: ignore[attr-defined]
         assert isinstance(actual_inp, (LookupSearchInput, LookupFetchInput))
         result = await _lookup_fn(actual_inp, registry=registry, executor=executor)
-        if isinstance(result, _LookupError):
-            raise RuntimeError(f"lookup error: reason={result.reason}, msg={result.message}")
         return result.model_dump(mode="json")
 
     executor.register_adapter("lookup", _lookup_adapter)
