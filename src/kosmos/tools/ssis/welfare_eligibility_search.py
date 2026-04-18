@@ -103,9 +103,9 @@ class MohwWelfareEligibilitySearchInput(BaseModel):
         le=500,
         description="Records per page. Default 10, maximum 500 per SSIS API contract.",
     )
-    call_tp: CallType = Field(
+    call_tp: Literal[CallType.list_] = Field(
         default=CallType.list_,
-        description="Call type — fixed to 'L' (list) for this endpoint.",
+        description="Call type — fixed to 'L' (list) for NationalWelfarelistV001. Do not override.",
     )
 
 

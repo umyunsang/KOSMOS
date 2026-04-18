@@ -274,7 +274,7 @@ class TestNfaExecutorAuthGate:
     @respx.mock
     async def test_executor_returns_auth_required(self, nfa_reg_exec) -> None:
         """lookup(mode='fetch') with session_identity=None returns LookupError(auth_required)."""
-        registry, executor = nfa_reg_exec
+        _registry, executor = nfa_reg_exec
 
         respx.get(url__regex=r".*apis\.data\.go\.kr.*").respond(200, json={})
 
@@ -299,7 +299,7 @@ class TestNfaExecutorAuthGate:
     @respx.mock
     async def test_zero_upstream_calls(self, nfa_reg_exec) -> None:
         """No HTTP calls must be made to data.go.kr when auth gate fires."""
-        registry, executor = nfa_reg_exec
+        _registry, executor = nfa_reg_exec
 
         nfa_route = respx.get(url__regex=r".*1661000.*").respond(200, json={})
 
@@ -321,7 +321,7 @@ class TestNfaExecutorAuthGate:
     @respx.mock
     async def test_auth_required_shape_matches_scenario2_contract(self, nfa_reg_exec) -> None:
         """LookupError shape is the exact stub contract for Scenario 2 (Epic #18)."""
-        registry, executor = nfa_reg_exec
+        _registry, executor = nfa_reg_exec
 
         respx.route().respond(200, json={})
 
@@ -351,7 +351,7 @@ class TestNfaBm25Discoverability:
     @pytest.mark.asyncio
     async def test_korean_query_top5(self, nfa_reg_exec) -> None:
         """Korean query returns nfa_emergency_info_service in top-5 candidates."""
-        registry, executor = nfa_reg_exec
+        registry, _executor = nfa_reg_exec
 
         inp = LookupSearchInput(mode="search", query="119 구급 출동 소방 통계 현황")
         result = await lookup(inp, registry=registry)
@@ -365,7 +365,7 @@ class TestNfaBm25Discoverability:
     @pytest.mark.asyncio
     async def test_english_query_top5(self, nfa_reg_exec) -> None:
         """English query returns nfa_emergency_info_service in top-5 candidates."""
-        registry, executor = nfa_reg_exec
+        registry, _executor = nfa_reg_exec
 
         inp = LookupSearchInput(
             mode="search", query="NFA emergency dispatch statistics fire station"

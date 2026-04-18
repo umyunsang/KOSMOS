@@ -237,7 +237,7 @@ class TestMohwExecutorAuthGate:
     @respx.mock
     async def test_executor_returns_auth_required(self, mohw_reg_exec) -> None:
         """lookup(mode='fetch') with session_identity=None returns LookupError(auth_required)."""
-        registry, executor = mohw_reg_exec
+        _registry, executor = mohw_reg_exec
 
         respx.get(url__regex=r".*apis\.data\.go\.kr.*").respond(200, text="<response/>")
 
@@ -259,7 +259,7 @@ class TestMohwExecutorAuthGate:
     @respx.mock
     async def test_zero_upstream_calls(self, mohw_reg_exec) -> None:
         """No HTTP calls must be made to SSIS endpoint when auth gate fires."""
-        registry, executor = mohw_reg_exec
+        _registry, executor = mohw_reg_exec
 
         ssis_route = respx.get(url__regex=r".*B554287.*").respond(200, text="<response/>")
 
@@ -295,7 +295,7 @@ class TestMohwScenario3Contract:
 
         This test freezes the interface-only contract so Epic #19 doesn't drift.
         """
-        registry, executor = mohw_reg_exec
+        _registry, executor = mohw_reg_exec
 
         respx.route().respond(200, json={})
 
@@ -330,7 +330,7 @@ class TestMohwBm25Discoverability:
     @pytest.mark.asyncio
     async def test_korean_query_top5(self, mohw_reg_exec) -> None:
         """Korean query returns mohw_welfare_eligibility_search in top-5 candidates."""
-        registry, executor = mohw_reg_exec
+        registry, _executor = mohw_reg_exec
 
         inp = LookupSearchInput(mode="search", query="출산 보조금 복지 혜택")
         result = await lookup(inp, registry=registry)
@@ -344,7 +344,7 @@ class TestMohwBm25Discoverability:
     @pytest.mark.asyncio
     async def test_english_query_top5(self, mohw_reg_exec) -> None:
         """English query returns mohw_welfare_eligibility_search in top-5 candidates."""
-        registry, executor = mohw_reg_exec
+        registry, _executor = mohw_reg_exec
 
         inp = LookupSearchInput(mode="search", query="welfare benefit eligibility SSIS childbirth")
         result = await lookup(inp, registry=registry)
