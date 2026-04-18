@@ -47,6 +47,8 @@ def register_all_tools(registry: ToolRegistry, executor: ToolExecutor) -> None:
      11. nmc_emergency_search — NMC emergency room bed availability (Layer 3 gated)
      12. kma_forecast_fetch — KMA short-term forecast by (lat, lon) → LCC grid
      13. hira_hospital_search — HIRA hospital search by coordinates + radius
+     14. nfa_emergency_info_service — NFA EMS statistics (Phase 2, Layer 3 gated stub)
+     15. mohw_welfare_eligibility_search — SSIS welfare service list (Phase 2, Layer 3 gated stub)
 
     Args:
         registry: The central ToolRegistry to add tools to.
@@ -73,7 +75,9 @@ def register_all_tools(registry: ToolRegistry, executor: ToolExecutor) -> None:
     from kosmos.tools.koroad.accident_hazard_search import register as reg_koroad_hazard
     from kosmos.tools.koroad.koroad_accident_search import register as reg_koroad
     from kosmos.tools.mvp_surface import register_mvp_surface
+    from kosmos.tools.nfa119.emergency_info_service import register as reg_nfa
     from kosmos.tools.nmc.emergency_search import register as reg_nmc
+    from kosmos.tools.ssis.welfare_eligibility_search import register as reg_mohw
 
     # Register MVP LLM-visible core surface first (FR-001, SC-003)
     register_mvp_surface(registry)
@@ -103,5 +107,9 @@ def register_all_tools(registry: ToolRegistry, executor: ToolExecutor) -> None:
 
     executor.register_adapter("kma_forecast_fetch", _kma_forecast_fetch_adapter)
     logger.info("Registered tool: kma_forecast_fetch")
+
+    # Phase 2 adapters (spec 029 — NFA 119 + MOHW SSIS, Layer 3 gated stubs)
+    reg_nfa(registry, executor)  # T014 — NFA EMS statistics (interface-only)
+    reg_mohw(registry, executor)  # T022 — MOHW welfare eligibility search (interface-only)
 
     logger.info("All %d tools registered successfully", len(registry))

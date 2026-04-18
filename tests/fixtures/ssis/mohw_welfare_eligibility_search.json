@@ -1,0 +1,19 @@
+{
+  "result_code": "0",
+  "result_message": "SUCCESS",
+  "page_no": 1,
+  "num_of_rows": 10,
+  "total_count": 1,
+  "items": [
+    {
+      "servId": "WLF0000001188",
+      "servNm": "출산가정 방문서비스",
+      "jurMnofNm": "보건복지부",
+      "jurOrgNm": "출산정책과",
+      "servDgst": "출산 가정을 방문하여 산모와 신생아 건강을 지원",
+      "lifeArray": "임신·출산",
+      "intrsThemaArray": "임신·출산",
+      "onapPsbltYn": "Y"
+    }
+  ]
+}

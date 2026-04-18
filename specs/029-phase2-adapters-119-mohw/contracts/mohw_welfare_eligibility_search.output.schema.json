@@ -1,0 +1,6 @@
+{
+  "additionalProperties": true,
+  "description": "Placeholder output schema for GovAPITool registration.\n\nReal XML-parsed output shape is deferred until Layer 3 auth is provisioned\n(Epic #16 / #20). Real models (SsisWelfareServiceItem +\nMohwWelfareEligibilitySearchOutput) are authored above ready for switch-over.",
+  "title": "_MohwWelfareEligibilitySearchOutputStub",
+  "type": "object"
+}
