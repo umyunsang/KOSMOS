@@ -154,13 +154,13 @@ Spec 028 is **local dev + KSC 2026 laptop demo only**. The following items are e
 
 | Item | Reason | Target Epic / Issue |
 |---|---|---|
-| Production OTLP collector deployment (Fly.io / Railway, TLS, `otel.kosmos.<domain>`) | Cost-constrained; local dev is the KSC demo target. Production infra requires #468 Infisical OIDC to be stable first. | Phase 3 observability epic [NEEDS TRACKING] |
-| Langfuse Cloud Hobby integration | External SaaS dependency; cost/quota analysis pending. Revisit if self-hosted quota becomes a constraint. | Phase 3 observability epic [NEEDS TRACKING] |
-| TLS configuration (receiver + exporter) | Not required for local dev or KSC demo LAN. Required for production. | Phase 3 observability epic [NEEDS TRACKING] |
-| CI pipeline `KOSMOS_LANGFUSE_OTLP_AUTH_HEADER` injection via Infisical OIDC | Depends on #468 (OIDC) being stable. | Phase 3 observability epic [NEEDS TRACKING] |
-| Per-environment Langfuse project isolation (`kosmos-dev`, `kosmos-ci`, `kosmos-prod`) | Not meaningful until CI integration is in scope. | Phase 3 observability epic [NEEDS TRACKING] |
-| Live CI smoke test (`tests/live/test_trace_emission.py`) | Requires production collector endpoint. | Phase 3 observability epic [NEEDS TRACKING] |
-| `redaction.yaml` split (separate file for redaction rules) | Epic body mentions this file; current spec inlines rules in `config.yaml` for simplicity. Extract when rule count exceeds 10. | [NEEDS TRACKING] |
+| Production OTLP collector deployment (Fly.io / Railway, TLS, `otel.kosmos.<domain>`) | Cost-constrained; local dev is the KSC demo target. Production infra requires #468 Infisical OIDC to be stable first. | #897 |
+| Langfuse Cloud Hobby integration | External SaaS dependency; cost/quota analysis pending. Revisit if self-hosted quota becomes a constraint. | #899 |
+| TLS configuration (receiver + exporter) | Not required for local dev or KSC demo LAN. Required for production. | #901 |
+| CI pipeline `KOSMOS_LANGFUSE_OTLP_AUTH_HEADER` injection via Infisical OIDC | Depends on #468 (OIDC) being stable. | #903 |
+| Per-environment Langfuse project isolation (`kosmos-dev`, `kosmos-ci`, `kosmos-prod`) | Not meaningful until CI integration is in scope. | #907 |
+| Live CI smoke test (`tests/live/test_trace_emission.py`) | Requires production collector endpoint. | #910 |
+| `redaction.yaml` split (separate file for redaction rules) | Epic body mentions this file; current spec inlines rules in `config.yaml` for simplicity. Extract when rule count exceeds 10. | #912 |
 | Span-attribute normative lock (Section C of Epic #501) | Depends on #507 facade + adapter span-name stabilization. | #507 |
 | OTel Logs signal integration | Spec 021 explicit deferral. | #502 |
 | Span sampling / filtering | Spec 021 explicit deferral. | #503 |
