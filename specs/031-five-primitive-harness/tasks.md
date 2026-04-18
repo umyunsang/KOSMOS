@@ -103,15 +103,15 @@ Single Python package layout per `plan.md § Project Structure`:
 
 ### Tests for User Story 4
 
-- [ ] T028 [P] [US4] Regression test `tests/integration/test_spec_022_regression.py` — invokes `uv run pytest specs/022-mvp-main-tool/tests/ -q` as a subprocess + asserts exit code 0 (SC-003)
-- [ ] T029 [P] [US4] Contract byte-identity test `tests/unit/primitives/test_lookup_envelope_identity.py` — loads Spec 022's `contracts/lookup.input.schema.json` + `lookup.output.schema.json` and asserts that Spec 031's re-exported `lookup` emits the same shapes (FR-016)
-- [ ] T030 [P] [US4] Contract byte-identity test `tests/unit/primitives/test_resolve_location_envelope_identity.py` — same for `resolve_location` (FR-017)
+- [X] T028 [P] [US4] Regression test `tests/integration/test_spec_022_regression.py` — invokes `uv run pytest specs/022-mvp-main-tool/tests/ -q` as a subprocess + asserts exit code 0 (SC-003)
+- [X] T029 [P] [US4] Contract byte-identity test `tests/unit/primitives/test_lookup_envelope_identity.py` — loads Spec 022's `contracts/lookup.input.schema.json` + `lookup.output.schema.json` and asserts that Spec 031's re-exported `lookup` emits the same shapes (FR-016)
+- [X] T030 [P] [US4] Contract byte-identity test `tests/unit/primitives/test_resolve_location_envelope_identity.py` — same for `resolve_location` (FR-017)
 
 ### Implementation for User Story 4
 
-- [ ] T031 [US4] Verify `src/kosmos/primitives/__init__.py` re-export (T013) does not introduce any attribute / signature change on `lookup` or `resolve_location`
-- [ ] T032 [US4] Back-fill `AdapterPrimitive` + `published_tier_minimum=None, nist_aal_hint=None` on the 4 existing Spec 022 registrations (`koroad_accident_hazard_search`, `kma_forecast_fetch`, `hira_hospital_search`, `nmc_emergency_search`) during pre-v1.2 compatibility window (FR-028) — `None` is the legal default pre-v1.2
-- [ ] T033 [US4] Update the 4 Spec 022 adapter registrations to set `primitive=AdapterPrimitive.lookup` or `AdapterPrimitive.resolve_location` as appropriate; no other field changes
+- [X] T031 [US4] Verify `src/kosmos/primitives/__init__.py` re-export (T013) does not introduce any attribute / signature change on `lookup` or `resolve_location`
+- [X] T032 [US4] Back-fill `AdapterPrimitive` + `published_tier_minimum=None, nist_aal_hint=None` on the 4 existing Spec 022 registrations (`koroad_accident_hazard_search`, `kma_forecast_fetch`, `hira_hospital_search`, `nmc_emergency_search`) during pre-v1.2 compatibility window (FR-028) — `None` is the legal default pre-v1.2
+- [X] T033 [US4] Update the 4 Spec 022 adapter registrations to set `primitive=AdapterPrimitive.lookup` or `AdapterPrimitive.resolve_location` as appropriate; no other field changes
 
 **Checkpoint**: Spec 022 test suite green; envelope shapes confirmed byte-identical. US1 + US4 are now the MVP surface.
 
