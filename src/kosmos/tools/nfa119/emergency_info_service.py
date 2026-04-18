@@ -48,12 +48,14 @@ class NfaEmergencyInfoServiceInput(BaseModel):
     operation: NfaEmgOperation = Field(
         default=NfaEmgOperation.activity,
         description=(
-            "Which emergency-info sub-endpoint to query. Default 'activity' "
-            "(getEmgencyActivityInfo) returns dispatch distance, patient symptoms, "
-            "and crew qualifications — the most citizen-relevant view. "
-            "Choose 'transfer' for patient transport, 'condition' for vitals, "
-            "'firstaid' for treatment codes, 'vehicle_dispatch' or 'vehicle_info' "
-            "for fleet data."
+            "Which emergency-info sub-endpoint to query. "
+            "Pass the NfaEmgOperation enum value string directly. "
+            "Default 'getEmgencyActivityInfo' returns dispatch distance, patient "
+            "symptoms, and crew qualifications — the most citizen-relevant view. "
+            "Use 'getEmgPatientTransferInfo' for patient transport, "
+            "'getEmgPatientConditionInfo' for vitals, "
+            "'getEmgPatientFirstaidInfo' for treatment codes, "
+            "'getEmgVehicleDispatchInfo' or 'getEmgVehicleInfo' for fleet data."
         ),
     )
     sido_hq_ogid_nm: str | None = Field(
@@ -284,7 +286,7 @@ NFA_EMERGENCY_INFO_SERVICE_TOOL = GovAPITool(
         "Query the NFA (소방청) emergency-activity records service for historical, "
         "anonymized EMS statistics by region, fire station, and report year-month. "
         "Returns dispatch distance, patient symptoms, and crew qualifications when "
-        "operation='activity' (default). This is NOT a real-time 119 dispatch tool "
+        "operation='getEmgencyActivityInfo' (default). This is NOT a real-time 119 dispatch tool "
         "and does NOT return current-incident or facility-locator data. "
         "IMPORTANT: requires_auth=True — unauthenticated sessions receive auth_required."
     ),
