@@ -59,6 +59,20 @@ from kosmos.tools.registry import (  # noqa: E402
 _SPAN_NAME = "gen_ai.tool_loop.iteration"
 
 
+@pytest.fixture(autouse=True)
+def _enable_otel_sdk(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Neutralise CI's ``OTEL_SDK_DISABLED=true`` for the duration of the test.
+
+    The OpenTelemetry SDK honours ``OTEL_SDK_DISABLED=true`` globally: any
+    ``TracerProvider()`` constructed while it is set emits no spans, which
+    breaks the in-memory exporter assertions below. Local runs pass because
+    the variable is unset; CI sets it via ``ci.yml`` to silence the real
+    exporter. We explicitly clear it here so the test's isolated
+    ``TracerProvider`` can route spans to ``InMemorySpanExporter``.
+    """
+    monkeypatch.delenv("OTEL_SDK_DISABLED", raising=False)
+
+
 def _fresh_exporter() -> tuple[InMemorySpanExporter, TracerProvider]:
     exporter = InMemorySpanExporter()
     provider = TracerProvider()
