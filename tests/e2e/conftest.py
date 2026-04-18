@@ -1029,34 +1029,24 @@ def _build_report(
     adapter_hits: dict[str, int],
     elapsed_ms: int,
 ) -> RunReport:
-    """Construct a RunReport, enforcing I7 only when instrumentation is active.
+    """Construct a RunReport preserving the real observability snapshot.
 
-    I7 (fetched_adapter_ids count == adapter span count) is enforced only when:
-      - sdk_disabled is False (OTel SDK is on), AND
-      - at least one tool span was captured (instrumentation is wired up).
-
-    When the SDK is on but 0 tool spans exist, the executor is not yet
-    instrumented in this test environment.  We mark sdk_disabled=True so
-    I7 is not enforced — downstream span tests will skip via sdk_disabled
-    guard rather than asserting false negatives.  A warning is emitted so
-    the gap is visible in logs.
+    sdk_disabled reflects only OTEL_SDK_DISABLED (set by OTelSpanCaptureFixture).
+    I7 enforcement (fetched_adapter_ids == adapter span count) is gated in
+    RunReport._check_invariants: when span_adapter_count==0 (executor not yet
+    emitting kosmos.tool.adapter), I7 is not triggered.  A warning is emitted
+    here so the instrumentation gap is visible in logs.
     """
-    obs = obs_snapshot
     if not obs_snapshot.sdk_disabled:
         span_adapter_count = sum(1 for s in obs_snapshot.spans if s.adapter_id is not None)
         if span_adapter_count != len(fetched_adapters):
-            # kosmos.tool.adapter attribute is not yet emitted by the executor in this
-            # test environment.  Mark sdk_disabled=True so RunReport I7 is not enforced,
-            # and emit a warning so the gap is visible — this is not a silent bypass.
             logger.warning(
                 "_build_report: span adapter count (%d) != fetched adapters (%d); "
-                "%d total tool spans captured — kosmos.tool.adapter not yet set by executor; "
-                "marking sdk_disabled=True for I7 bypass (FR-020 gate)",
+                "%d total tool spans — kosmos.tool.adapter not yet emitted by executor",
                 span_adapter_count,
                 len(fetched_adapters),
                 len(obs_snapshot.spans),
             )
-            obs = ObservabilitySnapshot(sdk_disabled=True, spans=())
     return RunReport(
         scenario_id=scenario_id,
         trigger_query=TRIGGER_QUERY,
@@ -1065,7 +1055,7 @@ def _build_report(
         final_response=final_response,
         stop_reason=stop_reason_str,  # type: ignore[arg-type]
         usage_totals=usage_totals,
-        observability=obs,
+        observability=obs_snapshot,
         adapter_rate_limit_hits=adapter_hits,
         elapsed_ms=elapsed_ms,
     )
