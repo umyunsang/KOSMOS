@@ -1,0 +1,7 @@
+{
+  "kind": "permission_response",
+  "session_id": "01HTESTST0000000000000ABCA",
+  "ts": "2026-04-19T12:00:08.000Z",
+  "request_id": "01HTESTPERM00000000000001",
+  "decision": "granted"
+}

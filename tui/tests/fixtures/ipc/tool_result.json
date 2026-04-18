@@ -1,0 +1,19 @@
+{
+  "kind": "tool_result",
+  "session_id": "01HTESTST0000000000000ABCA",
+  "ts": "2026-04-19T12:00:04.000Z",
+  "call_id": "01HTESTCALL000000000000001",
+  "envelope": {
+    "kind": "lookup",
+    "subtype": "LookupList",
+    "items": [
+      {
+        "id": "koroad_route_143",
+        "name": "143번 광역버스",
+        "description": "서울역 ↔ 수원"
+      }
+    ],
+    "total": 1,
+    "page": 1
+  }
+}

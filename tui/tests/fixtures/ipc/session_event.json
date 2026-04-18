@@ -1,0 +1,7 @@
+{
+  "kind": "session_event",
+  "session_id": "01HTESTST0000000000000ABCA",
+  "ts": "2026-04-19T12:00:09.000Z",
+  "event": "save",
+  "payload": {}
+}

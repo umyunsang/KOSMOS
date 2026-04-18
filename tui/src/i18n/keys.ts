@@ -4,9 +4,20 @@ export interface I18nBundle {
   sessionReady: string;
   sessionEnded: string;
 
-  // Commands
+  // Commands — dispatch
   commandNotFound: (name: string) => string;
   commandHelp: string;
+
+  // Commands — session handlers
+  cmdSaveAck: string;
+  cmdSessionsAck: string;
+  cmdResumeAck: (sessionId: string) => string;
+  cmdResumeMissingId: string;
+  cmdNewAck: string;
+
+  // Help view labels
+  helpTitle: string;
+  helpUsage: string;
 
   // Permission gauntlet
   permissionPromptTitle: string;

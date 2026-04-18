@@ -6,6 +6,13 @@ const ko: I18nBundle = {
   sessionEnded: '\uc138\uc158\uc774 \uc885\ub8cc\ub418\uc5c8\uc2b5\ub2c8\ub2e4',
   commandNotFound: (name) => `\uc54c \uc218 \uc5c6\ub294 \uba85\ub839: /${name}`,
   commandHelp: '\uc0ac\uc6a9 \uac00\ub2a5\ud55c \uba85\ub839:',
+  cmdSaveAck: '\uc138\uc158\uc744 \uc800\uc7a5\ud558\ub294 \uc911\u2026',
+  cmdSessionsAck: '\uc138\uc158 \ubaa9\ub85d\uc744 \ubd88\ub7ec\uc624\ub294 \uc911\u2026',
+  cmdResumeAck: (sessionId) => `\uc138\uc158 ${sessionId}\uc744(\ub97c) \uc7ac\uac1c\ud558\ub294 \uc911\u2026`,
+  cmdResumeMissingId: '\uc0ac\uc6a9\ubc95: /resume <\uc138\uc158-ID>',
+  cmdNewAck: '\uc0c8 \uc138\uc158\uc744 \uc2dc\uc791\ud558\ub294 \uc911\u2026',
+  helpTitle: 'KOSMOS \uc2ac\ub798\uc2dc \uba85\ub839',
+  helpUsage: '/<\uba85\ub839> [\uc778\uc218]\ub97c \uc785\ub825\ud558\uc138\uc694',
   permissionPromptTitle: '\uad8c\ud55c\uc774 \ud544\uc694\ud569\ub2c8\ub2e4',
   permissionPromptBody: (toolName) =>
     `\ub3c4\uad6c "${toolName}"\uc758 \uc2e4\ud589\uc744 \ud5c8\uc6a9\ud558\uc2dc\uaca0\uc2b5\ub2c8\uae4c?`,

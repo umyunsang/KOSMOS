@@ -1,0 +1,8 @@
+{
+  "kind": "assistant_chunk",
+  "session_id": "01HTESTST0000000000000ABCA",
+  "ts": "2026-04-19T12:00:01.000Z",
+  "message_id": "01HTESTMSG000000000000001",
+  "delta": "버스 143번은 ",
+  "done": false
+}

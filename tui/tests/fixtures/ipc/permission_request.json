@@ -1,0 +1,11 @@
+{
+  "kind": "permission_request",
+  "session_id": "01HTESTST0000000000000ABCA",
+  "ts": "2026-04-19T12:00:07.000Z",
+  "request_id": "01HTESTPERM00000000000001",
+  "worker_id": "worker-health-01",
+  "primitive_kind": "lookup",
+  "description_ko": "병원 정보 조회를 허용하시겠습니까?",
+  "description_en": "Allow access to hospital information?",
+  "risk_level": "low"
+}

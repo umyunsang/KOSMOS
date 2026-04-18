@@ -1,0 +1,11 @@
+{
+  "kind": "error",
+  "session_id": "01HTESTST0000000000000ABCA",
+  "ts": "2026-04-19T12:00:10.000Z",
+  "code": "backend_crash",
+  "message": "Unexpected error in tool executor",
+  "details": {
+    "tool_id": "koroad_accident_hazard_search",
+    "attempt": 1
+  }
+}

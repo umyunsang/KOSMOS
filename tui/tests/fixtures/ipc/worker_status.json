@@ -1,0 +1,9 @@
+{
+  "kind": "worker_status",
+  "session_id": "01HTESTST0000000000000ABCA",
+  "ts": "2026-04-19T12:00:06.000Z",
+  "worker_id": "worker-transport-01",
+  "role_id": "transport-specialist",
+  "current_primitive": "lookup",
+  "status": "running"
+}
