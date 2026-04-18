@@ -1,0 +1,75 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# KOSMOS OTel Collector Contrib — local dev pipeline contract.
+# Spec: specs/028-otlp-collector/
+# Ref: research.md §3 (Reference mapping)
+#
+# This file is the authoritative contract for `infra/otel-collector/config.yaml`.
+# Any change to this file constitutes a spec amendment and must pass /speckit-analyze.
+#
+# Pipeline: otlp (receiver) -> attributes/pii_redact -> batch -> otlphttp (exporter)
+#
+# PII rules mirror spec 021's _ALLOWED_METADATA_KEYS Python whitelist (first gate).
+# The collector is the SECOND gate (controller-level per PIPA §26 carve-out).
+#
+# Wildcard `patient.*` is NOT supported by the attributes processor — rules are
+# explicitly enumerated. New `patient.*` keys must be added here AND whitelisted
+# at the Python layer.
+
+extensions:
+  health_check:
+    endpoint: "0.0.0.0:13133"
+    # pprof intentionally disabled — no profiling endpoint exposure.
+
+receivers:
+  otlp:
+    protocols:
+      http:
+        endpoint: "0.0.0.0:4318"
+        include_metadata: false
+      # grpc intentionally omitted — FR-003 restricts exposure to HTTP only.
+
+processors:
+  attributes/pii_redact:
+    actions:
+      # --- delete known patient.* identifiers (PIPA §26) ---
+      - key: patient.name
+        action: delete
+      - key: patient.phone
+        action: delete
+      - key: patient.rrn
+        action: delete
+      - key: patient.address
+        action: delete
+      # --- hash the raw location query (preserve cardinality, redact content) ---
+      - key: kosmos.location.query
+        action: hash
+        # algorithm: SHA-256 (collector default for `hash` action since v0.92.0)
+
+  batch:
+    timeout: 5s
+    send_batch_size: 512
+    send_batch_max_size: 512
+
+exporters:
+  otlphttp:
+    # IMPORTANT: otlphttp exporter appends /v1/traces automatically.
+    # Set endpoint to base URL only (e.g. http://langfuse-web:3000/api/public/otel),
+    # NOT the full traces path — otherwise the request lands at .../v1/traces/v1/traces.
+    # Ref: opentelemetry-collector-contrib otlphttpexporter README
+    endpoint: "${env:KOSMOS_LANGFUSE_OTLP_ENDPOINT:-http://langfuse-web:3000/api/public/otel}"
+    headers:
+      Authorization: "${env:KOSMOS_LANGFUSE_OTLP_AUTH_HEADER}"
+      x-langfuse-ingestion-version: "4"
+    compression: gzip
+    tls:
+      insecure: true  # local dev only — Phase 3 observability epic flips to TLS
+
+service:
+  extensions: [health_check]
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [attributes/pii_redact, batch]
+      exporters: [otlphttp]
+  # telemetry: intentionally omitted — collector's own self-telemetry is out of scope.
