@@ -333,19 +333,19 @@ Copied verbatim from Epic #287:
 
 | Item | Reason for Deferral | Target Epic/Phase | Tracking Issue |
 |------|---------------------|-------------------|----------------|
-| Web UI / browser-based interface | Requires different rendering stack; out of scope for terminal platform | Phase 3+ | NEEDS TRACKING |
-| Mobile UI | Out of scope for terminal platform | Phase 3+ | NEEDS TRACKING |
-| Voice input and voice output | Claude Code `voice/` module exists but skipped for MVP; requires speech pipeline | Phase 3+ | NEEDS TRACKING |
-| Plugin / skill system (`plugins/`, `skills/` from Claude Code) | Complex extension lifecycle; not required for MVP primitives | Phase 3+ | NEEDS TRACKING |
-| Buddy mode (`buddy/` from Claude Code) | Not mapped to any KOSMOS role; no equivalent backend | Phase 3+ | NEEDS TRACKING |
-| KAIROS assistant mode (`assistant/` from Claude Code) | No equivalent backend; design TBD | Phase 3+ | NEEDS TRACKING |
-| Remote sessions (`remote/` from Claude Code) | KOSMOS runs local; remote orchestration is a separate initiative | Future Initiative | NEEDS TRACKING |
-| Vim mode (`vim/` from Claude Code) | Low priority for citizen users | Phase 3+ | NEEDS TRACKING |
-| Custom theme DSL beyond 3 built-in themes | Not required for MVP; design TBD | Phase 3+ | NEEDS TRACKING |
-| Multi-window / tiled layouts | Complex layout engine; not required for MVP | Phase 3+ | NEEDS TRACKING |
-| Windows-native full support | Linux + macOS are primary; Windows is best-effort in v1 | Phase 3+ | NEEDS TRACKING |
-| Upstream-diff auto-sync bot | Manual diff script sufficient for v1; bot automation deferred | Phase 3+ | NEEDS TRACKING |
-| Accessibility: screen-reader automated CI | Manual checklist sufficient for v1; automated CI requires Ink a11y improvements | Phase 3+ | NEEDS TRACKING |
+| Web UI / browser-based interface | Requires different rendering stack; out of scope for terminal platform | Phase 3+ | #1282 |
+| Mobile UI | Out of scope for terminal platform | Phase 3+ | #1283 |
+| Voice input and voice output | Claude Code `voice/` module exists but skipped for MVP; requires speech pipeline | Phase 3+ | #1284 |
+| Plugin / skill system (`plugins/`, `skills/` from Claude Code) | Complex extension lifecycle; not required for MVP primitives | Phase 3+ | #1285 |
+| Buddy mode (`buddy/` from Claude Code) | Not mapped to any KOSMOS role; no equivalent backend | Phase 3+ | #1286 |
+| KAIROS assistant mode (`assistant/` from Claude Code) | No equivalent backend; design TBD | Phase 3+ | #1287 |
+| Remote sessions (`remote/` from Claude Code) | KOSMOS runs local; remote orchestration is a separate initiative | Future Initiative | #1288 |
+| Vim mode (`vim/` from Claude Code) | Low priority for citizen users | Phase 3+ | #1289 |
+| Custom theme DSL beyond 3 built-in themes | Not required for MVP; design TBD | Phase 3+ | #1290 |
+| Multi-window / tiled layouts | Complex layout engine; not required for MVP | Phase 3+ | #1291 |
+| Windows-native full support | Linux + macOS are primary; Windows is best-effort in v1 | Phase 3+ | #1292 |
+| Upstream-diff auto-sync bot | Manual diff script sufficient for v1; bot automation deferred | Phase 3+ | #1293 |
+| Accessibility: screen-reader automated CI | Manual checklist sufficient for v1; automated CI requires Ink a11y improvements | Phase 3+ | #1294 |
 
 ---
 
