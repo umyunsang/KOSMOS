@@ -3,7 +3,7 @@
 
 Public surface::
 
-    from kosmos.ipc import IPCFrame
+    from kosmos.ipc import IPCFrame, run_stdio_loop, write_frame
     from kosmos.ipc import (
         UserInputFrame, AssistantChunkFrame, ToolCallFrame, ToolResultFrame,
         CoordinatorPhaseFrame, WorkerStatusFrame, PermissionRequestFrame,
@@ -26,6 +26,7 @@ from kosmos.ipc.frame_schema import (
     WorkerStatusFrame,
     ipc_frame_json_schema,
 )
+from kosmos.ipc.stdio import run as run_stdio_loop, write_frame
 
 __all__ = [
     "IPCFrame",
@@ -41,4 +42,6 @@ __all__ = [
     "SessionEventFrame",
     "ErrorFrame",
     "ipc_frame_json_schema",
+    "run_stdio_loop",
+    "write_frame",
 ]
