@@ -75,21 +75,21 @@ Single Python package layout per `plan.md § Project Structure`:
 
 > Write these first; they MUST fail before implementation lands (FR-001..005 + SC-001, SC-002).
 
-- [ ] T016 [P] [US1] Contract test `tests/unit/primitives/submit/test_contract_shape.py` — loads `contracts/submit.input.schema.json` + `submit.output.schema.json`, validates against fixture payloads, and asserts no domain fields appear in either schema
-- [ ] T017 [P] [US1] Lint test `tests/lint/test_submit_banned_words.py` — ripgreps `src/kosmos/primitives/submit.py` against the 10 banned strings from SC-002 (`check_eligibility`, `reserve_slot`, `subscribe_alert`, `pay`, `issue_certificate`, `submit_application`, `declared_income_krw`, `certificate_type`, `family_register`, `resident_register`). Zero matches required.
-- [ ] T018 [P] [US1] Unit test `tests/unit/primitives/submit/test_dispatch.py` — asserts envelope purity + `AdapterNotFoundError` path for unregistered `tool_id`
-- [ ] T019 [P] [US1] Unit test `tests/unit/primitives/submit/test_transaction_id_determinism.py` — FR-004: same `(tool_id, params)` produces same `transaction_id`
-- [ ] T020 [P] [US1] Integration test `tests/integration/test_submit_published_tier_gate.py` — registers a mock `submit` adapter with `published_tier_minimum="ganpyeon_injeung_kakao_aal2"`, invokes with a mismatched `AuthContext`, and asserts structured rejection (SC-005)
+- [X] T016 [P] [US1] Contract test `tests/unit/primitives/submit/test_contract_shape.py` — loads `contracts/submit.input.schema.json` + `submit.output.schema.json`, validates against fixture payloads, and asserts no domain fields appear in either schema
+- [X] T017 [P] [US1] Lint test `tests/lint/test_submit_banned_words.py` — ripgreps `src/kosmos/primitives/submit.py` against the 10 banned strings from SC-002 (`check_eligibility`, `reserve_slot`, `subscribe_alert`, `pay`, `issue_certificate`, `submit_application`, `declared_income_krw`, `certificate_type`, `family_register`, `resident_register`). Zero matches required.
+- [X] T018 [P] [US1] Unit test `tests/unit/primitives/submit/test_dispatch.py` — asserts envelope purity + `AdapterNotFoundError` path for unregistered `tool_id`
+- [X] T019 [P] [US1] Unit test `tests/unit/primitives/submit/test_transaction_id_determinism.py` — FR-004: same `(tool_id, params)` produces same `transaction_id`
+- [X] T020 [P] [US1] Integration test `tests/integration/test_submit_published_tier_gate.py` — registers a mock `submit` adapter with `published_tier_minimum="ganpyeon_injeung_kakao_aal2"`, invokes with a mismatched `AuthContext`, and asserts structured rejection (SC-005)
 
 ### Implementation for User Story 1
 
-- [ ] T021 [US1] Create `src/kosmos/primitives/submit.py` with `SubmitInput`, `SubmitStatus` StrEnum, `SubmitOutput` Pydantic models matching `data-model.md § 1`
-- [ ] T022 [US1] Implement `submit(tool_id, params) -> SubmitOutput | AdapterNotFoundError | AdapterInvocationError` dispatcher in `src/kosmos/primitives/submit.py` — resolves registry entry, validates `params` against adapter's typed model, awaits `invoke()`, emits Spec 024 `ToolCallAuditRecord` (delegated to existing audit sink) + Spec 021 OTEL span `gen_ai.tool_loop.iteration`
-- [ ] T023 [US1] Implement deterministic `transaction_id` derivation — SHA-256 over `canonical_json(tool_id, params, adapter_nonce)` + `urn:kosmos:submit:` prefix
-- [ ] T024 [US1] Update `src/kosmos/primitives/__init__.py` to export real `submit` symbol (replacing Phase 1 placeholder)
-- [ ] T025 [P] [US1] Create first mock adapter `src/kosmos/tools/mock/data_go_kr/fines_pay.py` — `FinesPayParams` Pydantic model + `async def invoke()` + `AdapterRegistration` with `tool_id="mock_traffic_fine_pay_v1"`, matching the worked example in `quickstart.md § 3`
-- [ ] T026 [P] [US1] Create second mock adapter `src/kosmos/tools/mock/mydata/welfare_application.py` (different ministry, shared envelope) — `tool_id="mock_welfare_application_submit_v1"` — to prove Acceptance Scenario 2
-- [ ] T027 [US1] Register both mock adapters in `src/kosmos/tools/mock/__init__.py` on import so they are discoverable at registry boot
+- [X] T021 [US1] Create `src/kosmos/primitives/submit.py` with `SubmitInput`, `SubmitStatus` StrEnum, `SubmitOutput` Pydantic models matching `data-model.md § 1`
+- [X] T022 [US1] Implement `submit(tool_id, params) -> SubmitOutput | AdapterNotFoundError | AdapterInvocationError` dispatcher in `src/kosmos/primitives/submit.py` — resolves registry entry, validates `params` against adapter's typed model, awaits `invoke()`, emits Spec 024 `ToolCallAuditRecord` (delegated to existing audit sink) + Spec 021 OTEL span `gen_ai.tool_loop.iteration`
+- [X] T023 [US1] Implement deterministic `transaction_id` derivation — SHA-256 over `canonical_json(tool_id, params, adapter_nonce)` + `urn:kosmos:submit:` prefix
+- [X] T024 [US1] Update `src/kosmos/primitives/__init__.py` to export real `submit` symbol (replacing Phase 1 placeholder)
+- [X] T025 [P] [US1] Create first mock adapter `src/kosmos/tools/mock/data_go_kr/fines_pay.py` — `FinesPayParams` Pydantic model + `async def invoke()` + `AdapterRegistration` with `tool_id="mock_traffic_fine_pay_v1"`, matching the worked example in `quickstart.md § 3`
+- [X] T026 [P] [US1] Create second mock adapter `src/kosmos/tools/mock/mydata/welfare_application.py` (different ministry, shared envelope) — `tool_id="mock_welfare_application_submit_v1"` — to prove Acceptance Scenario 2
+- [X] T027 [US1] Register both mock adapters in `src/kosmos/tools/mock/__init__.py` on import so they are discoverable at registry boot
 
 **Checkpoint**: `submit` is fully functional and testable. The 5→1 verb collapse is provable via SC-002 ripgrep.
 
