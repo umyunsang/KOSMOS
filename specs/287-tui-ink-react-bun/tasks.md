@@ -77,25 +77,25 @@ description: "Task list for Spec 287 TUI (Ink + React + Bun)"
 
 ### Tests for User Story 1
 
-- [ ] T025 [P] [US1] Contract test `tui/tests/ipc/codec.test.ts`: zod-parse every JSON file under `tui/tests/fixtures/ipc/` against `frames.generated.ts` discriminated union; one pass case + one malformed-json case per arm
-- [ ] T026 [P] [US1] Integration test `tui/tests/ipc/bridge.test.ts`: spawn a stub Python backend (fixture echo) via `Bun.spawn`, assert process-up within 2 s, stream 10 `assistant_chunk` frames, assert FIFO order + p99 ≤ 50 ms per chunk (US1 scenarios 1, 2, 5; FR-001, FR-005, FR-006)
-- [ ] T027 [P] [US1] Integration test `tui/tests/ipc/crash.test.ts`: kill stub backend mid-stream, assert `<CrashNotice />` renders within 5 s and no `KOSMOS_*` env var values appear in the rendered output (US1 scenario 4; FR-004, SC-5)
-- [ ] T028 [P] [US1] Soak test `tui/tests/ipc/soak.test.ts` (marked `@slow`; 10-min runtime): replay a fixture stream at 100 ev/s via `tui/scripts/soak.ts`; assert zero dropped frames, p99 chunk latency ≤ 50 ms, RSS growth ≤ 50 MB, clean exit (US1 scenario 3; FR-007, SC-2)
-- [ ] T029 [P] [US1] Python round-trip test `tests/ipc/test_stdio_roundtrip.py`: pytest-asyncio spawns `uv run kosmos-backend --ipc stdio`, writes 10 frames of each arm, reads responses, asserts byte-for-byte union validity
+- [X] T025 [P] [US1] Contract test `tui/tests/ipc/codec.test.ts`: zod-parse every JSON file under `tui/tests/fixtures/ipc/` against `frames.generated.ts` discriminated union; one pass case + one malformed-json case per arm
+- [X] T026 [P] [US1] Integration test `tui/tests/ipc/bridge.test.ts`: spawn a stub Python backend (fixture echo) via `Bun.spawn`, assert process-up within 2 s, stream 10 `assistant_chunk` frames, assert FIFO order + p99 ≤ 50 ms per chunk (US1 scenarios 1, 2, 5; FR-001, FR-005, FR-006)
+- [X] T027 [P] [US1] Integration test `tui/tests/ipc/crash.test.ts`: kill stub backend mid-stream, assert `<CrashNotice />` renders within 5 s and no `KOSMOS_*` env var values appear in the rendered output (US1 scenario 4; FR-004, SC-5)
+- [X] T028 [P] [US1] Soak test `tui/tests/ipc/soak.test.ts` (marked `@slow`; 10-min runtime): replay a fixture stream at 100 ev/s via `tui/scripts/soak.ts`; assert zero dropped frames, p99 chunk latency ≤ 50 ms, RSS growth ≤ 50 MB, clean exit (US1 scenario 3; FR-007, SC-2)
+- [X] T029 [P] [US1] Python round-trip test `tests/ipc/test_stdio_roundtrip.py`: pytest-asyncio spawns `uv run kosmos-backend --ipc stdio`, writes 10 frames of each arm, reads responses, asserts byte-for-byte union validity
 
 ### Implementation for User Story 1
 
-- [ ] T030 [P] [US1] Implement Python IPC reader/writer loop in `src/kosmos/ipc/stdio.py`: `asyncio.StreamReader` on `sys.stdin.buffer`, `sys.stdout.buffer.write` + `flush` for output; uses stdlib only (no new runtime deps)
-- [ ] T031 [P] [US1] Add `--ipc stdio` CLI flag to `src/kosmos/cli/__main__.py` that dispatches to `kosmos.ipc.stdio:run()` instead of the existing REPL
-- [ ] T032 [P] [US1] Create `tui/src/ipc/codec.ts` (KOSMOS-original) providing `encodeFrame(frame: IPCFrame): string` and `decodeFrame(line: string): IPCFrame | { error }` with zod validation (belt-and-braces against generated types)
-- [ ] T033 [US1] Create `tui/src/ipc/bridge.ts` wrapping `Bun.spawn(["uv", "run", "kosmos-backend", "--ipc", "stdio"], { stdio: ["pipe","pipe","pipe"] })`; line-split stdout on `\n`; push each decoded frame into a FIFO async queue consumed by the store reducer (FR-001, FR-002, FR-005, FR-009)
-- [ ] T034 [US1] Create `tui/src/ipc/crash-detector.ts`: subscribe to `child.exited`, watch stderr flush, detect non-zero exit or fatal stderr within ≤ 5 s; emit a synthetic `error` frame whose `message` + `details` are run through a KOSMOS_*-env-var redactor (reuse #468 guard pattern) (FR-004)
-- [ ] T035 [US1] Create `tui/src/components/conversation/CrashNotice.tsx` rendering the redacted crash payload with a restart hint (US1 scenario 4)
-- [ ] T036 [US1] Create `tui/src/components/conversation/StreamingMessage.tsx` (lift from `restored-src/src/components/` streaming-message pattern with attribution header) that reads from `session-store` via `useSyncExternalStore` and only re-renders its own message slot on new chunks (FR-050, US1 scenario 2)
-- [ ] T037 [US1] Create `tui/src/main.tsx` / `tui/src/entrypoints/tui.tsx` wiring `bridge → store → ThemeProvider → <App />`; SIGTERM child on Ctrl-C or `session_event.exit` with ≤ 3 s timeout before SIGKILL (FR-009)
-- [ ] T038 [US1] Create `tui/scripts/soak.ts` replay helper that drives `tui/tests/fixtures/soak/` at configurable events/sec; used by T028
-- [ ] T039 [US1] Create `tui/tests/fixtures/smoke/route-safety.jsonl` (hand-curated from #507 recorded responses) showing 3-turn route-safety dialog used by quickstart step 2 (FR-035)
-- [ ] T040 [US1] Add DEBUG-level frame logging controlled by `KOSMOS_TUI_LOG_LEVEL` in `tui/src/ipc/bridge.ts`; default WARN (FR-010)
+- [X] T030 [P] [US1] Implement Python IPC reader/writer loop in `src/kosmos/ipc/stdio.py`: `asyncio.StreamReader` on `sys.stdin.buffer`, `sys.stdout.buffer.write` + `flush` for output; uses stdlib only (no new runtime deps)
+- [X] T031 [P] [US1] Add `--ipc stdio` CLI flag to `src/kosmos/cli/__main__.py` that dispatches to `kosmos.ipc.stdio:run()` instead of the existing REPL
+- [X] T032 [P] [US1] Create `tui/src/ipc/codec.ts` (KOSMOS-original) providing `encodeFrame(frame: IPCFrame): string` and `decodeFrame(line: string): IPCFrame | { error }` with zod validation (belt-and-braces against generated types)
+- [X] T033 [US1] Create `tui/src/ipc/bridge.ts` wrapping `Bun.spawn(["uv", "run", "kosmos-backend", "--ipc", "stdio"], { stdio: ["pipe","pipe","pipe"] })`; line-split stdout on `\n`; push each decoded frame into a FIFO async queue consumed by the store reducer (FR-001, FR-002, FR-005, FR-009)
+- [X] T034 [US1] Create `tui/src/ipc/crash-detector.ts`: subscribe to `child.exited`, watch stderr flush, detect non-zero exit or fatal stderr within ≤ 5 s; emit a synthetic `error` frame whose `message` + `details` are run through a KOSMOS_*-env-var redactor (reuse #468 guard pattern) (FR-004)
+- [X] T035 [US1] Create `tui/src/components/conversation/CrashNotice.tsx` rendering the redacted crash payload with a restart hint (US1 scenario 4)
+- [X] T036 [US1] Create `tui/src/components/conversation/StreamingMessage.tsx` (lift from `restored-src/src/components/` streaming-message pattern with attribution header) that reads from `session-store` via `useSyncExternalStore` and only re-renders its own message slot on new chunks (FR-050, US1 scenario 2)
+- [X] T037 [US1] Create `tui/src/main.tsx` / `tui/src/entrypoints/tui.tsx` wiring `bridge → store → ThemeProvider → <App />`; SIGTERM child on Ctrl-C or `session_event.exit` with ≤ 3 s timeout before SIGKILL (FR-009)
+- [X] T038 [US1] Create `tui/scripts/soak.ts` replay helper that drives `tui/tests/fixtures/soak/` at configurable events/sec; used by T028
+- [X] T039 [US1] Create `tui/tests/fixtures/smoke/route-safety.jsonl` (hand-curated from #507 recorded responses) showing 3-turn route-safety dialog used by quickstart step 2 (FR-035)
+- [X] T040 [US1] Add DEBUG-level frame logging controlled by `KOSMOS_TUI_LOG_LEVEL` in `tui/src/ipc/bridge.ts`; default WARN (FR-010)
 
 **Checkpoint**: `bun run tui` against the real Python backend shows streaming output in Korean; `bun test:soak` passes.
 
