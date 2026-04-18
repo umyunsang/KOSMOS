@@ -184,21 +184,21 @@ Single Python package layout per `plan.md § Project Structure`:
 
 ### Tests for User Story 5
 
-- [ ] T061 [P] [US5] Docs-lint test `tests/test_mock_scenario_split.py` — asserts (a) `docs/mock/` subdirectory count == 6, (b) exact names are `{data_go_kr, omnione, barocert, mydata, npki_crypto, cbs}`, (c) `docs/scenarios/*.md` count == 3, (d) each scenario file contains the handoff heading `## KOSMOS ↔ real system handoff point` (FR-024, SC-004)
-- [ ] T062 [P] [US5] Docs-lint test `tests/test_no_opaque_mock_adapter.py` — walks `src/kosmos/tools/mock/` and asserts no adapter module imports or references `gov24`, `kec`, or `npki_portal_session` — `docs/scenarios/` content MUST NOT have a code sibling (FR-026)
+- [X] T061 [P] [US5] Docs-lint test `tests/test_mock_scenario_split.py` — asserts (a) `docs/mock/` subdirectory count == 6, (b) exact names are `{data_go_kr, omnione, barocert, mydata, npki_crypto, cbs}`, (c) `docs/scenarios/*.md` count == 3, (d) each scenario file contains the handoff heading `## KOSMOS ↔ real system handoff point` (FR-024, SC-004)
+- [X] T062 [P] [US5] Docs-lint test `tests/test_no_opaque_mock_adapter.py` — walks `src/kosmos/tools/mock/` and asserts no adapter module imports or references `gov24`, `kec`, or `npki_portal_session` — `docs/scenarios/` content MUST NOT have a code sibling (FR-026)
 
 ### Implementation for User Story 5
 
-- [ ] T063 [P] [US5] Write `docs/mock/data_go_kr/README.md` — public-spec URL (`openapi.data.go.kr`), mirror axis (`byte`), license, fixture-recording approach
-- [ ] T064 [P] [US5] Write `docs/mock/omnione/README.md` — OpenDID reference stack URL, mirror axis (`byte`), Apache-2.0 license
-- [ ] T065 [P] [US5] Write `docs/mock/barocert/README.md` — developers.barocert.com URL, mirror axis (`shape`), SDK-docs basis
-- [ ] T066 [P] [US5] Write `docs/mock/mydata/README.md` — KFTC 마이데이터 v240930 standard URL, mirror axis (`shape`), mTLS + OAuth 2.0 profile
-- [ ] T067 [P] [US5] Write `docs/mock/npki_crypto/README.md` — PyPinkSign reference URL, crypto-layer-only scope (PKCS#7 / #12), explicit NOTE: NPKI portal session is OPAQUE and lives in scenarios (not mock)
-- [ ] T068 [P] [US5] Write `docs/mock/cbs/README.md` — 3GPP TS 23.041 URL, Message ID 4370–4385, mirror axis (`byte`)
-- [ ] T069 [P] [US5] Fill `docs/scenarios/gov24_submission.md` — journey narrative + "Submission API withheld from public disclosure" rationale + explicit handoff heading
-- [ ] T070 [P] [US5] Fill `docs/scenarios/kec_xml_signature.md` — journey narrative + "XSD + public signing key not disclosed" rationale + handoff heading
-- [ ] T071 [P] [US5] Fill `docs/scenarios/npki_portal_session.md` — journey narrative + "Portal-proprietary session handshake" rationale + handoff heading
-- [ ] T072 [US5] Document the scenario→mock promotion path in a new `docs/scenarios/README.md` (FR-025) — include the "Promoted to mock on <date>, tracked by #<issue>" footer template
+- [X] T063 [P] [US5] Write `docs/mock/data_go_kr/README.md` — public-spec URL (`openapi.data.go.kr`), mirror axis (`byte`), license, fixture-recording approach
+- [X] T064 [P] [US5] Write `docs/mock/omnione/README.md` — OpenDID reference stack URL, mirror axis (`byte`), Apache-2.0 license
+- [X] T065 [P] [US5] Write `docs/mock/barocert/README.md` — developers.barocert.com URL, mirror axis (`shape`), SDK-docs basis
+- [X] T066 [P] [US5] Write `docs/mock/mydata/README.md` — KFTC 마이데이터 v240930 standard URL, mirror axis (`shape`), mTLS + OAuth 2.0 profile
+- [X] T067 [P] [US5] Write `docs/mock/npki_crypto/README.md` — PyPinkSign reference URL, crypto-layer-only scope (PKCS#7 / #12), explicit NOTE: NPKI portal session is OPAQUE and lives in scenarios (not mock)
+- [X] T068 [P] [US5] Write `docs/mock/cbs/README.md` — 3GPP TS 23.041 URL, Message ID 4370–4385, mirror axis (`byte`)
+- [X] T069 [P] [US5] Fill `docs/scenarios/gov24_submission.md` — journey narrative + "Submission API withheld from public disclosure" rationale + explicit handoff heading
+- [X] T070 [P] [US5] Fill `docs/scenarios/kec_xml_signature.md` — journey narrative + "XSD + public signing key not disclosed" rationale + handoff heading
+- [X] T071 [P] [US5] Fill `docs/scenarios/npki_portal_session.md` — journey narrative + "Portal-proprietary session handshake" rationale + handoff heading
+- [X] T072 [US5] Document the scenario→mock promotion path in a new `docs/scenarios/README.md` (FR-025) — include the "Promoted to mock on <date>, tracked by #<issue>" footer template
 
 **Checkpoint**: Mock scope + scenario scope both enforced. SC-004 green.
 
