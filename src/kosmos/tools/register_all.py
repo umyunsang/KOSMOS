@@ -109,7 +109,7 @@ def register_all_tools(registry: ToolRegistry, executor: ToolExecutor) -> None:
     logger.info("Registered tool: kma_forecast_fetch")
 
     # Phase 2 adapters (spec 029 — NFA 119 + MOHW SSIS, Layer 3 gated stubs)
-    reg_nfa(registry, executor)   # T014 — NFA EMS statistics (interface-only)
+    reg_nfa(registry, executor)  # T014 — NFA EMS statistics (interface-only)
     reg_mohw(registry, executor)  # T022 — MOHW welfare eligibility search (interface-only)
 
     logger.info("All %d tools registered successfully", len(registry))
