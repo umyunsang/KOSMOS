@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kosmos.dev/schemas/spec-287/ipc-frames.schema.json",
+  "title": "IPCFrame",
+  "description": "Discriminated union of all frames exchanged between the KOSMOS Python backend and the TypeScript TUI over JSONL stdio. Source of truth: Python Pydantic v2 models at src/kosmos/ipc/frame_schema.py.",
+  "x-ipc-protocol-version": "1",
+  "type": "object",
+  "required": ["kind", "session_id", "ts"],
+  "properties": {
+    "kind": {
+      "type": "string",
+      "enum": [
+        "user_input",
+        "assistant_chunk",
+        "tool_call",
+        "tool_result",
+        "coordinator_phase",
+        "worker_status",
+        "permission_request",
+        "permission_response",
+        "session_event",
+        "error"
+      ]
+    },
+    "session_id": {
+      "type": "string",
+      "description": "ULID; shared across all frames in a session."
+    },
+    "correlation_id": {
+      "type": ["string", "null"],
+      "description": "ULID of the triggering frame; null for unsolicited frames."
+    },
+    "ts": {
+      "type": "string",
+      "format": "date-time",
+      "description": "RFC 3339 UTC timestamp."
+    }
+  },
+  "oneOf": [
+    { "$ref": "./user-input.schema.json" },
+    { "$ref": "./assistant-chunk.schema.json" },
+    { "$ref": "./tool-call.schema.json" },
+    { "$ref": "./tool-result.schema.json" },
+    { "$ref": "./coordinator-phase.schema.json" },
+    { "$ref": "./worker-status.schema.json" },
+    { "$ref": "./permission-request.schema.json" },
+    { "$ref": "./permission-response.schema.json" },
+    { "$ref": "./session-event.schema.json" },
+    { "$ref": "./error.schema.json" }
+  ],
+  "additionalProperties": false
+}

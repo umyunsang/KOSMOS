@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kosmos.dev/schemas/spec-287/user-input.schema.json",
+  "title": "UserInputFrame",
+  "description": "TUI → backend: a citizen's typed input. Direction: TUI → backend.",
+  "type": "object",
+  "required": ["kind", "session_id", "ts", "text"],
+  "properties": {
+    "kind": { "const": "user_input" },
+    "session_id": { "type": "string" },
+    "correlation_id": { "type": ["string", "null"] },
+    "ts": { "type": "string", "format": "date-time" },
+    "text": {
+      "type": "string",
+      "description": "Raw user text in UTF-8 (may contain Korean, English, emoji)."
+    }
+  },
+  "additionalProperties": false
+}

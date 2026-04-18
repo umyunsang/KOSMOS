@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kosmos.dev/schemas/spec-287/permission-response.schema.json",
+  "title": "PermissionResponseFrame",
+  "description": "TUI → backend: citizen's decision on a permission_request. Direction: TUI → backend. Input is unblocked only after this frame is sent (FR-046).",
+  "type": "object",
+  "required": ["kind", "session_id", "ts", "request_id", "decision"],
+  "properties": {
+    "kind": { "const": "permission_response" },
+    "session_id": { "type": "string" },
+    "correlation_id": { "type": ["string", "null"] },
+    "ts": { "type": "string", "format": "date-time" },
+    "request_id": {
+      "type": "string",
+      "description": "ULID matching the originating permission_request.request_id."
+    },
+    "decision": {
+      "type": "string",
+      "enum": ["granted", "denied"]
+    }
+  },
+  "additionalProperties": false
+}

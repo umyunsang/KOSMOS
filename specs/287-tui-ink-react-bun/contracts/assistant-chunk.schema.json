@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kosmos.dev/schemas/spec-287/assistant-chunk.schema.json",
+  "title": "AssistantChunkFrame",
+  "description": "backend → TUI: streaming assistant text delta. Direction: backend → TUI. Performance: TUI MUST render within 50ms of receipt (FR-006).",
+  "type": "object",
+  "required": ["kind", "session_id", "ts", "message_id", "delta", "done"],
+  "properties": {
+    "kind": { "const": "assistant_chunk" },
+    "session_id": { "type": "string" },
+    "correlation_id": { "type": ["string", "null"] },
+    "ts": { "type": "string", "format": "date-time" },
+    "message_id": {
+      "type": "string",
+      "description": "ULID of the assistant message this delta belongs to."
+    },
+    "delta": {
+      "type": "string",
+      "description": "UTF-8 text appended to the message."
+    },
+    "done": {
+      "type": "boolean",
+      "description": "True if this is the terminal chunk for this message_id."
+    }
+  },
+  "additionalProperties": false
+}
