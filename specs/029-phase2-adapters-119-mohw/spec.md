@@ -99,7 +99,7 @@ so that the harness route is validated without a live upstream call.
 | Scenario 3 full E2E (childbirth benefits flow) | Epic #19 |
 | Gov24 application submission after eligibility lookup | Epic #22 |
 | Recall@5 eval set expansion for Phase 2 adapters | Epic #507 follow-on |
-| `nfa_safety_center_lookup` (local CSV-backed nearest-station tool) | See §9 — deferred extension |
+| `nfa_safety_center_lookup` (local CSV-backed nearest-station tool) | #934 (deferred placeholder) — See §9 |
 
 ---
 

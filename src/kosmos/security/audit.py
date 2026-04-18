@@ -72,6 +72,9 @@ TOOL_MIN_AAL: Final[dict[str, AALLevel]] = {
     "issue_certificate": "AAL3",
     "submit_application": "AAL2",
     "pay": "AAL3",
+    # Phase 2 API adapters (spec 029):
+    "nfa_emergency_info_service": "AAL1",  # NFA EMS stats — anonymized, serviceKey auth
+    "mohw_welfare_eligibility_search": "AAL2",  # SSIS welfare — personal demographic inputs
 }
 
 
