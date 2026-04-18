@@ -5,6 +5,7 @@ Provides:
 - tmp_mailbox_root: temp directory for FileMailbox (env patched)
 - fixture_tape_llm: stub LLM that replays scripted responses from JSON
 - build_test_registry: ToolRegistry restricted to {lookup, resolve_location}
+- StubLLMClient: LLMClient subclass that replays scripted text responses
 """
 
 from __future__ import annotations
@@ -19,8 +20,59 @@ from uuid import uuid4
 
 import pytest
 
+from kosmos.llm.client import LLMClient
 from kosmos.llm.models import StreamEvent, TokenUsage
 from kosmos.tools.registry import ToolRegistry
+
+
+# ---------------------------------------------------------------------------
+# Stub LLM client — proper subclass of LLMClient for Pydantic type checking
+# ---------------------------------------------------------------------------
+
+
+class StubLLMClient(LLMClient):
+    """LLMClient subclass that replays scripted text responses without real HTTP.
+
+    Bypasses LLMClient.__init__ via object.__new__ so no env vars or httpx
+    client are needed. Suitable wherever Pydantic validates `llm_client: LLMClient`.
+    """
+
+    def __new__(cls, responses: list[str]) -> "StubLLMClient":  # type: ignore[misc]
+        instance = object.__new__(cls)
+        return instance
+
+    def __init__(self, responses: list[str]) -> None:
+        # Do NOT call super().__init__() — that reads env vars and creates httpx client
+        self._stub_responses = list(responses)
+        self._stub_index = 0
+        self._stub_call_count = 0
+        self._stub_tools_args: list[Any] = []
+
+    async def stream(  # type: ignore[override]
+        self,
+        messages: Any,
+        *,
+        tools: Any = None,
+        **kwargs: Any,
+    ) -> AsyncIterator[StreamEvent]:
+        self._stub_call_count += 1
+        self._stub_tools_args.append(tools)
+
+        if self._stub_index < len(self._stub_responses):
+            text = self._stub_responses[self._stub_index]
+            self._stub_index += 1
+        else:
+            text = ""
+
+        if text:
+            yield StreamEvent(type="content_delta", content=text)
+        yield StreamEvent(type="usage", usage=TokenUsage(input_tokens=5, output_tokens=5))
+
+    def reset(self) -> None:
+        """Reset replay state."""
+        self._stub_index = 0
+        self._stub_call_count = 0
+        self._stub_tools_args = []
 
 
 # ---------------------------------------------------------------------------
@@ -45,8 +97,8 @@ def tmp_mailbox_root(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
 # ---------------------------------------------------------------------------
 
 
-class FixtureTapeLLMClient:
-    """Minimal stub that replays scripted LLM responses from JSON files.
+class FixtureTapeLLMClient(LLMClient):
+    """LLMClient subclass that replays scripted LLM responses from JSON files.
 
     The fixture JSON file has the structure:
     {
@@ -64,13 +116,20 @@ class FixtureTapeLLMClient:
 
     Responses are popped in order. If the queue is exhausted a stop event
     is returned.
+
+    Bypasses LLMClient.__init__ so no env vars or httpx client are needed.
     """
 
+    def __new__(cls, responses: list[dict[str, Any]]) -> "FixtureTapeLLMClient":  # type: ignore[misc]
+        instance = object.__new__(cls)
+        return instance
+
     def __init__(self, responses: list[dict[str, Any]]) -> None:
+        # Do NOT call super().__init__() — no env vars or httpx client needed
         self._responses = list(responses)
         self._index = 0
 
-    async def stream(
+    async def stream(  # type: ignore[override]
         self,
         messages: Any,
         *,
