@@ -485,9 +485,7 @@ async def submit(
             )
 
         # Step 3 — Derive deterministic transaction_id
-        transaction_id = derive_transaction_id(
-            tool_id, params, adapter_nonce=registration.nonce
-        )
+        transaction_id = derive_transaction_id(tool_id, params, adapter_nonce=registration.nonce)
         span.set_attribute("kosmos.submit.transaction_id", transaction_id)
 
         # Step 4 + 5 — Validate params (best-effort) and invoke adapter
