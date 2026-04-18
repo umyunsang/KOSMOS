@@ -1,0 +1,27 @@
+{
+  "meta": {
+    "total_count": 1,
+    "pageable_count": 1,
+    "is_end": true
+  },
+  "documents": [
+    {
+      "address_name": "강원특별자치도 춘천시",
+      "address_type": "REGION",
+      "x": "127.7297654",
+      "y": "37.8748432",
+      "address": {
+        "address_name": "강원특별자치도 춘천시",
+        "region_1depth_name": "강원특별자치도",
+        "region_2depth_name": "춘천시",
+        "region_3depth_name": "",
+        "mountain_yn": "N",
+        "main_address_no": "",
+        "sub_address_no": "",
+        "x": "127.7297654",
+        "y": "37.8748432"
+      },
+      "road_address": null
+    }
+  ]
+}

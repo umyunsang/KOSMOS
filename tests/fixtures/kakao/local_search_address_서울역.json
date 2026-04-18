@@ -1,0 +1,40 @@
+{
+  "meta": {
+    "total_count": 1,
+    "pageable_count": 1,
+    "is_end": true
+  },
+  "documents": [
+    {
+      "address_name": "서울특별시 중구 봉래동2가",
+      "address_type": "REGION_ADDR",
+      "x": "126.9706271",
+      "y": "37.5547997",
+      "address": {
+        "address_name": "서울특별시 중구 봉래동2가",
+        "region_1depth_name": "서울특별시",
+        "region_2depth_name": "중구",
+        "region_3depth_name": "봉래동2가",
+        "mountain_yn": "N",
+        "main_address_no": "",
+        "sub_address_no": "",
+        "x": "126.9706271",
+        "y": "37.5547997"
+      },
+      "road_address": {
+        "address_name": "서울특별시 중구 한강대로 405",
+        "region_1depth_name": "서울특별시",
+        "region_2depth_name": "중구",
+        "region_3depth_name": "남대문로5가",
+        "road_name": "한강대로",
+        "underground_yn": "N",
+        "main_building_no": "405",
+        "sub_building_no": "",
+        "building_name": "서울역",
+        "zone_no": "04346",
+        "x": "126.9706271",
+        "y": "37.5547997"
+      }
+    }
+  ]
+}

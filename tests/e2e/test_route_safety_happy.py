@@ -1,169 +1,136 @@
 # SPDX-License-Identifier: Apache-2.0
-"""E2E happy-path tests for the route safety citizen query flow (T006-T008).
+"""E2E happy-path tests for Scenario 1 Route Safety (030 rebase).
 
-Tests verify the full pipeline from a Korean citizen query through LLM tool
-dispatch, composite adapter fan-out to 3 Korean public APIs, and final
-Korean text synthesis — using recorded fixtures and zero live API calls.
+Verifies the full resolve→search→fetch×2→synthesize pipeline using:
+- MockLLMClient scripted to the 6-turn sequence (FR-003).
+- Recorded JSON fixtures for Kakao, KOROAD, KMA (no live API calls).
+- RunReport aggregate (schema_version="030-runreport-v1").
 """
 
 from __future__ import annotations
 
 import pytest
 
-from kosmos.engine.events import StopReason
 from tests.e2e.conftest import (
-    TEXT_ANSWER_ROUTE_SAFETY,
-    TOOL_CALL_ROAD_RISK,
-    E2EFixtureBuilder,
-    assert_final_response_contains,
-    assert_no_data_gaps,
-    assert_tool_calls_dispatched,
-    run_e2e_query,
+    TRIGGER_QUERY,
+    run_scenario,
 )
 
 # ---------------------------------------------------------------------------
-# T006 [US1] Happy-path E2E test
+# T011 [US1] Happy-path E2E — 6-turn scripted sequence
 # ---------------------------------------------------------------------------
 
 
 @pytest.mark.asyncio
-async def test_t006_happy_path_route_safety(
-    e2e_env: None,
-    e2e_builder: E2EFixtureBuilder,
-) -> None:
-    """Full E2E: citizen query dispatches road_risk_score, receives Korean response.
+async def test_t011_happy_path_resolve_lookup_synthesize() -> None:
+    """US1 AC1-4: full 6-turn pipeline with scripted mock LLM and recorded fixtures.
 
-    Verifies that:
-    - The engine dispatches road_risk_score via a tool_use event.
-    - The final response contains Korean route safety text.
-    - The stop reason is task_complete or end_turn.
-    - No data gaps are reported from the composite adapter.
+    Verifies:
+    - tool_call_order follows resolve x2, lookup x4 (search+fetch for each adapter).
+    - stop_reason == "end_turn".
+    - final_response is non-empty Korean text.
+    - final_response mentions a KOROAD hazard spot name.
+    - final_response mentions a KMA forecast field reference.
     """
-    engine, _llm_client, httpx_mock = e2e_builder.with_llm_responses(
-        [TOOL_CALL_ROAD_RISK, TEXT_ANSWER_ROUTE_SAFETY]
-    ).build()
+    report = await run_scenario("happy")
 
-    events = await run_e2e_query(
-        engine,
-        httpx_mock,
-        user_message="내일 부산에서 서울 가는데, 안전한 경로 추천해줘",
+    # AC1: tool call order — resolve x2, then lookup x4
+    assert "resolve_location" in report.tool_call_order, (
+        f"Expected 'resolve_location' in tool_call_order, got {report.tool_call_order!r}"
+    )
+    assert "lookup" in report.tool_call_order, (
+        f"Expected 'lookup' in tool_call_order, got {report.tool_call_order!r}"
     )
 
-    # road_risk_score tool must have been dispatched
-    assert_tool_calls_dispatched(events, ["road_risk_score"])
+    # Two resolve_location calls
+    resolve_calls = [t for t in report.tool_call_order if t == "resolve_location"]
+    assert len(resolve_calls) >= 2, (
+        f"Expected ≥2 resolve_location calls, got {len(resolve_calls)}: {report.tool_call_order}"
+    )
 
-    # Final text must contain Korean route safety keywords
-    assert_final_response_contains(events, ["경로", "안전"])
+    # At least 4 lookup calls (2 search + 2 fetch)
+    lookup_calls = [t for t in report.tool_call_order if t == "lookup"]
+    assert len(lookup_calls) >= 4, (
+        f"Expected ≥4 lookup calls, got {len(lookup_calls)}: {report.tool_call_order}"
+    )
 
-    # Stop reason must indicate successful completion
-    stop_events = [e for e in events if e.type == "stop"]
-    assert stop_events, "No stop event found in response"
-    assert stop_events[-1].stop_reason in (
-        StopReason.task_complete,
-        StopReason.end_turn,
-    ), f"Unexpected stop reason: {stop_events[-1].stop_reason}"
+    # AC2: resolve calls precede all lookup calls
+    first_lookup_idx = next(i for i, t in enumerate(report.tool_call_order) if t == "lookup")
+    last_resolve_idx = max(
+        i for i, t in enumerate(report.tool_call_order) if t == "resolve_location"
+    )
+    assert last_resolve_idx < first_lookup_idx, (
+        "All resolve_location calls must precede the first lookup call. "
+        f"last_resolve_idx={last_resolve_idx}, first_lookup_idx={first_lookup_idx}"
+    )
 
-    # No data gaps — all 3 inner adapters should have succeeded
-    assert_no_data_gaps(events)
+    # AC3: stop_reason == "end_turn"
+    assert report.stop_reason == "end_turn", (
+        f"Expected stop_reason='end_turn', got {report.stop_reason!r}"
+    )
 
+    # AC4: final_response is non-empty Korean text
+    assert report.final_response, "final_response must not be empty or None"
 
-# ---------------------------------------------------------------------------
-# T007 [US1] Conversation history verification
-# ---------------------------------------------------------------------------
+    # Korean content checks (FR-023)
+    response_text = report.final_response
+    assert any(ord(c) >= 0xAC00 for c in response_text), (
+        f"final_response must contain Korean characters, got: {response_text[:200]!r}"
+    )
+
+    # Must mention a KOROAD hazard spot name from the fixture
+    koroad_keywords = ["강남구", "개포동", "삼성동", "사고", "위험"]
+    assert any(kw in response_text for kw in koroad_keywords), (
+        f"final_response must reference a KOROAD hazard spot. "
+        f"Expected one of {koroad_keywords} in: {response_text[:300]!r}"
+    )
+
+    # Must mention a KMA weather field
+    kma_keywords = ["날씨", "기온", "강수", "예보", "℃", "°C", "%"]
+    assert any(kw in response_text for kw in kma_keywords), (
+        f"final_response must reference a KMA weather field. "
+        f"Expected one of {kma_keywords} in: {response_text[:300]!r}"
+    )
 
 
 @pytest.mark.asyncio
-async def test_t007_conversation_history_accumulates(
-    e2e_env: None,
-    e2e_builder: E2EFixtureBuilder,
-) -> None:
-    """Verify that message history accumulates correctly across two LLM calls.
+async def test_t011b_happy_path_token_accounting() -> None:
+    """US1 AC3: usage_totals == sum of per-call mock token counts (0% tolerance).
 
-    The engine calls the LLM twice:
-      - Iteration 1: LLM requests road_risk_score tool.
-      - Iteration 2: LLM synthesizes the Korean answer with tool results injected.
-
-    After the second call, llm_client.last_messages must contain the accumulated
-    history including a role="user" message and a role="tool" message.
+    With 7 LLM calls (6 tool calls + 1 synthesis) at TokenUsage(200, 50) each for
+    tool calls and TokenUsage(800, 150) for synthesis:
+    - input_tokens = 6*200 + 1*800 = 2000
+    - output_tokens = 6*50 + 1*150 = 450
     """
-    engine, llm_client, httpx_mock = e2e_builder.with_llm_responses(
-        [TOOL_CALL_ROAD_RISK, TEXT_ANSWER_ROUTE_SAFETY]
-    ).build()
+    report = await run_scenario("happy")
 
-    await run_e2e_query(
-        engine,
-        httpx_mock,
-        user_message="내일 부산에서 서울 가는데, 안전한 경로 추천해줘",
+    assert report.usage_totals.input_tokens == 2000, (
+        f"Expected total input_tokens=2000 (6×200 + 800), got {report.usage_totals.input_tokens}"
     )
-
-    # The LLM must have been called exactly twice (tool call + text synthesis)
-    assert llm_client.call_count == 2, f"Expected 2 LLM calls, got {llm_client.call_count}"
-
-    # last_messages reflects the history sent on the second (text synthesis) call
-    assert llm_client.last_messages is not None, "last_messages should not be None"
-
-    roles = [msg.role for msg in llm_client.last_messages]
-
-    # Must include at least one user message (the citizen's original query)
-    assert "user" in roles, f"Expected role='user' in message history, got roles: {roles}"
-
-    # Must include a tool result message fed back to the LLM
-    assert "tool" in roles, (
-        f"Expected role='tool' in message history on 2nd call, got roles: {roles}"
+    assert report.usage_totals.output_tokens == 450, (
+        f"Expected total output_tokens=450 (6×50 + 150), got {report.usage_totals.output_tokens}"
     )
-
-
-# ---------------------------------------------------------------------------
-# T008 [US1] Multi-tool fan-out verification
-# ---------------------------------------------------------------------------
 
 
 @pytest.mark.asyncio
-async def test_t008_multi_tool_fan_out(
-    e2e_env: None,
-    e2e_builder: E2EFixtureBuilder,
-) -> None:
-    """Verify that the road_risk_score composite adapter invokes all 3 inner APIs.
+async def test_t011c_happy_path_fetched_adapters() -> None:
+    """US1: both lookup-fetch calls target the expected adapters.
 
-    Checks:
-    - httpx mock received at least 3 GET calls (one per inner adapter).
-    - Each inner adapter URL pattern appears in the call arguments.
+    fetched_adapter_ids must contain exactly koroad_accident_hazard_search
+    and kma_forecast_fetch (order-preserving).
     """
-    engine, _llm_client, httpx_mock = e2e_builder.with_llm_responses(
-        [TOOL_CALL_ROAD_RISK, TEXT_ANSWER_ROUTE_SAFETY]
-    ).build()
+    report = await run_scenario("happy")
 
-    await run_e2e_query(
-        engine,
-        httpx_mock,
-        user_message="내일 부산에서 서울 가는데, 안전한 경로 추천해줘",
+    expected = ("koroad_accident_hazard_search", "kma_forecast_fetch")
+    assert report.fetched_adapter_ids == expected, (
+        f"Expected fetched_adapter_ids={expected!r}, got {report.fetched_adapter_ids!r}"
     )
 
-    # All 3 inner adapters must have made HTTP GET calls
-    call_count = httpx_mock.call_count
-    assert call_count >= 3, (
-        f"Expected at least 3 httpx GET calls (one per inner adapter), got {call_count}"
+
+@pytest.mark.asyncio
+async def test_t011d_happy_path_trigger_query_preserved() -> None:
+    """US1: trigger_query is preserved verbatim in the RunReport."""
+    report = await run_scenario("happy")
+    assert report.trigger_query == TRIGGER_QUERY, (
+        f"Expected trigger_query={TRIGGER_QUERY!r}, got {report.trigger_query!r}"
     )
-
-    # Collect all URL strings from call arguments
-    called_urls: list[str] = []
-    for call in httpx_mock.call_args_list:
-        # call.args[0] is the URL positional argument to AsyncClient.get()
-        if call.args:
-            called_urls.append(str(call.args[0]))
-        elif call.kwargs.get("url"):
-            called_urls.append(str(call.kwargs["url"]))
-
-    all_urls = " ".join(called_urls)
-
-    # Verify each inner adapter's URL pattern is present
-    expected_patterns = [
-        "getRestFrequentzoneLg",  # koroad_accident_search
-        "getWthrWrnList",  # kma_weather_alert_status
-        "getUltraSrtNcst",  # kma_current_observation
-    ]
-    for pattern in expected_patterns:
-        assert pattern in all_urls, (
-            f"Expected URL pattern {pattern!r} not found in httpx calls.\n"
-            f"Called URLs: {called_urls}"
-        )
