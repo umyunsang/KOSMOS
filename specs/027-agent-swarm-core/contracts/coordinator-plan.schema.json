@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kosmos/specs/027-agent-swarm-core/contracts/coordinator-plan.schema.json",
+  "title": "CoordinatorPlan",
+  "description": "Output of the Coordinator Synthesis phase. Produced by LLM text generation only — lookup / resolve_location are NOT injected into the synthesis-phase tool definitions (FR-004 + FR-038).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["session_id", "status", "steps", "worker_correlation_ids"],
+  "properties": {
+    "session_id": { "type": "string", "format": "uuid" },
+    "status": {
+      "type": "string",
+      "enum": ["complete", "partial", "no_results", "failed"]
+    },
+    "steps": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/PlanStep" }
+    },
+    "worker_correlation_ids": {
+      "type": "array",
+      "description": "Zero-orphan-id invariant (SC-002): every element here must correspond to a worker `result` message delivered before synthesis began.",
+      "items": { "type": "string", "format": "uuid" }
+    },
+    "message": {
+      "oneOf": [
+        { "type": "string" },
+        { "type": "null" }
+      ],
+      "description": "Human-readable summary; populated when status is 'no_results' or 'partial'."
+    }
+  },
+  "$defs": {
+    "PlanStep": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ministry", "action", "execution_mode"],
+      "properties": {
+        "ministry": { "type": "string", "minLength": 1, "maxLength": 64 },
+        "action": { "type": "string", "minLength": 1 },
+        "depends_on": {
+          "type": "array",
+          "items": { "type": "integer", "minimum": 0 },
+          "default": []
+        },
+        "execution_mode": {
+          "type": "string",
+          "enum": ["sequential", "parallel"]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "in_progress", "complete", "failed"],
+          "default": "pending"
+        }
+      }
+    }
+  }
+}
