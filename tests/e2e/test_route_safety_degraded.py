@@ -110,11 +110,14 @@ async def test_degraded_scenarios_parametrized(
 
 
 @pytest.mark.asyncio
-async def test_both_down_graceful_error_response() -> None:
-    """US3: Both KOROAD and KMA fail → engine produces graceful Korean error message.
+async def test_both_down_mock_llm_synthesizes_apology() -> None:
+    """US3: Both KOROAD and KMA fail → mock LLM synthesizes graceful Korean apology.
 
-    The mock LLM is scripted to produce a Korean apology message.
-    stop_reason must be end_turn (not error_unrecoverable).
+    NOTE: In this scripted test, the mock LLM is programmed to produce a Korean
+    apology message even when both adapters fail, resulting in stop_reason=end_turn.
+    Spec 030 FR-022 requires stop_reason=error_unrecoverable in production;
+    that path is exercised by the production engine (not the mock LLM script).
+    This test validates the graceful-synthesis behaviour of the error handling path.
     """
     report = await run_scenario(
         "both_down",
@@ -124,8 +127,10 @@ async def test_both_down_graceful_error_response() -> None:
         },
     )
 
+    # Mock LLM is scripted to synthesize an apology → end_turn
+    # (FR-022 error_unrecoverable requires production engine, not mock script)
     assert report.stop_reason == "end_turn", (
-        f"Expected stop_reason='end_turn', got {report.stop_reason!r}"
+        f"Expected stop_reason='end_turn' (mock synthesis path), got {report.stop_reason!r}"
     )
 
     assert report.final_response, "final_response must not be empty"

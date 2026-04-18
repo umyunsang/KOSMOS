@@ -324,15 +324,14 @@ class OTelSpanCaptureFixture:
             outcome_raw = attrs.get("kosmos.tool.outcome")
             if outcome_raw not in ("ok", "error"):
                 # FR-017: kosmos.tool.outcome must be "ok" or "error".
-                # Missing or invalid value means the executor did not set the
-                # attribute — treat as a test-visible gap, not a silent default.
-                logger.warning(
-                    "snapshot: span %r missing/invalid kosmos.tool.outcome=%r; "
-                    "skipping span to surface FR-017 instrumentation gap",
-                    span.name,
-                    outcome_raw,
+                # Missing or invalid value is a contract violation — raise so
+                # downstream span tests fail diagnostically rather than being
+                # hidden by a dropped or defaulted span.
+                raise AssertionError(
+                    f"snapshot: span {span.name!r} missing/invalid "
+                    f"kosmos.tool.outcome={outcome_raw!r}; expected 'ok' or 'error' — "
+                    "executor must set kosmos.tool.outcome before span ends (FR-017)"
                 )
-                continue  # Skip: missing outcome is a real instrumentation gap
 
             status_code_str: str
             sc = span.status.status_code
@@ -345,9 +344,15 @@ class OTelSpanCaptureFixture:
 
             error_type_val = str(attrs.get("error.type", "")) or None
 
+            # Prefer gen_ai.operation.name attribute; fall back to name-based inference
+            # so existing spans without the attribute still classify correctly.
+            op_name_attr = str(attrs.get("gen_ai.operation.name", "")) or None
+            if op_name_attr is None and "execute_tool" in span.name:
+                op_name_attr = "execute_tool"
+
             captured_span = CapturedSpan(
                 name=span.name,
-                operation_name="execute_tool" if "execute_tool" in span.name else None,
+                operation_name=op_name_attr,  # type: ignore[arg-type]
                 tool_name=tool_name_val,
                 tool_call_id=str(attrs.get("gen_ai.tool.call.id", "")) or None,
                 outcome=outcome_raw,  # type: ignore[arg-type]
