@@ -945,10 +945,19 @@ def e2e_env_vars(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def _build_registry_and_executor() -> tuple[ToolRegistry, ToolExecutor]:
-    """Create a ToolRegistry and ToolExecutor with the two facade tools and both adapters.
+    """Create a ToolRegistry and ToolExecutor with all required adapters.
 
-    Both adapters are registered through ToolRegistry.register() so V1-V6
-    backstop checks run (FR-009/010). No bypass path.
+    Registers executor adapters for:
+    - resolve_location: wraps resolve_location() coroutine; httpx.AsyncClient.get
+      is patched at the class level by run_scenario() so no explicit client arg needed.
+    - lookup: wraps lookup() coroutine; captures registry + executor in closure so
+      lookup(mode=search) can use the BM25 index and lookup(mode=fetch) can invoke
+      the concrete data adapters via executor.invoke().
+    - koroad_accident_hazard_search: KOROAD data adapter (V1-V6 validated).
+    - kma_forecast_fetch: KMA forecast adapter (V1-V6 validated).
+
+    All tools are registered through ToolRegistry.register() so V1-V6 backstop
+    checks run (FR-009/010). No bypass path.
     """
 
     from pydantic import BaseModel
@@ -961,6 +970,9 @@ def _build_registry_and_executor() -> tuple[ToolRegistry, ToolExecutor]:
         _fetch as kma_forecast_fetch_fn,
     )
     from kosmos.tools.koroad.accident_hazard_search import register as reg_koroad_hazard
+    from kosmos.tools.lookup import lookup as _lookup_fn
+    from kosmos.tools.models import LookupFetchInput, LookupSearchInput, ResolveLocationInput
+    from kosmos.tools.resolve_location import resolve_location as _resolve_location_fn
 
     registry = ToolRegistry()
     recovery = RecoveryExecutor()
@@ -970,6 +982,37 @@ def _build_registry_and_executor() -> tuple[ToolRegistry, ToolExecutor]:
     from kosmos.tools.mvp_surface import register_mvp_surface
 
     register_mvp_surface(registry)
+
+    # Register resolve_location executor adapter.
+    # resolve_location() uses httpx.AsyncClient internally; the class-level
+    # patch.object(httpx.AsyncClient, "get", httpx_mock) in run_scenario() covers it.
+    # Use model_dump(mode="json") so datetime/UUID fields serialize to JSON-safe types.
+    async def _resolve_location_adapter(inp: BaseModel) -> dict[str, Any]:
+        assert isinstance(inp, ResolveLocationInput)
+        result = await _resolve_location_fn(inp)
+        return result.model_dump(mode="json")
+
+    executor.register_adapter("resolve_location", _resolve_location_adapter)
+
+    # Register lookup executor adapter.
+    # _LookupInput is a RootModel wrapper; inp.root is the actual discriminated input.
+    # registry and executor are captured here so lookup() can perform BM25 search
+    # (search mode) and executor.invoke() dispatch (fetch mode).
+    # Use model_dump(mode="json") so all fields are JSON-safe (no datetime/UUID objects).
+    # Raise RuntimeError when lookup() returns LookupError so dispatch() records
+    # success=False and the engine sees a failed tool result (mirrors the adapter
+    # contract: error outcomes must propagate as ToolResult.success=False).
+    from kosmos.tools.models import LookupError as _LookupError
+
+    async def _lookup_adapter(inp: BaseModel) -> dict[str, Any]:
+        actual_inp = inp.root if hasattr(inp, "root") else inp  # type: ignore[attr-defined]
+        assert isinstance(actual_inp, (LookupSearchInput, LookupFetchInput))
+        result = await _lookup_fn(actual_inp, registry=registry, executor=executor)
+        if isinstance(result, _LookupError):
+            raise RuntimeError(f"lookup error: reason={result.reason}, msg={result.message}")
+        return result.model_dump(mode="json")
+
+    executor.register_adapter("lookup", _lookup_adapter)
 
     # Register KOROAD adapter (with V1-V6 validation)
     reg_koroad_hazard(registry, executor)
