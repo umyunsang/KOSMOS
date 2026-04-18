@@ -52,11 +52,11 @@ description: "Task list for Spec 287 TUI (Ink + React + Bun)"
 
 **Purpose**: IPC contract source of truth + code-gen pipeline + base Ink reconciler lift + theme tokens + attribution enforcement. These tasks MUST complete before any user story phase starts — every user story depends on the IPC bridge contract + Ink reconciler.
 
-- [ ] T013 Create `src/kosmos/ipc/__init__.py` exposing `IPCFrame` union (Pydantic v2 models matching `specs/287-tui-ink-react-bun/contracts/ipc-frames.schema.json`) in `src/kosmos/ipc/frame_schema.py`
-- [ ] T014 Add Python contract test in `tests/ipc/test_frame_schema.py` verifying every JSON Schema in `specs/287-tui-ink-react-bun/contracts/*.schema.json` round-trips through `IPCFrame.model_validate_json` + `model_dump_json` for all 10 arms
-- [ ] T015 Create `tui/scripts/gen-ipc-types.ts` that spawns Python and runs `kosmos.ipc.frame_schema.IPCFrame.model_json_schema()` → writes `tui/src/ipc/frames.generated.ts` via `datamodel-code-generator` or `json-schema-to-typescript`; support `--check` flag for CI drift gate (FR-003)
-- [ ] T016 Run `bun run gen:ipc` once to produce `tui/src/ipc/frames.generated.ts` and commit it with a do-not-edit banner
-- [ ] T017 [P] Add CI gate that runs `bun run gen:ipc -- --check` and fails if the committed generated file drifts from the live Pydantic schema (contracts/README.md § Authority)
+- [X] T013 Create `src/kosmos/ipc/__init__.py` exposing `IPCFrame` union (Pydantic v2 models matching `specs/287-tui-ink-react-bun/contracts/ipc-frames.schema.json`) in `src/kosmos/ipc/frame_schema.py`
+- [X] T014 Add Python contract test in `tests/ipc/test_frame_schema.py` verifying every JSON Schema in `specs/287-tui-ink-react-bun/contracts/*.schema.json` round-trips through `IPCFrame.model_validate_json` + `model_dump_json` for all 10 arms
+- [X] T015 Create `tui/scripts/gen-ipc-types.ts` that spawns Python and runs `kosmos.ipc.frame_schema.IPCFrame.model_json_schema()` → writes `tui/src/ipc/frames.generated.ts` via `datamodel-code-generator` or `json-schema-to-typescript`; support `--check` flag for CI drift gate (FR-003)
+- [X] T016 Run `bun run gen:ipc` once to produce `tui/src/ipc/frames.generated.ts` and commit it with a do-not-edit banner
+- [X] T017 [P] Add CI gate that runs `bun run gen:ipc -- --check` and fails if the committed generated file drifts from the live Pydantic schema (contracts/README.md § Authority)
 - [X] T018 Lift Ink reconciler files from `.references/claude-code-sourcemap/restored-src/src/ink/` into `tui/src/ink/` (reconciler.ts, renderer.ts, root.ts, dom.ts, layout/, events/, node-cache.ts, measure-text.ts, render-*.ts, parse-keypress.ts) — every file prepended with the FR-011 attribution header (~29 files)
 - [X] T019 [P] Create `tui/scripts/diff-upstream.sh` that walks every file in `tui/src/ink/` / `tui/src/commands/` / `tui/src/theme/` / `tui/src/components/coordinator/` / `tui/src/components/conversation/` with the FR-011 header and diffs them against their `.references/claude-code-sourcemap/restored-src/` source; exit non-zero on divergence (FR-013)
 - [X] T020 [P] Add CI check that runs `tui/scripts/diff-upstream.sh` and asserts every lifted file retains its attribution header via grep (FR-011, SC-9)
