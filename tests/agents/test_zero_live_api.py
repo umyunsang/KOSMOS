@@ -67,9 +67,8 @@ def test_no_live_host_literals_in_test_files() -> None:
             continue  # this file mentions hosts for documentation purposes
         violations.extend(_scan_file_for_banned_hosts(path))
 
-    assert not violations, (
-        "SC-010: live API host literal found in agent tests:\n"
-        + "\n".join(f"  {v}" for v in violations)
+    assert not violations, "SC-010: live API host literal found in agent tests:\n" + "\n".join(
+        f"  {v}" for v in violations
     )
 
 

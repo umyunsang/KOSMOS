@@ -171,9 +171,7 @@ async def test_send_file_mode_0o600(tmp_path: Path) -> None:
     session_dir = tmp_path / str(session_id) / "coordinator"
     for f in session_dir.glob("*.json"):
         file_mode = stat.S_IMODE(f.stat().st_mode)
-        assert file_mode == 0o600, (
-            f"File {f.name} has mode {oct(file_mode)}, expected 0o600"
-        )
+        assert file_mode == 0o600, f"File {f.name} has mode {oct(file_mode)}, expected 0o600"
 
 
 @pytest.mark.asyncio

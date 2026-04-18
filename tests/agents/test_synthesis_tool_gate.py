@@ -88,9 +88,7 @@ async def test_synthesis_llm_receives_no_tools() -> None:
     )
 
     # The LLM must have been called exactly once with tools=None
-    assert llm._stub_call_count == 1, (
-        f"Expected exactly 1 LLM call, got {llm._stub_call_count}"
-    )
+    assert llm._stub_call_count == 1, f"Expected exactly 1 LLM call, got {llm._stub_call_count}"
     actual_tools = llm._stub_tools_args[0]
     assert actual_tools is None, (
         f"FR-004/FR-038 VIOLATED: synthesis LLM received tools={actual_tools!r}, "
@@ -141,7 +139,4 @@ async def test_synthesis_tool_gate_contrast_with_worker_tools() -> None:
 
     # Confirm the isolation invariant
     for call_tools in llm._stub_tools_args:
-        assert call_tools is None, (
-            "Synthesis LLM must NEVER receive tools — "
-            f"got {call_tools!r}"
-        )
+        assert call_tools is None, f"Synthesis LLM must NEVER receive tools — got {call_tools!r}"

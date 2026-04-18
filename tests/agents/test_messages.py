@@ -92,9 +92,7 @@ def test_error_payload_round_trip() -> None:
 
 
 def test_permission_request_payload_round_trip() -> None:
-    payload = PermissionRequestPayload(
-        tool_id="nmc_emergency_search", reason="auth_required"
-    )
+    payload = PermissionRequestPayload(tool_id="nmc_emergency_search", reason="auth_required")
     msg = _make_message(MessageType.permission_request, payload)
     json_str = msg.model_dump_json()
     restored = AgentMessage.model_validate_json(json_str)

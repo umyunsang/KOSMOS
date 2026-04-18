@@ -247,9 +247,7 @@ class FileMailbox(Mailbox):
         try:
             await asyncio.to_thread(_atomic_write, dest, payload)
         except OSError as exc:
-            raise MailboxWriteError(
-                f"Failed to write mailbox message to {dest}: {exc}"
-            ) from exc
+            raise MailboxWriteError(f"Failed to write mailbox message to {dest}: {exc}") from exc
 
         logger.debug(
             "FileMailbox.send: %s → %s (msg_type=%s, id=%s)",

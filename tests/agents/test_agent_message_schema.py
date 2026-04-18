@@ -68,7 +68,12 @@ def _validate(instance: dict) -> None:  # type: ignore[type-arg]
         for field in ["id", "sender", "recipient", "msg_type", "payload", "timestamp"]:
             assert field in instance, f"Missing required field: {field}"
         assert instance["msg_type"] in [
-            "task", "result", "error", "permission_request", "permission_response", "cancel"
+            "task",
+            "result",
+            "error",
+            "permission_request",
+            "permission_response",
+            "cancel",
         ]
         payload = instance["payload"]
         assert "kind" in payload

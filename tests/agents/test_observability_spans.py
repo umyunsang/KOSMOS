@@ -44,9 +44,7 @@ def _make_provider_and_exporter() -> tuple[TracerProvider, InMemorySpanExporter]
     return provider, exporter
 
 
-def _spans_named(
-    exporter: InMemorySpanExporter, name: str
-) -> list[Any]:
+def _spans_named(exporter: InMemorySpanExporter, name: str) -> list[Any]:
     return [s for s in exporter.get_finished_spans() if s.name == name]
 
 
@@ -104,7 +102,8 @@ async def test_coordinator_emits_four_phase_spans(
     )
 
     phase_values = {
-        s.attributes.get("kosmos.agent.coordinator.phase") for s in phase_spans  # type: ignore[union-attr]
+        s.attributes.get("kosmos.agent.coordinator.phase")
+        for s in phase_spans  # type: ignore[union-attr]
     }
     expected_phases = {"research", "synthesis", "implementation", "verification"}
     assert phase_values == expected_phases, (
@@ -141,9 +140,7 @@ async def test_coordinator_phase_span_attributes(
 
 
 @pytest.mark.asyncio
-async def test_mailbox_send_emits_span(
-    tmp_path: Any, span_exporter: InMemorySpanExporter
-) -> None:
+async def test_mailbox_send_emits_span(tmp_path: Any, span_exporter: InMemorySpanExporter) -> None:
     """FR-030: each FileMailbox.send() emits one gen_ai.agent.mailbox.message span."""
     from kosmos.agents.mailbox.file_mailbox import FileMailbox
 
@@ -187,16 +184,12 @@ async def test_mailbox_send_multiple_spans(
             sender="coordinator",
             recipient=f"worker-{i}",
             msg_type=MessageType.task,
-            payload=TaskPayload(
-                instruction=f"Task {i}", specialist_role="civil_affairs"
-            ),
+            payload=TaskPayload(instruction=f"Task {i}", specialist_role="civil_affairs"),
         )
         await mailbox.send(msg)
 
     mailbox_spans = _spans_named(span_exporter, "gen_ai.agent.mailbox.message")
-    assert len(mailbox_spans) == n, (
-        f"FR-030: expected {n} mailbox spans, got {len(mailbox_spans)}"
-    )
+    assert len(mailbox_spans) == n, f"FR-030: expected {n} mailbox spans, got {len(mailbox_spans)}"
 
 
 @pytest.mark.asyncio
@@ -225,8 +218,7 @@ async def test_span_attributes_never_contain_message_body(
     for span in all_spans:
         for key, value in (span.attributes or {}).items():
             assert sensitive_instruction not in str(value), (
-                f"PIPA: span {span.name!r} attribute {key!r} contains message body: "
-                f"{value!r}"
+                f"PIPA: span {span.name!r} attribute {key!r} contains message body: {value!r}"
             )
 
 
@@ -264,6 +256,4 @@ async def test_mailbox_span_correlation_id_attribute(
     assert len(mailbox_spans) == 1
     span = mailbox_spans[0]
     cid_attr = (span.attributes or {}).get("kosmos.agent.mailbox.correlation_id")
-    assert cid_attr == str(cid), (
-        f"FR-030: expected correlation_id={cid}, got {cid_attr!r}"
-    )
+    assert cid_attr == str(cid), f"FR-030: expected correlation_id={cid}, got {cid_attr!r}"

@@ -125,9 +125,7 @@ class Worker:
         Args:
             instruction: Human-readable task instruction for the LLM prompt.
         """
-        correlation_id = (
-            self._task_message.id if self._task_message else uuid4()
-        )
+        correlation_id = self._task_message.id if self._task_message else uuid4()
         try:
             await self._run_inner(instruction, correlation_id)
         except asyncio.CancelledError:
@@ -339,9 +337,7 @@ class Worker:
             message,
         )
 
-    async def _request_permission(
-        self, tool_id: str, correlation_id: UUID
-    ) -> bool:
+    async def _request_permission(self, tool_id: str, correlation_id: UUID) -> bool:
         """Send permission_request to coordinator and await permission_response.
 
         FR-023, FR-025: permissions MUST NOT flow laterally — the message is
@@ -350,9 +346,7 @@ class Worker:
         Returns:
             True if consent was granted; False if denied.
         """
-        req_payload = PermissionRequestPayload(
-            tool_id=tool_id, reason="auth_required"
-        )
+        req_payload = PermissionRequestPayload(tool_id=tool_id, reason="auth_required")
         req_msg = AgentMessage(
             sender=self._ctx.worker_id,
             recipient=self._ctx.coordinator_id,

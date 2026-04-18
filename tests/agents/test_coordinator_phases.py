@@ -128,9 +128,7 @@ async def test_coordinator_synthesis_produces_plan() -> None:
         mailbox.seed_result(sender, coordinator._session_id, cid)
 
     # Run synthesis directly
-    worker_results = [
-        msg for msg in mailbox._pre_seeded if msg.recipient == "coordinator"
-    ]
+    worker_results = [msg for msg in mailbox._pre_seeded if msg.recipient == "coordinator"]
     plan = await coordinator._synthesis_phase(
         "I need to move: residence, vehicle, and insurance update.",
         worker_results,
@@ -256,11 +254,13 @@ async def test_coordinator_implementation_phase_runs_parallel_steps() -> None:
         status=PlanStatus.complete,
         steps=[
             PlanStep(
-                ministry="transport", action="Update vehicle",
+                ministry="transport",
+                action="Update vehicle",
                 execution_mode=ExecutionMode.parallel,
             ),
             PlanStep(
-                ministry="health_insurance", action="Update insurance",
+                ministry="health_insurance",
+                action="Update insurance",
                 execution_mode=ExecutionMode.parallel,
             ),
         ],
@@ -289,11 +289,14 @@ async def test_coordinator_implementation_phase_runs_sequential_steps() -> None:
         status=PlanStatus.complete,
         steps=[
             PlanStep(
-                ministry="civil_affairs", action="Step 1",
+                ministry="civil_affairs",
+                action="Step 1",
                 execution_mode=ExecutionMode.sequential,
             ),
             PlanStep(
-                ministry="transport", action="Step 2", depends_on=[0],
+                ministry="transport",
+                action="Step 2",
+                depends_on=[0],
                 execution_mode=ExecutionMode.sequential,
             ),
         ],

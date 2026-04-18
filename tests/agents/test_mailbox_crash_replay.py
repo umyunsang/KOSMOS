@@ -123,9 +123,7 @@ async def test_crash_replay_consumed_marker_written(tmp_path: Path) -> None:
 
     # Consumed marker must now exist
     consumed_marker = msg_file.parent / (msg_file.name + ".consumed")
-    assert consumed_marker.exists(), (
-        f"Consumed marker {consumed_marker} must exist after replay"
-    )
+    assert consumed_marker.exists(), f"Consumed marker {consumed_marker} must exist after replay"
 
 
 @pytest.mark.asyncio

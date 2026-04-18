@@ -110,7 +110,5 @@ class CoordinatorPlan(BaseModel):
                         f"(steps length={n})"
                     )
                 if dep == i:
-                    raise ValueError(
-                        f"steps[{i}].depends_on references itself (index {i})"
-                    )
+                    raise ValueError(f"steps[{i}].depends_on references itself (index {i})")
         return self

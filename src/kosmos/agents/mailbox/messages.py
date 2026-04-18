@@ -59,9 +59,7 @@ class ResultPayload(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     kind: Literal["result"] = "result"
-    lookup_output: LookupRecord | LookupCollection | LookupTimeseries = Field(
-        discriminator="kind"
-    )
+    lookup_output: LookupRecord | LookupCollection | LookupTimeseries = Field(discriminator="kind")
     """The output from the worker's tool-loop run."""
 
     turn_count: int = Field(ge=0)

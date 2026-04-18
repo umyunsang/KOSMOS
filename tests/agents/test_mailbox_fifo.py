@@ -153,6 +153,7 @@ async def test_fifo_filename_sort_is_lexicographic(tmp_path: Path) -> None:
 
     # Verify lexicographic sort == write order by checking message IDs in files
     import json as json_mod
+
     file_ids = []
     for fname in json_files:
         raw = (sender_dir / fname).read_bytes()

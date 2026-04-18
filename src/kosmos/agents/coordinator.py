@@ -158,9 +158,7 @@ class Coordinator:
 
         # Phase 2: SYNTHESIS — produce CoordinatorPlan (no tools injected)
         self._emit_phase_span(CoordinatorPhase.synthesis)
-        plan = await self._synthesis_phase(
-            citizen_request, worker_results
-        )
+        plan = await self._synthesis_phase(citizen_request, worker_results)
 
         if self._cancel_requested:
             return plan
@@ -239,9 +237,7 @@ class Coordinator:
                 len(prior_results),
             )
 
-    async def _research_phase(
-        self, citizen_request: str
-    ) -> list[AgentMessage]:
+    async def _research_phase(self, citizen_request: str) -> list[AgentMessage]:
         """Classify intent, spawn workers, collect results.
 
         Intent classification is performed by the coordinator LLM (FR-003),
@@ -279,9 +275,7 @@ class Coordinator:
                 f"{citizen_request}"
             )
 
-            async def _run_with_semaphore(
-                w: Worker, inst: str, wid: str
-            ) -> None:
+            async def _run_with_semaphore(w: Worker, inst: str, wid: str) -> None:
                 async with self._semaphore:
                     await w.run(inst)
 
@@ -439,9 +433,7 @@ class Coordinator:
             granted,
         )
 
-    async def _collect_worker_messages(
-        self, worker_ids: list[str]
-    ) -> list[AgentMessage]:
+    async def _collect_worker_messages(self, worker_ids: list[str]) -> list[AgentMessage]:
         """Collect all result/error messages posted by workers.
 
         Returns:
@@ -501,8 +493,7 @@ class Coordinator:
                 if isinstance(payload, ResultPayload):
                     out = payload.lookup_output
                     summary = (
-                        f"Worker '{msg.sender}': {out.kind} output, "
-                        f"{payload.turn_count} turn(s)"
+                        f"Worker '{msg.sender}': {out.kind} output, {payload.turn_count} turn(s)"
                     )
                     result_summaries.append(summary)
             elif msg.msg_type == MessageType.error:
@@ -513,9 +504,7 @@ class Coordinator:
                     )
 
         # Ask the LLM to synthesise a plan (NO tools injected — FR-004)
-        plan_data = await self._call_synthesis_llm(
-            citizen_request, result_summaries
-        )
+        plan_data = await self._call_synthesis_llm(citizen_request, result_summaries)
 
         steps = plan_data.get("steps", [])
         plan_steps = [
@@ -541,9 +530,7 @@ class Coordinator:
             message=plan_data.get("message"),
         )
 
-    async def _call_synthesis_llm(
-        self, citizen_request: str, result_summaries: list[str]
-    ) -> dict:  # type: ignore[type-arg]
+    async def _call_synthesis_llm(self, citizen_request: str, result_summaries: list[str]) -> dict:  # type: ignore[type-arg]
         """Call the LLM for synthesis WITHOUT any tools injected (FR-004).
 
         The LLM generates a JSON plan as text. Tool definitions are
@@ -738,9 +725,7 @@ class Coordinator:
             span.set_attribute(KOSMOS_AGENT_COORDINATOR_PHASE, phase.value)
         logger.debug("Coordinator: phase → %s", phase.value)
 
-    def _build_partial_plan(
-        self, worker_results: list[AgentMessage]
-    ) -> CoordinatorPlan:
+    def _build_partial_plan(self, worker_results: list[AgentMessage]) -> CoordinatorPlan:
         """Build a partial plan from whatever results arrived before cancellation."""
         correlation_ids = [
             msg.correlation_id

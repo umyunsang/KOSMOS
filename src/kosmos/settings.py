@@ -93,9 +93,7 @@ class KosmosSettings(BaseSettings):
     def _agent_mailbox_root_must_be_absolute(cls, v: Path) -> Path:
         """Reject relative paths for agent_mailbox_root (FR-032)."""
         if not v.is_absolute():
-            raise ValueError(
-                f"agent_mailbox_root must be an absolute path, got: {v!r}"
-            )
+            raise ValueError(f"agent_mailbox_root must be an absolute path, got: {v!r}")
         return v
 
 

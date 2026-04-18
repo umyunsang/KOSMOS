@@ -185,8 +185,7 @@ async def test_cancel_sends_cancel_messages_to_workers() -> None:
     cancel_recipients = {m.recipient for m in cancel_messages}
     for wid in worker_ids:
         assert wid in cancel_recipients, (
-            f"Worker {wid!r} did not receive cancel message; "
-            f"cancel recipients: {cancel_recipients}"
+            f"Worker {wid!r} did not receive cancel message; cancel recipients: {cancel_recipients}"
         )
 
 
