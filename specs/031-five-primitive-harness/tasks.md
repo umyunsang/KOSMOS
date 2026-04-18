@@ -125,19 +125,19 @@ Single Python package layout per `plan.md § Project Structure`:
 
 ### Tests for User Story 2
 
-- [ ] T034 [P] [US2] Contract test `tests/unit/primitives/verify/test_contract_shape.py` — loads `contracts/verify.input.schema.json` + `verify.output.schema.json`, validates 6 family variants + `VerifyMismatchError` against fixtures
-- [ ] T035 [P] [US2] Unit test `tests/unit/primitives/verify/test_discriminator.py` — 6-family coercion-free dispatch; `family_hint` mismatch returns `VerifyMismatchError`, never coerces (FR-010)
-- [ ] T036 [P] [US2] Unit test `tests/unit/primitives/verify/test_published_tier_narrowing.py` — each family variant rejects a `published_tier` outside its subset per `data-model.md § 2.1`
-- [ ] T037 [P] [US2] Unit test `tests/unit/primitives/verify/test_no_signing_keys.py` — grep-style assertion over `src/kosmos/primitives/verify.py` for `sign`, `BEGIN PRIVATE KEY`, `issue_credential`; zero matches (FR-009 harness-not-reimplementation)
-- [ ] T038 [P] [US2] Lint test `tests/lint/test_no_ca_material.py` — greps `src/` + `docs/` for forbidden extensions (`.pem` private halves, `.p12`, `.pfx`) outside `docs/mock/npki_crypto/fixtures/*` (SC-006)
+- [X] T034 [P] [US2] Contract test `tests/unit/primitives/verify/test_contract_shape.py` — loads `contracts/verify.input.schema.json` + `verify.output.schema.json`, validates 6 family variants + `VerifyMismatchError` against fixtures
+- [X] T035 [P] [US2] Unit test `tests/unit/primitives/verify/test_discriminator.py` — 6-family coercion-free dispatch; `family_hint` mismatch returns `VerifyMismatchError`, never coerces (FR-010)
+- [X] T036 [P] [US2] Unit test `tests/unit/primitives/verify/test_published_tier_narrowing.py` — each family variant rejects a `published_tier` outside its subset per `data-model.md § 2.1`
+- [X] T037 [P] [US2] Unit test `tests/unit/primitives/verify/test_no_signing_keys.py` — grep-style assertion over `src/kosmos/primitives/verify.py` for `sign`, `BEGIN PRIVATE KEY`, `issue_credential`; zero matches (FR-009 harness-not-reimplementation)
+- [X] T038 [P] [US2] Lint test `tests/lint/test_no_ca_material.py` — greps `src/` + `docs/` for forbidden extensions (`.pem` private halves, `.p12`, `.pfx`) outside `docs/mock/npki_crypto/fixtures/*` (SC-006)
 
 ### Implementation for User Story 2
 
-- [ ] T039 [US2] Create `src/kosmos/primitives/verify.py` with `VerifyInput`, `_AuthContextBase`, 6 family context classes (`GongdongInjeungseoContext`, `GeumyungInjeungseoContext`, `GanpyeonInjeungContext`, `DigitalOnepassContext`, `MobileIdContext`, `MyDataContext`), `AuthContext` Annotated union, `VerifyMismatchError`, `VerifyOutput` — all matching `data-model.md § 2`
-- [ ] T040 [US2] Implement `@model_validator(mode="after")` on each family variant enforcing per-family `published_tier` narrowing per the table in `data-model.md § 2.1`
-- [ ] T041 [US2] Implement `verify(family_hint, session_context) -> AuthContext | VerifyMismatchError` dispatcher — delegates to the registered adapter for the `family_hint`; returns `VerifyMismatchError` if the session context evidence disagrees with `family_hint` (FR-010, no coercion)
-- [ ] T042 [US2] Update `src/kosmos/primitives/__init__.py` to export real `verify` symbol (replacing placeholder)
-- [ ] T043 [US2] Register 6 mock verify adapters — one per family — under `src/kosmos/tools/mock/verify_<family>.py` (each fixture-backed, no real external calls); these back the acceptance scenarios and SC-005
+- [X] T039 [US2] Create `src/kosmos/primitives/verify.py` with `VerifyInput`, `_AuthContextBase`, 6 family context classes (`GongdongInjeungseoContext`, `GeumyungInjeungseoContext`, `GanpyeonInjeungContext`, `DigitalOnepassContext`, `MobileIdContext`, `MyDataContext`), `AuthContext` Annotated union, `VerifyMismatchError`, `VerifyOutput` — all matching `data-model.md § 2`
+- [X] T040 [US2] Implement `@model_validator(mode="after")` on each family variant enforcing per-family `published_tier` narrowing per the table in `data-model.md § 2.1`
+- [X] T041 [US2] Implement `verify(family_hint, session_context) -> AuthContext | VerifyMismatchError` dispatcher — delegates to the registered adapter for the `family_hint`; returns `VerifyMismatchError` if the session context evidence disagrees with `family_hint` (FR-010, no coercion)
+- [X] T042 [US2] Update `src/kosmos/primitives/__init__.py` to export real `verify` symbol (replacing placeholder)
+- [X] T043 [US2] Register 6 mock verify adapters — one per family — under `src/kosmos/tools/mock/verify_<family>.py` (each fixture-backed, no real external calls); these back the acceptance scenarios and SC-005
 
 **Checkpoint**: `verify` is fully functional. Dual-axis schema in effect. SC-005 + SC-006 demonstrable.
 

@@ -7,15 +7,17 @@ Exports the five primitive symbols that make up the main-tool surface:
 - ``resolve_location``: geocoding (re-exported from Spec 022, byte-identical).
 - ``submit``: write-transaction absorber (Spec 031, lands in Phase 3).
 - ``subscribe``: CBS / REST pull / RSS 2.0 iterator (Spec 031, lands in Phase 3).
-- ``verify``: delegation-only identity binding (Spec 031, lands in Phase 3).
+- ``verify``: delegation-only identity binding (Spec 031 US2 — T042).
 
 T013 — ``lookup`` and ``resolve_location`` are the real Spec 022 coroutines
-(not placeholders). The remaining three are Phase 1 placeholders that raise
-``NotImplementedError`` until their user-story phases land.
+(not placeholders). ``verify`` is the real Spec 031 US2 dispatcher (T042).
+``submit`` and ``subscribe`` remain Phase 1 placeholders until their
+user-story phases land.
 """
 
 from __future__ import annotations
 
+from kosmos.primitives.verify import verify
 from kosmos.tools.lookup import lookup
 from kosmos.tools.resolve_location import resolve_location
 
@@ -34,7 +36,3 @@ def _placeholder(name: str):  # pragma: no cover - Phase 1 scaffold only
 
 async def subscribe(*args, **kwargs):  # pragma: no cover
     return _placeholder("subscribe")
-
-
-async def verify(*args, **kwargs):  # pragma: no cover
-    return _placeholder("verify")
