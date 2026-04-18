@@ -27,5 +27,6 @@ export function buildDefaultRegistry(): CommandRegistry {
   return registry
 }
 
-export { createRegistry, registerCommand } from './dispatcher'
+export { createRegistry, registerCommand, dispatchCommand, isSlashCommand, listCommands } from './dispatcher'
+export type { CommandRegistry, DispatchResult } from './dispatcher'
 export type { CommandDefinition, CommandHandlerArgs, CommandResult, SendFrame } from './types'

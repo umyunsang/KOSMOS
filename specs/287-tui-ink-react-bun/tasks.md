@@ -121,9 +121,9 @@ description: "Task list for Spec 287 TUI (Ink + React + Bun)"
 - [X] T047 [P] [US2] Create `tui/src/commands/sessions.ts` emitting `session_event: "list"` + rendering returned list (FR-038, US2 scenario 1)
 - [X] T048 [P] [US2] Create `tui/src/commands/resume.ts` emitting `session_event: "resume"` with `{id}` payload (FR-038)
 - [X] T049 [P] [US2] Create `tui/src/commands/new.ts` emitting `session_event: "new"` + clearing store (FR-038)
-- [ ] T050 [US2] Wire dispatcher into `tui/src/entrypoints/tui.tsx` — slash-prefixed input intercepted before `user_input` frame emission
+- [X] T050 [US2] Wire dispatcher into `tui/src/entrypoints/tui.tsx` — slash-prefixed input intercepted before `user_input` frame emission
 - [X] T051 [US2] Add help renderer for unknown commands in `tui/src/commands/dispatcher.ts` reading registered names (FR-042, US2 scenario 4)
-- [ ] T052 [US2] Wire `ThemeProvider` into `tui/src/main.tsx` at root; all Box/Text components consume `useTheme()` hook — no inline hex colors permitted (FR-040)
+- [X] T052 [US2] Wire `ThemeProvider` into `tui/src/main.tsx` at root; all Box/Text components consume `useTheme()` hook — no inline hex colors permitted (FR-040)
 - [X] T053 [P] [US2] Document `KOSMOS_TUI_THEME` in `docs/configuration.md` with the 3 values (FR-039)
 
 **Checkpoint**: Slash commands round-trip through IPC; theme switch works; upstream registry diff applies cleanly.
@@ -174,7 +174,7 @@ description: "Task list for Spec 287 TUI (Ink + React + Bun)"
 - [X] T084 [P] [US3] Create `tui/src/components/primitive/AuthWarningBanner.tsx` (FR-032)
 - [X] T085 [P] [US3] Create `tui/src/components/primitive/UnrecognizedPayload.tsx` with warning-log side effect; no structure inference (FR-033)
 - [X] T086 [US3] Create `tui/src/components/primitive/index.tsx` exporting a `PrimitiveDispatcher` that switches on `envelope.kind` + subtype discriminator and routes to the 14 renderers; exhaustive switch compile-time checked against generated TS union (FR-008)
-- [ ] T087 [US3] Wire `PrimitiveDispatcher` into `tui/src/components/conversation/MessageList.tsx` so every `tool_result` frame in the store renders via the dispatcher
+- [X] T087 [US3] Wire `PrimitiveDispatcher` into `tui/src/components/conversation/MessageList.tsx` so every `tool_result` frame in the store renders via the dispatcher
 - [X] T088 [US3] Pull fixtures from #507 + #1052 recorded responses into `tui/tests/fixtures/{lookup,resolve_location,submit,subscribe,verify}/` per FR-035; document provenance in `tui/tests/fixtures/README.md`
 
 **Checkpoint**: Every 5-primitive output variant renders in isolation via fixture + full dispatch works end-to-end.

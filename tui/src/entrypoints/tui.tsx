@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // KOSMOS-original skeleton — wires createBridge() + useSessionStore +
-// <StreamingMessage> + <CrashNotice>.
+// <StreamingMessage> + <CrashNotice> + commands dispatcher (T050) +
+// PrimitiveDispatcher (T087 is hooked one level deeper in MessageList).
 //
 // Design:
 //   - createBridge() spawns the Python backend (or KOSMOS_BACKEND_CMD override).
@@ -8,24 +9,33 @@
 //     store via dispatchSessionAction().
 //   - SIGTERM / Ctrl-C triggers bridge.close() with ≤3 s SIGTERM → SIGKILL
 //     (FR-009).
-//   - This component is the root App; it is rendered by tui/src/main.tsx.
+//   - This component is the root App; it is rendered by tui/src/main.tsx under
+//     <ThemeProvider> (T052).
+//
+// Input handling:
+//   - A minimal ASCII input buffer lives here; proper Korean IME is Phase 7 US5.
+//   - On Enter: slash-prefixed input is intercepted by dispatchCommand(); all
+//     other input is emitted as a user_input IPC frame (T050, FR-038, FR-042).
 
-// TODO(T050): wire commands dispatcher — slash-prefixed input intercepted
-//             before user_input frame emission (Phase 4, Team B).
-// TODO(T087): wire PrimitiveDispatcher — tool_result envelopes routed to
-//             primitive renderers (Phase 5, Team C).
-
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { Box, Text, useApp, useInput } from 'ink'
-import { ThemeProvider, useTheme } from '../theme/provider'
-import { useSessionStore, dispatchSessionAction, sessionStore } from '../store/session-store'
-import type { SessionAction } from '../store/session-store'
+import { useTheme } from '../theme/provider'
+import { useSessionStore, dispatchSessionAction } from '../store/session-store'
 import { MessageList } from '../components/conversation/MessageList'
 import { CrashNotice } from '../components/CrashNotice'
 import { createBridge } from '../ipc/bridge'
 import type { IPCBridge } from '../ipc/bridge'
-import type { IPCFrame } from '../ipc/frames.generated'
+import type { IPCFrame, UserInputFrame, SessionEventFrame } from '../ipc/frames.generated'
 import { useI18n } from '../i18n'
+import {
+  buildDefaultRegistry,
+  dispatchCommand,
+  isSlashCommand,
+  listCommands,
+} from '../commands'
+import type { DispatchResult } from '../commands'
+import type { CommandDefinition } from '../commands/types'
+import { HelpView } from '../commands/help'
 
 // ---------------------------------------------------------------------------
 // Frame dispatcher — maps IPCFrame arms to SessionAction
@@ -128,6 +138,15 @@ function dispatchFrame(frame: IPCFrame): void {
 }
 
 // ---------------------------------------------------------------------------
+// Help / acknowledgement state — populated by the dispatcher
+// ---------------------------------------------------------------------------
+
+interface HelpState {
+  commands: CommandDefinition[]
+  errorBanner?: string
+}
+
+// ---------------------------------------------------------------------------
 // App inner — consumes theme/i18n hooks (must be inside ThemeProvider)
 // ---------------------------------------------------------------------------
 
@@ -141,17 +160,94 @@ function AppInner({ bridge }: AppInnerProps): React.ReactElement {
   const { exit } = useApp()
   const crash = useSessionStore((s) => s.crash)
   const messageOrder = useSessionStore((s) => s.message_order)
-  const inputRef = useRef('')
 
-  // Wire Ctrl-C to bridge.close() + Ink exit
-  useInput((_input, key) => {
-    if (key.ctrl && _input === 'c') {
+  const registry = useMemo(() => buildDefaultRegistry(), [])
+  const [inputBuffer, setInputBuffer] = useState('')
+  const [ack, setAck] = useState<string>('')
+  const [helpState, setHelpState] = useState<HelpState | null>(null)
+
+  // IPC senders closed over the bridge — safe for the dispatcher's SendFrame
+  // callback (typed to SessionEventFrame) and for free-text user_input frames.
+  const sessionId = useSessionStore((s) => s.session_id)
+
+  const sendSessionEvent = (frame: SessionEventFrame): void => {
+    // Bridge-level fill-in: populate session_id when the command builder left
+    // it as "". The dispatcher never has access to the store directly.
+    const stamped: SessionEventFrame = frame.session_id === ''
+      ? { ...frame, session_id: sessionId }
+      : frame
+    bridge.send(stamped)
+  }
+
+  const sendUserInput = (text: string): void => {
+    const frame: UserInputFrame = {
+      kind: 'user_input',
+      session_id: sessionId,
+      ts: new Date().toISOString(),
+      text,
+    }
+    bridge.send(frame)
+  }
+
+  const submitInput = (): void => {
+    const raw = inputBuffer
+    setInputBuffer('')
+    if (raw.trim().length === 0) return
+
+    if (isSlashCommand(raw)) {
+      // Fire-and-forget — the dispatcher resolves, never throws
+      void dispatchCommand(raw, registry, sendSessionEvent).then((result: DispatchResult) => {
+        setAck(result.acknowledgement)
+        if (result.renderHelp === true) {
+          setHelpState({
+            commands: listCommands(registry),
+            errorBanner: result.acknowledgement === '' ? undefined : result.acknowledgement,
+          })
+        } else {
+          setHelpState(null)
+        }
+      })
+      return
+    }
+
+    // Non-slash path: emit user_input IPC frame and clear any pending help
+    setHelpState(null)
+    setAck('')
+    sendUserInput(raw)
+  }
+
+  // Keyboard handling — Ctrl-C closes bridge; otherwise build the input buffer.
+  useInput((input, key) => {
+    if (key.ctrl && input === 'c') {
       bridge.close().then(() => exit())
+      return
+    }
+
+    if (key.return) {
+      submitInput()
+      return
+    }
+
+    if (key.backspace || key.delete) {
+      setInputBuffer((prev) => prev.slice(0, -1))
+      return
+    }
+
+    if (key.escape) {
+      setInputBuffer('')
+      setHelpState(null)
+      return
+    }
+
+    // Ignore other control keys (arrows, tab, etc.). Proper Korean IME arrives
+    // in Phase 7 US5 via the @jrichman/ink-text-input fork.
+    if (input !== undefined && input.length > 0 && !key.ctrl && !key.meta) {
+      setInputBuffer((prev) => prev + input)
     }
   })
 
-  // Show ready hint if no messages yet
-  const isEmpty = messageOrder.length === 0 && !crash
+  // Show ready hint if nothing has happened yet
+  const isEmpty = messageOrder.length === 0 && !crash && helpState === null && ack === ''
 
   return (
     <Box flexDirection="column" paddingX={1}>
@@ -161,7 +257,7 @@ function AppInner({ bridge }: AppInnerProps): React.ReactElement {
       {/* Crash notice (renders when store.crash is set) */}
       <CrashNotice />
 
-      {/* Ready hint — shown before first message */}
+      {/* Ready hint — shown before any interaction */}
       {isEmpty && (
         <Box>
           <Text color={theme.inactive} dimColor>
@@ -170,8 +266,24 @@ function AppInner({ bridge }: AppInnerProps): React.ReactElement {
         </Box>
       )}
 
-      {/* TODO(T050): wire commands dispatcher — input box goes here */}
-      {/* TODO(T087): wire PrimitiveDispatcher — permission gauntlet goes here */}
+      {/* Help view — slash-command listing or unknown-command error */}
+      {helpState !== null && (
+        <HelpView commands={helpState.commands} errorBanner={helpState.errorBanner} />
+      )}
+
+      {/* Transient acknowledgement notice from a command handler */}
+      {helpState === null && ack !== '' && (
+        <Box marginY={1}>
+          <Text color={theme.subtle}>{ack}</Text>
+        </Box>
+      )}
+
+      {/* Input line — minimal placeholder until Phase 7 US5 Korean IME. */}
+      <Box>
+        <Text bold color={theme.briefLabelYou}>{'> '}</Text>
+        <Text color={theme.text}>{inputBuffer}</Text>
+        <Text color={theme.inactive}>▋</Text>
+      </Box>
     </Box>
   )
 }
@@ -207,9 +319,5 @@ export function App({ bridge }: AppProps): React.ReactElement {
     }
   }, [bridge, exit])
 
-  return (
-    <ThemeProvider>
-      <AppInner bridge={bridge} />
-    </ThemeProvider>
-  )
+  return <AppInner bridge={bridge} />
 }

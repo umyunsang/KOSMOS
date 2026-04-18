@@ -8,11 +8,15 @@
 //   - Ink's useInput (Ctrl-C) in App triggers bridge.close() → exit().
 //   - A top-level SIGTERM handler also calls bridge.close().
 //   - Both paths respect the ≤3 s SIGTERM → SIGKILL timeout (FR-009).
+//
+// T052: <ThemeProvider> mounted at the render root so every Box/Text component
+// across the tree consumes the resolved token set via useTheme() (FR-040).
 
 import React from 'react'
 import { render } from 'ink'
 import { createBridge } from './ipc/bridge'
 import { App } from './entrypoints/tui'
+import { ThemeProvider } from './theme/provider'
 
 async function main(): Promise<void> {
   const bridge = createBridge()
@@ -22,7 +26,11 @@ async function main(): Promise<void> {
     bridge.close().then(() => process.exit(0))
   })
 
-  const { waitUntilExit } = render(<App bridge={bridge} />)
+  const { waitUntilExit } = render(
+    <ThemeProvider>
+      <App bridge={bridge} />
+    </ThemeProvider>,
+  )
   await waitUntilExit()
 }
 
