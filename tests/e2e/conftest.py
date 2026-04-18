@@ -220,24 +220,31 @@ def _build_httpx_mock(
         params: dict[str, Any] | None = None,
         **kwargs: Any,
     ) -> httpx.Response:
+        import urllib.parse as _urlparse
+
         url_str = str(url)
         param_str = "&".join(f"{k}={v}" for k, v in (params or {}).items())
         full_url = f"{url_str}?{param_str}" if params else url_str
+        parsed = _urlparse.urlparse(url_str)
+        url_host = parsed.netloc or parsed.path
+        url_path = parsed.path
 
-        if "getRestFrequentzoneLg" in url_str:
+        # Route by URL path fragment (API endpoint discriminator)
+        if "getRestFrequentzoneLg" in url_path:
             aid = "koroad_accident_hazard_search"
             if _err_mode(aid) == "upstream_down":
                 return _resp(url_str, _tape(aid, "accident_hazard_ERROR_upstream_down.json"))
             return _resp(url_str, _tape(aid, _koroad_tape_name(full_url)))
 
-        if "getVilageFcst" in url_str:
+        if "getVilageFcst" in url_path:
             aid = "kma_forecast_fetch"
             if _err_mode(aid) == "upstream_down":
                 return _resp(url_str, _tape(aid, "forecast_ERROR_upstream_down.json"))
             kma_tape = "forecast_lat=37.518_lon=127.047_base=20260419_0500.json"
             return _resp(url_str, _tape(aid, kma_tape))
 
-        if "local.kakao.com" in url_str or "dapi.kakao.com" in url_str:
+        # Route Kakao geocoder by host suffix (defends against subdomain confusion)
+        if url_host.endswith(".kakao.com") or url_host == "kakao.com":
             return _resp(url_str, _tape("kakao", _kakao_tape_name(url_str, params)))
 
         raise AssertionError(f"Unpatched httpx.get call to URL: {url_str!r}")
