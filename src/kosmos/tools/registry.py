@@ -13,7 +13,6 @@ from kosmos.security.audit import TOOL_MIN_AAL
 from kosmos.tools.bm25_index import BM25Index
 from kosmos.tools.errors import (
     AdapterIdCollisionError,
-    DuplicateToolError,
     RegistrationError,
     ToolNotFoundError,
 )
@@ -94,8 +93,12 @@ NistAalHint = Literal["AAL1", "AAL2", "AAL3"]
 class AdapterRegistration(BaseModel):
     """T009 — registry metadata for Spec 031 five-primitive adapters.
 
-    Mirrors data-model.md § 4 verbatim. Spec 024 V1–V4 and Spec 025 V6
-    invariants are preserved and continue to fire at :meth:`ToolRegistry.register`.
+    Mirrors data-model.md § 4 verbatim. Spec 024 V1–V4 (applied via pydantic
+    ``@model_validator`` on :class:`GovAPITool`) and Spec 025 V6 + the Spec 031
+    v1.2 dual-axis invariant (applied via ``@model_validator`` on this class at
+    construction time; see :mod:`kosmos.security.v12_dual_axis`) remain the
+    authoritative enforcement points; :meth:`ToolRegistry.register` only
+    additionally validates :class:`GovAPITool` instances passed to it.
     ``published_tier_minimum`` / ``nist_aal_hint`` are optional during the
     pre-v1.2 compatibility window (FR-028) and become mandatory when the
     :mod:`kosmos.security.v12_dual_axis` backstop flips ``V12_GA_ACTIVE = True``.
@@ -135,7 +138,7 @@ class AdapterRegistration(BaseModel):
     dpa_reference: str | None = None
 
     @model_validator(mode="after")
-    def _enforce_v12_dual_axis(self) -> "AdapterRegistration":
+    def _enforce_v12_dual_axis(self) -> AdapterRegistration:
         """Spec 031 FR-030 v1.2 GA backstop.
 
         Delegates to :func:`kosmos.security.v12_dual_axis.enforce`. No-op while

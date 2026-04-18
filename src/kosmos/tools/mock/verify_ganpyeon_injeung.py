@@ -8,7 +8,7 @@ Default fixture uses 'kakao' provider. Test code may pass _fixture_override.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from kosmos.primitives.verify import (
     GanpyeonInjeungContext,
@@ -49,7 +49,7 @@ _FIXTURE = GanpyeonInjeungContext(
     family="ganpyeon_injeung",
     published_tier="ganpyeon_injeung_kakao_aal2",
     nist_aal_hint="AAL2",
-    verified_at=datetime(2026, 4, 19, 9, 0, 0, tzinfo=timezone.utc),
+    verified_at=datetime(2026, 4, 19, 9, 0, 0, tzinfo=UTC),
     external_session_ref="mock-ganpyeon-ref-001",
     provider="kakao",
 )
@@ -58,10 +58,8 @@ _FIXTURE = GanpyeonInjeungContext(
 def invoke(session_context: dict[str, object]) -> GanpyeonInjeungContext:
     """Return the recorded fixture; override via session_context for test variants."""
     if session_context.get("_fixture_override"):
-        overrides: dict[str, object] = dict(session_context["_fixture_override"])  # type: ignore[arg-type]
-        return GanpyeonInjeungContext.model_validate(
-            {**_FIXTURE.model_dump(), **overrides}
-        )
+        overrides: dict[str, object] = dict(session_context["_fixture_override"])  # type: ignore[call-overload]
+        return GanpyeonInjeungContext.model_validate({**_FIXTURE.model_dump(), **overrides})
     return _FIXTURE
 
 

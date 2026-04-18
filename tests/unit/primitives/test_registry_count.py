@@ -40,6 +40,4 @@ def test_all_primitives_are_callable() -> None:
     """Assert each of the 5 primitives resolves to a callable on the module."""
     for name in _EXPECTED_PRIMITIVES:
         obj = getattr(primitives_module, name, None)
-        assert callable(obj), (
-            f"SC-001: primitive {name!r} is not callable (got {type(obj)!r})"
-        )
+        assert callable(obj), f"SC-001: primitive {name!r} is not callable (got {type(obj)!r})"

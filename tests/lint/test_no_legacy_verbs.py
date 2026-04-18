@@ -48,9 +48,7 @@ _BANNED_VERBS: frozenset[str] = frozenset(
 #   tool_id = 'pay'
 #   tool_id=  "pay"
 # Captures the verb in group 1 so we can filter to banned set.
-_REGISTRATION_PATTERN: re.Pattern[str] = re.compile(
-    r"""tool_id\s*=\s*['"]([a-z_]+)['"]"""
-)
+_REGISTRATION_PATTERN: re.Pattern[str] = re.compile(r"""tool_id\s*=\s*['"]([a-z_]+)['"]""")
 
 
 def _is_comment_or_docstring_line(line: str) -> bool:
@@ -60,9 +58,7 @@ def _is_comment_or_docstring_line(line: str) -> bool:
     if stripped.startswith("#"):
         return True
     # Lines that are only a string literal (docstring body / standalone string)
-    if stripped.startswith(('"', "'")) and not re.search(r"tool_id\s*=", stripped):
-        return True
-    return False
+    return bool(stripped.startswith(('"', "'")) and not re.search(r"tool_id\s*=", stripped))
 
 
 def _collect_violations() -> list[tuple[str, int, str]]:
@@ -114,7 +110,5 @@ def test_legacy_verb_scan_completed_without_violation() -> None:
     """Assert the legacy-verb scan found zero registration violations."""
     assert _VIOLATIONS == [], (
         f"Spec 031 SC: {len(_VIOLATIONS)} legacy verb registration(s) detected:\n"
-        + "\n".join(
-            f"  {p}:{ln} — tool_id={v!r}" for p, ln, v in _VIOLATIONS
-        )
+        + "\n".join(f"  {p}:{ln} — tool_id={v!r}" for p, ln, v in _VIOLATIONS)
     )

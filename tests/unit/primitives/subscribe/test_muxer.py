@@ -8,9 +8,6 @@ AsyncIterator with discriminated ``kind`` field.
 
 from __future__ import annotations
 
-import asyncio
-from datetime import timedelta
-
 import pytest
 
 from kosmos.primitives.subscribe import (
@@ -18,7 +15,6 @@ from kosmos.primitives.subscribe import (
     RestPullTickEvent,
     RssItemEvent,
     SubscribeInput,
-    SubscriptionHandle,
     subscribe,
 )
 from kosmos.tools.mock.cbs.disaster_feed import MOCK_CBS_DISASTER_TOOL
@@ -83,7 +79,18 @@ class TestMuxer:
 
     async def test_each_event_has_discriminated_kind_field(self):
         """Every event yielded from subscribe() must have a ``kind`` field."""
-        for tool in [MOCK_CBS_DISASTER_TOOL, MOCK_REST_PULL_TICK_TOOL, MOCK_RSS_PUBLIC_NOTICES_TOOL]:
+        tools = [
+            MOCK_CBS_DISASTER_TOOL,
+            MOCK_REST_PULL_TICK_TOOL,
+            MOCK_RSS_PUBLIC_NOTICES_TOOL,
+        ]
+        allowed_kinds = {
+            "cbs_broadcast",
+            "rest_pull_tick",
+            "rss_item",
+            "subscription_backpressure_drop",
+        }
+        for tool in tools:
             inp = SubscribeInput(
                 tool_id=tool.tool_id,
                 params={},
@@ -92,7 +99,7 @@ class TestMuxer:
             async for event in subscribe(inp):
                 assert hasattr(event, "kind"), f"Event from {tool.tool_id} missing 'kind'"
                 assert isinstance(event.kind, str)
-                assert event.kind in {"cbs_broadcast", "rest_pull_tick", "rss_item", "subscription_backpressure_drop"}
+                assert event.kind in allowed_kinds
                 break  # Only need 1 event per modality
 
     async def test_subscribe_returns_async_iterator(self):

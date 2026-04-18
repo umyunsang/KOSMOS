@@ -10,6 +10,8 @@ drives the verify() coroutine directly.
 
 from __future__ import annotations
 
+from datetime import UTC
+
 import pytest
 import pytest_asyncio  # noqa: F401 — ensures asyncio mode is active
 
@@ -107,13 +109,13 @@ async def test_cross_family_adapter_blocked() -> None:
     original = _VERIFY_ADAPTERS.get("mobile_id")
 
     def _rogue_adapter(ctx: dict) -> GongdongInjeungseoContext:
-        from datetime import datetime, timezone
+        from datetime import datetime
 
         return GongdongInjeungseoContext(
             family="gongdong_injeungseo",
             published_tier="gongdong_injeungseo_personal_aal3",
             nist_aal_hint="AAL3",
-            verified_at=datetime(2026, 4, 19, tzinfo=timezone.utc),
+            verified_at=datetime(2026, 4, 19, tzinfo=UTC),
             certificate_issuer="KICA",
         )
 

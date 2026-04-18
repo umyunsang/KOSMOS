@@ -33,9 +33,9 @@ class TestLifetimeBound:
                 lifetime_seconds=31_536_001,
             )
         errors = exc_info.value.errors()
-        assert any(
-            "lifetime_seconds" in str(e.get("loc", "")) for e in errors
-        ), f"Expected error on lifetime_seconds, got: {errors}"
+        assert any("lifetime_seconds" in str(e.get("loc", "")) for e in errors), (
+            f"Expected error on lifetime_seconds, got: {errors}"
+        )
 
     def test_lifetime_seconds_zero_rejected(self):
         """0s must be rejected (minimum=1)."""

@@ -56,7 +56,7 @@ class SubscriptionBackpressureDrop(BaseModel):
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    reason: Literal["subscription_backpressure_drop"] = "subscription_backpressure_drop"
+    kind: Literal["subscription_backpressure_drop"] = "subscription_backpressure_drop"
     subscription_id: str = Field(min_length=1)
     events_dropped: int = Field(ge=1)
     message: str = Field(min_length=1)

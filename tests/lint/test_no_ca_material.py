@@ -13,8 +13,8 @@ runs in CI on every PR.
 from __future__ import annotations
 
 import re
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Iterator
 
 import pytest
 
@@ -28,18 +28,14 @@ _SCAN_ROOTS: list[Path] = [
 
 # Allow-listed prefixes (relative to repo root). Files under these paths are
 # exempt from the private-key check (fixture-only cryptographic test data).
-_ALLOWLIST_PREFIXES: tuple[str, ...] = (
-    str(Path("docs") / "mock" / "npki_crypto" / "fixtures"),
-)
+_ALLOWLIST_PREFIXES: tuple[str, ...] = (str(Path("docs") / "mock" / "npki_crypto" / "fixtures"),)
 
 # Extensions that indicate private-key / PKCS#12 / PFX material.
 _FORBIDDEN_EXTENSIONS: frozenset[str] = frozenset({".p12", ".pfx"})
 
 # Regex to detect PEM private-key headers inside text files
 # (matches both PKCS#8 and traditional RSA/EC key headers).
-_PEM_PRIVATE_RE = re.compile(
-    r"-----BEGIN (?:RSA |EC |ENCRYPTED |)PRIVATE KEY-----"
-)
+_PEM_PRIVATE_RE = re.compile(r"-----BEGIN (?:RSA |EC |ENCRYPTED |)PRIVATE KEY-----")
 
 
 def _is_allowlisted(path: Path) -> bool:
@@ -84,9 +80,7 @@ def _collect_violations() -> list[tuple[str, str]]:
 
         if _PEM_PRIVATE_RE.search(content):
             rel = path.relative_to(_REPO_ROOT)
-            violations.append(
-                (str(rel), "contains PEM private-key header (SC-006 violation)")
-            )
+            violations.append((str(rel), "contains PEM private-key header (SC-006 violation)"))
 
     return violations
 

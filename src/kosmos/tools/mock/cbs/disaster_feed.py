@@ -18,9 +18,10 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import logging
+from collections.abc import AsyncIterator
 from dataclasses import dataclass
-from datetime import datetime, timezone
-from typing import AsyncIterator
+from datetime import UTC, datetime
+from typing import Literal, TypedDict
 
 from kosmos.primitives.subscribe import (
     MODALITY_CBS,
@@ -32,8 +33,32 @@ from kosmos.primitives.subscribe import (
 
 logger = logging.getLogger(__name__)
 
+
+class _CbsFixture(TypedDict):
+    cbs_message_id: Literal[
+        4370,
+        4371,
+        4372,
+        4373,
+        4374,
+        4375,
+        4376,
+        4377,
+        4378,
+        4379,
+        4380,
+        4381,
+        4382,
+        4383,
+        4384,
+        4385,
+    ]
+    language: Literal["ko", "en"]
+    body: str
+
+
 # CBS message ID fixtures (3GPP TS 23.041 range 4370–4385)
-_CBS_FIXTURES = [
+_CBS_FIXTURES: list[_CbsFixture] = [
     {
         "cbs_message_id": 4370,
         "language": "ko",
@@ -69,24 +94,26 @@ _CBS_FIXTURES = [
 
 def _make_payload_hash(body: str, received_at: datetime) -> str:
     """SHA-256 of raw bearer payload (body + timestamp ISO string)."""
-    raw = f"{body}|{received_at.isoformat()}".encode("utf-8")
+    raw = f"{body}|{received_at.isoformat()}".encode()
     return hashlib.sha256(raw).hexdigest()
 
 
-def _build_cbs_events(count: int) -> list:
+def _build_cbs_events(count: int) -> list[CbsBroadcastEvent]:
     """Build a list of CbsBroadcastEvent objects synchronously (no I/O)."""
-    events = []
+    events: list[CbsBroadcastEvent] = []
     for i in range(count):
         fixture = _CBS_FIXTURES[i % len(_CBS_FIXTURES)]
-        received_at = datetime.now(timezone.utc)
+        received_at = datetime.now(UTC)
         payload_hash = _make_payload_hash(fixture["body"], received_at)
-        events.append(CbsBroadcastEvent(
-            cbs_message_id=fixture["cbs_message_id"],
-            received_at=received_at,
-            payload_hash=payload_hash,
-            language=fixture["language"],
-            body=fixture["body"],
-        ))
+        events.append(
+            CbsBroadcastEvent(
+                cbs_message_id=fixture["cbs_message_id"],
+                received_at=received_at,
+                payload_hash=payload_hash,
+                language=fixture["language"],
+                body=fixture["body"],
+            )
+        )
     return events
 
 
@@ -103,8 +130,8 @@ async def _cbs_disaster_generator(
       (no intermediate awaits) to enable back-pressure testing.
     """
     params = inp.params
-    burst_count = int(params.get("burst_count", 3))
-    burst_delay = float(params.get("burst_delay_seconds", 0.1))
+    burst_count = int(params.get("burst_count", 3))  # type: ignore[call-overload]
+    burst_delay = float(params.get("burst_delay_seconds", 0.1))  # type: ignore[arg-type]
 
     if burst_delay == 0.0:
         # Burst mode: build all events synchronously and yield them without
@@ -112,7 +139,7 @@ async def _cbs_disaster_generator(
         # has a chance to drain it. This is the back-pressure stress path.
         events = _build_cbs_events(burst_count)
         for event in events:
-            if datetime.now(timezone.utc).timestamp() > handle.closes_at.timestamp():
+            if datetime.now(UTC).timestamp() > handle.closes_at.timestamp():
                 break
             yield event
         # Single yield at the end so the caller can switch context
@@ -124,7 +151,7 @@ async def _cbs_disaster_generator(
     fixture_idx = 0
     while emitted < burst_count:
         fixture = _CBS_FIXTURES[fixture_idx % len(_CBS_FIXTURES)]
-        received_at = datetime.now(timezone.utc)
+        received_at = datetime.now(UTC)
         payload_hash = _make_payload_hash(fixture["body"], received_at)
 
         event = CbsBroadcastEvent(
@@ -141,13 +168,14 @@ async def _cbs_disaster_generator(
         await asyncio.sleep(burst_delay)
 
         # Check lifetime
-        if datetime.now(timezone.utc).timestamp() > handle.closes_at.timestamp():
+        if datetime.now(UTC).timestamp() > handle.closes_at.timestamp():
             break
 
 
 @dataclass
 class _MockCbsDisasterTool:
     """Lightweight tool descriptor for the CBS disaster mock adapter."""
+
     tool_id: str = "mock_cbs_disaster_v1"
     modality: str = MODALITY_CBS
 

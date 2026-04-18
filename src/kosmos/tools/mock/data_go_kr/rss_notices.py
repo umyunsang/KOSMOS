@@ -17,9 +17,9 @@ from __future__ import annotations
 
 import asyncio
 import logging
+from collections.abc import AsyncIterator
 from dataclasses import dataclass
-from datetime import datetime, timezone
-from typing import AsyncIterator
+from datetime import UTC, datetime
 
 from kosmos.primitives.subscribe import (
     MODALITY_RSS,
@@ -70,7 +70,7 @@ def _parse_rfc3339(dt_str: str) -> datetime:
     try:
         return datetime.fromisoformat(dt_str)
     except ValueError:
-        return datetime.now(timezone.utc)
+        return datetime.now(UTC)
 
 
 async def _rss_notices_generator(
@@ -86,9 +86,9 @@ async def _rss_notices_generator(
       With reset_guids=True and repeat_count=2, the second pass re-delivers all items.
     """
     params = inp.params
-    item_delay = float(params.get("item_delay_seconds", 0.05))
+    item_delay = float(params.get("item_delay_seconds", 0.05))  # type: ignore[arg-type]
     reset_guids = bool(params.get("reset_guids", False))
-    repeat_count = int(params.get("repeat_count", 1))
+    repeat_count = int(params.get("repeat_count", 1))  # type: ignore[call-overload]
 
     # Per-subscription guid tracker (stateful within this handle)
     tracker = RssGuidTracker()
@@ -100,7 +100,7 @@ async def _rss_notices_generator(
 
         for fixture in _RSS_FIXTURES:
             # Check lifetime
-            if datetime.now(timezone.utc).timestamp() > handle.closes_at.timestamp():
+            if datetime.now(UTC).timestamp() > handle.closes_at.timestamp():
                 return
 
             guid = fixture["guid"]
@@ -127,6 +127,7 @@ async def _rss_notices_generator(
 @dataclass
 class _MockRssPublicNoticesTool:
     """Lightweight tool descriptor for the RSS public notices mock adapter."""
+
     tool_id: str = "mock_rss_public_notices_v1"
     modality: str = MODALITY_RSS
 
@@ -140,8 +141,6 @@ register_subscribe_adapter(
     adapter_fn=_rss_notices_generator,
 )
 
-logger.debug(
-    "Registered mock RSS public notices adapter: %r", MOCK_RSS_PUBLIC_NOTICES_TOOL.tool_id
-)
+logger.debug("Registered mock RSS public notices adapter: %r", MOCK_RSS_PUBLIC_NOTICES_TOOL.tool_id)
 
 __all__ = ["MOCK_RSS_PUBLIC_NOTICES_TOOL"]

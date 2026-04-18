@@ -26,9 +26,7 @@ from __future__ import annotations
 import pytest
 from pydantic import BaseModel, ConfigDict
 
-from kosmos.primitives.submit import SubmitOutput, SubmitStatus, submit
 from kosmos.tools.registry import AdapterPrimitive, AdapterRegistration, AdapterSourceMode
-
 
 # ---------------------------------------------------------------------------
 # Minimal AuthContext stand-in (pre-US2)
@@ -152,9 +150,7 @@ async def test_submit_with_matching_tier_passes_gate(
         registration=tier_gated_registration,
         auth_context=auth_ctx,
     )
-    assert result is None, (
-        "Matching tier must return None (gate passes — no rejection)"
-    )
+    assert result is None, "Matching tier must return None (gate passes — no rejection)"
 
 
 # ---------------------------------------------------------------------------

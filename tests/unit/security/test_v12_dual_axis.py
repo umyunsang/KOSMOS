@@ -6,8 +6,10 @@ that ``AdapterRegistration`` construction raises ``DualAxisMissingError`` when
 either of the dual-axis fields (``published_tier_minimum`` / ``nist_aal_hint``)
 is ``None`` (FR-030, SC-007).
 
-Also asserts the pre-v1.2 compatibility window: with the toggle off (default
-``False``), both fields may be ``None`` without error (FR-028).
+Also asserts the pre-v1.2 compatibility window: with the toggle monkeypatched
+to ``False``, both fields may be ``None`` without error (FR-028). Note: after
+Phase 9 T073-T080 cutover, :data:`V12_GA_ACTIVE` now defaults to ``True``; the
+compatibility-window tests explicitly toggle it off via ``monkeypatch``.
 
 Expected red state:
   - ``DualAxisMissingError`` does not yet exist in ``kosmos.tools.errors``
@@ -30,9 +32,11 @@ import pytest
 
 # Top-level imports so that ImportError surfaces immediately as a red test
 # (explicit red state per T074 TDD contract).
-from kosmos.tools.errors import DualAxisMissingError, RegistrationError  # type: ignore[attr-defined]
+from kosmos.tools.errors import (  # type: ignore[attr-defined]
+    DualAxisMissingError,
+    RegistrationError,
+)
 from kosmos.tools.registry import AdapterPrimitive, AdapterRegistration, AdapterSourceMode
-
 
 # ---------------------------------------------------------------------------
 # Helpers — kwargs factory
@@ -135,9 +139,7 @@ def test_v12_active_both_fields_missing_raises_mentioning_both(
     monkeypatch.setattr(_mod, "V12_GA_ACTIVE", True)
 
     with pytest.raises(DualAxisMissingError) as exc_info:
-        AdapterRegistration(
-            **_base_kwargs(published_tier_minimum=None, nist_aal_hint=None)
-        )
+        AdapterRegistration(**_base_kwargs(published_tier_minimum=None, nist_aal_hint=None))
 
     err_str = str(exc_info.value)
     assert "published_tier_minimum" in err_str, (
@@ -183,9 +185,7 @@ def test_v12_inactive_both_none_succeeds(monkeypatch: pytest.MonkeyPatch) -> Non
 
     monkeypatch.setattr(_mod, "V12_GA_ACTIVE", False)
 
-    reg = AdapterRegistration(
-        **_base_kwargs(published_tier_minimum=None, nist_aal_hint=None)
-    )
+    reg = AdapterRegistration(**_base_kwargs(published_tier_minimum=None, nist_aal_hint=None))
     assert reg.published_tier_minimum is None
     assert reg.nist_aal_hint is None
 

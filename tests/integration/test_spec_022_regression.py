@@ -30,7 +30,7 @@ def test_spec_022_suite_passes() -> None:
     Invokes pytest as a subprocess so failures surface as a single assertion
     with the captured stdout/stderr for diagnosis.
     """
-    result = subprocess.run(
+    result = subprocess.run(  # noqa: S603
         [
             sys.executable,
             "-m",
@@ -46,9 +46,9 @@ def test_spec_022_suite_passes() -> None:
 
     # Print output regardless of outcome so pytest -v shows context on CI.
     if result.stdout:
-        print("\n--- Spec 022 pytest stdout ---\n", result.stdout)
+        print("\n--- Spec 022 pytest stdout ---\n", result.stdout)  # noqa: T201
     if result.stderr:
-        print("\n--- Spec 022 pytest stderr ---\n", result.stderr)
+        print("\n--- Spec 022 pytest stderr ---\n", result.stderr)  # noqa: T201
 
     assert result.returncode == 0, (
         f"Spec 022 regression FAILED (exit {result.returncode}).\n"

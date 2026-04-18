@@ -24,27 +24,20 @@ from pathlib import Path
 import pytest
 from pydantic import TypeAdapter
 
+# ---------------------------------------------------------------------------
+# Import both paths and assert identity
+# ---------------------------------------------------------------------------
+import kosmos.primitives as _primitives_module
+from kosmos.tools.lookup import lookup as _canonical_lookup
 from kosmos.tools.models import (
     LookupError,  # noqa: A004
     LookupSearchResult,
 )
 
-# ---------------------------------------------------------------------------
-# Import both paths and assert identity
-# ---------------------------------------------------------------------------
-
-import kosmos.primitives as _primitives_module
-from kosmos.tools.lookup import lookup as _canonical_lookup
-
 _primitives_lookup = _primitives_module.lookup
 
 # Path to Spec 022 JSON Schema contracts (relative to project root).
-_CONTRACTS_DIR = (
-    Path(__file__).resolve().parents[3]
-    / "specs"
-    / "022-mvp-main-tool"
-    / "contracts"
-)
+_CONTRACTS_DIR = Path(__file__).resolve().parents[3] / "specs" / "022-mvp-main-tool" / "contracts"
 _INPUT_SCHEMA_PATH = _CONTRACTS_DIR / "lookup.input.schema.json"
 _OUTPUT_SCHEMA_PATH = _CONTRACTS_DIR / "lookup.output.schema.json"
 
@@ -83,9 +76,7 @@ def test_primitives_lookup_preserves_signature() -> None:
     canonical_sig = inspect.signature(_canonical_lookup)
     primitives_sig = inspect.signature(_primitives_lookup)
     assert canonical_sig == primitives_sig, (
-        f"Signature mismatch.\n"
-        f"  canonical : {canonical_sig}\n"
-        f"  primitives: {primitives_sig}"
+        f"Signature mismatch.\n  canonical : {canonical_sig}\n  primitives: {primitives_sig}"
     )
 
 
@@ -96,16 +87,12 @@ def test_primitives_lookup_preserves_signature() -> None:
 
 def test_spec022_input_schema_file_exists() -> None:
     """Spec 022 lookup.input.schema.json must be present in the worktree."""
-    assert _INPUT_SCHEMA_PATH.is_file(), (
-        f"Spec 022 contract file missing: {_INPUT_SCHEMA_PATH}"
-    )
+    assert _INPUT_SCHEMA_PATH.is_file(), f"Spec 022 contract file missing: {_INPUT_SCHEMA_PATH}"
 
 
 def test_spec022_output_schema_file_exists() -> None:
     """Spec 022 lookup.output.schema.json must be present in the worktree."""
-    assert _OUTPUT_SCHEMA_PATH.is_file(), (
-        f"Spec 022 contract file missing: {_OUTPUT_SCHEMA_PATH}"
-    )
+    assert _OUTPUT_SCHEMA_PATH.is_file(), f"Spec 022 contract file missing: {_OUTPUT_SCHEMA_PATH}"
 
 
 # ---------------------------------------------------------------------------

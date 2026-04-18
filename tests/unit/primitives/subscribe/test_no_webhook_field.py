@@ -13,10 +13,7 @@ from __future__ import annotations
 
 import re
 
-import pytest
-
 from kosmos.primitives.subscribe import SubscribeInput
-
 
 # Pattern matching names that suggest inbound receiver / webhook semantics
 _INBOUND_PATTERN = re.compile(
@@ -24,9 +21,7 @@ _INBOUND_PATTERN = re.compile(
 )
 
 # Patterns that are explicitly outbound-only (allowed even if they carry URL type)
-_OUTBOUND_PATTERN = re.compile(
-    r"(?i)(rss_feed_url|rest_pull_url|feed_url|polling_url|source_url)"
-)
+_OUTBOUND_PATTERN = re.compile(r"(?i)(rss_feed_url|rest_pull_url|feed_url|polling_url|source_url)")
 
 
 def _collect_url_fields(model_cls, visited=None):
@@ -46,9 +41,7 @@ def _collect_url_fields(model_cls, visited=None):
         annotation_str = str(field_info.annotation)
         # Collect if field name suggests URL or annotation includes URL type
         is_url_type = (
-            "HttpUrl" in annotation_str
-            or "AnyUrl" in annotation_str
-            or "url" in name.lower()
+            "HttpUrl" in annotation_str or "AnyUrl" in annotation_str or "url" in name.lower()
         )
         if is_url_type:
             url_fields.append((name, field_info))
@@ -85,9 +78,7 @@ class TestNoWebhookField:
             if not _OUTBOUND_PATTERN.search(field_name):
                 # Check description for explicit outbound-only annotation
                 description = field_info.description or ""
-                assert "outbound" in description.lower() or _OUTBOUND_PATTERN.search(
-                    field_name
-                ), (
+                assert "outbound" in description.lower() or _OUTBOUND_PATTERN.search(field_name), (
                     f"URL field {field_name!r} in SubscribeInput is not tagged as "
                     "outbound-only. Add 'outbound' to description or rename to "
                     "e.g. 'rss_feed_url' / 'rest_pull_url'. (FR-013)"

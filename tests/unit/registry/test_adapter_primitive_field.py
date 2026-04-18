@@ -84,9 +84,7 @@ def test_pre_v12_allows_none_dual_axis(monkeypatch: pytest.MonkeyPatch) -> None:
 
     monkeypatch.setattr(_mod, "V12_GA_ACTIVE", False)
 
-    reg = AdapterRegistration(
-        **_base_kwargs(published_tier_minimum=None, nist_aal_hint=None)
-    )
+    reg = AdapterRegistration(**_base_kwargs(published_tier_minimum=None, nist_aal_hint=None))
     assert reg.published_tier_minimum is None
     assert reg.nist_aal_hint is None
 

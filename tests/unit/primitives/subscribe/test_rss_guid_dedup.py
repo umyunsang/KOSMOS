@@ -7,11 +7,7 @@ Validates Edge Case from research.md §4:
 
 from __future__ import annotations
 
-import asyncio
-
-import pytest
-
-from kosmos.primitives.subscribe import RssGuidTracker, RssItemEvent
+from kosmos.primitives.subscribe import RssGuidTracker
 
 
 class TestRssGuidDedup:

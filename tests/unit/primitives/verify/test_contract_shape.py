@@ -183,11 +183,9 @@ _OUTPUT_ADAPTER: TypeAdapter[VerifyOutput] = TypeAdapter(VerifyOutput)
 
 @pytest.mark.parametrize(
     "payload, expected_type",
-    list(zip(_FAMILY_CONTEXTS, _EXPECTED_TYPES)),
+    list(zip(_FAMILY_CONTEXTS, _EXPECTED_TYPES, strict=True)),
 )
-def test_verify_output_roundtrip(
-    payload: dict[str, object], expected_type: type
-) -> None:
+def test_verify_output_roundtrip(payload: dict[str, object], expected_type: type) -> None:
     output = VerifyOutput(result=payload)  # type: ignore[arg-type]
     assert isinstance(output.result, expected_type)
     assert output.result.family == payload["family"]

@@ -14,10 +14,7 @@ from __future__ import annotations
 import hashlib
 import json
 
-import pytest
-
 from kosmos.primitives.submit import derive_transaction_id
-
 
 # ---------------------------------------------------------------------------
 # T019-A: URN prefix
@@ -87,7 +84,9 @@ def test_transaction_id_is_sha256_based() -> None:
         "params": dict(sorted(params.items())),  # canonical: keys sorted
         "adapter_nonce": adapter_nonce,
     }
-    canonical = json.dumps(canonical_payload, sort_keys=True, ensure_ascii=True, separators=(",", ":"))
+    canonical = json.dumps(
+        canonical_payload, sort_keys=True, ensure_ascii=True, separators=(",", ":")
+    )
     expected_hash = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
     expected_txid = f"urn:kosmos:submit:{expected_hash}"
 
@@ -109,7 +108,9 @@ def test_transaction_id_with_nonce_is_sha256_based() -> None:
         "params": dict(sorted(params.items())),
         "adapter_nonce": adapter_nonce,
     }
-    canonical = json.dumps(canonical_payload, sort_keys=True, ensure_ascii=True, separators=(",", ":"))
+    canonical = json.dumps(
+        canonical_payload, sort_keys=True, ensure_ascii=True, separators=(",", ":")
+    )
     expected_hash = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
     expected_txid = f"urn:kosmos:submit:{expected_hash}"
 

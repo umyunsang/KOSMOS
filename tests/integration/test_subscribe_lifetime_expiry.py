@@ -16,8 +16,6 @@ import pytest
 
 from kosmos.primitives.subscribe import (
     SubscribeInput,
-    SubscriptionBackpressureDrop,
-    SubscriptionHandle,
     subscribe,
 )
 from kosmos.tools.mock.cbs.disaster_feed import MOCK_CBS_DISASTER_TOOL
@@ -64,7 +62,6 @@ class TestSubscribeLifetimeExpiry:
 
     async def test_subscription_handle_closes_at_is_accurate(self):
         """SubscriptionHandle.closes_at must reflect opened_at + lifetime_seconds."""
-        from datetime import datetime, timezone
 
         inp = SubscribeInput(
             tool_id=MOCK_CBS_DISASTER_TOOL.tool_id,
@@ -73,12 +70,13 @@ class TestSubscribeLifetimeExpiry:
         )
         handle = None
         async with asyncio.timeout(5.0):
-            async for event in subscribe(inp):
+            async for _event in subscribe(inp):
                 # First item may be the handle or an event; get handle from subscribe()
                 break
 
         # Access the handle directly from subscribe to verify closes_at
         from kosmos.primitives.subscribe import _get_handle_for_testing
+
         handle = await _get_handle_for_testing(inp)
         assert handle is not None
         expected_delta = (handle.closes_at - handle.opened_at).total_seconds()

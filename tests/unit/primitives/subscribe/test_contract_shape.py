@@ -11,8 +11,6 @@ from __future__ import annotations
 import json
 import pathlib
 
-import pytest
-
 # Path anchored to repo root via specs/ directory
 # tests/unit/primitives/subscribe/test_contract_shape.py → parents[4] = repo root
 _SPEC_CONTRACTS = (
@@ -108,7 +106,14 @@ class TestSubscribeOutputSchema:
         schema = json.loads(_OUTPUT_SCHEMA.read_text())
         cbs = schema["$defs"]["CbsBroadcastEvent"]
         required = set(cbs.get("required", []))
-        assert {"kind", "cbs_message_id", "received_at", "payload_hash", "language", "body"} <= required
+        assert {
+            "kind",
+            "cbs_message_id",
+            "received_at",
+            "payload_hash",
+            "language",
+            "body",
+        } <= required
         assert cbs["properties"]["kind"]["const"] == "cbs_broadcast"
         # CBS message IDs must be the 3GPP range 4370–4385
         msg_ids = set(cbs["properties"]["cbs_message_id"]["enum"])

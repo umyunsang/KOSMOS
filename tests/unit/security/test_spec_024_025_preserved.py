@@ -29,7 +29,6 @@ from pydantic import BaseModel, ValidationError
 
 from kosmos.tools.models import GovAPITool
 
-
 # ---------------------------------------------------------------------------
 # Minimal Pydantic stubs for input_schema / output_schema
 # ---------------------------------------------------------------------------
@@ -167,7 +166,7 @@ def test_v3_fires_when_lookup_declares_wrong_auth_level(
         GovAPITool(
             **_compliant_kwargs(
                 id=_CANONICAL_LOOKUP_ID,
-                auth_level="AAL2",   # TOOL_MIN_AAL requires AAL1
+                auth_level="AAL2",  # TOOL_MIN_AAL requires AAL1
                 auth_type="api_key",
                 requires_auth=True,
                 pipa_class="non_personal",
@@ -177,8 +176,7 @@ def test_v3_fires_when_lookup_declares_wrong_auth_level(
 
     err_str = str(exc_info.value)
     assert "V3" in err_str, (
-        f"Expected 'V3' in the error message for a TOOL_MIN_AAL drift violation. "
-        f"Got: {err_str!r}"
+        f"Expected 'V3' in the error message for a TOOL_MIN_AAL drift violation. Got: {err_str!r}"
     )
 
 
@@ -193,7 +191,7 @@ def test_v3_positive_control_lookup_with_aal1_constructs(
     tool = GovAPITool(
         **_compliant_kwargs(
             id=_CANONICAL_LOOKUP_ID,
-            auth_level="AAL1",    # matches TOOL_MIN_AAL["lookup"]
+            auth_level="AAL1",  # matches TOOL_MIN_AAL["lookup"]
             auth_type="api_key",
             requires_auth=True,
             pipa_class="non_personal",
@@ -226,10 +224,10 @@ def test_v6_fires_when_public_auth_type_declares_aal3(
             **_compliant_kwargs(
                 id="fake_v6_violation_tool",
                 auth_type="public",
-                auth_level="AAL3",    # outside {public, AAL1} for auth_type="public"
+                auth_level="AAL3",  # outside {public, AAL1} for auth_type="public"
                 pipa_class="non_personal",
                 dpa_reference=None,
-                requires_auth=True,   # V5: AAL3 → requires_auth=True
+                requires_auth=True,  # V5: AAL3 → requires_auth=True
             )
         )
 

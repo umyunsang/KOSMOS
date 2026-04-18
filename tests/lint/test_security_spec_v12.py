@@ -75,10 +75,10 @@ def test_doc_contains_version_12_marker() -> None:
     """
     content = _read_doc()
     assert _V12_MARKER_RE.search(content) is not None, (
-        f"docs/security/tool-template-security-spec-v1.md does not contain a "
-        f"v1.2 version marker. Expected one of: 'Version: 1.2', a heading "
-        f"containing 'v1.2', or 'Version 1.2'. "
-        f"Land the doc bump (T076) to fix this."
+        "docs/security/tool-template-security-spec-v1.md does not contain a "
+        "v1.2 version marker. Expected one of: 'Version: 1.2', a heading "
+        "containing 'v1.2', or 'Version 1.2'. "
+        "Land the doc bump (T076) to fix this."
     )
 
 
@@ -158,7 +158,7 @@ def test_doc_does_not_contain_tool_min_aal_section_heading() -> None:
     assert match is None, (
         f"Legacy TOOL_MIN_AAL section heading still present at position "
         f"{match.start() if match else 0}: "
-        f"{content[match.start():match.start() + 60]!r}. "
+        f"{content[match.start() : match.start() + 60]!r}. "
         "T077 must replace this section with the dual-axis table."
     )
 

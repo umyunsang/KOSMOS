@@ -8,8 +8,13 @@ and ``nist_aal_hint=None`` so the existing Spec 022 adapters (lookup /
 resolve_location) keep registering unchanged.
 
 When v1.2 GA ships, flipping :data:`V12_GA_ACTIVE` to ``True`` enables
-:func:`enforce`: it raises ``RegistrationError`` at registry.register() time for
-any adapter that still ships either field as ``None`` (FR-030).
+:func:`enforce`: it raises :class:`DualAxisMissingError` at
+:class:`~kosmos.tools.registry.AdapterRegistration` construction time (via the
+``@model_validator(mode="after")`` defined on that class) for any adapter that
+still ships either field as ``None`` (FR-030). This enforcement fires *before*
+an adapter can ever reach ``ToolRegistry.register``; the backstop is purely for
+``AdapterRegistration`` objects and does not apply to :class:`GovAPITool`
+registrations, which keep going through Spec 024 V1–V4 validators.
 
 This module is intentionally side-effect free; the toggle lives in code so that
 v1.2 GA is a one-line review-gated change, not an env-var flip.

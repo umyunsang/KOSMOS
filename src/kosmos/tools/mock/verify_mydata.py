@@ -8,7 +8,7 @@ FR-009 (delegation-only): no TLS private keys, no OAuth server logic. Fixture-ba
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from kosmos.primitives.verify import (
     MyDataContext,
@@ -49,7 +49,7 @@ _FIXTURE = MyDataContext(
     family="mydata",
     published_tier="mydata_individual_aal2",
     nist_aal_hint="AAL2",
-    verified_at=datetime(2026, 4, 19, 9, 0, 0, tzinfo=timezone.utc),
+    verified_at=datetime(2026, 4, 19, 9, 0, 0, tzinfo=UTC),
     external_session_ref="mock-mydata-ref-001",
     provider_id="TEST_PROVIDER_001",
 )
@@ -58,10 +58,8 @@ _FIXTURE = MyDataContext(
 def invoke(session_context: dict[str, object]) -> MyDataContext:
     """Return the recorded fixture; override via session_context for test variants."""
     if session_context.get("_fixture_override"):
-        overrides: dict[str, object] = dict(session_context["_fixture_override"])  # type: ignore[arg-type]
-        return MyDataContext.model_validate(
-            {**_FIXTURE.model_dump(), **overrides}
-        )
+        overrides: dict[str, object] = dict(session_context["_fixture_override"])  # type: ignore[call-overload]
+        return MyDataContext.model_validate({**_FIXTURE.model_dump(), **overrides})
     return _FIXTURE
 
 

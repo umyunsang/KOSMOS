@@ -12,7 +12,7 @@ No network calls; all pure-Python.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 from pydantic import ValidationError
@@ -26,7 +26,7 @@ from kosmos.primitives.verify import (
     MyDataContext,
 )
 
-_NOW = datetime(2026, 4, 19, 9, 0, 0, tzinfo=timezone.utc)
+_NOW = datetime(2026, 4, 19, 9, 0, 0, tzinfo=UTC)
 
 
 def _gongdong(published_tier: str) -> GongdongInjeungseoContext:

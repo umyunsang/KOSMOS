@@ -7,7 +7,7 @@ FR-009 (delegation-only): no signing keys, no CA logic. Fixture-backed.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from kosmos.primitives.verify import (
     GongdongInjeungseoContext,
@@ -48,7 +48,7 @@ _FIXTURE = GongdongInjeungseoContext(
     family="gongdong_injeungseo",
     published_tier="gongdong_injeungseo_personal_aal3",
     nist_aal_hint="AAL3",
-    verified_at=datetime(2026, 4, 19, 9, 0, 0, tzinfo=timezone.utc),
+    verified_at=datetime(2026, 4, 19, 9, 0, 0, tzinfo=UTC),
     external_session_ref="mock-gongdong-ref-001",
     certificate_issuer="KICA",
 )
@@ -57,10 +57,8 @@ _FIXTURE = GongdongInjeungseoContext(
 def invoke(session_context: dict[str, object]) -> GongdongInjeungseoContext:
     """Return the recorded fixture; override via session_context for test variants."""
     if session_context.get("_fixture_override"):
-        overrides: dict[str, object] = dict(session_context["_fixture_override"])  # type: ignore[arg-type]
-        return GongdongInjeungseoContext.model_validate(
-            {**_FIXTURE.model_dump(), **overrides}
-        )
+        overrides: dict[str, object] = dict(session_context["_fixture_override"])  # type: ignore[call-overload]
+        return GongdongInjeungseoContext.model_validate({**_FIXTURE.model_dump(), **overrides})
     return _FIXTURE
 
 

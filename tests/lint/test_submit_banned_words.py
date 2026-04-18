@@ -51,8 +51,7 @@ _BANNED_STRINGS = [
 def submit_source() -> str:
     """Load the submit.py source once for all parametrize cases."""
     assert _SUBMIT_MODULE.exists(), (
-        f"submit.py not found at {_SUBMIT_MODULE}. "
-        "T021 must create this file before T017 can pass."
+        f"submit.py not found at {_SUBMIT_MODULE}. T021 must create this file before T017 can pass."
     )
     return _SUBMIT_MODULE.read_text(encoding="utf-8")
 

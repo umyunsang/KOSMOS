@@ -126,7 +126,7 @@ class GongdongInjeungseoContext(_AuthContextBase):
     )
 
     @model_validator(mode="after")
-    def _check_published_tier(self) -> "GongdongInjeungseoContext":
+    def _check_published_tier(self) -> GongdongInjeungseoContext:
         if self.published_tier not in _GONGDONG_TIERS:
             raise ValueError(
                 f"GongdongInjeungseoContext.published_tier must be one of "
@@ -139,12 +139,10 @@ class GeumyungInjeungseoContext(_AuthContextBase):
     """금융인증서 (Financial Certificate, KFTC) authentication context."""
 
     family: Literal["geumyung_injeungseo"] = "geumyung_injeungseo"
-    bank_cluster: Literal["kftc"] = Field(
-        description="금융결제원 클라우드 cluster identifier."
-    )
+    bank_cluster: Literal["kftc"] = Field(description="금융결제원 클라우드 cluster identifier.")
 
     @model_validator(mode="after")
-    def _check_published_tier(self) -> "GeumyungInjeungseoContext":
+    def _check_published_tier(self) -> GeumyungInjeungseoContext:
         if self.published_tier not in _GEUMYUNG_TIERS:
             raise ValueError(
                 f"GeumyungInjeungseoContext.published_tier must be one of "
@@ -160,7 +158,7 @@ class GanpyeonInjeungContext(_AuthContextBase):
     provider: Literal["pass", "kakao", "naver", "toss", "bank", "samsung", "payco"]
 
     @model_validator(mode="after")
-    def _check_published_tier(self) -> "GanpyeonInjeungContext":
+    def _check_published_tier(self) -> GanpyeonInjeungContext:
         if self.published_tier not in _GANPYEON_TIERS:
             raise ValueError(
                 f"GanpyeonInjeungContext.published_tier must be one of "
@@ -176,7 +174,7 @@ class DigitalOnepassContext(_AuthContextBase):
     level: Literal[1, 2, 3]
 
     @model_validator(mode="after")
-    def _check_published_tier(self) -> "DigitalOnepassContext":
+    def _check_published_tier(self) -> DigitalOnepassContext:
         if self.published_tier not in _DIGITAL_ONEPASS_TIERS:
             raise ValueError(
                 f"DigitalOnepassContext.published_tier must be one of "
@@ -189,12 +187,10 @@ class MobileIdContext(_AuthContextBase):
     """모바일 신분증 (Mobile ID) authentication context."""
 
     family: Literal["mobile_id"] = "mobile_id"
-    id_type: Literal["mdl", "resident"] = Field(
-        description="모바일운전면허 | 모바일주민등록증"
-    )
+    id_type: Literal["mdl", "resident"] = Field(description="모바일운전면허 | 모바일주민등록증")
 
     @model_validator(mode="after")
-    def _check_published_tier(self) -> "MobileIdContext":
+    def _check_published_tier(self) -> MobileIdContext:
         if self.published_tier not in _MOBILE_ID_TIERS:
             raise ValueError(
                 f"MobileIdContext.published_tier must be one of "
@@ -210,7 +206,7 @@ class MyDataContext(_AuthContextBase):
     provider_id: str = Field(min_length=1, description="마이데이터 사업자 코드.")
 
     @model_validator(mode="after")
-    def _check_published_tier(self) -> "MyDataContext":
+    def _check_published_tier(self) -> MyDataContext:
         if self.published_tier not in _MYDATA_TIERS:
             raise ValueError(
                 f"MyDataContext.published_tier must be one of "
@@ -330,7 +326,7 @@ async def verify(
         import inspect
 
         if inspect.iscoroutinefunction(adapter):
-            result = await adapter(session_context)  # type: ignore[operator]
+            result = await adapter(session_context)
         else:
             result = adapter(session_context)  # type: ignore[operator]
             if asyncio.isfuture(result) or asyncio.iscoroutine(result):

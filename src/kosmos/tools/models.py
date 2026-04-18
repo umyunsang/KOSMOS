@@ -135,9 +135,7 @@ class GovAPITool(BaseModel):
     """
 
     # Spec 031 T032 dual-axis fields — None during pre-v1.2 compatibility window FR-028
-    primitive: Literal[
-        "lookup", "resolve_location", "submit", "subscribe", "verify"
-    ] | None = None
+    primitive: Literal["lookup", "resolve_location", "submit", "subscribe", "verify"] | None = None
     """Five-primitive surface this adapter binds to (Spec 031 AdapterPrimitive).
 
     Set to the appropriate value during Spec 031 Phase 4 (T033).
@@ -146,26 +144,29 @@ class GovAPITool(BaseModel):
     non-None value becomes mandatory for all newly-registered adapters.
     """
 
-    published_tier_minimum: Literal[
-        "gongdong_injeungseo_personal_aal3",
-        "gongdong_injeungseo_corporate_aal3",
-        "gongdong_injeungseo_bank_only_aal2",
-        "geumyung_injeungseo_personal_aal2",
-        "geumyung_injeungseo_business_aal3",
-        "ganpyeon_injeung_pass_aal2",
-        "ganpyeon_injeung_kakao_aal2",
-        "ganpyeon_injeung_naver_aal2",
-        "ganpyeon_injeung_toss_aal2",
-        "ganpyeon_injeung_bank_aal2",
-        "ganpyeon_injeung_samsung_aal2",
-        "ganpyeon_injeung_payco_aal2",
-        "digital_onepass_level1_aal1",
-        "digital_onepass_level2_aal2",
-        "digital_onepass_level3_aal3",
-        "mobile_id_mdl_aal2",
-        "mobile_id_resident_aal2",
-        "mydata_individual_aal2",
-    ] | None = None
+    published_tier_minimum: (
+        Literal[
+            "gongdong_injeungseo_personal_aal3",
+            "gongdong_injeungseo_corporate_aal3",
+            "gongdong_injeungseo_bank_only_aal2",
+            "geumyung_injeungseo_personal_aal2",
+            "geumyung_injeungseo_business_aal3",
+            "ganpyeon_injeung_pass_aal2",
+            "ganpyeon_injeung_kakao_aal2",
+            "ganpyeon_injeung_naver_aal2",
+            "ganpyeon_injeung_toss_aal2",
+            "ganpyeon_injeung_bank_aal2",
+            "ganpyeon_injeung_samsung_aal2",
+            "ganpyeon_injeung_payco_aal2",
+            "digital_onepass_level1_aal1",
+            "digital_onepass_level2_aal2",
+            "digital_onepass_level3_aal3",
+            "mobile_id_mdl_aal2",
+            "mobile_id_resident_aal2",
+            "mydata_individual_aal2",
+        ]
+        | None
+    ) = None
     """Minimum Korea-published auth tier required by this adapter (Spec 031 primary axis).
 
     ``None`` is legal during the pre-v1.2 compatibility window (FR-028).

@@ -13,9 +13,8 @@ from __future__ import annotations
 
 import pytest
 
-from kosmos.primitives._errors import AdapterInvocationError, AdapterNotFoundError
+from kosmos.primitives._errors import AdapterNotFoundError
 from kosmos.primitives.submit import SubmitOutput, SubmitStatus, submit
-
 
 # ---------------------------------------------------------------------------
 # Minimal stub adapter for dispatch tests
@@ -67,7 +66,7 @@ async def test_unregistered_tool_id_returns_structured_error() -> None:
 
 def test_submit_output_has_only_envelope_fields() -> None:
     """SubmitOutput must only expose transaction_id, status, adapter_receipt."""
-    out = SubmitOutput(
+    SubmitOutput(
         transaction_id="urn:kosmos:submit:test001",
         status=SubmitStatus.succeeded,
         adapter_receipt={"ref": "2026"},

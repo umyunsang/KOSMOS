@@ -17,7 +17,6 @@ from __future__ import annotations
 
 import re
 import subprocess
-import sys
 from pathlib import Path
 from typing import Final
 
@@ -55,14 +54,10 @@ _KNOWN_DEPS_SNAPSHOT: Final[frozenset[str]] = frozenset(
 
 # Regex matching a PEP 508 requirement line (package name with optional extras
 # and version specifier).  We only extract the bare package name (group 1).
-_DEP_LINE_RE: re.Pattern[str] = re.compile(
-    r"""^\s*['"]?([A-Za-z][A-Za-z0-9_.-]*)"""
-)
+_DEP_LINE_RE: re.Pattern[str] = re.compile(r"""^\s*['"]?([A-Za-z][A-Za-z0-9_.-]*)""")
 
 # Diff line added inside [project].dependencies block
-_ADDED_DEP_RE: re.Pattern[str] = re.compile(
-    r"""^\+\s+['"]([A-Za-z][A-Za-z0-9_.-]*)"""
-)
+_ADDED_DEP_RE: re.Pattern[str] = re.compile(r"""^\+\s+['"]([A-Za-z][A-Za-z0-9_.-]*)""")
 
 
 def _normalise(name: str) -> str:
@@ -72,8 +67,8 @@ def _normalise(name: str) -> str:
 
 def _run_git_diff(base_ref: str) -> str | None:
     """Run git diff <base_ref> -- pyproject.toml; return stdout or None on failure."""
-    result = subprocess.run(
-        ["git", "diff", base_ref, "--", "pyproject.toml"],
+    result = subprocess.run(  # noqa: S603
+        ["git", "diff", base_ref, "--", "pyproject.toml"],  # noqa: S607
         cwd=_REPO_ROOT,
         capture_output=True,
         text=True,
@@ -130,6 +125,7 @@ def _current_deps_from_pyproject() -> frozenset[str]:
 # ---------------------------------------------------------------------------
 # Test logic
 # ---------------------------------------------------------------------------
+
 
 def test_no_new_runtime_deps() -> None:
     """SC-008: assert no new runtime dependencies were added vs main."""

@@ -23,16 +23,16 @@ import asyncio
 import hashlib
 import json
 import logging
+from collections.abc import AsyncIterator
 from dataclasses import dataclass
-from datetime import datetime, timezone
-from typing import AsyncIterator
+from datetime import UTC, datetime
 
 from kosmos.primitives.subscribe import (
+    _MIN_POLLING_INTERVAL_SECONDS,
     MODALITY_REST_PULL,
     RestPullTickEvent,
     SubscribeInput,
     SubscriptionHandle,
-    _MIN_POLLING_INTERVAL_SECONDS,
     register_subscribe_adapter,
 )
 
@@ -46,7 +46,7 @@ logger = logging.getLogger(__name__)
 _DEFAULT_POLLING_INTERVAL_SECONDS: float = 30.0
 
 # Mock payload simulating a data.go.kr REST response for public notices
-_MOCK_PAYLOAD = {
+_MOCK_PAYLOAD: dict[str, object] = {
     "response": {
         "header": {
             "resultCode": "00",
@@ -71,7 +71,7 @@ _MOCK_PAYLOAD = {
 }
 
 
-def _make_response_hash(payload: dict) -> str:
+def _make_response_hash(payload: dict[str, object]) -> str:
     """SHA-256 of the JSON-serialized response payload."""
     raw = json.dumps(payload, sort_keys=True, ensure_ascii=False).encode("utf-8")
     return hashlib.sha256(raw).hexdigest()
@@ -89,26 +89,28 @@ async def _rest_pull_tick_generator(
     - tick_delay_seconds (float): Delay between ticks (default = clamped interval).
     """
     params = inp.params
-    raw_interval = float(params.get("polling_interval_seconds", _DEFAULT_POLLING_INTERVAL_SECONDS))
+    raw_interval = float(
+        params.get("polling_interval_seconds", _DEFAULT_POLLING_INTERVAL_SECONDS)  # type: ignore[arg-type]
+    )
     # Harness enforces minimum interval (FR-REST-pull, research §4)
     polling_interval = max(raw_interval, _MIN_POLLING_INTERVAL_SECONDS)
 
-    tick_count = int(params.get("tick_count", 1))
+    tick_count = int(params.get("tick_count", 1))  # type: ignore[call-overload]
     # For test convenience, allow override of actual sleep time
-    tick_delay = float(params.get("tick_delay_seconds", polling_interval))
+    tick_delay = float(params.get("tick_delay_seconds", polling_interval))  # type: ignore[arg-type]
     # But still enforce minimum in production path
     tick_delay = max(tick_delay, _MIN_POLLING_INTERVAL_SECONDS)
 
     emitted = 0
     while emitted < tick_count:
         # Check lifetime before emitting
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         if now.timestamp() > handle.closes_at.timestamp():
             break
 
         payload = dict(_MOCK_PAYLOAD)  # shallow copy for determinism
         response_hash = _make_response_hash(payload)
-        tick_at = datetime.now(timezone.utc)
+        tick_at = datetime.now(UTC)
 
         event = RestPullTickEvent(
             tool_id=inp.tool_id,
@@ -126,6 +128,7 @@ async def _rest_pull_tick_generator(
 @dataclass
 class _MockRestPullTickTool:
     """Lightweight tool descriptor for the REST-pull tick mock adapter."""
+
     tool_id: str = "mock_rest_pull_tick_v1"
     modality: str = MODALITY_REST_PULL
     polling_interval_seconds: float = _DEFAULT_POLLING_INTERVAL_SECONDS

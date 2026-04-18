@@ -21,16 +21,13 @@ from __future__ import annotations
 
 import asyncio
 import uuid
-from datetime import datetime, timedelta, timezone
 
 import pytest
 
 from kosmos.primitives._errors import SubscriptionBackpressureDrop
 from kosmos.primitives.subscribe import (
-    CbsBroadcastEvent,
-    SubscribeInput,
-    SubscriptionHandle,
     _QUEUE_MAXSIZE,
+    SubscribeInput,
     subscribe,
 )
 from kosmos.tools.mock.cbs.disaster_feed import (
@@ -65,9 +62,7 @@ class TestSubscribeBackpressure:
                 drop_counter[0] += 1
 
         # With 100 events and maxsize=64, exactly 36 should be dropped
-        assert drop_counter[0] == 36, (
-            f"Expected 36 drops (100 - 64), got {drop_counter[0]}"
-        )
+        assert drop_counter[0] == 36, f"Expected 36 drops (100 - 64), got {drop_counter[0]}"
         assert queue.qsize() == 64
 
         # Verify that SubscriptionBackpressureDrop can be constructed correctly
@@ -77,7 +72,7 @@ class TestSubscribeBackpressure:
             message=f"subscribe: {drop_counter[0]} event(s) dropped due to back-pressure.",
         )
         assert drop.events_dropped == 36
-        assert drop.reason == "subscription_backpressure_drop"
+        assert drop.kind == "subscription_backpressure_drop"
 
     async def test_backpressure_drop_model_shape(self):
         """SubscriptionBackpressureDrop must have correct fields (data-model.md §7)."""
@@ -86,7 +81,7 @@ class TestSubscribeBackpressure:
             events_dropped=10,
             message="10 events dropped due to queue overflow.",
         )
-        assert drop.reason == "subscription_backpressure_drop"
+        assert drop.kind == "subscription_backpressure_drop"
         assert drop.subscription_id == "sub-test-001"
         assert drop.events_dropped == 10
         assert len(drop.message) > 0
@@ -94,6 +89,7 @@ class TestSubscribeBackpressure:
     async def test_backpressure_drop_rejects_zero_events_dropped(self):
         """events_dropped must be >= 1 (contract: ge=1)."""
         from pydantic import ValidationError
+
         with pytest.raises(ValidationError):
             SubscriptionBackpressureDrop(
                 subscription_id="sub-test-001",

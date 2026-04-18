@@ -54,4 +54,6 @@ from kosmos.tools.mock import (  # noqa: F401, E402
 # tool via register_subscribe_adapter().
 from kosmos.tools.mock.cbs.disaster_feed import MOCK_CBS_DISASTER_TOOL  # noqa: F401, E402
 from kosmos.tools.mock.data_go_kr.rest_pull_tick import MOCK_REST_PULL_TICK_TOOL  # noqa: F401, E402
-from kosmos.tools.mock.data_go_kr.rss_notices import MOCK_RSS_PUBLIC_NOTICES_TOOL  # noqa: F401, E402
+from kosmos.tools.mock.data_go_kr.rss_notices import (
+    MOCK_RSS_PUBLIC_NOTICES_TOOL,  # noqa: F401, E402
+)

@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import asyncio
 import importlib
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 from opentelemetry.sdk.trace import TracerProvider
@@ -32,26 +32,29 @@ submit_mod = importlib.import_module("kosmos.primitives.submit")
 subscribe_mod = importlib.import_module("kosmos.primitives.subscribe")
 verify_mod = importlib.import_module("kosmos.primitives.verify")
 
-from kosmos.primitives.submit import (
+from kosmos.primitives.submit import (  # noqa: E402
     SubmitOutput,
     SubmitStatus,
     register_submit_adapter,
     submit,
 )
-from kosmos.primitives.subscribe import (
+from kosmos.primitives.subscribe import (  # noqa: E402
     MODALITY_REST_PULL,
     RestPullTickEvent,
     SubscribeInput,
     register_subscribe_adapter,
     subscribe,
 )
-from kosmos.primitives.verify import (
+from kosmos.primitives.verify import (  # noqa: E402
     GanpyeonInjeungContext,
     register_verify_adapter,
     verify,
 )
-from kosmos.tools.registry import AdapterPrimitive, AdapterRegistration, AdapterSourceMode
-
+from kosmos.tools.registry import (  # noqa: E402
+    AdapterPrimitive,
+    AdapterRegistration,
+    AdapterSourceMode,
+)
 
 _SPAN_NAME = "gen_ai.tool_loop.iteration"
 
@@ -153,7 +156,7 @@ async def test_verify_emits_gen_ai_tool_loop_iteration_span(
         return GanpyeonInjeungContext(
             family="ganpyeon_injeung",
             provider="kakao",
-            verified_at=datetime.now(timezone.utc),
+            verified_at=datetime.now(UTC),
             published_tier="ganpyeon_injeung_kakao_aal2",
             nist_aal_hint="AAL2",
         )
@@ -192,7 +195,7 @@ async def test_subscribe_emits_gen_ai_tool_loop_iteration_span(
     async def _adapter(inp: SubscribeInput, _handle):
         yield RestPullTickEvent(
             tool_id=inp.tool_id,
-            tick_at=datetime.now(timezone.utc),
+            tick_at=datetime.now(UTC),
             response_hash="0" * 64,
             payload={"ok": True},
         )

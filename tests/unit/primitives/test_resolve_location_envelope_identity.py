@@ -23,6 +23,10 @@ from pathlib import Path
 import pytest
 from pydantic import TypeAdapter
 
+# ---------------------------------------------------------------------------
+# Import both paths and assert identity
+# ---------------------------------------------------------------------------
+import kosmos.primitives as _primitives_module
 from kosmos.tools.models import (
     AddressResult,
     AdmCodeResult,
@@ -32,23 +36,12 @@ from kosmos.tools.models import (
     ResolveError,
     ResolveLocationInput,
 )
-
-# ---------------------------------------------------------------------------
-# Import both paths and assert identity
-# ---------------------------------------------------------------------------
-
-import kosmos.primitives as _primitives_module
 from kosmos.tools.resolve_location import resolve_location as _canonical_rl
 
 _primitives_rl = _primitives_module.resolve_location
 
 # Path to Spec 022 JSON Schema contracts (relative to project root).
-_CONTRACTS_DIR = (
-    Path(__file__).resolve().parents[3]
-    / "specs"
-    / "022-mvp-main-tool"
-    / "contracts"
-)
+_CONTRACTS_DIR = Path(__file__).resolve().parents[3] / "specs" / "022-mvp-main-tool" / "contracts"
 _INPUT_SCHEMA_PATH = _CONTRACTS_DIR / "resolve_location.input.schema.json"
 _OUTPUT_SCHEMA_PATH = _CONTRACTS_DIR / "resolve_location.output.schema.json"
 
@@ -88,9 +81,7 @@ def test_primitives_resolve_location_preserves_signature() -> None:
     canonical_sig = inspect.signature(_canonical_rl)
     primitives_sig = inspect.signature(_primitives_rl)
     assert canonical_sig == primitives_sig, (
-        f"Signature mismatch.\n"
-        f"  canonical : {canonical_sig}\n"
-        f"  primitives: {primitives_sig}"
+        f"Signature mismatch.\n  canonical : {canonical_sig}\n  primitives: {primitives_sig}"
     )
 
 
@@ -101,16 +92,12 @@ def test_primitives_resolve_location_preserves_signature() -> None:
 
 def test_spec022_input_schema_file_exists() -> None:
     """Spec 022 resolve_location.input.schema.json must be present."""
-    assert _INPUT_SCHEMA_PATH.is_file(), (
-        f"Spec 022 contract file missing: {_INPUT_SCHEMA_PATH}"
-    )
+    assert _INPUT_SCHEMA_PATH.is_file(), f"Spec 022 contract file missing: {_INPUT_SCHEMA_PATH}"
 
 
 def test_spec022_output_schema_file_exists() -> None:
     """Spec 022 resolve_location.output.schema.json must be present."""
-    assert _OUTPUT_SCHEMA_PATH.is_file(), (
-        f"Spec 022 contract file missing: {_OUTPUT_SCHEMA_PATH}"
-    )
+    assert _OUTPUT_SCHEMA_PATH.is_file(), f"Spec 022 contract file missing: {_OUTPUT_SCHEMA_PATH}"
 
 
 # ---------------------------------------------------------------------------

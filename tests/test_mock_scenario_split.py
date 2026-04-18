@@ -10,6 +10,7 @@ Asserts:
   (d) each of the 3 scenario files contains the heading
       "## KOSMOS ↔ real system handoff point"
 """
+
 from __future__ import annotations
 
 import pathlib
@@ -61,11 +62,7 @@ def test_mock_subdirectory_exact_names() -> None:
 
 def _scenario_files() -> list[pathlib.Path]:
     """Return all .md files in docs/scenarios/ except README.md."""
-    return [
-        p
-        for p in SCENARIOS_DIR.glob("*.md")
-        if p.name.lower() != "readme.md"
-    ]
+    return [p for p in SCENARIOS_DIR.glob("*.md") if p.name.lower() != "readme.md"]
 
 
 def test_scenario_file_count() -> None:
@@ -87,6 +84,5 @@ def test_scenario_has_handoff_heading(scenario_file: pathlib.Path) -> None:
     """Each scenario file must contain '## KOSMOS ↔ real system handoff point'."""
     content = scenario_file.read_text(encoding="utf-8")
     assert HANDOFF_HEADING in content, (
-        f"{scenario_file.name} is missing the required heading: "
-        f"'{HANDOFF_HEADING}'"
+        f"{scenario_file.name} is missing the required heading: '{HANDOFF_HEADING}'"
     )

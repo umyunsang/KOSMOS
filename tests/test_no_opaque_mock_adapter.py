@@ -12,6 +12,7 @@ OPAQUE systems (must stay in docs/scenarios/, never in src/kosmos/tools/mock/):
 The check scans all .py files under src/kosmos/tools/mock/ for any of these
 strings as identifiers, import targets, or string literals.
 """
+
 from __future__ import annotations
 
 import pathlib
@@ -73,6 +74,5 @@ def test_no_opaque_identifier_in_mock_adapter(mock_file: pathlib.Path) -> None:
             )
     assert not violations, (
         f"{mock_file.name} contains references to OPAQUE systems that must "
-        f"only appear in docs/scenarios/, not in mock adapters:\n"
-        + "\n".join(violations)
+        f"only appear in docs/scenarios/, not in mock adapters:\n" + "\n".join(violations)
     )

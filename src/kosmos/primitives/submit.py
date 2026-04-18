@@ -239,6 +239,25 @@ _TIER_ORDER: list[str] = [
 ]
 
 
+# AAL-band rank (higher = stronger assurance). Used for cross-band comparison
+# in check_tier_gate. Within the same band, we fall back to exact tier-id
+# equality rather than ordinal position, because peer AAL2/AAL3 tiers from
+# unrelated identity families have no intrinsic ordering (see code review on
+# PR #1149).
+_AAL_RANK: dict[str, int] = {"AAL1": 1, "AAL2": 2, "AAL3": 3}
+
+
+def _aal_band_of(tier: str) -> str | None:
+    """Extract the NIST AAL band ('AAL1'/'AAL2'/'AAL3') from a published tier id.
+
+    Every entry in ``_TIER_ORDER`` terminates with ``_aal1``/``_aal2``/``_aal3``
+    per the Spec 031 § 6 naming convention. Returns ``None`` when the suffix is
+    not one of the three recognised bands (fail-closed signal).
+    """
+    suffix = tier.rsplit("_", 1)[-1].upper()
+    return suffix if suffix in _AAL_RANK else None
+
+
 def check_tier_gate(
     *,
     registration: AdapterRegistration,
@@ -258,8 +277,13 @@ def check_tier_gate(
     SC-005 semantics:
         - ``published_tier_minimum=None`` → gate always passes (pre-v1.2 window).
         - ``auth_context=None`` AND ``published_tier_minimum`` is set → rejected.
-        - ``auth_context.published_tier`` index < ``published_tier_minimum`` index → rejected.
-        - Otherwise → passes.
+        - Caller's AAL band < required AAL band → rejected.
+        - Caller's AAL band > required AAL band → accepted.
+        - Caller's AAL band == required AAL band but tier ids differ → rejected
+          (peer AAL tiers from unrelated identity families are NOT auto-accepted;
+          cross-family acceptance requires an explicit accept-set mechanism that
+          this spec deliberately leaves out of scope).
+        - Caller tier id == required tier id → accepted.
     """
     required_tier = registration.published_tier_minimum
     if required_tier is None:
@@ -284,10 +308,8 @@ def check_tier_gate(
             ),
         }
 
-    # Compare by ordinal position in _TIER_ORDER.
-    try:
-        caller_idx = _TIER_ORDER.index(caller_tier)
-    except ValueError:
+    # Step 1: caller + required tier ids must both be recognised published tiers.
+    if caller_tier not in _TIER_ORDER:
         return {
             "rejected": True,
             "reason": (
@@ -295,10 +317,7 @@ def check_tier_gate(
                 f"{caller_tier!r} is not a recognised published tier (SC-005)"
             ),
         }
-
-    try:
-        required_idx = _TIER_ORDER.index(required_tier)
-    except ValueError:
+    if required_tier not in _TIER_ORDER:
         logger.error(
             "check_tier_gate: required tier %r not in _TIER_ORDER — failing closed",
             required_tier,
@@ -311,12 +330,52 @@ def check_tier_gate(
             ),
         }
 
-    if caller_idx < required_idx:
+    # Step 2: compare AAL strength first. Higher AAL caller always satisfies a
+    # lower-AAL requirement; lower AAL caller never satisfies a higher-AAL
+    # requirement. This matches the NIST SP 800-63B advisory hint rather than
+    # relying on arbitrary ordinal position within the tier list.
+    caller_band = _aal_band_of(caller_tier)
+    required_band = _aal_band_of(required_tier)
+    if caller_band is None or required_band is None:
+        logger.error(
+            "check_tier_gate: unrecognised AAL suffix (caller=%r required=%r)",
+            caller_tier,
+            required_tier,
+        )
         return {
             "rejected": True,
             "reason": (
-                f"published_tier_minimum={required_tier!r} not met: caller has "
-                f"{caller_tier!r} (index {caller_idx}) < required (index {required_idx}) (SC-005)"
+                f"published_tier_minimum={required_tier!r}: unable to extract "
+                f"NIST AAL band from caller_tier={caller_tier!r} — failing closed (SC-005)"
+            ),
+        }
+
+    caller_rank = _AAL_RANK[caller_band]
+    required_rank = _AAL_RANK[required_band]
+
+    if caller_rank > required_rank:
+        return None  # stronger AAL always accepted
+    if caller_rank < required_rank:
+        return {
+            "rejected": True,
+            "reason": (
+                f"published_tier_minimum={required_tier!r} ({required_band}) not met: "
+                f"caller has {caller_tier!r} ({caller_band}) (SC-005)"
+            ),
+        }
+
+    # Step 3: same AAL band — require exact tier-id match. Peer AAL tiers from
+    # unrelated identity families (e.g., ganpyeon_injeung_kakao_aal2 vs
+    # mydata_individual_aal2) are NOT auto-accepted. A future spec can add an
+    # explicit accept-set on AdapterRegistration for cross-family acceptance.
+    if caller_tier != required_tier:
+        return {
+            "rejected": True,
+            "reason": (
+                f"published_tier_minimum={required_tier!r} ({required_band}) not met: "
+                f"caller has {caller_tier!r} which is a peer {caller_band} tier from a "
+                "different identity family; cross-family acceptance is not permitted "
+                "without an explicit accept-set (SC-005)"
             ),
         }
 

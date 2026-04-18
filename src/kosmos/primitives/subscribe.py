@@ -16,16 +16,17 @@ Reference: specs/031-five-primitive-harness/research.md § 4.
 from __future__ import annotations
 
 import asyncio
-import hashlib
+import contextlib
 import logging
 import uuid
-from datetime import datetime, timedelta, timezone
-from typing import Annotated, AsyncIterator, Literal
+from collections.abc import AsyncIterator, Callable
+from datetime import UTC, datetime, timedelta
+from typing import Annotated, Any, Literal
 
 from opentelemetry import trace
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field
 
-from kosmos.primitives._errors import SubscriptionBackpressureDrop
+from kosmos.primitives._errors import AdapterNotFoundError, SubscriptionBackpressureDrop
 
 logger = logging.getLogger(__name__)
 
@@ -94,8 +95,22 @@ class CbsBroadcastEvent(BaseModel):
 
     kind: Literal["cbs_broadcast"] = "cbs_broadcast"
     cbs_message_id: Literal[
-        4370, 4371, 4372, 4373, 4374, 4375, 4376, 4377,
-        4378, 4379, 4380, 4381, 4382, 4383, 4384, 4385,
+        4370,
+        4371,
+        4372,
+        4373,
+        4374,
+        4375,
+        4376,
+        4377,
+        4378,
+        4379,
+        4380,
+        4381,
+        4382,
+        4383,
+        4384,
+        4385,
     ]
     received_at: datetime
     payload_hash: str = Field(pattern=r"^[0-9a-f]{64}$")
@@ -191,13 +206,14 @@ class RssGuidTracker:
 
 # Maps tool_id → (modality, adapter_fn)
 # Modality is one of MODALITY_CBS / MODALITY_REST_PULL / MODALITY_RSS.
-_SUBSCRIBE_ADAPTERS: dict[str, tuple[str, object]] = {}
+SubscribeAdapterFn = Callable[[SubscribeInput, "SubscriptionHandle"], AsyncIterator[Any]]
+_SUBSCRIBE_ADAPTERS: dict[str, tuple[str, SubscribeAdapterFn]] = {}
 
 
 def register_subscribe_adapter(
     tool_id: str,
     modality: str,
-    adapter_fn,  # async generator (inp, queue, handle) -> None
+    adapter_fn: SubscribeAdapterFn,  # async generator (inp, handle) -> AsyncIterator
 ) -> None:
     """Register a subscribe-primitive adapter.
 
@@ -218,10 +234,10 @@ def register_subscribe_adapter(
 async def _run_driver(
     tool_id: str,
     modality: str,
-    adapter_fn,
+    adapter_fn: SubscribeAdapterFn,
     inp: SubscribeInput,
     handle: SubscriptionHandle,
-    queue: asyncio.Queue,
+    queue: asyncio.Queue[Any],
     drop_counter: list[int],
 ) -> None:
     """Run the adapter driver and funnel events into the shared queue.
@@ -254,7 +270,7 @@ async def _run_driver(
 async def _cbs_driver(
     inp: SubscribeInput,
     handle: SubscriptionHandle,
-    queue: asyncio.Queue,
+    queue: asyncio.Queue[Any],
     drop_counter: list[int],
 ) -> None:
     """CBS adapter driver — delegates to the registered CBS adapter."""
@@ -271,7 +287,7 @@ async def _cbs_driver(
 async def _rest_pull_driver(
     inp: SubscribeInput,
     handle: SubscriptionHandle,
-    queue: asyncio.Queue,
+    queue: asyncio.Queue[Any],
     drop_counter: list[int],
 ) -> None:
     """REST-pull driver — enforces minimum 10s polling interval (research §4)."""
@@ -288,7 +304,7 @@ async def _rest_pull_driver(
 async def _rss_driver(
     inp: SubscribeInput,
     handle: SubscriptionHandle,
-    queue: asyncio.Queue,
+    queue: asyncio.Queue[Any],
     drop_counter: list[int],
 ) -> None:
     """RSS 2.0 driver with per-handle guid de-duplication."""
@@ -302,18 +318,35 @@ async def _rss_driver(
 # ---------------------------------------------------------------------------
 
 
-def subscribe(inp: SubscribeInput) -> AsyncIterator[SubscriptionEvent]:
-    """Return an ``AsyncIterator[SubscriptionEvent]`` for the given subscription input.
+def subscribe(
+    inp: SubscribeInput,
+) -> AsyncIterator[SubscriptionEvent] | AdapterNotFoundError:
+    """Open a subscription and return an ``AsyncIterator[SubscriptionEvent]``.
 
     The iterator is bounded by ``inp.lifetime_seconds`` (FR-011, FR-014).
     Back-pressure is handled by a 64-event queue (FR-015).
     No webhook field anywhere (FR-013).
+
+    Registry miss surfaces synchronously as an :class:`AdapterNotFoundError`
+    sibling return, matching :func:`kosmos.primitives.submit.submit` and
+    :func:`kosmos.primitives.verify.verify` rather than leaking the error into
+    the event stream (where it would violate the :data:`SubscriptionEvent`
+    discriminated-union contract).
 
     Modality dispatch (T052):
     - ``MODALITY_CBS`` → CBS broadcast driver (T053)
     - ``MODALITY_REST_PULL`` → REST-pull driver with 10s minimum interval (T054)
     - ``MODALITY_RSS`` → RSS 2.0 driver with guid de-dup (T055)
     """
+    if inp.tool_id not in _SUBSCRIBE_ADAPTERS:
+        logger.warning("subscribe: adapter not found: %s", inp.tool_id)
+        return AdapterNotFoundError(
+            tool_id=inp.tool_id,
+            message=(
+                f"No subscribe adapter registered for tool_id={inp.tool_id!r}. "
+                "Check that the adapter module is imported before calling subscribe()."
+            ),
+        )
     return _SubscribeIterator(inp)
 
 
@@ -322,17 +355,17 @@ class _SubscribeIterator:
 
     def __init__(self, inp: SubscribeInput) -> None:
         self._inp = inp
-        self._queue: asyncio.Queue = asyncio.Queue(maxsize=_QUEUE_MAXSIZE)
+        self._queue: asyncio.Queue[Any] = asyncio.Queue(maxsize=_QUEUE_MAXSIZE)
         self._drop_counter: list[int] = [0]
         self._handle: SubscriptionHandle | None = None
-        self._driver_task: asyncio.Task | None = None
+        self._driver_task: asyncio.Task[None] | None = None
         self._started = False
         self._done = False
 
-    def __aiter__(self):
+    def __aiter__(self) -> _SubscribeIterator:
         return self
 
-    async def __anext__(self):
+    async def __anext__(self) -> Any:
         if not self._started:
             await self._start()
 
@@ -340,9 +373,9 @@ class _SubscribeIterator:
             raise StopAsyncIteration
 
         inp = self._inp
-        lifetime = inp.lifetime_seconds
+        assert self._handle is not None  # set by _start() before any __anext__
         deadline = self._handle.closes_at.timestamp()
-        now = datetime.now(timezone.utc).timestamp()
+        now = datetime.now(UTC).timestamp()
         remaining = max(0.0, deadline - now)
 
         if remaining <= 0:
@@ -353,15 +386,15 @@ class _SubscribeIterator:
             item = await asyncio.wait_for(self._queue.get(), timeout=remaining + 0.1)
         except TimeoutError:
             await self._finalize()
-            raise StopAsyncIteration
+            raise StopAsyncIteration from None
 
         if item is _DRIVER_DONE:
             self._done = True
             # Emit drop event if there were unflushed drops (FR-014)
             if self._drop_counter[0] > 0:
-                handle = self._handle
+                assert self._handle is not None
                 drop = SubscriptionBackpressureDrop(
-                    subscription_id=handle.subscription_id,
+                    subscription_id=self._handle.subscription_id,
                     events_dropped=self._drop_counter[0],
                     message=(
                         f"subscribe({inp.tool_id}): {self._drop_counter[0]} event(s) "
@@ -373,7 +406,7 @@ class _SubscribeIterator:
             raise StopAsyncIteration
 
         # Check lifetime hasn't expired mid-iteration
-        now_after = datetime.now(timezone.utc).timestamp()
+        now_after = datetime.now(UTC).timestamp()
         if now_after > deadline:
             await self._finalize()
             raise StopAsyncIteration
@@ -384,7 +417,7 @@ class _SubscribeIterator:
         """Create the handle and start the driver task."""
         self._started = True
         inp = self._inp
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         self._handle = SubscriptionHandle(
             subscription_id=str(uuid.uuid4()),
             tool_id=inp.tool_id,
@@ -400,27 +433,17 @@ class _SubscribeIterator:
             span.set_attribute("kosmos.subscribe.subscription_id", self._handle.subscription_id)
             span.set_attribute("kosmos.subscribe.lifetime_seconds", float(inp.lifetime_seconds))
 
-            if inp.tool_id not in _SUBSCRIBE_ADAPTERS:
-                from kosmos.primitives._errors import AdapterNotFoundError
-                span.set_attribute("error.type", "adapter_not_found")
-                err = AdapterNotFoundError(
-                    tool_id=inp.tool_id,
-                    message=f"No subscribe adapter registered for tool_id={inp.tool_id!r}",
-                )
-                # Surface as error event then terminate
-                await self._queue.put(err)
-                await self._queue.put(_DRIVER_DONE)
-                return
-
+        # subscribe() already guards against registry misses before the iterator
+        # is constructed, so _SUBSCRIBE_ADAPTERS[inp.tool_id] is guaranteed here.
         modality, adapter_fn = _SUBSCRIBE_ADAPTERS[inp.tool_id]
         drop_counter = self._drop_counter
         handle = self._handle
         queue = self._queue
 
-        async def _driver_body():
+        async def _driver_body() -> None:
             try:
                 async for event in adapter_fn(inp, handle):
-                    now_check = datetime.now(timezone.utc).timestamp()
+                    now_check = datetime.now(UTC).timestamp()
                     if now_check > handle.closes_at.timestamp():
                         break
                     try:
@@ -439,10 +462,8 @@ class _SubscribeIterator:
         self._done = True
         if self._driver_task and not self._driver_task.done():
             self._driver_task.cancel()
-            try:
+            with contextlib.suppress(asyncio.CancelledError, Exception):
                 await self._driver_task
-            except (asyncio.CancelledError, Exception):
-                pass
 
 
 # ---------------------------------------------------------------------------
@@ -455,7 +476,7 @@ async def _get_handle_for_testing(inp: SubscribeInput) -> SubscriptionHandle:
 
     For use only in integration tests (T048). Not part of the public API.
     """
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     return SubscriptionHandle(
         subscription_id=str(uuid.uuid4()),
         tool_id=inp.tool_id,
