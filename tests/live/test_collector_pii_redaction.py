@@ -197,9 +197,10 @@ def test_patient_name_deleted_by_collector(_require_live_stack: None) -> None:
     for observation in trace.get("observations", []):
         attrs = observation.get("attributes", {}) or {}
         all_attribute_keys.update(attrs.keys())
-    # Also check top-level input/output/metadata
-    if trace.get("input"):
-        all_attribute_keys.update({"input"})
+    # Also track top-level input/output/metadata presence as sentinels
+    for top_level_field in ("input", "output", "metadata"):
+        if trace.get(top_level_field):
+            all_attribute_keys.add(top_level_field)
 
     assert "patient.name" not in all_attribute_keys, (
         f"patient.name MUST NOT appear in Langfuse trace (PIPA §26 redaction). "

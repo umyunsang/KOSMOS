@@ -1,9 +1,8 @@
 # SPDX-License-Identifier: Apache-2.0
 """T006 — Compose service field assertions (CI-safe, no Docker required).
 
-Parses ``docker-compose.dev.yml`` as YAML using the stdlib ``tomllib``
--style minimal fallback or ``yaml`` (via PyYAML, already a transitive dev
-dep through ``langfuse``/opentelemetry extras) and asserts:
+Parses ``docker-compose.dev.yml`` as YAML using PyYAML (``pyyaml`` is a
+direct dev dependency listed in ``pyproject.toml``) and asserts:
 
   (a) service ``otelcol`` exists
   (b) its ``image`` field is the manifest-list digest pin
@@ -13,9 +12,9 @@ dep through ``langfuse``/opentelemetry extras) and asserts:
   (f) ``langfuse/langfuse`` image tag is pinned to ``3.35.0``
   (g) ``langfuse/langfuse-worker`` tag is pinned to ``3.35.0``
 
-No Docker binary is required.  Requires PyYAML (a transitive dev dep) via
-``pytest.importorskip`` — the entire module is skipped when PyYAML is absent,
-ensuring the test never silently passes on a broken YAML parse.
+No Docker binary is required.  The module is skipped via
+``pytest.importorskip`` when PyYAML is absent, ensuring the test never
+silently passes on a broken YAML parse.
 """
 
 from __future__ import annotations
@@ -95,19 +94,35 @@ def test_otelcol_config_volume_is_readonly(compose_data: dict) -> None:
     )
 
 
+def _container_port(mapping: str) -> str:
+    """Extract the container port from a host:container mapping string.
+
+    Handles:
+      - "4318:4318"          -> "4318"
+      - "4318"               -> "4318"
+      - "0.0.0.0:4318:4318" -> "4318"
+      - "${VAR:-4318}:4318"  -> "4318"
+
+    Returns the last colon-separated segment so that a host port that
+    happens to contain the digits "4317" (e.g. "14317:4318") does not
+    produce a false-positive match.
+    """
+    return str(mapping).rsplit(":", 1)[-1]
+
+
 def test_otelcol_only_exposes_otlp_http_port(compose_data: dict) -> None:
     """(e) Only port 4318 is exposed; gRPC port 4317 must NOT be present."""
-    ports: list[str] = compose_data["services"]["otelcol"].get("ports", [])
-    ports_str = [str(p) for p in ports]
+    ports: list = compose_data["services"]["otelcol"].get("ports", [])
+    container_ports = [_container_port(str(p)) for p in ports]
 
-    # At least one port maps to container 4318
-    assert any("4318" in p for p in ports_str), (
-        f"otelcol must expose port 4318; ports found: {ports_str}"
+    # At least one entry exposes container port 4318
+    assert any(cp == "4318" for cp in container_ports), (
+        f"otelcol must expose container port 4318; ports found: {ports}"
     )
 
-    # gRPC port 4317 must not appear
-    assert not any("4317" in p for p in ports_str), (
-        f"otelcol must NOT expose gRPC port 4317 (FR-003); ports found: {ports_str}"
+    # gRPC container port 4317 must not appear
+    assert not any(cp == "4317" for cp in container_ports), (
+        f"otelcol must NOT expose gRPC container port 4317 (FR-003); ports found: {ports}"
     )
 
 
