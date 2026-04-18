@@ -167,9 +167,7 @@ class ObservabilitySnapshot(BaseModel):
     @model_validator(mode="after")
     def _check_sdk_disabled(self) -> ObservabilitySnapshot:
         if self.sdk_disabled and self.spans:
-            raise ValueError(
-                "ObservabilitySnapshot: spans must be empty when sdk_disabled=True"
-            )
+            raise ValueError("ObservabilitySnapshot: spans must be empty when sdk_disabled=True")
         return self
 
 
@@ -206,9 +204,7 @@ class RunReport(BaseModel):
     @model_validator(mode="after")
     def _check_invariants(self) -> RunReport:
         # I7: fetched_adapter_ids count matches spans with adapter_id
-        span_adapter_count = sum(
-            1 for s in self.observability.spans if s.adapter_id is not None
-        )
+        span_adapter_count = sum(1 for s in self.observability.spans if s.adapter_id is not None)
         # Only enforce I7 when OTel SDK is enabled
         if not self.observability.sdk_disabled and span_adapter_count != len(
             self.fetched_adapter_ids

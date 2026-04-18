@@ -105,12 +105,10 @@ async def test_t011b_happy_path_token_accounting() -> None:
     report = await run_scenario("happy")
 
     assert report.usage_totals.input_tokens == 2000, (
-        f"Expected total input_tokens=2000 (6×200 + 800), "
-        f"got {report.usage_totals.input_tokens}"
+        f"Expected total input_tokens=2000 (6×200 + 800), got {report.usage_totals.input_tokens}"
     )
     assert report.usage_totals.output_tokens == 450, (
-        f"Expected total output_tokens=450 (6×50 + 150), "
-        f"got {report.usage_totals.output_tokens}"
+        f"Expected total output_tokens=450 (6×50 + 150), got {report.usage_totals.output_tokens}"
     )
 
 

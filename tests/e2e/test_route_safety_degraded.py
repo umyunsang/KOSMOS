@@ -100,8 +100,7 @@ async def test_degraded_scenarios_parametrized(
 
     response_text = report.final_response
     assert any(kw in response_text for kw in degraded_kw), (
-        f"[{scenario_id}] Expected one of {degraded_kw} in response: "
-        f"{response_text[:300]!r}"
+        f"[{scenario_id}] Expected one of {degraded_kw} in response: {response_text[:300]!r}"
     )
 
 

@@ -455,20 +455,51 @@ def build_happy_script() -> tuple[list[list[StreamEvent]], ScenarioScript]:
     ]
 
     scenario_turns = (
-        ScenarioTurn(index=0, kind="tool_call", tool_name="resolve_location",
-                     tool_arguments=_RESOLVE_GANGNAM_ARGS, token_usage=_USAGE_TOOL_CALL),
-        ScenarioTurn(index=1, kind="tool_call", tool_name="resolve_location",
-                     tool_arguments=_RESOLVE_SEOUL_STATION_ARGS, token_usage=_USAGE_TOOL_CALL),
-        ScenarioTurn(index=2, kind="tool_call", tool_name="lookup",
-                     tool_arguments=_SEARCH_KOROAD_ARGS, token_usage=_USAGE_TOOL_CALL),
-        ScenarioTurn(index=3, kind="tool_call", tool_name="lookup",
-                     tool_arguments=_FETCH_KOROAD_ARGS, token_usage=_USAGE_TOOL_CALL),
-        ScenarioTurn(index=4, kind="tool_call", tool_name="lookup",
-                     tool_arguments=_SEARCH_KMA_ARGS, token_usage=_USAGE_TOOL_CALL),
-        ScenarioTurn(index=5, kind="tool_call", tool_name="lookup",
-                     tool_arguments=_FETCH_KMA_ARGS, token_usage=_USAGE_TOOL_CALL),
-        ScenarioTurn(index=6, kind="text_delta", text_content=_KOREAN_SYNTHESIS,
-                     token_usage=_USAGE_SYNTHESIS),
+        ScenarioTurn(
+            index=0,
+            kind="tool_call",
+            tool_name="resolve_location",
+            tool_arguments=_RESOLVE_GANGNAM_ARGS,
+            token_usage=_USAGE_TOOL_CALL,
+        ),
+        ScenarioTurn(
+            index=1,
+            kind="tool_call",
+            tool_name="resolve_location",
+            tool_arguments=_RESOLVE_SEOUL_STATION_ARGS,
+            token_usage=_USAGE_TOOL_CALL,
+        ),
+        ScenarioTurn(
+            index=2,
+            kind="tool_call",
+            tool_name="lookup",
+            tool_arguments=_SEARCH_KOROAD_ARGS,
+            token_usage=_USAGE_TOOL_CALL,
+        ),
+        ScenarioTurn(
+            index=3,
+            kind="tool_call",
+            tool_name="lookup",
+            tool_arguments=_FETCH_KOROAD_ARGS,
+            token_usage=_USAGE_TOOL_CALL,
+        ),
+        ScenarioTurn(
+            index=4,
+            kind="tool_call",
+            tool_name="lookup",
+            tool_arguments=_SEARCH_KMA_ARGS,
+            token_usage=_USAGE_TOOL_CALL,
+        ),
+        ScenarioTurn(
+            index=5,
+            kind="tool_call",
+            tool_name="lookup",
+            tool_arguments=_FETCH_KMA_ARGS,
+            token_usage=_USAGE_TOOL_CALL,
+        ),
+        ScenarioTurn(
+            index=6, kind="text_delta", text_content=_KOREAN_SYNTHESIS, token_usage=_USAGE_SYNTHESIS
+        ),
     )
     script = ScenarioScript(
         scenario_id="happy",
@@ -493,22 +524,58 @@ def build_degraded_kma_retry_script() -> tuple[list[list[StreamEvent]], Scenario
         _make_text_events(_KOREAN_SYNTHESIS, _USAGE_SYNTHESIS),
     ]
     scenario_turns = (
-        ScenarioTurn(index=0, kind="tool_call", tool_name="resolve_location",
-                     tool_arguments=_RESOLVE_GANGNAM_ARGS, token_usage=_USAGE_TOOL_CALL),
-        ScenarioTurn(index=1, kind="tool_call", tool_name="resolve_location",
-                     tool_arguments=_RESOLVE_SEOUL_STATION_ARGS, token_usage=_USAGE_TOOL_CALL),
-        ScenarioTurn(index=2, kind="tool_call", tool_name="lookup",
-                     tool_arguments=_SEARCH_KOROAD_ARGS, token_usage=_USAGE_TOOL_CALL),
-        ScenarioTurn(index=3, kind="tool_call", tool_name="lookup",
-                     tool_arguments=_FETCH_KOROAD_ARGS, token_usage=_USAGE_TOOL_CALL),
-        ScenarioTurn(index=4, kind="tool_call", tool_name="lookup",
-                     tool_arguments=_SEARCH_KMA_ARGS, token_usage=_USAGE_TOOL_CALL),
-        ScenarioTurn(index=5, kind="tool_call", tool_name="lookup",
-                     tool_arguments=_FETCH_KMA_ARGS, token_usage=_USAGE_TOOL_CALL),
-        ScenarioTurn(index=6, kind="tool_call", tool_name="lookup",
-                     tool_arguments=_FETCH_KMA_ARGS, token_usage=_USAGE_TOOL_CALL),
-        ScenarioTurn(index=7, kind="text_delta", text_content=_KOREAN_SYNTHESIS,
-                     token_usage=_USAGE_SYNTHESIS),
+        ScenarioTurn(
+            index=0,
+            kind="tool_call",
+            tool_name="resolve_location",
+            tool_arguments=_RESOLVE_GANGNAM_ARGS,
+            token_usage=_USAGE_TOOL_CALL,
+        ),
+        ScenarioTurn(
+            index=1,
+            kind="tool_call",
+            tool_name="resolve_location",
+            tool_arguments=_RESOLVE_SEOUL_STATION_ARGS,
+            token_usage=_USAGE_TOOL_CALL,
+        ),
+        ScenarioTurn(
+            index=2,
+            kind="tool_call",
+            tool_name="lookup",
+            tool_arguments=_SEARCH_KOROAD_ARGS,
+            token_usage=_USAGE_TOOL_CALL,
+        ),
+        ScenarioTurn(
+            index=3,
+            kind="tool_call",
+            tool_name="lookup",
+            tool_arguments=_FETCH_KOROAD_ARGS,
+            token_usage=_USAGE_TOOL_CALL,
+        ),
+        ScenarioTurn(
+            index=4,
+            kind="tool_call",
+            tool_name="lookup",
+            tool_arguments=_SEARCH_KMA_ARGS,
+            token_usage=_USAGE_TOOL_CALL,
+        ),
+        ScenarioTurn(
+            index=5,
+            kind="tool_call",
+            tool_name="lookup",
+            tool_arguments=_FETCH_KMA_ARGS,
+            token_usage=_USAGE_TOOL_CALL,
+        ),
+        ScenarioTurn(
+            index=6,
+            kind="tool_call",
+            tool_name="lookup",
+            tool_arguments=_FETCH_KMA_ARGS,
+            token_usage=_USAGE_TOOL_CALL,
+        ),
+        ScenarioTurn(
+            index=7, kind="text_delta", text_content=_KOREAN_SYNTHESIS, token_usage=_USAGE_SYNTHESIS
+        ),
     )
     script = ScenarioScript(
         scenario_id="degraded_kma_retry",
@@ -530,20 +597,54 @@ def build_degraded_koroad_no_retry_script() -> tuple[list[list[StreamEvent]], Sc
         _make_text_events(_DEGRADED_SYNTHESIS, _USAGE_SYNTHESIS),
     ]
     scenario_turns = (
-        ScenarioTurn(index=0, kind="tool_call", tool_name="resolve_location",
-                     tool_arguments=_RESOLVE_GANGNAM_ARGS, token_usage=_USAGE_TOOL_CALL),
-        ScenarioTurn(index=1, kind="tool_call", tool_name="resolve_location",
-                     tool_arguments=_RESOLVE_SEOUL_STATION_ARGS, token_usage=_USAGE_TOOL_CALL),
-        ScenarioTurn(index=2, kind="tool_call", tool_name="lookup",
-                     tool_arguments=_SEARCH_KOROAD_ARGS, token_usage=_USAGE_TOOL_CALL),
-        ScenarioTurn(index=3, kind="tool_call", tool_name="lookup",
-                     tool_arguments=_FETCH_KOROAD_ARGS, token_usage=_USAGE_TOOL_CALL),
-        ScenarioTurn(index=4, kind="tool_call", tool_name="lookup",
-                     tool_arguments=_SEARCH_KMA_ARGS, token_usage=_USAGE_TOOL_CALL),
-        ScenarioTurn(index=5, kind="tool_call", tool_name="lookup",
-                     tool_arguments=_FETCH_KMA_ARGS, token_usage=_USAGE_TOOL_CALL),
-        ScenarioTurn(index=6, kind="text_delta", text_content=_DEGRADED_SYNTHESIS,
-                     token_usage=_USAGE_SYNTHESIS),
+        ScenarioTurn(
+            index=0,
+            kind="tool_call",
+            tool_name="resolve_location",
+            tool_arguments=_RESOLVE_GANGNAM_ARGS,
+            token_usage=_USAGE_TOOL_CALL,
+        ),
+        ScenarioTurn(
+            index=1,
+            kind="tool_call",
+            tool_name="resolve_location",
+            tool_arguments=_RESOLVE_SEOUL_STATION_ARGS,
+            token_usage=_USAGE_TOOL_CALL,
+        ),
+        ScenarioTurn(
+            index=2,
+            kind="tool_call",
+            tool_name="lookup",
+            tool_arguments=_SEARCH_KOROAD_ARGS,
+            token_usage=_USAGE_TOOL_CALL,
+        ),
+        ScenarioTurn(
+            index=3,
+            kind="tool_call",
+            tool_name="lookup",
+            tool_arguments=_FETCH_KOROAD_ARGS,
+            token_usage=_USAGE_TOOL_CALL,
+        ),
+        ScenarioTurn(
+            index=4,
+            kind="tool_call",
+            tool_name="lookup",
+            tool_arguments=_SEARCH_KMA_ARGS,
+            token_usage=_USAGE_TOOL_CALL,
+        ),
+        ScenarioTurn(
+            index=5,
+            kind="tool_call",
+            tool_name="lookup",
+            tool_arguments=_FETCH_KMA_ARGS,
+            token_usage=_USAGE_TOOL_CALL,
+        ),
+        ScenarioTurn(
+            index=6,
+            kind="text_delta",
+            text_content=_DEGRADED_SYNTHESIS,
+            token_usage=_USAGE_SYNTHESIS,
+        ),
     )
     script = ScenarioScript(
         scenario_id="degraded_koroad_no_retry",
@@ -565,20 +666,54 @@ def build_both_down_script() -> tuple[list[list[StreamEvent]], ScenarioScript]:
         _make_text_events(_BOTH_DOWN_SYNTHESIS, _USAGE_SYNTHESIS),
     ]
     scenario_turns = (
-        ScenarioTurn(index=0, kind="tool_call", tool_name="resolve_location",
-                     tool_arguments=_RESOLVE_GANGNAM_ARGS, token_usage=_USAGE_TOOL_CALL),
-        ScenarioTurn(index=1, kind="tool_call", tool_name="resolve_location",
-                     tool_arguments=_RESOLVE_SEOUL_STATION_ARGS, token_usage=_USAGE_TOOL_CALL),
-        ScenarioTurn(index=2, kind="tool_call", tool_name="lookup",
-                     tool_arguments=_SEARCH_KOROAD_ARGS, token_usage=_USAGE_TOOL_CALL),
-        ScenarioTurn(index=3, kind="tool_call", tool_name="lookup",
-                     tool_arguments=_FETCH_KOROAD_ARGS, token_usage=_USAGE_TOOL_CALL),
-        ScenarioTurn(index=4, kind="tool_call", tool_name="lookup",
-                     tool_arguments=_SEARCH_KMA_ARGS, token_usage=_USAGE_TOOL_CALL),
-        ScenarioTurn(index=5, kind="tool_call", tool_name="lookup",
-                     tool_arguments=_FETCH_KMA_ARGS, token_usage=_USAGE_TOOL_CALL),
-        ScenarioTurn(index=6, kind="text_delta", text_content=_BOTH_DOWN_SYNTHESIS,
-                     token_usage=_USAGE_SYNTHESIS),
+        ScenarioTurn(
+            index=0,
+            kind="tool_call",
+            tool_name="resolve_location",
+            tool_arguments=_RESOLVE_GANGNAM_ARGS,
+            token_usage=_USAGE_TOOL_CALL,
+        ),
+        ScenarioTurn(
+            index=1,
+            kind="tool_call",
+            tool_name="resolve_location",
+            tool_arguments=_RESOLVE_SEOUL_STATION_ARGS,
+            token_usage=_USAGE_TOOL_CALL,
+        ),
+        ScenarioTurn(
+            index=2,
+            kind="tool_call",
+            tool_name="lookup",
+            tool_arguments=_SEARCH_KOROAD_ARGS,
+            token_usage=_USAGE_TOOL_CALL,
+        ),
+        ScenarioTurn(
+            index=3,
+            kind="tool_call",
+            tool_name="lookup",
+            tool_arguments=_FETCH_KOROAD_ARGS,
+            token_usage=_USAGE_TOOL_CALL,
+        ),
+        ScenarioTurn(
+            index=4,
+            kind="tool_call",
+            tool_name="lookup",
+            tool_arguments=_SEARCH_KMA_ARGS,
+            token_usage=_USAGE_TOOL_CALL,
+        ),
+        ScenarioTurn(
+            index=5,
+            kind="tool_call",
+            tool_name="lookup",
+            tool_arguments=_FETCH_KMA_ARGS,
+            token_usage=_USAGE_TOOL_CALL,
+        ),
+        ScenarioTurn(
+            index=6,
+            kind="text_delta",
+            text_content=_BOTH_DOWN_SYNTHESIS,
+            token_usage=_USAGE_SYNTHESIS,
+        ),
     )
     script = ScenarioScript(
         scenario_id="both_down",
@@ -608,15 +743,29 @@ def build_quirk_2023_gangwon_script() -> tuple[list[list[StreamEvent]], Scenario
     ]
     scenario_turns = (
         ScenarioTurn(
-            index=0, kind="tool_call", tool_name="resolve_location",
-            tool_arguments=gangwon_resolve_args, token_usage=_U,
+            index=0,
+            kind="tool_call",
+            tool_name="resolve_location",
+            tool_arguments=gangwon_resolve_args,
+            token_usage=_U,
         ),
-        ScenarioTurn(index=1, kind="tool_call", tool_name="lookup",
-                     tool_arguments=_SEARCH_KOROAD_ARGS, token_usage=_U),
-        ScenarioTurn(index=2, kind="tool_call", tool_name="lookup",
-                     tool_arguments=fetch_gangwon_args, token_usage=_U),
-        ScenarioTurn(index=3, kind="text_delta", text_content=korean_response,
-                     token_usage=_USAGE_SYNTHESIS),
+        ScenarioTurn(
+            index=1,
+            kind="tool_call",
+            tool_name="lookup",
+            tool_arguments=_SEARCH_KOROAD_ARGS,
+            token_usage=_U,
+        ),
+        ScenarioTurn(
+            index=2,
+            kind="tool_call",
+            tool_name="lookup",
+            tool_arguments=fetch_gangwon_args,
+            token_usage=_U,
+        ),
+        ScenarioTurn(
+            index=3, kind="text_delta", text_content=korean_response, token_usage=_USAGE_SYNTHESIS
+        ),
     )
     script = ScenarioScript(
         scenario_id="quirk_2023_gangwon",
@@ -646,15 +795,29 @@ def build_quirk_2023_jeonbuk_script() -> tuple[list[list[StreamEvent]], Scenario
     ]
     scenario_turns = (
         ScenarioTurn(
-            index=0, kind="tool_call", tool_name="resolve_location",
-            tool_arguments=jeonbuk_resolve_args, token_usage=_U,
+            index=0,
+            kind="tool_call",
+            tool_name="resolve_location",
+            tool_arguments=jeonbuk_resolve_args,
+            token_usage=_U,
         ),
-        ScenarioTurn(index=1, kind="tool_call", tool_name="lookup",
-                     tool_arguments=_SEARCH_KOROAD_ARGS, token_usage=_U),
-        ScenarioTurn(index=2, kind="tool_call", tool_name="lookup",
-                     tool_arguments=fetch_jeonbuk_args, token_usage=_U),
-        ScenarioTurn(index=3, kind="text_delta", text_content=korean_response,
-                     token_usage=_USAGE_SYNTHESIS),
+        ScenarioTurn(
+            index=1,
+            kind="tool_call",
+            tool_name="lookup",
+            tool_arguments=_SEARCH_KOROAD_ARGS,
+            token_usage=_U,
+        ),
+        ScenarioTurn(
+            index=2,
+            kind="tool_call",
+            tool_name="lookup",
+            tool_arguments=fetch_jeonbuk_args,
+            token_usage=_U,
+        ),
+        ScenarioTurn(
+            index=3, kind="text_delta", text_content=korean_response, token_usage=_USAGE_SYNTHESIS
+        ),
     )
     script = ScenarioScript(
         scenario_id="quirk_2023_jeonbuk",
@@ -684,15 +847,29 @@ def build_quirk_2022_control_script() -> tuple[list[list[StreamEvent]], Scenario
     ]
     scenario_turns = (
         ScenarioTurn(
-            index=0, kind="tool_call", tool_name="resolve_location",
-            tool_arguments=gangwon_resolve_args, token_usage=_U,
+            index=0,
+            kind="tool_call",
+            tool_name="resolve_location",
+            tool_arguments=gangwon_resolve_args,
+            token_usage=_U,
         ),
-        ScenarioTurn(index=1, kind="tool_call", tool_name="lookup",
-                     tool_arguments=_SEARCH_KOROAD_ARGS, token_usage=_U),
-        ScenarioTurn(index=2, kind="tool_call", tool_name="lookup",
-                     tool_arguments=fetch_gangwon_2022_args, token_usage=_U),
-        ScenarioTurn(index=3, kind="text_delta", text_content=korean_response,
-                     token_usage=_USAGE_SYNTHESIS),
+        ScenarioTurn(
+            index=1,
+            kind="tool_call",
+            tool_name="lookup",
+            tool_arguments=_SEARCH_KOROAD_ARGS,
+            token_usage=_U,
+        ),
+        ScenarioTurn(
+            index=2,
+            kind="tool_call",
+            tool_name="lookup",
+            tool_arguments=fetch_gangwon_2022_args,
+            token_usage=_U,
+        ),
+        ScenarioTurn(
+            index=3, kind="text_delta", text_content=korean_response, token_usage=_USAGE_SYNTHESIS
+        ),
     )
     script = ScenarioScript(
         scenario_id="quirk_2022_control",
@@ -764,6 +941,7 @@ def _build_registry_and_executor() -> tuple[ToolRegistry, ToolExecutor]:
 
     # Register MVP LLM-visible surface (resolve_location + lookup)
     from kosmos.tools.mvp_surface import register_mvp_surface
+
     register_mvp_surface(registry)
 
     # Register KOROAD adapter (with V1-V6 validation)

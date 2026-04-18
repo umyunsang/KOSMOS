@@ -48,9 +48,7 @@ def dump_run_report(report: RunReport, dump_dir: Path | None) -> Path | None:
             ) from exc
 
     if not dump_dir.is_dir():
-        raise RuntimeError(
-            f"dump_run_report: dump_dir {dump_dir!r} exists but is not a directory"
-        )
+        raise RuntimeError(f"dump_run_report: dump_dir {dump_dir!r} exists but is not a directory")
 
     # Test write access via a temporary probe
     probe = dump_dir / ".write_probe"

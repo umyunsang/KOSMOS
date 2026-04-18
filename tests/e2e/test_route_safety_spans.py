@@ -32,8 +32,7 @@ async def test_fr017_execute_tool_span_has_outcome() -> None:
         pytest.skip("OTel SDK was disabled during this run; span assertions skipped")
 
     execute_tool_spans = [
-        s for s in obs.spans
-        if "execute_tool" in s.name or s.operation_name == "execute_tool"
+        s for s in obs.spans if "execute_tool" in s.name or s.operation_name == "execute_tool"
     ]
 
     # Happy path: at least one execute_tool span should exist

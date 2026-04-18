@@ -57,11 +57,13 @@ _LOOKUP_UNREGISTERED_TOOL: list[StreamEvent] = [
         tool_call_index=0,
         tool_call_id=None,
         function_name=None,
-        function_args_delta=json.dumps({
-            "mode": "fetch",
-            "tool_id": "nonexistent_adapter_xyz",
-            "params": {},
-        }),
+        function_args_delta=json.dumps(
+            {
+                "mode": "fetch",
+                "tool_id": "nonexistent_adapter_xyz",
+                "params": {},
+            }
+        ),
     ),
     StreamEvent(type="usage", usage=TokenUsage(input_tokens=100, output_tokens=40)),
     StreamEvent(type="done"),

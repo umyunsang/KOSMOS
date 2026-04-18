@@ -39,12 +39,8 @@ async def test_t013_token_usage_tracking() -> None:
 
     usage = report.usage_totals
     # Happy path: 6 × (200 in, 50 out) + 1 × (800 in, 150 out) = (2000, 450)
-    assert usage.input_tokens == 2000, (
-        f"Expected input_tokens=2000, got {usage.input_tokens}"
-    )
-    assert usage.output_tokens == 450, (
-        f"Expected output_tokens=450, got {usage.output_tokens}"
-    )
+    assert usage.input_tokens == 2000, f"Expected input_tokens=2000, got {usage.input_tokens}"
+    assert usage.output_tokens == 450, f"Expected output_tokens=450, got {usage.output_tokens}"
 
 
 # ---------------------------------------------------------------------------
