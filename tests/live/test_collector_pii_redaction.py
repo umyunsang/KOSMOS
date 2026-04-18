@@ -45,7 +45,7 @@ _LANGFUSE_HEALTH_URL = f"{_LANGFUSE_BASE_URL}/api/public/health"
 _LANGFUSE_TRACES_URL = f"{_LANGFUSE_BASE_URL}/api/public/traces"
 
 # The SHA-256 hex hash of "서울역" (UTF-8) that the collector should produce.
-_EXPECTED_HASH = hashlib.sha256("서울역".encode("utf-8")).hexdigest()
+_EXPECTED_HASH = hashlib.sha256("서울역".encode()).hexdigest()
 
 
 def _langfuse_reachable() -> bool:
@@ -125,15 +125,14 @@ def _emit_test_span(trace_id_hex: str) -> None:
     link_ctx = trace.use_span(NonRecordingSpan(ctx))
 
     tracer = provider.get_tracer("kosmos.test.pii_redaction")
-    with link_ctx:
-        with tracer.start_as_current_span(
-            "test.pii_redaction_smoke",
-            context=trace.set_span_in_context(NonRecordingSpan(ctx)),
-        ) as span:
-            span.set_attribute("patient.name", "TEST_OPERATOR")
-            span.set_attribute("patient.phone", "010-0000-0000")
-            span.set_attribute("kosmos.location.query", "서울역")
-            span.set_attribute("kosmos.test.marker", "spec028-pii-smoke")
+    with link_ctx, tracer.start_as_current_span(
+        "test.pii_redaction_smoke",
+        context=trace.set_span_in_context(NonRecordingSpan(ctx)),
+    ) as span:
+        span.set_attribute("patient.name", "TEST_OPERATOR")
+        span.set_attribute("patient.phone", "010-0000-0000")
+        span.set_attribute("kosmos.location.query", "서울역")
+        span.set_attribute("kosmos.test.marker", "spec028-pii-smoke")
 
     # Force flush to send before the provider is garbage-collected
     provider.force_flush(timeout_millis=10_000)
