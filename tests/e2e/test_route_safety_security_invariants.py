@@ -19,7 +19,6 @@ from kosmos.tools.models import GovAPITool
 from kosmos.tools.registry import ToolRegistry
 from tests.engine.conftest import MockInput, MockOutput
 
-
 # ---------------------------------------------------------------------------
 # Helper: clone of koroad adapter with deliberate V6 violation
 # ---------------------------------------------------------------------------
@@ -142,8 +141,8 @@ def test_mvp_adapters_pass_v1_to_v6() -> None:
     """
     from kosmos.recovery.executor import RecoveryExecutor
     from kosmos.tools.executor import ToolExecutor
-    from kosmos.tools.koroad.accident_hazard_search import register as reg_koroad
     from kosmos.tools.kma.forecast_fetch import KMA_FORECAST_FETCH_TOOL
+    from kosmos.tools.koroad.accident_hazard_search import register as reg_koroad
 
     registry = ToolRegistry()
     recovery = RecoveryExecutor()

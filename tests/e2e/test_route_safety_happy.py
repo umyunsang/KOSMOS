@@ -16,7 +16,6 @@ from tests.e2e.conftest import (
     run_scenario,
 )
 
-
 # ---------------------------------------------------------------------------
 # T011 [US1] Happy-path E2E — 6-turn scripted sequence
 # ---------------------------------------------------------------------------
@@ -57,7 +56,9 @@ async def test_t011_happy_path_resolve_lookup_synthesize() -> None:
 
     # AC2: resolve calls precede all lookup calls
     first_lookup_idx = next(i for i, t in enumerate(report.tool_call_order) if t == "lookup")
-    last_resolve_idx = max(i for i, t in enumerate(report.tool_call_order) if t == "resolve_location")
+    last_resolve_idx = max(
+        i for i, t in enumerate(report.tool_call_order) if t == "resolve_location"
+    )
     assert last_resolve_idx < first_lookup_idx, (
         "All resolve_location calls must precede the first lookup call. "
         f"last_resolve_idx={last_resolve_idx}, first_lookup_idx={first_lookup_idx}"

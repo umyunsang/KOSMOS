@@ -25,7 +25,6 @@ from __future__ import annotations
 import json
 import logging
 import os
-import time
 from collections.abc import AsyncIterator
 from pathlib import Path
 from typing import Any
@@ -49,9 +48,6 @@ from kosmos.llm.usage import UsageTracker
 from kosmos.recovery.executor import RecoveryExecutor
 from kosmos.tools.executor import ToolExecutor
 from kosmos.tools.registry import ToolRegistry
-
-# Re-export MockLLMClient from engine test fixtures for reuse
-from tests.engine.conftest import MockLLMClient
 from tests.e2e.models import (
     CapturedSpan,
     ObservabilitySnapshot,
@@ -60,6 +56,9 @@ from tests.e2e.models import (
     ScenarioScript,
     ScenarioTurn,
 )
+
+# Re-export MockLLMClient from engine test fixtures for reuse
+from tests.engine.conftest import MockLLMClient
 
 logger = logging.getLogger(__name__)
 
@@ -71,7 +70,7 @@ logger = logging.getLogger(__name__)
 class _MockLLMClientAdapter(LLMClient):
     """Wrap a MockLLMClient so it satisfies Pydantic's isinstance(LLMClient) check."""
 
-    def __new__(cls, *args: object, **kwargs: object) -> "_MockLLMClientAdapter":
+    def __new__(cls, *args: object, **kwargs: object) -> _MockLLMClientAdapter:
         return object.__new__(cls)  # type: ignore[return-value]
 
     def __init__(self, delegate: MockLLMClient) -> None:
@@ -109,6 +108,71 @@ _KMA_FIXTURE_DIR = _FIXTURE_BASE / "kma"
 _CALL_COUNTERS: dict[str, int] = {}
 
 
+def _resolve_tape_path(
+    adapter_id: str,
+    filename: str,
+    tape_overrides: dict[str, Path],
+) -> Path:
+    """Resolve the absolute fixture path for an adapter + filename."""
+    if adapter_id in tape_overrides:
+        return tape_overrides[adapter_id]
+    if adapter_id == "koroad_accident_hazard_search":
+        return _KOROAD_FIXTURE_DIR / filename
+    if adapter_id == "kma_forecast_fetch":
+        return _KMA_FIXTURE_DIR / filename
+    if adapter_id.startswith("kakao"):
+        return _KAKAO_FIXTURE_DIR / filename
+    raise AssertionError(f"No fixture directory for adapter: {adapter_id}")
+
+
+def _load_tape(
+    adapter_id: str,
+    filename: str,
+    tape_overrides: dict[str, Path],
+) -> dict[str, Any]:
+    """Load a JSON fixture tape, asserting it exists."""
+    path = _resolve_tape_path(adapter_id, filename, tape_overrides)
+    if not path.exists():
+        raise AssertionError(f"Missing HTTP fixture: {path}")
+    return json.loads(path.read_text())
+
+
+def _koroad_tape_name(url_str: str) -> str:
+    """Derive the KOROAD fixture tape filename from the siDo query param."""
+    if "siDo=51" in url_str:
+        return "accident_hazard_siDo=51_year=2023.json"
+    if "siDo=52" in url_str:
+        return "accident_hazard_siDo=52_year=2023.json"
+    if "siDo=42" in url_str and "year=2022" in url_str:
+        return "accident_hazard_siDo=42_year=2022.json"
+    if "siDo=45" in url_str and "year=2022" in url_str:
+        return "accident_hazard_siDo=45_year=2022.json"
+    return "accident_hazard_siDo=11_year=2023.json"
+
+
+def _kakao_tape_name(url_str: str, params: dict[str, Any] | None) -> str:
+    """Derive the Kakao geocoder fixture tape filename from the query string."""
+    import urllib.parse
+
+    query_str = ""
+    if params:
+        query_str = str(params.get("query", ""))
+    elif "query=" in url_str:
+        parsed = urllib.parse.urlparse(url_str)
+        qs = urllib.parse.parse_qs(parsed.query)
+        query_str = qs.get("query", [""])[0]
+
+    if "강남구" in query_str or "gangnam" in query_str.lower():
+        return "local_search_address_강남구.json"
+    if "서울역" in query_str or "seoul_station" in query_str.lower():
+        return "local_search_address_서울역.json"
+    if "춘천" in query_str or "chuncheon" in query_str.lower():
+        return "local_search_address_춘천시.json"
+    if "전주" in query_str or "jeonju" in query_str.lower():
+        return "local_search_address_전주시.json"
+    return "local_search_address_강남구.json"
+
+
 def _build_httpx_mock(
     tape_overrides: dict[str, Path] | None = None,
     error_table: dict[str, list[str | None]] | None = None,
@@ -129,65 +193,26 @@ def _build_httpx_mock(
     Returns:
         AsyncMock with side_effect routing to tape files.
     """
-    tape_overrides = tape_overrides or {}
-    error_table = error_table or {}
-    call_counters: dict[str, int] = {}
+    _overrides = tape_overrides or {}
+    _errors = error_table or {}
+    _counters: dict[str, int] = {}
 
-    def _get_tape(adapter_id: str, filename: str) -> dict[str, Any]:
-        if adapter_id in tape_overrides:
-            path = tape_overrides[adapter_id]
-        else:
-            if adapter_id == "koroad_accident_hazard_search":
-                path = _KOROAD_FIXTURE_DIR / filename
-            elif adapter_id == "kma_forecast_fetch":
-                path = _KMA_FIXTURE_DIR / filename
-            elif adapter_id.startswith("kakao"):
-                path = _KAKAO_FIXTURE_DIR / filename
-            else:
-                raise AssertionError(f"No fixture directory for adapter: {adapter_id}")
-        if not path.exists():
-            raise AssertionError(f"Missing HTTP fixture: {path}")
-        return json.loads(path.read_text())
+    def _tape(adapter_id: str, filename: str) -> dict[str, Any]:
+        return _load_tape(adapter_id, filename, _overrides)
 
-    def _get_koroad_tape_name(url_str: str) -> str:
-        """Derive the koroad tape filename from the siDo query param in the URL."""
-        if "siDo=51" in url_str:
-            return "accident_hazard_siDo=51_year=2023.json"
-        elif "siDo=52" in url_str:
-            return "accident_hazard_siDo=52_year=2023.json"
-        elif "siDo=42" in url_str and "year=2022" in url_str:
-            return "accident_hazard_siDo=42_year=2022.json"
-        elif "siDo=45" in url_str and "year=2022" in url_str:
-            return "accident_hazard_siDo=45_year=2022.json"
-        else:
-            # Default happy-path tape (siDo=11 강남구 2023)
-            return "accident_hazard_siDo=11_year=2023.json"
+    def _err_mode(adapter_id: str) -> str | None:
+        idx = _counters.get(adapter_id, 0)
+        _counters[adapter_id] = idx + 1
+        errs = _errors.get(adapter_id, [])
+        return errs[idx] if idx < len(errs) else None
 
-    def _get_kma_tape_name(url_str: str) -> str:
-        """Derive the KMA tape filename from the URL params."""
-        return "forecast_lat=37.518_lon=127.047_base=20260419_0500.json"
-
-    def _get_kakao_tape_name(url_str: str, params: dict[str, Any] | None) -> str:
-        """Derive the Kakao tape filename from the query parameter."""
-        query_str = ""
-        if params:
-            query_str = str(params.get("query", ""))
-        elif "query=" in url_str:
-            import urllib.parse
-            parsed = urllib.parse.urlparse(url_str)
-            qs = urllib.parse.parse_qs(parsed.query)
-            query_str = qs.get("query", [""])[0]
-
-        if "강남구" in query_str or "gangnam" in query_str.lower():
-            return "local_search_address_강남구.json"
-        elif "서울역" in query_str or "seoul_station" in query_str.lower():
-            return "local_search_address_서울역.json"
-        elif "춘천" in query_str or "chuncheon" in query_str.lower():
-            return "local_search_address_춘천시.json"
-        elif "전주" in query_str or "jeonju" in query_str.lower():
-            return "local_search_address_전주시.json"
-        else:
-            return "local_search_address_강남구.json"
+    def _resp(url_str: str, data: dict[str, Any]) -> httpx.Response:
+        return httpx.Response(
+            status_code=200,
+            json=data,
+            request=httpx.Request("GET", url_str),
+            headers={"content-type": "application/json"},
+        )
 
     async def _mock_get(
         url: str | httpx.URL,
@@ -196,76 +221,25 @@ def _build_httpx_mock(
         **kwargs: Any,
     ) -> httpx.Response:
         url_str = str(url)
-        # Merge query params into url_str for pattern matching
-        if params:
-            param_str = "&".join(f"{k}={v}" for k, v in params.items())
-            full_url = f"{url_str}?{param_str}"
-        else:
-            full_url = url_str
+        param_str = "&".join(f"{k}={v}" for k, v in (params or {}).items())
+        full_url = f"{url_str}?{param_str}" if params else url_str
 
-        # Route: KOROAD
         if "getRestFrequentzoneLg" in url_str:
-            adapter_id = "koroad_accident_hazard_search"
-            call_idx = call_counters.get(adapter_id, 0)
-            call_counters[adapter_id] = call_idx + 1
+            aid = "koroad_accident_hazard_search"
+            if _err_mode(aid) == "upstream_down":
+                return _resp(url_str, _tape(aid, "accident_hazard_ERROR_upstream_down.json"))
+            return _resp(url_str, _tape(aid, _koroad_tape_name(full_url)))
 
-            errors = error_table.get(adapter_id, [])
-            err_mode = errors[call_idx] if call_idx < len(errors) else None
-
-            if err_mode == "upstream_down":
-                return httpx.Response(
-                    status_code=200,
-                    json=_get_tape(adapter_id, "accident_hazard_ERROR_upstream_down.json"),
-                    request=httpx.Request("GET", url_str),
-                )
-
-            tape_name = _get_koroad_tape_name(full_url)
-            data = _get_tape(adapter_id, tape_name)
-            return httpx.Response(
-                status_code=200,
-                json=data,
-                request=httpx.Request("GET", url_str),
-                headers={"content-type": "application/json"},
-            )
-
-        # Route: KMA forecast
         if "getVilageFcst" in url_str:
-            adapter_id = "kma_forecast_fetch"
-            call_idx = call_counters.get(adapter_id, 0)
-            call_counters[adapter_id] = call_idx + 1
+            aid = "kma_forecast_fetch"
+            if _err_mode(aid) == "upstream_down":
+                return _resp(url_str, _tape(aid, "forecast_ERROR_upstream_down.json"))
+            kma_tape = "forecast_lat=37.518_lon=127.047_base=20260419_0500.json"
+            return _resp(url_str, _tape(aid, kma_tape))
 
-            errors = error_table.get(adapter_id, [])
-            err_mode = errors[call_idx] if call_idx < len(errors) else None
-
-            if err_mode == "upstream_down":
-                return httpx.Response(
-                    status_code=200,
-                    json=_get_tape(adapter_id, "forecast_ERROR_upstream_down.json"),
-                    request=httpx.Request("GET", url_str),
-                )
-
-            tape_name = _get_kma_tape_name(full_url)
-            data = _get_tape(adapter_id, tape_name)
-            return httpx.Response(
-                status_code=200,
-                json=data,
-                request=httpx.Request("GET", url_str),
-                headers={"content-type": "application/json"},
-            )
-
-        # Route: Kakao local search
         if "local.kakao.com" in url_str or "dapi.kakao.com" in url_str:
-            adapter_id = "kakao"
-            tape_name = _get_kakao_tape_name(url_str, params)
-            data = _get_tape(adapter_id, tape_name)
-            return httpx.Response(
-                status_code=200,
-                json=data,
-                request=httpx.Request("GET", url_str),
-                headers={"content-type": "application/json"},
-            )
+            return _resp(url_str, _tape("kakao", _kakao_tape_name(url_str, params)))
 
-        # Unmatched URL — fail loud to detect missing fixture coverage (FR-004)
         raise AssertionError(f"Unpatched httpx.get call to URL: {url_str!r}")
 
     return AsyncMock(side_effect=_mock_get)
@@ -414,6 +388,19 @@ _BOTH_DOWN_SYNTHESIS = (
 _USAGE_TOOL_CALL = TokenUsage(input_tokens=200, output_tokens=50)
 _USAGE_SYNTHESIS = TokenUsage(input_tokens=800, output_tokens=150)
 
+# Short alias used in script builders to keep lines under 100 chars.
+_U = _USAGE_TOOL_CALL
+
+
+def _tce(
+    tool_name: str,
+    args: dict[str, Any],
+    call_id: str,
+    usage: TokenUsage | None = None,
+) -> list[StreamEvent]:
+    """Short alias for _make_tool_call_events (script builder line-length)."""
+    return _make_tool_call_events(tool_name, args, call_id, usage)
+
 
 def _make_tool_call_events(
     tool_name: str,
@@ -458,12 +445,12 @@ def _make_text_events(content: str, usage: TokenUsage | None = None) -> list[Str
 def build_happy_script() -> tuple[list[list[StreamEvent]], ScenarioScript]:
     """Build the 6-turn happy-path script (resolve x2, search x2, fetch x2, synthesize)."""
     turns_events = [
-        _make_tool_call_events("resolve_location", _RESOLVE_GANGNAM_ARGS, "call_001", _USAGE_TOOL_CALL),
-        _make_tool_call_events("resolve_location", _RESOLVE_SEOUL_STATION_ARGS, "call_002", _USAGE_TOOL_CALL),
-        _make_tool_call_events("lookup", _SEARCH_KOROAD_ARGS, "call_003", _USAGE_TOOL_CALL),
-        _make_tool_call_events("lookup", _FETCH_KOROAD_ARGS, "call_004", _USAGE_TOOL_CALL),
-        _make_tool_call_events("lookup", _SEARCH_KMA_ARGS, "call_005", _USAGE_TOOL_CALL),
-        _make_tool_call_events("lookup", _FETCH_KMA_ARGS, "call_006", _USAGE_TOOL_CALL),
+        _tce("resolve_location", _RESOLVE_GANGNAM_ARGS, "call_001", _U),
+        _tce("resolve_location", _RESOLVE_SEOUL_STATION_ARGS, "call_002", _U),
+        _tce("lookup", _SEARCH_KOROAD_ARGS, "call_003", _U),
+        _tce("lookup", _FETCH_KOROAD_ARGS, "call_004", _U),
+        _tce("lookup", _SEARCH_KMA_ARGS, "call_005", _U),
+        _tce("lookup", _FETCH_KMA_ARGS, "call_006", _U),
         _make_text_events(_KOREAN_SYNTHESIS, _USAGE_SYNTHESIS),
     ]
 
@@ -495,14 +482,14 @@ def build_degraded_kma_retry_script() -> tuple[list[list[StreamEvent]], Scenario
     """KMA first call fails (retryable), second succeeds; KOROAD succeeds."""
     # Simulate: KMA fetch fails first, engine retries, then synthesizes with both data
     turns_events = [
-        _make_tool_call_events("resolve_location", _RESOLVE_GANGNAM_ARGS, "call_001", _USAGE_TOOL_CALL),
-        _make_tool_call_events("resolve_location", _RESOLVE_SEOUL_STATION_ARGS, "call_002", _USAGE_TOOL_CALL),
-        _make_tool_call_events("lookup", _SEARCH_KOROAD_ARGS, "call_003", _USAGE_TOOL_CALL),
-        _make_tool_call_events("lookup", _FETCH_KOROAD_ARGS, "call_004", _USAGE_TOOL_CALL),
-        _make_tool_call_events("lookup", _SEARCH_KMA_ARGS, "call_005", _USAGE_TOOL_CALL),
+        _tce("resolve_location", _RESOLVE_GANGNAM_ARGS, "call_001", _U),
+        _tce("resolve_location", _RESOLVE_SEOUL_STATION_ARGS, "call_002", _U),
+        _tce("lookup", _SEARCH_KOROAD_ARGS, "call_003", _U),
+        _tce("lookup", _FETCH_KOROAD_ARGS, "call_004", _U),
+        _tce("lookup", _SEARCH_KMA_ARGS, "call_005", _U),
         # KMA fetch — first attempt returns error, retry on same tool call
-        _make_tool_call_events("lookup", _FETCH_KMA_ARGS, "call_006", _USAGE_TOOL_CALL),
-        _make_tool_call_events("lookup", _FETCH_KMA_ARGS, "call_007r", _USAGE_TOOL_CALL),
+        _tce("lookup", _FETCH_KMA_ARGS, "call_006", _U),
+        _tce("lookup", _FETCH_KMA_ARGS, "call_007r", _U),
         _make_text_events(_KOREAN_SYNTHESIS, _USAGE_SYNTHESIS),
     ]
     scenario_turns = (
@@ -534,12 +521,12 @@ def build_degraded_kma_retry_script() -> tuple[list[list[StreamEvent]], Scenario
 def build_degraded_koroad_no_retry_script() -> tuple[list[list[StreamEvent]], ScenarioScript]:
     """KOROAD fails (no retry); KMA succeeds; synthesis references KMA data + gap note."""
     turns_events = [
-        _make_tool_call_events("resolve_location", _RESOLVE_GANGNAM_ARGS, "call_001", _USAGE_TOOL_CALL),
-        _make_tool_call_events("resolve_location", _RESOLVE_SEOUL_STATION_ARGS, "call_002", _USAGE_TOOL_CALL),
-        _make_tool_call_events("lookup", _SEARCH_KOROAD_ARGS, "call_003", _USAGE_TOOL_CALL),
-        _make_tool_call_events("lookup", _FETCH_KOROAD_ARGS, "call_004", _USAGE_TOOL_CALL),
-        _make_tool_call_events("lookup", _SEARCH_KMA_ARGS, "call_005", _USAGE_TOOL_CALL),
-        _make_tool_call_events("lookup", _FETCH_KMA_ARGS, "call_006", _USAGE_TOOL_CALL),
+        _tce("resolve_location", _RESOLVE_GANGNAM_ARGS, "call_001", _U),
+        _tce("resolve_location", _RESOLVE_SEOUL_STATION_ARGS, "call_002", _U),
+        _tce("lookup", _SEARCH_KOROAD_ARGS, "call_003", _U),
+        _tce("lookup", _FETCH_KOROAD_ARGS, "call_004", _U),
+        _tce("lookup", _SEARCH_KMA_ARGS, "call_005", _U),
+        _tce("lookup", _FETCH_KMA_ARGS, "call_006", _U),
         _make_text_events(_DEGRADED_SYNTHESIS, _USAGE_SYNTHESIS),
     ]
     scenario_turns = (
@@ -569,12 +556,12 @@ def build_degraded_koroad_no_retry_script() -> tuple[list[list[StreamEvent]], Sc
 def build_both_down_script() -> tuple[list[list[StreamEvent]], ScenarioScript]:
     """Both adapters fail; engine produces graceful Korean error message."""
     turns_events = [
-        _make_tool_call_events("resolve_location", _RESOLVE_GANGNAM_ARGS, "call_001", _USAGE_TOOL_CALL),
-        _make_tool_call_events("resolve_location", _RESOLVE_SEOUL_STATION_ARGS, "call_002", _USAGE_TOOL_CALL),
-        _make_tool_call_events("lookup", _SEARCH_KOROAD_ARGS, "call_003", _USAGE_TOOL_CALL),
-        _make_tool_call_events("lookup", _FETCH_KOROAD_ARGS, "call_004", _USAGE_TOOL_CALL),
-        _make_tool_call_events("lookup", _SEARCH_KMA_ARGS, "call_005", _USAGE_TOOL_CALL),
-        _make_tool_call_events("lookup", _FETCH_KMA_ARGS, "call_006", _USAGE_TOOL_CALL),
+        _tce("resolve_location", _RESOLVE_GANGNAM_ARGS, "call_001", _U),
+        _tce("resolve_location", _RESOLVE_SEOUL_STATION_ARGS, "call_002", _U),
+        _tce("lookup", _SEARCH_KOROAD_ARGS, "call_003", _U),
+        _tce("lookup", _FETCH_KOROAD_ARGS, "call_004", _U),
+        _tce("lookup", _SEARCH_KMA_ARGS, "call_005", _U),
+        _tce("lookup", _FETCH_KMA_ARGS, "call_006", _U),
         _make_text_events(_BOTH_DOWN_SYNTHESIS, _USAGE_SYNTHESIS),
     ]
     scenario_turns = (
@@ -614,18 +601,20 @@ def build_quirk_2023_gangwon_script() -> tuple[list[list[StreamEvent]], Scenario
         "춘천 중심가 일대에 사고다발구역이 확인되었습니다."
     )
     turns_events = [
-        _make_tool_call_events("resolve_location", gangwon_resolve_args, "call_001", _USAGE_TOOL_CALL),
-        _make_tool_call_events("lookup", _SEARCH_KOROAD_ARGS, "call_002", _USAGE_TOOL_CALL),
-        _make_tool_call_events("lookup", fetch_gangwon_args, "call_003", _USAGE_TOOL_CALL),
+        _tce("resolve_location", gangwon_resolve_args, "call_001", _U),
+        _tce("lookup", _SEARCH_KOROAD_ARGS, "call_002", _U),
+        _tce("lookup", fetch_gangwon_args, "call_003", _U),
         _make_text_events(korean_response, _USAGE_SYNTHESIS),
     ]
     scenario_turns = (
-        ScenarioTurn(index=0, kind="tool_call", tool_name="resolve_location",
-                     tool_arguments=gangwon_resolve_args, token_usage=_USAGE_TOOL_CALL),
+        ScenarioTurn(
+            index=0, kind="tool_call", tool_name="resolve_location",
+            tool_arguments=gangwon_resolve_args, token_usage=_U,
+        ),
         ScenarioTurn(index=1, kind="tool_call", tool_name="lookup",
-                     tool_arguments=_SEARCH_KOROAD_ARGS, token_usage=_USAGE_TOOL_CALL),
+                     tool_arguments=_SEARCH_KOROAD_ARGS, token_usage=_U),
         ScenarioTurn(index=2, kind="tool_call", tool_name="lookup",
-                     tool_arguments=fetch_gangwon_args, token_usage=_USAGE_TOOL_CALL),
+                     tool_arguments=fetch_gangwon_args, token_usage=_U),
         ScenarioTurn(index=3, kind="text_delta", text_content=korean_response,
                      token_usage=_USAGE_SYNTHESIS),
     )
@@ -650,18 +639,20 @@ def build_quirk_2023_jeonbuk_script() -> tuple[list[list[StreamEvent]], Scenario
         "전주 도심 일대에 사고다발구역이 확인되었습니다."
     )
     turns_events = [
-        _make_tool_call_events("resolve_location", jeonbuk_resolve_args, "call_001", _USAGE_TOOL_CALL),
-        _make_tool_call_events("lookup", _SEARCH_KOROAD_ARGS, "call_002", _USAGE_TOOL_CALL),
-        _make_tool_call_events("lookup", fetch_jeonbuk_args, "call_003", _USAGE_TOOL_CALL),
+        _tce("resolve_location", jeonbuk_resolve_args, "call_001", _U),
+        _tce("lookup", _SEARCH_KOROAD_ARGS, "call_002", _U),
+        _tce("lookup", fetch_jeonbuk_args, "call_003", _U),
         _make_text_events(korean_response, _USAGE_SYNTHESIS),
     ]
     scenario_turns = (
-        ScenarioTurn(index=0, kind="tool_call", tool_name="resolve_location",
-                     tool_arguments=jeonbuk_resolve_args, token_usage=_USAGE_TOOL_CALL),
+        ScenarioTurn(
+            index=0, kind="tool_call", tool_name="resolve_location",
+            tool_arguments=jeonbuk_resolve_args, token_usage=_U,
+        ),
         ScenarioTurn(index=1, kind="tool_call", tool_name="lookup",
-                     tool_arguments=_SEARCH_KOROAD_ARGS, token_usage=_USAGE_TOOL_CALL),
+                     tool_arguments=_SEARCH_KOROAD_ARGS, token_usage=_U),
         ScenarioTurn(index=2, kind="tool_call", tool_name="lookup",
-                     tool_arguments=fetch_jeonbuk_args, token_usage=_USAGE_TOOL_CALL),
+                     tool_arguments=fetch_jeonbuk_args, token_usage=_U),
         ScenarioTurn(index=3, kind="text_delta", text_content=korean_response,
                      token_usage=_USAGE_SYNTHESIS),
     )
@@ -686,18 +677,20 @@ def build_quirk_2022_control_script() -> tuple[list[list[StreamEvent]], Scenario
         "2022년 기준 춘천 지역 사고다발구역이 확인되었습니다."
     )
     turns_events = [
-        _make_tool_call_events("resolve_location", gangwon_resolve_args, "call_001", _USAGE_TOOL_CALL),
-        _make_tool_call_events("lookup", _SEARCH_KOROAD_ARGS, "call_002", _USAGE_TOOL_CALL),
-        _make_tool_call_events("lookup", fetch_gangwon_2022_args, "call_003", _USAGE_TOOL_CALL),
+        _tce("resolve_location", gangwon_resolve_args, "call_001", _U),
+        _tce("lookup", _SEARCH_KOROAD_ARGS, "call_002", _U),
+        _tce("lookup", fetch_gangwon_2022_args, "call_003", _U),
         _make_text_events(korean_response, _USAGE_SYNTHESIS),
     ]
     scenario_turns = (
-        ScenarioTurn(index=0, kind="tool_call", tool_name="resolve_location",
-                     tool_arguments=gangwon_resolve_args, token_usage=_USAGE_TOOL_CALL),
+        ScenarioTurn(
+            index=0, kind="tool_call", tool_name="resolve_location",
+            tool_arguments=gangwon_resolve_args, token_usage=_U,
+        ),
         ScenarioTurn(index=1, kind="tool_call", tool_name="lookup",
-                     tool_arguments=_SEARCH_KOROAD_ARGS, token_usage=_USAGE_TOOL_CALL),
+                     tool_arguments=_SEARCH_KOROAD_ARGS, token_usage=_U),
         ScenarioTurn(index=2, kind="tool_call", tool_name="lookup",
-                     tool_arguments=fetch_gangwon_2022_args, token_usage=_USAGE_TOOL_CALL),
+                     tool_arguments=fetch_gangwon_2022_args, token_usage=_U),
         ScenarioTurn(index=3, kind="text_delta", text_content=korean_response,
                      token_usage=_USAGE_SYNTHESIS),
     )
@@ -753,14 +746,17 @@ def _build_registry_and_executor() -> tuple[ToolRegistry, ToolExecutor]:
     Both adapters are registered through ToolRegistry.register() so V1-V6
     backstop checks run (FR-009/010). No bypass path.
     """
-    from kosmos.tools.koroad.accident_hazard_search import register as reg_koroad_hazard
+
+    from pydantic import BaseModel
+
     from kosmos.tools.kma.forecast_fetch import (
         KMA_FORECAST_FETCH_TOOL,
         KmaForecastFetchInput,
+    )
+    from kosmos.tools.kma.forecast_fetch import (
         _fetch as kma_forecast_fetch_fn,
     )
-    from pydantic import BaseModel
-    from typing import Any
+    from kosmos.tools.koroad.accident_hazard_search import register as reg_koroad_hazard
 
     registry = ToolRegistry()
     recovery = RecoveryExecutor()
@@ -791,6 +787,77 @@ def _build_registry_and_executor() -> tuple[ToolRegistry, ToolExecutor]:
 # ---------------------------------------------------------------------------
 
 
+def _map_stop_reason(events: list[QueryEvent]) -> str:
+    """Map raw StopReason from engine events to RunReport stop_reason literal."""
+    stop_events = [e for e in events if e.type == "stop"]
+    raw = stop_events[-1].stop_reason if stop_events else StopReason.error_unrecoverable
+    if raw in (StopReason.end_turn, StopReason.task_complete):
+        return "end_turn"
+    if raw == StopReason.api_budget_exceeded:
+        return "api_budget_exceeded"
+    return "error_unrecoverable"
+
+
+def _extract_fetched_adapters(script: ScenarioScript) -> list[str]:
+    """Return the list of adapter IDs from lookup-fetch turns in the script."""
+    result: list[str] = []
+    for turn in script.turns:
+        if (
+            turn.kind == "tool_call"
+            and turn.tool_name == "lookup"
+            and turn.tool_arguments
+            and turn.tool_arguments.get("mode") == "fetch"
+        ):
+            tool_id = turn.tool_arguments.get("tool_id")
+            if tool_id:
+                result.append(str(tool_id))
+    return result
+
+
+def _extract_usage_totals(events: list[QueryEvent]) -> TokenUsage:
+    """Sum all usage_update events into a single TokenUsage aggregate."""
+    total_input = 0
+    total_output = 0
+    for event in events:
+        if event.type == "usage_update" and event.usage is not None:
+            total_input += event.usage.input_tokens or 0
+            total_output += event.usage.output_tokens or 0
+    return TokenUsage(input_tokens=total_input, output_tokens=total_output)
+
+
+def _build_report(
+    *,
+    scenario_id: ScenarioId,
+    tool_call_order: tuple[str, ...],
+    fetched_adapters: list[str],
+    final_response: str | None,
+    stop_reason_str: str,
+    usage_totals: TokenUsage,
+    obs_snapshot: ObservabilitySnapshot,
+    adapter_hits: dict[str, int],
+    elapsed_ms: int,
+) -> RunReport:
+    """Construct a RunReport, relaxing I7 when span count mismatches fetch count."""
+    span_adapter_count = sum(1 for s in obs_snapshot.spans if s.adapter_id is not None)
+    fetch_count = len(fetched_adapters)
+    obs = obs_snapshot
+    if not obs_snapshot.sdk_disabled and span_adapter_count != fetch_count:
+        # SDK enabled but span count mismatch — bypass I7 to avoid spurious failure
+        obs = ObservabilitySnapshot(sdk_disabled=True, spans=())
+    return RunReport(
+        scenario_id=scenario_id,
+        trigger_query=TRIGGER_QUERY,
+        tool_call_order=tool_call_order,
+        fetched_adapter_ids=tuple(fetched_adapters),
+        final_response=final_response,
+        stop_reason=stop_reason_str,  # type: ignore[arg-type]
+        usage_totals=usage_totals,
+        observability=obs,
+        adapter_rate_limit_hits=adapter_hits,
+        elapsed_ms=elapsed_ms,
+    )
+
+
 async def run_scenario(
     scenario_id: ScenarioId,
     *,
@@ -811,15 +878,10 @@ async def run_scenario(
 
     event_sequences, script = get_script(scenario_id)
 
-    # Build registry and executor
     registry, executor = _build_registry_and_executor()
     context_builder = ContextBuilder(registry=registry)
-
-    # Build mock LLM
     mock_llm = MockLLMClient(responses=event_sequences)
     llm_adapter = _MockLLMClientAdapter(mock_llm)
-
-    # Build engine
     config = QueryEngineConfig()
     engine = QueryEngine(
         llm_client=llm_adapter,
@@ -829,15 +891,9 @@ async def run_scenario(
         context_builder=context_builder,
     )
 
-    # Build OTel span capture
     otel = OTelSpanCaptureFixture()
     otel.setup()
-
-    # Build HTTP mock
-    httpx_mock = _build_httpx_mock(
-        tape_overrides=tape_overrides,
-        error_table=error_table,
-    )
+    httpx_mock = _build_httpx_mock(tape_overrides=tape_overrides, error_table=error_table)
 
     t_start = _time.monotonic()
     events: list[QueryEvent] = []
@@ -849,100 +905,29 @@ async def run_scenario(
         otel.teardown()
 
     elapsed_ms = int((_time.monotonic() - t_start) * 1000)
-
-    # Extract stop_reason
-    stop_events = [e for e in events if e.type == "stop"]
-    raw_stop_reason = stop_events[-1].stop_reason if stop_events else StopReason.error_unrecoverable
-    if raw_stop_reason in (StopReason.end_turn, StopReason.task_complete):
-        stop_reason_str = "end_turn"
-    elif raw_stop_reason == StopReason.api_budget_exceeded:
-        stop_reason_str = "api_budget_exceeded"
-    else:
-        stop_reason_str = "error_unrecoverable"
-
-    # Extract tool_call_order
+    stop_reason_str = _map_stop_reason(events)
     tool_call_order = tuple(e.tool_name for e in events if e.type == "tool_use")
-
-    # Extract fetched_adapter_ids (from tool_result events that correspond to lookup fetches)
-    # We track adapter IDs from the script's fetch turns
-    fetched_adapters: list[str] = []
-    for turn in script.turns:
-        if (
-            turn.kind == "tool_call"
-            and turn.tool_name == "lookup"
-            and turn.tool_arguments
-            and turn.tool_arguments.get("mode") == "fetch"
-        ):
-            tool_id = turn.tool_arguments.get("tool_id")
-            if tool_id:
-                fetched_adapters.append(str(tool_id))
-
-    # Extract final_response
+    fetched_adapters = _extract_fetched_adapters(script)
     text_parts = [e.content for e in events if e.type == "text_delta" and e.content]
     final_response = "".join(text_parts) if text_parts else None
-
-    # Extract usage totals from usage_update events
-    total_input = 0
-    total_output = 0
-    for event in events:
-        if event.type == "usage_update" and event.usage is not None:
-            total_input += event.usage.input_tokens or 0
-            total_output += event.usage.output_tokens or 0
-
-    usage_totals = TokenUsage(input_tokens=total_input, output_tokens=total_output)
-
-    # Build OTel snapshot
+    usage_totals = _extract_usage_totals(events)
     obs_snapshot = otel.snapshot()
 
-    # Count rate limiter hits per adapter by counting HTTP mock calls per adapter
     adapter_hits: dict[str, int] = {}
-    for turn in script.turns:
-        if (
-            turn.kind == "tool_call"
-            and turn.tool_name == "lookup"
-            and turn.tool_arguments
-            and turn.tool_arguments.get("mode") == "fetch"
-        ):
-            tool_id = str(turn.tool_arguments.get("tool_id", ""))
-            if tool_id:
-                adapter_hits[tool_id] = adapter_hits.get(tool_id, 0) + 1
+    for aid in fetched_adapters:
+        adapter_hits[aid] = adapter_hits.get(aid, 0) + 1
 
-    # Build RunReport — only enforce I7 when SDK is enabled and we have spans
-    fetch_count = len(fetched_adapters)
-    span_adapter_count = sum(1 for s in obs_snapshot.spans if s.adapter_id is not None)
-
-    # When OTEL is disabled, set sdk_disabled snapshot for I7 bypass
-    # (I7 is not enforced in RunReport when sdk_disabled=True)
-    if obs_snapshot.sdk_disabled or span_adapter_count == fetch_count:
-        report = RunReport(
-            scenario_id=scenario_id,
-            trigger_query=TRIGGER_QUERY,
-            tool_call_order=tool_call_order,
-            fetched_adapter_ids=tuple(fetched_adapters),
-            final_response=final_response if stop_reason_str == "end_turn" else final_response,
-            stop_reason=stop_reason_str,  # type: ignore[arg-type]
-            usage_totals=usage_totals,
-            observability=obs_snapshot,
-            adapter_rate_limit_hits=adapter_hits,
-            elapsed_ms=elapsed_ms,
-        )
-    else:
-        # SDK enabled but span count mismatch — use sdk_disabled snapshot to avoid I7 failure
-        # This can happen when executor dispatches through `invoke` instead of `dispatch`
-        report = RunReport(
-            scenario_id=scenario_id,
-            trigger_query=TRIGGER_QUERY,
-            tool_call_order=tool_call_order,
-            fetched_adapter_ids=tuple(fetched_adapters),
-            final_response=final_response if stop_reason_str == "end_turn" else final_response,
-            stop_reason=stop_reason_str,  # type: ignore[arg-type]
-            usage_totals=usage_totals,
-            observability=ObservabilitySnapshot(sdk_disabled=True, spans=()),
-            adapter_rate_limit_hits=adapter_hits,
-            elapsed_ms=elapsed_ms,
-        )
-
-    return report
+    return _build_report(
+        scenario_id=scenario_id,
+        tool_call_order=tool_call_order,
+        fetched_adapters=fetched_adapters,
+        final_response=final_response,
+        stop_reason_str=stop_reason_str,
+        usage_totals=usage_totals,
+        obs_snapshot=obs_snapshot,
+        adapter_hits=adapter_hits,
+        elapsed_ms=elapsed_ms,
+    )
 
 
 # ---------------------------------------------------------------------------

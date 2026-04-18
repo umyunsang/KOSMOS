@@ -26,14 +26,11 @@ from kosmos.engine.config import QueryEngineConfig
 from kosmos.engine.engine import QueryEngine
 from kosmos.engine.events import StopReason
 from kosmos.llm.models import StreamEvent, TokenUsage
-from kosmos.recovery.executor import RecoveryExecutor
-from kosmos.tools.executor import ToolExecutor
-from kosmos.tools.registry import ToolRegistry
 from tests.e2e.conftest import (
     TRIGGER_QUERY,
-    _MockLLMClientAdapter,
     _build_httpx_mock,
     _build_registry_and_executor,
+    _MockLLMClientAdapter,
 )
 from tests.engine.conftest import MockLLMClient
 

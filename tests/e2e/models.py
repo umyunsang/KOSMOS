@@ -23,7 +23,6 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from kosmos.llm.models import TokenUsage
 
-
 # ---------------------------------------------------------------------------
 # 2.1 ScenarioTurn
 # ---------------------------------------------------------------------------
@@ -58,7 +57,7 @@ class ScenarioTurn(BaseModel):
     token_usage: TokenUsage | None = None
 
     @model_validator(mode="after")
-    def _check_invariants(self) -> "ScenarioTurn":
+    def _check_invariants(self) -> ScenarioTurn:
         if self.kind == "tool_call":
             if self.tool_name is None:
                 raise ValueError("I1: kind='tool_call' requires tool_name to be non-None")
@@ -100,7 +99,7 @@ class ScenarioScript(BaseModel):
     expected_stop_reason: Literal["end_turn", "error_unrecoverable", "api_budget_exceeded"]
 
     @model_validator(mode="after")
-    def _check_min_turns(self) -> "ScenarioScript":
+    def _check_min_turns(self) -> ScenarioScript:
         if len(self.turns) < 2:
             raise ValueError("ScenarioScript must have at least 2 turns (tool call + synthesis)")
         return self
@@ -132,7 +131,7 @@ class CapturedSpan(BaseModel):
     attribute_keys: frozenset[str]
 
     @model_validator(mode="after")
-    def _check_invariants(self) -> "CapturedSpan":
+    def _check_invariants(self) -> CapturedSpan:
         # I4
         if self.outcome == "error":
             if self.status_code != "ERROR":
@@ -166,7 +165,7 @@ class ObservabilitySnapshot(BaseModel):
     sdk_disabled: bool = False
 
     @model_validator(mode="after")
-    def _check_sdk_disabled(self) -> "ObservabilitySnapshot":
+    def _check_sdk_disabled(self) -> ObservabilitySnapshot:
         if self.sdk_disabled and self.spans:
             raise ValueError(
                 "ObservabilitySnapshot: spans must be empty when sdk_disabled=True"
@@ -205,7 +204,7 @@ class RunReport(BaseModel):
     elapsed_ms: int = Field(ge=0, description="Wall-clock ms for the full run (advisory).")
 
     @model_validator(mode="after")
-    def _check_invariants(self) -> "RunReport":
+    def _check_invariants(self) -> RunReport:
         # I7: fetched_adapter_ids count matches spans with adapter_id
         span_adapter_count = sum(
             1 for s in self.observability.spans if s.adapter_id is not None

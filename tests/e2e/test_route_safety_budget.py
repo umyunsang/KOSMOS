@@ -17,7 +17,6 @@ import pytest
 from kosmos.engine.events import StopReason
 from tests.e2e.conftest import run_scenario
 
-
 # ---------------------------------------------------------------------------
 # T013 [P] [US3] Token usage tracking
 # ---------------------------------------------------------------------------
@@ -64,19 +63,21 @@ async def test_t014_api_budget_exceeded_scenario() -> None:
     This test verifies that RunReport correctly captures api_budget_exceeded
     when the engine terminates due to exhausted budget.
     """
-    from tests.e2e.conftest import (
-        TRIGGER_QUERY,
-        _MockLLMClientAdapter,
-        _build_httpx_mock,
-        _build_registry_and_executor,
-    )
-    from tests.engine.conftest import MockLLMClient
+    from unittest.mock import patch
+
+    import httpx
+
     from kosmos.context.builder import ContextBuilder
     from kosmos.engine.config import QueryEngineConfig
     from kosmos.engine.engine import QueryEngine
     from kosmos.llm.models import StreamEvent, TokenUsage
-    from unittest.mock import patch
-    import httpx
+    from tests.e2e.conftest import (
+        TRIGGER_QUERY,
+        _build_httpx_mock,
+        _build_registry_and_executor,
+        _MockLLMClientAdapter,
+    )
+    from tests.engine.conftest import MockLLMClient
 
     # A single turn that emits tool_call followed immediately by done — engine
     # will exhaust iterations if max_iterations=1 is set.

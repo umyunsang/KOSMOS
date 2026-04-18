@@ -15,7 +15,6 @@ import pytest
 
 from tests.e2e.conftest import run_scenario
 
-
 _SDK_DISABLED = os.getenv("OTEL_SDK_DISABLED", "").lower() == "true"
 
 
@@ -32,12 +31,18 @@ async def test_fr017_execute_tool_span_has_outcome() -> None:
     if obs.sdk_disabled:
         pytest.skip("OTel SDK was disabled during this run; span assertions skipped")
 
-    execute_tool_spans = [s for s in obs.spans if "execute_tool" in s.name or s.operation_name == "execute_tool"]
+    execute_tool_spans = [
+        s for s in obs.spans
+        if "execute_tool" in s.name or s.operation_name == "execute_tool"
+    ]
 
     # Happy path: at least one execute_tool span should exist
     if not execute_tool_spans:
         # If no execute_tool spans (depends on OTel integration level), warn but don't fail
-        pytest.skip("No execute_tool spans captured — OTel integration may not emit spans in test environment")
+        pytest.skip(
+            "No execute_tool spans captured — "
+            "OTel integration may not emit spans in test environment"
+        )
 
     for span in execute_tool_spans:
         assert span.outcome in ("ok", "error"), (
@@ -63,7 +68,9 @@ async def test_fr018_fetch_span_has_adapter_attribute() -> None:
     adapter_spans = [s for s in obs.spans if s.adapter_id is not None]
 
     if not adapter_spans:
-        pytest.skip("No adapter spans captured — OTel integration may not emit spans in test environment")
+        pytest.skip(
+            "No adapter spans captured — OTel integration may not emit spans in test environment"
+        )
 
     for span in adapter_spans:
         # FR-018: kosmos.tool.adapter is only set on lookup fetch spans

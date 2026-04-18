@@ -34,7 +34,6 @@ from kosmos.tools.executor import ToolExecutor
 from kosmos.tools.models import GovAPITool
 from kosmos.tools.registry import ToolRegistry
 
-
 # ---------------------------------------------------------------------------
 # T016 [US4] Permission pipeline — public tool, anonymous session
 # ---------------------------------------------------------------------------
