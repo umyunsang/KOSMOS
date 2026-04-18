@@ -18,7 +18,7 @@ import json
 import logging
 from datetime import UTC, datetime
 from enum import StrEnum
-from typing import Any, Literal
+from typing import TYPE_CHECKING, Any, Literal
 from uuid import UUID, uuid4
 
 from opentelemetry import trace
@@ -48,7 +48,7 @@ from kosmos.llm.models import ChatMessage
 from kosmos.observability.semconv import KOSMOS_AGENT_COORDINATOR_PHASE
 from kosmos.tools.registry import ToolRegistry
 
-if False:  # TYPE_CHECKING — avoid circular import at runtime
+if TYPE_CHECKING:
     from kosmos.agents.mailbox.base import Mailbox
 
 logger = logging.getLogger(__name__)
@@ -275,12 +275,12 @@ class Coordinator:
                 f"{citizen_request}"
             )
 
-            async def _run_with_semaphore(w: Worker, inst: str, wid: str) -> None:
+            async def _run_with_semaphore(w: Worker, inst: str) -> None:
                 async with self._semaphore:
                     await w.run(inst)
 
             task = asyncio.create_task(
-                _run_with_semaphore(worker, instruction, worker_id),
+                _run_with_semaphore(worker, instruction),
                 name=f"worker-{worker_id}",
             )
             tasks_by_role[worker_id] = task

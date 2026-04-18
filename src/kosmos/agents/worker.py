@@ -13,6 +13,7 @@ from __future__ import annotations
 import asyncio
 import logging
 from datetime import UTC, datetime
+from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
 from opentelemetry import trace
@@ -38,7 +39,7 @@ from kosmos.observability.semconv import (
 from kosmos.tools.executor import ToolExecutor
 from kosmos.tools.models import LookupCollection, LookupRecord, LookupTimeseries
 
-if False:  # TYPE_CHECKING — avoid circular at runtime
+if TYPE_CHECKING:
     from kosmos.agents.mailbox.base import Mailbox
 
 logger = logging.getLogger(__name__)

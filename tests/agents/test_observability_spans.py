@@ -52,10 +52,17 @@ def _spans_named(exporter: InMemorySpanExporter, name: str) -> list[Any]:
 def span_exporter(monkeypatch: pytest.MonkeyPatch) -> InMemorySpanExporter:
     """Patch module-level _tracer in coordinator, worker, and mailbox with a
     captured provider. Returns the InMemorySpanExporter to assert against.
+
+    OTEL_SDK_DISABLED is cleared for the duration of this fixture so that
+    TracerProvider.get_tracer() returns a real SDK tracer rather than a NoOp.
     """
     import kosmos.agents.coordinator as _coord_mod
     import kosmos.agents.mailbox.file_mailbox as _fm_mod
     import kosmos.agents.worker as _worker_mod
+
+    # OTEL_SDK_DISABLED=true (set by CI) causes TracerProvider.get_tracer()
+    # to return a NoOpTracer. Clear it so the in-memory exporter works.
+    monkeypatch.delenv("OTEL_SDK_DISABLED", raising=False)
 
     provider, exporter = _make_provider_and_exporter()
 
