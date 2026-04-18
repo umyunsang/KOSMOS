@@ -1,0 +1,44 @@
+KOSMOS TUI
+Copyright 2024-2026 The KOSMOS Contributors
+
+This product is a student portfolio project (research use).
+It is not affiliated with Anthropic, LG AI Research, or the Korean government.
+
+---
+
+ANTHROPIC / CLAUDE CODE ATTRIBUTION (FR-012)
+
+Portions of this software are derived from Claude Code 2.1.88 (reconstructed
+source map at .references/claude-code-sourcemap/restored-src/).
+
+Every file lifted from that source carries the following attribution header:
+
+  // Source: .references/claude-code-sourcemap/restored-src/<original-path>
+  //         (Claude Code 2.1.88, research-use)
+
+These portions are used solely for research and educational reconstruction of
+the tool-loop / TUI harness architecture. They are not reproduced for
+commercial redistribution.
+
+---
+
+GOOGLE / GEMINI CLI ATTRIBUTION (Apache-2.0)
+
+Portions of this software reference or adapt code from the Gemini CLI project
+(.references/gemini-cli/), copyright Google LLC and contributors, licensed
+under the Apache License, Version 2.0.
+
+You may obtain a copy of that license at:
+  http://www.apache.org/licenses/LICENSE-2.0
+
+In particular, the overflowToBackbuffer virtualization pattern is adapted from
+.references/gemini-cli/packages/cli/ (Apache-2.0). Adapted files carry an
+inline comment identifying the Gemini CLI Apache-2.0 source.
+
+---
+
+KOSMOS-ORIGINAL CODE
+
+All files not carrying an upstream attribution header are original work by the
+KOSMOS contributors and are licensed under the Apache License, Version 2.0.
+See the LICENSE file at the repository root for the full license text.
