@@ -151,26 +151,26 @@ Single Python package layout per `plan.md § Project Structure`:
 
 ### Tests for User Story 3
 
-- [ ] T044 [P] [US3] Contract test `tests/unit/primitives/subscribe/test_contract_shape.py` — loads `contracts/subscribe.input.schema.json` + `subscribe.output.schema.json`, validates 4-variant event union
-- [ ] T045 [P] [US3] Unit test `tests/unit/primitives/subscribe/test_no_webhook_field.py` — introspects `SubscribeInput` model and asserts no field accepts a URL that could act as inbound receiver (FR-013)
-- [ ] T046 [P] [US3] Unit test `tests/unit/primitives/subscribe/test_muxer.py` — registers the 3 mock adapters and asserts events from all 3 modalities flow through the same iterator with discriminated `kind`
-- [ ] T047 [P] [US3] Unit test `tests/unit/primitives/subscribe/test_lifetime_bound.py` — `SubscribeInput` rejects `lifetime_seconds > 31536000` (365 days ceiling, FR-011)
-- [ ] T048 [P] [US3] Integration test `tests/integration/test_subscribe_lifetime_expiry.py` — FR-014: subscribe with lifetime=1s, iterate; after expiry the iterator terminates cleanly and a final audit marker is emitted
-- [ ] T049 [P] [US3] Integration test `tests/integration/test_subscribe_backpressure.py` — mock CBS feed emits 100 events in 1s with 64-event pending-buffer cap; assert at least one `SubscriptionBackpressureDrop` event (FR-015)
-- [ ] T050 [P] [US3] Unit test `tests/unit/primitives/subscribe/test_rss_guid_dedup.py` — duplicate `guid` values are suppressed; reset `guid` on publisher side surfaces as new item (Edge Case + research.md §4)
+- [X] T044 [P] [US3] Contract test `tests/unit/primitives/subscribe/test_contract_shape.py` — loads `contracts/subscribe.input.schema.json` + `subscribe.output.schema.json`, validates 4-variant event union
+- [X] T045 [P] [US3] Unit test `tests/unit/primitives/subscribe/test_no_webhook_field.py` — introspects `SubscribeInput` model and asserts no field accepts a URL that could act as inbound receiver (FR-013)
+- [X] T046 [P] [US3] Unit test `tests/unit/primitives/subscribe/test_muxer.py` — registers the 3 mock adapters and asserts events from all 3 modalities flow through the same iterator with discriminated `kind`
+- [X] T047 [P] [US3] Unit test `tests/unit/primitives/subscribe/test_lifetime_bound.py` — `SubscribeInput` rejects `lifetime_seconds > 31536000` (365 days ceiling, FR-011)
+- [X] T048 [P] [US3] Integration test `tests/integration/test_subscribe_lifetime_expiry.py` — FR-014: subscribe with lifetime=1s, iterate; after expiry the iterator terminates cleanly and a final audit marker is emitted
+- [X] T049 [P] [US3] Integration test `tests/integration/test_subscribe_backpressure.py` — mock CBS feed emits 100 events in 1s with 64-event pending-buffer cap; assert at least one `SubscriptionBackpressureDrop` event (FR-015)
+- [X] T050 [P] [US3] Unit test `tests/unit/primitives/subscribe/test_rss_guid_dedup.py` — duplicate `guid` values are suppressed; reset `guid` on publisher side surfaces as new item (Edge Case + research.md §4)
 
 ### Implementation for User Story 3
 
-- [ ] T051 [US3] Create `src/kosmos/primitives/subscribe.py` with `SubscribeInput`, `SubscriptionHandle`, `CbsBroadcastEvent`, `RestPullTickEvent`, `RssItemEvent`, `SubscriptionBackpressureDrop`, `SubscriptionEvent` union matching `data-model.md § 3`
-- [ ] T052 [US3] Implement the modality muxer — dispatches to one of 3 internal drivers based on `AdapterRegistration.source_mode` + adapter-declared modality flag; yields `SubscriptionEvent` through a shared `asyncio.Queue` with `maxsize=64` for back-pressure
-- [ ] T053 [US3] Implement CBS broadcast driver — consumes mock `3GPP TS 23.041` fixture producing events with `cbs_message_id ∈ {4370..4385}` + SHA-256 `payload_hash`
-- [ ] T054 [US3] Implement REST-pull driver — `httpx.AsyncClient` with adapter-declared `polling_interval`; harness enforces minimum 10s interval; emits `RestPullTickEvent` per tick
-- [ ] T055 [US3] Implement RSS 2.0 driver — tracks `guid` set per-handle; de-dupes; reset `guid` treated as new item; emits `RssItemEvent`
-- [ ] T056 [US3] Implement `lifetime_seconds` enforcement — `asyncio.wait_for` on the iterator wrapper; on expiry, releases network resources and emits a final `SubscriptionBackpressureDrop` only if unflushed events remain (FR-014)
-- [ ] T057 [US3] Update `src/kosmos/primitives/__init__.py` to export real `subscribe` symbol
-- [ ] T058 [P] [US3] Create mock adapter `src/kosmos/tools/mock/cbs/disaster_feed.py` — `tool_id="mock_cbs_disaster_v1"`
-- [ ] T059 [P] [US3] Create mock adapter `src/kosmos/tools/mock/data_go_kr/rest_pull_tick.py` — `tool_id="mock_rest_pull_tick_v1"`
-- [ ] T060 [P] [US3] Create mock adapter `src/kosmos/tools/mock/data_go_kr/rss_notices.py` — `tool_id="mock_rss_public_notices_v1"`
+- [X] T051 [US3] Create `src/kosmos/primitives/subscribe.py` with `SubscribeInput`, `SubscriptionHandle`, `CbsBroadcastEvent`, `RestPullTickEvent`, `RssItemEvent`, `SubscriptionBackpressureDrop`, `SubscriptionEvent` union matching `data-model.md § 3`
+- [X] T052 [US3] Implement the modality muxer — dispatches to one of 3 internal drivers based on `AdapterRegistration.source_mode` + adapter-declared modality flag; yields `SubscriptionEvent` through a shared `asyncio.Queue` with `maxsize=64` for back-pressure
+- [X] T053 [US3] Implement CBS broadcast driver — consumes mock `3GPP TS 23.041` fixture producing events with `cbs_message_id ∈ {4370..4385}` + SHA-256 `payload_hash`
+- [X] T054 [US3] Implement REST-pull driver — `httpx.AsyncClient` with adapter-declared `polling_interval`; harness enforces minimum 10s interval; emits `RestPullTickEvent` per tick
+- [X] T055 [US3] Implement RSS 2.0 driver — tracks `guid` set per-handle; de-dupes; reset `guid` treated as new item; emits `RssItemEvent`
+- [X] T056 [US3] Implement `lifetime_seconds` enforcement — `asyncio.wait_for` on the iterator wrapper; on expiry, releases network resources and emits a final `SubscriptionBackpressureDrop` only if unflushed events remain (FR-014)
+- [X] T057 [US3] Update `src/kosmos/primitives/__init__.py` to export real `subscribe` symbol
+- [X] T058 [P] [US3] Create mock adapter `src/kosmos/tools/mock/cbs/disaster_feed.py` — `tool_id="mock_cbs_disaster_v1"`
+- [X] T059 [P] [US3] Create mock adapter `src/kosmos/tools/mock/data_go_kr/rest_pull_tick.py` — `tool_id="mock_rest_pull_tick_v1"`
+- [X] T060 [P] [US3] Create mock adapter `src/kosmos/tools/mock/data_go_kr/rss_notices.py` — `tool_id="mock_rss_public_notices_v1"`
 
 **Checkpoint**: `subscribe` is functional. 3-modality unification proven. No webhook field anywhere.
 

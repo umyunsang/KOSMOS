@@ -11,6 +11,11 @@ Six mock system sub-packages (byte- or shape-mirror-able public systems):
 OPAQUE systems (gov24 submission, KEC XML signature, NPKI portal session)
 live in docs/scenarios/ only — no mock adapter implementations (FR-026).
 
+Spec 031 US1 submit adapters (T027) — registered with kosmos.primitives.submit
+on import:
+- data_go_kr.fines_pay
+- mydata.welfare_application
+
 Spec 031 US2 verify adapters (T043) — one per family, registered on import:
 - verify_gongdong_injeungseo: 공동인증서 / KOSCOM Joint Certificate
 - verify_geumyung_injeungseo: 금융인증서 / Financial Certificate (KFTC)
@@ -18,6 +23,12 @@ Spec 031 US2 verify adapters (T043) — one per family, registered on import:
 - verify_digital_onepass: Digital Onepass Level 1-3
 - verify_mobile_id: 모바일 신분증 (mdl | resident)
 - verify_mydata: 마이데이터 OAuth 2.0 + mTLS
+
+Spec 031 US3 subscribe adapters (T058–T060) — registered with
+kosmos.primitives.subscribe on import:
+- cbs.disaster_feed.MOCK_CBS_DISASTER_TOOL (tool_id="mock_cbs_disaster_v1")
+- data_go_kr.rest_pull_tick.MOCK_REST_PULL_TICK_TOOL (tool_id="mock_rest_pull_tick_v1")
+- data_go_kr.rss_notices.MOCK_RSS_PUBLIC_NOTICES_TOOL (tool_id="mock_rss_public_notices_v1")
 """
 
 # T027 — US1 submit adapters. Import triggers self-registration in
@@ -36,3 +47,9 @@ from kosmos.tools.mock import (  # noqa: F401, E402
     verify_mobile_id,
     verify_mydata,
 )
+
+# T058–T060 — US3 subscribe adapters. Import side-effect registers each
+# tool via register_subscribe_adapter().
+from kosmos.tools.mock.cbs.disaster_feed import MOCK_CBS_DISASTER_TOOL  # noqa: F401, E402
+from kosmos.tools.mock.data_go_kr.rest_pull_tick import MOCK_REST_PULL_TICK_TOOL  # noqa: F401, E402
+from kosmos.tools.mock.data_go_kr.rss_notices import MOCK_RSS_PUBLIC_NOTICES_TOOL  # noqa: F401, E402

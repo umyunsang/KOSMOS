@@ -5,34 +5,20 @@ Exports the five primitive symbols that make up the main-tool surface:
 
 - ``lookup``: read/search/fetch (re-exported from Spec 022, byte-identical).
 - ``resolve_location``: geocoding (re-exported from Spec 022, byte-identical).
-- ``submit``: write-transaction absorber (Spec 031, lands in Phase 3).
-- ``subscribe``: CBS / REST pull / RSS 2.0 iterator (Spec 031, lands in Phase 3).
-- ``verify``: delegation-only identity binding (Spec 031 US2 — T042).
+- ``submit``: write-transaction absorber (Spec 031 US1, T024).
+- ``subscribe``: CBS / REST pull / RSS 2.0 iterator (Spec 031 US3, T057).
+- ``verify``: delegation-only identity binding (Spec 031 US2, T042).
 
-T013 — ``lookup`` and ``resolve_location`` are the real Spec 022 coroutines
-(not placeholders). ``verify`` is the real Spec 031 US2 dispatcher (T042).
-``submit`` and ``subscribe`` remain Phase 1 placeholders until their
-user-story phases land.
+All five primitives are now real implementations — the Phase 1 scaffold
+placeholders have been fully replaced by their user-story coroutines.
 """
 
 from __future__ import annotations
 
+from kosmos.primitives.submit import submit
+from kosmos.primitives.subscribe import subscribe
 from kosmos.primitives.verify import verify
 from kosmos.tools.lookup import lookup
 from kosmos.tools.resolve_location import resolve_location
 
-# T024 — replace Phase 1 placeholder with real submit dispatcher (Spec 031 US1)
-from kosmos.primitives.submit import submit  # noqa: E402
-
 __all__ = ["lookup", "resolve_location", "submit", "subscribe", "verify"]
-
-
-def _placeholder(name: str):  # pragma: no cover - Phase 1 scaffold only
-    raise NotImplementedError(
-        f"kosmos.primitives.{name} is a Phase 1 placeholder. "
-        "Real implementation lands in Spec 031 Phase 3+ tasks."
-    )
-
-
-async def subscribe(*args, **kwargs):  # pragma: no cover
-    return _placeholder("subscribe")
