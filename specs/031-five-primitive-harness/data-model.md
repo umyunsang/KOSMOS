@@ -124,6 +124,7 @@ AuthContext = Annotated[
 
 class VerifyMismatchError(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
+    family: Literal["mismatch_error"]  # structural discriminator — enables Field(discriminator="family") on VerifyOutput.result
     reason: Literal["family_mismatch"]
     expected_family: str
     observed_family: str
@@ -133,6 +134,8 @@ class VerifyOutput(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
     result: AuthContext | VerifyMismatchError = Field(discriminator="family")  # see §2.1
 ```
+
+> **Discriminator note**: `VerifyMismatchError.family = "mismatch_error"` is a **structural discriminator**, not a family-of-identity. It is the seventh tag value on the `Field(discriminator="family")` union so that Pydantic v2 can dispatch between the six real `AuthContext` variants and the error variant in a single declarative union. This label is reserved — no real identity family may use `"mismatch_error"`.
 
 ### 2.1 Per-family `published_tier` narrowing
 
