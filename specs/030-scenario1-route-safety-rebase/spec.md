@@ -197,7 +197,7 @@ Every tool call during the scenario emits an OTel `gen_ai.tool.execute` span wit
 
 **Observability spans (new vs spec 012)**
 
-- **FR-017**: Every tool call (both `resolve_location` and `lookup`) MUST emit one `gen_ai.tool.execute` span with `gen_ai.tool.name` and `kosmos.tool.outcome`.
+- **FR-017**: Every tool call (both `resolve_location` and `lookup`) MUST emit one `"execute_tool"` span (`gen_ai.operation.name = "execute_tool"`, see `src/kosmos/observability/semconv.py`) with `gen_ai.tool.name` and `kosmos.tool.outcome`.
 - **FR-018**: `lookup(mode="fetch")` spans MUST additionally carry `kosmos.tool.adapter` set to the resolved adapter id.
 - **FR-019**: Span assertions MUST verify that no raw Korean query strings from citizen input appear in exported span attributes. Citizen-originating strings MUST be absent from span attributes or represented only by a hash (per spec 021 PII masking rules).
 - **FR-020**: The span assertion test MUST be skipped gracefully (not fail) when `OTEL_SDK_DISABLED=true` is set, to preserve CI compatibility with spec 021's no-op path.

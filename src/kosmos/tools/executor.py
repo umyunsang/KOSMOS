@@ -520,6 +520,14 @@ class ToolExecutor:
                         if "error_class" in filtered:
                             span.set_attribute(ERROR_TYPE, str(filtered["error_class"]))
 
+                # FR-017: emit kosmos.tool.outcome exactly once per execute_tool span.
+                # Derived from _final_result.success — "ok" on success, "error" on failure.
+                if _final_result is not None:
+                    span.set_attribute(
+                        "kosmos.tool.outcome",
+                        "ok" if _final_result.success else "error",
+                    )
+
                 # Emit structured tool_call event (AC-A6).
                 if _final_result is not None:
                     _duration_ms = (time.monotonic() - dispatch_start) * 1000

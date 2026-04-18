@@ -1,0 +1,45 @@
+{
+  "resultCode": "00",
+  "resultMsg": "NORMAL SERVICE.",
+  "numOfRows": 10,
+  "pageNo": 1,
+  "totalCount": 2,
+  "items": {
+    "item": [
+      {
+        "spot_cd": "5111010100",
+        "spot_nm": "강원특별자치도 춘천시 교동 일대",
+        "sido_sgg_nm": "강원특별자치도 춘천시",
+        "bjd_cd": "5111010100",
+        "occrrnc_cnt": 8,
+        "caslt_cnt": 10,
+        "dth_dnv_cnt": 0,
+        "se_dnv_cnt": 2,
+        "sl_dnv_cnt": 3,
+        "wnd_dnv_cnt": 5,
+        "la_crd": 37.882,
+        "lo_crd": 127.733,
+        "geom_json": null,
+        "afos_id": "2023211",
+        "afos_fid": "5111010100_001"
+      },
+      {
+        "spot_cd": "5111010200",
+        "spot_nm": "강원특별자치도 춘천시 조양동 일대",
+        "sido_sgg_nm": "강원특별자치도 춘천시",
+        "bjd_cd": "5111010200",
+        "occrrnc_cnt": 5,
+        "caslt_cnt": 6,
+        "dth_dnv_cnt": 0,
+        "se_dnv_cnt": 1,
+        "sl_dnv_cnt": 2,
+        "wnd_dnv_cnt": 3,
+        "la_crd": 37.878,
+        "lo_crd": 127.741,
+        "geom_json": null,
+        "afos_id": "2023211",
+        "afos_fid": "5111010200_001"
+      }
+    ]
+  }
+}

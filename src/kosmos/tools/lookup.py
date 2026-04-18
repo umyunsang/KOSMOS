@@ -14,6 +14,8 @@ from __future__ import annotations
 import logging
 import uuid
 
+from opentelemetry import trace
+
 from kosmos.tools.errors import LookupErrorReason
 from kosmos.tools.models import (
     LookupCollection,
@@ -144,6 +146,12 @@ async def _lookup_fetch(
         )
 
     request_id = str(uuid.uuid4())
+
+    # FR-018: annotate the current execute_tool span with kosmos.tool.adapter
+    # for fetch mode only.  search mode and resolve_location MUST NOT carry this
+    # attribute.  Use get_current_span() — no new span is created.
+    current_span = trace.get_current_span()
+    current_span.set_attribute("kosmos.tool.adapter", inp.tool_id)
 
     result = await executor.invoke(
         tool_id=inp.tool_id,
