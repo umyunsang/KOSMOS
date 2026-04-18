@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kosmos.example/schemas/029/mohw_welfare_eligibility_search.output.schema.json",
+  "title": "MohwWelfareEligibilitySearchOutput",
+  "description": "Output envelope for the mohw_welfare_eligibility_search adapter. For the interface-only phase (this spec), registration uses a RootModel[dict[str, Any]] stub; this schema is the target shape that will replace the stub when the Layer 3 auth-gate (Epic #16 / #20) lands and real HTTP calls are enabled. Response fields confirmed from SSIS v2.2 technical document §1.1.c.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "result_code",
+    "result_message",
+    "page_no",
+    "num_of_rows",
+    "total_count",
+    "items"
+  ],
+  "properties": {
+    "result_code": {
+      "description": "결과코드 ('0' = SUCCESS in SSIS v2.0).",
+      "type": "string"
+    },
+    "result_message": {
+      "description": "결과메세지.",
+      "type": "string"
+    },
+    "page_no": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "num_of_rows": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "total_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "items": {
+      "description": "List of welfare services matching the query.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/SsisWelfareServiceItem" }
+    }
+  },
+  "$defs": {
+    "SsisWelfareServiceItem": {
+      "type": "object",
+      "description": "Single welfare-service record from NationalWelfarelistV001. 14 fields confirmed from SSIS v2.2 §1.1.c response parameter table.",
+      "additionalProperties": true,
+      "required": ["servId", "servNm", "jurMnofNm"],
+      "properties": {
+        "servId": { "type": "string", "description": "서비스ID (e.g. 'WLF00001188')" },
+        "servNm": { "type": "string", "description": "서비스명" },
+        "jurMnofNm": { "type": "string", "description": "소관부처명 (ministry)" },
+        "jurOrgNm": { "type": ["string", "null"], "description": "소관조직명 (bureau)" },
+        "inqNum": { "type": ["string", "null"], "description": "조회수 (raw string)" },
+        "servDgst": { "type": ["string", "null"], "description": "서비스 요약" },
+        "servDtlLink": { "type": ["string", "null"], "description": "서비스 상세링크 (bokjiro.go.kr)" },
+        "svcfrstRegTs": { "type": ["string", "null"], "description": "서비스등록일" },
+        "lifeArray": { "type": ["string", "null"], "description": "생애주기 (comma-separated names)" },
+        "intrsThemaArray": { "type": ["string", "null"], "description": "관심주제" },
+        "trgterIndvdlArray": { "type": ["string", "null"], "description": "가구유형" },
+        "sprtCycNm": { "type": ["string", "null"], "description": "지원주기 (e.g. '1회성')" },
+        "srvPvsnNm": { "type": ["string", "null"], "description": "제공유형 (e.g. '전자바우처')" },
+        "rprsCtadr": { "type": ["string", "null"], "description": "문의처" },
+        "onapPsbltYn": {
+          "description": "온라인신청가능여부.",
+          "type": ["string", "null"],
+          "enum": ["Y", "N", null]
+        }
+      }
+    }
+  }
+}

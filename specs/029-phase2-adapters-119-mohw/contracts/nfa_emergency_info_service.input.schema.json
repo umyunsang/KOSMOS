@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kosmos.example/schemas/029/nfa_emergency_info_service.input.schema.json",
+  "title": "NfaEmergencyInfoServiceInput",
+  "description": "Input schema for the nfa_emergency_info_service adapter (소방청 EmergencyInformationService). Exported from the pydantic v2 model defined in data-model.md §2.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "rsac_gut_fstt_ogid_nm",
+    "stmt_ym"
+  ],
+  "properties": {
+    "operation": {
+      "description": "Which emergency-info sub-endpoint to query. Default 'activity' (getEmgencyActivityInfo) returns dispatch distance, patient symptoms, and crew qualifications — the most citizen-relevant view.",
+      "type": "string",
+      "enum": [
+        "getEmgencyActivityInfo",
+        "getEmgPatientTransferInfo",
+        "getEmgPatientConditionInfo",
+        "getEmgPatientFirstaidInfo",
+        "getEmgVehicleDispatchInfo",
+        "getEmgVehicleInfo"
+      ],
+      "default": "getEmgencyActivityInfo"
+    },
+    "sido_hq_ogid_nm": {
+      "description": "Regional fire headquarters name (시도본부). Example: '서울소방재난본부'. Optional — omit to query all regions.",
+      "type": ["string", "null"],
+      "maxLength": 22,
+      "default": null
+    },
+    "rsac_gut_fstt_ogid_nm": {
+      "description": "Fire station name (출동소방서). Required. Example: '공주소방서'. Must be a valid NFA station name — do not guess.",
+      "type": "string",
+      "maxLength": 7
+    },
+    "stmt_ym": {
+      "description": "Report year-month in YYYYMM format (신고년월 or 출동년월). Example: '202101'. Required. Do not use future dates.",
+      "type": "string",
+      "pattern": "^\\d{6}$"
+    },
+    "page_no": {
+      "description": "Page number (1-indexed). Default 1.",
+      "type": "integer",
+      "minimum": 1,
+      "default": 1
+    },
+    "num_of_rows": {
+      "description": "Number of records per page. Default 10, maximum 100 per NFA API contract.",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 10
+    },
+    "result_type": {
+      "description": "Response format. Fixed to 'json' — the adapter's Content-Type guard requires JSON to be requested.",
+      "type": "string",
+      "const": "json",
+      "default": "json"
+    }
+  }
+}

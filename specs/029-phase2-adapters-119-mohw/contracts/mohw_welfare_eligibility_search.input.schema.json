@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kosmos.example/schemas/029/mohw_welfare_eligibility_search.input.schema.json",
+  "title": "MohwWelfareEligibilitySearchInput",
+  "description": "Input schema for the mohw_welfare_eligibility_search adapter (SSIS NationalWelfarelistV001). Enum values are sourced from research/data/ssis/지자체복지서비스_코드표(v1.0).doc and confirmed cross-ministry applicable via research.md §3 C2.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [],
+  "properties": {
+    "search_wrd": {
+      "description": "Free-text keyword to search welfare-service names/summaries. Korean preferred. Example: '출산'. Omit to filter by codes only.",
+      "type": ["string", "null"],
+      "maxLength": 100,
+      "default": null
+    },
+    "srch_key_code": {
+      "description": "Which fields to search (001 name, 002 summary, 003 both).",
+      "type": "string",
+      "enum": ["001", "002", "003"],
+      "default": "003"
+    },
+    "life_array": {
+      "description": "Life-stage filter (SSIS lifeArray). 001 영유아, 002 아동, 003 청소년, 004 청년, 005 중장년, 006 노년, 007 임신·출산.",
+      "type": ["string", "null"],
+      "enum": ["001", "002", "003", "004", "005", "006", "007", null],
+      "default": null
+    },
+    "trgter_indvdl_array": {
+      "description": "Target individual / household-type filter (SSIS trgterIndvdlArray). 010 다문화·탈북민, 020 다자녀, 030 보훈대상자, 040 장애인, 050 저소득, 060 한부모·조손.",
+      "type": ["string", "null"],
+      "enum": ["010", "020", "030", "040", "050", "060", null],
+      "default": null
+    },
+    "intrs_thema_array": {
+      "description": "Interest-theme filter (SSIS intrsThemaArray). 010 신체건강, 020 정신건강, 030 생활지원, 040 주거, 050 일자리, 060 문화·여가, 070 안전·위기, 080 임신·출산, 090 보육, 100 교육, 110 입양·위탁, 120 보호·돌봄, 130 서민금융, 140 법률. NOTE: the authoritative 임신·출산 code for intrsThemaArray is 080 (NOT 010).",
+      "type": ["string", "null"],
+      "enum": ["010", "020", "030", "040", "050", "060", "070", "080", "090", "100", "110", "120", "130", "140", null],
+      "default": null
+    },
+    "age": {
+      "description": "Citizen age in years. Used to filter age-eligible services. Part of the is_personal_data=True surface — do not request this without citizen consent.",
+      "type": ["integer", "null"],
+      "minimum": 0,
+      "maximum": 150,
+      "default": null
+    },
+    "onap_psblt_yn": {
+      "description": "Filter to online-applicable services when 'Y'. Omit to return both online and offline services.",
+      "type": ["string", "null"],
+      "enum": ["Y", "N", null],
+      "default": null
+    },
+    "order_by": {
+      "description": "Sort order: 'popular' (조회 수) or 'date' (등록순).",
+      "type": "string",
+      "enum": ["date", "popular"],
+      "default": "popular"
+    },
+    "page_no": {
+      "description": "Page number (1-indexed). SSIS caps at 1000.",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 1
+    },
+    "num_of_rows": {
+      "description": "Records per page. Default 10, maximum 500 per SSIS API contract.",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 500,
+      "default": 10
+    },
+    "call_tp": {
+      "description": "Call type — fixed to 'L' (list) for this endpoint.",
+      "type": "string",
+      "enum": ["L", "D"],
+      "default": "L"
+    }
+  }
+}
