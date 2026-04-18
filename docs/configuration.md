@@ -66,6 +66,9 @@ Column definitions:
 | `KOSMOS_THEME` | No | `default` | `default` \| `dark` \| `light` | `kosmos.cli.themes.load_theme` | This doc |
 | `KOSMOS_CLI_THEME` | No | `default` | `default` \| `dark` \| `light` | `kosmos.cli.themes.load_theme` (alias for `KOSMOS_THEME`) | This doc |
 | `KOSMOS_OTEL_ENDPOINT` | Yes (prod only) | — | Valid HTTPS URL | `kosmos.observability.otel (#501)` | Epic #501 |
+| `KOSMOS_OTEL_COLLECTOR_PORT` | No | `4318` | Integer (TCP port) | `docker-compose.dev.yml` otelcol host port binding | Epic #501, spec 028 |
+| `KOSMOS_LANGFUSE_OTLP_ENDPOINT` | No | `http://langfuse-web:3000/api/public/otel` | Valid HTTP(S) URL (base, no `/v1/traces` suffix) | `infra/otel-collector/config.yaml` otlphttp exporter | Epic #501, spec 028 |
+| `KOSMOS_LANGFUSE_OTLP_AUTH_HEADER` | No | `` (empty = anonymous) | `Basic <base64(pk:sk)>` string | `infra/otel-collector/config.yaml` exporter Authorization header | Epic #501, spec 028 |
 | `LANGFUSE_PUBLIC_KEY` | Yes (prod only) | — | `pk-lf-…` format string | `kosmos.observability.langfuse (#501)` | [Langfuse Cloud](https://cloud.langfuse.com) |
 | `LANGFUSE_SECRET_KEY` | Yes (prod only) | — | `sk-lf-…` format string | `kosmos.observability.langfuse (#501)` | [Langfuse Cloud](https://cloud.langfuse.com) |
 | `KOSMOS_PROMPT_REGISTRY_LANGFUSE` | No | `false` | `true` \| `false` | `kosmos.context.prompt_loader.PromptLoader` | Epic #467 |
@@ -75,10 +78,12 @@ Column definitions:
 | `KOSMOS_{TOOL_ID}_API_KEY` | Override pattern | — | API key string | `kosmos.permissions.credentials._tool_specific_var` | [Per-tool override pattern](#per-tool-override-pattern) |
 | `KOSMOS_API_KEY` | **Deprecated** | — | API key string | `kosmos.permissions.credentials.resolve_credential` (global fallback) | [Deprecation notice](#kosmos_api_key-deprecated) |
 
-> **Row count**: 31 rows (26 `KOSMOS_*` active + 2 `LANGFUSE_*` + 1 `KOSMOS_OTEL_ENDPOINT` +
+> **Row count**: 34 rows (29 `KOSMOS_*` active + 2 `LANGFUSE_*` + 1 `KOSMOS_OTEL_ENDPOINT` +
 > 1 override-family pattern + 1 deprecated). `KOSMOS_KOROAD_API_KEY` and
 > `KOSMOS_KOROAD_ACCIDENT_SEARCH_API_KEY` are concrete expansions of the
 > `KOSMOS_{TOOL_ID}_API_KEY` override-family pattern and are covered by that row.
+> Spec 028 added `KOSMOS_OTEL_COLLECTOR_PORT`, `KOSMOS_LANGFUSE_OTLP_ENDPOINT`, and
+> `KOSMOS_LANGFUSE_OTLP_AUTH_HEADER` (rows 29–31 of KOSMOS_* active set).
 
 ---
 
