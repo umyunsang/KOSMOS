@@ -30,12 +30,19 @@ OPAQUE_IDENTIFIERS = [
     "npki_portal_session",
 ]
 
-# Pre-compiled patterns for each forbidden identifier (word-boundary aware).
-# We use word boundaries so "npki_crypto" does NOT trigger on "npki_portal_session",
-# but "kec" would trigger on "kec_sign" — which is intentional, because any
-# reference to KEC in a mock adapter is a violation regardless of suffix.
+# Pre-compiled patterns for each forbidden identifier.
+# Python's built-in ``\b`` treats ``_`` as a word character, so ``\bkec\b``
+# would fail to match ``kec_sign``. We deliberately want ``kec`` and any
+# ``kec_<suffix>`` snake_case identifier to count as a violation, while still
+# excluding benign substrings like ``echecker``. The custom look-around below
+# uses ``[A-Za-z0-9]`` (no underscore) as the alphanumeric class, so ``_`` is
+# treated as a boundary — catching ``kec_sign`` while leaving ``echecker``
+# alone. ``npki_portal_session`` stays matched as a literal multi-token id.
 _OPAQUE_PATTERNS = [
-    (identifier, re.compile(r"\b" + re.escape(identifier) + r"\b"))
+    (
+        identifier,
+        re.compile(r"(?<![A-Za-z0-9])" + re.escape(identifier) + r"(?![A-Za-z0-9])"),
+    )
     for identifier in OPAQUE_IDENTIFIERS
 ]
 

@@ -22,9 +22,13 @@ mapping to avoid coupling the new envelope to the legacy BM25 / retrieval stack.
 T023 — deterministic ``transaction_id`` derivation:
     ``urn:kosmos:submit:`` + SHA-256 over canonical JSON of
     ``{tool_id, params (sorted keys), adapter_nonce}``.
-    Same inputs always produce the same URN. Adapter modules may declare a
-    ``nonce`` field on their ``AdapterRegistration`` (T023: ``nonce: str | None``
-    added to ``AdapterRegistration`` in registry.py) to namespace their outputs.
+    Same inputs always produce the same URN. The ``adapter_nonce`` is sourced
+    from :attr:`kosmos.tools.registry.AdapterRegistration.nonce` so the
+    dispatcher and the adapter body compute byte-identical transaction ids.
+    Submit adapters declare a stable ``nonce`` string (e.g.
+    ``"mock_traffic_fine_pay_v1_nonce_v1"``) on their ``AdapterRegistration``;
+    the dispatcher reads that value directly — ``None`` is the explicit
+    opt-out signal for adapters that do not need nonce namespacing.
 
 OTEL spans: each invocation emits a ``gen_ai.tool_loop.iteration`` span (Spec 021)
 via the global ``TracerProvider``. When tracing is disabled (``OTEL_SDK_DISABLED=true``
@@ -54,6 +58,7 @@ from opentelemetry import trace
 from pydantic import BaseModel, ConfigDict, Field
 
 from kosmos.primitives._errors import AdapterInvocationError, AdapterNotFoundError
+from kosmos.tools.errors import AdapterIdCollisionError
 from kosmos.tools.registry import AdapterRegistration
 
 if TYPE_CHECKING:
@@ -150,16 +155,31 @@ def register_submit_adapter(registration: AdapterRegistration, invoke_fn: Any) -
         invoke_fn: Async callable ``async (params: <AdapterInput>) -> SubmitOutput``.
             The dispatcher passes the validated adapter input model as the sole arg.
 
+    Raises:
+        AdapterIdCollisionError: When ``registration.tool_id`` is already
+            registered. Spec 031 FR-020 rejects duplicate registrations at
+            import time rather than silently discarding them so a typo or a
+            rogue third-party module cannot hijack an existing tool id. The
+            error mirrors :meth:`ToolRegistry.register` on the legacy
+            ``GovAPITool`` surface for consistency across both paths.
+
     This function is called at module-import time by adapter modules (e.g.
     ``src/kosmos/tools/mock/data_go_kr/fines_pay.py``) as their last statement.
     """
-    if registration.tool_id in _ADAPTER_REGISTRY:
-        logger.warning(
-            "submit dispatcher: tool_id collision at registration — "
-            "first-wins (FR-020): %s already registered, skipping.",
+    existing = _ADAPTER_REGISTRY.get(registration.tool_id)
+    if existing is not None:
+        existing_registration, _ = existing
+        logger.error(
+            "submit dispatcher: tool_id collision at registration (FR-020) — "
+            "%s already registered by %s; rejecting re-registration from %s.",
             registration.tool_id,
+            existing_registration.module_path,
+            registration.module_path,
         )
-        return
+        raise AdapterIdCollisionError(
+            registration.tool_id,
+            existing_module=existing_registration.module_path,
+        )
     _ADAPTER_REGISTRY[registration.tool_id] = (registration, invoke_fn)
     logger.info("submit dispatcher: registered adapter %s", registration.tool_id)
 
@@ -455,7 +475,7 @@ async def submit(
                 transaction_id=derive_transaction_id(
                     tool_id,
                     params,
-                    adapter_nonce=getattr(registration, "nonce", None),
+                    adapter_nonce=registration.nonce,
                 ),
                 status=SubmitStatus.rejected,
                 adapter_receipt={
@@ -465,8 +485,9 @@ async def submit(
             )
 
         # Step 3 — Derive deterministic transaction_id
-        adapter_nonce: str | None = getattr(registration, "nonce", None)
-        transaction_id = derive_transaction_id(tool_id, params, adapter_nonce=adapter_nonce)
+        transaction_id = derive_transaction_id(
+            tool_id, params, adapter_nonce=registration.nonce
+        )
         span.set_attribute("kosmos.submit.transaction_id", transaction_id)
 
         # Step 4 + 5 — Validate params (best-effort) and invoke adapter

@@ -143,6 +143,7 @@ REGISTRATION = AdapterRegistration(
     pipa_class="personal_standard",
     is_irreversible=True,  # V1 invariant: submit + personal_* → irreversible
     dpa_reference="KosmosTrafficFinePay-v1",
+    nonce=_ADAPTER_NONCE,
 )
 
 # Register in the submit dispatcher's in-process table

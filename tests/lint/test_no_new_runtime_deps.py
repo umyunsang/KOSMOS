@@ -66,13 +66,28 @@ def _normalise(name: str) -> str:
 
 
 def _run_git_diff(base_ref: str) -> str | None:
-    """Run git diff <base_ref> -- pyproject.toml; return stdout or None on failure."""
-    result = subprocess.run(  # noqa: S603
-        ["git", "diff", base_ref, "--", "pyproject.toml"],  # noqa: S607
-        cwd=_REPO_ROOT,
-        capture_output=True,
-        text=True,
-    )
+    """Run git diff <base_ref> -- pyproject.toml; return stdout or None on failure.
+
+    Returns ``None`` when the git invocation cannot produce a usable diff. This
+    covers three independent failure modes so the caller can fall back to the
+    snapshot comparison instead of crashing the test:
+
+    1. ``git`` binary not on PATH (``FileNotFoundError``) — minimal CI images
+       occasionally run pytest without git installed.
+    2. Generic ``OSError`` raised by the subprocess layer (permission denied,
+       cwd missing, fork failures on restricted sandboxes).
+    3. Non-zero exit code from ``git diff`` (``base_ref`` unknown, shallow
+       clone with the ref pruned, etc.).
+    """
+    try:
+        result = subprocess.run(  # noqa: S603
+            ["git", "diff", base_ref, "--", "pyproject.toml"],  # noqa: S607
+            cwd=_REPO_ROOT,
+            capture_output=True,
+            text=True,
+        )
+    except (FileNotFoundError, OSError):
+        return None
     if result.returncode != 0:
         return None
     return result.stdout

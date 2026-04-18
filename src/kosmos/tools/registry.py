@@ -137,6 +137,15 @@ class AdapterRegistration(BaseModel):
     is_irreversible: bool = False
     dpa_reference: str | None = None
 
+    # Spec 031 T023 — optional per-adapter nonce used to namespace the
+    # deterministic ``transaction_id`` emitted by the ``submit`` dispatcher
+    # (see :func:`kosmos.primitives.submit.derive_transaction_id`). Adapters
+    # that participate in the ``submit`` primitive declare a stable nonce
+    # string so the dispatcher and the adapter body compute byte-identical
+    # transaction ids (FR-004). ``None`` is valid for non-submit primitives
+    # and for submit adapters that explicitly opt out of nonce namespacing.
+    nonce: str | None = Field(default=None, max_length=128)
+
     @model_validator(mode="after")
     def _enforce_v12_dual_axis(self) -> AdapterRegistration:
         """Spec 031 FR-030 v1.2 GA backstop.
