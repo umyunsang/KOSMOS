@@ -19,6 +19,9 @@ from __future__ import annotations
 from kosmos.tools.lookup import lookup
 from kosmos.tools.resolve_location import resolve_location
 
+# T024 — replace Phase 1 placeholder with real submit dispatcher (Spec 031 US1)
+from kosmos.primitives.submit import submit  # noqa: E402
+
 __all__ = ["lookup", "resolve_location", "submit", "subscribe", "verify"]
 
 
@@ -27,10 +30,6 @@ def _placeholder(name: str):  # pragma: no cover - Phase 1 scaffold only
         f"kosmos.primitives.{name} is a Phase 1 placeholder. "
         "Real implementation lands in Spec 031 Phase 3+ tasks."
     )
-
-
-async def submit(*args, **kwargs):  # pragma: no cover
-    return _placeholder("submit")
 
 
 async def subscribe(*args, **kwargs):  # pragma: no cover
