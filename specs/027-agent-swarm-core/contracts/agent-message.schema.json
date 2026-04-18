@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kosmos/specs/027-agent-swarm-core/contracts/agent-message.schema.json",
+  "title": "AgentMessage",
+  "description": "Inter-agent message delivered via the KOSMOS Layer 4 mailbox. Closed discriminated union on msg_type / payload.kind. No `Any`, no `additionalProperties`.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "sender", "recipient", "msg_type", "payload", "timestamp"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique message identifier (UUID4)."
+    },
+    "sender": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "description": "Sender agent ID. 'coordinator' for the coordinator; 'worker-<role>-<uuid4>' for a worker."
+    },
+    "recipient": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "description": "Recipient agent ID. Mailbox enforces strict routing by this field (FR-025 — no lateral permission flow)."
+    },
+    "msg_type": {
+      "type": "string",
+      "enum": ["task", "result", "error", "permission_request", "permission_response", "cancel"]
+    },
+    "payload": {
+      "oneOf": [
+        { "$ref": "#/$defs/TaskPayload" },
+        { "$ref": "#/$defs/ResultPayload" },
+        { "$ref": "#/$defs/ErrorPayload" },
+        { "$ref": "#/$defs/PermissionRequestPayload" },
+        { "$ref": "#/$defs/PermissionResponsePayload" },
+        { "$ref": "#/$defs/CancelPayload" }
+      ],
+      "description": "Discriminator: payload.kind MUST equal msg_type."
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "RFC 3339 UTC timestamp when the message was sealed for sending."
+    },
+    "correlation_id": {
+      "oneOf": [
+        { "type": "string", "format": "uuid" },
+        { "type": "null" }
+      ],
+      "description": "Optional correlation ID. Every `result`/`error` from a worker MUST set this to the `id` of the originating `task` message."
+    }
+  },
+  "$defs": {
+    "TaskPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "instruction", "specialist_role"],
+      "properties": {
+        "kind": { "const": "task" },
+        "instruction": { "type": "string", "minLength": 1 },
+        "specialist_role": { "type": "string", "minLength": 1, "maxLength": 64 }
+      }
+    },
+    "ResultPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "lookup_output", "turn_count"],
+      "properties": {
+        "kind": { "const": "result" },
+        "lookup_output": {
+          "description": "Pydantic v2 discriminated union from kosmos.tools.models — LookupRecord | LookupCollection | LookupTimeseries. kind in {record, collection, timeseries}.",
+          "type": "object",
+          "required": ["kind"],
+          "properties": {
+            "kind": { "type": "string", "enum": ["record", "collection", "timeseries"] }
+          }
+        },
+        "turn_count": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "ErrorPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "error_type", "message"],
+      "properties": {
+        "kind": { "const": "error" },
+        "error_type": { "type": "string", "minLength": 1 },
+        "message": { "type": "string", "minLength": 1 },
+        "retryable": { "type": "boolean", "default": false }
+      }
+    },
+    "PermissionRequestPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "tool_id", "reason"],
+      "properties": {
+        "kind": { "const": "permission_request" },
+        "tool_id": { "type": "string", "minLength": 1 },
+        "reason": { "type": "string", "minLength": 1 }
+      }
+    },
+    "PermissionResponsePayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "granted", "tool_id"],
+      "properties": {
+        "kind": { "const": "permission_response" },
+        "granted": { "type": "boolean" },
+        "tool_id": { "type": "string", "minLength": 1 }
+      }
+    },
+    "CancelPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind"],
+      "properties": {
+        "kind": { "const": "cancel" },
+        "reason": { "type": "string", "minLength": 1, "default": "coordinator_requested" }
+      }
+    }
+  }
+}
