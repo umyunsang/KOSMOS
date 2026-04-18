@@ -7,7 +7,7 @@ import logging
 from enum import StrEnum
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from kosmos.security.audit import TOOL_MIN_AAL
 from kosmos.tools.bm25_index import BM25Index
@@ -133,6 +133,20 @@ class AdapterRegistration(BaseModel):
     ]
     is_irreversible: bool = False
     dpa_reference: str | None = None
+
+    @model_validator(mode="after")
+    def _enforce_v12_dual_axis(self) -> "AdapterRegistration":
+        """Spec 031 FR-030 v1.2 GA backstop.
+
+        Delegates to :func:`kosmos.security.v12_dual_axis.enforce`. No-op while
+        ``V12_GA_ACTIVE`` is ``False`` (pre-v1.2 compatibility window, FR-028).
+        Once flipped, raises ``DualAxisMissingError`` if either dual-axis field
+        is ``None``. Imported inline to avoid a circular import at module load.
+        """
+        from kosmos.security.v12_dual_axis import enforce as _enforce_v12
+
+        _enforce_v12(self)
+        return self
 
 
 class ToolRegistry:

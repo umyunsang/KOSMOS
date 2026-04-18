@@ -22,16 +22,25 @@ from kosmos.tools.registry import (
 
 
 def _base_kwargs(**overrides: object) -> dict[str, object]:
-    """Minimum valid AdapterRegistration kwargs; tests layer overrides on top."""
+    """Minimum valid AdapterRegistration kwargs; tests layer overrides on top.
+
+    Dual-axis fields default to non-None so constructions succeed under
+    V12_GA_ACTIVE=True (Spec 031 T079 GA cut). Tests that need to exercise
+    the pre-v1.2 compatibility window (None allowed) must ``monkeypatch`` the
+    toggle off explicitly.
+    """
     base: dict[str, object] = {
         "tool_id": "fake_adapter",
         "primitive": AdapterPrimitive.lookup,
         "module_path": "kosmos.tools.mock.data_go_kr.fake_adapter",
         "input_model_ref": "kosmos.tools.mock.data_go_kr.fake_adapter:FakeInput",
         "source_mode": AdapterSourceMode.OPENAPI,
+        "published_tier_minimum": "digital_onepass_level2_aal2",
+        "nist_aal_hint": "AAL2",
         "auth_type": "api_key",
         "auth_level": "AAL2",
         "pipa_class": "personal_standard",
+        "dpa_reference": "dpa-test-fake-v1",
     }
     base.update(overrides)
     return base
@@ -64,8 +73,17 @@ def test_model_is_frozen() -> None:
         reg.tool_id = "mutated"  # type: ignore[misc]
 
 
-def test_pre_v12_allows_none_dual_axis() -> None:
-    """Pre-v1.2 compatibility window (FR-028): both dual-axis fields may be None."""
+def test_pre_v12_allows_none_dual_axis(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Pre-v1.2 compatibility window (FR-028): both dual-axis fields may be None.
+
+    Requires the v1.2 backstop toggled off — T079 flipped the runtime default
+    to ``True``, so this test explicitly forces the legacy compatibility mode
+    to prove the FR-028 contract still holds in that window.
+    """
+    import kosmos.security.v12_dual_axis as _mod
+
+    monkeypatch.setattr(_mod, "V12_GA_ACTIVE", False)
+
     reg = AdapterRegistration(
         **_base_kwargs(published_tier_minimum=None, nist_aal_hint=None)
     )

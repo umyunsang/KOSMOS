@@ -19,18 +19,19 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from kosmos.tools.errors import RegistrationError
+from kosmos.tools.errors import DualAxisMissingError
 
 if TYPE_CHECKING:
     from kosmos.tools.registry import AdapterRegistration
 
 
-V12_GA_ACTIVE: bool = False
-"""Master toggle for the v1.2 GA dual-axis backstop.
+V12_GA_ACTIVE: bool = True
+"""Master toggle for the v1.2 GA dual-axis backstop (T079 — flipped on GA cut).
 
-Stays ``False`` throughout the pre-v1.2 compatibility window. When the v1.2
-cutover PR lands, this flips to ``True`` and :func:`enforce` begins rejecting
-adapters that omit either axis of the dual-axis auth contract.
+Was ``False`` throughout the pre-v1.2 compatibility window. As of the Spec 031
+v1.2 GA cutover (2026-04-19), this is ``True``: :func:`enforce` rejects any
+:class:`AdapterRegistration` that omits ``published_tier_minimum`` or
+``nist_aal_hint`` (FR-030, SC-007).
 """
 
 
@@ -45,8 +46,8 @@ def enforce(registration: AdapterRegistration) -> None:
         registration: The adapter registration about to be accepted.
 
     Raises:
-        RegistrationError: If the v1.2 GA toggle is active and either axis of
-            the dual-axis auth contract is still ``None``.
+        DualAxisMissingError: If the v1.2 GA toggle is active and either axis
+            of the dual-axis auth contract is still ``None``.
     """
     if not V12_GA_ACTIVE:
         return
@@ -58,7 +59,7 @@ def enforce(registration: AdapterRegistration) -> None:
         missing.append("nist_aal_hint")
 
     if missing:
-        raise RegistrationError(
+        raise DualAxisMissingError(
             registration.tool_id,
             (
                 "v1.2 GA dual-axis violation (FR-030): "

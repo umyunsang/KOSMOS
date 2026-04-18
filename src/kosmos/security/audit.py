@@ -14,17 +14,20 @@ References
 - ``specs/024-tool-security-v1/data-model.md`` §2 — authoritative table.
 - ``specs/024-tool-security-v1/spec.md`` — FR-002, FR-003, FR-004.
 
-The table covers every canonical tool exposed by the KOSMOS tool loop:
+The table covers the ``GovAPITool`` tools bound to V3 (``auth_level`` ==
+``TOOL_MIN_AAL[tool_id]``):
 
 - ``lookup`` — AAL1
 - ``resolve_location`` — AAL1
-- ``check_eligibility`` — AAL2 with ``public_path`` marker (AAL1 permitted for
-  rules-only evaluation over public inputs with no PII in request or response)
-- ``subscribe_alert`` — AAL2
-- ``reserve_slot`` — AAL2
-- ``issue_certificate`` — AAL3
-- ``submit_application`` — AAL2
-- ``pay`` — AAL3
+- ``nfa_emergency_info_service`` — AAL1 (Spec 029)
+- ``mohw_welfare_eligibility_search`` — AAL2 (Spec 029)
+
+Spec 031 v1.2 GA (T080) supersedes the legacy 8-verb row set with the
+dual-axis ``(published_tier_minimum, nist_aal_hint)`` contract carried on
+``AdapterRegistration``; see ``docs/security/tool-template-security-spec-v1.md``
+§2. The six legacy verbs (``check_eligibility`` / ``subscribe_alert`` /
+``reserve_slot`` / ``issue_certificate`` / ``submit_application`` / ``pay``)
+no longer appear as ``GovAPITool`` IDs.
 
 Every ``GovAPITool.auth_level`` MUST equal its row here; drift is a load-time
 failure enforced by validator ``V3`` in ``kosmos.tools.models``.
@@ -64,14 +67,14 @@ PermissionDecision = Literal[
 MerkleCoveredHash = Literal["sanitized_output_hash", "output_hash"]
 
 TOOL_MIN_AAL: Final[dict[str, AALLevel]] = {
+    # Spec 031 T080 — legacy 8-verb table replaced by dual-axis contract.
+    # Only primitives/Phase-2 adapters whose tool_id still flows through V3
+    # (GovAPITool.auth_level == TOOL_MIN_AAL[tool_id]) remain. Six legacy
+    # verbs (check_eligibility / subscribe_alert / reserve_slot /
+    # issue_certificate / submit_application / pay) are superseded by the
+    # v1.2 dual-axis table; see docs/security/tool-template-security-spec-v1.md §2.
     "lookup": "AAL1",
     "resolve_location": "AAL1",
-    "check_eligibility": "AAL2",
-    "subscribe_alert": "AAL2",
-    "reserve_slot": "AAL2",
-    "issue_certificate": "AAL3",
-    "submit_application": "AAL2",
-    "pay": "AAL3",
     # Phase 2 API adapters (spec 029):
     "nfa_emergency_info_service": "AAL1",  # NFA EMS stats — anonymized, serviceKey auth
     "mohw_welfare_eligibility_search": "AAL2",  # SSIS welfare — personal demographic inputs

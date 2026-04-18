@@ -160,6 +160,17 @@ class RegistrationError(KosmosToolError):
         self.tool_id = tool_id
 
 
+class DualAxisMissingError(RegistrationError):
+    """Spec 031 v1.2 GA dual-axis backstop violation (FR-030).
+
+    Raised by :func:`kosmos.security.v12_dual_axis.enforce` when
+    ``V12_GA_ACTIVE`` is ``True`` and either ``published_tier_minimum`` or
+    ``nist_aal_hint`` is ``None`` on an :class:`AdapterRegistration`.
+    Subclasses :class:`RegistrationError` so existing
+    ``except RegistrationError`` handlers keep working (FR-028).
+    """
+
+
 class Layer3GateViolation(KosmosToolError):  # noqa: N818
     """Raised when an NMC-style stub adapter's handler body is reached despite the Layer 3 gate.
 

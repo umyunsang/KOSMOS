@@ -163,8 +163,18 @@ async def test_submit_with_matching_tier_passes_gate(
 
 
 @pytest.mark.asyncio
-async def test_submit_no_tier_minimum_always_passes() -> None:
-    """Adapter with published_tier_minimum=None never rejects on tier (pre-v1.2)."""
+async def test_submit_no_tier_minimum_always_passes(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Adapter with published_tier_minimum=None never rejects on tier (pre-v1.2).
+
+    Forces ``V12_GA_ACTIVE=False`` so the pre-v1.2 compatibility window
+    (FR-028) is in effect; T079 flipped the runtime default to ``True``.
+    """
+    import kosmos.security.v12_dual_axis as _mod
+
+    monkeypatch.setattr(_mod, "V12_GA_ACTIVE", False)
+
     from kosmos.primitives.submit import check_tier_gate
 
     reg_no_tier = AdapterRegistration(

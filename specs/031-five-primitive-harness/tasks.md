@@ -212,17 +212,17 @@ Single Python package layout per `plan.md § Project Structure`:
 
 ### Tests for User Story 6
 
-- [ ] T073 [P] [US6] Docs-lint test `tests/lint/test_security_spec_v12.py` — asserts `docs/security/tool-template-security-spec-v1.md` contains `## Version 1.2`, contains a migration note section, does NOT contain `TOOL_MIN_AAL` single-axis table, contains the `(published_tier_minimum, nist_aal_hint)` dual-axis table
-- [ ] T074 [P] [US6] Unit test `tests/unit/security/test_v12_dual_axis.py` — toggles `v12_dual_axis.V12_GA_ACTIVE = True` in a fixture and asserts registrations without both dual-axis fields raise `DualAxisMissingError` (FR-030, SC-007)
-- [ ] T075 [P] [US6] Registry-regression test `tests/unit/security/test_spec_024_025_preserved.py` — asserts V1 (irreversible rule), V3 (auth-level mapping), V6 (auth-type↔auth-level allow-list) still fire on/after v1.2 GA toggle (FR-028)
+- [X] T073 [P] [US6] Docs-lint test `tests/lint/test_security_spec_v12.py` — asserts `docs/security/tool-template-security-spec-v1.md` contains `## Version 1.2`, contains a migration note section, does NOT contain `TOOL_MIN_AAL` single-axis table, contains the `(published_tier_minimum, nist_aal_hint)` dual-axis table
+- [X] T074 [P] [US6] Unit test `tests/unit/security/test_v12_dual_axis.py` — toggles `v12_dual_axis.V12_GA_ACTIVE = True` in a fixture and asserts registrations without both dual-axis fields raise `DualAxisMissingError` (FR-030, SC-007)
+- [X] T075 [P] [US6] Registry-regression test `tests/unit/security/test_spec_024_025_preserved.py` — asserts V1 (irreversible rule), V3 (auth-level mapping), V6 (auth-type↔auth-level allow-list) still fire on/after v1.2 GA toggle (FR-028)
 
 ### Implementation for User Story 6
 
-- [ ] T076 [US6] Bump `docs/security/tool-template-security-spec-v1.md` metadata header to `Version: 1.2` + `Status: Draft` + `Supersedes: v1.1`
-- [ ] T077 [US6] Replace the `TOOL_MIN_AAL` table in the doc with the `(published_tier_minimum, nist_aal_hint)` dual-axis table — covering the 4 Spec 022 adapters + the new mock adapter landings from US1/US2/US3
-- [ ] T078 [US6] Write the v1.1→v1.2 migration note section in the doc — explicit list of which invariants re-stated (V1–V6 verbatim) vs superseded (`TOOL_MIN_AAL` → dual-axis)
-- [ ] T079 [US6] Flip `src/kosmos/security/v12_dual_axis.py::V12_GA_ACTIVE` from `False` to `True` — activates FR-030 enforcement
-- [ ] T080 [US6] Delete the legacy 8-verb entries from `src/kosmos/security/audit.py::TOOL_MIN_AAL` (confirmed present per research.md §6); migrate the 4 Spec 022 adapters + 2 Phase-2 entries to dual-axis
+- [X] T076 [US6] Bump `docs/security/tool-template-security-spec-v1.md` metadata header to `Version: 1.2` + `Status: Draft` + `Supersedes: v1.1`
+- [X] T077 [US6] Replace the `TOOL_MIN_AAL` table in the doc with the `(published_tier_minimum, nist_aal_hint)` dual-axis table — covering the 4 Spec 022 adapters + the new mock adapter landings from US1/US2/US3
+- [X] T078 [US6] Write the v1.1→v1.2 migration note section in the doc — explicit list of which invariants re-stated (V1–V6 verbatim) vs superseded (`TOOL_MIN_AAL` → dual-axis)
+- [X] T079 [US6] Flip `src/kosmos/security/v12_dual_axis.py::V12_GA_ACTIVE` from `False` to `True` — activates FR-030 enforcement
+- [X] T080 [US6] Delete the legacy 8-verb entries from `src/kosmos/security/audit.py::TOOL_MIN_AAL` (confirmed present per research.md §6); migrate the 4 Spec 022 adapters + 2 Phase-2 entries to dual-axis
 
 **Checkpoint**: Security spec is v1.2; dual-axis enforced at registration time; legacy 8-verb AAL-only artifacts removed.
 
