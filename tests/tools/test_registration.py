@@ -18,12 +18,14 @@ class TestToolRegistration:
           T049  —2 (address_to_region, address_to_grid removed)
           Stage 3 (T033/T048/T056)  +3 (nmc_emergency_search,
             kma_forecast_fetch, hira_hospital_search)
-        Total: 13 (= 2 MVP core + 8 legacy adapters + 3 seed adapters).
+          Phase 2 (spec 029)  +2 (nfa_emergency_info_service,
+            mohw_welfare_eligibility_search)
+        Total: 15 (= 2 MVP core + 8 legacy adapters + 3 seed adapters + 2 Phase 2 stubs).
         """
         registry = ToolRegistry()
         executor = ToolExecutor(registry)
         register_all_tools(registry, executor)
-        assert len(registry) == 13
+        assert len(registry) == 15
 
     def test_tool_ids_present(self) -> None:
         """Each expected tool_id is in the registry.
@@ -49,6 +51,9 @@ class TestToolRegistration:
             "nmc_emergency_search",
             "kma_forecast_fetch",
             "hira_hospital_search",
+            # Phase 2 adapters (spec 029)
+            "nfa_emergency_info_service",
+            "mohw_welfare_eligibility_search",
         }
         for tool_id in expected:
             assert tool_id in registry, f"{tool_id} not found in registry"
@@ -74,6 +79,9 @@ class TestToolRegistration:
             "nmc_emergency_search",
             "kma_forecast_fetch",
             "hira_hospital_search",
+            # Phase 2 adapters (spec 029)
+            "nfa_emergency_info_service",
+            "mohw_welfare_eligibility_search",
         }
         for tool_id in expected:
             assert tool_id in executor._adapters, f"No adapter for {tool_id}"

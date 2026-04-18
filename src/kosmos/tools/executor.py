@@ -47,8 +47,12 @@ def _classify_adapter_exception(exc: Exception) -> tuple[LookupErrorReason, bool
     """Map adapter exceptions to (reason, retryable) for the error envelope."""
     import httpx  # noqa: PLC0415
 
+    from kosmos.tools.errors import Layer3GateViolation  # noqa: PLC0415
     from kosmos.tools.kma.projection import KMADomainError  # noqa: PLC0415
 
+    if isinstance(exc, Layer3GateViolation):
+        # Programming error: stub handler was reached despite auth-gate — never retry.
+        return (LookupErrorReason.upstream_unavailable, False)
     if isinstance(exc, (ValueError, TypeError, KMADomainError)):
         return (LookupErrorReason.invalid_params, False)
     if isinstance(exc, httpx.TimeoutException):

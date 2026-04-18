@@ -1,0 +1,6 @@
+{
+  "additionalProperties": true,
+  "description": "Placeholder output schema for GovAPITool registration.\n\nReal output shape is deferred until Layer 3 auth is provisioned (Epic #16/#20).",
+  "title": "_NfaEmergencyInfoServiceOutputStub",
+  "type": "object"
+}
