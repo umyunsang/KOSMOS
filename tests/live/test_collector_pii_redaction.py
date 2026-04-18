@@ -42,7 +42,8 @@ _COLLECTOR_PORT_RAW = os.environ.get("KOSMOS_OTEL_COLLECTOR_PORT", "4318")
 try:
     _COLLECTOR_PORT = int(_COLLECTOR_PORT_RAW)
 except ValueError:
-    _COLLECTOR_PORT = 4318  # fall back to default; invalid value surfaced at test time
+    # sentinel: live tests will skip with a clear message (see _require_live_stack)
+    _COLLECTOR_PORT = None
 
 _LANGFUSE_BASE_URL = "http://localhost:3000"
 _LANGFUSE_HEALTH_URL = f"{_LANGFUSE_BASE_URL}/api/public/health"
@@ -71,6 +72,11 @@ def _langfuse_reachable() -> bool:
 @pytest.fixture(scope="module", autouse=False)
 def _require_live_stack() -> None:
     """Skip the entire module when the live stack is unavailable."""
+    if _COLLECTOR_PORT is None:
+        pytest.skip(
+            f"KOSMOS_OTEL_COLLECTOR_PORT={_COLLECTOR_PORT_RAW!r} is not a valid integer — "
+            "fix or unset it before running live PII redaction tests."
+        )
     if not _AUTH_HEADER:
         pytest.skip(
             "KOSMOS_LANGFUSE_OTLP_AUTH_HEADER is unset — "
@@ -164,6 +170,27 @@ def _fetch_trace_from_langfuse(trace_id_hex: str) -> dict | None:
     return None
 
 
+def _wait_for_trace(
+    trace_id_hex: str,
+    *,
+    timeout_seconds: float = 30.0,
+    poll_interval_seconds: float = 1.0,
+) -> dict | None:
+    """Poll Langfuse until the trace appears or *timeout_seconds* elapses.
+
+    Replaces a fixed ``time.sleep`` with a bounded polling loop so the test
+    fails fast on a healthy stack while remaining resilient on slow machines
+    (e.g. first-run ClickHouse migration).  Returns the trace dict or None.
+    """
+    deadline = time.monotonic() + timeout_seconds
+    while time.monotonic() < deadline:
+        result = _fetch_trace_from_langfuse(trace_id_hex)
+        if result is not None:
+            return result
+        time.sleep(poll_interval_seconds)
+    return None
+
+
 # ---------------------------------------------------------------------------
 # Tests
 # ---------------------------------------------------------------------------
@@ -183,12 +210,10 @@ def test_patient_name_deleted_by_collector(_require_live_stack: None) -> None:
 
     _emit_test_span(trace_id_hex)
 
-    # Wait for batch processor timeout (5 s) + Langfuse ingestion buffer
-    time.sleep(8)
-
-    trace = _fetch_trace_from_langfuse(trace_id_hex)
+    # Poll until trace appears (batch processor 5 s + Langfuse ingestion buffer)
+    trace = _wait_for_trace(trace_id_hex, timeout_seconds=30.0)
     assert trace is not None, (
-        f"Trace {trace_id_hex!r} not found in Langfuse after 8 s. "
+        f"Trace {trace_id_hex!r} not found in Langfuse after 30 s. "
         "Check collector logs: docker compose -f docker-compose.dev.yml logs otelcol --tail=50"
     )
 
@@ -225,12 +250,10 @@ def test_location_query_hashed_by_collector(_require_live_stack: None) -> None:
 
     _emit_test_span(trace_id_hex)
 
-    # Wait for batch processor + Langfuse ingestion
-    time.sleep(8)
-
-    trace = _fetch_trace_from_langfuse(trace_id_hex)
+    # Poll until trace appears (batch processor 5 s + Langfuse ingestion buffer)
+    trace = _wait_for_trace(trace_id_hex, timeout_seconds=30.0)
     assert trace is not None, (
-        f"Trace {trace_id_hex!r} not found in Langfuse after 8 s. "
+        f"Trace {trace_id_hex!r} not found in Langfuse after 30 s. "
         "Check: docker compose -f docker-compose.dev.yml logs otelcol --tail=50"
     )
 
