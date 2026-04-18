@@ -157,25 +157,25 @@ description: "Task list for Spec 287 TUI (Ink + React + Bun)"
 
 ### Implementation for User Story 3
 
-- [ ] T070 [P] [US3] Create `tui/src/components/primitive/PointCard.tsx` rendering key-value table + collapsible raw-JSON expander (FR-017)
-- [ ] T071 [P] [US3] Create `tui/src/components/primitive/TimeseriesTable.tsx` with semantic column headers only (FR-018)
-- [ ] T072 [P] [US3] Create `tui/src/components/primitive/CollectionList.tsx` with pagination + "Load more" callback emitting follow-up IPC frame (FR-019)
-- [ ] T073 [P] [US3] Create `tui/src/components/primitive/DetailView.tsx` (FR-020)
-- [ ] T074 [P] [US3] Create `tui/src/components/primitive/ErrorBanner.tsx` with per-reason icon + retry; `auth_required` wires to permission-consent dialog (FR-021)
-- [ ] T075 [P] [US3] Create `tui/src/components/primitive/CoordPill.tsx` (FR-022)
-- [ ] T076 [P] [US3] Create `tui/src/components/primitive/AdmCodeBadge.tsx` (FR-023)
-- [ ] T077 [P] [US3] Create `tui/src/components/primitive/AddressBlock.tsx` (FR-024)
-- [ ] T078 [P] [US3] Create `tui/src/components/primitive/POIMarker.tsx` (FR-025)
-- [ ] T079 [P] [US3] Create `tui/src/components/primitive/SubmitReceipt.tsx` handling all 5 families + `[MOCK: <reason>]` chip (FR-026)
-- [ ] T080 [P] [US3] Create `tui/src/components/primitive/SubmitErrorBanner.tsx` (FR-027)
-- [ ] T081 [P] [US3] Create `tui/src/components/primitive/EventStream.tsx` consuming subscribe AsyncIterator frames; modality banner + dedup/throttle indicators (FR-028)
-- [ ] T082 [P] [US3] Create `tui/src/components/primitive/StreamClosed.tsx` (FR-029)
-- [ ] T083 [P] [US3] Create `tui/src/components/primitive/AuthContextCard.tsx` — korea_tier primary label; NIST hint advisory-only (FR-030, FR-031)
-- [ ] T084 [P] [US3] Create `tui/src/components/primitive/AuthWarningBanner.tsx` (FR-032)
-- [ ] T085 [P] [US3] Create `tui/src/components/primitive/UnrecognizedPayload.tsx` with warning-log side effect; no structure inference (FR-033)
-- [ ] T086 [US3] Create `tui/src/components/primitive/index.tsx` exporting a `PrimitiveDispatcher` that switches on `envelope.kind` + subtype discriminator and routes to the 14 renderers; exhaustive switch compile-time checked against generated TS union (FR-008)
+- [X] T070 [P] [US3] Create `tui/src/components/primitive/PointCard.tsx` rendering key-value table + collapsible raw-JSON expander (FR-017)
+- [X] T071 [P] [US3] Create `tui/src/components/primitive/TimeseriesTable.tsx` with semantic column headers only (FR-018)
+- [X] T072 [P] [US3] Create `tui/src/components/primitive/CollectionList.tsx` with pagination + "Load more" callback emitting follow-up IPC frame (FR-019)
+- [X] T073 [P] [US3] Create `tui/src/components/primitive/DetailView.tsx` (FR-020)
+- [X] T074 [P] [US3] Create `tui/src/components/primitive/ErrorBanner.tsx` with per-reason icon + retry; `auth_required` wires to permission-consent dialog (FR-021)
+- [X] T075 [P] [US3] Create `tui/src/components/primitive/CoordPill.tsx` (FR-022)
+- [X] T076 [P] [US3] Create `tui/src/components/primitive/AdmCodeBadge.tsx` (FR-023)
+- [X] T077 [P] [US3] Create `tui/src/components/primitive/AddressBlock.tsx` (FR-024)
+- [X] T078 [P] [US3] Create `tui/src/components/primitive/POIMarker.tsx` (FR-025)
+- [X] T079 [P] [US3] Create `tui/src/components/primitive/SubmitReceipt.tsx` handling all 5 families + `[MOCK: <reason>]` chip (FR-026)
+- [X] T080 [P] [US3] Create `tui/src/components/primitive/SubmitErrorBanner.tsx` (FR-027)
+- [X] T081 [P] [US3] Create `tui/src/components/primitive/EventStream.tsx` consuming subscribe AsyncIterator frames; modality banner + dedup/throttle indicators (FR-028)
+- [X] T082 [P] [US3] Create `tui/src/components/primitive/StreamClosed.tsx` (FR-029)
+- [X] T083 [P] [US3] Create `tui/src/components/primitive/AuthContextCard.tsx` — korea_tier primary label; NIST hint advisory-only (FR-030, FR-031)
+- [X] T084 [P] [US3] Create `tui/src/components/primitive/AuthWarningBanner.tsx` (FR-032)
+- [X] T085 [P] [US3] Create `tui/src/components/primitive/UnrecognizedPayload.tsx` with warning-log side effect; no structure inference (FR-033)
+- [X] T086 [US3] Create `tui/src/components/primitive/index.tsx` exporting a `PrimitiveDispatcher` that switches on `envelope.kind` + subtype discriminator and routes to the 14 renderers; exhaustive switch compile-time checked against generated TS union (FR-008)
 - [ ] T087 [US3] Wire `PrimitiveDispatcher` into `tui/src/components/conversation/MessageList.tsx` so every `tool_result` frame in the store renders via the dispatcher
-- [ ] T088 [US3] Pull fixtures from #507 + #1052 recorded responses into `tui/tests/fixtures/{lookup,resolve_location,submit,subscribe,verify}/` per FR-035; document provenance in `tui/tests/fixtures/README.md`
+- [X] T088 [US3] Pull fixtures from #507 + #1052 recorded responses into `tui/tests/fixtures/{lookup,resolve_location,submit,subscribe,verify}/` per FR-035; document provenance in `tui/tests/fixtures/README.md`
 
 **Checkpoint**: Every 5-primitive output variant renders in isolation via fixture + full dispatch works end-to-end.
 

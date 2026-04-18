@@ -1,0 +1,15 @@
+{
+  "session_id": "01HWZK5P1XZ8Q4VNMJ2TRCB7AE",
+  "correlation_id": "01HWZK5P1XZ8Q4VNMJ2TRCB7AF",
+  "ts": "2026-04-19T00:00:00.000Z",
+  "kind": "tool_result",
+  "call_id": "01HWZK5P1XZ8Q4VNMJ2TRCB7AK",
+  "envelope": {
+    "kind": "lookup",
+    "subtype": "error",
+    "tool_id": "koroad_accident_hazard_search",
+    "title": "Search Failed",
+    "description": "The data.go.kr endpoint returned HTTP 503 (Service Unavailable).",
+    "retry_hint": "Try again in 30 seconds. The API is rate-limited to 1000 req/day."
+  }
+}

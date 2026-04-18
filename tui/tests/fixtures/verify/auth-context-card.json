@@ -1,0 +1,16 @@
+{
+  "session_id": "01HWZK5P1XZ8Q4VNMJ2TRCB7AE",
+  "correlation_id": "01HWZK5P1XZ8Q4VNMJ2TRCB7AF",
+  "ts": "2026-04-19T00:00:00.000Z",
+  "kind": "tool_result",
+  "call_id": "01HWZK5P1XZ8Q4VNMJ2TRCB7AT",
+  "envelope": {
+    "kind": "verify",
+    "tool_id": "digital_onepass_verify",
+    "family": "digital_onepass",
+    "ok": true,
+    "korea_tier": "AAL2",
+    "nist_aal_hint": "NIST SP 800-63B AAL2",
+    "identity_label": "홍길동 (주민등록번호 끝 2자리: 84)"
+  }
+}

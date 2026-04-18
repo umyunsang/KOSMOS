@@ -1,0 +1,17 @@
+{
+  "session_id": "01HWZK5P1XZ8Q4VNMJ2TRCB7AE",
+  "correlation_id": "01HWZK5P1XZ8Q4VNMJ2TRCB7AF",
+  "ts": "2026-04-19T00:00:00.000Z",
+  "kind": "tool_result",
+  "call_id": "01HWZK5P1XZ8Q4VNMJ2TRCB7AU",
+  "envelope": {
+    "kind": "verify",
+    "tool_id": "digital_onepass_verify",
+    "family": "digital_onepass",
+    "ok": false,
+    "korea_tier": "AAL1",
+    "error_code": "CERT_EXPIRED",
+    "message": "The presented certificate has expired. Verification cannot be completed.",
+    "remediation": "Renew your GongdongInjeungseo at the nearest community service center or online at gov.kr."
+  }
+}

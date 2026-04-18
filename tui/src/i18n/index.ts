@@ -9,3 +9,8 @@ export type { I18nBundle };
 const LOCALE = process.env['KOSMOS_TUI_LOCALE'] ?? 'ko';
 
 export const i18n: I18nBundle = LOCALE === 'en' ? en : ko;
+
+/** React hook returning the active i18n bundle. */
+export function useI18n(): I18nBundle {
+  return i18n;
+}

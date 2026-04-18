@@ -1,0 +1,21 @@
+{
+  "session_id": "01HWZK5P1XZ8Q4VNMJ2TRCB7AE",
+  "correlation_id": "01HWZK5P1XZ8Q4VNMJ2TRCB7AF",
+  "ts": "2026-04-19T00:00:00.000Z",
+  "kind": "tool_result",
+  "call_id": "01HWZK5P1XZ8Q4VNMJ2TRCB7AJ",
+  "envelope": {
+    "kind": "lookup",
+    "subtype": "detail",
+    "tool_id": "nmc_emergency_search",
+    "fields": [
+      { "label": "Hospital Name", "value": "Seoul Emergency Medical Center" },
+      { "label": "Emergency Level", "value": "Level 1 (Regional)" },
+      { "label": "Address", "value": "110, Sejong-daero, Jung-gu, Seoul" },
+      { "label": "Phone", "value": "02-1339" },
+      { "label": "Bed Availability", "value": "8 beds available" },
+      { "label": "Wait Time", "value": "~15 minutes" },
+      { "label": "Open Hours", "value": "24/7" }
+    ]
+  }
+}
