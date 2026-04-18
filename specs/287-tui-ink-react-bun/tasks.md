@@ -109,22 +109,22 @@ description: "Task list for Spec 287 TUI (Ink + React + Bun)"
 
 ### Tests for User Story 2
 
-- [ ] T041 [P] [US2] Component test `tui/tests/commands/dispatcher.test.ts`: inject `/save`, `/sessions`, `/resume <id>`, `/new`, and an unknown `/foo`; assert (a) each valid command emits the matching `session_event` frame, (b) `/foo` renders a help snippet (no crash) (US2 scenarios 1, 2, 4; FR-038, FR-042)
-- [ ] T042 [P] [US2] Component test `tui/tests/theme/provider.test.tsx`: set `KOSMOS_TUI_THEME=light|dark|default` and assert `<ThemeProvider />` exposes the matching token set; unset → default token set (US2 scenario 3; FR-039)
-- [ ] T043 [P] [US2] Registry-shape test `tui/tests/commands/registry.test.ts`: load `tui/src/commands/registry.ts` and assert its shape (keys, per-entry interface) is structurally identical to `restored-src/src/commands/` registry per FR-036 / US2 scenario 5
-- [ ] T044 [P] [US2] i18n test `tui/tests/i18n/strings.test.ts`: assert `en.ts` and `ko.ts` export the same key set; no English string in `ko.ts` except technical identifiers (FR-037)
+- [X] T041 [P] [US2] Component test `tui/tests/commands/dispatcher.test.ts`: inject `/save`, `/sessions`, `/resume <id>`, `/new`, and an unknown `/foo`; assert (a) each valid command emits the matching `session_event` frame, (b) `/foo` renders a help snippet (no crash) (US2 scenarios 1, 2, 4; FR-038, FR-042)
+- [X] T042 [P] [US2] Component test `tui/tests/theme/provider.test.tsx`: set `KOSMOS_TUI_THEME=light|dark|default` and assert `<ThemeProvider />` exposes the matching token set; unset → default token set (US2 scenario 3; FR-039)
+- [X] T043 [P] [US2] Registry-shape test `tui/tests/commands/registry.test.ts`: load `tui/src/commands/registry.ts` and assert its shape (keys, per-entry interface) is structurally identical to `restored-src/src/commands/` registry per FR-036 / US2 scenario 5
+- [X] T044 [P] [US2] i18n test `tui/tests/i18n/strings.test.ts`: assert `en.ts` and `ko.ts` export the same key set; no English string in `ko.ts` except technical identifiers (FR-037)
 
 ### Implementation for User Story 2
 
-- [ ] T045 [US2] Lift `tui/src/commands/dispatcher.ts` from `restored-src/src/commands.ts` + `restored-src/src/commands/` registry shape with attribution header (FR-036)
-- [ ] T046 [P] [US2] Create `tui/src/commands/save.ts` emitting `session_event: "save"` via IPC bridge (FR-038, US2 scenario 2)
-- [ ] T047 [P] [US2] Create `tui/src/commands/sessions.ts` emitting `session_event: "list"` + rendering returned list (FR-038, US2 scenario 1)
-- [ ] T048 [P] [US2] Create `tui/src/commands/resume.ts` emitting `session_event: "resume"` with `{id}` payload (FR-038)
-- [ ] T049 [P] [US2] Create `tui/src/commands/new.ts` emitting `session_event: "new"` + clearing store (FR-038)
+- [X] T045 [US2] Lift `tui/src/commands/dispatcher.ts` from `restored-src/src/commands.ts` + `restored-src/src/commands/` registry shape with attribution header (FR-036)
+- [X] T046 [P] [US2] Create `tui/src/commands/save.ts` emitting `session_event: "save"` via IPC bridge (FR-038, US2 scenario 2)
+- [X] T047 [P] [US2] Create `tui/src/commands/sessions.ts` emitting `session_event: "list"` + rendering returned list (FR-038, US2 scenario 1)
+- [X] T048 [P] [US2] Create `tui/src/commands/resume.ts` emitting `session_event: "resume"` with `{id}` payload (FR-038)
+- [X] T049 [P] [US2] Create `tui/src/commands/new.ts` emitting `session_event: "new"` + clearing store (FR-038)
 - [ ] T050 [US2] Wire dispatcher into `tui/src/entrypoints/tui.tsx` — slash-prefixed input intercepted before `user_input` frame emission
-- [ ] T051 [US2] Add help renderer for unknown commands in `tui/src/commands/dispatcher.ts` reading registered names (FR-042, US2 scenario 4)
+- [X] T051 [US2] Add help renderer for unknown commands in `tui/src/commands/dispatcher.ts` reading registered names (FR-042, US2 scenario 4)
 - [ ] T052 [US2] Wire `ThemeProvider` into `tui/src/main.tsx` at root; all Box/Text components consume `useTheme()` hook — no inline hex colors permitted (FR-040)
-- [ ] T053 [P] [US2] Document `KOSMOS_TUI_THEME` in `docs/configuration.md` with the 3 values (FR-039)
+- [X] T053 [P] [US2] Document `KOSMOS_TUI_THEME` in `docs/configuration.md` with the 3 values (FR-039)
 
 **Checkpoint**: Slash commands round-trip through IPC; theme switch works; upstream registry diff applies cleanly.
 
@@ -138,22 +138,22 @@ description: "Task list for Spec 287 TUI (Ink + React + Bun)"
 
 ### Tests for User Story 3
 
-- [ ] T054 [P] [US3] Component test `tui/tests/components/primitive/PointCard.test.tsx` — LookupPoint + LookupRecord fixtures from `tui/tests/fixtures/lookup/point/` (US3 scenario 1; FR-017)
-- [ ] T055 [P] [US3] Component test `tui/tests/components/primitive/TimeseriesTable.test.tsx` — LookupTimeseries fixture; assert semantic headers appear, raw codes (TMP/PCP/REH) do NOT (US3 scenario 2; FR-018)
-- [ ] T056 [P] [US3] Component test `tui/tests/components/primitive/CollectionList.test.tsx` — LookupList + LookupCollection fixture; assert pagination row + "Load more" affordance triggers a follow-up `lookup(mode="fetch", page=...)` IPC frame (US3 scenario 3; FR-019)
-- [ ] T057 [P] [US3] Component test `tui/tests/components/primitive/DetailView.test.tsx` — LookupDetail fixture (FR-020)
-- [ ] T058 [P] [US3] Component test `tui/tests/components/primitive/ErrorBanner.test.tsx` — LookupError with `reason=auth_required` (permission-consent dialog) + 4 other reason values (US3 scenario 4; FR-021)
-- [ ] T059 [P] [US3] Component test `tui/tests/components/primitive/CoordPill.test.tsx` — resolve_location coords slot (FR-022)
-- [ ] T060 [P] [US3] Component test `tui/tests/components/primitive/AdmCodeBadge.test.tsx` — 10-digit adm_cd + Korean name (FR-023)
-- [ ] T061 [P] [US3] Component test `tui/tests/components/primitive/AddressBlock.test.tsx` — road + jibun + zipcode (FR-024)
-- [ ] T062 [P] [US3] Component test `tui/tests/components/primitive/POIMarker.test.tsx` — POI id + canonical name (FR-025)
-- [ ] T063 [P] [US3] Component test `tui/tests/components/primitive/SubmitReceipt.test.tsx` — all 5 submit families + `[MOCK: <reason>]` chip for 4 mock_reason values (US3 scenario 6; FR-026)
-- [ ] T064 [P] [US3] Component test `tui/tests/components/primitive/SubmitErrorBanner.test.tsx` — revocation/rollback hint (FR-027)
-- [ ] T065 [P] [US3] Component test `tui/tests/components/primitive/EventStream.test.tsx` — CBS / REST pull / RSS modality banner + live event append; assert RSS `guid` dedup indicator and CBS storm throttle surface (US3 scenario 7; FR-028)
-- [ ] T066 [P] [US3] Component test `tui/tests/components/primitive/StreamClosed.test.tsx` — 3 close_reason values (exhausted, revoked, timeout) (FR-029)
-- [ ] T067 [P] [US3] Component test `tui/tests/components/primitive/AuthContextCard.test.tsx` — all 18 Korea tier values as primary label + NIST AAL hint absent/present; assert primary label never omitted (US3 scenario 8; FR-030, FR-031)
-- [ ] T068 [P] [US3] Component test `tui/tests/components/primitive/AuthWarningBanner.test.tsx` — downgrade + expiry + AAL drift (FR-032)
-- [ ] T069 [P] [US3] Component test `tui/tests/components/primitive/UnrecognizedPayload.test.tsx` — unknown `kind`, missing `kind`, malformed nested payload; assert warning log emitted + no crash (US3 scenario 9, Edge Cases; FR-033)
+- [X] T054 [P] [US3] Component test `tui/tests/components/primitive/PointCard.test.tsx` — LookupPoint + LookupRecord fixtures from `tui/tests/fixtures/lookup/point/` (US3 scenario 1; FR-017)
+- [X] T055 [P] [US3] Component test `tui/tests/components/primitive/TimeseriesTable.test.tsx` — LookupTimeseries fixture; assert semantic headers appear, raw codes (TMP/PCP/REH) do NOT (US3 scenario 2; FR-018)
+- [X] T056 [P] [US3] Component test `tui/tests/components/primitive/CollectionList.test.tsx` — LookupList + LookupCollection fixture; assert pagination row + "Load more" affordance triggers a follow-up `lookup(mode="fetch", page=...)` IPC frame (US3 scenario 3; FR-019)
+- [X] T057 [P] [US3] Component test `tui/tests/components/primitive/DetailView.test.tsx` — LookupDetail fixture (FR-020)
+- [X] T058 [P] [US3] Component test `tui/tests/components/primitive/ErrorBanner.test.tsx` — LookupError with `reason=auth_required` (permission-consent dialog) + 4 other reason values (US3 scenario 4; FR-021)
+- [X] T059 [P] [US3] Component test `tui/tests/components/primitive/CoordPill.test.tsx` — resolve_location coords slot (FR-022)
+- [X] T060 [P] [US3] Component test `tui/tests/components/primitive/AdmCodeBadge.test.tsx` — 10-digit adm_cd + Korean name (FR-023)
+- [X] T061 [P] [US3] Component test `tui/tests/components/primitive/AddressBlock.test.tsx` — road + jibun + zipcode (FR-024)
+- [X] T062 [P] [US3] Component test `tui/tests/components/primitive/POIMarker.test.tsx` — POI id + canonical name (FR-025)
+- [X] T063 [P] [US3] Component test `tui/tests/components/primitive/SubmitReceipt.test.tsx` — all 5 submit families + `[MOCK: <reason>]` chip for 4 mock_reason values (US3 scenario 6; FR-026)
+- [X] T064 [P] [US3] Component test `tui/tests/components/primitive/SubmitErrorBanner.test.tsx` — revocation/rollback hint (FR-027)
+- [X] T065 [P] [US3] Component test `tui/tests/components/primitive/EventStream.test.tsx` — CBS / REST pull / RSS modality banner + live event append; assert RSS `guid` dedup indicator and CBS storm throttle surface (US3 scenario 7; FR-028)
+- [X] T066 [P] [US3] Component test `tui/tests/components/primitive/StreamClosed.test.tsx` — 3 close_reason values (exhausted, revoked, timeout) (FR-029)
+- [X] T067 [P] [US3] Component test `tui/tests/components/primitive/AuthContextCard.test.tsx` — all 18 Korea tier values as primary label + NIST AAL hint absent/present; assert primary label never omitted (US3 scenario 8; FR-030, FR-031)
+- [X] T068 [P] [US3] Component test `tui/tests/components/primitive/AuthWarningBanner.test.tsx` — downgrade + expiry + AAL drift (FR-032)
+- [X] T069 [P] [US3] Component test `tui/tests/components/primitive/UnrecognizedPayload.test.tsx` — unknown `kind`, missing `kind`, malformed nested payload; assert warning log emitted + no crash (US3 scenario 9, Edge Cases; FR-033)
 
 ### Implementation for User Story 3
 

@@ -567,6 +567,66 @@ error in the final plan.
 
 ---
 
+## TUI Layer (Epic #287)
+
+Variables that control the Ink + React terminal UI introduced by Spec 287.
+The TUI layer reads these at startup; none of them are hot-reloaded.
+
+### `KOSMOS_TUI_THEME`
+
+Controls the ANSI colour token set used by all `<Box>` / `<Text>` components
+in the TUI.  The theme is read once at process startup by `ThemeProvider`
+(`tui/src/theme/provider.tsx`) and propagated to every child component via
+React context.  Components MUST use `useTheme()` — no inline hex literals
+are permitted (FR-040).
+
+#### Allowed values
+
+| Value | Description |
+|-------|-------------|
+| `default` | ANSI 16-colour safe palette — maps to the same tokens as `dark` but uses the ANSI colour names instead of explicit RGB values. Falls back gracefully on terminals without 256-colour or true-colour support. **This is the recommended value for CI and headless environments.** |
+| `dark` | Dark-background palette with explicit RGB values (default choice for modern terminal emulators on dark themes). |
+| `light` | Light-background palette for terminals set to a white or cream background. |
+
+#### Precedence
+
+Shell environment variable > `.env` file > fallback to `default`.
+
+If the variable is **unset**, `ThemeProvider` silently uses `default`.  
+If the variable is set to an **unrecognised value**, `ThemeProvider` writes a
+warning to `stderr` and falls back to `default`.  The process does NOT exit.
+
+#### Preview each theme
+
+```bash
+# Preview dark theme
+KOSMOS_TUI_THEME=dark bun run tui
+
+# Preview light theme
+KOSMOS_TUI_THEME=light bun run tui
+
+# Preview default (ANSI-safe) theme
+KOSMOS_TUI_THEME=default bun run tui
+```
+
+#### Follow-up reminder
+
+`KOSMOS_TUI_THEME` MUST also be registered in `src/kosmos/config/env_registry.py`
+following the `#468` pattern (see `TUISettings` class skeleton in
+`specs/287-tui-ink-react-bun/spec.md § TUI Env Vars`).  Do NOT modify
+`env_registry.py` in this wave — defer to the post-wave integration step
+(tracked as part of Epic #287 T052).
+
+| Property | Value |
+|----------|-------|
+| **Default** | `default` |
+| **Required** | No |
+| **Range** | `default` \| `dark` \| `light` |
+| **Consumed by** | `tui/src/theme/provider.tsx → ThemeProvider` |
+| **Spec** | Spec 287 FR-039, FR-040, FR-041 |
+
+---
+
 ## Related Documents
 
 - `AGENTS.md` § Hard rules — prefix rule and `.env` no-write constraint
