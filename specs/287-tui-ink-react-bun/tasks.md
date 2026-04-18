@@ -63,7 +63,7 @@ description: "Task list for Spec 287 TUI (Ink + React + Bun)"
 - [ ] T021 Lift theme tokens + 3 built-in themes from `restored-src/src/components/design-system/` into `tui/src/theme/tokens.ts`, `tui/src/theme/default.ts`, `tui/src/theme/dark.ts`, `tui/src/theme/light.ts` with attribution headers (FR-039, FR-040)
 - [ ] T022 Create `tui/src/theme/provider.tsx` (KOSMOS-original) that reads `KOSMOS_TUI_THEME` env var and provides `ThemeToken` context to all children; default to `default` theme on unset (FR-039, FR-041)
 - [ ] T023 Create `tui/src/store/session-store.ts` implementing `useSyncExternalStore` reducer store per data-model.md § 3; lift the ≈35-line store pattern from `restored-src/src/store/` with attribution header (FR-050)
-- [ ] T024 [P] Create `tui/src/i18n/en.ts` + `tui/src/i18n/ko.ts` with bilingual user-visible strings (FR-037); English is source, Korean is co-located translation
+- [X] T024 [P] Create `tui/src/i18n/en.ts` + `tui/src/i18n/ko.ts` with bilingual user-visible strings (FR-037); English is source, Korean is co-located translation
 
 **Checkpoint**: Python-side contract + TypeScript-side generated types + Ink reconciler + theme + store + bilingual strings all in place. User stories can now proceed in parallel.
 
