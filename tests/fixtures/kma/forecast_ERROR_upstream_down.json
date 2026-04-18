@@ -1,0 +1,6 @@
+{
+  "response": {
+    "header": {"resultCode": "99", "resultMsg": "SERVICE ERROR."},
+    "body": null
+  }
+}

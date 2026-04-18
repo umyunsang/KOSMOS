@@ -1,0 +1,45 @@
+{
+  "resultCode": "00",
+  "resultMsg": "NORMAL SERVICE.",
+  "numOfRows": 10,
+  "pageNo": 1,
+  "totalCount": 2,
+  "items": {
+    "item": [
+      {
+        "spot_cd": "5211010100",
+        "spot_nm": "전북특별자치도 전주시 완산구 일대",
+        "sido_sgg_nm": "전북특별자치도 전주시",
+        "bjd_cd": "5211010100",
+        "occrrnc_cnt": 11,
+        "caslt_cnt": 14,
+        "dth_dnv_cnt": 1,
+        "se_dnv_cnt": 3,
+        "sl_dnv_cnt": 4,
+        "wnd_dnv_cnt": 6,
+        "la_crd": 35.820,
+        "lo_crd": 127.108,
+        "geom_json": null,
+        "afos_id": "2023252",
+        "afos_fid": "5211010100_001"
+      },
+      {
+        "spot_cd": "5211010200",
+        "spot_nm": "전북특별자치도 전주시 덕진구 일대",
+        "sido_sgg_nm": "전북특별자치도 전주시",
+        "bjd_cd": "5211010200",
+        "occrrnc_cnt": 7,
+        "caslt_cnt": 9,
+        "dth_dnv_cnt": 0,
+        "se_dnv_cnt": 2,
+        "sl_dnv_cnt": 3,
+        "wnd_dnv_cnt": 4,
+        "la_crd": 35.830,
+        "lo_crd": 127.115,
+        "geom_json": null,
+        "afos_id": "2023252",
+        "afos_fid": "5211010200_001"
+      }
+    ]
+  }
+}

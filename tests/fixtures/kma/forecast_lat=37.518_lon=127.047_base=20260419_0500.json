@@ -1,0 +1,34 @@
+{
+  "response": {
+    "header": {"resultCode": "00", "resultMsg": "NORMAL_CODE"},
+    "body": {
+      "dataType": "JSON",
+      "items": {
+        "item": [
+          {"baseDate": "20260419", "baseTime": "0500", "nx": 61, "ny": 125, "category": "TMP", "fcstDate": "20260419", "fcstTime": "0600", "fcstValue": "14"},
+          {"baseDate": "20260419", "baseTime": "0500", "nx": 61, "ny": 125, "category": "SKY", "fcstDate": "20260419", "fcstTime": "0600", "fcstValue": "1"},
+          {"baseDate": "20260419", "baseTime": "0500", "nx": 61, "ny": 125, "category": "PTY", "fcstDate": "20260419", "fcstTime": "0600", "fcstValue": "0"},
+          {"baseDate": "20260419", "baseTime": "0500", "nx": 61, "ny": 125, "category": "POP", "fcstDate": "20260419", "fcstTime": "0600", "fcstValue": "10"},
+          {"baseDate": "20260419", "baseTime": "0500", "nx": 61, "ny": 125, "category": "PCP", "fcstDate": "20260419", "fcstTime": "0600", "fcstValue": "강수없음"},
+          {"baseDate": "20260419", "baseTime": "0500", "nx": 61, "ny": 125, "category": "REH", "fcstDate": "20260419", "fcstTime": "0600", "fcstValue": "55"},
+          {"baseDate": "20260419", "baseTime": "0500", "nx": 61, "ny": 125, "category": "WSD", "fcstDate": "20260419", "fcstTime": "0600", "fcstValue": "2.5"},
+          {"baseDate": "20260419", "baseTime": "0500", "nx": 61, "ny": 125, "category": "TMP", "fcstDate": "20260419", "fcstTime": "0900", "fcstValue": "17"},
+          {"baseDate": "20260419", "baseTime": "0500", "nx": 61, "ny": 125, "category": "SKY", "fcstDate": "20260419", "fcstTime": "0900", "fcstValue": "1"},
+          {"baseDate": "20260419", "baseTime": "0500", "nx": 61, "ny": 125, "category": "PTY", "fcstDate": "20260419", "fcstTime": "0900", "fcstValue": "0"},
+          {"baseDate": "20260419", "baseTime": "0500", "nx": 61, "ny": 125, "category": "POP", "fcstDate": "20260419", "fcstTime": "0900", "fcstValue": "10"},
+          {"baseDate": "20260419", "baseTime": "0500", "nx": 61, "ny": 125, "category": "PCP", "fcstDate": "20260419", "fcstTime": "0900", "fcstValue": "강수없음"},
+          {"baseDate": "20260419", "baseTime": "0500", "nx": 61, "ny": 125, "category": "TMP", "fcstDate": "20260419", "fcstTime": "1200", "fcstValue": "20"},
+          {"baseDate": "20260419", "baseTime": "0500", "nx": 61, "ny": 125, "category": "SKY", "fcstDate": "20260419", "fcstTime": "1200", "fcstValue": "1"},
+          {"baseDate": "20260419", "baseTime": "0500", "nx": 61, "ny": 125, "category": "PTY", "fcstDate": "20260419", "fcstTime": "1200", "fcstValue": "0"},
+          {"baseDate": "20260419", "baseTime": "0500", "nx": 61, "ny": 125, "category": "POP", "fcstDate": "20260419", "fcstTime": "1200", "fcstValue": "10"},
+          {"baseDate": "20260419", "baseTime": "0500", "nx": 61, "ny": 125, "category": "PCP", "fcstDate": "20260419", "fcstTime": "1200", "fcstValue": "강수없음"},
+          {"baseDate": "20260419", "baseTime": "0500", "nx": 61, "ny": 125, "category": "TMN", "fcstDate": "20260419", "fcstTime": "0600", "fcstValue": "10"},
+          {"baseDate": "20260419", "baseTime": "0500", "nx": 61, "ny": 125, "category": "TMX", "fcstDate": "20260419", "fcstTime": "1500", "fcstValue": "22"}
+        ]
+      },
+      "numOfRows": 290,
+      "pageNo": 1,
+      "totalCount": 19
+    }
+  }
+}
