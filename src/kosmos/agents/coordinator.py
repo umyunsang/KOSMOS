@@ -13,9 +13,10 @@ FR traces: FR-001..FR-007, FR-024, FR-025, FR-028 (observability).
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import json
 import logging
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Literal
 from uuid import UUID, uuid4
@@ -33,7 +34,6 @@ from kosmos.agents.mailbox.messages import (
     PermissionRequestPayload,
     PermissionResponsePayload,
     ResultPayload,
-    TaskPayload,
 )
 from kosmos.agents.plan import (
     CoordinatorPlan,
@@ -93,7 +93,7 @@ class Coordinator:
         session_id: UUID,
         llm_client: LLMClient,
         tool_registry: ToolRegistry,
-        mailbox: "Mailbox",
+        mailbox: Mailbox,
         *,
         consent_gateway: ConsentGateway | None = None,
         role: Literal["solo", "coordinator", "specialist"] = "coordinator",
@@ -207,10 +207,8 @@ class Coordinator:
                 payload=cancel_payload,
                 timestamp=datetime.now(UTC),
             )
-            try:
-                await self._mailbox.send(cancel_msg)
-            except Exception:
-                pass  # Best-effort cancel message delivery
+            with contextlib.suppress(Exception):
+                await self._mailbox.send(cancel_msg)  # Best-effort cancel message delivery
 
         # Wait for tasks to complete with timeout
         all_tasks = list(self._worker_tasks.values())
@@ -219,7 +217,7 @@ class Coordinator:
                 asyncio.gather(*all_tasks, return_exceptions=True),
                 timeout=timeout,
             )
-        except asyncio.TimeoutError:
+        except TimeoutError:
             logger.warning(
                 "Coordinator: %d worker(s) did not cancel within %.0f ms",
                 len(all_tasks),
@@ -302,7 +300,7 @@ class Coordinator:
                     asyncio.gather(*tasks_by_role.values(), return_exceptions=True),
                     timeout=float(self._worker_timeout_seconds),
                 )
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 logger.warning(
                     "Coordinator: worker timeout after %d seconds",
                     self._worker_timeout_seconds,
@@ -412,7 +410,6 @@ class Coordinator:
         FR-024: prompt the citizen consent stub, then emit permission_response
         addressed to the requesting worker's sender field.
         """
-        from kosmos.agents.mailbox.messages import PermissionRequestPayload
 
         payload = request.payload
         if not isinstance(payload, PermissionRequestPayload):
@@ -503,7 +500,10 @@ class Coordinator:
                 payload = msg.payload
                 if isinstance(payload, ResultPayload):
                     out = payload.lookup_output
-                    summary = f"Worker '{msg.sender}': {out.kind} output, {payload.turn_count} turn(s)"
+                    summary = (
+                        f"Worker '{msg.sender}': {out.kind} output, "
+                        f"{payload.turn_count} turn(s)"
+                    )
                     result_summaries.append(summary)
             elif msg.msg_type == MessageType.error:
                 payload = msg.payload
@@ -570,7 +570,9 @@ class Coordinator:
                 "Return ONLY valid JSON."
             ),
         )
-        summaries_text = "\n".join(result_summaries) if result_summaries else "No results available."
+        summaries_text = (
+            "\n".join(result_summaries) if result_summaries else "No results available."
+        )
         user_msg = ChatMessage(
             role="user",
             content=(

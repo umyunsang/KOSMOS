@@ -14,8 +14,7 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import AsyncIterator
-from datetime import datetime, UTC
-from typing import Any
+from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
 import pytest
@@ -23,19 +22,14 @@ import pytest
 from kosmos.agents.consent import AlwaysGrantConsentGateway, ConsentGateway
 from kosmos.agents.context import AgentContext
 from kosmos.agents.coordinator import Coordinator
-from kosmos.agents.errors import AgentConfigurationError
 from kosmos.agents.mailbox.messages import (
     AgentMessage,
-    ErrorPayload,
     MessageType,
     PermissionRequestPayload,
     PermissionResponsePayload,
-    ResultPayload,
-    TaskPayload,
 )
 from kosmos.agents.worker import Worker
 from tests.agents.conftest import StubLLMClient, build_test_registry
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -125,8 +119,6 @@ async def test_permission_request_addressed_to_coordinator_only() -> None:
 
     # Manually trigger a permission request (test internal method)
     correlation_id = uuid4()
-    mailbox_messages_before = len(mailbox._messages)
-
     # Seed a permission_response so _request_permission doesn't block forever
     mailbox._pending[worker_id] = [
         AgentMessage(
@@ -139,7 +131,7 @@ async def test_permission_request_addressed_to_coordinator_only() -> None:
         )
     ]
 
-    granted = await worker._request_permission("nmc_emergency_search", correlation_id)
+    _granted = await worker._request_permission("nmc_emergency_search", correlation_id)
 
     # Verify the request was sent to coordinator only
     permission_requests = mailbox.all_messages_of_type(MessageType.permission_request)
@@ -269,7 +261,6 @@ async def test_permission_round_trip_under_one_second() -> None:
 @pytest.mark.asyncio
 async def test_coordinator_handles_permission_request_via_consent_gateway() -> None:
     """FR-024: coordinator routes permission through ConsentGateway, not directly."""
-    import time
 
     class _TrackingConsentGateway(ConsentGateway):
         def __init__(self) -> None:

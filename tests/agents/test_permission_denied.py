@@ -11,8 +11,7 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import AsyncIterator
-from datetime import datetime, UTC
-from typing import Any
+from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
 import pytest
@@ -22,14 +21,12 @@ from kosmos.agents.context import AgentContext
 from kosmos.agents.coordinator import Coordinator
 from kosmos.agents.mailbox.messages import (
     AgentMessage,
-    ErrorPayload,
     MessageType,
     PermissionRequestPayload,
     PermissionResponsePayload,
 )
 from kosmos.agents.worker import Worker
 from tests.agents.conftest import StubLLMClient, build_test_registry
-
 
 # ---------------------------------------------------------------------------
 # Helpers

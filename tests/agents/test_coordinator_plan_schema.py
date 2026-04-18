@@ -15,7 +15,6 @@ from kosmos.agents.plan import (
     ExecutionMode,
     PlanStatus,
     PlanStep,
-    StepStatus,
 )
 
 _SCHEMA_PATH = (
@@ -77,7 +76,7 @@ def test_complete_plan_schema() -> None:
 
 
 def test_no_results_plan_schema() -> None:
-    instance = _plan(status=PlanStatus.no_results)
+    _plan(status=PlanStatus.no_results)
     instance_obj = CoordinatorPlan(
         session_id=uuid4(),
         status=PlanStatus.no_results,

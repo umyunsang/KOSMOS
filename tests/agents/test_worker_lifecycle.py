@@ -13,9 +13,9 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import AsyncIterator
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 from typing import Any
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 import pytest
 
@@ -28,7 +28,6 @@ from kosmos.llm.models import StreamEvent, TokenUsage
 from kosmos.tools.registry import ToolRegistry
 from tests.agents.conftest import StubLLMClient, build_test_registry
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -37,13 +36,15 @@ from tests.agents.conftest import StubLLMClient, build_test_registry
 class _FailingLLMClient(LLMClient):
     """LLMClient subclass that raises on stream()."""
 
-    def __new__(cls) -> "_FailingLLMClient":  # type: ignore[misc]
+    def __new__(cls) -> _FailingLLMClient:  # type: ignore[misc]
         return object.__new__(cls)
 
     def __init__(self) -> None:
         pass  # bypass super().__init__()
 
-    async def stream(self, messages: Any, *, tools: Any = None, **kwargs: Any) -> AsyncIterator[StreamEvent]:  # type: ignore[override]
+    async def stream(  # type: ignore[override]
+        self, messages: Any, *, tools: Any = None, **kwargs: Any
+    ) -> AsyncIterator[StreamEvent]:
         raise RuntimeError("LLM failed catastrophically")
         yield  # make it an async generator
 
@@ -51,13 +52,15 @@ class _FailingLLMClient(LLMClient):
 class _CancellableLLMClient(LLMClient):
     """LLMClient subclass that blocks forever (cancelled by test)."""
 
-    def __new__(cls) -> "_CancellableLLMClient":  # type: ignore[misc]
+    def __new__(cls) -> _CancellableLLMClient:  # type: ignore[misc]
         return object.__new__(cls)
 
     def __init__(self) -> None:
         pass
 
-    async def stream(self, messages: Any, *, tools: Any = None, **kwargs: Any) -> AsyncIterator[StreamEvent]:  # type: ignore[override]
+    async def stream(  # type: ignore[override]
+        self, messages: Any, *, tools: Any = None, **kwargs: Any
+    ) -> AsyncIterator[StreamEvent]:
         await asyncio.sleep(10)  # Will be cancelled
         yield StreamEvent(type="usage", usage=TokenUsage(input_tokens=1, output_tokens=1))
 
@@ -155,7 +158,6 @@ async def test_worker_posts_result_after_text_response() -> None:
 async def test_worker_result_contains_lookup_output() -> None:
     """FR-008: The result payload must contain a LookupRecord or similar."""
     from kosmos.agents.mailbox.messages import ResultPayload
-    from kosmos.tools.models import LookupRecord
 
     llm = StubLLMClient(responses=["Transport info found."])
     mailbox = _InMemoryMailbox()
@@ -235,7 +237,7 @@ async def test_worker_tool_restriction_empty_registry() -> None:
 @pytest.mark.asyncio
 async def test_worker_correlation_id_from_task_message() -> None:
     """Worker uses task message's ID as correlation_id when provided."""
-    from kosmos.agents.mailbox.messages import ResultPayload, TaskPayload
+    from kosmos.agents.mailbox.messages import TaskPayload
 
     llm = StubLLMClient(responses=["Result."])
     mailbox = _InMemoryMailbox()

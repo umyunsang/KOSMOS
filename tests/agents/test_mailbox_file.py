@@ -11,16 +11,14 @@ Tests:
 
 from __future__ import annotations
 
-import os
 import stat
-from collections.abc import AsyncIterator
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 from pathlib import Path
 from uuid import uuid4
 
 import pytest
 
-from kosmos.agents.errors import MailboxOverflowError, MailboxWriteError
+from kosmos.agents.errors import MailboxOverflowError
 from kosmos.agents.mailbox.file_mailbox import FileMailbox
 from kosmos.agents.mailbox.messages import (
     AgentMessage,
@@ -29,7 +27,6 @@ from kosmos.agents.mailbox.messages import (
     TaskPayload,
 )
 from kosmos.tools.models import LookupMeta, LookupRecord
-
 
 # ---------------------------------------------------------------------------
 # Helpers

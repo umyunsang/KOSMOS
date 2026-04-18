@@ -12,7 +12,7 @@ from __future__ import annotations
 import asyncio
 import json
 from collections.abc import AsyncIterator
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
 import pytest
@@ -22,7 +22,6 @@ from kosmos.agents.mailbox.messages import (
     AgentMessage,
     MessageType,
     ResultPayload,
-    TaskPayload,
 )
 from kosmos.agents.plan import CoordinatorPlan, ExecutionMode, PlanStatus, PlanStep
 from kosmos.tools.models import LookupMeta, LookupRecord
@@ -149,7 +148,12 @@ async def test_coordinator_synthesis_captures_worker_correlation_ids() -> None:
     synthesis_json = json.dumps(
         {
             "steps": [
-                {"ministry": "transport", "action": "Update", "depends_on": [], "execution_mode": "parallel"}
+                {
+                    "ministry": "transport",
+                    "action": "Update",
+                    "depends_on": [],
+                    "execution_mode": "parallel",
+                }
             ]
         }
     )
@@ -251,8 +255,14 @@ async def test_coordinator_implementation_phase_runs_parallel_steps() -> None:
         session_id=coordinator._session_id,
         status=PlanStatus.complete,
         steps=[
-            PlanStep(ministry="transport", action="Update vehicle", execution_mode=ExecutionMode.parallel),
-            PlanStep(ministry="health_insurance", action="Update insurance", execution_mode=ExecutionMode.parallel),
+            PlanStep(
+                ministry="transport", action="Update vehicle",
+                execution_mode=ExecutionMode.parallel,
+            ),
+            PlanStep(
+                ministry="health_insurance", action="Update insurance",
+                execution_mode=ExecutionMode.parallel,
+            ),
         ],
         worker_correlation_ids=[],
     )
@@ -278,8 +288,14 @@ async def test_coordinator_implementation_phase_runs_sequential_steps() -> None:
         session_id=coordinator._session_id,
         status=PlanStatus.complete,
         steps=[
-            PlanStep(ministry="civil_affairs", action="Step 1", execution_mode=ExecutionMode.sequential),
-            PlanStep(ministry="transport", action="Step 2", depends_on=[0], execution_mode=ExecutionMode.sequential),
+            PlanStep(
+                ministry="civil_affairs", action="Step 1",
+                execution_mode=ExecutionMode.sequential,
+            ),
+            PlanStep(
+                ministry="transport", action="Step 2", depends_on=[0],
+                execution_mode=ExecutionMode.sequential,
+            ),
         ],
         worker_correlation_ids=[],
     )

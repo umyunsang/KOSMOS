@@ -16,16 +16,11 @@ Constitution IV: "Never call live data.go.kr APIs from CI tests."
 
 from __future__ import annotations
 
-import importlib
-import inspect
-import sys
 from pathlib import Path
 from typing import Any
-from unittest.mock import AsyncMock, MagicMock, patch
 
 import httpx
 import pytest
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -73,7 +68,7 @@ def test_no_live_host_literals_in_test_files() -> None:
         violations.extend(_scan_file_for_banned_hosts(path))
 
     assert not violations, (
-        f"SC-010: live API host literal found in agent tests:\n"
+        "SC-010: live API host literal found in agent tests:\n"
         + "\n".join(f"  {v}" for v in violations)
     )
 
@@ -87,7 +82,6 @@ class _BlockingTransport(httpx.AsyncBaseTransport):
     """Transport that raises if any real HTTP request is attempted."""
 
     async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
-        host = request.url.host
         raise AssertionError(
             f"SC-010: live HTTP request attempted in agent test: "
             f"{request.method} {request.url}\n"

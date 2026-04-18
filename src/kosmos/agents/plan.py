@@ -99,7 +99,7 @@ class CoordinatorPlan(BaseModel):
     """Human-readable summary; populated when status is `no_results` or `partial`."""
 
     @model_validator(mode="after")
-    def _depends_on_indices_are_valid(self) -> "CoordinatorPlan":
+    def _depends_on_indices_are_valid(self) -> CoordinatorPlan:
         """Validate that all depends_on references are in-range and non-self-referential."""
         n = len(self.steps)
         for i, step in enumerate(self.steps):

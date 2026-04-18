@@ -11,11 +11,9 @@ Provides:
 from __future__ import annotations
 
 import json
-import os
 from collections.abc import AsyncIterator
 from pathlib import Path
 from typing import Any
-from unittest.mock import AsyncMock
 from uuid import uuid4
 
 import pytest
@@ -23,7 +21,6 @@ import pytest
 from kosmos.llm.client import LLMClient
 from kosmos.llm.models import StreamEvent, TokenUsage
 from kosmos.tools.registry import ToolRegistry
-
 
 # ---------------------------------------------------------------------------
 # Stub LLM client — proper subclass of LLMClient for Pydantic type checking
@@ -37,7 +34,7 @@ class StubLLMClient(LLMClient):
     client are needed. Suitable wherever Pydantic validates `llm_client: LLMClient`.
     """
 
-    def __new__(cls, responses: list[str]) -> "StubLLMClient":  # type: ignore[misc]
+    def __new__(cls, responses: list[str]) -> StubLLMClient:  # type: ignore[misc]
         instance = object.__new__(cls)
         return instance
 
@@ -120,7 +117,7 @@ class FixtureTapeLLMClient(LLMClient):
     Bypasses LLMClient.__init__ so no env vars or httpx client are needed.
     """
 
-    def __new__(cls, responses: list[dict[str, Any]]) -> "FixtureTapeLLMClient":  # type: ignore[misc]
+    def __new__(cls, responses: list[dict[str, Any]]) -> FixtureTapeLLMClient:  # type: ignore[misc]
         instance = object.__new__(cls)
         return instance
 

@@ -17,9 +17,8 @@ should start clean.
 
 from __future__ import annotations
 
-import asyncio
 from collections.abc import AsyncIterator
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
 import pytest
@@ -27,13 +26,11 @@ import pytest
 from kosmos.agents.coordinator import Coordinator
 from kosmos.agents.mailbox.messages import (
     AgentMessage,
-    CancelPayload,
     MessageType,
     ResultPayload,
 )
 from kosmos.tools.models import LookupMeta, LookupRecord
 from tests.agents.conftest import StubLLMClient, build_test_registry
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -104,7 +101,7 @@ async def test_prior_run_messages_consumed_on_first_replay() -> None:
 
     # First coordinator: replays the prior message
     llm = StubLLMClient(responses=[])
-    coordinator1 = Coordinator(
+    _coordinator1 = Coordinator(
         session_id=session_id,
         llm_client=llm,
         tool_registry=build_test_registry(),

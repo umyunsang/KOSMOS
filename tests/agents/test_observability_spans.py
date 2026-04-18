@@ -31,7 +31,6 @@ from kosmos.agents.mailbox.messages import (
 from kosmos.tools.models import LookupMeta, LookupRecord
 from tests.agents.conftest import StubLLMClient, build_test_registry
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -57,8 +56,8 @@ def span_exporter(monkeypatch: pytest.MonkeyPatch) -> InMemorySpanExporter:
     captured provider. Returns the InMemorySpanExporter to assert against.
     """
     import kosmos.agents.coordinator as _coord_mod
-    import kosmos.agents.worker as _worker_mod
     import kosmos.agents.mailbox.file_mailbox as _fm_mod
+    import kosmos.agents.worker as _worker_mod
 
     provider, exporter = _make_provider_and_exporter()
 
@@ -83,8 +82,8 @@ async def test_coordinator_emits_four_phase_spans(
     tmp_path: Any, span_exporter: InMemorySpanExporter
 ) -> None:
     """FR-028: exactly 4 gen_ai.agent.coordinator.phase spans are emitted."""
-    from kosmos.agents.mailbox.file_mailbox import FileMailbox
     from kosmos.agents.coordinator import Coordinator
+    from kosmos.agents.mailbox.file_mailbox import FileMailbox
 
     session_id = uuid4()
     llm = StubLLMClient(responses=["", "", "", ""])
@@ -118,8 +117,8 @@ async def test_coordinator_phase_span_attributes(
     tmp_path: Any, span_exporter: InMemorySpanExporter
 ) -> None:
     """FR-028: each phase span carries kosmos.agent.coordinator.phase attribute."""
-    from kosmos.agents.mailbox.file_mailbox import FileMailbox
     from kosmos.agents.coordinator import Coordinator
+    from kosmos.agents.mailbox.file_mailbox import FileMailbox
 
     session_id = uuid4()
     llm = StubLLMClient(responses=["", "", "", ""])
@@ -205,8 +204,8 @@ async def test_span_attributes_never_contain_message_body(
     tmp_path: Any, span_exporter: InMemorySpanExporter
 ) -> None:
     """FR-031 (PIPA): message body must never appear in any span attribute."""
-    from kosmos.agents.mailbox.file_mailbox import FileMailbox
     from kosmos.agents.coordinator import Coordinator
+    from kosmos.agents.mailbox.file_mailbox import FileMailbox
 
     session_id = uuid4()
     llm = StubLLMClient(responses=["", "", "", ""])
@@ -237,6 +236,7 @@ async def test_mailbox_span_correlation_id_attribute(
 ) -> None:
     """FR-030: mailbox.message span has kosmos.agent.mailbox.correlation_id attribute."""
     import datetime as _dt
+
     from kosmos.agents.mailbox.file_mailbox import FileMailbox
 
     session_id = uuid4()
@@ -245,7 +245,7 @@ async def test_mailbox_span_correlation_id_attribute(
     cid = uuid4()
     meta = LookupMeta(
         source="lookup",
-        fetched_at=_dt.datetime.now(_dt.timezone.utc),
+        fetched_at=_dt.datetime.now(_dt.UTC),
         request_id=str(uuid4()),
         elapsed_ms=1,
     )

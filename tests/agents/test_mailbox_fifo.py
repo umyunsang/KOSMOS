@@ -10,7 +10,7 @@ FR-018: "Filenames sort lexicographically in write order for each sender."
 from __future__ import annotations
 
 import asyncio
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 from pathlib import Path
 from uuid import uuid4
 
@@ -24,7 +24,6 @@ from kosmos.agents.mailbox.messages import (
     TaskPayload,
 )
 from kosmos.tools.models import LookupMeta, LookupRecord
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -71,7 +70,10 @@ async def test_single_sender_fifo_order(tmp_path: Path) -> None:
     mailbox = FileMailbox(session_id=session_id, root=tmp_path, max_messages=1000)
 
     # Send 5 messages in sequence
-    msgs = [_make_result_msg(sender="worker-a", recipient="coordinator", label=f"msg-{i}") for i in range(5)]
+    msgs = [
+        _make_result_msg(sender="worker-a", recipient="coordinator", label=f"msg-{i}")
+        for i in range(5)
+    ]
     for msg in msgs:
         await mailbox.send(msg)
         # Small delay to ensure distinct timestamp_ns values
@@ -139,7 +141,10 @@ async def test_fifo_filename_sort_is_lexicographic(tmp_path: Path) -> None:
     mailbox = FileMailbox(session_id=session_id, root=tmp_path, max_messages=1000)
 
     # Send 3 messages and collect their filenames
-    msgs = [_make_result_msg(sender="worker-c", recipient="coordinator", label=f"c-{i}") for i in range(3)]
+    msgs = [
+        _make_result_msg(sender="worker-c", recipient="coordinator", label=f"c-{i}")
+        for i in range(3)
+    ]
     for msg in msgs:
         await mailbox.send(msg)
 

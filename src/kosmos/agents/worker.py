@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
 from opentelemetry import trace
@@ -21,7 +21,6 @@ from kosmos.agents.context import AgentContext
 from kosmos.agents.errors import AgentConfigurationError, PermissionDeniedError
 from kosmos.agents.mailbox.messages import (
     AgentMessage,
-    CancelPayload,
     ErrorPayload,
     MessageType,
     PermissionRequestPayload,
@@ -36,7 +35,6 @@ from kosmos.observability.semconv import (
     KOSMOS_AGENT_ROLE,
     KOSMOS_AGENT_SESSION_ID,
 )
-from kosmos.tools.errors import LookupErrorReason
 from kosmos.tools.executor import ToolExecutor
 from kosmos.tools.models import LookupCollection, LookupRecord, LookupTimeseries
 
@@ -76,7 +74,7 @@ class Worker:
     def __init__(
         self,
         ctx: AgentContext,
-        mailbox: "Mailbox",
+        mailbox: Mailbox,
         *,
         task_message: AgentMessage | None = None,
     ) -> None:
@@ -151,7 +149,7 @@ class Worker:
                 correlation_id=correlation_id,
             )
 
-    async def _run_inner(self, instruction: str, correlation_id: UUID) -> None:
+    async def _run_inner(self, instruction: str, correlation_id: UUID) -> None:  # noqa: C901
         """Run the query inner loop and post the result.
 
         Emits one gen_ai.agent.worker.iteration span per tool-loop iteration
@@ -276,7 +274,7 @@ class Worker:
                         result = LookupOutput.model_validate(data)  # type: ignore[attr-defined]
                         if isinstance(result, (LookupRecord, LookupCollection, LookupTimeseries)):
                             return result
-                except (json.JSONDecodeError, Exception):
+                except (json.JSONDecodeError, Exception):  # noqa: S112
                     continue
         return None
 

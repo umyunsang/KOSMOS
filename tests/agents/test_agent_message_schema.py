@@ -7,7 +7,7 @@ T016 — FR-016, US1 contract gate.
 from __future__ import annotations
 
 import json
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 from pathlib import Path
 from uuid import uuid4
 

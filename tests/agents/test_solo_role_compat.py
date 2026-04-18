@@ -18,7 +18,6 @@ from kosmos.agents.mailbox.messages import AgentMessage
 from kosmos.agents.plan import PlanStatus
 from tests.agents.conftest import StubLLMClient, build_test_registry
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------

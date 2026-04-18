@@ -11,7 +11,7 @@ T013 — FR-010.
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock, create_autospec
+from unittest.mock import create_autospec
 from uuid import uuid4
 
 import pytest

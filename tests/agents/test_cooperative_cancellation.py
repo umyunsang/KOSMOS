@@ -12,9 +12,9 @@ from __future__ import annotations
 import asyncio
 import time
 from collections.abc import AsyncIterator
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 from typing import Any
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 import pytest
 
@@ -31,7 +31,6 @@ from kosmos.llm.models import StreamEvent, TokenUsage
 from kosmos.tools.models import LookupMeta, LookupRecord
 from tests.agents.conftest import StubLLMClient, build_test_registry
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -40,13 +39,15 @@ from tests.agents.conftest import StubLLMClient, build_test_registry
 class _SlowLLMClient(LLMClient):
     """LLMClient subclass that sleeps for a long time — allows cancellation testing."""
 
-    def __new__(cls, delay: float = 10.0) -> "_SlowLLMClient":  # type: ignore[misc]
+    def __new__(cls, delay: float = 10.0) -> _SlowLLMClient:  # type: ignore[misc]
         return object.__new__(cls)
 
     def __init__(self, delay: float = 10.0) -> None:
         self._delay = delay
 
-    async def stream(self, messages: Any, *, tools: Any = None, **kwargs: Any) -> AsyncIterator[StreamEvent]:  # type: ignore[override]
+    async def stream(  # type: ignore[override]
+        self, messages: Any, *, tools: Any = None, **kwargs: Any
+    ) -> AsyncIterator[StreamEvent]:
         await asyncio.sleep(self._delay)
         yield StreamEvent(type="usage", usage=TokenUsage(input_tokens=1, output_tokens=1))
 

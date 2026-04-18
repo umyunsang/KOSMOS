@@ -11,7 +11,7 @@ T014 — FR-016, data-model.md §2.
 
 from __future__ import annotations
 
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 from uuid import uuid4
 
 import pytest

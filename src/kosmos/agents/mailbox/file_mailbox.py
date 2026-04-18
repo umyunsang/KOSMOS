@@ -269,7 +269,7 @@ class FileMailbox(Mailbox):
         async for message in self.replay_unread(recipient):
             yield message
 
-    async def replay_unread(self, recipient: str) -> AsyncIterator[AgentMessage]:
+    async def replay_unread(self, recipient: str) -> AsyncIterator[AgentMessage]:  # noqa: C901
         """Yield unread messages and write consumed markers (mailbox-abi.md §4).
 
         Skips:

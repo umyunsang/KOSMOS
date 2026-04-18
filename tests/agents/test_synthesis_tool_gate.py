@@ -9,17 +9,13 @@ from __future__ import annotations
 
 import json
 from collections.abc import AsyncIterator
-from datetime import datetime, UTC
-from typing import Any
 from uuid import uuid4
 
 import pytest
 
 from kosmos.agents.coordinator import Coordinator
-from kosmos.agents.mailbox.messages import AgentMessage, MessageType
-from kosmos.agents.plan import PlanStatus
+from kosmos.agents.mailbox.messages import AgentMessage
 from tests.agents.conftest import StubLLMClient, build_test_registry
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -65,7 +61,12 @@ async def test_synthesis_llm_receives_no_tools() -> None:
     synthesis_json = json.dumps(
         {
             "steps": [
-                {"ministry": "civil_affairs", "action": "Submit form", "depends_on": [], "execution_mode": "parallel"}
+                {
+                    "ministry": "civil_affairs",
+                    "action": "Submit form",
+                    "depends_on": [],
+                    "execution_mode": "parallel",
+                }
             ],
             "message": "Plan ready.",
         }

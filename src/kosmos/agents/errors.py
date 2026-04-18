@@ -19,7 +19,7 @@ class AgentConfigurationError(ValueError):
     """
 
 
-class AgentIsolationViolation(RuntimeError):
+class AgentIsolationViolationError(RuntimeError):
     """Detected an attempt to mutate state shared across workers.
 
     Raised by the coordinator when it detects that a worker is trying to

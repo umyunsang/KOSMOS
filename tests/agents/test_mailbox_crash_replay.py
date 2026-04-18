@@ -11,10 +11,9 @@ FileMailbox instance, asserts:
 
 from __future__ import annotations
 
-import json
 import os
 import time
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 from pathlib import Path
 from uuid import uuid4
 
@@ -27,7 +26,6 @@ from kosmos.agents.mailbox.messages import (
     ResultPayload,
 )
 from kosmos.tools.models import LookupMeta, LookupRecord
-
 
 # ---------------------------------------------------------------------------
 # Helpers

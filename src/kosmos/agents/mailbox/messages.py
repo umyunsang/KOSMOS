@@ -10,7 +10,7 @@ FR traces: FR-016, FR-025, data-model.md §2.
 
 from __future__ import annotations
 
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Annotated, Literal
 from uuid import UUID, uuid4
@@ -177,7 +177,7 @@ class AgentMessage(BaseModel):
     """Links related messages (e.g., permission_request ↔ permission_response)."""
 
     @model_validator(mode="after")
-    def _msg_type_matches_payload_kind(self) -> "AgentMessage":
+    def _msg_type_matches_payload_kind(self) -> AgentMessage:
         """Invariant: msg_type enum value == payload.kind string."""
         if self.msg_type.value != self.payload.kind:
             raise ValueError(
