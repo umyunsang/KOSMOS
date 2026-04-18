@@ -32,7 +32,6 @@ from unittest.mock import AsyncMock, patch
 
 import httpx
 import pytest
-from opentelemetry import trace
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import SimpleSpanProcessor
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
@@ -265,8 +264,13 @@ class OTelSpanCaptureFixture:
         capture = OTelSpanCaptureFixture()
         capture.setup()
         # ... run scenario ...
-        snapshot = capture.snapshot()
+        snapshot = capture.snapshot()  # MUST be called before teardown()
         capture.teardown()
+
+    Strategy: monkeypatch the module-level _tracer in executor.py to a dedicated
+    TracerProvider backed by InMemorySpanExporter.  This avoids the OTel SDK
+    write-once singleton guard that blocks multiple trace.set_tracer_provider()
+    calls across test runs (see tests/observability/test_tool_execute_span.py).
 
     When OTEL_SDK_DISABLED="true", setup() is a no-op and snapshot() returns
     ObservabilitySnapshot(sdk_disabled=True, spans=()) per FR-020.
@@ -275,24 +279,31 @@ class OTelSpanCaptureFixture:
     def __init__(self) -> None:
         self._exporter: InMemorySpanExporter | None = None
         self._provider: TracerProvider | None = None
-        self._prev_provider: trace.ProxyTracerProvider | None = None
+        self._orig_tracer: object = None
         self._sdk_disabled = os.getenv("OTEL_SDK_DISABLED", "").lower() == "true"
 
     def setup(self) -> None:
         if self._sdk_disabled:
             return
+        import kosmos.tools.executor as _executor_mod
+
         self._exporter = InMemorySpanExporter()
         self._provider = TracerProvider()
         self._provider.add_span_processor(SimpleSpanProcessor(self._exporter))
-        # Install as the global tracer provider for this test
-        trace.set_tracer_provider(self._provider)
+        # Monkeypatch the module-level _tracer instead of resetting the global
+        # provider singleton — consistent with the repo's established pattern.
+        self._orig_tracer = _executor_mod._tracer
+        _executor_mod._tracer = self._provider.get_tracer("kosmos.tools.executor")
 
     def teardown(self) -> None:
         if self._sdk_disabled or self._provider is None:
             return
+        import kosmos.tools.executor as _executor_mod
+
+        # Restore the original tracer before shutting down the test provider.
+        _executor_mod._tracer = self._orig_tracer
+        self._provider.force_flush()
         self._provider.shutdown()
-        # Reset to a no-op provider after teardown
-        trace.set_tracer_provider(TracerProvider())
 
     def snapshot(self) -> ObservabilitySnapshot:
         """Return an ObservabilitySnapshot from exported spans."""
@@ -312,7 +323,16 @@ class OTelSpanCaptureFixture:
 
             outcome_raw = attrs.get("kosmos.tool.outcome")
             if outcome_raw not in ("ok", "error"):
-                outcome_raw = "ok"  # Default when not yet set
+                # FR-017: kosmos.tool.outcome must be "ok" or "error".
+                # Missing or invalid value means the executor did not set the
+                # attribute — treat as a test-visible gap, not a silent default.
+                logger.warning(
+                    "snapshot: span %r missing/invalid kosmos.tool.outcome=%r; "
+                    "skipping span to surface FR-017 instrumentation gap",
+                    span.name,
+                    outcome_raw,
+                )
+                continue  # Skip: missing outcome is a real instrumentation gap
 
             status_code_str: str
             sc = span.status.status_code
@@ -325,23 +345,18 @@ class OTelSpanCaptureFixture:
 
             error_type_val = str(attrs.get("error.type", "")) or None
 
-            # Build CapturedSpan — relaxed I4 check: only require error_type when
-            # both outcome=error AND status=ERROR are set (allow partial spans).
-            try:
-                captured_span = CapturedSpan(
-                    name=span.name,
-                    operation_name="execute_tool" if "execute_tool" in span.name else None,
-                    tool_name=tool_name_val,
-                    tool_call_id=str(attrs.get("gen_ai.tool.call.id", "")) or None,
-                    outcome=outcome_raw,  # type: ignore[arg-type]
-                    adapter_id=str(attrs.get("kosmos.tool.adapter", "")) or None,
-                    error_type=error_type_val,
-                    status_code=status_code_str,  # type: ignore[arg-type]
-                    attribute_keys=frozenset(attrs.keys()),
-                )
-                captured.append(captured_span)
-            except Exception as e:
-                logger.debug("Skipping span %r due to validation error: %s", span.name, e)
+            captured_span = CapturedSpan(
+                name=span.name,
+                operation_name="execute_tool" if "execute_tool" in span.name else None,
+                tool_name=tool_name_val,
+                tool_call_id=str(attrs.get("gen_ai.tool.call.id", "")) or None,
+                outcome=outcome_raw,  # type: ignore[arg-type]
+                adapter_id=str(attrs.get("kosmos.tool.adapter", "")) or None,
+                error_type=error_type_val,
+                status_code=status_code_str,  # type: ignore[arg-type]
+                attribute_keys=frozenset(attrs.keys()),
+            )
+            captured.append(captured_span)
 
         return ObservabilitySnapshot(
             sdk_disabled=False,
@@ -1105,6 +1120,8 @@ async def run_scenario(
             async for event in engine.run(TRIGGER_QUERY):
                 events.append(event)
     finally:
+        # Snapshot MUST be taken before teardown — teardown flushes/shuts provider.
+        obs_snapshot = otel.snapshot()
         otel.teardown()
 
     elapsed_ms = int((_time.monotonic() - t_start) * 1000)
@@ -1114,7 +1131,6 @@ async def run_scenario(
     text_parts = [e.content for e in events if e.type == "text_delta" and e.content]
     final_response = "".join(text_parts) if text_parts else None
     usage_totals = _extract_usage_totals(events)
-    obs_snapshot = otel.snapshot()
 
     adapter_hits: dict[str, int] = {}
     for aid in fetched_adapters:
