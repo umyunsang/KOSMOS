@@ -88,13 +88,21 @@ Column definitions:
 | `KOSMOS_AGENT_MAILBOX_CORRELATION_ID` | OTel span attr | n/a | String span attribute key | `kosmos.observability.semconv.KOSMOS_AGENT_MAILBOX_CORRELATION_ID` | [Agent Swarm (Epic #13)](#agent-swarm-epic-13) |
 | `KOSMOS_AGENT_MAILBOX_SENDER` | OTel span attr | n/a | String span attribute key | `kosmos.observability.semconv.KOSMOS_AGENT_MAILBOX_SENDER` | [Agent Swarm (Epic #13)](#agent-swarm-epic-13) |
 | `KOSMOS_AGENT_MAILBOX_RECIPIENT` | OTel span attr | n/a | String span attribute key | `kosmos.observability.semconv.KOSMOS_AGENT_MAILBOX_RECIPIENT` | [Agent Swarm (Epic #13)](#agent-swarm-epic-13) |
+| `KOSMOS_TUI_THEME` | No | `default` | `default` \| `dark` \| `light` | `kosmos.config.env_registry.TUISettings.theme` | [Spec 287 TUI (Epic #287)](#tui-ink-react-bun-epic-287) |
+| `KOSMOS_TUI_LOG_LEVEL` | No | `WARN` | `DEBUG` \| `INFO` \| `WARN` \| `ERROR` | `kosmos.config.env_registry.TUISettings.log_level` | [Spec 287 TUI (Epic #287)](#tui-ink-react-bun-epic-287) |
+| `KOSMOS_TUI_SUBSCRIBE_TIMEOUT_S` | No | `300` | Integer >= 1 (seconds) | `kosmos.config.env_registry.TUISettings.subscribe_timeout_s` | [Spec 287 TUI (Epic #287)](#tui-ink-react-bun-epic-287) |
+| `KOSMOS_TUI_IME_STRATEGY` | No | `fork` | `fork` \| `readline` | `kosmos.config.env_registry.TUISettings.ime_strategy` | [Spec 287 TUI (Epic #287)](#tui-ink-react-bun-epic-287) |
+| `KOSMOS_TUI_SOAK_EVENTS_PER_SEC` | No | `100` | Integer >= 1 | `kosmos.config.env_registry.TUISettings.soak_events_per_sec` | [Spec 287 TUI (Epic #287)](#tui-ink-react-bun-epic-287) |
 
-> **Row count**: 35 rows (30 `KOSMOS_*` active + 2 `LANGFUSE_*` + 1 `KOSMOS_OTEL_ENDPOINT` +
+> **Row count**: 40 rows (35 `KOSMOS_*` active + 2 `LANGFUSE_*` + 1 `KOSMOS_OTEL_ENDPOINT` +
 > 1 override-family pattern + 1 deprecated). `KOSMOS_KOROAD_API_KEY` and
 > `KOSMOS_KOROAD_ACCIDENT_SEARCH_API_KEY` are concrete expansions of the
 > `KOSMOS_{TOOL_ID}_API_KEY` override-family pattern and are covered by that row.
 > Spec 028 added `KOSMOS_OTEL_COLLECTOR_PORT`, `KOSMOS_LANGFUSE_OTLP_ENDPOINT`, and
 > `KOSMOS_LANGFUSE_OTLP_AUTH_HEADER` (rows 29–31 of KOSMOS_* active set).
+> Spec 287 (T010) added `KOSMOS_TUI_THEME`, `KOSMOS_TUI_LOG_LEVEL`,
+> `KOSMOS_TUI_SUBSCRIBE_TIMEOUT_S`, `KOSMOS_TUI_IME_STRATEGY`, and
+> `KOSMOS_TUI_SOAK_EVENTS_PER_SEC` (rows 36–40 of KOSMOS_* active set).
 
 ---
 
