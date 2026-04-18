@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SubscribeOutput",
+  "description": "SubscriptionHandle + discriminated event union (FR-012). Handle returned synchronously; events surface through AsyncIterator semantics on the Python side.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["handle", "events_schema"],
+  "properties": {
+    "handle": {"$ref": "#/$defs/SubscriptionHandle"},
+    "events_schema": {
+      "oneOf": [
+        {"$ref": "#/$defs/CbsBroadcastEvent"},
+        {"$ref": "#/$defs/RestPullTickEvent"},
+        {"$ref": "#/$defs/RssItemEvent"},
+        {"$ref": "#/$defs/SubscriptionBackpressureDrop"}
+      ],
+      "description": "Discriminated on `kind`. Each event carries channel-native identifiers (CBS Message ID / REST payload / RSS guid) per FR-012."
+    }
+  },
+  "$defs": {
+    "SubscriptionHandle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["subscription_id", "tool_id", "opened_at", "closes_at"],
+      "properties": {
+        "subscription_id": {"type": "string", "minLength": 1},
+        "tool_id": {"type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-z][a-z0-9_]*$"},
+        "opened_at": {"type": "string", "format": "date-time"},
+        "closes_at": {"type": "string", "format": "date-time", "description": "opened_at + lifetime_seconds."}
+      }
+    },
+    "CbsBroadcastEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "cbs_message_id", "received_at", "payload_hash", "language", "body"],
+      "properties": {
+        "kind": {"const": "cbs_broadcast"},
+        "cbs_message_id": {
+          "type": "integer",
+          "enum": [4370, 4371, 4372, 4373, 4374, 4375, 4376, 4377, 4378, 4379, 4380, 4381, 4382, 4383, 4384, 4385],
+          "description": "3GPP TS 23.041 Public Warning System Message ID range."
+        },
+        "received_at": {"type": "string", "format": "date-time"},
+        "payload_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$", "description": "SHA-256 of raw bearer payload."},
+        "language": {"type": "string", "enum": ["ko", "en"]},
+        "body": {"type": "string"}
+      }
+    },
+    "RestPullTickEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "tool_id", "tick_at", "response_hash", "payload"],
+      "properties": {
+        "kind": {"const": "rest_pull_tick"},
+        "tool_id": {"type": "string"},
+        "tick_at": {"type": "string", "format": "date-time"},
+        "response_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "payload": {"type": "object", "additionalProperties": true}
+      }
+    },
+    "RssItemEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "feed_tool_id", "guid", "title"],
+      "properties": {
+        "kind": {"const": "rss_item"},
+        "feed_tool_id": {"type": "string"},
+        "guid": {"type": "string", "description": "RSS 2.0 <guid>. Reset guids surface as new items (Edge Case, research §4)."},
+        "published_at": {"type": ["string", "null"], "format": "date-time"},
+        "title": {"type": "string"},
+        "link": {"type": ["string", "null"]},
+        "description": {"type": ["string", "null"]}
+      }
+    },
+    "SubscriptionBackpressureDrop": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "subscription_id", "events_dropped", "message"],
+      "properties": {
+        "kind": {"const": "subscription_backpressure_drop"},
+        "subscription_id": {"type": "string"},
+        "events_dropped": {"type": "integer", "minimum": 1},
+        "message": {"type": "string"}
+      }
+    }
+  }
+}

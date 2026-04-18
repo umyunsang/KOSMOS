@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SubscribeInput",
+  "description": "Main-surface input for subscribe. FR-011, FR-013. No inbound webhook field — harness never operates as receiver.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["tool_id", "params", "lifetime_seconds"],
+  "properties": {
+    "tool_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[a-z][a-z0-9_]*$"
+    },
+    "params": {
+      "type": "object",
+      "additionalProperties": true,
+      "default": {},
+      "description": "Adapter-specific subscription parameters (e.g. region filter for CBS, feed URL template for RSS)."
+    },
+    "lifetime_seconds": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 31536000,
+      "description": "Bounded lifetime required (FR-011). Ceiling = 365 days. Harness releases resources on expiry or explicit cancel (FR-014)."
+    }
+  }
+}

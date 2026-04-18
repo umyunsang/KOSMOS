@@ -292,6 +292,10 @@ NMC_EMERGENCY_SEARCH_TOOL = GovAPITool(
     # Canonical hint values (kept here as comments for T033 reference):
     #   search_hint_ko = "응급실 실시간 병상 · 응급의료센터"
     #   search_hint_en = "emergency room bed availability nearest ER"
+    # Spec 031 T032/T033 dual-axis fields — None during pre-v1.2 compatibility window FR-028
+    primitive="lookup",
+    published_tier_minimum=None,
+    nist_aal_hint=None,
 )
 
 

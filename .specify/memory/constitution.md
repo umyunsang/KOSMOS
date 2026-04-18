@@ -6,6 +6,8 @@
 
 Every design decision MUST trace to a concrete reference source. All sources listed in `docs/vision.md § Reference materials` are valid, including open-source repos, official documentation, reconstructed architecture analyses, and leaked-source review documents.
 
+**Primary migration source (project-wide)**: `.references/claude-code-sourcemap/restored-src/src/` — Claude Code 2.1.88, 1,884 .ts/.tsx files, research-use reconstruction from `@anthropic-ai/claude-code` v2.1.88 source map. Per AGENTS.md, KOSMOS migrates the Claude Code harness (tool loop, permission gauntlet, context assembly, TUI, and the related coordinator/commands/services/context layers) to the Korean public-service domain. Before authoring any new module at any layer, check restored-src for the corresponding construct first; only escalate to the secondary references below when restored-src does not cover the need (document the escalation in `research.md`). The rewrite boundary is narrow: `services/api/` (→ KOSMOS Python backend over stdio JSONL), `tools/*` (→ thin renderers over KOSMOS's 5-primitive surface), and net-new domain layers Claude Code does not have (Korean IME, public-API adapters, PIPA permission extensions, Spec 027 swarm mailbox). Files lifted from restored-src MUST carry a header citing the upstream path + version `2.1.88` + research-use notice; per-layer `NOTICE` declares Anthropic attribution.
+
 **Mandatory reference mapping** — every `/speckit-plan` Phase 0 Research MUST read `docs/vision.md` and map each design decision to one of these sources:
 
 | Layer | Primary reference | Secondary reference |
@@ -94,4 +96,4 @@ This prevents "ghost work" — deferred items that exist only in spec prose but 
 
 This constitution supersedes individual spec decisions. Any spec conflicting with these principles is a blocker — open an issue before proceeding. Amendments require an ADR under `docs/adr/` and user approval.
 
-**Version**: 1.1.0 | **Ratified**: 2026-04-12 | **Last Amended**: 2026-04-13
+**Version**: 1.1.1 | **Ratified**: 2026-04-12 | **Last Amended**: 2026-04-19

@@ -42,8 +42,15 @@ jobs:
             exit 0
           fi
           PATTERN='^(feat|fix|docs|refactor|test|chore|spec)\/[a-z0-9][a-z0-9\-]*$'
-          if ! echo "$BRANCH" | grep -qE "$PATTERN"; then
-            echo "::error::Branch name '$BRANCH' does not match pattern: <type>/<kebab-case-scope>"
-            echo "Valid prefixes: feat/, fix/, docs/, refactor/, test/, chore/, spec/"
-            exit 1
+          SPECKIT_PATTERN='^[0-9]{3}-[a-z0-9][a-z0-9\-]*$'
+          if echo "$BRANCH" | grep -qE "$PATTERN"; then
+            exit 0
           fi
+          if echo "$BRANCH" | grep -qE "$SPECKIT_PATTERN"; then
+            echo "Spec Kit auto-generated branch accepted: $BRANCH"
+            exit 0
+          fi
+          echo "::error::Branch name '$BRANCH' does not match conventional pattern or Spec Kit pattern"
+          echo "Valid prefixes: feat/, fix/, docs/, refactor/, test/, chore/, spec/"
+          echo "Or Spec Kit format: NNN-kebab-case-slug (e.g. 031-five-primitive-harness)"
+          exit 1

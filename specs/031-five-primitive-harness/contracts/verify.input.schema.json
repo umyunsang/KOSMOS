@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "VerifyInput",
+  "description": "Main-surface input for the verify primitive. FR-006. Delegation-only — KOSMOS never operates CA / HSM / VC issuer (FR-009).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["family_hint", "session_context"],
+  "properties": {
+    "family_hint": {
+      "type": "string",
+      "enum": [
+        "gongdong_injeungseo",
+        "geumyung_injeungseo",
+        "ganpyeon_injeung",
+        "digital_onepass",
+        "mobile_id",
+        "mydata"
+      ],
+      "description": "Expected authentication family. Mismatch vs session credentials → structured VerifyMismatchError (FR-010). Coercion prohibited."
+    },
+    "session_context": {
+      "type": "object",
+      "description": "Opaque caller-owned session payload forwarded to the external Korean national infrastructure. Shape is adapter-specific.",
+      "additionalProperties": true,
+      "default": {}
+    }
+  }
+}

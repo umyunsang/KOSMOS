@@ -892,6 +892,10 @@ KOROAD_ACCIDENT_HAZARD_SEARCH_TOOL = GovAPITool(
     cache_ttl_seconds=3600,
     rate_limit_per_minute=10,
     is_core=False,
+    # Spec 031 T032/T033 dual-axis fields — None during pre-v1.2 compatibility window FR-028
+    primitive="lookup",
+    published_tier_minimum=None,
+    nist_aal_hint=None,
 )
 
 

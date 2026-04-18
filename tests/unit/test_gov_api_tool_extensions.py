@@ -191,20 +191,25 @@ class TestGovAPIToolValidatorV2:
 class TestGovAPIToolValidatorV3:
     """V3 (FR-001/FR-005): auth_level disagrees with TOOL_MIN_AAL row → error.
 
-    Uses the canonical pair: id='issue_certificate' (TOOL_MIN_AAL = 'AAL3')
-    combined with auth_level='AAL1' to produce a deterministic V3 conflict.
-    issue_certificate requires AAL3 per data-model.md §2.
+    Post Spec 031 T080: the legacy 8-verb table has been pruned to the four
+    ``GovAPITool`` IDs still bound to V3 — ``lookup`` (AAL1),
+    ``resolve_location`` (AAL1), ``nfa_emergency_info_service`` (AAL1), and
+    ``mohw_welfare_eligibility_search`` (AAL2). The negative tests below pick
+    two of those and present the wrong AAL to trigger V3.
     """
 
     def test_auth_level_disagreement_with_tool_min_aal_raises(self) -> None:
-        """id=issue_certificate (AAL3 in TOOL_MIN_AAL) + auth_level=AAL1 must raise (V3)."""
+        """mohw_welfare_eligibility_search (AAL2 in TOOL_MIN_AAL) + auth_level=AAL1 → V3."""
         with pytest.raises(ValidationError) as exc_info:
             _make(
-                id="issue_certificate",
-                auth_level="AAL1",  # conflicts with TOOL_MIN_AAL["issue_certificate"] = "AAL3"
-                pipa_class="identifier",  # realistic for certificate issuance
-                dpa_reference="dpa-mois-v1",
-                is_irreversible=True,
+                id="mohw_welfare_eligibility_search",
+                auth_type="api_key",  # V6: (api_key, AAL1) is allowed.
+                auth_level="AAL1",  # conflicts with TOOL_MIN_AAL["mohw_..."] = "AAL2"
+                pipa_class="personal",
+                dpa_reference="dpa-ssis-v1",
+                is_irreversible=False,
+                requires_auth=True,  # V5: AAL1+ requires requires_auth=True.
+                is_personal_data=True,
             )
         err_str = str(exc_info.value)
         # Error must reference V3 or FR-001 or FR-005
@@ -213,14 +218,17 @@ class TestGovAPIToolValidatorV3:
         )
 
     def test_pay_with_wrong_aal_raises(self) -> None:
-        """id=pay (AAL3 in TOOL_MIN_AAL) + auth_level=AAL2 must raise (V3)."""
+        """nfa_emergency_info_service (AAL1 in TOOL_MIN_AAL) + auth_level=AAL2 → V3."""
         with pytest.raises(ValidationError) as exc_info:
             _make(
-                id="pay",
-                auth_level="AAL2",  # conflicts with TOOL_MIN_AAL["pay"] = "AAL3"
-                pipa_class="personal",
-                dpa_reference="dpa-payment-v1",
-                is_irreversible=True,
+                id="nfa_emergency_info_service",
+                auth_type="api_key",  # V6: (api_key, AAL2) is allowed.
+                auth_level="AAL2",  # conflicts with TOOL_MIN_AAL["nfa_..."] = "AAL1"
+                pipa_class="non_personal",  # NFA EMS stats are anonymized.
+                dpa_reference=None,
+                is_irreversible=False,
+                requires_auth=True,  # V5: AAL1+ requires requires_auth=True.
+                is_personal_data=False,
             )
         err_str = str(exc_info.value)
         assert "V3" in err_str or "FR-001" in err_str or "FR-005" in err_str, (
