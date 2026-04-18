@@ -74,8 +74,12 @@ Column definitions:
 | `KOSMOS_LANGFUSE_SECRET_KEY` | No | — | `sk-lf-…` format string | `kosmos.context.prompt_loader.PromptLoader` | [Langfuse Cloud](https://cloud.langfuse.com) |
 | `KOSMOS_{TOOL_ID}_API_KEY` | Override pattern | — | API key string | `kosmos.permissions.credentials._tool_specific_var` | [Per-tool override pattern](#per-tool-override-pattern) |
 | `KOSMOS_API_KEY` | **Deprecated** | — | API key string | `kosmos.permissions.credentials.resolve_credential` (global fallback) | [Deprecation notice](#kosmos_api_key-deprecated) |
+| `KOSMOS_AGENT_MAILBOX_ROOT` | No | `~/.kosmos/mailbox` | Absolute directory path | `kosmos.settings.KosmosSettings.agent_mailbox_root` | [Agent Swarm (Epic #13)](#agent-swarm-epic-13) |
+| `KOSMOS_AGENT_MAILBOX_MAX_MESSAGES` | No | `1000` | Integer [100, 10000] | `kosmos.settings.KosmosSettings.agent_mailbox_max_messages` | [Agent Swarm (Epic #13)](#agent-swarm-epic-13) |
+| `KOSMOS_AGENT_MAX_WORKERS` | No | `4` | Integer [1, 16] | `kosmos.settings.KosmosSettings.agent_max_workers` | [Agent Swarm (Epic #13)](#agent-swarm-epic-13) |
+| `KOSMOS_AGENT_WORKER_TIMEOUT_SECONDS` | No | `120` | Integer [10, 600] | `kosmos.settings.KosmosSettings.agent_worker_timeout_seconds` | [Agent Swarm (Epic #13)](#agent-swarm-epic-13) |
 
-> **Row count**: 31 rows (26 `KOSMOS_*` active + 2 `LANGFUSE_*` + 1 `KOSMOS_OTEL_ENDPOINT` +
+> **Row count**: 35 rows (30 `KOSMOS_*` active + 2 `LANGFUSE_*` + 1 `KOSMOS_OTEL_ENDPOINT` +
 > 1 override-family pattern + 1 deprecated). `KOSMOS_KOROAD_API_KEY` and
 > `KOSMOS_KOROAD_ACCIDENT_SEARCH_API_KEY` are concrete expansions of the
 > `KOSMOS_{TOOL_ID}_API_KEY` override-family pattern and are covered by that row.
@@ -484,6 +488,62 @@ They do not need to be populated in production or developer `.env` files.
 |----------|---------|----------|
 | `KOSMOS_AUTH_TEST_TOOL_API_KEY` | Credential fixture for permission-pipeline unit tests | No (test only) |
 | `KOSMOS_SKIP_PERF` | Skip performance-sensitive assertions in slow CI environments | No (test only) |
+
+---
+
+## Agent Swarm (Epic #13)
+
+Four variables control the multi-agent coordinator/worker IPC layer introduced in spec 027.
+
+### `KOSMOS_AGENT_MAILBOX_ROOT`
+
+Root directory for the file-based at-least-once mailbox (mailbox-abi.md §1). FileMailbox
+creates `<root>/<session_id>/<sender>/` subdirectories at mode `0o700`; message files are
+written at mode `0o600`.
+
+| Property | Value |
+|----------|-------|
+| **Default** | `~/.kosmos/mailbox` |
+| **Required** | No |
+| **Range** | Absolute path (relative paths are rejected at validation time, FR-032) |
+| **Consumed by** | `kosmos.agents.mailbox.file_mailbox.FileMailbox.__init__` |
+
+### `KOSMOS_AGENT_MAILBOX_MAX_MESSAGES`
+
+Per-session message cap enforced by `FileMailbox.send()`. When the count of `.json` files
+in the session directory reaches this value, `send()` raises `MailboxOverflowError` (FR-021).
+
+| Property | Value |
+|----------|-------|
+| **Default** | `1000` |
+| **Required** | No |
+| **Range** | Integer [100, 10 000] |
+| **Consumed by** | `kosmos.agents.mailbox.file_mailbox.FileMailbox.__init__` |
+
+### `KOSMOS_AGENT_MAX_WORKERS`
+
+Maximum number of specialist workers spawned concurrently by one coordinator session.
+Workers beyond this limit are queued. Set lower in memory-constrained environments.
+
+| Property | Value |
+|----------|-------|
+| **Default** | `4` |
+| **Required** | No |
+| **Range** | Integer [1, 16] |
+| **Consumed by** | `kosmos.agents.coordinator.Coordinator._research_phase` |
+
+### `KOSMOS_AGENT_WORKER_TIMEOUT_SECONDS`
+
+Seconds a worker has to post a `result` or `error` message before the coordinator
+cancels it (cooperative cancellation, FR-006). A cancelled worker is treated as an
+error in the final plan.
+
+| Property | Value |
+|----------|-------|
+| **Default** | `120` |
+| **Required** | No |
+| **Range** | Integer [10, 600] |
+| **Consumed by** | `kosmos.agents.coordinator.Coordinator._research_phase` |
 
 ---
 
