@@ -53,7 +53,11 @@ processors:
 
 exporters:
   otlphttp:
-    endpoint: "${env:KOSMOS_LANGFUSE_OTLP_ENDPOINT:-http://langfuse-web:3000/api/public/otel/v1/traces}"
+    # IMPORTANT: otlphttp exporter appends /v1/traces automatically.
+    # Set endpoint to base URL only (e.g. http://langfuse-web:3000/api/public/otel),
+    # NOT the full traces path — otherwise the request lands at .../v1/traces/v1/traces.
+    # Ref: opentelemetry-collector-contrib otlphttpexporter README
+    endpoint: "${env:KOSMOS_LANGFUSE_OTLP_ENDPOINT:-http://langfuse-web:3000/api/public/otel}"
     headers:
       Authorization: "${env:KOSMOS_LANGFUSE_OTLP_AUTH_HEADER}"
       x-langfuse-ingestion-version: "4"

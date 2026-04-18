@@ -96,7 +96,8 @@ services:
     ports:
       - "${KOSMOS_OTEL_COLLECTOR_PORT:-4318}:4318"
     environment:
-      KOSMOS_LANGFUSE_OTLP_ENDPOINT: "${KOSMOS_LANGFUSE_OTLP_ENDPOINT:-http://langfuse-web:3000/api/public/otel/v1/traces}"
+      # Base URL only — otlphttp exporter appends /v1/traces automatically
+      KOSMOS_LANGFUSE_OTLP_ENDPOINT: "${KOSMOS_LANGFUSE_OTLP_ENDPOINT:-http://langfuse-web:3000/api/public/otel}"
       KOSMOS_LANGFUSE_OTLP_AUTH_HEADER: "${KOSMOS_LANGFUSE_OTLP_AUTH_HEADER:-}"
       KOSMOS_OTEL_COLLECTOR_PORT: "${KOSMOS_OTEL_COLLECTOR_PORT:-4318}"
     healthcheck:

@@ -92,7 +92,7 @@ All variables follow the `KOSMOS_` prefix rule (AGENTS.md hard rule).
 | Variable | Default | Description |
 |---|---|---|
 | `KOSMOS_OTEL_COLLECTOR_PORT` | `4318` | Host port for the `otelcol` OTLP HTTP receiver. Consumed by `docker-compose.dev.yml`. |
-| `KOSMOS_LANGFUSE_OTLP_ENDPOINT` | `http://langfuse-web:3000/api/public/otel/v1/traces` | Langfuse OTLP ingest URL used by the collector exporter (compose-internal). Consumed by `infra/otel-collector/config.yaml`. |
+| `KOSMOS_LANGFUSE_OTLP_ENDPOINT` | `http://langfuse-web:3000/api/public/otel` | Langfuse OTLP **base** URL used by the collector exporter (compose-internal). The `otlphttp` exporter appends `/v1/traces` automatically. Consumed by `infra/otel-collector/config.yaml`. |
 | `KOSMOS_LANGFUSE_OTLP_AUTH_HEADER` | `` (empty) | `Basic <base64(pk-xxx:sk-xxx)>` for Langfuse OTLP auth. Empty = anonymous. **Sensitive** — do not commit. Consumed by `infra/otel-collector/config.yaml`. |
 
 ### Inherited from spec 021 (unchanged)

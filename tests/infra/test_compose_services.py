@@ -13,9 +13,9 @@ dep through ``langfuse``/opentelemetry extras) and asserts:
   (f) ``langfuse/langfuse`` image tag is pinned to ``3.35.0``
   (g) ``langfuse/langfuse-worker`` tag is pinned to ``3.35.0``
 
-No Docker binary is required.  Uses ``yaml`` (PyYAML) if importable,
-otherwise raises a clear skip message so the test never silently passes
-on a broken YAML parse.
+No Docker binary is required.  Requires PyYAML (a transitive dev dep) via
+``pytest.importorskip`` — the entire module is skipped when PyYAML is absent,
+ensuring the test never silently passes on a broken YAML parse.
 """
 
 from __future__ import annotations
@@ -115,25 +115,32 @@ def test_otelcol_only_exposes_otlp_http_port(compose_data: dict) -> None:
 
 
 def test_langfuse_image_pinned(compose_data: dict) -> None:
-    """(f) langfuse/langfuse image is pinned to 3.35.0 (no floating tag)."""
+    """(f) langfuse/langfuse image is pinned to 3.35.0 or a digest (no floating tag)."""
     image: str = compose_data["services"]["langfuse-web"]["image"]
-    assert _LANGFUSE_IMAGE_TAG in image, (
-        f"langfuse/langfuse image must be pinned to {_LANGFUSE_IMAGE_TAG}.\n"
+    # Accept either an exact version tag (:3.35.0) or a digest pin (@sha256:...)
+    has_version_tag = f":{_LANGFUSE_IMAGE_TAG}" in image
+    has_digest_pin = "@sha256:" in image
+    assert has_version_tag or has_digest_pin, (
+        f"langfuse/langfuse image must be pinned to :{_LANGFUSE_IMAGE_TAG} or @sha256:...\n"
         f"  Got: {image}"
     )
-    # Ensure it is not the old floating ':3' tag
-    assert image.endswith(":3") is False or _LANGFUSE_IMAGE_TAG in image, (
+    # Ensure it is not the old floating ':3' tag (single digit, no patch)
+    assert not image.endswith(":3"), (
         f"langfuse/langfuse image must not use floating ':3' tag. Got: {image}"
     )
 
 
 def test_langfuse_worker_image_pinned(compose_data: dict) -> None:
-    """(g) langfuse/langfuse-worker image is pinned to 3.35.0 (no floating tag)."""
+    """(g) langfuse/langfuse-worker image is pinned to 3.35.0 or a digest (no floating tag)."""
     image: str = compose_data["services"]["langfuse-worker"]["image"]
-    assert _LANGFUSE_WORKER_IMAGE_TAG in image, (
-        f"langfuse/langfuse-worker image must be pinned to {_LANGFUSE_WORKER_IMAGE_TAG}.\n"
+    # Accept either an exact version tag (:3.35.0) or a digest pin (@sha256:...)
+    has_version_tag = f":{_LANGFUSE_WORKER_IMAGE_TAG}" in image
+    has_digest_pin = "@sha256:" in image
+    assert has_version_tag or has_digest_pin, (
+        f"langfuse/langfuse-worker image must be pinned to "
+        f":{_LANGFUSE_WORKER_IMAGE_TAG} or @sha256:...\n"
         f"  Got: {image}"
     )
-    assert image.endswith(":3") is False or _LANGFUSE_WORKER_IMAGE_TAG in image, (
+    assert not image.endswith(":3"), (
         f"langfuse/langfuse-worker must not use floating ':3' tag. Got: {image}"
     )

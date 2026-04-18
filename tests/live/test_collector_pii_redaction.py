@@ -38,7 +38,11 @@ import pytest
 # ---------------------------------------------------------------------------
 
 _AUTH_HEADER = os.environ.get("KOSMOS_LANGFUSE_OTLP_AUTH_HEADER", "")
-_COLLECTOR_PORT = int(os.environ.get("KOSMOS_OTEL_COLLECTOR_PORT", "4318"))
+_COLLECTOR_PORT_RAW = os.environ.get("KOSMOS_OTEL_COLLECTOR_PORT", "4318")
+try:
+    _COLLECTOR_PORT = int(_COLLECTOR_PORT_RAW)
+except ValueError:
+    _COLLECTOR_PORT = 4318  # fall back to default; invalid value surfaced at test time
 
 _LANGFUSE_BASE_URL = "http://localhost:3000"
 _LANGFUSE_HEALTH_URL = f"{_LANGFUSE_BASE_URL}/api/public/health"
