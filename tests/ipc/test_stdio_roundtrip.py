@@ -12,20 +12,19 @@ exercises the full CLI → stdio path without any live data.go.kr calls.
 from __future__ import annotations
 
 import asyncio
-import json
 import sys
 import time
-from datetime import datetime, timezone
+from collections.abc import AsyncIterator
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import AsyncIterator
 
 import pytest
 from pydantic import TypeAdapter
 
 from kosmos.ipc.frame_schema import (
     IPCFrame,
-    UserInputFrame,
     SessionEventFrame,
+    UserInputFrame,
 )
 
 # ---------------------------------------------------------------------------
@@ -38,7 +37,7 @@ _PROJECT_ROOT = Path(__file__).parent.parent.parent
 
 
 def _ts() -> str:
-    now = datetime.now(tz=timezone.utc)
+    now = datetime.now(tz=UTC)
     return now.strftime("%Y-%m-%dT%H:%M:%S.") + f"{now.microsecond // 1000:03d}Z"
 
 
@@ -56,7 +55,7 @@ async def _read_lines(stream: asyncio.StreamReader, n: int, timeout: float = 10.
             break
         try:
             raw = await asyncio.wait_for(stream.readline(), timeout=remaining)
-        except asyncio.TimeoutError:
+        except TimeoutError:
             break
         if not raw:
             break
@@ -75,7 +74,11 @@ async def _read_lines(stream: asyncio.StreamReader, n: int, timeout: float = 10.
 async def backend_proc() -> AsyncIterator[asyncio.subprocess.Process]:
     """Spawn ``uv run kosmos --ipc stdio`` and yield the process handle."""
     proc = await asyncio.create_subprocess_exec(
-        sys.executable, "-m", "kosmos.cli", "--ipc", "stdio",
+        sys.executable,
+        "-m",
+        "kosmos.cli",
+        "--ipc",
+        "stdio",
         stdin=asyncio.subprocess.PIPE,
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
@@ -86,7 +89,7 @@ async def backend_proc() -> AsyncIterator[asyncio.subprocess.Process]:
         proc.terminate()
         try:
             await asyncio.wait_for(proc.wait(), timeout=3.0)
-        except asyncio.TimeoutError:
+        except TimeoutError:
             proc.kill()
             await proc.wait()
 
@@ -148,7 +151,7 @@ async def test_exit_event_triggers_shutdown(backend_proc: asyncio.subprocess.Pro
     # Backend should exit within 5 seconds on exit event
     try:
         await asyncio.wait_for(backend_proc.wait(), timeout=5.0)
-    except asyncio.TimeoutError:
+    except TimeoutError:
         pytest.fail("Backend did not exit within 5 s after session_event exit")
 
     assert backend_proc.returncode == 0, f"Non-zero exit: {backend_proc.returncode}"

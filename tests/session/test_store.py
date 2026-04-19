@@ -287,13 +287,9 @@ class TestSessionDirTildeExpansion:
 
         # The resolved path must be absolute and not start with '~'
         assert result.is_absolute(), f"Expected absolute path, got {result}"
-        assert not str(result).startswith("~"), (
-            f"'~' was not expanded — got {result}"
-        )
+        assert not str(result).startswith("~"), f"'~' was not expanded — got {result}"
         # The directory must have been created by _get_session_dir
-        assert result.exists() and result.is_dir(), (
-            f"Directory was not created at {result}"
-        )
+        assert result.exists() and result.is_dir(), f"Directory was not created at {result}"
         # And it should live under tmp_path (since HOME=tmp_path)
         assert str(result).startswith(str(tmp_path)), (
             f"Expected path under {tmp_path}, got {result}"

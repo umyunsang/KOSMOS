@@ -26,10 +26,7 @@ from kosmos.ipc.frame_schema import IPCFrame, ipc_frame_json_schema
 # ---------------------------------------------------------------------------
 
 _CONTRACTS_DIR = (
-    Path(__file__).parent.parent.parent
-    / "specs"
-    / "287-tui-ink-react-bun"
-    / "contracts"
+    Path(__file__).parent.parent.parent / "specs" / "287-tui-ink-react-bun" / "contracts"
 )
 
 # Arms whose per-arm JSON Schema files had no "examples" field; minimal valid

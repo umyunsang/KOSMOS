@@ -24,21 +24,23 @@ frames from outside this module.
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import logging
 import signal
 import sys
 import time
-from typing import TYPE_CHECKING, Callable, Any
+from collections.abc import Callable
+from datetime import UTC
+from typing import TYPE_CHECKING, Any
 
 from opentelemetry import trace
 from opentelemetry.trace import Status, StatusCode
 from pydantic import TypeAdapter, ValidationError
 
 from kosmos.ipc.frame_schema import (
+    ErrorFrame,
     IPCFrame,
     SessionEventFrame,
-    UserInputFrame,
-    ErrorFrame,
 )
 
 if TYPE_CHECKING:
@@ -186,9 +188,12 @@ async def _reader_loop(
 
 def _utcnow() -> str:
     """Return current UTC time as RFC 3339 string."""
-    from datetime import datetime, timezone
-    return datetime.now(tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.") + \
-           f"{datetime.now(tz=timezone.utc).microsecond // 1000:03d}Z"
+    from datetime import datetime
+
+    return (
+        datetime.now(tz=UTC).strftime("%Y-%m-%dT%H:%M:%S.")
+        + f"{datetime.now(tz=UTC).microsecond // 1000:03d}Z"
+    )
 
 
 async def _emit_exit_frame(session_id: str) -> None:
@@ -213,7 +218,7 @@ async def _dispatch_session_event(
     event: str,
     payload: dict[str, Any],
     session_id: str,
-    sm: "SessionManager",
+    sm: SessionManager,
     shutdown: asyncio.Event,
 ) -> None:
     """Route a ``session_event`` frame to the appropriate :class:`SessionManager` method.
@@ -331,10 +336,10 @@ async def _dispatch_session_event(
 # ---------------------------------------------------------------------------
 
 
-async def run(
+async def run(  # noqa: C901
     session_id: str | None = None,
     on_frame: Callable[[IPCFrame], Any] | None = None,
-    session_manager: "SessionManager | None" = None,
+    session_manager: SessionManager | None = None,
 ) -> None:
     """Run the asyncio JSONL stdio loop until stdin closes or a signal arrives.
 
@@ -388,9 +393,11 @@ async def run(
     # session manager.  Wraps every handler in try/except so malformed payloads
     # never crash the loop (FR-010).
     if on_frame is None:
+
         async def _handle_frame(frame: IPCFrame) -> None:  # type: ignore[misc]
             if frame.kind == "user_input":
                 from kosmos.ipc.frame_schema import AssistantChunkFrame
+
                 echo_frame = AssistantChunkFrame(
                     session_id=frame.session_id,
                     ts=_utcnow(),
@@ -405,9 +412,7 @@ async def run(
                 evt = frame.event  # type: ignore[attr-defined]
                 payload = frame.payload  # type: ignore[attr-defined]
                 try:
-                    await _dispatch_session_event(
-                        evt, payload, frame.session_id, _sm, _shutdown
-                    )
+                    await _dispatch_session_event(evt, payload, frame.session_id, _sm, _shutdown)
                 except Exception as exc:  # noqa: BLE001
                     logger.exception("session_event handler raised: %s", exc)
                     err = ErrorFrame(
@@ -437,10 +442,8 @@ async def run(
     # Cancel whatever is still running
     for task in pending:
         task.cancel()
-        try:
+        with contextlib.suppress(asyncio.CancelledError, Exception):
             await task
-        except (asyncio.CancelledError, Exception):
-            pass
 
     # Emit exit frame and flush
     try:

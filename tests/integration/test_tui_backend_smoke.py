@@ -44,6 +44,7 @@ fixture.
 from __future__ import annotations
 
 import json
+from datetime import UTC
 from pathlib import Path
 from typing import Any
 from unittest.mock import patch
@@ -80,9 +81,9 @@ def _load_json(path: Path) -> dict[str, Any]:
 
 
 def _make_ts() -> str:
-    from datetime import datetime, timezone
+    from datetime import datetime
 
-    now = datetime.now(tz=timezone.utc)
+    now = datetime.now(tz=UTC)
     return now.strftime("%Y-%m-%dT%H:%M:%S.") + f"{now.microsecond // 1000:03d}Z"
 
 
@@ -92,7 +93,7 @@ def _make_ts() -> str:
 
 
 @pytest.mark.asyncio
-async def test_sc8_scenario1_ipc_frame_sequence() -> None:
+async def test_sc8_scenario1_ipc_frame_sequence() -> None:  # noqa: C901
     """SC-8 Scenario 1: validate IPC frame sequence via QueryEngine + fixture mock.
 
     Wires:
@@ -111,6 +112,11 @@ async def test_sc8_scenario1_ipc_frame_sequence() -> None:
     """
     import uuid
 
+    from kosmos.context.builder import ContextBuilder
+    from kosmos.engine.config import QueryEngineConfig
+    from kosmos.engine.engine import QueryEngine
+    from kosmos.engine.events import QueryEvent
+    from kosmos.ipc.frame_schema import ToolResultEnvelope
     from tests.e2e.conftest import (
         TRIGGER_QUERY,
         _build_httpx_mock,
@@ -118,12 +124,6 @@ async def test_sc8_scenario1_ipc_frame_sequence() -> None:
         build_happy_script,
     )
     from tests.engine.conftest import MockLLMClient
-
-    from kosmos.context.builder import ContextBuilder
-    from kosmos.engine.config import QueryEngineConfig
-    from kosmos.engine.engine import QueryEngine
-    from kosmos.engine.events import QueryEvent
-    from kosmos.ipc.frame_schema import ToolResultEnvelope
 
     # Build scripted mock LLM (same as e2e happy scenario)
     event_sequences, _script = build_happy_script()
@@ -133,7 +133,7 @@ async def test_sc8_scenario1_ipc_frame_sequence() -> None:
 
     # Wrap MockLLMClient in LLMClient-compatible adapter
     from kosmos.llm.client import LLMClient
-    from kosmos.llm.models import ChatMessage, StreamEvent
+    from kosmos.llm.models import ChatMessage
     from kosmos.llm.usage import UsageTracker
 
     class _Adapter(LLMClient):
@@ -198,7 +198,11 @@ async def test_sc8_scenario1_ipc_frame_sequence() -> None:
             result_tool_name = "lookup"
             for prev in reversed(collected_events[: collected_events.index(event)]):
                 if prev.type == "tool_use" and prev.tool_name in {
-                    "lookup", "resolve_location", "submit", "subscribe", "verify"
+                    "lookup",
+                    "resolve_location",
+                    "submit",
+                    "subscribe",
+                    "verify",
                 }:
                     result_tool_name = prev.tool_name
                     break
@@ -254,9 +258,7 @@ async def test_sc8_scenario1_ipc_frame_sequence() -> None:
     assert tool_result_frames, "Expected at least one ToolResultFrame in IPC output"
 
     # At least one AssistantChunkFrame with done=True (terminal chunk)
-    done_chunks = [
-        f for f in ipc_frames if isinstance(f, AssistantChunkFrame) and f.done
-    ]
+    done_chunks = [f for f in ipc_frames if isinstance(f, AssistantChunkFrame) and f.done]
     assert done_chunks, "Expected at least one AssistantChunkFrame with done=True"
 
     # Serialise/deserialise round-trip for every frame

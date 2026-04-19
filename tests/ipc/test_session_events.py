@@ -13,13 +13,12 @@ session_event routing wired in T111.
 from __future__ import annotations
 
 import asyncio
-import json
 import os
 import sys
 import time
-from datetime import datetime, timezone
+from collections.abc import AsyncIterator
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import AsyncIterator
 
 import pytest
 from pydantic import TypeAdapter
@@ -27,7 +26,6 @@ from pydantic import TypeAdapter
 from kosmos.ipc.frame_schema import (
     IPCFrame,
     SessionEventFrame,
-    UserInputFrame,
 )
 
 # ---------------------------------------------------------------------------
@@ -40,7 +38,7 @@ _PROJECT_ROOT = Path(__file__).parent.parent.parent
 
 def _ts() -> str:
     """Return current UTC time as an RFC 3339 string."""
-    now = datetime.now(tz=timezone.utc)
+    now = datetime.now(tz=UTC)
     return now.strftime("%Y-%m-%dT%H:%M:%S.") + f"{now.microsecond // 1000:03d}Z"
 
 
@@ -62,7 +60,7 @@ async def _read_lines(
             break
         try:
             raw = await asyncio.wait_for(stream.readline(), timeout=remaining)
-        except asyncio.TimeoutError:
+        except TimeoutError:
             break
         if not raw:
             break
@@ -110,7 +108,7 @@ async def session_backend(
         proc.terminate()
         try:
             await asyncio.wait_for(proc.wait(), timeout=3.0)
-        except asyncio.TimeoutError:
+        except TimeoutError:
             proc.kill()
             await proc.wait()
 
@@ -288,6 +286,6 @@ async def test_exit_event_shuts_down(
     # Wait for the backend process to exit cleanly within 3s.
     try:
         await asyncio.wait_for(proc.wait(), timeout=3.0)
-    except asyncio.TimeoutError:
+    except TimeoutError:
         pytest.fail("Backend did not exit within 3 s after session_event exit")
     assert proc.returncode == 0, f"Expected exit 0, got {proc.returncode}"

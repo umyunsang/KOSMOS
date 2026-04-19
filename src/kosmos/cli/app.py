@@ -96,8 +96,7 @@ def _cli_command(
     if ipc is not None:
         if ipc != "stdio":
             _stderr_console.print(
-                f"[red]Unknown --ipc mode:[/red] {ipc!r}. "
-                "Only 'stdio' is supported."
+                f"[red]Unknown --ipc mode:[/red] {ipc!r}. Only 'stdio' is supported."
             )
             sys.exit(1)
         _run_ipc_stdio()

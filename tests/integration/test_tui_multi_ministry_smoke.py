@@ -46,8 +46,8 @@ Fixture sources
 from __future__ import annotations
 
 import json
-import os
 from collections.abc import AsyncIterator
+from datetime import UTC
 from pathlib import Path
 from typing import Any
 from unittest.mock import AsyncMock, patch
@@ -60,8 +60,8 @@ from kosmos.ipc.frame_schema import (
     AssistantChunkFrame,
     IPCFrame,
     ToolCallFrame,
-    ToolResultFrame,
     ToolResultEnvelope,
+    ToolResultFrame,
 )
 
 # ---------------------------------------------------------------------------
@@ -113,9 +113,9 @@ _frame_adapter: TypeAdapter[Any] = TypeAdapter(IPCFrame)
 
 
 def _make_ts() -> str:
-    from datetime import datetime, timezone
+    from datetime import datetime
 
-    now = datetime.now(tz=timezone.utc)
+    now = datetime.now(tz=UTC)
     return now.strftime("%Y-%m-%dT%H:%M:%S.") + f"{now.microsecond // 1000:03d}Z"
 
 
@@ -172,9 +172,7 @@ def _build_multi_ministry_httpx_mock() -> AsyncMock:
             kakao_fixture = _FIXTURE_BASE / "kakao" / "local_search_address_강남구.json"
             return _resp(url_str, _load(kakao_fixture))
 
-        raise AssertionError(
-            f"Unpatched httpx.get call in multi-ministry test to URL: {url_str!r}"
-        )
+        raise AssertionError(f"Unpatched httpx.get call in multi-ministry test to URL: {url_str!r}")
 
     return AsyncMock(side_effect=_mock_get)
 
@@ -191,9 +189,8 @@ def _build_multi_ministry_script():  # type: ignore[no-untyped-def]
     event_sequences: list of per-turn StreamEvent lists consumed by MockLLMClient.
     expected_tool_order: ordered list of tool names for assertion.
     """
-    from tests.e2e.conftest import _tce, _make_text_events
-
     from kosmos.llm.models import TokenUsage
+    from tests.e2e.conftest import _make_text_events, _tce
 
     _u = TokenUsage(input_tokens=200, output_tokens=50)
     _u_synth = TokenUsage(input_tokens=900, output_tokens=180)
@@ -224,7 +221,7 @@ def _build_multi_ministry_script():  # type: ignore[no-untyped-def]
 
 
 @pytest.mark.asyncio
-async def test_sc8_phase2_multi_ministry_ipc_frame_sequence() -> None:
+async def test_sc8_phase2_multi_ministry_ipc_frame_sequence() -> None:  # noqa: C901
     """SC-8 Phase 2: multi-ministry IPC frame sequence (KOROAD + HIRA).
 
     Exercises tool call order: resolve_location → lookup(search,KOROAD) →
@@ -240,9 +237,6 @@ async def test_sc8_phase2_multi_ministry_ipc_frame_sequence() -> None:
     """
     import uuid
 
-    from tests.e2e.conftest import _build_registry_and_executor
-    from tests.engine.conftest import MockLLMClient
-
     from kosmos.context.builder import ContextBuilder
     from kosmos.engine.config import QueryEngineConfig
     from kosmos.engine.engine import QueryEngine
@@ -250,7 +244,9 @@ async def test_sc8_phase2_multi_ministry_ipc_frame_sequence() -> None:
     from kosmos.llm.client import LLMClient
     from kosmos.llm.models import ChatMessage, StreamEvent
     from kosmos.llm.usage import UsageTracker
-    from kosmos.tools.hira.hospital_search import HIRA_HOSPITAL_SEARCH_TOOL, register as reg_hira
+    from kosmos.tools.hira.hospital_search import register as reg_hira
+    from tests.e2e.conftest import _build_registry_and_executor
+    from tests.engine.conftest import MockLLMClient
 
     # Build mock LLM event sequences
     event_sequences, expected_tool_order = _build_multi_ministry_script()
@@ -302,9 +298,7 @@ async def test_sc8_phase2_multi_ministry_ipc_frame_sequence() -> None:
     tool_call_order = [e.tool_name for e in collected_events if e.type == "tool_use"]
 
     # Extract final response
-    text_parts = [
-        e.content for e in collected_events if e.type == "text_delta" and e.content
-    ]
+    text_parts = [e.content for e in collected_events if e.type == "text_delta" and e.content]
     final_response = "".join(text_parts) if text_parts else None
 
     # Extract stop reason
@@ -327,9 +321,7 @@ async def test_sc8_phase2_multi_ministry_ipc_frame_sequence() -> None:
 
     # resolve_location must precede the first lookup
     first_lookup_idx = next(i for i, t in enumerate(tool_call_order) if t == "lookup")
-    last_resolve_idx = max(
-        i for i, t in enumerate(tool_call_order) if t == "resolve_location"
-    )
+    last_resolve_idx = max(i for i, t in enumerate(tool_call_order) if t == "resolve_location")
     assert last_resolve_idx < first_lookup_idx, (
         "All resolve_location calls must precede the first lookup call. "
         f"last_resolve_idx={last_resolve_idx}, first_lookup_idx={first_lookup_idx}"
@@ -420,9 +412,7 @@ async def test_sc8_phase2_multi_ministry_ipc_frame_sequence() -> None:
     assert ipc_frames, "No IPC frames produced"
 
     # IPC sequence must start with a ToolCallFrame (first primitive call)
-    first_primitive_frame = next(
-        (f for f in ipc_frames if isinstance(f, ToolCallFrame)), None
-    )
+    first_primitive_frame = next((f for f in ipc_frames if isinstance(f, ToolCallFrame)), None)
     assert first_primitive_frame is not None, "Expected at least one ToolCallFrame"
     assert first_primitive_frame.name in primitive_names
 

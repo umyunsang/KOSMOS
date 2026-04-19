@@ -20,7 +20,7 @@ from __future__ import annotations
 import asyncio
 import io
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 from opentelemetry.sdk.trace import TracerProvider
@@ -30,14 +30,13 @@ from opentelemetry.trace import StatusCode
 
 from kosmos.ipc.frame_schema import AssistantChunkFrame, UserInputFrame
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
 
 def _ts() -> str:
-    now = datetime.now(tz=timezone.utc)
+    now = datetime.now(tz=UTC)
     return now.strftime("%Y-%m-%dT%H:%M:%S.") + f"{now.microsecond // 1000:03d}Z"
 
 
@@ -116,12 +115,8 @@ async def test_inbound_user_input_span(
     span = ipc_spans[0]
     attrs = dict(span.attributes or {})
 
-    assert attrs.get("kosmos.session.id") == session_id, (
-        f"kosmos.session.id mismatch: {attrs}"
-    )
-    assert attrs.get("kosmos.frame.kind") == "user_input", (
-        f"kosmos.frame.kind mismatch: {attrs}"
-    )
+    assert attrs.get("kosmos.session.id") == session_id, f"kosmos.session.id mismatch: {attrs}"
+    assert attrs.get("kosmos.frame.kind") == "user_input", f"kosmos.frame.kind mismatch: {attrs}"
     assert attrs.get("kosmos.frame.direction") == "inbound", (
         f"kosmos.frame.direction mismatch: {attrs}"
     )
@@ -144,7 +139,7 @@ async def test_outbound_assistant_chunk_span(
     mem_exporter: InMemorySpanExporter,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Outbound assistant_chunk frame via write_frame → kosmos.ipc.frame span with direction=outbound."""
+    """Outbound assistant_chunk via write_frame → kosmos.ipc.frame span (direction=outbound)."""
     from kosmos.ipc import stdio as stdio_mod  # noqa: PLC0415
 
     session_id = str(uuid.uuid4())
@@ -194,9 +189,7 @@ async def test_outbound_assistant_chunk_span(
     span = ipc_spans[0]
     attrs = dict(span.attributes or {})
 
-    assert attrs.get("kosmos.session.id") == session_id, (
-        f"kosmos.session.id mismatch: {attrs}"
-    )
+    assert attrs.get("kosmos.session.id") == session_id, f"kosmos.session.id mismatch: {attrs}"
     assert attrs.get("kosmos.frame.kind") == "assistant_chunk", (
         f"kosmos.frame.kind mismatch: {attrs}"
     )

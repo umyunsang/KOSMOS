@@ -29,7 +29,6 @@ from pathlib import Path
 
 import yaml
 from pydantic import ValidationError
-
 from tools.release_manifest.models import ReleaseManifest
 
 logger = logging.getLogger(__name__)
