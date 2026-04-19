@@ -183,7 +183,9 @@ async def test_sc8_scenario1_ipc_frame_sequence() -> None:  # noqa: C901
             if event.tool_name in primitive_names:
                 frame = ToolCallFrame(
                     session_id=session_id,
+                    correlation_id=str(uuid.uuid4()),
                     ts=_make_ts(),
+                    role="backend",
                     kind="tool_call",
                     call_id=event.tool_call_id or str(uuid.uuid4()),
                     name=event.tool_name,  # type: ignore[arg-type]
@@ -211,7 +213,9 @@ async def test_sc8_scenario1_ipc_frame_sequence() -> None:  # noqa: C901
             )
             result_frame = ToolResultFrame(
                 session_id=session_id,
+                correlation_id=str(uuid.uuid4()),
                 ts=_make_ts(),
+                role="backend",
                 kind="tool_result",
                 call_id=str(uuid.uuid4()),
                 envelope=envelope,
@@ -221,7 +225,9 @@ async def test_sc8_scenario1_ipc_frame_sequence() -> None:  # noqa: C901
         elif event.type == "text_delta" and event.content:
             chunk = AssistantChunkFrame(
                 session_id=session_id,
+                correlation_id=str(uuid.uuid4()),
                 ts=_make_ts(),
+                role="backend",
                 kind="assistant_chunk",
                 message_id=str(uuid.uuid4()),
                 delta=event.content,
@@ -233,7 +239,9 @@ async def test_sc8_scenario1_ipc_frame_sequence() -> None:  # noqa: C901
     if ipc_frames:
         terminal = AssistantChunkFrame(
             session_id=session_id,
+            correlation_id=str(uuid.uuid4()),
             ts=_make_ts(),
+            role="backend",
             kind="assistant_chunk",
             message_id=str(uuid.uuid4()),
             delta="",

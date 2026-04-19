@@ -116,6 +116,8 @@ async def test_user_input_echo_roundtrip(backend_proc: asyncio.subprocess.Proces
     sid = "01HTESTST0000000000000ABCD"
     frame = UserInputFrame(
         session_id=sid,
+        correlation_id="test-corr-roundtrip-001",
+        role="tui",
         ts=_ts(),
         kind="user_input",
         text="hello",
@@ -138,6 +140,8 @@ async def test_exit_event_triggers_shutdown(backend_proc: asyncio.subprocess.Pro
     sid = "01HTESTST0000000000000ABCE"
     frame = SessionEventFrame(
         session_id=sid,
+        correlation_id="test-corr-exit-001",
+        role="tui",
         ts=_ts(),
         kind="session_event",
         event="exit",
@@ -178,8 +182,15 @@ async def test_multiple_frames_fifo_order(backend_proc: asyncio.subprocess.Proce
     sid = "01HTESTST0000000000000ABCF"
     texts = [f"msg-{i}" for i in range(5)]
     assert backend_proc.stdin is not None
-    for text in texts:
-        f = UserInputFrame(session_id=sid, ts=_ts(), kind="user_input", text=text)
+    for i, text in enumerate(texts):
+        f = UserInputFrame(
+            session_id=sid,
+            correlation_id=f"test-corr-fifo-{i:03d}",
+            role="tui",
+            ts=_ts(),
+            kind="user_input",
+            text=text,
+        )
         backend_proc.stdin.write(_encode(f))
     await backend_proc.stdin.drain()
 

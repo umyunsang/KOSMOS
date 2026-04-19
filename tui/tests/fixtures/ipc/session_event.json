@@ -1,6 +1,10 @@
 {
   "kind": "session_event",
+  "version": "1.0",
   "session_id": "01HTESTST0000000000000ABCA",
+  "correlation_id": "01HTESTCORR000000000000010",
+  "role": "tui",
+  "frame_seq": 9,
   "ts": "2026-04-19T12:00:09.000Z",
   "event": "save",
   "payload": {}

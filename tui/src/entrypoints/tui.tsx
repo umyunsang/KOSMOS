@@ -114,6 +114,7 @@ function dispatchFrame(frame: IPCFrame): void {
         type: 'PERMISSION_REQUEST',
         request: {
           request_id: frame.request_id,
+          correlation_id: frame.correlation_id,
           worker_id: frame.worker_id,
           primitive_kind: frame.primitive_kind,
           description_ko: frame.description_ko,
@@ -218,7 +219,9 @@ function AppInner({ bridge }: AppInnerProps): React.ReactElement {
     const frame: UserInputFrame = {
       kind: 'user_input',
       session_id: sessionId,
+      correlation_id: crypto.randomUUID(),
       ts: new Date().toISOString(),
+      role: 'tui',
       text,
     }
     bridge.send(frame)

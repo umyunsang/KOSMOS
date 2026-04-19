@@ -57,6 +57,18 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 1. Run `.specify/scripts/bash/check-prerequisites.sh --json --require-tasks --include-tasks` from repo root and parse FEATURE_DIR and AVAILABLE_DOCS list. All paths must be absolute. For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot").
 1. From the executed script, extract the path to **tasks**.
+1. **100 sub-issue cap pre-flight check** (MANDATORY):
+   - Resolve the originating Epic number (same procedure as "Deferred Item Issue Creation" § 3 below).
+   - Query the Epic's current sub-issue count:
+     ```bash
+     gh api graphql -f query='query($num: Int!) { repository(owner: "OWNER", name: "REPO") { issue(number: $num) { subIssues { totalCount } } } }' -F num=EPIC_NUM
+     ```
+   - Count `- [ ]` checkboxes in `tasks.md` → `NEW_TASKS`.
+   - If `existing_count + NEW_TASKS + deferred_count > 100`: **STOP**. Report the overflow to the user with three options:
+     1. Re-run `speckit-tasks` and consolidate per its "Task Count Budget" section.
+     2. Split the Epic into multiple topically-coherent Epics under the same Initiative.
+     3. Acknowledge the overflow explicitly and accept that surplus Tasks will be created as orphans (requires human "proceed" confirmation — do not auto-proceed).
+   - Only after the cap check passes (or user explicitly authorises overflow) proceed to remote URL validation.
 1. Get the Git remote by running:
 
 ```bash

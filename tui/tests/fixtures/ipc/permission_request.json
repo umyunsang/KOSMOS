@@ -1,6 +1,10 @@
 {
   "kind": "permission_request",
+  "version": "1.0",
   "session_id": "01HTESTST0000000000000ABCA",
+  "correlation_id": "01HTESTCORR000000000000008",
+  "role": "backend",
+  "frame_seq": 7,
   "ts": "2026-04-19T12:00:07.000Z",
   "request_id": "01HTESTPERM00000000000001",
   "worker_id": "worker-health-01",

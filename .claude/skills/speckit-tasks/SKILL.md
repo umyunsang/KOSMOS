@@ -198,3 +198,22 @@ Every task MUST strictly follow this format:
   - Within each story: Tests (if requested) → Models → Services → Endpoints → Integration
   - Each phase should be a complete, independently testable increment
 - **Final Phase**: Polish & Cross-Cutting Concerns
+
+### Task Count Budget (MANDATORY — 100 sub-issue cap)
+
+**GitHub Sub-Issues API v2 enforces a hard 100-sub-issue cap per parent.** Once an Epic reaches 100 sub-issues, `addSubIssue` mutations fail and subsequent Tasks are stranded as orphans. Spec 287 hit this cap in Epic #287 leaving 31 Tasks (T101–T131) permanently unlinked.
+
+**Hard budget**: total Tasks emitted in `tasks.md` for a single Epic MUST stay ≤ **90** (reserves 10 slots for `[Deferred]` placeholders and mid-cycle additions).
+
+**Soft warning**: if the generator projects > 80 Tasks, emit a warning and consolidate before finalising.
+
+**Consolidation rules** (apply in order until projected count ≤ 90):
+
+1. **Cohesion merge** — combine Tasks that touch the same file + same user story + same phase into one Task with a checklist body. Example: T042 "Add `validate()` to `UserService`" + T043 "Add `sanitize()` to `UserService`" → single Task "Extend `UserService` with validate/sanitize helpers" with sub-bullets.
+2. **Coupling merge** — combine Tasks where B cannot be meaningfully tested without A's output (tight temporal coupling) into a sequenced pair inside one Task. Mark dependency explicitly in the Task body.
+3. **Scope slice** — move low-priority Tasks into a follow-up spec (tracked as `[Deferred]` row in spec.md's "Deferred to Future Work" table; `speckit-taskstoissues` will materialise them as placeholders).
+4. **Do NOT split** — never split a cohesive Task into sub-Tasks just to hit a phase header. One file + one verb = one Task.
+
+**Fail-closed check before emitting `tasks.md`**: count the `- [ ]` checkboxes. If > 90 for a single Epic, STOP and re-run consolidation. The generator MUST refuse to emit an over-budget `tasks.md` — document the budget overrun in the "Notes" section and request human guidance on which Tasks to merge or defer.
+
+**Multi-Epic specs**: if a spec legitimately exceeds 90 Tasks because it spans multiple concerns, split it into topically-coherent Epics (e.g., Epic A = IPC + session; Epic B = rendering + perf) before task generation; each sub-Epic then has its own ≤ 90 budget.

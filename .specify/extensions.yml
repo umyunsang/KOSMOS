@@ -6,17 +6,17 @@ hooks:
   - extension: git
     command: speckit.git.initialize
     enabled: true
-    optional: false
+    optional: true
     prompt: Execute speckit.git.initialize?
-    description: Initialize Git repository before constitution setup
+    description: Initialize Git repository before constitution setup (Refs github/spec-kit#2149, #2178 — must stay optional=true)
     condition: null
   before_specify:
   - extension: git
     command: speckit.git.feature
     enabled: true
-    optional: false
+    optional: true
     prompt: Execute speckit.git.feature?
-    description: Create feature branch before specification
+    description: Create feature branch before specification (Refs github/spec-kit#2149, #2178 — must stay optional=true)
     condition: null
   before_clarify:
   - extension: git

@@ -1,6 +1,10 @@
 {
   "kind": "assistant_chunk",
+  "version": "1.0",
   "session_id": "01HTESTST0000000000000ABCA",
+  "correlation_id": "01HTESTCORR000000000000003",
+  "role": "backend",
+  "frame_seq": 2,
   "ts": "2026-04-19T12:00:02.000Z",
   "message_id": "01HTESTMSG000000000000001",
   "delta": "서울역까지 운행합니다.",

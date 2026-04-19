@@ -1,6 +1,10 @@
 {
   "kind": "coordinator_phase",
+  "version": "1.0",
   "session_id": "01HTESTST0000000000000ABCA",
+  "correlation_id": "01HTESTCORR000000000000006",
+  "role": "backend",
+  "frame_seq": 5,
   "ts": "2026-04-19T12:00:05.000Z",
   "phase": "Research"
 }

@@ -29,15 +29,17 @@ import logging
 import signal
 import sys
 import time
+import uuid
 from collections.abc import Callable
 from datetime import UTC
 from types import FrameType
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal
 
 from opentelemetry import trace
 from opentelemetry.trace import Status, StatusCode
 from pydantic import TypeAdapter, ValidationError
 
+from kosmos.ipc.envelope import attach_envelope_span_attributes
 from kosmos.ipc.frame_schema import (
     ErrorFrame,
     IPCFrame,
@@ -76,7 +78,12 @@ def _get_stdout_lock() -> asyncio.Lock:
 # ---------------------------------------------------------------------------
 
 
-async def write_frame(frame: IPCFrame, *, _assembly_start_ns: int | None = None) -> None:
+async def write_frame(
+    frame: IPCFrame,
+    *,
+    _assembly_start_ns: int | None = None,
+    tx_cache_state: Literal["miss", "hit", "stored"] | None = None,
+) -> None:
     """Serialise *frame* to a single JSON line and write it to stdout.
 
     Flushes stdout immediately after every frame to preserve the FIFO ordering
@@ -88,7 +95,9 @@ async def write_frame(frame: IPCFrame, *, _assembly_start_ns: int | None = None)
     OTEL: emits a ``kosmos.ipc.frame`` child span (FR-053) with direction
     ``"outbound"``.  ``_assembly_start_ns`` is the ``time.monotonic_ns()``
     captured by the caller before building the frame payload; when absent,
-    the span clock starts at the write call itself.
+    the span clock starts at the write call itself.  ``tx_cache_state`` is
+    forwarded from the :class:`~kosmos.ipc.transaction_lru.TransactionLRU`
+    path for irreversible-tool frames (Spec 032 T048 / FR-053).
     """
     t0_ns = _assembly_start_ns if _assembly_start_ns is not None else time.monotonic_ns()
     payload = frame.model_dump_json() + "\n"
@@ -104,6 +113,7 @@ async def write_frame(frame: IPCFrame, *, _assembly_start_ns: int | None = None)
             span.set_attribute("kosmos.frame.kind", frame.kind)
             span.set_attribute("kosmos.frame.direction", "outbound")
             span.set_attribute("kosmos.ipc.latency_ms", latency_ms)
+            attach_envelope_span_attributes(frame, tx_cache_state=tx_cache_state)
         except Exception as exc:  # noqa: BLE001
             span.record_exception(exc)
             span.set_status(Status(StatusCode.ERROR))
@@ -155,6 +165,8 @@ async def _reader_loop(
             # should be surfaced, not silently dropped).
             err_frame = ErrorFrame(
                 session_id=session_id,
+                correlation_id=str(uuid.uuid4()),
+                role="backend",
                 ts=_utcnow(),
                 kind="error",
                 code="ipc_decode_error",
@@ -176,6 +188,7 @@ async def _reader_loop(
                 span.set_attribute("kosmos.frame.kind", frame.kind)
                 span.set_attribute("kosmos.frame.direction", "inbound")
                 span.set_attribute("kosmos.ipc.latency_ms", latency_ms)
+                attach_envelope_span_attributes(frame)
             except Exception as exc:  # noqa: BLE001
                 span.record_exception(exc)
                 span.set_status(Status(StatusCode.ERROR))
@@ -201,6 +214,8 @@ async def _emit_exit_frame(session_id: str) -> None:
     """Write a ``session_event {event='exit'}`` frame and flush stdout."""
     exit_frame = SessionEventFrame(
         session_id=session_id,
+        correlation_id=str(uuid.uuid4()),
+        role="backend",
         ts=_utcnow(),
         kind="session_event",
         event="exit",
@@ -221,6 +236,7 @@ async def _dispatch_session_event(
     session_id: str,
     sm: SessionManager,
     shutdown: asyncio.Event,
+    correlation_id: str,
 ) -> None:
     """Route a ``session_event`` frame to the appropriate :class:`SessionManager` method.
 
@@ -247,6 +263,8 @@ async def _dispatch_session_event(
         meta = await sm.new_session()
         reply = SessionEventFrame(
             session_id=meta.session_id,
+            correlation_id=correlation_id,
+            role="backend",
             ts=_utcnow(),
             kind="session_event",
             event="new",
@@ -261,6 +279,8 @@ async def _dispatch_session_event(
         active_sid = sm.session_id or session_id
         reply = SessionEventFrame(
             session_id=active_sid,
+            correlation_id=correlation_id,
+            role="backend",
             ts=_utcnow(),
             kind="session_event",
             event="save",
@@ -282,6 +302,8 @@ async def _dispatch_session_event(
         active_sid = sm.session_id or session_id
         reply = SessionEventFrame(
             session_id=active_sid,
+            correlation_id=correlation_id,
+            role="backend",
             ts=_utcnow(),
             kind="session_event",
             event="list",
@@ -295,6 +317,8 @@ async def _dispatch_session_event(
         messages = await sm.resume_session(target_id)
         reply = SessionEventFrame(
             session_id=target_id,
+            correlation_id=correlation_id,
+            role="backend",
             ts=_utcnow(),
             kind="session_event",
             event="load",
@@ -314,6 +338,8 @@ async def _dispatch_session_event(
         # load is backend → TUI only; reject TUI → backend direction.
         err = ErrorFrame(
             session_id=session_id,
+            correlation_id=correlation_id,
+            role="backend",
             ts=_utcnow(),
             kind="error",
             code="invalid_direction",
@@ -360,8 +386,6 @@ async def run(  # noqa: C901
         operations.  When ``None`` a default ``SessionManager()`` is
         constructed (uses ``~/.kosmos/sessions``).
     """
-    import uuid
-
     from kosmos.session.manager import SessionManager as _SessionManager
 
     sid = session_id or str(uuid.uuid4())
@@ -402,6 +426,8 @@ async def run(  # noqa: C901
 
                 echo_frame = AssistantChunkFrame(
                     session_id=frame.session_id,
+                    correlation_id=frame.correlation_id,
+                    role="backend",
                     ts=_utcnow(),
                     kind="assistant_chunk",
                     message_id=str(uuid.uuid4()),
@@ -414,11 +440,20 @@ async def run(  # noqa: C901
                 evt = frame.event
                 payload = frame.payload
                 try:
-                    await _dispatch_session_event(evt, payload, frame.session_id, _sm, _shutdown)
+                    await _dispatch_session_event(
+                        evt,
+                        payload,
+                        frame.session_id,
+                        _sm,
+                        _shutdown,
+                        frame.correlation_id,
+                    )
                 except Exception as exc:  # noqa: BLE001
                     logger.exception("session_event handler raised: %s", exc)
                     err = ErrorFrame(
                         session_id=frame.session_id,
+                        correlation_id=str(uuid.uuid4()),
+                        role="backend",
                         ts=_utcnow(),
                         kind="error",
                         code="session_event_error",

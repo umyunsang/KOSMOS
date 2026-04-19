@@ -119,6 +119,15 @@ class QueryContext(BaseModel):
     are non-None.
     """
 
+    correlation_id: str | None = None
+    """UUIDv7 correlation chain identifier for the current turn (Spec 032 T049).
+
+    Threaded from the inbound ``user_input`` frame's envelope through the tool
+    loop so that every IPC frame emitted during this turn carries the same
+    ``kosmos.ipc.correlation_id`` OTEL attribute (FR-027 / FR-053).  ``None``
+    when the engine is driven outside the stdio bridge (unit tests / REPL).
+    """
+
 
 # ---------------------------------------------------------------------------
 # SessionBudget

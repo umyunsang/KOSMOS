@@ -1,0 +1,2288 @@
+{
+  "$defs": {
+    "AssistantChunkFrame": {
+      "additionalProperties": false,
+      "description": "backend -> TUI: streaming assistant text delta.",
+      "properties": {
+        "correlation_id": {
+          "description": "UUIDv7 string for new emissions; ULID accepted for back-compat. Non-empty; emitter SHOULD use UUIDv7. (E5)",
+          "minLength": 1,
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "delta": {
+          "description": "UTF-8 text appended to the message.",
+          "title": "Delta",
+          "type": "string"
+        },
+        "done": {
+          "description": "True if this is the terminal chunk for this message_id.",
+          "title": "Done",
+          "type": "boolean"
+        },
+        "frame_seq": {
+          "default": 0,
+          "description": "Per-session monotonic sequence number (ge=0). Gap detection uses this.",
+          "minimum": 0,
+          "title": "Frame Seq",
+          "type": "integer"
+        },
+        "kind": {
+          "const": "assistant_chunk",
+          "default": "assistant_chunk",
+          "description": "Frame discriminator.",
+          "title": "Kind",
+          "type": "string"
+        },
+        "message_id": {
+          "description": "ULID of the assistant message this delta belongs to.",
+          "title": "Message Id",
+          "type": "string"
+        },
+        "role": {
+          "description": "Origin role. Validated against kind<->role allow-list (E3, FR-004).",
+          "enum": [
+            "tui",
+            "backend",
+            "tool",
+            "llm",
+            "notification"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "session_id": {
+          "description": "Opaque session identifier.",
+          "title": "Session Id",
+          "type": "string"
+        },
+        "trailer": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FrameTrailer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Completion/validation metadata. Populated on terminal frames. (FR-006)"
+        },
+        "transaction_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)",
+          "title": "Transaction Id"
+        },
+        "ts": {
+          "description": "ISO-8601 UTC timestamp with sub-ms precision.",
+          "title": "Ts",
+          "type": "string"
+        },
+        "version": {
+          "const": "1.0",
+          "default": "1.0",
+          "description": "Envelope version. Hard-fail on mismatch (E1, FR-001).",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "session_id",
+        "correlation_id",
+        "ts",
+        "role",
+        "message_id",
+        "delta",
+        "done"
+      ],
+      "title": "AssistantChunkFrame",
+      "type": "object"
+    },
+    "BackpressureSignalFrame": {
+      "additionalProperties": false,
+      "description": "Emitted when outgoing queue crosses HWM or a 429 condition is detected.\n\nrole allow-list: tui (tui_reader), backend (backend_writer, upstream_429).\nFR-012, FR-015: hud_copy_ko/en MUST be non-empty (min_length=1).",
+      "properties": {
+        "correlation_id": {
+          "description": "UUIDv7 string for new emissions; ULID accepted for back-compat. Non-empty; emitter SHOULD use UUIDv7. (E5)",
+          "minLength": 1,
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "frame_seq": {
+          "default": 0,
+          "description": "Per-session monotonic sequence number (ge=0). Gap detection uses this.",
+          "minimum": 0,
+          "title": "Frame Seq",
+          "type": "integer"
+        },
+        "hud_copy_en": {
+          "description": "English HUD copy (dev-facing). Must be non-empty (FR-015).",
+          "minLength": 1,
+          "title": "Hud Copy En",
+          "type": "string"
+        },
+        "hud_copy_ko": {
+          "description": "Korean HUD copy (civic-facing). Must be non-empty (FR-015).",
+          "minLength": 1,
+          "title": "Hud Copy Ko",
+          "type": "string"
+        },
+        "hwm": {
+          "description": "High-water mark threshold in effect (default 64).",
+          "minimum": 1,
+          "title": "Hwm",
+          "type": "integer"
+        },
+        "kind": {
+          "const": "backpressure",
+          "default": "backpressure",
+          "description": "Frame discriminator.",
+          "title": "Kind",
+          "type": "string"
+        },
+        "queue_depth": {
+          "description": "Current outbound queue size.",
+          "minimum": 0,
+          "title": "Queue Depth",
+          "type": "integer"
+        },
+        "retry_after_ms": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "For throttle sourced from upstream_429; reflects Retry-After. ge=0.",
+          "title": "Retry After Ms"
+        },
+        "role": {
+          "description": "Origin role. Validated against kind<->role allow-list (E3, FR-004).",
+          "enum": [
+            "tui",
+            "backend",
+            "tool",
+            "llm",
+            "notification"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "session_id": {
+          "description": "Opaque session identifier.",
+          "title": "Session Id",
+          "type": "string"
+        },
+        "signal": {
+          "description": "Reader action. pause=stop emitting; resume=clear; throttle=slow down.",
+          "enum": [
+            "pause",
+            "resume",
+            "throttle"
+          ],
+          "title": "Signal",
+          "type": "string"
+        },
+        "source": {
+          "description": "Origin of the signal.",
+          "enum": [
+            "tui_reader",
+            "backend_writer",
+            "upstream_429"
+          ],
+          "title": "Source",
+          "type": "string"
+        },
+        "trailer": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FrameTrailer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Completion/validation metadata. Populated on terminal frames. (FR-006)"
+        },
+        "transaction_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)",
+          "title": "Transaction Id"
+        },
+        "ts": {
+          "description": "ISO-8601 UTC timestamp with sub-ms precision.",
+          "title": "Ts",
+          "type": "string"
+        },
+        "version": {
+          "const": "1.0",
+          "default": "1.0",
+          "description": "Envelope version. Hard-fail on mismatch (E1, FR-001).",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "session_id",
+        "correlation_id",
+        "ts",
+        "role",
+        "signal",
+        "source",
+        "queue_depth",
+        "hwm",
+        "hud_copy_ko",
+        "hud_copy_en"
+      ],
+      "title": "BackpressureSignalFrame",
+      "type": "object"
+    },
+    "CoordinatorPhaseFrame": {
+      "additionalProperties": false,
+      "description": "backend -> TUI: Spec 027 coordinator phase update.",
+      "properties": {
+        "correlation_id": {
+          "description": "UUIDv7 string for new emissions; ULID accepted for back-compat. Non-empty; emitter SHOULD use UUIDv7. (E5)",
+          "minLength": 1,
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "frame_seq": {
+          "default": 0,
+          "description": "Per-session monotonic sequence number (ge=0). Gap detection uses this.",
+          "minimum": 0,
+          "title": "Frame Seq",
+          "type": "integer"
+        },
+        "kind": {
+          "const": "coordinator_phase",
+          "default": "coordinator_phase",
+          "description": "Frame discriminator.",
+          "title": "Kind",
+          "type": "string"
+        },
+        "phase": {
+          "description": "Current coordinator phase.",
+          "enum": [
+            "Research",
+            "Synthesis",
+            "Implementation",
+            "Verification"
+          ],
+          "title": "Phase",
+          "type": "string"
+        },
+        "role": {
+          "description": "Origin role. Validated against kind<->role allow-list (E3, FR-004).",
+          "enum": [
+            "tui",
+            "backend",
+            "tool",
+            "llm",
+            "notification"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "session_id": {
+          "description": "Opaque session identifier.",
+          "title": "Session Id",
+          "type": "string"
+        },
+        "trailer": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FrameTrailer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Completion/validation metadata. Populated on terminal frames. (FR-006)"
+        },
+        "transaction_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)",
+          "title": "Transaction Id"
+        },
+        "ts": {
+          "description": "ISO-8601 UTC timestamp with sub-ms precision.",
+          "title": "Ts",
+          "type": "string"
+        },
+        "version": {
+          "const": "1.0",
+          "default": "1.0",
+          "description": "Envelope version. Hard-fail on mismatch (E1, FR-001).",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "session_id",
+        "correlation_id",
+        "ts",
+        "role",
+        "phase"
+      ],
+      "title": "CoordinatorPhaseFrame",
+      "type": "object"
+    },
+    "ErrorFrame": {
+      "additionalProperties": false,
+      "description": "backend -> TUI: a backend error surfaced to the TUI for rendering.",
+      "properties": {
+        "code": {
+          "description": "Machine-readable error code (e.g., 'backend_crash', 'protocol_mismatch').",
+          "title": "Code",
+          "type": "string"
+        },
+        "correlation_id": {
+          "description": "UUIDv7 string for new emissions; ULID accepted for back-compat. Non-empty; emitter SHOULD use UUIDv7. (E5)",
+          "minLength": 1,
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "details": {
+          "additionalProperties": true,
+          "description": "Structured error details. KOSMOS_* env var values MUST be redacted.",
+          "title": "Details",
+          "type": "object"
+        },
+        "frame_seq": {
+          "default": 0,
+          "description": "Per-session monotonic sequence number (ge=0). Gap detection uses this.",
+          "minimum": 0,
+          "title": "Frame Seq",
+          "type": "integer"
+        },
+        "kind": {
+          "const": "error",
+          "default": "error",
+          "description": "Frame discriminator.",
+          "title": "Kind",
+          "type": "string"
+        },
+        "message": {
+          "description": "Human-readable short message. MUST NOT contain KOSMOS_*-prefixed env var values (FR-004 redaction rule).",
+          "title": "Message",
+          "type": "string"
+        },
+        "role": {
+          "description": "Origin role. Validated against kind<->role allow-list (E3, FR-004).",
+          "enum": [
+            "tui",
+            "backend",
+            "tool",
+            "llm",
+            "notification"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "session_id": {
+          "description": "Opaque session identifier.",
+          "title": "Session Id",
+          "type": "string"
+        },
+        "trailer": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FrameTrailer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Completion/validation metadata. Populated on terminal frames. (FR-006)"
+        },
+        "transaction_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)",
+          "title": "Transaction Id"
+        },
+        "ts": {
+          "description": "ISO-8601 UTC timestamp with sub-ms precision.",
+          "title": "Ts",
+          "type": "string"
+        },
+        "version": {
+          "const": "1.0",
+          "default": "1.0",
+          "description": "Envelope version. Hard-fail on mismatch (E1, FR-001).",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "session_id",
+        "correlation_id",
+        "ts",
+        "role",
+        "code",
+        "message",
+        "details"
+      ],
+      "title": "ErrorFrame",
+      "type": "object"
+    },
+    "FrameTrailer": {
+      "additionalProperties": false,
+      "description": "Completion/validation metadata on terminal frames (FR-006).",
+      "properties": {
+        "checksum_sha256": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Hex SHA-256 of the concatenated payload bytes for streamed payloads.",
+          "title": "Checksum Sha256"
+        },
+        "final": {
+          "description": "True when this frame terminates a logical payload/stream.",
+          "title": "Final",
+          "type": "boolean"
+        },
+        "transaction_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Mirror of envelope transaction_id for trailer-only consumers.",
+          "title": "Transaction Id"
+        }
+      },
+      "required": [
+        "final"
+      ],
+      "title": "FrameTrailer",
+      "type": "object"
+    },
+    "HeartbeatFrame": {
+      "additionalProperties": false,
+      "description": "Emitted every 30 s (default) by both sides to prove liveness.\n\nNote: Heartbeat frames do NOT increment frame_seq \u2014 they use a dedicated\ncounter. This keeps ring-buffer economy tight.\nrole allow-list: tui, backend.",
+      "properties": {
+        "correlation_id": {
+          "description": "UUIDv7 string for new emissions; ULID accepted for back-compat. Non-empty; emitter SHOULD use UUIDv7. (E5)",
+          "minLength": 1,
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "direction": {
+          "description": "ping from sender, pong from receiver.",
+          "enum": [
+            "ping",
+            "pong"
+          ],
+          "title": "Direction",
+          "type": "string"
+        },
+        "frame_seq": {
+          "default": 0,
+          "description": "Per-session monotonic sequence number (ge=0). Gap detection uses this.",
+          "minimum": 0,
+          "title": "Frame Seq",
+          "type": "integer"
+        },
+        "kind": {
+          "const": "heartbeat",
+          "default": "heartbeat",
+          "description": "Frame discriminator.",
+          "title": "Kind",
+          "type": "string"
+        },
+        "peer_frame_seq": {
+          "description": "Sender's current outbound frame_seq high-water.",
+          "minimum": 0,
+          "title": "Peer Frame Seq",
+          "type": "integer"
+        },
+        "role": {
+          "description": "Origin role. Validated against kind<->role allow-list (E3, FR-004).",
+          "enum": [
+            "tui",
+            "backend",
+            "tool",
+            "llm",
+            "notification"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "session_id": {
+          "description": "Opaque session identifier.",
+          "title": "Session Id",
+          "type": "string"
+        },
+        "trailer": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FrameTrailer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Completion/validation metadata. Populated on terminal frames. (FR-006)"
+        },
+        "transaction_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)",
+          "title": "Transaction Id"
+        },
+        "ts": {
+          "description": "ISO-8601 UTC timestamp with sub-ms precision.",
+          "title": "Ts",
+          "type": "string"
+        },
+        "version": {
+          "const": "1.0",
+          "default": "1.0",
+          "description": "Envelope version. Hard-fail on mismatch (E1, FR-001).",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "session_id",
+        "correlation_id",
+        "ts",
+        "role",
+        "direction",
+        "peer_frame_seq"
+      ],
+      "title": "HeartbeatFrame",
+      "type": "object"
+    },
+    "NotificationPushFrame": {
+      "additionalProperties": false,
+      "description": "Push from subscription surfaces (Spec 031 SubscriptionHandle).\n\nCarried over the same stdio channel to keep a single correlation plane.\nrole allow-list: notification.",
+      "properties": {
+        "adapter_id": {
+          "description": "e.g., disaster_alert_cbs_push, rss_newsroom_subscribe.",
+          "title": "Adapter Id",
+          "type": "string"
+        },
+        "correlation_id": {
+          "description": "UUIDv7 string for new emissions; ULID accepted for back-compat. Non-empty; emitter SHOULD use UUIDv7. (E5)",
+          "minLength": 1,
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "event_guid": {
+          "description": "RSS guid or CBS event hash for duplicate suppression.",
+          "title": "Event Guid",
+          "type": "string"
+        },
+        "frame_seq": {
+          "default": 0,
+          "description": "Per-session monotonic sequence number (ge=0). Gap detection uses this.",
+          "minimum": 0,
+          "title": "Frame Seq",
+          "type": "integer"
+        },
+        "kind": {
+          "const": "notification_push",
+          "default": "notification_push",
+          "description": "Frame discriminator.",
+          "title": "Kind",
+          "type": "string"
+        },
+        "payload": {
+          "description": "Inline notification content (Korean for civic users).",
+          "title": "Payload",
+          "type": "string"
+        },
+        "payload_content_type": {
+          "description": "Inline payload MIME.",
+          "enum": [
+            "text/plain",
+            "application/json"
+          ],
+          "title": "Payload Content Type",
+          "type": "string"
+        },
+        "role": {
+          "description": "Origin role. Validated against kind<->role allow-list (E3, FR-004).",
+          "enum": [
+            "tui",
+            "backend",
+            "tool",
+            "llm",
+            "notification"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "session_id": {
+          "description": "Opaque session identifier.",
+          "title": "Session Id",
+          "type": "string"
+        },
+        "subscription_id": {
+          "description": "Handle from Spec 031 subscribe registration.",
+          "title": "Subscription Id",
+          "type": "string"
+        },
+        "trailer": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FrameTrailer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Completion/validation metadata. Populated on terminal frames. (FR-006)"
+        },
+        "transaction_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)",
+          "title": "Transaction Id"
+        },
+        "ts": {
+          "description": "ISO-8601 UTC timestamp with sub-ms precision.",
+          "title": "Ts",
+          "type": "string"
+        },
+        "version": {
+          "const": "1.0",
+          "default": "1.0",
+          "description": "Envelope version. Hard-fail on mismatch (E1, FR-001).",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "session_id",
+        "correlation_id",
+        "ts",
+        "role",
+        "subscription_id",
+        "adapter_id",
+        "event_guid",
+        "payload_content_type",
+        "payload"
+      ],
+      "title": "NotificationPushFrame",
+      "type": "object"
+    },
+    "PayloadDeltaFrame": {
+      "additionalProperties": false,
+      "description": "One chunk of a streamed payload.\n\nrole allow-list: backend, tool, llm.",
+      "properties": {
+        "correlation_id": {
+          "description": "UUIDv7 string for new emissions; ULID accepted for back-compat. Non-empty; emitter SHOULD use UUIDv7. (E5)",
+          "minLength": 1,
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "delta_seq": {
+          "description": "Monotonic within the payload (first delta = 0).",
+          "minimum": 0,
+          "title": "Delta Seq",
+          "type": "integer"
+        },
+        "frame_seq": {
+          "default": 0,
+          "description": "Per-session monotonic sequence number (ge=0). Gap detection uses this.",
+          "minimum": 0,
+          "title": "Frame Seq",
+          "type": "integer"
+        },
+        "kind": {
+          "const": "payload_delta",
+          "default": "payload_delta",
+          "description": "Frame discriminator.",
+          "title": "Kind",
+          "type": "string"
+        },
+        "payload": {
+          "description": "UTF-8 text. If content-type is application/json, this is a JSON-encoded fragment string.",
+          "title": "Payload",
+          "type": "string"
+        },
+        "role": {
+          "description": "Origin role. Validated against kind<->role allow-list (E3, FR-004).",
+          "enum": [
+            "tui",
+            "backend",
+            "tool",
+            "llm",
+            "notification"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "session_id": {
+          "description": "Opaque session identifier.",
+          "title": "Session Id",
+          "type": "string"
+        },
+        "trailer": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FrameTrailer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Completion/validation metadata. Populated on terminal frames. (FR-006)"
+        },
+        "transaction_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)",
+          "title": "Transaction Id"
+        },
+        "ts": {
+          "description": "ISO-8601 UTC timestamp with sub-ms precision.",
+          "title": "Ts",
+          "type": "string"
+        },
+        "version": {
+          "const": "1.0",
+          "default": "1.0",
+          "description": "Envelope version. Hard-fail on mismatch (E1, FR-001).",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "session_id",
+        "correlation_id",
+        "ts",
+        "role",
+        "delta_seq",
+        "payload"
+      ],
+      "title": "PayloadDeltaFrame",
+      "type": "object"
+    },
+    "PayloadEndFrame": {
+      "additionalProperties": false,
+      "description": "Terminates a streamed payload.\n\nMUST carry a trailer with final=True.\nrole allow-list: backend, tool, llm.",
+      "properties": {
+        "correlation_id": {
+          "description": "UUIDv7 string for new emissions; ULID accepted for back-compat. Non-empty; emitter SHOULD use UUIDv7. (E5)",
+          "minLength": 1,
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "delta_count": {
+          "description": "Total number of payload_delta frames emitted.",
+          "minimum": 0,
+          "title": "Delta Count",
+          "type": "integer"
+        },
+        "frame_seq": {
+          "default": 0,
+          "description": "Per-session monotonic sequence number (ge=0). Gap detection uses this.",
+          "minimum": 0,
+          "title": "Frame Seq",
+          "type": "integer"
+        },
+        "kind": {
+          "const": "payload_end",
+          "default": "payload_end",
+          "description": "Frame discriminator.",
+          "title": "Kind",
+          "type": "string"
+        },
+        "role": {
+          "description": "Origin role. Validated against kind<->role allow-list (E3, FR-004).",
+          "enum": [
+            "tui",
+            "backend",
+            "tool",
+            "llm",
+            "notification"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "session_id": {
+          "description": "Opaque session identifier.",
+          "title": "Session Id",
+          "type": "string"
+        },
+        "status": {
+          "description": "Terminal disposition.",
+          "enum": [
+            "ok",
+            "aborted"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "trailer": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FrameTrailer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Completion/validation metadata. Populated on terminal frames. (FR-006)"
+        },
+        "transaction_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)",
+          "title": "Transaction Id"
+        },
+        "ts": {
+          "description": "ISO-8601 UTC timestamp with sub-ms precision.",
+          "title": "Ts",
+          "type": "string"
+        },
+        "version": {
+          "const": "1.0",
+          "default": "1.0",
+          "description": "Envelope version. Hard-fail on mismatch (E1, FR-001).",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "session_id",
+        "correlation_id",
+        "ts",
+        "role",
+        "delta_count",
+        "status"
+      ],
+      "title": "PayloadEndFrame",
+      "type": "object"
+    },
+    "PayloadStartFrame": {
+      "additionalProperties": false,
+      "description": "Begins a streamed payload (assistant output, tool result chunking).\n\nSender MUST follow with >= 1 payload_delta and exactly one payload_end.\nrole allow-list: backend, tool, llm.",
+      "properties": {
+        "content_type": {
+          "description": "Payload MIME type.",
+          "enum": [
+            "text/markdown",
+            "application/json",
+            "text/plain"
+          ],
+          "title": "Content Type",
+          "type": "string"
+        },
+        "correlation_id": {
+          "description": "UUIDv7 string for new emissions; ULID accepted for back-compat. Non-empty; emitter SHOULD use UUIDv7. (E5)",
+          "minLength": 1,
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "estimated_bytes": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional size hint for HUD progress bars.",
+          "title": "Estimated Bytes"
+        },
+        "frame_seq": {
+          "default": 0,
+          "description": "Per-session monotonic sequence number (ge=0). Gap detection uses this.",
+          "minimum": 0,
+          "title": "Frame Seq",
+          "type": "integer"
+        },
+        "kind": {
+          "const": "payload_start",
+          "default": "payload_start",
+          "description": "Frame discriminator.",
+          "title": "Kind",
+          "type": "string"
+        },
+        "role": {
+          "description": "Origin role. Validated against kind<->role allow-list (E3, FR-004).",
+          "enum": [
+            "tui",
+            "backend",
+            "tool",
+            "llm",
+            "notification"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "session_id": {
+          "description": "Opaque session identifier.",
+          "title": "Session Id",
+          "type": "string"
+        },
+        "trailer": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FrameTrailer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Completion/validation metadata. Populated on terminal frames. (FR-006)"
+        },
+        "transaction_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)",
+          "title": "Transaction Id"
+        },
+        "ts": {
+          "description": "ISO-8601 UTC timestamp with sub-ms precision.",
+          "title": "Ts",
+          "type": "string"
+        },
+        "version": {
+          "const": "1.0",
+          "default": "1.0",
+          "description": "Envelope version. Hard-fail on mismatch (E1, FR-001).",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "session_id",
+        "correlation_id",
+        "ts",
+        "role",
+        "content_type"
+      ],
+      "title": "PayloadStartFrame",
+      "type": "object"
+    },
+    "PermissionRequestFrame": {
+      "additionalProperties": false,
+      "description": "backend -> TUI: a worker raises a permission request.",
+      "properties": {
+        "correlation_id": {
+          "description": "UUIDv7 string for new emissions; ULID accepted for back-compat. Non-empty; emitter SHOULD use UUIDv7. (E5)",
+          "minLength": 1,
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "description_en": {
+          "description": "English-language description shown alongside the Korean one.",
+          "title": "Description En",
+          "type": "string"
+        },
+        "description_ko": {
+          "description": "Korean-language description shown to the citizen.",
+          "title": "Description Ko",
+          "type": "string"
+        },
+        "frame_seq": {
+          "default": 0,
+          "description": "Per-session monotonic sequence number (ge=0). Gap detection uses this.",
+          "minimum": 0,
+          "title": "Frame Seq",
+          "type": "integer"
+        },
+        "kind": {
+          "const": "permission_request",
+          "default": "permission_request",
+          "description": "Frame discriminator.",
+          "title": "Kind",
+          "type": "string"
+        },
+        "primitive_kind": {
+          "description": "The primitive the worker wants to invoke.",
+          "enum": [
+            "lookup",
+            "resolve_location",
+            "submit",
+            "subscribe",
+            "verify"
+          ],
+          "title": "Primitive Kind",
+          "type": "string"
+        },
+        "request_id": {
+          "description": "ULID; round-trips in the matching permission_response frame.",
+          "title": "Request Id",
+          "type": "string"
+        },
+        "risk_level": {
+          "description": "Risk classification of the requested operation.",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "title": "Risk Level",
+          "type": "string"
+        },
+        "role": {
+          "description": "Origin role. Validated against kind<->role allow-list (E3, FR-004).",
+          "enum": [
+            "tui",
+            "backend",
+            "tool",
+            "llm",
+            "notification"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "session_id": {
+          "description": "Opaque session identifier.",
+          "title": "Session Id",
+          "type": "string"
+        },
+        "trailer": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FrameTrailer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Completion/validation metadata. Populated on terminal frames. (FR-006)"
+        },
+        "transaction_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)",
+          "title": "Transaction Id"
+        },
+        "ts": {
+          "description": "ISO-8601 UTC timestamp with sub-ms precision.",
+          "title": "Ts",
+          "type": "string"
+        },
+        "version": {
+          "const": "1.0",
+          "default": "1.0",
+          "description": "Envelope version. Hard-fail on mismatch (E1, FR-001).",
+          "title": "Version",
+          "type": "string"
+        },
+        "worker_id": {
+          "description": "Worker requesting permission.",
+          "title": "Worker Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "session_id",
+        "correlation_id",
+        "ts",
+        "role",
+        "request_id",
+        "worker_id",
+        "primitive_kind",
+        "description_ko",
+        "description_en",
+        "risk_level"
+      ],
+      "title": "PermissionRequestFrame",
+      "type": "object"
+    },
+    "PermissionResponseFrame": {
+      "additionalProperties": false,
+      "description": "TUI -> backend: citizen's decision on a permission_request.",
+      "properties": {
+        "correlation_id": {
+          "description": "UUIDv7 string for new emissions; ULID accepted for back-compat. Non-empty; emitter SHOULD use UUIDv7. (E5)",
+          "minLength": 1,
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "decision": {
+          "description": "Citizen's permission decision.",
+          "enum": [
+            "granted",
+            "denied"
+          ],
+          "title": "Decision",
+          "type": "string"
+        },
+        "frame_seq": {
+          "default": 0,
+          "description": "Per-session monotonic sequence number (ge=0). Gap detection uses this.",
+          "minimum": 0,
+          "title": "Frame Seq",
+          "type": "integer"
+        },
+        "kind": {
+          "const": "permission_response",
+          "default": "permission_response",
+          "description": "Frame discriminator.",
+          "title": "Kind",
+          "type": "string"
+        },
+        "request_id": {
+          "description": "ULID matching the originating permission_request.request_id.",
+          "title": "Request Id",
+          "type": "string"
+        },
+        "role": {
+          "description": "Origin role. Validated against kind<->role allow-list (E3, FR-004).",
+          "enum": [
+            "tui",
+            "backend",
+            "tool",
+            "llm",
+            "notification"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "session_id": {
+          "description": "Opaque session identifier.",
+          "title": "Session Id",
+          "type": "string"
+        },
+        "trailer": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FrameTrailer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Completion/validation metadata. Populated on terminal frames. (FR-006)"
+        },
+        "transaction_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)",
+          "title": "Transaction Id"
+        },
+        "ts": {
+          "description": "ISO-8601 UTC timestamp with sub-ms precision.",
+          "title": "Ts",
+          "type": "string"
+        },
+        "version": {
+          "const": "1.0",
+          "default": "1.0",
+          "description": "Envelope version. Hard-fail on mismatch (E1, FR-001).",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "session_id",
+        "correlation_id",
+        "ts",
+        "role",
+        "request_id",
+        "decision"
+      ],
+      "title": "PermissionResponseFrame",
+      "type": "object"
+    },
+    "ResumeRejectedFrame": {
+      "additionalProperties": false,
+      "description": "Backend cannot honor the resume request.\n\nTrailer with final=True MUST be set (E6).\nrole allow-list: backend.",
+      "properties": {
+        "correlation_id": {
+          "description": "UUIDv7 string for new emissions; ULID accepted for back-compat. Non-empty; emitter SHOULD use UUIDv7. (E5)",
+          "minLength": 1,
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "detail": {
+          "description": "Human-readable Korean/English detail for HUD.",
+          "title": "Detail",
+          "type": "string"
+        },
+        "frame_seq": {
+          "default": 0,
+          "description": "Per-session monotonic sequence number (ge=0). Gap detection uses this.",
+          "minimum": 0,
+          "title": "Frame Seq",
+          "type": "integer"
+        },
+        "kind": {
+          "const": "resume_rejected",
+          "default": "resume_rejected",
+          "description": "Frame discriminator.",
+          "title": "Kind",
+          "type": "string"
+        },
+        "reason": {
+          "description": "Machine-readable reason code.",
+          "enum": [
+            "ring_evicted",
+            "session_unknown",
+            "token_mismatch",
+            "protocol_incompatible",
+            "session_expired"
+          ],
+          "title": "Reason",
+          "type": "string"
+        },
+        "role": {
+          "description": "Origin role. Validated against kind<->role allow-list (E3, FR-004).",
+          "enum": [
+            "tui",
+            "backend",
+            "tool",
+            "llm",
+            "notification"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "session_id": {
+          "description": "Opaque session identifier.",
+          "title": "Session Id",
+          "type": "string"
+        },
+        "trailer": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FrameTrailer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Completion/validation metadata. Populated on terminal frames. (FR-006)"
+        },
+        "transaction_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)",
+          "title": "Transaction Id"
+        },
+        "ts": {
+          "description": "ISO-8601 UTC timestamp with sub-ms precision.",
+          "title": "Ts",
+          "type": "string"
+        },
+        "version": {
+          "const": "1.0",
+          "default": "1.0",
+          "description": "Envelope version. Hard-fail on mismatch (E1, FR-001).",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "session_id",
+        "correlation_id",
+        "ts",
+        "role",
+        "reason",
+        "detail"
+      ],
+      "title": "ResumeRejectedFrame",
+      "type": "object"
+    },
+    "ResumeRequestFrame": {
+      "additionalProperties": false,
+      "description": "Sent by the reconnecting TUI after a stdio drop.\n\nrole allow-list: tui.",
+      "properties": {
+        "correlation_id": {
+          "description": "UUIDv7 string for new emissions; ULID accepted for back-compat. Non-empty; emitter SHOULD use UUIDv7. (E5)",
+          "minLength": 1,
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "frame_seq": {
+          "default": 0,
+          "description": "Per-session monotonic sequence number (ge=0). Gap detection uses this.",
+          "minimum": 0,
+          "title": "Frame Seq",
+          "type": "integer"
+        },
+        "kind": {
+          "const": "resume_request",
+          "default": "resume_request",
+          "description": "Frame discriminator.",
+          "title": "Kind",
+          "type": "string"
+        },
+        "last_seen_correlation_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Last correlation_id the TUI successfully applied. None if no prior frame.",
+          "title": "Last Seen Correlation Id"
+        },
+        "last_seen_frame_seq": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Last frame_seq applied. None if none.",
+          "title": "Last Seen Frame Seq"
+        },
+        "role": {
+          "description": "Origin role. Validated against kind<->role allow-list (E3, FR-004).",
+          "enum": [
+            "tui",
+            "backend",
+            "tool",
+            "llm",
+            "notification"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "session_id": {
+          "description": "Opaque session identifier.",
+          "title": "Session Id",
+          "type": "string"
+        },
+        "trailer": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FrameTrailer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Completion/validation metadata. Populated on terminal frames. (FR-006)"
+        },
+        "transaction_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)",
+          "title": "Transaction Id"
+        },
+        "ts": {
+          "description": "ISO-8601 UTC timestamp with sub-ms precision.",
+          "title": "Ts",
+          "type": "string"
+        },
+        "tui_session_token": {
+          "description": "TUI-local session token for authenticity binding.",
+          "minLength": 1,
+          "title": "Tui Session Token",
+          "type": "string"
+        },
+        "version": {
+          "const": "1.0",
+          "default": "1.0",
+          "description": "Envelope version. Hard-fail on mismatch (E1, FR-001).",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "session_id",
+        "correlation_id",
+        "ts",
+        "role",
+        "tui_session_token"
+      ],
+      "title": "ResumeRequestFrame",
+      "type": "object"
+    },
+    "ResumeResponseFrame": {
+      "additionalProperties": false,
+      "description": "Backend accepts the resume.\n\nMust be followed by replay of frames with frame_seq > last_seen_frame_seq.\nTrailer with final=True MUST be set (E6).\nrole allow-list: backend.",
+      "properties": {
+        "correlation_id": {
+          "description": "UUIDv7 string for new emissions; ULID accepted for back-compat. Non-empty; emitter SHOULD use UUIDv7. (E5)",
+          "minLength": 1,
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "frame_seq": {
+          "default": 0,
+          "description": "Per-session monotonic sequence number (ge=0). Gap detection uses this.",
+          "minimum": 0,
+          "title": "Frame Seq",
+          "type": "integer"
+        },
+        "heartbeat_interval_ms": {
+          "description": "Negotiated heartbeat cadence (default 30000).",
+          "minimum": 1000,
+          "title": "Heartbeat Interval Ms",
+          "type": "integer"
+        },
+        "kind": {
+          "const": "resume_response",
+          "default": "resume_response",
+          "description": "Frame discriminator.",
+          "title": "Kind",
+          "type": "string"
+        },
+        "replay_count": {
+          "description": "Total frames the backend will replay. Bounded by ring buffer size.",
+          "minimum": 0,
+          "title": "Replay Count",
+          "type": "integer"
+        },
+        "resumed_from_frame_seq": {
+          "description": "Inclusive lower bound of frames that will be replayed.",
+          "minimum": 0,
+          "title": "Resumed From Frame Seq",
+          "type": "integer"
+        },
+        "role": {
+          "description": "Origin role. Validated against kind<->role allow-list (E3, FR-004).",
+          "enum": [
+            "tui",
+            "backend",
+            "tool",
+            "llm",
+            "notification"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "server_session_id": {
+          "description": "Backend-assigned session id the TUI should use going forward.",
+          "title": "Server Session Id",
+          "type": "string"
+        },
+        "session_id": {
+          "description": "Opaque session identifier.",
+          "title": "Session Id",
+          "type": "string"
+        },
+        "trailer": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FrameTrailer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Completion/validation metadata. Populated on terminal frames. (FR-006)"
+        },
+        "transaction_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)",
+          "title": "Transaction Id"
+        },
+        "ts": {
+          "description": "ISO-8601 UTC timestamp with sub-ms precision.",
+          "title": "Ts",
+          "type": "string"
+        },
+        "version": {
+          "const": "1.0",
+          "default": "1.0",
+          "description": "Envelope version. Hard-fail on mismatch (E1, FR-001).",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "session_id",
+        "correlation_id",
+        "ts",
+        "role",
+        "resumed_from_frame_seq",
+        "replay_count",
+        "server_session_id",
+        "heartbeat_interval_ms"
+      ],
+      "title": "ResumeResponseFrame",
+      "type": "object"
+    },
+    "SessionEventFrame": {
+      "additionalProperties": false,
+      "description": "Bidirectional: session lifecycle events.",
+      "properties": {
+        "correlation_id": {
+          "description": "UUIDv7 string for new emissions; ULID accepted for back-compat. Non-empty; emitter SHOULD use UUIDv7. (E5)",
+          "minLength": 1,
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "event": {
+          "description": "Session lifecycle event type.",
+          "enum": [
+            "save",
+            "load",
+            "list",
+            "resume",
+            "new",
+            "exit"
+          ],
+          "title": "Event",
+          "type": "string"
+        },
+        "frame_seq": {
+          "default": 0,
+          "description": "Per-session monotonic sequence number (ge=0). Gap detection uses this.",
+          "minimum": 0,
+          "title": "Frame Seq",
+          "type": "integer"
+        },
+        "kind": {
+          "const": "session_event",
+          "default": "session_event",
+          "description": "Frame discriminator.",
+          "title": "Kind",
+          "type": "string"
+        },
+        "payload": {
+          "additionalProperties": true,
+          "description": "Event-specific payload. For list: {sessions: [{id, created_at, turn_count}]}. For resume: {id: str}. For others: {}.",
+          "title": "Payload",
+          "type": "object"
+        },
+        "role": {
+          "description": "Origin role. Validated against kind<->role allow-list (E3, FR-004).",
+          "enum": [
+            "tui",
+            "backend",
+            "tool",
+            "llm",
+            "notification"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "session_id": {
+          "description": "Opaque session identifier.",
+          "title": "Session Id",
+          "type": "string"
+        },
+        "trailer": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FrameTrailer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Completion/validation metadata. Populated on terminal frames. (FR-006)"
+        },
+        "transaction_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)",
+          "title": "Transaction Id"
+        },
+        "ts": {
+          "description": "ISO-8601 UTC timestamp with sub-ms precision.",
+          "title": "Ts",
+          "type": "string"
+        },
+        "version": {
+          "const": "1.0",
+          "default": "1.0",
+          "description": "Envelope version. Hard-fail on mismatch (E1, FR-001).",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "session_id",
+        "correlation_id",
+        "ts",
+        "role",
+        "event",
+        "payload"
+      ],
+      "title": "SessionEventFrame",
+      "type": "object"
+    },
+    "ToolCallFrame": {
+      "additionalProperties": false,
+      "description": "backend -> TUI (display only): a tool invocation decision by the model.",
+      "properties": {
+        "arguments": {
+          "additionalProperties": true,
+          "description": "Primitive-specific arguments; shape per Spec 031 input schemas.",
+          "title": "Arguments",
+          "type": "object"
+        },
+        "call_id": {
+          "description": "ULID correlating this call to its subsequent tool_result.",
+          "title": "Call Id",
+          "type": "string"
+        },
+        "correlation_id": {
+          "description": "UUIDv7 string for new emissions; ULID accepted for back-compat. Non-empty; emitter SHOULD use UUIDv7. (E5)",
+          "minLength": 1,
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "frame_seq": {
+          "default": 0,
+          "description": "Per-session monotonic sequence number (ge=0). Gap detection uses this.",
+          "minimum": 0,
+          "title": "Frame Seq",
+          "type": "integer"
+        },
+        "kind": {
+          "const": "tool_call",
+          "default": "tool_call",
+          "description": "Frame discriminator.",
+          "title": "Kind",
+          "type": "string"
+        },
+        "name": {
+          "description": "Primitive name per Spec 031.",
+          "enum": [
+            "lookup",
+            "resolve_location",
+            "submit",
+            "subscribe",
+            "verify"
+          ],
+          "title": "Name",
+          "type": "string"
+        },
+        "role": {
+          "description": "Origin role. Validated against kind<->role allow-list (E3, FR-004).",
+          "enum": [
+            "tui",
+            "backend",
+            "tool",
+            "llm",
+            "notification"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "session_id": {
+          "description": "Opaque session identifier.",
+          "title": "Session Id",
+          "type": "string"
+        },
+        "trailer": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FrameTrailer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Completion/validation metadata. Populated on terminal frames. (FR-006)"
+        },
+        "transaction_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)",
+          "title": "Transaction Id"
+        },
+        "ts": {
+          "description": "ISO-8601 UTC timestamp with sub-ms precision.",
+          "title": "Ts",
+          "type": "string"
+        },
+        "version": {
+          "const": "1.0",
+          "default": "1.0",
+          "description": "Envelope version. Hard-fail on mismatch (E1, FR-001).",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "session_id",
+        "correlation_id",
+        "ts",
+        "role",
+        "call_id",
+        "name",
+        "arguments"
+      ],
+      "title": "ToolCallFrame",
+      "type": "object"
+    },
+    "ToolResultEnvelope": {
+      "additionalProperties": true,
+      "description": "5-primitive discriminated union envelope (open schema).",
+      "properties": {
+        "kind": {
+          "description": "Primitive kind discriminator per Spec 031.",
+          "enum": [
+            "lookup",
+            "resolve_location",
+            "submit",
+            "subscribe",
+            "verify"
+          ],
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "title": "ToolResultEnvelope",
+      "type": "object"
+    },
+    "ToolResultFrame": {
+      "additionalProperties": false,
+      "description": "backend -> TUI (render): the output of a tool invocation.",
+      "properties": {
+        "call_id": {
+          "description": "ULID correlating this result to its originating tool_call.",
+          "title": "Call Id",
+          "type": "string"
+        },
+        "correlation_id": {
+          "description": "UUIDv7 string for new emissions; ULID accepted for back-compat. Non-empty; emitter SHOULD use UUIDv7. (E5)",
+          "minLength": 1,
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "envelope": {
+          "$ref": "#/$defs/ToolResultEnvelope",
+          "description": "5-primitive discriminated union. Unknown kind falls to UnrecognizedPayload."
+        },
+        "frame_seq": {
+          "default": 0,
+          "description": "Per-session monotonic sequence number (ge=0). Gap detection uses this.",
+          "minimum": 0,
+          "title": "Frame Seq",
+          "type": "integer"
+        },
+        "kind": {
+          "const": "tool_result",
+          "default": "tool_result",
+          "description": "Frame discriminator.",
+          "title": "Kind",
+          "type": "string"
+        },
+        "role": {
+          "description": "Origin role. Validated against kind<->role allow-list (E3, FR-004).",
+          "enum": [
+            "tui",
+            "backend",
+            "tool",
+            "llm",
+            "notification"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "session_id": {
+          "description": "Opaque session identifier.",
+          "title": "Session Id",
+          "type": "string"
+        },
+        "trailer": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FrameTrailer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Completion/validation metadata. Populated on terminal frames. (FR-006)"
+        },
+        "transaction_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)",
+          "title": "Transaction Id"
+        },
+        "ts": {
+          "description": "ISO-8601 UTC timestamp with sub-ms precision.",
+          "title": "Ts",
+          "type": "string"
+        },
+        "version": {
+          "const": "1.0",
+          "default": "1.0",
+          "description": "Envelope version. Hard-fail on mismatch (E1, FR-001).",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "session_id",
+        "correlation_id",
+        "ts",
+        "role",
+        "call_id",
+        "envelope"
+      ],
+      "title": "ToolResultFrame",
+      "type": "object"
+    },
+    "UserInputFrame": {
+      "additionalProperties": false,
+      "description": "TUI -> backend: a citizen's typed input.",
+      "properties": {
+        "correlation_id": {
+          "description": "UUIDv7 string for new emissions; ULID accepted for back-compat. Non-empty; emitter SHOULD use UUIDv7. (E5)",
+          "minLength": 1,
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "frame_seq": {
+          "default": 0,
+          "description": "Per-session monotonic sequence number (ge=0). Gap detection uses this.",
+          "minimum": 0,
+          "title": "Frame Seq",
+          "type": "integer"
+        },
+        "kind": {
+          "const": "user_input",
+          "default": "user_input",
+          "description": "Frame discriminator.",
+          "title": "Kind",
+          "type": "string"
+        },
+        "role": {
+          "description": "Origin role. Validated against kind<->role allow-list (E3, FR-004).",
+          "enum": [
+            "tui",
+            "backend",
+            "tool",
+            "llm",
+            "notification"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "session_id": {
+          "description": "Opaque session identifier.",
+          "title": "Session Id",
+          "type": "string"
+        },
+        "text": {
+          "description": "Raw user text in UTF-8 (may contain Korean, English, emoji).",
+          "title": "Text",
+          "type": "string"
+        },
+        "trailer": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FrameTrailer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Completion/validation metadata. Populated on terminal frames. (FR-006)"
+        },
+        "transaction_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)",
+          "title": "Transaction Id"
+        },
+        "ts": {
+          "description": "ISO-8601 UTC timestamp with sub-ms precision.",
+          "title": "Ts",
+          "type": "string"
+        },
+        "version": {
+          "const": "1.0",
+          "default": "1.0",
+          "description": "Envelope version. Hard-fail on mismatch (E1, FR-001).",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "session_id",
+        "correlation_id",
+        "ts",
+        "role",
+        "text"
+      ],
+      "title": "UserInputFrame",
+      "type": "object"
+    },
+    "WorkerStatusFrame": {
+      "additionalProperties": false,
+      "description": "backend -> TUI: per-worker status row update from Spec 027 swarm.",
+      "properties": {
+        "correlation_id": {
+          "description": "UUIDv7 string for new emissions; ULID accepted for back-compat. Non-empty; emitter SHOULD use UUIDv7. (E5)",
+          "minLength": 1,
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "current_primitive": {
+          "description": "Primitive currently being invoked by this worker.",
+          "enum": [
+            "lookup",
+            "resolve_location",
+            "submit",
+            "subscribe",
+            "verify"
+          ],
+          "title": "Current Primitive",
+          "type": "string"
+        },
+        "frame_seq": {
+          "default": 0,
+          "description": "Per-session monotonic sequence number (ge=0). Gap detection uses this.",
+          "minimum": 0,
+          "title": "Frame Seq",
+          "type": "integer"
+        },
+        "kind": {
+          "const": "worker_status",
+          "default": "worker_status",
+          "description": "Frame discriminator.",
+          "title": "Kind",
+          "type": "string"
+        },
+        "role": {
+          "description": "Origin role. Validated against kind<->role allow-list (E3, FR-004).",
+          "enum": [
+            "tui",
+            "backend",
+            "tool",
+            "llm",
+            "notification"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "role_id": {
+          "description": "Specialist label (e.g., transport-specialist, health-specialist).",
+          "title": "Role Id",
+          "type": "string"
+        },
+        "session_id": {
+          "description": "Opaque session identifier.",
+          "title": "Session Id",
+          "type": "string"
+        },
+        "status": {
+          "description": "Worker execution status.",
+          "enum": [
+            "idle",
+            "running",
+            "waiting_permission",
+            "error"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "trailer": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FrameTrailer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Completion/validation metadata. Populated on terminal frames. (FR-006)"
+        },
+        "transaction_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)",
+          "title": "Transaction Id"
+        },
+        "ts": {
+          "description": "ISO-8601 UTC timestamp with sub-ms precision.",
+          "title": "Ts",
+          "type": "string"
+        },
+        "version": {
+          "const": "1.0",
+          "default": "1.0",
+          "description": "Envelope version. Hard-fail on mismatch (E1, FR-001).",
+          "title": "Version",
+          "type": "string"
+        },
+        "worker_id": {
+          "description": "Unique worker identifier.",
+          "title": "Worker Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "session_id",
+        "correlation_id",
+        "ts",
+        "role",
+        "worker_id",
+        "role_id",
+        "current_primitive",
+        "status"
+      ],
+      "title": "WorkerStatusFrame",
+      "type": "object"
+    }
+  },
+  "discriminator": {
+    "mapping": {
+      "assistant_chunk": "#/$defs/AssistantChunkFrame",
+      "backpressure": "#/$defs/BackpressureSignalFrame",
+      "coordinator_phase": "#/$defs/CoordinatorPhaseFrame",
+      "error": "#/$defs/ErrorFrame",
+      "heartbeat": "#/$defs/HeartbeatFrame",
+      "notification_push": "#/$defs/NotificationPushFrame",
+      "payload_delta": "#/$defs/PayloadDeltaFrame",
+      "payload_end": "#/$defs/PayloadEndFrame",
+      "payload_start": "#/$defs/PayloadStartFrame",
+      "permission_request": "#/$defs/PermissionRequestFrame",
+      "permission_response": "#/$defs/PermissionResponseFrame",
+      "resume_rejected": "#/$defs/ResumeRejectedFrame",
+      "resume_request": "#/$defs/ResumeRequestFrame",
+      "resume_response": "#/$defs/ResumeResponseFrame",
+      "session_event": "#/$defs/SessionEventFrame",
+      "tool_call": "#/$defs/ToolCallFrame",
+      "tool_result": "#/$defs/ToolResultFrame",
+      "user_input": "#/$defs/UserInputFrame",
+      "worker_status": "#/$defs/WorkerStatusFrame"
+    },
+    "propertyName": "kind"
+  },
+  "oneOf": [
+    {
+      "$ref": "#/$defs/UserInputFrame"
+    },
+    {
+      "$ref": "#/$defs/AssistantChunkFrame"
+    },
+    {
+      "$ref": "#/$defs/ToolCallFrame"
+    },
+    {
+      "$ref": "#/$defs/ToolResultFrame"
+    },
+    {
+      "$ref": "#/$defs/CoordinatorPhaseFrame"
+    },
+    {
+      "$ref": "#/$defs/WorkerStatusFrame"
+    },
+    {
+      "$ref": "#/$defs/PermissionRequestFrame"
+    },
+    {
+      "$ref": "#/$defs/PermissionResponseFrame"
+    },
+    {
+      "$ref": "#/$defs/SessionEventFrame"
+    },
+    {
+      "$ref": "#/$defs/ErrorFrame"
+    },
+    {
+      "$ref": "#/$defs/PayloadStartFrame"
+    },
+    {
+      "$ref": "#/$defs/PayloadDeltaFrame"
+    },
+    {
+      "$ref": "#/$defs/PayloadEndFrame"
+    },
+    {
+      "$ref": "#/$defs/BackpressureSignalFrame"
+    },
+    {
+      "$ref": "#/$defs/ResumeRequestFrame"
+    },
+    {
+      "$ref": "#/$defs/ResumeResponseFrame"
+    },
+    {
+      "$ref": "#/$defs/ResumeRejectedFrame"
+    },
+    {
+      "$ref": "#/$defs/HeartbeatFrame"
+    },
+    {
+      "$ref": "#/$defs/NotificationPushFrame"
+    }
+  ]
+}

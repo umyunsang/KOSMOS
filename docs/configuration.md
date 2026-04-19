@@ -94,8 +94,20 @@ Column definitions:
 | `KOSMOS_TUI_SUBSCRIBE_TIMEOUT_S` | No | `300` | Integer >= 1 (seconds) | `kosmos.config.env_registry.TUISettings.subscribe_timeout_s` | [Spec 287 TUI (Epic #287)](#tui-ink-react-bun-epic-287) |
 | `KOSMOS_TUI_IME_STRATEGY` | No | `fork` | `fork` \| `readline` | `kosmos.config.env_registry.TUISettings.ime_strategy` | [Spec 287 TUI (Epic #287)](#tui-ink-react-bun-epic-287) |
 | `KOSMOS_TUI_SOAK_EVENTS_PER_SEC` | No | `100` | Integer >= 1 | `kosmos.config.env_registry.TUISettings.soak_events_per_sec` | [Spec 287 TUI (Epic #287)](#tui-ink-react-bun-epic-287) |
+| `KOSMOS_IPC_RING_SIZE` | No | `256` | Integer >= 1 | `kosmos.ipc.ring_buffer._DEFAULT_RING_SIZE` | [Spec 032 IPC (Epic #1298)](#ipc-stdio-hardening-epic-1298) |
+| `KOSMOS_IPC_HWM` | No | `64` | Integer >= 1 | `kosmos.ipc.backpressure._DEFAULT_HWM` / `kosmos.ipc.ring_buffer._DEFAULT_HWM` | [Spec 032 IPC (Epic #1298)](#ipc-stdio-hardening-epic-1298) |
+| `KOSMOS_IPC_TX_CACHE_CAPACITY` | No | `512` | Integer >= 1 | `kosmos.ipc.tx_cache._DEFAULT_CAPACITY` | [Spec 032 IPC (Epic #1298)](#ipc-stdio-hardening-epic-1298) |
+| `KOSMOS_IPC_CORRELATION_ID` | OTel span attr | n/a | String span attribute key | `kosmos.ipc.otel_constants.KOSMOS_IPC_CORRELATION_ID` | [Spec 032 IPC (Epic #1298)](#ipc-stdio-hardening-epic-1298) |
+| `KOSMOS_IPC_TRANSACTION_ID` | OTel span attr | n/a | String span attribute key | `kosmos.ipc.otel_constants.KOSMOS_IPC_TRANSACTION_ID` | [Spec 032 IPC (Epic #1298)](#ipc-stdio-hardening-epic-1298) |
+| `KOSMOS_IPC_TX_CACHE_STATE` | OTel span attr | n/a | String span attribute key | `kosmos.ipc.otel_constants.KOSMOS_IPC_TX_CACHE_STATE` | [Spec 032 IPC (Epic #1298)](#ipc-stdio-hardening-epic-1298) |
+| `KOSMOS_IPC_BACKPRESSURE_KIND` | OTel span attr | n/a | String span attribute key | `kosmos.ipc.otel_constants.KOSMOS_IPC_BACKPRESSURE_KIND` | [Spec 032 IPC (Epic #1298)](#ipc-stdio-hardening-epic-1298) |
+| `KOSMOS_IPC_BACKPRESSURE_SEVERITY` | OTel span attr | n/a | String span attribute key | `kosmos.ipc.otel_constants.KOSMOS_IPC_BACKPRESSURE_SEVERITY` | [Spec 032 IPC (Epic #1298)](#ipc-stdio-hardening-epic-1298) |
+| `KOSMOS_IPC_BACKPRESSURE_SOURCE` | OTel span attr | n/a | String span attribute key | `kosmos.ipc.otel_constants.KOSMOS_IPC_BACKPRESSURE_SOURCE` | [Spec 032 IPC (Epic #1298)](#ipc-stdio-hardening-epic-1298) |
+| `KOSMOS_IPC_BACKPRESSURE_QUEUE_DEPTH` | OTel span attr | n/a | String span attribute key | `kosmos.ipc.otel_constants.KOSMOS_IPC_BACKPRESSURE_QUEUE_DEPTH` | [Spec 032 IPC (Epic #1298)](#ipc-stdio-hardening-epic-1298) |
+| `KOSMOS_IPC_SCHEMA_HASH` | OTel span attr | n/a | String span attribute key | `kosmos.ipc.otel_constants.KOSMOS_IPC_SCHEMA_HASH` | [Spec 032 IPC (Epic #1298)](#ipc-stdio-hardening-epic-1298) |
+| `KOSMOS_IPC_REPLAYED` | OTel span attr | n/a | String span attribute key | `kosmos.ipc.otel_constants.KOSMOS_IPC_REPLAYED` | [Spec 032 IPC (Epic #1298)](#ipc-stdio-hardening-epic-1298) |
 
-> **Row count**: 40 rows (35 `KOSMOS_*` active + 2 `LANGFUSE_*` + 1 `KOSMOS_OTEL_ENDPOINT` +
+> **Row count**: 52 rows (47 `KOSMOS_*` active + 2 `LANGFUSE_*` + 1 `KOSMOS_OTEL_ENDPOINT` +
 > 1 override-family pattern + 1 deprecated). `KOSMOS_KOROAD_API_KEY` and
 > `KOSMOS_KOROAD_ACCIDENT_SEARCH_API_KEY` are concrete expansions of the
 > `KOSMOS_{TOOL_ID}_API_KEY` override-family pattern and are covered by that row.
@@ -104,6 +116,11 @@ Column definitions:
 > Spec 287 (T010) added `KOSMOS_TUI_THEME`, `KOSMOS_TUI_LOG_LEVEL`,
 > `KOSMOS_TUI_SUBSCRIBE_TIMEOUT_S`, `KOSMOS_TUI_IME_STRATEGY`, and
 > `KOSMOS_TUI_SOAK_EVENTS_PER_SEC` (rows 36–40 of KOSMOS_* active set).
+> Spec 032 (T053–T061) added 3 env-var rows (`KOSMOS_IPC_RING_SIZE`,
+> `KOSMOS_IPC_HWM`, `KOSMOS_IPC_TX_CACHE_CAPACITY`) and 9 OTel-span-attribute
+> key constants (`KOSMOS_IPC_CORRELATION_ID`, `KOSMOS_IPC_TRANSACTION_ID`,
+> `KOSMOS_IPC_TX_CACHE_STATE`, `KOSMOS_IPC_BACKPRESSURE_{KIND,SEVERITY,SOURCE,QUEUE_DEPTH}`,
+> `KOSMOS_IPC_SCHEMA_HASH`, `KOSMOS_IPC_REPLAYED`) — rows 41–52 of KOSMOS_* active set.
 
 ---
 
@@ -625,6 +642,93 @@ following the `#468` pattern (see `TUISettings` class skeleton in
 | **Range** | `default` \| `dark` \| `light` |
 | **Consumed by** | `tui/src/theme/provider.tsx → ThemeProvider` |
 | **Spec** | Spec 287 FR-039, FR-040, FR-041 |
+
+---
+
+## IPC Stdio Hardening (Epic #1298)
+
+<a id="ipc-stdio-hardening-epic-1298"></a>
+
+Variables introduced by Spec 032 (`specs/032-ipc-stdio-hardening/spec.md`) to tune
+the NDJSON stdio transport between the TUI (Bun) and the Python backend, and to
+expose frame-level correlation state to OpenTelemetry.
+
+The group splits into two kinds:
+
+1. **Env-tunable defaults** — three integers read from `os.environ` at module
+   import time (ring-buffer size, high-water mark, tx-cache LRU capacity).
+2. **OTel span-attribute key constants** — nine Python string constants under
+   `kosmos.ipc.otel_constants` whose values (`"kosmos.ipc.*"`) are used as
+   span-attribute keys by the envelope emitter.  They appear in the registry
+   for provenance tracking (Epic #468 audit contract), even though they are
+   not read from the environment.  This mirrors the Agent Swarm convention
+   for `KOSMOS_AGENT_*` OTel span attributes (Epic #13).
+
+### `KOSMOS_IPC_RING_SIZE`
+
+Maximum number of frames retained in `SessionRingBuffer` per session for resume
+replay (FR-018..025).  Evicted FIFO once the buffer exceeds this depth.
+
+| Property | Value |
+|----------|-------|
+| **Default** | `256` |
+| **Required** | No |
+| **Range** | Integer >= 1 |
+| **Consumed by** | `kosmos.ipc.ring_buffer._DEFAULT_RING_SIZE` |
+| **Spec** | Spec 032 FR-018, FR-023 |
+
+### `KOSMOS_IPC_HWM`
+
+High-water mark that drives the backpressure state machine (FR-013..017).
+`SessionRingBuffer.is_above_hwm()` returns True when depth >= HWM; the
+resume threshold is `HWM // 2`.
+
+| Property | Value |
+|----------|-------|
+| **Default** | `64` |
+| **Required** | No |
+| **Range** | Integer >= 1 |
+| **Consumed by** | `kosmos.ipc.backpressure._DEFAULT_HWM`, `kosmos.ipc.ring_buffer._DEFAULT_HWM` |
+| **Spec** | Spec 032 FR-013, FR-014 |
+
+### `KOSMOS_IPC_TX_CACHE_CAPACITY`
+
+Per-session LRU capacity for the transaction-id dedup cache (FR-026..033).
+Controls the maximum number of cached irreversible-tool responses before the
+oldest entries are evicted.
+
+| Property | Value |
+|----------|-------|
+| **Default** | `512` |
+| **Required** | No |
+| **Range** | Integer >= 1 |
+| **Consumed by** | `kosmos.ipc.tx_cache._DEFAULT_CAPACITY` |
+| **Spec** | Spec 032 FR-029, FR-031 |
+
+### OTel span-attribute keys
+
+The following nine names are **not** environment variables — they are Python
+string constants whose values are the OTel span-attribute keys written by
+`kosmos.ipc.envelope.emit_ndjson`.  They carry the `KOSMOS_` prefix because
+their values live under the `kosmos.ipc.*` namespace; they are listed in the
+registry so the drift-audit script (`scripts/audit-env-registry.py`) recognises
+the symbols rather than treating them as unregistered env vars (same pattern
+as the Agent Swarm `KOSMOS_AGENT_*` OTel attributes).
+
+| Constant | Value | Purpose |
+|----------|-------|---------|
+| `KOSMOS_IPC_CORRELATION_ID` | `kosmos.ipc.correlation_id` | UUIDv7 correlation chain across a full turn |
+| `KOSMOS_IPC_TRANSACTION_ID` | `kosmos.ipc.transaction_id` | Per-action idempotency key (irreversible tools only) |
+| `KOSMOS_IPC_TX_CACHE_STATE` | `kosmos.ipc.tx.cache_state` | `miss` \| `hit` \| `stored` |
+| `KOSMOS_IPC_BACKPRESSURE_KIND` | `kosmos.ipc.backpressure.signal` | `pause` \| `resume` \| `throttle` |
+| `KOSMOS_IPC_BACKPRESSURE_SEVERITY` | `kosmos.ipc.backpressure.severity` | `info` \| `warn` \| `critical` |
+| `KOSMOS_IPC_BACKPRESSURE_SOURCE` | `kosmos.ipc.backpressure.source` | `tui_reader` \| `backend_writer` \| `upstream_429` |
+| `KOSMOS_IPC_BACKPRESSURE_QUEUE_DEPTH` | `kosmos.ipc.backpressure.queue_depth` | Outbound queue depth at emission time |
+| `KOSMOS_IPC_SCHEMA_HASH` | `kosmos.ipc.schema.hash` | SHA-256 of `frame.schema.json` (FR-037) |
+| `KOSMOS_IPC_REPLAYED` | `kosmos.ipc.replayed` | Frame was retransmitted after resume handshake |
+
+Defined in `src/kosmos/ipc/otel_constants.py`; emitted via `envelope.emit_ndjson`
+and `backpressure.emit_backpressure_event`.
 
 ---
 
