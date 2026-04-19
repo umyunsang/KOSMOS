@@ -10,6 +10,16 @@
 //   - DEBUG-level frame logging controlled by KOSMOS_TUI_LOG_LEVEL (FR-010).
 //   - crashDetector is wired via crash-detector.ts; this module only exposes
 //     the send/close/frames API surface.
+//
+// FR-054 (fire-and-forget telemetry hook):
+//   - Callers may attach bridge.onFrame to observe frame events with latency.
+//   - Implementations MUST return synchronously and MUST NOT throw.
+//   - If an implementation throws or returns a rejected Promise the bridge
+//     swallows the error via a queueMicrotask wrapper so the frame-dispatch
+//     loop is never blocked.
+//   - OTEL span emission lives in the Python backend (Spec 031 / T121).
+//     The TUI surfaces metrics only through this hook + the store subscriber
+//     pattern; no opentelemetry-sdk dependency is added to the TUI package.
 
 import { decodeFrames, encodeFrame } from './codec'
 import { startCrashDetector } from './crash-detector'
@@ -18,6 +28,23 @@ import type { IPCFrame } from './frames.generated'
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
+
+/**
+ * FR-054 telemetry hook.
+ *
+ * Called fire-and-forget after every frame is pushed to the dispatch queue.
+ * Implementations MUST:
+ *   - return synchronously (or return void — a resolved Promise is fine)
+ *   - never throw (errors are caught and logged at WARN level)
+ *
+ * The hook is invoked inside a queueMicrotask() wrapper so it cannot block
+ * the frame-dispatch loop under any circumstances.
+ */
+export type FrameHook = (
+  frame: IPCFrame,
+  direction: 'recv' | 'send',
+  latencyMs: number,
+) => void
 
 export interface BridgeOptions {
   /**
@@ -36,6 +63,12 @@ export interface BridgeOptions {
    * crash-detector; this hook is for callers who need additional side-effects.
    */
   onCrash?: (notice: CrashNotice) => void
+  /**
+   * FR-054 fire-and-forget telemetry hook.
+   * Invoked in a queueMicrotask after each frame is dispatched or sent.
+   * Must not throw; errors are caught and logged at WARN level.
+   */
+  onFrame?: FrameHook
 }
 
 export interface CrashNotice {
@@ -59,6 +92,12 @@ export interface IPCBridge {
   close(): Promise<void>
   /** Underlying Bun subprocess (for crash detector, tests, etc.) */
   readonly proc: ReturnType<typeof Bun.spawn>
+  /**
+   * FR-054 fire-and-forget telemetry hook.
+   * May be set or replaced at any time after bridge creation.
+   * Invoked in a queueMicrotask after each dispatched/sent frame.
+   */
+  onFrame?: FrameHook
 }
 
 // ---------------------------------------------------------------------------
@@ -162,6 +201,33 @@ export function createBridge(opts: BridgeOptions = {}): IPCBridge {
   let _remainder = ''
   let _closed = false
 
+  // ---- FR-054 fire-and-forget hook dispatcher ----
+  // Invokes bridge.onFrame inside queueMicrotask so the caller's hook
+  // implementation can never block the frame-dispatch loop, even if it
+  // throws synchronously or returns a rejected Promise.
+  function _dispatchHook(
+    frame: IPCFrame,
+    direction: 'recv' | 'send',
+    latencyMs: number,
+  ): void {
+    if (!bridge.onFrame) return
+    // Capture reference so replacement between schedule and execute is safe.
+    const hook = bridge.onFrame
+    queueMicrotask(() => {
+      try {
+        const result = hook(frame, direction, latencyMs) as unknown
+        // Swallow rejected promises to prevent unhandled rejection warnings.
+        if (result instanceof Promise) {
+          result.catch((e: unknown) => {
+            _log('WARN', `onFrame hook rejected: ${e}`)
+          })
+        }
+      } catch (e: unknown) {
+        _log('WARN', `onFrame hook threw: ${e}`)
+      }
+    })
+  }
+
   // ---- stdout reader ----
   ;(async () => {
     const reader = proc.stdout.getReader()
@@ -170,6 +236,7 @@ export function createBridge(opts: BridgeOptions = {}): IPCBridge {
       while (true) {
         const { value, done } = await reader.read()
         if (done) break
+        const t0 = Date.now()
         const chunk = decoder.decode(value, { stream: true })
         const buffered = _remainder + chunk
         const { frames, remainder } = decodeFrames(buffered)
@@ -178,6 +245,7 @@ export function createBridge(opts: BridgeOptions = {}): IPCBridge {
           if (result.ok) {
             _log('DEBUG', `recv kind=${result.frame.kind} session=${result.frame.session_id}`)
             frameQueue.push(result.frame)
+            _dispatchHook(result.frame, 'recv', Date.now() - t0)
           } else {
             _log('ERROR', `decode error: ${result.error} | raw=${result.raw.slice(0, 200)}`)
           }
@@ -203,13 +271,16 @@ export function createBridge(opts: BridgeOptions = {}): IPCBridge {
   // ---- bridge implementation ----
   const bridge: IPCBridge = {
     proc,
+    onFrame: opts.onFrame,
 
     send(frame: IPCFrame): boolean {
       if (_closed || proc.killed) return false
       try {
+        const t0 = Date.now()
         const encoded = encodeFrame(frame)
         _log('DEBUG', `send kind=${frame.kind} session=${frame.session_id}`)
         proc.stdin.write(encoded)
+        _dispatchHook(frame, 'send', Date.now() - t0)
         return true
       } catch (e: unknown) {
         _log('WARN', `send error: ${e}`)

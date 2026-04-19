@@ -1,102 +1,153 @@
 # Accessibility Checklist
 
 **Spec**: Spec 287 (KOSMOS TUI — Ink + React + Bun)
-**Status**: Skeleton — validation happens in T123 (keyboard-only navigation pass) + T124 (screen-reader smoke) under Phase 10 Polish.
+**Status**: T123 keyboard-only navigation pass completed 2026-04-19. T124 screen-reader smoke plan appended 2026-04-19. Items remain unchecked until manual execution.
 **Requirements**: FR-055 (keyboard-only navigation), FR-056 (screen-reader manual smoke test).
 
-All checklist items below are unticked (`- [ ]`). A Teammate completing T123 or T124 marks items as complete (`- [x]`) and adds a date + result to the Audit Log.
+---
+
+## Keyboard-only Navigation Audit Table (FR-055, T123)
+
+Audited 2026-04-19. For each component, actual behavior is derived from reading the source file. No speculation. Components that do not yet have a keyboard-interactive surface are marked "Not applicable" or listed under "Deferred surfaces".
+
+| Component | File | Interactions | Keyboard-reachable? | Escape to cancel? | Notes |
+|-----------|------|-------------|---------------------|-------------------|-------|
+| `PermissionGauntletModal` | `tui/src/components/coordinator/PermissionGauntletModal.tsx` | `y`/`Y` to grant, `n`/`N` or `Escape` to deny | Yes — `useInput` installs on mount, receives all keystrokes while modal is visible | Yes — `key.escape` triggers `deny()` and emits `permission_response: denied` | No Tab cycle between buttons; modal surface is single-decision (y/n/Escape), not a two-button focus cycle. The skeleton checklist expected Tab-cycling; ACTUAL code has none. Followup: add Tab focus ring if FR-055 requires explicit button tabbing. Color-only risk indicator (`riskBorderColor`) has no non-visual signal — see Known Issues. |
+| `InputBar` | `tui/src/components/input/InputBar.tsx` | Enter to submit (guarded by `!ime.isComposing`); Backspace delegated to `useKoreanIME`; all input suppressed when `disabled=true` | Yes — active by default, suppressed only when the permission modal is open | Not applicable (not a modal; no cancel action) | Korean IME mid-composition Enter is correctly blocked by `ime.isComposing` guard. `disabled` prop is the mechanism for the permission-modal gate (FR-046). No Escape handler in `InputBar` itself — Escape is not a meaningful action on a single-line text input in this TUI. |
+| `CollectionList` "Load more" | `tui/src/components/primitive/CollectionList.tsx` | Renders up to 50 items then a truncation notice | No keyboard-reachable "Load more" affordance — truncation is displayed as static text (`… N more items`), not an interactive button | Not applicable (no button exists) | FR-019 specifies a "Load more" button that emits a follow-up `lookup(mode="fetch", page=...)` IPC frame. The current implementation truncates at `MAX_ITEMS = 50` with a static count text and no interactive affordance. This is a gap vs FR-019 and FR-055. Followup: implement a keyboard-focusable "Load more" control. |
+| Session list `<Select />` | `tui/src/commands/sessions.ts` + `tui/src/components/` | `sessions.ts` emits a `session_event: "list"` IPC frame only; no UI component renders the returned list | Not wired to any UI yet | Not applicable | The `/sessions` command sends the list request via IPC but there is no `<Select />` or other rendering component for the returned session list in `tui/src/components/`. This surface is deferred (see below). |
+| Slash-command auto-complete | `tui/src/commands/dispatcher.ts` + `tui/src/components/input/InputBar.tsx` | Dispatcher handles slash-prefixed input; no auto-complete suggestion list in source | Not applicable (feature not implemented) | Not applicable | No auto-complete UI component exists. Skeleton checklist item is aspirational/deferred. |
+| Ctrl-C SIGTERM | `tui/src/entrypoints/tui.tsx` | Process-level signal; not a component interaction | Yes — Ctrl-C is handled at process level, not blocked by any component | Not applicable | FR-009 compliance depends on `tui.tsx` wiring; confirmed `PermissionGauntletModal` does not intercept Ctrl-C (it only consumes y/n/Escape via `useInput`). |
+
+### Deferred surfaces
+
+The following interactive surfaces appear in the skeleton checklist or spec but are not yet implemented as keyboard-navigable UI components in `tui/src/`. Do not mark these as passing until the code ships.
+
+- **Session list `<Select />` (US2 / FR-038)**: The `/sessions` command emits an IPC request but the returned list has no rendered interactive component. Once a `<Select />` (from `@inkjs/ui`) is wired, audit Tab/arrow/Enter/Escape per the checklist template.
+- **CollectionList "Load more" button (US3 / FR-019)**: Static truncation text only. Once an interactive affordance is added, audit Tab-reachability and Enter activation.
+- **Slash-command auto-complete**: Not implemented. Audit when shipped.
 
 ---
 
-## 1. Keyboard-only Navigation (FR-055)
+## Keyboard-only Navigation Checklist (FR-055)
 
-FR-055: "Keyboard-only navigation MUST be supported for all interactive components (modal approval, session list selection, 'Load more', etc.)."
+Items below reflect the state of the actual source code as of 2026-04-19. Ticking an item requires a human tester to manually verify the behavior matches the description.
 
-No mouse interaction may be required to reach, activate, or dismiss any interactive component in the TUI. All navigation MUST be completable using Tab, arrow keys, Enter, Escape, and Ctrl-key combinations.
+### PermissionGauntletModal
 
-### PermissionGauntletModal (User Story 4)
+- [ ] The permission modal receives all keyboard input automatically when it mounts (no extra keypress required) — `useInput` activates on mount.
+- [x] `y` / `Y` grants the request and emits `permission_response: granted`. (Verified in source: line 68-77, `PermissionGauntletModal.tsx`.)
+- [x] `n` / `N` denies the request and emits `permission_response: denied`. (Verified in source: line 78-88.)
+- [x] Escape denies the request — `key.escape` branch is identical to `n`. (Verified in source: line 78.)
+- [ ] All other keystrokes are blocked while the modal is open — `useInput` callback comment on line 89 says "All other keys are consumed (blocked) intentionally." Manual confirmation required.
+- [ ] Focus returns to `InputBar` after modal closes — requires `InputBar.disabled` to transition `false`; wiring is in `tui.tsx`, not yet manually verified.
+- [ ] **GAP**: No Tab cycle between "Allow" and "Deny" buttons — the modal is y/n/Escape only. If FR-055 requires explicit button tabbing, this needs a followup implementation task.
 
-- [ ] The permission modal receives keyboard focus automatically when it appears; no additional keypress required.
-- [ ] Tab cycles between "Allow" and "Deny" (or equivalent) action buttons.
-- [ ] Enter activates the focused button.
-- [ ] Escape dismisses the modal with a "Deny" / cancel result (same behavior as activating "Deny").
-- [ ] Focus is returned to the input bar after the modal closes.
+### InputBar (Korean IME + Enter + Backspace)
 
-### Session list Select component (User Story 2)
+- [ ] Korean IME Enter (mid-composition) does NOT submit — guarded by `!ime.isComposing`. Manual verification required on macOS Korean IME and Linux fcitx5/ibus.
+- [ ] Backspace deletes partial syllable atomically (delegated to `useKoreanIME`). Manual IME hardware test required.
+- [ ] Enter submits only non-empty committed text (`text.trim().length > 0`). Manual test required.
+- [ ] Input is suppressed when `disabled=true` (modal open). Manual test with permission fixture required.
 
-- [ ] The session list (`<Select />` from `@inkjs/ui`) is navigable with Up / Down arrow keys.
-- [ ] Enter selects the highlighted session and resumes it.
-- [ ] Escape exits the session list without selecting.
-- [ ] Page Up / Page Down skip 5 items at a time when the list exceeds the terminal height.
+### CollectionList "Load more"
 
-### CollectionList "Load more" affordance (User Story 3)
+- [ ] **GAP — NOT IMPLEMENTED**: No keyboard-reachable "Load more" affordance exists. The component renders static truncation text. Follow-up task required to implement an interactive affordance per FR-019.
 
-- [ ] The "Load more" button in `<CollectionList />` is reachable by Tab from the last visible row.
-- [ ] Enter on the focused "Load more" button emits the follow-up `lookup(mode="fetch", page=...)` IPC frame.
-- [ ] After loading, focus moves to the first newly loaded row.
+### Session list Select
 
-### Slash-command auto-complete
+- [ ] **DEFERRED — NOT WIRED**: Session list rendering UI does not yet exist. Keyboard-navigation audit blocked until UI component is implemented.
 
-- [ ] The auto-complete suggestion list opens with Tab or the first slash character.
-- [ ] Up / Down arrow keys navigate suggestions.
-- [ ] Tab or Enter accepts the highlighted suggestion.
-- [ ] Escape dismisses the suggestion list and returns focus to the input bar.
+### Ctrl-C SIGTERM
 
-### Ctrl-C SIGTERM (FR-009)
-
-- [ ] Ctrl-C sends `SIGTERM` to the backend process within the ≤ 3 s window defined by FR-009.
-- [ ] A second Ctrl-C within 3 s escalates to `SIGKILL`.
-- [ ] No interactive component blocks Ctrl-C (i.e., no component installs a Ctrl-C intercept without forwarding the signal).
+- [ ] Ctrl-C sends SIGTERM to the backend process within ≤ 3 s (FR-009). Manual test with `kill -0` verification required.
+- [ ] No interactive component intercepts Ctrl-C without forwarding — confirmed `PermissionGauntletModal` only intercepts y/n/Escape.
 
 ---
 
-## 2. Screen-reader Manual Smoke (FR-056)
+## Screen reader smoke — macOS VoiceOver + Linux Orca
 
-FR-056: "Screen-reader accessibility (Ink `aria-*` equivalents) MUST be verified by a manual test checklist committed to `tui/docs/accessibility-checklist.md`."
+**Status**: Manual smoke plan only. This plan has NOT been executed. Execution is required to satisfy FR-056.
 
-Ink does not emit ARIA to a DOM — it writes to stdout. "Screen-reader verification" in a TUI context means confirming that a screen reader's line-review mode reads the terminal output in a meaningful order and does not produce garbled text from raw ANSI escape sequences. Test using a real terminal emulator with the screen reader active.
+> This section is a documented manual test plan, not a CI-automated check. Automated screen-reader CI for Ink-based TUIs requires upstream Ink accessibility improvements (see Deferred Items in spec.md `#1294`). All items below remain unchecked until a human tester executes the steps on the specified hardware/OS.
+
+### Known issues (pre-execution, from static code analysis)
+
+1. **ANSI escape code degradation**: Ink writes raw ANSI escape sequences to stdout. Screen readers in line-review mode may speak or display raw escape codes (e.g., `\e[1m`, `\e[32m`) interleaved with text content. This is a fundamental limitation of Ink's output model and applies to all TUI output including streaming assistant chunks, the permission modal border, and risk-level color codes.
+
+2. **Color-only risk indicator on `PermissionGauntletModal`**: `PermissionGauntletModal.tsx` line 92 and 108-109 express `risk_level` (`low`/`medium`/`high`) exclusively via `riskBorderColor` (a theme token mapping to `theme.success` / `theme.warning` / `theme.error`). The risk level text (`HIGH`, `MEDIUM`, `LOW`) is rendered via `pendingRequest.risk_level.toUpperCase()` on line 109. The text representation exists, so VoiceOver/Orca will read the level string — but the border color alone would be inaccessible without it. Confirmed: the text label is present.
+
+3. **No `aria-*` equivalents in Ink**: Ink's component model does not emit ARIA roles, live regions, or focus management signals to an assistive technology bridge. Screen readers operating in line-review mode (not application mode) are the only usable interaction model. Modal "focus trap" behavior that a DOM-based UI provides via `aria-modal` does not exist — the `PermissionGauntletModal` blocks input via Ink's `useInput` activation model but does not signal to VoiceOver/Orca that a modal is active.
+
+---
 
 ### macOS VoiceOver
 
-**Test environment**: macOS 14+, Terminal.app or iTerm2, VoiceOver (Cmd-F5 to toggle).
+**Test environment**: macOS 14+ (Sonoma) or later, Terminal.app or iTerm2, VoiceOver enabled via Cmd+F5.
 
-Manual steps (skeleton — fill in pass/fail during T124):
+**Prerequisites**:
+- Bun installed (`~/.bun/bin/bun` — note: `bun` may not be on `$PATH` in all shells; use the full path `~/.bun/bin/bun run tui` if `bun: command not found` is reported).
+- Python backend running or fixture mode configured.
+- VoiceOver cursor interaction mode set to "Text selection" for terminal windows.
 
-1. Launch the TUI via `bun run tui` in Terminal.app with VoiceOver active.
-2. Navigate to the first assistant message using VO-Right arrow and verify the message text is read without embedded ANSI codes.
-3. Trigger a `tool_result` with `kind: "lookup"` returning an `UnrecognizedPayload` and verify VoiceOver reads the fallback text (`UnrecognizedPayload.tsx`, FR-033).
-4. Trigger the permission modal (User Story 4) and verify VoiceOver announces the modal content and focus trap.
-5. Trigger a crash notice (`CrashNotice.tsx`) by killing the backend process and verify VoiceOver reads the crash message without leaking `KOSMOS_*` env var values.
+**Steps**:
 
-Checklist items:
+1. Enable VoiceOver: press Cmd+F5 (or open System Settings > Accessibility > VoiceOver).
+2. Open Terminal.app. Start the TUI in fixture mode:
+   ```
+   ~/.bun/bin/bun scripts/fixture-runner.ts tests/fixtures/smoke/route-safety.jsonl
+   ```
+   (Note: `scripts/fixture-runner.ts` does not exist yet — see T127 delta log. Use `tui/src/entrypoints/tui.tsx` against a stub backend, or wait for fixture-runner.ts to be implemented.)
+3. With VoiceOver active, use VO+Right arrow to move through the terminal output line by line. Confirm the assistant message text is spoken without embedded ANSI escape codes (`\e[` sequences).
+4. Trigger a `tool_result` with `kind: "lookup"` returning a `LookupCollection`. Confirm VoiceOver reads the `CollectionList` row text and the truncation notice.
+5. Trigger the permission modal by replaying `tests/fixtures/coordinator/permission-gauntlet.jsonl` (if the file exists) or injecting a `permission_request` frame manually. Confirm VoiceOver reads: (a) the modal title, (b) the `description_ko` and `description_en` text, (c) the `[y]` / `[n]` prompt. Confirm VoiceOver does NOT continue reading background content while the modal is open (Ink's `useInput` activation blocks other input but does not enforce an ARIA modal — known limitation).
+6. Kill the backend process (`kill -9 <pid>`) and confirm VoiceOver reads the `CrashNotice` text. Confirm no `KOSMOS_*` env var values appear in the spoken output.
 
-- [ ] Assistant chunk text is read correctly without raw ANSI escape codes by VoiceOver line-review.
-- [ ] `UnrecognizedPayload` fallback label is announced by VoiceOver.
-- [ ] Permission modal captures VoiceOver focus; background content is not read while the modal is open.
-- [ ] Crash notice is read by VoiceOver; no `KOSMOS_*` env var values appear in the spoken output.
+**Checklist items** (tick when manually verified by a human tester):
 
-### Linux Orca
-
-**Test environment**: Ubuntu 22.04+ (or equivalent), GNOME Terminal, Orca screen reader (`orca` package from distribution repo).
-
-Manual steps (skeleton — fill in pass/fail during T124):
-
-1. Launch the TUI via `bun run tui` in GNOME Terminal with Orca active (Super key → Accessibility → Screen Reader on).
-2. Use Orca's flat-review mode (Orca-KP_8 / Orca-KP_2) to navigate rendered rows and verify no ANSI codes appear in spoken output.
-3. Trigger a `tool_result` with `kind: "lookup"` returning an `UnrecognizedPayload` and verify Orca speaks the fallback text.
-4. Trigger the permission modal and verify Orca announces it and enforces the focus trap.
-5. Trigger a crash notice and verify Orca reads the redacted crash message.
-
-Checklist items:
-
-- [ ] Assistant chunk text is read correctly without raw ANSI escape codes by Orca flat-review.
-- [ ] `UnrecognizedPayload` fallback label is announced by Orca.
-- [ ] Permission modal captures Orca focus; background content is not read while the modal is open.
-- [ ] Crash notice is read by Orca; no `KOSMOS_*` env var values appear in the spoken output.
+- [ ] Assistant chunk text is spoken without raw ANSI codes in line-review mode.
+- [ ] `CollectionList` row text and truncation notice are spoken.
+- [ ] Permission modal title, bilingual description, and y/n prompt are spoken.
+- [ ] `CrashNotice` text is spoken; no `KOSMOS_*` values in spoken output.
+- [ ] **Known issue acknowledged**: VoiceOver does not receive an ARIA-modal signal; background content may be navigable with VO cursor — this is a known Ink limitation.
+- [ ] **Known issue acknowledged**: ANSI escape codes may appear in spoken output for colored or styled text — logged as a known issue, not a blocker for v1.
 
 ---
 
-## 3. Visual Contrast
+### Linux Orca
+
+**Test environment**: Ubuntu 24.04 LTS, GNOME Terminal, Orca screen reader (`sudo apt install orca`).
+
+**Prerequisites**:
+- Bun installed via `curl -fsSL https://bun.sh/install | bash`; `~/.bun/bin/bun` is available.
+- Orca active: GNOME Settings > Accessibility > Screen Reader toggle, or run `orca` from a terminal in a separate session.
+- Python 3.12+ with `uv` installed.
+
+**Steps**:
+
+1. Enable Orca: toggle from GNOME Settings > Accessibility > Screen Reader, or run `orca &` in a background terminal.
+2. Open GNOME Terminal. Start the TUI:
+   ```
+   ~/.bun/bin/bun scripts/fixture-runner.ts tests/fixtures/smoke/route-safety.jsonl
+   ```
+   (Same caveat as macOS: `fixture-runner.ts` is not yet implemented. See T127 delta log.)
+3. Use Orca's flat-review mode: Orca+KP_8 to read the line above, Orca+KP_2 to read the line below. Navigate rendered rows and confirm the assistant message text is spoken without `\e[` sequences.
+4. Trigger a `tool_result` with `kind: "lookup"` returning a `LookupCollection`. Confirm Orca reads the row text and truncation notice.
+5. Trigger the permission modal. Confirm Orca announces the modal content. Note: Orca does not receive an ARIA-modal signal from Ink; flat-review may still navigate to background content (known limitation).
+6. Kill the backend and confirm Orca reads the `CrashNotice` text without leaking `KOSMOS_*` values.
+
+**Checklist items** (tick when manually verified by a human tester):
+
+- [ ] Assistant chunk text is spoken without raw ANSI codes in Orca flat-review mode.
+- [ ] `CollectionList` row text and truncation notice are spoken.
+- [ ] Permission modal title, bilingual description, and y/n prompt are spoken.
+- [ ] `CrashNotice` text is spoken; no `KOSMOS_*` values in spoken output.
+- [ ] **Known issue acknowledged**: Orca does not receive an ARIA-modal signal — known Ink limitation.
+- [ ] **Known issue acknowledged**: ANSI escape codes may appear in spoken output — known limitation.
+
+---
+
+## Visual Contrast
 
 ThemeToken sets (`default`, `dark`, `light` — FR-039) MUST pass WCAG AA minimum contrast ratio (4.5:1 for normal body text, 3:1 for large text) between foreground and background color values as declared in `tui/src/theme/*.ts`.
 
@@ -125,7 +176,7 @@ Verification method: extract hex color pairs from theme token files and test wit
 
 ---
 
-## 4. Internationalization and RTL
+## Internationalization and RTL
 
 ### Bilingual support (FR-037)
 
@@ -148,10 +199,11 @@ RTL (right-to-left) layout is not in scope for v1. Ink's layout model does not p
 
 ---
 
-## 5. Audit Log
+## Audit Log
 
 Record each accessibility review pass here. One row per session; add rows chronologically.
 
 | Date | Auditor | Scenario | Result | Notes |
 |------|---------|----------|--------|-------|
-|      |         |          |        |       |
+| 2026-04-19 | Technical Writer (T123) | Keyboard-only navigation pass — static code analysis of all interactive components | See table above | Gaps: CollectionList "Load more" not implemented; session list Select not wired to UI; PermissionGauntletModal has no Tab cycle between buttons. |
+| 2026-04-19 | Technical Writer (T124) | Screen-reader smoke plan authored | Plan documented; NOT executed | Execution required on macOS VoiceOver + Ubuntu 24.04 Orca by a human tester. |

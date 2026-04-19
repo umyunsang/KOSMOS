@@ -27,8 +27,11 @@ import asyncio
 import logging
 import signal
 import sys
+import time
 from typing import TYPE_CHECKING, Callable, Any
 
+from opentelemetry import trace
+from opentelemetry.trace import Status, StatusCode
 from pydantic import TypeAdapter, ValidationError
 
 from kosmos.ipc.frame_schema import (
@@ -42,6 +45,10 @@ if TYPE_CHECKING:
     from kosmos.session.manager import SessionManager
 
 logger = logging.getLogger(__name__)
+
+# Module-level tracer — follows the same pattern as kosmos.tools.executor and
+# kosmos.engine.query (trace.get_tracer(__name__) at module load time).
+_tracer = trace.get_tracer(__name__)
 
 # ---------------------------------------------------------------------------
 # Internal state
@@ -66,7 +73,7 @@ def _get_stdout_lock() -> asyncio.Lock:
 # ---------------------------------------------------------------------------
 
 
-async def write_frame(frame: IPCFrame) -> None:
+async def write_frame(frame: IPCFrame, *, _assembly_start_ns: int | None = None) -> None:
     """Serialise *frame* to a single JSON line and write it to stdout.
 
     Flushes stdout immediately after every frame to preserve the FIFO ordering
@@ -74,13 +81,30 @@ async def write_frame(frame: IPCFrame) -> None:
 
     Thread-safety: serialised by ``_stdout_lock`` so concurrent coroutines
     cannot interleave partial JSON.
+
+    OTEL: emits a ``kosmos.ipc.frame`` child span (FR-053) with direction
+    ``"outbound"``.  ``_assembly_start_ns`` is the ``time.monotonic_ns()``
+    captured by the caller before building the frame payload; when absent,
+    the span clock starts at the write call itself.
     """
+    t0_ns = _assembly_start_ns if _assembly_start_ns is not None else time.monotonic_ns()
     payload = frame.model_dump_json() + "\n"
     encoded = payload.encode("utf-8")
     lock = _get_stdout_lock()
-    async with lock:
-        sys.stdout.buffer.write(encoded)
-        sys.stdout.buffer.flush()
+    with _tracer.start_as_current_span("kosmos.ipc.frame") as span:
+        try:
+            async with lock:
+                sys.stdout.buffer.write(encoded)
+                sys.stdout.buffer.flush()
+            latency_ms = (time.monotonic_ns() - t0_ns) / 1_000_000
+            span.set_attribute("kosmos.session.id", frame.session_id)
+            span.set_attribute("kosmos.frame.kind", frame.kind)
+            span.set_attribute("kosmos.frame.direction", "outbound")
+            span.set_attribute("kosmos.ipc.latency_ms", latency_ms)
+        except Exception as exc:  # noqa: BLE001
+            span.record_exception(exc)
+            span.set_status(Status(StatusCode.ERROR))
+            raise
 
 
 def _write_frame_sync(frame: IPCFrame) -> None:
@@ -138,12 +162,21 @@ async def _reader_loop(
             continue
 
         logger.debug("IPC frame received: kind=%s session=%s", frame.kind, frame.session_id)
-        try:
-            result = on_frame(frame)
-            if asyncio.iscoroutine(result):
-                await result
-        except Exception as exc:  # noqa: BLE001
-            logger.exception("on_frame handler raised: %s", exc)
+        _dispatch_start_ns = time.monotonic_ns()
+        with _tracer.start_as_current_span("kosmos.ipc.frame") as span:
+            try:
+                result = on_frame(frame)
+                if asyncio.iscoroutine(result):
+                    await result
+                latency_ms = (time.monotonic_ns() - _dispatch_start_ns) / 1_000_000
+                span.set_attribute("kosmos.session.id", frame.session_id)
+                span.set_attribute("kosmos.frame.kind", frame.kind)
+                span.set_attribute("kosmos.frame.direction", "inbound")
+                span.set_attribute("kosmos.ipc.latency_ms", latency_ms)
+            except Exception as exc:  # noqa: BLE001
+                span.record_exception(exc)
+                span.set_status(Status(StatusCode.ERROR))
+                logger.exception("on_frame handler raised: %s", exc)
 
 
 # ---------------------------------------------------------------------------

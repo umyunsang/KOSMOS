@@ -1,5 +1,7 @@
-// Source: .references/claude-code-sourcemap/restored-src/src/components/ToolPermission*.tsx (Claude Code 2.1.88, research-use)
+// Source: .references/claude-code-sourcemap/restored-src/src/components/permissions/WorkerPendingPermission.tsx (Claude Code 2.1.88, research-use)
 // Source: .references/claude-code-sourcemap/restored-src/src/components/BypassPermissionsModeDialog.tsx (Claude Code 2.1.88, research-use)
+// Note: Original attribution listed ToolPermission*.tsx wildcard which does not resolve in restored-src.
+//       WorkerPendingPermission.tsx is the closest upstream analog for the worker-scoped permission modal pattern.
 // KOSMOS adaptation: renders PermissionRequest from session-store; emits PermissionResponseFrame on y/n.
 
 import React from 'react'

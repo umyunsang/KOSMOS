@@ -1,4 +1,6 @@
-// Source: .references/claude-code-sourcemap/restored-src/src/components/CoordinatorProgressLine.tsx (Claude Code 2.1.88, research-use)
+// Source: .references/claude-code-sourcemap/restored-src/src/components/AgentProgressLine.tsx (Claude Code 2.1.88, research-use)
+// Note: Original attribution listed CoordinatorProgressLine.tsx which does not exist in restored-src.
+//       AgentProgressLine.tsx is the closest upstream analog (phase glyph + progress line pattern).
 // KOSMOS adaptation: maps CoordinatorPhaseFrame.phase to phase-indicator glyph.
 //
 // FR-043 (coordinator phase indicator), FR-050 (selector-isolated subscription).

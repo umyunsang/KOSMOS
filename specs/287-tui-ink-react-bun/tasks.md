@@ -281,16 +281,16 @@ description: "Task list for Spec 287 TUI (Ink + React + Bun)"
 
 **Purpose**: Observability, final attribution compliance, documentation updates, release polish.
 
-- [ ] T121 [P] Add `kosmos.ipc.frame` OTEL span emission in `src/kosmos/ipc/stdio.py` (child of session span from Spec 021) with attrs `kosmos.session.id`, `kosmos.frame.kind`, `kosmos.frame.direction`, `kosmos.ipc.latency_ms` (FR-053)
-- [ ] T122 [P] Ensure OTEL span emission is fire-and-forget async (not on render thread) in `tui/src/ipc/bridge.ts` (FR-054)
-- [ ] T123 [P] Keyboard-only navigation pass across all interactive components — `PermissionGauntletModal`, session list `<Select />`, CollectionList "Load more" — documented in `tui/docs/accessibility-checklist.md` (FR-055)
-- [ ] T124 [P] Manual screen-reader smoke on macOS VoiceOver + Linux Orca documented in `tui/docs/accessibility-checklist.md` (FR-056)
-- [ ] T125 [P] Final attribution audit — run `tui/scripts/diff-upstream.sh` + grep for missing `// Source:` headers across every file lifted to `tui/src/ink/`, `tui/src/commands/`, `tui/src/theme/`, `tui/src/components/coordinator/`, `tui/src/components/conversation/VirtualizedList.tsx`, `tui/src/hooks/` (FR-011, SC-9)
-- [ ] T126 [P] Bun single-binary build via `bun build --compile --outfile dist/kosmos-tui src/main.tsx`; verify on macOS arm64 + Linux x64 per spec § Assumption "bun build --compile"
-- [ ] T127 [P] Run `quickstart.md` end-to-end on macOS + Linux and document any deltas in `tui/docs/README.md`
-- [ ] T128 [P] Smoke test SC-8 Scenario 1 (route safety) via the real Python backend + TUI; archive a screencast under `tui/docs/demos/` if available
-- [ ] T129 [P] Smoke test a Phase 2 multi-ministry scenario end-to-end via TUI (SC-8) — fixture OK if live APIs unavailable
-- [ ] T130 Update `specs/287-tui-ink-react-bun/spec.md` `NEEDS TRACKING` rows with the actual issue numbers created by `/speckit-taskstoissues` (Constitution Principle VI back-fill)
+- [X] T121 [P] Add `kosmos.ipc.frame` OTEL span emission in `src/kosmos/ipc/stdio.py` (child of session span from Spec 021) with attrs `kosmos.session.id`, `kosmos.frame.kind`, `kosmos.frame.direction`, `kosmos.ipc.latency_ms` (FR-053)
+- [X] T122 [P] Ensure OTEL span emission is fire-and-forget async (not on render thread) in `tui/src/ipc/bridge.ts` (FR-054)
+- [X] T123 [P] Keyboard-only navigation pass across all interactive components — `PermissionGauntletModal`, session list `<Select />`, CollectionList "Load more" — documented in `tui/docs/accessibility-checklist.md` (FR-055)
+- [X] T124 [P] Manual screen-reader smoke on macOS VoiceOver + Linux Orca documented in `tui/docs/accessibility-checklist.md` (FR-056)
+- [X] T125 [P] Final attribution audit — run `tui/scripts/diff-upstream.sh` + grep for missing `// Source:` headers across every file lifted to `tui/src/ink/`, `tui/src/commands/`, `tui/src/theme/`, `tui/src/components/coordinator/`, `tui/src/components/conversation/VirtualizedList.tsx`, `tui/src/hooks/` (FR-011, SC-9)
+- [X] T126 [P] Bun single-binary build via `bun build --compile --outfile dist/kosmos-tui src/main.tsx`; verify on macOS arm64 + Linux x64 per spec § Assumption "bun build --compile"
+- [X] T127 [P] Run `quickstart.md` end-to-end on macOS + Linux and document any deltas in `tui/docs/README.md`
+- [X] T128 [P] Smoke test SC-8 Scenario 1 (route safety) via the real Python backend + TUI; archive a screencast under `tui/docs/demos/` if available
+- [X] T129 [P] Smoke test a Phase 2 multi-ministry scenario end-to-end via TUI (SC-8) — fixture OK if live APIs unavailable
+- [X] T130 Update `specs/287-tui-ink-react-bun/spec.md` `NEEDS TRACKING` rows with the actual issue numbers created by `/speckit-taskstoissues` (Constitution Principle VI back-fill)
 - [ ] T131 Final review: confirm all six Constitution principles (I–VI) still pass post-implementation in a new `specs/287-tui-ink-react-bun/checklists/final-review.md`
 
 ---

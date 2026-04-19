@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// KOSMOS-original React context provider for KOSMOS_TUI_THEME resolution.
+// No upstream analog in Claude Code — CC uses a plain object import, not React context.
 import { createContext, useContext, type ReactNode } from 'react'
 import defaultTheme from './default'
 import darkTheme from './dark'
