@@ -348,7 +348,6 @@ class BackpressureController:
         queue_depth: int = 0,
         ts: str | None = None,
         frame_seq: int = 0,
-        source_agency: str = "ministry",
     ) -> BackpressureSignalFrame:
         """Parse a 429 Retry-After header and emit a ``throttle`` frame.
 
@@ -363,7 +362,6 @@ class BackpressureController:
             queue_depth: Current outbound queue depth for HUD context.
             ts: ISO-8601 timestamp for the emitted frame.
             frame_seq: Frame sequence number.
-            source_agency: Human-readable agency name for HUD copy interpolation.
 
         Returns:
             A ``BackpressureSignalFrame`` with ``signal="throttle"``.
