@@ -1,6 +1,10 @@
 {
   "kind": "worker_status",
+  "version": "1.0",
   "session_id": "01HTESTST0000000000000ABCA",
+  "correlation_id": "01HTESTCORR000000000000011",
+  "role": "backend",
+  "frame_seq": 10,
   "ts": "2026-04-19T12:00:06.000Z",
   "worker_id": "worker-transport-01",
   "role_id": "transport-specialist",

@@ -185,7 +185,7 @@ class _BaseFrame(BaseModel):
 class UserInputFrame(_BaseFrame):
     """TUI -> backend: a citizen's typed input."""
 
-    kind: Literal["user_input"] = Field(description="Frame discriminator.")
+    kind: Literal["user_input"] = Field(default="user_input", description="Frame discriminator.")
     text: str = Field(description="Raw user text in UTF-8 (may contain Korean, English, emoji).")
 
 
@@ -197,7 +197,9 @@ class UserInputFrame(_BaseFrame):
 class AssistantChunkFrame(_BaseFrame):
     """backend -> TUI: streaming assistant text delta."""
 
-    kind: Literal["assistant_chunk"] = Field(description="Frame discriminator.")
+    kind: Literal["assistant_chunk"] = Field(
+        default="assistant_chunk", description="Frame discriminator."
+    )
     message_id: str = Field(description="ULID of the assistant message this delta belongs to.")
     delta: str = Field(description="UTF-8 text appended to the message.")
     done: bool = Field(description="True if this is the terminal chunk for this message_id.")
@@ -211,7 +213,7 @@ class AssistantChunkFrame(_BaseFrame):
 class ToolCallFrame(_BaseFrame):
     """backend -> TUI (display only): a tool invocation decision by the model."""
 
-    kind: Literal["tool_call"] = Field(description="Frame discriminator.")
+    kind: Literal["tool_call"] = Field(default="tool_call", description="Frame discriminator.")
     call_id: str = Field(description="ULID correlating this call to its subsequent tool_result.")
     name: Literal["lookup", "resolve_location", "submit", "subscribe", "verify"] = Field(
         description="Primitive name per Spec 031."
@@ -239,7 +241,7 @@ class ToolResultEnvelope(BaseModel):
 class ToolResultFrame(_BaseFrame):
     """backend -> TUI (render): the output of a tool invocation."""
 
-    kind: Literal["tool_result"] = Field(description="Frame discriminator.")
+    kind: Literal["tool_result"] = Field(default="tool_result", description="Frame discriminator.")
     call_id: str = Field(description="ULID correlating this result to its originating tool_call.")
     envelope: ToolResultEnvelope = Field(
         description="5-primitive discriminated union. Unknown kind falls to UnrecognizedPayload."
@@ -254,7 +256,9 @@ class ToolResultFrame(_BaseFrame):
 class CoordinatorPhaseFrame(_BaseFrame):
     """backend -> TUI: Spec 027 coordinator phase update."""
 
-    kind: Literal["coordinator_phase"] = Field(description="Frame discriminator.")
+    kind: Literal["coordinator_phase"] = Field(
+        default="coordinator_phase", description="Frame discriminator."
+    )
     phase: Literal["Research", "Synthesis", "Implementation", "Verification"] = Field(
         description="Current coordinator phase."
     )
@@ -268,7 +272,9 @@ class CoordinatorPhaseFrame(_BaseFrame):
 class WorkerStatusFrame(_BaseFrame):
     """backend -> TUI: per-worker status row update from Spec 027 swarm."""
 
-    kind: Literal["worker_status"] = Field(description="Frame discriminator.")
+    kind: Literal["worker_status"] = Field(
+        default="worker_status", description="Frame discriminator."
+    )
     worker_id: str = Field(description="Unique worker identifier.")
     role_id: str = Field(
         description="Specialist label (e.g., transport-specialist, health-specialist)."
@@ -289,7 +295,9 @@ class WorkerStatusFrame(_BaseFrame):
 class PermissionRequestFrame(_BaseFrame):
     """backend -> TUI: a worker raises a permission request."""
 
-    kind: Literal["permission_request"] = Field(description="Frame discriminator.")
+    kind: Literal["permission_request"] = Field(
+        default="permission_request", description="Frame discriminator."
+    )
     request_id: str = Field(
         description="ULID; round-trips in the matching permission_response frame."
     )
@@ -314,7 +322,9 @@ class PermissionRequestFrame(_BaseFrame):
 class PermissionResponseFrame(_BaseFrame):
     """TUI -> backend: citizen's decision on a permission_request."""
 
-    kind: Literal["permission_response"] = Field(description="Frame discriminator.")
+    kind: Literal["permission_response"] = Field(
+        default="permission_response", description="Frame discriminator."
+    )
     request_id: str = Field(
         description="ULID matching the originating permission_request.request_id."
     )
@@ -329,7 +339,9 @@ class PermissionResponseFrame(_BaseFrame):
 class SessionEventFrame(_BaseFrame):
     """Bidirectional: session lifecycle events."""
 
-    kind: Literal["session_event"] = Field(description="Frame discriminator.")
+    kind: Literal["session_event"] = Field(
+        default="session_event", description="Frame discriminator."
+    )
     event: Literal["save", "load", "list", "resume", "new", "exit"] = Field(
         description="Session lifecycle event type."
     )
@@ -350,7 +362,7 @@ class SessionEventFrame(_BaseFrame):
 class ErrorFrame(_BaseFrame):
     """backend -> TUI: a backend error surfaced to the TUI for rendering."""
 
-    kind: Literal["error"] = Field(description="Frame discriminator.")
+    kind: Literal["error"] = Field(default="error", description="Frame discriminator.")
     code: str = Field(
         description="Machine-readable error code (e.g., 'backend_crash', 'protocol_mismatch')."
     )
@@ -381,7 +393,9 @@ class PayloadStartFrame(_BaseFrame):
     role allow-list: backend, tool, llm.
     """
 
-    kind: Literal["payload_start"] = Field(description="Frame discriminator.")
+    kind: Literal["payload_start"] = Field(
+        default="payload_start", description="Frame discriminator."
+    )
     content_type: Literal["text/markdown", "application/json", "text/plain"] = Field(
         description="Payload MIME type."
     )
@@ -402,7 +416,9 @@ class PayloadDeltaFrame(_BaseFrame):
     role allow-list: backend, tool, llm.
     """
 
-    kind: Literal["payload_delta"] = Field(description="Frame discriminator.")
+    kind: Literal["payload_delta"] = Field(
+        default="payload_delta", description="Frame discriminator."
+    )
     delta_seq: NonNegativeInt = Field(
         description="Monotonic within the payload (first delta = 0)."
     )
@@ -426,7 +442,7 @@ class PayloadEndFrame(_BaseFrame):
     role allow-list: backend, tool, llm.
     """
 
-    kind: Literal["payload_end"] = Field(description="Frame discriminator.")
+    kind: Literal["payload_end"] = Field(default="payload_end", description="Frame discriminator.")
     delta_count: NonNegativeInt = Field(
         description="Total number of payload_delta frames emitted."
     )
@@ -445,7 +461,9 @@ class BackpressureSignalFrame(_BaseFrame):
     FR-012, FR-015: hud_copy_ko/en MUST be non-empty (min_length=1).
     """
 
-    kind: Literal["backpressure"] = Field(description="Frame discriminator.")
+    kind: Literal["backpressure"] = Field(
+        default="backpressure", description="Frame discriminator."
+    )
     signal: Literal["pause", "resume", "throttle"] = Field(
         description="Reader action. pause=stop emitting; resume=clear; throttle=slow down."
     )
@@ -479,7 +497,9 @@ class ResumeRequestFrame(_BaseFrame):
     role allow-list: tui.
     """
 
-    kind: Literal["resume_request"] = Field(description="Frame discriminator.")
+    kind: Literal["resume_request"] = Field(
+        default="resume_request", description="Frame discriminator."
+    )
     last_seen_correlation_id: str | None = Field(
         default=None,
         description="Last correlation_id the TUI successfully applied. None if no prior frame.",
@@ -507,7 +527,9 @@ class ResumeResponseFrame(_BaseFrame):
     role allow-list: backend.
     """
 
-    kind: Literal["resume_response"] = Field(description="Frame discriminator.")
+    kind: Literal["resume_response"] = Field(
+        default="resume_response", description="Frame discriminator."
+    )
     resumed_from_frame_seq: NonNegativeInt = Field(
         description="Inclusive lower bound of frames that will be replayed."
     )
@@ -535,7 +557,9 @@ class ResumeRejectedFrame(_BaseFrame):
     role allow-list: backend.
     """
 
-    kind: Literal["resume_rejected"] = Field(description="Frame discriminator.")
+    kind: Literal["resume_rejected"] = Field(
+        default="resume_rejected", description="Frame discriminator."
+    )
     reason: Literal[
         "ring_evicted",
         "session_unknown",
@@ -561,7 +585,7 @@ class HeartbeatFrame(_BaseFrame):
     role allow-list: tui, backend.
     """
 
-    kind: Literal["heartbeat"] = Field(description="Frame discriminator.")
+    kind: Literal["heartbeat"] = Field(default="heartbeat", description="Frame discriminator.")
     direction: Literal["ping", "pong"] = Field(
         description="ping from sender, pong from receiver."
     )
@@ -582,7 +606,9 @@ class NotificationPushFrame(_BaseFrame):
     role allow-list: notification.
     """
 
-    kind: Literal["notification_push"] = Field(description="Frame discriminator.")
+    kind: Literal["notification_push"] = Field(
+        default="notification_push", description="Frame discriminator."
+    )
     subscription_id: str = Field(
         description="Handle from Spec 031 subscribe registration."
     )

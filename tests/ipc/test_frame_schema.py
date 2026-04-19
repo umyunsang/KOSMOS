@@ -49,31 +49,30 @@ SYNTHESISED_ARMS: frozenset[str] = frozenset(
 
 _TS = "2025-01-01T00:00:00Z"
 _SESSION_ID = "01HNMJ1Z000000000000000000"  # valid ULID-format string
-# Spec 032: correlation_id is now required (min_length=1); use a canonical UUIDv7-format value.
-_CORRELATION_ID = "019da5b0-e60d-71a0-a393-000000000001"
+_CORR_ID = "01HNMJ0Z000000000000000000"  # Spec 032 required envelope field
 
 # ---------------------------------------------------------------------------
 # Minimal valid examples per arm
 # ---------------------------------------------------------------------------
 
-# Spec 032 adds required fields `correlation_id` (non-empty str) and `role` to
-# _BaseFrame.  All minimal examples must include them so existing round-trip
-# tests stay green after the schema extension.
-
 _MINIMAL_EXAMPLES: dict[str, dict[str, Any]] = {
     "user_input": {
         "kind": "user_input",
+        "version": "1.0",
         "session_id": _SESSION_ID,
-        "correlation_id": _CORRELATION_ID,
+        "correlation_id": _CORR_ID,
         "role": "tui",
+        "frame_seq": 0,
         "ts": _TS,
         "text": "안녕하세요",
     },
     "assistant_chunk": {
         "kind": "assistant_chunk",
+        "version": "1.0",
         "session_id": _SESSION_ID,
-        "correlation_id": _CORRELATION_ID,
+        "correlation_id": _CORR_ID,
         "role": "backend",
+        "frame_seq": 1,
         "ts": _TS,
         "message_id": "01HNMJ2Z000000000000000001",
         "delta": "안녕",
@@ -81,9 +80,11 @@ _MINIMAL_EXAMPLES: dict[str, dict[str, Any]] = {
     },
     "tool_call": {
         "kind": "tool_call",
+        "version": "1.0",
         "session_id": _SESSION_ID,
-        "correlation_id": _CORRELATION_ID,
+        "correlation_id": _CORR_ID,
         "role": "backend",
+        "frame_seq": 2,
         "ts": _TS,
         "call_id": "01HNMJ3Z000000000000000002",
         "name": "lookup",
@@ -91,26 +92,32 @@ _MINIMAL_EXAMPLES: dict[str, dict[str, Any]] = {
     },
     "tool_result": {
         "kind": "tool_result",
+        "version": "1.0",
         "session_id": _SESSION_ID,
-        "correlation_id": _CORRELATION_ID,
+        "correlation_id": _CORR_ID,
         "role": "backend",
+        "frame_seq": 3,
         "ts": _TS,
         "call_id": "01HNMJ3Z000000000000000002",
         "envelope": {"kind": "lookup"},
     },
     "coordinator_phase": {
         "kind": "coordinator_phase",
+        "version": "1.0",
         "session_id": _SESSION_ID,
-        "correlation_id": _CORRELATION_ID,
+        "correlation_id": _CORR_ID,
         "role": "backend",
+        "frame_seq": 4,
         "ts": _TS,
         "phase": "Research",
     },
     "worker_status": {
         "kind": "worker_status",
+        "version": "1.0",
         "session_id": _SESSION_ID,
-        "correlation_id": _CORRELATION_ID,
+        "correlation_id": _CORR_ID,
         "role": "backend",
+        "frame_seq": 5,
         "ts": _TS,
         "worker_id": "worker-001",
         "role_id": "transport-specialist",
@@ -119,9 +126,11 @@ _MINIMAL_EXAMPLES: dict[str, dict[str, Any]] = {
     },
     "permission_request": {
         "kind": "permission_request",
+        "version": "1.0",
         "session_id": _SESSION_ID,
-        "correlation_id": _CORRELATION_ID,
+        "correlation_id": _CORR_ID,
         "role": "backend",
+        "frame_seq": 6,
         "ts": _TS,
         "request_id": "01HNMJ4Z000000000000000003",
         "worker_id": "worker-001",
@@ -132,31 +141,148 @@ _MINIMAL_EXAMPLES: dict[str, dict[str, Any]] = {
     },
     "permission_response": {
         "kind": "permission_response",
+        "version": "1.0",
         "session_id": _SESSION_ID,
-        "correlation_id": _CORRELATION_ID,
+        "correlation_id": _CORR_ID,
         "role": "tui",
+        "frame_seq": 7,
         "ts": _TS,
         "request_id": "01HNMJ4Z000000000000000003",
         "decision": "granted",
     },
     "session_event": {
         "kind": "session_event",
+        "version": "1.0",
         "session_id": _SESSION_ID,
-        "correlation_id": _CORRELATION_ID,
+        "correlation_id": _CORR_ID,
         "role": "tui",
+        "frame_seq": 8,
         "ts": _TS,
         "event": "save",
         "payload": {},
     },
     "error": {
         "kind": "error",
+        "version": "1.0",
         "session_id": _SESSION_ID,
-        "correlation_id": _CORRELATION_ID,
+        "correlation_id": _CORR_ID,
         "role": "backend",
+        "frame_seq": 9,
         "ts": _TS,
         "code": "backend_crash",
         "message": "Unexpected backend error",
         "details": {},
+    },
+    # --- Spec 032 new arms (T005-T009) ---
+    "payload_start": {
+        "kind": "payload_start",
+        "version": "1.0",
+        "session_id": _SESSION_ID,
+        "correlation_id": _CORR_ID,
+        "role": "backend",
+        "frame_seq": 10,
+        "ts": _TS,
+        "content_type": "text/plain",
+    },
+    "payload_delta": {
+        "kind": "payload_delta",
+        "version": "1.0",
+        "session_id": _SESSION_ID,
+        "correlation_id": _CORR_ID,
+        "role": "backend",
+        "frame_seq": 11,
+        "ts": _TS,
+        "delta_seq": 0,
+        "payload": "hello",
+    },
+    "payload_end": {
+        "kind": "payload_end",
+        "version": "1.0",
+        "session_id": _SESSION_ID,
+        "correlation_id": _CORR_ID,
+        "role": "backend",
+        "frame_seq": 12,
+        "ts": _TS,
+        "delta_count": 1,
+        "status": "ok",
+        "trailer": {"final": True},
+    },
+    "backpressure": {
+        "kind": "backpressure",
+        "version": "1.0",
+        "session_id": _SESSION_ID,
+        "correlation_id": _CORR_ID,
+        "role": "backend",
+        "frame_seq": 13,
+        "ts": _TS,
+        "signal": "throttle",
+        "source": "upstream_429",
+        "queue_depth": 10,
+        "hwm": 64,
+        "retry_after_ms": 5000,
+        "hud_copy_ko": "부처 API가 혼잡합니다.",
+        "hud_copy_en": "Upstream API is congested.",
+    },
+    "resume_request": {
+        "kind": "resume_request",
+        "version": "1.0",
+        "session_id": _SESSION_ID,
+        "correlation_id": _CORR_ID,
+        "role": "tui",
+        "frame_seq": 0,
+        "ts": _TS,
+        "tui_session_token": "test-token-001",
+    },
+    "resume_response": {
+        "kind": "resume_response",
+        "version": "1.0",
+        "session_id": _SESSION_ID,
+        "correlation_id": _CORR_ID,
+        "role": "backend",
+        "frame_seq": 14,
+        "ts": _TS,
+        "trailer": {"final": True},
+        "resumed_from_frame_seq": 0,
+        "replay_count": 0,
+        "server_session_id": _SESSION_ID,
+        "heartbeat_interval_ms": 30000,
+    },
+    "resume_rejected": {
+        "kind": "resume_rejected",
+        "version": "1.0",
+        "session_id": _SESSION_ID,
+        "correlation_id": _CORR_ID,
+        "role": "backend",
+        "frame_seq": 15,
+        "ts": _TS,
+        "trailer": {"final": True},
+        "reason": "session_unknown",
+        "detail": "Session not found",
+    },
+    "heartbeat": {
+        "kind": "heartbeat",
+        "version": "1.0",
+        "session_id": _SESSION_ID,
+        "correlation_id": _CORR_ID,
+        "role": "backend",
+        "frame_seq": 16,
+        "ts": _TS,
+        "direction": "ping",
+        "peer_frame_seq": 5,
+    },
+    "notification_push": {
+        "kind": "notification_push",
+        "version": "1.0",
+        "session_id": _SESSION_ID,
+        "correlation_id": _CORR_ID,
+        "role": "notification",
+        "frame_seq": 17,
+        "ts": _TS,
+        "subscription_id": "sub-001",
+        "adapter_id": "disaster_alert_cbs_push",
+        "event_guid": "guid-001",
+        "payload_content_type": "text/plain",
+        "payload": "재난 알림 테스트",
     },
 }
 
@@ -205,22 +331,13 @@ def test_arm_kind_field(arm: str) -> None:
 
 
 def test_json_schema_contains_all_discriminators() -> None:
-    """ipc_frame_json_schema() exposes all 19 discriminator values (Spec 032 extended).
-
-    The _EXPECTED_ARMS set covers the original 10 Spec 287 baseline arms.
-    Spec 032 adds 9 more; we verify a superset relationship so the test is
-    forwards-compatible with future arm additions.
-    """
+    """ipc_frame_json_schema() exposes all 19 discriminator values (10 baseline + 9 Spec 032)."""
     schema = ipc_frame_json_schema()
     discriminator = schema.get("discriminator", {})
     mapping = discriminator.get("mapping", {})
     found = frozenset(mapping.keys())
-    assert _EXPECTED_ARMS.issubset(found), (
-        f"Missing baseline arms: {_EXPECTED_ARMS - found}"
-    )
-    # Spec 032 added 9 new arms; total must be at least 19.
-    assert len(found) >= 19, (
-        f"Expected at least 19 discriminator kinds, got {len(found)}: {sorted(found)}"
+    assert found == _EXPECTED_ARMS, (
+        f"Missing arms: {_EXPECTED_ARMS - found}; unexpected: {found - _EXPECTED_ARMS}"
     )
 
 
@@ -275,14 +392,10 @@ def test_unknown_kind_rejected() -> None:
 
 @pytest.mark.parametrize("arm", sorted(_MINIMAL_EXAMPLES.keys()))
 def test_missing_required_field_rejected(arm: str) -> None:
-    """Dropping any required field from a minimal example must raise ValidationError."""
+    """Dropping correlation_id (required, no default) must raise ValidationError."""
     example = dict(_MINIMAL_EXAMPLES[arm])
-    # Drop the first non-kind, non-session_id, non-ts field
-    extra_keys = [k for k in example if k not in ("kind", "session_id", "ts")]
-    if not extra_keys:
-        pytest.skip(f"No extra required fields for arm={arm!r}")
-    drop_key = extra_keys[0]
-    del example[drop_key]
+    # correlation_id is required on _BaseFrame (no default) — dropping it must fail.
+    del example["correlation_id"]
     with pytest.raises(ValidationError):
         _ADAPTER.validate_json(json.dumps(example))
 
@@ -296,28 +409,16 @@ def test_extra_field_rejected() -> None:
 
 
 # ---------------------------------------------------------------------------
-# Tests: correlation_id (Spec 032: now required, non-empty string)
+# Tests: optional correlation_id
 # ---------------------------------------------------------------------------
 
 
 def test_correlation_id_null_rejected() -> None:
-    """correlation_id=null is REJECTED by Spec 032 (E5: min_length=1, required).
-
-    Pre-Spec-032 behaviour was to accept null; after the schema extension,
-    correlation_id must be a non-empty string on every frame.
-    """
+    """correlation_id=null is rejected — Spec 032 invariant E5 requires non-empty string."""
     payload = dict(_MINIMAL_EXAMPLES["assistant_chunk"])
     payload["correlation_id"] = None
     with pytest.raises(ValidationError):
-        _validate_roundtrip(payload)
-
-
-def test_correlation_id_empty_string_rejected() -> None:
-    """correlation_id='' is rejected (E5: min_length=1)."""
-    payload = dict(_MINIMAL_EXAMPLES["assistant_chunk"])
-    payload["correlation_id"] = ""
-    with pytest.raises(ValidationError):
-        _validate_roundtrip(payload)
+        _ADAPTER.validate_json(json.dumps(payload))
 
 
 def test_correlation_id_string_accepted() -> None:

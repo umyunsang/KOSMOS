@@ -16,7 +16,6 @@ import asyncio
 import os
 import sys
 import time
-import uuid
 from collections.abc import AsyncIterator
 from datetime import UTC, datetime
 from pathlib import Path
@@ -44,8 +43,7 @@ def _ts() -> str:
 
 
 def _encode(frame: IPCFrame) -> bytes:
-    json_str: str = frame.model_dump_json()
-    return (json_str + "\n").encode("utf-8")
+    return (frame.model_dump_json() + "\n").encode("utf-8")
 
 
 async def _read_lines(
@@ -120,20 +118,17 @@ async def session_backend(
 # ---------------------------------------------------------------------------
 
 
-def _session_event(
-    sid: str, event: str, payload: dict[str, object] | None = None
-) -> bytes:
+def _session_event(sid: str, event: str, payload: dict | None = None) -> bytes:
     frame = SessionEventFrame(
         session_id=sid,
-        correlation_id=str(uuid.uuid4()),
+        correlation_id=f"test-corr-{event}-001",
         role="tui",
         ts=_ts(),
         kind="session_event",
-        event=event,
+        event=event,  # type: ignore[arg-type]
         payload=payload or {},
     )
-    json_str: str = frame.model_dump_json()
-    return (json_str + "\n").encode("utf-8")
+    return _encode(frame)
 
 
 # ---------------------------------------------------------------------------
@@ -159,8 +154,8 @@ async def test_new_creates_session(
 
     parsed = _ADAPTER.validate_json(lines[0])
     assert parsed.kind == "session_event"
-    assert parsed.event == "new"
-    new_sid = parsed.payload.get("session_id")
+    assert parsed.event == "new"  # type: ignore[attr-defined]
+    new_sid = parsed.payload.get("session_id")  # type: ignore[attr-defined]
     assert new_sid, "Response payload must include session_id"
 
     # Verify a JSONL file was created in the hermetic session dir.
@@ -185,7 +180,7 @@ async def test_save_emits_ack(
     new_lines = await _read_lines(proc.stdout, 1, timeout=5.0)
     assert new_lines, "Expected new reply before save"
     new_parsed = _ADAPTER.validate_json(new_lines[0])
-    new_sid = new_parsed.payload.get("session_id")
+    new_sid = new_parsed.payload.get("session_id")  # type: ignore[attr-defined]
     assert new_sid
 
     # Now send save.
@@ -196,8 +191,8 @@ async def test_save_emits_ack(
     assert save_lines, "Expected ack frame for session_event save"
     save_parsed = _ADAPTER.validate_json(save_lines[0])
     assert save_parsed.kind == "session_event"
-    assert save_parsed.event == "save"
-    assert save_parsed.payload.get("session_id"), "save ack must include session_id"
+    assert save_parsed.event == "save"  # type: ignore[attr-defined]
+    assert save_parsed.payload.get("session_id"), "save ack must include session_id"  # type: ignore[attr-defined]
 
 
 @pytest.mark.asyncio
@@ -225,8 +220,8 @@ async def test_list_returns_sessions(
     assert list_lines, "Expected a response frame for session_event list"
     list_parsed = _ADAPTER.validate_json(list_lines[0])
     assert list_parsed.kind == "session_event"
-    assert list_parsed.event == "list"
-    sessions = list_parsed.payload.get("sessions")
+    assert list_parsed.event == "list"  # type: ignore[attr-defined]
+    sessions = list_parsed.payload.get("sessions")  # type: ignore[attr-defined]
     assert isinstance(sessions, list) and len(sessions) > 0, "sessions must be non-empty"
     for entry in sessions:
         assert "id" in entry, "Each session entry must have 'id'"
@@ -252,7 +247,7 @@ async def test_resume_emits_load_frame(
     new_lines = await _read_lines(proc.stdout, 1, timeout=5.0)
     assert new_lines, "Expected new reply"
     new_parsed = _ADAPTER.validate_json(new_lines[0])
-    new_sid: str = new_parsed.payload.get("session_id")
+    new_sid: str = new_parsed.payload.get("session_id")  # type: ignore[attr-defined]
     assert new_sid
 
     # Step 2: resume that session.
@@ -263,8 +258,8 @@ async def test_resume_emits_load_frame(
     assert load_lines, "Expected a load frame for session_event resume"
     load_parsed = _ADAPTER.validate_json(load_lines[0])
     assert load_parsed.kind == "session_event"
-    assert load_parsed.event == "load"
-    payload = load_parsed.payload
+    assert load_parsed.event == "load"  # type: ignore[attr-defined]
+    payload = load_parsed.payload  # type: ignore[attr-defined]
     assert payload.get("session_id") == new_sid, "load frame must echo session_id"
     assert isinstance(payload.get("messages"), list), "load frame must include messages array"
 
@@ -288,7 +283,7 @@ async def test_exit_event_shuts_down(
     exit_parsed = _ADAPTER.validate_json(exit_lines[0])
     # The loop always emits a final session_event exit frame on shutdown.
     assert exit_parsed.kind == "session_event"
-    assert exit_parsed.event == "exit"
+    assert exit_parsed.event == "exit"  # type: ignore[attr-defined]
 
     # Wait for the backend process to exit cleanly within 3s.
     try:

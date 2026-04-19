@@ -72,17 +72,17 @@ description: "Task list for Spec 032 — IPC stdio hardening"
 
 **Independent Test**: `kill -9 <backend-pid>` mid-stream → TUI reconnects → `ResumeResponseFrame(replay_count=N)` + N replayed frames with original `frame_seq` preserved → user continues without re-issuing query. Validated by `resume.integration.test.ts` (bun) + `test_resume_handshake.py` (pytest) 9-scenario matrix from `contracts/resume-handshake.contract.md` § 7.
 
-- [ ] T021 [US1] Implement `ResumeManager.handle_resume_request()` in `src/kosmos/ipc/resume_manager.py` — validates session existence, token match, `last_seen_frame_seq >= oldest_in_ring`; emits `ResumeResponseFrame` with `resumed_from_frame_seq = last_seen + 1`.
-- [ ] T022 [US1] Implement 5-value rejection enum + `ResumeRejectedFrame` emission in `src/kosmos/ipc/resume_manager.py`: `ring_evicted`, `session_unknown`, `token_mismatch`, `protocol_incompatible`, `session_expired` (FR-021/022/023 + contract § 3).
-- [ ] T023 [US1] Implement 3-strike blacklist in `src/kosmos/ipc/resume_manager.py` (FR-025) — same `session_id` failing resume 3× consecutively enters blacklist; subsequent resume_request returns `session_unknown` without touching ring buffer.
-- [ ] T024 [US1] Wire heartbeat ↔ resume coupling in `src/kosmos/ipc/heartbeat.py`: 45s silence → `ErrorFrame(code="peer_dead")` + keep ring buffer for 120s grace window; grace-window expiry → GC ring buffer (contract § 5).
-- [ ] T025 [US1] Implement TUI reconnect loop in `tui/src/ipc/bridge.ts` — EOF detection → exponential backoff reconnect → emit `ResumeRequestFrame` as first frame (fresh outbound `frame_seq=0`) → track `applied_frame_seqs: Set<number>` for replay dedup.
-- [ ] T026 [US1] Implement `tui/src/ipc/crash-detector.ts` — listen for stdin EOF / `EPIPE` errors → signal bridge.ts to enter reconnect state without prompting user.
-- [ ] T027 [US1] Author `tests/ipc/test_resume_handshake.py` — all 9 scenarios from `contracts/resume-handshake.contract.md` § 7 (happy path, fresh-TUI, ring_evicted, token_mismatch, session_unknown, double resume, during backpressure, heartbeat grace recover, heartbeat grace expire).
-- [ ] T028 [US1] Author `tests/ipc/test_resume_blacklist.py` — 3-strike blacklist behavior + reset semantics on successful handshake.
-- [ ] T029 [US1] Author `tests/ipc/test_heartbeat_timeout.py` — 45s dead threshold, 120s grace window, `HeartbeatFrame` ping/pong symmetry.
-- [ ] T030 [US1] Author `tests/ipc/test_ring_buffer.py` — `deque(maxlen=256)` overflow eviction, `.consumed` marker replay gating, `ring_evicted(last_seen_seq)` boolean correctness.
-- [ ] T031 [US1] Author `tui/tests/ipc/resume.integration.test.ts` — bun end-to-end against synthetic backend: kill stdin after N frames → reconnect → assert replay_count correct + applied_frame_seqs dedup prevents double-application.
+- [X] T021 [US1] Implement `ResumeManager.handle_resume_request()` in `src/kosmos/ipc/resume_manager.py` — validates session existence, token match, `last_seen_frame_seq >= oldest_in_ring`; emits `ResumeResponseFrame` with `resumed_from_frame_seq = last_seen + 1`.
+- [X] T022 [US1] Implement 5-value rejection enum + `ResumeRejectedFrame` emission in `src/kosmos/ipc/resume_manager.py`: `ring_evicted`, `session_unknown`, `token_mismatch`, `protocol_incompatible`, `session_expired` (FR-021/022/023 + contract § 3).
+- [X] T023 [US1] Implement 3-strike blacklist in `src/kosmos/ipc/resume_manager.py` (FR-025) — same `session_id` failing resume 3× consecutively enters blacklist; subsequent resume_request returns `session_unknown` without touching ring buffer.
+- [X] T024 [US1] Wire heartbeat ↔ resume coupling in `src/kosmos/ipc/heartbeat.py`: 45s silence → `ErrorFrame(code="peer_dead")` + keep ring buffer for 120s grace window; grace-window expiry → GC ring buffer (contract § 5).
+- [X] T025 [US1] Implement TUI reconnect loop in `tui/src/ipc/bridge.ts` — EOF detection → exponential backoff reconnect → emit `ResumeRequestFrame` as first frame (fresh outbound `frame_seq=0`) → track `applied_frame_seqs: Set<number>` for replay dedup.
+- [X] T026 [US1] Implement `tui/src/ipc/crash-detector.ts` — listen for stdin EOF / `EPIPE` errors → signal bridge.ts to enter reconnect state without prompting user.
+- [X] T027 [US1] Author `tests/ipc/test_resume_handshake.py` — all 9 scenarios from `contracts/resume-handshake.contract.md` § 7 (happy path, fresh-TUI, ring_evicted, token_mismatch, session_unknown, double resume, during backpressure, heartbeat grace recover, heartbeat grace expire).
+- [X] T028 [US1] Author `tests/ipc/test_resume_blacklist.py` — 3-strike blacklist behavior + reset semantics on successful handshake.
+- [X] T029 [US1] Author `tests/ipc/test_heartbeat_timeout.py` — 45s dead threshold, 120s grace window, `HeartbeatFrame` ping/pong symmetry.
+- [X] T030 [US1] Author `tests/ipc/test_ring_buffer.py` — `deque(maxlen=256)` overflow eviction, `.consumed` marker replay gating, `ring_evicted(last_seen_seq)` boolean correctness.
+- [X] T031 [US1] Author `tui/tests/ipc/resume.integration.test.ts` — bun end-to-end against synthetic backend: kill stdin after N frames → reconnect → assert replay_count correct + applied_frame_seqs dedup prevents double-application.
 
 **Checkpoint**: US1 deliverable complete — MVP scope satisfied. Team may stop here and demo resume semantics.
 
@@ -113,14 +113,14 @@ description: "Task list for Spec 032 — IPC stdio hardening"
 
 **Independent Test**: Same `transaction_id` submitted twice → first call executes + writes `ToolCallAuditRecord(status="ok")`, second call cache-hits + writes `ToolCallAuditRecord(status="dedup_hit")`, response byte-equal. Validated by `test_tx_dedup.py::test_double_submit_hits_cache`.
 
-- [ ] T040 [US3] Integrate `TransactionLRU` into `ToolExecutor` dispatch in `src/kosmos/ipc/tx_cache.py` + executor call-site — Stripe 3-step (lookup → execute on miss → record with pin for irreversible) per `contracts/tx-dedup.contract.md` § 2.2.
-- [ ] T041 [US3] Enforce LRU pin on `AdapterRegistration.is_irreversible=true` in `src/kosmos/ipc/tx_cache.py` — pinned entries never evicted; non-pinned overflow evicts FIFO oldest.
-- [ ] T042 [US3] Implement cached-response round-trip in `src/kosmos/ipc/tx_cache.py` — `entry.cached_response = response.model_dump(mode="json")` on record, `ToolCallResponse.model_validate(...)` on replay (contract § 2.5).
-- [ ] T043 [US3] Wire Spec 024 audit coupling in `src/kosmos/ipc/tx_cache.py` — write `ToolCallAuditRecord(status="ok"|"error")` on miss, `status="dedup_hit"` with reference to original `correlation_id` on hit (contract § 2.7).
-- [ ] T044 [US3] Implement `tui/src/ipc/tx-registry.ts` — client-side UUIDv7 minting on user submit, persistence for retry idempotency until response received (no re-mint on duplicate click).
-- [ ] T045 [US3] Author `tests/ipc/test_tx_cache_lru.py` — capacity 512, FIFO eviction of non-pinned, pinned never evicted, 513-pinned operational-limit scenario documented.
-- [ ] T046 [US3] Author `tests/ipc/test_tx_irreversible_pin.py` — `is_irreversible=true` auto-pins on record, pin survives resume replay (cache survives session-drop).
-- [ ] T047 [US3] Author `tests/ipc/test_tx_dedup.py` — `test_double_submit_hits_cache`, `test_cache_state_span_attribute` (asserts `kosmos.ipc.tx.cache_state="hit"`), `test_distinct_tx_id_no_dedup`, `test_reversible_tool_bypasses_cache`.
+- [X] T040 [US3] Integrate `TransactionLRU` into `ToolExecutor` dispatch in `src/kosmos/ipc/tx_cache.py` + executor call-site — Stripe 3-step (lookup → execute on miss → record with pin for irreversible) per `contracts/tx-dedup.contract.md` § 2.2.
+- [X] T041 [US3] Enforce LRU pin on `AdapterRegistration.is_irreversible=true` in `src/kosmos/ipc/tx_cache.py` — pinned entries never evicted; non-pinned overflow evicts FIFO oldest.
+- [X] T042 [US3] Implement cached-response round-trip in `src/kosmos/ipc/tx_cache.py` — `entry.cached_response = response.model_dump(mode="json")` on record, `ToolCallResponse.model_validate(...)` on replay (contract § 2.5).
+- [X] T043 [US3] Wire Spec 024 audit coupling in `src/kosmos/ipc/tx_cache.py` — write `ToolCallAuditRecord(status="ok"|"error")` on miss, `status="dedup_hit"` with reference to original `correlation_id` on hit (contract § 2.7).
+- [X] T044 [US3] Implement `tui/src/ipc/tx-registry.ts` — client-side UUIDv7 minting on user submit, persistence for retry idempotency until response received (no re-mint on duplicate click).
+- [X] T045 [US3] Author `tests/ipc/test_tx_cache_lru.py` — capacity 512, FIFO eviction of non-pinned, pinned never evicted, 513-pinned operational-limit scenario documented.
+- [X] T046 [US3] Author `tests/ipc/test_tx_irreversible_pin.py` — `is_irreversible=true` auto-pins on record, pin survives resume replay (cache survives session-drop).
+- [X] T047 [US3] Author `tests/ipc/test_tx_dedup.py` — `test_double_submit_hits_cache`, `test_cache_state_span_attribute` (asserts `kosmos.ipc.tx.cache_state="hit"`), `test_distinct_tx_id_no_dedup`, `test_reversible_tool_bypasses_cache`.
 
 **Checkpoint**: US3 complete — PIPA §26 duplicate-submission safeguard operational.
 

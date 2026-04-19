@@ -210,6 +210,51 @@ class HeartbeatState:
     # Introspection
     # ------------------------------------------------------------------
 
+    # ------------------------------------------------------------------
+    # Resume ↔ heartbeat coupling (T024, contract § 5)
+    # ------------------------------------------------------------------
+
+    def notify_resume_success(self) -> None:
+        """Signal that a resume handshake succeeded within the grace window.
+
+        Resets ``dead_declared`` so the session re-enters the HEALTHY state
+        and normal heartbeat pinging resumes.  Called by ``ResumeManager``
+        after a successful ``ResumeResponseFrame`` is emitted.
+        """
+        if self.dead_declared:
+            logger.info(
+                "heartbeat.resume_cancelled_teardown",
+                extra={"session_id": self.session_id},
+            )
+            self.dead_declared = False
+            self.dead_declared_ts = None
+        # Treat resume as an implicit liveness proof.
+        self.last_peer_ping_ts = datetime.now(tz=UTC)
+
+    def should_gc_ring(self, now: datetime | None = None) -> bool:
+        """Return True when the grace window has expired and the ring may be GC'd.
+
+        The ring buffer MUST NOT be garbage-collected while in GRACE state.
+        Only when ``should_gc_ring()`` is True should the caller drop the
+        ``SessionRingBuffer`` (contract § 5: grace-window expiry → GC ring).
+
+        Args:
+            now: Current wall-clock time (injectable for tests).
+
+        Returns:
+            True only when ``dead_declared=True`` AND the grace window has
+            elapsed; False in all other cases.
+        """
+        if not self.dead_declared or self.dead_declared_ts is None:
+            return False
+        current = now or datetime.now(tz=UTC)
+        elapsed_grace_ms = (current - self.dead_declared_ts).total_seconds() * 1000
+        return elapsed_grace_ms >= self._settings.heartbeat_grace_ms
+
+    # ------------------------------------------------------------------
+    # Introspection
+    # ------------------------------------------------------------------
+
     def __repr__(self) -> str:  # pragma: no cover
         return (
             f"HeartbeatState(session_id={self.session_id!r}, "
