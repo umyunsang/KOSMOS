@@ -201,8 +201,10 @@ async def test_transaction_id_present_only_on_irreversible_tool_call(
     ipc_spans = [s for s in mem_exporter.get_finished_spans() if s.name == "kosmos.ipc.frame"]
     assert len(ipc_spans) == 2
 
-    by_kind = {dict(s.attributes or {}).get("kosmos.frame.kind"): dict(s.attributes or {})
-               for s in ipc_spans}
+    by_kind = {
+        dict(s.attributes or {}).get("kosmos.frame.kind"): dict(s.attributes or {})
+        for s in ipc_spans
+    }
 
     tool_attrs = by_kind["tool_call"]
     assert tool_attrs.get(KOSMOS_IPC_TRANSACTION_ID) == tx_id

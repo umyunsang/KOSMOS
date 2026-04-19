@@ -141,10 +141,7 @@ class TestCacheStateSpanAttribute:
             _dispatch(_make_executor(_success_response()), transaction_id="tx-span-miss")
 
         # Extract all set_attribute calls
-        calls = {
-            call.args[0]: call.args[1]
-            for call in mock_span.set_attribute.call_args_list
-        }
+        calls = {call.args[0]: call.args[1] for call in mock_span.set_attribute.call_args_list}
         assert calls.get("kosmos.ipc.tx.cache_state") == "miss"
 
     def test_hit_sets_span_attribute(self) -> None:
@@ -178,10 +175,7 @@ class TestCacheStateSpanAttribute:
                 is_irreversible=True,
             )
 
-        calls = {
-            call.args[0]: call.args[1]
-            for call in mock_span.set_attribute.call_args_list
-        }
+        calls = {call.args[0]: call.args[1] for call in mock_span.set_attribute.call_args_list}
         assert calls.get("kosmos.ipc.tx.cache_state") == "hit"
 
     def test_bypass_sets_span_attribute(self) -> None:
@@ -198,10 +192,7 @@ class TestCacheStateSpanAttribute:
                 transaction_id=None,
             )
 
-        calls = {
-            call.args[0]: call.args[1]
-            for call in mock_span.set_attribute.call_args_list
-        }
+        calls = {call.args[0]: call.args[1] for call in mock_span.set_attribute.call_args_list}
         assert calls.get("kosmos.ipc.tx.cache_state") == "bypass"
 
 

@@ -29,9 +29,7 @@ from kosmos.ipc.frame_schema import ipc_frame_json_schema
 # ---------------------------------------------------------------------------
 
 _WORKTREE_ROOT = pathlib.Path(__file__).parent.parent.parent
-_COMMITTED_SCHEMA_PATH = (
-    _WORKTREE_ROOT / "tui" / "src" / "ipc" / "schema" / "frame.schema.json"
-)
+_COMMITTED_SCHEMA_PATH = _WORKTREE_ROOT / "tui" / "src" / "ipc" / "schema" / "frame.schema.json"
 
 # Expected number of frame arms (Spec 287 baseline 10 + Spec 032 additions 9)
 _EXPECTED_KIND_COUNT = 19
@@ -107,9 +105,7 @@ class TestSchemaParity:
 
     def test_committed_schema_has_19_kinds(self) -> None:
         """Committed JSON schema file exposes exactly 19 discriminator kinds."""
-        committed_schema = json.loads(
-            _COMMITTED_SCHEMA_PATH.read_text(encoding="utf-8")
-        )
+        committed_schema = json.loads(_COMMITTED_SCHEMA_PATH.read_text(encoding="utf-8"))
         kinds = _extract_kinds_from_schema(committed_schema)
         assert len(kinds) == _EXPECTED_KIND_COUNT, (
             f"Committed schema: expected {_EXPECTED_KIND_COUNT} kinds, "
@@ -171,9 +167,7 @@ class TestSchemaParity:
             "heartbeat",
             "notification_push",
         }
-        committed_schema = json.loads(
-            _COMMITTED_SCHEMA_PATH.read_text(encoding="utf-8")
-        )
+        committed_schema = json.loads(_COMMITTED_SCHEMA_PATH.read_text(encoding="utf-8"))
         committed_kinds = _extract_kinds_from_schema(committed_schema)
         missing = expected_kinds - committed_kinds
         extra = committed_kinds - expected_kinds
@@ -181,9 +175,7 @@ class TestSchemaParity:
             f"Kinds missing from committed schema: {sorted(missing)}. "
             "Run `cd tui && bun run gen:ipc` to regenerate."
         )
-        assert not extra, (
-            f"Unexpected kinds in committed schema: {sorted(extra)}."
-        )
+        assert not extra, f"Unexpected kinds in committed schema: {sorted(extra)}."
 
     def test_python_and_committed_schemas_are_structurally_equivalent(self) -> None:
         """Python-generated and committed schemas have identical discriminator structure.
@@ -197,9 +189,7 @@ class TestSchemaParity:
         test_schema_normalised_equality test below.
         """
         live_schema = ipc_frame_json_schema()
-        committed_schema = json.loads(
-            _COMMITTED_SCHEMA_PATH.read_text(encoding="utf-8")
-        )
+        committed_schema = json.loads(_COMMITTED_SCHEMA_PATH.read_text(encoding="utf-8"))
 
         live_kinds = _extract_kinds_from_schema(live_schema)
         committed_kinds = _extract_kinds_from_schema(committed_schema)
@@ -231,9 +221,7 @@ class TestSchemaParity:
         and committing the result.
         """
         live_schema = ipc_frame_json_schema()
-        committed_schema = json.loads(
-            _COMMITTED_SCHEMA_PATH.read_text(encoding="utf-8")
-        )
+        committed_schema = json.loads(_COMMITTED_SCHEMA_PATH.read_text(encoding="utf-8"))
 
         live_normalised = _normalise(live_schema)
         committed_normalised = _normalise(committed_schema)
@@ -248,8 +236,9 @@ class TestSchemaParity:
             top_diff = live_top_keys.symmetric_difference(committed_top_keys)
 
             diff_hint = (
-                f"Top-level key diff: {sorted(top_diff)}" if top_diff else
-                "Top-level keys match; divergence is in nested values"
+                f"Top-level key diff: {sorted(top_diff)}"
+                if top_diff
+                else "Top-level keys match; divergence is in nested values"
             )
 
             pytest.fail(

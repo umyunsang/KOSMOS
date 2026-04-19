@@ -230,9 +230,14 @@ describe('BackpressureHud', () => {
 
   // -------------------------------------------------------------------------
   // Test 7: SC-003 render budget — p95 < 16 ms
+  //
+  // Gated behind KOSMOS_PERF_GATE=1 because wall-clock p95 measurements are
+  // flaky on shared CI runners under concurrent load; the assertion still
+  // runs locally (set the env var) and on dedicated perf runners.
   // -------------------------------------------------------------------------
 
-  test('SC-003: render p95 under 16 ms', () => {
+  const perfGateEnabled = process.env.KOSMOS_PERF_GATE === '1'
+  test.skipIf(!perfGateEnabled)('SC-003: render p95 under 16 ms', () => {
     const frame = makeThrottleFrame(15000)
     const ITERATIONS = 100
     const times: number[] = []

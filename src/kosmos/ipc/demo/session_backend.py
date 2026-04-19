@@ -112,7 +112,7 @@ async def _read_resume_request(session_id: str) -> ResumeRequestFrame | None:
                 session_id,
             )
             continue
-        return frame  # type: ignore[return-value]
+        return frame
 
 
 async def run(args: argparse.Namespace) -> int:
@@ -160,7 +160,7 @@ async def run(args: argparse.Namespace) -> int:
         new_correlation_id=_new_uuidv7(),
         ts=_ts(),
     )
-    _write(result.response)  # type: ignore[arg-type]
+    _write(result.response)
     for replayed in result.replay_frames:
         _write(replayed)  # type: ignore[arg-type]
 

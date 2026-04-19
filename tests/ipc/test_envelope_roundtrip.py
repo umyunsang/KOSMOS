@@ -11,12 +11,11 @@ Tests:
 from __future__ import annotations
 
 import json
-from typing import Any
 
 import pytest
 from pydantic import TypeAdapter, ValidationError
 
-from kosmos.ipc.envelope import emit_ndjson, escape_newlines_in_payload, parse_ndjson_line
+from kosmos.ipc.envelope import emit_ndjson, parse_ndjson_line
 from kosmos.ipc.frame_schema import (
     AssistantChunkFrame,
     BackpressureSignalFrame,
@@ -61,19 +60,27 @@ ALL_FRAMES: list[IPCFrame] = [
     UserInputFrame(**_BASE, role="tui", kind="user_input", text="서울 강남구 응급실 병상"),
     # 2. assistant_chunk
     AssistantChunkFrame(
-        **_BASE, role="backend", kind="assistant_chunk",
-        message_id="msg-001", delta="안녕하세요", done=False
+        **_BASE,
+        role="backend",
+        kind="assistant_chunk",
+        message_id="msg-001",
+        delta="안녕하세요",
+        done=False,
     ),
     # 3. tool_call
     ToolCallFrame(
-        **_BASE, role="backend", kind="tool_call",
-        call_id="call-001", name="lookup",
-        arguments={"mode": "fetch", "tool_id": "kma_forecast"}
+        **_BASE,
+        role="backend",
+        kind="tool_call",
+        call_id="call-001",
+        name="lookup",
+        arguments={"mode": "fetch", "tool_id": "kma_forecast"},
     ),
     # 4. tool_result
     ToolResultFrame(
         **{**_BASE, "trailer": FrameTrailer(final=True)},
-        role="backend", kind="tool_result",
+        role="backend",
+        kind="tool_result",
         call_id="call-001",
         envelope=ToolResultEnvelope(kind="lookup", data=[]),
     ),
@@ -81,91 +88,112 @@ ALL_FRAMES: list[IPCFrame] = [
     CoordinatorPhaseFrame(**_BASE, role="backend", kind="coordinator_phase", phase="Research"),
     # 6. worker_status
     WorkerStatusFrame(
-        **_BASE, role="backend", kind="worker_status",
-        worker_id="w1", role_id="transport-specialist",
-        current_primitive="lookup", status="running"
+        **_BASE,
+        role="backend",
+        kind="worker_status",
+        worker_id="w1",
+        role_id="transport-specialist",
+        current_primitive="lookup",
+        status="running",
     ),
     # 7. permission_request
     PermissionRequestFrame(
-        **_BASE, role="backend", kind="permission_request",
-        request_id="req-001", worker_id="w1",
+        **_BASE,
+        role="backend",
+        kind="permission_request",
+        request_id="req-001",
+        worker_id="w1",
         primitive_kind="submit",
         description_ko="민원 제출 허가 요청",
         description_en="Permission to submit civil petition",
-        risk_level="high"
+        risk_level="high",
     ),
     # 8. permission_response
     PermissionResponseFrame(
-        **_BASE, role="tui", kind="permission_response",
-        request_id="req-001", decision="granted"
+        **_BASE, role="tui", kind="permission_response", request_id="req-001", decision="granted"
     ),
     # 9. session_event
-    SessionEventFrame(
-        **_BASE, role="tui", kind="session_event",
-        event="new", payload={}
-    ),
+    SessionEventFrame(**_BASE, role="tui", kind="session_event", event="new", payload={}),
     # 10. error
     ErrorFrame(
         **{**_BASE, "trailer": FrameTrailer(final=True)},
-        role="backend", kind="error",
-        code="backend_crash", message="Internal error", details={},
+        role="backend",
+        kind="error",
+        code="backend_crash",
+        message="Internal error",
+        details={},
     ),
     # 11. payload_start
     PayloadStartFrame(
-        **_BASE, role="backend", kind="payload_start",
-        content_type="text/markdown", estimated_bytes=None
+        **_BASE,
+        role="backend",
+        kind="payload_start",
+        content_type="text/markdown",
+        estimated_bytes=None,
     ),
     # 12. payload_delta
     PayloadDeltaFrame(
-        **_BASE, role="backend", kind="payload_delta",
-        delta_seq=0, payload="서울 강남구"
+        **_BASE, role="backend", kind="payload_delta", delta_seq=0, payload="서울 강남구"
     ),
     # 13. payload_end
     PayloadEndFrame(
         **{**_BASE, "trailer": FrameTrailer(final=True)},
-        role="backend", kind="payload_end",
-        delta_count=1, status="ok",
+        role="backend",
+        kind="payload_end",
+        delta_count=1,
+        status="ok",
     ),
     # 14. backpressure
     BackpressureSignalFrame(
-        **_BASE, role="backend", kind="backpressure",
-        signal="pause", source="backend_writer",
-        queue_depth=64, hwm=64,
+        **_BASE,
+        role="backend",
+        kind="backpressure",
+        signal="pause",
+        source="backend_writer",
+        queue_depth=64,
+        hwm=64,
         hud_copy_ko="서비스 조절 중입니다",
-        hud_copy_en="Service is throttled"
+        hud_copy_en="Service is throttled",
     ),
     # 15. resume_request
     ResumeRequestFrame(
-        **_BASE, role="tui", kind="resume_request",
-        last_seen_correlation_id=None, last_seen_frame_seq=None,
-        tui_session_token="tok-abc"
+        **_BASE,
+        role="tui",
+        kind="resume_request",
+        last_seen_correlation_id=None,
+        last_seen_frame_seq=None,
+        tui_session_token="tok-abc",
     ),
     # 16. resume_response
     ResumeResponseFrame(
         **{**_BASE, "trailer": FrameTrailer(final=True)},
-        role="backend", kind="resume_response",
-        resumed_from_frame_seq=0, replay_count=0,
+        role="backend",
+        kind="resume_response",
+        resumed_from_frame_seq=0,
+        replay_count=0,
         server_session_id="sess-0001",
         heartbeat_interval_ms=30000,
     ),
     # 17. resume_rejected
     ResumeRejectedFrame(
         **{**_BASE, "trailer": FrameTrailer(final=True)},
-        role="backend", kind="resume_rejected",
+        role="backend",
+        kind="resume_rejected",
         reason="session_unknown",
         detail="세션을 찾을 수 없습니다. 새 세션을 시작해 주세요.",
     ),
     # 18. heartbeat
-    HeartbeatFrame(
-        **_BASE, role="backend", kind="heartbeat",
-        direction="ping", peer_frame_seq=42
-    ),
+    HeartbeatFrame(**_BASE, role="backend", kind="heartbeat", direction="ping", peer_frame_seq=42),
     # 19. notification_push
     NotificationPushFrame(
-        **_BASE, role="notification", kind="notification_push",
-        subscription_id="sub-001", adapter_id="disaster_alert_cbs_push",
-        event_guid="event-guid-001", payload_content_type="text/plain",
-        payload="재난 경보: 서울시 강남구 폭우 경보"
+        **_BASE,
+        role="notification",
+        kind="notification_push",
+        subscription_id="sub-001",
+        adapter_id="disaster_alert_cbs_push",
+        event_guid="event-guid-001",
+        payload_content_type="text/plain",
+        payload="재난 경보: 서울시 강남구 폭우 경보",
     ),
 ]
 
@@ -220,12 +248,25 @@ def test_schema_has_all_19_kinds() -> None:
     schema = ipc_frame_json_schema()
 
     expected_kinds = {
-        "user_input", "assistant_chunk", "tool_call", "tool_result",
-        "coordinator_phase", "worker_status", "permission_request",
-        "permission_response", "session_event", "error",
-        "payload_start", "payload_delta", "payload_end",
-        "backpressure", "resume_request", "resume_response",
-        "resume_rejected", "heartbeat", "notification_push",
+        "user_input",
+        "assistant_chunk",
+        "tool_call",
+        "tool_result",
+        "coordinator_phase",
+        "worker_status",
+        "permission_request",
+        "permission_response",
+        "session_event",
+        "error",
+        "payload_start",
+        "payload_delta",
+        "payload_end",
+        "backpressure",
+        "resume_request",
+        "resume_response",
+        "resume_rejected",
+        "heartbeat",
+        "notification_push",
     }
 
     # Pydantic generates a oneOf + discriminator schema
@@ -248,9 +289,13 @@ def test_e1_version_hard_fail() -> None:
     """version != '1.0' must be rejected (E1)."""
     raw = {
         "version": "2.0",  # invalid
-        "session_id": "s1", "correlation_id": "c1",
-        "ts": "2026-04-19T12:00:00Z", "role": "tui",
-        "frame_seq": 0, "kind": "user_input", "text": "hi"
+        "session_id": "s1",
+        "correlation_id": "c1",
+        "ts": "2026-04-19T12:00:00Z",
+        "role": "tui",
+        "frame_seq": 0,
+        "kind": "user_input",
+        "text": "hi",
     }
     with pytest.raises(ValidationError, match="version"):
         _ADAPTER.validate_python(raw)
@@ -265,7 +310,8 @@ def test_e3_role_kind_mismatch_rejected() -> None:
     """role not in the allow-list for a kind must raise ValidationError (E3)."""
     raw = {
         "version": "1.0",
-        "session_id": "s1", "correlation_id": "c1",
+        "session_id": "s1",
+        "correlation_id": "c1",
         "ts": "2026-04-19T12:00:00Z",
         "frame_seq": 0,
         "role": "tool",  # invalid for resume_request (must be tui)
@@ -280,14 +326,17 @@ def test_e3_notification_push_requires_notification_role() -> None:
     """notification_push must have role='notification' (E3)."""
     raw = {
         "version": "1.0",
-        "session_id": "s1", "correlation_id": "c1",
+        "session_id": "s1",
+        "correlation_id": "c1",
         "ts": "2026-04-19T12:00:00Z",
         "frame_seq": 0,
         "role": "backend",  # invalid — must be "notification"
         "kind": "notification_push",
-        "subscription_id": "sub-1", "adapter_id": "a1",
+        "subscription_id": "sub-1",
+        "adapter_id": "a1",
         "event_guid": "guid-1",
-        "payload_content_type": "text/plain", "payload": "test"
+        "payload_content_type": "text/plain",
+        "payload": "test",
     }
     with pytest.raises(ValidationError, match="role"):
         _ADAPTER.validate_python(raw)
@@ -302,9 +351,13 @@ def test_e5_empty_correlation_id_rejected() -> None:
     """correlation_id='' must raise ValidationError (E5)."""
     raw = {
         "version": "1.0",
-        "session_id": "s1", "correlation_id": "",  # empty — invalid
-        "ts": "2026-04-19T12:00:00Z", "role": "tui",
-        "frame_seq": 0, "kind": "user_input", "text": "hi"
+        "session_id": "s1",
+        "correlation_id": "",  # empty — invalid
+        "ts": "2026-04-19T12:00:00Z",
+        "role": "tui",
+        "frame_seq": 0,
+        "kind": "user_input",
+        "text": "hi",
     }
     with pytest.raises(ValidationError, match="correlation_id"):
         _ADAPTER.validate_python(raw)
@@ -319,11 +372,14 @@ def test_e6_trailer_final_on_non_terminal_kind_rejected() -> None:
     """trailer.final=True on a non-terminal kind (e.g., heartbeat) must fail (E6)."""
     raw = {
         "version": "1.0",
-        "session_id": "s1", "correlation_id": "c1",
-        "ts": "2026-04-19T12:00:00Z", "role": "backend",
+        "session_id": "s1",
+        "correlation_id": "c1",
+        "ts": "2026-04-19T12:00:00Z",
+        "role": "backend",
         "frame_seq": 0,
         "kind": "heartbeat",
-        "direction": "ping", "peer_frame_seq": 0,
+        "direction": "ping",
+        "peer_frame_seq": 0,
         "trailer": {"final": True},  # invalid — heartbeat is not terminal
     }
     with pytest.raises(ValidationError, match="trailer"):
@@ -334,11 +390,14 @@ def test_e6_trailer_final_on_terminal_kind_allowed() -> None:
     """trailer.final=True on payload_end is allowed (E6)."""
     raw = {
         "version": "1.0",
-        "session_id": "s1", "correlation_id": "c1",
-        "ts": "2026-04-19T12:00:00Z", "role": "backend",
+        "session_id": "s1",
+        "correlation_id": "c1",
+        "ts": "2026-04-19T12:00:00Z",
+        "role": "backend",
         "frame_seq": 0,
         "kind": "payload_end",
-        "delta_count": 3, "status": "ok",
+        "delta_count": 3,
+        "status": "ok",
         "trailer": {"final": True},
     }
     frame = _ADAPTER.validate_python(raw)
@@ -356,11 +415,16 @@ def test_backpressure_empty_hud_copy_ko_rejected() -> None:
     """hud_copy_ko='' must fail (FR-015, min_length=1)."""
     raw = {
         "version": "1.0",
-        "session_id": "s1", "correlation_id": "c1",
-        "ts": "2026-04-19T12:00:00Z", "role": "backend",
-        "frame_seq": 0, "kind": "backpressure",
-        "signal": "pause", "source": "backend_writer",
-        "queue_depth": 64, "hwm": 64,
+        "session_id": "s1",
+        "correlation_id": "c1",
+        "ts": "2026-04-19T12:00:00Z",
+        "role": "backend",
+        "frame_seq": 0,
+        "kind": "backpressure",
+        "signal": "pause",
+        "source": "backend_writer",
+        "queue_depth": 64,
+        "hwm": 64,
         "hud_copy_ko": "",  # invalid
         "hud_copy_en": "congested",
     }
@@ -372,11 +436,16 @@ def test_backpressure_empty_hud_copy_en_rejected() -> None:
     """hud_copy_en='' must fail (FR-015, min_length=1)."""
     raw = {
         "version": "1.0",
-        "session_id": "s1", "correlation_id": "c1",
-        "ts": "2026-04-19T12:00:00Z", "role": "backend",
-        "frame_seq": 0, "kind": "backpressure",
-        "signal": "pause", "source": "backend_writer",
-        "queue_depth": 64, "hwm": 64,
+        "session_id": "s1",
+        "correlation_id": "c1",
+        "ts": "2026-04-19T12:00:00Z",
+        "role": "backend",
+        "frame_seq": 0,
+        "kind": "backpressure",
+        "signal": "pause",
+        "source": "backend_writer",
+        "queue_depth": 64,
+        "hwm": 64,
         "hud_copy_ko": "혼잡",
         "hud_copy_en": "",  # invalid
     }
@@ -390,35 +459,29 @@ def test_backpressure_empty_hud_copy_en_rejected() -> None:
 
 
 def test_ndjson_payload_newline_escape() -> None:
-    """A payload containing a literal newline must be escaped in NDJSON output."""
+    """A payload containing a literal newline must round-trip as a real newline.
+
+    ``json.dumps`` escapes ``\\n`` to the two-character JSON sequence ``\\n``
+    so each frame occupies exactly one terminal-``\\n`` NDJSON line (FR-009),
+    AND the receiver's ``parse_ndjson_line`` decodes it back to a real newline
+    (no double-escape corruption).
+    """
     frame = PayloadDeltaFrame(
-        **_BASE, role="backend", kind="payload_delta",
-        delta_seq=0, payload="line1\nline2"
+        **_BASE, role="backend", kind="payload_delta", delta_seq=0, payload="line1\nline2"
     )
     ndjson_line = emit_ndjson(frame)
 
-    # The emitted line must be a single JSON line
-    lines = ndjson_line.split("\n")
-    non_empty = [line for line in lines if line.strip()]
-    assert len(non_empty) == 1, (
-        "Payload with \\n should produce exactly one NDJSON line"
+    # The emitted line must be a single NDJSON line terminated by a single "\n".
+    assert ndjson_line.endswith("\n")
+    assert ndjson_line.count("\n") == 1, (
+        f"Expected exactly one terminal newline, got {ndjson_line.count(chr(10))}"
     )
 
-
-def test_escape_newlines_recursive() -> None:
-    """escape_newlines_in_payload handles nested dicts/lists."""
-    obj: Any = {
-        "text": "hello\nworld",
-        "nested": {"inner": "foo\nbar"},
-        "list": ["a\nb", "c"],
-        "num": 42,
-    }
-    result = escape_newlines_in_payload(obj)
-    assert result["text"] == "hello\\nworld"
-    assert result["nested"]["inner"] == "foo\\nbar"
-    assert result["list"][0] == "a\\nb"
-    assert result["list"][1] == "c"
-    assert result["num"] == 42
+    # Round-trip: the receiver sees the ORIGINAL newline, not a literal "\\n".
+    decoded = parse_ndjson_line(ndjson_line)
+    assert decoded is not None
+    assert decoded.kind == "payload_delta"
+    assert decoded.payload == "line1\nline2"  # type: ignore[attr-defined]
 
 
 # ---------------------------------------------------------------------------

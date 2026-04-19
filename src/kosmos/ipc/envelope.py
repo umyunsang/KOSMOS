@@ -3,11 +3,12 @@
 
 Responsibilities:
 - ``emit_ndjson(frame)``: serialise an IPCFrame to a single NDJSON line ending
-  with ``\\n``.  Payload-internal newlines are JSON-escaped.
+  with ``\\n``.  ``json.dumps`` natively escapes newlines in string values to
+  the two-character JSON sequence ``\\n`` (FR-009), so no pre-processing is
+  required — a pre-escape step would double-encode and corrupt multi-line
+  payloads on the receiver.
 - ``parse_ndjson_line(line)``: parse one NDJSON line into a validated IPCFrame.
   Fail-closed: malformed JSON or schema violations return None + log error.
-- ``escape_newlines_in_payload(obj)``: recursively replace bare ``\\n`` in
-  string values with ``\\\\n`` so NDJSON line integrity is preserved (FR-009).
 - ``attach_envelope_span_attributes(frame, *, tx_cache_state)``: promote envelope
   ``correlation_id`` / ``transaction_id`` / ``tx.cache_state`` to the current OTEL
   span (Spec 032 T048 / FR-053).
@@ -21,7 +22,7 @@ import hashlib
 import json
 import logging
 from pathlib import Path
-from typing import Any, Literal
+from typing import Literal
 
 from opentelemetry import trace
 from pydantic import TypeAdapter, ValidationError
@@ -43,33 +44,6 @@ logger = logging.getLogger(__name__)
 _IPC_ADAPTER: TypeAdapter[IPCFrame] = TypeAdapter(IPCFrame)
 
 # ---------------------------------------------------------------------------
-# Newline escape
-# ---------------------------------------------------------------------------
-
-
-def escape_newlines_in_payload(obj: Any) -> Any:
-    """Recursively replace bare '\\n' with '\\\\n' in all string leaf values.
-
-    This ensures that payload text containing newlines does not break NDJSON
-    line integrity (FR-009).  The resulting object is still valid JSON when
-    serialised — ``\\\\n`` decodes back to ``\\n`` on the receiver.
-
-    Args:
-        obj: Any JSON-serialisable Python value.
-
-    Returns:
-        A new value with all string leaves having bare newlines escaped.
-    """
-    if isinstance(obj, str):
-        return obj.replace("\n", "\\n")
-    if isinstance(obj, dict):
-        return {k: escape_newlines_in_payload(v) for k, v in obj.items()}
-    if isinstance(obj, list):
-        return [escape_newlines_in_payload(item) for item in obj]
-    return obj
-
-
-# ---------------------------------------------------------------------------
 # Emit
 # ---------------------------------------------------------------------------
 
@@ -77,8 +51,11 @@ def escape_newlines_in_payload(obj: Any) -> Any:
 def emit_ndjson(frame: IPCFrame) -> str:
     """Serialise *frame* to a single NDJSON line terminated by ``\\n``.
 
-    Payload string values that contain bare newlines are escaped before
-    serialisation so that each frame occupies exactly one line (FR-009).
+    ``json.dumps`` escapes bare newlines in string values to the two-character
+    JSON sequence ``\\n`` automatically, so the emitted line is guaranteed to
+    contain exactly one terminal ``\\n`` (FR-009) without any pre-processing.
+    Pre-escaping would cause the receiver's ``json.loads`` to yield a literal
+    backslash-n string in place of the original newline.
 
     Args:
         frame: A validated IPCFrame instance.
@@ -86,9 +63,7 @@ def emit_ndjson(frame: IPCFrame) -> str:
     Returns:
         A JSON string ending with a single ``\\n``.
     """
-    raw_dict = frame.model_dump(mode="json")
-    safe_dict = escape_newlines_in_payload(raw_dict)
-    return json.dumps(safe_dict, ensure_ascii=False) + "\n"
+    return json.dumps(frame.model_dump(mode="json"), ensure_ascii=False) + "\n"
 
 
 # ---------------------------------------------------------------------------
@@ -133,9 +108,7 @@ def parse_ndjson_line(line: str) -> IPCFrame | None:
             extra={
                 "error": str(exc),
                 "kind": (
-                    parsed.get("kind", "<unknown>")
-                    if isinstance(parsed, dict)
-                    else "<non-dict>"
+                    parsed.get("kind", "<unknown>") if isinstance(parsed, dict) else "<non-dict>"
                 ),
             },
         )
@@ -254,7 +227,6 @@ def emit_schema_hash_resource_attribute(schema_path: Path | None = None) -> str 
 __all__ = [
     "emit_ndjson",
     "parse_ndjson_line",
-    "escape_newlines_in_payload",
     "compute_schema_file_hash",
     "attach_envelope_span_attributes",
     "emit_schema_hash_resource_attribute",

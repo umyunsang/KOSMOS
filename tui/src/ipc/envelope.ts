@@ -8,9 +8,12 @@
 //   - makeUUIDv7(): mint a fresh UUIDv7 string using crypto.randomUUID() +
 //     millisecond-precision timestamp prepend (no new deps, AGENTS.md hard rule).
 //   - makeTrailer(): build a FrameTrailer object for terminal frames.
-//   - escapeNewlines(): escape bare \n in string values before JSON serialisation
-//     so NDJSON line integrity is maintained (FR-009).
 //   - makeBaseEnvelope(): convenience factory for the shared envelope fields.
+//
+// NDJSON line integrity (FR-009) is guaranteed by ``JSON.stringify`` alone —
+// it escapes bare "\n" to the two-character JSON sequence "\\n" natively, so
+// each frame occupies exactly one line.  A pre-escape step would double-encode
+// and corrupt multi-line payloads on the receiver.
 
 import type { FrameTrailer } from './frames.generated'
 
@@ -57,32 +60,6 @@ export function makeUUIDv7(): string {
     raw.slice(24)                 // lower 48 bits random
 
   return result
-}
-
-// ---------------------------------------------------------------------------
-// Newline escape (FR-009)
-// ---------------------------------------------------------------------------
-
-/**
- * Recursively escape bare ``\n`` in string leaf values so that NDJSON lines
- * stay single-line after JSON.stringify().  The resulting JSON is valid —
- * ``\\n`` decodes back to ``\n`` on the receiver.
- */
-export function escapeNewlines(obj: unknown): unknown {
-  if (typeof obj === 'string') {
-    return obj.replace(/\n/g, '\\n')
-  }
-  if (Array.isArray(obj)) {
-    return obj.map(escapeNewlines)
-  }
-  if (obj !== null && typeof obj === 'object') {
-    const result: Record<string, unknown> = {}
-    for (const [k, v] of Object.entries(obj as Record<string, unknown>)) {
-      result[k] = escapeNewlines(v)
-    }
-    return result
-  }
-  return obj
 }
 
 // ---------------------------------------------------------------------------

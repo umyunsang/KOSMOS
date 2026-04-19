@@ -75,7 +75,7 @@ def test_pause_emitted_at_hwm(ctrl: BackpressureController) -> None:
 
 def test_no_duplicate_pause_above_hwm(ctrl: BackpressureController) -> None:
     """Second tick at depth=65 (already paused) must be no-op."""
-    ctrl.tick(depth=64, source="backend_writer")   # pauses
+    ctrl.tick(depth=64, source="backend_writer")  # pauses
     result = ctrl.tick(depth=65, source="backend_writer")  # already paused → no-op
     assert result is None
 
@@ -87,7 +87,7 @@ def test_no_duplicate_pause_above_hwm(ctrl: BackpressureController) -> None:
 
 def test_resume_emitted_after_drain(ctrl: BackpressureController) -> None:
     """After pause, draining to depth=31 (< 32) emits resume."""
-    ctrl.tick(depth=64, source="backend_writer")   # pause
+    ctrl.tick(depth=64, source="backend_writer")  # pause
     result = ctrl.tick(depth=31, source="backend_writer")
     assert result is not None
     assert result.signal == "resume"
@@ -108,7 +108,7 @@ def test_resume_at_exact_threshold(ctrl: BackpressureController) -> None:
 def test_no_duplicate_resume(ctrl: BackpressureController) -> None:
     """Second drain call (already resumed) must be no-op."""
     ctrl.tick(depth=64, source="backend_writer")
-    ctrl.tick(depth=31, source="backend_writer")   # resume
+    ctrl.tick(depth=31, source="backend_writer")  # resume
     result = ctrl.tick(depth=20, source="backend_writer")  # already resumed → no-op
     assert result is None
 
@@ -139,9 +139,7 @@ def test_hysteresis_oscillation_emits_at_most_one_pause(ctrl: BackpressureContro
 
     # Count pause signals
     pause_count = signals.count("pause")
-    assert pause_count <= 1, (
-        f"Expected at most 1 pause, got {pause_count}. Signals: {signals}"
-    )
+    assert pause_count <= 1, f"Expected at most 1 pause, got {pause_count}. Signals: {signals}"
 
 
 def test_hysteresis_band_no_op(ctrl: BackpressureController) -> None:

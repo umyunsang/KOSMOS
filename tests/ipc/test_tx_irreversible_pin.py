@@ -161,9 +161,7 @@ class TestPinSurvivesResumeReplay:
         sessions = ["sess-alpha", "sess-beta"]
         for sess in sessions:
             for i in range(3):
-                lru.record(
-                    _entry(f"tx-{i}", session_id=sess, is_irreversible=True)
-                )
+                lru.record(_entry(f"tx-{i}", session_id=sess, is_irreversible=True))
 
         # 6 irreversible entries total, across 2 sessions
         assert lru.pinned_count == 6

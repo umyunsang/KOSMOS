@@ -211,6 +211,7 @@ RESUME_ATTEMPT="$count" "${BUN_BIN}" run "${backendScript}"
 
     const collectFrames = async () => {
       for await (const frame of bridge.frames()) {
+        if (frame.kind === undefined) continue
         collectedKinds.push(frame.kind)
         if (frame.kind === 'resume_response') {
           resumeResponse = frame

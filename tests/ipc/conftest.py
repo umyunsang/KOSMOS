@@ -66,11 +66,11 @@ class UUIDv7Factory:
         # determinism.  uuid.uuid7() is Python 3.13+; we use uuid4 random bits
         # and overwrite the timestamp prefix (same approach as envelope.ts).
         now_ms = int(time.time() * 1000)
-        ts_hex = f"{now_ms:012x}"          # 48-bit timestamp as 12 hex chars
+        ts_hex = f"{now_ms:012x}"  # 48-bit timestamp as 12 hex chars
         counter_hex = f"{self._counter:012x}"
         # UUIDv7 layout: xxxxxxxx-xxxx-7xxx-yxxx-xxxxxxxxxxxx
         # Positions 0-7 and 9-12 are the 48-bit timestamp prefix.
-        raw = uuid.uuid4().hex             # 32 hex chars, no hyphens
+        raw = uuid.uuid4().hex  # 32 hex chars, no hyphens
         # Replace first 12 hex chars (48 bits) with timestamp, version nibble,
         # and last 12 with counter for determinism.
         deterministic_hex = ts_hex + "7" + raw[13:20] + counter_hex

@@ -59,7 +59,7 @@ _DEFAULT_HWM: int = int(os.environ.get("KOSMOS_IPC_HWM", "64"))
 _RESUME_THRESHOLD_DIVISOR: int = 2  # resume at HWM / 2 = 32
 
 # Retry-After clamp bounds (seconds after conversion to ms)
-_RETRY_AFTER_MS_MIN: int = 1000   # 1 s
+_RETRY_AFTER_MS_MIN: int = 1000  # 1 s
 _RETRY_AFTER_MS_MAX: int = 900_000  # 900 s = 15 min
 
 
@@ -236,13 +236,10 @@ class BackpressureController:
                 ``emit_upstream_429()`` instead).
         """
         if source == "upstream_429":
-            raise ValueError(
-                "Use emit_upstream_429() for upstream_429 source, not tick()."
-            )
+            raise ValueError("Use emit_upstream_429() for upstream_429 source, not tick().")
         if source not in self._paused:
             raise ValueError(
-                f"Unknown source {source!r}. "
-                f"Valid sources: {sorted(self._paused.keys())}"
+                f"Unknown source {source!r}. Valid sources: {sorted(self._paused.keys())}"
             )
 
         _ts = ts or datetime.now(tz=UTC).isoformat()
@@ -375,12 +372,8 @@ class BackpressureController:
         retry_after_s = retry_after_ms // 1000
         _ts = ts or datetime.now(tz=UTC).isoformat()
 
-        hud_copy_ko = (
-            f"부처 API가 혼잡합니다. {retry_after_s}초 후 자동 재시도합니다."
-        )
-        hud_copy_en = (
-            f"Ministry API rate-limited. Retrying in {retry_after_s}s."
-        )
+        hud_copy_ko = f"부처 API가 혼잡합니다. {retry_after_s}초 후 자동 재시도합니다."
+        hud_copy_en = f"Ministry API rate-limited. Retrying in {retry_after_s}s."
 
         frame = BackpressureSignalFrame(
             session_id=self._session_id,

@@ -419,9 +419,7 @@ class PayloadDeltaFrame(_BaseFrame):
     kind: Literal["payload_delta"] = Field(
         default="payload_delta", description="Frame discriminator."
     )
-    delta_seq: NonNegativeInt = Field(
-        description="Monotonic within the payload (first delta = 0)."
-    )
+    delta_seq: NonNegativeInt = Field(description="Monotonic within the payload (first delta = 0).")
     payload: str = Field(
         description=(
             "UTF-8 text. If content-type is application/json, "
@@ -443,9 +441,7 @@ class PayloadEndFrame(_BaseFrame):
     """
 
     kind: Literal["payload_end"] = Field(default="payload_end", description="Frame discriminator.")
-    delta_count: NonNegativeInt = Field(
-        description="Total number of payload_delta frames emitted."
-    )
+    delta_count: NonNegativeInt = Field(description="Total number of payload_delta frames emitted.")
     status: Literal["ok", "aborted"] = Field(description="Terminal disposition.")
 
 
@@ -586,9 +582,7 @@ class HeartbeatFrame(_BaseFrame):
     """
 
     kind: Literal["heartbeat"] = Field(default="heartbeat", description="Frame discriminator.")
-    direction: Literal["ping", "pong"] = Field(
-        description="ping from sender, pong from receiver."
-    )
+    direction: Literal["ping", "pong"] = Field(description="ping from sender, pong from receiver.")
     peer_frame_seq: NonNegativeInt = Field(
         description="Sender's current outbound frame_seq high-water."
     )
@@ -609,21 +603,13 @@ class NotificationPushFrame(_BaseFrame):
     kind: Literal["notification_push"] = Field(
         default="notification_push", description="Frame discriminator."
     )
-    subscription_id: str = Field(
-        description="Handle from Spec 031 subscribe registration."
-    )
-    adapter_id: str = Field(
-        description="e.g., disaster_alert_cbs_push, rss_newsroom_subscribe."
-    )
-    event_guid: str = Field(
-        description="RSS guid or CBS event hash for duplicate suppression."
-    )
+    subscription_id: str = Field(description="Handle from Spec 031 subscribe registration.")
+    adapter_id: str = Field(description="e.g., disaster_alert_cbs_push, rss_newsroom_subscribe.")
+    event_guid: str = Field(description="RSS guid or CBS event hash for duplicate suppression.")
     payload_content_type: Literal["text/plain", "application/json"] = Field(
         description="Inline payload MIME."
     )
-    payload: str = Field(
-        description="Inline notification content (Korean for civic users)."
-    )
+    payload: str = Field(description="Inline notification content (Korean for civic users).")
 
 
 # ---------------------------------------------------------------------------

@@ -186,9 +186,7 @@ def test_upstream_429_en_copy_contains_retry_time() -> None:
 
 
 @pytest.mark.parametrize("signal", ["pause", "resume", "throttle"])
-def test_all_signal_types_carry_bilingual_copy(
-    ctrl: BackpressureController, signal: str
-) -> None:
+def test_all_signal_types_carry_bilingual_copy(ctrl: BackpressureController, signal: str) -> None:
     """Every signal type (pause/resume/throttle) must carry bilingual HUD copy."""
     if signal == "pause":
         frame = ctrl.tick(depth=64, source="backend_writer")

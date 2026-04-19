@@ -61,7 +61,7 @@ def _malformed_variants() -> list[str]:
     """
     return [
         # 1. Lexical breakage — unbalanced braces
-        'this is not json{{{\n',
+        "this is not json{{{\n",
         # 2. Lexical breakage — truncated string literal
         '{"kind": "user_input", "text": "unterminated\n',
         # 3. Schema violation — missing required envelope fields
@@ -189,8 +189,7 @@ def test_ndjson_stream_fail_closed_5pct_malformed(
         and r.message in {"ipc.parse.json_error", "ipc.parse.schema_error"}
     ]
     assert len(parse_error_records) == MALFORMED_COUNT, (
-        f"expected {MALFORMED_COUNT} structured drop logs, "
-        f"got {len(parse_error_records)}"
+        f"expected {MALFORMED_COUNT} structured drop logs, got {len(parse_error_records)}"
     )
 
     # 4. Both error branches were exercised (json vs schema).
@@ -228,8 +227,7 @@ def test_ndjson_stream_preserves_frame_seq_order() -> None:
     parsed_ok: list[IPCFrame] = [
         frame
         for index, line in enumerate(lines)
-        if index not in malformed_indices
-        and (frame := parse_ndjson_line(line)) is not None
+        if index not in malformed_indices and (frame := parse_ndjson_line(line)) is not None
     ]
 
     assert len(parsed_ok) == VALID_COUNT
@@ -237,11 +235,7 @@ def test_ndjson_stream_preserves_frame_seq_order() -> None:
     expected_seqs = list(range(VALID_COUNT))
     actual_seqs = [frame.frame_seq for frame in parsed_ok]
     first_mismatch = next(
-        (
-            i
-            for i, (a, e) in enumerate(zip(actual_seqs, expected_seqs, strict=True))
-            if a != e
-        ),
+        (i for i, (a, e) in enumerate(zip(actual_seqs, expected_seqs, strict=True)) if a != e),
         -1,
     )
     assert actual_seqs == expected_seqs, (

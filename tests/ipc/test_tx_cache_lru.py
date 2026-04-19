@@ -215,8 +215,8 @@ class TestPinInvariants:
 
         # One more — overflows non-pinned quota, evicts oldest non-pinned (tx-a)
         lru.record(_make_entry("tx-d"))
-        assert lru.get(SESSION, "tx-a") is None       # evicted
-        assert lru.get(SESSION, "tx-b") is not None   # still pinned
+        assert lru.get(SESSION, "tx-a") is None  # evicted
+        assert lru.get(SESSION, "tx-b") is not None  # still pinned
 
     def test_pin_nonexistent_key_is_noop(self) -> None:
         """Pinning a key that is not in cache must not raise."""

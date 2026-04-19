@@ -230,8 +230,7 @@ def test_critical_lane_p95_latency_and_ordering_under_pause() -> None:
         else:
             elapsed = time.perf_counter_ns() - start
             assert label == "non_critical", (
-                f"critical frame did not raise at seq={frame.frame_seq} — "
-                f"FR-017 bypass missed"
+                f"critical frame did not raise at seq={frame.frame_seq} — FR-017 bypass missed"
             )
             non_critical_queued.append(frame.frame_seq)
 

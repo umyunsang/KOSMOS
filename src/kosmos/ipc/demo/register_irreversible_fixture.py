@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 
 def main(argv: list[str] | None = None) -> int:
     _ = argv  # reserved for future --variant flags
-    from kosmos.primitives.submit import AdapterIdCollisionError
+    from kosmos.tools.errors import AdapterIdCollisionError
 
     try:
         import kosmos.tools.mock.mydata.welfare_application as welfare

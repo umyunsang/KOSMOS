@@ -42,7 +42,6 @@ import type {
   HeartbeatFrame,
   NotificationPushFrame,
 } from './frames.generated'
-import { escapeNewlines } from './envelope'
 
 // ---------------------------------------------------------------------------
 // Zod schemas (belt-and-braces atop generated TypeScript types)
@@ -323,12 +322,13 @@ export type DecodeResult = DecodeSuccess | DecodeError
 /**
  * Serialise *frame* to a JSON string terminated by a single newline.
  *
- * Payload string values containing bare ``\n`` are escaped before
- * serialisation so each frame occupies exactly one line (FR-009).
+ * ``JSON.stringify`` escapes bare ``\n`` in string values to the two-character
+ * JSON sequence ``\\n`` natively, so each frame occupies exactly one line
+ * (FR-009).  A pre-escape step would double-encode and leave receivers with a
+ * literal backslash-n in place of the original newline.
  */
 export function encodeFrame(frame: IPCFrame): string {
-  const safe = escapeNewlines(frame)
-  return JSON.stringify(safe) + '\n'
+  return JSON.stringify(frame) + '\n'
 }
 
 /**
