@@ -360,7 +360,9 @@ async def test_sc8_phase2_multi_ministry_ipc_frame_sequence() -> None:  # noqa: 
         if event.type == "tool_use" and event.tool_name in primitive_names:
             frame = ToolCallFrame(
                 session_id=session_id,
+                correlation_id=str(uuid.uuid4()),
                 ts=_make_ts(),
+                role="backend",
                 kind="tool_call",
                 call_id=event.tool_call_id or str(uuid.uuid4()),
                 name=event.tool_name,  # type: ignore[arg-type]
@@ -379,7 +381,9 @@ async def test_sc8_phase2_multi_ministry_ipc_frame_sequence() -> None:  # noqa: 
             envelope = ToolResultEnvelope(kind=envelope_kind)  # type: ignore[arg-type]
             result_frame = ToolResultFrame(
                 session_id=session_id,
+                correlation_id=str(uuid.uuid4()),
                 ts=_make_ts(),
+                role="backend",
                 kind="tool_result",
                 call_id=str(uuid.uuid4()),
                 envelope=envelope,
@@ -389,7 +393,9 @@ async def test_sc8_phase2_multi_ministry_ipc_frame_sequence() -> None:  # noqa: 
         elif event.type == "text_delta" and event.content:
             chunk = AssistantChunkFrame(
                 session_id=session_id,
+                correlation_id=str(uuid.uuid4()),
                 ts=_make_ts(),
+                role="backend",
                 kind="assistant_chunk",
                 message_id=str(uuid.uuid4()),
                 delta=event.content,
@@ -400,7 +406,9 @@ async def test_sc8_phase2_multi_ministry_ipc_frame_sequence() -> None:  # noqa: 
     # Add terminal chunk
     terminal = AssistantChunkFrame(
         session_id=session_id,
+        correlation_id=str(uuid.uuid4()),
         ts=_make_ts(),
+        role="backend",
         kind="assistant_chunk",
         message_id=str(uuid.uuid4()),
         delta="",
