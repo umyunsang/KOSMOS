@@ -40,7 +40,9 @@ def _get_session_dir() -> Path:
     modifying the user's home directory.
     """
     env_override = os.environ.get("KOSMOS_SESSION_DIR", "").strip()
-    session_dir = Path(env_override) if env_override else _DEFAULT_SESSION_DIR
+    session_dir = (
+        Path(env_override).expanduser() if env_override else _DEFAULT_SESSION_DIR
+    )
     session_dir.mkdir(parents=True, exist_ok=True)
     return session_dir
 

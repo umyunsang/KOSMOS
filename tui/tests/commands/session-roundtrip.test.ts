@@ -4,11 +4,11 @@
 //         and surface acknowledgements to the user via i18n strings.
 //
 // Test strategy:
-//   1. /save  → exactly one session_event{event:"save"} frame, ack = en.cmdSaveAck
-//   2. /sessions → exactly one session_event{event:"list"} frame, ack = en.cmdSessionsAck
+//   1. /save  → exactly one session_event{event:"save"} frame, ack = i18n.cmdSaveAck
+//   2. /sessions → exactly one session_event{event:"list"} frame, ack = i18n.cmdSessionsAck
 //              → simulate backend SESSION_EVENT list reply; assert payload shape
 //   3. /resume abc123 → one session_event{event:"resume", payload:{id:"abc123"}} frame,
-//                       ack = en.cmdResumeAck("abc123")
+//                       ack = i18n.cmdResumeAck("abc123")
 //              → simulate backend SESSION_EVENT load reply; assert store populated
 
 import { describe, it, expect, beforeEach } from 'bun:test'
@@ -16,7 +16,7 @@ import { buildDefaultRegistry, dispatchCommand } from '../../src/commands'
 import type { SendFrame } from '../../src/commands/types'
 import type { SessionEventFrame } from '../../src/ipc/frames.generated'
 import { dispatchSessionAction, getSessionSnapshot } from '../../src/store/session-store'
-import en from '../../src/i18n/en'
+import { i18n } from '../../src/i18n'
 
 // ---------------------------------------------------------------------------
 // Spy factory — captures emitted frames for assertion
@@ -54,7 +54,7 @@ describe('/save round-trip (FR-038)', () => {
     expect(frame.kind).toBe('session_event')
     expect(frame.event).toBe('save')
     expect(frame.payload).toEqual({})
-    expect(result.acknowledgement).toBe(en.cmdSaveAck)
+    expect(result.acknowledgement).toBe(i18n.cmdSaveAck)
     expect(result.renderHelp).not.toBe(true)
   })
 })
@@ -75,7 +75,7 @@ describe('/sessions round-trip (FR-038)', () => {
     expect(frame.kind).toBe('session_event')
     expect(frame.event).toBe('list')
     expect(frame.payload).toEqual({})
-    expect(result.acknowledgement).toBe(en.cmdSessionsAck)
+    expect(result.acknowledgement).toBe(i18n.cmdSessionsAck)
   })
 
   it('simulated backend list reply — payload shape is valid', () => {
@@ -121,7 +121,7 @@ describe('/resume round-trip (FR-038)', () => {
     expect(frame.kind).toBe('session_event')
     expect(frame.event).toBe('resume')
     expect((frame.payload as Record<string, unknown>)['id']).toBe('abc123')
-    expect(result.acknowledgement).toBe(en.cmdResumeAck('abc123'))
+    expect(result.acknowledgement).toBe(i18n.cmdResumeAck('abc123'))
     expect(result.renderHelp).not.toBe(true)
   })
 
@@ -162,6 +162,6 @@ describe('/resume round-trip (FR-038)', () => {
     const result = await dispatchCommand('/resume', registry, sendFrame)
 
     expect(captured).toHaveLength(0)
-    expect(result.acknowledgement).toBe(en.cmdResumeMissingId)
+    expect(result.acknowledgement).toBe(i18n.cmdResumeMissingId)
   })
 })

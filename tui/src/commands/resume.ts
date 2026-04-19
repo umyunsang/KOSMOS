@@ -2,13 +2,13 @@
 // Emits session_event IPC frame with event="resume" and payload={id: sessionId}.
 
 import type { CommandDefinition, CommandHandlerArgs, CommandResult } from './types'
-import en from '../i18n/en'
+import { i18n } from '../i18n'
 
 function handle({ args, sendFrame }: CommandHandlerArgs): CommandResult {
   const sessionId = args.trim()
   if (!sessionId) {
     return {
-      acknowledgement: en.cmdResumeMissingId,
+      acknowledgement: i18n.cmdResumeMissingId,
     }
   }
 
@@ -21,7 +21,7 @@ function handle({ args, sendFrame }: CommandHandlerArgs): CommandResult {
     event: 'resume',
     payload: { id: sessionId },
   })
-  return { acknowledgement: en.cmdResumeAck(sessionId) }
+  return { acknowledgement: i18n.cmdResumeAck(sessionId) }
 }
 
 const resumeCommand: CommandDefinition = {

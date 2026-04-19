@@ -38,8 +38,8 @@ _PROJECT_ROOT = Path(__file__).parent.parent.parent
 
 
 def _ts() -> str:
-    return datetime.now(tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.") + \
-           f"{datetime.now(tz=timezone.utc).microsecond // 1000:03d}Z"
+    now = datetime.now(tz=timezone.utc)
+    return now.strftime("%Y-%m-%dT%H:%M:%S.") + f"{now.microsecond // 1000:03d}Z"
 
 
 def _encode(frame: IPCFrame) -> bytes:

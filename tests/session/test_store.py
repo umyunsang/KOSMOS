@@ -11,6 +11,7 @@ import pytest
 
 from kosmos.session.models import SessionEntry, SessionMetadata
 from kosmos.session.store import (
+    _get_session_dir,
     create_session,
     delete_session,
     get_session_metadata,
@@ -258,3 +259,42 @@ class TestUpdateSessionMetadata:
         # Should still have both the (updated) metadata and the message entry
         assert len(entries) == 2
         assert entries[1].data["content"] == "hello"
+
+
+# ---------------------------------------------------------------------------
+# KOSMOS_SESSION_DIR tilde expansion
+# ---------------------------------------------------------------------------
+
+
+class TestSessionDirTildeExpansion:
+    """Verify that KOSMOS_SESSION_DIR values containing '~' are expanded."""
+
+    def test_tilde_in_env_var_is_expanded(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
+        """_get_session_dir must call expanduser() so '~' paths resolve correctly.
+
+        We redirect home to tmp_path so the test never touches the real
+        home directory, then set KOSMOS_SESSION_DIR to a '~/...' string.
+        The returned path must be an absolute directory under tmp_path,
+        not a literal path starting with '~'.
+        """
+        # Point HOME at tmp_path so Path("~").expanduser() resolves to tmp_path
+        monkeypatch.setenv("HOME", str(tmp_path))
+        monkeypatch.setenv("KOSMOS_SESSION_DIR", "~/kosmos-test-sess")
+
+        result = _get_session_dir()
+
+        # The resolved path must be absolute and not start with '~'
+        assert result.is_absolute(), f"Expected absolute path, got {result}"
+        assert not str(result).startswith("~"), (
+            f"'~' was not expanded — got {result}"
+        )
+        # The directory must have been created by _get_session_dir
+        assert result.exists() and result.is_dir(), (
+            f"Directory was not created at {result}"
+        )
+        # And it should live under tmp_path (since HOME=tmp_path)
+        assert str(result).startswith(str(tmp_path)), (
+            f"Expected path under {tmp_path}, got {result}"
+        )

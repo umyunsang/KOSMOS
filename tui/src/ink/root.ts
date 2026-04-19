@@ -152,7 +152,14 @@ export async function createRoot({
 
   return {
     render: node => instance.render(node),
-    unmount: () => instance.unmount(),
+    unmount: () => {
+      instance.unmount()
+      // Only remove the map entry if it still points to this root's instance,
+      // so we don't delete a newer root's entry registered against the same stdout.
+      if (instances.get(stdout) === instance) {
+        instances.delete(stdout)
+      }
+    },
     waitUntilExit: () => instance.waitUntilExit(),
   }
 }

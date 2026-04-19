@@ -3,7 +3,7 @@
 // Backend streams back session metadata in a matching session_event list payload.
 
 import type { CommandDefinition, CommandHandlerArgs, CommandResult } from './types'
-import en from '../i18n/en'
+import { i18n } from '../i18n'
 
 function handle({ sendFrame }: CommandHandlerArgs): CommandResult {
   const now = new Date().toISOString()
@@ -15,7 +15,7 @@ function handle({ sendFrame }: CommandHandlerArgs): CommandResult {
     event: 'list',
     payload: {},
   })
-  return { acknowledgement: en.cmdSessionsAck }
+  return { acknowledgement: i18n.cmdSessionsAck }
 }
 
 const sessionsCommand: CommandDefinition = {

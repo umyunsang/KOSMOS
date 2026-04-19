@@ -11,6 +11,7 @@ const en: I18nBundle = {
   cmdResumeAck: (sessionId) => `Resuming session ${sessionId}\u2026`,
   cmdResumeMissingId: 'Usage: /resume <session-id>',
   cmdNewAck: 'Starting new session\u2026',
+  cmdHandlerFailed: (name, message) => `/${name} failed: ${message}`,
   helpTitle: 'KOSMOS slash commands',
   helpUsage: 'Type /<command> [args]',
   permissionPromptTitle: 'Permission required',

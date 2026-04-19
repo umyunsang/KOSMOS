@@ -11,6 +11,7 @@ const ko: I18nBundle = {
   cmdResumeAck: (sessionId) => `\uc138\uc158 ${sessionId}\uc744(\ub97c) \uc7ac\uac1c\ud558\ub294 \uc911\u2026`,
   cmdResumeMissingId: '\uc0ac\uc6a9\ubc95: /resume <\uc138\uc158-ID>',
   cmdNewAck: '\uc0c8 \uc138\uc158\uc744 \uc2dc\uc791\ud558\ub294 \uc911\u2026',
+  cmdHandlerFailed: (name, message) => `/${name} \uc2e4\ud589 \uc2e4\ud328: ${message}`,
   helpTitle: 'KOSMOS \uc2ac\ub798\uc2dc \uba85\ub839',
   helpUsage: '/<\uba85\ub839> [\uc778\uc218]\ub97c \uc785\ub825\ud558\uc138\uc694',
   permissionPromptTitle: '\uad8c\ud55c\uc774 \ud544\uc694\ud569\ub2c8\ub2e4',

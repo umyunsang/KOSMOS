@@ -3,6 +3,7 @@
 // All KOSMOS-domain logic (IPC frames, session events, help renderer) is original.
 
 import type { CommandDefinition, CommandHandlerArgs, CommandResult, SendFrame } from './types'
+import { i18n } from '../i18n'
 
 // ---------------------------------------------------------------------------
 // CommandRegistry
@@ -135,7 +136,7 @@ export async function dispatchCommand(
   if (!def) {
     return {
       commandName: name,
-      acknowledgement: `Unknown command: /${name}`,
+      acknowledgement: i18n.commandNotFound(name),
       renderHelp: true,
     }
   }
@@ -149,7 +150,7 @@ export async function dispatchCommand(
     const message = err instanceof Error ? err.message : String(err)
     return {
       commandName: name,
-      acknowledgement: `/${name} failed: ${message}`,
+      acknowledgement: i18n.cmdHandlerFailed(name, message),
     }
   }
 }

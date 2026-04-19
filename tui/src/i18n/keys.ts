@@ -14,6 +14,7 @@ export interface I18nBundle {
   cmdResumeAck: (sessionId: string) => string;
   cmdResumeMissingId: string;
   cmdNewAck: string;
+  cmdHandlerFailed: (name: string, message: string) => string;
 
   // Help view labels
   helpTitle: string;

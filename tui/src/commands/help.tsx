@@ -4,7 +4,7 @@
 
 import { Box, Text } from 'ink'
 import { useTheme } from '../theme/provider'
-import en from '../i18n/en'
+import { useI18n } from '../i18n'
 import type { CommandDefinition } from './types.ts'
 
 // ---------------------------------------------------------------------------
@@ -37,6 +37,7 @@ export interface HelpViewProps {
  */
 export function HelpView({ commands, errorBanner }: HelpViewProps) {
   const theme = useTheme()
+  const i18n = useI18n()
 
   return (
     <Box flexDirection="column" paddingY={1}>
@@ -51,13 +52,13 @@ export function HelpView({ commands, errorBanner }: HelpViewProps) {
       {/* Title */}
       <Box marginBottom={1}>
         <Text bold color={theme.claude}>
-          {en.helpTitle}
+          {i18n.helpTitle}
         </Text>
       </Box>
 
       {/* Usage line */}
       <Box marginBottom={1}>
-        <Text color={theme.subtle}>{en.helpUsage}</Text>
+        <Text color={theme.subtle}>{i18n.helpUsage}</Text>
       </Box>
 
       {/* Command list */}

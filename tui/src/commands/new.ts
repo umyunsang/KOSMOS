@@ -3,7 +3,7 @@
 // The session store's SESSION_EVENT "new" arm clears state (data-model.md § 3.2).
 
 import type { CommandDefinition, CommandHandlerArgs, CommandResult } from './types'
-import en from '../i18n/en'
+import { i18n } from '../i18n'
 
 function handle({ sendFrame }: CommandHandlerArgs): CommandResult {
   const now = new Date().toISOString()
@@ -16,7 +16,7 @@ function handle({ sendFrame }: CommandHandlerArgs): CommandResult {
     payload: {},
   })
   // Store is cleared via the SESSION_EVENT "new" reducer in session-store.ts
-  return { acknowledgement: en.cmdNewAck }
+  return { acknowledgement: i18n.cmdNewAck }
 }
 
 const newCommand: CommandDefinition = {
