@@ -49,21 +49,31 @@ SYNTHESISED_ARMS: frozenset[str] = frozenset(
 
 _TS = "2025-01-01T00:00:00Z"
 _SESSION_ID = "01HNMJ1Z000000000000000000"  # valid ULID-format string
+# Spec 032: correlation_id is now required (min_length=1); use a canonical UUIDv7-format value.
+_CORRELATION_ID = "019da5b0-e60d-71a0-a393-000000000001"
 
 # ---------------------------------------------------------------------------
 # Minimal valid examples per arm
 # ---------------------------------------------------------------------------
 
+# Spec 032 adds required fields `correlation_id` (non-empty str) and `role` to
+# _BaseFrame.  All minimal examples must include them so existing round-trip
+# tests stay green after the schema extension.
+
 _MINIMAL_EXAMPLES: dict[str, dict[str, Any]] = {
     "user_input": {
         "kind": "user_input",
         "session_id": _SESSION_ID,
+        "correlation_id": _CORRELATION_ID,
+        "role": "tui",
         "ts": _TS,
         "text": "안녕하세요",
     },
     "assistant_chunk": {
         "kind": "assistant_chunk",
         "session_id": _SESSION_ID,
+        "correlation_id": _CORRELATION_ID,
+        "role": "backend",
         "ts": _TS,
         "message_id": "01HNMJ2Z000000000000000001",
         "delta": "안녕",
@@ -72,6 +82,8 @@ _MINIMAL_EXAMPLES: dict[str, dict[str, Any]] = {
     "tool_call": {
         "kind": "tool_call",
         "session_id": _SESSION_ID,
+        "correlation_id": _CORRELATION_ID,
+        "role": "backend",
         "ts": _TS,
         "call_id": "01HNMJ3Z000000000000000002",
         "name": "lookup",
@@ -80,6 +92,8 @@ _MINIMAL_EXAMPLES: dict[str, dict[str, Any]] = {
     "tool_result": {
         "kind": "tool_result",
         "session_id": _SESSION_ID,
+        "correlation_id": _CORRELATION_ID,
+        "role": "backend",
         "ts": _TS,
         "call_id": "01HNMJ3Z000000000000000002",
         "envelope": {"kind": "lookup"},
@@ -87,12 +101,16 @@ _MINIMAL_EXAMPLES: dict[str, dict[str, Any]] = {
     "coordinator_phase": {
         "kind": "coordinator_phase",
         "session_id": _SESSION_ID,
+        "correlation_id": _CORRELATION_ID,
+        "role": "backend",
         "ts": _TS,
         "phase": "Research",
     },
     "worker_status": {
         "kind": "worker_status",
         "session_id": _SESSION_ID,
+        "correlation_id": _CORRELATION_ID,
+        "role": "backend",
         "ts": _TS,
         "worker_id": "worker-001",
         "role_id": "transport-specialist",
@@ -102,6 +120,8 @@ _MINIMAL_EXAMPLES: dict[str, dict[str, Any]] = {
     "permission_request": {
         "kind": "permission_request",
         "session_id": _SESSION_ID,
+        "correlation_id": _CORRELATION_ID,
+        "role": "backend",
         "ts": _TS,
         "request_id": "01HNMJ4Z000000000000000003",
         "worker_id": "worker-001",
@@ -113,6 +133,8 @@ _MINIMAL_EXAMPLES: dict[str, dict[str, Any]] = {
     "permission_response": {
         "kind": "permission_response",
         "session_id": _SESSION_ID,
+        "correlation_id": _CORRELATION_ID,
+        "role": "tui",
         "ts": _TS,
         "request_id": "01HNMJ4Z000000000000000003",
         "decision": "granted",
@@ -120,6 +142,8 @@ _MINIMAL_EXAMPLES: dict[str, dict[str, Any]] = {
     "session_event": {
         "kind": "session_event",
         "session_id": _SESSION_ID,
+        "correlation_id": _CORRELATION_ID,
+        "role": "tui",
         "ts": _TS,
         "event": "save",
         "payload": {},
@@ -127,6 +151,8 @@ _MINIMAL_EXAMPLES: dict[str, dict[str, Any]] = {
     "error": {
         "kind": "error",
         "session_id": _SESSION_ID,
+        "correlation_id": _CORRELATION_ID,
+        "role": "backend",
         "ts": _TS,
         "code": "backend_crash",
         "message": "Unexpected backend error",
@@ -179,13 +205,22 @@ def test_arm_kind_field(arm: str) -> None:
 
 
 def test_json_schema_contains_all_discriminators() -> None:
-    """ipc_frame_json_schema() exposes all 10 discriminator values."""
+    """ipc_frame_json_schema() exposes all 19 discriminator values (Spec 032 extended).
+
+    The _EXPECTED_ARMS set covers the original 10 Spec 287 baseline arms.
+    Spec 032 adds 9 more; we verify a superset relationship so the test is
+    forwards-compatible with future arm additions.
+    """
     schema = ipc_frame_json_schema()
     discriminator = schema.get("discriminator", {})
     mapping = discriminator.get("mapping", {})
     found = frozenset(mapping.keys())
-    assert found == _EXPECTED_ARMS, (
-        f"Missing arms: {_EXPECTED_ARMS - found}; unexpected: {found - _EXPECTED_ARMS}"
+    assert _EXPECTED_ARMS.issubset(found), (
+        f"Missing baseline arms: {_EXPECTED_ARMS - found}"
+    )
+    # Spec 032 added 9 new arms; total must be at least 19.
+    assert len(found) >= 19, (
+        f"Expected at least 19 discriminator kinds, got {len(found)}: {sorted(found)}"
     )
 
 
@@ -261,15 +296,28 @@ def test_extra_field_rejected() -> None:
 
 
 # ---------------------------------------------------------------------------
-# Tests: optional correlation_id
+# Tests: correlation_id (Spec 032: now required, non-empty string)
 # ---------------------------------------------------------------------------
 
 
-def test_correlation_id_null_accepted() -> None:
-    """correlation_id=null is accepted on any arm."""
+def test_correlation_id_null_rejected() -> None:
+    """correlation_id=null is REJECTED by Spec 032 (E5: min_length=1, required).
+
+    Pre-Spec-032 behaviour was to accept null; after the schema extension,
+    correlation_id must be a non-empty string on every frame.
+    """
     payload = dict(_MINIMAL_EXAMPLES["assistant_chunk"])
     payload["correlation_id"] = None
-    _validate_roundtrip(payload)
+    with pytest.raises(ValidationError):
+        _validate_roundtrip(payload)
+
+
+def test_correlation_id_empty_string_rejected() -> None:
+    """correlation_id='' is rejected (E5: min_length=1)."""
+    payload = dict(_MINIMAL_EXAMPLES["assistant_chunk"])
+    payload["correlation_id"] = ""
+    with pytest.raises(ValidationError):
+        _validate_roundtrip(payload)
 
 
 def test_correlation_id_string_accepted() -> None:

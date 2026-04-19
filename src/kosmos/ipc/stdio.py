@@ -29,6 +29,7 @@ import logging
 import signal
 import sys
 import time
+import uuid
 from collections.abc import Callable
 from datetime import UTC
 from types import FrameType
@@ -155,6 +156,8 @@ async def _reader_loop(
             # should be surfaced, not silently dropped).
             err_frame = ErrorFrame(
                 session_id=session_id,
+                correlation_id=str(uuid.uuid4()),
+                role="backend",
                 ts=_utcnow(),
                 kind="error",
                 code="ipc_decode_error",
@@ -201,6 +204,8 @@ async def _emit_exit_frame(session_id: str) -> None:
     """Write a ``session_event {event='exit'}`` frame and flush stdout."""
     exit_frame = SessionEventFrame(
         session_id=session_id,
+        correlation_id=str(uuid.uuid4()),
+        role="backend",
         ts=_utcnow(),
         kind="session_event",
         event="exit",
@@ -247,6 +252,8 @@ async def _dispatch_session_event(
         meta = await sm.new_session()
         reply = SessionEventFrame(
             session_id=meta.session_id,
+            correlation_id=str(uuid.uuid4()),
+            role="backend",
             ts=_utcnow(),
             kind="session_event",
             event="new",
@@ -261,6 +268,8 @@ async def _dispatch_session_event(
         active_sid = sm.session_id or session_id
         reply = SessionEventFrame(
             session_id=active_sid,
+            correlation_id=str(uuid.uuid4()),
+            role="backend",
             ts=_utcnow(),
             kind="session_event",
             event="save",
@@ -282,6 +291,8 @@ async def _dispatch_session_event(
         active_sid = sm.session_id or session_id
         reply = SessionEventFrame(
             session_id=active_sid,
+            correlation_id=str(uuid.uuid4()),
+            role="backend",
             ts=_utcnow(),
             kind="session_event",
             event="list",
@@ -295,6 +306,8 @@ async def _dispatch_session_event(
         messages = await sm.resume_session(target_id)
         reply = SessionEventFrame(
             session_id=target_id,
+            correlation_id=str(uuid.uuid4()),
+            role="backend",
             ts=_utcnow(),
             kind="session_event",
             event="load",
@@ -314,6 +327,8 @@ async def _dispatch_session_event(
         # load is backend → TUI only; reject TUI → backend direction.
         err = ErrorFrame(
             session_id=session_id,
+            correlation_id=str(uuid.uuid4()),
+            role="backend",
             ts=_utcnow(),
             kind="error",
             code="invalid_direction",
@@ -360,8 +375,6 @@ async def run(  # noqa: C901
         operations.  When ``None`` a default ``SessionManager()`` is
         constructed (uses ``~/.kosmos/sessions``).
     """
-    import uuid
-
     from kosmos.session.manager import SessionManager as _SessionManager
 
     sid = session_id or str(uuid.uuid4())
@@ -402,6 +415,8 @@ async def run(  # noqa: C901
 
                 echo_frame = AssistantChunkFrame(
                     session_id=frame.session_id,
+                    correlation_id=frame.correlation_id,
+                    role="backend",
                     ts=_utcnow(),
                     kind="assistant_chunk",
                     message_id=str(uuid.uuid4()),
@@ -419,6 +434,8 @@ async def run(  # noqa: C901
                     logger.exception("session_event handler raised: %s", exc)
                     err = ErrorFrame(
                         session_id=frame.session_id,
+                        correlation_id=str(uuid.uuid4()),
+                        role="backend",
                         ts=_utcnow(),
                         kind="error",
                         code="session_event_error",

@@ -84,6 +84,8 @@ async def test_inbound_user_input_span(
     session_id = str(uuid.uuid4())
     frame_in = UserInputFrame(
         session_id=session_id,
+        correlation_id=str(uuid.uuid4()),
+        role="tui",
         ts=_ts(),
         kind="user_input",
         text="hello",
@@ -145,6 +147,8 @@ async def test_outbound_assistant_chunk_span(
     session_id = str(uuid.uuid4())
     chunk_frame = AssistantChunkFrame(
         session_id=session_id,
+        correlation_id=str(uuid.uuid4()),
+        role="backend",
         ts=_ts(),
         kind="assistant_chunk",
         message_id=str(uuid.uuid4()),
