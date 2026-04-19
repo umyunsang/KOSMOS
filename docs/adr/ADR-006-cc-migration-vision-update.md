@@ -178,6 +178,42 @@ The CC→KOSMOS Phase 2 migration surface is scoped as **nine Epics**, linked di
 
 ---
 
+### Part D — Coverage boundary (codebase-verified 2026-04-19)
+
+Part B's nine-Epic table covers the **majority** of the CC→KOSMOS Phase 2 migration surface, but it is not exhaustive. A full codebase audit on 2026-04-19 (walking `.references/claude-code-sourcemap/restored-src/src/` against the actual `src/kosmos/` and `tui/src/` trees under commit `693d4b6`) identified three residual CC parity gaps that the nine Epics do not address, a set of CC surfaces intentionally excluded from migration, and a set of KOSMOS-original surfaces that have no CC analog. This Part makes each boundary explicit so future reviewers do not re-discover them.
+
+**D-1. Intentionally not migrated (design exclusion)**
+
+These CC surfaces exist in the sourcemap but are out-of-scope for the KOSMOS citizen domain:
+
+- **Dev-only slash commands** — `/commit`, `/pr_comments`, `/review`, `/issue`, `/install-github-app`, `/doctor`, `/heapdump`, `/vim`, `/model`, `/config` under `src/commands/`. Rationale: citizens do not ship PRs. Retained only in the sourcemap for parity reference; the KOSMOS `tui/src/commands/` set (`new`, `resume`, `save`, `sessions`, `help`) is the domain-correct subset.
+- **Anthropic-platform surfaces** — `src/services/claudeAiLimits*`, `src/services/oauth/`, `src/services/autoDream/`, `src/services/PromptSuggestion/`, `src/services/MagicDocs/`, `src/upstreamproxy/`, `src/bridge/`, `src/buddy/`. Rationale: these plumb CC into Anthropic's platform (OAuth, billing, Anthropic-operated prompt hubs); KOSMOS delegates the equivalent surface to FriendliAI + `data.go.kr`, which expose different contracts.
+- **Migration helpers** — 11 files under `src/migrations/` (e.g., `migrate-to-claude-agents.ts`). Rationale: CC-specific settings migrations that have no KOSMOS analog.
+- **Domain-mismatch modules** — `src/voice/`, `src/vim/`, `src/plugins/`. Rationale: no citizen-domain use case; voice + vim are developer ergonomics and plugins are Anthropic-CLI-specific.
+
+**D-2. CC parity gaps — candidate Epics (to be created)**
+
+These are CC surfaces that **do** have a citizen-domain use case but are absent from both the code and the nine-Epic table. Each will be opened as a direct sub-Epic of Initiative #2 alongside A–I:
+
+- **Epic J — Cost/Token HUD** (candidate). CC source: `src/cost-tracker.ts` + `src/costHook.ts` + the `<StatusLine>` cost renderer. KOSMOS gap: no `tokens` / `cost` / `quota` HUD component under `tui/src/components/`; `src/kosmos/llm/usage.py` records usage server-side but never surfaces it to the citizen. Citizen justification: FriendliAI + `data.go.kr` both meter quota, and the citizen has a legitimate interest in knowing how much of their session budget has been consumed.
+- **Epic K — Settings TUI dialog** (candidate). CC source: `src/screens/Settings*.tsx` + `src/commands/config.ts`. KOSMOS gap: no `<Settings>` modal; `src/kosmos/cli/config.py` exposes a Python-CLI path only. Citizen justification: language toggle (ko/en i18n is already shipped under `tui/src/i18n/`), permission mode selector (depends on Epic B landing), and theme override (three themes exist under `tui/src/theme/` but no picker) all want a single TUI surface.
+- **Epic L — Notifications surface** (candidate). CC source: CC's `<StatusLine>` + the `services/notifications` pipeline that drives long-running-tool indicators and background-task completion toasts. KOSMOS gap: `tui/src/components/coordinator/PhaseIndicator.tsx` + `WorkerStatusRow.tsx` cover swarm-phase ticking but there is no general notification surface for out-of-band events (consent-required prompt, background CBS SSE drop, KOSMOS_RATE_LIMIT_EXHAUSTED, NMC stale-data warning). Citizen justification: the coordinator already raises `auth_required` and `stale_data` signals that currently surface only in log lines.
+
+**Additionally, ConsentGateway production implementation** is explicitly scoped under existing **Epic B #1297**: `src/kosmos/agents/consent.py` ships only `AlwaysGrantConsentGateway` (a 50-line stub whose docstring states "real TUI integration is #287"). Epic B must replace this stub with a real `TuiConsentGateway` that renders the `PermissionGauntletModal` as the consent-request surface.
+
+**D-3. KOSMOS-original surfaces (no CC analog — accept as extension)**
+
+These are KOSMOS-native surfaces that have no counterpart in CC. They are not migration gaps; they are legitimate extensions driven by the Korean public-service domain:
+
+- `src/kosmos/safety/` — 8 files (`_ingress.py`, `_injection.py`, `_litellm_callbacks.py`, `_patterns.py`, `_redactor.py`, `_span.py`, `_models.py`, `_settings.py`). PIPA-driven prompt-injection defence and PII redactor; no CC analog because CC operates on developer-trusted inputs.
+- `src/kosmos/security/` — Specs 024/025 audit + V1–V6 dual-axis validator. Tool Template Security Spec v1.1 is a KOSMOS-original compliance surface for Ministry PR readiness.
+- `src/kosmos/primitives/` — Spec 031 `submit` / `subscribe` / `verify`. The five-primitive harness redesign is a KOSMOS invention; CC has only `AgentTool` + `BashTool` + file tools as top-level verbs.
+- `src/kosmos/tools/{geocoding,hira,kma,koroad,nfa119,nmc}/` — adapter tree for `data.go.kr` ministries. No CC analog because CC has no ministry-tool layer.
+
+Reviewers evaluating future Epic proposals must check Part D before claiming "CC has X — KOSMOS must port it": if X is in D-1 or D-3 it is correctly absent; if X is in D-2 it is already a candidate Epic under Initiative #2; if X is in A–I it is already in the nine-Epic plan; only a surface absent from all three boxes qualifies as a new gap.
+
+---
+
 ## Consequences
 
 **Positive:**
@@ -226,3 +262,4 @@ The CC→KOSMOS Phase 2 migration surface is scoped as **nine Epics**, linked di
 - AGENTS.md — Agent Teams, GraphQL-only issue tracking (now corrected to `subIssues`/`parent`), vision-change PR rules
 - Initiative #2 (Phase 2 — Multi-Agent Swarm) — direct parent of the nine Epics #1297–#1305
 - Sub-Epic issues — #1297 (B), #1298 (A), #1299 (D), #1300 (E), #1301 (C), #1302 (H), #1303 (I), #1304 (F), #1305 (G)
+- Part D candidate Epics (to be created) — J (Cost/Token HUD), K (Settings TUI dialog), L (Notifications surface); D-1 exclusions; D-3 KOSMOS-original surfaces
