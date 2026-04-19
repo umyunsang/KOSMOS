@@ -107,17 +107,17 @@ KOSMOS의 stdio IPC는 단순 개발자 편의 채널이 아니라 시민 세션
 - **FR-005**: `payload`는 frame kind 별 discriminated union이며 모든 frame kind는 Pydantic v2 `BaseModel` + `Field(discriminator="kind")` 로 검증된다.
 - **FR-006**: `trailer`는 optional이며 스트리밍 종료 시 `{final: bool, transaction_id, checksum_sha256}` 를 포함한다.
 - **FR-007**: 시스템은 envelope JSON Schema를 `tui/src/ipc/schema/frame.schema.json` (Draft 2020-12)에 커밋해야 하며, TypeScript 타입과 Python Pydantic v2 모델이 동일 schema에서 파생된다.
-- **FR-008**: 최초 지원 frame kind 집합: `payload_start`, `payload_delta`, `payload_end`, `tool_call`, `tool_result`, `backpressure_signal`, `resume_request`, `resume_response`, `resume_rejected`, `notification_push`, `heartbeat`.
+- **FR-008**: 최초 지원 frame kind 집합: `payload_start`, `payload_delta`, `payload_end`, `tool_call`, `tool_result`, `backpressure`, `resume_request`, `resume_response`, `resume_rejected`, `notification_push`, `heartbeat`. (정규 명칭은 `contracts/frame-envelope.schema.json` enum이 source of truth.)
 - **FR-009**: 모든 프레임은 stdout의 NDJSON 포맷 — 각 프레임은 `\n` 으로 종료되며 payload 내 `\n` 은 JSON escape (`\\n`).
 - **FR-010**: 단일 프레임 직렬화 크기 > 1 MiB 이면 chunked frame 3개 이상으로 분할 전송(`trailer.final=false` 연쇄 + 마지막만 `final=true`).
 
 **Backpressure (FR-011..FR-017)**
 
 - **FR-011**: 백엔드는 TUI 이그레스 큐가 high-water-mark(기본 64 프레임)에 도달하면 outbound emission을 일시 중단하고 TUI drain을 대기한다.
-- **FR-012**: 백엔드는 LLM 429, 부처 API 429, 내부 쿼터 포화 시 `backpressure_signal` frame을 발사한다. 페이로드는 `{kind, severity, retry_after_ms, source_agency, message_ko, message_en}`.
-- **FR-013**: TUI는 `backpressure_signal` 수신 시 1 animation frame 이내 상태바 표시 + 입력을 지역 큐잉한다 (명시적 거절 아닌 부드러운 지연).
-- **FR-014**: TUI 자체 ingest saturation 감지 시 `resume_pause` 프레임을 백엔드로 발사하고, drain 후 `resume_emit` 으로 재개 신호를 보낸다.
-- **FR-015**: `backpressure_signal` 은 OTEL span 속성 `kosmos.ipc.backpressure.kind`·`.severity`·`.source_agency` 로 승격 기록된다.
+- **FR-012**: 백엔드는 LLM 429, 부처 API 429, 내부 쿼터 포화 시 `backpressure` frame을 발사한다. 페이로드는 컨트랙트 § 1.2/1.3 표준 `{signal, source, queue_depth, hwm, retry_after_ms, hud_copy_ko, hud_copy_en}` (signal ∈ {pause, resume, throttle}, source ∈ {tui_reader, backend_writer, upstream_429}; `retry_after_ms` clamp [1000, 900000]).
+- **FR-013**: TUI는 `backpressure` 프레임 수신 시 1 animation frame 이내 상태바 표시 + 입력을 지역 큐잉한다 (명시적 거절 아닌 부드러운 지연).
+- **FR-014**: TUI 자체 ingest saturation 감지 시 `backpressure(signal="pause", source="tui_reader")` 프레임을 백엔드로 발사하고, drain 후 `backpressure(signal="resume", source="tui_reader")` 으로 재개 신호를 보낸다. 모든 `pause`는 teardown 이전까지 반드시 1회의 `resume`와 페어링된다 (컨트랙트 § 1.4 pause/resume pairing invariant).
+- **FR-015**: `backpressure` 프레임은 OTEL span 속성 `kosmos.ipc.backpressure.signal`·`.source`·`.queue_depth` 로 승격 기록된다. HUD 문구는 `hud_copy_ko`/`hud_copy_en` 모두 `min_length=1` 강제 — 이중 로케일 규율은 하드 인바리언트.
 - **FR-016**: 시스템은 backpressure 상태의 누적 시간(session-level)을 session state에 기록하여 사후 KPI 분석(시민 대기 총량) 을 가능하게 한다.
 - **FR-017**: backpressure는 `disaster_alert`(CBS 재난문자) 등 `severity=critical` frame을 block 하지 않는다 (critical lane 분리).
 
@@ -126,9 +126,9 @@ KOSMOS의 stdio IPC는 단순 개발자 편의 채널이 아니라 시민 세션
 - **FR-018**: TUI가 세션 재시작 시 백엔드로 `resume_request(session_id, last_seen_correlation_id, last_seen_frame_seq)` 프레임을 첫 프레임으로 전송한다.
 - **FR-019**: 백엔드는 session별 in-memory ring buffer(기본 256 프레임)에 outbound 프레임을 보관하며 `.consumed` 마커 없는 프레임만 재전송 대상으로 취급한다.
 - **FR-020**: `resume_request` 에 대한 응답은 `resume_response(replayed_frame_count, oldest_available_seq, session_status)` 프레임이며 이후 실제 replay 프레임을 순서대로 보낸다.
-- **FR-021**: 백엔드 ring buffer 용량 초과로 특정 `last_seen_frame_seq` 이전 프레임이 소실된 경우 `resume_rejected(reason="buffer_overflow", recoverable_from_seq=N)` 프레임 반환 후 신규 세션 시작 유도.
-- **FR-022**: 세션 만료 시(기본 30 분 무활동) `resume_rejected(reason="session_expired")` 반환.
-- **FR-023**: 백엔드 프로세스 재시작 후의 resume은 session_id가 ring buffer를 복원할 수 없으면 `resume_rejected(reason="backend_restart")` 반환; TUI는 세션을 새로 시작한다(in-flight tool-call은 Spec 024 audit log로만 추적).
+- **FR-021**: 백엔드 ring buffer 용량 초과로 특정 `last_seen_frame_seq` 이전 프레임이 소실된 경우 `resume_rejected(reason="ring_evicted", recoverable_from_seq=N)` 프레임 반환 후 신규 세션 시작 유도.
+- **FR-022**: 세션 만료 시(기본 30 분 무활동) `resume_rejected(reason="session_expired")` 반환. (컨트랙트 § 3 rejection 5종: `ring_evicted`, `session_unknown`, `token_mismatch`, `protocol_incompatible`, `session_expired`.)
+- **FR-023**: 백엔드 프로세스 재시작 후의 resume은 session_id가 ring buffer를 복원할 수 없으면 `resume_rejected(reason="session_unknown")` 반환; TUI는 세션을 새로 시작한다(in-flight tool-call은 Spec 024 audit log로만 추적).
 - **FR-024**: Resume 성공 시 모든 replay 프레임은 원본 `correlation_id` 와 `frame_seq` 를 유지하며, 추가 속성 `replayed=true` 는 OTEL span에만 기록(frame 본체는 원본과 byte-identical).
 - **FR-025**: Resume은 최대 3회 연속 실패 시(동일 session_id로) 해당 세션을 블랙리스트에 등록하여 무한 루프 차단.
 
@@ -156,7 +156,7 @@ KOSMOS의 stdio IPC는 단순 개발자 편의 채널이 아니라 시민 세션
 ### Key Entities
 
 - **FrameEnvelope**: 단일 IPC 메시지. `{version, correlation_id, role, payload, trailer?, frame_seq, emitted_at_utc}`. NDJSON 라인 = 하나의 envelope.
-- **BackpressureSignal**: 백엔드→TUI 속도 조절 신호. `{kind, severity, retry_after_ms?, source_agency, message_ko, message_en}`.
+- **BackpressureSignalFrame**: 백엔드↔TUI 속도 조절 프레임. `{signal: "pause"|"resume"|"throttle", source: "tui_reader"|"backend_writer"|"upstream_429", queue_depth, hwm, retry_after_ms?, hud_copy_ko, hud_copy_en}`. 정규 스키마는 `contracts/frame-envelope.schema.json` + `contracts/tx-dedup.contract.md` § 1.2/1.3.
 - **ResumeRequest / ResumeResponse**: 재접속 핸드셰이크 프레임 쌍. Request: `{session_id, last_seen_correlation_id?, last_seen_frame_seq?}`. Response: `{replayed_frame_count, oldest_available_seq, session_status}`.
 - **TransactionRecord**: 세션 내 tx 캐시 엔트리. `{session_id, transaction_id, correlation_id, result_summary, is_irreversible, created_at_utc}`.
 - **SessionRingBuffer**: 백엔드가 유지하는 최근 256개 outbound 프레임의 FIFO 큐(순환 덮어쓰기). `.consumed` 마커는 ack된 프레임 표시.
@@ -200,11 +200,11 @@ KOSMOS의 stdio IPC는 단순 개발자 편의 채널이 아니라 시민 세션
 
 | Item | Reason for Deferral | Target Epic/Phase | Tracking Issue |
 |------|---------------------|-------------------|----------------|
-| 원격 TUI(WebSocket/HTTP) 전송 계층 | AX 배포 후 공무원 원격 상담 수요 발생 시 재검토 | Phase 3 remote ops | NEEDS TRACKING |
-| Frame-level 서명/암호화(e2e) | stdio 로컬 전제, 외부 노출 없음; 필요 시 Spec 024 Merkle chain 확장 | Phase 3 sovereignty | NEEDS TRACKING |
-| 백엔드 다중 인스턴스 세션 shard | 현 단계 단일 백엔드 모델; swarm 수평 확장 시 재설계 | Phase 2.5 swarm shard | NEEDS TRACKING |
-| WebMCP-style declarative capability advertisement | MCP transports 표준 정립 대기 | Phase 2.5 MCP host | NEEDS TRACKING |
-| OS-native stdio alternative(Windows named pipes) | 타겟 OS는 macOS/Linux; 우선순위 낮음 | Phase 3 portability | NEEDS TRACKING |
+| 원격 TUI(WebSocket/HTTP) 전송 계층 | AX 배포 후 공무원 원격 상담 수요 발생 시 재검토 | Phase 3 remote ops | #1373 |
+| Frame-level 서명/암호화(e2e) | stdio 로컬 전제, 외부 노출 없음; 필요 시 Spec 024 Merkle chain 확장 | Phase 3 sovereignty | #1374 |
+| 백엔드 다중 인스턴스 세션 shard | 현 단계 단일 백엔드 모델; swarm 수평 확장 시 재설계 | Phase 2.5 swarm shard | #1375 |
+| WebMCP-style declarative capability advertisement | MCP transports 표준 정립 대기 | Phase 2.5 MCP host | #1376 |
+| OS-native stdio alternative(Windows named pipes) | 타겟 OS는 macOS/Linux; 우선순위 낮음 | Phase 3 portability | #1377 |
 
 ## References
 
