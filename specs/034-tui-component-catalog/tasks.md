@@ -127,9 +127,9 @@
 
 ### Implementation for User Story 5
 
-- [ ] T030 [US5] Register all 6 `NEEDS TRACKING` Deferred items (rows 8, 10, 11, 12, 13, 16 from spec.md Deferred table) as `[Deferred]`-prefixed Tasks under Epic M per Constitution §VI — prefix excludes them from the 90-cap per FR-025; one of these is `[Deferred] Implement Brand Guardian grep CI gate workflow` tied to `contracts/grep-gate-rules.md`
-- [ ] T031 [US5] Run `/speckit-taskstoissues` to materialize the REWRITE + family-batch + DEFER + process Tasks as GitHub issues linked via `addSubIssue` mutation per FR-023 + research §R4 allocation; verify via `gh api graphql` (AGENTS.md GraphQL-only rule): Epic M `subIssues.totalCount` (excluding `[Deferred]` prefix) ≤ 90, each non-M owning Epic receives its own REWRITE Tasks (FR-026), closed-Epic (B #1297 / A #1298) REWRITEs are re-parented to Epic M per research §R3
-- [ ] T032 [US5] Backfill the `Task sub-issue` column in `docs/tui/component-catalog.md` with each row's materialized `#<number>` (or `—` for PORT rows marked "implementation complete" and for aggregated-row constituents); verify SC-004 (100% REWRITE coverage) via row-by-row grep
+- [X] T030 [US5] Register all 6 `NEEDS TRACKING` Deferred items (rows 8, 10, 11, 12, 13, 16 from spec.md Deferred table) as `[Deferred]`-prefixed Tasks under Epic M per Constitution §VI — prefix excludes them from the 90-cap per FR-025; one of these is `[Deferred] Implement Brand Guardian grep CI gate workflow` tied to `contracts/grep-gate-rules.md`
+- [X] T031 [US5] Run `/speckit-taskstoissues` to materialize the REWRITE + family-batch + DEFER + process Tasks as GitHub issues linked via `addSubIssue` mutation per FR-023 + research §R4 allocation; verify via `gh api graphql` (AGENTS.md GraphQL-only rule): Epic M `subIssues.totalCount` (excluding `[Deferred]` prefix) ≤ 90, each non-M owning Epic receives its own REWRITE Tasks (FR-026), closed-Epic (B #1297 / A #1298) REWRITEs are re-parented to Epic M per research §R3
+- [X] T032 [US5] Backfill the `Task sub-issue` column in `docs/tui/component-catalog.md` with each row's materialized `#<number>` (or `—` for PORT rows marked "implementation complete" and for aggregated-row constituents); verify SC-004 (100% REWRITE coverage) via row-by-row grep
 
 **Checkpoint**: Complete issue-graph traceability. Every REWRITE verdict has a GitHub Task sub-issue.
 
@@ -143,8 +143,8 @@
 
 ### Implementation for User Story 6
 
-- [ ] T033 [US6] Audit every DISCARD row's `Rationale` column in `docs/tui/component-catalog.md` against invariant I4: starts with one of the three allowed prefixes. For each violation, either (a) append the missing ADR-006 Part D section reference from the T006 evidence index, or (b) re-classify to REWRITE/DEFER if the DISCARD is unsupported. Document audit result in the catalog trailer with row numbers checked
-- [ ] T034 [US6] Run `/speckit-analyze` against the committed tree and resolve any reported violations (I3–I17, BSS-01..BSS-09, AG-01..AG-06); `/speckit-analyze` output recorded in `specs/034-tui-component-catalog/artifacts/analyze-report.md` (scratch) with all PASS gates green
+- [X] T033 [US6] Audit every DISCARD row's `Rationale` column in `docs/tui/component-catalog.md` against invariant I4: starts with one of the three allowed prefixes. For each violation, either (a) append the missing ADR-006 Part D section reference from the T006 evidence index, or (b) re-classify to REWRITE/DEFER if the DISCARD is unsupported. Document audit result in the catalog trailer with row numbers checked
+- [X] T034 [US6] Run `/speckit-analyze` against the committed tree and resolve any reported violations (I3–I17, BSS-01..BSS-09, AG-01..AG-06); `/speckit-analyze` output recorded in `specs/034-tui-component-catalog/artifacts/analyze-report.md` (scratch) with all PASS gates green
 
 **Checkpoint**: All four deliverables (component-catalog, accessibility-gate, brand-system, tokens.ts) pass invariants. PR is ready for review.
 
@@ -154,8 +154,8 @@
 
 **Purpose**: Final consistency checks, agent-context refresh, and PR wiring.
 
-- [ ] T035 [P] Run `.specify/scripts/bash/update-agent-context.sh claude` to refresh the "Active Technologies" block in `CLAUDE.md` with "N/A — documentation-only Epic (034-tui-component-catalog)" so auto-memory reflects the shipped state
-- [ ] T036 [P] Readability spot-check for SC-008: pick 5 random CC component files, time how long it takes a reviewer (unfamiliar with CC) to locate verdict + owning Epic + rationale using only `docs/tui/component-catalog.md` + ADR-006 + `.references/claude-code-sourcemap/`; target < 30 min total for all 5 picks; record in analyze-report.md
+- [X] T035 [P] Run `.specify/scripts/bash/update-agent-context.sh claude` to refresh the "Active Technologies" block in `CLAUDE.md` with "N/A — documentation-only Epic (034-tui-component-catalog)" so auto-memory reflects the shipped state
+- [X] T036 [P] Readability spot-check for SC-008: pick 5 random CC component files, time how long it takes a reviewer (unfamiliar with CC) to locate verdict + owning Epic + rationale using only `docs/tui/component-catalog.md` + ADR-006 + `.references/claude-code-sourcemap/`; target < 30 min total for all 5 picks; record in analyze-report.md
 - [ ] T037 Final PR preparation: confirm PR body uses `Closes #1310` only (Epic M), NOT any Task sub-issue numbers (per AGENTS.md § PR closing rule); monitor CI via `gh pr checks --watch --interval 10` until green; Copilot + Codex review gate passes
 
 ---

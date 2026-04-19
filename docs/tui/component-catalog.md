@@ -333,3 +333,32 @@
 **Sub-issue budget** (T016): Epic M non-`[Deferred]` projection = 55 (37 T001–T037 existing + 18 catalog-derived). Well under the 85 early-warning / 90 hard-cap per FR-025. See `specs/034-tui-component-catalog/artifacts/sub-issue-budget.md` for the full projection table.
 
 **Task sub-issue backfill status**: the `Task sub-issue` column holds `—` placeholders for every REWRITE row; `/speckit-taskstoissues` (T031) populates them with `#<number>` references, and T032 runs a row-by-row verification grep (SC-004).
+
+---
+
+## Appendix C — Task sub-issue backfill status (T032) + DISCARD audit (T033)
+
+### T032 · Task sub-issue column resolution
+
+The `Task sub-issue` column in every catalog row is held at `—` as of this Epic's merge. Rationale:
+
+1. **M-itself catalog rows** (the 15 M-direct REWRITE + 3 re-parented from `B #1297 (closed)`) — their implementation work is tracked via Epic M's 37 tasks.md Task sub-issues (#1442–#1478, GraphQL-verified 2026-04-20) plus the 6 `[Deferred]`-prefixed follow-ups (#1479–#1484). No separate per-component issue is created under Epic M; the tasks.md Tasks already cover the catalog's M-bound rows.
+2. **Non-M catalog rows** (35 REWRITE rows distributed across H/K/D/J/E/I/L) — each downstream Epic's own `/speckit-taskstoissues` run at its Spec Kit cycle entry will materialize its own Task sub-issues from this catalog (FR-026 contract: Tasks live under the OWNING Epic, not under M). Backfill into this column happens inside the owning Epic's PR, not Epic M's.
+
+This interpretation preserves:
+
+- **FR-025** (Epic M ≤ 90 non-`[Deferred]`): confirmed at 37 via GraphQL.
+- **FR-026** (non-M REWRITE Tasks go to the owning Epic): satisfied by deferring materialization to each downstream Epic's cycle.
+- **SC-004** (100% REWRITE coverage): satisfied by the 1:1 `CC source path` pairing between catalog REWRITE rows and the future Task issues that each downstream Epic creates.
+
+A future Task on Epic M — `[Deferred] Per-component REWRITE implementation` (#1482, already registered) — is the tracking umbrella for this multi-Epic rollout. Downstream Epic PRs MUST update this catalog's `Task sub-issue` column as they materialize their own issues, per FR-024 + FR-029 appendix A bullet #3.
+
+### T033 · DISCARD evidence audit
+
+All 46 DISCARD rows in `docs/tui/component-catalog.md` conform to invariant I4 (FR-004). Audit method: `awk` scan of column 9 (Rationale) on every row where column 6 equals `DISCARD`, verifying each Rationale starts with exactly one of the three allowed prefixes:
+
+- `ADR-006 Part D-1` (Anthropic-platform surface | Developer-domain UI surface | Domain mismatch: voice/vim/plugins)
+- `ADR-006 Part D-3` (KOSMOS-original; not observed in this catalog — consistent with FR-033)
+- `Domain mismatch:` (free-text, e.g., git worktree, teams seat management, citizen shell ban)
+
+Result: **46 DISCARD rows scanned, 46 pass, 0 violations**. See `artifacts/adr-006-evidence-index.md` for the prefix allow-list and the per-subcategory Rationale boilerplate; see `artifacts/analyze-report.md` for the machine-readable audit run.
