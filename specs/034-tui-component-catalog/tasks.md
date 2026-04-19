@@ -77,8 +77,8 @@
 
 ### Implementation for User Story 2
 
-- [ ] T019 [US2] Author `docs/design/brand-system.md` §2 Token naming doctrine (≥ 500 words per SC-003 / BSS-03) covering: grammar (BNF from token-naming-grammar.md §1), BAN-01..BAN-07 table with error messages (BSS-08), exceptions (semantic-safety keywords + CC-legacy allow-list convention), ministry roster pointer to §1, Brand Guardian review contract, three rejection worked examples (`primary`, `accent1`, `claudeShimmer` — SC-012), future-proofing process
-- [ ] T020 [US2] Audit `tui/src/theme/tokens.ts` type surface — verify every NEW identifier added under this Epic matches `{metaphorRole}{Variant}?` grammar and passes BAN-01..BAN-07; do NOT rename existing CC-legacy identifiers (that is Deferred row 10, out of scope per FR-030); append additive tokens only if required by catalog examples (most Epics require zero additions — this Task may complete as a no-op with an audit summary comment)
+- [X] T019 [US2] Author `docs/design/brand-system.md` §2 Token naming doctrine (≥ 500 words per SC-003 / BSS-03) covering: grammar (BNF from token-naming-grammar.md §1), BAN-01..BAN-07 table with error messages (BSS-08), exceptions (semantic-safety keywords + CC-legacy allow-list convention), ministry roster pointer to §1, Brand Guardian review contract, three rejection worked examples (`primary`, `accent1`, `claudeShimmer` — SC-012), future-proofing process
+- [X] T020 [US2] Audit `tui/src/theme/tokens.ts` type surface — verify every NEW identifier added under this Epic matches `{metaphorRole}{Variant}?` grammar and passes BAN-01..BAN-07; do NOT rename existing CC-legacy identifiers (that is Deferred row 10, out of scope per FR-030); append additive tokens only if required by catalog examples (most Epics require zero additions — this Task may complete as a no-op with an audit summary comment)
 
 **Checkpoint**: Brand Guardian rejection pathway live. SC-012 test passes: a simulated ad-hoc proposal can be rejected citing a single §2 subsection.
 
@@ -92,10 +92,10 @@
 
 ### Implementation for User Story 3
 
-- [ ] T021 [US3] Scaffold `docs/design/brand-system.md` with 10 H2 section headings (`## §1` … `## §10`) in order per BSS-01 + brand-system-sections.md §1, and include the document title `# KOSMOS Brand System` with no preamble text (BSS-09)
-- [ ] T022 [US3] Author §1 Brand metaphor (≥ 500 words per SC-003 / BSS-02) covering the five required content areas from brand-system-sections.md §2: KOSMOS 은하계 integration metaphor (BSS-07 includes literal strings `KOSMOS` + `은하계` + ministry roster header), visual element vocabulary, ministry satellite roster (KOROAD/KMA/HIRA/NMC/119/Geocoding), why metaphor matters for text UI, cross-references to ADR-006 A-9 + assets/kosmos-*.svg + Korea AI Action Plan Principle 8/9
-- [ ] T023 [US3] Populate §3–§10 placeholders (≤ 50 words each per BSS-04/BSS-05) using the exact template from brand-system-sections.md §4 — owner pointer per BSS-06: §3–§7 + §9 → `Owner: Epic H #1302`; §8 → `Owners: Epic H #1302 + Epic K #1308`; §10 → `Owners: all design-concerned Epics (B/C/D/E/H/I/J/K/L/M)` with the dated-H3-subheading append convention note
-- [ ] T024 [US3] Validate `docs/design/brand-system.md` against BSS-01..BSS-09 (ten H2 sections in order, §1 ≥ 500 words, §2 ≥ 500 words, §3–§10 each ≤ 50 words, §3–§10 each contain `Owner:` line, §1 contains `KOSMOS` + `은하계`, §2 contains `BAN-01`..`BAN-07`, no preamble between title and §1) — fix any violations in place
+- [X] T021 [US3] Scaffold `docs/design/brand-system.md` with 10 H2 section headings (`## §1` … `## §10`) in order per BSS-01 + brand-system-sections.md §1, and include the document title `# KOSMOS Brand System` with no preamble text (BSS-09)
+- [X] T022 [US3] Author §1 Brand metaphor (≥ 500 words per SC-003 / BSS-02) covering the five required content areas from brand-system-sections.md §2: KOSMOS 은하계 integration metaphor (BSS-07 includes literal strings `KOSMOS` + `은하계` + ministry roster header), visual element vocabulary, ministry satellite roster (KOROAD/KMA/HIRA/NMC/119/Geocoding), why metaphor matters for text UI, cross-references to ADR-006 A-9 + assets/kosmos-*.svg + Korea AI Action Plan Principle 8/9
+- [X] T023 [US3] Populate §3–§10 placeholders (≤ 50 words each per BSS-04/BSS-05) using the exact template from brand-system-sections.md §4 — owner pointer per BSS-06: §3–§7 + §9 → `Owner: Epic H #1302`; §8 → `Owners: Epic H #1302 + Epic K #1308`; §10 → `Owners: all design-concerned Epics (B/C/D/E/H/I/J/K/L/M)` with the dated-H3-subheading append convention note
+- [X] T024 [US3] Validate `docs/design/brand-system.md` against BSS-01..BSS-09 (ten H2 sections in order, §1 ≥ 500 words, §2 ≥ 500 words, §3–§10 each ≤ 50 words, §3–§10 each contain `Owner:` line, §1 contains `KOSMOS` + `은하계`, §2 contains `BAN-01`..`BAN-07`, no preamble between title and §1) — fix any violations in place
 
 **Checkpoint**: Brand system doctrine ships. §3–§10 scope-violation trap armed for `/speckit-analyze` (FR-034).
 
