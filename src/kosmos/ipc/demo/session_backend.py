@@ -66,7 +66,12 @@ def _write(frame: IPCFrame) -> None:
     sys.stdout.flush()
 
 
-def _build_chunk(session_id: str, correlation_id: str, message_id: str, idx: int) -> AssistantChunkFrame:
+def _build_chunk(
+    session_id: str,
+    correlation_id: str,
+    message_id: str,
+    idx: int,
+) -> AssistantChunkFrame:
     return AssistantChunkFrame(
         session_id=session_id,
         correlation_id=correlation_id,

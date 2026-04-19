@@ -236,7 +236,15 @@ def test_ndjson_stream_preserves_frame_seq_order() -> None:
 
     expected_seqs = list(range(VALID_COUNT))
     actual_seqs = [frame.frame_seq for frame in parsed_ok]
+    first_mismatch = next(
+        (
+            i
+            for i, (a, e) in enumerate(zip(actual_seqs, expected_seqs, strict=True))
+            if a != e
+        ),
+        -1,
+    )
     assert actual_seqs == expected_seqs, (
-        "frame_seq ordering drifted — expected monotonic 0..949, "
-        f"got first-mismatch at {next((i for i, (a, e) in enumerate(zip(actual_seqs, expected_seqs)) if a != e), -1)}"
+        f"frame_seq ordering drifted — expected monotonic 0..949, "
+        f"got first-mismatch at {first_mismatch}"
     )

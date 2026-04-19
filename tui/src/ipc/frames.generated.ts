@@ -882,7 +882,7 @@ export interface UserInputFrame {
    * Completion/validation metadata. Populated on terminal frames. (FR-006)
    */
   trailer?: FrameTrailer | null;
-  kind: Kind;
+  kind?: Kind;
   text: Text;
 }
 /**
@@ -908,7 +908,7 @@ export interface AssistantChunkFrame {
    * Completion/validation metadata. Populated on terminal frames. (FR-006)
    */
   trailer?: FrameTrailer | null;
-  kind: Kind1;
+  kind?: Kind1;
   message_id: MessageId;
   delta: Delta;
   done: Done;
@@ -928,7 +928,7 @@ export interface ToolCallFrame {
    * Completion/validation metadata. Populated on terminal frames. (FR-006)
    */
   trailer?: FrameTrailer | null;
-  kind: Kind2;
+  kind?: Kind2;
   call_id: CallId;
   name: Name;
   arguments: Arguments;
@@ -954,7 +954,7 @@ export interface ToolResultFrame {
    * Completion/validation metadata. Populated on terminal frames. (FR-006)
    */
   trailer?: FrameTrailer | null;
-  kind: Kind3;
+  kind?: Kind3;
   call_id: CallId1;
   envelope: ToolResultEnvelope;
 }
@@ -980,7 +980,7 @@ export interface CoordinatorPhaseFrame {
    * Completion/validation metadata. Populated on terminal frames. (FR-006)
    */
   trailer?: FrameTrailer | null;
-  kind: Kind5;
+  kind?: Kind5;
   phase: Phase;
 }
 /**
@@ -998,7 +998,7 @@ export interface WorkerStatusFrame {
    * Completion/validation metadata. Populated on terminal frames. (FR-006)
    */
   trailer?: FrameTrailer | null;
-  kind: Kind6;
+  kind?: Kind6;
   worker_id: WorkerId;
   role_id: RoleId;
   current_primitive: CurrentPrimitive;
@@ -1019,7 +1019,7 @@ export interface PermissionRequestFrame {
    * Completion/validation metadata. Populated on terminal frames. (FR-006)
    */
   trailer?: FrameTrailer | null;
-  kind: Kind7;
+  kind?: Kind7;
   request_id: RequestId;
   worker_id: WorkerId1;
   primitive_kind: PrimitiveKind;
@@ -1042,7 +1042,7 @@ export interface PermissionResponseFrame {
    * Completion/validation metadata. Populated on terminal frames. (FR-006)
    */
   trailer?: FrameTrailer | null;
-  kind: Kind8;
+  kind?: Kind8;
   request_id: RequestId1;
   decision: Decision;
 }
@@ -1061,7 +1061,7 @@ export interface SessionEventFrame {
    * Completion/validation metadata. Populated on terminal frames. (FR-006)
    */
   trailer?: FrameTrailer | null;
-  kind: Kind9;
+  kind?: Kind9;
   event: Event;
   payload: Payload;
 }
@@ -1086,7 +1086,7 @@ export interface ErrorFrame {
    * Completion/validation metadata. Populated on terminal frames. (FR-006)
    */
   trailer?: FrameTrailer | null;
-  kind: Kind10;
+  kind?: Kind10;
   code: Code;
   message: Message;
   details: Details;
@@ -1115,7 +1115,7 @@ export interface PayloadStartFrame {
    * Completion/validation metadata. Populated on terminal frames. (FR-006)
    */
   trailer?: FrameTrailer | null;
-  kind: Kind11;
+  kind?: Kind11;
   content_type: ContentType;
   estimated_bytes?: EstimatedBytes;
 }
@@ -1136,7 +1136,7 @@ export interface PayloadDeltaFrame {
    * Completion/validation metadata. Populated on terminal frames. (FR-006)
    */
   trailer?: FrameTrailer | null;
-  kind: Kind12;
+  kind?: Kind12;
   delta_seq: DeltaSeq;
   payload: Payload1;
 }
@@ -1158,7 +1158,7 @@ export interface PayloadEndFrame {
    * Completion/validation metadata. Populated on terminal frames. (FR-006)
    */
   trailer?: FrameTrailer | null;
-  kind: Kind13;
+  kind?: Kind13;
   delta_count: DeltaCount;
   status: Status1;
 }
@@ -1180,7 +1180,7 @@ export interface BackpressureSignalFrame {
    * Completion/validation metadata. Populated on terminal frames. (FR-006)
    */
   trailer?: FrameTrailer | null;
-  kind: Kind14;
+  kind?: Kind14;
   signal: Signal;
   source: Source;
   queue_depth: QueueDepth;
@@ -1206,7 +1206,7 @@ export interface ResumeRequestFrame {
    * Completion/validation metadata. Populated on terminal frames. (FR-006)
    */
   trailer?: FrameTrailer | null;
-  kind: Kind15;
+  kind?: Kind15;
   last_seen_correlation_id?: LastSeenCorrelationId;
   last_seen_frame_seq?: LastSeenFrameSeq;
   tui_session_token: TuiSessionToken;
@@ -1230,7 +1230,7 @@ export interface ResumeResponseFrame {
    * Completion/validation metadata. Populated on terminal frames. (FR-006)
    */
   trailer?: FrameTrailer | null;
-  kind: Kind16;
+  kind?: Kind16;
   resumed_from_frame_seq: ResumedFromFrameSeq;
   replay_count: ReplayCount;
   server_session_id: ServerSessionId;
@@ -1254,7 +1254,7 @@ export interface ResumeRejectedFrame {
    * Completion/validation metadata. Populated on terminal frames. (FR-006)
    */
   trailer?: FrameTrailer | null;
-  kind: Kind17;
+  kind?: Kind17;
   reason: Reason;
   detail: Detail;
 }
@@ -1277,7 +1277,7 @@ export interface HeartbeatFrame {
    * Completion/validation metadata. Populated on terminal frames. (FR-006)
    */
   trailer?: FrameTrailer | null;
-  kind: Kind18;
+  kind?: Kind18;
   direction: Direction;
   peer_frame_seq: PeerFrameSeq;
 }
@@ -1299,7 +1299,7 @@ export interface NotificationPushFrame {
    * Completion/validation metadata. Populated on terminal frames. (FR-006)
    */
   trailer?: FrameTrailer | null;
-  kind: Kind19;
+  kind?: Kind19;
   subscription_id: SubscriptionId;
   adapter_id: AdapterId;
   event_guid: EventGuid;

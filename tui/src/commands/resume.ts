@@ -16,8 +16,9 @@ function handle({ args, sendFrame }: CommandHandlerArgs): CommandResult {
   sendFrame({
     kind: 'session_event',
     session_id: '',
-    correlation_id: null,
+    correlation_id: crypto.randomUUID(),
     ts: now,
+    role: 'tui',
     event: 'resume',
     payload: { id: sessionId },
   })

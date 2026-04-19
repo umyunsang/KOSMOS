@@ -71,8 +71,9 @@ export function PermissionGauntletModal({
       grant()
       sendFrame({
         session_id: sessionId,
-        correlation_id: null,
+        correlation_id: pendingRequest.correlation_id,
         ts: new Date().toISOString(),
+        role: 'tui',
         kind: 'permission_response',
         request_id: pendingRequest.request_id,
         decision: 'granted',
@@ -81,8 +82,9 @@ export function PermissionGauntletModal({
       deny()
       sendFrame({
         session_id: sessionId,
-        correlation_id: null,
+        correlation_id: pendingRequest.correlation_id,
         ts: new Date().toISOString(),
+        role: 'tui',
         kind: 'permission_response',
         request_id: pendingRequest.request_id,
         decision: 'denied',

@@ -19,6 +19,7 @@ duplicate ids; the CLI catches that as success.
 
 from __future__ import annotations
 
+import contextlib
 import logging
 import sys
 
@@ -44,14 +45,12 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 2
 
-    try:
-        # Re-import semantics: if already registered on a prior run inside
-        # the same process, the module-level register_submit_adapter() call
-        # has already landed. An AdapterIdCollisionError here means the
-        # adapter was registered by another importer — also success.
+    # Re-import semantics: if already registered on a prior run inside the
+    # same process, the module-level register_submit_adapter() call has
+    # already landed. An AdapterIdCollisionError here means the adapter was
+    # registered by another importer — also success.
+    with contextlib.suppress(AdapterIdCollisionError):
         _ = registration
-    except AdapterIdCollisionError:
-        pass
 
     sys.stdout.write(
         f"[fixture] registered {registration.tool_id} "

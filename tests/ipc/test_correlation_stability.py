@@ -26,7 +26,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 @pytest.mark.parametrize("session", ["s-trace", "s-probe-1"])
 def test_probe_emits_single_correlation_id(session: str) -> None:
     """Probe output has exactly 1 unique correlation_id across all emitted frames."""
-    result = subprocess.run(
+    result = subprocess.run(  # noqa: S603
         [sys.executable, "-m", "kosmos.ipc.demo.full_turn_probe", "--session", session],
         cwd=PROJECT_ROOT,
         check=True,

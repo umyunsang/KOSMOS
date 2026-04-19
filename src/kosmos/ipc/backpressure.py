@@ -118,9 +118,7 @@ def is_critical_lane(frame: IPCFrame) -> bool:
     """
     if frame.kind == "notification_push":
         return frame.adapter_id in _CRITICAL_NOTIFICATION_ADAPTERS
-    if frame.kind == "error":
-        return True
-    return False
+    return frame.kind == "error"
 
 
 # ---------------------------------------------------------------------------

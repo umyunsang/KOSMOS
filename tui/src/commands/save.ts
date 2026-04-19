@@ -11,8 +11,9 @@ function handle({ sendFrame }: CommandHandlerArgs): CommandResult {
     // session_id and ts are placeholders — Team A fills these in at the bridge
     // layer (T050) when wiring the dispatcher to the IPC bridge.
     session_id: '',
-    correlation_id: null,
+    correlation_id: crypto.randomUUID(),
     ts: now,
+    role: 'tui',
     event: 'save',
     payload: {},
   })

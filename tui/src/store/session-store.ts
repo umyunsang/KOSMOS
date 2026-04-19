@@ -71,6 +71,7 @@ export interface WorkerStatus {
 /** Pending permission request that blocks user input */
 export interface PermissionRequest {
   request_id: string
+  correlation_id: string
   worker_id: string
   primitive_kind: string
   description_ko: string

@@ -35,7 +35,7 @@ from kosmos.ipc.envelope import emit_ndjson
 
 logger = logging.getLogger(__name__)
 
-_DEFAULT_FIXTURE_PATH = Path("/tmp/backpressure-throttle.json")
+_DEFAULT_FIXTURE_PATH = Path("/tmp/backpressure-throttle.json")  # noqa: S108 — demo fixture location
 
 
 def main(argv: list[str] | None = None) -> int:

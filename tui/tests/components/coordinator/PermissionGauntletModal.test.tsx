@@ -27,6 +27,7 @@ const SESSION_ID = 'test-session-01'
 
 const MOCK_REQUEST: PermissionRequest = {
   request_id: 'req-001',
+  correlation_id: '019da5b0-e60d-71a0-a393-000000000001',
   worker_id: 'transport-worker-1',
   primitive_kind: 'lookup',
   description_ko: '교통 정보를 조회하려 합니다',
