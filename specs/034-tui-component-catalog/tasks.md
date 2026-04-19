@@ -156,7 +156,7 @@
 
 - [X] T035 [P] Run `.specify/scripts/bash/update-agent-context.sh claude` to refresh the "Active Technologies" block in `CLAUDE.md` with "N/A — documentation-only Epic (034-tui-component-catalog)" so auto-memory reflects the shipped state
 - [X] T036 [P] Readability spot-check for SC-008: pick 5 random CC component files, time how long it takes a reviewer (unfamiliar with CC) to locate verdict + owning Epic + rationale using only `docs/tui/component-catalog.md` + ADR-006 + `.references/claude-code-sourcemap/`; target < 30 min total for all 5 picks; record in analyze-report.md
-- [ ] T037 Final PR preparation: confirm PR body uses `Closes #1310` only (Epic M), NOT any Task sub-issue numbers (per AGENTS.md § PR closing rule); monitor CI via `gh pr checks --watch --interval 10` until green; Copilot + Codex review gate passes
+- [X] T037 Final PR preparation: confirm PR body uses `Closes #1310` only (Epic M), NOT any Task sub-issue numbers (per AGENTS.md § PR closing rule); monitor CI via `gh pr checks --watch --interval 10` until green; Copilot + Codex review gate passes
 
 ---
 
