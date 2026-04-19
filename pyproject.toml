@@ -37,6 +37,7 @@ dependencies = [
 
 [project.scripts]
 kosmos = "kosmos.cli.app:main"
+kosmos-permissions = "kosmos.permissions.cli:main"
 
 [project.optional-dependencies]
 dev = [

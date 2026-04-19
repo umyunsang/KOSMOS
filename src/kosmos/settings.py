@@ -96,6 +96,54 @@ class KosmosSettings(BaseSettings):
             raise ValueError(f"agent_mailbox_root must be an absolute path, got: {v!r}")
         return v
 
+    # --- Permission v2 (Spec 033, Epic #1297) ---
+    permission_timeout_sec: int = Field(default=30, ge=1, le=300)
+    """Consent prompt timeout in seconds (KOSMOS_PERMISSION_TIMEOUT_SEC).
+
+    The citizen has this many seconds to respond to a PIPA consent prompt
+    before the pipeline times out and falls back to ``deny``.
+    Clamped to [1, 300]. Default: 30.
+    """
+
+    permission_ttl_session_sec: int = Field(default=3600, ge=60, le=86400)
+    """Session-scoped permission rule TTL in seconds (KOSMOS_PERMISSION_TTL_SESSION_SEC).
+
+    Session-scoped ``allow`` rules expire after this many seconds regardless
+    of process lifetime.  Clamped to [60, 86400] (1 min to 24 hours).
+    Default: 3600 (1 hour).
+    """
+
+    permission_key_path: Path = Field(
+        default_factory=lambda: Path.home() / ".kosmos" / "keys" / "ledger.key",
+    )
+    """Path to the HMAC key file (KOSMOS_PERMISSION_KEY_PATH).
+
+    Must be an absolute path.  File is created with mode ``0o400`` on first boot
+    via ``hmac_key.load_or_generate_key()``.  If the file exists with wrong mode,
+    ledger operations fail closed (Invariant C3).
+    Default: ``~/.kosmos/keys/ledger.key``.
+    """
+
+    permission_ledger_path: Path = Field(
+        default_factory=lambda: Path.home() / ".kosmos" / "consent_ledger.jsonl",
+    )
+    """Path to the append-only PIPA consent ledger (KOSMOS_PERMISSION_LEDGER_PATH).
+
+    JSONL file; one RFC 8785 JCS canonical record per line.  WORM semantics
+    enforced in software — no update/delete API.
+    Default: ``~/.kosmos/consent_ledger.jsonl``.
+    """
+
+    permission_rule_store_path: Path = Field(
+        default_factory=lambda: Path.home() / ".kosmos" / "permissions.json",
+    )
+    """Path to the persistent tri-state rule store (KOSMOS_PERMISSION_RULE_STORE_PATH).
+
+    JSON file; atomic writes via ``tmpfile + os.rename``.  Schema-validated at
+    boot; falls back to ``default`` mode + prompt-always on violation.
+    Default: ``~/.kosmos/permissions.json``.
+    """
+
 
 settings: KosmosSettings = KosmosSettings()
 """Module-level singleton.  Import this directly in production code."""
