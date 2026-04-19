@@ -262,16 +262,16 @@ description: "Task list for Spec 287 TUI (Ink + React + Bun)"
 
 ### Tests for User Story 7
 
-- [ ] T114 [P] [US7] Perf test `tui/tests/components/conversation/VirtualizedList.test.tsx` — mount 1,000-message fixture; assert only the visible viewport re-renders on new-message append (US7 scenario 1; FR-048)
-- [ ] T115 [P] [US7] Perf test `tui/tests/components/conversation/overflowToBackbuffer.test.tsx` — conversation exceeds terminal height; assert scrollback works without re-rendering historical messages (US7 scenario 4; FR-052)
-- [ ] T116 [P] [US7] Store-selector test `tui/tests/store/useSyncExternalStore.test.ts` — append a chunk; assert only the affected `<StreamingMessage />` re-renders (US7 scenario 3; FR-050)
+- [X] T114 [P] [US7] Perf test `tui/tests/components/conversation/VirtualizedList.test.tsx` — mount 1,000-message fixture; assert only the visible viewport re-renders on new-message append (US7 scenario 1; FR-048)
+- [X] T115 [P] [US7] Perf test `tui/tests/components/conversation/overflowToBackbuffer.test.tsx` — conversation exceeds terminal height; assert scrollback works without re-rendering historical messages (US7 scenario 4; FR-052)
+- [X] T116 [P] [US7] Store-selector test `tui/tests/store/useSyncExternalStore.test.ts` — append a chunk; assert only the affected `<StreamingMessage />` re-renders (US7 scenario 3; FR-050)
 
 ### Implementation for User Story 7
 
-- [ ] T117 [US7] Lift `tui/src/components/conversation/VirtualizedList.tsx` from `restored-src/src/components/` virtualization implementation with attribution header (FR-048)
-- [ ] T118 [US7] Add Gemini CLI's `overflowToBackbuffer` pattern on top of VirtualizedList, referencing `.references/gemini-cli/packages/cli/` for structure (FR-052) — KOSMOS-original integration; no attribution header to restored-src, but add a comment referencing Gemini CLI Apache-2.0 licensing
-- [ ] T119 [US7] Implement double-buffered redraw pattern in `tui/src/ink/renderer.ts` lift (already from T018); verify via component test that redraw-batch coalescing matches Claude Code behavior (FR-049)
-- [ ] T120 [US7] Wire `VirtualizedList` into `MessageList.tsx` replacing any naive list rendering
+- [X] T117 [US7] Lift `tui/src/components/conversation/VirtualizedList.tsx` from `restored-src/src/components/` virtualization implementation with attribution header (FR-048)
+- [X] T118 [US7] Add Gemini CLI's `overflowToBackbuffer` pattern on top of VirtualizedList, referencing `.references/gemini-cli/packages/cli/` for structure (FR-052) — KOSMOS-original integration; no attribution header to restored-src, but add a comment referencing Gemini CLI Apache-2.0 licensing
+- [X] T119 [US7] Implement double-buffered redraw pattern in `tui/src/ink/renderer.ts` lift (already from T018); verify via component test that redraw-batch coalescing matches Claude Code behavior (FR-049)
+- [X] T120 [US7] Wire `VirtualizedList` into `MessageList.tsx` replacing any naive list rendering
 
 **Checkpoint**: 1,000-message replay passes perf thresholds; scrollback preserves history.
 
