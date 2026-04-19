@@ -121,6 +121,8 @@ async def session_backend(
 def _session_event(sid: str, event: str, payload: dict | None = None) -> bytes:
     frame = SessionEventFrame(
         session_id=sid,
+        correlation_id=f"test-corr-{event}-001",
+        role="tui",
         ts=_ts(),
         kind="session_event",
         event=event,  # type: ignore[arg-type]

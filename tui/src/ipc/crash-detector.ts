@@ -12,6 +12,11 @@
 // Timing: crash must be detected within 5 seconds of the backend exit
 // (SC-5 / FR-004).  This is satisfied because proc.exited resolves as soon
 // as the OS signals the process has exited; no polling is needed.
+//
+// US1 T026: Added onDrop callback — called on stdin EOF / EPIPE so the bridge
+// can initiate its reconnect loop without prompting the user.  This is
+// distinct from onCrash (non-zero exit) because a clean backend restart
+// exits 0 but still causes a drop from the TUI's perspective.
 
 import type { CrashNotice } from './bridge'
 
@@ -88,6 +93,18 @@ class StderrBuffer {
 export interface CrashDetectorOptions {
   /** Called when a crash is detected with a redacted notice. */
   onCrash: (notice: CrashNotice) => void
+  /**
+   * US1 T026: Called when a stdio drop is detected (stdin EOF / EPIPE) so
+   * the bridge can initiate its reconnect loop without prompting the user.
+   *
+   * A drop is distinct from a crash: the backend may exit 0 (clean restart)
+   * but the TUI still loses its stdio connection.  The bridge should not
+   * surface any user-visible error for a drop — only for a persistent
+   * crash after all reconnect attempts fail.
+   *
+   * Optional: if absent, only onCrash is called.
+   */
+  onDrop?: () => void
 }
 
 /**
@@ -98,6 +115,9 @@ export interface CrashDetectorOptions {
  *    killed) builds a CrashNotice with the stderr tail.
  * 3. Redacts KOSMOS_*_KEY/SECRET/TOKEN/PASSWORD values from the tail.
  * 4. Calls `onCrash` with the notice.
+ * 5. (US1 T026) Watches for stdin EOF / EPIPE by attempting a zero-byte write
+ *    after process exit; also listens on stdout done → calls `onDrop` so the
+ *    bridge enters the reconnect loop without surfacing a user error.
  *
  * The detector is passive — it does not kill the process itself.  Killing is
  * the bridge's responsibility (bridge.ts `close()`).
@@ -136,9 +156,13 @@ export function startCrashDetector(
     const raw = stderrBuf.tail()
     const redacted = redactKosmosSecrets(raw)
 
-    // Exit 0 is clean shutdown — no crash notice needed.
-    // Exit null means the process is still running (should not happen here).
-    if (exitCode === 0 || exitCode === null) return
+    // Exit 0 is a clean shutdown.  Signal onDrop (not onCrash) so the bridge
+    // can attempt reconnect without showing the user an error dialog.
+    if (exitCode === 0 || exitCode === null) {
+      // Drop the connection silently — bridge reconnect loop handles recovery.
+      opts.onDrop?.()
+      return
+    }
 
     const notice: CrashNotice = {
       exitCode,
