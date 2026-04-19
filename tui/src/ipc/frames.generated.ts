@@ -19,19 +19,56 @@ export type IPCFrame =
   | PermissionRequestFrame
   | PermissionResponseFrame
   | SessionEventFrame
-  | ErrorFrame;
+  | ErrorFrame
+  | PayloadStartFrame
+  | PayloadDeltaFrame
+  | PayloadEndFrame
+  | BackpressureSignalFrame
+  | ResumeRequestFrame
+  | ResumeResponseFrame
+  | ResumeRejectedFrame
+  | HeartbeatFrame
+  | NotificationPushFrame;
 /**
- * ULID; shared across all frames in a session.
+ * Opaque session identifier.
  */
 export type SessionId = string;
 /**
- * ULID of the triggering frame; null for unsolicited frames.
+ * UUIDv7 string for new emissions; ULID accepted for back-compat. Non-empty; emitter SHOULD use UUIDv7. (E5)
  */
-export type CorrelationId = string | null;
+export type CorrelationId = string;
 /**
- * RFC 3339 UTC timestamp.
+ * ISO-8601 UTC timestamp with sub-ms precision.
  */
 export type Ts = string;
+/**
+ * Envelope version. Hard-fail on mismatch (E1, FR-001).
+ */
+export type Version = '1.0';
+/**
+ * Origin role. Validated against kind<->role allow-list (E3, FR-004).
+ */
+export type Role = 'tui' | 'backend' | 'tool' | 'llm' | 'notification';
+/**
+ * Per-session monotonic sequence number (ge=0). Gap detection uses this.
+ */
+export type FrameSeq = number;
+/**
+ * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)
+ */
+export type TransactionId = string | null;
+/**
+ * True when this frame terminates a logical payload/stream.
+ */
+export type Final = boolean;
+/**
+ * Mirror of envelope transaction_id for trailer-only consumers.
+ */
+export type TransactionId1 = string | null;
+/**
+ * Hex SHA-256 of the concatenated payload bytes for streamed payloads.
+ */
+export type ChecksumSha256 = string | null;
 /**
  * Frame discriminator.
  */
@@ -41,17 +78,33 @@ export type Kind = 'user_input';
  */
 export type Text = string;
 /**
- * ULID; shared across all frames in a session.
+ * Opaque session identifier.
  */
 export type SessionId1 = string;
 /**
- * ULID of the triggering frame; null for unsolicited frames.
+ * UUIDv7 string for new emissions; ULID accepted for back-compat. Non-empty; emitter SHOULD use UUIDv7. (E5)
  */
-export type CorrelationId1 = string | null;
+export type CorrelationId1 = string;
 /**
- * RFC 3339 UTC timestamp.
+ * ISO-8601 UTC timestamp with sub-ms precision.
  */
 export type Ts1 = string;
+/**
+ * Envelope version. Hard-fail on mismatch (E1, FR-001).
+ */
+export type Version1 = '1.0';
+/**
+ * Origin role. Validated against kind<->role allow-list (E3, FR-004).
+ */
+export type Role1 = 'tui' | 'backend' | 'tool' | 'llm' | 'notification';
+/**
+ * Per-session monotonic sequence number (ge=0). Gap detection uses this.
+ */
+export type FrameSeq1 = number;
+/**
+ * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)
+ */
+export type TransactionId2 = string | null;
 /**
  * Frame discriminator.
  */
@@ -69,17 +122,33 @@ export type Delta = string;
  */
 export type Done = boolean;
 /**
- * ULID; shared across all frames in a session.
+ * Opaque session identifier.
  */
 export type SessionId2 = string;
 /**
- * ULID of the triggering frame; null for unsolicited frames.
+ * UUIDv7 string for new emissions; ULID accepted for back-compat. Non-empty; emitter SHOULD use UUIDv7. (E5)
  */
-export type CorrelationId2 = string | null;
+export type CorrelationId2 = string;
 /**
- * RFC 3339 UTC timestamp.
+ * ISO-8601 UTC timestamp with sub-ms precision.
  */
 export type Ts2 = string;
+/**
+ * Envelope version. Hard-fail on mismatch (E1, FR-001).
+ */
+export type Version2 = '1.0';
+/**
+ * Origin role. Validated against kind<->role allow-list (E3, FR-004).
+ */
+export type Role2 = 'tui' | 'backend' | 'tool' | 'llm' | 'notification';
+/**
+ * Per-session monotonic sequence number (ge=0). Gap detection uses this.
+ */
+export type FrameSeq2 = number;
+/**
+ * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)
+ */
+export type TransactionId3 = string | null;
 /**
  * Frame discriminator.
  */
@@ -93,17 +162,33 @@ export type CallId = string;
  */
 export type Name = 'lookup' | 'resolve_location' | 'submit' | 'subscribe' | 'verify';
 /**
- * ULID; shared across all frames in a session.
+ * Opaque session identifier.
  */
 export type SessionId3 = string;
 /**
- * ULID of the triggering frame; null for unsolicited frames.
+ * UUIDv7 string for new emissions; ULID accepted for back-compat. Non-empty; emitter SHOULD use UUIDv7. (E5)
  */
-export type CorrelationId3 = string | null;
+export type CorrelationId3 = string;
 /**
- * RFC 3339 UTC timestamp.
+ * ISO-8601 UTC timestamp with sub-ms precision.
  */
 export type Ts3 = string;
+/**
+ * Envelope version. Hard-fail on mismatch (E1, FR-001).
+ */
+export type Version3 = '1.0';
+/**
+ * Origin role. Validated against kind<->role allow-list (E3, FR-004).
+ */
+export type Role3 = 'tui' | 'backend' | 'tool' | 'llm' | 'notification';
+/**
+ * Per-session monotonic sequence number (ge=0). Gap detection uses this.
+ */
+export type FrameSeq3 = number;
+/**
+ * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)
+ */
+export type TransactionId4 = string | null;
 /**
  * Frame discriminator.
  */
@@ -117,17 +202,33 @@ export type CallId1 = string;
  */
 export type Kind4 = 'lookup' | 'resolve_location' | 'submit' | 'subscribe' | 'verify';
 /**
- * ULID; shared across all frames in a session.
+ * Opaque session identifier.
  */
 export type SessionId4 = string;
 /**
- * ULID of the triggering frame; null for unsolicited frames.
+ * UUIDv7 string for new emissions; ULID accepted for back-compat. Non-empty; emitter SHOULD use UUIDv7. (E5)
  */
-export type CorrelationId4 = string | null;
+export type CorrelationId4 = string;
 /**
- * RFC 3339 UTC timestamp.
+ * ISO-8601 UTC timestamp with sub-ms precision.
  */
 export type Ts4 = string;
+/**
+ * Envelope version. Hard-fail on mismatch (E1, FR-001).
+ */
+export type Version4 = '1.0';
+/**
+ * Origin role. Validated against kind<->role allow-list (E3, FR-004).
+ */
+export type Role4 = 'tui' | 'backend' | 'tool' | 'llm' | 'notification';
+/**
+ * Per-session monotonic sequence number (ge=0). Gap detection uses this.
+ */
+export type FrameSeq4 = number;
+/**
+ * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)
+ */
+export type TransactionId5 = string | null;
 /**
  * Frame discriminator.
  */
@@ -137,17 +238,33 @@ export type Kind5 = 'coordinator_phase';
  */
 export type Phase = 'Research' | 'Synthesis' | 'Implementation' | 'Verification';
 /**
- * ULID; shared across all frames in a session.
+ * Opaque session identifier.
  */
 export type SessionId5 = string;
 /**
- * ULID of the triggering frame; null for unsolicited frames.
+ * UUIDv7 string for new emissions; ULID accepted for back-compat. Non-empty; emitter SHOULD use UUIDv7. (E5)
  */
-export type CorrelationId5 = string | null;
+export type CorrelationId5 = string;
 /**
- * RFC 3339 UTC timestamp.
+ * ISO-8601 UTC timestamp with sub-ms precision.
  */
 export type Ts5 = string;
+/**
+ * Envelope version. Hard-fail on mismatch (E1, FR-001).
+ */
+export type Version5 = '1.0';
+/**
+ * Origin role. Validated against kind<->role allow-list (E3, FR-004).
+ */
+export type Role5 = 'tui' | 'backend' | 'tool' | 'llm' | 'notification';
+/**
+ * Per-session monotonic sequence number (ge=0). Gap detection uses this.
+ */
+export type FrameSeq5 = number;
+/**
+ * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)
+ */
+export type TransactionId6 = string | null;
 /**
  * Frame discriminator.
  */
@@ -169,17 +286,33 @@ export type CurrentPrimitive = 'lookup' | 'resolve_location' | 'submit' | 'subsc
  */
 export type Status = 'idle' | 'running' | 'waiting_permission' | 'error';
 /**
- * ULID; shared across all frames in a session.
+ * Opaque session identifier.
  */
 export type SessionId6 = string;
 /**
- * ULID of the triggering frame; null for unsolicited frames.
+ * UUIDv7 string for new emissions; ULID accepted for back-compat. Non-empty; emitter SHOULD use UUIDv7. (E5)
  */
-export type CorrelationId6 = string | null;
+export type CorrelationId6 = string;
 /**
- * RFC 3339 UTC timestamp.
+ * ISO-8601 UTC timestamp with sub-ms precision.
  */
 export type Ts6 = string;
+/**
+ * Envelope version. Hard-fail on mismatch (E1, FR-001).
+ */
+export type Version6 = '1.0';
+/**
+ * Origin role. Validated against kind<->role allow-list (E3, FR-004).
+ */
+export type Role6 = 'tui' | 'backend' | 'tool' | 'llm' | 'notification';
+/**
+ * Per-session monotonic sequence number (ge=0). Gap detection uses this.
+ */
+export type FrameSeq6 = number;
+/**
+ * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)
+ */
+export type TransactionId7 = string | null;
 /**
  * Frame discriminator.
  */
@@ -209,17 +342,33 @@ export type DescriptionEn = string;
  */
 export type RiskLevel = 'low' | 'medium' | 'high';
 /**
- * ULID; shared across all frames in a session.
+ * Opaque session identifier.
  */
 export type SessionId7 = string;
 /**
- * ULID of the triggering frame; null for unsolicited frames.
+ * UUIDv7 string for new emissions; ULID accepted for back-compat. Non-empty; emitter SHOULD use UUIDv7. (E5)
  */
-export type CorrelationId7 = string | null;
+export type CorrelationId7 = string;
 /**
- * RFC 3339 UTC timestamp.
+ * ISO-8601 UTC timestamp with sub-ms precision.
  */
 export type Ts7 = string;
+/**
+ * Envelope version. Hard-fail on mismatch (E1, FR-001).
+ */
+export type Version7 = '1.0';
+/**
+ * Origin role. Validated against kind<->role allow-list (E3, FR-004).
+ */
+export type Role7 = 'tui' | 'backend' | 'tool' | 'llm' | 'notification';
+/**
+ * Per-session monotonic sequence number (ge=0). Gap detection uses this.
+ */
+export type FrameSeq7 = number;
+/**
+ * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)
+ */
+export type TransactionId8 = string | null;
 /**
  * Frame discriminator.
  */
@@ -233,17 +382,33 @@ export type RequestId1 = string;
  */
 export type Decision = 'granted' | 'denied';
 /**
- * ULID; shared across all frames in a session.
+ * Opaque session identifier.
  */
 export type SessionId8 = string;
 /**
- * ULID of the triggering frame; null for unsolicited frames.
+ * UUIDv7 string for new emissions; ULID accepted for back-compat. Non-empty; emitter SHOULD use UUIDv7. (E5)
  */
-export type CorrelationId8 = string | null;
+export type CorrelationId8 = string;
 /**
- * RFC 3339 UTC timestamp.
+ * ISO-8601 UTC timestamp with sub-ms precision.
  */
 export type Ts8 = string;
+/**
+ * Envelope version. Hard-fail on mismatch (E1, FR-001).
+ */
+export type Version8 = '1.0';
+/**
+ * Origin role. Validated against kind<->role allow-list (E3, FR-004).
+ */
+export type Role8 = 'tui' | 'backend' | 'tool' | 'llm' | 'notification';
+/**
+ * Per-session monotonic sequence number (ge=0). Gap detection uses this.
+ */
+export type FrameSeq8 = number;
+/**
+ * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)
+ */
+export type TransactionId9 = string | null;
 /**
  * Frame discriminator.
  */
@@ -253,17 +418,33 @@ export type Kind9 = 'session_event';
  */
 export type Event = 'save' | 'load' | 'list' | 'resume' | 'new' | 'exit';
 /**
- * ULID; shared across all frames in a session.
+ * Opaque session identifier.
  */
 export type SessionId9 = string;
 /**
- * ULID of the triggering frame; null for unsolicited frames.
+ * UUIDv7 string for new emissions; ULID accepted for back-compat. Non-empty; emitter SHOULD use UUIDv7. (E5)
  */
-export type CorrelationId9 = string | null;
+export type CorrelationId9 = string;
 /**
- * RFC 3339 UTC timestamp.
+ * ISO-8601 UTC timestamp with sub-ms precision.
  */
 export type Ts9 = string;
+/**
+ * Envelope version. Hard-fail on mismatch (E1, FR-001).
+ */
+export type Version9 = '1.0';
+/**
+ * Origin role. Validated against kind<->role allow-list (E3, FR-004).
+ */
+export type Role9 = 'tui' | 'backend' | 'tool' | 'llm' | 'notification';
+/**
+ * Per-session monotonic sequence number (ge=0). Gap detection uses this.
+ */
+export type FrameSeq9 = number;
+/**
+ * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)
+ */
+export type TransactionId10 = string | null;
 /**
  * Frame discriminator.
  */
@@ -276,36 +457,477 @@ export type Code = string;
  * Human-readable short message. MUST NOT contain KOSMOS_*-prefixed env var values (FR-004 redaction rule).
  */
 export type Message = string;
+/**
+ * Opaque session identifier.
+ */
+export type SessionId10 = string;
+/**
+ * UUIDv7 string for new emissions; ULID accepted for back-compat. Non-empty; emitter SHOULD use UUIDv7. (E5)
+ */
+export type CorrelationId10 = string;
+/**
+ * ISO-8601 UTC timestamp with sub-ms precision.
+ */
+export type Ts10 = string;
+/**
+ * Envelope version. Hard-fail on mismatch (E1, FR-001).
+ */
+export type Version10 = '1.0';
+/**
+ * Origin role. Validated against kind<->role allow-list (E3, FR-004).
+ */
+export type Role10 = 'tui' | 'backend' | 'tool' | 'llm' | 'notification';
+/**
+ * Per-session monotonic sequence number (ge=0). Gap detection uses this.
+ */
+export type FrameSeq10 = number;
+/**
+ * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)
+ */
+export type TransactionId11 = string | null;
+/**
+ * Frame discriminator.
+ */
+export type Kind11 = 'payload_start';
+/**
+ * Payload MIME type.
+ */
+export type ContentType = 'text/markdown' | 'application/json' | 'text/plain';
+/**
+ * Optional size hint for HUD progress bars.
+ */
+export type EstimatedBytes = number | null;
+/**
+ * Opaque session identifier.
+ */
+export type SessionId11 = string;
+/**
+ * UUIDv7 string for new emissions; ULID accepted for back-compat. Non-empty; emitter SHOULD use UUIDv7. (E5)
+ */
+export type CorrelationId11 = string;
+/**
+ * ISO-8601 UTC timestamp with sub-ms precision.
+ */
+export type Ts11 = string;
+/**
+ * Envelope version. Hard-fail on mismatch (E1, FR-001).
+ */
+export type Version11 = '1.0';
+/**
+ * Origin role. Validated against kind<->role allow-list (E3, FR-004).
+ */
+export type Role11 = 'tui' | 'backend' | 'tool' | 'llm' | 'notification';
+/**
+ * Per-session monotonic sequence number (ge=0). Gap detection uses this.
+ */
+export type FrameSeq11 = number;
+/**
+ * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)
+ */
+export type TransactionId12 = string | null;
+/**
+ * Frame discriminator.
+ */
+export type Kind12 = 'payload_delta';
+/**
+ * Monotonic within the payload (first delta = 0).
+ */
+export type DeltaSeq = number;
+/**
+ * UTF-8 text. If content-type is application/json, this is a JSON-encoded fragment string.
+ */
+export type Payload1 = string;
+/**
+ * Opaque session identifier.
+ */
+export type SessionId12 = string;
+/**
+ * UUIDv7 string for new emissions; ULID accepted for back-compat. Non-empty; emitter SHOULD use UUIDv7. (E5)
+ */
+export type CorrelationId12 = string;
+/**
+ * ISO-8601 UTC timestamp with sub-ms precision.
+ */
+export type Ts12 = string;
+/**
+ * Envelope version. Hard-fail on mismatch (E1, FR-001).
+ */
+export type Version12 = '1.0';
+/**
+ * Origin role. Validated against kind<->role allow-list (E3, FR-004).
+ */
+export type Role12 = 'tui' | 'backend' | 'tool' | 'llm' | 'notification';
+/**
+ * Per-session monotonic sequence number (ge=0). Gap detection uses this.
+ */
+export type FrameSeq12 = number;
+/**
+ * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)
+ */
+export type TransactionId13 = string | null;
+/**
+ * Frame discriminator.
+ */
+export type Kind13 = 'payload_end';
+/**
+ * Total number of payload_delta frames emitted.
+ */
+export type DeltaCount = number;
+/**
+ * Terminal disposition.
+ */
+export type Status1 = 'ok' | 'aborted';
+/**
+ * Opaque session identifier.
+ */
+export type SessionId13 = string;
+/**
+ * UUIDv7 string for new emissions; ULID accepted for back-compat. Non-empty; emitter SHOULD use UUIDv7. (E5)
+ */
+export type CorrelationId13 = string;
+/**
+ * ISO-8601 UTC timestamp with sub-ms precision.
+ */
+export type Ts13 = string;
+/**
+ * Envelope version. Hard-fail on mismatch (E1, FR-001).
+ */
+export type Version13 = '1.0';
+/**
+ * Origin role. Validated against kind<->role allow-list (E3, FR-004).
+ */
+export type Role13 = 'tui' | 'backend' | 'tool' | 'llm' | 'notification';
+/**
+ * Per-session monotonic sequence number (ge=0). Gap detection uses this.
+ */
+export type FrameSeq13 = number;
+/**
+ * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)
+ */
+export type TransactionId14 = string | null;
+/**
+ * Frame discriminator.
+ */
+export type Kind14 = 'backpressure';
+/**
+ * Reader action. pause=stop emitting; resume=clear; throttle=slow down.
+ */
+export type Signal = 'pause' | 'resume' | 'throttle';
+/**
+ * Origin of the signal.
+ */
+export type Source = 'tui_reader' | 'backend_writer' | 'upstream_429';
+/**
+ * Current outbound queue size.
+ */
+export type QueueDepth = number;
+/**
+ * High-water mark threshold in effect (default 64).
+ */
+export type Hwm = number;
+/**
+ * For throttle sourced from upstream_429; reflects Retry-After. ge=0.
+ */
+export type RetryAfterMs = number | null;
+/**
+ * Korean HUD copy (civic-facing). Must be non-empty (FR-015).
+ */
+export type HudCopyKo = string;
+/**
+ * English HUD copy (dev-facing). Must be non-empty (FR-015).
+ */
+export type HudCopyEn = string;
+/**
+ * Opaque session identifier.
+ */
+export type SessionId14 = string;
+/**
+ * UUIDv7 string for new emissions; ULID accepted for back-compat. Non-empty; emitter SHOULD use UUIDv7. (E5)
+ */
+export type CorrelationId14 = string;
+/**
+ * ISO-8601 UTC timestamp with sub-ms precision.
+ */
+export type Ts14 = string;
+/**
+ * Envelope version. Hard-fail on mismatch (E1, FR-001).
+ */
+export type Version14 = '1.0';
+/**
+ * Origin role. Validated against kind<->role allow-list (E3, FR-004).
+ */
+export type Role14 = 'tui' | 'backend' | 'tool' | 'llm' | 'notification';
+/**
+ * Per-session monotonic sequence number (ge=0). Gap detection uses this.
+ */
+export type FrameSeq14 = number;
+/**
+ * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)
+ */
+export type TransactionId15 = string | null;
+/**
+ * Frame discriminator.
+ */
+export type Kind15 = 'resume_request';
+/**
+ * Last correlation_id the TUI successfully applied. None if no prior frame.
+ */
+export type LastSeenCorrelationId = string | null;
+/**
+ * Last frame_seq applied. None if none.
+ */
+export type LastSeenFrameSeq = number | null;
+/**
+ * TUI-local session token for authenticity binding.
+ */
+export type TuiSessionToken = string;
+/**
+ * Opaque session identifier.
+ */
+export type SessionId15 = string;
+/**
+ * UUIDv7 string for new emissions; ULID accepted for back-compat. Non-empty; emitter SHOULD use UUIDv7. (E5)
+ */
+export type CorrelationId15 = string;
+/**
+ * ISO-8601 UTC timestamp with sub-ms precision.
+ */
+export type Ts15 = string;
+/**
+ * Envelope version. Hard-fail on mismatch (E1, FR-001).
+ */
+export type Version15 = '1.0';
+/**
+ * Origin role. Validated against kind<->role allow-list (E3, FR-004).
+ */
+export type Role15 = 'tui' | 'backend' | 'tool' | 'llm' | 'notification';
+/**
+ * Per-session monotonic sequence number (ge=0). Gap detection uses this.
+ */
+export type FrameSeq15 = number;
+/**
+ * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)
+ */
+export type TransactionId16 = string | null;
+/**
+ * Frame discriminator.
+ */
+export type Kind16 = 'resume_response';
+/**
+ * Inclusive lower bound of frames that will be replayed.
+ */
+export type ResumedFromFrameSeq = number;
+/**
+ * Total frames the backend will replay. Bounded by ring buffer size.
+ */
+export type ReplayCount = number;
+/**
+ * Backend-assigned session id the TUI should use going forward.
+ */
+export type ServerSessionId = string;
+/**
+ * Negotiated heartbeat cadence (default 30000).
+ */
+export type HeartbeatIntervalMs = number;
+/**
+ * Opaque session identifier.
+ */
+export type SessionId16 = string;
+/**
+ * UUIDv7 string for new emissions; ULID accepted for back-compat. Non-empty; emitter SHOULD use UUIDv7. (E5)
+ */
+export type CorrelationId16 = string;
+/**
+ * ISO-8601 UTC timestamp with sub-ms precision.
+ */
+export type Ts16 = string;
+/**
+ * Envelope version. Hard-fail on mismatch (E1, FR-001).
+ */
+export type Version16 = '1.0';
+/**
+ * Origin role. Validated against kind<->role allow-list (E3, FR-004).
+ */
+export type Role16 = 'tui' | 'backend' | 'tool' | 'llm' | 'notification';
+/**
+ * Per-session monotonic sequence number (ge=0). Gap detection uses this.
+ */
+export type FrameSeq16 = number;
+/**
+ * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)
+ */
+export type TransactionId17 = string | null;
+/**
+ * Frame discriminator.
+ */
+export type Kind17 = 'resume_rejected';
+/**
+ * Machine-readable reason code.
+ */
+export type Reason =
+  | 'ring_evicted'
+  | 'session_unknown'
+  | 'token_mismatch'
+  | 'protocol_incompatible'
+  | 'session_expired';
+/**
+ * Human-readable Korean/English detail for HUD.
+ */
+export type Detail = string;
+/**
+ * Opaque session identifier.
+ */
+export type SessionId17 = string;
+/**
+ * UUIDv7 string for new emissions; ULID accepted for back-compat. Non-empty; emitter SHOULD use UUIDv7. (E5)
+ */
+export type CorrelationId17 = string;
+/**
+ * ISO-8601 UTC timestamp with sub-ms precision.
+ */
+export type Ts17 = string;
+/**
+ * Envelope version. Hard-fail on mismatch (E1, FR-001).
+ */
+export type Version17 = '1.0';
+/**
+ * Origin role. Validated against kind<->role allow-list (E3, FR-004).
+ */
+export type Role17 = 'tui' | 'backend' | 'tool' | 'llm' | 'notification';
+/**
+ * Per-session monotonic sequence number (ge=0). Gap detection uses this.
+ */
+export type FrameSeq17 = number;
+/**
+ * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)
+ */
+export type TransactionId18 = string | null;
+/**
+ * Frame discriminator.
+ */
+export type Kind18 = 'heartbeat';
+/**
+ * ping from sender, pong from receiver.
+ */
+export type Direction = 'ping' | 'pong';
+/**
+ * Sender's current outbound frame_seq high-water.
+ */
+export type PeerFrameSeq = number;
+/**
+ * Opaque session identifier.
+ */
+export type SessionId18 = string;
+/**
+ * UUIDv7 string for new emissions; ULID accepted for back-compat. Non-empty; emitter SHOULD use UUIDv7. (E5)
+ */
+export type CorrelationId18 = string;
+/**
+ * ISO-8601 UTC timestamp with sub-ms precision.
+ */
+export type Ts18 = string;
+/**
+ * Envelope version. Hard-fail on mismatch (E1, FR-001).
+ */
+export type Version18 = '1.0';
+/**
+ * Origin role. Validated against kind<->role allow-list (E3, FR-004).
+ */
+export type Role18 = 'tui' | 'backend' | 'tool' | 'llm' | 'notification';
+/**
+ * Per-session monotonic sequence number (ge=0). Gap detection uses this.
+ */
+export type FrameSeq18 = number;
+/**
+ * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)
+ */
+export type TransactionId19 = string | null;
+/**
+ * Frame discriminator.
+ */
+export type Kind19 = 'notification_push';
+/**
+ * Handle from Spec 031 subscribe registration.
+ */
+export type SubscriptionId = string;
+/**
+ * e.g., disaster_alert_cbs_push, rss_newsroom_subscribe.
+ */
+export type AdapterId = string;
+/**
+ * RSS guid or CBS event hash for duplicate suppression.
+ */
+export type EventGuid = string;
+/**
+ * Inline payload MIME.
+ */
+export type PayloadContentType = 'text/plain' | 'application/json';
+/**
+ * Inline notification content (Korean for civic users).
+ */
+export type Payload2 = string;
 
 /**
- * TUI → backend: a citizen's typed input.
+ * TUI -> backend: a citizen's typed input.
  */
 export interface UserInputFrame {
   session_id: SessionId;
-  correlation_id?: CorrelationId;
+  correlation_id: CorrelationId;
   ts: Ts;
+  version?: Version;
+  role: Role;
+  frame_seq?: FrameSeq;
+  transaction_id?: TransactionId;
+  /**
+   * Completion/validation metadata. Populated on terminal frames. (FR-006)
+   */
+  trailer?: FrameTrailer | null;
   kind: Kind;
   text: Text;
 }
 /**
- * backend → TUI: streaming assistant text delta.
+ * Completion/validation metadata on terminal frames (FR-006).
+ */
+export interface FrameTrailer {
+  final: Final;
+  transaction_id?: TransactionId1;
+  checksum_sha256?: ChecksumSha256;
+}
+/**
+ * backend -> TUI: streaming assistant text delta.
  */
 export interface AssistantChunkFrame {
   session_id: SessionId1;
-  correlation_id?: CorrelationId1;
+  correlation_id: CorrelationId1;
   ts: Ts1;
+  version?: Version1;
+  role: Role1;
+  frame_seq?: FrameSeq1;
+  transaction_id?: TransactionId2;
+  /**
+   * Completion/validation metadata. Populated on terminal frames. (FR-006)
+   */
+  trailer?: FrameTrailer | null;
   kind: Kind1;
   message_id: MessageId;
   delta: Delta;
   done: Done;
 }
 /**
- * backend → TUI (display only): a tool invocation decision by the model.
+ * backend -> TUI (display only): a tool invocation decision by the model.
  */
 export interface ToolCallFrame {
   session_id: SessionId2;
-  correlation_id?: CorrelationId2;
+  correlation_id: CorrelationId2;
   ts: Ts2;
+  version?: Version2;
+  role: Role2;
+  frame_seq?: FrameSeq2;
+  transaction_id?: TransactionId3;
+  /**
+   * Completion/validation metadata. Populated on terminal frames. (FR-006)
+   */
+  trailer?: FrameTrailer | null;
   kind: Kind2;
   call_id: CallId;
   name: Name;
@@ -318,12 +940,20 @@ export interface Arguments {
   [k: string]: any;
 }
 /**
- * backend → TUI (render): the output of a tool invocation.
+ * backend -> TUI (render): the output of a tool invocation.
  */
 export interface ToolResultFrame {
   session_id: SessionId3;
-  correlation_id?: CorrelationId3;
+  correlation_id: CorrelationId3;
   ts: Ts3;
+  version?: Version3;
+  role: Role3;
+  frame_seq?: FrameSeq3;
+  transaction_id?: TransactionId4;
+  /**
+   * Completion/validation metadata. Populated on terminal frames. (FR-006)
+   */
+  trailer?: FrameTrailer | null;
   kind: Kind3;
   call_id: CallId1;
   envelope: ToolResultEnvelope;
@@ -336,22 +966,38 @@ export interface ToolResultEnvelope {
   [k: string]: any;
 }
 /**
- * backend → TUI: Spec 027 coordinator phase update.
+ * backend -> TUI: Spec 027 coordinator phase update.
  */
 export interface CoordinatorPhaseFrame {
   session_id: SessionId4;
-  correlation_id?: CorrelationId4;
+  correlation_id: CorrelationId4;
   ts: Ts4;
+  version?: Version4;
+  role: Role4;
+  frame_seq?: FrameSeq4;
+  transaction_id?: TransactionId5;
+  /**
+   * Completion/validation metadata. Populated on terminal frames. (FR-006)
+   */
+  trailer?: FrameTrailer | null;
   kind: Kind5;
   phase: Phase;
 }
 /**
- * backend → TUI: per-worker status row update from Spec 027 swarm.
+ * backend -> TUI: per-worker status row update from Spec 027 swarm.
  */
 export interface WorkerStatusFrame {
   session_id: SessionId5;
-  correlation_id?: CorrelationId5;
+  correlation_id: CorrelationId5;
   ts: Ts5;
+  version?: Version5;
+  role: Role5;
+  frame_seq?: FrameSeq5;
+  transaction_id?: TransactionId6;
+  /**
+   * Completion/validation metadata. Populated on terminal frames. (FR-006)
+   */
+  trailer?: FrameTrailer | null;
   kind: Kind6;
   worker_id: WorkerId;
   role_id: RoleId;
@@ -359,12 +1005,20 @@ export interface WorkerStatusFrame {
   status: Status;
 }
 /**
- * backend → TUI: a worker raises a permission request.
+ * backend -> TUI: a worker raises a permission request.
  */
 export interface PermissionRequestFrame {
   session_id: SessionId6;
-  correlation_id?: CorrelationId6;
+  correlation_id: CorrelationId6;
   ts: Ts6;
+  version?: Version6;
+  role: Role6;
+  frame_seq?: FrameSeq6;
+  transaction_id?: TransactionId7;
+  /**
+   * Completion/validation metadata. Populated on terminal frames. (FR-006)
+   */
+  trailer?: FrameTrailer | null;
   kind: Kind7;
   request_id: RequestId;
   worker_id: WorkerId1;
@@ -374,12 +1028,20 @@ export interface PermissionRequestFrame {
   risk_level: RiskLevel;
 }
 /**
- * TUI → backend: citizen's decision on a permission_request.
+ * TUI -> backend: citizen's decision on a permission_request.
  */
 export interface PermissionResponseFrame {
   session_id: SessionId7;
-  correlation_id?: CorrelationId7;
+  correlation_id: CorrelationId7;
   ts: Ts7;
+  version?: Version7;
+  role: Role7;
+  frame_seq?: FrameSeq7;
+  transaction_id?: TransactionId8;
+  /**
+   * Completion/validation metadata. Populated on terminal frames. (FR-006)
+   */
+  trailer?: FrameTrailer | null;
   kind: Kind8;
   request_id: RequestId1;
   decision: Decision;
@@ -389,8 +1051,16 @@ export interface PermissionResponseFrame {
  */
 export interface SessionEventFrame {
   session_id: SessionId8;
-  correlation_id?: CorrelationId8;
+  correlation_id: CorrelationId8;
   ts: Ts8;
+  version?: Version8;
+  role: Role8;
+  frame_seq?: FrameSeq8;
+  transaction_id?: TransactionId9;
+  /**
+   * Completion/validation metadata. Populated on terminal frames. (FR-006)
+   */
+  trailer?: FrameTrailer | null;
   kind: Kind9;
   event: Event;
   payload: Payload;
@@ -402,12 +1072,20 @@ export interface Payload {
   [k: string]: any;
 }
 /**
- * backend → TUI: a backend error surfaced to the TUI for rendering.
+ * backend -> TUI: a backend error surfaced to the TUI for rendering.
  */
 export interface ErrorFrame {
   session_id: SessionId9;
-  correlation_id?: CorrelationId9;
+  correlation_id: CorrelationId9;
   ts: Ts9;
+  version?: Version9;
+  role: Role9;
+  frame_seq?: FrameSeq9;
+  transaction_id?: TransactionId10;
+  /**
+   * Completion/validation metadata. Populated on terminal frames. (FR-006)
+   */
+  trailer?: FrameTrailer | null;
   kind: Kind10;
   code: Code;
   message: Message;
@@ -418,4 +1096,213 @@ export interface ErrorFrame {
  */
 export interface Details {
   [k: string]: any;
+}
+/**
+ * Begins a streamed payload (assistant output, tool result chunking).
+ *
+ * Sender MUST follow with >= 1 payload_delta and exactly one payload_end.
+ * role allow-list: backend, tool, llm.
+ */
+export interface PayloadStartFrame {
+  session_id: SessionId10;
+  correlation_id: CorrelationId10;
+  ts: Ts10;
+  version?: Version10;
+  role: Role10;
+  frame_seq?: FrameSeq10;
+  transaction_id?: TransactionId11;
+  /**
+   * Completion/validation metadata. Populated on terminal frames. (FR-006)
+   */
+  trailer?: FrameTrailer | null;
+  kind: Kind11;
+  content_type: ContentType;
+  estimated_bytes?: EstimatedBytes;
+}
+/**
+ * One chunk of a streamed payload.
+ *
+ * role allow-list: backend, tool, llm.
+ */
+export interface PayloadDeltaFrame {
+  session_id: SessionId11;
+  correlation_id: CorrelationId11;
+  ts: Ts11;
+  version?: Version11;
+  role: Role11;
+  frame_seq?: FrameSeq11;
+  transaction_id?: TransactionId12;
+  /**
+   * Completion/validation metadata. Populated on terminal frames. (FR-006)
+   */
+  trailer?: FrameTrailer | null;
+  kind: Kind12;
+  delta_seq: DeltaSeq;
+  payload: Payload1;
+}
+/**
+ * Terminates a streamed payload.
+ *
+ * MUST carry a trailer with final=True.
+ * role allow-list: backend, tool, llm.
+ */
+export interface PayloadEndFrame {
+  session_id: SessionId12;
+  correlation_id: CorrelationId12;
+  ts: Ts12;
+  version?: Version12;
+  role: Role12;
+  frame_seq?: FrameSeq12;
+  transaction_id?: TransactionId13;
+  /**
+   * Completion/validation metadata. Populated on terminal frames. (FR-006)
+   */
+  trailer?: FrameTrailer | null;
+  kind: Kind13;
+  delta_count: DeltaCount;
+  status: Status1;
+}
+/**
+ * Emitted when outgoing queue crosses HWM or a 429 condition is detected.
+ *
+ * role allow-list: tui (tui_reader), backend (backend_writer, upstream_429).
+ * FR-012, FR-015: hud_copy_ko/en MUST be non-empty (min_length=1).
+ */
+export interface BackpressureSignalFrame {
+  session_id: SessionId13;
+  correlation_id: CorrelationId13;
+  ts: Ts13;
+  version?: Version13;
+  role: Role13;
+  frame_seq?: FrameSeq13;
+  transaction_id?: TransactionId14;
+  /**
+   * Completion/validation metadata. Populated on terminal frames. (FR-006)
+   */
+  trailer?: FrameTrailer | null;
+  kind: Kind14;
+  signal: Signal;
+  source: Source;
+  queue_depth: QueueDepth;
+  hwm: Hwm;
+  retry_after_ms?: RetryAfterMs;
+  hud_copy_ko: HudCopyKo;
+  hud_copy_en: HudCopyEn;
+}
+/**
+ * Sent by the reconnecting TUI after a stdio drop.
+ *
+ * role allow-list: tui.
+ */
+export interface ResumeRequestFrame {
+  session_id: SessionId14;
+  correlation_id: CorrelationId14;
+  ts: Ts14;
+  version?: Version14;
+  role: Role14;
+  frame_seq?: FrameSeq14;
+  transaction_id?: TransactionId15;
+  /**
+   * Completion/validation metadata. Populated on terminal frames. (FR-006)
+   */
+  trailer?: FrameTrailer | null;
+  kind: Kind15;
+  last_seen_correlation_id?: LastSeenCorrelationId;
+  last_seen_frame_seq?: LastSeenFrameSeq;
+  tui_session_token: TuiSessionToken;
+}
+/**
+ * Backend accepts the resume.
+ *
+ * Must be followed by replay of frames with frame_seq > last_seen_frame_seq.
+ * Trailer with final=True MUST be set (E6).
+ * role allow-list: backend.
+ */
+export interface ResumeResponseFrame {
+  session_id: SessionId15;
+  correlation_id: CorrelationId15;
+  ts: Ts15;
+  version?: Version15;
+  role: Role15;
+  frame_seq?: FrameSeq15;
+  transaction_id?: TransactionId16;
+  /**
+   * Completion/validation metadata. Populated on terminal frames. (FR-006)
+   */
+  trailer?: FrameTrailer | null;
+  kind: Kind16;
+  resumed_from_frame_seq: ResumedFromFrameSeq;
+  replay_count: ReplayCount;
+  server_session_id: ServerSessionId;
+  heartbeat_interval_ms: HeartbeatIntervalMs;
+}
+/**
+ * Backend cannot honor the resume request.
+ *
+ * Trailer with final=True MUST be set (E6).
+ * role allow-list: backend.
+ */
+export interface ResumeRejectedFrame {
+  session_id: SessionId16;
+  correlation_id: CorrelationId16;
+  ts: Ts16;
+  version?: Version16;
+  role: Role16;
+  frame_seq?: FrameSeq16;
+  transaction_id?: TransactionId17;
+  /**
+   * Completion/validation metadata. Populated on terminal frames. (FR-006)
+   */
+  trailer?: FrameTrailer | null;
+  kind: Kind17;
+  reason: Reason;
+  detail: Detail;
+}
+/**
+ * Emitted every 30 s (default) by both sides to prove liveness.
+ *
+ * Note: Heartbeat frames do NOT increment frame_seq — they use a dedicated
+ * counter. This keeps ring-buffer economy tight.
+ * role allow-list: tui, backend.
+ */
+export interface HeartbeatFrame {
+  session_id: SessionId17;
+  correlation_id: CorrelationId17;
+  ts: Ts17;
+  version?: Version17;
+  role: Role17;
+  frame_seq?: FrameSeq17;
+  transaction_id?: TransactionId18;
+  /**
+   * Completion/validation metadata. Populated on terminal frames. (FR-006)
+   */
+  trailer?: FrameTrailer | null;
+  kind: Kind18;
+  direction: Direction;
+  peer_frame_seq: PeerFrameSeq;
+}
+/**
+ * Push from subscription surfaces (Spec 031 SubscriptionHandle).
+ *
+ * Carried over the same stdio channel to keep a single correlation plane.
+ * role allow-list: notification.
+ */
+export interface NotificationPushFrame {
+  session_id: SessionId18;
+  correlation_id: CorrelationId18;
+  ts: Ts18;
+  version?: Version18;
+  role: Role18;
+  frame_seq?: FrameSeq18;
+  transaction_id?: TransactionId19;
+  /**
+   * Completion/validation metadata. Populated on terminal frames. (FR-006)
+   */
+  trailer?: FrameTrailer | null;
+  kind: Kind19;
+  subscription_id: SubscriptionId;
+  adapter_id: AdapterId;
+  event_guid: EventGuid;
+  payload_content_type: PayloadContentType;
+  payload: Payload2;
 }

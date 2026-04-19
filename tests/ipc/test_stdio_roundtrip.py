@@ -14,6 +14,7 @@ from __future__ import annotations
 import asyncio
 import sys
 import time
+import uuid
 from collections.abc import AsyncIterator
 from datetime import UTC, datetime
 from pathlib import Path
@@ -42,7 +43,8 @@ def _ts() -> str:
 
 
 def _encode(frame: IPCFrame) -> bytes:
-    return (frame.model_dump_json() + "\n").encode("utf-8")
+    json_str: str = frame.model_dump_json()
+    return (json_str + "\n").encode("utf-8")
 
 
 async def _read_lines(stream: asyncio.StreamReader, n: int, timeout: float = 10.0) -> list[str]:
@@ -116,6 +118,8 @@ async def test_user_input_echo_roundtrip(backend_proc: asyncio.subprocess.Proces
     sid = "01HTESTST0000000000000ABCD"
     frame = UserInputFrame(
         session_id=sid,
+        correlation_id=str(uuid.uuid4()),
+        role="tui",
         ts=_ts(),
         kind="user_input",
         text="hello",
@@ -138,6 +142,8 @@ async def test_exit_event_triggers_shutdown(backend_proc: asyncio.subprocess.Pro
     sid = "01HTESTST0000000000000ABCE"
     frame = SessionEventFrame(
         session_id=sid,
+        correlation_id=str(uuid.uuid4()),
+        role="tui",
         ts=_ts(),
         kind="session_event",
         event="exit",
@@ -169,7 +175,7 @@ async def test_malformed_json_returns_error_frame(backend_proc: asyncio.subproce
     assert len(lines) == 1, "Expected an error frame response"
     parsed = _ADAPTER.validate_json(lines[0])
     assert parsed.kind == "error"
-    assert parsed.code == "ipc_decode_error"  # type: ignore[attr-defined]
+    assert parsed.code == "ipc_decode_error"
 
 
 @pytest.mark.asyncio
@@ -179,7 +185,14 @@ async def test_multiple_frames_fifo_order(backend_proc: asyncio.subprocess.Proce
     texts = [f"msg-{i}" for i in range(5)]
     assert backend_proc.stdin is not None
     for text in texts:
-        f = UserInputFrame(session_id=sid, ts=_ts(), kind="user_input", text=text)
+        f = UserInputFrame(
+            session_id=sid,
+            correlation_id=str(uuid.uuid4()),
+            role="tui",
+            ts=_ts(),
+            kind="user_input",
+            text=text,
+        )
         backend_proc.stdin.write(_encode(f))
     await backend_proc.stdin.drain()
 
