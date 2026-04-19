@@ -1,0 +1,127 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kosmos.dev/ipc/schema/frame.schema.json",
+  "title": "KOSMOS IPC Frame Envelope",
+  "description": "Normative JSON Schema for KOSMOS stdio frames. Draft 2020-12. Mirror target: src/kosmos/ipc/frame_schema.py (Pydantic v2 IPCFrame discriminated union). The Python implementation remains the source of truth; this document is the human-readable/TypeScript consumption surface.",
+  "type": "object",
+  "required": ["version", "session_id", "correlation_id", "role", "frame_seq", "ts", "kind"],
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "const": "1.0",
+      "description": "Envelope version. Hard-fail on mismatch (FR-001)."
+    },
+    "session_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Opaque session identifier scoped to a TUI ↔ backend pairing."
+    },
+    "correlation_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "UUIDv7 string for new emissions; ULID accepted for back-compat. Opaque, 128-bit, lexicographically sortable (FR-003)."
+    },
+    "role": {
+      "type": "string",
+      "enum": ["tui", "backend", "tool", "llm", "notification"],
+      "description": "Origin role. Validated against kind ↔ role allow-list (FR-004)."
+    },
+    "frame_seq": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Per-session monotonic sequence. Gap → resume handshake (FR-005, FR-018)."
+    },
+    "transaction_id": {
+      "type": ["string", "null"],
+      "minLength": 1,
+      "description": "UUIDv7 populated for idempotent state-change frames (irreversible tools). Null for streaming chunks (FR-026)."
+    },
+    "ts": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO-8601 UTC with sub-ms precision."
+    },
+    "trailer": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["final"],
+          "properties": {
+            "final": { "type": "boolean" },
+            "transaction_id": { "type": ["string", "null"], "minLength": 1 },
+            "checksum_sha256": { "type": ["string", "null"], "pattern": "^[0-9a-f]{64}$" }
+          }
+        }
+      ],
+      "description": "Completion/validation metadata on terminal frames (FR-006)."
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "user_input",
+        "assistant_chunk",
+        "tool_call",
+        "tool_result",
+        "coordinator_phase",
+        "worker_status",
+        "permission_request",
+        "permission_response",
+        "session_event",
+        "error",
+        "payload_start",
+        "payload_delta",
+        "payload_end",
+        "backpressure",
+        "resume_request",
+        "resume_response",
+        "resume_rejected",
+        "heartbeat",
+        "notification_push"
+      ],
+      "description": "Discriminator. First 10 are Spec 031 baseline; last 9 introduced by Spec 032."
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "kind": { "const": "resume_request" } } },
+      "then": { "properties": { "role": { "const": "tui" } } }
+    },
+    {
+      "if": { "properties": { "kind": { "const": "resume_response" } } },
+      "then": {
+        "properties": { "role": { "const": "backend" } },
+        "required": ["trailer"]
+      }
+    },
+    {
+      "if": { "properties": { "kind": { "const": "resume_rejected" } } },
+      "then": {
+        "properties": { "role": { "const": "backend" } },
+        "required": ["trailer"]
+      }
+    },
+    {
+      "if": { "properties": { "kind": { "const": "heartbeat" } } },
+      "then": { "properties": { "role": { "enum": ["tui", "backend"] } } }
+    },
+    {
+      "if": { "properties": { "kind": { "const": "notification_push" } } },
+      "then": { "properties": { "role": { "const": "notification" } } }
+    },
+    {
+      "if": { "properties": { "kind": { "const": "backpressure" } } },
+      "then": { "properties": { "role": { "enum": ["tui", "backend"] } } }
+    },
+    {
+      "if": { "properties": { "kind": { "enum": ["payload_start", "payload_delta", "payload_end"] } } },
+      "then": { "properties": { "role": { "enum": ["backend", "tool", "llm"] } } }
+    }
+  ],
+  "$defs": {
+    "note": {
+      "$comment": "Per-kind payload field schemas are intentionally omitted from this envelope contract. They live as Pydantic arm classes in src/kosmos/ipc/frame_schema.py. The TypeScript side (tui/src/ipc/envelope.ts) mirrors envelope fields + kind-narrowed interfaces generated or hand-maintained against this schema. Schema divergence is detected by the WS1 byte-equal rebuild test (T-??? in tasks.md)."
+    }
+  }
+}
