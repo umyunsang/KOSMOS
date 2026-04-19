@@ -1,0 +1,45 @@
+# Spec 287: KOSMOS TUI — Ink + React + Bun
+# tui/.gitignore
+#
+# NOTE: bun.lockb is intentionally NOT ignored.
+# Bun best practice is to commit the lockfile so all contributors and CI
+# reproduce the exact same dependency resolution.
+# (Ref: https://bun.sh/docs/install/lockfile)
+#
+# NOTE: src/ipc/frames.generated.ts is also intentionally NOT ignored.
+# It is the single code-gen artifact that must be committed so the repo
+# is self-contained and CI does not require a live Python process to
+# type-check. All other *.generated.ts files produced at runtime should
+# NOT be committed.
+
+# --- Dependencies ---
+node_modules/
+
+# --- Code-generation runtime artifacts ---
+# Ignore all *.generated.ts except the one committed artifact.
+*.generated.ts
+!src/ipc/frames.generated.ts
+
+# --- Build outputs ---
+dist/
+build/
+out/
+
+# --- Bun single-binary compile outputs (T126) ---
+*.binary
+*.exe
+
+# --- Environment secrets ---
+.env*
+!.env.example
+
+# --- Test coverage ---
+coverage/
+
+# --- OS artifacts ---
+.DS_Store
+Thumbs.db
+
+# --- IDE ---
+.vscode/
+.idea/

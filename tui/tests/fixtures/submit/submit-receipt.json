@@ -1,0 +1,17 @@
+{
+  "session_id": "01HWZK5P1XZ8Q4VNMJ2TRCB7AE",
+  "correlation_id": "01HWZK5P1XZ8Q4VNMJ2TRCB7AF",
+  "ts": "2026-04-19T00:00:00.000Z",
+  "kind": "tool_result",
+  "call_id": "01HWZK5P1XZ8Q4VNMJ2TRCB7AP",
+  "envelope": {
+    "kind": "submit",
+    "tool_id": "minwon_submit_application",
+    "family": "submit_application",
+    "ok": true,
+    "confirmation_id": "MWON-2026-0419-00001234",
+    "timestamp": "2026-04-19T00:00:00.000Z",
+    "summary": "Application for civil registration certificate submitted successfully. Expected processing time: 3 business days.",
+    "mock_reason": "tee_bound"
+  }
+}

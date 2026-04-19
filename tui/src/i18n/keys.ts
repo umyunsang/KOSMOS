@@ -1,0 +1,53 @@
+export interface I18nBundle {
+  // Coordinator / lifecycle
+  sessionStarting: string;
+  sessionReady: string;
+  sessionEnded: string;
+
+  // Commands — dispatch
+  commandNotFound: (name: string) => string;
+  commandHelp: string;
+
+  // Commands — session handlers
+  cmdSaveAck: string;
+  cmdSessionsAck: string;
+  cmdResumeAck: (sessionId: string) => string;
+  cmdResumeMissingId: string;
+  cmdNewAck: string;
+  cmdHandlerFailed: (name: string, message: string) => string;
+
+  // Help view labels
+  helpTitle: string;
+  helpUsage: string;
+
+  // Permission gauntlet
+  permissionPromptTitle: string;
+  permissionPromptBody: (toolName: string) => string;
+  permissionApproved: string;
+  permissionDenied: string;
+
+  // Errors
+  toolCallFailed: (toolId: string, reason: string) => string;
+  workerCrashed: (reason: string) => string;
+  ipcDecodeError: string;
+
+  // Renderer status lines
+  toolRunning: (toolId: string) => string;
+  toolSucceeded: (toolId: string) => string;
+  toolFailed: (toolId: string) => string;
+  subscriptionOpened: (toolId: string) => string;
+  subscriptionClosed: (toolId: string) => string;
+
+  // Verify primitive
+  verifyInProgress: string;
+  verifySucceeded: string;
+  verifyFailed: string;
+
+  // Location resolver
+  resolveLocationPending: string;
+  resolveLocationAmbiguous: string;
+
+  // Shutdown / footer
+  pressCtrlCToExit: string;
+  shuttingDown: string;
+}

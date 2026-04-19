@@ -1,0 +1,19 @@
+{
+  "session_id": "01HWZK5P1XZ8Q4VNMJ2TRCB7AE",
+  "correlation_id": "01HWZK5P1XZ8Q4VNMJ2TRCB7AF",
+  "ts": "2026-04-19T00:00:00.000Z",
+  "kind": "tool_result",
+  "call_id": "01HWZK5P1XZ8Q4VNMJ2TRCB7AN",
+  "envelope": {
+    "kind": "resolve_location",
+    "tool_id": "resolve_location",
+    "slots": {
+      "address": {
+        "road": "서울특별시 강남구 테헤란로 152",
+        "parcel": "서울특별시 강남구 역삼동 649",
+        "detail": "강남파이낸스센터 10층",
+        "zip": "06236"
+      }
+    }
+  }
+}

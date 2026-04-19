@@ -1,0 +1,17 @@
+{
+  "session_id": "01HWZK5P1XZ8Q4VNMJ2TRCB7AE",
+  "correlation_id": "01HWZK5P1XZ8Q4VNMJ2TRCB7AF",
+  "ts": "2026-04-19T00:00:00.000Z",
+  "kind": "tool_result",
+  "call_id": "01HWZK5P1XZ8Q4VNMJ2TRCB7AM",
+  "envelope": {
+    "kind": "resolve_location",
+    "tool_id": "resolve_location",
+    "slots": {
+      "adm_cd": {
+        "code": "1168010600",
+        "name": "서울특별시 강남구 대치2동"
+      }
+    }
+  }
+}

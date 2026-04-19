@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kosmos.dev/schemas/spec-287/error.schema.json",
+  "title": "ErrorFrame",
+  "description": "backend → TUI: a backend error surfaced to the TUI for rendering. Direction: backend → TUI. Rendered via <ErrorBanner /> or appended as a synthetic assistant message (store reducer).",
+  "type": "object",
+  "required": ["kind", "session_id", "ts", "code", "message", "details"],
+  "properties": {
+    "kind": { "const": "error" },
+    "session_id": { "type": "string" },
+    "correlation_id": { "type": ["string", "null"] },
+    "ts": { "type": "string", "format": "date-time" },
+    "code": {
+      "type": "string",
+      "description": "Machine-readable error code (e.g., 'backend_crash', 'protocol_mismatch', 'rate_limit')."
+    },
+    "message": {
+      "type": "string",
+      "description": "Human-readable short message. MUST NOT contain KOSMOS_*-prefixed env var values (FR-004 redaction rule)."
+    },
+    "details": {
+      "type": "object",
+      "description": "Structured error details. Any KOSMOS_* env var values MUST be redacted per #468 guard pattern."
+    }
+  },
+  "additionalProperties": false
+}

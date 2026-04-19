@@ -1,0 +1,17 @@
+{
+  "session_id": "01HWZK5P1XZ8Q4VNMJ2TRCB7AE",
+  "correlation_id": "01HWZK5P1XZ8Q4VNMJ2TRCB7AF",
+  "ts": "2026-04-19T00:00:00.000Z",
+  "kind": "tool_result",
+  "call_id": "01HWZK5P1XZ8Q4VNMJ2TRCB7AL",
+  "envelope": {
+    "kind": "resolve_location",
+    "tool_id": "resolve_location",
+    "slots": {
+      "coords": {
+        "lat": 37.566826,
+        "lon": 126.978656
+      }
+    }
+  }
+}

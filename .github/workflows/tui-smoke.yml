@@ -1,0 +1,95 @@
+name: TUI Boot Smoke Gate
+
+# Catches React 19 selector-identity regressions, duplicate-key warnings, and
+# broken entrypoint wiring that only surface when the TUI boots under a real
+# TTY. Driven by tui/scripts/tui-smoke.ts (see that file for the failure
+# criteria and fake-backend strategy).
+
+on:
+  pull_request:
+    paths:
+      - "tui/**"
+      - ".github/workflows/tui-smoke.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "tui/**"
+      - ".github/workflows/tui-smoke.yml"
+
+jobs:
+  tui-smoke:
+    name: "TUI typecheck + unit tests + PTY boot smoke"
+    runs-on: ubuntu-latest
+    # Hard ceiling — the smoke script itself bounds at BOOT_MS + grace, so the
+    # job should finish in ~30 s. Protect against a runaway on a bad runner.
+    timeout-minutes: 5
+
+    # kosmos.config.guard.verify_startup() exits 78 (EX_CONFIG) when the three
+    # required KOSMOS_* tokens are missing. The bridge integration test spawns
+    # the real backend via `uv run kosmos --ipc stdio` — but the stdio echo
+    # loop never performs an LLM call or data.go.kr request, so dummy
+    # placeholders are sufficient to pass the guard without leaking secrets
+    # into the workflow. Live-API tests are gated by `@pytest.mark.live` and
+    # do not run here.
+    env:
+      KOSMOS_ENV: ci
+      KOSMOS_KAKAO_API_KEY: ci-dummy-kakao-key
+      KOSMOS_FRIENDLI_TOKEN: ci-dummy-friendli-token
+      KOSMOS_DATA_GO_KR_API_KEY: ci-dummy-data-go-kr-key
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.2.x"
+
+      - name: Set up Python (for bridge/crash-detector integration tests)
+        # tui/tests/ipc/bridge.test.ts + crash.test.ts spawn the real
+        # `uv run kosmos --ipc stdio` echo backend — not a mock — to verify
+        # the stdio JSONL contract end-to-end. Skipping Python here would
+        # force those tests into a mocked half-world and mask backend drift.
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+          enable-cache: true
+
+      - name: Install Python dependencies (`uv sync`)
+        # Installs the `kosmos` console script used by createBridge's default
+        # cmd (`uv run kosmos --ipc stdio`). Frozen against uv.lock so CI
+        # only ever runs against pinned versions.
+        run: uv sync --frozen
+
+      - name: Install util-linux `script` (PTY harness)
+        # ubuntu-latest images ship util-linux, but guarantee presence so the
+        # gate fails loudly with a clear error if the image drifts.
+        run: |
+          which script || (sudo apt-get update && sudo apt-get install -y bsdmainutils util-linux)
+          script --version
+
+      - name: Install TUI dependencies
+        working-directory: tui
+        run: bun install --frozen-lockfile
+
+      - name: Typecheck
+        working-directory: tui
+        run: bun run typecheck
+
+      - name: Unit tests
+        working-directory: tui
+        run: bun test
+
+      - name: PTY boot smoke
+        working-directory: tui
+        env:
+          # Slightly longer boot window on shared CI runners.
+          KOSMOS_TUI_SMOKE_BOOT_MS: "5000"
+        run: bun run tui:smoke

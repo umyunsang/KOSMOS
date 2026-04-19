@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kosmos.dev/schemas/spec-287/session-event.schema.json",
+  "title": "SessionEventFrame",
+  "description": "Bidirectional: session lifecycle events. Direction: bidirectional. Backed by Phase 1 Python JSONL store (backend-owned; TUI holds zero session state, FR-131).",
+  "type": "object",
+  "required": ["kind", "session_id", "ts", "event", "payload"],
+  "properties": {
+    "kind": { "const": "session_event" },
+    "session_id": { "type": "string" },
+    "correlation_id": { "type": ["string", "null"] },
+    "ts": { "type": "string", "format": "date-time" },
+    "event": {
+      "type": "string",
+      "enum": ["save", "load", "list", "resume", "new", "exit"]
+    },
+    "payload": {
+      "type": "object",
+      "description": "Event-specific payload. For list: {sessions: [{id, created_at, turn_count}]}. For resume: {id: str}. For others: {}."
+    }
+  },
+  "additionalProperties": false
+}

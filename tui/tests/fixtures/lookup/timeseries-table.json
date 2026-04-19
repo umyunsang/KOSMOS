@@ -1,0 +1,23 @@
+{
+  "session_id": "01HWZK5P1XZ8Q4VNMJ2TRCB7AE",
+  "correlation_id": "01HWZK5P1XZ8Q4VNMJ2TRCB7AF",
+  "ts": "2026-04-19T00:00:00.000Z",
+  "kind": "tool_result",
+  "call_id": "01HWZK5P1XZ8Q4VNMJ2TRCB7AH",
+  "envelope": {
+    "kind": "lookup",
+    "subtype": "timeseries",
+    "tool_id": "kma_forecast_fetch",
+    "unit": "°C",
+    "rows": [
+      { "ts": "2026-04-19T00:00:00Z", "value": "12.3" },
+      { "ts": "2026-04-19T03:00:00Z", "value": "11.1" },
+      { "ts": "2026-04-19T06:00:00Z", "value": "10.4" },
+      { "ts": "2026-04-19T09:00:00Z", "value": "14.7" },
+      { "ts": "2026-04-19T12:00:00Z", "value": "18.2" },
+      { "ts": "2026-04-19T15:00:00Z", "value": "19.5" },
+      { "ts": "2026-04-19T18:00:00Z", "value": "17.3" },
+      { "ts": "2026-04-19T21:00:00Z", "value": "14.8" }
+    ]
+  }
+}

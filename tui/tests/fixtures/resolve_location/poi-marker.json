@@ -1,0 +1,18 @@
+{
+  "session_id": "01HWZK5P1XZ8Q4VNMJ2TRCB7AE",
+  "correlation_id": "01HWZK5P1XZ8Q4VNMJ2TRCB7AF",
+  "ts": "2026-04-19T00:00:00.000Z",
+  "kind": "tool_result",
+  "call_id": "01HWZK5P1XZ8Q4VNMJ2TRCB7AO",
+  "envelope": {
+    "kind": "resolve_location",
+    "tool_id": "resolve_location",
+    "slots": {
+      "poi": {
+        "name": "강남역",
+        "category": "지하철역",
+        "source": "kakao_local"
+      }
+    }
+  }
+}

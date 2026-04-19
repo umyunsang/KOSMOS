@@ -73,6 +73,18 @@ def _cli_command(
             help="List recent sessions and exit.",
         ),
     ] = False,
+    ipc: Annotated[
+        str | None,
+        typer.Option(
+            "--ipc",
+            help=(
+                "IPC transport mode.  Pass 'stdio' to bypass the interactive Rich TUI "
+                "and run a JSONL-over-stdio bridge suitable for the Ink/Bun TUI frontend. "
+                "See docs/ipc-protocol.md for the frame schema."
+            ),
+            metavar="MODE",
+        ),
+    ] = None,
 ) -> None:
     """Launch the KOSMOS interactive CLI."""
     if debug:
@@ -80,11 +92,43 @@ def _cli_command(
     else:
         logging.basicConfig(level=logging.WARNING)
 
+    # IPC stdio mode: bypass interactive REPL, run JSONL bridge on stdin/stdout.
+    if ipc is not None:
+        if ipc != "stdio":
+            _stderr_console.print(
+                f"[red]Unknown --ipc mode:[/red] {ipc!r}. Only 'stdio' is supported."
+            )
+            sys.exit(1)
+        _run_ipc_stdio()
+        return
+
     if list_sessions:
         _run_list_sessions()
         return
 
     _run_repl(resume_session_id=resume)
+
+
+def _run_ipc_stdio() -> None:
+    """Run the asyncio JSONL stdio loop (no interactive Rich TUI).
+
+    This is the entry point when the Bun/Ink TUI spawns the backend via
+    ``Bun.spawn(['uv', 'run', 'kosmos', '--ipc', 'stdio'])``.
+
+    The loop reads ``IPCFrame`` JSON lines from stdin, dispatches them to the
+    query engine, and writes response frames to stdout.  A ``session_event
+    {event='exit'}`` frame is emitted on clean shutdown.
+    """
+    from kosmos.ipc.stdio import run as _ipc_run  # noqa: PLC0415
+
+    try:
+        asyncio.run(_ipc_run())
+    except KeyboardInterrupt:
+        pass
+    except Exception as exc:  # noqa: BLE001
+        logger.exception("Unexpected error in IPC stdio loop: %s", exc)
+        _stderr_console.print(f"[red]IPC stdio error:[/red] {escape(str(exc))}")
+        sys.exit(1)
 
 
 def _run_list_sessions() -> None:

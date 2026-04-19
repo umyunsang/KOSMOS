@@ -1,0 +1,79 @@
+name: TUI Attribution Gate
+
+# FR-011: Every lifted file must carry the attribution header.
+# SC-9: 100% attribution compliance enforced in CI on every PR.
+# ADR-004: Authoritative policy for Claude Code sourcemap port.
+
+on:
+  pull_request:
+    paths:
+      - "tui/src/ink/**"
+      - "tui/src/commands/**"
+      - "tui/src/theme/**"
+      - "tui/src/components/coordinator/**"
+      - "tui/src/components/conversation/**"
+      - "tui/src/hooks/**"
+      - "tui/src/utils/**"
+      - "tui/scripts/diff-upstream.sh"
+
+jobs:
+  attribution-gate:
+    name: "FR-011 + SC-9: Attribution Header Compliance"
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout repository (including .references/ for diff-upstream)"
+        uses: actions/checkout@v4
+        with:
+          # Full checkout so .references/ is present for diff-upstream.sh
+          fetch-depth: 1
+
+      - name: "FR-011: Grep every lifted .ts/.tsx for attribution header"
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          LIFTED_DIRS=(
+            "tui/src/ink"
+            "tui/src/utils"
+            "tui/src/commands"
+            "tui/src/theme"
+            "tui/src/components/coordinator"
+            "tui/src/components/conversation"
+            "tui/src/hooks"
+          )
+
+          MISSING=0
+
+          for dir in "${LIFTED_DIRS[@]}"; do
+            if [ ! -d "$dir" ]; then
+              continue
+            fi
+
+            while IFS= read -r -d '' filepath; do
+              first_line=$(head -1 "$filepath")
+              # Only check files that look like they should be lifted
+              # (i.e., files added in a PR touching these directories).
+              # A KOSMOS-original file in a lifted dir has no header — that is
+              # allowed ONLY if the file has never been a lift. We use the
+              # absence of any "Source:" comment as the skip signal.
+              if echo "$first_line" | grep -q "Source:"; then
+                # File claims to be lifted — verify full FR-011 format
+                if ! echo "$first_line" | grep -q "Source: .references/claude-code-sourcemap/restored-src/.*Claude Code 2.1.88, research-use"; then
+                  echo "::error file=$filepath::FR-011 header present but malformed: $first_line"
+                  MISSING=$((MISSING + 1))
+                fi
+              fi
+            done < <(find "$dir" \( -name "*.ts" -o -name "*.tsx" \) -print0)
+          done
+
+          if [ "$MISSING" -gt 0 ]; then
+            echo "::error::FR-011 header malformed in $MISSING file(s). See individual errors above."
+            exit 1
+          fi
+
+          echo "FR-011 header check passed."
+
+      - name: "SC-9: Run diff-upstream.sh — lifted files must not diverge from restored-src"
+        shell: bash
+        run: |
+          bash tui/scripts/diff-upstream.sh

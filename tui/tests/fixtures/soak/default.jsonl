@@ -1,0 +1,150 @@
+{"kind": "user_input", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:00.000Z", "text": "message 0"}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:00.100Z", "message_id": "msg-0000", "delta": "Response 0: ", "done": false}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:00.200Z", "message_id": "msg-0000", "delta": "test response text for message 0.", "done": true}
+{"kind": "user_input", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:01.000Z", "text": "message 1"}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:01.100Z", "message_id": "msg-0001", "delta": "Response 1: ", "done": false}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:01.200Z", "message_id": "msg-0001", "delta": "test response text for message 1.", "done": true}
+{"kind": "user_input", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:02.000Z", "text": "message 2"}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:02.100Z", "message_id": "msg-0002", "delta": "Response 2: ", "done": false}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:02.200Z", "message_id": "msg-0002", "delta": "test response text for message 2.", "done": true}
+{"kind": "user_input", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:03.000Z", "text": "message 3"}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:03.100Z", "message_id": "msg-0003", "delta": "Response 3: ", "done": false}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:03.200Z", "message_id": "msg-0003", "delta": "test response text for message 3.", "done": true}
+{"kind": "user_input", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:04.000Z", "text": "message 4"}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:04.100Z", "message_id": "msg-0004", "delta": "Response 4: ", "done": false}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:04.200Z", "message_id": "msg-0004", "delta": "test response text for message 4.", "done": true}
+{"kind": "user_input", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:05.000Z", "text": "message 5"}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:05.100Z", "message_id": "msg-0005", "delta": "Response 5: ", "done": false}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:05.200Z", "message_id": "msg-0005", "delta": "test response text for message 5.", "done": true}
+{"kind": "user_input", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:06.000Z", "text": "message 6"}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:06.100Z", "message_id": "msg-0006", "delta": "Response 6: ", "done": false}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:06.200Z", "message_id": "msg-0006", "delta": "test response text for message 6.", "done": true}
+{"kind": "user_input", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:07.000Z", "text": "message 7"}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:07.100Z", "message_id": "msg-0007", "delta": "Response 7: ", "done": false}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:07.200Z", "message_id": "msg-0007", "delta": "test response text for message 7.", "done": true}
+{"kind": "user_input", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:08.000Z", "text": "message 8"}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:08.100Z", "message_id": "msg-0008", "delta": "Response 8: ", "done": false}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:08.200Z", "message_id": "msg-0008", "delta": "test response text for message 8.", "done": true}
+{"kind": "user_input", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:09.000Z", "text": "message 9"}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:09.100Z", "message_id": "msg-0009", "delta": "Response 9: ", "done": false}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:09.200Z", "message_id": "msg-0009", "delta": "test response text for message 9.", "done": true}
+{"kind": "user_input", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:10.000Z", "text": "message 10"}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:10.100Z", "message_id": "msg-0010", "delta": "Response 10: ", "done": false}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:10.200Z", "message_id": "msg-0010", "delta": "test response text for message 10.", "done": true}
+{"kind": "user_input", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:11.000Z", "text": "message 11"}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:11.100Z", "message_id": "msg-0011", "delta": "Response 11: ", "done": false}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:11.200Z", "message_id": "msg-0011", "delta": "test response text for message 11.", "done": true}
+{"kind": "user_input", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:12.000Z", "text": "message 12"}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:12.100Z", "message_id": "msg-0012", "delta": "Response 12: ", "done": false}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:12.200Z", "message_id": "msg-0012", "delta": "test response text for message 12.", "done": true}
+{"kind": "user_input", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:13.000Z", "text": "message 13"}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:13.100Z", "message_id": "msg-0013", "delta": "Response 13: ", "done": false}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:13.200Z", "message_id": "msg-0013", "delta": "test response text for message 13.", "done": true}
+{"kind": "user_input", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:14.000Z", "text": "message 14"}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:14.100Z", "message_id": "msg-0014", "delta": "Response 14: ", "done": false}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:14.200Z", "message_id": "msg-0014", "delta": "test response text for message 14.", "done": true}
+{"kind": "user_input", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:15.000Z", "text": "message 15"}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:15.100Z", "message_id": "msg-0015", "delta": "Response 15: ", "done": false}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:15.200Z", "message_id": "msg-0015", "delta": "test response text for message 15.", "done": true}
+{"kind": "user_input", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:16.000Z", "text": "message 16"}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:16.100Z", "message_id": "msg-0016", "delta": "Response 16: ", "done": false}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:16.200Z", "message_id": "msg-0016", "delta": "test response text for message 16.", "done": true}
+{"kind": "user_input", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:17.000Z", "text": "message 17"}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:17.100Z", "message_id": "msg-0017", "delta": "Response 17: ", "done": false}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:17.200Z", "message_id": "msg-0017", "delta": "test response text for message 17.", "done": true}
+{"kind": "user_input", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:18.000Z", "text": "message 18"}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:18.100Z", "message_id": "msg-0018", "delta": "Response 18: ", "done": false}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:18.200Z", "message_id": "msg-0018", "delta": "test response text for message 18.", "done": true}
+{"kind": "user_input", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:19.000Z", "text": "message 19"}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:19.100Z", "message_id": "msg-0019", "delta": "Response 19: ", "done": false}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:19.200Z", "message_id": "msg-0019", "delta": "test response text for message 19.", "done": true}
+{"kind": "user_input", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:20.000Z", "text": "message 20"}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:20.100Z", "message_id": "msg-0020", "delta": "Response 20: ", "done": false}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:20.200Z", "message_id": "msg-0020", "delta": "test response text for message 20.", "done": true}
+{"kind": "user_input", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:21.000Z", "text": "message 21"}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:21.100Z", "message_id": "msg-0021", "delta": "Response 21: ", "done": false}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:21.200Z", "message_id": "msg-0021", "delta": "test response text for message 21.", "done": true}
+{"kind": "user_input", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:22.000Z", "text": "message 22"}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:22.100Z", "message_id": "msg-0022", "delta": "Response 22: ", "done": false}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:22.200Z", "message_id": "msg-0022", "delta": "test response text for message 22.", "done": true}
+{"kind": "user_input", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:23.000Z", "text": "message 23"}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:23.100Z", "message_id": "msg-0023", "delta": "Response 23: ", "done": false}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:23.200Z", "message_id": "msg-0023", "delta": "test response text for message 23.", "done": true}
+{"kind": "user_input", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:24.000Z", "text": "message 24"}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:24.100Z", "message_id": "msg-0024", "delta": "Response 24: ", "done": false}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:24.200Z", "message_id": "msg-0024", "delta": "test response text for message 24.", "done": true}
+{"kind": "user_input", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:25.000Z", "text": "message 25"}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:25.100Z", "message_id": "msg-0025", "delta": "Response 25: ", "done": false}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:25.200Z", "message_id": "msg-0025", "delta": "test response text for message 25.", "done": true}
+{"kind": "user_input", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:26.000Z", "text": "message 26"}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:26.100Z", "message_id": "msg-0026", "delta": "Response 26: ", "done": false}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:26.200Z", "message_id": "msg-0026", "delta": "test response text for message 26.", "done": true}
+{"kind": "user_input", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:27.000Z", "text": "message 27"}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:27.100Z", "message_id": "msg-0027", "delta": "Response 27: ", "done": false}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:27.200Z", "message_id": "msg-0027", "delta": "test response text for message 27.", "done": true}
+{"kind": "user_input", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:28.000Z", "text": "message 28"}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:28.100Z", "message_id": "msg-0028", "delta": "Response 28: ", "done": false}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:28.200Z", "message_id": "msg-0028", "delta": "test response text for message 28.", "done": true}
+{"kind": "user_input", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:29.000Z", "text": "message 29"}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:29.100Z", "message_id": "msg-0029", "delta": "Response 29: ", "done": false}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:29.200Z", "message_id": "msg-0029", "delta": "test response text for message 29.", "done": true}
+{"kind": "user_input", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:30.000Z", "text": "message 30"}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:30.100Z", "message_id": "msg-0030", "delta": "Response 30: ", "done": false}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:30.200Z", "message_id": "msg-0030", "delta": "test response text for message 30.", "done": true}
+{"kind": "user_input", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:31.000Z", "text": "message 31"}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:31.100Z", "message_id": "msg-0031", "delta": "Response 31: ", "done": false}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:31.200Z", "message_id": "msg-0031", "delta": "test response text for message 31.", "done": true}
+{"kind": "user_input", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:32.000Z", "text": "message 32"}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:32.100Z", "message_id": "msg-0032", "delta": "Response 32: ", "done": false}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:32.200Z", "message_id": "msg-0032", "delta": "test response text for message 32.", "done": true}
+{"kind": "user_input", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:33.000Z", "text": "message 33"}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:33.100Z", "message_id": "msg-0033", "delta": "Response 33: ", "done": false}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:33.200Z", "message_id": "msg-0033", "delta": "test response text for message 33.", "done": true}
+{"kind": "user_input", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:34.000Z", "text": "message 34"}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:34.100Z", "message_id": "msg-0034", "delta": "Response 34: ", "done": false}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:34.200Z", "message_id": "msg-0034", "delta": "test response text for message 34.", "done": true}
+{"kind": "user_input", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:35.000Z", "text": "message 35"}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:35.100Z", "message_id": "msg-0035", "delta": "Response 35: ", "done": false}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:35.200Z", "message_id": "msg-0035", "delta": "test response text for message 35.", "done": true}
+{"kind": "user_input", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:36.000Z", "text": "message 36"}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:36.100Z", "message_id": "msg-0036", "delta": "Response 36: ", "done": false}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:36.200Z", "message_id": "msg-0036", "delta": "test response text for message 36.", "done": true}
+{"kind": "user_input", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:37.000Z", "text": "message 37"}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:37.100Z", "message_id": "msg-0037", "delta": "Response 37: ", "done": false}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:37.200Z", "message_id": "msg-0037", "delta": "test response text for message 37.", "done": true}
+{"kind": "user_input", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:38.000Z", "text": "message 38"}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:38.100Z", "message_id": "msg-0038", "delta": "Response 38: ", "done": false}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:38.200Z", "message_id": "msg-0038", "delta": "test response text for message 38.", "done": true}
+{"kind": "user_input", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:39.000Z", "text": "message 39"}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:39.100Z", "message_id": "msg-0039", "delta": "Response 39: ", "done": false}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:39.200Z", "message_id": "msg-0039", "delta": "test response text for message 39.", "done": true}
+{"kind": "user_input", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:40.000Z", "text": "message 40"}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:40.100Z", "message_id": "msg-0040", "delta": "Response 40: ", "done": false}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:40.200Z", "message_id": "msg-0040", "delta": "test response text for message 40.", "done": true}
+{"kind": "user_input", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:41.000Z", "text": "message 41"}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:41.100Z", "message_id": "msg-0041", "delta": "Response 41: ", "done": false}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:41.200Z", "message_id": "msg-0041", "delta": "test response text for message 41.", "done": true}
+{"kind": "user_input", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:42.000Z", "text": "message 42"}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:42.100Z", "message_id": "msg-0042", "delta": "Response 42: ", "done": false}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:42.200Z", "message_id": "msg-0042", "delta": "test response text for message 42.", "done": true}
+{"kind": "user_input", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:43.000Z", "text": "message 43"}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:43.100Z", "message_id": "msg-0043", "delta": "Response 43: ", "done": false}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:43.200Z", "message_id": "msg-0043", "delta": "test response text for message 43.", "done": true}
+{"kind": "user_input", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:44.000Z", "text": "message 44"}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:44.100Z", "message_id": "msg-0044", "delta": "Response 44: ", "done": false}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:44.200Z", "message_id": "msg-0044", "delta": "test response text for message 44.", "done": true}
+{"kind": "user_input", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:45.000Z", "text": "message 45"}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:45.100Z", "message_id": "msg-0045", "delta": "Response 45: ", "done": false}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:45.200Z", "message_id": "msg-0045", "delta": "test response text for message 45.", "done": true}
+{"kind": "user_input", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:46.000Z", "text": "message 46"}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:46.100Z", "message_id": "msg-0046", "delta": "Response 46: ", "done": false}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:46.200Z", "message_id": "msg-0046", "delta": "test response text for message 46.", "done": true}
+{"kind": "user_input", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:47.000Z", "text": "message 47"}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:47.100Z", "message_id": "msg-0047", "delta": "Response 47: ", "done": false}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:47.200Z", "message_id": "msg-0047", "delta": "test response text for message 47.", "done": true}
+{"kind": "user_input", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:48.000Z", "text": "message 48"}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:48.100Z", "message_id": "msg-0048", "delta": "Response 48: ", "done": false}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:48.200Z", "message_id": "msg-0048", "delta": "test response text for message 48.", "done": true}
+{"kind": "user_input", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:49.000Z", "text": "message 49"}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:49.100Z", "message_id": "msg-0049", "delta": "Response 49: ", "done": false}
+{"kind": "assistant_chunk", "session_id": "01HTESTSOAKDEFAULT000000", "ts": "2026-04-19T12:00:49.200Z", "message_id": "msg-0049", "delta": "test response text for message 49.", "done": true}

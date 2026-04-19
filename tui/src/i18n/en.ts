@@ -1,0 +1,38 @@
+import type { I18nBundle } from './keys';
+
+const en: I18nBundle = {
+  sessionStarting: 'Starting KOSMOS session\u2026',
+  sessionReady: 'Ready',
+  sessionEnded: 'Session ended',
+  commandNotFound: (name) => `Unknown command: /${name}`,
+  commandHelp: 'Available commands:',
+  cmdSaveAck: 'Saving session\u2026',
+  cmdSessionsAck: 'Loading sessions\u2026',
+  cmdResumeAck: (sessionId) => `Resuming session ${sessionId}\u2026`,
+  cmdResumeMissingId: 'Usage: /resume <session-id>',
+  cmdNewAck: 'Starting new session\u2026',
+  cmdHandlerFailed: (name, message) => `/${name} failed: ${message}`,
+  helpTitle: 'KOSMOS slash commands',
+  helpUsage: 'Type /<command> [args]',
+  permissionPromptTitle: 'Permission required',
+  permissionPromptBody: (toolName) => `Allow tool "${toolName}" to run?`,
+  permissionApproved: 'Approved',
+  permissionDenied: 'Denied',
+  toolCallFailed: (toolId, reason) => `Tool ${toolId} failed: ${reason}`,
+  workerCrashed: (reason) => `Worker crashed: ${reason}`,
+  ipcDecodeError: 'Failed to decode IPC frame',
+  toolRunning: (toolId) => `Running ${toolId}\u2026`,
+  toolSucceeded: (toolId) => `${toolId} succeeded`,
+  toolFailed: (toolId) => `${toolId} failed`,
+  subscriptionOpened: (toolId) => `Subscribed to ${toolId}`,
+  subscriptionClosed: (toolId) => `Unsubscribed from ${toolId}`,
+  verifyInProgress: 'Verifying\u2026',
+  verifySucceeded: 'Verification succeeded',
+  verifyFailed: 'Verification failed',
+  resolveLocationPending: 'Resolving location\u2026',
+  resolveLocationAmbiguous: 'Multiple matches \u2014 please disambiguate',
+  pressCtrlCToExit: 'Press Ctrl-C to exit',
+  shuttingDown: 'Shutting down\u2026',
+};
+
+export default en;

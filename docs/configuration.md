@@ -60,6 +60,7 @@ Column definitions:
 | `KOSMOS_RETRIEVAL_FUSION` | No | `rrf` | `rrf` | `kosmos.tools.retrieval.backend._parse_fusion_config` | Epic #585 |
 | `KOSMOS_RETRIEVAL_FUSION_K` | No | `60` | Integer >= 1 | `kosmos.tools.retrieval.backend._parse_fusion_config` | Epic #585 |
 | `KOSMOS_RETRIEVAL_MODEL_ID` | No | `intfloat/multilingual-e5-small` | Hugging Face model ID string | `kosmos.tools.retrieval.backend.build_retriever_from_env` | Epic #585 |
+| `KOSMOS_SESSION_DIR` | No | `~/.kosmos/sessions` | Filesystem path (expanduser) | `kosmos.session.store._get_session_dir` | Epic #287 |
 | `KOSMOS_CLI_HISTORY_SIZE` | No | `1000` | Integer >= 0 | `kosmos.cli.config.CLIConfig.history_size` | This doc |
 | `KOSMOS_CLI_SHOW_USAGE` | No | `true` | `true` \| `false` | `kosmos.cli.config.CLIConfig.show_usage` | This doc |
 | `KOSMOS_CLI_WELCOME_BANNER` | No | `true` | `true` \| `false` | `kosmos.cli.config.CLIConfig.welcome_banner` | This doc |
@@ -88,13 +89,21 @@ Column definitions:
 | `KOSMOS_AGENT_MAILBOX_CORRELATION_ID` | OTel span attr | n/a | String span attribute key | `kosmos.observability.semconv.KOSMOS_AGENT_MAILBOX_CORRELATION_ID` | [Agent Swarm (Epic #13)](#agent-swarm-epic-13) |
 | `KOSMOS_AGENT_MAILBOX_SENDER` | OTel span attr | n/a | String span attribute key | `kosmos.observability.semconv.KOSMOS_AGENT_MAILBOX_SENDER` | [Agent Swarm (Epic #13)](#agent-swarm-epic-13) |
 | `KOSMOS_AGENT_MAILBOX_RECIPIENT` | OTel span attr | n/a | String span attribute key | `kosmos.observability.semconv.KOSMOS_AGENT_MAILBOX_RECIPIENT` | [Agent Swarm (Epic #13)](#agent-swarm-epic-13) |
+| `KOSMOS_TUI_THEME` | No | `default` | `default` \| `dark` \| `light` | `kosmos.config.env_registry.TUISettings.theme` | [Spec 287 TUI (Epic #287)](#tui-ink-react-bun-epic-287) |
+| `KOSMOS_TUI_LOG_LEVEL` | No | `WARN` | `DEBUG` \| `INFO` \| `WARN` \| `ERROR` | `kosmos.config.env_registry.TUISettings.log_level` | [Spec 287 TUI (Epic #287)](#tui-ink-react-bun-epic-287) |
+| `KOSMOS_TUI_SUBSCRIBE_TIMEOUT_S` | No | `300` | Integer >= 1 (seconds) | `kosmos.config.env_registry.TUISettings.subscribe_timeout_s` | [Spec 287 TUI (Epic #287)](#tui-ink-react-bun-epic-287) |
+| `KOSMOS_TUI_IME_STRATEGY` | No | `fork` | `fork` \| `readline` | `kosmos.config.env_registry.TUISettings.ime_strategy` | [Spec 287 TUI (Epic #287)](#tui-ink-react-bun-epic-287) |
+| `KOSMOS_TUI_SOAK_EVENTS_PER_SEC` | No | `100` | Integer >= 1 | `kosmos.config.env_registry.TUISettings.soak_events_per_sec` | [Spec 287 TUI (Epic #287)](#tui-ink-react-bun-epic-287) |
 
-> **Row count**: 35 rows (30 `KOSMOS_*` active + 2 `LANGFUSE_*` + 1 `KOSMOS_OTEL_ENDPOINT` +
+> **Row count**: 40 rows (35 `KOSMOS_*` active + 2 `LANGFUSE_*` + 1 `KOSMOS_OTEL_ENDPOINT` +
 > 1 override-family pattern + 1 deprecated). `KOSMOS_KOROAD_API_KEY` and
 > `KOSMOS_KOROAD_ACCIDENT_SEARCH_API_KEY` are concrete expansions of the
 > `KOSMOS_{TOOL_ID}_API_KEY` override-family pattern and are covered by that row.
 > Spec 028 added `KOSMOS_OTEL_COLLECTOR_PORT`, `KOSMOS_LANGFUSE_OTLP_ENDPOINT`, and
 > `KOSMOS_LANGFUSE_OTLP_AUTH_HEADER` (rows 29–31 of KOSMOS_* active set).
+> Spec 287 (T010) added `KOSMOS_TUI_THEME`, `KOSMOS_TUI_LOG_LEVEL`,
+> `KOSMOS_TUI_SUBSCRIBE_TIMEOUT_S`, `KOSMOS_TUI_IME_STRATEGY`, and
+> `KOSMOS_TUI_SOAK_EVENTS_PER_SEC` (rows 36–40 of KOSMOS_* active set).
 
 ---
 
@@ -556,6 +565,66 @@ error in the final plan.
 | **Required** | No |
 | **Range** | Integer [10, 600] |
 | **Consumed by** | `kosmos.agents.coordinator.Coordinator._research_phase` |
+
+---
+
+## TUI Layer (Epic #287)
+
+Variables that control the Ink + React terminal UI introduced by Spec 287.
+The TUI layer reads these at startup; none of them are hot-reloaded.
+
+### `KOSMOS_TUI_THEME`
+
+Controls the ANSI colour token set used by all `<Box>` / `<Text>` components
+in the TUI.  The theme is read once at process startup by `ThemeProvider`
+(`tui/src/theme/provider.tsx`) and propagated to every child component via
+React context.  Components MUST use `useTheme()` — no inline hex literals
+are permitted (FR-040).
+
+#### Allowed values
+
+| Value | Description |
+|-------|-------------|
+| `default` | ANSI 16-colour safe palette — maps to the same tokens as `dark` but uses the ANSI colour names instead of explicit RGB values. Falls back gracefully on terminals without 256-colour or true-colour support. **This is the recommended value for CI and headless environments.** |
+| `dark` | Dark-background palette with explicit RGB values (default choice for modern terminal emulators on dark themes). |
+| `light` | Light-background palette for terminals set to a white or cream background. |
+
+#### Precedence
+
+Shell environment variable > `.env` file > fallback to `default`.
+
+If the variable is **unset**, `ThemeProvider` silently uses `default`.  
+If the variable is set to an **unrecognised value**, `ThemeProvider` writes a
+warning to `stderr` and falls back to `default`.  The process does NOT exit.
+
+#### Preview each theme
+
+```bash
+# Preview dark theme
+KOSMOS_TUI_THEME=dark bun run tui
+
+# Preview light theme
+KOSMOS_TUI_THEME=light bun run tui
+
+# Preview default (ANSI-safe) theme
+KOSMOS_TUI_THEME=default bun run tui
+```
+
+#### Follow-up reminder
+
+`KOSMOS_TUI_THEME` MUST also be registered in `src/kosmos/config/env_registry.py`
+following the `#468` pattern (see `TUISettings` class skeleton in
+`specs/287-tui-ink-react-bun/spec.md § TUI Env Vars`).  Do NOT modify
+`env_registry.py` in this wave — defer to the post-wave integration step
+(tracked as part of Epic #287 T052).
+
+| Property | Value |
+|----------|-------|
+| **Default** | `default` |
+| **Required** | No |
+| **Range** | `default` \| `dark` \| `light` |
+| **Consumed by** | `tui/src/theme/provider.tsx → ThemeProvider` |
+| **Spec** | Spec 287 FR-039, FR-040, FR-041 |
 
 ---
 

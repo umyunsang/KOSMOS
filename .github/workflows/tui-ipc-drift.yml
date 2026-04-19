@@ -1,0 +1,61 @@
+name: TUI IPC Frame Schema Drift Gate
+
+# FR-003: TypeScript types MUST be derived from Pydantic models.
+# contracts/README.md § Authority: CI enforces that the committed
+# frames.generated.ts matches the live Pydantic schema exactly.
+
+on:
+  pull_request:
+    paths:
+      - "src/kosmos/ipc/**"
+      - "specs/287-tui-ink-react-bun/contracts/**"
+      - "tui/src/ipc/frames.generated.ts"
+      - "tui/scripts/gen-ipc-types.ts"
+      - "tui/package.json"
+  push:
+    branches:
+      - main
+    paths:
+      - "src/kosmos/ipc/**"
+      - "specs/287-tui-ink-react-bun/contracts/**"
+      - "tui/src/ipc/frames.generated.ts"
+      - "tui/scripts/gen-ipc-types.ts"
+      - "tui/package.json"
+
+jobs:
+  ipc-drift-check:
+    name: "FR-003: IPC Frame Schema Drift Check"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: ">=0.5"
+
+      - name: Install Python dependencies
+        run: uv sync --frozen
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.2.x"
+
+      - name: Install TUI dependencies
+        working-directory: tui
+        run: bun install --frozen-lockfile
+
+      - name: Run IPC schema drift check
+        working-directory: tui
+        run: bun run scripts/gen-ipc-types.ts --check
+        env:
+          # Ensure Python can import kosmos.ipc
+          PYTHONPATH: ${{ github.workspace }}/src

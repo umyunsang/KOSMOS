@@ -1,0 +1,19 @@
+{
+  "session_id": "01HWZK5P1XZ8Q4VNMJ2TRCB7AE",
+  "correlation_id": "01HWZK5P1XZ8Q4VNMJ2TRCB7AF",
+  "ts": "2026-04-19T00:00:00.000Z",
+  "kind": "tool_result",
+  "call_id": "01HWZK5P1XZ8Q4VNMJ2TRCB7AI",
+  "envelope": {
+    "kind": "lookup",
+    "subtype": "collection",
+    "tool_id": "hira_hospital_search",
+    "items": [
+      { "index": 1, "title": "Seoul National University Hospital", "meta": "General Hospital · 02-2072-2114" },
+      { "index": 2, "title": "Severance Hospital", "meta": "General Hospital · 02-2228-0114" },
+      { "index": 3, "title": "Asan Medical Center", "meta": "General Hospital · 02-3010-3114" },
+      { "index": 4, "title": "Samsung Medical Center", "meta": "General Hospital · 02-3410-0200" },
+      { "index": 5, "title": "Kangbuk Samsung Hospital", "meta": "General Hospital · 02-2001-2001" }
+    ]
+  }
+}

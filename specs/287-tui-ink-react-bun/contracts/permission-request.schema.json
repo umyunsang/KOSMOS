@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kosmos.dev/schemas/spec-287/permission-request.schema.json",
+  "title": "PermissionRequestFrame",
+  "description": "backend → TUI: a worker raises a permission request. Direction: backend → TUI. The TUI MUST render the permission-gauntlet modal (lifted from Claude Code) and block input until a permission_response is emitted (FR-045, FR-046).",
+  "type": "object",
+  "required": ["kind", "session_id", "ts", "request_id", "worker_id", "primitive_kind", "description_ko", "description_en", "risk_level"],
+  "properties": {
+    "kind": { "const": "permission_request" },
+    "session_id": { "type": "string" },
+    "correlation_id": { "type": ["string", "null"] },
+    "ts": { "type": "string", "format": "date-time" },
+    "request_id": {
+      "type": "string",
+      "description": "ULID; round-trips in the matching permission_response frame."
+    },
+    "worker_id": { "type": "string" },
+    "primitive_kind": {
+      "type": "string",
+      "enum": ["lookup", "resolve_location", "submit", "subscribe", "verify"]
+    },
+    "description_ko": {
+      "type": "string",
+      "description": "Korean-language description shown to the citizen."
+    },
+    "description_en": {
+      "type": "string",
+      "description": "English-language description shown alongside the Korean one."
+    },
+    "risk_level": {
+      "type": "string",
+      "enum": ["low", "medium", "high"]
+    }
+  },
+  "additionalProperties": false
+}
