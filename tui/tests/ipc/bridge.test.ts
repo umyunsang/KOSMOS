@@ -27,7 +27,9 @@ function makeUserInputFrame(sid: string, text: string): IPCFrame {
   return {
     kind: 'user_input',
     session_id: sid,
+    correlation_id: crypto.randomUUID(),
     ts: new Date().toISOString(),
+    role: 'tui',
     text,
   } as IPCFrame
 }

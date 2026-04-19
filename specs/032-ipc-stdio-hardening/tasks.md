@@ -132,11 +132,11 @@ description: "Task list for Spec 032 — IPC stdio hardening"
 
 **Independent Test**: Full-turn probe emits 5+ frames → `jq -s '[.[] | .correlation_id] | unique | length' == 1`; every span in the turn has `kosmos.ipc.correlation_id` attribute set to same UUIDv7 value. Validated by `test_otel_correlation.py`.
 
-- [ ] T048 [US4] Promote envelope `correlation_id` / `transaction_id` / `tx.cache_state` to OTEL span attributes in `src/kosmos/ipc/envelope.py` emit path — use constants from T002; attach to current span via `opentelemetry.trace.get_current_span()`.
-- [ ] T049 [US4] Thread `correlation_id` through `RunContext` in existing tool-loop bootstrap (minimal touch — add `correlation_id` field if absent; propagate through `emit()` calls).
-- [ ] T050 [US4] Emit `kosmos.ipc.schema.hash` as OTEL resource attribute on backend startup in `src/kosmos/ipc/envelope.py` (FR-037) — SHA-256 of `frame.schema.json` committed bytes.
-- [ ] T051 [US4] Author `tests/ipc/test_otel_correlation.py` — drive synthetic full turn → assert all spans in turn share one `correlation_id` + irreversible tool-call span has `tx.cache_state="miss"` then `"hit"` on replay.
-- [ ] T052 [US4] Author `src/kosmos/ipc/demo/full_turn_probe.py` + `tests/ipc/test_correlation_stability.py` — run probe → NDJSON to stdout → `jq -s '... | unique | length' == 1` (quickstart § 5.2).
+- [X] T048 [US4] Promote envelope `correlation_id` / `transaction_id` / `tx.cache_state` to OTEL span attributes in `src/kosmos/ipc/envelope.py` emit path — use constants from T002; attach to current span via `opentelemetry.trace.get_current_span()`.
+- [X] T049 [US4] Thread `correlation_id` through `RunContext` in existing tool-loop bootstrap (minimal touch — add `correlation_id` field if absent; propagate through `emit()` calls).
+- [X] T050 [US4] Emit `kosmos.ipc.schema.hash` as OTEL resource attribute on backend startup in `src/kosmos/ipc/envelope.py` (FR-037) — SHA-256 of `frame.schema.json` committed bytes.
+- [X] T051 [US4] Author `tests/ipc/test_otel_correlation.py` — drive synthetic full turn → assert all spans in turn share one `correlation_id` + irreversible tool-call span has `tx.cache_state="miss"` then `"hit"` on replay.
+- [X] T052 [US4] Author `src/kosmos/ipc/demo/full_turn_probe.py` + `tests/ipc/test_correlation_stability.py` — run probe → NDJSON to stdout → `jq -s '... | unique | length' == 1` (quickstart § 5.2).
 
 **Checkpoint**: US4 audit trail complete — investigators can join OTEL / Langfuse / `ToolCallAuditRecord` by single correlation_id.
 
@@ -146,15 +146,15 @@ description: "Task list for Spec 032 — IPC stdio hardening"
 
 **Purpose**: Quickstart validation, no-new-deps lint guard, documentation touch-ups, deferred-item tracking.
 
-- [ ] T053 [P] Implement `src/kosmos/ipc/demo/session_backend.py` + `tui/src/ipc/demo/resume_probe.ts` (quickstart scenario B harness per `quickstart.md` § 2).
-- [ ] T054 [P] Implement `src/kosmos/ipc/demo/upstream_429_probe.py` + `tui/src/ipc/demo/hud_probe.ts` (quickstart scenario C harness per `quickstart.md` § 3).
-- [ ] T055 [P] Implement `src/kosmos/ipc/demo/register_irreversible_fixture.py` (quickstart scenario D seed — `AdapterRegistration(is_irreversible=true)` fixture for `test_tx_dedup.py`).
-- [ ] T056 [P] Extend lint trio with `tests/ipc/test_no_new_runtime_deps.py` — diff `pyproject.toml` + `tui/package.json` against Spec 031 baseline; fail on any new runtime dep (SC-008 enforcement, reuses Spec 031 pattern).
-- [ ] T057 [P] Author `tests/ipc/test_ndjson_integrity.py` — 1000-frame stream with 5% malformed JSON injection → 0 session aborts, only malformed frames dropped with OTEL error span (SC-007).
-- [ ] T058 [P] Refresh `.specify/memory/agent-context/*.md` via `.specify/scripts/bash/update-agent-context.sh claude` — adds Spec 032 entries to Active Technologies + Recent Changes.
-- [ ] T059 Touch up `docs/vision.md` § L1 Transport reference pointers + § L5 TUI IPC section to cite Spec 032 deliverables + schema path.
-- [ ] T060 Track 5 `[Deferred]` items from spec.md § "Deferred to Future Work" in `docs/deferred/032-ipc-stdio-hardening.md` — remote TUI, frame signing, multi-backend shard, WebMCP capability advertisement, Windows named pipes (5 × `NEEDS TRACKING` → resolved to GitHub issues by `/speckit-taskstoissues`).
-- [ ] T061 [US2] Implement critical-lane bypass in `src/kosmos/ipc/backpressure.py` — `severity=critical` frames (e.g., CBS 재난문자 `notification_push`) skip pause gate regardless of ring/queue state (FR-017). Verify via `tests/ipc/test_critical_lane_priority.py`: inject `pause`-signaled state + 10 × `severity=critical` frames; assert p95 emit latency < 16 ms per SC-009; assert ordering preserved ahead of queued non-critical frames.
+- [X] T053 [P] Implement `src/kosmos/ipc/demo/session_backend.py` + `tui/src/ipc/demo/resume_probe.ts` (quickstart scenario B harness per `quickstart.md` § 2).
+- [X] T054 [P] Implement `src/kosmos/ipc/demo/upstream_429_probe.py` + `tui/src/ipc/demo/hud_probe.ts` (quickstart scenario C harness per `quickstart.md` § 3).
+- [X] T055 [P] Implement `src/kosmos/ipc/demo/register_irreversible_fixture.py` (quickstart scenario D seed — `AdapterRegistration(is_irreversible=true)` fixture for `test_tx_dedup.py`).
+- [X] T056 [P] Extend lint trio with `tests/ipc/test_no_new_runtime_deps.py` — diff `pyproject.toml` + `tui/package.json` against Spec 031 baseline; fail on any new runtime dep (SC-008 enforcement, reuses Spec 031 pattern).
+- [X] T057 [P] Author `tests/ipc/test_ndjson_integrity.py` — 1000-frame stream with 5% malformed JSON injection → 0 session aborts, only malformed frames dropped with OTEL error span (SC-007).
+- [X] T058 [P] Refresh `.specify/memory/agent-context/*.md` via `.specify/scripts/bash/update-agent-context.sh claude` — adds Spec 032 entries to Active Technologies + Recent Changes.
+- [X] T059 Touch up `docs/vision.md` § L1 Transport reference pointers + § L5 TUI IPC section to cite Spec 032 deliverables + schema path.
+- [X] T060 Track 5 `[Deferred]` items from spec.md § "Deferred to Future Work" in `docs/deferred/032-ipc-stdio-hardening.md` — remote TUI, frame signing, multi-backend shard, WebMCP capability advertisement, Windows named pipes (5 × `NEEDS TRACKING` → resolved to GitHub issues by `/speckit-taskstoissues`).
+- [X] T061 [US2] Implement critical-lane bypass in `src/kosmos/ipc/backpressure.py` — `severity=critical` frames (e.g., CBS 재난문자 `notification_push`) skip pause gate regardless of ring/queue state (FR-017). Verify via `tests/ipc/test_critical_lane_priority.py`: inject `pause`-signaled state + 10 × `severity=critical` frames; assert p95 emit latency < 16 ms per SC-009; assert ordering preserved ahead of queued non-critical frames.
 
 **Checkpoint**: Quickstart scenarios A–E (§ 6 full regression) exit zero on `uv run pytest tests/ipc/ -q` + `cd tui && bun test ipc && cd ..`. Spec 032 landable.
 

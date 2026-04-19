@@ -176,6 +176,10 @@ StopReason:
 
 Every LLM call and every public API call is debited against a session budget. `data.go.kr` APIs have daily per-key quotas; the engine tracks remaining quota per API and can substitute cached results or alternative APIs when approaching the limit. Observability hooks (OpenTelemetry-style counters) emit metrics for model tokens, cache hits, and per-ministry call counts.
 
+### Query ↔ TUI transport
+
+The Python query loop never touches the terminal directly. Every progress event, tool call, permission prompt, and backpressure signal crosses the process boundary as a **single-line NDJSON frame on stdout** — the 19-arm discriminated union frozen in Spec 032 (`specs/032-ipc-stdio-hardening/spec.md`). The JSON Schema at `tui/src/ipc/schema/frame.schema.json` is the versioned contract; its SHA-256 digest is emitted as the `kosmos.ipc.schema.hash` OTEL attribute at backend startup (FR-037). Envelope fields (`session_id` / `correlation_id` / `frame_seq` / `transaction_id`) thread every span so a citizen's turn is reconstructible end-to-end from Langfuse alone. `parse_ndjson_line` is fail-closed (FR-035): malformed bytes drop with a structured log, never aborting the session — Spec 032 T057 proves this on a 1000-frame / 5%-malformed stress stream (SC-007).
+
 ---
 
 ## Layer 2 — Tool System
@@ -377,6 +381,16 @@ Claude Code defines 65 bindings across 20 contexts (`src/keybindings/defaultBind
 - **Tier 3 (deferred until dependent specs)**: `ctrl+x ctrl+k` (killAll — requires multi-worker), `ctrl+e` (external editor), `meta+p` (modelPicker — KOSMOS uses K-EXAONE only), `ctrl+s` (stash), `ctrl+v` (image paste).
 
 IME safety rule: every binding that mutates the input buffer MUST check `!useKoreanIME().isComposing` before acting. Hangul composition must not be interrupted by a shortcut. The current `tui/src/hooks/useKoreanIME.ts` exposes the required predicate.
+
+### TUI ↔ backend IPC
+
+The Ink TUI reads the backend's stdout as an NDJSON stream and validates every line through the Zod discriminated union generated from the same schema the Python side emits (`tui/src/ipc/codec.ts` + `tui/src/ipc/frames.generated.ts`, bootstrapped by Spec 032 T018). Three resilience stories land in Phase 2:
+
+- **Resume on stdio drop (FR-018..025).** The backend keeps a 256-frame `SessionRingBuffer` per session. When the TUI reconnects it emits a `resume_request(last_seen_frame_seq, tui_session_token)`; the backend replies with `resume_response(replay_count, resumed_from_frame_seq)` and replays exactly the missed frames — Spec 032 quickstart § 2 probes this end-to-end (`src/kosmos/ipc/demo/session_backend.py` ↔ `tui/src/ipc/demo/resume_probe.ts`).
+- **Upstream 429 HUD (FR-014..016).** `BackpressureController.emit_upstream_429` converts a ministry Retry-After header into a `backpressure(signal="throttle")` frame with bilingual `hud_copy_ko` / `hud_copy_en` so the citizen sees a calm Korean banner with a live countdown (Spec 032 quickstart § 3, `tui/src/ipc/demo/hud_probe.ts`).
+- **Critical-lane bypass (FR-017).** CBS 재난문자 and other `severity=critical` frames (notably `notification_push`) skip the pause gate regardless of ring/queue state — a flood-warning push must reach the HUD even when the session is throttled upstream.
+
+Every TUI ↔ backend frame carries the same `correlation_id` the Python query loop already tags to its OpenTelemetry spans, so a "clicked this button" trace maps one-to-one onto the "called this adapter" trace without bespoke plumbing.
 
 ---
 

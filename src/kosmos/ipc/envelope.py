@@ -8,6 +8,9 @@ Responsibilities:
   Fail-closed: malformed JSON or schema violations return None + log error.
 - ``escape_newlines_in_payload(obj)``: recursively replace bare ``\\n`` in
   string values with ``\\\\n`` so NDJSON line integrity is preserved (FR-009).
+- ``attach_envelope_span_attributes(frame, *, tx_cache_state)``: promote envelope
+  ``correlation_id`` / ``transaction_id`` / ``tx.cache_state`` to the current OTEL
+  span (Spec 032 T048 / FR-053).
 
 All outbound frames use stdout (FR-036).  This module never writes to stderr.
 """
@@ -18,11 +21,18 @@ import hashlib
 import json
 import logging
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
+from opentelemetry import trace
 from pydantic import TypeAdapter, ValidationError
 
 from kosmos.ipc.frame_schema import IPCFrame
+from kosmos.ipc.otel_constants import (
+    KOSMOS_IPC_CORRELATION_ID,
+    KOSMOS_IPC_SCHEMA_HASH,
+    KOSMOS_IPC_TRANSACTION_ID,
+    KOSMOS_IPC_TX_CACHE_STATE,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -153,9 +163,99 @@ def compute_schema_file_hash(schema_path: Path) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
+# ---------------------------------------------------------------------------
+# OTEL span attribute promotion (Spec 032 T048 / FR-053)
+# ---------------------------------------------------------------------------
+
+
+def attach_envelope_span_attributes(
+    frame: IPCFrame,
+    *,
+    tx_cache_state: Literal["miss", "hit", "stored"] | None = None,
+) -> None:
+    """Promote envelope identifiers to the currently active OTEL span.
+
+    Sets ``kosmos.ipc.correlation_id`` (always) and, when populated,
+    ``kosmos.ipc.transaction_id`` and ``kosmos.ipc.tx.cache_state``.  The
+    caller is responsible for opening the span context.  When no span is
+    recording (no-op tracer), this function is a silent no-op.
+
+    Args:
+        frame: Any validated ``IPCFrame`` instance.
+        tx_cache_state: ``"miss"`` / ``"hit"`` / ``"stored"`` from the
+            :class:`~kosmos.ipc.transaction_lru.TransactionLRU` path when an
+            irreversible-tool frame is being emitted; ``None`` otherwise.
+    """
+    span = trace.get_current_span()
+    if not span.is_recording():
+        return
+    span.set_attribute(KOSMOS_IPC_CORRELATION_ID, frame.correlation_id)
+    tx_id = getattr(frame, "transaction_id", None)
+    if tx_id is not None:
+        span.set_attribute(KOSMOS_IPC_TRANSACTION_ID, tx_id)
+    if tx_cache_state is not None:
+        span.set_attribute(KOSMOS_IPC_TX_CACHE_STATE, tx_cache_state)
+
+
+# ---------------------------------------------------------------------------
+# Schema-hash OTEL resource attribute emission (Spec 032 T050 / FR-037)
+# ---------------------------------------------------------------------------
+
+
+_DEFAULT_SCHEMA_REL_PATH = Path("tui/src/ipc/schema/frame.schema.json")
+
+
+def _resolve_schema_path(schema_path: Path | None) -> Path | None:
+    """Walk up from this file until the committed schema file is found."""
+    if schema_path is not None:
+        return schema_path if schema_path.is_file() else None
+    here = Path(__file__).resolve()
+    for parent in here.parents:
+        candidate = parent / _DEFAULT_SCHEMA_REL_PATH
+        if candidate.is_file():
+            return candidate
+    return None
+
+
+def emit_schema_hash_resource_attribute(schema_path: Path | None = None) -> str | None:
+    """Emit ``kosmos.ipc.schema.hash`` on the current OTEL span at backend startup.
+
+    The span attribute mirrors the digest onto the current root span so that
+    OTEL Collector / Langfuse can surface deployment version consistency even
+    when resource attributes are not customisable at runtime (FR-037).
+
+    Args:
+        schema_path: Override for the committed schema file location.  When
+            ``None`` (default), the function walks upward from this module
+            looking for ``tui/src/ipc/schema/frame.schema.json``.
+
+    Returns:
+        The hex digest when the schema file was located, else ``None``.
+    """
+    resolved = _resolve_schema_path(schema_path)
+    if resolved is None:
+        logger.warning(
+            "ipc.schema_hash.resolve_failed",
+            extra={"searched": str(_DEFAULT_SCHEMA_REL_PATH)},
+        )
+        return None
+
+    digest = compute_schema_file_hash(resolved)
+    span = trace.get_current_span()
+    if span.is_recording():
+        span.set_attribute(KOSMOS_IPC_SCHEMA_HASH, digest)
+    logger.info(
+        "ipc.schema_hash.emitted",
+        extra={"schema_hash": digest, "schema_path": str(resolved)},
+    )
+    return digest
+
+
 __all__ = [
     "emit_ndjson",
     "parse_ndjson_line",
     "escape_newlines_in_payload",
     "compute_schema_file_hash",
+    "attach_envelope_span_attributes",
+    "emit_schema_hash_resource_attribute",
 ]

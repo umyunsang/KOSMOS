@@ -20,15 +20,20 @@ T035  Pause/resume pairing invariant:
       On session teardown with an outstanding ``pause``, a synthetic ``resume``
       is emitted before any terminal error frame.
 
-FR-017  Critical-lane bypass is implemented in T061; this module raises
-        ``CriticalLaneBypassError`` to signal the caller when the frame must
-        bypass the pause gate (severity=critical).
+T061  Critical-lane bypass (FR-017) — ``severity=critical`` frames skip the
+      pause gate regardless of ring/queue state.  The module exposes
+      :func:`is_critical_lane` as a classifier and
+      :meth:`BackpressureController.check_critical_bypass` which raises
+      :class:`CriticalLaneBypassError` so the emitter can route the frame
+      immediately, bypassing queue/ring hysteresis.
 
 References
 ----------
 - ``contracts/tx-dedup.contract.md`` § 1.1 — threshold triangle
 - ``contracts/tx-dedup.contract.md`` § 1.3 — upstream_429 specifics
 - ``contracts/tx-dedup.contract.md`` § 1.4 — pause/resume pairing invariant
+- ``specs/032-ipc-stdio-hardening/spec.md`` FR-017 — critical lane separation
+- 「재난 및 안전관리 기본법」 §38 — 재난경보 전송 의무 (legal basis)
 """
 
 from __future__ import annotations
@@ -38,7 +43,7 @@ import os
 from datetime import UTC, datetime
 from email.utils import parsedate_to_datetime
 
-from kosmos.ipc.frame_schema import BackpressureSignalFrame
+from kosmos.ipc.frame_schema import BackpressureSignalFrame, IPCFrame
 from kosmos.ipc.otel_constants import (
     KOSMOS_IPC_BACKPRESSURE_KIND,
     KOSMOS_IPC_BACKPRESSURE_SOURCE,
@@ -65,6 +70,57 @@ _RETRY_AFTER_MS_MAX: int = 900_000  # 900 s = 15 min
 
 class BackpressureError(RuntimeError):
     """Raised when the backpressure invariant is violated."""
+
+
+class CriticalLaneBypassError(RuntimeError):
+    """Raised to signal a frame must bypass the pause gate (FR-017).
+
+    Callers catch this to emit the frame immediately, skipping ring/queue
+    hysteresis.  The originating frame is attached for telemetry so the
+    emitter can thread it straight into ``write_ndjson``.
+    """
+
+    def __init__(self, frame: IPCFrame) -> None:
+        self.frame = frame
+        super().__init__(
+            f"critical-lane bypass required for kind={frame.kind!r} "
+            "(FR-017 — CBS 재난문자 / error frames skip pause gate)"
+        )
+
+
+# ---------------------------------------------------------------------------
+# Critical-lane classifier (FR-017)
+# ---------------------------------------------------------------------------
+
+# NotificationPushFrame adapters whose payloads are legally mandated to reach
+# the citizen without throttling (재난 및 안전관리 기본법 §38).  Extended as
+# additional subscription surfaces (e.g., National Emergency broadcasts) are
+# added via Spec 031 subscribe primitives.
+_CRITICAL_NOTIFICATION_ADAPTERS: frozenset[str] = frozenset(
+    {
+        "disaster_alert_cbs_push",
+    }
+)
+
+
+def is_critical_lane(frame: IPCFrame) -> bool:
+    """Return True if *frame* requires critical-lane bypass (FR-017).
+
+    Critical categories:
+
+    * ``notification_push`` with ``adapter_id`` in
+      :data:`_CRITICAL_NOTIFICATION_ADAPTERS` — CBS 재난문자 and any other
+      legally-mandated broadcast surface.
+    * ``error`` frames — terminal errors must reach the peer to prevent silent
+      session death behind a stuck pause gate.
+
+    All other kinds return False (normal pause-gate routing applies).
+    """
+    if frame.kind == "notification_push":
+        return frame.adapter_id in _CRITICAL_NOTIFICATION_ADAPTERS
+    if frame.kind == "error":
+        return True
+    return False
 
 
 # ---------------------------------------------------------------------------
@@ -126,6 +182,29 @@ class BackpressureController:
     def any_paused(self) -> bool:
         """Return True if any source has an outstanding pause."""
         return any(self._paused.values())
+
+    # ------------------------------------------------------------------
+    # T061  check_critical_bypass() — critical-lane gate (FR-017)
+    # ------------------------------------------------------------------
+
+    def check_critical_bypass(self, frame: IPCFrame) -> None:
+        """Raise :class:`CriticalLaneBypassError` iff *frame* must bypass the gate.
+
+        The gate fires only when **both** hold:
+
+        1. At least one source is currently paused (``any_paused() is True``).
+        2. :func:`is_critical_lane` classifies *frame* as critical.
+
+        When no source is paused, critical frames flow through the normal path
+        and this method returns None silently.  When paused but the frame is
+        non-critical, the emitter is expected to queue/throttle per its own
+        policy — this method still returns None silently.
+
+        This gate is O(1) (dict lookup + set membership test) so it preserves
+        SC-009 p95 latency < 16 ms even inside a hot emit loop.
+        """
+        if self.any_paused() and is_critical_lane(frame):
+            raise CriticalLaneBypassError(frame)
 
     # ------------------------------------------------------------------
     # T032  tick() — hysteresis gate
@@ -482,4 +561,9 @@ class BackpressureController:
         )
 
 
-__all__ = ["BackpressureController", "BackpressureError"]
+__all__ = [
+    "BackpressureController",
+    "BackpressureError",
+    "CriticalLaneBypassError",
+    "is_critical_lane",
+]

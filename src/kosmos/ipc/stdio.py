@@ -39,6 +39,7 @@ from opentelemetry import trace
 from opentelemetry.trace import Status, StatusCode
 from pydantic import TypeAdapter, ValidationError
 
+from kosmos.ipc.envelope import attach_envelope_span_attributes
 from kosmos.ipc.frame_schema import (
     ErrorFrame,
     IPCFrame,
@@ -77,7 +78,12 @@ def _get_stdout_lock() -> asyncio.Lock:
 # ---------------------------------------------------------------------------
 
 
-async def write_frame(frame: IPCFrame, *, _assembly_start_ns: int | None = None) -> None:
+async def write_frame(
+    frame: IPCFrame,
+    *,
+    _assembly_start_ns: int | None = None,
+    tx_cache_state: str | None = None,
+) -> None:
     """Serialise *frame* to a single JSON line and write it to stdout.
 
     Flushes stdout immediately after every frame to preserve the FIFO ordering
@@ -89,7 +95,9 @@ async def write_frame(frame: IPCFrame, *, _assembly_start_ns: int | None = None)
     OTEL: emits a ``kosmos.ipc.frame`` child span (FR-053) with direction
     ``"outbound"``.  ``_assembly_start_ns`` is the ``time.monotonic_ns()``
     captured by the caller before building the frame payload; when absent,
-    the span clock starts at the write call itself.
+    the span clock starts at the write call itself.  ``tx_cache_state`` is
+    forwarded from the :class:`~kosmos.ipc.transaction_lru.TransactionLRU`
+    path for irreversible-tool frames (Spec 032 T048 / FR-053).
     """
     t0_ns = _assembly_start_ns if _assembly_start_ns is not None else time.monotonic_ns()
     payload = frame.model_dump_json() + "\n"
@@ -105,6 +113,7 @@ async def write_frame(frame: IPCFrame, *, _assembly_start_ns: int | None = None)
             span.set_attribute("kosmos.frame.kind", frame.kind)
             span.set_attribute("kosmos.frame.direction", "outbound")
             span.set_attribute("kosmos.ipc.latency_ms", latency_ms)
+            attach_envelope_span_attributes(frame, tx_cache_state=tx_cache_state)  # type: ignore[arg-type]
         except Exception as exc:  # noqa: BLE001
             span.record_exception(exc)
             span.set_status(Status(StatusCode.ERROR))
@@ -179,6 +188,7 @@ async def _reader_loop(
                 span.set_attribute("kosmos.frame.kind", frame.kind)
                 span.set_attribute("kosmos.frame.direction", "inbound")
                 span.set_attribute("kosmos.ipc.latency_ms", latency_ms)
+                attach_envelope_span_attributes(frame)
             except Exception as exc:  # noqa: BLE001
                 span.record_exception(exc)
                 span.set_status(Status(StatusCode.ERROR))
