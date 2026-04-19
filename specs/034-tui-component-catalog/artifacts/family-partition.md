@@ -189,8 +189,8 @@ Per `catalog-row-schema.md §2.1`. Authored by Lead (T014).
 |---|---|---:|
 | A — design-system / chrome | design-system, ui, Spinner, LogoV2, HighlightedCode, StructuredDiff, diff, CustomSelect | 62 |
 | B — conversation / IO | messages, PromptInput, HelpV2, hooks, memory, shell, ClaudeCodeHint | 78 |
-| C — permission / safety | permissions, TrustDialog, ManagedSettingsSecurityDialog, sandbox, Passes, agents, teams, grove | 89 |
-| D — tooling / integration | mcp, skills, tasks, wizard, DesktopUpsell, FeedbackSurvey, LspRecommendation, Settings | 47 |
+| C — permission / safety | permissions, TrustDialog, ManagedSettingsSecurityDialog, sandbox, Passes, agents, teams, grove | 90 |
+| D — tooling / integration | mcp, skills, tasks, wizard, DesktopUpsell, FeedbackSurvey, LspRecommendation, Settings | 46 |
 | **Subdir subtotal** | — | **276** |
 | Lead (T014) — root bins | 6 semantic bins | 113 |
 | **Grand total** | — | **389** |
