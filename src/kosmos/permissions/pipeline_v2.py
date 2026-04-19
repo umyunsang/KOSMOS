@@ -433,20 +433,35 @@ def _dispatch_mode(
     """Route mode-specific evaluation to the matching resolver."""
     if ctx.mode == "default":
         adapter = _RuleStoreDefaultModeAdapter(rule_store, scope_ctx)
-        result = mode_default.resolve_default_mode(ctx, adapter)
+        result = mode_default.resolve_default_mode(ctx, adapter, action_digest=action_digest)
         if isinstance(result, ConsentDecision):
             return result
         return "ASK"
 
-    if ctx.mode in {"bypassPermissions", "dontAsk"}:
+    if ctx.mode == "bypassPermissions":
         verdict = mode_bypass.resolve_bypass_mode(ctx, ctx.adapter_metadata)
         if verdict == "ALLOW":
             return _auto_allow_decision(
                 ctx,
                 scope="one-shot",
-                reason=f"{ctx.mode}_silent_allow",
+                reason="bypassPermissions_silent_allow",
                 action_digest=action_digest,
             )
+        return "ASK"
+
+    if ctx.mode == "dontAsk":
+        # dontAsk is allow-list only: require an explicit allow rule in the
+        # store.  When no rule exists we fall through to the default-mode
+        # behavior (which resolves the prompt), never silent-allow.
+        verdict = mode_bypass.resolve_bypass_mode(ctx, ctx.adapter_metadata)
+        if verdict == "ASK":
+            return "ASK"
+        adapter = _RuleStoreDefaultModeAdapter(rule_store, scope_ctx)
+        default_result = mode_default.resolve_default_mode(
+            ctx, adapter, action_digest=action_digest
+        )
+        if isinstance(default_result, ConsentDecision):
+            return default_result
         return "ASK"
 
     if ctx.mode == "plan":

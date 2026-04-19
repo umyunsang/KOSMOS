@@ -45,6 +45,7 @@ import { PhaseIndicator } from '../components/coordinator/PhaseIndicator'
 import { WorkerStatusRow } from '../components/coordinator/WorkerStatusRow'
 import { PermissionGauntletModal } from '../components/coordinator/PermissionGauntletModal'
 import { InputBar } from '../components/input/InputBar'
+import { handleNotificationFrame } from '../permissions/consentBridge'
 
 // ---------------------------------------------------------------------------
 // Frame dispatcher — maps IPCFrame arms to SessionAction
@@ -342,6 +343,9 @@ export function App({ bridge }: AppProps): React.ReactElement {
     ;(async () => {
       for await (const frame of bridge.frames()) {
         if (!active) break
+        // Consent sub-protocol rides notification_push frames; if a waiter
+        // claims one, skip store dispatch to avoid double-handling.
+        if (handleNotificationFrame(frame)) continue
         dispatchFrame(frame)
         // Exit event from backend
         if (frame.kind === 'session_event' && frame.event === 'exit') {

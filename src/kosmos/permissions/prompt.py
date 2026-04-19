@@ -267,29 +267,37 @@ def build_from_decisions(
             (Invariant C1).
         AttributeError: If a decision object is missing expected attributes.
     """
-    # Invariant C2: collect pipa_class values that require individual consent.
+    # Invariant C2 / PIPA §22(1): individual-consent classes ({민감, 고유식별,
+    # 특수}) must never be bundled with ANY other decision — not another
+    # individual-consent class, and not even a {일반} decision.  The rule is
+    # "one individual-consent prompt at a time, or zero".
     individual_classes_found: list[str] = [
         d.pipa_class  # type: ignore[attr-defined]
         for d in decisions
         if d.pipa_class in _INDIVIDUAL_CONSENT_CLASSES  # type: ignore[attr-defined]
     ]
-    if len(individual_classes_found) > 1:
+    if len(decisions) > 1 and individual_classes_found:
         offending = frozenset(individual_classes_found)
         _logger.error(
             "Invariant C2 violation: cannot bundle individual-consent classes %r "
-            "into a single prompt (PIPA §22(1)).",
+            "with any other decision (PIPA §22(1)).",
             sorted(offending),
         )
         raise IndividualConsentViolationError(offending)
 
     prompts: list[PIPAConsentPrompt] = []
     for d in decisions:
+        raw_items = d.data_items  # type: ignore[attr-defined]
+        # ConsentDecision.data_items is a tuple of non-empty strings; the
+        # PIPA prompt requires a newline-delimited string (StrictStr) so the
+        # 4-tuple fits the existing dialog layout.
+        items_str = "\n".join(raw_items) if isinstance(raw_items, (tuple, list)) else raw_items
         prompt = PIPAConsentPrompt(
             tool_id=d.tool_id,  # type: ignore[attr-defined]
             pipa_class=d.pipa_class,  # type: ignore[attr-defined]
             auth_level=d.auth_level,  # type: ignore[attr-defined]
             purpose=d.purpose,  # type: ignore[attr-defined]
-            data_items=d.data_items,  # type: ignore[attr-defined]
+            data_items=items_str,
             retention_period=d.retention_period,  # type: ignore[attr-defined]
             refusal_right=d.refusal_right,  # type: ignore[attr-defined]
         )

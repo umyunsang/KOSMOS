@@ -263,8 +263,12 @@ def _cmd_rotate_key(args: argparse.Namespace) -> int:  # noqa: C901
             existing_entries = []
 
     # The key being retired is the currently active key.
-    # If registry exists and has entries, use the max+1 as new id.
-    # current_key_id = the id of the key we are about to retire.
+    # If the registry is absent but a key file exists, it was the implicit
+    # k0001 (created by the first `ledger.append` call); treat it as sequence
+    # 1 so the new key gets sequence 2, avoiding a key_id collision that
+    # would otherwise overwrite the archived key in verify-time dicts.
+    if next_seq == 1 and key_path.exists():
+        next_seq = 2
     current_key_id = f"k{(next_seq - 1):04d}" if next_seq > 1 else "k0001"
     new_key_id = f"k{next_seq:04d}"
 

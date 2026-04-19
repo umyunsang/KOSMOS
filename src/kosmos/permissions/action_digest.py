@@ -9,7 +9,7 @@ Invariants:
       guaranteed by the ``nonce`` parameter — a freshly generated UUID is passed
       for every call, so the canonical payload differs even when tool_id and
       arguments are identical.
-- FR-B04: Killswitch-triggered calls are recorded with a ``scope=single_action``
+- FR-B04: Killswitch-triggered calls are recorded with a ``scope="one-shot"``
           ledger record that carries this digest.
 
 The canonical payload is built as a JSON object:

@@ -73,6 +73,8 @@ class RuleStore(Protocol):
 def resolve_default_mode(
     ctx: ToolPermissionContext,
     rule_store: RuleStore,
+    *,
+    action_digest: str | None = None,
 ) -> ConsentDecision | Literal["ASK"]:
     """Apply ``default`` mode logic to a tool permission context.
 
@@ -96,6 +98,13 @@ def resolve_default_mode(
     Args:
         ctx: Per-invocation tool permission context.
         rule_store: Injected persistent rule store (WS2 implementation).
+        action_digest: Pre-computed per-call digest from
+            ``action_digest.compute_action_digest()``.  When supplied it is
+            attached verbatim to the returned ConsentDecision so the
+            pipeline-wide "one nonce per call" invariant (K6) survives.
+            When ``None`` a deterministic correlation-id-derived fallback is
+            used — correct for isolated unit tests but not for the audit
+            trail, so pipeline_v2 always supplies a fresh nonce-based digest.
 
     Returns:
         ``ConsentDecision`` if the rule store has a persistent ``allow`` rule,
@@ -122,22 +131,24 @@ def resolve_default_mode(
         # where available; the pipeline_v2.py caller fills in the ledger record.
         # Use placeholder strings for fields not available at this layer
         # (the pipeline wires in the prompt builder which provides full 4-tuple).
-        import hashlib
         from datetime import datetime
 
-        from kosmos.permissions.canonical_json import canonicalize
+        # Prefer the pipeline-supplied nonce-based digest (Invariant K6).  In
+        # standalone unit tests (pipeline not wired) fall back to a
+        # correlation-id-derived digest so this function stays callable.
+        if action_digest is None:
+            import hashlib
 
-        # Build a deterministic action_digest for auto-allow (no user args nonce
-        # available at this layer — the pipeline injects a nonce before calling).
-        # Use the correlation_id as a deterministic source.
-        digest_input = canonicalize(
-            {
-                "tool_id": ctx.tool_id,
-                "correlation_id": ctx.correlation_id,
-                "auto_allow": True,
-            }
-        )
-        action_digest = hashlib.sha256(digest_input).hexdigest()
+            from kosmos.permissions.canonical_json import canonicalize
+
+            digest_input = canonicalize(
+                {
+                    "tool_id": ctx.tool_id,
+                    "correlation_id": ctx.correlation_id,
+                    "auto_allow": True,
+                }
+            )
+            action_digest = hashlib.sha256(digest_input).hexdigest()
 
         return ConsentDecision(
             purpose="persistent_allow_rule",

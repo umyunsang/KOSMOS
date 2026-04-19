@@ -51,7 +51,11 @@ class SessionBootState(BaseModel):
     session.  ``mode`` is always ``"default"`` (Invariant M3/PR1).
     """
 
-    model_config = ConfigDict(frozen=True, extra="forbid")
+    model_config = ConfigDict(
+        frozen=True,
+        extra="forbid",
+        arbitrary_types_allowed=True,
+    )
 
     mode: PermissionMode = "default"
     """Active permission mode.  Always ``"default"`` on restart (M3/PR1)."""
@@ -68,8 +72,6 @@ class SessionBootState(BaseModel):
 
     user_rule_count: int = 0
     """Number of user-scope rules loaded from disk."""
-
-    model_config = ConfigDict(frozen=True, extra="forbid", arbitrary_types_allowed=True)
 
 
 # ---------------------------------------------------------------------------

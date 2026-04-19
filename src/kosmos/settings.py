@@ -144,6 +144,22 @@ class KosmosSettings(BaseSettings):
     Default: ``~/.kosmos/permissions.json``.
     """
 
+    @field_validator(
+        "permission_key_path",
+        "permission_ledger_path",
+        "permission_rule_store_path",
+        mode="after",
+    )
+    @classmethod
+    def _permission_paths_must_be_absolute(cls, v: Path) -> Path:
+        """Reject relative paths to prevent writes into an unexpected CWD (Spec 033)."""
+        if not v.is_absolute():
+            raise ValueError(
+                f"permission path must be absolute, got: {v!r}. "
+                "Set the matching KOSMOS_PERMISSION_*_PATH env var to an absolute path."
+            )
+        return v
+
 
 settings: KosmosSettings = KosmosSettings()
 """Module-level singleton.  Import this directly in production code."""

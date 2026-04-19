@@ -64,7 +64,7 @@ PIPA classifications:
     고유식별 (unique ID) — PIPA §24 unique identifiers (RRN, passport, etc.)
 
 These are NOT forwarded to the LLM (FR-E02, Invariant C5, MEMORY project_pipa_role).
-The remaining classes (일반, 개인식별, 특수) are forwarded subject to other pipeline
+The remaining classes (일반, 특수) are forwarded subject to other pipeline
 controls (killswitch blocks 특수 at a higher layer — it does not reach synthesis).
 """
 

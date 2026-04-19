@@ -340,11 +340,19 @@ class TestAALBackstopFRF02:
 
 
 @pytest.fixture()
-def otel_exporter() -> tuple[TracerProvider, InMemorySpanExporter]:
+def otel_exporter(
+    monkeypatch: pytest.MonkeyPatch,
+) -> tuple[TracerProvider, InMemorySpanExporter]:
     """Set up an in-memory OTEL exporter for span inspection.
+
+    CI sets ``OTEL_SDK_DISABLED=true`` to suppress outbound telemetry, which
+    also turns ``TracerProvider`` into a no-op.  These tests need real SDK
+    spans for attribute assertions, so we locally unset the flag for the
+    fixture scope before constructing the provider.
 
     Yields (provider, exporter).  Caller accesses spans via exporter.get_finished_spans().
     """
+    monkeypatch.delenv("OTEL_SDK_DISABLED", raising=False)
     exporter = InMemorySpanExporter()
     provider = TracerProvider()
     provider.add_span_processor(SimpleSpanProcessor(exporter))

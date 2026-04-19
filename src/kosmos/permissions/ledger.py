@@ -140,6 +140,10 @@ def _read_last_line_locked(fd: int) -> bytes | None:
     The file is seeked from current append position.  Called while holding
     ``LOCK_EX`` so the read is consistent with the subsequent write.
 
+    Reads the tail of the file in 1 MiB chunks from EOF backward so that
+    ledgers larger than 64 MiB still return the true last record (preserving
+    chain integrity — Invariant L3 / L4).
+
     Args:
         fd: Open file descriptor in O_RDONLY mode on the same path.
 
@@ -147,21 +151,33 @@ def _read_last_line_locked(fd: int) -> bytes | None:
         Last non-empty line bytes without trailing newline, or ``None`` if
         the file is empty.
     """
-    # Seek to start to read all content for last-line extraction.
-    # For large ledgers a reverse-read would be optimal, but correctness
-    # is the priority; SC-003 (≤200ms/1000 records) is still achievable.
+    chunk_size = 1024 * 1024
     try:
-        os.lseek(fd, 0, os.SEEK_SET)
-        content = os.read(fd, 64 * 1024 * 1024)  # up to 64 MB
-        if not content:
+        file_size = os.lseek(fd, 0, os.SEEK_END)
+        if file_size == 0:
             return None
-        # Find the last non-empty line.
-        lines = content.rstrip(b"\n").split(b"\n")
-        for line in reversed(lines):
-            stripped = line.strip()
-            if stripped:
-                return stripped
-        return None
+
+        offset = file_size
+        buffer = b""
+        while offset > 0:
+            read_size = min(chunk_size, offset)
+            offset -= read_size
+            os.lseek(fd, offset, os.SEEK_SET)
+            chunk = os.read(fd, read_size)
+            buffer = chunk + buffer
+            # Keep reading until we have at least one newline that isn't the
+            # trailing one — otherwise the final record may span the chunk
+            # boundary.
+            stripped = buffer.rstrip(b"\n")
+            if b"\n" in stripped:
+                _, _, last = stripped.rpartition(b"\n")
+                candidate = last.strip()
+                if candidate:
+                    return candidate
+        # Whole file is a single line.
+        stripped = buffer.rstrip(b"\n")
+        candidate = stripped.strip()
+        return candidate or None
     except OSError:
         return None
 

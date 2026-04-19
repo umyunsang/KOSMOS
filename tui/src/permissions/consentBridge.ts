@@ -16,10 +16,17 @@
 //
 // `correlation_id` from ToolPermissionContext is threaded through so the
 // backend can join the decision to the tool call audit record.
+//
+// IMPORTANT — single-consumer contract:
+//   There is exactly one `bridge.frames()` consumer in the TUI (`tui.tsx`'s
+//   master dispatch loop).  This module MUST NOT iterate `bridge.frames()`
+//   directly — doing so steals frames from the dispatcher and breaks IPC
+//   ordering.  Instead it exposes `handleNotificationFrame()` so the master
+//   loop can forward consent-related frames here.
 
 import type { IPCBridge } from '../ipc/bridge'
 import type { ConsentDecision } from './types'
-import type { NotificationPushFrame } from '../ipc/frames.generated'
+import type { IPCFrame, NotificationPushFrame } from '../ipc/frames.generated'
 import { makeBaseEnvelope } from '../ipc/envelope'
 
 // ---------------------------------------------------------------------------
@@ -76,13 +83,6 @@ export interface ConsentDecisionPayload {
 }
 
 // ---------------------------------------------------------------------------
-// Raw payload record from NotificationPushFrame (untyped in generated schema)
-// ---------------------------------------------------------------------------
-
-/** Record representation of the notification_push payload field. */
-type RawPayload = Record<string, unknown>
-
-// ---------------------------------------------------------------------------
 // ConsentBridge: awaits a single consent request and submits the decision
 // ---------------------------------------------------------------------------
 
@@ -104,6 +104,17 @@ export interface ConsentBridgeResult {
   resolve: (granted: boolean, scope: ConsentDecision['scope']) => void
 }
 
+// Internal resolver state: one entry per outstanding awaitConsentRequest call.
+interface PendingWaiter {
+  bridge: IPCBridge
+  sessionId: string
+  timeoutId: ReturnType<typeof setTimeout>
+  resolve: (result: ConsentBridgeResult) => void
+  reject: (err: Error) => void
+}
+
+const _pending = new Map<string, PendingWaiter>()
+
 /**
  * Wait for the next consent prompt request frame from the backend
  * that matches `correlationId`, then return the payload and a resolve callback.
@@ -112,6 +123,10 @@ export interface ConsentBridgeResult {
  *
  * The caller renders ConsentPrompt with the payload and calls
  * `result.resolve(granted, scope)` when the citizen decides.
+ *
+ * The master IPC dispatch loop (tui.tsx) is expected to call
+ * `handleNotificationFrame(frame)` for every notification_push frame so this
+ * function can deliver the matching payload back to the awaiting caller.
  *
  * BLOCKER NOTE: The current NotificationPushFrame schema (auto-generated from
  * frame_schema.py Spec 031) does not carry a consent-specific field —
@@ -122,62 +137,96 @@ export interface ConsentBridgeResult {
  *
  * @throws Error if timeout is reached before a matching request arrives.
  */
-export async function awaitConsentRequest(
+export function awaitConsentRequest(
   opts: ConsentBridgeOptions,
 ): Promise<ConsentBridgeResult> {
   const { bridge, sessionId, correlationId, timeoutMs = 120_000 } = opts
 
   return new Promise<ConsentBridgeResult>((resolve, reject) => {
-    let settled = false
+    if (_pending.has(correlationId)) {
+      reject(
+        new Error(
+          `Duplicate awaitConsentRequest for correlation_id=${correlationId}`,
+        ),
+      )
+      return
+    }
+
     const timeoutId = setTimeout(() => {
-      if (!settled) {
-        settled = true
-        reject(new Error(`Consent request timed out after ${timeoutMs}ms (correlation_id=${correlationId})`))
+      const waiter = _pending.get(correlationId)
+      if (waiter) {
+        _pending.delete(correlationId)
+        waiter.reject(
+          new Error(
+            `Consent request timed out after ${timeoutMs}ms (correlation_id=${correlationId})`,
+          ),
+        )
       }
     }, timeoutMs)
 
-    // Start listening for frames
-    ;(async () => {
-      try {
-        for await (const frame of bridge.frames()) {
-          if (settled) break
-
-          // Only handle notification_push frames
-          if (frame.kind !== 'notification_push') continue
-
-          const notifFrame = frame as NotificationPushFrame
-          // Match on sub-protocol kind (adapter_id) + correlation_id
-          if (
-            notifFrame.adapter_id !== CONSENT_REQUEST_KIND ||
-            notifFrame.correlation_id !== correlationId
-          ) {
-            continue
-          }
-
-          // Cast payload to our expected shape — backend must conform
-          const rawPayload = notifFrame.payload as unknown as RawPayload
-          const payload = rawPayload as unknown as ConsentRequestPayload
-
-          settled = true
-          clearTimeout(timeoutId)
-
-          resolve({
-            payload,
-            resolve: (granted: boolean, scope: ConsentDecision['scope']) => {
-              _sendDecision(bridge, sessionId, correlationId, payload, granted, scope)
-            },
-          })
-          break
-        }
-      } catch (err) {
-        if (!settled) {
-          settled = true
-          clearTimeout(timeoutId)
-          reject(err)
-        }
-      }
-    })()
+    _pending.set(correlationId, {
+      bridge,
+      sessionId,
+      timeoutId,
+      resolve,
+      reject,
+    })
   })
+}
+
+/**
+ * Forwarded from the TUI master frame loop for every incoming frame.
+ *
+ * Returns `true` if the frame was claimed by the consent sub-protocol (and
+ * therefore must not be dispatched to the main store), `false` otherwise.
+ * Non-notification_push frames are ignored without claim.
+ */
+export function handleNotificationFrame(frame: IPCFrame): boolean {
+  if (frame.kind !== 'notification_push') return false
+  const notifFrame = frame as NotificationPushFrame
+  if (notifFrame.adapter_id !== CONSENT_REQUEST_KIND) return false
+
+  const waiter = _pending.get(notifFrame.correlation_id)
+  if (!waiter) return false
+
+  // NotificationPushFrame.payload is a JSON-encoded string per frame_schema.py.
+  // Parse defensively — an unparseable payload is a backend contract violation
+  // and should fail the waiter loudly instead of silently returning undefined
+  // fields.
+  let payload: ConsentRequestPayload
+  try {
+    const rawPayload = notifFrame.payload as unknown
+    const jsonText =
+      typeof rawPayload === 'string' ? rawPayload : JSON.stringify(rawPayload)
+    payload = JSON.parse(jsonText) as ConsentRequestPayload
+  } catch (err) {
+    _pending.delete(notifFrame.correlation_id)
+    clearTimeout(waiter.timeoutId)
+    waiter.reject(
+      err instanceof Error
+        ? err
+        : new Error('Failed to parse consent request payload'),
+    )
+    return true
+  }
+
+  _pending.delete(notifFrame.correlation_id)
+  clearTimeout(waiter.timeoutId)
+
+  waiter.resolve({
+    payload,
+    resolve: (granted: boolean, scope: ConsentDecision['scope']) => {
+      _sendDecision(
+        waiter.bridge,
+        waiter.sessionId,
+        notifFrame.correlation_id,
+        payload,
+        granted,
+        scope,
+      )
+    },
+  })
+  return true
 }
 
 // ---------------------------------------------------------------------------
@@ -205,6 +254,7 @@ function _sendDecision(
 
   // Ride NotificationPushFrame with adapter_id = CONSENT_DECISION_KIND.
   // event_guid and subscription_id are stub values — the backend filters on adapter_id.
+  // payload must be a JSON-encoded string per the IPC schema (frame_schema.py).
   const frame: NotificationPushFrame = {
     ...base,
     role: 'tui',
@@ -213,7 +263,7 @@ function _sendDecision(
     subscription_id: '',
     event_guid: '',
     payload_content_type: 'application/json',
-    payload: decisionPayload as unknown as NotificationPushFrame['payload'],
+    payload: JSON.stringify(decisionPayload),
   }
 
   bridge.send(frame)

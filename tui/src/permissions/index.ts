@@ -31,6 +31,7 @@ export type { ConsentPromptProps } from './ConsentPrompt'
 // ConsentBridge (T019)
 export {
   awaitConsentRequest,
+  handleNotificationFrame,
   CONSENT_REQUEST_KIND,
   CONSENT_DECISION_KIND,
 } from './consentBridge'

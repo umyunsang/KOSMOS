@@ -94,7 +94,9 @@ def tmp_rule_store(tmp_permission_dir: Path) -> Path:
     """Return path to an empty rule store JSON file under ``tmp_permission_dir``."""
     rule_store = tmp_permission_dir / "permissions.json"
     # Write an empty but valid schema-versioned rule store.
-    empty_store = '{"$schema": "kosmos://permissions-store/v1", "version": 1, "rules": []}\n'
+    # Shape must match `RuleStore._parse_root()` — top-level `schema_version`
+    # plus optional `generated_at` plus `rules`.
+    empty_store = '{"schema_version": "1.0.0", "rules": []}\n'
     rule_store.write_text(empty_store)
     return rule_store
 
