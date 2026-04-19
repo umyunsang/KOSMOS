@@ -124,6 +124,13 @@ class SessionRingBuffer:
         self._frames.append(stamped)
         self._frame_seq_counter += 1
         self.last_append_ts = datetime.now(tz=UTC)
+
+        # Prune consumed-markers for frames that have fallen out of the ring
+        # (deque.maxlen already evicted them). Otherwise long sessions leak
+        # one int per consumed frame forever.
+        oldest = self._frames[0].frame_seq
+        if self._consumed_markers and oldest is not None:
+            self._consumed_markers = {s for s in self._consumed_markers if s >= oldest}
         logger.debug(
             "ring.append",
             extra={

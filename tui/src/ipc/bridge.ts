@@ -299,7 +299,13 @@ export function createBridge(opts: BridgeOptions = {}): IPCBridge {
   let _tuiSessionToken: string | null = opts.tuiSessionToken ?? null
   let _lastSeenCorrelationId: string | null = null
   let _lastSeenFrameSeq: number | null = null
+  // Bounded ring of applied (session_id, frame_seq) keys for replay-dedup.
+  // Cap mirrors the backend SessionRingBuffer size (Spec 032: 256 frames);
+  // oldest entries are evicted via FIFO replacement so the Set cannot grow
+  // unbounded across long sessions.
+  const _APPLIED_FRAME_SEQS_CAP = 256
   const _appliedFrameSeqs = new Set<string>()
+  const _appliedFrameSeqsOrder: string[] = []
 
   // ------------------------------------------------------------------
   // Spawn first process
@@ -347,8 +353,22 @@ export function createBridge(opts: BridgeOptions = {}): IPCBridge {
    * frame_seq is always 0 (fresh outbound counter after reconnect).
    */
   function _emitResumeRequest(): void {
-    if (!_sessionId || !_tuiSessionToken) {
-      _log('WARN', 'Cannot emit ResumeRequestFrame — session credentials not set')
+    // Fresh bridge that never handshaked has nothing to resume — skip silently.
+    if (!_sessionId) {
+      _log('DEBUG', 'Skipping ResumeRequestFrame — no session_id assigned yet')
+      return
+    }
+    // session_id is set but token is missing → programmer error (likely
+    // session_event path skipped setSessionCredentials). Log loud so the
+    // invariant break is visible; the bridge will fall back to a fresh session.
+    if (!_tuiSessionToken) {
+      _log(
+        'ERROR',
+        `Cannot emit ResumeRequestFrame — session=${_sessionId} has no tui_session_token; falling back to fresh session`,
+      )
+      _sessionId = null
+      _lastSeenFrameSeq = null
+      _lastSeenCorrelationId = null
       return
     }
     const frame: ResumeRequestFrame = {
@@ -457,8 +477,12 @@ export function createBridge(opts: BridgeOptions = {}): IPCBridge {
             if (result.ok) {
               const frame = result.frame
 
-              // Track last-seen for resume requests
-              if (frame.frame_seq != null) {
+              // Track last-seen for resume requests — only advance forward so
+              // heartbeats (frame_seq=0) never regress the watermark.
+              if (
+                frame.frame_seq != null &&
+                (_lastSeenFrameSeq == null || frame.frame_seq > _lastSeenFrameSeq)
+              ) {
                 _lastSeenFrameSeq = frame.frame_seq
               }
               if (frame.correlation_id) {
@@ -476,6 +500,11 @@ export function createBridge(opts: BridgeOptions = {}): IPCBridge {
                   continue
                 }
                 _appliedFrameSeqs.add(key)
+                _appliedFrameSeqsOrder.push(key)
+                if (_appliedFrameSeqsOrder.length > _APPLIED_FRAME_SEQS_CAP) {
+                  const evicted = _appliedFrameSeqsOrder.shift()
+                  if (evicted !== undefined) _appliedFrameSeqs.delete(evicted)
+                }
               }
 
               _log('DEBUG', `recv kind=${frame.kind} session=${frame.session_id}`)

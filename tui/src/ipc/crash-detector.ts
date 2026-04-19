@@ -156,14 +156,16 @@ export function startCrashDetector(
     const raw = stderrBuf.tail()
     const redacted = redactKosmosSecrets(raw)
 
-    // Exit 0 is a clean shutdown.  Signal onDrop (not onCrash) so the bridge
-    // can attempt reconnect without showing the user an error dialog.
-    if (exitCode === 0 || exitCode === null) {
-      // Drop the connection silently — bridge reconnect loop handles recovery.
+    // Exit 0 is a clean shutdown → drop (bridge reconnects silently).
+    if (exitCode === 0) {
       opts.onDrop?.()
       return
     }
 
+    // exitCode === null means the process was killed by a signal (SIGKILL,
+    // SIGTERM, …). Treat that as a crash so the user sees the stderr tail
+    // and can diagnose why the backend went away — a silent drop would
+    // mask segfaults and OOM kills.
     const notice: CrashNotice = {
       exitCode,
       stderrTail: raw,

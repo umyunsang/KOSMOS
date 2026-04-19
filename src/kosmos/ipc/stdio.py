@@ -33,7 +33,7 @@ import uuid
 from collections.abc import Callable
 from datetime import UTC
 from types import FrameType
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal
 
 from opentelemetry import trace
 from opentelemetry.trace import Status, StatusCode
@@ -82,7 +82,7 @@ async def write_frame(
     frame: IPCFrame,
     *,
     _assembly_start_ns: int | None = None,
-    tx_cache_state: str | None = None,
+    tx_cache_state: Literal["miss", "hit", "stored"] | None = None,
 ) -> None:
     """Serialise *frame* to a single JSON line and write it to stdout.
 
@@ -113,7 +113,7 @@ async def write_frame(
             span.set_attribute("kosmos.frame.kind", frame.kind)
             span.set_attribute("kosmos.frame.direction", "outbound")
             span.set_attribute("kosmos.ipc.latency_ms", latency_ms)
-            attach_envelope_span_attributes(frame, tx_cache_state=tx_cache_state)  # type: ignore[arg-type]
+            attach_envelope_span_attributes(frame, tx_cache_state=tx_cache_state)
         except Exception as exc:  # noqa: BLE001
             span.record_exception(exc)
             span.set_status(Status(StatusCode.ERROR))
@@ -236,6 +236,7 @@ async def _dispatch_session_event(
     session_id: str,
     sm: SessionManager,
     shutdown: asyncio.Event,
+    correlation_id: str,
 ) -> None:
     """Route a ``session_event`` frame to the appropriate :class:`SessionManager` method.
 
@@ -262,7 +263,7 @@ async def _dispatch_session_event(
         meta = await sm.new_session()
         reply = SessionEventFrame(
             session_id=meta.session_id,
-            correlation_id=str(uuid.uuid4()),
+            correlation_id=correlation_id,
             role="backend",
             ts=_utcnow(),
             kind="session_event",
@@ -278,7 +279,7 @@ async def _dispatch_session_event(
         active_sid = sm.session_id or session_id
         reply = SessionEventFrame(
             session_id=active_sid,
-            correlation_id=str(uuid.uuid4()),
+            correlation_id=correlation_id,
             role="backend",
             ts=_utcnow(),
             kind="session_event",
@@ -301,7 +302,7 @@ async def _dispatch_session_event(
         active_sid = sm.session_id or session_id
         reply = SessionEventFrame(
             session_id=active_sid,
-            correlation_id=str(uuid.uuid4()),
+            correlation_id=correlation_id,
             role="backend",
             ts=_utcnow(),
             kind="session_event",
@@ -316,7 +317,7 @@ async def _dispatch_session_event(
         messages = await sm.resume_session(target_id)
         reply = SessionEventFrame(
             session_id=target_id,
-            correlation_id=str(uuid.uuid4()),
+            correlation_id=correlation_id,
             role="backend",
             ts=_utcnow(),
             kind="session_event",
@@ -337,7 +338,7 @@ async def _dispatch_session_event(
         # load is backend → TUI only; reject TUI → backend direction.
         err = ErrorFrame(
             session_id=session_id,
-            correlation_id=str(uuid.uuid4()),
+            correlation_id=correlation_id,
             role="backend",
             ts=_utcnow(),
             kind="error",
@@ -439,7 +440,14 @@ async def run(  # noqa: C901
                 evt = frame.event
                 payload = frame.payload
                 try:
-                    await _dispatch_session_event(evt, payload, frame.session_id, _sm, _shutdown)
+                    await _dispatch_session_event(
+                        evt,
+                        payload,
+                        frame.session_id,
+                        _sm,
+                        _shutdown,
+                        frame.correlation_id,
+                    )
                 except Exception as exc:  # noqa: BLE001
                     logger.exception("session_event handler raised: %s", exc)
                     err = ErrorFrame(

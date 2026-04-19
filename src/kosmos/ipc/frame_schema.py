@@ -115,7 +115,11 @@ class _BaseFrame(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid", populate_by_name=True)
 
     # --- Spec 287 original fields (unchanged) ---
-    session_id: str = Field(min_length=1, description="Opaque session identifier.")
+    # Note: session_id may be "" before the TUI has received a backend-assigned
+    # session — slash-command builders (/new, /save, /sessions, /resume) and
+    # the initial user_input emit empty session_id and rely on the bridge to
+    # stamp the real id once handshake completes. E1-E6 do not constrain it.
+    session_id: str = Field(description="Opaque session identifier.")
     correlation_id: str = Field(
         min_length=1,
         description=(

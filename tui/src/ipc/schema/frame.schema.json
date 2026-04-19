@@ -53,7 +53,6 @@
         },
         "session_id": {
           "description": "Opaque session identifier.",
-          "minLength": 1,
           "title": "Session Id",
           "type": "string"
         },
@@ -183,7 +182,6 @@
         },
         "session_id": {
           "description": "Opaque session identifier.",
-          "minLength": 1,
           "title": "Session Id",
           "type": "string"
         },
@@ -309,7 +307,6 @@
         },
         "session_id": {
           "description": "Opaque session identifier.",
-          "minLength": 1,
           "title": "Session Id",
           "type": "string"
         },
@@ -415,7 +412,6 @@
         },
         "session_id": {
           "description": "Opaque session identifier.",
-          "minLength": 1,
           "title": "Session Id",
           "type": "string"
         },
@@ -513,7 +509,7 @@
     },
     "HeartbeatFrame": {
       "additionalProperties": false,
-      "description": "Emitted every 30 s (default) by both sides to prove liveness.\n\nNote: Heartbeat frames do NOT increment frame_seq — they use a dedicated\ncounter. This keeps ring-buffer economy tight.\nrole allow-list: tui, backend.",
+      "description": "Emitted every 30 s (default) by both sides to prove liveness.\n\nNote: Heartbeat frames do NOT increment frame_seq \u2014 they use a dedicated\ncounter. This keeps ring-buffer economy tight.\nrole allow-list: tui, backend.",
       "properties": {
         "correlation_id": {
           "description": "UUIDv7 string for new emissions; ULID accepted for back-compat. Non-empty; emitter SHOULD use UUIDv7. (E5)",
@@ -564,7 +560,6 @@
         },
         "session_id": {
           "description": "Opaque session identifier.",
-          "minLength": 1,
           "title": "Session Id",
           "type": "string"
         },
@@ -679,7 +674,6 @@
         },
         "session_id": {
           "description": "Opaque session identifier.",
-          "minLength": 1,
           "title": "Session Id",
           "type": "string"
         },
@@ -789,7 +783,6 @@
         },
         "session_id": {
           "description": "Opaque session identifier.",
-          "minLength": 1,
           "title": "Session Id",
           "type": "string"
         },
@@ -886,7 +879,6 @@
         },
         "session_id": {
           "description": "Opaque session identifier.",
-          "minLength": 1,
           "title": "Session Id",
           "type": "string"
         },
@@ -1010,7 +1002,6 @@
         },
         "session_id": {
           "description": "Opaque session identifier.",
-          "minLength": 1,
           "title": "Session Id",
           "type": "string"
         },
@@ -1137,7 +1128,6 @@
         },
         "session_id": {
           "description": "Opaque session identifier.",
-          "minLength": 1,
           "title": "Session Id",
           "type": "string"
         },
@@ -1251,7 +1241,6 @@
         },
         "session_id": {
           "description": "Opaque session identifier.",
-          "minLength": 1,
           "title": "Session Id",
           "type": "string"
         },
@@ -1359,7 +1348,6 @@
         },
         "session_id": {
           "description": "Opaque session identifier.",
-          "minLength": 1,
           "title": "Session Id",
           "type": "string"
         },
@@ -1477,7 +1465,6 @@
         },
         "session_id": {
           "description": "Opaque session identifier.",
-          "minLength": 1,
           "title": "Session Id",
           "type": "string"
         },
@@ -1596,7 +1583,6 @@
         },
         "session_id": {
           "description": "Opaque session identifier.",
-          "minLength": 1,
           "title": "Session Id",
           "type": "string"
         },
@@ -1708,7 +1694,6 @@
         },
         "session_id": {
           "description": "Opaque session identifier.",
-          "minLength": 1,
           "title": "Session Id",
           "type": "string"
         },
@@ -1822,7 +1807,6 @@
         },
         "session_id": {
           "description": "Opaque session identifier.",
-          "minLength": 1,
           "title": "Session Id",
           "type": "string"
         },
@@ -1946,7 +1930,6 @@
         },
         "session_id": {
           "description": "Opaque session identifier.",
-          "minLength": 1,
           "title": "Session Id",
           "type": "string"
         },
@@ -2037,7 +2020,6 @@
         },
         "session_id": {
           "description": "Opaque session identifier.",
-          "minLength": 1,
           "title": "Session Id",
           "type": "string"
         },
@@ -2149,7 +2131,6 @@
         },
         "session_id": {
           "description": "Opaque session identifier.",
-          "minLength": 1,
           "title": "Session Id",
           "type": "string"
         },
