@@ -259,8 +259,14 @@ def _cmd_rotate_key(args: argparse.Namespace) -> int:  # noqa: C901
                             next_seq = seq + 1
                     except (ValueError, AttributeError):
                         pass
-        except (json.JSONDecodeError, OSError):
-            existing_entries = []
+        except (json.JSONDecodeError, OSError) as exc:
+            # Fail closed: silently resetting to [] would wipe historical
+            # key_id→file mappings and make prior ledger rows unverifiable.
+            raise RuntimeError(
+                f"Failed to read/parse key registry at {registry_path}. "
+                "Rotation aborted to preserve HMAC verification continuity. "
+                f"Root cause: {exc!r}"
+            ) from exc
 
     # The key being retired is the currently active key.
     # If the registry is absent but a key file exists, it was the implicit

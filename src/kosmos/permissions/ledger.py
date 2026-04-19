@@ -227,18 +227,35 @@ def _get_key_id(key_registry_path: Path) -> str:
         return "k0001"
     try:
         entries = json.loads(key_registry_path.read_text("utf-8"))
-        if not isinstance(entries, list) or not entries:
-            return "k0001"
-        # Active key = last entry with retired_at == null.
-        for entry in reversed(entries):
-            if entry.get("retired_at") is None:
-                key_id: str = entry["key_id"]
-                return key_id
-        # Fallback if all entries are retired (should not happen normally).
-        fallback_key_id: str = entries[-1]["key_id"]
-        return fallback_key_id
-    except (json.JSONDecodeError, KeyError, OSError):
+    except (json.JSONDecodeError, OSError) as exc:
+        # Fail closed: silently using "k0001" here would tag new records with
+        # a key_id unrelated to the actual signing key bytes, producing rows
+        # that verify() would later reject.
+        raise RuntimeError(
+            f"Failed to read/parse key registry at {key_registry_path}. "
+            "Ledger append aborted to preserve HMAC verification continuity. "
+            f"Root cause: {exc!r}"
+        ) from exc
+    if not isinstance(entries, list) or not entries:
         return "k0001"
+    # Active key = last entry with retired_at == null.
+    for entry in reversed(entries):
+        if entry.get("retired_at") is None:
+            try:
+                key_id: str = entry["key_id"]
+            except KeyError as exc:
+                raise RuntimeError(
+                    f"Key registry entry is missing 'key_id' at {key_registry_path}."
+                ) from exc
+            return key_id
+    # Fallback if all entries are retired (should not happen normally).
+    try:
+        fallback_key_id: str = entries[-1]["key_id"]
+    except KeyError as exc:
+        raise RuntimeError(
+            f"Key registry tail entry is missing 'key_id' at {key_registry_path}."
+        ) from exc
+    return fallback_key_id
 
 
 def _ensure_ledger_file(ledger_path: Path) -> None:
