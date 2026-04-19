@@ -16,6 +16,7 @@ import asyncio
 import contextlib
 import json
 import logging
+import os
 import uuid
 from datetime import UTC, datetime
 from pathlib import Path
@@ -32,8 +33,14 @@ _DEFAULT_SESSION_DIR = Path.home() / ".kosmos" / "sessions"
 
 
 def _get_session_dir() -> Path:
-    """Return the session directory, creating it if necessary."""
-    session_dir = _DEFAULT_SESSION_DIR
+    """Return the session directory, creating it if necessary.
+
+    Honours the ``KOSMOS_SESSION_DIR`` environment variable when set, which
+    allows tests to redirect session storage to a temporary directory without
+    modifying the user's home directory.
+    """
+    env_override = os.environ.get("KOSMOS_SESSION_DIR", "").strip()
+    session_dir = Path(env_override) if env_override else _DEFAULT_SESSION_DIR
     session_dir.mkdir(parents=True, exist_ok=True)
     return session_dir
 

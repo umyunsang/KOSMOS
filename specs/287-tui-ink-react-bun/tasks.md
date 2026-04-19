@@ -240,15 +240,15 @@ description: "Task list for Spec 287 TUI (Ink + React + Bun)"
 
 ### Tests for User Story 6
 
-- [ ] T108 [P] [US6] Integration test `tui/tests/commands/session-roundtrip.test.ts` — `/save` emits `session_event.save`; `/sessions` renders list with id + timestamp + turn_count; `/resume <id>` restores prior turns in message list without re-streaming (US6 scenarios 1–3; FR-038)
-- [ ] T109 [P] [US6] Stateless-TUI invariant test `tui/tests/store/no-persistence.test.ts` — assert no file writes occur under `tui/` after any `session_event` (kill-and-restart simulation; US6 scenario 4; spec § Assumptions)
-- [ ] T110 [P] [US6] Python backend session test `tests/ipc/test_session_events.py` — verify `session_event: save|load|list|resume|new|exit` frames round-trip through existing Phase 1 JSONL store (FR-038)
+- [X] T108 [P] [US6] Integration test `tui/tests/commands/session-roundtrip.test.ts` — `/save` emits `session_event.save`; `/sessions` renders list with id + timestamp + turn_count; `/resume <id>` restores prior turns in message list without re-streaming (US6 scenarios 1–3; FR-038)
+- [X] T109 [P] [US6] Stateless-TUI invariant test `tui/tests/store/no-persistence.test.ts` — assert no file writes occur under `tui/` after any `session_event` (kill-and-restart simulation; US6 scenario 4; spec § Assumptions)
+- [X] T110 [P] [US6] Python backend session test `tests/ipc/test_session_events.py` — verify `session_event: save|load|list|resume|new|exit` frames round-trip through existing Phase 1 JSONL store (FR-038)
 
 ### Implementation for User Story 6
 
-- [ ] T111 [P] [US6] Extend `src/kosmos/ipc/stdio.py` to route `session_event` frames to existing Phase 1 session store (`src/kosmos/session/`) without duplication
-- [ ] T112 [US6] Confirm store reducer handles `session_event.load` / `resume` by replaying historical messages into the message list WITHOUT triggering `assistant_chunk` re-render animation (US6 scenario 3)
-- [ ] T113 [P] [US6] Add `session_event.exit` handler in TUI triggering SIGTERM chain per FR-009
+- [X] T111 [P] [US6] Extend `src/kosmos/ipc/stdio.py` to route `session_event` frames to existing Phase 1 session store (`src/kosmos/session/`) without duplication
+- [X] T112 [US6] Confirm store reducer handles `session_event.load` / `resume` by replaying historical messages into the message list WITHOUT triggering `assistant_chunk` re-render animation (US6 scenario 3)
+- [X] T113 [P] [US6] Add `session_event.exit` handler in TUI triggering SIGTERM chain per FR-009
 
 **Checkpoint**: Kill-and-restart cycle restores full conversation state via backend-only storage.
 

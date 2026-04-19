@@ -252,7 +252,55 @@ function sessionReducer(
           ...initialSessionState(state.session_id),
         }
       }
-      // Other session events (save, load, list, resume, exit) are handled
+      if (action.event === 'load') {
+        // FR-052: replay persisted messages directly with done:true so
+        // MessageList does not animate them as streaming content.
+        const rawMessages = action.payload['messages']
+        if (!Array.isArray(rawMessages)) {
+          console.warn('[session-store] SESSION_EVENT load: payload.messages is not an array — ignoring')
+          return state
+        }
+        const messages = new Map<string, Message>()
+        const message_order: string[] = []
+        for (const raw of rawMessages) {
+          if (
+            raw === null ||
+            typeof raw !== 'object' ||
+            typeof (raw as Record<string, unknown>)['id'] !== 'string'
+          ) {
+            console.warn('[session-store] SESSION_EVENT load: skipping entry missing required id field', raw)
+            continue
+          }
+          const entry = raw as Record<string, unknown>
+          const msg: Message = {
+            id: entry['id'] as string,
+            role: (entry['role'] === 'user' || entry['role'] === 'assistant') ? entry['role'] : 'assistant',
+            chunks: Array.isArray(entry['chunks'])
+              ? (entry['chunks'] as unknown[]).map(String)
+              : [],
+            done: true, // always mark done — no streaming animation (FR-052)
+            tool_calls: Array.isArray(entry['tool_calls'])
+              ? (entry['tool_calls'] as ToolCall[])
+              : [],
+            tool_results: Array.isArray(entry['tool_results'])
+              ? (entry['tool_results'] as ToolResult[])
+              : [],
+          }
+          messages.set(msg.id, msg)
+          message_order.push(msg.id)
+        }
+        const session_id =
+          typeof action.payload['session_id'] === 'string'
+            ? action.payload['session_id']
+            : state.session_id
+        return {
+          ...state,
+          session_id,
+          messages,
+          message_order,
+        }
+      }
+      // Other session events (save, list, resume, exit) are handled
       // as side-effects by the IPC bridge; reducer leaves state intact.
       return state
     }
