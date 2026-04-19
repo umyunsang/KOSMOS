@@ -33,7 +33,7 @@ KOSMOS's deeper claim is not "connect 5,000 APIs." It is: **the Claude Code harn
 |---|---|---|
 | Who is it for? | Software developers | Citizens using national infrastructure |
 | Tool surface | File system, shell, git, editors | `data.go.kr` public APIs, civil-affairs portals |
-| Primitive verbs | Read, Edit, Bash, Grep, WebFetch | lookup, pay, issue, apply, reserve, subscribe |
+| Primitive verbs | Read, Edit, Bash, Grep, WebFetch | lookup, resolve_location, submit, subscribe, verify |
 | Permission concerns | Dangerous shell commands, file overwrites | PIPA (PII protection), identity verification, legal ordering |
 | Deployment | Developer laptop + IDE | Citizen laptop (TUI) → eventually mobile/web |
 
@@ -54,7 +54,7 @@ KOSMOS must apply the identical method to citizen-government interaction — not
 3. **Weight by empirical frequency.** Back-of-envelope annual transaction volume per verb, grounded in e-나라지표, ministry statistics, and `data.go.kr` usage metrics — not designer intuition.
 4. **Distill to 6–8 always-loaded verbs.** Everything else is lazily discovered via `search_tools`. The upper bound matches Claude Code's cognitive budget for tool schemas in the system prompt.
 
-A forthcoming **Spec 031** will execute this method and propose a small set of domain-agnostic harness primitives — currently scoped as five (`lookup`, `resolve_location`, `submit`, `subscribe`, `verify`), mirroring Claude Code's ~5 always-loaded verbs. An earlier 8-verb proposal (with domain-tinted names such as `pay`, `issue_certificate`, `submit_application`, `reserve_slot`, `subscribe_alert`, `check_eligibility`) has been **retired** for leaking ministry knowledge into the main surface; domain specialization belongs in adapters (`src/kosmos/tools/<ministry>/<adapter>.py`), not in LLM-visible verb names. The method that produced the verb list is what is canonical — if a later survey contradicts a candidate, we re-run the method and update, rather than patching conclusions while keeping stale premises.
+**Spec 031** executed this method and ratified a small set of domain-agnostic harness primitives — five (`lookup`, `resolve_location`, `submit`, `subscribe`, `verify`), mirroring Claude Code's ~5 always-loaded verbs. An earlier 8-verb proposal (with domain-tinted names such as `pay`, `issue_certificate`, `submit_application`, `reserve_slot`, `subscribe_alert`, `check_eligibility`) has been **retired** for leaking ministry knowledge into the main surface; domain specialization belongs in adapters (`src/kosmos/tools/<ministry>/<adapter>.py`), not in LLM-visible verb names. The method that produced the verb list is what is canonical — if a later survey contradicts a candidate, we re-run the method and update, rather than patching conclusions while keeping stale premises.
 
 The ambition above describes **what** this migration enables. The methodology here fixes **how we decide which tools serve it**. The six layers below describe **how the migration is structured**. All three serve the same thesis.
 
@@ -82,7 +82,7 @@ KOSMOS adapts architectural patterns from the conversational AI agent ecosystem 
 | NeMo Guardrails (`NVIDIA/NeMo-Guardrails`) | Apache-2.0 | Colang 2.0 declarative tool-call validation rails — whitelist-of-approved-actions model, auditable policy language for PIPA compliance |
 | Google ADK (`google/adk-python`) | Apache-2.0 | Runner-level plugin pattern for centralized permission enforcement, reflect-and-retry tool failure handling |
 | LangGraph (`langchain-ai/langgraph`) | MIT | `RetryPolicy` per-node exponential backoff, `ToolNode(handle_tool_errors=True)` — Pydantic `ValidationError` fail-closed lesson at tool boundary |
-| Mastra (`mastra-ai/mastra`) | Apache-2.0 | TypeScript agent framework — typed tool workflow graphs with loops, branching, human-in-the-loop; Phase 2 TUI layer reference |
+| Mastra (`mastra-ai/mastra`) | Apache-2.0 | TypeScript agent framework — typed tool workflow graphs with loops, branching, human-in-the-loop (reference only; not used for Phase 2 TUI after ADR-003/004) |
 | Korean Public APIs index (`yybmion/public-apis-4Kr`) | MIT | Curated `data.go.kr` API discovery index with auth type annotations — tool registry `search_hint` population |
 | stamina (`hynek/stamina`) | MIT | Production-grade async retry with enforced jitter and capped backoff — Layer 6 retry policy foundation |
 | aiobreaker (`arlyon/aiobreaker`) | MIT | Asyncio-native circuit breaker for per-API failure isolation — Layer 6 circuit breaker pattern |
@@ -111,7 +111,7 @@ KOSMOS is built around six architectural layers, each adapting a pattern family 
 | 1 | **Query Engine** | The `while(True)` tool loop that resolves a civil-affairs request | Async generator state machine |
 | 2 | **Tool System** | Registry and factory for `data.go.kr` API adapters | Schema-driven tool modules |
 | 3 | **Permission Pipeline** | Citizen authentication and personal-data protection gate | Multi-step bypass-immune gauntlet |
-| 4 | **Agent Swarms** | Ministry-specialist agents coordinated by an orchestrator | Mailbox IPC + coordinator synthesis |
+| 4 | **Agent Swarms** | Ministry-specialist agents coordinated by an orchestrator | AsyncLocalStorage in-process coordinator (CC parity) + file-based mailbox IPC for crash resilience (KOSMOS Spec 027 extension) |
 | 5 | **Context Assembly** | The 3-tier context the LLM sees each turn | System + memory + attachments |
 | 6 | **Error Recovery** | Resilience against public API outages, rate limits, maintenance | `withRetry`-style error matrix |
 
@@ -156,6 +156,10 @@ QueryState:
     pending_api_calls     # in-flight tool invocations
     resolved_tasks        # completed civil-affairs sub-goals
 ```
+
+### QueryDeps injection boundary
+
+The query loop receives its LLM client, tool registry, permission policy, and telemetry emitter via an explicit `QueryDeps` dataclass at loop construction time — never imported from module scope inside the loop. This boundary is how Claude Code keeps the engine test-isolatable (parity with `src/query/deps.ts`) and how KOSMOS keeps its Phase-1 Scenario 1 E2E runnable without side effects on live `data.go.kr` APIs. Every new coordinator, worker, or replay harness constructs its own `QueryDeps` with the dependencies it needs; nothing implicit crosses the boundary.
 
 ### Termination conditions
 
@@ -222,6 +226,10 @@ LLM:      calls the discovered tool
 ## Layer 3 — Permission Pipeline
 
 Public data is not the same as unconstrained data. Citizens' personal information flows through KOSMOS and must be gated.
+
+### PermissionMode spectrum
+
+Layer 3 inherits Claude Code's four-mode `PermissionMode` (`default`, `plan`, `acceptEdits`, `bypassPermissions`) as a first-class concept. KOSMOS tightens `bypassPermissions` under a PIPA-specific killswitch (parity with `src/utils/permissions/bypassPermissionsKillswitch.ts`) and adds a `citizen-ident-verified` precondition for tools whose `auth_level ∈ {AAL2, AAL3}`. The TUI mode-toggle shortcut (`shift+tab`, CC `chat:cycleMode`) cycles only through the modes the current citizen is permitted to enter; a session without AAL1 cannot reach `acceptEdits` at all.
 
 ### Multi-step gauntlet
 
@@ -309,6 +317,10 @@ The LLM sees a layered context on every turn.
 
 Memory files support conditional activation. A rule block for senior-welfare APIs can be gated on `age >= 65` so younger citizens never see those tools, reducing prompt surface and avoiding irrelevant suggestions.
 
+### Phase-1 delivered scope
+
+Of the five memory tiers described above, Phase 1 (on `main` as of 2026-04-19) delivers only **System prompt assembly** (Spec 026 Prompt Registry) and **Session turn compaction** (`microCompact` + `autoCompact` parity with `.references/claude-code-sourcemap/restored-src/src/services/compact/`). The **Region**, **Citizen**, and **Auto** tiers — Claude Code's equivalent `src/memdir/` layer — are deferred to Phase 2+; no KOSMOS component currently reads or writes memdir-style files. Declaring this prevents vision drift and keeps the memdir port scoped under the CC→KOSMOS Phase 2 Migration meta-Epic (sub-Epic D).
+
 ### Per-turn attachments
 
 Each turn the loop collects fresh dynamic context with a short timeout budget:
@@ -343,6 +355,31 @@ Public API call → error?
 
 ---
 
+## TUI experience surface
+
+The six layers above describe how KOSMOS reasons. This section describes how a citizen touches KOSMOS. The TUI (Ink + React + Bun, ported from `.references/claude-code-sourcemap/restored-src/` per ADR-004) is the Phase-1 and Phase-2 surface; mobile and web surfaces are out of scope for this document.
+
+### Citizen onboarding
+
+First-launch presents a dedicated onboarding sequence derived from Claude Code's step registry (`src/components/Onboarding.tsx`) with the developer-domain steps (API key, OAuth, terminal fonts) replaced by citizen-domain equivalents:
+
+1. **KOSMOS brand splash** — renders the orbital-ring logo (`assets/kosmos-logo-dark.svg` / icon-component equivalent) with the wordmark `KOSMOS` and the subtitle `KOREAN PUBLIC SERVICE MULTI-AGENT OS`. The canonical palette is extracted directly from the SVG assets: background `#0a0e27` → `#1a1040` (gradient); orbital ring `#60a5fa` → `#a78bfa`; core `#818cf8` → `#6366f1`; wordmark `#e0e7ff`; subtitle `#94a3b8`; satellite nodes `#34d399` / `#f472b6` / `#93c5fd` / `#c4b5fd`. The current `tui/src/theme/dark.ts` `background` token (placeholder `rgb(0,204,204)`) is replaced with navy `#0a0e27` in the same PR that ports the onboarding splash.
+2. **PIPA consent** — KOSMOS-original step with no Claude Code analog. Mandatory under PIPA §15 before any Layer-2 adapter executes; records consent version, timestamp, and the authenticated AAL gate.
+3. **Public-API scope acknowledgment** — enumerates the `data.go.kr` ministries the session will query (KOROAD, KMA, HIRA, NMC, …) and their data categories; the citizen must acknowledge before adapters go live.
+4. **Theme picker** — deferred until a light / high-contrast theme ships; Phase 1 runs the `dark` theme only.
+
+### Keyboard-shortcut migration
+
+Claude Code defines 65 bindings across 20 contexts (`src/keybindings/defaultBindings.ts`). KOSMOS currently implements 5 (Enter, y/Y, n/N/Esc, Backspace/Delete, IME passthrough for modifiers). The tiered migration scope is:
+
+- **Tier 1 (pre-citizen-launch blocker)**: `ctrl+c` (interrupt active agent), `ctrl+d` (clean exit), `escape` in InputBar (cancel draft, gated on `!ime.isComposing`), `ctrl+r` (history search), `up`/`down` in InputBar (history prev/next, gated on empty buffer).
+- **Tier 2 (post-launch hardening)**: `pageup`/`pagedown`, `ctrl+l` (redraw), `shift+tab` (cycle PermissionMode — binds to the Layer 3 spectrum), `ctrl+_` (undo), `ctrl+shift+c` (copy selection).
+- **Tier 3 (deferred until dependent specs)**: `ctrl+x ctrl+k` (killAll — requires multi-worker), `ctrl+e` (external editor), `meta+p` (modelPicker — KOSMOS uses K-EXAONE only), `ctrl+s` (stash), `ctrl+v` (image paste).
+
+IME safety rule: every binding that mutates the input buffer MUST check `!useKoreanIME().isComposing` before acting. Hangul composition must not be interrupted by a shortcut. The current `tui/src/hooks/useKoreanIME.ts` exposes the required predicate.
+
+---
+
 ## Citizen scenarios (design targets)
 
 KOSMOS success means the following conversations work end-to-end on a real citizen's day:
@@ -358,7 +395,7 @@ These are the acceptance tests. If the platform cannot complete them, the vision
 ## Roadmap
 
 - **Phase 1 — Prototype** — FriendliAI Serverless + 10 high-value APIs + single query engine + CLI. Scenario 1 working end-to-end.
-- **Phase 2 — Swarm** — Ministry-specialist agents, mailbox IPC, multi-API synthesis. Scenarios 1–3 working.
+- **Phase 2 — Swarm** — Ministry-specialist agents, mailbox IPC, multi-API synthesis. Scenarios 1–3 working. Status: **partial** — Spec 027 mailbox IPC shipped (2026-04-14) and Spec 287 TUI port landed (2026-04-19); ministry-specialist agents (출산 보조금, 건강보험, 교통) and the coordinator synthesis pipeline remain open. See Initiative #2 and the CC→KOSMOS Phase 2 Migration meta-Epic (sub-Epics B–F) for the remaining work.
 - **Phase 3 — Production** — Full permission pipeline, identity verification, audit logging, all scenarios working, public beta.
 
 ## Code scope estimates
