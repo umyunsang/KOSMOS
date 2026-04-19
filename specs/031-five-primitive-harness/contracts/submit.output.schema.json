@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SubmitOutput",
+  "description": "Main-surface output envelope for the submit primitive. FR-001, FR-004, FR-005.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["transaction_id", "status", "adapter_receipt"],
+  "properties": {
+    "transaction_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "description": "Deterministic per invocation (content-hash of input + adapter-declared nonce) — FR-004."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["pending", "succeeded", "failed", "rejected"],
+      "description": "Terminal/non-terminal adapter disposition. Failed adapter invocations surface as failed|rejected, never as an unhandled exception — FR-005."
+    },
+    "adapter_receipt": {
+      "type": "object",
+      "description": "Opaque adapter-specific receipt (e.g. carrier reference, 접수번호, payment authorization code). Main envelope does NOT narrow this shape.",
+      "additionalProperties": true,
+      "default": {}
+    }
+  }
+}

@@ -90,6 +90,8 @@ KOSMOS adapts architectural patterns from the conversational AI agent ecosystem 
 | string-width (`sindresorhus/string-width`) | MIT | CJK full-width character column width calculation — Korean text terminal layout |
 | K-AI2026 (`hollobit/K-AI2026`) | Public dashboard | 국가인공지능전략위원회 · 대한민국 인공지능행동계획 (AI Action Plan 2026-2028) live tracker — authoritative source for 공공AX 원칙 8/9 task alignment and ministry-program traceability |
 
+Spec 031 ratifies the 5-primitive surface; see `specs/031-five-primitive-harness/research.md § 1` for the CC primitive-mapping table.
+
 ### What is original to KOSMOS
 
 The patterns above are general-purpose. KOSMOS's contribution is adapting them to the government public-service domain, which introduces constraints absent from coding agents:

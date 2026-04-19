@@ -4,10 +4,18 @@
 from __future__ import annotations
 
 import logging
+from enum import StrEnum
+from typing import Literal
+
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from kosmos.security.audit import TOOL_MIN_AAL
 from kosmos.tools.bm25_index import BM25Index
-from kosmos.tools.errors import DuplicateToolError, RegistrationError, ToolNotFoundError
+from kosmos.tools.errors import (
+    AdapterIdCollisionError,
+    RegistrationError,
+    ToolNotFoundError,
+)
 from kosmos.tools.models import _AUTH_TYPE_LEVEL_MAPPING, GovAPITool, ToolSearchResult
 from kosmos.tools.rate_limiter import RateLimiter
 from kosmos.tools.retrieval.backend import Retriever, build_retriever_from_env
@@ -17,6 +25,140 @@ from kosmos.tools.retrieval.dense_backend import DenseBackendLoadError
 from kosmos.tools.search import search_tools
 
 logger = logging.getLogger(__name__)
+
+
+# ---------------------------------------------------------------------------
+# Spec 031 Phase 2 — Five-primitive registry metadata (T007–T009).
+# ---------------------------------------------------------------------------
+
+
+class AdapterPrimitive(StrEnum):
+    """T007 — the five primitive surfaces every registered adapter binds to.
+
+    Matches data-model.md § 4 verbatim.
+    """
+
+    lookup = "lookup"
+    resolve_location = "resolve_location"
+    submit = "submit"
+    subscribe = "subscribe"
+    verify = "verify"
+
+
+class AdapterSourceMode(StrEnum):
+    """T009 — how faithfully the adapter mirrors its external source.
+
+    OPENAPI: byte-mirrored from a public OpenAPI spec.
+    OOS: shape-mirrored from an open-source SDK / reference implementation.
+    HARNESS_ONLY: net-new; no external byte- or shape-mirror exists (per FR-026).
+    """
+
+    OPENAPI = "OPENAPI"
+    OOS = "OOS"
+    HARNESS_ONLY = "harness-only"
+
+
+# T008 — 18-label closed enum of Korea-published auth tiers (primary axis).
+PublishedTier = Literal[
+    # gongdong_injeungseo — 3 labels
+    "gongdong_injeungseo_personal_aal3",
+    "gongdong_injeungseo_corporate_aal3",
+    "gongdong_injeungseo_bank_only_aal2",
+    # geumyung_injeungseo — 2 labels
+    "geumyung_injeungseo_personal_aal2",
+    "geumyung_injeungseo_business_aal3",
+    # ganpyeon_injeung — 7 labels
+    "ganpyeon_injeung_pass_aal2",
+    "ganpyeon_injeung_kakao_aal2",
+    "ganpyeon_injeung_naver_aal2",
+    "ganpyeon_injeung_toss_aal2",
+    "ganpyeon_injeung_bank_aal2",
+    "ganpyeon_injeung_samsung_aal2",
+    "ganpyeon_injeung_payco_aal2",
+    # digital_onepass — 3 labels
+    "digital_onepass_level1_aal1",
+    "digital_onepass_level2_aal2",
+    "digital_onepass_level3_aal3",
+    # mobile_id — 2 labels
+    "mobile_id_mdl_aal2",
+    "mobile_id_resident_aal2",
+    # mydata — 1 label
+    "mydata_individual_aal2",
+]
+
+# T008 — advisory secondary axis; hint for external consumers only.
+NistAalHint = Literal["AAL1", "AAL2", "AAL3"]
+
+
+class AdapterRegistration(BaseModel):
+    """T009 — registry metadata for Spec 031 five-primitive adapters.
+
+    Mirrors data-model.md § 4 verbatim. Spec 024 V1–V4 (applied via pydantic
+    ``@model_validator`` on :class:`GovAPITool`) and Spec 025 V6 + the Spec 031
+    v1.2 dual-axis invariant (applied via ``@model_validator`` on this class at
+    construction time; see :mod:`kosmos.security.v12_dual_axis`) remain the
+    authoritative enforcement points; :meth:`ToolRegistry.register` only
+    additionally validates :class:`GovAPITool` instances passed to it.
+    ``published_tier_minimum`` / ``nist_aal_hint`` are optional during the
+    pre-v1.2 compatibility window (FR-028) and become mandatory when the
+    :mod:`kosmos.security.v12_dual_axis` backstop flips ``V12_GA_ACTIVE = True``.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    tool_id: str = Field(min_length=1, max_length=128, pattern=r"^[a-z][a-z0-9_]*$")
+    primitive: AdapterPrimitive
+    module_path: str
+    input_model_ref: str
+    source_mode: AdapterSourceMode
+
+    # Dual-axis auth (Spec 031 § 6). Pre-v1.2 may ship None on either field;
+    # v1.2 GA enforces both non-None via v12_dual_axis.enforce().
+    published_tier_minimum: PublishedTier | None = None
+    nist_aal_hint: NistAalHint | None = None
+
+    # Spec 024 / 025 invariants preserved (FR-028)
+    requires_auth: bool = True
+    is_personal_data: bool = True
+    is_concurrency_safe: bool = False
+    cache_ttl_seconds: int = 0
+    rate_limit_per_minute: int = 10
+    search_hint: dict[Literal["ko", "en"], list[str]] = Field(default_factory=dict)
+
+    # Spec 024 security extensions
+    auth_type: Literal["public", "api_key", "oauth"]
+    auth_level: Literal["public", "AAL1", "AAL2", "AAL3"]
+    pipa_class: Literal[
+        "non_personal",
+        "personal_standard",
+        "personal_sensitive",
+        "personal_unique_id",
+    ]
+    is_irreversible: bool = False
+    dpa_reference: str | None = None
+
+    # Spec 031 T023 — optional per-adapter nonce used to namespace the
+    # deterministic ``transaction_id`` emitted by the ``submit`` dispatcher
+    # (see :func:`kosmos.primitives.submit.derive_transaction_id`). Adapters
+    # that participate in the ``submit`` primitive declare a stable nonce
+    # string so the dispatcher and the adapter body compute byte-identical
+    # transaction ids (FR-004). ``None`` is valid for non-submit primitives
+    # and for submit adapters that explicitly opt out of nonce namespacing.
+    nonce: str | None = Field(default=None, max_length=128)
+
+    @model_validator(mode="after")
+    def _enforce_v12_dual_axis(self) -> AdapterRegistration:
+        """Spec 031 FR-030 v1.2 GA backstop.
+
+        Delegates to :func:`kosmos.security.v12_dual_axis.enforce`. No-op while
+        ``V12_GA_ACTIVE`` is ``False`` (pre-v1.2 compatibility window, FR-028).
+        Once flipped, raises ``DualAxisMissingError`` if either dual-axis field
+        is ``None``. Imported inline to avoid a circular import at module load.
+        """
+        from kosmos.security.v12_dual_axis import enforce as _enforce_v12
+
+        _enforce_v12(self)
+        return self
 
 
 class ToolRegistry:
@@ -52,7 +194,10 @@ class ToolRegistry:
         """Register a tool.
 
         Raises:
-            DuplicateToolError: If tool.id is already registered.
+            AdapterIdCollisionError: If ``tool.id`` is already registered
+                (Spec 031 FR-020 — first-wins semantics). Subclasses
+                :class:`DuplicateToolError`, so existing call sites that catch
+                the parent keep working.
             RegistrationError: If ``is_personal_data=True`` without ``requires_auth=True``
                 (FR-038 — fail-closed PII invariant), or if ``tool.auth_level`` disagrees
                 with ``TOOL_MIN_AAL`` (V3 drift backstop for callers that bypass pydantic
@@ -62,7 +207,11 @@ class ToolRegistry:
                 bypass of the pydantic V6 model validator).
         """
         if tool.id in self._tools:
-            raise DuplicateToolError(tool.id)
+            existing = self._tools[tool.id]
+            raise AdapterIdCollisionError(
+                tool.id,
+                existing_module=type(existing).__module__,
+            )
 
         # FR-038 (auth_level backstop): PII-flagged adapters MUST NOT declare
         # auth_level='public' regardless of the requires_auth flag. Pydantic V1

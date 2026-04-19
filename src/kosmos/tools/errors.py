@@ -19,6 +19,20 @@ class DuplicateToolError(KosmosToolError):
         self.tool_id = tool_id
 
 
+class AdapterIdCollisionError(DuplicateToolError):
+    """Spec 031 FR-020 — second registration with an existing ``tool_id`` is rejected.
+
+    Subclasses :class:`DuplicateToolError` so existing call sites that catch the
+    parent class keep working. The first successful registration wins; every
+    subsequent attempt on the same ``tool_id`` surfaces this structured error so
+    callers can distinguish harness collisions from unrelated duplicate registrations.
+    """
+
+    def __init__(self, tool_id: str, existing_module: str | None = None) -> None:
+        super().__init__(tool_id)
+        self.existing_module = existing_module
+
+
 class ToolNotFoundError(KosmosToolError):
     """No tool with this id in the registry."""
 
@@ -144,6 +158,17 @@ class RegistrationError(KosmosToolError):
     def __init__(self, tool_id: str, message: str) -> None:
         super().__init__(f"Registration error for tool {tool_id!r}: {message}")
         self.tool_id = tool_id
+
+
+class DualAxisMissingError(RegistrationError):
+    """Spec 031 v1.2 GA dual-axis backstop violation (FR-030).
+
+    Raised by :func:`kosmos.security.v12_dual_axis.enforce` when
+    ``V12_GA_ACTIVE`` is ``True`` and either ``published_tier_minimum`` or
+    ``nist_aal_hint`` is ``None`` on an :class:`AdapterRegistration`.
+    Subclasses :class:`RegistrationError` so existing
+    ``except RegistrationError`` handlers keep working (FR-028).
+    """
 
 
 class Layer3GateViolation(KosmosToolError):  # noqa: N818
