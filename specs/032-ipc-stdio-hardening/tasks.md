@@ -94,14 +94,14 @@ description: "Task list for Spec 032 — IPC stdio hardening"
 
 **Independent Test**: Synthetic `BackpressureSignalFrame(signal="throttle", source="upstream_429", retry_after_ms=15000)` → TUI HUD renders "부처 API가 혼잡합니다. 15초 후 자동 재시도합니다." within 16 ms p95 (SC-003). Validated by `test_backpressure_signal.py` + `backpressure.hud.test.ts`.
 
-- [ ] T032 [US2] Implement `BackpressureController.tick()` in `src/kosmos/ipc/backpressure.py` — hysteresis logic (HWM=64 pause, HWM/2=32 resume, no-op in hysteresis band per `contracts/tx-dedup.contract.md` § 1.1).
-- [ ] T033 [US2] Implement 3-source emission paths in `src/kosmos/ipc/backpressure.py` — `tui_reader` (TUI congested), `backend_writer` (ring overflow risk), `upstream_429` (external adapter rate-limit pass-through).
-- [ ] T034 [US2] Wire `upstream_429` adapter path in `src/kosmos/ipc/backpressure.py` — parse `Retry-After` header (seconds or HTTP-date), clamp `retry_after_ms` to `[1000, 900000]`, emit `throttle` with Korean + English HUD copy templates (contract § 1.3).
-- [ ] T035 [US2] Enforce pause/resume pairing invariant in `src/kosmos/ipc/backpressure.py` — every `pause` must have a later `resume`; on session teardown with outstanding `pause`, emit synthetic `resume` before terminal error (contract § 1.4).
-- [ ] T036 [US2] Implement `tui/src/ipc/backpressure-hud.tsx` — renders Korean HUD banner with live countdown from `retry_after_ms`; non-blocking (does not pause input queue); consumes `hud_copy_ko` directly from frame.
-- [ ] T037 [US2] Author `tests/ipc/test_backpressure_signal.py` — hysteresis matrix (60↔64 oscillation → at most 1 pause), upstream_429 clamp, dual-locale min_length enforcement, teardown synthetic resume (contract § 5.1 test matrix).
-- [ ] T038 [US2] Author `tui/tests/ipc/backpressure.hud.test.ts` — ingest fixture frame → assert HUD text exact match "부처 API가 혼잡합니다. 15초 후 자동 재시도합니다." + countdown ticks.
-- [ ] T039 [US2] Author `tests/ipc/test_backpressure_dual_locale.py` — reject emission where `hud_copy_ko` or `hud_copy_en` is empty / missing (FR-015 discipline).
+- [X] T032 [US2] Implement `BackpressureController.tick()` in `src/kosmos/ipc/backpressure.py` — hysteresis logic (HWM=64 pause, HWM/2=32 resume, no-op in hysteresis band per `contracts/tx-dedup.contract.md` § 1.1).
+- [X] T033 [US2] Implement 3-source emission paths in `src/kosmos/ipc/backpressure.py` — `tui_reader` (TUI congested), `backend_writer` (ring overflow risk), `upstream_429` (external adapter rate-limit pass-through).
+- [X] T034 [US2] Wire `upstream_429` adapter path in `src/kosmos/ipc/backpressure.py` — parse `Retry-After` header (seconds or HTTP-date), clamp `retry_after_ms` to `[1000, 900000]`, emit `throttle` with Korean + English HUD copy templates (contract § 1.3).
+- [X] T035 [US2] Enforce pause/resume pairing invariant in `src/kosmos/ipc/backpressure.py` — every `pause` must have a later `resume`; on session teardown with outstanding `pause`, emit synthetic `resume` before terminal error (contract § 1.4).
+- [X] T036 [US2] Implement `tui/src/ipc/backpressure-hud.tsx` — renders Korean HUD banner with live countdown from `retry_after_ms`; non-blocking (does not pause input queue); consumes `hud_copy_ko` directly from frame.
+- [X] T037 [US2] Author `tests/ipc/test_backpressure_signal.py` — hysteresis matrix (60↔64 oscillation → at most 1 pause), upstream_429 clamp, dual-locale min_length enforcement, teardown synthetic resume (contract § 5.1 test matrix).
+- [X] T038 [US2] Author `tui/tests/ipc/backpressure.hud.test.ts` — ingest fixture frame → assert HUD text exact match "부처 API가 혼잡합니다. 15초 후 자동 재시도합니다." + countdown ticks.
+- [X] T039 [US2] Author `tests/ipc/test_backpressure_dual_locale.py` — reject emission where `hud_copy_ko` or `hud_copy_en` is empty / missing (FR-015 discipline).
 
 **Checkpoint**: US2 HUD visibility complete — citizen sees congestion state without log-diving.
 
