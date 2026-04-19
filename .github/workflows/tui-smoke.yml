@@ -34,6 +34,27 @@ jobs:
         with:
           bun-version: "1.2.x"
 
+      - name: Set up Python (for bridge/crash-detector integration tests)
+        # tui/tests/ipc/bridge.test.ts + crash.test.ts spawn the real
+        # `uv run kosmos --ipc stdio` echo backend — not a mock — to verify
+        # the stdio JSONL contract end-to-end. Skipping Python here would
+        # force those tests into a mocked half-world and mask backend drift.
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+          enable-cache: true
+
+      - name: Install Python dependencies (`uv sync`)
+        # Installs the `kosmos` console script used by createBridge's default
+        # cmd (`uv run kosmos --ipc stdio`). Frozen against uv.lock so CI
+        # only ever runs against pinned versions.
+        run: uv sync --frozen
+
       - name: Install util-linux `script` (PTY harness)
         # ubuntu-latest images ship util-linux, but guarantee presence so the
         # gate fails loudly with a clear error if the image drifts.
