@@ -28,7 +28,7 @@ Epic M produces the **authoritative verdict matrix** for porting Claude Code's 3
 **Constraints**:
 - Zero source-code file modifications outside `tui/src/theme/tokens.ts` type surface (FR-030, FR-031).
 - ≤ 90 Task sub-issues under Epic M excluding `[Deferred]`-prefixed (FR-025, SC-007).
-- All owning-Epic values ⊆ `{B, C, D, E, H, I, J, K, L, M}` literal set; closed Epics (B, A) handled per research §R3 (re-parent to M).
+- All owning-Epic values ⊆ `{B, C, D, E, H, I, J, K, L, M}` literal set; the only closed Epic that actually owns rows is B (3 REWRITE rows re-parented to M per research §R3). Epic A is also closed historically but owns no rows in this catalog.
 - §3–§10 of brand-system.md are scope-violation-protected (FR-014, FR-034).
 **Scale/Scope**: 389 catalog rows + up to ~90 generated Task sub-issues + 10 brand-system sections + up to ~275 accessibility-gate rows (only PORT/REWRITE populate; DISCARD/DEFER do not).
 

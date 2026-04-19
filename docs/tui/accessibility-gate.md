@@ -10,6 +10,18 @@
 
 FR-018 mandates that `docs/tui/accessibility-gate.md` exist and enumerate per-verdict accessibility requirements for every PORT and REWRITE row in the component catalog. FR-019 requires each row to be annotated with applicable WCAG 2.1 AA success criteria drawn from a closed set of five criteria. FR-020 extends the annotation requirement to Korean Accessibility Guidelines (한국 접근성 지침 2.2) for citizen-facing component families. FR-021 flags every text-input surface for IME composition-gate compliance under the Epic E #1300 contract. FR-022 documents color-contrast constraints (≥ 4.5:1 body text, ≥ 3:1 large text/non-text) as a palette-selection constraint passed to Epic H #1302. SC-009 (zero orphan verdicts) enforces that every PORT/REWRITE catalog row has exactly one matching gate row — no row may be omitted or duplicated. This gate document is the single source of truth for downstream Epics (B, C, D, E, H, I, J, K, L) to inherit WCAG/KWCAG constraints when authoring Task sub-issues.
 
+### §1.1 · Terminal screen-reader pathway
+
+KOSMOS TUI renders through Ink (React for CLIs) in a terminal emulator. Unlike the browser DOM, a terminal has **no native accessibility tree**: VoiceOver, NVDA, and JAWS cannot introspect Ink's virtual DOM directly. Per-row mentions of "스크린 리더 접근 가능" in §3 KWCAG notes therefore rely on the following concrete pathways, not on a DOM accessibility API:
+
+1. **Text stream accessibility** — all visible content MUST render as plain UTF-8 text in the terminal output buffer. macOS VoiceOver in terminal mode (`Cmd+F5` in Terminal.app or iTerm2) reads the text stream line by line; refreshable braille displays attached via BRLTTY (Linux) or Duxbury (Windows) consume the same stream. Animated surfaces (Spinner, LogoV2 shimmer) MUST degrade gracefully when reading — no information may be conveyed by animation alone.
+2. **Reduced-motion fallback** — components that animate (all `Spinner/*` rows, `LogoV2/AnimatedAsterisk.tsx`, `LogoV2/WelcomeV2.tsx`, `useShimmerAnimation.ts` consumers) MUST honor the `NO_COLOR` / `KOSMOS_REDUCED_MOTION=1` env flag and emit a static-text equivalent. Implementation Epic is H #1302 (palette + motion tokens); runtime check is the responsibility of the implementing Epic (typically H or B).
+3. **Semantic ordering** — rendered output MUST follow top-to-bottom reading order matching visual precedence. Ink's `<Box>` flex layout with `flexDirection="column"` is the default compliant shape; `position="absolute"` or out-of-order rendering is a regression that breaks the text-stream pathway.
+4. **Focus narration** — focus transitions (WCAG 2.4.7) MUST emit a human-readable cue in the text stream when focus lands. Inverse-video alone is insufficient for screen readers that cannot see color — every focused affordance MUST carry a visible label or announcement line.
+5. **Keyboard-only operation** — per WCAG 2.1.1, no affordance may require a mouse or trackpad; no citizen workflow may depend on terminal mouse reporting (`xterm-mouse`). All `IME-safe = yes` rows (§5) additionally guard against composition-mid-submit — the composition keypress MUST NOT trigger an action.
+
+Deep ARIA-style role/name/value conformance (WCAG 4.1.2) for an Ink virtual DOM is deferred to #25 (`4.1.2 Name Role Value — deep compliance`); this gate requires role annotations only as §3 table entries, not runtime exposure. Epic H #1302 (palette) and Epic I #1303 (shortcuts) are the primary downstream consumers of this pathway; their `/speckit-specify` inputs MUST cite this §1.1 when proposing any animation, color, or keybinding decision.
+
 ## §2 · WCAG 2.1 AA criteria (closed set)
 
 | ID | Name | Typical TUI application |
@@ -121,64 +133,64 @@ FR-018 mandates that `docs/tui/accessibility-gate.md` exist and enumerate per-ve
 
 | # | CC source path | Verdict | WCAG | KWCAG notes | IME-safe | Contrast constraint |
 |---|---|---|---|---|---|---|
-| 56 | messages/AssistantRedactedThinkingMessage.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 표시 시 재고지 | n/a | 4.5:1 |
-| 57 | messages/AssistantTextMessage.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 표시 시 재고지 | n/a | 4.5:1 |
-| 58 | messages/AssistantThinkingMessage.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 표시 시 재고지 | n/a | 4.5:1 |
-| 59 | messages/AssistantToolUseMessage.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 표시 시 재고지 | n/a | 4.5:1 |
-| 60 | messages/AttachmentMessage.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 표시 시 재고지 | n/a | 4.5:1 |
-| 61 | messages/CollapsedReadSearchContent.tsx | PORT | 1.4.3, 2.1.1, 2.4.7, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 표시 시 재고지 | n/a | 4.5:1 |
-| 62 | messages/CompactBoundaryMessage.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 표시 시 재고지 | n/a | 4.5:1 |
-| 63 | messages/GroupedToolUseContent.tsx | PORT | 1.4.3, 2.1.1, 2.4.7, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 표시 시 재고지 | n/a | 4.5:1 |
-| 64 | messages/HighlightedThinkingText.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 표시 시 재고지 | n/a | 4.5:1 |
-| 65 | messages/HookProgressMessage.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 표시 시 재고지 | n/a | 4.5:1 |
+| 56 | messages/AssistantRedactedThinkingMessage.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 렌더링 시 processor 역할 유지 — controller 재고지 책임 없음 | n/a | 4.5:1 |
+| 57 | messages/AssistantTextMessage.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 렌더링 시 processor 역할 유지 — controller 재고지 책임 없음 | n/a | 4.5:1 |
+| 58 | messages/AssistantThinkingMessage.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 렌더링 시 processor 역할 유지 — controller 재고지 책임 없음 | n/a | 4.5:1 |
+| 59 | messages/AssistantToolUseMessage.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 렌더링 시 processor 역할 유지 — controller 재고지 책임 없음 | n/a | 4.5:1 |
+| 60 | messages/AttachmentMessage.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 렌더링 시 processor 역할 유지 — controller 재고지 책임 없음 | n/a | 4.5:1 |
+| 61 | messages/CollapsedReadSearchContent.tsx | PORT | 1.4.3, 2.1.1, 2.4.7, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 렌더링 시 processor 역할 유지 — controller 재고지 책임 없음 | n/a | 4.5:1 |
+| 62 | messages/CompactBoundaryMessage.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 렌더링 시 processor 역할 유지 — controller 재고지 책임 없음 | n/a | 4.5:1 |
+| 63 | messages/GroupedToolUseContent.tsx | PORT | 1.4.3, 2.1.1, 2.4.7, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 렌더링 시 processor 역할 유지 — controller 재고지 책임 없음 | n/a | 4.5:1 |
+| 64 | messages/HighlightedThinkingText.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 렌더링 시 processor 역할 유지 — controller 재고지 책임 없음 | n/a | 4.5:1 |
+| 65 | messages/HookProgressMessage.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 렌더링 시 processor 역할 유지 — controller 재고지 책임 없음 | n/a | 4.5:1 |
 | 66 | messages/nullRenderingAttachments.ts | PORT | 1.4.3 | 유틸리티 모듈; 시민 가시 표면 없음 (null renderer) | n/a | n/a |
-| 67 | messages/PlanApprovalMessage.tsx | PORT | 1.4.3, 2.1.1, 2.4.7, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 표시 시 재고지 | n/a | 4.5:1 |
-| 68 | messages/RateLimitMessage.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 표시 시 재고지 | n/a | 4.5:1 |
-| 69 | messages/ShutdownMessage.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 표시 시 재고지 | n/a | 4.5:1 |
-| 70 | messages/SystemAPIErrorMessage.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 표시 시 재고지 | n/a | 4.5:1 |
-| 71 | messages/SystemTextMessage.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 표시 시 재고지 | n/a | 4.5:1 |
-| 72 | messages/TaskAssignmentMessage.tsx | REWRITE | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 표시 시 재고지 | n/a | 4.5:1 |
-| 73 | messages/teamMemCollapsed.tsx | REWRITE | 1.4.3, 2.1.1, 2.4.7, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 표시 시 재고지 | n/a | 4.5:1 |
+| 67 | messages/PlanApprovalMessage.tsx | PORT | 1.4.3, 2.1.1, 2.4.7, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 렌더링 시 processor 역할 유지 — controller 재고지 책임 없음 | n/a | 4.5:1 |
+| 68 | messages/RateLimitMessage.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 렌더링 시 processor 역할 유지 — controller 재고지 책임 없음 | n/a | 4.5:1 |
+| 69 | messages/ShutdownMessage.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 렌더링 시 processor 역할 유지 — controller 재고지 책임 없음 | n/a | 4.5:1 |
+| 70 | messages/SystemAPIErrorMessage.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 렌더링 시 processor 역할 유지 — controller 재고지 책임 없음 | n/a | 4.5:1 |
+| 71 | messages/SystemTextMessage.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 렌더링 시 processor 역할 유지 — controller 재고지 책임 없음 | n/a | 4.5:1 |
+| 72 | messages/TaskAssignmentMessage.tsx | REWRITE | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 렌더링 시 processor 역할 유지 — controller 재고지 책임 없음 | n/a | 4.5:1 |
+| 73 | messages/teamMemCollapsed.tsx | REWRITE | 1.4.3, 2.1.1, 2.4.7, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 렌더링 시 processor 역할 유지 — controller 재고지 책임 없음 | n/a | 4.5:1 |
 | 74 | messages/teamMemSaved.ts | REWRITE | 1.4.3 | 유틸리티 모듈; 데이터 변환만 수행 (렌더링 없음) | n/a | n/a |
-| 75 | messages/UserAgentNotificationMessage.tsx | REWRITE | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 표시 시 재고지 | n/a | 4.5:1 |
-| 76 | messages/UserCommandMessage.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 표시 시 재고지 | n/a | 4.5:1 |
-| 77 | messages/UserImageMessage.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 표시 시 재고지 | n/a | 4.5:1 |
-| 78 | messages/UserMemoryInputMessage.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 표시 시 재고지 | n/a | 4.5:1 |
-| 79 | messages/UserPlanMessage.tsx | PORT | 1.4.3, 2.1.1, 2.4.7, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 표시 시 재고지 | n/a | 4.5:1 |
-| 80 | messages/UserPromptMessage.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 표시 시 재고지 | n/a | 4.5:1 |
-| 81 | messages/UserResourceUpdateMessage.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 표시 시 재고지 | n/a | 4.5:1 |
-| 82 | messages/UserTeammateMessage.tsx | REWRITE | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 표시 시 재고지 | n/a | 4.5:1 |
-| 83 | messages/UserTextMessage.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 표시 시 재고지 | n/a | 4.5:1 |
-| 84 | messages/UserToolResultMessage/RejectedPlanMessage.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 표시 시 재고지 | n/a | 4.5:1 |
-| 85 | messages/UserToolResultMessage/RejectedToolUseMessage.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 표시 시 재고지 | n/a | 4.5:1 |
-| 86 | messages/UserToolResultMessage/UserToolCanceledMessage.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 표시 시 재고지 | n/a | 4.5:1 |
-| 87 | messages/UserToolResultMessage/UserToolErrorMessage.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 표시 시 재고지 | n/a | 4.5:1 |
-| 88 | messages/UserToolResultMessage/UserToolRejectMessage.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 표시 시 재고지 | n/a | 4.5:1 |
-| 89 | messages/UserToolResultMessage/UserToolResultMessage.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 표시 시 재고지 | n/a | 4.5:1 |
-| 90 | messages/UserToolResultMessage/UserToolSuccessMessage.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 표시 시 재고지 | n/a | 4.5:1 |
+| 75 | messages/UserAgentNotificationMessage.tsx | REWRITE | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 렌더링 시 processor 역할 유지 — controller 재고지 책임 없음 | n/a | 4.5:1 |
+| 76 | messages/UserCommandMessage.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 렌더링 시 processor 역할 유지 — controller 재고지 책임 없음 | n/a | 4.5:1 |
+| 77 | messages/UserImageMessage.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 렌더링 시 processor 역할 유지 — controller 재고지 책임 없음 | n/a | 4.5:1 |
+| 78 | messages/UserMemoryInputMessage.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 렌더링 시 processor 역할 유지 — controller 재고지 책임 없음 | n/a | 4.5:1 |
+| 79 | messages/UserPlanMessage.tsx | PORT | 1.4.3, 2.1.1, 2.4.7, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 렌더링 시 processor 역할 유지 — controller 재고지 책임 없음 | n/a | 4.5:1 |
+| 80 | messages/UserPromptMessage.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 렌더링 시 processor 역할 유지 — controller 재고지 책임 없음 | n/a | 4.5:1 |
+| 81 | messages/UserResourceUpdateMessage.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 렌더링 시 processor 역할 유지 — controller 재고지 책임 없음 | n/a | 4.5:1 |
+| 82 | messages/UserTeammateMessage.tsx | REWRITE | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 렌더링 시 processor 역할 유지 — controller 재고지 책임 없음 | n/a | 4.5:1 |
+| 83 | messages/UserTextMessage.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 렌더링 시 processor 역할 유지 — controller 재고지 책임 없음 | n/a | 4.5:1 |
+| 84 | messages/UserToolResultMessage/RejectedPlanMessage.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 렌더링 시 processor 역할 유지 — controller 재고지 책임 없음 | n/a | 4.5:1 |
+| 85 | messages/UserToolResultMessage/RejectedToolUseMessage.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 렌더링 시 processor 역할 유지 — controller 재고지 책임 없음 | n/a | 4.5:1 |
+| 86 | messages/UserToolResultMessage/UserToolCanceledMessage.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 렌더링 시 processor 역할 유지 — controller 재고지 책임 없음 | n/a | 4.5:1 |
+| 87 | messages/UserToolResultMessage/UserToolErrorMessage.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 렌더링 시 processor 역할 유지 — controller 재고지 책임 없음 | n/a | 4.5:1 |
+| 88 | messages/UserToolResultMessage/UserToolRejectMessage.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 렌더링 시 processor 역할 유지 — controller 재고지 책임 없음 | n/a | 4.5:1 |
+| 89 | messages/UserToolResultMessage/UserToolResultMessage.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 렌더링 시 processor 역할 유지 — controller 재고지 책임 없음 | n/a | 4.5:1 |
+| 90 | messages/UserToolResultMessage/UserToolSuccessMessage.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 렌더링 시 processor 역할 유지 — controller 재고지 책임 없음 | n/a | 4.5:1 |
 | 91 | messages/UserToolResultMessage/utils.tsx | PORT | 1.4.3 | 유틸리티 헬퍼; 렌더링은 형제 메시지 컴포넌트가 담당 | n/a | n/a |
-| 92 | CompactSummary.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 표시 시 재고지 | n/a | 4.5:1 |
-| 93 | ContextSuggestions.tsx | REWRITE | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 표시 시 재고지 | n/a | 4.5:1 |
-| 94 | ContextVisualization.tsx | REWRITE | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 표시 시 재고지 | n/a | 4.5:1 |
-| 95 | FallbackToolUseErrorMessage.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 표시 시 재고지 | n/a | 4.5:1 |
-| 96 | FallbackToolUseRejectedMessage.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 표시 시 재고지 | n/a | 4.5:1 |
+| 92 | CompactSummary.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 렌더링 시 processor 역할 유지 — controller 재고지 책임 없음 | n/a | 4.5:1 |
+| 93 | ContextSuggestions.tsx | REWRITE | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 렌더링 시 processor 역할 유지 — controller 재고지 책임 없음 | n/a | 4.5:1 |
+| 94 | ContextVisualization.tsx | REWRITE | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 렌더링 시 processor 역할 유지 — controller 재고지 책임 없음 | n/a | 4.5:1 |
+| 95 | FallbackToolUseErrorMessage.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 렌더링 시 processor 역할 유지 — controller 재고지 책임 없음 | n/a | 4.5:1 |
+| 96 | FallbackToolUseRejectedMessage.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 렌더링 시 processor 역할 유지 — controller 재고지 책임 없음 | n/a | 4.5:1 |
 | 97 | FileEditToolDiff.tsx | PORT | 1.4.3, 4.1.2 | — | n/a | 4.5:1 |
 | 98 | FileEditToolUpdatedMessage.tsx | PORT | 1.4.3, 4.1.2 | — | n/a | 4.5:1 |
 | 99 | FileEditToolUseRejectedMessage.tsx | PORT | 1.4.3, 4.1.2 | — | n/a | 4.5:1 |
 | 100 | HighlightedCode.tsx | PORT | 1.4.3 | — | n/a | 4.5:1 |
-| 101 | InterruptedByUser.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 표시 시 재고지 | n/a | 4.5:1 |
+| 101 | InterruptedByUser.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 렌더링 시 processor 역할 유지 — controller 재고지 책임 없음 | n/a | 4.5:1 |
 | 102 | Markdown.tsx | PORT | 1.4.3, 4.1.2 | — | n/a | 4.5:1 |
 | 103 | MarkdownTable.tsx | PORT | 1.4.3, 4.1.2 | — | n/a | 4.5:1 |
-| 104 | Message.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 표시 시 재고지 | n/a | 4.5:1 |
+| 104 | Message.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 렌더링 시 processor 역할 유지 — controller 재고지 책임 없음 | n/a | 4.5:1 |
 | 105 | messageActions.tsx | PORT | 1.4.3, 2.1.1 | — | n/a | n/a |
 | 106 | MessageModel.tsx | PORT | 1.4.3 | — | n/a | n/a |
-| 107 | MessageResponse.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 표시 시 재고지 | n/a | 4.5:1 |
-| 108 | MessageRow.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 표시 시 재고지 | n/a | 4.5:1 |
-| 109 | Messages.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 표시 시 재고지 | n/a | 4.5:1 |
+| 107 | MessageResponse.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 렌더링 시 processor 역할 유지 — controller 재고지 책임 없음 | n/a | 4.5:1 |
+| 108 | MessageRow.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 렌더링 시 processor 역할 유지 — controller 재고지 책임 없음 | n/a | 4.5:1 |
+| 109 | Messages.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 렌더링 시 processor 역할 유지 — controller 재고지 책임 없음 | n/a | 4.5:1 |
 | 110 | MessageTimestamp.tsx | PORT | 1.4.3, 4.1.2 | — | n/a | 4.5:1 |
 | 111 | StructuredDiff.tsx | PORT | 1.4.3 | — | n/a | 4.5:1 |
 | 112 | StructuredDiffList.tsx | PORT | 1.4.3 | — | n/a | 4.5:1 |
-| 113 | VirtualMessageList.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 표시 시 재고지 | n/a | 4.5:1 |
+| 113 | VirtualMessageList.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 렌더링 시 processor 역할 유지 — controller 재고지 책임 없음 | n/a | 4.5:1 |
 
 <a id="ag-promptinput"></a>
 
@@ -405,7 +417,7 @@ Every `IME-safe = yes` gate row, when materialized as a Task sub-issue via `/spe
 - [ ] All keyboard handlers gated on `!useKoreanIME().isComposing` before mutating input buffer
 ```
 
-IME-safe rows in this gate (10 total):
+IME-safe rows in this gate (11 total):
 
 - `CustomSelect/select.tsx` (row 5) — search-filter keyboard handler
 - `CustomSelect/SelectMulti.tsx` (row 6) — multi-select keyboard handler
@@ -419,7 +431,24 @@ IME-safe rows in this gate (10 total):
 - `BaseTextInput.tsx` (row 183) — Ink text-input primitive
 - `TextInput.tsx` (row 184) — Ink text-input primitive
 
-## §6 · Handoff to Epic H #1302
+## §6 · Enforcement
+
+This gate is the single source of truth for six machine-checkable invariants. `/speckit-analyze` consumes `specs/034-tui-component-catalog/contracts/accessibility-gate-rows.md §6` as the rule set and applies the following consequences. Downstream Epics inherit this enforcement surface when materializing Task sub-issues.
+
+| ID | Invariant | FR | Violation consequence |
+|---|---|---|---|
+| AG-01 | Every PORT/REWRITE `CatalogRow` has exactly one `AccessibilityGateRow` with matching `CC source path`. | FR-018, SC-009 | `/speckit-analyze` FAILS — reports the orphan verdict (catalog row without a gate row, or gate row without a catalog row) and blocks merge. Fix: add or remove the gate row to restore 1:1 pairing. |
+| AG-02 | The `WCAG` column is non-empty for every row (at minimum `1.4.3` for any visible component). | FR-019 | `/speckit-analyze` FAILS — reports the offending row number. Fix: populate the `WCAG` column with ≥ 1 criterion from the §2 closed set. |
+| AG-03 | Citizen-facing families (§4) have non-empty `KWCAG notes`. | FR-020 | `/speckit-analyze` FAILS — reports the family and row. Fix: author a KWCAG note specific to the citizen interaction (boilerplate strings without per-component detail do NOT satisfy this invariant and MUST be elaborated). |
+| AG-04 | `IME-safe = yes` rows propagate the composition-gate acceptance line into the generated `TaskSubIssue.acceptance_checklist` body. | FR-021 | `/speckit-taskstoissues` REJECTS the Task creation — the sub-issue body template rendering fails with a missing-line error. Fix: ensure the §5 acceptance-checklist line is included verbatim in the Task template. Downstream Epic PR fails the AG-04 check if any IME-safe component ships without the gate. |
+| AG-05 | `Contrast constraint` column values ⊆ `{4.5:1, 3:1, n/a}`. | FR-022 | `/speckit-analyze` FAILS — reports the out-of-set value. Fix: normalize to the three allowed values (not free-text). Epic H #1302 reviewer is copied on the failure. |
+| AG-06 | Every row's `WCAG` values ⊆ the closed set defined in §2 (exactly five criteria: 1.4.3 / 2.1.1 / 2.4.7 / 3.3.2 / 4.1.2). | FR-019 | `/speckit-analyze` FAILS — reports the out-of-set criterion. Fix: either rewrite the row to use a criterion from the closed set, or open an ADR to extend §2 (requires Accessibility Auditor sign-off). |
+
+**Enforcement runner**: `/speckit-analyze` scans this document by row and produces `specs/<epic>/artifacts/analyze-report.md`. The runner is authoritative — manual visual inspection does not substitute. A PR that modifies this gate document MUST also update `specs/034-tui-component-catalog/contracts/accessibility-gate-rows.md` to keep the contract in sync.
+
+**Upstream rule for downstream Epics**: Epics B / C / D / E / H / I / J / K / L that author Task sub-issues from this gate MUST cite the row ID (`# N`) and the invariant ID in their Task acceptance checklist. A Task that violates AG-04 at merge time is a SEV-2 citizen-accessibility regression.
+
+## §7 · Handoff to Epic H #1302
 
 **Palette-selection constraint for Epic H #1302**: body text ≥ 4.5:1 contrast, large text / non-text ≥ 3:1 (FR-022).
 

@@ -32,6 +32,19 @@ Variant         ::= <TitleCased> (one of: "Shimmer" | "Muted" | "Hover" | "Activ
 - `Variant` is **TitleCased** (initial capital) — e.g., `orbitalRingShimmer`, not `orbitalring_shimmer`.
 - Concatenation is direct, no separator: `{role}{Variant}`.
 
+### 1.1 · Canonical regex (BNF-derived, for `lint-tokens.mjs` Deferred row 11)
+
+The single canonical regex below is derived 1:1 from the BNF above. Any token identifier added to `tui/src/theme/tokens.ts` type surface MUST match this regex AND not match any BAN-01..BAN-07 rule in §2. When the BNF changes (e.g., new `MinistryCode` or new `Variant`), this regex MUST be updated in the same PR.
+
+```regex
+^(kosmosCore|orbitalRing|wordmark|subtitle|agentSatellite(Koroad|Kma|Hira|Nmc|Nfa119|Geocoding)|permissionGauntlet|planMode|autoAccept|success|error|warning|info|text|inverseText|inactive|subtle|suggestion|remember)(Shimmer|Muted|Hover|Active|Background|Border|Dimmed|Selected)?$
+```
+
+**Caveats**:
+- `MinistryCode` alternation is closed to the six ministries listed in `docs/design/brand-system.md §1 ministry roster` at the time of this PR. Adding a new ministry requires a one-line PR against that roster plus a regex update here.
+- `Variant` alternation reflects the eight variants listed in the BNF. New variants require owner-Epic approval (see BNF note) plus a regex update.
+- The regex does NOT encode BAN-01..BAN-07 exclusions — the lint script runs both checks: (i) name matches this regex; (ii) name does not match any BAN regex from §2.
+
 ## 2 · Banned patterns (enforced by grep gate)
 
 Regex applied to every identifier added in a PR touching `tui/src/theme/tokens.ts` type surface (not imports):

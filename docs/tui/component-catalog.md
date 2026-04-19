@@ -18,9 +18,9 @@
 - **DISCARD** — not in KOSMOS tree. Rationale MUST start with `ADR-006 Part D-1`, `ADR-006 Part D-3`, or `Domain mismatch:` (FR-004).
 - **DEFER** — Phase 3+ or blocked. Rationale MUST contain `unblock when <condition>` (FR-005).
 
-**Owning Epic closed set** (FR-003): `{B #1297 (closed), A #1298 (closed), C #1301, D #1299, E #1300, H #1302, I #1303, J #1307, K #1308, L #1309, M #1310}`.
+**Owning Epic closed set** (FR-003): `{B #1297 (closed), C #1301, D #1299, E #1300, H #1302, I #1303, J #1307, K #1308, L #1309, M #1310}`. (Historical context: Epic A #1298 is also closed but owns zero rows in this catalog and therefore does not appear in the set; see `plan.md §Constitution Check` footnote on closed-Epic handling.)
 
-**Closed-Epic rule** (research §R3; `contracts/catalog-row-schema.md` §2.2): rows with `Owning Epic = B #1297 (closed)` or `A #1298 (closed)` use the literal ` (closed)` suffix for traceability; their REWRITE Task sub-issues are re-parented to Epic M #1310 at `/speckit-taskstoissues` time (FR-026 exception; invariant I16).
+**Closed-Epic rule** (research §R3; `contracts/catalog-row-schema.md` §2.2): rows with `Owning Epic = B #1297 (closed)` use the literal ` (closed)` suffix for traceability; their REWRITE Task sub-issues are re-parented to Epic M #1310 at `/speckit-taskstoissues` time (FR-026 exception; invariant I16). Epic A #1298 (closed) owns zero catalog rows and therefore requires no re-parenting; if future authoring surfaces an A-owned row, the same rule applies.
 
 **Aggregation rule** (FR-027; `contracts/catalog-row-schema.md` §2.3): families with > 10 REWRITE rows MAY be collapsed into one aggregated row (`CC source path = <family>/*`, `Files = N`, constituent file list in Rationale). Aggregated DISCARD rows (uniform rationale) follow the same pattern.
 
@@ -247,7 +247,7 @@
 | 211 | NotebookEditToolUseRejectedMessage.tsx | 1 | root.misc | DISCARD | — | — | Domain mismatch: Jupyter notebook tool-use rejection; KOSMOS citizens do not edit notebooks. | CC `src/components/NotebookEditToolUseRejectedMessage.tsx` @ a8a678c | — | — | — | — |
 | 212 | OffscreenFreeze.tsx | 1 | root.misc | PORT | M #1310 | tui/src/components/chrome/OffscreenFreeze.tsx | Ink render-pause wrapper for offscreen content | CC `src/components/OffscreenFreeze.tsx` @ a8a678c | [ag-coordinator](../tui/accessibility-gate.md#ag-coordinator) | — | — | — |
 | 213 | ResumeTask.tsx | 1 | root.misc | PORT | M #1310 | tui/src/components/dialogs/ResumeTask.tsx | task-resume prompt | CC `src/components/ResumeTask.tsx` @ a8a678c | [ag-dialogs](../tui/accessibility-gate.md#ag-dialogs) | — | — | — |
-| 214 | SandboxViolationExpandedView.tsx | 1 | root.misc | DISCARD | — | — | Domain mismatch: CC sandbox violation expansion; KOSMOS has no sandbox (Part D-3 adjacency — server-side Python adapters replace client sandbox). | CC `src/components/SandboxViolationExpandedView.tsx` @ a8a678c; ADR-006 Part D-1 | — | — | — | — |
+| 214 | SandboxViolationExpandedView.tsx | 1 | root.misc | DISCARD | — | — | Domain mismatch: CC sandbox violation expansion; KOSMOS has no sandbox (Part D-1 developer-domain UI surface — server-side Python adapters replace client sandbox). | CC `src/components/SandboxViolationExpandedView.tsx` @ a8a678c; ADR-006 Part D-1 | — | — | — | — |
 | 215 | SessionBackgroundHint.tsx | 1 | root.misc | PORT | M #1310 | tui/src/components/coordinator/SessionBackgroundHint.tsx | background-session hint | CC `src/components/SessionBackgroundHint.tsx` @ a8a678c | [ag-coordinator](../tui/accessibility-gate.md#ag-coordinator) | — | — | — |
 | 216 | Spinner.tsx | 1 | root.misc | PORT | M #1310 | tui/src/components/chrome/Spinner.tsx | root-level spinner wrapper over `components/Spinner/*` | CC `src/components/Spinner.tsx` @ a8a678c | [ag-spinner](../tui/accessibility-gate.md#ag-spinner) | — | — | — |
 | 217 | Stats.tsx | 1 | root.misc | REWRITE | J #1307 | tui/src/components/dialogs/cost/Stats.tsx | citizen-visible usage stats — Epic J Cost/Token HUD | CC `src/components/Stats.tsx` @ a8a678c; ADR-006 Part D-2 Epic J | [ag-dialogs](../tui/accessibility-gate.md#ag-dialogs) | — | — | — |
@@ -311,20 +311,21 @@
 
 **FR-027 aggregation audit**:
 
-- Aggregated rows across all 5 fragments:
-  - `permissions/*` — 50 files aggregated REWRITE (owner: `B #1297 (closed)`, re-parented to M at T031).
-  - `agents/*` REWRITE aggregated — 14 files (owner: `M #1310`).
-  - `agents/new-agent-creation/wizard-steps/*` DISCARD aggregated — 12 files (Domain mismatch).
-  - `PromptInput/*` REWRITE aggregated — 21 files (owner: `E #1300`).
-  - `sandbox/*` DISCARD aggregated — 5 files (Domain mismatch).
-  - `tasks/*` REWRITE aggregated — 11 files (owner: `M #1310`).
-  - `mcp/*` split per-file (13 rows); `FeedbackSurvey/*` aggregated DISCARD — 9 files.
-  - `root.shortcuts/*` aggregated REWRITE — 4 files (owner: `I #1303`).
-  - `root.dev-ui/*` aggregated DISCARD — 14 files.
-  - `root.dialogs/anthropic-platform/*` aggregated DISCARD — 17 files.
-  - `root.dialogs/developer-ergonomic/*` aggregated DISCARD — 10 files.
-  - `root.misc/teleport/*` aggregated DISCARD — 4 files.
-- Total aggregated-row constituent files: 50+14+12+21+5+11+9+4+14+17+10+4 = 171 files covered by 12 aggregated rows.
+- Aggregated rows — listed in row-number order across the verdict matrix; total = 12:
+  1. `PromptInput/*` (row 104) — REWRITE aggregated, 21 files (owner: `E #1300`).
+  2. `permissions/*` (row 122) — REWRITE aggregated, 50 files (owner: `B #1297 (closed)`, re-parented to M at T031).
+  3. `agents/*` (row 127) — REWRITE aggregated, 14 files (owner: `M #1310`).
+  4. `agents/new-agent-creation/wizard-steps/*` (row 128) — DISCARD aggregated, 12 files (Domain mismatch).
+  5. `sandbox/*` (row 131) — DISCARD aggregated, 5 files (Domain mismatch).
+  6. `FeedbackSurvey/*` (row 135) — DISCARD aggregated, 9 files (Domain mismatch).
+  7. `tasks/*` (row 155) — REWRITE aggregated, 11 files (owner: `M #1310`).
+  8. `root.shortcuts/*` (row 166) — REWRITE aggregated, 4 files (owner: `I #1303`).
+  9. `root.dev-ui/*` (row 167) — DISCARD aggregated, 14 files.
+  10. `root.dialogs/anthropic-platform/*` (row 168) — DISCARD aggregated, 17 files.
+  11. `root.dialogs/developer-ergonomic/*` (row 169) — DISCARD aggregated, 10 files.
+  12. `root.misc/teleport/*` (row 224) — DISCARD aggregated, 4 files.
+- Non-aggregated family note: `mcp/*` is intentionally split per-file (13 rows) rather than aggregated because its 5 REWRITE + 8 DISCARD verdicts diverge; aggregation rule FR-027 applies only to uniform-verdict families with > 10 rows.
+- Total aggregated-row constituent files: 21+50+14+12+5+9+11+4+14+17+10+4 = 171 files covered by 12 aggregated rows.
 - Per-file rows: 389 − 171 = 218 files covered by 218 rows.
 - Grand total: 171 + 218 = 389 ✓ and 12 + 218 = 230 rows ✓.
 
