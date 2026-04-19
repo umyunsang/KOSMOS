@@ -110,8 +110,9 @@ def project(tool: object) -> AdapterPermissionMetadata:
         TypeError: If *tool* is not a ``GovAPITool``-compatible object.
     """
     # Validate that the object has the expected shape.
-    _require_attrs(tool, ("id", "auth_level", "pipa_class", "is_irreversible",
-                          "requires_auth", "auth_type"))
+    _require_attrs(
+        tool, ("id", "auth_level", "pipa_class", "is_irreversible", "requires_auth", "auth_type")
+    )
 
     # Access attributes directly (B009: avoid getattr with constant string).
     # The _require_attrs call above guarantees these attributes exist.

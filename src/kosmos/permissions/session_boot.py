@@ -127,9 +127,7 @@ def reset_session_state(store_path: Path) -> SessionBootState:
 
     # Absent file is valid (first-run state); rules_loaded=True with 0 rules.
     user_count = len(rule_store.list_rules(scope="user"))
-    logger.debug(
-        "Session boot: mode=default, rules_loaded=True, user_rule_count=%d", user_count
-    )
+    logger.debug("Session boot: mode=default, rules_loaded=True, user_rule_count=%d", user_count)
     return SessionBootState(
         mode="default",
         rule_store=rule_store,

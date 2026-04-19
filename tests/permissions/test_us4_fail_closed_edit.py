@@ -316,9 +316,7 @@ class TestFailClosedWrongFileMode:
     """Invariant C3: file mode != 0o600 → RuleStorePermissionsError."""
 
     @pytest.mark.parametrize("bad_mode", [0o644, 0o666, 0o777, 0o400, 0o640])
-    def test_wrong_mode_raises_permissions_error(
-        self, tmp_path: Path, bad_mode: int
-    ) -> None:
+    def test_wrong_mode_raises_permissions_error(self, tmp_path: Path, bad_mode: int) -> None:
         store_path = tmp_path / "permissions.json"
         # Write valid content first
         store_path.write_bytes(_valid_store_bytes())

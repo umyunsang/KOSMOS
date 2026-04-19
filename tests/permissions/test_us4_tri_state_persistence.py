@@ -179,9 +179,7 @@ class TestUS4TriStatePersistence:
 
         store = RuleStore(store_path)
         # Session-scope rule should raise ValueError when save_rule is called
-        session_rule = make_rule(
-            tool_id="kma_forecast_fetch", decision="allow", scope="session"
-        )
+        session_rule = make_rule(tool_id="kma_forecast_fetch", decision="allow", scope="session")
         with pytest.raises(ValueError, match="user-scope"):
             store.save_rule(session_rule)
 
@@ -221,9 +219,7 @@ class TestUS4TriStatePersistence:
 
         # R1: deny-wins — session deny overrides user allow
         decision = store.resolve("koroad_accident_hazard_search", ctx)
-        assert decision == "deny", (
-            f"R1 violated: deny-wins should override allow, got {decision!r}"
-        )
+        assert decision == "deny", f"R1 violated: deny-wins should override allow, got {decision!r}"
 
     def test_r2_narrower_wins_session_over_user(self, tmp_path: Path) -> None:
         """Invariant R2: narrower scope (session) wins over wider scope (user)."""
@@ -231,14 +227,10 @@ class TestUS4TriStatePersistence:
 
         store = RuleStore(store_path)
         # User-scope deny
-        store.save_rule(
-            make_rule(tool_id="hira_hospital_search", decision="deny", scope="user")
-        )
+        store.save_rule(make_rule(tool_id="hira_hospital_search", decision="deny", scope="user"))
 
         # Session-scope allow (narrower)
-        session_allow = make_rule(
-            tool_id="hira_hospital_search", decision="allow", scope="session"
-        )
+        session_allow = make_rule(tool_id="hira_hospital_search", decision="allow", scope="session")
         ctx = ScopeContext(session_rules=(session_allow,))
 
         # R1 deny-wins takes precedence over R2 narrower-wins.
@@ -254,18 +246,12 @@ class TestUS4TriStatePersistence:
 
         store = RuleStore(store_path)
         # User-scope ask
-        store.save_rule(
-            make_rule(tool_id="nmc_emergency_search", decision="ask", scope="user")
-        )
+        store.save_rule(make_rule(tool_id="nmc_emergency_search", decision="ask", scope="user"))
 
         # Session-scope allow (narrower, no deny present anywhere)
-        session_allow = make_rule(
-            tool_id="nmc_emergency_search", decision="allow", scope="session"
-        )
+        session_allow = make_rule(tool_id="nmc_emergency_search", decision="allow", scope="session")
         ctx = ScopeContext(session_rules=(session_allow,))
 
         # R2: narrower session allow wins over user ask
         decision = store.resolve("nmc_emergency_search", ctx)
-        assert decision == "allow", (
-            f"R2: session allow should win over user ask, got {decision!r}"
-        )
+        assert decision == "allow", f"R2: session allow should win over user ask, got {decision!r}"

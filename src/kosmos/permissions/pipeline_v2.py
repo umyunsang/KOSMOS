@@ -45,7 +45,8 @@ from kosmos.permissions import aal_backstop, killswitch, mode_bypass, mode_defau
 from kosmos.permissions.action_digest import compute_action_digest, generate_nonce
 from kosmos.permissions.ledger import append as ledger_append
 from kosmos.permissions.models import ConsentDecision, ToolPermissionContext
-from kosmos.permissions.prompt import PIPAConsentPrompt, build as build_prompt
+from kosmos.permissions.prompt import PIPAConsentPrompt
+from kosmos.permissions.prompt import build as build_prompt
 from kosmos.permissions.rules import RuleStore, ScopeContext
 
 __all__ = [

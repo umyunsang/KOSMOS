@@ -182,7 +182,8 @@ def _parse_prev_hash(last_line: bytes | None) -> str:
         return _GENESIS_PREV_HASH
     try:
         obj = json.loads(last_line.decode("utf-8"))
-        return obj["record_hash"]
+        record_hash: str = obj["record_hash"]
+        return record_hash
     except (json.JSONDecodeError, KeyError, UnicodeDecodeError) as exc:
         raise ValueError(
             f"Ledger corruption: failed to parse prev_hash from last line: {exc}"
@@ -213,9 +214,11 @@ def _get_key_id(key_registry_path: Path) -> str:
         # Active key = last entry with retired_at == null.
         for entry in reversed(entries):
             if entry.get("retired_at") is None:
-                return entry["key_id"]
+                key_id: str = entry["key_id"]
+                return key_id
         # Fallback if all entries are retired (should not happen normally).
-        return entries[-1]["key_id"]
+        fallback_key_id: str = entries[-1]["key_id"]
+        return fallback_key_id
     except (json.JSONDecodeError, KeyError, OSError):
         return "k0001"
 
@@ -259,7 +262,8 @@ def read_last_record(ledger_path: Path) -> dict[str, Any] | None:
         stripped = line.strip()
         if stripped:
             try:
-                return json.loads(stripped.decode("utf-8"))
+                record: dict[str, Any] = json.loads(stripped.decode("utf-8"))
+                return record
             except (json.JSONDecodeError, UnicodeDecodeError):
                 continue
     return None
@@ -361,7 +365,7 @@ def append(
                 "prev_hash": prev_hash,
                 # Placeholders — computed next.
                 "record_hash": _GENESIS_PREV_HASH,  # will be replaced
-                "hmac_seal": _GENESIS_PREV_HASH,    # will be replaced
+                "hmac_seal": _GENESIS_PREV_HASH,  # will be replaced
                 "key_id": key_id,
             }
             if consent_receipt_id is not None:

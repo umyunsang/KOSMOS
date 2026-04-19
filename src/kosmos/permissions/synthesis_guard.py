@@ -163,9 +163,7 @@ def redact(
         TypeError: If ``adapter_output`` is not a ``Mapping``.
     """
     if not isinstance(adapter_output, Mapping):
-        raise TypeError(
-            f"adapter_output must be a Mapping, got {type(adapter_output).__name__!r}"
-        )
+        raise TypeError(f"adapter_output must be a Mapping, got {type(adapter_output).__name__!r}")
 
     tool_id = adapter_metadata.tool_id
     adapter_pipa_class = adapter_metadata.pipa_class

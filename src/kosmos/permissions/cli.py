@@ -31,6 +31,7 @@ import re
 import sys
 from datetime import UTC
 from pathlib import Path
+from typing import Any
 
 from kosmos.permissions.rules import (
     RuleStore,
@@ -152,8 +153,7 @@ def _cmd_verify(args: argparse.Namespace) -> int:  # noqa: C901
         )
     except HMACKeyFileModeError:
         sys.stderr.write(
-            f"Error: HMAC key file has wrong permissions. "
-            f"Fix with: chmod 0400 {key_path}\n"
+            f"Error: HMAC key file has wrong permissions. Fix with: chmod 0400 {key_path}\n"
         )
         return 6
     except OSError as exc:
@@ -217,9 +217,7 @@ def _cmd_verify(args: argparse.Namespace) -> int:  # noqa: C901
                     "  Use --hash-only --acknowledge-key-loss to skip HMAC.\n"
                 )
             elif exit_code == 4:
-                sys.stdout.write(
-                    "  Reason: Record fails ConsentLedgerRecord schema validation.\n"
-                )
+                sys.stdout.write("  Reason: Record fails ConsentLedgerRecord schema validation.\n")
 
     return exit_code
 
@@ -247,7 +245,7 @@ def _cmd_rotate_key(args: argparse.Namespace) -> int:  # noqa: C901
 
     # ---- Determine next key_id sequence ------------------------------------
     next_seq = 1
-    existing_entries: list[dict] = []
+    existing_entries: list[dict[str, Any]] = []
 
     if registry_path.exists():
         try:
@@ -296,11 +294,13 @@ def _cmd_rotate_key(args: argparse.Namespace) -> int:  # noqa: C901
                 updated = True
                 break
         if not updated:
-            existing_entries.append({
-                "key_id": current_key_id,
-                "retired_at": retired_at,
-                "file_path": archive_filename,
-            })
+            existing_entries.append(
+                {
+                    "key_id": current_key_id,
+                    "retired_at": retired_at,
+                    "file_path": archive_filename,
+                }
+            )
     else:
         _logger.info("No existing key at %s; generating first key", key_path)
 
@@ -316,11 +316,13 @@ def _cmd_rotate_key(args: argparse.Namespace) -> int:  # noqa: C901
     _logger.info("Generated new HMAC key %s at %s (mode 0400)", new_key_id, key_path)
 
     # ---- Add new active key to registry ------------------------------------
-    existing_entries.append({
-        "key_id": new_key_id,
-        "retired_at": None,
-        "file_path": "ledger.key",
-    })
+    existing_entries.append(
+        {
+            "key_id": new_key_id,
+            "retired_at": None,
+            "file_path": "ledger.key",
+        }
+    )
 
     # Atomic registry write (tmp + rename).
     tmp_registry = registry_path.with_suffix(".json.tmp")
@@ -532,8 +534,7 @@ def _cmd_list(args: argparse.Namespace) -> int:
             sys.stdout.write("No rules found.\n")
         else:
             header = (
-                f"{'TOOL_ID':<40} {'DECISION':<8} {'SCOPE':<10}"
-                f" {'CREATED_AT':<26} {'MODE':<20}"
+                f"{'TOOL_ID':<40} {'DECISION':<8} {'SCOPE':<10} {'CREATED_AT':<26} {'MODE':<20}"
             )
             sys.stdout.write(header + "\n")
             sys.stdout.write("-" * len(header) + "\n")
@@ -610,8 +611,7 @@ def _build_parser() -> argparse.ArgumentParser:
         default=False,
         dest="acknowledge_key_loss",
         help=(
-            "Required alongside --hash-only. Documents that HMAC step is "
-            "skipped due to key loss."
+            "Required alongside --hash-only. Documents that HMAC step is skipped due to key loss."
         ),
     )
     p_verify.add_argument(

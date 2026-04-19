@@ -271,6 +271,7 @@ class TestResolvBypassMode:
     def test_function_has_no_cache_parameter(self) -> None:
         """resolve_bypass_mode must NOT have a 'cache' parameter (Invariant K5)."""
         import inspect  # noqa: PLC0415
+
         sig = inspect.signature(resolve_bypass_mode)
         assert "cache" not in sig.parameters, (
             "Invariant K5: resolve_bypass_mode MUST NOT have a 'cache' parameter. "
@@ -302,10 +303,7 @@ class TestActionDigestDistinctness:
         tool_id = "minwon_submit"
         arguments = {"form": "A", "applicant": "citizen_01"}
 
-        digests = {
-            compute_action_digest(tool_id, arguments, generate_nonce())
-            for _ in range(100)
-        }
+        digests = {compute_action_digest(tool_id, arguments, generate_nonce()) for _ in range(100)}
 
         assert len(digests) == 100, (
             f"Expected 100 distinct digests, got {len(digests)}. "

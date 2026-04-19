@@ -171,6 +171,7 @@ class AuditLogEntry(BaseModel):
 # Reference: specs/033-permission-v2-spectrum/data-model.md § 1
 # ---------------------------------------------------------------------------
 
+
 class PermissionRule(BaseModel):
     """Persistent tri-state rule for a single adapter (Spec 033 FR-C01).
 

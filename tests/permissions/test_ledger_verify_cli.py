@@ -25,13 +25,13 @@ import hashlib
 import hmac as hmac_lib
 import json
 import os
+from datetime import UTC
 from pathlib import Path
 
 import pytest
 
 from kosmos.permissions.canonical_json import canonicalize
 from kosmos.permissions.ledger_verify import verify_ledger
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -46,7 +46,7 @@ def _make_valid_records(
     key_id: str = "k0001",
 ) -> list[dict]:
     """Build a list of n valid, properly chained, HMAC-sealed ledger records."""
-    from datetime import datetime, timezone
+    from datetime import datetime
 
     records = []
     prev_hash = _GENESIS
@@ -54,14 +54,14 @@ def _make_valid_records(
         record: dict = {
             "version": "1.0.0",
             "sequence": i,
-            "recorded_at": datetime.now(tz=timezone.utc).isoformat(),
+            "recorded_at": datetime.now(tz=UTC).isoformat(),
             "tool_id": "test_tool",
             "mode": "default",
             "granted": True,
             "action_digest": hashlib.sha256(f"action_{i}".encode()).hexdigest(),
             "prev_hash": prev_hash,
             "record_hash": _GENESIS,  # placeholder
-            "hmac_seal": _GENESIS,    # placeholder
+            "hmac_seal": _GENESIS,  # placeholder
             "key_id": key_id,
         }
         # Compute record_hash (excluding record_hash and hmac_seal).

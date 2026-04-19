@@ -156,8 +156,7 @@ def _validate_rule_fields(idx: int, rule: dict[str, object]) -> None:
     decision = rule["decision"]
     if decision not in _VALID_DECISIONS:
         raise RuleStoreSchemaError(
-            f"Rule[{idx}].decision must be one of {sorted(_VALID_DECISIONS)!r},"
-            f" got {decision!r}"
+            f"Rule[{idx}].decision must be one of {sorted(_VALID_DECISIONS)!r}, got {decision!r}"
         )
 
     scope = rule["scope"]
@@ -169,8 +168,7 @@ def _validate_rule_fields(idx: int, rule: dict[str, object]) -> None:
     mode = rule["created_by_mode"]
     if mode not in _VALID_MODES:
         raise RuleStoreSchemaError(
-            f"Rule[{idx}].created_by_mode must be one of {sorted(_VALID_MODES)!r},"
-            f" got {mode!r}"
+            f"Rule[{idx}].created_by_mode must be one of {sorted(_VALID_MODES)!r}, got {mode!r}"
         )
 
     _parse_datetime_field(rule, f"Rule[{idx}].created_at", "created_at")
@@ -311,13 +309,9 @@ class RuleStore:
             raw = self._path.read_text(encoding="utf-8")
             doc = json.loads(raw)
         except json.JSONDecodeError as exc:
-            raise RuleStoreSchemaError(
-                f"permissions.json is not valid JSON: {exc}"
-            ) from exc
+            raise RuleStoreSchemaError(f"permissions.json is not valid JSON: {exc}") from exc
         except OSError as exc:
-            raise RuleStoreSchemaError(
-                f"Cannot read permissions.json: {exc}"
-            ) from exc
+            raise RuleStoreSchemaError(f"Cannot read permissions.json: {exc}") from exc
 
         # --- Validate schema (hand-rolled, no jsonschema dep) ---
         _validate_store_document(doc)

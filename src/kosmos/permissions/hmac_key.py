@@ -109,8 +109,7 @@ def _load_existing_key(path: Path) -> bytes:
     raw = path.read_bytes()
     if len(raw) < 32:
         raise ValueError(
-            f"HMAC key file {path!r} is too short: "
-            f"got {len(raw)} bytes, expected at least 32."
+            f"HMAC key file {path!r} is too short: got {len(raw)} bytes, expected at least 32."
         )
     _logger.debug("HMAC key loaded from %s (key_id inferred from filename)", path)
     return raw[:32]

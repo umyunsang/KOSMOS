@@ -32,7 +32,7 @@ from kosmos.permissions.models import (
 )
 from kosmos.permissions.modes import PermissionMode
 from kosmos.permissions.prompt import PIPAConsentPrompt
-from kosmos.permissions.rules import RuleStore, ScopeContext
+from kosmos.permissions.rules import RuleStore
 
 # ---------------------------------------------------------------------------
 # Fixtures / factories
@@ -137,7 +137,12 @@ async def test_killswitch_forces_prompt_for_irreversible_under_bypass(
     tmp_permission_dir: Path, tmp_hmac_key: Path
 ) -> None:
     store = RuleStore(tmp_permission_dir / "permissions.json")
-    md = _make_metadata(is_irreversible=True, auth_level="AAL2", auth_type="oauth", requires_auth=True)
+    md = _make_metadata(
+        is_irreversible=True,
+        auth_level="AAL2",
+        auth_type="oauth",
+        requires_auth=True,
+    )
     ctx = _make_ctx(mode="bypassPermissions", metadata=md)
 
     decision = await pipeline_v2.evaluate(
@@ -241,11 +246,14 @@ async def test_plan_mode_reversible_auto_allows(tmp_permission_dir: Path) -> Non
 
 
 @pytest.mark.asyncio
-async def test_plan_mode_irreversible_prompts(
-    tmp_permission_dir: Path, tmp_hmac_key: Path
-) -> None:
+async def test_plan_mode_irreversible_prompts(tmp_permission_dir: Path, tmp_hmac_key: Path) -> None:
     store = RuleStore(tmp_permission_dir / "permissions.json")
-    md = _make_metadata(is_irreversible=True, auth_level="AAL2", auth_type="oauth", requires_auth=True)
+    md = _make_metadata(
+        is_irreversible=True,
+        auth_level="AAL2",
+        auth_type="oauth",
+        requires_auth=True,
+    )
     ctx = _make_ctx(mode="plan", metadata=md)
 
     decision = await pipeline_v2.evaluate(

@@ -35,17 +35,15 @@ _PYPROJECT = _REPO_ROOT / "pyproject.toml"
 
 def _git(*args: str) -> str:
     """Run a git command inside the repo root and return stdout (stripped)."""
-    proc = subprocess.run(
-        ["git", *args],
+    proc = subprocess.run(  # noqa: S603 — test-only, static argv, git on PATH
+        ["git", *args],  # noqa: S607 — git resolved via PATH in CI/dev shells
         cwd=str(_REPO_ROOT),
         capture_output=True,
         text=True,
         check=False,
     )
     if proc.returncode != 0:
-        raise RuntimeError(
-            f"git {' '.join(args)} failed: {proc.stderr.strip()!r}"
-        )
+        raise RuntimeError(f"git {' '.join(args)} failed: {proc.stderr.strip()!r}")
     return proc.stdout.strip()
 
 
@@ -73,8 +71,8 @@ def _load_deps_at(ref: str | None) -> set[str]:
     if ref is None:
         raw = _PYPROJECT.read_bytes()
     else:
-        raw = subprocess.run(
-            ["git", "show", f"{ref}:pyproject.toml"],
+        raw = subprocess.run(  # noqa: S603 — test-only, static argv, git on PATH
+            ["git", "show", f"{ref}:pyproject.toml"],  # noqa: S607 — git on PATH
             cwd=str(_REPO_ROOT),
             capture_output=True,
             check=True,

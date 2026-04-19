@@ -66,7 +66,8 @@ def generate_nonce() -> uuid.UUID:
     """
     uuid7_fn = getattr(uuid, "uuid7", None)
     if uuid7_fn is not None:
-        return uuid7_fn()
+        result: uuid.UUID = uuid7_fn()
+        return result
     return uuid.uuid4()
 
 

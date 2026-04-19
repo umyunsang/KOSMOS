@@ -130,11 +130,13 @@ def resolve_default_mode(
         # Build a deterministic action_digest for auto-allow (no user args nonce
         # available at this layer — the pipeline injects a nonce before calling).
         # Use the correlation_id as a deterministic source.
-        digest_input = canonicalize({
-            "tool_id": ctx.tool_id,
-            "correlation_id": ctx.correlation_id,
-            "auto_allow": True,
-        })
+        digest_input = canonicalize(
+            {
+                "tool_id": ctx.tool_id,
+                "correlation_id": ctx.correlation_id,
+                "auto_allow": True,
+            }
+        )
         action_digest = hashlib.sha256(digest_input).hexdigest()
 
         return ConsentDecision(

@@ -316,9 +316,7 @@ class TestAALBackstopFRF02:
         ctx_prompt = _make_tool_permission_context(
             tool_id="hira_hospital_search", auth_level="AAL2"
         )
-        ctx_exec = _make_tool_permission_context(
-            tool_id="kma_forecast_fetch", auth_level="AAL2"
-        )
+        ctx_exec = _make_tool_permission_context(tool_id="kma_forecast_fetch", auth_level="AAL2")
 
         with pytest.raises(ValueError, match="protocol error"):
             check_aal_downgrade(ctx_prompt, ctx_exec)
@@ -594,9 +592,7 @@ class TestEndToEndConsentToolCall:
             tool_id="hira_hospital_search",
             auth_level_presented="AAL2",
         )
-        coupling_result = couple_audit_record(
-            audit_record, consent, ctx_at_prompt.correlation_id
-        )
+        coupling_result = couple_audit_record(audit_record, consent, ctx_at_prompt.correlation_id)
 
         assert coupling_result.consent_receipt_id is not None
         assert coupling_result.correlation_id == "corr-e2e-001"

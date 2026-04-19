@@ -67,7 +67,7 @@ def test_assert_killswitch_first_passes_when_killswitch_is_first() -> None:
 def test_assert_killswitch_first_raises_when_mode_is_first() -> None:
     """Any order with mode.evaluate BEFORE killswitch MUST raise AssertionError (K1)."""
     bad_order = [
-        "mode.evaluate",           # ← WRONG: mode before killswitch
+        "mode.evaluate",  # ← WRONG: mode before killswitch
         "killswitch.pre_evaluate",
         "rule.resolve",
         "prompt.ask",

@@ -41,7 +41,7 @@ _VECTORS: list[tuple[str, object, bytes]] = [
     ),
     (
         "V04 string escapes: CR LF TAB BS FF QUOT BSOL",
-        {"s": "\r\n\t\b\f\"\\"},
+        {"s": '\r\n\t\b\f"\\'},
         b'{"s":"\\r\\n\\t\\b\\f\\"\\\\"}',
     ),
     (
@@ -89,8 +89,8 @@ _VECTORS: list[tuple[str, object, bytes]] = [
         "V13 supplementary char U+1F600 sorts before U+FFFF in UTF-16",
         # U+1F600 encodes as surrogate pair (0xD83D, 0xDE00) in UTF-16BE.
         # First code unit 0xD83D < 0xFFFF, so emoji sorts BEFORE U+FFFF.
-        {"\U0001f600": "emoji", "\uFFFF": "hi"},
-        ('{"' + "\U0001f600" + '":"emoji","' + "\uFFFF" + '":"hi"}').encode("utf-8"),
+        {"\U0001f600": "emoji", "\uffff": "hi"},
+        ('{"' + "\U0001f600" + '":"emoji","' + "\uffff" + '":"hi"}').encode("utf-8"),
     ),
 ]
 
@@ -104,14 +104,10 @@ def test_jcs_vector(description: str, input_value: object, expected: bytes) -> N
     """Each RFC 8785 Appendix A vector must produce byte-identical output."""
     result = canonicalize(input_value)
     assert result == expected, (
-        f"\n[{description}]\n"
-        f"  got:      {result!r}\n"
-        f"  expected: {expected!r}"
+        f"\n[{description}]\n  got:      {result!r}\n  expected: {expected!r}"
     )
 
 
 def test_jcs_vector_count() -> None:
     """Exactly 13 vectors must be present (Phase 2 gate requirement)."""
-    assert len(_VECTORS) == 13, (
-        f"Expected 13 RFC 8785 test vectors, found {len(_VECTORS)}"
-    )
+    assert len(_VECTORS) == 13, f"Expected 13 RFC 8785 test vectors, found {len(_VECTORS)}"
