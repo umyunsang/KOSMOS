@@ -217,16 +217,16 @@ description: "Task list for Spec 287 TUI (Ink + React + Bun)"
 
 ### Tests for User Story 5
 
-- [ ] T101 [P] [US5] Headless IME test `tui/tests/hooks/useKoreanIME.test.ts` — inject `ㅎ + ㅏ + ㄴ` → assert `한` emitted as single codepoint; inject mid-composition Backspace → assert atomic partial-syllable deletion (US5 scenarios 1, 2; FR-015, FR-016)
-- [ ] T102 [P] [US5] CI precondition test `tui/tests/adr-precheck.test.ts` — assert `docs/adr/NNN-korean-ime-strategy.md` exists; fail build otherwise (US5 scenario 3; FR-014, FR-057)
+- [X] T101 [P] [US5] Headless IME test `tui/tests/hooks/useKoreanIME.test.ts` — inject `ㅎ + ㅏ + ㄴ` → assert `한` emitted as single codepoint; inject mid-composition Backspace → assert atomic partial-syllable deletion (US5 scenarios 1, 2; FR-015, FR-016)
+- [X] T102 [P] [US5] CI precondition test `tui/tests/adr-precheck.test.ts` — assert `docs/adr/NNN-korean-ime-strategy.md` exists; fail build otherwise (US5 scenario 3; FR-014, FR-057)
 
 ### Implementation for User Story 5
 
-- [ ] T103 [US5] Based on ADR T004 outcome: if option (a) fork, update `tui/package.json` pin `"ink": "npm:@jrichman/ink@6.6.9"` + rerun `bun install` + regenerate lockfile; if option (b) readline, implement the stdlib readline hybrid in `tui/src/ipc/readline-bridge.ts` (KOSMOS-original) and keep Ink pin at `@^7`
-- [ ] T104 [US5] Create `tui/src/hooks/useKoreanIME.ts` strategy-selector hook reading `KOSMOS_TUI_IME_STRATEGY` env var; dispatch to fork-based `useInput` OR readline hybrid per ADR (FR-014)
-- [ ] T105 [US5] Create `tui/src/components/input/InputBar.tsx` consuming `useKoreanIME` hook; renders composition-state buffer + emits `user_input` frame on Enter (FR-015)
-- [ ] T106 [US5] Wire `InputBar` into `tui/src/entrypoints/tui.tsx` replacing any placeholder text input
-- [ ] T107 [P] [US5] Document chosen IME strategy in `tui/docs/korean-ime.md` with fallback instructions if the strategy fails on an uncommon terminal
+- [X] T103 [US5] Based on ADR T004 outcome: if option (a) fork, update `tui/package.json` pin `"ink": "npm:@jrichman/ink@6.6.9"` + rerun `bun install` + regenerate lockfile; if option (b) readline, implement the stdlib readline hybrid in `tui/src/ipc/readline-bridge.ts` (KOSMOS-original) and keep Ink pin at `@^7`
+- [X] T104 [US5] Create `tui/src/hooks/useKoreanIME.ts` strategy-selector hook reading `KOSMOS_TUI_IME_STRATEGY` env var; dispatch to fork-based `useInput` OR readline hybrid per ADR (FR-014)
+- [X] T105 [US5] Create `tui/src/components/input/InputBar.tsx` consuming `useKoreanIME` hook; renders composition-state buffer + emits `user_input` frame on Enter (FR-015)
+- [X] T106 [US5] Wire `InputBar` into `tui/src/entrypoints/tui.tsx` replacing any placeholder text input
+- [X] T107 [P] [US5] Document chosen IME strategy in `tui/docs/korean-ime.md` with fallback instructions if the strategy fails on an uncommon terminal
 
 **Checkpoint**: `한글` composed correctly on macOS + Linux; backspace deletes jamo atomically.
 

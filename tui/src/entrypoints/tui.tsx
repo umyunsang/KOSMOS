@@ -44,6 +44,7 @@ import { HelpView } from '../commands/help'
 import { PhaseIndicator } from '../components/coordinator/PhaseIndicator'
 import { WorkerStatusRow } from '../components/coordinator/WorkerStatusRow'
 import { PermissionGauntletModal } from '../components/coordinator/PermissionGauntletModal'
+import { InputBar } from '../components/input/InputBar'
 
 // ---------------------------------------------------------------------------
 // Frame dispatcher — maps IPCFrame arms to SessionAction
@@ -190,7 +191,6 @@ function AppInner({ bridge }: AppInnerProps): React.ReactElement {
   const pendingPermission = useSessionStore((s) => s.pending_permission)
 
   const registry = useMemo(() => buildDefaultRegistry(), [])
-  const [inputBuffer, setInputBuffer] = useState('')
   const [ack, setAck] = useState<string>('')
   const [helpState, setHelpState] = useState<HelpState | null>(null)
 
@@ -222,13 +222,13 @@ function AppInner({ bridge }: AppInnerProps): React.ReactElement {
     bridge.send(frame)
   }
 
-  const submitInput = (): void => {
-    const raw = inputBuffer
-    setInputBuffer('')
+  // InputBar delegates key handling to useKoreanIME (Phase 7 US5). We keep a
+  // thin outer useInput here only for Ctrl-C (tear down) and Escape (clear
+  // help overlay) — text composition lives entirely inside InputBar.
+  const handleSubmit = (raw: string): void => {
     if (raw.trim().length === 0) return
 
     if (isSlashCommand(raw)) {
-      // Fire-and-forget — the dispatcher resolves, never throws
       void dispatchCommand(raw, registry, sendSessionEvent).then((result: DispatchResult) => {
         setAck(result.acknowledgement)
         if (result.renderHelp === true) {
@@ -243,54 +243,28 @@ function AppInner({ bridge }: AppInnerProps): React.ReactElement {
       return
     }
 
-    // Non-slash path: emit user_input IPC frame and clear any pending help
     setHelpState(null)
     setAck('')
     sendUserInput(raw)
   }
 
-  // Keyboard handling — Ctrl-C closes bridge; otherwise build the input buffer.
-  // When the permission modal is open it owns all keystrokes (FR-046): we
-  // short-circuit here so y/n/Escape reach PermissionGauntletModal exclusively.
+  // Outer key handler — Ctrl-C always closes the bridge. Escape clears the
+  // help overlay when no modal is active. Everything else passes through to
+  // InputBar's useKoreanIME (or to PermissionGauntletModal when it is open).
   useInput((input, key) => {
-    if (pendingPermission !== null) {
-      // Still allow Ctrl-C to tear down the bridge even while the modal is open.
-      if (key.ctrl && input === 'c') {
-        bridge.close().then(() => exit())
-      }
-      return
-    }
-
     if (key.ctrl && input === 'c') {
       bridge.close().then(() => exit())
       return
     }
-
-    if (key.return) {
-      submitInput()
-      return
-    }
-
-    if (key.backspace || key.delete) {
-      setInputBuffer((prev) => prev.slice(0, -1))
-      return
-    }
-
+    if (pendingPermission !== null) return
     if (key.escape) {
-      setInputBuffer('')
       setHelpState(null)
-      return
-    }
-
-    // Ignore other control keys (arrows, tab, etc.). Proper Korean IME arrives
-    // in Phase 7 US5 via the @jrichman/ink-text-input fork.
-    if (input !== undefined && input.length > 0 && !key.ctrl && !key.meta) {
-      setInputBuffer((prev) => prev + input)
     }
   })
 
   // Show ready hint if nothing has happened yet
   const isEmpty = messageOrder.length === 0 && !crash && helpState === null && ack === ''
+  const inputDisabled = pendingPermission !== null
 
   return (
     <Box flexDirection="column" paddingX={1}>
@@ -334,12 +308,9 @@ function AppInner({ bridge }: AppInnerProps): React.ReactElement {
         </Box>
       )}
 
-      {/* Input line — minimal placeholder until Phase 7 US5 Korean IME. */}
-      <Box>
-        <Text bold color={theme.briefLabelYou}>{'> '}</Text>
-        <Text color={theme.text}>{inputBuffer}</Text>
-        <Text color={theme.inactive}>▋</Text>
-      </Box>
+      {/* Korean IME input bar (US5, FR-015/FR-016) — delegates to
+          useKoreanIME hook; suppressed while the permission modal is open. */}
+      <InputBar onSubmit={handleSubmit} disabled={inputDisabled} />
     </Box>
   )
 }
