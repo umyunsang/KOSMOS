@@ -108,20 +108,27 @@ export function startCrashDetector(
 ): void {
   const stderrBuf = new StderrBuffer()
 
-  // Drain stderr in the background
-  ;(async () => {
-    const reader = proc.stderr.getReader()
-    const decoder = new TextDecoder('utf-8')
-    try {
-      while (true) {
-        const { value, done } = await reader.read()
-        if (done) break
-        stderrBuf.push(decoder.decode(value, { stream: true }))
+  // Drain stderr in the background.
+  // Bun types `proc.stderr` as `number | ReadableStream<Uint8Array>` because
+  // callers may pass a raw fd via `stderr: "inherit"|fd`. The bridge always
+  // spawns with `stderr: "pipe"`, so it is a ReadableStream at runtime; guard
+  // anyway so a future fd-based caller degrades silently instead of throwing.
+  const stderrStream = proc.stderr
+  if (stderrStream instanceof ReadableStream) {
+    ;(async () => {
+      const reader = stderrStream.getReader()
+      const decoder = new TextDecoder('utf-8')
+      try {
+        while (true) {
+          const { value, done } = await reader.read()
+          if (done) break
+          stderrBuf.push(decoder.decode(value, { stream: true }))
+        }
+      } catch {
+        // Ignore read errors — the process may have exited
       }
-    } catch {
-      // Ignore read errors — the process may have exited
-    }
-  })()
+    })()
+  }
 
   // Watch for process exit
   ;(async () => {

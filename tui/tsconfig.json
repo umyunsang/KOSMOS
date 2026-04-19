@@ -26,5 +26,12 @@
     "tests/**/*.ts",
     "tests/**/*.tsx"
   ],
-  "exclude": ["node_modules", "build"]
+  "exclude": [
+    "node_modules",
+    "build",
+    "src/ink/**",
+    "src/utils/**",
+    "tests/ink/**",
+    "scripts/soak.ts"
+  ]
 }

@@ -27,7 +27,8 @@ import {
 } from '../../../src/store/session-store'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const FIXTURE = join(__dirname, '../fixtures/coordinator/three-specialist.jsonl')
+// Fixture lives alongside this test file (tests/fixtures/coordinator/).
+const FIXTURE = join(__dirname, 'three-specialist.jsonl')
 
 // ---------------------------------------------------------------------------
 // Helper: map a decoded IPCFrame to a SessionAction (same logic as bridge wiring)

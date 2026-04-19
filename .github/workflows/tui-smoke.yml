@@ -1,0 +1,61 @@
+name: TUI Boot Smoke Gate
+
+# Catches React 19 selector-identity regressions, duplicate-key warnings, and
+# broken entrypoint wiring that only surface when the TUI boots under a real
+# TTY. Driven by tui/scripts/tui-smoke.ts (see that file for the failure
+# criteria and fake-backend strategy).
+
+on:
+  pull_request:
+    paths:
+      - "tui/**"
+      - ".github/workflows/tui-smoke.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "tui/**"
+      - ".github/workflows/tui-smoke.yml"
+
+jobs:
+  tui-smoke:
+    name: "TUI typecheck + unit tests + PTY boot smoke"
+    runs-on: ubuntu-latest
+    # Hard ceiling — the smoke script itself bounds at BOOT_MS + grace, so the
+    # job should finish in ~30 s. Protect against a runaway on a bad runner.
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.2.x"
+
+      - name: Install util-linux `script` (PTY harness)
+        # ubuntu-latest images ship util-linux, but guarantee presence so the
+        # gate fails loudly with a clear error if the image drifts.
+        run: |
+          which script || (sudo apt-get update && sudo apt-get install -y bsdmainutils util-linux)
+          script --version
+
+      - name: Install TUI dependencies
+        working-directory: tui
+        run: bun install --frozen-lockfile
+
+      - name: Typecheck
+        working-directory: tui
+        run: bun run typecheck
+
+      - name: Unit tests
+        working-directory: tui
+        run: bun test
+
+      - name: PTY boot smoke
+        working-directory: tui
+        env:
+          # Slightly longer boot window on shared CI runners.
+          KOSMOS_TUI_SMOKE_BOOT_MS: "5000"
+        run: bun run tui:smoke

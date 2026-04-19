@@ -7,10 +7,10 @@
     "bun": ">=1.2.0 <1.3.0"
   },
   "scripts": {
-    "tui": "bun run src/cli.tsx",
+    "tui": "bun run src/main.tsx",
     "gen:ipc": "bun run scripts/gen-ipc-types.ts",
     "diff:upstream": "bun run scripts/diff-upstream.ts",
-    "tui:fixture": "bun run scripts/fixture-runner.ts",
+    "tui:smoke": "bun run scripts/tui-smoke.ts",
     "test:soak": "bun test --timeout 600000 tests/soak",
     "test": "bun test",
     "typecheck": "tsc --noEmit"

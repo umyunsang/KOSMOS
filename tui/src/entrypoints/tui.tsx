@@ -161,8 +161,15 @@ interface HelpState {
 // ---------------------------------------------------------------------------
 
 function WorkerStatusList(): React.ReactElement | null {
-  const workerIds = useSessionStore((s) =>
-    Array.from(s.workers.keys()).sort(),
+  // Subscribe to the workers Map by identity — the reducer replaces the Map
+  // reference whenever its contents change, so this is ref-stable between
+  // dispatches. Deriving the sorted ID list inside the selector would rebuild
+  // a new array on every getSnapshot call and trip React 19's Object.is cache
+  // check ("getSnapshot should be cached to avoid an infinite loop").
+  const workers = useSessionStore((s) => s.workers)
+  const workerIds = useMemo(
+    () => Array.from(workers.keys()).sort(),
+    [workers],
   )
   if (workerIds.length === 0) return null
   return (
