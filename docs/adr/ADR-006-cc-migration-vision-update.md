@@ -2,9 +2,11 @@
 
 **Status**: Proposed
 **Date**: 2026-04-19
-**Epic**: TBD (meta-Epic "CC→KOSMOS Phase 2 Migration", sub-issue of Initiative #2)
+**Initiative**: #2 (Phase 2 — Multi-Agent Swarm) — the nine sub-Epics below are linked directly as sub-issues of Initiative #2 (#1297–#1305)
 **Supersedes portions of**: `docs/vision.md` lines 37, 57, 85, 114, 361 (see Amendments A-1..A-4, A-8)
 **Extends**: ADR-003 (Bun + Ink + React TUI stack), ADR-004 (Claude Code sourcemap port policy)
+
+> **Hierarchy-correction note (2026-04-19)**: an earlier draft of this ADR used the term "meta-Epic" and created issue #1296 as an intermediate parent under Initiative #2, with the nine sub-Epics as sub-issues of #1296. This violated AGENTS.md § Issue hierarchy, which mandates `Initiative → Epic → Task` (Epic sub-issues MUST be Tasks, not sub-Epics). The structure was repaired via GraphQL: #1296 was closed as `not planned`, and #1297–#1305 were re-linked as direct sub-issues of Initiative #2. All remaining references to "meta-Epic" in this ADR have been rewritten; the nine items are peer Epics under Initiative #2, not children of a meta-Epic. The label previously reserved for the meta-Epic is discontinued.
 
 ---
 
@@ -15,9 +17,9 @@ PR #1295 merged Spec 287 (TUI port of `claude-code-sourcemap` 2.1.88 into `tui/s
 1. A **vision document that matches what was actually built** — several `docs/vision.md` lines now describe a future state that has already shipped, or describe retired alternatives.
 2. An **evidence-grounded plan for the remaining CC migration surface** — six architectural layers with concrete files in `.references/claude-code-sourcemap/restored-src/`, mapped against KOSMOS coverage.
 3. A **citizen-facing onboarding and shortcut plan** — currently KOSMOS TUI has 5 keybindings vs. CC's 65, no onboarding screen, and the SVG logo + brand palette in `assets/` has never been ported into a TUI component.
-4. A **data-integrity fix** — Initiative #2's `trackedIssues` GraphQL edge is empty despite the body claiming 7 Epics (sub-issue links never created via Sub-Issues API).
+4. A **data-integrity fix** — Initiative #2's Sub-Issues API v2 `subIssues` connection was empty despite the body claiming 7 Epics (sub-issue links never created via the `addSubIssue` mutation; the earlier AGENTS.md reference to `trackedIssues`/`trackedInIssues` pointed at the legacy body-mention connection, not the canonical Sub-Issues API v2 edge — see the AGENTS.md edit in the same PR as this ADR).
 
-This ADR records the consolidated decision so the meta-Epic can be cut with traceable scope.
+This ADR records the consolidated decision so the nine Epics under Initiative #2 can be cut with traceable scope.
 
 **Research base** (all file paths verified to exist on `main` as of 2026-04-19):
 
@@ -112,7 +114,7 @@ The following ten amendments bring `docs/vision.md` back in sync with shipped st
 
 **Amended**: add a status line directly under the heading:
 
-> Status: **partial** — Spec 027 mailbox IPC shipped (2026-04-14); ministry-specialist agents (출산 보조금, 건강보험, 교통) and the coordinator synthesis pipeline remain open. See Initiative #2 and the CC→KOSMOS Phase 2 Migration meta-Epic (sub-Epics B–F) for the remaining work.
+> Status: **partial** — Spec 027 mailbox IPC shipped (2026-04-14); ministry-specialist agents (출산 보조금, 건강보험, 교통) and the coordinator synthesis pipeline remain open. See Initiative #2 and its nine direct-child Epics (#1297–#1305, sub-Epics A–I under ADR-006) for the remaining work.
 
 **Evidence**: `gh api graphql` confirms Spec 027 closed; Initiative #2 remains `OPEN`.
 
@@ -145,23 +147,23 @@ The following ten amendments bring `docs/vision.md` back in sync with shipped st
 
 ---
 
-### Part B — Meta-Epic "CC→KOSMOS Phase 2 Migration" sub-Epic breakdown
+### Part B — Nine Epics under Initiative #2 (labelled sub-Epics A–I for ADR cross-reference)
 
-The meta-Epic is scoped as **nine sub-Epics**, labelled A–I. Each sub-Epic maps to a concrete CC source region and a concrete KOSMOS gap. The recommended execution order (critical path first) is **G → B → A → H → I → D → C → E → F**.
+The CC→KOSMOS Phase 2 migration surface is scoped as **nine Epics**, linked directly as sub-issues of Initiative #2 (issue numbers #1297–#1305). The A–I labels below are ADR-local identifiers only — they are NOT an issue-hierarchy tier. Each Epic maps to a concrete CC source region and a concrete KOSMOS gap. The recommended execution order (critical path first) is **G → B → A → H → I → D → C → E → F**.
 
-| ID | Title | CC source | KOSMOS gap | Priority |
-|---|---|---|---|---|
-| **G** | **Initiative #2 sub-issue re-link** (data-integrity fix) | — | `trackedIssues` edge empty; 7 Epics listed in body but never linked via Sub-Issues API | **P0 — blocker** |
-| **B** | Permission v2 — PermissionMode spectrum + persistent rule store | `src/utils/permissions/{permissions,PermissionMode,bypassPermissionsKillswitch,dangerousPatterns,filesystem}.ts` | No mode concept; TUI `PermissionGauntletModal` is per-call only | **P0 — Tier 1 shortcut (shift+tab) + TUI parity + PIPA audit trail** |
-| **A** | IPC stdio hardening — structured frames, backpressure, reconnect | `src/services/api/` (REST) vs. KOSMOS `src/kosmos/ipc/stdio.py` | JSONL-over-stdio shipped in 287; no framing spec, no reconnect, no replay | P1 |
-| **H** | Onboarding + brand port (binds A-9) | `src/components/Onboarding.tsx` step registry | No onboarding screen; `dark.ts` background token placeholder; logo never rendered in TUI | P1 |
-| **I** | Shortcut Tier 1 port (binds A-10) | `src/keybindings/defaultBindings.ts` + `src/hooks/useGlobalKeybindings.tsx` | 5/65 bindings implemented | P1 |
-| **D** | Context Assembly v2 — memdir User + Project tiers (binds A-6) | `src/memdir/memdir.ts` + `src/memdir/paths.ts` | System + Session tiers only; no `~/.kosmos/memory/` | P2 |
-| **C** | Ministry Specialists — 출산 보조금 / 건강보험 / 교통 workers | `src/coordinator/coordinatorMode.ts` + `src/tasks/InProcessTeammateTask/` | Spec 027 mailbox shipped; no ministry-specific workers yet | P2 |
-| **E** | Korean IME — composition-aware shortcut gating, Hangul width | `src/hooks/useKeybindings.ts` (no IME notion in CC) | `useKoreanIME.ts` exists; not integrated with Tier 1 keybindings | P2 |
-| **F** | Scenario 2+3 E2E — multi-ministry coordination walk-throughs | — (KOSMOS original; uses `pytest @pytest.mark.live`) | Scenario 1 done (Spec 013); Scenarios 2+3 not specced | P3 |
+| ID | Issue | Title | CC source | KOSMOS gap | Priority |
+|---|---|---|---|---|---|
+| **G** | #1305 | **Initiative #2 sub-issue re-link** (data-integrity fix) | — | `subIssues` edge empty; 7 Epics listed in body but never linked via Sub-Issues API v2 | **P0 — blocker (completed 2026-04-19 during ADR execution; scope narrowed to documentation fix in AGENTS.md)** |
+| **B** | #1297 | Permission v2 — PermissionMode spectrum + persistent rule store | `src/utils/permissions/{permissions,PermissionMode,bypassPermissionsKillswitch,dangerousPatterns,filesystem}.ts` | No mode concept; TUI `PermissionGauntletModal` is per-call only | **P0 — Tier 1 shortcut (shift+tab) + TUI parity + PIPA audit trail** |
+| **A** | #1298 | IPC stdio hardening — structured frames, backpressure, reconnect | `src/services/api/` (REST) vs. KOSMOS `src/kosmos/ipc/stdio.py` | JSONL-over-stdio shipped in 287; no framing spec, no reconnect, no replay | P1 |
+| **H** | #1302 | Onboarding + brand port (binds A-9) | `src/components/Onboarding.tsx` step registry | No onboarding screen; `dark.ts` background token placeholder; logo never rendered in TUI | P1 |
+| **I** | #1303 | Shortcut Tier 1 port (binds A-10) | `src/keybindings/defaultBindings.ts` + `src/hooks/useGlobalKeybindings.tsx` | 5/65 bindings implemented | P1 |
+| **D** | #1299 | Context Assembly v2 — memdir User + Project tiers (binds A-6) | `src/memdir/memdir.ts` + `src/memdir/paths.ts` | System + Session tiers only; no `~/.kosmos/memory/` | P2 |
+| **C** | #1301 | Ministry Specialists — 출산 보조금 / 건강보험 / 교통 workers | `src/coordinator/coordinatorMode.ts` + `src/tasks/InProcessTeammateTask/` | Spec 027 mailbox shipped; no ministry-specific workers yet | P2 |
+| **E** | #1300 | Korean IME — composition-aware shortcut gating, Hangul width | `src/hooks/useKeybindings.ts` (no IME notion in CC) | `useKoreanIME.ts` exists; not integrated with Tier 1 keybindings | P2 |
+| **F** | #1304 | Scenario 2+3 E2E — multi-ministry coordination walk-throughs | — (KOSMOS original; uses `pytest @pytest.mark.live`) | Scenario 1 done (Spec 013); Scenarios 2+3 not specced | P3 |
 
-**Why G is P0**: without a repaired sub-issue graph, `/speckit-taskstoissues` output for the meta-Epic cannot be traced; GraphQL-only issue-tracking (AGENTS.md hard rule) fails at the Initiative level.
+**Why G is P0 (now completed)**: without a repaired sub-issue graph, `/speckit-taskstoissues` output for the nine Epics cannot be traced; GraphQL-only issue-tracking (AGENTS.md hard rule) fails at the Initiative level. G's scope was narrowed during execution from "data repair" to "documentation fix: AGENTS.md field name correction (`trackedIssues` → `subIssues`) + this ADR's hierarchy-correction note" after a GraphQL query on 2026-04-19 revealed that `issue.subIssues.totalCount` for Initiative #2 was already 21 (well-populated) while `issue.trackedIssues.totalCount` was 0 — confirming the bug was in AGENTS.md's field reference, not in the sub-issue graph.
 
 **Why B is P0**: PermissionMode is a prerequisite for the Tier 1 `shift+tab` binding in sub-Epic I, for the PIPA audit trail that every tool call downstream of Spec 024 must write, and for TUI feature parity with CC's mode-toggle dialog.
 
@@ -169,10 +171,10 @@ The meta-Epic is scoped as **nine sub-Epics**, labelled A–I. Each sub-Epic map
 
 ### Part C — Execution protocol
 
-1. **This PR** (ADR-006 + vision.md amendments A-1..A-10 + this ADR) is the gate. No sub-Epic branches open until this PR is merged.
-2. **Sub-Epic G** runs first as a one-off fix (not a full `/speckit-specify` cycle) because it is a GraphQL mutation sequence, not a code change. Traceable artefact: a GraphQL mutation transcript posted as a comment on Initiative #2 and on each re-linked Epic, plus a post-fix `gh api graphql` query confirming `trackedIssues.nodes` is non-empty and pageInfo exhausted.
-3. **Sub-Epics B, A, H, I** run in parallel under Agent Teams (AGENTS.md § Agent Teams: 3+ independent tasks ⇒ parallel Sonnet teammates) once G is done, each following the standard Spec Kit cycle (specify → plan → tasks → analyze → taskstoissues → implement).
-4. **Sub-Epics D, C, E, F** stage sequentially after B ships because they depend on the PermissionMode spectrum (D and C must audit-trail through Layer 3; E's keybinding integration requires Tier 1 bindings from I; F's E2E scenarios need B's audit contracts).
+1. **This PR** (ADR-006 + vision.md amendments A-1..A-10 + AGENTS.md field correction) is the gate. No Epic branches open until this PR is merged.
+2. **Sub-Epic G** (#1305) completed in-line during ADR execution on 2026-04-19: the AGENTS.md field reference was corrected from `trackedIssues`/`trackedInIssues` to `subIssues`/`parent` (Sub-Issues API v2); the ADR hierarchy-correction note was added; and the nine Epics (#1297–#1305) were confirmed via `gh api graphql` to be direct sub-issues of Initiative #2 with `subIssues.totalCount = 29` (seven prior Epics + nine new + thirteen [Deferred]-prefixed tracking issues from Spec 287, none orphaned post-fix).
+3. **Epics B, A, H, I** (#1297, #1298, #1302, #1303) run in parallel under Agent Teams (AGENTS.md § Agent Teams: 3+ independent tasks ⇒ parallel Sonnet teammates) once this PR merges, each following the standard Spec Kit cycle (specify → plan → tasks → analyze → taskstoissues → implement).
+4. **Epics D, C, E, F** (#1299, #1301, #1300, #1304) stage sequentially after B ships because they depend on the PermissionMode spectrum (D and C must audit-trail through Layer 3; E's keybinding integration requires Tier 1 bindings from I; F's E2E scenarios need B's audit contracts).
 
 ---
 
@@ -181,10 +183,11 @@ The meta-Epic is scoped as **nine sub-Epics**, labelled A–I. Each sub-Epic map
 **Positive:**
 
 - `docs/vision.md` becomes re-readable without contradicting shipped reality: L37/L57/L85/L114/L361 all line up with `main`.
-- The meta-Epic has nine named sub-Epics with concrete CC source citations; any reviewer can verify "where does X come from in CC" with a single `grep` under `.references/claude-code-sourcemap/restored-src/`.
+- Initiative #2 has nine direct-child Epics (#1297–#1305) with concrete CC source citations; any reviewer can verify "where does X come from in CC" with a single `grep` under `.references/claude-code-sourcemap/restored-src/`.
 - Onboarding brand decisions are ADR-locked: no future PR can change the KOSMOS palette or add a step without citing A-9.
 - The 65-binding CC catalog is triaged into Tier 1/2/3 with IME safety rules; no more ad-hoc keybindings.
-- The Initiative #2 sub-issue data bug is exposed and scheduled; future `gh api graphql` walks will no longer lie.
+- The AGENTS.md field-name bug (`trackedIssues` vs. the canonical Sub-Issues API v2 `subIssues`) is fixed; future `gh api graphql` walks will query the correct connection.
+- The `Initiative → Epic → Task` hierarchy is enforced: a brief "meta-Epic" mistake (#1296) was closed and the ADR restructured so that the term never appears in normative text again — the nine items are peer Epics under Initiative #2, not children of an intermediate parent.
 
 **Negative / Trade-offs:**
 
@@ -199,8 +202,9 @@ The meta-Epic is scoped as **nine sub-Epics**, labelled A–I. Each sub-Epic map
 
 - **Defer vision amendments to a separate follow-up PR**: Rejected. AGENTS.md rule requires vision + ADR in the same PR. Splitting would introduce a window where vision.md contradicts this ADR.
 - **Fold the shortcut plan into sub-Epic I's spec only (no ADR entry)**: Rejected. Shortcut migration crosses Layer 3 (Permission mode toggle) and Layer 5 (TUI); without an ADR cross-reference, the Tier plan drifts once sub-Epic I starts writing specs.
-- **Drop sub-Epic G (treat the Initiative #2 empty-edge as a documentation bug, not an issue-graph bug)**: Rejected. AGENTS.md hard rule pins issue tracking to GraphQL `trackedIssues`; the body text is not authoritative. Leaving the edge empty means future tracking claims are wrong.
+- **Drop sub-Epic G (treat the Initiative #2 empty-edge as a documentation bug, not an issue-graph bug)**: Partially accepted, scope narrowed. Initial draft assumed the sub-issue graph itself was empty; a 2026-04-19 GraphQL query revealed Initiative #2's `subIssues.totalCount` was already 21 while `trackedIssues.totalCount` was 0, proving the bug was in AGENTS.md's field reference (wrong GraphQL connection) rather than in the data. G now delivers the documentation fix (AGENTS.md edit + ADR hierarchy note) as part of this PR rather than a follow-up branch.
 - **Retire Mastra from the reference table entirely (not just the "Phase 2 TUI layer reference" phrasing)**: Rejected. Mastra remains useful as a typed tool-graph reference; only the "Phase 2 TUI" role is obsolete.
+- **Use a "meta-Epic" layer between Initiative and Epic to group CC→KOSMOS migration work**: Rejected (was briefly attempted as issue #1296 and reversed the same day). AGENTS.md § Issue hierarchy mandates `Initiative → Epic → Task` — Epic sub-issues MUST be Tasks. Introducing a meta-Epic layer violates the hierarchy and breaks `/speckit-taskstoissues` assumptions (it expects a single-Epic parent for every Task issue).
 
 ---
 
@@ -219,5 +223,6 @@ The meta-Epic is scoped as **nine sub-Epics**, labelled A–I. Each sub-Epic map
 - `docs/vision.md` — target of amendments A-1..A-10
 - ADR-003 — Bun + Ink + React TUI stack
 - ADR-004 — Claude Code sourcemap port policy
-- AGENTS.md — Agent Teams, GraphQL-only issue tracking, vision-change PR rules
-- Initiative #2 (Phase 2 — Multi-Agent Swarm) — target parent for the meta-Epic and sub-Epic G
+- AGENTS.md — Agent Teams, GraphQL-only issue tracking (now corrected to `subIssues`/`parent`), vision-change PR rules
+- Initiative #2 (Phase 2 — Multi-Agent Swarm) — direct parent of the nine Epics #1297–#1305
+- Sub-Epic issues — #1297 (B), #1298 (A), #1299 (D), #1300 (E), #1301 (C), #1302 (H), #1303 (I), #1304 (F), #1305 (G)
