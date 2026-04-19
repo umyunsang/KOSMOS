@@ -252,6 +252,41 @@ def _resolve_rule(
     return None
 
 
+def _record_auto_decision(
+    ctx: ToolPermissionContext,
+    *,
+    decision: ConsentDecision,
+    action_digest: str,
+    ledger_config: LedgerConfig | None,
+) -> None:
+    """Persist a non-prompt decision to the consent ledger.
+
+    Mode- and rule-store-driven decisions never pass through
+    ``_prompt_and_record``, so this helper records them directly.  Keeping the
+    audit trail complete (Invariant L1 + FR-D02) is the reason this is called
+    from ``evaluate()`` before returning auto-approved / auto-denied paths.
+    """
+    if ledger_config is None:
+        return
+    ledger_append(
+        tool_id=ctx.tool_id,
+        mode=ctx.mode,
+        granted=decision.granted,
+        action_digest=action_digest,
+        purpose=decision.purpose,
+        data_items=decision.data_items,
+        retention_period=decision.retention_period,
+        refusal_right=decision.refusal_right,
+        pipa_class=ctx.adapter_metadata.pipa_class,
+        auth_level=ctx.adapter_metadata.auth_level,
+        session_id=ctx.session_id,
+        correlation_id=ctx.correlation_id,
+        ledger_path=ledger_config.ledger_path,
+        key_path=ledger_config.key_path,
+        key_registry_path=ledger_config.key_registry_path,
+    )
+
+
 async def _prompt_and_record(
     ctx: ToolPermissionContext,
     consent_request: ConsentPromptRequest,
@@ -296,6 +331,14 @@ async def _prompt_and_record(
             mode=ctx.mode,
             granted=granted,
             action_digest=action_digest,
+            purpose=consent_request.purpose,
+            data_items=consent_request.data_items,
+            retention_period=consent_request.retention_period,
+            refusal_right=consent_request.refusal_right,
+            pipa_class=ctx.adapter_metadata.pipa_class,
+            auth_level=ctx.adapter_metadata.auth_level,
+            session_id=ctx.session_id,
+            correlation_id=ctx.correlation_id,
             ledger_path=ledger_config.ledger_path,
             key_path=ledger_config.key_path,
             key_registry_path=ledger_config.key_registry_path,
@@ -395,6 +438,12 @@ async def evaluate(
         action_digest=action_digest,
     )
     if isinstance(mode_verdict, ConsentDecision):
+        _record_auto_decision(
+            ctx,
+            decision=mode_verdict,
+            action_digest=action_digest,
+            ledger_config=ledger_config,
+        )
         return mode_verdict
 
     # ------------------------------------------------------------------
@@ -404,6 +453,12 @@ async def evaluate(
     # ------------------------------------------------------------------
     rule_decision = _resolve_rule(ctx, rule_store, effective_scope, action_digest)
     if rule_decision is not None:
+        _record_auto_decision(
+            ctx,
+            decision=rule_decision,
+            action_digest=action_digest,
+            ledger_config=ledger_config,
+        )
         return rule_decision
 
     # ------------------------------------------------------------------

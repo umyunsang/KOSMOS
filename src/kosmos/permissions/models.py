@@ -385,6 +385,33 @@ class ConsentLedgerRecord(BaseModel):
     consent_receipt_id: StrictStr | None = None
     """Kantara CR v1.1.0 receipt id.  Set when PIPA consent was captured."""
 
+    # PIPA §15(2) disclosure snapshot (FR-D02 consent-receipt semantics).
+    # All optional so existing ledgers remain valid; populated for any record
+    # that rode through a prompt or auto-decision path that had the fields.
+    purpose: StrictStr | None = None
+    """PIPA §15(2)(1) 목적 captured at consent time."""
+
+    data_items: tuple[StrictStr, ...] | None = None
+    """PIPA §15(2)(2) 항목 — items the citizen consented to process."""
+
+    retention_period: StrictStr | None = None
+    """PIPA §15(2)(4) 보유기간 captured at consent time."""
+
+    refusal_right: StrictStr | None = None
+    """PIPA §15(2)(3) 거부권 and consequence text shown to the citizen."""
+
+    pipa_class: Literal["일반", "민감", "고유식별", "특수"] | None = None
+    """Adapter's PIPA classification at decision time."""
+
+    auth_level: Literal["public", "AAL1", "AAL2", "AAL3"] | None = None
+    """Authentication level enforced at decision time."""
+
+    session_id: StrictStr | None = None
+    """Session that produced this decision — audit binding."""
+
+    correlation_id: StrictStr | None = None
+    """Correlation id joining this record to the tool-call audit trail."""
+
 
 class LedgerVerifyReport(BaseModel):
     """Output of ``kosmos permissions verify`` (Spec 033 FR-D05).

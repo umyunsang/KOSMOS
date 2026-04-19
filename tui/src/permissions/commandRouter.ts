@@ -207,13 +207,15 @@ function _verifyCommand(cb: PermissionCommandCallbacks): CommandDefinition {
     name: 'permissions verify',
     description: 'Verify consent ledger chain integrity',
     handle: (_args: CommandHandlerArgs): CommandResult => {
-      // Ledger verification runs in the Python backend.
-      // The TUI sends a session_event to trigger it; result is streamed back.
-      // Full IPC wiring is Lead's responsibility — this is the command stub.
-      void cb.getSessionId()  // reference to avoid unused-variable lint
+      // Ledger verification runs in the Python backend via the
+      // `kosmos-permissions verify` CLI.  IPC dispatch is not yet wired from
+      // the TUI — Lead integration will add a session_event trigger.
+      // Until then the acknowledgement must not claim a request was sent.
+      void cb.getSessionId() // reference to avoid unused-variable lint
       return {
         acknowledgement:
-          '동의 원장 검증 요청을 전송했습니다. 결과는 백엔드에서 스트리밍됩니다.',
+          '동의 원장 검증은 아직 TUI에서 실행되지 않습니다. ' +
+          "터미널에서 'kosmos-permissions verify' 명령으로 수동 실행하세요.",
       }
     },
   }

@@ -150,36 +150,38 @@ def _read_last_line_locked(fd: int) -> bytes | None:
     Returns:
         Last non-empty line bytes without trailing newline, or ``None`` if
         the file is empty.
+
+    Raises:
+        OSError: Propagated to the caller so a tail-read failure on a
+            non-empty ledger fails closed instead of silently re-seeding
+            the chain at genesis.
     """
     chunk_size = 1024 * 1024
-    try:
-        file_size = os.lseek(fd, 0, os.SEEK_END)
-        if file_size == 0:
-            return None
-
-        offset = file_size
-        buffer = b""
-        while offset > 0:
-            read_size = min(chunk_size, offset)
-            offset -= read_size
-            os.lseek(fd, offset, os.SEEK_SET)
-            chunk = os.read(fd, read_size)
-            buffer = chunk + buffer
-            # Keep reading until we have at least one newline that isn't the
-            # trailing one — otherwise the final record may span the chunk
-            # boundary.
-            stripped = buffer.rstrip(b"\n")
-            if b"\n" in stripped:
-                _, _, last = stripped.rpartition(b"\n")
-                candidate = last.strip()
-                if candidate:
-                    return candidate
-        # Whole file is a single line.
-        stripped = buffer.rstrip(b"\n")
-        candidate = stripped.strip()
-        return candidate or None
-    except OSError:
+    file_size = os.lseek(fd, 0, os.SEEK_END)
+    if file_size == 0:
         return None
+
+    offset = file_size
+    buffer = b""
+    while offset > 0:
+        read_size = min(chunk_size, offset)
+        offset -= read_size
+        os.lseek(fd, offset, os.SEEK_SET)
+        chunk = os.read(fd, read_size)
+        buffer = chunk + buffer
+        # Keep reading until we have at least one newline that isn't the
+        # trailing one — otherwise the final record may span the chunk
+        # boundary.
+        stripped = buffer.rstrip(b"\n")
+        if b"\n" in stripped:
+            _, _, last = stripped.rpartition(b"\n")
+            candidate = last.strip()
+            if candidate:
+                return candidate
+    # Whole file is a single line.
+    stripped = buffer.rstrip(b"\n")
+    candidate = stripped.strip()
+    return candidate or None
 
 
 def _parse_prev_hash(last_line: bytes | None) -> str:
@@ -285,7 +287,7 @@ def read_last_record(ledger_path: Path) -> dict[str, Any] | None:
     return None
 
 
-def append(
+def append(  # noqa: C901 — linear 4-step WORM append; splitting hides atomicity
     *,
     tool_id: str,
     mode: str,
@@ -294,6 +296,14 @@ def append(
     version: str = "1.0.0",
     sequence: int | None = None,
     consent_receipt_id: str | None = None,
+    purpose: str | None = None,
+    data_items: tuple[str, ...] | None = None,
+    retention_period: str | None = None,
+    refusal_right: str | None = None,
+    pipa_class: str | None = None,
+    auth_level: str | None = None,
+    session_id: str | None = None,
+    correlation_id: str | None = None,
     ledger_path: Path,
     key_path: Path,
     key_registry_path: Path,
@@ -386,6 +396,22 @@ def append(
             }
             if consent_receipt_id is not None:
                 record_dict["consent_receipt_id"] = consent_receipt_id
+            if purpose is not None:
+                record_dict["purpose"] = purpose
+            if data_items is not None:
+                record_dict["data_items"] = list(data_items)
+            if retention_period is not None:
+                record_dict["retention_period"] = retention_period
+            if refusal_right is not None:
+                record_dict["refusal_right"] = refusal_right
+            if pipa_class is not None:
+                record_dict["pipa_class"] = pipa_class
+            if auth_level is not None:
+                record_dict["auth_level"] = auth_level
+            if session_id is not None:
+                record_dict["session_id"] = session_id
+            if correlation_id is not None:
+                record_dict["correlation_id"] = correlation_id
 
             # Step 8: Compute record_hash over record_dict with
             #         record_hash + hmac_seal excluded (L2).
@@ -398,9 +424,12 @@ def append(
             record_dict["record_hash"] = record_hash
             record_dict["hmac_seal"] = hmac_seal
 
-            # Step 11: Serialize to NDJSON and write atomically.
-            # json.dumps produces valid UTF-8; ensure_ascii=False for Korean.
+            # Step 11: Serialize to NDJSON.  We serialize BEFORE writing so we
+            # can validate the schema while the lock is still held — this
+            # guarantees that a schema violation raises before any bytes hit
+            # disk (fail-closed for integrity-sensitive storage).
             serialized = json.dumps(record_dict, ensure_ascii=False, separators=(",", ":"))
+            record_model = ConsentLedgerRecord.model_validate_json(serialized)
             line_bytes = (serialized + "\n").encode("utf-8")
             os.write(append_fd, line_bytes)
 
@@ -423,9 +452,4 @@ def append(
         record_hash,
     )
 
-    # Step 13: Build and validate Pydantic model from the written record.
-    # Use model_validate_json because recorded_at is stored as an ISO 8601
-    # string and model_config strict=True prevents str→datetime coercion
-    # via model_validate(dict). model_validate_json handles it correctly.
-    json_line = json.dumps(record_dict, ensure_ascii=False, separators=(",", ":"))
-    return ConsentLedgerRecord.model_validate_json(json_line)
+    return record_model

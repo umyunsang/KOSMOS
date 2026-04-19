@@ -64,7 +64,10 @@ class SessionBootState(BaseModel):
     """Freshly initialised rule store.  May be empty on validation failure."""
 
     rules_loaded: bool
-    """True when ``permissions.json`` was present and passed validation."""
+    """True when the rule store was successfully initialised — either the
+    existing ``permissions.json`` passed validation, or no file was present
+    (first-run default).  False only on schema / permission-mode violations
+    that forced the fail-closed empty-store fallback."""
 
     failed_reason: Annotated[str, Field(min_length=1)] | None = None
     """Human-readable failure reason when ``rules_loaded`` is False.

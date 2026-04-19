@@ -215,10 +215,12 @@ def canonicalize(value: Any) -> bytes:  # noqa: ANN401  — public; Any per RFC 
         >>> canonicalize([1, True, None, "hello"])
         b'[1,true,null,"hello"]'
     """
-    # Pre-parse through stdlib json to normalise the Python representation.
-    # This handles edge cases like Python Decimal, custom __json__ methods, etc.
-    # We re-serialize via our own serializer for canonical key ordering and
-    # number formatting — stdlib json.dumps(sort_keys=True) is insufficient.
+    # Serialize the JSON-compatible Python value directly — this function does
+    # NOT round-trip through stdlib json to normalise exotic types.  Callers
+    # must pass values whose leaves are already JSON-native (str, int/float,
+    # bool, None, dict, list/tuple).  The custom serializer applies RFC 8785
+    # key ordering + number formatting that stdlib json.dumps(sort_keys=True)
+    # cannot produce.
     return _serialize(value).encode("utf-8")
 
 
