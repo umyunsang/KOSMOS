@@ -31,6 +31,7 @@ import sys
 import time
 from collections.abc import Callable
 from datetime import UTC
+from types import FrameType
 from typing import TYPE_CHECKING, Any
 
 from opentelemetry import trace
@@ -372,14 +373,15 @@ async def run(  # noqa: C901
     # Install shutdown flag
     _shutdown = asyncio.Event()
 
-    def _handle_signal(sig: signal.Signals, *_args: Any) -> None:  # type: ignore[type-arg]
-        logger.info("Received signal %s — initiating graceful shutdown", sig.name)
+    def _handle_signal(signum: int, _frame: FrameType | None = None) -> None:
+        sig_name = signal.Signals(signum).name
+        logger.info("Received signal %s — initiating graceful shutdown", sig_name)
         _shutdown.set()
 
     loop = asyncio.get_running_loop()
     for sig in (signal.SIGTERM, signal.SIGINT):
         try:
-            loop.add_signal_handler(sig, _handle_signal, sig)
+            loop.add_signal_handler(sig, _handle_signal, int(sig))
         except (ValueError, NotImplementedError):
             # Windows or restricted environments — fall back to signal.signal
             signal.signal(sig, _handle_signal)
@@ -394,7 +396,7 @@ async def run(  # noqa: C901
     # never crash the loop (FR-010).
     if on_frame is None:
 
-        async def _handle_frame(frame: IPCFrame) -> None:  # type: ignore[misc]
+        async def _handle_frame(frame: IPCFrame) -> None:
             if frame.kind == "user_input":
                 from kosmos.ipc.frame_schema import AssistantChunkFrame
 
@@ -403,14 +405,14 @@ async def run(  # noqa: C901
                     ts=_utcnow(),
                     kind="assistant_chunk",
                     message_id=str(uuid.uuid4()),
-                    delta=f"[echo] {frame.text}",  # type: ignore[attr-defined]
+                    delta=f"[echo] {frame.text}",
                     done=True,
                 )
                 await write_frame(echo_frame)
 
             elif frame.kind == "session_event":
-                evt = frame.event  # type: ignore[attr-defined]
-                payload = frame.payload  # type: ignore[attr-defined]
+                evt = frame.event
+                payload = frame.payload
                 try:
                     await _dispatch_session_event(evt, payload, frame.session_id, _sm, _shutdown)
                 except Exception as exc:  # noqa: BLE001
