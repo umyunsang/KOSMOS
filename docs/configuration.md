@@ -106,6 +106,14 @@ Column definitions:
 | `KOSMOS_IPC_BACKPRESSURE_QUEUE_DEPTH` | OTel span attr | n/a | String span attribute key | `kosmos.ipc.otel_constants.KOSMOS_IPC_BACKPRESSURE_QUEUE_DEPTH` | [Spec 032 IPC (Epic #1298)](#ipc-stdio-hardening-epic-1298) |
 | `KOSMOS_IPC_SCHEMA_HASH` | OTel span attr | n/a | String span attribute key | `kosmos.ipc.otel_constants.KOSMOS_IPC_SCHEMA_HASH` | [Spec 032 IPC (Epic #1298)](#ipc-stdio-hardening-epic-1298) |
 | `KOSMOS_IPC_REPLAYED` | OTel span attr | n/a | String span attribute key | `kosmos.ipc.otel_constants.KOSMOS_IPC_REPLAYED` | [Spec 032 IPC (Epic #1298)](#ipc-stdio-hardening-epic-1298) |
+| `KOSMOS_PERMISSION_TIMEOUT_SEC` | No | `30` | Integer [1, 300] (seconds) | `kosmos.settings.KosmosSettings.permission_timeout_sec` | [Spec 033 Permission v2 (Epic #1297)](#permission-v2-epic-1297) |
+| `KOSMOS_PERMISSION_TTL_SESSION_SEC` | No | `3600` | Integer [60, 86400] (seconds) | `kosmos.settings.KosmosSettings.permission_ttl_session_sec` | [Spec 033 Permission v2 (Epic #1297)](#permission-v2-epic-1297) |
+| `KOSMOS_PERMISSION_KEY_PATH` | No | `~/.kosmos/keys/ledger.key` | Absolute filesystem path | `kosmos.settings.KosmosSettings.permission_key_path` | [Spec 033 Permission v2 (Epic #1297)](#permission-v2-epic-1297) |
+| `KOSMOS_PERMISSION_LEDGER_PATH` | No | `~/.kosmos/consent_ledger.jsonl` | Absolute filesystem path | `kosmos.settings.KosmosSettings.permission_ledger_path` | [Spec 033 Permission v2 (Epic #1297)](#permission-v2-epic-1297) |
+| `KOSMOS_PERMISSION_RULE_STORE_PATH` | No | `~/.kosmos/permissions.json` | Absolute filesystem path | `kosmos.settings.KosmosSettings.permission_rule_store_path` | [Spec 033 Permission v2 (Epic #1297)](#permission-v2-epic-1297) |
+| `KOSMOS_PERMISSION_MODE` | OTel span attr | n/a | String span attribute key | `kosmos.permissions.otel_integration.KOSMOS_PERMISSION_MODE` | [Spec 033 Permission v2 (Epic #1297)](#permission-v2-epic-1297) |
+| `KOSMOS_PERMISSION_DECISION` | OTel span attr | n/a | String span attribute key | `kosmos.permissions.otel_integration.KOSMOS_PERMISSION_DECISION` | [Spec 033 Permission v2 (Epic #1297)](#permission-v2-epic-1297) |
+| `KOSMOS_CONSENT_RECEIPT_ID` | OTel span attr | n/a | String span attribute key | `kosmos.permissions.otel_integration.KOSMOS_CONSENT_RECEIPT_ID` | [Spec 033 Permission v2 (Epic #1297)](#permission-v2-epic-1297) |
 
 > **Row count**: 52 rows (47 `KOSMOS_*` active + 2 `LANGFUSE_*` + 1 `KOSMOS_OTEL_ENDPOINT` +
 > 1 override-family pattern + 1 deprecated). `KOSMOS_KOROAD_API_KEY` and
