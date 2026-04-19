@@ -30,9 +30,9 @@ description: "Task list for Spec 032 — IPC stdio hardening"
 
 **Purpose**: Establish lint guards, OTEL attribute constants, and test scaffolding shared by all four workstreams.
 
-- [ ] T001 [P] Create `tests/ipc/conftest.py` with shared fixtures (fake clock, UUIDv7 factory, NDJSON capture buffer) — **no production code changes**. Load env overrides for `KOSMOS_IPC_RING_SIZE`, `KOSMOS_IPC_TX_CACHE_CAPACITY`, `KOSMOS_IPC_HEARTBEAT_INTERVAL_MS`, `KOSMOS_IPC_HEARTBEAT_DEAD_MS`.
-- [ ] T002 [P] Add OTEL attribute-key constants to `src/kosmos/ipc/otel_constants.py`: `KOSMOS_IPC_CORRELATION_ID`, `KOSMOS_IPC_TRANSACTION_ID`, `KOSMOS_IPC_TX_CACHE_STATE`, `KOSMOS_IPC_BACKPRESSURE_KIND`, `KOSMOS_IPC_BACKPRESSURE_SEVERITY`, `KOSMOS_IPC_BACKPRESSURE_SOURCE`, `KOSMOS_IPC_SCHEMA_HASH`, `KOSMOS_IPC_REPLAYED`.
-- [ ] T003 [P] Create `tui/tests/ipc/fixtures/` and seed it with frozen sample NDJSON fixtures (`envelope.v1.happy.ndjson`, `backpressure.throttle.ndjson`, `resume.response.ndjson`) for TUI unit tests.
+- [X] T001 [P] Create `tests/ipc/conftest.py` with shared fixtures (fake clock, UUIDv7 factory, NDJSON capture buffer) — **no production code changes**. Load env overrides for `KOSMOS_IPC_RING_SIZE`, `KOSMOS_IPC_TX_CACHE_CAPACITY`, `KOSMOS_IPC_HEARTBEAT_INTERVAL_MS`, `KOSMOS_IPC_HEARTBEAT_DEAD_MS`.
+- [X] T002 [P] Add OTEL attribute-key constants to `src/kosmos/ipc/otel_constants.py`: `KOSMOS_IPC_CORRELATION_ID`, `KOSMOS_IPC_TRANSACTION_ID`, `KOSMOS_IPC_TX_CACHE_STATE`, `KOSMOS_IPC_BACKPRESSURE_KIND`, `KOSMOS_IPC_BACKPRESSURE_SEVERITY`, `KOSMOS_IPC_BACKPRESSURE_SOURCE`, `KOSMOS_IPC_SCHEMA_HASH`, `KOSMOS_IPC_REPLAYED`.
+- [X] T003 [P] Create `tui/tests/ipc/fixtures/` and seed it with frozen sample NDJSON fixtures (`envelope.v1.happy.ndjson`, `backpressure.throttle.ndjson`, `resume.response.ndjson`) for TUI unit tests.
 
 **Checkpoint**: Setup complete — all four workstreams can now author code against shared fixtures and constants.
 
@@ -44,23 +44,23 @@ description: "Task list for Spec 032 — IPC stdio hardening"
 
 **⚠️ CRITICAL**: No user-story phase may start until T020 green.
 
-- [ ] T004 Extend `_BaseFrame` in `src/kosmos/ipc/frame_schema.py` with 5 new fields (`version: Literal["1.0"]`, `role: Literal["tui","backend","tool","llm","notification"]`, `frame_seq: NonNegativeInt`, `transaction_id: str | None`, `trailer: FrameTrailer | None`) + `FrameTrailer` model (`final: bool`, `transaction_id?`, `checksum_sha256?`). Preserve `ConfigDict(frozen=True, extra="forbid", populate_by_name=True)`.
-- [ ] T005 [P] Add `PayloadStartFrame`, `PayloadDeltaFrame`, `PayloadEndFrame` arms in `src/kosmos/ipc/frame_schema.py` (content_type, delta_seq, delta_count, status fields per data-model.md § 4).
-- [ ] T006 [P] Add `BackpressureSignalFrame` arm in `src/kosmos/ipc/frame_schema.py` (signal/source enums, queue_depth, hwm, retry_after_ms, hud_copy_ko/en with `min_length=1`).
-- [ ] T007 [P] Add `ResumeRequestFrame` + `ResumeResponseFrame` + `ResumeRejectedFrame` arms in `src/kosmos/ipc/frame_schema.py` (last_seen_correlation_id, last_seen_frame_seq, tui_session_token, resumed_from_frame_seq, replay_count, heartbeat_interval_ms, 5-value `reason` enum).
-- [ ] T008 [P] Add `HeartbeatFrame` arm in `src/kosmos/ipc/frame_schema.py` (direction=ping|pong, peer_frame_seq).
-- [ ] T009 [P] Add `NotificationPushFrame` arm in `src/kosmos/ipc/frame_schema.py` (subscription_id, adapter_id, event_guid, payload_content_type, payload).
-- [ ] T010 Update `IPCFrame = Annotated[Union[...], Field(discriminator="kind")]` in `src/kosmos/ipc/frame_schema.py` to include all 19 kinds; enforce role↔kind allow-list invariant (E3) in a shared `@model_validator(mode="after")` on `_BaseFrame`.
-- [ ] T011 Enforce cross-field invariants E1–E6 in `src/kosmos/ipc/frame_schema.py`: version hard-fail (E1), frame_seq non-negative (E2), role↔kind allow-list (E3), `transaction_id` presence ⇔ `{tool_call, permission_response, payload_end}` AND irreversible (E4), correlation_id min_length=1 (E5), `trailer.final=true` only on terminal kinds (E6).
-- [ ] T012 Implement `src/kosmos/ipc/envelope.py` emit/parse helpers: `emit_ndjson(frame) -> str`, `parse_ndjson_line(line) -> IPCFrame`, `escape_newlines_in_payload(obj) -> obj`; fail-closed on malformed lines (FR-035).
-- [ ] T013 [P] Implement `SessionRingBuffer` in `src/kosmos/ipc/ring_buffer.py` using `collections.deque(maxlen=256)` + `.consumed` marker set per data-model.md § 5.1 (`append`, `replay_since`, `mark_consumed`, `ring_evicted` ops). **WS4 consumes; staged in Foundational to unblock downstream workstreams.**
-- [ ] T014 [P] Implement `TransactionLRU` in `src/kosmos/ipc/tx_cache.py` using `collections.OrderedDict` (capacity 512) + `pinned_keys: set` for `is_irreversible=true`; `get`, `record`, `is_duplicate`, `pin`, `unpin`, `evict_oldest_non_pinned` ops (T1–T5 invariants).
-- [ ] T015 [P] Implement `HeartbeatState` in `src/kosmos/ipc/heartbeat.py` with `record_ping`, `record_pong`, `tick(now) -> DeadlineState`; 30s interval / 45s dead / 120s resume-grace-window defaults via `pydantic-settings`.
-- [ ] T016 Emit JSON Schema Draft 2020-12 from Python: add `ipc_frame_json_schema()` function in `src/kosmos/ipc/frame_schema.py` that dumps the 19-kind discriminated-union schema + `allOf` role↔kind constraints; commit output to `tui/src/ipc/schema/frame.schema.json`.
-- [ ] T017 Regenerate TypeScript types at `tui/src/ipc/frames.generated.ts` from `tui/src/ipc/schema/frame.schema.json` (use existing `bun run codegen` pipeline from Spec 287; extend enum export for 9 new kinds).
-- [ ] T018 Extend `tui/src/ipc/envelope.ts` and `tui/src/ipc/codec.ts` with NDJSON encode/decode that parses all 19 kinds, kind-narrowed type guards, and newline-escape invariant.
-- [ ] T019 [P] Author `tests/ipc/test_envelope_roundtrip.py` covering all 19 kinds — serialize via Pydantic, parse via envelope helpers, assert byte-equal round-trip + invariants E1–E6.
-- [ ] T020 [P] Author `tests/ipc/test_schema_python_ts_diff.py` — regenerate JSON Schema from Python, diff against `tui/src/ipc/schema/frame.schema.json`; fail CI on drift (FR-040 / SC-006).
+- [X] T004 Extend `_BaseFrame` in `src/kosmos/ipc/frame_schema.py` with 5 new fields (`version: Literal["1.0"]`, `role: Literal["tui","backend","tool","llm","notification"]`, `frame_seq: NonNegativeInt`, `transaction_id: str | None`, `trailer: FrameTrailer | None`) + `FrameTrailer` model (`final: bool`, `transaction_id?`, `checksum_sha256?`). Preserve `ConfigDict(frozen=True, extra="forbid", populate_by_name=True)`.
+- [X] T005 [P] Add `PayloadStartFrame`, `PayloadDeltaFrame`, `PayloadEndFrame` arms in `src/kosmos/ipc/frame_schema.py` (content_type, delta_seq, delta_count, status fields per data-model.md § 4).
+- [X] T006 [P] Add `BackpressureSignalFrame` arm in `src/kosmos/ipc/frame_schema.py` (signal/source enums, queue_depth, hwm, retry_after_ms, hud_copy_ko/en with `min_length=1`).
+- [X] T007 [P] Add `ResumeRequestFrame` + `ResumeResponseFrame` + `ResumeRejectedFrame` arms in `src/kosmos/ipc/frame_schema.py` (last_seen_correlation_id, last_seen_frame_seq, tui_session_token, resumed_from_frame_seq, replay_count, heartbeat_interval_ms, 5-value `reason` enum).
+- [X] T008 [P] Add `HeartbeatFrame` arm in `src/kosmos/ipc/frame_schema.py` (direction=ping|pong, peer_frame_seq).
+- [X] T009 [P] Add `NotificationPushFrame` arm in `src/kosmos/ipc/frame_schema.py` (subscription_id, adapter_id, event_guid, payload_content_type, payload).
+- [X] T010 Update `IPCFrame = Annotated[Union[...], Field(discriminator="kind")]` in `src/kosmos/ipc/frame_schema.py` to include all 19 kinds; enforce role↔kind allow-list invariant (E3) in a shared `@model_validator(mode="after")` on `_BaseFrame`.
+- [X] T011 Enforce cross-field invariants E1–E6 in `src/kosmos/ipc/frame_schema.py`: version hard-fail (E1), frame_seq non-negative (E2), role↔kind allow-list (E3), `transaction_id` presence ⇔ `{tool_call, permission_response, payload_end}` AND irreversible (E4), correlation_id min_length=1 (E5), `trailer.final=true` only on terminal kinds (E6).
+- [X] T012 Implement `src/kosmos/ipc/envelope.py` emit/parse helpers: `emit_ndjson(frame) -> str`, `parse_ndjson_line(line) -> IPCFrame`, `escape_newlines_in_payload(obj) -> obj`; fail-closed on malformed lines (FR-035).
+- [X] T013 [P] Implement `SessionRingBuffer` in `src/kosmos/ipc/ring_buffer.py` using `collections.deque(maxlen=256)` + `.consumed` marker set per data-model.md § 5.1 (`append`, `replay_since`, `mark_consumed`, `ring_evicted` ops). **WS4 consumes; staged in Foundational to unblock downstream workstreams.**
+- [X] T014 [P] Implement `TransactionLRU` in `src/kosmos/ipc/tx_cache.py` using `collections.OrderedDict` (capacity 512) + `pinned_keys: set` for `is_irreversible=true`; `get`, `record`, `is_duplicate`, `pin`, `unpin`, `evict_oldest_non_pinned` ops (T1–T5 invariants).
+- [X] T015 [P] Implement `HeartbeatState` in `src/kosmos/ipc/heartbeat.py` with `record_ping`, `record_pong`, `tick(now) -> DeadlineState`; 30s interval / 45s dead / 120s resume-grace-window defaults via `pydantic-settings`.
+- [X] T016 Emit JSON Schema Draft 2020-12 from Python: add `ipc_frame_json_schema()` function in `src/kosmos/ipc/frame_schema.py` that dumps the 19-kind discriminated-union schema + `allOf` role↔kind constraints; commit output to `tui/src/ipc/schema/frame.schema.json`.
+- [X] T017 Regenerate TypeScript types at `tui/src/ipc/frames.generated.ts` from `tui/src/ipc/schema/frame.schema.json` (use existing `bun run codegen` pipeline from Spec 287; extend enum export for 9 new kinds).
+- [X] T018 Extend `tui/src/ipc/envelope.ts` and `tui/src/ipc/codec.ts` with NDJSON encode/decode that parses all 19 kinds, kind-narrowed type guards, and newline-escape invariant.
+- [X] T019 [P] Author `tests/ipc/test_envelope_roundtrip.py` covering all 19 kinds — serialize via Pydantic, parse via envelope helpers, assert byte-equal round-trip + invariants E1–E6.
+- [X] T020 [P] Author `tests/ipc/test_schema_python_ts_diff.py` — regenerate JSON Schema from Python, diff against `tui/src/ipc/schema/frame.schema.json`; fail CI on drift (FR-040 / SC-006).
 
 **Checkpoint**: WS1 foundation green. US1/US2/US3/US4 phases may now proceed in parallel Agent Teams α/β/γ/δ.
 
