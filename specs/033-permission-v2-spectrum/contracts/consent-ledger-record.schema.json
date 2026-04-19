@@ -1,0 +1,147 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kosmos.dev/schemas/consent-ledger-record.v1.json",
+  "title": "KOSMOS Permission v2 — Consent Ledger Record",
+  "description": "Single append-only record in ~/.kosmos/consent_ledger.jsonl. Combines Kantara Consent Receipt v1.1.0 surface + ISO/IEC 29184:2020 notice binding + KOSMOS hash-chain + HMAC-SHA-256 seal. Canonical JSON = RFC 8785 JCS.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "receipt_id",
+    "version",
+    "occurred_at",
+    "subject_hash",
+    "session_id",
+    "purpose",
+    "data_items",
+    "retention_period",
+    "refusal_right",
+    "tool_id",
+    "pipa_class",
+    "auth_level",
+    "mode",
+    "action_digest",
+    "granted",
+    "prev_hash",
+    "record_hash",
+    "hmac_key_id",
+    "hmac_seal"
+  ],
+  "properties": {
+    "receipt_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "UUIDv7 receipt identifier (Kantara CR v1.1.0 surrogate)."
+    },
+    "version": {
+      "type": "string",
+      "const": "1.0.0",
+      "description": "Ledger record schema version. Append-only migration path — old records remain valid."
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 UTC timestamp (tz-aware). Record insertion time, not adapter execution time."
+    },
+    "subject_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "SHA-256 of a stable subject identifier. Single-user MVP: hash of deterministic device-local salt."
+    },
+    "session_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Session identifier (Spec 027/032 correlation)."
+    },
+    "purpose": {
+      "type": "string",
+      "minLength": 1,
+      "description": "PIPA §15(2) 1/4 — 목적."
+    },
+    "data_items": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 },
+      "description": "PIPA §15(2) 2/4 — 항목. Ordered (canonical JSON preserves order)."
+    },
+    "retention_period": {
+      "type": "string",
+      "minLength": 1,
+      "description": "PIPA §15(2) 3/4 — 보유기간. ISO 8601 duration (e.g., 'P30D') or '일회성'."
+    },
+    "refusal_right": {
+      "type": "string",
+      "minLength": 1,
+      "description": "PIPA §15(2) 4/4 — 거부권 고지문 with 불이익 explanation."
+    },
+    "tool_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9_.]+$",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "pipa_class": {
+      "type": "string",
+      "enum": ["일반", "민감", "고유식별", "특수"]
+    },
+    "auth_level": {
+      "type": "string",
+      "enum": ["public", "AAL1", "AAL2", "AAL3"]
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["default", "plan", "acceptEdits", "bypassPermissions", "dontAsk"]
+    },
+    "action_digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "SHA-256 over canonical (tool_id, arguments, timestamp-bucket). In bypassPermissions mode, includes UUIDv7 nonce to force per-call uniqueness (FR-B04)."
+    },
+    "granted": {
+      "type": "boolean",
+      "description": "User consent outcome. Both True and False create ledger records (PIPA audit requires refusal evidence too)."
+    },
+    "prev_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "SHA-256 of the previous record's record_hash. Genesis = 64*'0'."
+    },
+    "record_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "SHA-256 over RFC 8785 canonical JSON of this record with record_hash='' and hmac_seal=''."
+    },
+    "hmac_key_id": {
+      "type": "string",
+      "pattern": "^k\\d{4}$",
+      "description": "Monotonic key id (k0001, k0002, ...). Enables rotation-aware verification."
+    },
+    "hmac_seal": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "HMAC-SHA-256(key=hmac_key_id-resolved-key, msg=RFC 8785 canonical JSON of this record with hmac_seal='')."
+    }
+  },
+  "examples": [
+    {
+      "receipt_id": "01970b0c-7a6d-7123-8abc-def012345678",
+      "version": "1.0.0",
+      "occurred_at": "2026-04-20T10:15:30.123456Z",
+      "subject_hash": "d2a84f4b8b650937ec8f73cd8be2c74add5a911ba64df27458ed8229da804a26",
+      "session_id": "01970b0c-7a6d-7000-8abc-def012345679",
+      "purpose": "응급의료기관 검색 결과 제공",
+      "data_items": ["현재 위치 좌표"],
+      "retention_period": "일회성",
+      "refusal_right": "거부 시 본 기능을 사용할 수 없습니다.",
+      "tool_id": "nmc_emergency_search",
+      "pipa_class": "일반",
+      "auth_level": "public",
+      "mode": "default",
+      "action_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "granted": true,
+      "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "record_hash": "aaaabbbbccccddddeeeeffff0000111122223333444455556666777788889999",
+      "hmac_key_id": "k0001",
+      "hmac_seal": "9999888877776666555544443333222211110000ffffeeeeddddccccbbbbaaaa"
+    }
+  ]
+}

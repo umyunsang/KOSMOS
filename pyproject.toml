@@ -37,6 +37,7 @@ dependencies = [
 
 [project.scripts]
 kosmos = "kosmos.cli.app:main"
+kosmos-permissions = "kosmos.permissions.cli:main"
 
 [project.optional-dependencies]
 dev = [
@@ -93,6 +94,7 @@ markers = [
     "live: hits real data.go.kr APIs — skipped in CI (deselect with -m 'not live')",
     "performance: timing assertions against perf budgets — opt-out via KOSMOS_SKIP_PERF=1",
     "live_embedder: downloads HF model weights — skipped in CI (run locally with -m live_embedder)",
+    "integration: cross-spec integration tests (no live APIs; mocked WS dependencies)",
 ]
 filterwarnings = [
     "error",
