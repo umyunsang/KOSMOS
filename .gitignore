@@ -62,6 +62,10 @@ htmlcov/
 # Local references (cloned repos)
 .references/
 
+# Claude Code local state
+.claude/scheduled_tasks.lock
+.claude/worktrees/
+
 # Model artifacts
 models/
 checkpoints/
