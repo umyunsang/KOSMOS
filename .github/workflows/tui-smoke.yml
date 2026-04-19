@@ -25,6 +25,19 @@ jobs:
     # job should finish in ~30 s. Protect against a runaway on a bad runner.
     timeout-minutes: 5
 
+    # kosmos.config.guard.verify_startup() exits 78 (EX_CONFIG) when the three
+    # required KOSMOS_* tokens are missing. The bridge integration test spawns
+    # the real backend via `uv run kosmos --ipc stdio` — but the stdio echo
+    # loop never performs an LLM call or data.go.kr request, so dummy
+    # placeholders are sufficient to pass the guard without leaking secrets
+    # into the workflow. Live-API tests are gated by `@pytest.mark.live` and
+    # do not run here.
+    env:
+      KOSMOS_ENV: ci
+      KOSMOS_KAKAO_API_KEY: ci-dummy-kakao-key
+      KOSMOS_FRIENDLI_TOKEN: ci-dummy-friendli-token
+      KOSMOS_DATA_GO_KR_API_KEY: ci-dummy-data-go-kr-key
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
