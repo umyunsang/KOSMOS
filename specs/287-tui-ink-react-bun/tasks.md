@@ -291,7 +291,7 @@ description: "Task list for Spec 287 TUI (Ink + React + Bun)"
 - [X] T128 [P] Smoke test SC-8 Scenario 1 (route safety) via the real Python backend + TUI; archive a screencast under `tui/docs/demos/` if available
 - [X] T129 [P] Smoke test a Phase 2 multi-ministry scenario end-to-end via TUI (SC-8) — fixture OK if live APIs unavailable
 - [X] T130 Update `specs/287-tui-ink-react-bun/spec.md` `NEEDS TRACKING` rows with the actual issue numbers created by `/speckit-taskstoissues` (Constitution Principle VI back-fill)
-- [ ] T131 Final review: confirm all six Constitution principles (I–VI) still pass post-implementation in a new `specs/287-tui-ink-react-bun/checklists/final-review.md`
+- [X] T131 Final review: confirm all six Constitution principles (I–VI) still pass post-implementation in a new `specs/287-tui-ink-react-bun/checklists/final-review.md`
 
 ---
 
