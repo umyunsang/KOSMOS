@@ -56,6 +56,15 @@ function isModifier(s: string): s is Modifier {
  *
  * Canonical form: modifiers in `ctrl→shift→alt→meta` order, lowercased,
  * single trailing key. Examples: `ctrl+c`, `ctrl+shift+p`, `escape`.
+ *
+ * `meta` normalises to `alt` during parsing. Ink collapses terminal
+ * alt/meta into a single `key.meta` flag and `buildChordEvent()` emits
+ * `alt+<key>` at runtime — so accepting `meta` as a distinct modifier
+ * would let user overrides like `{"meta+k": "history-search"}` load but
+ * never match. The schema + `Modifier` union still document `meta` as
+ * valid spelling; the normalisation happens silently here to preserve
+ * the KOSMOS invariant that loader-accepted strings match matcher-emitted
+ * ones. Addresses Codex P2 on PR #1591.
  */
 export function parseChord(input: string): ChordString {
   if (typeof input !== 'string' || input.length === 0) {
@@ -79,6 +88,13 @@ export function parseChord(input: string): ChordString {
       throw new Error(`duplicate modifier in chord: ${JSON.stringify(input)}`)
     }
     seenMods.add(tok)
+  }
+  // `meta` → `alt` canonicalisation. If both modifiers are spelled in the
+  // same chord (e.g. `alt+meta+m`), the collapse is idempotent — we silently
+  // coalesce to `alt` rather than raising a duplicate-modifier error.
+  if (seenMods.has('meta')) {
+    seenMods.delete('meta')
+    seenMods.add('alt')
   }
   const ordered: string[] = []
   for (const m of MODIFIER_ORDER) {

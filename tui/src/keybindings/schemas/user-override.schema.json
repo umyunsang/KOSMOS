@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://kosmos.dev/schemas/keybindings-override-v1.json",
   "title": "KOSMOS User Keybinding Overrides (Spec 288)",
-  "description": "Citizen-editable override file at ~/.kosmos/keybindings.json. Maps chord strings to TierOneAction names, or null to disable a binding. Missing or invalid file degrades silently to defaults (FR-023, FR-024).",
+  "description": "Citizen-editable override file at ~/.kosmos/keybindings.json. Maps chord strings to TierOneAction names, or null to disable a binding. Missing or invalid file degrades silently to defaults (FR-023, FR-024). NOTE: the `meta` modifier is accepted syntactically but normalises to `alt` at parse time because Ink collapses terminal alt/meta into a single flag and the matcher emits `alt+<key>` at runtime. So `{\"meta+k\": \"history-search\"}` and `{\"alt+k\": \"history-search\"}` are semantically identical. Addresses Codex P2 on PR #1591.",
   "type": "object",
   "patternProperties": {
     "^((ctrl|shift|alt|meta)\\+)*(tab|enter|escape|up|down|left|right|pageup|pagedown|home|end|space|backspace|delete|f([1-9]|1[0-2])|[a-z]|[0-9])$": {
