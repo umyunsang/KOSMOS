@@ -227,32 +227,45 @@ describe('FR-032 catalogue discoverability without chord', () => {
 describe('User-override template excludes reserved actions', () => {
   it('JSON template is parseable + omits agent-interrupt + session-exit', () => {
     const tpl = generateKeybindingsTemplate()
-    const parsed = JSON.parse(tpl) as {
-      bindings: { [chord: string]: string }
-    }
-    expect(typeof parsed.bindings).toBe('object')
+    // Schema shape: flat `{ <chord>: <action> | null }`. No `bindings`
+    // wrapper, no `$schema`/`$docs` top-level keys (additionalProperties:
+    // false in user-override.schema.json forbids them, and the loader
+    // would emit `invalid-chord` warnings if they appeared). See Codex
+    // P2 fix on PR #1591.
+    const parsed = JSON.parse(tpl) as { [chord: string]: string }
+    expect(typeof parsed).toBe('object')
+    expect(Array.isArray(parsed)).toBe(false)
     const reserved = new Set<string>()
     for (const e of DEFAULT_BINDINGS) {
       if (e.reserved) reserved.add(e.action)
     }
-    for (const action of Object.values(parsed.bindings)) {
+    for (const action of Object.values(parsed)) {
       expect(reserved.has(action)).toBe(false)
     }
   })
 
   it('template entries are all bindable to non-reserved Tier 1 actions', () => {
     const tpl = generateKeybindingsTemplate()
-    const parsed = JSON.parse(tpl) as {
-      bindings: { [chord: string]: string }
-    }
+    const parsed = JSON.parse(tpl) as { [chord: string]: string }
     const defaults = defaultBindingsByAction()
-    for (const [chord, action] of Object.entries(parsed.bindings)) {
+    for (const [chord, action] of Object.entries(parsed)) {
       const def = defaults.get(action as TierOneAction)
       expect(def).toBeDefined()
       expect(def?.reserved).toBe(false)
       expect(def?.remappable).toBe(true)
       expect(typeof chord).toBe('string')
     }
+  })
+
+  it('template has no top-level `$schema` / `$docs` / `bindings` wrapper keys', () => {
+    // Regression for Codex P2 on PR #1591 — top-level metadata keys would
+    // be parsed as invalid chords by `loadUserBindings()`, silently
+    // discarding every intended remap/disable.
+    const tpl = generateKeybindingsTemplate()
+    const parsed = JSON.parse(tpl) as Record<string, unknown>
+    expect(Object.keys(parsed)).not.toContain('$schema')
+    expect(Object.keys(parsed)).not.toContain('$docs')
+    expect(Object.keys(parsed)).not.toContain('bindings')
   })
 })
 

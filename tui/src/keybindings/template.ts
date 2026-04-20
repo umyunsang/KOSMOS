@@ -24,21 +24,36 @@ import {
 // Editable JSON template
 // ---------------------------------------------------------------------------
 
+// Schema + docs URLs are preserved here as non-emitted constants so that
+// `/doctor` and docs surfaces can still surface the reference pointers
+// without polluting the override file itself. The override schema
+// (`schemas/user-override.schema.json`) declares `additionalProperties:
+// false` over a chord-string `patternProperties`, so `$schema` / `$docs`
+// CANNOT appear at the top level — doing so would (a) fail JSON Schema
+// validation and (b) be parsed by `loadUserBindings()` as invalid chords
+// (emitting `invalid-chord` warnings and ignoring every intended remap).
+// Citizens discover the schema via the catalogue menu + onboarding docs,
+// not via an inline JSON-pointer header (JSON has no comment syntax).
+export const KEYBINDINGS_OVERRIDE_SCHEMA_URL =
+  'https://kosmos.dev/schemas/keybindings-override-v1.json'
+export const KEYBINDINGS_OVERRIDE_DOCS_URL =
+  'https://github.com/umyunsang/KOSMOS/tree/main/specs/288-shortcut-tier1-port'
+
 export function generateKeybindingsTemplate(): string {
+  // Flat chord→action map, matching the shape `loadUserBindings()` expects
+  // and `schemas/user-override.schema.json` declares (FR-023..FR-028).
+  //
+  // Reserved actions (agent-interrupt, session-exit) are intentionally
+  // excluded from the editable surface per FR-027: remapping them is
+  // rejected by the loader; surfacing them in the template would mislead
+  // citizens into writing rejected JSON.
   const editable: Record<string, TierOneAction> = {}
   for (const e of DEFAULT_BINDINGS) {
     if (e.reserved === false && e.effective_chord !== null) {
       editable[e.effective_chord as unknown as string] = e.action
     }
   }
-  const config = {
-    $schema:
-      'https://kosmos.dev/schemas/keybindings-override-v1.json',
-    $docs:
-      'https://github.com/umyunsang/KOSMOS/tree/main/specs/288-shortcut-tier1-port',
-    bindings: editable,
-  }
-  return `${JSON.stringify(config, null, 2)}\n`
+  return `${JSON.stringify(editable, null, 2)}\n`
 }
 
 // ---------------------------------------------------------------------------
