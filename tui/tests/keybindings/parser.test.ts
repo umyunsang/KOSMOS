@@ -16,14 +16,30 @@ describe('parser — chord grammar', () => {
     expect(String(parseChord('ctrl+c'))).toBe('ctrl+c')
     expect(String(parseChord('CTRL+R'))).toBe('ctrl+r')
     expect(String(parseChord('shift+tab'))).toBe('shift+tab')
-    expect(String(parseChord('meta+m'))).toBe('meta+m')
+    // `meta+m` normalises to `alt+m` — see `meta → alt` canonicalisation
+    // in `parseChord`. Addresses Codex P2 on PR #1591: the matcher always
+    // emits `alt+<key>` for Ink's collapsed meta flag, so accepting `meta`
+    // as a distinct chord modifier would silently break user overrides.
+    expect(String(parseChord('meta+m'))).toBe('alt+m')
   })
 
-  test('canonical modifier order (ctrl → shift → alt → meta)', () => {
-    // Input order is random; output MUST be the canonical order.
+  test('meta normalises to alt at parse time (Codex P2 PR #1591)', () => {
+    // Both spellings produce the same ChordString so user overrides keyed
+    // on `meta+...` match runtime events emitted as `alt+...`.
+    expect(String(parseChord('meta+m'))).toBe(String(parseChord('alt+m')))
+    expect(String(parseChord('meta+k'))).toBe(String(parseChord('alt+k')))
+    // Idempotent collapse when both alt and meta are spelled in the same
+    // chord — no duplicate-modifier error.
+    expect(String(parseChord('alt+meta+m'))).toBe('alt+m')
+    expect(String(parseChord('meta+alt+m'))).toBe('alt+m')
+  })
+
+  test('canonical modifier order (ctrl → shift → alt; meta → alt)', () => {
+    // Input order is random; output MUST be the canonical order. `meta`
+    // collapses into `alt` silently per Codex P2 fix.
     expect(String(parseChord('shift+ctrl+p'))).toBe('ctrl+shift+p')
     expect(String(parseChord('meta+alt+shift+ctrl+x'))).toBe(
-      'ctrl+shift+alt+meta+x',
+      'ctrl+shift+alt+x',
     )
     expect(String(parseChord('alt+ctrl+t'))).toBe('ctrl+alt+t')
   })
