@@ -19,6 +19,7 @@ import { useKoreanIME } from '../../hooks/useKoreanIME'
 import { LogoV2 } from './LogoV2/LogoV2'
 import { PIPAConsentStep } from './PIPAConsentStep'
 import { MinistryScopeStep } from './MinistryScopeStep'
+import { writeConsentRecord, writeScopeRecord } from '../../memdir/io'
 import type { PIPAConsentRecord } from '../../memdir/consent'
 import type { MinistryScopeAcknowledgment } from '../../memdir/ministry-scope'
 
@@ -156,18 +157,22 @@ export const STEPS: readonly OnboardingStep[] = [
 ]
 
 // ---------------------------------------------------------------------------
-// Default consent-write side-effect — stdio JSONL envelope
+// Default consent-write side-effect — direct-filesystem atomic write.
 //
-// Emits the consent record on stderr where the Python backend's stdio
-// consumer (Spec 032) picks it up and performs the atomic filesystem write
-// via `src/kosmos/memdir/user_consent.py::write_consent_atomic`.  Tests
-// override this by passing a mock `onWriteConsentRecord` prop.
+// Writes the record to `~/.kosmos/memdir/user/{consent,ministry-scope}/`
+// via `tui/src/memdir/io.ts` using the tmp + fsync + rename pattern.  The
+// Python backend reads the same directory through `latest_consent()` /
+// `latest_scope()`; both producers share POSIX fsync ordering for
+// durability.  A best-effort diagnostic envelope is also emitted on
+// stderr so log aggregators see the event trail — actionable state lives
+// on disk, not on stderr.  Tests override by passing `onWriteConsentRecord`.
 // ---------------------------------------------------------------------------
 
 function defaultWriteConsentRecord(record: PIPAConsentRecord): void {
+  writeConsentRecord(record)
   const envelope = {
     event: 'onboarding.write_consent_record',
-    payload: record,
+    session_id: record.session_id,
     ts: new Date().toISOString(),
   }
   process.stderr.write(`${JSON.stringify(envelope)}\n`)
@@ -176,9 +181,10 @@ function defaultWriteConsentRecord(record: PIPAConsentRecord): void {
 function defaultWriteScopeRecord(
   record: MinistryScopeAcknowledgment,
 ): void {
+  writeScopeRecord(record)
   const envelope = {
     event: 'onboarding.write_scope_record',
-    payload: record,
+    session_id: record.session_id,
     ts: new Date().toISOString(),
   }
   process.stderr.write(`${JSON.stringify(envelope)}\n`)

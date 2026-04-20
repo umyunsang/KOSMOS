@@ -34,7 +34,7 @@ const defaultTheme: ThemeToken = {
   inverseText: 'rgb(0,0,0)', // Black
   inactive: 'rgb(153,153,153)', // Light gray
   inactiveShimmer: 'rgb(193,193,193)', // Lighter gray for shimmer effect
-  subtle: 'rgb(80,80,80)', // Dark gray
+  subtle: 'rgb(148,148,148)', // Medium gray — synced with dark.ts FR-011 bump
   suggestion: 'rgb(177,185,249)', // Light blue-purple
   remember: 'rgb(177,185,249)', // Light blue-purple
   background: 'rgb(10,14,39)', // #0a0e27 — KOSMOS navy
@@ -43,8 +43,8 @@ const defaultTheme: ThemeToken = {
   warning: 'rgb(255,193,7)', // Bright amber
   merged: 'rgb(175,135,255)', // Electric violet (matches autoAccept)
   warningShimmer: 'rgb(255,223,57)', // Lighter amber for shimmer
-  diffAdded: 'rgb(34,92,43)', // Dark green
-  diffRemoved: 'rgb(122,41,54)', // Dark red
+  diffAdded: 'rgb(64,140,86)', // Medium green — synced with dark.ts FR-011 bump
+  diffRemoved: 'rgb(200,80,96)', // Medium red — synced with dark.ts FR-011 bump
   diffAddedDimmed: 'rgb(71,88,74)', // Very dark green
   diffRemovedDimmed: 'rgb(105,72,77)', // Very dark red
   diffAddedWord: 'rgb(56,166,96)', // Medium green

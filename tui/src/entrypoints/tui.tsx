@@ -46,6 +46,13 @@ import { WorkerStatusRow } from '../components/coordinator/WorkerStatusRow'
 import { PermissionGauntletModal } from '../components/coordinator/PermissionGauntletModal'
 import { InputBar } from '../components/input/InputBar'
 import { handleNotificationFrame } from '../permissions/consentBridge'
+import {
+  Onboarding,
+  resolveStartStep,
+  CURRENT_CONSENT_VERSION,
+  CURRENT_SCOPE_VERSION,
+} from '../components/onboarding/Onboarding'
+import { latestConsentRecord, latestScopeRecord } from '../memdir/io'
 
 // ---------------------------------------------------------------------------
 // Frame dispatcher — maps IPCFrame arms to SessionAction
@@ -360,5 +367,36 @@ export function App({ bridge }: AppProps): React.ReactElement {
     }
   }, [bridge, exit])
 
+  // Epic H #1302: gate the main UI behind the citizen onboarding flow.
+  // On first launch (or after a consent/scope version bump) render the
+  // three-step Onboarding before AppInner.  Returning citizens with fresh
+  // memdir records skip the flow in ≤ 3 s via the splash fast-path
+  // (SC-012).  The memdir snapshot is read synchronously at boot only —
+  // subsequent state lives in `onComplete`.
+  const initialMemdir = useMemo(() => {
+    const consent = latestConsentRecord()
+    const scope = latestScopeRecord()
+    return {
+      consentRecord: consent !== null ? { consent_version: consent.consent_version } : undefined,
+      scopeRecord: scope !== null ? { scope_version: scope.scope_version } : undefined,
+    }
+  }, [])
+  const consentFresh =
+    initialMemdir.consentRecord?.consent_version === CURRENT_CONSENT_VERSION
+  const scopeFresh =
+    initialMemdir.scopeRecord?.scope_version === CURRENT_SCOPE_VERSION
+  const [onboardingDone, setOnboardingDone] = useState<boolean>(
+    consentFresh && scopeFresh,
+  )
+
+  if (!onboardingDone) {
+    return (
+      <Onboarding
+        memdir={initialMemdir}
+        startStep={resolveStartStep(initialMemdir)}
+        onComplete={() => setOnboardingDone(true)}
+      />
+    )
+  }
   return <AppInner bridge={bridge} />
 }
