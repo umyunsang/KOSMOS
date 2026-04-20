@@ -7,12 +7,19 @@
 //
 // Design:
 //   - `polite` messages are queued and flushed on the next microtask.
-//   - `assertive` messages are flushed synchronously to interrupt the reader.
+//   - `assertive` messages are written synchronously and bypass the polite
+//     queue entirely — this mirrors WAI-ARIA `aria-live="assertive"`
+//     semantics where an urgent announcement must interrupt anything the
+//     screen reader is currently speaking, including any queued-but-not-yet
+//     -emitted polite notices. If we routed assertive through the shared
+//     FIFO, an earlier polite entry in the same tick (e.g. a status update)
+//     would be spoken first, delaying the urgent cue (e.g. an interrupt
+//     warning). See Codex P2 on PR #1591.
 //   - Both write to stderr with an `[a11y]` prefix that screen readers in
 //     terminal mode forward via their stdin channel.
 //   - The contract mandates delivery within 1 s (FR-030). The implementation
 //     uses `queueMicrotask` for polite delivery which is orders of magnitude
-//     under that budget.
+//     under that budget; assertive delivery is synchronous.
 
 import {
   type AccessibilityAnnouncer,
@@ -71,11 +78,16 @@ export function createAccessibilityAnnouncer(
         priority,
         at: now(),
       })
-      buffer.push(record)
       if (priority === 'assertive') {
-        flushQueued()
+        // WAI-ARIA `aria-live="assertive"` semantics: bypass the polite
+        // queue and emit synchronously so a same-tick urgent announcement
+        // (e.g. interrupt warning) is not delayed behind an earlier polite
+        // status update.  The polite queue drains on its own scheduled
+        // flush and stays intact. Codex P2 on PR #1591.
+        write(format(record))
         return
       }
+      buffer.push(record)
       if (!scheduled) {
         scheduled = true
         schedule(flushQueued)
