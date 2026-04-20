@@ -56,6 +56,10 @@ import { latestConsentRecord, latestScopeRecord } from '../memdir/io'
 import { useKoreanIME, type KoreanIMEState } from '../hooks/useKoreanIME'
 import { KeybindingProviderSetup } from '../keybindings/KeybindingProviderSetup'
 import type { KeybindingContext as KeybindingContextEnum } from '../keybindings/types'
+import { buildTier1Handlers } from '../keybindings/tier1Handlers'
+import type { HistoryNavigationEntry } from '../keybindings/actions/historyNavigate'
+import type { PermissionMode } from '../permissions/types'
+import { createAccessibilityAnnouncer } from '../keybindings/accessibilityAnnouncer'
 
 // ---------------------------------------------------------------------------
 // Frame dispatcher — maps IPCFrame arms to SessionAction
@@ -485,6 +489,144 @@ export function App({ bridge }: AppProps): React.ReactElement {
     return ['Chat', 'Global'] as const
   }, [onboardingDone, activeSurface])
 
+  // ---------------------------------------------------------------------
+  // Spec 288 Codex P1 (follow-up) — wire real Tier-1 handlers into the
+  // provider.  Without `handlerOverrides` the provider would register its
+  // default announce-only stubs, so ctrl+d / history navigation / mode
+  // cycling never exercise their implemented controllers at runtime.
+  //
+  // The announcer is created once here so both `<KeybindingProviderSetup>`
+  // and `buildTier1Handlers` share a single announce stream — the default
+  // stubs inside the provider (used only before `handlerOverrides` takes
+  // effect) and our real handlers funnel through the same stderr channel.
+  //
+  // Some controller deps are still stubs — see `tier1Handlers.ts` for the
+  // `FIXME: Spec 288.1` comments covering the Spec 027 cancellation
+  // envelope and Spec 024 audit writer.  The goal of this block is the
+  // Codex P1 fix: every dispatched Tier-1 chord reaches a real controller
+  // instead of the announce-only fallback.
+  // ---------------------------------------------------------------------
+  const sharedAnnouncer = useMemo(() => createAccessibilityAnnouncer(), [])
+
+  const [permissionMode, setPermissionMode] =
+    useState<PermissionMode>('default')
+
+  // Tracks the latest InputBar buffer snapshot so the `session-exit` FR-014
+  // guard can read an up-to-date value without InputBar needing to
+  // re-render on every keystroke of its own draft.  `useKoreanIME` already
+  // owns the buffer; we mirror its length via an effect inside <App>.
+  const isBufferEmptyRef = useRef<boolean>(true)
+  // Keep the ref in sync with the live IME buffer.  `ime.buffer` is
+  // updated by the hook on every keystroke; reading it during render is
+  // safe (same microtask) and cheap.
+  isBufferEmptyRef.current = ime.buffer.length === 0
+
+  // History source — for the wiring PR we surface the current session's
+  // user-input messages only.  Cross-session entries land when Epic D
+  // (#1299) exposes the memdir USER read path to the TUI.
+  const messagesMap = useSessionStore((s) => s.messages)
+  const backendSessionId = useSessionStore((s) => s.session_id)
+  const resolvedSessionId =
+    backendSessionId !== '' ? backendSessionId : sessionIdRef.current
+
+  const historyEntries = useMemo<ReadonlyArray<HistoryNavigationEntry>>(() => {
+    const entries: HistoryNavigationEntry[] = []
+    for (const [, msg] of messagesMap) {
+      if (msg.role !== 'user') continue
+      entries.push({
+        query_text: msg.chunks.join(''),
+        // `Message` does not carry a timestamp today — surface a stable
+        // placeholder so downstream consumers see ISO-8601 shaped data.
+        // FIXME: Spec 288.1 — thread the true `user_input` frame `ts`
+        // through the reducer so this reflects wall-clock history order.
+        timestamp: new Date(0).toISOString(),
+        session_id: resolvedSessionId,
+        consent_scope: 'current-session',
+      })
+    }
+    return entries
+  }, [messagesMap, resolvedSessionId])
+
+  // memdir USER consent — the onboarding boot snapshot already drives
+  // `consentFresh`; reuse it as the Tier-1 consent probe.  Epic D (#1299)
+  // will replace this with a live read when the USER tier lands.
+  const memdirUserGranted = consentFresh
+  // Availability mirrors granted-ness today; once Epic D ships the USER
+  // tier can exist without a consent record (`available && !granted`).
+  const memdirUserAvailable = consentFresh
+
+  // Agent loop probe — the session store does not track liveness directly,
+  // so derive it from the latest assistant message's `done` flag.
+  const messageOrderForProbe = useSessionStore((s) => s.message_order)
+  const isAgentLoopActive = React.useCallback((): boolean => {
+    const lastId = messageOrderForProbe[messageOrderForProbe.length - 1]
+    if (lastId === undefined) return false
+    const msg = messagesMap.get(lastId)
+    if (msg === undefined) return false
+    return msg.role === 'assistant' && !msg.done
+  }, [messageOrderForProbe, messagesMap])
+
+  const currentToolCallId = React.useCallback((): string | null => {
+    // Scan the most recent assistant message for the last tool call that
+    // has no matching result yet.  When none is in flight, return null.
+    for (let i = messageOrderForProbe.length - 1; i >= 0; i--) {
+      const id = messageOrderForProbe[i]
+      if (id === undefined) continue
+      const msg = messagesMap.get(id)
+      if (msg === undefined || msg.role !== 'assistant') continue
+      for (let j = msg.tool_calls.length - 1; j >= 0; j--) {
+        const call = msg.tool_calls[j]
+        if (call === undefined) continue
+        const hasResult = msg.tool_results.some(
+          (r) => r.call_id === call.call_id,
+        )
+        if (!hasResult) return call.call_id
+      }
+    }
+    return null
+  }, [messageOrderForProbe, messagesMap])
+
+  const tier1Handlers = useMemo(
+    () =>
+      buildTier1Handlers({
+        sessionId: resolvedSessionId,
+        announcer: sharedAnnouncer,
+        isAgentLoopActive,
+        currentToolCallId,
+        isBufferEmpty: () => isBufferEmptyRef.current,
+        getPermissionMode: () => permissionMode,
+        setPermissionMode,
+        // FIXME: Spec 288.1 — read Spec 033 session state once the
+        // permission pipeline surfaces an irreversible-action flag.
+        hasPendingIrreversibleAction: () => false,
+        readDraft: () => ime.buffer,
+        setDraft: (_value: string) => {
+          // `useKoreanIME` only exposes a clear() primitive today; injecting
+          // an arbitrary string would require an IME append path the hook
+          // does not yet provide.  Clear the buffer so the `returned-to-
+          // present` history branch behaves correctly; other branches will
+          // land once Spec 288.1 adds `ime.setBuffer()`.
+          // FIXME: Spec 288.1 — thread an IME buffer-setter here so
+          // `history-prev` actually surfaces the loaded entry in the UI.
+          ime.clear()
+        },
+        getHistory: () => historyEntries,
+        memdirUserGranted,
+        memdirUserAvailable,
+      }),
+    [
+      resolvedSessionId,
+      sharedAnnouncer,
+      isAgentLoopActive,
+      currentToolCallId,
+      permissionMode,
+      ime,
+      historyEntries,
+      memdirUserGranted,
+      memdirUserAvailable,
+    ],
+  )
+
   const body = !onboardingDone ? (
     <Onboarding
       memdir={initialMemdir}
@@ -510,6 +652,8 @@ export function App({ bridge }: AppProps): React.ReactElement {
     <KeybindingProviderSetup
       activeContexts={activeContexts}
       isImeComposing={ime.isComposing}
+      announcer={sharedAnnouncer}
+      handlerOverrides={tier1Handlers}
     >
       {body}
     </KeybindingProviderSetup>
