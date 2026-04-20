@@ -253,17 +253,35 @@ export function Onboarding({
     if (current !== undefined) emitOnboardingSpan(current.stepId, 'enter')
   }, [current])
 
+  // Reaching `done` is the terminal signal — emit completion and exit so the
+  // TUI can hand off to the main session surface.  Without this effect the
+  // `done` step renders `null` and leaves the citizen on a blank screen.
+  useEffect(() => {
+    if (current?.stepId === 'done') {
+      onComplete?.()
+      exit()
+    }
+  }, [current, exit, onComplete])
+
   const advance = useCallback((): void => {
     if (current === undefined) return
     emitOnboardingSpan(current.stepId, 'advance')
-    const nextIndex = currentIndex + 1
+    // Walk forward honouring `skipCondition(memdir)` so returning citizens
+    // skip steps whose records are already fresh (fast-path contract § 3).
+    let nextIndex = currentIndex + 1
+    while (
+      nextIndex < STEPS.length &&
+      STEPS[nextIndex]?.skipCondition(memdir) === true
+    ) {
+      nextIndex += 1
+    }
     if (nextIndex >= STEPS.length) {
       onComplete?.()
       exit()
       return
     }
     setCurrentIndex(nextIndex)
-  }, [currentIndex, current, exit, onComplete])
+  }, [currentIndex, current, exit, memdir, onComplete])
 
   const exitSession = useCallback((): void => {
     if (current !== undefined) emitOnboardingSpan(current.stepId, 'exit')
