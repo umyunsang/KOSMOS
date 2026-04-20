@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import asyncio
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 from uuid import UUID
@@ -38,7 +38,7 @@ from kosmos.tools.main_router import (
 )
 
 FIXTURE_SESSION = UUID("018f8a72-d4c9-7a1e-9c8b-0b2c3d4e5f60")
-UTC = timezone.utc
+UTC = UTC
 
 
 def _scope_record(
@@ -46,7 +46,7 @@ def _scope_record(
 ) -> MinistryScopeAcknowledgment:
     """Build a scope record with the four ministries opted in, overriding
     any pair in `overrides` to the provided state."""
-    defaults = {code: True for code in MINISTRY_CODES}
+    defaults = dict.fromkeys(MINISTRY_CODES, True)
     if overrides:
         defaults.update(overrides)
     return MinistryScopeAcknowledgment(

@@ -9,7 +9,7 @@ Invariants: I-9, I-10, I-11, I-12.
 from __future__ import annotations
 
 import json
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta, timezone
 from pathlib import Path
 from uuid import UUID, uuid4
 
@@ -24,7 +24,7 @@ from kosmos.memdir.user_consent import (
 )
 
 FIXTURE_SESSION_ID = UUID("018f8a72-d4c9-7a1e-9c8b-0b2c3d4e5f60")
-UTC = timezone.utc
+UTC = UTC
 
 
 def _valid_record(ts: datetime, session_id: UUID | None = None) -> PIPAConsentRecord:

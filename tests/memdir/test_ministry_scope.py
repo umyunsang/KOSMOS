@@ -8,7 +8,7 @@ Invariants: I-13, I-14, I-15, I-16.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime, timezone
 from pathlib import Path
 from uuid import UUID, uuid4
 
@@ -25,14 +25,14 @@ from kosmos.memdir.ministry_scope import (
     write_scope_atomic,
 )
 
-UTC = timezone.utc
+UTC = UTC
 FIXTURE_SESSION = UUID("018f8a72-d4c9-7a1e-9c8b-0b2c3d4e5f60")
 
 
 def _valid_ministries(
     overrides: dict[str, bool] | None = None,
 ) -> frozenset[MinistryOptIn]:
-    defaults = {code: True for code in MINISTRY_CODES}
+    defaults = dict.fromkeys(MINISTRY_CODES, True)
     if overrides:
         defaults.update(overrides)
     return frozenset(

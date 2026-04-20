@@ -20,7 +20,7 @@ from __future__ import annotations
 import json
 import logging
 import os
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Literal
 from uuid import UUID
@@ -65,7 +65,7 @@ class PIPAConsentRecord(BaseModel):
     @field_validator("timestamp")
     @classmethod
     def _enforce_utc(cls, value: datetime) -> datetime:
-        if value.tzinfo is None or value.utcoffset() != timezone.utc.utcoffset(value):
+        if value.tzinfo is None or value.utcoffset() != UTC.utcoffset(value):
             raise ValueError(
                 "PIPAConsentRecord.timestamp must be timezone-aware UTC"
             )
@@ -84,7 +84,7 @@ def _record_filename(record: PIPAConsentRecord) -> str:
     Matches contract § 4 pattern.  Example:
         2026-04-20T14-32-05Z-018f8a72-d4c9-7a1e-9c8b-0b2c3d4e5f60.json
     """
-    ts_iso = record.timestamp.astimezone(timezone.utc).strftime(
+    ts_iso = record.timestamp.astimezone(UTC).strftime(
         "%Y-%m-%dT%H-%M-%SZ"
     )
     return f"{ts_iso}-{record.session_id}.json"

@@ -16,7 +16,7 @@ from __future__ import annotations
 import json
 import logging
 import os
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Literal
 from uuid import UUID
@@ -78,7 +78,7 @@ class MinistryScopeAcknowledgment(BaseModel):
     @field_validator("timestamp")
     @classmethod
     def _enforce_utc(cls, value: datetime) -> datetime:
-        if value.tzinfo is None or value.utcoffset() != timezone.utc.utcoffset(
+        if value.tzinfo is None or value.utcoffset() != UTC.utcoffset(
             value
         ):
             raise ValueError(
@@ -87,7 +87,7 @@ class MinistryScopeAcknowledgment(BaseModel):
         return value
 
     @model_validator(mode="after")
-    def _check_four_unique(self) -> "MinistryScopeAcknowledgment":
+    def _check_four_unique(self) -> MinistryScopeAcknowledgment:
         codes = {m.ministry_code for m in self.ministries}
         if codes != MINISTRY_CODES:
             raise ValueError(
@@ -117,7 +117,7 @@ def opt_in_lookup(
 
 
 def _record_filename(record: MinistryScopeAcknowledgment) -> str:
-    ts_iso = record.timestamp.astimezone(timezone.utc).strftime(
+    ts_iso = record.timestamp.astimezone(UTC).strftime(
         "%Y-%m-%dT%H-%M-%SZ"
     )
     return f"{ts_iso}-{record.session_id}.json"

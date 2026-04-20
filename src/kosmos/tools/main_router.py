@@ -16,9 +16,10 @@ USER tier is bounded by filesystem latency, not network latency — so the
 from __future__ import annotations
 
 import logging
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Awaitable, Callable, Literal
+from typing import Any, Literal
 
 from kosmos.memdir.ministry_scope import (
     MINISTRY_CODES,
@@ -81,12 +82,17 @@ class _RefusalPayload:
     message: str
 
 
-class MinistryOptOutRefusal(Exception):
+class MinistryOptOutRefusal(Exception):  # noqa: N818
     """Raised before any network call when the citizen opted out of `ministry`.
 
     Attributes:
         ministry:  The MinistryCode that was declined (or absent from scope).
         message:   Citizen-facing Korean refusal copy per contract § 5.
+
+    N818 waiver: this exception's name is a contract-level identifier fixed by
+    `specs/035-onboarding-brand-port/contracts/memdir-ministry-scope-schema.md
+    § 5`.  Renaming to `MinistryOptOutRefusalError` would break the spec
+    reference and is therefore refused at the style-gate boundary.
     """
 
     def __init__(self, *, ministry: MinistryCode, message: str) -> None:
