@@ -1,10 +1,16 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS-original: input bar component consuming useKoreanIME hook.
+// KOSMOS-original: input bar component consuming a caller-owned IME state.
+//
+// Spec 288 Codex P1 — `useKoreanIME` now lives in <App> (tui.tsx) so the
+// central keybinding resolver can observe `isComposing` via
+// <KeybindingProviderSetup>.  This component receives the single IME
+// instance as a prop to guarantee there is exactly one `useInput`
+// composition listener in the tree.
 
 import React from 'react'
 import { Box, Text, useInput } from 'ink'
 import { useTheme } from '../../theme/provider'
-import { useKoreanIME } from '../../hooks/useKoreanIME'
+import type { KoreanIMEState } from '../../hooks/useKoreanIME'
 import { useKeybinding } from '../../keybindings/useKeybinding'
 import { useKeybindingSurfaces } from '../../keybindings/KeybindingContext'
 import { cancelDraft } from '../../keybindings/actions/draftCancel'
@@ -14,6 +20,12 @@ import { cancelDraft } from '../../keybindings/actions/draftCancel'
 // ---------------------------------------------------------------------------
 
 export interface InputBarProps {
+  /**
+   * The live IME state.  Owned by <App> and passed down so the resolver
+   * (<KeybindingProviderSetup>) and this component see the exact same
+   * composition flag (Spec 288 Codex P1).
+   */
+  ime: KoreanIMEState
   /**
    * Called when the user presses Enter (and is not mid-composition).
    * Receives the full committed text. The bar clears itself after calling.
@@ -48,9 +60,8 @@ export interface InputBarProps {
  * FR-015: Hangul composition is handled by the hook; the component only
  * renders what the hook surfaces.
  */
-export function InputBar({ onSubmit, disabled = false }: InputBarProps): React.ReactElement {
+export function InputBar({ ime, onSubmit, disabled = false }: InputBarProps): React.ReactElement {
   const theme = useTheme()
-  const ime = useKoreanIME(!disabled)
   const surfaces = useKeybindingSurfaces()
 
   // Intercept Enter separately — useKoreanIME's isActive gate already blocks

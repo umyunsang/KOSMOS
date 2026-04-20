@@ -11,13 +11,20 @@
 //
 // T052: <ThemeProvider> mounted at the render root so every Box/Text component
 // across the tree consumes the resolved token set via useTheme() (FR-040).
+//
+// Spec 288 Codex P1 fix: `KeybindingProviderSetup` is mounted **inside** App
+// (not here) so it can feed the resolver a live `activeContexts` array and
+// `isImeComposing` flag derived from App-level modal state + the lifted
+// `useKoreanIME` hook. Mounting it at this render root would pin the resolver
+// to `['Global']` + `false` for the whole session, making Chat-only shortcuts
+// unreachable and bypassing the central IME guard for `mutates_buffer`
+// actions.
 
 import React from 'react'
 import { render } from 'ink'
 import { createBridge } from './ipc/bridge'
 import { App } from './entrypoints/tui'
 import { ThemeProvider } from './theme/provider'
-import { KeybindingProviderSetup } from './keybindings/KeybindingProviderSetup'
 
 async function main(): Promise<void> {
   const bridge = createBridge()
@@ -29,9 +36,7 @@ async function main(): Promise<void> {
 
   const { waitUntilExit } = render(
     <ThemeProvider>
-      <KeybindingProviderSetup>
-        <App bridge={bridge} />
-      </KeybindingProviderSetup>
+      <App bridge={bridge} />
     </ThemeProvider>,
   )
   await waitUntilExit()

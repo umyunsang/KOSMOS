@@ -53,6 +53,9 @@ import {
   CURRENT_SCOPE_VERSION,
 } from '../components/onboarding/Onboarding'
 import { latestConsentRecord, latestScopeRecord } from '../memdir/io'
+import { useKoreanIME, type KoreanIMEState } from '../hooks/useKoreanIME'
+import { KeybindingProviderSetup } from '../keybindings/KeybindingProviderSetup'
+import type { KeybindingContext as KeybindingContextEnum } from '../keybindings/types'
 
 // ---------------------------------------------------------------------------
 // Frame dispatcher — maps IPCFrame arms to SessionAction
@@ -196,9 +199,23 @@ function WorkerStatusList(): React.ReactElement | null {
 
 interface AppInnerProps {
   bridge: IPCBridge
+  /**
+   * IME state lifted to <App> so <KeybindingProviderSetup> can feed
+   * `isImeComposing` into the resolver's central IME guard for
+   * `mutates_buffer` actions (Spec 288 Codex P1).  InputBar consumes the same
+   * instance — there is exactly one active `useKoreanIME` hook in the
+   * post-onboarding branch of the tree.
+   */
+  ime: KoreanIMEState
+  /**
+   * Reports modal-surface state (permission gauntlet, help overlay) upward so
+   * <App> can derive `activeContexts` for the keybinding resolver.  Called on
+   * every render with the currently-active `Chat | Confirmation` surface.
+   */
+  onActiveSurfaceChange: (surface: 'Chat' | 'Confirmation') => void
 }
 
-function AppInner({ bridge }: AppInnerProps): React.ReactElement {
+function AppInner({ bridge, ime, onActiveSurfaceChange }: AppInnerProps): React.ReactElement {
   const theme = useTheme()
   const i18n = useI18n()
   const { exit } = useApp()
@@ -209,6 +226,18 @@ function AppInner({ bridge }: AppInnerProps): React.ReactElement {
   const registry = useMemo(() => buildDefaultRegistry(), [])
   const [ack, setAck] = useState<string>('')
   const [helpState, setHelpState] = useState<HelpState | null>(null)
+
+  // Spec 288 Codex P1 — surface Chat / Confirmation state to <App> so the
+  // central keybinding resolver sees the right context stack.  A modal open
+  // (permission gauntlet, help overlay) claims `Confirmation`; otherwise the
+  // InputBar owns focus → `Chat`.  `HistorySearch` is not yet wired because
+  // <HistorySearchOverlay> is not mounted in the tree — see the TODO in
+  // <App> below (Spec 288.1 follow-up).
+  const activeSurface: 'Chat' | 'Confirmation' =
+    pendingPermission !== null || helpState !== null ? 'Confirmation' : 'Chat'
+  useEffect(() => {
+    onActiveSurfaceChange(activeSurface)
+  }, [activeSurface, onActiveSurfaceChange])
 
   // IPC senders closed over the bridge — safe for the dispatcher's SendFrame
   // callback (typed to SessionEventFrame) and for free-text user_input frames.
@@ -269,6 +298,14 @@ function AppInner({ bridge }: AppInnerProps): React.ReactElement {
   // Outer key handler — Ctrl-C always closes the bridge. Escape clears the
   // help overlay when no modal is active. Everything else passes through to
   // InputBar's useKoreanIME (or to PermissionGauntletModal when it is open).
+  //
+  // Spec 288 Codex P1 note: the central keybinding resolver (mounted by
+  // <KeybindingProviderSetup> in <App>) now also fires for ctrl+c via the
+  // `session-exit` Tier-1 action.  Both paths run in parallel during the
+  // Spec 288.1 migration window — keeping this handler means Ctrl-C still
+  // tears the bridge down immediately even if the resolver's handler is
+  // stubbed (announce-only).  Removing the dual path is tracked by Spec 288.1
+  // alongside the resolver's production session-exit wiring.
   useInput((input, key) => {
     if (key.ctrl && input === 'c') {
       bridge.close().then(() => exit())
@@ -326,9 +363,11 @@ function AppInner({ bridge }: AppInnerProps): React.ReactElement {
         </Box>
       )}
 
-      {/* Korean IME input bar (US5, FR-015/FR-016) — delegates to
-          useKoreanIME hook; suppressed while the permission modal is open. */}
-      <InputBar onSubmit={handleSubmit} disabled={inputDisabled} />
+      {/* Korean IME input bar (US5, FR-015/FR-016) — consumes the lifted
+          `ime` state so both the resolver (<KeybindingProviderSetup>) and
+          the InputBar observe the same composition flag.  Suppressed while
+          the permission modal is open. */}
+      <InputBar ime={ime} onSubmit={handleSubmit} disabled={inputDisabled} />
     </Box>
   )
 }
@@ -398,15 +437,81 @@ export function App({ bridge }: AppProps): React.ReactElement {
     consentFresh && scopeFresh,
   )
 
-  if (!onboardingDone) {
-    return (
-      <Onboarding
-        memdir={initialMemdir}
-        startStep={resolveStartStep(initialMemdir)}
-        sessionId={sessionIdRef.current}
-        onComplete={() => setOnboardingDone(true)}
-      />
-    )
-  }
-  return <AppInner bridge={bridge} />
+  // ---------------------------------------------------------------------
+  // Spec 288 Codex P1 — lift IME + activeContexts to <App>
+  //
+  // `KeybindingProviderSetup` was previously mounted in main.tsx with no
+  // props, causing the resolver to fall back to `['Global']` + `false` for
+  // the entire session (Chat-only shortcuts unreachable, IME guard for
+  // `mutates_buffer` actions inert).  We now lift both values up:
+  //
+  //   1. `useKoreanIME` is instantiated here with `isActive = onboardingDone`
+  //      so it does not race Onboarding's own IME hook during first-launch.
+  //      AppInner consumes the same instance via the `ime` prop — exactly
+  //      one active `useInput` composition listener per branch.
+  //
+  //   2. `activeContexts` is derived dynamically.  During onboarding we
+  //      treat the tree as `['Confirmation', 'Global']` (consent-style
+  //      modal).  Post-onboarding, AppInner reports whether the permission
+  //      gauntlet / help overlay claim the surface via
+  //      `onActiveSurfaceChange`; we lift the result into state and stamp
+  //      the resolver context accordingly.
+  //
+  //   3. `HistorySearch` is not yet wired.  <HistorySearchOverlay> from
+  //      Team C is not mounted into the tree — when Spec 288.1 mounts it,
+  //      this branch should observe the overlay's open state (likely via
+  //      an `onOpenChange` callback or lifted store field) and push
+  //      `'HistorySearch'` onto the context stack.  Leaving a TODO here
+  //      rather than fabricating a read path (Codex P1 scope is wiring the
+  //      two values that already have backing state).
+  //
+  // The `cancelHistoryRef` below tracks whether the fire-and-forget memdir
+  // scope-ack write from Onboarding has completed — orthogonal to the
+  // provider concerns above.
+  // ---------------------------------------------------------------------
+  const ime = useKoreanIME(onboardingDone)
+  const [activeSurface, setActiveSurface] = useState<'Chat' | 'Confirmation'>('Chat')
+  const activeContexts = useMemo<ReadonlyArray<KeybindingContextEnum>>(() => {
+    if (!onboardingDone) {
+      // Onboarding is a consent-style modal — the three steps (splash,
+      // consent review, ministry scope) all accept y/n / Enter inputs that
+      // should shadow Chat chords.  TODO (Spec 288.1): add `'HistorySearch'`
+      // here when <HistorySearchOverlay> is mounted.
+      return ['Confirmation', 'Global'] as const
+    }
+    if (activeSurface === 'Confirmation') {
+      return ['Confirmation', 'Global'] as const
+    }
+    return ['Chat', 'Global'] as const
+  }, [onboardingDone, activeSurface])
+
+  const body = !onboardingDone ? (
+    <Onboarding
+      memdir={initialMemdir}
+      startStep={resolveStartStep(initialMemdir)}
+      sessionId={sessionIdRef.current}
+      onComplete={() => setOnboardingDone(true)}
+    />
+  ) : (
+    <AppInner
+      bridge={bridge}
+      ime={ime}
+      onActiveSurfaceChange={setActiveSurface}
+    />
+  )
+
+  // Note on `sessionId`: the provider prop is only consumed by the IPC-backed
+  // audit writer (currently unmounted — announce-only stubs from T017).
+  // Wiring it to a concrete id belongs with the production audit writer in
+  // Spec 288.1, where the backend session_id (from the IPC store) supersedes
+  // the onboarding-local `sessionIdRef`.  Leaving it unset here avoids
+  // stamping the wrong id on eventual audit records.
+  return (
+    <KeybindingProviderSetup
+      activeContexts={activeContexts}
+      isImeComposing={ime.isComposing}
+    >
+      {body}
+    </KeybindingProviderSetup>
+  )
 }
