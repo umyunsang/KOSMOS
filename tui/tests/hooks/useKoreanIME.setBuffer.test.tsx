@@ -59,13 +59,36 @@ function ImeHarness({ initialActive, onReady }: HarnessProps): React.ReactElemen
 }
 
 /**
- * Flushes two macrotasks — the first covers the React reconciler commit, the
- * second covers Ink's async frame write.  Mirrors the helper used in
- * `tui/tests/entrypoints/ime-activation-guard.test.tsx`.
+ * Flushes React's reconciler + Ink's frame write pipeline.  Under CI load
+ * the commit + useEffect publish can straddle more than two macrotasks, so
+ * we loop a handful of yields rather than relying on a fixed count.  Local
+ * runs converge after the first iteration; CI converges within five.
  */
 async function flush(): Promise<void> {
-  await new Promise<void>((r) => setTimeout(r, 0))
-  await new Promise<void>((r) => setTimeout(r, 0))
+  for (let i = 0; i < 10; i += 1) {
+    await new Promise<void>((r) => setTimeout(r, 0))
+  }
+}
+
+/**
+ * Polling helper that waits for `capture.latest()?.buffer` to equal the
+ * expected value, flushing between checks.  Guards against the CI-specific
+ * race where React's setState commit lands but the `onReady` useEffect has
+ * not republished the fresh `ime` object to the capture box yet.
+ */
+async function awaitBuffer(
+  capture: { latest: () => KoreanIMEState | null },
+  expected: string,
+  timeoutMs = 2000,
+): Promise<void> {
+  const deadline = Date.now() + timeoutMs
+  while (Date.now() < deadline) {
+    if (capture.latest()?.buffer === expected) return
+    await new Promise<void>((r) => setTimeout(r, 5))
+  }
+  throw new Error(
+    `awaitBuffer timed out — expected "${expected}", observed "${capture.latest()?.buffer ?? '<null>'}" after ${timeoutMs}ms`,
+  )
 }
 
 // ---------------------------------------------------------------------------
@@ -108,16 +131,13 @@ describe('useKoreanIME.setBuffer — Spec 288 Codex P1 history-navigate recall',
     // Simulate `history-prev` loading a stored query — setBuffer is the
     // exact call site used by `buildTier1Handlers.setDraft` post-fix.
     capture.latest()?.setBuffer('recall')
-    await flush()
+    await awaitBuffer(capture, 'recall')
 
     // The committed buffer must carry the recalled text verbatim — this is
     // the authoritative contract the navigator writes against and the exact
-    // code path Team η could not complete before.  The `lastFrame` render
-    // assertion was dropped because ink-testing-library's debug renderer
-    // commits frames asynchronously; CI observes the pre-setBuffer frame
-    // under load while local runs observe the post-setBuffer frame.  The
-    // `buffer` field is synchronous React state and is the definitive
-    // regression signal.
+    // code path Team η could not complete before.  `awaitBuffer` polls
+    // `capture.latest()` through the flush cadence because CI observes the
+    // React commit + useEffect publish on a longer horizon than local runs.
     expect(capture.latest()?.buffer).toBe('recall')
 
     // Silence unused-variable lint without loading-bearing frame assertion.
@@ -138,7 +158,7 @@ describe('useKoreanIME.setBuffer — Spec 288 Codex P1 history-navigate recall',
     await flush()
 
     capture.latest()?.setBuffer('홍대입구역')
-    await flush()
+    await awaitBuffer(capture, '홍대입구역')
 
     expect(capture.latest()?.buffer).toBe('홍대입구역')
 
@@ -155,16 +175,16 @@ describe('useKoreanIME.setBuffer — Spec 288 Codex P1 history-navigate recall',
     // Prime the buffer so the subsequent empty write is observable as a
     // transition, not a no-op.
     capture.latest()?.setBuffer('prev')
-    await flush()
+    await awaitBuffer(capture, 'prev')
     expect(capture.latest()?.buffer).toBe('prev')
 
     // The `history-next` → `returned-to-present` branch in
     // createHistoryNavigator calls `deps.setDraft('')` — confirm that path
-    // fully clears the committed buffer.  `lastFrame` assertion dropped here
-    // too because ink-testing-library's debug renderer commits frames
+    // fully clears the committed buffer.  `lastFrame` assertion dropped
+    // here too because ink-testing-library's debug renderer commits frames
     // asynchronously under CI load; same rationale as the first test above.
     capture.latest()?.setBuffer('')
-    await flush()
+    await awaitBuffer(capture, '')
 
     expect(capture.latest()?.buffer).toBe('')
     void lastFrame
@@ -187,7 +207,7 @@ describe('useKoreanIME.setBuffer — Spec 288 Codex P1 history-navigate recall',
     expect(capture.latest()?.buffer).toBe('')
 
     capture.latest()?.setBuffer('prog')
-    await flush()
+    await awaitBuffer(capture, 'prog')
 
     expect(capture.latest()?.buffer).toBe('prog')
 
@@ -202,13 +222,13 @@ describe('useKoreanIME.setBuffer — Spec 288 Codex P1 history-navigate recall',
     await flush()
 
     capture.latest()?.setBuffer('first')
-    await flush()
+    await awaitBuffer(capture, 'first')
     expect(capture.latest()?.buffer).toBe('first')
 
     // A second setBuffer call (e.g., user hits `up` again to step further
     // back in history) must replace the prior value — not append.
     capture.latest()?.setBuffer('second')
-    await flush()
+    await awaitBuffer(capture, 'second')
 
     expect(capture.latest()?.buffer).toBe('second')
 
