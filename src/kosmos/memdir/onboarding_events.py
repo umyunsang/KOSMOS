@@ -27,8 +27,9 @@ Security:
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any
 
 from pydantic import ValidationError
 
@@ -87,13 +88,9 @@ def _handle_scope(payload: dict[str, Any], memdir_root: Path) -> Path:
     return write_scope_atomic(record, base)
 
 
-_HANDLERS: dict[
-    Literal[
-        "onboarding.write_consent_record",
-        "onboarding.write_scope_record",
-    ],
-    Any,
-] = {
+_PayloadHandler = Callable[[dict[str, Any], Path], Path]
+
+_HANDLERS: dict[str, _PayloadHandler] = {
     "onboarding.write_consent_record": _handle_consent,
     "onboarding.write_scope_record": _handle_scope,
 }
@@ -123,7 +120,7 @@ def handle_onboarding_event(
     payload = event.get("payload")
     if not isinstance(event_name, str) or not isinstance(payload, dict):
         raise OnboardingEventError("onboarding event envelope missing str `event` + dict `payload`")
-    handler = _HANDLERS.get(event_name)  # type: ignore[arg-type]
+    handler = _HANDLERS.get(event_name)
     if handler is None:
         raise UnknownOnboardingEventError(f"unknown onboarding event: {event_name!r}")
     written_path = handler(payload, memdir_root)
