@@ -1,0 +1,5 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`CondensedLogo renders the KOSMOS wordmark with model · effort · coordinatorMode segments 1`] = `"* KOSMOS — K-EXAONE · normal · default"`;
+
+exports[`CondensedLogo omits segments when props undefined 1`] = `"* KOSMOS"`;

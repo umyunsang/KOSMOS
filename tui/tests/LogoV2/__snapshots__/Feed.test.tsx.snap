@@ -1,0 +1,31 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`Feed primitive renders title + rows for a session feed 1`] = `
+"최근 세션
+교통 사고 다발 구간 2026-04-20 14:32
+오늘 날씨 2026-04-20 09:11"
+`;
+
+exports[`FeedColumn primitive (PORT) stacks a single feed configuration 1`] = `
+"부처 상태
+한국도로공 ●
+사
+기상청 ●
+건강보험심 ○
+사평가원
+
+국립중앙의 ●
+료원"
+`;
+
+exports[`KosmosOnboardingFeed renders two columns side-by-side 1`] = `
+"최근 세션                     부처 상태
+교통 사고 다발 2026-04-20     한국도로공 ●
+구간           14:32          사
+오늘 날씨 2026-04-20 09:11    기상청 ●
+                              건강보험심 ○
+                              사평가원
+
+                              국립중앙의 ●
+                              료원"
+`;

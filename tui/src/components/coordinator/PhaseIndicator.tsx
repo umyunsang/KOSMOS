@@ -56,7 +56,7 @@ export function PhaseIndicator(): React.ReactElement | null {
 
   return (
     <Box flexDirection="row" marginBottom={1}>
-      <Text bold color={theme.claudeBlue_FOR_SYSTEM_SPINNER}>
+      <Text bold color={theme.orbitalRing}>
         {`${glyph} Phase: `}
       </Text>
       <Text bold color={theme.text}>

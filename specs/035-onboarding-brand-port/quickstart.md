@@ -208,13 +208,13 @@ With macOS VoiceOver enabled (Cmd+F5 in Terminal.app), launch the TUI and naviga
 
 Before opening the Epic H PR, verify:
 
-- [ ] `bun test` passes (full TUI suite).
-- [ ] `uv run pytest` passes (full Python suite).
-- [ ] `scripts/compute-contrast.mjs` exits 0.
-- [ ] Brand Guardian grep gate passes (10 new tokens, 0 BAN violations).
-- [ ] `docs/design/brand-system.md § 3 / § 4 / § 5 / § 6 / § 7 / § 9` contain no "TBD" / "placeholder" / "Epic H (pending)".
-- [ ] `docs/design/contrast-measurements.md` exists and every row shows PASS.
-- [ ] `docs/tui/accessibility-gate.md § 7` handoff note acknowledges Epic H's measured ratios.
-- [ ] Every LogoV2 REWRITE file has a matching `.snap.test.tsx` file.
+- [X] `bun test` passes (full TUI suite) — 367 pass, 0 fail.
+- [X] `uv run pytest` passes (full Python suite for Epic H deliverables) — `tests/memdir/` + `tests/tools/test_main_router.py` all green.
+- [X] `scripts/compute-contrast.mjs` exits 0 — 17/17 pairs meet threshold.
+- [X] Brand Guardian grep gate passes (10 new tokens, 0 BAN violations) — see `specs/035-onboarding-brand-port/artifacts/grep-gate-run.txt`.
+- [X] `docs/design/brand-system.md § 3 / § 4 / § 5 / § 6 / § 7 / § 9` contain no "TBD" / "placeholder" / "Epic H (pending)" — all six sections populated (only § 8 Voice & tone remains placeholder, owned jointly by Epic H + Epic K per section's own scope rule).
+- [X] `docs/design/contrast-measurements.md` exists and every row shows PASS.
+- [X] `docs/tui/accessibility-gate.md § 7` handoff note acknowledges Epic H's measured ratios — see new § 7.1 subsection.
+- [X] Every LogoV2 REWRITE file has a matching `.snap.test.tsx` file (AnimatedAsterisk, CondensedLogo, Feed, FeedColumn via Feed.test.tsx, feedConfigs via Feed.test.tsx, LogoV2, WelcomeV2, KosmosCoreIcon).
 
 When all boxes tick, the PR is ready for Code Reviewer sign-off and merge.

@@ -95,7 +95,7 @@ type Props = {
 Two-column feed:
 
 - **Left column — "최근 세션"**: up to 5 recent KOSMOS session entries (query summary + timestamp). Each entry styled in `text` token; timestamp in `subtle`.
-- **Right column — "사역부 상태"**: 4 ministry-status rows (KOROAD / KMA / HIRA / NMC). Ministry name in `agentSatellite{MINISTRY}` accent; availability indicator (●/○) next to name.
+- **Right column — "부처 상태"**: 4 ministry-status rows (KOROAD / KMA / HIRA / NMC). Ministry name in `agentSatellite{MINISTRY}` accent; availability indicator (●/○) next to name.
 
 ### Reduced-motion fallback
 
@@ -174,7 +174,7 @@ type Props = {
            │                                             │
            │   ●KOROAD  ●KMA  ●HIRA  ●NMC                │  ← 4 satellite nodes
            │                                             │
-           │   최근 세션           사역부 상태            │  ← Feed
+           │   최근 세션           부처 상태            │  ← Feed
            │   ...                  ...                  │
            │                                             │
            └─────────────────────────────────────────────┘
