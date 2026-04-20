@@ -45,6 +45,19 @@ export {
   type CancelResult,
 } from './actions/historySearch'
 export {
+  buildSessionExitHandler,
+  type SessionExitDeps,
+  type SessionExitResult,
+  type SessionExitBlockedReason,
+} from './actions/sessionExit'
+export {
+  buildPermissionModeCycleHandler,
+  computeTier1NextMode,
+  type PermissionModeCycleDeps,
+  type PermissionModeCycleResult,
+  type ModeChangedSpanArgs,
+} from './actions/permissionModeCycle'
+export {
   buildChordEvent,
   lookupChord,
   type InkKeyLike,
