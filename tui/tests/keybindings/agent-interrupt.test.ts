@@ -97,21 +97,34 @@ type Fixture = {
   audit: ReturnType<typeof makeAudit>
   recordings: AnnouncementRecord[]
   exitCalls: number[]
+  beforeExitCalls: number[]
   isLoopActive: () => boolean
   setLoopActive: (v: boolean) => void
   toolCallId: string | null
   setToolCallId: (id: string | null) => void
 }
 
-function makeFixture(options: { loopActive?: boolean } = {}): Fixture {
+function makeFixture(
+  options: {
+    loopActive?: boolean
+    beforeExit?: () => Promise<void>
+  } = {},
+): Fixture {
   let virtualTime = 1_000_000
   let loopActive = options.loopActive ?? false
   let toolCallId: string | null = null
   const exitCalls: number[] = []
+  const beforeExitCalls: number[] = []
   const now = () => virtualTime
   const cancellation = makeCancellation(now)
   const audit = makeAudit()
   const { announcer, records } = makeRecordingAnnouncer(now)
+  // Record every `beforeExit` invocation at virtual-time of the call so
+  // ordering vs `exit(0)` is observable.  Tests that want to assert a
+  // specific behaviour (await, rejection) override via `options.beforeExit`.
+  const defaultBeforeExit = async (): Promise<void> => {
+    beforeExitCalls.push(virtualTime)
+  }
   const deps: AgentInterruptDeps = {
     sessionId: '01956b00-d4c9-7a1e-9c8b-0b2c3d4e5f60',
     isAgentLoopActive: () => loopActive,
@@ -123,6 +136,7 @@ function makeFixture(options: { loopActive?: boolean } = {}): Fixture {
     exit: (code) => {
       exitCalls.push(code)
     },
+    beforeExit: options.beforeExit ?? defaultBeforeExit,
   }
   const controller = createAgentInterruptController(deps)
   return {
@@ -135,6 +149,7 @@ function makeFixture(options: { loopActive?: boolean } = {}): Fixture {
     audit,
     recordings: records,
     exitCalls,
+    beforeExitCalls,
     isLoopActive: () => loopActive,
     setLoopActive: (v) => {
       loopActive = v
@@ -278,6 +293,141 @@ describe('FR-013 double-press exit when idle', () => {
     expect(f.audit.calls.length).toBe(1)
     expect(f.audit.calls[0]?.event_type).toBe('user-interrupted')
     expect(f.exitCalls.length).toBe(0)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Spec 288 Codex P1 — bridge close lifecycle on the double-press FIRE path.
+//
+// Regression guard for the legacy `useInput` ctrl+c handler removal: the
+// controller now owns the `bridge.close()` call that previously lived in
+// `tui.tsx`.  Asserts:
+//   1. First press arms (no bridge close, no exit).
+//   2. Second press within the arm window calls `beforeExit` EXACTLY ONCE
+//      and then `exit(0)` — in that order.
+//   3. Arm-window timeout (single press, let it expire, re-arm) never
+//      touches `beforeExit` or `exit`.
+//   4. `beforeExit` rejection is swallowed — the exit still fires (matches
+//      the audit-resilience rule from FR-013).
+//   5. Absent `beforeExit` (legacy callers, onboarding-pre-bridge mount),
+//      the FIRE path still calls `exit(0)` — backwards-compatible.
+// ---------------------------------------------------------------------------
+
+describe('Spec 288 Codex P1 — bridge close before exit (FR-009)', () => {
+  it('first press arms; no bridge close, no exit', async () => {
+    const f = makeFixture({ loopActive: false })
+    const outcome = await f.controller.handle()
+    expect(outcome.kind).toBe('armed')
+    expect(f.beforeExitCalls.length).toBe(0)
+    expect(f.exitCalls.length).toBe(0)
+  })
+
+  it('second press within arm window calls beforeExit then exit(0)', async () => {
+    // Build a standalone controller so we can observe the invocation order
+    // (beforeExit MUST complete before exit is called).  Using a pair of
+    // captures (`beforeExitCalled`, `beforeExitCountAtExit`) avoids timing
+    // flakes — the virtual clock is frozen at the time of both writes.
+    let beforeExitCalled = 0
+    let beforeExitCountAtExit = -1
+    const exitCalls: number[] = []
+    const { announcer } = makeRecordingAnnouncer()
+    let virtualTime = 2_000_000
+    const controller = createAgentInterruptController({
+      sessionId: 'sess-order',
+      isAgentLoopActive: () => false,
+      currentToolCallId: () => null,
+      cancellation: { async cancelActiveAgentLoop() {} },
+      audit: { async writeReservedAction() {} },
+      announcer,
+      now: () => virtualTime,
+      exit: (code) => {
+        // Snapshot beforeExit count at the moment exit is invoked — if
+        // beforeExit had not yet resolved, this would be 0 (bug).
+        beforeExitCountAtExit = beforeExitCalled
+        exitCalls.push(code)
+      },
+      beforeExit: async () => {
+        beforeExitCalled++
+      },
+    })
+    await controller.handle() // arm
+    virtualTime += 500 // still inside the 2 s window
+    const outcome = await controller.handle()
+
+    expect(outcome.kind).toBe('exited')
+    expect(beforeExitCalled).toBe(1)
+    expect(exitCalls).toEqual([0])
+    // Ordering assertion — beforeExit fully resolved before exit fired.
+    expect(beforeExitCountAtExit).toBe(1)
+  })
+
+  it('beforeExit is invoked exactly once on the FIRE branch', async () => {
+    const f = makeFixture({ loopActive: false })
+    await f.controller.handle() // arm
+    f.advance(100)
+    const outcome = await f.controller.handle()
+    expect(outcome.kind).toBe('exited')
+    expect(f.beforeExitCalls.length).toBe(1)
+    expect(f.exitCalls).toEqual([0])
+  })
+
+  it('beforeExit is NOT invoked when the arm window expires and the press re-arms', async () => {
+    const f = makeFixture({ loopActive: false })
+    await f.controller.handle() // arm
+    f.advance(ARM_WINDOW_MS + 1) // timeout
+    const outcome = await f.controller.handle()
+    expect(outcome.kind).toBe('armed')
+    expect(f.beforeExitCalls.length).toBe(0)
+    expect(f.exitCalls.length).toBe(0)
+  })
+
+  it('beforeExit is NOT invoked on the loop-active interrupt path', async () => {
+    const f = makeFixture({ loopActive: true })
+    const outcome = await f.controller.handle()
+    expect(outcome.kind).toBe('interrupted')
+    // The interrupt path cancels the loop — it does not exit the process
+    // and so MUST NOT tear the bridge down.
+    expect(f.beforeExitCalls.length).toBe(0)
+    expect(f.exitCalls.length).toBe(0)
+  })
+
+  it('rejected beforeExit still fires exit(0) — citizen never trapped', async () => {
+    const f = makeFixture({
+      loopActive: false,
+      beforeExit: async () => {
+        throw new Error('simulated bridge close failure')
+      },
+    })
+    await f.controller.handle() // arm
+    f.advance(100)
+    const outcome = await f.controller.handle()
+    expect(outcome.kind).toBe('exited')
+    expect(f.exitCalls).toEqual([0])
+  })
+
+  it('omitting beforeExit preserves legacy direct-exit behaviour', async () => {
+    const exitCalls: number[] = []
+    const { announcer } = makeRecordingAnnouncer()
+    let virtualTime = 1_000_000
+    const controller = createAgentInterruptController({
+      sessionId: 'sess-legacy',
+      isAgentLoopActive: () => false,
+      currentToolCallId: () => null,
+      cancellation: { async cancelActiveAgentLoop() {} },
+      audit: { async writeReservedAction() {} },
+      announcer,
+      now: () => virtualTime,
+      exit: (code) => {
+        exitCalls.push(code)
+      },
+      // beforeExit intentionally omitted — mimics callers that predate the
+      // Spec 288 Codex P1 bridge wiring (tests, onboarding-pre-bridge mount).
+    })
+    await controller.handle() // arm
+    virtualTime += 100
+    const outcome = await controller.handle()
+    expect(outcome.kind).toBe('exited')
+    expect(exitCalls).toEqual([0])
   })
 })
 

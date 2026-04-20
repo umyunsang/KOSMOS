@@ -81,6 +81,7 @@ type Probes = {
   modeSets: string[]
   draftLog: string[]
   confirmExitCalls: number
+  closeBridgeCalls: number
 }
 
 function makeProbes(overrides: Partial<Tier1HandlerDeps> = {}): Probes {
@@ -92,6 +93,7 @@ function makeProbes(overrides: Partial<Tier1HandlerDeps> = {}): Probes {
   const modeSets: string[] = []
   const draftLog: string[] = []
   let confirmExitCalls = 0
+  let closeBridgeCalls = 0
 
   const historyEntries = [
     {
@@ -151,6 +153,12 @@ function makeProbes(overrides: Partial<Tier1HandlerDeps> = {}): Probes {
       // Return a never-typed value without actually terminating the runner.
       return undefined as never
     }) as (code?: number) => never,
+    // Spec 288 Codex P1 — bridge close hook threaded into the
+    // agent-interrupt `beforeExit` callback.  Counter lets the regression
+    // test assert the FIRE branch tears the bridge down before exit.
+    closeBridge: async () => {
+      closeBridgeCalls++
+    },
     ...overrides,
   }
 
@@ -171,6 +179,9 @@ function makeProbes(overrides: Partial<Tier1HandlerDeps> = {}): Probes {
     draftLog,
     get confirmExitCalls() {
       return confirmExitCalls
+    },
+    get closeBridgeCalls() {
+      return closeBridgeCalls
     },
   } as unknown as Probes
 }
@@ -315,5 +326,53 @@ describe('Tier 1 wiring — buildTier1Handlers × KeybindingProviderSetup', () =
 
     // Navigator writes an empty string back on returned-to-present.
     expect(probes.draftLog.length).toBeGreaterThan(draftCountBefore)
+  })
+
+  // -------------------------------------------------------------------------
+  // Spec 288 Codex P1 — `closeBridge` is threaded into the agent-interrupt
+  // controller as `beforeExit` so the double-press FIRE branch tears the
+  // bridge down before `exit(0)` (FR-009).  The legacy `useInput` ctrl+c
+  // handler in `tui.tsx` used to own `bridge.close()`; removing that dual
+  // path means the Tier-1 handler must own the lifecycle guarantee.
+  //
+  // We dispatch `agent-interrupt` twice against an inactive agent loop so
+  // the first press arms and the second fires.  `closeBridge` MUST be
+  // invoked exactly once (on FIRE), and `processExit` captures the bare
+  // `exit(0)`.  The provider-supplied announcer receives the arm + exit
+  // messages, which the test does not pin — the factory-level suite above
+  // covers message content.
+  // -------------------------------------------------------------------------
+  it('threads closeBridge into agent-interrupt so FIRE closes the bridge before exit', async () => {
+    const { probes } = await mount({
+      // Override: loop is NOT active so the arm-then-fire state machine
+      // runs instead of the interrupt path.
+      isAgentLoopActive: () => false,
+    })
+
+    // First press — arms the double-press window.  No bridge close, no exit.
+    const fired1 = dispatchAction('Global', 'agent-interrupt')
+    expect(fired1).toBe(true)
+    // Settle the controller's microtasks.
+    await Promise.resolve()
+    await Promise.resolve()
+    expect(probes.closeBridgeCalls).toBe(0)
+    expect(probes.processExitCalls.length).toBe(0)
+
+    // Second press — fires FIRE.  beforeExit(closeBridge) must be awaited
+    // before exit(0) is reached.
+    const fired2 = dispatchAction('Global', 'agent-interrupt')
+    expect(fired2).toBe(true)
+    await Promise.resolve()
+    await Promise.resolve()
+    await Promise.resolve()
+
+    expect(probes.closeBridgeCalls).toBe(1)
+    // `tier1Handlers` forwards the injected `processExit` shim to the
+    // agent-interrupt controller so the FIRE branch's `exit(0)` lands on
+    // the same recorder as session-exit — see the Codex P1 comment in
+    // tier1Handlers.ts above.  The call MUST land AFTER `closeBridge`
+    // resolves; the factory-level suite in agent-interrupt.test.ts asserts
+    // the ordering, the integration suite here only pins the count.
+    expect(probes.processExitCalls).toContain(0)
   })
 })
