@@ -1,18 +1,29 @@
 // Source: .references/claude-code-sourcemap/restored-src/src/utils/theme.ts (Claude Code 2.1.88, research-use)
+// KOSMOS 브랜드 토큰으로 리네이밍됨 (ADR-006 A-9)
 import type { ThemeToken } from './tokens'
 
 /**
- * Default KOSMOS theme — maps to Claude Code's "dark" palette.
+ * Default KOSMOS theme — maps to the KOSMOS dark palette (ADR-006 A-9).
  * Uses explicit RGB values to avoid inconsistencies from users'
  * custom terminal ANSI color definitions.
  */
 const defaultTheme: ThemeToken = {
   autoAccept: 'rgb(175,135,255)', // Electric violet
   bashBorder: 'rgb(253,93,177)', // Bright pink
-  claude: 'rgb(215,119,87)', // Claude orange
-  claudeShimmer: 'rgb(235,159,127)', // Lighter claude orange for shimmer effect
-  claudeBlue_FOR_SYSTEM_SPINNER: 'rgb(147,165,255)', // Blue for system spinner
-  claudeBlueShimmer_FOR_SYSTEM_SPINNER: 'rgb(177,195,255)', // Lighter blue for system spinner shimmer
+  // KOSMOS metaphor — orbital core
+  kosmosCore: 'rgb(99,102,241)', // #6366f1
+  kosmosCoreShimmer: 'rgb(165,180,252)', // #a5b4fc
+  // KOSMOS metaphor — orbital ring
+  orbitalRing: 'rgb(96,165,250)', // #60a5fa
+  orbitalRingShimmer: 'rgb(199,210,254)', // #c7d2fe
+  // KOSMOS wordmark + subtitle
+  wordmark: 'rgb(224,231,255)', // #e0e7ff
+  subtitle: 'rgb(148,163,184)', // #94a3b8
+  // KOSMOS ministry satellites
+  agentSatelliteKoroad: 'rgb(244,114,182)', // #f472b6 (한국도로공사)
+  agentSatelliteKma: 'rgb(52,211,153)', // #34d399 (기상청)
+  agentSatelliteHira: 'rgb(147,197,253)', // #93c5fd (건강보험심사평가원)
+  agentSatelliteNmc: 'rgb(196,181,253)', // #c4b5fd (국립중앙의료원)
   permission: 'rgb(177,185,249)', // Light blue-purple
   permissionShimmer: 'rgb(207,215,255)', // Lighter blue-purple for shimmer
   planMode: 'rgb(72,150,140)', // Muted sage green
@@ -23,17 +34,17 @@ const defaultTheme: ThemeToken = {
   inverseText: 'rgb(0,0,0)', // Black
   inactive: 'rgb(153,153,153)', // Light gray
   inactiveShimmer: 'rgb(193,193,193)', // Lighter gray for shimmer effect
-  subtle: 'rgb(80,80,80)', // Dark gray
+  subtle: 'rgb(148,148,148)', // Medium gray — synced with dark.ts FR-011 bump
   suggestion: 'rgb(177,185,249)', // Light blue-purple
   remember: 'rgb(177,185,249)', // Light blue-purple
-  background: 'rgb(0,204,204)', // Bright cyan
+  background: 'rgb(10,14,39)', // #0a0e27 — KOSMOS navy
   success: 'rgb(78,186,101)', // Bright green
   error: 'rgb(255,107,128)', // Bright red
   warning: 'rgb(255,193,7)', // Bright amber
   merged: 'rgb(175,135,255)', // Electric violet (matches autoAccept)
   warningShimmer: 'rgb(255,223,57)', // Lighter amber for shimmer
-  diffAdded: 'rgb(34,92,43)', // Dark green
-  diffRemoved: 'rgb(122,41,54)', // Dark red
+  diffAdded: 'rgb(64,140,86)', // Medium green — synced with dark.ts FR-011 bump
+  diffRemoved: 'rgb(200,80,96)', // Medium red — synced with dark.ts FR-011 bump
   diffAddedDimmed: 'rgb(71,88,74)', // Very dark green
   diffRemovedDimmed: 'rgb(105,72,77)', // Very dark red
   diffAddedWord: 'rgb(56,166,96)', // Medium green
@@ -48,8 +59,6 @@ const defaultTheme: ThemeToken = {
   cyan_FOR_SUBAGENTS_ONLY: 'rgb(8,145,178)', // Cyan 600
   professionalBlue: 'rgb(106,155,204)',
   chromeYellow: 'rgb(251,188,4)',
-  clawd_body: 'rgb(215,119,87)',
-  clawd_background: 'rgb(0,0,0)',
   userMessageBackground: 'rgb(55, 55, 55)',
   userMessageBackgroundHover: 'rgb(70, 70, 70)',
   messageActionsBackground: 'rgb(44, 50, 62)',
@@ -61,7 +70,6 @@ const defaultTheme: ThemeToken = {
   fastMode: 'rgb(255,120,20)',
   fastModeShimmer: 'rgb(255,165,70)',
   briefLabelYou: 'rgb(122,180,232)',
-  briefLabelClaude: 'rgb(215,119,87)',
   rainbow_red: 'rgb(235,95,87)',
   rainbow_orange: 'rgb(245,139,87)',
   rainbow_yellow: 'rgb(250,195,95)',

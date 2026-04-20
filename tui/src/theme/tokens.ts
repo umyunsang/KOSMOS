@@ -1,21 +1,36 @@
 // Source: .references/claude-code-sourcemap/restored-src/src/utils/theme.ts (Claude Code 2.1.88, research-use)
+// KOSMOS 브랜드 토큰으로 리네이밍됨 (ADR-006 A-9)
 
 /**
  * ThemeToken is the canonical set of named color slots used throughout the
- * KOSMOS TUI.  It is a strict subset of Claude Code's Theme type — keys
- * that are tied to developer-domain semantics (e.g. agent subagent palette,
- * diff colors, rain-bow shimmer) are retained verbatim from the upstream
- * source so that lifted components continue to compile.
+ * KOSMOS TUI.  It binds to the KOSMOS brand metaphor (orbital core, orbital
+ * ring, wordmark, subtitle, ministry satellites) per ADR-006 A-9; keys that
+ * are tied to harness semantics (subagent palette, diff colours, rainbow
+ * shimmer) are retained verbatim from the upstream source so that lifted
+ * components continue to compile.
+ *
+ * Contract: specs/035-onboarding-brand-port/contracts/brand-token-surface.md
+ * Grep gate: specs/034-tui-component-catalog/contracts/grep-gate-rules.md § 4
  *
  * The "default" KOSMOS theme maps to the upstream "dark" palette.
  */
 export type ThemeToken = {
   autoAccept: string
   bashBorder: string
-  claude: string
-  claudeShimmer: string
-  claudeBlue_FOR_SYSTEM_SPINNER: string
-  claudeBlueShimmer_FOR_SYSTEM_SPINNER: string
+  // KOSMOS metaphor — orbital core (asterisk glyph)
+  kosmosCore: string
+  kosmosCoreShimmer: string
+  // KOSMOS metaphor — orbital ring (ADR-006 A-9 composition)
+  orbitalRing: string
+  orbitalRingShimmer: string
+  // KOSMOS wordmark + subtitle
+  wordmark: string
+  subtitle: string
+  // KOSMOS ministry satellites (Phase 1 ministries)
+  agentSatelliteKoroad: string
+  agentSatelliteKma: string
+  agentSatelliteHira: string
+  agentSatelliteNmc: string
   permission: string
   permissionShimmer: string
   planMode: string
@@ -51,8 +66,6 @@ export type ThemeToken = {
   cyan_FOR_SUBAGENTS_ONLY: string
   professionalBlue: string
   chromeYellow: string
-  clawd_body: string
-  clawd_background: string
   userMessageBackground: string
   userMessageBackgroundHover: string
   messageActionsBackground: string
@@ -64,7 +77,6 @@ export type ThemeToken = {
   fastMode: string
   fastModeShimmer: string
   briefLabelYou: string
-  briefLabelClaude: string
   rainbow_red: string
   rainbow_orange: string
   rainbow_yellow: string

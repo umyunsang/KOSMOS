@@ -93,7 +93,7 @@ export function WorkerStatusRow({ workerId }: WorkerStatusRowProps): React.React
           : '○'
 
   const glyphColor = isRunning
-    ? theme.claudeBlue_FOR_SYSTEM_SPINNER
+    ? theme.orbitalRing
     : isDone
       ? theme.success
       : isError
@@ -105,7 +105,7 @@ export function WorkerStatusRow({ workerId }: WorkerStatusRowProps): React.React
   const statusLabel = STATUS_LABEL[worker.status]
 
   const statusColor = isRunning
-    ? theme.claudeBlue_FOR_SYSTEM_SPINNER
+    ? theme.orbitalRing
     : isDone
       ? theme.success
       : isError

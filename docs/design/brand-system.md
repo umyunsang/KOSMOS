@@ -18,7 +18,7 @@ This is why the brand metaphor is not decorative. It is a load-bearing descripti
 
 Five brand primitives constitute the KOSMOS visual vocabulary. Each maps to a specific semantic role in the text UI. The canonical visual reference is the onboarding splash screen specified in ADR-006 A-9 ([`../adr/ADR-006-cc-migration-vision-update.md`](../adr/ADR-006-cc-migration-vision-update.md)), which derives from the Claude Code step-registry pattern (`src/components/Onboarding.tsx`) with developer-domain steps replaced by citizen-domain equivalents.
 
-**`kosmosCore`** — the luminous central asterisk rendered at the centre of the onboarding splash. In the SVG assets (`../../assets/kosmos-logo.svg`, `../../assets/kosmos-logo-dark.svg`), this element carries the ring-to-core gradient (`#818cf8` → `#6366f1`). In every subsequent render surface — the status line, the active spinner, the active-ministry indicator — `kosmosCore` tokens mark "this is a single system." The core is never absent while the session is alive; its persistent presence is the visual claim that no matter how many ministries are answering in parallel, the citizen is talking to one thing.
+**`kosmosCore`** — the luminous central asterisk rendered at the centre of the onboarding splash. In the SVG assets (`../../assets/kosmos-logo.svg`, `../../assets/kosmos-banner-dark.svg`), this element carries the ring-to-core gradient (`#818cf8` → `#6366f1`). In every subsequent render surface — the status line, the active spinner, the active-ministry indicator — `kosmosCore` tokens mark "this is a single system." The core is never absent while the session is alive; its persistent presence is the visual claim that no matter how many ministries are answering in parallel, the citizen is talking to one thing.
 
 **`orbitalRing`** — the rotating ring that encircles `kosmosCore` during active tool-loop execution. In the splash assets, the ring carries the orbital gradient (`#60a5fa` → `#a78bfa`). In the running TUI, `orbitalRing` tokens are applied to progress indicators and to the border of the permission-gauntlet modal (the PermissionGauntletModal component in `tui/src/components/coordinator/`). The ring's visual rotation is the text-UI affordance for "a ministry adapter call is in flight." When the ring is visible, the citizen knows KOSMOS is working; when it stills, the response is ready. The `orbitalRingShimmer` variant carries the pulsing in-flight state without relying on animation speed — shimmering vs. static encodes the same information glyph-safely.
 
@@ -32,10 +32,10 @@ Five brand primitives constitute the KOSMOS visual vocabulary. Each maps to a sp
 
 The following ministries are currently in scope for KOSMOS. Each entry defines the `{MINISTRY}` suffix used in `agentSatellite{MINISTRY}` token names. Adding a new ministry to the KOSMOS adapter tree requires appending a line to this roster **before** any `agentSatellite{MINISTRY}` token can ship — the token-naming grammar defined in §2 defers to this roster as its MinistryCode source of truth (see data-model `§1.7 MetaphorRole`).
 
-- KOROAD — 한국도로공사 (교통사고 위험구간·돌발정보) · accent: road-safety orange
-- KMA — 기상청 (단기예보·주의보) · accent: weather blue
-- HIRA — 건강보험심사평가원 (병원·약국 검색) · accent: health teal
-- NMC — 국립중앙의료원 (응급의료센터) · accent: emergency red
+- KOROAD — 한국도로공사 (교통사고 위험구간·돌발정보) · accent: `#f472b6` (Epic H #1302 binding; see §4 Palette values)
+- KMA — 기상청 (단기예보·주의보) · accent: `#34d399` (Epic H #1302 binding)
+- HIRA — 건강보험심사평가원 (병원·약국 검색) · accent: `#93c5fd` (Epic H #1302 binding)
+- NMC — 국립중앙의료원 (응급의료센터) · accent: `#c4b5fd` (Epic H #1302 binding)
 - 119 NFA — 소방청 (구급·구조 긴급상황) · accent: fire-service red-orange
 - Geocoding — 국토교통부 (주소·좌표 변환) · accent: geospatial grey-blue
 
@@ -61,7 +61,7 @@ The Korea AI Action Plan 공공AX Principle 9 adds a further constraint: citizen
 - **Brand assets on disk** — the following files are present under `/Users/um-yunsang/KOSMOS/assets/` and serve as the authoritative source of palette values for Epic H #1302:
   - `../../assets/kosmos-logo.svg` — primary logo (light background)
   - `../../assets/kosmos-logo.png` — raster equivalent
-  - `../../assets/kosmos-logo-dark.svg` — logo optimised for the KOSMOS navy dark background; cited directly in ADR-006 A-9 as the onboarding splash source
+  - `../../assets/kosmos-banner-dark.svg` — wide wordmark + subtitle on the KOSMOS navy background; cited directly in ADR-006 A-9 as the onboarding splash palette extraction source (historical note: an earlier draft of this document referenced `kosmos-logo-dark.svg`, which was never committed — `kosmos-banner-dark.svg` supersedes it per Epic H research R-10)
   - `../../assets/kosmos-banner-dark.svg` — wide wordmark + subtitle on dark background; canonical palette extraction source per ADR-006 A-9
   - `../../assets/kosmos-banner-dark.png` — raster equivalent
   - `../../assets/kosmos-banner-light.svg` — wide wordmark + subtitle on light background; owned by Epic H for the planned light theme
@@ -184,33 +184,118 @@ New `Variant` values — as opposed to new `MetaphorRole` values — require a l
 
 ## §3 Logo usage
 
-**Owner: Epic H #1302**
+**Owner: Epic H #1302** — populated by `specs/035-onboarding-brand-port/` (ADR-006 A-9 binding).
 
-This section is intentionally a placeholder until Epic H #1302 enters its Spec Kit cycle. Do not edit under Epic M — edits land as part of Epic H's PR. See Epic M #1310 FR-014 for the scope rule.
+### §3.1 · Primary wordmark asset
+
+The KOSMOS wordmark + subtitle composition is rendered from a single SVG source:
+
+- `../../assets/kosmos-banner-dark.svg` — authoritative wide-format wordmark on the KOSMOS navy `#0a0e27` background. This is the palette-extraction source cited by ADR-006 A-9 and the only asset that carries the canonical KOSMOS hex values.
+- `../../assets/kosmos-logo.svg` — compact square logo (core + ring composition); also carries the 16-hex superset from which shimmer variants were drawn per research R-2.
+- `../../assets/kosmos-banner-light.svg`, `../../assets/kosmos-banner-light.png` — light-theme variants owned by Epic H for the deferred light-theme work.
+
+### §3.2 · Clear-space rule
+
+The wordmark must have clear space of at least one glyph-cell on every side. In the TUI this is enforced by wrapping the wordmark in an Ink `<Box flexDirection="column" alignItems="center">` with a `marginTop={1}` and `marginBottom={1}` — the splash composition in `tui/src/components/onboarding/LogoV2/LogoV2.tsx` models the canonical spacing.
+
+### §3.3 · Forbidden transformations
+
+- Never render the wordmark in any colour other than `wordmark` token (`#e0e7ff` on dark; light theme deferred).
+- Never insert punctuation or whitespace between the letters `K O S M O S` — the letterform is a single identity.
+- Never substitute `*` for a decorative glyph — the kosmosCore asterisk is the load-bearing metaphor.
 
 ## §4 Palette values
 
-**Owner: Epic H #1302**
+**Owner: Epic H #1302** — normative reference for every KOSMOS brand token.
 
-This section is intentionally a placeholder until Epic H #1302 enters its Spec Kit cycle. Do not edit under Epic M — edits land as part of Epic H's PR. See Epic M #1310 FR-014 for the scope rule.
+### §4.1 · Primary dark palette (`tui/src/theme/dark.ts`)
+
+| Token | Primary hex | RGB | Ministry binding | Measured contrast vs `#0a0e27` | Pair kind |
+|---|---|---|---|---|---|
+| `background` | `#0a0e27` | `rgb(10,14,39)` | — | — (self) | — |
+| `kosmosCore` | `#6366f1` | `rgb(99,102,241)` | — | see [`contrast-measurements.md`](./contrast-measurements.md) | non-text |
+| `kosmosCoreShimmer` | `#a5b4fc` | `rgb(165,180,252)` | — | see [`contrast-measurements.md`](./contrast-measurements.md) | non-text |
+| `orbitalRing` | `#60a5fa` | `rgb(96,165,250)` | — | see [`contrast-measurements.md`](./contrast-measurements.md) | non-text |
+| `orbitalRingShimmer` | `#c7d2fe` | `rgb(199,210,254)` | — | see [`contrast-measurements.md`](./contrast-measurements.md) | non-text |
+| `wordmark` | `#e0e7ff` | `rgb(224,231,255)` | — | see [`contrast-measurements.md`](./contrast-measurements.md) | body |
+| `subtitle` | `#94a3b8` | `rgb(148,163,184)` | — | see [`contrast-measurements.md`](./contrast-measurements.md) | body |
+| `agentSatelliteKoroad` | `#f472b6` | `rgb(244,114,182)` | KOROAD (한국도로공사) | see [`contrast-measurements.md`](./contrast-measurements.md) | body |
+| `agentSatelliteKma` | `#34d399` | `rgb(52,211,153)` | KMA (기상청) | see [`contrast-measurements.md`](./contrast-measurements.md) | body |
+| `agentSatelliteHira` | `#93c5fd` | `rgb(147,197,253)` | HIRA (건강보험심사평가원) | see [`contrast-measurements.md`](./contrast-measurements.md) | body |
+| `agentSatelliteNmc` | `#c4b5fd` | `rgb(196,181,253)` | NMC (국립중앙의료원) | see [`contrast-measurements.md`](./contrast-measurements.md) | body |
+
+### §4.2 · Contrast authority
+
+The authoritative measured contrast ratios for every palette pair live in [`contrast-measurements.md`](./contrast-measurements.md), machine-regenerated by `scripts/compute-contrast.mjs` on every palette change. All Epic H-introduced tokens pass the WCAG 2.1 thresholds: body text ≥ 4.5:1, non-text ≥ 3:1. Preserve-set tokens whose original value fell below threshold under the new `#0a0e27` background were raised per FR-011 (see commit diff on `subtle` / `diffAdded` / `diffRemoved`).
+
+### §4.3 · Palette provenance
+
+Every primary hex listed above was extracted from `../../assets/kosmos-logo.svg` and `../../assets/kosmos-banner-dark.svg`. Shimmer-variant hexes come from the same SVG's 16-hex superset per research R-2. Ministry accent assignments (KOROAD ↔ `#f472b6`, etc.) are binding as of Epic H #1302; §1's roster entries cross-reference this table.
 
 ## §5 Typography scale
 
 **Owner: Epic H #1302**
 
-This section is intentionally a placeholder until Epic H #1302 enters its Spec Kit cycle. Do not edit under Epic M — edits land as part of Epic H's PR. See Epic M #1310 FR-014 for the scope rule.
+### §5.1 · Font stack (Hangul-safe monospace)
+
+The TUI does not choose a font — it inherits the user's terminal font. However, KOSMOS components assume a monospace terminal that renders:
+
+- Hangul syllables (AC00–D7A3) as width-2 glyphs — matching the East-Asian wide-char convention.
+- Unicode block-drawing characters (U+2500–U+257F) for the orbital-ring frame.
+- The U+002A `*` asterisk in the `kosmosCore` token.
+
+For width computation across Hangul + CJK + ASCII mixed strings, every KOSMOS component uses `tui/src/ink/stringWidth.ts` (ported from CC per Spec 287) rather than rolling its own width pass. This is the single source of truth for terminal grid alignment and must not be duplicated inside a component.
+
+### §5.2 · Terminal font recommendations
+
+The following fonts are verified to render the KOSMOS splash correctly. They are recommendations — not requirements — and are listed for the citizen-facing onboarding handout:
+
+- D2Coding (Korean-community monospace, free)
+- Sarasa Mono K (CJK-wide monospace, free)
+- JetBrains Mono + Hangul fallback (developer-leaning, free)
+- Terminal.app default (`Menlo`) + the OS's Hangul fallback (Mac)
+
+Missing-glyph fallback: when the terminal renders `*` as a visibly-square replacement glyph, the splash still communicates; the reduced-motion branch uses the same glyph.
 
 ## §6 Spacing / grid
 
 **Owner: Epic H #1302**
 
-This section is intentionally a placeholder until Epic H #1302 enters its Spec Kit cycle. Do not edit under Epic M — edits land as part of Epic H's PR. See Epic M #1310 FR-014 for the scope rule.
+### §6.1 · Cell-grid model
+
+KOSMOS composes within a fixed character grid. One column = one cell of ASCII width; one Hangul syllable = two cells. All component layouts are expressed in cells using Ink's `Box` props (`width`, `height`, `marginX`, `paddingX`, etc.). There is no pixel grid — the measurement primitive is the cell.
+
+### §6.2 · Canonical splash dimensions
+
+- Full splash (≥ 80 columns): centred composition, `kosmosCore` asterisk cluster (width 5, height 3), orbital-ring frame (inner width 13), wordmark row (width 6), subtitle row (width up to 60). Detailed geometry lives in `tui/src/components/onboarding/LogoV2/logoV2Utils.ts::calculateLayoutDimensions`.
+- Condensed (50–79 columns): single-line `CondensedLogo` (prefix asterisk + wordmark + segments).
+- Fallback (< 50 columns): `KOSMOS — 한국 공공서비스 대화창` on one line.
+
+### §6.3 · Hangul-syllable spacing
+
+Hangul syllables are rendered at width 2. When mixing Hangul with ASCII digits / English codes (e.g. `한국도로공사 (KOROAD)`), the terminal places the ASCII at width 1, so alignment must be computed with `stringWidth` before the layout pass. KOSMOS layouts never hardcode column offsets — they compute each line's width and use `Box` `flexDirection` + `justifyContent` to position it. This is why Hangul labels do not break at wider / narrower terminal widths.
 
 ## §7 Motion
 
 **Owner: Epic H #1302**
 
-This section is intentionally a placeholder until Epic H #1302 enters its Spec Kit cycle. Do not edit under Epic M — edits land as part of Epic H's PR. See Epic M #1310 FR-014 for the scope rule.
+### §7.1 · Shimmer frame budget
+
+Every shimmering component in KOSMOS cycles at **6 fps** — a 166 ms tick interval — matching the CC `useShimmerAnimation.ts` cadence. Faster rates flicker on low-quality terminals; slower rates drop below the "active" perceptual threshold. The shimmer cadence is shared by `AnimatedAsterisk`, `KosmosCoreIcon`, and any future shimmering surface.
+
+### §7.2 · Reduced-motion gate (`useReducedMotion`)
+
+Every shimmering component reads `tui/src/hooks/useReducedMotion.ts`, which returns `{ prefersReducedMotion: true }` when either `NO_COLOR` or `KOSMOS_REDUCED_MOTION` is set in the environment. When reduced-motion is active:
+
+- The `setInterval` is not started (zero re-render pressure).
+- The component renders its static-variant glyph only (e.g. `*` in `kosmosCore` without cycling to `kosmosCoreShimmer`).
+- The visual information is preserved — colour + glyph still communicate the state — only the animation frame is suppressed.
+
+`NO_COLOR` equivalence means that users who have already opted out of terminal colours via the no-color.org convention automatically get reduced-motion too. This pairing is documented in `docs/tui/accessibility-gate.md § 1.1`.
+
+### §7.3 · Orbital-ring pulsing
+
+The orbital-ring frame in `LogoV2.tsx` full-mode is rendered as a static frame; the ring's "activity" is conveyed by the `AnimatedAsterisk` shimmer at its centre rather than by animating the ring itself. Animating the ring characters would require terminal redraws at every tick — the KOSMOS design avoids this cost by making the core the only animated element.
 
 ## §8 Voice & tone
 
@@ -222,7 +307,39 @@ This section is intentionally a placeholder until Epic H or Epic K enters its Sp
 
 **Owner: Epic H #1302**
 
-This section is intentionally a placeholder until Epic H #1302 enters its Spec Kit cycle. Do not edit under Epic M — edits land as part of Epic H's PR. See Epic M #1310 FR-014 for the scope rule.
+### §9.1 · Core glyph — U+002A asterisk
+
+KOSMOS uses a standard ASCII asterisk (`*`, U+002A) as its core glyph. The choice is deliberate:
+
+- The asterisk is present in every terminal font; there is no fallback to worry about.
+- Its five-point geometry evokes the orbital-core metaphor without requiring graphics.
+- It pairs naturally with block-drawing characters (U+2500–U+257F) for the orbital ring frame.
+
+The asterisk is never substituted by a stylised glyph (e.g. ✦, ✴, ✷). Any visual elaboration happens via colour cycling (`kosmosCoreShimmer`) rather than glyph substitution. This keeps the KOSMOS brand legible on every terminal, including low-quality ones that replace uncommon glyphs with a square.
+
+### §9.2 · Asterisk cluster (`WelcomeV2`)
+
+The welcome screen renders a 3×3 asterisk cluster with a centre `●` (U+25CF, BLACK CIRCLE) in `kosmosCoreShimmer`:
+
+```
+  *  *  *
+ *  ●  *
+  *  *  *
+```
+
+The `●` is the only non-asterisk glyph in the cluster; it represents the citizen's "here" position within the galaxy metaphor. Under reduced-motion the `●` is rendered in `kosmosCore` (no shimmer).
+
+### §9.3 · Ministry availability indicators
+
+The feed component uses U+25CF `●` (available) and U+25CB `○` (unavailable) as ministry-status glyphs, with each row's indicator carrying the `agentSatellite{MINISTRY}` accent. These glyphs are universally supported in terminal fonts and communicate availability glyph-safely even on monochrome terminals.
+
+### §9.4 · Korean-safe fallback policy
+
+Any future KOSMOS glyph added to the design system must pass three checks before landing:
+
+1. Present in the Unicode BMP (not in a supplementary plane).
+2. Renders width-1 on standard terminal fonts (non-wide-char ASCII-equivalent) OR clearly documented as width-2 for Hangul-family inclusion.
+3. Has a reduced-motion fallback (either static or replaced with a simpler primitive).
 
 ## §10 Component usage guidelines
 

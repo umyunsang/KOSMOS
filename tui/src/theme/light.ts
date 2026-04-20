@@ -1,17 +1,31 @@
 // Source: .references/claude-code-sourcemap/restored-src/src/utils/theme.ts (Claude Code 2.1.88, research-use)
+// KOSMOS 브랜드 토큰으로 리네이밍됨 (ADR-006 A-9)
 import type { ThemeToken } from './tokens'
 
 /**
  * Light theme using explicit RGB values to avoid inconsistencies
- * from users' custom terminal ANSI color definitions.
+ * from users' custom terminal ANSI color definitions. ADR-006 A-9 specifies
+ * the KOSMOS dark palette authoritatively; the light variant reuses the same
+ * ten KOSMOS metaphor tokens unchanged (this keeps the ThemeToken contract
+ * uniform — actual light-mode hex tuning lives in a future Epic).
  */
 const lightTheme: ThemeToken = {
   autoAccept: 'rgb(135,0,255)', // Electric violet
   bashBorder: 'rgb(255,0,135)', // Vibrant pink
-  claude: 'rgb(215,119,87)', // Claude orange
-  claudeShimmer: 'rgb(245,149,117)', // Lighter claude orange for shimmer effect
-  claudeBlue_FOR_SYSTEM_SPINNER: 'rgb(87,105,247)', // Medium blue for system spinner
-  claudeBlueShimmer_FOR_SYSTEM_SPINNER: 'rgb(117,135,255)', // Lighter blue for system spinner shimmer
+  // KOSMOS metaphor — orbital core
+  kosmosCore: 'rgb(99,102,241)', // #6366f1
+  kosmosCoreShimmer: 'rgb(165,180,252)', // #a5b4fc
+  // KOSMOS metaphor — orbital ring
+  orbitalRing: 'rgb(96,165,250)', // #60a5fa
+  orbitalRingShimmer: 'rgb(199,210,254)', // #c7d2fe
+  // KOSMOS wordmark + subtitle
+  wordmark: 'rgb(224,231,255)', // #e0e7ff
+  subtitle: 'rgb(148,163,184)', // #94a3b8
+  // KOSMOS ministry satellites
+  agentSatelliteKoroad: 'rgb(244,114,182)', // #f472b6
+  agentSatelliteKma: 'rgb(52,211,153)', // #34d399
+  agentSatelliteHira: 'rgb(147,197,253)', // #93c5fd
+  agentSatelliteNmc: 'rgb(196,181,253)', // #c4b5fd
   permission: 'rgb(87,105,247)', // Medium blue
   permissionShimmer: 'rgb(137,155,255)', // Lighter blue for shimmer effect
   planMode: 'rgb(0,102,102)', // Muted teal
@@ -47,8 +61,6 @@ const lightTheme: ThemeToken = {
   cyan_FOR_SUBAGENTS_ONLY: 'rgb(8,145,178)', // Cyan 600
   professionalBlue: 'rgb(106,155,204)',
   chromeYellow: 'rgb(251,188,4)',
-  clawd_body: 'rgb(215,119,87)',
-  clawd_background: 'rgb(0,0,0)',
   userMessageBackground: 'rgb(240, 240, 240)',
   userMessageBackgroundHover: 'rgb(252, 252, 252)',
   messageActionsBackground: 'rgb(232, 236, 244)',
@@ -60,7 +72,6 @@ const lightTheme: ThemeToken = {
   fastMode: 'rgb(255,106,0)',
   fastModeShimmer: 'rgb(255,150,50)',
   briefLabelYou: 'rgb(37,99,235)',
-  briefLabelClaude: 'rgb(215,119,87)',
   rainbow_red: 'rgb(235,95,87)',
   rainbow_orange: 'rgb(245,139,87)',
   rainbow_yellow: 'rgb(250,195,95)',

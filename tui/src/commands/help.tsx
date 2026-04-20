@@ -51,7 +51,7 @@ export function HelpView({ commands, errorBanner }: HelpViewProps) {
 
       {/* Title */}
       <Box marginBottom={1}>
-        <Text bold color={theme.claude}>
+        <Text bold color={theme.kosmosCore}>
           {i18n.helpTitle}
         </Text>
       </Box>

@@ -53,7 +53,7 @@ export function StreamingMessage({ messageId }: StreamingMessageProps): React.Re
     <Box flexDirection="column" marginBottom={1}>
       {/* Assistant label */}
       <Box>
-        <Text bold color={theme.claude}>
+        <Text bold color={theme.kosmosCore}>
           {'  '}⎿{'  '}
         </Text>
       </Box>

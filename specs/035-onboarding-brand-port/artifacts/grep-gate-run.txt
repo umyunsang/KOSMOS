@@ -1,0 +1,90 @@
+Brand Guardian Grep Gate — Manual Run (T037)
+=============================================
+
+Branch        : 035-onboarding-brand-port
+Date          : 2026-04-20
+Spec          : 035-onboarding-brand-port (Epic H #1302)
+Rule set      : specs/034-tui-component-catalog/contracts/grep-gate-rules.md §2
+Roster source : docs/design/brand-system.md §1 Ministry satellite roster
+
+Note: the gate workflow (.github/workflows/brand-guardian.yml) is tracked as
+a Spec 034 Deferred Items row and has not been implemented as CI yet.  This
+file captures the manual run performed at Epic H PR prep time.  Once the
+workflow lands, the same enumeration must pass automatically.
+
+
+PR-added identifiers (delta on tui/src/theme/tokens.ts ThemeToken type)
+-----------------------------------------------------------------------
+
+10 new identifiers (from contracts/brand-token-surface.md §2):
+
+  01. kosmosCore
+  02. kosmosCoreShimmer
+  03. orbitalRing
+  04. orbitalRingShimmer
+  05. wordmark
+  06. subtitle
+  07. agentSatelliteKoroad
+  08. agentSatelliteKma
+  09. agentSatelliteHira
+  10. agentSatelliteNmc
+
+7 removed identifiers (DELETE set, §1):
+
+   - claude                                        (BAN-01)
+   - claudeShimmer                                 (BAN-01)
+   - claudeBlue_FOR_SYSTEM_SPINNER                 (BAN-01)
+   - claudeBlueShimmer_FOR_SYSTEM_SPINNER          (BAN-01)
+   - clawd_body                                    (BAN-02)
+   - clawd_background                              (BAN-02)
+   - briefLabelClaude                              (BAN-01)
+
+BAN-01..BAN-07 checks on the 10 added identifiers
+--------------------------------------------------
+
+  BAN-01  ^claude[A-Za-z0-9_]*$              : 0 match  PASS
+  BAN-02  ^clawd[A-Za-z0-9_]*$               : 0 match  PASS
+  BAN-03  ^anthropic[A-Za-z0-9_]*$           : 0 match  PASS
+  BAN-04  ^(primary|secondary|tertiary)$     : 0 match  PASS
+  BAN-05  ^accent[0-9]+$                     : 0 match  PASS
+  BAN-06  ^mainColor$                        : 0 match  PASS
+  BAN-07  ^(background|foreground)$          : 0 match  PASS
+                                               (`background` identifier is
+                                                preserve-set, its VALUE
+                                                changed but identifier did
+                                                not — allow-listed.)
+
+MinistryCode roster check (contract §6)
+---------------------------------------
+
+Four agentSatellite{MinistryCode} tokens require the suffix to appear in
+docs/design/brand-system.md §1 roster:
+
+  Koroad   → present in roster ✓
+  Kma      → present in roster ✓
+  Hira     → present in roster ✓
+  Nmc      → present in roster ✓
+
+Component-layer scan (tui/src/components/**)
+--------------------------------------------
+
+Scan for reintroduction of BAN-01..BAN-02 in component source (not just the
+theme surface) — exactly zero token-use references remain after Phase 2
+consumer migration (StreamingMessage / WorkerStatusRow / PhaseIndicator /
+help):
+
+  rg -n '\b(claude|claudeShimmer|clawd_body|clawd_background|briefLabelClaude)\b' \
+     tui/src/components/ -g '!*.md'   →  0 matches
+
+  (62 `// Source: .references/claude-code-sourcemap/...` attribution
+   comments remain — these match `claude` inside `claude-code-sourcemap`
+   which is a directory name, not a token identifier; the regex pattern
+   in §2 is anchored to whole-identifier names and excludes attribution
+   prose by construction.)
+
+Result
+------
+
+PASS — every PR-added identifier clears BAN-01..BAN-07 and every
+`agentSatellite{MinistryCode}` resolves to a roster-present MinistryCode.
+No manual fix-up was required.

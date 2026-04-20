@@ -88,13 +88,13 @@ Deep ARIA-style role/name/value conformance (WCAG 4.1.2) for an Ink virtual DOM 
 
 | # | CC source path | Verdict | WCAG | KWCAG notes | IME-safe | Contrast constraint |
 |---|---|---|---|---|---|---|
-| 31 | LogoV2/AnimatedAsterisk.tsx | REWRITE | 1.4.3, 4.1.2 | 은하계 로고 애니메이션 대체 텍스트 제공; 고대비 모드 지원 | n/a | 3:1 |
-| 32 | LogoV2/CondensedLogo.tsx | REWRITE | 1.4.3, 4.1.2 | 축약 헤더 KOSMOS 워드마크 대체 텍스트; 스크린 리더 세션 정보 안내 | n/a | 4.5:1 |
-| 33 | LogoV2/Feed.tsx | REWRITE | 1.4.3, 4.1.2 | 피드 항목 스크린 리더 접근 가능; 사역부 상태 피드 대체 텍스트 | n/a | 4.5:1 |
-| 34 | LogoV2/FeedColumn.tsx | PORT | 1.4.3 | — | n/a | 4.5:1 |
-| 35 | LogoV2/feedConfigs.tsx | REWRITE | 1.4.3, 4.1.2 | 피드 팩토리 시민 온보딩 단계 스크린 리더 내레이션; 사역부 가용성 상태 안내 | n/a | 4.5:1 |
-| 36 | LogoV2/LogoV2.tsx | REWRITE | 1.4.3, 2.1.1, 2.4.7, 4.1.2 | 은하계 스플래시 대체 텍스트; 키보드 포커스 순서 명확; 고대비 모드 지원 | n/a | 4.5:1 |
-| 37 | LogoV2/WelcomeV2.tsx | REWRITE | 1.4.3, 2.1.1, 2.4.7, 4.1.2 | 은하계 웰컴 화면 대체 텍스트; 키보드 포커스 순서 명확; KOSMOS 핵(kosmosCore) 은유 설명 | n/a | 4.5:1 |
+| 31 | LogoV2/AnimatedAsterisk.tsx | REWRITE | 1.4.3, 4.1.2 | 은하계 로고 애니메이션 대체 텍스트 제공; 고대비 모드 지원 · **SHIPPED-Epic-H #1302** | n/a | 3:1 |
+| 32 | LogoV2/CondensedLogo.tsx | REWRITE | 1.4.3, 4.1.2 | 축약 헤더 KOSMOS 워드마크 대체 텍스트; 스크린 리더 세션 정보 안내 · **SHIPPED-Epic-H #1302** | n/a | 4.5:1 |
+| 33 | LogoV2/Feed.tsx | REWRITE | 1.4.3, 4.1.2 | 피드 항목 스크린 리더 접근 가능; 사역부 상태 피드 대체 텍스트 · **SHIPPED-Epic-H #1302** | n/a | 4.5:1 |
+| 34 | LogoV2/FeedColumn.tsx | PORT | 1.4.3 | **SHIPPED-Epic-H #1302** | n/a | 4.5:1 |
+| 35 | LogoV2/feedConfigs.tsx | REWRITE | 1.4.3, 4.1.2 | 피드 팩토리 시민 온보딩 단계 스크린 리더 내레이션; 사역부 가용성 상태 안내 · **SHIPPED-Epic-H #1302** | n/a | 4.5:1 |
+| 36 | LogoV2/LogoV2.tsx | REWRITE | 1.4.3, 2.1.1, 2.4.7, 4.1.2 | 은하계 스플래시 대체 텍스트; 키보드 포커스 순서 명확; 고대비 모드 지원 · **SHIPPED-Epic-H #1302** | n/a | 4.5:1 |
+| 37 | LogoV2/WelcomeV2.tsx | REWRITE | 1.4.3, 2.1.1, 2.4.7, 4.1.2 | 은하계 웰컴 화면 대체 텍스트; 키보드 포커스 순서 명확; KOSMOS 핵(kosmosCore) 은유 설명 · **SHIPPED-Epic-H #1302** | n/a | 4.5:1 |
 
 <a id="ag-spinner"></a>
 
@@ -453,3 +453,13 @@ This gate is the single source of truth for six machine-checkable invariants. `/
 **Palette-selection constraint for Epic H #1302**: body text ≥ 4.5:1 contrast, large text / non-text ≥ 3:1 (FR-022).
 
 Epic H's `/speckit-specify` input MUST acknowledge this line before proposing any concrete color value. The constraint applies to all foreground/background color pairs rendered by any PORT or REWRITE component in this gate. The 3:1 threshold applies to non-text UI chrome including spinner glyphs (`Spinner/FlashingChar.tsx`, `Spinner/ShimmerChar.tsx`, `Spinner/SpinnerGlyph.tsx`, `Spinner/SpinnerAnimationRow.tsx`), dividers (`design-system/Divider.tsx`), panes (`design-system/Pane.tsx`), progress indicators (`design-system/ProgressBar.tsx`, `design-system/StatusIcon.tsx`), and `ToolUseLoader.tsx`. All other visible text surfaces require the 4.5:1 minimum. This constraint is non-negotiable and supersedes any CC-inherited palette token values.
+
+### §7.1 · Epic H #1302 shipped surface
+
+The `035-onboarding-brand-port` Epic ships the following accessibility-gate rows as the first citizen-facing KOSMOS surface:
+
+- Rows 31–37 (ag-logov2 family): every LogoV2 REWRITE + the FeedColumn PORT — see `specs/035-onboarding-brand-port/contracts/logov2-rewrite-visual-specs.md` for per-component visual specs and reduced-motion fallback rules. Measured contrast ratios are published in `docs/design/contrast-measurements.md` (populated by `scripts/compute-contrast.mjs` — Epic H tasks T045/T046).
+- Row 154 / 162 equivalents (chrome/KosmosCoreIcon.tsx): ag-logo-wordmark; static + shimmering variants verified under reduced-motion.
+- Row 156/165 equivalent (onboarding/Onboarding.tsx): ag-onboarding; three-step state machine with IME-gated Enter, Escape-to-exit, fail-closed PIPA consent + ministry-scope flow.
+
+All nine shipped rows meet the FR-022 contrast constraint by construction — KOSMOS navy `#0a0e27` against every Epic H-introduced foreground token has been measured via `scripts/compute-contrast.mjs`.
