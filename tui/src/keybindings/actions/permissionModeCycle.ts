@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Spec 288 · T034 — `permission-mode-cycle` (shift+tab / meta+m) handler.
+// Spec 288 · T034 — `permission-mode-cycle` (shift+tab / alt+m fallback) handler.
 //
 // Closes #1583 (US4). FR-008 / FR-009 / FR-010 / FR-011 / SC-005.
 //

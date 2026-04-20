@@ -15,6 +15,18 @@ import {
 
 // ---------------------------------------------------------------------------
 // Platform-specific shift+tab fallback (D3, ports CC L17-L30).
+//
+// Fallback chord chosen for Windows terminals that do NOT negotiate the VT
+// input sequence for shift+tab. We intentionally spell the fallback as
+// `alt+m` (not `meta+m`) because Ink collapses alt/meta into a single
+// `key.meta` flag on every host terminal, and `match.ts::buildChordEvent()`
+// canonicalises that collapsed flag to the `alt` token in the emitted
+// ChordEvent.chord string (see the QUIRK comment in match.ts). Shipping
+// `meta+m` here would produce a default binding that the matcher can never
+// hit — citizens would press Alt+M, the matcher would look up `alt+m`, and
+// the registry's `meta+m` entry would stay orphaned. Addresses Codex P2 on
+// PR #1591. The physical key a citizen presses is unchanged (Alt+M or
+// Meta/⌘+M — both collapse into Ink's meta flag).
 // ---------------------------------------------------------------------------
 
 function isWindows(): boolean {
@@ -40,7 +52,7 @@ function bunSupportsVT(): boolean {
 const SUPPORTS_TERMINAL_VT_MODE = !isWindows() || bunSupportsVT()
 export const MODE_CYCLE_DEFAULT_CHORD = SUPPORTS_TERMINAL_VT_MODE
   ? 'shift+tab'
-  : 'meta+m'
+  : 'alt+m'
 
 // ---------------------------------------------------------------------------
 // Tier 1 default bindings (data-model.md § 2)
