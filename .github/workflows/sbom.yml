@@ -77,12 +77,22 @@ jobs:
       # Reference: specs/024-tool-security-v1/research.md §3.7 "Supply-chain posture"
       - name: Divergence gate — SPDX (FR-019)
         run: |
+          # Normalise syft's per-run non-determinism so the gate flags
+          # genuine lockfile drift, not tool-internal ID reshuffling:
+          #   - strip timestamp + document UUID + root SPDXID
+          #   - strip the `-<16-hex>` hash suffix syft appends to every
+          #     `SPDXRef-Package-<name>-<hash>` identifier (the same
+          #     package can receive different hashes across runs when
+          #     catalogers visit paths in different order)
+          #   - sort the `packages` and `relationships` arrays so ordering
+          #     is not a divergence signal
           strip_spdx() {
-            jq 'del(
-              .creationInfo.created,
-              .documentNamespace,
-              .SPDXID
-            )' "$1"
+            jq '
+              del(.creationInfo.created, .documentNamespace, .SPDXID)
+              | (.. | strings) |= gsub("(?<p>SPDXRef-Package-[^\"\\s,]+?)-(?<h>[0-9a-f]{16})(?<t>\"|\\b)"; "\(.p)\(.t)")
+              | .packages |= sort_by(.name, .versionInfo)
+              | .relationships |= sort_by(.spdxElementId, .relatedSpdxElement, .relationshipType)
+            ' "$1"
           }
           diff <(strip_spdx sbom-spdx-run1.json) <(strip_spdx sbom-spdx-run2.json) \
             || { echo "ERROR: SPDX 2.3 SBOM diverged between runs (FR-019)."; \
@@ -92,12 +102,16 @@ jobs:
 
       - name: Divergence gate — CycloneDX (FR-019)
         run: |
+          # Same normalisation rationale as the SPDX gate above —
+          # CycloneDX also carries per-run UUID suffixes on
+          # bom-ref identifiers.  Strip them + sort components + deps.
           strip_cdx() {
-            jq 'del(
-              .metadata.timestamp,
-              .serialNumber,
-              .metadata.tools
-            )' "$1"
+            jq '
+              del(.metadata.timestamp, .serialNumber, .metadata.tools)
+              | (.. | strings) |= gsub("(?<p>[^\"\\s]+?)-(?<h>[0-9a-f]{16})(?<t>\"|\\b)"; "\(.p)\(.t)")
+              | (.components // []) |= sort_by(.name, .version)
+              | (.dependencies // []) |= sort_by(.ref)
+            ' "$1"
           }
           diff <(strip_cdx sbom-cyclonedx-run1.json) <(strip_cdx sbom-cyclonedx-run2.json) \
             || { echo "ERROR: CycloneDX 1.6 SBOM diverged between runs (FR-019)."; \

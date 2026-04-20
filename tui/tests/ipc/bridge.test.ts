@@ -39,9 +39,12 @@ function makeUserInputFrame(sid: string, text: string): IPCFrame {
 // ---------------------------------------------------------------------------
 
 describe('bridge: process lifecycle', () => {
-  test('backend spawns and starts within 2 s', async () => {
+  test('backend spawns and starts within 5 s', async () => {
     const bridge = createBridge({ cmd: BACKEND_CMD })
-    // Give it up to 2 s to be reachable
+    // Give it up to 5 s to be reachable.  The original 2 s bound was flaky
+    // on shared CI runners under load (observed 2 002 ms on main-branch
+    // runs where the PR CI passed at ~1.8 s).  5 s keeps the test fast
+    // while absorbing runner variance.
     const startTime = Date.now()
     const sid = 'test-session-bridge-01'
 
@@ -49,7 +52,7 @@ describe('bridge: process lifecycle', () => {
 
     let gotFrame = false
     const timeout = new Promise<void>((_, reject) =>
-      setTimeout(() => reject(new Error('timeout')), 2000),
+      setTimeout(() => reject(new Error('timeout')), 5000),
     )
     const receiveOne = (async () => {
       for await (const frame of bridge.frames()) {
@@ -60,7 +63,7 @@ describe('bridge: process lifecycle', () => {
 
     await Promise.race([receiveOne, timeout])
     expect(gotFrame).toBe(true)
-    expect(Date.now() - startTime).toBeLessThan(2000)
+    expect(Date.now() - startTime).toBeLessThan(5000)
     await bridge.close()
   })
 
