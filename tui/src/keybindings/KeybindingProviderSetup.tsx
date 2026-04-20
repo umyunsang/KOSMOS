@@ -21,6 +21,7 @@ import {
 } from './useKeybinding'
 import { useGlobalKeybindings } from '../hooks/useGlobalKeybindings'
 import {
+  type AccessibilityAnnouncer,
   type AuditWriter,
   type KeybindingContext as KeybindingContextEnum,
   type TierOneAction,
@@ -36,6 +37,14 @@ export type KeybindingProviderSetupProps = Readonly<{
    * `drainBindingSpans()` exposes to tests.
    */
   spans?: SpanEmitter
+  /**
+   * Optional — reuse an announcer already created by the caller.  Required
+   * when `handlerOverrides` needs to share an announcer with the provider
+   * (the handler bag and the provider's own stub writers must route through
+   * the same instance so a single screen-reader stream is observed).  When
+   * omitted, the provider creates a fresh `createAccessibilityAnnouncer()`.
+   */
+  announcer?: AccessibilityAnnouncer
   /** Current session id (from the bridge). */
   sessionId?: string | null
   /** Active contexts — declarative; the provider does not track modal state. */
@@ -135,7 +144,14 @@ export function KeybindingProviderSetup(
   props: KeybindingProviderSetupProps,
 ): React.ReactElement {
   const registry = React.useMemo(() => buildRegistry(), [])
-  const announcer = React.useMemo(() => createAccessibilityAnnouncer(), [])
+  // Use the caller-supplied announcer when provided so Tier 1 handler
+  // factories (`handlerOverrides`) and the provider's own default stubs share
+  // a single announce stream.  Fall back to a fresh instance otherwise.
+  const fallbackAnnouncer = React.useMemo(
+    () => createAccessibilityAnnouncer(),
+    [],
+  )
+  const announcer = props.announcer ?? fallbackAnnouncer
 
   const value = React.useMemo<KeybindingSurfaces>(
     () =>
