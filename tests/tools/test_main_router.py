@@ -30,8 +30,10 @@ from kosmos.memdir.ministry_scope import (
     write_scope_atomic,
 )
 from kosmos.tools.main_router import (
+    COMPOSITE_TOOL_MINISTRIES,
     MinistryOptOutRefusal,
     check_ministry_scope,
+    ministries_for_composite,
     ministry_for_tool,
     ministry_korean_name,
     resolve_with_scope_guard,
@@ -120,6 +122,51 @@ def test_no_scope_record_refuses_all_ministry_tools(tmp_path: Path) -> None:
 
 def test_no_scope_record_passes_non_ministry_tools(tmp_path: Path) -> None:
     assert check_ministry_scope("lookup", memdir_root=tmp_path) == "pass"
+
+
+def test_composite_tool_refuses_on_any_opt_out() -> None:
+    """`road_risk_score` fans out to KOROAD + KMA.  Opting out of either
+    ministry must refuse the composite call."""
+    assert "road_risk_score" in COMPOSITE_TOOL_MINISTRIES
+    assert ministries_for_composite("road_risk_score") == frozenset(
+        ("KOROAD", "KMA")
+    )
+    # KOROAD declined → refuse (canonical refusal ministry = KOROAD since
+    # it's the first in sorted order).
+    scope_no_koroad = _scope_record({"KOROAD": False})
+    result = check_ministry_scope(
+        "road_risk_score",
+        memdir_root=Path("/nonexistent"),
+        scope_override=scope_no_koroad,
+    )
+    assert isinstance(result, MinistryOptOutRefusal)
+    assert result.ministry == "KOROAD"
+    # KMA declined → also refuses, this time naming KMA.
+    scope_no_kma = _scope_record({"KMA": False})
+    result = check_ministry_scope(
+        "road_risk_score",
+        memdir_root=Path("/nonexistent"),
+        scope_override=scope_no_kma,
+    )
+    assert isinstance(result, MinistryOptOutRefusal)
+    assert result.ministry == "KMA"
+    # Both opted in → pass.
+    assert (
+        check_ministry_scope(
+            "road_risk_score",
+            memdir_root=Path("/nonexistent"),
+            scope_override=_scope_record(),
+        )
+        == "pass"
+    )
+
+
+def test_composite_tool_refuses_on_missing_scope_record(tmp_path: Path) -> None:
+    """Fail-closed default for composite tools when no scope record exists."""
+    result = check_ministry_scope(
+        "road_risk_score", memdir_root=tmp_path,
+    )
+    assert isinstance(result, MinistryOptOutRefusal)
 
 
 def test_stale_scope_version_refuses(tmp_path: Path) -> None:

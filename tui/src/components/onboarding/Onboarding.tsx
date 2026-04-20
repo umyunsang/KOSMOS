@@ -137,7 +137,12 @@ export const STEPS: readonly OnboardingStep[] = [
     stepId: 'ministry-scope-ack',
     component: MinistryScopeStepBound,
     advanceCondition: () => true,
+    // Skip ONLY when BOTH records are fresh.  Stale consent forces the
+    // scope step to render regardless of its own freshness — ministry
+    // opt-ins from a superseded consent version must be re-acknowledged
+    // (research R-6, Codex review 2026-04-20).
     skipCondition: (memdir) =>
+      memdir.consentRecord?.consent_version === CURRENT_CONSENT_VERSION &&
       memdir.scopeRecord?.scope_version === CURRENT_SCOPE_VERSION,
     exitSideEffect: 'write-scope-record',
   },

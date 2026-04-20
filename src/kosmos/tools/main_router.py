@@ -31,11 +31,14 @@ from kosmos.memdir.ministry_scope import (
 )
 
 __all__ = [
+    "COMPOSITE_TOOL_MINISTRIES",
     "MINISTRY_TOOL_PREFIX",
     "MinistryOptOutRefusal",
-    "resolve_with_scope_guard",
+    "check_ministry_scope",
+    "ministries_for_composite",
     "ministry_for_tool",
     "ministry_korean_name",
+    "resolve_with_scope_guard",
 ]
 
 logger = logging.getLogger(__name__)
@@ -51,18 +54,39 @@ MINISTRY_TOOL_PREFIX: dict[str, MinistryCode] = {
     "nmc_": "NMC",
 }
 
+# Composite tools whose `tool_id` does NOT carry a single-ministry prefix but
+# that fan out to multiple ministries under the hood.  Every ministry in the
+# set must be opted-in for the composite call to proceed; one opted-out
+# ministry refuses the whole call.  Extend this map when a new composite is
+# registered in `src/kosmos/tools/register_all.py`.
+COMPOSITE_TOOL_MINISTRIES: dict[str, frozenset[MinistryCode]] = {
+    "road_risk_score": frozenset(("KOROAD", "KMA")),
+}
+
 
 def ministry_for_tool(tool_id: str) -> MinistryCode | None:
     """Resolve a tool_id to its owning ministry, or None if not ministry-bound.
 
     `tool_id` is case-folded before matching so that a mis-cased registration
     (e.g., `Koroad_...` or `KOROAD_...`) cannot evade the scope guard.
+    Returns None for composite tools — callers must use
+    `ministries_for_composite()` for those.
     """
     normalized = tool_id.casefold()
     for prefix, code in MINISTRY_TOOL_PREFIX.items():
         if normalized.startswith(prefix):
             return code
     return None
+
+
+def ministries_for_composite(tool_id: str) -> frozenset[MinistryCode] | None:
+    """Return the ministry fan-out set for a composite tool, or None.
+
+    Composite tool IDs are matched case-sensitively against
+    `COMPOSITE_TOOL_MINISTRIES` keys — the registry pins these IDs
+    authoritatively, so no case normalisation is needed here.
+    """
+    return COMPOSITE_TOOL_MINISTRIES.get(tool_id)
 
 
 _MINISTRY_KOREAN: dict[MinistryCode, str] = {
@@ -137,25 +161,46 @@ def check_ministry_scope(
 ) -> Literal["pass"] | MinistryOptOutRefusal:
     """Fail-closed ministry-scope check.
 
-    - Non-ministry tool                          → pass.
-    - No scope record                            → refusal (fail-closed default).
+    - Non-ministry tool                            → pass.
+    - Composite tool with any opt-out ministry     → refusal (first-opt-out wins).
+    - No scope record                              → refusal (fail-closed default).
     - Stale scope_version != CURRENT_SCOPE_VERSION → refusal (forces re-onboard).
-    - Ministry opt-out                           → refusal.
-    - Ministry opt-in                            → pass.
+    - Single-ministry opt-out                      → refusal.
+    - Single-ministry opt-in                       → pass.
     """
+    composite = ministries_for_composite(tool_id)
     ministry = ministry_for_tool(tool_id)
-    if ministry is None:
+    if composite is None and ministry is None:
         return "pass"
 
     scope = scope_override
     if scope is None:
         scope = latest_scope(memdir_root / "user" / "ministry-scope")
+
+    # Pick a representative ministry for the refusal message when the scope
+    # record is missing / stale — use the first ministry in the composite
+    # set (sorted for determinism) or the single ministry.  This ministry
+    # appears in the citizen-facing Korean refusal copy.
+    canonical: MinistryCode = (
+        ministry
+        if ministry is not None
+        else sorted(composite)[0]  # type: ignore[arg-type]
+    )
+
     if scope is None:
-        return _build_refusal(ministry)
+        return _build_refusal(canonical)
     if scope.scope_version != CURRENT_SCOPE_VERSION:
-        # Stale record — bump invalidates all prior acknowledgments by design
-        # (research R-6); citizen must re-complete the ministry-scope step.
-        return _build_refusal(ministry)
+        return _build_refusal(canonical)
+
+    # Composite: refuse if ANY fan-out ministry is opted out.
+    if composite is not None:
+        for needed in sorted(composite):
+            if not opt_in_lookup(scope, needed):
+                return _build_refusal(needed)
+        return "pass"
+
+    # Single-ministry: standard opt-in check.
+    assert ministry is not None  # narrowed by earlier guard
     if not opt_in_lookup(scope, ministry):
         return _build_refusal(ministry)
     return "pass"
