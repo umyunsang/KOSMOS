@@ -20,7 +20,12 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Box, Text, useApp, useInput } from 'ink'
 import { useTheme } from '../theme/provider'
-import { useSessionStore, dispatchSessionAction } from '../store/session-store'
+import {
+  useSessionStore,
+  dispatchSessionAction,
+  computeIsAgentLoopActive,
+  computeCurrentToolCallId,
+} from '../store/session-store'
 import { MessageList } from '../components/conversation/MessageList'
 import { CrashNotice } from '../components/CrashNotice'
 import { createBridge } from '../ipc/bridge'
@@ -614,36 +619,28 @@ export function App({ bridge }: AppProps): React.ReactElement {
   // tier can exist without a consent record (`available && !granted`).
   const memdirUserAvailable = consentFresh
 
-  // Agent loop probe — the session store does not track liveness directly,
-  // so derive it from the latest assistant message's `done` flag.
-  const messageOrderForProbe = useSessionStore((s) => s.message_order)
-  const isAgentLoopActive = React.useCallback((): boolean => {
-    const lastId = messageOrderForProbe[messageOrderForProbe.length - 1]
-    if (lastId === undefined) return false
-    const msg = messagesMap.get(lastId)
-    if (msg === undefined) return false
-    return msg.role === 'assistant' && !msg.done
-  }, [messageOrderForProbe, messagesMap])
+  // Agent loop probes — the session store does not track liveness directly,
+  // so derive it from the full `messages` map.  Previously these probes
+  // peeked only the last entry of `message_order`, but the reducer's
+  // `TOOL_CALL` branch writes to `messages` WITHOUT appending to
+  // `message_order` (see session-store.ts comments around the TOOL_CALL case
+  // and `computeIsAgentLoopActive`).  That means a tool call that arrives
+  // before any `ASSISTANT_CHUNK` was invisible to the probe, causing
+  // `session-exit` to skip its FR-015 confirmation and `agent-interrupt` to
+  // arm exit instead of cancelling (Codex P1, Spec 288 PR #1591).
+  //
+  // The derived helpers in session-store.ts scan the map directly so a
+  // tool-call-only message still participates in loop-active and
+  // in-flight-tool-call detection.
+  const isAgentLoopActive = React.useCallback(
+    (): boolean => computeIsAgentLoopActive(messagesMap),
+    [messagesMap],
+  )
 
-  const currentToolCallId = React.useCallback((): string | null => {
-    // Scan the most recent assistant message for the last tool call that
-    // has no matching result yet.  When none is in flight, return null.
-    for (let i = messageOrderForProbe.length - 1; i >= 0; i--) {
-      const id = messageOrderForProbe[i]
-      if (id === undefined) continue
-      const msg = messagesMap.get(id)
-      if (msg === undefined || msg.role !== 'assistant') continue
-      for (let j = msg.tool_calls.length - 1; j >= 0; j--) {
-        const call = msg.tool_calls[j]
-        if (call === undefined) continue
-        const hasResult = msg.tool_results.some(
-          (r) => r.call_id === call.call_id,
-        )
-        if (!hasResult) return call.call_id
-      }
-    }
-    return null
-  }, [messageOrderForProbe, messagesMap])
+  const currentToolCallId = React.useCallback(
+    (): string | null => computeCurrentToolCallId(messagesMap),
+    [messagesMap],
+  )
 
   const tier1Handlers = useMemo(
     () =>
