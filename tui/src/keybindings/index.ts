@@ -45,6 +45,27 @@ export {
   type CancelResult,
 } from './actions/historySearch'
 export {
+  createAgentInterruptController,
+  ARM_WINDOW_MS,
+  type AgentInterruptController,
+  type AgentInterruptDeps,
+  type AgentInterruptOutcome,
+} from './actions/agentInterrupt'
+export {
+  cancelDraft,
+  type DraftCancelDeps,
+  type DraftCancelOutcome,
+} from './actions/draftCancel'
+export {
+  createHistoryNavigator,
+  type HistoryNavigator,
+  type HistoryNavigatorDeps,
+  type HistoryNavigationEntry,
+  type HistoryConsentState,
+  type HistoryPrevOutcome,
+  type HistoryNextOutcome,
+} from './actions/historyNavigate'
+export {
   buildChordEvent,
   lookupChord,
   type InkKeyLike,
