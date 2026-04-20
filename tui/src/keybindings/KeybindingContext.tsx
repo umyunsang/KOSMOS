@@ -18,8 +18,12 @@ import { type ImeStateLike, type SpanEmitter } from './resolver'
 export type KeybindingSurfaces = Readonly<{
   registry: KeybindingRegistry
   announcer: AccessibilityAnnouncer
-  /** Injected by the provider at boot; tests can stub with a ring buffer. */
-  spans: SpanEmitter
+  /**
+   * Injected by the provider at boot; tests can stub with a ring buffer.
+   * When `null`, the resolver falls back to its module-level ring (so
+   * `drainBindingSpans()` continues to observe emissions).
+   */
+  spans: SpanEmitter | null
   /** Optional — present when the Spec 024 IPC audit writer is wired. */
   audit: AuditWriter | null
   /** Current session id — used when emitting reserved-action audit records. */

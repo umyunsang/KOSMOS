@@ -37,7 +37,7 @@ export function useGlobalKeybindings(
         active: surfaces.activeContexts,
         registry: surfaces.registry,
         ime: surfaces.ime,
-        spans: surfaces.spans,
+        ...(surfaces.spans !== null ? { spans: surfaces.spans } : {}),
         sessionId: surfaces.sessionId ?? undefined,
         audit: surfaces.audit ?? undefined,
         announcer: surfaces.announcer,
