@@ -2,27 +2,33 @@
 // Source: .references/claude-code-sourcemap/restored-src/src/keybindings/validate.ts (CC 2.1.88, research-use)
 // Spec 288 · T011 — registry-build-time invariants (data-model.md § 3).
 //
-// Enforces three invariants that MUST hold over every `KeybindingEntry` the
+// Enforces four invariants that MUST hold over every `KeybindingEntry` the
 // registry accepts:
 //
 //   I1. reserved === true  ⟹  remappable === false
 //   I2. reserved === true  ⟹  effective_chord === default_chord  (FR-028)
 //   I3. default_chord parses under the chord grammar (i.e., `tryParseChord`
 //       round-trips to the same canonical string)
+//   I4. No non-reserved entry's effective_chord collides with a reserved
+//       entry's slot in the registry's chord map (Codex P1, PR #1591).
+//       Enforced at registry-assembly time in `buildRegistry`, not here —
+//       `assertI4` is exposed below for registry use.
 //
 // Violations throw — they cannot reach runtime. The registry assembler (T012)
 // wraps `validateEntries` around every merge so user-override damage cannot
-// silently corrupt the default set.
+// silently corrupt the default set. I4 is the defense-in-depth backstop
+// behind the loader-layer `reserved-chord-collision` rejection (per the
+// Spec 025 V6 two-layer pattern).
 
 import { tryParseChord } from './parser'
 import { type KeybindingEntry } from './types'
 
 export class RegistryInvariantError extends Error {
-  readonly invariant: 'I1' | 'I2' | 'I3'
+  readonly invariant: 'I1' | 'I2' | 'I3' | 'I4'
   readonly entry: KeybindingEntry
 
   constructor(
-    invariant: 'I1' | 'I2' | 'I3',
+    invariant: 'I1' | 'I2' | 'I3' | 'I4',
     entry: KeybindingEntry,
     message: string,
   ) {

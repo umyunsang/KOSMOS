@@ -205,6 +205,84 @@ describe('FR-028 reserved bindings are not disableable', () => {
 })
 
 // ---------------------------------------------------------------------------
+// Codex P1 on PR #1591 — reserved-chord collision rejection
+// ---------------------------------------------------------------------------
+//
+// FR-027 rejects remaps whose VALUE is a reserved action. This layer adds a
+// companion guard that rejects overrides whose KEY (chord) collides with a
+// reserved chord's default — otherwise `{"ctrl+c": "history-search"}` would
+// silently shadow agent-interrupt. The new warning kind is
+// `reserved-chord-collision`; it fires regardless of whether the value is
+// a remap target or `null`.
+
+describe('Codex P1 reserved-chord collision rejection', () => {
+  it('rejects remapping history-search onto ctrl+c (reserved agent-interrupt)', () => {
+    const result = loadUserBindings({
+      path: '<test:collide-ctrl-c-remap>',
+      readFile: () => '{"ctrl+c": "history-search"}',
+      onWarning: () => {},
+    })
+    const kinds = result.warnings.map((w) => w.kind)
+    expect(kinds).toContain('reserved-chord-collision')
+
+    // history-search keeps its default chord (ctrl+r), not ctrl+c.
+    expect(result.bindings.get('history-search')?.effective_chord).toBe(
+      parseChord('ctrl+r'),
+    )
+    // ctrl+c still resolves to agent-interrupt in the effective map.
+    expect(
+      result.effective_chord_to_action.get(parseChord('ctrl+c')),
+    ).toBe('agent-interrupt')
+  })
+
+  it('rejects remapping history-search onto ctrl+d (reserved session-exit)', () => {
+    const result = loadUserBindings({
+      path: '<test:collide-ctrl-d-remap>',
+      readFile: () => '{"ctrl+d": "history-search"}',
+      onWarning: () => {},
+    })
+    expect(result.warnings.some((w) => w.kind === 'reserved-chord-collision'))
+      .toBe(true)
+    expect(result.bindings.get('history-search')?.effective_chord).toBe(
+      parseChord('ctrl+r'),
+    )
+    expect(
+      result.effective_chord_to_action.get(parseChord('ctrl+d')),
+    ).toBe('session-exit')
+  })
+
+  it('emits reserved-chord-collision warning for `ctrl+c: null` (not just silent)', () => {
+    // FR-028 already silences the disable; this guard makes the feedback
+    // channel explicit rather than having the chord fall into `disabled`
+    // and get silently ignored later.
+    const result = loadUserBindings({
+      path: '<test:collide-ctrl-c-disable>',
+      readFile: () => '{"ctrl+c": null}',
+      onWarning: () => {},
+    })
+    expect(result.warnings.some((w) => w.kind === 'reserved-chord-collision'))
+      .toBe(true)
+    // Backwards-compatible: FR-028 state guarantees still hold.
+    expect(result.bindings.get('agent-interrupt')?.effective_chord).toBe(
+      parseChord('ctrl+c'),
+    )
+    expect(result.disabled_chords.length).toBe(0)
+  })
+
+  it('warning message cites the rejected chord for diagnostics', () => {
+    const result = loadUserBindings({
+      path: '<test:collide-diag>',
+      readFile: () => '{"ctrl+c": "history-search"}',
+      onWarning: () => {},
+    })
+    const collision = result.warnings.find(
+      (w) => w.kind === 'reserved-chord-collision',
+    )
+    expect(collision?.message).toContain('ctrl+c')
+  })
+})
+
+// ---------------------------------------------------------------------------
 // Robustness — invalid chord syntax + unknown action
 // ---------------------------------------------------------------------------
 

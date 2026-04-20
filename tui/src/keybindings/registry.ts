@@ -10,7 +10,7 @@
 
 import { DEFAULT_BINDINGS } from './defaultBindings'
 import { loadUserBindings, type LoaderResult } from './loadUserBindings'
-import { validateEntries } from './validate'
+import { RegistryInvariantError, validateEntries } from './validate'
 import {
   type ChordString,
   type KeybindingContext,
@@ -45,10 +45,57 @@ export function buildRegistry(
   // Build the (chord, context) → entry lookup. Disabled entries
   // (effective_chord === null) are excluded. Reserved actions live in
   // context `Global` so they reach the resolver from every surface.
+  //
+  // Defense-in-depth against reserved-chord collisions (Codex P1 on PR
+  // #1591, Spec 025 V6 two-layer pattern): reserved entries populate the
+  // map FIRST. If a later non-reserved entry's effective_chord would land
+  // on a slot already held by a reserved entry, we throw I4 rather than
+  // silently overwrite — loader-layer rejection is the primary guard
+  // (`reserved-chord-collision` warning), so reaching this path implies a
+  // bypass (e.g. direct `buildRegistry({ loaderResult })` injection with
+  // crafted bindings) and must surface loudly. The loader-produced
+  // `merged` map is a `ReadonlyMap<TierOneAction, KeybindingEntry>` that
+  // the loader guarantees never emits reserved-chord collisions, so this
+  // backstop is only exercised by adversarial `loaderResult` overrides.
   const byChord = new Map<string, KeybindingEntry>()
+  const reservedFirst: KeybindingEntry[] = []
+  const nonReserved: KeybindingEntry[] = []
   for (const e of merged) {
+    if (e.reserved) reservedFirst.push(e)
+    else nonReserved.push(e)
+  }
+  for (const e of reservedFirst) {
     if (e.effective_chord === null) continue
     byChord.set(chordKey(e.effective_chord, e.context), e)
+  }
+  for (const e of nonReserved) {
+    if (e.effective_chord === null) continue
+    const key = chordKey(e.effective_chord, e.context)
+    const direct = byChord.get(key)
+    if (direct?.reserved === true) {
+      throw new RegistryInvariantError(
+        'I4',
+        e,
+        `non-reserved action ${e.action} cannot remap onto reserved chord ${e.effective_chord} (held by ${direct.action})`,
+      )
+    }
+    // Also refuse to shadow a reserved Global slot when the non-reserved
+    // entry uses a non-Global context. The resolver's `lookupByChord`
+    // fallback resolves context → Global, so a non-reserved `Chat:ctrl+c`
+    // entry would win in Chat context and starve the Global reserved
+    // agent-interrupt — same safety violation, different scope.
+    if (e.context !== 'Global') {
+      const globalKey = chordKey(e.effective_chord, 'Global')
+      const globalHolder = byChord.get(globalKey)
+      if (globalHolder?.reserved === true) {
+        throw new RegistryInvariantError(
+          'I4',
+          e,
+          `non-reserved action ${e.action} in ${e.context} cannot shadow reserved Global chord ${e.effective_chord} (held by ${globalHolder.action})`,
+        )
+      }
+    }
+    byChord.set(key, e)
   }
 
   const frozenEntries: ReadonlyMap<TierOneAction, KeybindingEntry> =

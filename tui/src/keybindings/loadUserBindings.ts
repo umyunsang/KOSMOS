@@ -20,6 +20,7 @@ import {
   DEFAULT_BINDINGS,
   defaultBindingsByAction,
 } from './defaultBindings'
+import { isReservedChord } from './reservedShortcuts'
 import {
   type ChordString,
   type KeybindingEntry,
@@ -37,6 +38,7 @@ export type LoaderWarning = Readonly<{
     | 'parse-error'
     | 'shape-invalid'
     | 'reserved-action-remap'
+    | 'reserved-chord-collision'
     | 'unknown-action'
     | 'invalid-chord'
   message: string
@@ -185,6 +187,28 @@ export function loadUserBindings(
       const w: LoaderWarning = {
         kind: 'invalid-chord',
         message: `unknown chord syntax: ${rawChord}`,
+      }
+      warnings.push(w)
+      sink(w)
+      continue
+    }
+
+    // Defense against reserved-chord collisions (Codex P1 on PR #1591).
+    // A citizen override of the form `{"ctrl+c": "history-search"}` is NOT
+    // caught by the FR-027 reserved-ACTION check below, because the remap
+    // target is a non-reserved action. But it still violates the reserved
+    // safety contract: remapping history-search onto ctrl+c would shadow
+    // the reserved agent-interrupt entry in the registry's chord map.
+    // Same reasoning applies to `{"ctrl+c": null}` — FR-028 already refuses
+    // to disable agent-interrupt, but without this guard the chord still
+    // enters `disabled` and would suppress any non-reserved action that
+    // happens to share the chord via later remap. Reject at the loader
+    // layer so user intent gets clean feedback through the existing
+    // warning channel, and downstream `merged` state stays consistent.
+    if (isReservedChord(chord)) {
+      const w: LoaderWarning = {
+        kind: 'reserved-chord-collision',
+        message: `rejected override on reserved chord: ${rawChord}`,
       }
       warnings.push(w)
       sink(w)
