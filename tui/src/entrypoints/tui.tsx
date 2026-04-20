@@ -217,9 +217,17 @@ interface AppInnerProps {
    * every render with the currently-active `Chat | Confirmation` surface.
    */
   onActiveSurfaceChange: (surface: 'Chat' | 'Confirmation') => void
+  /**
+   * Reports modal-open state upward so <App> can deactivate the IME hook while
+   * a modal (permission gauntlet, help overlay) owns the keyboard.  Without
+   * this gate the IME listener keeps consuming `y/n` keystrokes in the
+   * background during a permission prompt and reveals them as unexpected
+   * draft text once the modal closes (Codex P1 regression fix).
+   */
+  onModalStateChange: (isModalOpen: boolean) => void
 }
 
-function AppInner({ bridge, ime, onActiveSurfaceChange }: AppInnerProps): React.ReactElement {
+function AppInner({ bridge, ime, onActiveSurfaceChange, onModalStateChange }: AppInnerProps): React.ReactElement {
   const theme = useTheme()
   const i18n = useI18n()
   const { exit } = useApp()
@@ -237,11 +245,20 @@ function AppInner({ bridge, ime, onActiveSurfaceChange }: AppInnerProps): React.
   // InputBar owns focus → `Chat`.  `HistorySearch` is not yet wired because
   // <HistorySearchOverlay> is not mounted in the tree — see the TODO in
   // <App> below (Spec 288.1 follow-up).
+  const isModalOpen = pendingPermission !== null || helpState !== null
   const activeSurface: 'Chat' | 'Confirmation' =
-    pendingPermission !== null || helpState !== null ? 'Confirmation' : 'Chat'
+    isModalOpen ? 'Confirmation' : 'Chat'
   useEffect(() => {
     onActiveSurfaceChange(activeSurface)
   }, [activeSurface, onActiveSurfaceChange])
+  // Spec 288 Codex P1 regression — report modal state to <App> so it can
+  // deactivate the lifted `useKoreanIME` hook while a modal owns keys.  Prior
+  // to this gate `y/n` presses inside the permission gauntlet leaked into
+  // `ime.buffer` in the background and surfaced as draft text once the modal
+  // closed, producing accidental submissions.
+  useEffect(() => {
+    onModalStateChange(isModalOpen)
+  }, [isModalOpen, onModalStateChange])
 
   // IPC senders closed over the bridge — safe for the dispatcher's SendFrame
   // callback (typed to SessionEventFrame) and for free-text user_input frames.
@@ -449,10 +466,18 @@ export function App({ bridge }: AppProps): React.ReactElement {
   // the entire session (Chat-only shortcuts unreachable, IME guard for
   // `mutates_buffer` actions inert).  We now lift both values up:
   //
-  //   1. `useKoreanIME` is instantiated here with `isActive = onboardingDone`
-  //      so it does not race Onboarding's own IME hook during first-launch.
-  //      AppInner consumes the same instance via the `ime` prop — exactly
-  //      one active `useInput` composition listener per branch.
+  //   1. `useKoreanIME` is instantiated here with
+  //      `isActive = onboardingDone && !isModalOpen` so it does not race
+  //      Onboarding's own IME hook during first-launch AND it does not
+  //      consume keystrokes in the background while a modal (permission
+  //      gauntlet, help overlay) owns the keyboard.  Before this guard,
+  //      `y/n` presses inside the permission gauntlet leaked into
+  //      `ime.buffer` and re-appeared as draft text once the modal closed
+  //      (Codex P1 regression from the previous `useKoreanIME(!disabled)`
+  //      call in <InputBar>).  AppInner reports the modal state via
+  //      `onModalStateChange`; the provider consumes the same instance via
+  //      the `ime` prop, guaranteeing exactly one `useInput` composition
+  //      listener per branch.
   //
   //   2. `activeContexts` is derived dynamically.  During onboarding we
   //      treat the tree as `['Confirmation', 'Global']` (consent-style
@@ -473,7 +498,8 @@ export function App({ bridge }: AppProps): React.ReactElement {
   // scope-ack write from Onboarding has completed — orthogonal to the
   // provider concerns above.
   // ---------------------------------------------------------------------
-  const ime = useKoreanIME(onboardingDone)
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
+  const ime = useKoreanIME(onboardingDone && !isModalOpen)
   const [activeSurface, setActiveSurface] = useState<'Chat' | 'Confirmation'>('Chat')
   const activeContexts = useMemo<ReadonlyArray<KeybindingContextEnum>>(() => {
     if (!onboardingDone) {
@@ -639,6 +665,7 @@ export function App({ bridge }: AppProps): React.ReactElement {
       bridge={bridge}
       ime={ime}
       onActiveSurfaceChange={setActiveSurface}
+      onModalStateChange={setIsModalOpen}
     />
   )
 
