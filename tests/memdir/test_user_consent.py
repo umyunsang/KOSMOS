@@ -107,9 +107,7 @@ def test_rejects_extra_keys() -> None:
 def test_append_only(tmp_path: Path) -> None:
     base = tmp_path / "consent"
     first = _valid_record(datetime(2026, 4, 20, 14, 32, 5, tzinfo=UTC))
-    second = _valid_record(
-        datetime(2026, 4, 25, 9, 11, 42, tzinfo=UTC), session_id=uuid4()
-    )
+    second = _valid_record(datetime(2026, 4, 25, 9, 11, 42, tzinfo=UTC), session_id=uuid4())
 
     first_path = write_consent_atomic(first, base)
     second_path = write_consent_atomic(second, base)
@@ -121,12 +119,8 @@ def test_append_only(tmp_path: Path) -> None:
     files = sorted(base.glob("*.json"))
     assert len(files) == 2
     # File bytes must be stable — neither write overwrote the other.
-    assert json.loads(first_path.read_text())["session_id"] == str(
-        FIXTURE_SESSION_ID
-    )
-    assert json.loads(second_path.read_text())["session_id"] != str(
-        FIXTURE_SESSION_ID
-    )
+    assert json.loads(first_path.read_text())["session_id"] == str(FIXTURE_SESSION_ID)
+    assert json.loads(second_path.read_text())["session_id"] != str(FIXTURE_SESSION_ID)
 
 
 def test_write_is_atomic_tmp_removed(tmp_path: Path) -> None:
@@ -146,9 +140,7 @@ def test_write_is_atomic_tmp_removed(tmp_path: Path) -> None:
 def test_latest_consent_returns_most_recent(tmp_path: Path) -> None:
     base = tmp_path / "consent"
     older = _valid_record(datetime(2026, 4, 20, 14, 32, 5, tzinfo=UTC))
-    newer = _valid_record(
-        datetime(2026, 4, 25, 9, 11, 42, tzinfo=UTC), session_id=uuid4()
-    )
+    newer = _valid_record(datetime(2026, 4, 25, 9, 11, 42, tzinfo=UTC), session_id=uuid4())
     write_consent_atomic(older, base)
     write_consent_atomic(newer, base)
 

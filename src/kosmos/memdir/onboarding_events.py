@@ -122,16 +122,10 @@ def handle_onboarding_event(
     event_name = event.get("event")
     payload = event.get("payload")
     if not isinstance(event_name, str) or not isinstance(payload, dict):
-        raise OnboardingEventError(
-            "onboarding event envelope missing str `event` + dict `payload`"
-        )
+        raise OnboardingEventError("onboarding event envelope missing str `event` + dict `payload`")
     handler = _HANDLERS.get(event_name)  # type: ignore[arg-type]
     if handler is None:
-        raise UnknownOnboardingEventError(
-            f"unknown onboarding event: {event_name!r}"
-        )
+        raise UnknownOnboardingEventError(f"unknown onboarding event: {event_name!r}")
     written_path = handler(payload, memdir_root)
-    logger.info(
-        "onboarding event handled: %s -> %s", event_name, written_path
-    )
+    logger.info("onboarding event handled: %s -> %s", event_name, written_path)
     return {"event": event_name, "written_path": str(written_path)}

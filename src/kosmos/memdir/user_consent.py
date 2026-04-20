@@ -66,15 +66,14 @@ class PIPAConsentRecord(BaseModel):
     @classmethod
     def _enforce_utc(cls, value: datetime) -> datetime:
         if value.tzinfo is None or value.utcoffset() != UTC.utcoffset(value):
-            raise ValueError(
-                "PIPAConsentRecord.timestamp must be timezone-aware UTC"
-            )
+            raise ValueError("PIPAConsentRecord.timestamp must be timezone-aware UTC")
         return value
 
 
 # ---------------------------------------------------------------------------
 # File-name + storage
 # ---------------------------------------------------------------------------
+
 
 def _record_filename(record: PIPAConsentRecord) -> str:
     """Derives the append-only filename:
@@ -84,9 +83,7 @@ def _record_filename(record: PIPAConsentRecord) -> str:
     Matches contract § 4 pattern.  Example:
         2026-04-20T14-32-05Z-018f8a72-d4c9-7a1e-9c8b-0b2c3d4e5f60.json
     """
-    ts_iso = record.timestamp.astimezone(UTC).strftime(
-        "%Y-%m-%dT%H-%M-%SZ"
-    )
+    ts_iso = record.timestamp.astimezone(UTC).strftime("%Y-%m-%dT%H-%M-%SZ")
     return f"{ts_iso}-{record.session_id}.json"
 
 
@@ -120,6 +117,7 @@ def write_consent_atomic(record: PIPAConsentRecord, base: Path) -> Path:
 # ---------------------------------------------------------------------------
 # Reader
 # ---------------------------------------------------------------------------
+
 
 def latest_consent(base: Path) -> PIPAConsentRecord | None:
     """Return the most recent valid PIPAConsentRecord under `base`.

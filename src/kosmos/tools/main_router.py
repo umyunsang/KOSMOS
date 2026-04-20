@@ -182,9 +182,7 @@ def check_ministry_scope(
     # set (sorted for determinism) or the single ministry.  This ministry
     # appears in the citizen-facing Korean refusal copy.
     canonical: MinistryCode = (
-        ministry
-        if ministry is not None
-        else sorted(composite)[0]  # type: ignore[arg-type]
+        ministry if ministry is not None else sorted(composite)[0]  # type: ignore[arg-type]
     )
 
     if scope is None:
@@ -223,9 +221,7 @@ async def resolve_with_scope_guard(
     assert set(MINISTRY_TOOL_PREFIX.values()) == set(MINISTRY_CODES), (
         "MINISTRY_TOOL_PREFIX must cover all four Phase 1 MinistryCodes"
     )
-    check = check_ministry_scope(
-        tool_id, memdir_root=memdir_root, scope_override=scope_override
-    )
+    check = check_ministry_scope(tool_id, memdir_root=memdir_root, scope_override=scope_override)
     if isinstance(check, MinistryOptOutRefusal):
         raise check
     return await resolver(tool_id, params)

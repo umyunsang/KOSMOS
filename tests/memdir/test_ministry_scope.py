@@ -36,8 +36,7 @@ def _valid_ministries(
     if overrides:
         defaults.update(overrides)
     return frozenset(
-        MinistryOptIn(ministry_code=code, opt_in=optin)
-        for code, optin in defaults.items()
+        MinistryOptIn(ministry_code=code, opt_in=optin) for code, optin in defaults.items()
     )
 
 
@@ -73,8 +72,7 @@ def test_schema_roundtrip() -> None:
 
 def test_four_unique_rejects_three_item_list() -> None:
     three = frozenset(
-        MinistryOptIn(ministry_code=code, opt_in=True)
-        for code in ["KOROAD", "KMA", "HIRA"]
+        MinistryOptIn(ministry_code=code, opt_in=True) for code in ["KOROAD", "KMA", "HIRA"]
     )
     with pytest.raises(ValidationError):
         _valid_record(ministries=three)
@@ -104,9 +102,7 @@ def test_four_unique_rejects_extra_code() -> None:
 
 
 def test_opt_in_lookup_returns_correct_state() -> None:
-    record = _valid_record(
-        ministries=_valid_ministries({"HIRA": False, "NMC": False})
-    )
+    record = _valid_record(ministries=_valid_ministries({"HIRA": False, "NMC": False}))
     assert opt_in_lookup(record, "KOROAD") is True
     assert opt_in_lookup(record, "KMA") is True
     assert opt_in_lookup(record, "HIRA") is False
@@ -134,9 +130,7 @@ def test_rejects_non_utc_timestamp() -> None:
 def test_append_only(tmp_path: Path) -> None:
     base = tmp_path / "ministry-scope"
     first = _valid_record()
-    second = _valid_record(
-        ts=datetime(2026, 4, 25, 9, 11, 42, tzinfo=UTC), session_id=uuid4()
-    )
+    second = _valid_record(ts=datetime(2026, 4, 25, 9, 11, 42, tzinfo=UTC), session_id=uuid4())
     p1 = write_scope_atomic(first, base)
     p2 = write_scope_atomic(second, base)
     assert p1.exists() and p2.exists() and p1 != p2
@@ -152,9 +146,7 @@ def test_append_only(tmp_path: Path) -> None:
 def test_latest_scope_returns_most_recent(tmp_path: Path) -> None:
     base = tmp_path / "ministry-scope"
     older = _valid_record()
-    newer = _valid_record(
-        ts=datetime(2026, 4, 25, 9, 11, 42, tzinfo=UTC), session_id=uuid4()
-    )
+    newer = _valid_record(ts=datetime(2026, 4, 25, 9, 11, 42, tzinfo=UTC), session_id=uuid4())
     write_scope_atomic(older, base)
     write_scope_atomic(newer, base)
     result = latest_scope(base)

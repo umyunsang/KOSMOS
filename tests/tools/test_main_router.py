@@ -56,8 +56,7 @@ def _scope_record(
         timestamp=datetime(2026, 4, 20, 14, 33, 17, tzinfo=UTC),
         session_id=FIXTURE_SESSION,
         ministries=frozenset(
-            MinistryOptIn(ministry_code=code, opt_in=optin)
-            for code, optin in defaults.items()
+            MinistryOptIn(ministry_code=code, opt_in=optin) for code, optin in defaults.items()
         ),
     )
 
@@ -128,9 +127,7 @@ def test_composite_tool_refuses_on_any_opt_out() -> None:
     """`road_risk_score` fans out to KOROAD + KMA.  Opting out of either
     ministry must refuse the composite call."""
     assert "road_risk_score" in COMPOSITE_TOOL_MINISTRIES
-    assert ministries_for_composite("road_risk_score") == frozenset(
-        ("KOROAD", "KMA")
-    )
+    assert ministries_for_composite("road_risk_score") == frozenset(("KOROAD", "KMA"))
     # KOROAD declined → refuse (canonical refusal ministry = KOROAD since
     # it's the first in sorted order).
     scope_no_koroad = _scope_record({"KOROAD": False})
@@ -164,7 +161,8 @@ def test_composite_tool_refuses_on_any_opt_out() -> None:
 def test_composite_tool_refuses_on_missing_scope_record(tmp_path: Path) -> None:
     """Fail-closed default for composite tools when no scope record exists."""
     result = check_ministry_scope(
-        "road_risk_score", memdir_root=tmp_path,
+        "road_risk_score",
+        memdir_root=tmp_path,
     )
     assert isinstance(result, MinistryOptOutRefusal)
 
@@ -185,8 +183,7 @@ def test_stale_scope_version_refuses(tmp_path: Path) -> None:
         timestamp=datetime(2026, 4, 20, 14, 33, 17, tzinfo=UTC),
         session_id=FIXTURE_SESSION,
         ministries=frozenset(
-            MinistryOptIn(ministry_code=code, opt_in=True)
-            for code in MINISTRY_CODES
+            MinistryOptIn(ministry_code=code, opt_in=True) for code in MINISTRY_CODES
         ),
     )
     result = check_ministry_scope(
@@ -206,7 +203,9 @@ def test_stale_scope_version_refuses(tmp_path: Path) -> None:
 def test_opt_in_success() -> None:
     scope = _scope_record()
     result = check_ministry_scope(
-        "hira_hospital_search", memdir_root=Path("/nonexistent"), scope_override=scope,
+        "hira_hospital_search",
+        memdir_root=Path("/nonexistent"),
+        scope_override=scope,
     )
     assert result == "pass"
 
@@ -277,7 +276,10 @@ def test_resolve_with_scope_guard_passes_through_on_opt_in(tmp_path: Path) -> No
 
     async def run() -> str:
         return await resolve_with_scope_guard(
-            "kma_forecast_fetch", {}, memdir_root=tmp_path, resolver=_noop_resolver,
+            "kma_forecast_fetch",
+            {},
+            memdir_root=tmp_path,
+            resolver=_noop_resolver,
         )
 
     result = asyncio.run(run())
@@ -289,7 +291,10 @@ def test_resolve_with_scope_guard_bypasses_non_ministry(tmp_path: Path) -> None:
 
     async def run() -> str:
         return await resolve_with_scope_guard(
-            "lookup", {}, memdir_root=tmp_path, resolver=_noop_resolver,
+            "lookup",
+            {},
+            memdir_root=tmp_path,
+            resolver=_noop_resolver,
         )
 
     assert asyncio.run(run()) == "resolved"

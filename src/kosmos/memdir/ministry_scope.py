@@ -48,9 +48,7 @@ logger = logging.getLogger(__name__)
 
 MinistryCode = Literal["KOROAD", "KMA", "HIRA", "NMC"]
 
-MINISTRY_CODES: frozenset[MinistryCode] = frozenset(
-    ("KOROAD", "KMA", "HIRA", "NMC")
-)
+MINISTRY_CODES: frozenset[MinistryCode] = frozenset(("KOROAD", "KMA", "HIRA", "NMC"))
 
 CURRENT_SCOPE_VERSION = "v1"
 
@@ -78,25 +76,17 @@ class MinistryScopeAcknowledgment(BaseModel):
     @field_validator("timestamp")
     @classmethod
     def _enforce_utc(cls, value: datetime) -> datetime:
-        if value.tzinfo is None or value.utcoffset() != UTC.utcoffset(
-            value
-        ):
-            raise ValueError(
-                "MinistryScopeAcknowledgment.timestamp must be timezone-aware UTC"
-            )
+        if value.tzinfo is None or value.utcoffset() != UTC.utcoffset(value):
+            raise ValueError("MinistryScopeAcknowledgment.timestamp must be timezone-aware UTC")
         return value
 
     @model_validator(mode="after")
     def _check_four_unique(self) -> MinistryScopeAcknowledgment:
         codes = {m.ministry_code for m in self.ministries}
         if codes != MINISTRY_CODES:
-            raise ValueError(
-                f"ministries must cover {sorted(MINISTRY_CODES)}, got {sorted(codes)}"
-            )
+            raise ValueError(f"ministries must cover {sorted(MINISTRY_CODES)}, got {sorted(codes)}")
         if len(self.ministries) != 4:
-            raise ValueError(
-                f"ministries must have exactly 4 entries, got {len(self.ministries)}"
-            )
+            raise ValueError(f"ministries must have exactly 4 entries, got {len(self.ministries)}")
         return self
 
 
@@ -117,9 +107,7 @@ def opt_in_lookup(
 
 
 def _record_filename(record: MinistryScopeAcknowledgment) -> str:
-    ts_iso = record.timestamp.astimezone(UTC).strftime(
-        "%Y-%m-%dT%H-%M-%SZ"
-    )
+    ts_iso = record.timestamp.astimezone(UTC).strftime("%Y-%m-%dT%H-%M-%SZ")
     return f"{ts_iso}-{record.session_id}.json"
 
 
@@ -134,9 +122,7 @@ def write_scope_atomic(
     tmp_path = final_path.with_suffix(".json.tmp")
     payload = record.model_dump_json()
 
-    fd = os.open(
-        tmp_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600
-    )
+    fd = os.open(tmp_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
     try:
         os.write(fd, payload.encode("utf-8"))
         os.fsync(fd)
