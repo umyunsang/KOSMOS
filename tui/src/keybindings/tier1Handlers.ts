@@ -44,6 +44,7 @@ import {
 import {
   openHistorySearchOverlay,
   type HistoryEntry,
+  type OverlayOpenRequest,
 } from './actions/historySearch'
 import type { PermissionMode } from '../permissions/types'
 import type {
@@ -111,6 +112,28 @@ export type Tier1HandlerDeps = Readonly<{
   memdirUserGranted: boolean
   /** True when the memdir USER tier is reachable on disk. */
   memdirUserAvailable: boolean
+
+  // -------------------------------------------------------------------------
+  // History-search overlay wiring (Spec 288 Codex P1 follow-up)
+  // -------------------------------------------------------------------------
+
+  /**
+   * Snapshot of the current InputBar draft at dispatch time — captured so the
+   * overlay can restore it byte-for-byte on `escape` (FR-022).  Read once per
+   * `history-search` dispatch rather than closed over because `buildTier1Handlers`
+   * is memoised and must not bake a stale draft into its handler bag.
+   */
+  getCurrentDraft: () => string
+
+  /**
+   * App-level setter that mounts / unmounts `<HistorySearchOverlay>`.  The
+   * handler hands it the open-request envelope returned by
+   * `openHistorySearchOverlay(...)`; passing `null` closes the overlay.  The
+   * return value of the pure action is purely declarative — without this
+   * setter the overlay stays unmounted and ctrl+r is effectively a no-op
+   * (Codex P1 finding at line 295 of the pre-fix handler).
+   */
+  setOverlayRequest: (request: OverlayOpenRequest | null) => void
 
   // -------------------------------------------------------------------------
   // Backend-bound deps (usually supplied as stubs during the Spec 288.1 gap)
@@ -288,15 +311,23 @@ export function buildTier1Handlers(
       void permissionCycle()
     },
     'history-search': () => {
-      openHistorySearchOverlay({
+      // Capture the draft at dispatch time — `getCurrentDraft()` reads live
+      // IME buffer state so `escape` can restore it byte-for-byte (FR-022).
+      // `readDraft` remains the history-navigation accessor; the two read
+      // from the same source today but we keep the surfaces separate so a
+      // future overlay-scoped draft (e.g. virtual composition freeze) can
+      // diverge without touching history-prev / history-next.
+      const request = openHistorySearchOverlay({
         all_entries: toHistorySearchEntries(deps.getHistory()),
-        saved_draft: deps.readDraft(),
+        saved_draft: deps.getCurrentDraft(),
         consent: { memdir_user_granted: deps.memdirUserGranted },
         announcer: deps.announcer,
       })
-      // FIXME: Spec 288.1 — mount <HistorySearchOverlay> with the returned
-      // request envelope.  The handler above is still useful on its own
-      // because it announces the overlay-open intent (FR-030).
+      // Hand the envelope to the app-level state so <HistorySearchOverlay>
+      // actually mounts.  Previously we dropped the return value — the
+      // action announced itself (FR-030) but the citizen saw nothing
+      // (Codex P1 at line 295 of the pre-fix file).
+      deps.setOverlayRequest(request)
     },
   }
 

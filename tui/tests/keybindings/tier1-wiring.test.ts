@@ -122,6 +122,13 @@ function makeProbes(overrides: Partial<Tier1HandlerDeps> = {}): Probes {
     getHistory: () => historyEntries,
     memdirUserGranted: false,
     memdirUserAvailable: false,
+    // Spec 288 Codex P1 mount fix — `history-search` now threads the open
+    // envelope through `setOverlayRequest`.  This test suite is scoped to
+    // `agent-interrupt` / `session-exit` / `permission-mode-cycle` /
+    // history-prev / history-next so the overlay setter is a no-op; the
+    // dedicated `history-search-wiring.test.ts` asserts the mount contract.
+    getCurrentDraft: () => '',
+    setOverlayRequest: () => {},
     cancellation: {
       async cancelActiveAgentLoop(): Promise<void> {
         interruptCancellationCalls++

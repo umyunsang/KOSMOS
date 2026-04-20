@@ -58,8 +58,10 @@ import { KeybindingProviderSetup } from '../keybindings/KeybindingProviderSetup'
 import type { KeybindingContext as KeybindingContextEnum } from '../keybindings/types'
 import { buildTier1Handlers } from '../keybindings/tier1Handlers'
 import type { HistoryNavigationEntry } from '../keybindings/actions/historyNavigate'
+import type { OverlayOpenRequest } from '../keybindings/actions/historySearch'
 import type { PermissionMode } from '../permissions/types'
 import { createAccessibilityAnnouncer } from '../keybindings/accessibilityAnnouncer'
+import { HistorySearchOverlay } from '../components/history/HistorySearchOverlay'
 
 // ---------------------------------------------------------------------------
 // Frame dispatcher — maps IPCFrame arms to SessionAction
@@ -499,21 +501,47 @@ export function App({ bridge }: AppProps): React.ReactElement {
   // provider concerns above.
   // ---------------------------------------------------------------------
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
-  const ime = useKoreanIME(onboardingDone && !isModalOpen)
+  // History-search overlay state (Spec 288 Codex P1 mount fix).
+  //
+  // The `history-search` handler returns an `OverlayOpenRequest` envelope —
+  // previously the handler discarded it, so ctrl+r only emitted its FR-030
+  // announcement and never surfaced the searchable history list.  Lifting
+  // the envelope into `App` lets us mount `<HistorySearchOverlay>` on
+  // demand and push the `HistorySearch` context onto the resolver stack
+  // while it is open (D7).  Closing the overlay is a single
+  // `setOverlayRequest(null)` call — the overlay itself owns escape /
+  // enter / arrow navigation via its internal `useInput`.
+  const [overlayRequest, setOverlayRequest] =
+    useState<OverlayOpenRequest | null>(null)
+  const isOverlayOpen = overlayRequest !== null
+  // Suppress the lifted IME hook while the overlay is open so keystrokes
+  // flow to the overlay's own `useInput` (needle typing, navigation) and do
+  // not leak into the InputBar's draft buffer underneath.  Mirrors the
+  // permission-modal gate introduced for the earlier Codex P1.
+  const ime = useKoreanIME(onboardingDone && !isModalOpen && !isOverlayOpen)
   const [activeSurface, setActiveSurface] = useState<'Chat' | 'Confirmation'>('Chat')
   const activeContexts = useMemo<ReadonlyArray<KeybindingContextEnum>>(() => {
     if (!onboardingDone) {
       // Onboarding is a consent-style modal — the three steps (splash,
       // consent review, ministry scope) all accept y/n / Enter inputs that
-      // should shadow Chat chords.  TODO (Spec 288.1): add `'HistorySearch'`
-      // here when <HistorySearchOverlay> is mounted.
+      // should shadow Chat chords.
       return ['Confirmation', 'Global'] as const
+    }
+    // History-search overlay wins precedence over Chat while open, so
+    // overlay-internal bindings (escape → cancel, enter → select) shadow
+    // the Tier-1 Chat chords.  The overlay component owns the keystroke
+    // loop through its own `useInput`; registering a `HistorySearch` bag
+    // on the resolver is a defence-in-depth path — if the overlay's
+    // `useInput` ever mis-fires, the resolver still has a first-class
+    // receiver for the context.
+    if (isOverlayOpen) {
+      return ['HistorySearch', 'Global'] as const
     }
     if (activeSurface === 'Confirmation') {
       return ['Confirmation', 'Global'] as const
     }
     return ['Chat', 'Global'] as const
-  }, [onboardingDone, activeSurface])
+  }, [onboardingDone, activeSurface, isOverlayOpen])
 
   // ---------------------------------------------------------------------
   // Spec 288 Codex P1 (follow-up) — wire real Tier-1 handlers into the
@@ -639,6 +667,12 @@ export function App({ bridge }: AppProps): React.ReactElement {
         getHistory: () => historyEntries,
         memdirUserGranted,
         memdirUserAvailable,
+        // History-search overlay wiring (Spec 288 Codex P1 mount fix).
+        // `getCurrentDraft` reads the live IME buffer at dispatch time so
+        // the saved draft is captured post-composition; `setOverlayRequest`
+        // hands the envelope back up to `App` for mounting.
+        getCurrentDraft: () => ime.buffer,
+        setOverlayRequest,
       }),
     [
       resolvedSessionId,
@@ -650,7 +684,46 @@ export function App({ bridge }: AppProps): React.ReactElement {
       historyEntries,
       memdirUserGranted,
       memdirUserAvailable,
+      setOverlayRequest,
     ],
+  )
+
+  // Overlay close callbacks — both paths collapse to `setOverlayRequest(null)`
+  // after delegating the post-close side-effect (commit or restore).
+  //
+  // FR-022 (byte-for-byte restore): the overlay's own `useInput` calls
+  // `cancelHistorySearch(request, announcer)` which returns `next_draft ===
+  // request.saved_draft`.  We forward that `next_draft` to the callback
+  // below, so the saved draft flows intact from the handler → envelope →
+  // overlay → this callback.  The UI-level buffer restore uses
+  // `ime.clear()` as a fallback today because `useKoreanIME` does not yet
+  // expose a `setBuffer` primitive — when Team κ lands that primitive
+  // (tracked as a sibling fix), swap this line for `ime.setBuffer(
+  // next_draft)` and the citizen will see their in-flight draft
+  // materialise again.  The envelope-level byte-for-byte restore is
+  // already observable by tests: the `next_draft` argument here equals
+  // the original draft verbatim.
+  const handleOverlaySelect = React.useCallback(
+    (_next_draft: string): void => {
+      // FIXME: Spec 288 (Team κ) — replace `ime.clear()` with
+      // `ime.setBuffer(_next_draft)` so the selected entry surfaces as the
+      // next draft.  Until then we clear the buffer so the stale draft
+      // does not reappear and surprise the citizen on submit.
+      ime.clear()
+      setOverlayRequest(null)
+    },
+    [ime],
+  )
+  const handleOverlayCancel = React.useCallback(
+    (_next_draft: string): void => {
+      // FIXME: Spec 288 (Team κ) — replace with `ime.setBuffer(
+      // _next_draft)` to honour FR-022 at the UI layer.  The envelope-
+      // level restore (`_next_draft === request.saved_draft`) is already
+      // satisfied — the integration test asserts that contract directly.
+      ime.clear()
+      setOverlayRequest(null)
+    },
+    [ime],
   )
 
   const body = !onboardingDone ? (
@@ -661,12 +734,28 @@ export function App({ bridge }: AppProps): React.ReactElement {
       onComplete={() => setOnboardingDone(true)}
     />
   ) : (
-    <AppInner
-      bridge={bridge}
-      ime={ime}
-      onActiveSurfaceChange={setActiveSurface}
-      onModalStateChange={setIsModalOpen}
-    />
+    <>
+      <AppInner
+        bridge={bridge}
+        ime={ime}
+        onActiveSurfaceChange={setActiveSurface}
+        onModalStateChange={setIsModalOpen}
+      />
+      {/* History-search overlay — mounted when the Tier-1 `history-search`
+          action fires and the handler stashes the envelope.  Rendering
+          here keeps the overlay inside `KeybindingProviderSetup` so the
+          resolver sees `HistorySearch` in `activeContexts` (D7) and the
+          overlay's own `useInput` participates in the same keystroke
+          pipeline as AppInner. */}
+      {overlayRequest !== null && (
+        <HistorySearchOverlay
+          request={overlayRequest}
+          announcer={sharedAnnouncer}
+          onSelect={handleOverlaySelect}
+          onCancel={handleOverlayCancel}
+        />
+      )}
+    </>
   )
 
   // Note on `sessionId`: the provider prop is only consumed by the IPC-backed
