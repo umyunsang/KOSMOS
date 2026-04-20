@@ -1,6 +1,7 @@
-// Source: KOSMOS Epic H #1302 (035-onboarding-brand-port)
-// Pattern mirror: tui/src/hooks/useKoreanIME.ts (Spec 287)
-// Reference: specs/035-onboarding-brand-port/plan.md § Phase 0 R-8
+// SPDX-License-Identifier: Apache-2.0
+// KOSMOS-original: no upstream CC analog (CC has no reduced-motion gate).
+// Pattern mirror: tui/src/hooks/useKoreanIME.ts (Spec 287).
+// Reference: specs/035-onboarding-brand-port/plan.md § Phase 0 R-8.
 //
 // Centralises the reduced-motion decision so AnimatedAsterisk, LogoV2, and
 // any future shimmer consumer reads a single source of truth.  The hook is
