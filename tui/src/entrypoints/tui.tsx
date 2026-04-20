@@ -232,7 +232,11 @@ interface AppInnerProps {
 function AppInner({ bridge, ime, onActiveSurfaceChange, onModalStateChange }: AppInnerProps): React.ReactElement {
   const theme = useTheme()
   const i18n = useI18n()
-  const { exit } = useApp()
+  // `useApp().exit` is no longer consumed here — the legacy ctrl+c
+  // `bridge.close().then(() => exit())` was removed in Spec 288 Codex P1
+  // and the resolver's `agent-interrupt` controller now owns the exit path
+  // (calls `process.exit(0)` directly via its injected shim).  `<App>` still
+  // uses `useApp().exit` for the backend `session_event: exit` frame.
   const crash = useSessionStore((s) => s.crash)
   const messageOrder = useSessionStore((s) => s.message_order)
   const pendingPermission = useSessionStore((s) => s.pending_permission)
@@ -318,22 +322,23 @@ function AppInner({ bridge, ime, onActiveSurfaceChange, onModalStateChange }: Ap
     sendUserInput(raw)
   }
 
-  // Outer key handler — Ctrl-C always closes the bridge. Escape clears the
-  // help overlay when no modal is active. Everything else passes through to
-  // InputBar's useKoreanIME (or to PermissionGauntletModal when it is open).
+  // Outer key handler — Escape clears the help overlay when no modal is
+  // active.  Everything else passes through to InputBar's `useKoreanIME` (or
+  // to PermissionGauntletModal when it is open).
   //
-  // Spec 288 Codex P1 note: the central keybinding resolver (mounted by
-  // <KeybindingProviderSetup> in <App>) now also fires for ctrl+c via the
-  // `session-exit` Tier-1 action.  Both paths run in parallel during the
-  // Spec 288.1 migration window — keeping this handler means Ctrl-C still
-  // tears the bridge down immediately even if the resolver's handler is
-  // stubbed (announce-only).  Removing the dual path is tracked by Spec 288.1
-  // alongside the resolver's production session-exit wiring.
-  useInput((input, key) => {
-    if (key.ctrl && input === 'c') {
-      bridge.close().then(() => exit())
-      return
-    }
+  // Spec 288 Codex P1 fix (ctrl+c path): the legacy branch that ran
+  // `bridge.close().then(() => exit())` on every ctrl+c press was removed
+  // once `buildTier1Handlers` began wiring the real `agent-interrupt`
+  // controller via `<KeybindingProviderSetup>`.  Keeping the dual path meant
+  // the first press both armed the double-press state machine AND
+  // immediately shut the bridge down, so the intended arm-then-confirm
+  // behaviour (`createAgentInterruptController`, FR-013) was bypassed at
+  // runtime.  ctrl+c now flows exclusively through the resolver →
+  // `agent-interrupt` handler, which owns the `bridge.close()` lifecycle
+  // guarantee via the `closeBridge` dep threaded into `buildTier1Handlers`
+  // below (FR-009).  The top-level `SIGTERM` handler in `main.tsx` remains
+  // untouched and covers `docker stop` / `systemd stop`.
+  useInput((_input, key) => {
     if (pendingPermission !== null) return
     if (key.escape) {
       setHelpState(null)
@@ -672,6 +677,14 @@ export function App({ bridge }: AppProps): React.ReactElement {
         // hands the envelope back up to `App` for mounting.
         getCurrentDraft: () => ime.buffer,
         setOverlayRequest,
+        // Spec 288 Codex P1 — hand the bridge close hook to the
+        // `agent-interrupt` controller so the double-press FIRE branch tears
+        // the Python backend down (SIGTERM → ≤ 3 s → SIGKILL per FR-009)
+        // before `process.exit(0)`.  The legacy `useInput` ctrl+c handler
+        // owned this lifecycle guarantee; removing that dual path means the
+        // Tier-1 handler must own it instead.  `tier1Handlers.ts` wraps
+        // rejection so a stuck bridge cannot trap the citizen.
+        closeBridge: () => bridge.close(),
       }),
     [
       resolvedSessionId,
@@ -684,6 +697,7 @@ export function App({ bridge }: AppProps): React.ReactElement {
       memdirUserGranted,
       memdirUserAvailable,
       setOverlayRequest,
+      bridge,
     ],
   )
 

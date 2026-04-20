@@ -73,6 +73,16 @@ export type AgentInterruptDeps = Readonly<{
   now?: () => number
   /** Process-exit shim — injectable for tests.  Default: `process.exit`. */
   exit?: (code: number) => void
+  /**
+   * Spec 288 Codex P1 — runs before `exit(0)` on the double-press FIRE branch
+   * so the session tears the IPC bridge down cleanly (SIGTERM → ≤ 3 s →
+   * SIGKILL per FR-009).  Previously the legacy `useInput` ctrl+c handler in
+   * `tui.tsx` owned `bridge.close()`; removing that dual path means the
+   * controller must own the lifecycle guarantee itself.  Rejection is caught
+   * and logged so a stuck bridge cannot trap the citizen in a half-shut
+   * session — the exit still fires.
+   */
+  beforeExit?: () => Promise<void>
 }>
 
 // ---------------------------------------------------------------------------
@@ -192,6 +202,23 @@ export function createAgentInterruptController(
           process.stderr.write(
             `[keybindings] audit write failed: ${(err as Error).message}\n`,
           )
+        }
+        // Spec 288 Codex P1 — tear the IPC bridge down cleanly before exit
+        // so the backend receives SIGTERM + 3 s grace (FR-009) instead of
+        // being orphaned by a bare `process.exit(0)`.  The legacy `useInput`
+        // ctrl+c handler in `tui.tsx` used to own this call; the dual-path
+        // removal means the controller now owns the lifecycle guarantee.
+        // Rejection is logged but never re-thrown — a stuck bridge MUST NOT
+        // trap the citizen in a half-shut session (parallels the audit
+        // resilience rule two lines above).
+        if (deps.beforeExit !== undefined) {
+          try {
+            await deps.beforeExit()
+          } catch (err) {
+            process.stderr.write(
+              `[keybindings] beforeExit failed: ${(err as Error).message}\n`,
+            )
+          }
         }
         // Exit the process.  Tests inject a shim so this does not terminate
         // the test runner.

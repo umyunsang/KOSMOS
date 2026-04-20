@@ -162,6 +162,20 @@ export type Tier1HandlerDeps = Readonly<{
   confirmExit?: () => Promise<boolean>
   /** Process-exit shim — tests inject a non-terminating replacement. */
   processExit?: (code?: number) => never
+
+  /**
+   * Spec 288 Codex P1 — IPC bridge close hook.  Invoked before `exit(0)` on
+   * the agent-interrupt FIRE branch (double-press ctrl+c) so the backend
+   * receives SIGTERM + ≤ 3 s grace (FR-009) instead of being orphaned by a
+   * bare `process.exit`.  The legacy `useInput` ctrl+c handler in `tui.tsx`
+   * used to own `bridge.close()`; dropping that dual path means the Tier-1
+   * `agent-interrupt` handler must own the lifecycle guarantee.  Optional so
+   * tests and the onboarding-pre-bridge mount can omit it; rejection is
+   * caught by the controller so a stuck bridge cannot trap the citizen in a
+   * half-shut session.  Not yet threaded into `session-exit` (ctrl+d) — that
+   * path's bridge lifecycle will be tracked by the Spec 288.1 follow-up.
+   */
+  closeBridge?: () => Promise<void>
 }>
 
 // ---------------------------------------------------------------------------
@@ -260,6 +274,22 @@ export function buildTier1Handlers(
     cancellation,
     audit,
     announcer: deps.announcer,
+    // Spec 288 Codex P1 — tear the IPC bridge down before `exit(0)` on the
+    // double-press FIRE branch.  See `AgentInterruptDeps.beforeExit` for the
+    // contract; omission (tests, onboarding-pre-bridge mount) falls back to a
+    // bare `process.exit` so the old behaviour is preserved when no bridge
+    // is live.
+    ...(deps.closeBridge !== undefined
+      ? { beforeExit: deps.closeBridge }
+      : {}),
+    // Forward the test-injected `processExit` shim to the controller so the
+    // FIRE branch does not terminate the test runner when dispatched inside
+    // `ink-testing-library`.  Production callers leave `processExit`
+    // undefined, in which case the controller defaults to `process.exit`
+    // (matches the legacy behaviour).
+    ...(deps.processExit !== undefined
+      ? { exit: (code: number) => deps.processExit!(code) }
+      : {}),
   }
   const agentInterrupt = createAgentInterruptController(agentInterruptDeps)
 
