@@ -284,14 +284,23 @@ export function Onboarding({
     if (current !== undefined) emitOnboardingSpan(current.stepId, 'enter')
   }, [current])
 
-  // Reaching `done` is the terminal signal — emit completion and exit so the
-  // TUI can hand off to the main session surface.  Without this effect the
-  // `done` step renders `null` and leaves the citizen on a blank screen.
+  // Reaching `done` is the terminal signal.
+  //
+  // When the caller wires `onComplete` (embedded-gate mode — the TUI
+  // entrypoint swaps <Onboarding> for <AppInner> via its own state flag),
+  // we MUST NOT call Ink `exit()` — that would tear down the whole render
+  // tree before the parent can mount the main UI.
+  //
+  // When no `onComplete` is provided (standalone mode — e.g. demo or
+  // isolated test harness), falling back to `exit()` is the sensible
+  // default so the process doesn't sit on the blank `DoneStep`.
   useEffect(() => {
-    if (current?.stepId === 'done') {
-      onComplete?.()
-      exit()
+    if (current?.stepId !== 'done') return
+    if (onComplete !== undefined) {
+      onComplete()
+      return
     }
+    exit()
   }, [current, exit, onComplete])
 
   const advance = useCallback((): void => {
@@ -307,8 +316,11 @@ export function Onboarding({
       nextIndex += 1
     }
     if (nextIndex >= STEPS.length) {
-      onComplete?.()
-      exit()
+      // Same embedded-vs-standalone rule as the done-step effect above:
+      // the embedded-gate flow relies on the parent to swap components
+      // via `onComplete`, so `exit()` must only fire in standalone mode.
+      if (onComplete !== undefined) onComplete()
+      else exit()
       return
     }
     setCurrentIndex(nextIndex)

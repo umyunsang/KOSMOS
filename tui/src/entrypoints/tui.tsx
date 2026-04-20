@@ -17,7 +17,7 @@
 //   - On Enter: slash-prefixed input is intercepted by dispatchCommand(); all
 //     other input is emitted as a user_input IPC frame (T050, FR-038, FR-042).
 
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Box, Text, useApp, useInput } from 'ink'
 import { useTheme } from '../theme/provider'
 import { useSessionStore, dispatchSessionAction } from '../store/session-store'
@@ -381,6 +381,15 @@ export function App({ bridge }: AppProps): React.ReactElement {
       scopeRecord: scope !== null ? { scope_version: scope.scope_version } : undefined,
     }
   }, [])
+  // Stable per-launch session id — the same value is stamped on every
+  // consent + ministry-scope record written during this session so the
+  // two records cross-reference (contracts/onboarding-step-registry.md § 4).
+  // UUIDv4 is used until Spec 032 surfaces a UUIDv7 helper; the Zod
+  // schemas accept any RFC 4122 UUID shape.
+  const sessionIdRef = useRef<string | null>(null)
+  if (sessionIdRef.current === null) {
+    sessionIdRef.current = crypto.randomUUID()
+  }
   const consentFresh =
     initialMemdir.consentRecord?.consent_version === CURRENT_CONSENT_VERSION
   const scopeFresh =
@@ -394,6 +403,7 @@ export function App({ bridge }: AppProps): React.ReactElement {
       <Onboarding
         memdir={initialMemdir}
         startStep={resolveStartStep(initialMemdir)}
+        sessionId={sessionIdRef.current}
         onComplete={() => setOnboardingDone(true)}
       />
     )
