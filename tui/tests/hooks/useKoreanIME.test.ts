@@ -6,6 +6,15 @@
 // require a running Ink instance to validate correctness.  We extract the
 // logic via a thin test harness that replays jamo sequences through the same
 // state transitions used by the hook.
+//
+// Spec 288 Codex P1 regression note — the `isActive` parameter gates the
+// hook's underlying `useInput({ isActive })` subscription, so callers must
+// pass `false` whenever a modal (permission gauntlet, help overlay) owns the
+// keyboard.  Otherwise `y/n` and other text keys leak into `ime.buffer` in
+// the background and surface as draft text once the modal closes.  The
+// activation-guard contract is exercised by
+// `tui/tests/entrypoints/ime-activation-guard.test.tsx`; the composition
+// algorithm below is independent of `isActive` and tested headlessly here.
 
 import { describe, expect, it, beforeEach } from 'bun:test'
 
