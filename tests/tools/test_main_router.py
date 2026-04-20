@@ -81,6 +81,14 @@ def test_ministry_for_tool_returns_none_for_non_ministry() -> None:
     assert ministry_for_tool("resolve_location") is None
 
 
+def test_ministry_for_tool_case_fold() -> None:
+    """Upper-case and mixed-case tool IDs must not evade the scope guard."""
+    assert ministry_for_tool("Koroad_accident_hazard") == "KOROAD"
+    assert ministry_for_tool("KOROAD_accident_hazard") == "KOROAD"
+    assert ministry_for_tool("KMA_forecast_fetch") == "KMA"
+    assert ministry_for_tool("Hira_hospital_search") == "HIRA"
+
+
 # ---------------------------------------------------------------------------
 # Korean refusal copy
 # ---------------------------------------------------------------------------
@@ -112,6 +120,35 @@ def test_no_scope_record_refuses_all_ministry_tools(tmp_path: Path) -> None:
 
 def test_no_scope_record_passes_non_ministry_tools(tmp_path: Path) -> None:
     assert check_ministry_scope("lookup", memdir_root=tmp_path) == "pass"
+
+
+def test_stale_scope_version_refuses(tmp_path: Path) -> None:
+    """A scope record with a non-current scope_version must refuse as if absent.
+
+    Bumping CURRENT_SCOPE_VERSION invalidates all prior records by design
+    (research R-6).  Without this check a stale v(N-1) record would carry
+    forward opt-in booleans from an obsolete consent version.
+    """
+    from kosmos.memdir.ministry_scope import (
+        MinistryScopeAcknowledgment as Ack,
+    )
+
+    stale = Ack(
+        scope_version="v0",  # non-current
+        timestamp=datetime(2026, 4, 20, 14, 33, 17, tzinfo=UTC),
+        session_id=FIXTURE_SESSION,
+        ministries=frozenset(
+            MinistryOptIn(ministry_code=code, opt_in=True)
+            for code in MINISTRY_CODES
+        ),
+    )
+    result = check_ministry_scope(
+        "hira_hospital_search",
+        memdir_root=Path("/nonexistent"),
+        scope_override=stale,
+    )
+    assert isinstance(result, MinistryOptOutRefusal)
+    assert result.ministry == "HIRA"
 
 
 # ---------------------------------------------------------------------------

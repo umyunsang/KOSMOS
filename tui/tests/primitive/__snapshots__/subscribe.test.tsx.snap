@@ -1,13 +1,5 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`StreamClosed renders closed badge, close_reason, event count, and cursor 1`] = `
-"┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
-│ ■ Stream closed [exhausted] [cbs]                                                                │
-│ 3 events received                                                                                │
-│ Cursor: cbs-003                                                                                  │
-└──────────────────────────────────────────────────────────────────────────────────────────────────┘"
-`;
-
 exports[`EventStream renders live badge, modality, and event bodies 1`] = `
 "┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
 │ ● Live [cbs] cbs_disaster_subscribe                                                              │
@@ -17,5 +9,13 @@ exports[`EventStream renders live badge, modality, and event bodies 1`] = `
 │ 0Z                    80mm/6h.                                                                   │
 │ 2026-04-19T00:02:30.0[EN:WIND WARNING] Strong wind warning issued for Seoul. Peak gusts up to 25 │
 │ 00Z                  m/s expected.                                                               │
+└──────────────────────────────────────────────────────────────────────────────────────────────────┘"
+`;
+
+exports[`StreamClosed renders closed badge, close_reason, event count, and cursor 1`] = `
+"┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ ■ Stream closed [exhausted] [cbs]                                                                │
+│ 3 events received                                                                                │
+│ Cursor: cbs-003                                                                                  │
 └──────────────────────────────────────────────────────────────────────────────────────────────────┘"
 `;

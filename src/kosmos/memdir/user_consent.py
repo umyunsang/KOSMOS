@@ -127,10 +127,15 @@ def latest_consent(base: Path) -> PIPAConsentRecord | None:
     Scans descending filename order (filenames are UTC-timestamp-prefixed so
     lexicographic sort == chronological sort).  Skips records that fail
     validation (corrupt on disk) per contract § 5; never repairs them.
+    Fails-closed on filesystem errors (broken symlink, permission-denied).
     """
     if not base.exists():
         return None
-    candidates = sorted(base.glob("*.json"), reverse=True)
+    try:
+        candidates = sorted(base.glob("*.json"), reverse=True)
+    except OSError:
+        logger.debug("latest_consent: unable to enumerate %s", base, exc_info=True)
+        return None
     for path in candidates:
         try:
             raw = path.read_text(encoding="utf-8")

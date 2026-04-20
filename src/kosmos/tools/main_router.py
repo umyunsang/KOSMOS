@@ -22,6 +22,7 @@ from pathlib import Path
 from typing import Any, Literal
 
 from kosmos.memdir.ministry_scope import (
+    CURRENT_SCOPE_VERSION,
     MINISTRY_CODES,
     MinistryCode,
     MinistryScopeAcknowledgment,
@@ -52,9 +53,14 @@ MINISTRY_TOOL_PREFIX: dict[str, MinistryCode] = {
 
 
 def ministry_for_tool(tool_id: str) -> MinistryCode | None:
-    """Resolve a tool_id to its owning ministry, or None if not ministry-bound."""
+    """Resolve a tool_id to its owning ministry, or None if not ministry-bound.
+
+    `tool_id` is case-folded before matching so that a mis-cased registration
+    (e.g., `Koroad_...` or `KOROAD_...`) cannot evade the scope guard.
+    """
+    normalized = tool_id.casefold()
     for prefix, code in MINISTRY_TOOL_PREFIX.items():
-        if tool_id.startswith(prefix):
+        if normalized.startswith(prefix):
             return code
     return None
 
@@ -131,10 +137,11 @@ def check_ministry_scope(
 ) -> Literal["pass"] | MinistryOptOutRefusal:
     """Fail-closed ministry-scope check.
 
-    - Non-ministry tool       → pass.
-    - No scope record         → refusal (fail-closed default).
-    - Ministry opt-out        → refusal.
-    - Ministry opt-in         → pass.
+    - Non-ministry tool                          → pass.
+    - No scope record                            → refusal (fail-closed default).
+    - Stale scope_version != CURRENT_SCOPE_VERSION → refusal (forces re-onboard).
+    - Ministry opt-out                           → refusal.
+    - Ministry opt-in                            → pass.
     """
     ministry = ministry_for_tool(tool_id)
     if ministry is None:
@@ -144,6 +151,10 @@ def check_ministry_scope(
     if scope is None:
         scope = latest_scope(memdir_root / "user" / "ministry-scope")
     if scope is None:
+        return _build_refusal(ministry)
+    if scope.scope_version != CURRENT_SCOPE_VERSION:
+        # Stale record — bump invalidates all prior acknowledgments by design
+        # (research R-6); citizen must re-complete the ministry-scope step.
         return _build_refusal(ministry)
     if not opt_in_lookup(scope, ministry):
         return _build_refusal(ministry)

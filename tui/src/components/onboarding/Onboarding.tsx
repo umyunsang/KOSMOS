@@ -14,12 +14,16 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Box, Text, useApp, useInput } from 'ink'
+import { useTheme } from '../../theme/provider'
 import { useKoreanIME } from '../../hooks/useKoreanIME'
 import { LogoV2 } from './LogoV2/LogoV2'
 import { PIPAConsentStep } from './PIPAConsentStep'
 import { MinistryScopeStep } from './MinistryScopeStep'
 import type { PIPAConsentRecord } from '../../memdir/consent'
 import type { MinistryScopeAcknowledgment } from '../../memdir/ministry-scope'
+
+// Fast-path auto-advance budget (SC-012: returning citizen ≤ 3 s launch-to-main).
+const FAST_PATH_AUTO_ADVANCE_MS = 3000
 
 // ---------------------------------------------------------------------------
 // Version constants (bumping either invalidates all prior memdir records).
@@ -57,8 +61,24 @@ export type OnboardingStep = {
   exitSideEffect: 'write-consent-record' | 'write-scope-record' | 'none'
 }
 
+/**
+ * Splash step wrapper — renders `<LogoV2 />` then a citizen-visible
+ * instruction hint below.  The hint satisfies WCAG 3.3.2 (labels /
+ * instructions) and is the terminal-stream equivalent of a "visible focus"
+ * cue for keyboard-only + screen-reader users.
+ */
 const SplashStep: React.FC<StepComponentProps> = () => {
-  return <LogoV2 />
+  const theme = useTheme()
+  return (
+    <Box flexDirection="column" alignItems="center">
+      <LogoV2 />
+      <Box marginTop={1}>
+        <Text color={theme.kosmosCore}>
+          계속하려면 Enter  ·  종료하려면 Esc
+        </Text>
+      </Box>
+    </Box>
+  )
 }
 
 const PIPAStepBound: React.FC<StepComponentProps> = ({
@@ -282,6 +302,24 @@ export function Onboarding({
     }
     setCurrentIndex(nextIndex)
   }, [currentIndex, current, exit, memdir, onComplete])
+
+  // Fast-path auto-advance (SC-012): when the returning-citizen resolver
+  // lands directly on the splash step AND both memdir records are fresh,
+  // auto-advance after FAST_PATH_AUTO_ADVANCE_MS.  This closes the keyboard
+  // loop for citizens who are not watching the screen when they relaunch.
+  const consentFresh =
+    memdir.consentRecord?.consent_version === CURRENT_CONSENT_VERSION
+  const scopeFresh =
+    memdir.scopeRecord?.scope_version === CURRENT_SCOPE_VERSION
+  const fastPath =
+    current?.stepId === 'splash' && consentFresh && scopeFresh
+  useEffect(() => {
+    if (!fastPath) return
+    const handle = setTimeout(() => {
+      if (current?.advanceCondition() === true) advance()
+    }, FAST_PATH_AUTO_ADVANCE_MS)
+    return () => clearTimeout(handle)
+  }, [fastPath, current, advance])
 
   const exitSession = useCallback((): void => {
     if (current !== undefined) emitOnboardingSpan(current.stepId, 'exit')

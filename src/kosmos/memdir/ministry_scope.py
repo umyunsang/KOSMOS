@@ -154,7 +154,14 @@ def write_scope_atomic(
 def latest_scope(base: Path) -> MinistryScopeAcknowledgment | None:
     if not base.exists():
         return None
-    candidates = sorted(base.glob("*.json"), reverse=True)
+    try:
+        candidates = sorted(base.glob("*.json"), reverse=True)
+    except OSError:
+        # Broken symlink, permission-denied, or raced-deletion of `base` —
+        # fail-closed at the reader boundary so the caller sees `None` and
+        # the router treats it as "no record" (refusal path).
+        logger.debug("latest_scope: unable to enumerate %s", base, exc_info=True)
+        return None
     for path in candidates:
         try:
             raw = path.read_text(encoding="utf-8")

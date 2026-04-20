@@ -180,7 +180,11 @@ export function MinistryScopeStep({
           const selected = idx === selectedIdx
           const optIn = optIns[row.code]
           const glyph = optIn ? '☑' : '☐'
-          const prefix = selected ? '▶ ' : '  '
+          // Text-prefix "[선택] " carries the focus state in the text
+          // stream for screen readers that cannot associate the `▶` glyph
+          // with focus semantics.  Visual cue `▶` is retained for sighted
+          // users; the two together form a redundant encoding.
+          const prefix = selected ? '[선택] ▶ ' : '        '
           const accent = theme[row.tokenKey]
           const accentColor =
             typeof accent === 'string' ? accent : theme.text
@@ -197,11 +201,6 @@ export function MinistryScopeStep({
           )
         })}
       </Box>
-      {error !== null && (
-        <Box marginTop={1}>
-          <Text color={theme.error}>{error}</Text>
-        </Box>
-      )}
       <Box marginTop={1}>
         <Text color={theme.kosmosCore}>
           {submitting
@@ -209,6 +208,14 @@ export function MinistryScopeStep({
             : '↑↓: 이동  ·  Space: 토글  ·  Enter: 확인하고 계속  ·  Esc: 종료'}
         </Text>
       </Box>
+      {/* Error region is the last rendered child — same a11y rationale as */}
+      {/* PIPAConsentStep: screen readers append on redraw and land on the */}
+      {/* last line.  `오류: ` prefix distinguishes from status text.       */}
+      {error !== null && (
+        <Box marginTop={1}>
+          <Text color={theme.error}>오류: {error}</Text>
+        </Box>
+      )}
     </Box>
   )
 }

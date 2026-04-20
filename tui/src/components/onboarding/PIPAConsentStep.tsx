@@ -151,11 +151,6 @@ export function PIPAConsentStep({
           현재 인증 단계: {AAL_LABEL[aalGate]} ({aalGate})
         </Text>
       </Box>
-      {error !== null && (
-        <Box marginTop={1}>
-          <Text color={theme.error}>{error}</Text>
-        </Box>
-      )}
       <Box marginTop={1} flexDirection="column">
         <Text color={theme.kosmosCore}>
           {submitting
@@ -163,6 +158,16 @@ export function PIPAConsentStep({
             : 'Enter: 동의하고 계속  ·  Esc: 동의하지 않고 종료'}
         </Text>
       </Box>
+      {/* Error region MUST be the last rendered child — terminal screen */}
+      {/* readers announce on stream-append, so the reader's "current line" */}
+      {/* lands on the error after state change.  Prefix `오류: ` gives an */}
+      {/* explicit narration handle for citizens using KWCAG-compliant     */}
+      {/* screen readers.                                                   */}
+      {error !== null && (
+        <Box marginTop={1}>
+          <Text color={theme.error}>오류: {error}</Text>
+        </Box>
+      )}
     </Box>
   )
 }
