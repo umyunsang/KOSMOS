@@ -59,6 +59,14 @@ export function HistorySearchOverlay({
   const { isComposing } = useKoreanIME()
   const [needle, setNeedle] = useState<string>('')
   const [cursor, setCursor] = useState<number>(0)
+  // Scroll offset into `filtered`: the first row drawn is
+  // `filtered[scrollOffset]`.  Maintaining this alongside `cursor` is what
+  // makes every result reachable by keyboard (Codex P2 against line 124 of
+  // the pre-fix code): without an offset, down-arrow could advance `cursor`
+  // past the visible window (`filtered.slice(0, max_rows)`) and `enter`
+  // would silently select a hidden entry.  Invariant preserved by every
+  // handler below: `scrollOffset <= cursor < scrollOffset + max_rows`.
+  const [scrollOffset, setScrollOffset] = useState<number>(0)
 
   // Derived view: filtered entries, recomputed on every keystroke. Memoise
   // because the filter walks the haystack and decomposes each Hangul
@@ -70,16 +78,38 @@ export function HistorySearchOverlay({
     [request.visible_entries, needle],
   )
 
-  // Keep the cursor in-bounds when the filter shrinks the result list.
+  // Reset cursor + scrollOffset whenever the filter query changes.  Keeping
+  // a stale offset would leave the citizen staring at empty rows when a
+  // tighter needle shrinks the result list below the previous offset.
+  useEffect(() => {
+    setCursor(0)
+    setScrollOffset(0)
+  }, [needle])
+
+  // Secondary bounds guard — the visible-entries array itself can change
+  // (e.g. new entries streamed into the session) independently of the
+  // needle.  Clamp cursor + offset to the post-filter length so the
+  // invariant `scrollOffset <= cursor < min(filtered.length, scrollOffset +
+  // max_rows)` survives those shifts.
   useEffect(() => {
     if (filtered.length === 0) {
       setCursor(0)
+      setScrollOffset(0)
       return
     }
     if (cursor >= filtered.length) {
-      setCursor(filtered.length - 1)
+      const nextCursor = filtered.length - 1
+      setCursor(nextCursor)
+      if (nextCursor < scrollOffset) {
+        setScrollOffset(nextCursor)
+      }
     }
-  }, [filtered.length, cursor])
+    // Keep the window anchored to a valid range.  If the list shrank below
+    // the current offset, pull the offset back so the cursor stays visible.
+    if (scrollOffset > Math.max(0, filtered.length - 1)) {
+      setScrollOffset(Math.max(0, filtered.length - 1))
+    }
+  }, [filtered.length, cursor, scrollOffset])
 
   // ---- Keystroke handler -------------------------------------------------
   //
@@ -117,11 +147,33 @@ export function HistorySearchOverlay({
       return
     }
     if (key.upArrow) {
-      setCursor((c) => Math.max(0, c - 1))
+      // Move cursor up; if it steps above the visible window, scroll the
+      // window up in lockstep so the highlighted row stays on screen.
+      setCursor((c) => {
+        const next = Math.max(0, c - 1)
+        setScrollOffset((off) => (next < off ? next : off))
+        return next
+      })
       return
     }
     if (key.downArrow) {
-      setCursor((c) => Math.min(Math.max(0, filtered.length - 1), c + 1))
+      // Move cursor down; if it steps past the last visible row and more
+      // results exist, scroll the window down so the highlighted row stays
+      // on screen.  The `filtered.length - 1` clamp still applies — we
+      // never advance past the last entry.
+      setCursor((c) => {
+        const upperBound = Math.max(0, filtered.length - 1)
+        const next = Math.min(upperBound, c + 1)
+        setScrollOffset((off) => {
+          const lastVisible = off + max_rows - 1
+          if (next > lastVisible) {
+            // Keep the cursor at the bottom visible row: slide the window.
+            return next - max_rows + 1
+          }
+          return off
+        })
+        return next
+      })
       return
     }
     if (key.backspace || key.delete) {
@@ -139,8 +191,13 @@ export function HistorySearchOverlay({
 
   // ---- Render ------------------------------------------------------------
 
-  const visible = filtered.slice(0, max_rows)
-  const overflow = Math.max(0, filtered.length - visible.length)
+  // Window slide: the visible rows are the `max_rows` entries starting at
+  // `scrollOffset`.  `cursor - scrollOffset` is the offset into `visible`
+  // of the highlighted row and is guaranteed to be in `[0, max_rows)` by
+  // the handler invariants above.
+  const visible = filtered.slice(scrollOffset, scrollOffset + max_rows)
+  const overflow = Math.max(0, filtered.length - (scrollOffset + visible.length))
+  const cursorInWindow = cursor - scrollOffset
 
   return (
     <Box flexDirection="column" paddingX={1}>
@@ -163,9 +220,9 @@ export function HistorySearchOverlay({
           visible.map((entry, idx) => (
             <Text
               key={`${entry.session_id}:${entry.timestamp}`}
-              color={idx === cursor ? theme.kosmosCore : theme.text}
+              color={idx === cursorInWindow ? theme.kosmosCore : theme.text}
             >
-              {idx === cursor ? '› ' : '  '}
+              {idx === cursorInWindow ? '› ' : '  '}
               {entry.query_text}
             </Text>
           ))
