@@ -45,7 +45,6 @@ export {
   type CancelResult,
 } from './actions/historySearch'
 export {
-<<<<<<< HEAD
   createAgentInterruptController,
   ARM_WINDOW_MS,
   type AgentInterruptController,
@@ -66,7 +65,7 @@ export {
   type HistoryPrevOutcome,
   type HistoryNextOutcome,
 } from './actions/historyNavigate'
-=======
+export {
   buildSessionExitHandler,
   type SessionExitDeps,
   type SessionExitResult,
@@ -79,7 +78,6 @@ export {
   type PermissionModeCycleResult,
   type ModeChangedSpanArgs,
 } from './actions/permissionModeCycle'
->>>>>>> worktree-agent-a742c9d8
 export {
   buildChordEvent,
   lookupChord,
