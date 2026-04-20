@@ -626,15 +626,14 @@ export function App({ bridge }: AppProps): React.ReactElement {
         // permission pipeline surfaces an irreversible-action flag.
         hasPendingIrreversibleAction: () => false,
         readDraft: () => ime.buffer,
-        setDraft: (_value: string) => {
-          // `useKoreanIME` only exposes a clear() primitive today; injecting
-          // an arbitrary string would require an IME append path the hook
-          // does not yet provide.  Clear the buffer so the `returned-to-
-          // present` history branch behaves correctly; other branches will
-          // land once Spec 288.1 adds `ime.setBuffer()`.
-          // FIXME: Spec 288.1 — thread an IME buffer-setter here so
-          // `history-prev` actually surfaces the loaded entry in the UI.
-          ime.clear()
+        setDraft: (value: string) => {
+          // Spec 288 Codex P1 fix — `history-prev` / `history-next` write the
+          // selected historical query into the input bar via `ime.setBuffer`.
+          // The hook's setter overwrites the committed buffer and drops any
+          // in-flight composition so the citizen sees the recalled text
+          // verbatim.  Empty-string writes (the `returned-to-present`
+          // branch in `createHistoryNavigator`) are honoured as a clear.
+          ime.setBuffer(value)
         },
         getHistory: () => historyEntries,
         memdirUserGranted,

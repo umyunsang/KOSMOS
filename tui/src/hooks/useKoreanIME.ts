@@ -134,6 +134,20 @@ export interface KoreanIMEState {
   submit: () => string
   /** Call to clear the buffer and any in-flight composition without submitting */
   clear: () => void
+  /**
+   * Overwrite the committed buffer with `value` and drop any in-flight
+   * composition.  Intended for programmatic draft writes such as Spec 288
+   * `history-prev` / `history-next` recall, where a stored query text must
+   * appear verbatim in the input bar.  Last-write-wins — any partial syllable
+   * present at call time is discarded without being committed first (the
+   * caller is responsible for flushing if they want composition preserved).
+   *
+   * Activation-guard contract: `setBuffer` is a pure state setter and does
+   * NOT go through the hook's `useInput` listener.  It therefore succeeds
+   * regardless of the hook's `isActive` flag — callers that wish to suppress
+   * programmatic writes during a modal must gate at their own boundary.
+   */
+  setBuffer: (value: string) => void
 }
 
 // ---------------------------------------------------------------------------
@@ -357,12 +371,24 @@ function useKoreanIME_fork(isActive: boolean): KoreanIMEState {
     setComp(EMPTY_COMPOSITION)
   }, [])
 
+  const setBuffer = useCallback((value: string): void => {
+    // Overwrite the committed buffer and discard any in-flight composition.
+    // Used by Spec 288 history-navigate (`history-prev` / `history-next`) to
+    // place the selected historical query into the input bar; also the
+    // single-source-of-truth write path whenever a controller needs to show
+    // stored text to the citizen.  See `KoreanIMEState.setBuffer` doc for
+    // the activation-guard contract.
+    setCommitted(value)
+    setComp(EMPTY_COMPOSITION)
+  }, [])
+
   return {
     buffer: committed,
     isComposing,
     composition: isComposing ? compGlyph : null,
     submit,
     clear,
+    setBuffer,
   }
 }
 
