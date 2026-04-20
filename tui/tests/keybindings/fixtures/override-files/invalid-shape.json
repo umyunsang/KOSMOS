@@ -1,0 +1,4 @@
+[
+  "this is an array, not an object — loadUserBindings must silently degrade",
+  "per FR-024 and Spec 288 § Edge Cases (Corrupted user-override file)"
+]

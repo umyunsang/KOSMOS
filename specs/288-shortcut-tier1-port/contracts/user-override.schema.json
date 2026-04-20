@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kosmos.dev/schemas/keybindings-override-v1.json",
+  "title": "KOSMOS User Keybinding Overrides (Spec 288)",
+  "description": "Citizen-editable override file at ~/.kosmos/keybindings.json. Maps chord strings to TierOneAction names, or null to disable a binding. Missing or invalid file degrades silently to defaults (FR-023, FR-024).",
+  "type": "object",
+  "patternProperties": {
+    "^((ctrl|shift|alt|meta)\\+)*(tab|enter|escape|up|down|left|right|pageup|pagedown|home|end|space|backspace|delete|f([1-9]|1[0-2])|[a-z]|[0-9])$": {
+      "oneOf": [
+        {
+          "type": "null",
+          "description": "Disable this binding (FR-025). The chord becomes a no-op."
+        },
+        {
+          "type": "string",
+          "enum": [
+            "agent-interrupt",
+            "session-exit",
+            "draft-cancel",
+            "history-search",
+            "history-prev",
+            "history-next",
+            "permission-mode-cycle"
+          ],
+          "description": "Remap the chord to this TierOneAction (FR-026). Reserved actions (agent-interrupt, session-exit) MUST NOT appear as remap targets — attempted remaps are rejected by validate.ts (FR-027)."
+        }
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "examples": [
+    {
+      "ctrl+r": null
+    },
+    {
+      "ctrl+f": "history-search",
+      "ctrl+r": null
+    },
+    {
+      "ctrl+shift+p": "permission-mode-cycle"
+    }
+  ]
+}

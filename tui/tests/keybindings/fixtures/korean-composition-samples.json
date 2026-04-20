@@ -1,0 +1,1808 @@
+{
+  "source": "Spec 288 · T032",
+  "description": "200 Korean IME composition samples covering 단모음 / 이중모음 / 복합종성 / precomposed / mixed-ASCII edges.",
+  "count": 200,
+  "samples": [
+    {
+      "name": "simple ㄱ+ㅏ → 가",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㄱ",
+        "ㅏ"
+      ],
+      "expected_committed": "가"
+    },
+    {
+      "name": "simple ㄱ+ㅓ → 거",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㄱ",
+        "ㅓ"
+      ],
+      "expected_committed": "거"
+    },
+    {
+      "name": "simple ㄱ+ㅗ → 고",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㄱ",
+        "ㅗ"
+      ],
+      "expected_committed": "고"
+    },
+    {
+      "name": "simple ㄱ+ㅜ → 구",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㄱ",
+        "ㅜ"
+      ],
+      "expected_committed": "구"
+    },
+    {
+      "name": "simple ㄱ+ㅣ → 기",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㄱ",
+        "ㅣ"
+      ],
+      "expected_committed": "기"
+    },
+    {
+      "name": "simple ㄲ+ㅏ → 까",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㄲ",
+        "ㅏ"
+      ],
+      "expected_committed": "까"
+    },
+    {
+      "name": "simple ㄲ+ㅓ → 꺼",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㄲ",
+        "ㅓ"
+      ],
+      "expected_committed": "꺼"
+    },
+    {
+      "name": "simple ㄲ+ㅗ → 꼬",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㄲ",
+        "ㅗ"
+      ],
+      "expected_committed": "꼬"
+    },
+    {
+      "name": "simple ㄲ+ㅜ → 꾸",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㄲ",
+        "ㅜ"
+      ],
+      "expected_committed": "꾸"
+    },
+    {
+      "name": "simple ㄲ+ㅣ → 끼",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㄲ",
+        "ㅣ"
+      ],
+      "expected_committed": "끼"
+    },
+    {
+      "name": "simple ㄴ+ㅏ → 나",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㄴ",
+        "ㅏ"
+      ],
+      "expected_committed": "나"
+    },
+    {
+      "name": "simple ㄴ+ㅓ → 너",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㄴ",
+        "ㅓ"
+      ],
+      "expected_committed": "너"
+    },
+    {
+      "name": "simple ㄴ+ㅗ → 노",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㄴ",
+        "ㅗ"
+      ],
+      "expected_committed": "노"
+    },
+    {
+      "name": "simple ㄴ+ㅜ → 누",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㄴ",
+        "ㅜ"
+      ],
+      "expected_committed": "누"
+    },
+    {
+      "name": "simple ㄴ+ㅣ → 니",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㄴ",
+        "ㅣ"
+      ],
+      "expected_committed": "니"
+    },
+    {
+      "name": "simple ㄷ+ㅏ → 다",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㄷ",
+        "ㅏ"
+      ],
+      "expected_committed": "다"
+    },
+    {
+      "name": "simple ㄷ+ㅓ → 더",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㄷ",
+        "ㅓ"
+      ],
+      "expected_committed": "더"
+    },
+    {
+      "name": "simple ㄷ+ㅗ → 도",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㄷ",
+        "ㅗ"
+      ],
+      "expected_committed": "도"
+    },
+    {
+      "name": "simple ㄷ+ㅜ → 두",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㄷ",
+        "ㅜ"
+      ],
+      "expected_committed": "두"
+    },
+    {
+      "name": "simple ㄷ+ㅣ → 디",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㄷ",
+        "ㅣ"
+      ],
+      "expected_committed": "디"
+    },
+    {
+      "name": "simple ㄸ+ㅏ → 따",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㄸ",
+        "ㅏ"
+      ],
+      "expected_committed": "따"
+    },
+    {
+      "name": "simple ㄸ+ㅓ → 떠",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㄸ",
+        "ㅓ"
+      ],
+      "expected_committed": "떠"
+    },
+    {
+      "name": "simple ㄸ+ㅗ → 또",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㄸ",
+        "ㅗ"
+      ],
+      "expected_committed": "또"
+    },
+    {
+      "name": "simple ㄸ+ㅜ → 뚜",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㄸ",
+        "ㅜ"
+      ],
+      "expected_committed": "뚜"
+    },
+    {
+      "name": "simple ㄸ+ㅣ → 띠",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㄸ",
+        "ㅣ"
+      ],
+      "expected_committed": "띠"
+    },
+    {
+      "name": "simple ㄹ+ㅏ → 라",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㄹ",
+        "ㅏ"
+      ],
+      "expected_committed": "라"
+    },
+    {
+      "name": "simple ㄹ+ㅓ → 러",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㄹ",
+        "ㅓ"
+      ],
+      "expected_committed": "러"
+    },
+    {
+      "name": "simple ㄹ+ㅗ → 로",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㄹ",
+        "ㅗ"
+      ],
+      "expected_committed": "로"
+    },
+    {
+      "name": "simple ㄹ+ㅜ → 루",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㄹ",
+        "ㅜ"
+      ],
+      "expected_committed": "루"
+    },
+    {
+      "name": "simple ㄹ+ㅣ → 리",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㄹ",
+        "ㅣ"
+      ],
+      "expected_committed": "리"
+    },
+    {
+      "name": "simple ㅁ+ㅏ → 마",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅁ",
+        "ㅏ"
+      ],
+      "expected_committed": "마"
+    },
+    {
+      "name": "simple ㅁ+ㅓ → 머",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅁ",
+        "ㅓ"
+      ],
+      "expected_committed": "머"
+    },
+    {
+      "name": "simple ㅁ+ㅗ → 모",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅁ",
+        "ㅗ"
+      ],
+      "expected_committed": "모"
+    },
+    {
+      "name": "simple ㅁ+ㅜ → 무",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅁ",
+        "ㅜ"
+      ],
+      "expected_committed": "무"
+    },
+    {
+      "name": "simple ㅁ+ㅣ → 미",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅁ",
+        "ㅣ"
+      ],
+      "expected_committed": "미"
+    },
+    {
+      "name": "simple ㅂ+ㅏ → 바",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅂ",
+        "ㅏ"
+      ],
+      "expected_committed": "바"
+    },
+    {
+      "name": "simple ㅂ+ㅓ → 버",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅂ",
+        "ㅓ"
+      ],
+      "expected_committed": "버"
+    },
+    {
+      "name": "simple ㅂ+ㅗ → 보",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅂ",
+        "ㅗ"
+      ],
+      "expected_committed": "보"
+    },
+    {
+      "name": "simple ㅂ+ㅜ → 부",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅂ",
+        "ㅜ"
+      ],
+      "expected_committed": "부"
+    },
+    {
+      "name": "simple ㅂ+ㅣ → 비",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅂ",
+        "ㅣ"
+      ],
+      "expected_committed": "비"
+    },
+    {
+      "name": "simple ㅃ+ㅏ → 빠",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅃ",
+        "ㅏ"
+      ],
+      "expected_committed": "빠"
+    },
+    {
+      "name": "simple ㅃ+ㅓ → 뻐",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅃ",
+        "ㅓ"
+      ],
+      "expected_committed": "뻐"
+    },
+    {
+      "name": "simple ㅃ+ㅗ → 뽀",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅃ",
+        "ㅗ"
+      ],
+      "expected_committed": "뽀"
+    },
+    {
+      "name": "simple ㅃ+ㅜ → 뿌",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅃ",
+        "ㅜ"
+      ],
+      "expected_committed": "뿌"
+    },
+    {
+      "name": "simple ㅃ+ㅣ → 삐",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅃ",
+        "ㅣ"
+      ],
+      "expected_committed": "삐"
+    },
+    {
+      "name": "simple ㅅ+ㅏ → 사",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅅ",
+        "ㅏ"
+      ],
+      "expected_committed": "사"
+    },
+    {
+      "name": "simple ㅅ+ㅓ → 서",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅅ",
+        "ㅓ"
+      ],
+      "expected_committed": "서"
+    },
+    {
+      "name": "simple ㅅ+ㅗ → 소",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅅ",
+        "ㅗ"
+      ],
+      "expected_committed": "소"
+    },
+    {
+      "name": "simple ㅅ+ㅜ → 수",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅅ",
+        "ㅜ"
+      ],
+      "expected_committed": "수"
+    },
+    {
+      "name": "simple ㅅ+ㅣ → 시",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅅ",
+        "ㅣ"
+      ],
+      "expected_committed": "시"
+    },
+    {
+      "name": "simple ㅆ+ㅏ → 싸",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅆ",
+        "ㅏ"
+      ],
+      "expected_committed": "싸"
+    },
+    {
+      "name": "simple ㅆ+ㅓ → 써",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅆ",
+        "ㅓ"
+      ],
+      "expected_committed": "써"
+    },
+    {
+      "name": "simple ㅆ+ㅗ → 쏘",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅆ",
+        "ㅗ"
+      ],
+      "expected_committed": "쏘"
+    },
+    {
+      "name": "simple ㅆ+ㅜ → 쑤",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅆ",
+        "ㅜ"
+      ],
+      "expected_committed": "쑤"
+    },
+    {
+      "name": "simple ㅆ+ㅣ → 씨",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅆ",
+        "ㅣ"
+      ],
+      "expected_committed": "씨"
+    },
+    {
+      "name": "simple ㅇ+ㅏ → 아",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅇ",
+        "ㅏ"
+      ],
+      "expected_committed": "아"
+    },
+    {
+      "name": "simple ㅇ+ㅓ → 어",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅇ",
+        "ㅓ"
+      ],
+      "expected_committed": "어"
+    },
+    {
+      "name": "simple ㅇ+ㅗ → 오",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅇ",
+        "ㅗ"
+      ],
+      "expected_committed": "오"
+    },
+    {
+      "name": "simple ㅇ+ㅜ → 우",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅇ",
+        "ㅜ"
+      ],
+      "expected_committed": "우"
+    },
+    {
+      "name": "simple ㅇ+ㅣ → 이",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅇ",
+        "ㅣ"
+      ],
+      "expected_committed": "이"
+    },
+    {
+      "name": "simple ㅈ+ㅏ → 자",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅈ",
+        "ㅏ"
+      ],
+      "expected_committed": "자"
+    },
+    {
+      "name": "simple ㅈ+ㅓ → 저",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅈ",
+        "ㅓ"
+      ],
+      "expected_committed": "저"
+    },
+    {
+      "name": "simple ㅈ+ㅗ → 조",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅈ",
+        "ㅗ"
+      ],
+      "expected_committed": "조"
+    },
+    {
+      "name": "simple ㅈ+ㅜ → 주",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅈ",
+        "ㅜ"
+      ],
+      "expected_committed": "주"
+    },
+    {
+      "name": "simple ㅈ+ㅣ → 지",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅈ",
+        "ㅣ"
+      ],
+      "expected_committed": "지"
+    },
+    {
+      "name": "simple ㅉ+ㅏ → 짜",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅉ",
+        "ㅏ"
+      ],
+      "expected_committed": "짜"
+    },
+    {
+      "name": "simple ㅉ+ㅓ → 쩌",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅉ",
+        "ㅓ"
+      ],
+      "expected_committed": "쩌"
+    },
+    {
+      "name": "simple ㅉ+ㅗ → 쪼",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅉ",
+        "ㅗ"
+      ],
+      "expected_committed": "쪼"
+    },
+    {
+      "name": "simple ㅉ+ㅜ → 쭈",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅉ",
+        "ㅜ"
+      ],
+      "expected_committed": "쭈"
+    },
+    {
+      "name": "simple ㅉ+ㅣ → 찌",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅉ",
+        "ㅣ"
+      ],
+      "expected_committed": "찌"
+    },
+    {
+      "name": "simple ㅊ+ㅏ → 차",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅊ",
+        "ㅏ"
+      ],
+      "expected_committed": "차"
+    },
+    {
+      "name": "simple ㅊ+ㅓ → 처",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅊ",
+        "ㅓ"
+      ],
+      "expected_committed": "처"
+    },
+    {
+      "name": "simple ㅊ+ㅗ → 초",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅊ",
+        "ㅗ"
+      ],
+      "expected_committed": "초"
+    },
+    {
+      "name": "simple ㅊ+ㅜ → 추",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅊ",
+        "ㅜ"
+      ],
+      "expected_committed": "추"
+    },
+    {
+      "name": "simple ㅊ+ㅣ → 치",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅊ",
+        "ㅣ"
+      ],
+      "expected_committed": "치"
+    },
+    {
+      "name": "simple ㅋ+ㅏ → 카",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅋ",
+        "ㅏ"
+      ],
+      "expected_committed": "카"
+    },
+    {
+      "name": "simple ㅋ+ㅓ → 커",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅋ",
+        "ㅓ"
+      ],
+      "expected_committed": "커"
+    },
+    {
+      "name": "simple ㅋ+ㅗ → 코",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅋ",
+        "ㅗ"
+      ],
+      "expected_committed": "코"
+    },
+    {
+      "name": "simple ㅋ+ㅜ → 쿠",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅋ",
+        "ㅜ"
+      ],
+      "expected_committed": "쿠"
+    },
+    {
+      "name": "simple ㅋ+ㅣ → 키",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅋ",
+        "ㅣ"
+      ],
+      "expected_committed": "키"
+    },
+    {
+      "name": "simple ㅌ+ㅏ → 타",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅌ",
+        "ㅏ"
+      ],
+      "expected_committed": "타"
+    },
+    {
+      "name": "simple ㅌ+ㅓ → 터",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅌ",
+        "ㅓ"
+      ],
+      "expected_committed": "터"
+    },
+    {
+      "name": "simple ㅌ+ㅗ → 토",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅌ",
+        "ㅗ"
+      ],
+      "expected_committed": "토"
+    },
+    {
+      "name": "simple ㅌ+ㅜ → 투",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅌ",
+        "ㅜ"
+      ],
+      "expected_committed": "투"
+    },
+    {
+      "name": "simple ㅌ+ㅣ → 티",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅌ",
+        "ㅣ"
+      ],
+      "expected_committed": "티"
+    },
+    {
+      "name": "simple ㅍ+ㅏ → 파",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅍ",
+        "ㅏ"
+      ],
+      "expected_committed": "파"
+    },
+    {
+      "name": "simple ㅍ+ㅓ → 퍼",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅍ",
+        "ㅓ"
+      ],
+      "expected_committed": "퍼"
+    },
+    {
+      "name": "simple ㅍ+ㅗ → 포",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅍ",
+        "ㅗ"
+      ],
+      "expected_committed": "포"
+    },
+    {
+      "name": "simple ㅍ+ㅜ → 푸",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅍ",
+        "ㅜ"
+      ],
+      "expected_committed": "푸"
+    },
+    {
+      "name": "simple ㅍ+ㅣ → 피",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅍ",
+        "ㅣ"
+      ],
+      "expected_committed": "피"
+    },
+    {
+      "name": "simple ㅎ+ㅏ → 하",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅎ",
+        "ㅏ"
+      ],
+      "expected_committed": "하"
+    },
+    {
+      "name": "simple ㅎ+ㅓ → 허",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅎ",
+        "ㅓ"
+      ],
+      "expected_committed": "허"
+    },
+    {
+      "name": "simple ㅎ+ㅗ → 호",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅎ",
+        "ㅗ"
+      ],
+      "expected_committed": "호"
+    },
+    {
+      "name": "simple ㅎ+ㅜ → 후",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅎ",
+        "ㅜ"
+      ],
+      "expected_committed": "후"
+    },
+    {
+      "name": "simple ㅎ+ㅣ → 히",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅎ",
+        "ㅣ"
+      ],
+      "expected_committed": "히"
+    },
+    {
+      "name": "closed ㅎ+ㅏ+ㄴ → 한",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅎ",
+        "ㅏ",
+        "ㄴ"
+      ],
+      "expected_committed": "한"
+    },
+    {
+      "name": "closed ㄱ+ㅏ+ㄴ → 간",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㄱ",
+        "ㅏ",
+        "ㄴ"
+      ],
+      "expected_committed": "간"
+    },
+    {
+      "name": "closed ㅇ+ㅗ+ㅇ → 옹",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅇ",
+        "ㅗ",
+        "ㅇ"
+      ],
+      "expected_committed": "옹"
+    },
+    {
+      "name": "closed ㅁ+ㅏ+ㅁ → 맘",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅁ",
+        "ㅏ",
+        "ㅁ"
+      ],
+      "expected_committed": "맘"
+    },
+    {
+      "name": "closed ㅍ+ㅗ+ㄹ → 폴",
+      "category": "simple-vowel",
+      "tokens": [
+        "ㅍ",
+        "ㅗ",
+        "ㄹ"
+      ],
+      "expected_committed": "폴"
+    },
+    {
+      "name": "compound ㄱ+ㅘ → 과",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㄱ",
+        "ㅘ"
+      ],
+      "expected_committed": "과"
+    },
+    {
+      "name": "compound ㄴ+ㅘ → 놔",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㄴ",
+        "ㅘ"
+      ],
+      "expected_committed": "놔"
+    },
+    {
+      "name": "compound ㄷ+ㅘ → 돠",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㄷ",
+        "ㅘ"
+      ],
+      "expected_committed": "돠"
+    },
+    {
+      "name": "compound ㄹ+ㅘ → 롸",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㄹ",
+        "ㅘ"
+      ],
+      "expected_committed": "롸"
+    },
+    {
+      "name": "compound ㅁ+ㅘ → 뫄",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㅁ",
+        "ㅘ"
+      ],
+      "expected_committed": "뫄"
+    },
+    {
+      "name": "compound ㅂ+ㅘ → 봐",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㅂ",
+        "ㅘ"
+      ],
+      "expected_committed": "봐"
+    },
+    {
+      "name": "compound ㅇ+ㅘ → 와",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㅇ",
+        "ㅘ"
+      ],
+      "expected_committed": "와"
+    },
+    {
+      "name": "compound ㅌ+ㅘ → 톼",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㅌ",
+        "ㅘ"
+      ],
+      "expected_committed": "톼"
+    },
+    {
+      "name": "compound ㅎ+ㅘ → 화",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㅎ",
+        "ㅘ"
+      ],
+      "expected_committed": "화"
+    },
+    {
+      "name": "compound ㄱ+ㅙ → 괘",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㄱ",
+        "ㅙ"
+      ],
+      "expected_committed": "괘"
+    },
+    {
+      "name": "compound ㄴ+ㅙ → 놰",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㄴ",
+        "ㅙ"
+      ],
+      "expected_committed": "놰"
+    },
+    {
+      "name": "compound ㄷ+ㅙ → 돼",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㄷ",
+        "ㅙ"
+      ],
+      "expected_committed": "돼"
+    },
+    {
+      "name": "compound ㄹ+ㅙ → 뢔",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㄹ",
+        "ㅙ"
+      ],
+      "expected_committed": "뢔"
+    },
+    {
+      "name": "compound ㅁ+ㅙ → 뫠",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㅁ",
+        "ㅙ"
+      ],
+      "expected_committed": "뫠"
+    },
+    {
+      "name": "compound ㅂ+ㅙ → 봬",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㅂ",
+        "ㅙ"
+      ],
+      "expected_committed": "봬"
+    },
+    {
+      "name": "compound ㅇ+ㅙ → 왜",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㅇ",
+        "ㅙ"
+      ],
+      "expected_committed": "왜"
+    },
+    {
+      "name": "compound ㅌ+ㅙ → 퇘",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㅌ",
+        "ㅙ"
+      ],
+      "expected_committed": "퇘"
+    },
+    {
+      "name": "compound ㅎ+ㅙ → 홰",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㅎ",
+        "ㅙ"
+      ],
+      "expected_committed": "홰"
+    },
+    {
+      "name": "compound ㄱ+ㅚ → 괴",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㄱ",
+        "ㅚ"
+      ],
+      "expected_committed": "괴"
+    },
+    {
+      "name": "compound ㄴ+ㅚ → 뇌",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㄴ",
+        "ㅚ"
+      ],
+      "expected_committed": "뇌"
+    },
+    {
+      "name": "compound ㄷ+ㅚ → 되",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㄷ",
+        "ㅚ"
+      ],
+      "expected_committed": "되"
+    },
+    {
+      "name": "compound ㄹ+ㅚ → 뢰",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㄹ",
+        "ㅚ"
+      ],
+      "expected_committed": "뢰"
+    },
+    {
+      "name": "compound ㅁ+ㅚ → 뫼",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㅁ",
+        "ㅚ"
+      ],
+      "expected_committed": "뫼"
+    },
+    {
+      "name": "compound ㅂ+ㅚ → 뵈",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㅂ",
+        "ㅚ"
+      ],
+      "expected_committed": "뵈"
+    },
+    {
+      "name": "compound ㅇ+ㅚ → 외",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㅇ",
+        "ㅚ"
+      ],
+      "expected_committed": "외"
+    },
+    {
+      "name": "compound ㅌ+ㅚ → 퇴",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㅌ",
+        "ㅚ"
+      ],
+      "expected_committed": "퇴"
+    },
+    {
+      "name": "compound ㅎ+ㅚ → 회",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㅎ",
+        "ㅚ"
+      ],
+      "expected_committed": "회"
+    },
+    {
+      "name": "compound ㄱ+ㅝ → 궈",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㄱ",
+        "ㅝ"
+      ],
+      "expected_committed": "궈"
+    },
+    {
+      "name": "compound ㄴ+ㅝ → 눠",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㄴ",
+        "ㅝ"
+      ],
+      "expected_committed": "눠"
+    },
+    {
+      "name": "compound ㄷ+ㅝ → 둬",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㄷ",
+        "ㅝ"
+      ],
+      "expected_committed": "둬"
+    },
+    {
+      "name": "compound ㄹ+ㅝ → 뤄",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㄹ",
+        "ㅝ"
+      ],
+      "expected_committed": "뤄"
+    },
+    {
+      "name": "compound ㅁ+ㅝ → 뭐",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㅁ",
+        "ㅝ"
+      ],
+      "expected_committed": "뭐"
+    },
+    {
+      "name": "compound ㅂ+ㅝ → 붜",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㅂ",
+        "ㅝ"
+      ],
+      "expected_committed": "붜"
+    },
+    {
+      "name": "compound ㅇ+ㅝ → 워",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㅇ",
+        "ㅝ"
+      ],
+      "expected_committed": "워"
+    },
+    {
+      "name": "compound ㅌ+ㅝ → 퉈",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㅌ",
+        "ㅝ"
+      ],
+      "expected_committed": "퉈"
+    },
+    {
+      "name": "compound ㅎ+ㅝ → 훠",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㅎ",
+        "ㅝ"
+      ],
+      "expected_committed": "훠"
+    },
+    {
+      "name": "compound ㄱ+ㅞ → 궤",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㄱ",
+        "ㅞ"
+      ],
+      "expected_committed": "궤"
+    },
+    {
+      "name": "compound ㄴ+ㅞ → 눼",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㄴ",
+        "ㅞ"
+      ],
+      "expected_committed": "눼"
+    },
+    {
+      "name": "compound ㄷ+ㅞ → 뒈",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㄷ",
+        "ㅞ"
+      ],
+      "expected_committed": "뒈"
+    },
+    {
+      "name": "compound ㄹ+ㅞ → 뤠",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㄹ",
+        "ㅞ"
+      ],
+      "expected_committed": "뤠"
+    },
+    {
+      "name": "compound ㅁ+ㅞ → 뭬",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㅁ",
+        "ㅞ"
+      ],
+      "expected_committed": "뭬"
+    },
+    {
+      "name": "compound ㅂ+ㅞ → 붸",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㅂ",
+        "ㅞ"
+      ],
+      "expected_committed": "붸"
+    },
+    {
+      "name": "compound ㅇ+ㅞ → 웨",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㅇ",
+        "ㅞ"
+      ],
+      "expected_committed": "웨"
+    },
+    {
+      "name": "compound ㅌ+ㅞ → 퉤",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㅌ",
+        "ㅞ"
+      ],
+      "expected_committed": "퉤"
+    },
+    {
+      "name": "compound ㅎ+ㅞ → 훼",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㅎ",
+        "ㅞ"
+      ],
+      "expected_committed": "훼"
+    },
+    {
+      "name": "compound ㄱ+ㅟ → 귀",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㄱ",
+        "ㅟ"
+      ],
+      "expected_committed": "귀"
+    },
+    {
+      "name": "compound ㄴ+ㅟ → 뉘",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㄴ",
+        "ㅟ"
+      ],
+      "expected_committed": "뉘"
+    },
+    {
+      "name": "compound ㄷ+ㅟ → 뒤",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㄷ",
+        "ㅟ"
+      ],
+      "expected_committed": "뒤"
+    },
+    {
+      "name": "compound ㄹ+ㅟ → 뤼",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㄹ",
+        "ㅟ"
+      ],
+      "expected_committed": "뤼"
+    },
+    {
+      "name": "compound ㅁ+ㅟ → 뮈",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㅁ",
+        "ㅟ"
+      ],
+      "expected_committed": "뮈"
+    },
+    {
+      "name": "compound ㅂ+ㅟ → 뷔",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㅂ",
+        "ㅟ"
+      ],
+      "expected_committed": "뷔"
+    },
+    {
+      "name": "compound ㅇ+ㅟ → 위",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㅇ",
+        "ㅟ"
+      ],
+      "expected_committed": "위"
+    },
+    {
+      "name": "compound ㅌ+ㅟ → 튀",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㅌ",
+        "ㅟ"
+      ],
+      "expected_committed": "튀"
+    },
+    {
+      "name": "compound ㅎ+ㅟ → 휘",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㅎ",
+        "ㅟ"
+      ],
+      "expected_committed": "휘"
+    },
+    {
+      "name": "compound ㄱ+ㅢ → 긔",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㄱ",
+        "ㅢ"
+      ],
+      "expected_committed": "긔"
+    },
+    {
+      "name": "compound ㄴ+ㅢ → 늬",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㄴ",
+        "ㅢ"
+      ],
+      "expected_committed": "늬"
+    },
+    {
+      "name": "compound ㄷ+ㅢ → 듸",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㄷ",
+        "ㅢ"
+      ],
+      "expected_committed": "듸"
+    },
+    {
+      "name": "compound ㄹ+ㅢ → 릐",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㄹ",
+        "ㅢ"
+      ],
+      "expected_committed": "릐"
+    },
+    {
+      "name": "compound ㅁ+ㅢ → 믜",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㅁ",
+        "ㅢ"
+      ],
+      "expected_committed": "믜"
+    },
+    {
+      "name": "compound ㅂ+ㅢ → 븨",
+      "category": "compound-vowel",
+      "tokens": [
+        "ㅂ",
+        "ㅢ"
+      ],
+      "expected_committed": "븨"
+    },
+    {
+      "name": "compound-jongseong precomposed ㄱ+ㅏ+ㄳ → 갃",
+      "category": "compound-jongseong",
+      "tokens": [
+        "갃"
+      ],
+      "expected_committed": "갃"
+    },
+    {
+      "name": "compound-jongseong precomposed ㄱ+ㅏ+ㄵ → 갅",
+      "category": "compound-jongseong",
+      "tokens": [
+        "갅"
+      ],
+      "expected_committed": "갅"
+    },
+    {
+      "name": "compound-jongseong precomposed ㄱ+ㅏ+ㄶ → 갆",
+      "category": "compound-jongseong",
+      "tokens": [
+        "갆"
+      ],
+      "expected_committed": "갆"
+    },
+    {
+      "name": "compound-jongseong precomposed ㄱ+ㅏ+ㄺ → 갉",
+      "category": "compound-jongseong",
+      "tokens": [
+        "갉"
+      ],
+      "expected_committed": "갉"
+    },
+    {
+      "name": "compound-jongseong precomposed ㄱ+ㅏ+ㄻ → 갊",
+      "category": "compound-jongseong",
+      "tokens": [
+        "갊"
+      ],
+      "expected_committed": "갊"
+    },
+    {
+      "name": "compound-jongseong precomposed ㄱ+ㅏ+ㄼ → 갋",
+      "category": "compound-jongseong",
+      "tokens": [
+        "갋"
+      ],
+      "expected_committed": "갋"
+    },
+    {
+      "name": "compound-jongseong precomposed ㄱ+ㅏ+ㄽ → 갌",
+      "category": "compound-jongseong",
+      "tokens": [
+        "갌"
+      ],
+      "expected_committed": "갌"
+    },
+    {
+      "name": "compound-jongseong precomposed ㄱ+ㅏ+ㄾ → 갍",
+      "category": "compound-jongseong",
+      "tokens": [
+        "갍"
+      ],
+      "expected_committed": "갍"
+    },
+    {
+      "name": "compound-jongseong precomposed ㄱ+ㅏ+ㄿ → 갎",
+      "category": "compound-jongseong",
+      "tokens": [
+        "갎"
+      ],
+      "expected_committed": "갎"
+    },
+    {
+      "name": "compound-jongseong precomposed ㄱ+ㅏ+ㅀ → 갏",
+      "category": "compound-jongseong",
+      "tokens": [
+        "갏"
+      ],
+      "expected_committed": "갏"
+    },
+    {
+      "name": "compound-jongseong precomposed ㄱ+ㅏ+ㅄ → 값",
+      "category": "compound-jongseong",
+      "tokens": [
+        "값"
+      ],
+      "expected_committed": "값"
+    },
+    {
+      "name": "compound-jongseong precomposed ㅎ+ㅏ+ㄳ → 핛",
+      "category": "compound-jongseong",
+      "tokens": [
+        "핛"
+      ],
+      "expected_committed": "핛"
+    },
+    {
+      "name": "compound-jongseong precomposed ㅎ+ㅏ+ㄵ → 핝",
+      "category": "compound-jongseong",
+      "tokens": [
+        "핝"
+      ],
+      "expected_committed": "핝"
+    },
+    {
+      "name": "compound-jongseong precomposed ㅎ+ㅏ+ㄶ → 핞",
+      "category": "compound-jongseong",
+      "tokens": [
+        "핞"
+      ],
+      "expected_committed": "핞"
+    },
+    {
+      "name": "compound-jongseong precomposed ㅎ+ㅏ+ㄺ → 핡",
+      "category": "compound-jongseong",
+      "tokens": [
+        "핡"
+      ],
+      "expected_committed": "핡"
+    },
+    {
+      "name": "compound-jongseong precomposed ㅎ+ㅏ+ㄻ → 핢",
+      "category": "compound-jongseong",
+      "tokens": [
+        "핢"
+      ],
+      "expected_committed": "핢"
+    },
+    {
+      "name": "compound-jongseong precomposed ㅎ+ㅏ+ㄼ → 핣",
+      "category": "compound-jongseong",
+      "tokens": [
+        "핣"
+      ],
+      "expected_committed": "핣"
+    },
+    {
+      "name": "compound-jongseong precomposed ㅎ+ㅏ+ㄽ → 핤",
+      "category": "compound-jongseong",
+      "tokens": [
+        "핤"
+      ],
+      "expected_committed": "핤"
+    },
+    {
+      "name": "compound-jongseong precomposed ㅎ+ㅏ+ㄾ → 핥",
+      "category": "compound-jongseong",
+      "tokens": [
+        "핥"
+      ],
+      "expected_committed": "핥"
+    },
+    {
+      "name": "compound-jongseong precomposed ㅎ+ㅏ+ㄿ → 핦",
+      "category": "compound-jongseong",
+      "tokens": [
+        "핦"
+      ],
+      "expected_committed": "핦"
+    },
+    {
+      "name": "precomposed 한",
+      "category": "precomposed",
+      "tokens": [
+        "한"
+      ],
+      "expected_committed": "한"
+    },
+    {
+      "name": "precomposed 글",
+      "category": "precomposed",
+      "tokens": [
+        "글"
+      ],
+      "expected_committed": "글"
+    },
+    {
+      "name": "precomposed 부",
+      "category": "precomposed",
+      "tokens": [
+        "부"
+      ],
+      "expected_committed": "부"
+    },
+    {
+      "name": "precomposed 산",
+      "category": "precomposed",
+      "tokens": [
+        "산"
+      ],
+      "expected_committed": "산"
+    },
+    {
+      "name": "precomposed 응",
+      "category": "precomposed",
+      "tokens": [
+        "응"
+      ],
+      "expected_committed": "응"
+    },
+    {
+      "name": "precomposed 급",
+      "category": "precomposed",
+      "tokens": [
+        "급"
+      ],
+      "expected_committed": "급"
+    },
+    {
+      "name": "precomposed 실",
+      "category": "precomposed",
+      "tokens": [
+        "실"
+      ],
+      "expected_committed": "실"
+    },
+    {
+      "name": "precomposed 안",
+      "category": "precomposed",
+      "tokens": [
+        "안"
+      ],
+      "expected_committed": "안"
+    },
+    {
+      "name": "precomposed 녕",
+      "category": "precomposed",
+      "tokens": [
+        "녕"
+      ],
+      "expected_committed": "녕"
+    },
+    {
+      "name": "precomposed 하",
+      "category": "precomposed",
+      "tokens": [
+        "하"
+      ],
+      "expected_committed": "하"
+    },
+    {
+      "name": "ASCII after ㅎ+ㅏ+ㄴ",
+      "category": "mixed-ascii",
+      "tokens": [
+        "ㅎ",
+        "ㅏ",
+        "ㄴ",
+        " ",
+        "h",
+        "i"
+      ],
+      "expected_committed": "한 hi"
+    },
+    {
+      "name": "digit before Korean",
+      "category": "mixed-ascii",
+      "tokens": [
+        "1",
+        "번",
+        "째"
+      ],
+      "expected_committed": "1번째"
+    },
+    {
+      "name": "punctuation after ㅂ+ㅜ",
+      "category": "mixed-ascii",
+      "tokens": [
+        "ㅂ",
+        "ㅜ",
+        "?"
+      ],
+      "expected_committed": "부?"
+    },
+    {
+      "name": "linking ㅂ+ㅜ+ㅅ+ㅏ+ㄴ (부산)",
+      "category": "mixed-ascii",
+      "tokens": [
+        "ㅂ",
+        "ㅜ",
+        "ㅅ",
+        "ㅏ",
+        "ㄴ"
+      ],
+      "expected_committed": "부산"
+    },
+    {
+      "name": "mixed hello 한",
+      "category": "mixed-ascii",
+      "tokens": [
+        "h",
+        "i",
+        " ",
+        "ㅎ",
+        "ㅏ",
+        "ㄴ"
+      ],
+      "expected_committed": "hi 한"
+    },
+    {
+      "name": "comma separation",
+      "category": "mixed-ascii",
+      "tokens": [
+        "ㅎ",
+        "ㅏ",
+        "ㄴ",
+        ",",
+        "ㄱ",
+        "ㅡ",
+        "ㄹ"
+      ],
+      "expected_committed": "한,글"
+    },
+    {
+      "name": "emoji after Korean",
+      "category": "mixed-ascii",
+      "tokens": [
+        "ㅎ",
+        "ㅏ",
+        "ㄴ",
+        " ",
+        "🙂"
+      ],
+      "expected_committed": "한 🙂"
+    },
+    {
+      "name": "enclosed parens",
+      "category": "mixed-ascii",
+      "tokens": [
+        "(",
+        "ㄱ",
+        "ㅏ",
+        ")"
+      ],
+      "expected_committed": "(가)"
+    },
+    {
+      "name": "digits Korean digits",
+      "category": "mixed-ascii",
+      "tokens": [
+        "3",
+        "0",
+        "개",
+        "소"
+      ],
+      "expected_committed": "30개소"
+    },
+    {
+      "name": "trailing ASCII",
+      "category": "mixed-ascii",
+      "tokens": [
+        "ㅎ",
+        "ㅏ",
+        "y"
+      ],
+      "expected_committed": "하y"
+    }
+  ]
+}

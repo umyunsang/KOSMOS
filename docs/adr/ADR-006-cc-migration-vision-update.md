@@ -145,6 +145,20 @@ The following ten amendments bring `docs/vision.md` back in sync with shipped st
 
 **Evidence**: Full 65-binding catalog in R2 research output (see References). Current KOSMOS 5-binding surface inventoried across `tui/src/components/input/InputBar.tsx`, `tui/src/components/coordinator/PermissionGauntletModal.tsx`, `tui/src/hooks/useKoreanIME.ts`.
 
+##### A-10 implementation landed in Spec 288
+
+The Tier 1 port specified above shipped under Epic I #1303 / Spec 288 on 2026-04-20. Implementation lives at:
+
+- `tui/src/keybindings/` — registry + parser + resolver + accessibility announcer (Lead Phase 2 ports T004–T025).
+- `tui/src/keybindings/actions/` — per-action handlers (T026/T028/T030/T034/T036/T037 across Teams A/B/C).
+- `tui/src/components/history/HistorySearchOverlay.tsx` — `ctrl+r` overlay (Spec 035 OnboardingShell modal pattern; T037 closes #1584).
+- `tui/src/keybindings/template.ts` — Tier 1 catalogue dump powering FR-032 / SC-007 screen-reader discoverability (T040 closes #1587).
+- `tui/tests/keybindings/` — TDD regression suite covering FR-005 / FR-020..FR-032 + SC-002 / SC-004 / SC-007 (T038/T039/T040 close #1585/#1586/#1587).
+
+Tier 2 / Tier 3 ports remain explicitly deferred to #1588 / #1589 per Part C narrowing.
+
+Cross-reference: `specs/288-shortcut-tier1-port/tasks.md` § Phase 10 T040.
+
 ---
 
 ### Part B — Nine Epics under Initiative #2 (labelled sub-Epics A–I for ADR cross-reference)

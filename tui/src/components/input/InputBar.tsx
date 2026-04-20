@@ -1,16 +1,31 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS-original: input bar component consuming useKoreanIME hook.
+// KOSMOS-original: input bar component consuming a caller-owned IME state.
+//
+// Spec 288 Codex P1 — `useKoreanIME` now lives in <App> (tui.tsx) so the
+// central keybinding resolver can observe `isComposing` via
+// <KeybindingProviderSetup>.  This component receives the single IME
+// instance as a prop to guarantee there is exactly one `useInput`
+// composition listener in the tree.
 
 import React from 'react'
 import { Box, Text, useInput } from 'ink'
 import { useTheme } from '../../theme/provider'
-import { useKoreanIME } from '../../hooks/useKoreanIME'
+import type { KoreanIMEState } from '../../hooks/useKoreanIME'
+import { useKeybinding } from '../../keybindings/useKeybinding'
+import { useKeybindingSurfaces } from '../../keybindings/KeybindingContext'
+import { cancelDraft } from '../../keybindings/actions/draftCancel'
 
 // ---------------------------------------------------------------------------
 // Props
 // ---------------------------------------------------------------------------
 
 export interface InputBarProps {
+  /**
+   * The live IME state.  Owned by <App> and passed down so the resolver
+   * (<KeybindingProviderSetup>) and this component see the exact same
+   * composition flag (Spec 288 Codex P1).
+   */
+  ime: KoreanIMEState
   /**
    * Called when the user presses Enter (and is not mid-composition).
    * Receives the full committed text. The bar clears itself after calling.
@@ -37,17 +52,22 @@ export interface InputBarProps {
  * - `disabled` prop suppresses input (FR-046 — caller-managed modal gate).
  * - Does NOT import the IPC bridge. Emitting `user_input` frames is the
  *   caller's responsibility.
+ * - Spec 288 · T031 — `escape` is wired through the central keybinding
+ *   registry (`useKeybinding('Chat', { 'draft-cancel': ... })`) rather than
+ *   an ad-hoc `useInput` handler.  The pre-existing Enter `useInput` stays
+ *   (FR-004 modal-local boundary: y/n/Enter handlers remain in-place).
  *
  * FR-015: Hangul composition is handled by the hook; the component only
  * renders what the hook surfaces.
  */
-export function InputBar({ onSubmit, disabled = false }: InputBarProps): React.ReactElement {
+export function InputBar({ ime, onSubmit, disabled = false }: InputBarProps): React.ReactElement {
   const theme = useTheme()
-  const ime = useKoreanIME(!disabled)
+  const surfaces = useKeybindingSurfaces()
 
   // Intercept Enter separately — useKoreanIME's isActive gate already blocks
   // all other input when disabled, but Enter is handled here so we can call
-  // onSubmit at the right moment.
+  // onSubmit at the right moment.  Escape is NOT intercepted here — it
+  // flows through the central keybinding resolver (see useKeybinding below).
   useInput(
     (input, key) => {
       if (key.return && !ime.isComposing) {
@@ -59,6 +79,24 @@ export function InputBar({ onSubmit, disabled = false }: InputBarProps): React.R
     },
     { isActive: !disabled },
   )
+
+  // Spec 288 FR-004 — central keybinding registration.  The `draft-cancel`
+  // handler clears the IME buffer when the resolver dispatches.  Both the
+  // resolver's IME gate (T014) and the handler's own backstop (T030) short-
+  // circuit while composition is in flight, so this subscription is safe
+  // even when a Korean syllable is partially composed.
+  const draftCancelHandler = React.useCallback(() => {
+    cancelDraft({
+      readDraft: () => ime.buffer,
+      isComposing: () => ime.isComposing,
+      clearDraft: () => ime.clear(),
+      announcer: surfaces.announcer,
+    })
+  }, [ime, surfaces.announcer])
+
+  useKeybinding('Chat', {
+    'draft-cancel': draftCancelHandler,
+  })
 
   // Render the committed text, the in-flight composition glyph (if any), and
   // a block cursor. The composition glyph uses `theme.suggestion` to
