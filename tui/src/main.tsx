@@ -17,6 +17,7 @@ import { render } from 'ink'
 import { createBridge } from './ipc/bridge'
 import { App } from './entrypoints/tui'
 import { ThemeProvider } from './theme/provider'
+import { KeybindingProviderSetup } from './keybindings/KeybindingProviderSetup'
 
 async function main(): Promise<void> {
   const bridge = createBridge()
@@ -28,7 +29,9 @@ async function main(): Promise<void> {
 
   const { waitUntilExit } = render(
     <ThemeProvider>
-      <App bridge={bridge} />
+      <KeybindingProviderSetup>
+        <App bridge={bridge} />
+      </KeybindingProviderSetup>
     </ThemeProvider>,
   )
   await waitUntilExit()

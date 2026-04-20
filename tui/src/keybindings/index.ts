@@ -44,3 +44,48 @@ export {
   type SelectionResult,
   type CancelResult,
 } from './actions/historySearch'
+export {
+  buildChordEvent,
+  lookupChord,
+  type InkKeyLike,
+} from './match'
+export {
+  RESERVED_ACTIONS,
+  isReservedAction,
+  isReservedChord,
+} from './reservedShortcuts'
+export {
+  validateEntries,
+  RegistryInvariantError,
+} from './validate'
+export { buildRegistry, type BuildRegistryOptions } from './registry'
+export {
+  resolve,
+  drainBindingSpans,
+  type ResolveContext,
+  type SpanEmitter,
+  type BindingSpanAttributes,
+  type ImeStateLike,
+} from './resolver'
+export {
+  createAccessibilityAnnouncer,
+  type BufferedAnnouncer,
+  type AnnounceRecord,
+  type AccessibilityAnnouncerOptions,
+} from './accessibilityAnnouncer'
+export {
+  KeybindingContext as KeybindingReactContext,
+  useKeybindingSurfaces,
+  type KeybindingSurfaces,
+} from './KeybindingContext'
+export {
+  KeybindingProviderSetup,
+  type KeybindingProviderSetupProps,
+} from './KeybindingProviderSetup'
+export {
+  useKeybinding,
+  dispatchAction,
+  registerHandlers,
+  type ActionHandlers,
+} from './useKeybinding'
+export { useShortcutDisplay } from './useShortcutDisplay'
