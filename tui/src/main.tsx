@@ -1,5 +1,5 @@
-  // claude auth } from 'bun:bundle';
 import { Command as CommanderCommand, InvalidArgumentError, Option } from '@commander-js/extra-typings';
+import { enforceFriendliCredential } from './entrypoints/envGuard.js';
 import chalk from 'chalk';
 import { readFileSync } from 'fs';
 import mapValues from 'lodash-es/mapValues.js';
@@ -365,12 +365,8 @@ export async function main() {
   // See: https://docs.microsoft.com/en-us/windows/win32/api/processenv/nf-processenv-searchpathw
   process.env.NoDefaultCurrentDirectoryInExePath = '1';
 
-  // Fail-closed: require FRIENDLI_API_KEY for KOSMOS (Epic #1633)
-  if (!process.env.FRIENDLI_API_KEY && !process.env.KOSMOS_FRIENDLI_TOKEN) {
-    const msg = 'FRIENDLI_API_KEY 환경변수가 필요합니다 / FRIENDLI_API_KEY environment variable required'
-    console.error(msg)
-    process.exit(1)
-  }
+  // Fail-closed: require FRIENDLI_API_KEY for KOSMOS (Epic #1633 T011)
+  enforceFriendliCredential();
 
   // Initialize warning handler early to catch warnings
   initializeWarningHandler();
