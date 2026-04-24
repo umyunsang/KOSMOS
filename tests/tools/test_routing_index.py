@@ -13,7 +13,6 @@ from kosmos.tools.routing_index import (
     build_routing_index,
 )
 
-
 # ---------------------------------------------------------------------------
 # Minimal placeholder schemas
 # ---------------------------------------------------------------------------
@@ -44,24 +43,24 @@ def _make_tool(**overrides) -> GovAPITool:
     - is_irreversible=False (V4: public cannot be irreversible)
     - primitive="lookup" (Invariant 1: must be declared)
     """
-    defaults: dict = dict(
-        id="fixture_tool",
-        name_ko="픽스처",
-        ministry="KOROAD",
-        category=["test"],
-        endpoint="https://example.invalid/",
-        auth_type="public",
-        input_schema=_FixtureInput,
-        output_schema=_FixtureOutput,
-        search_hint="fixture test",
-        auth_level="public",
-        pipa_class="non_personal",
-        is_irreversible=False,
-        dpa_reference=None,
-        requires_auth=False,
-        primitive="lookup",
-        adapter_mode="live",
-    )
+    defaults: dict = {
+        "id": "fixture_tool",
+        "name_ko": "픽스처",
+        "ministry": "KOROAD",
+        "category": ["test"],
+        "endpoint": "https://example.invalid/",
+        "auth_type": "public",
+        "input_schema": _FixtureInput,
+        "output_schema": _FixtureOutput,
+        "search_hint": "fixture test",
+        "auth_level": "public",
+        "pipa_class": "non_personal",
+        "is_irreversible": False,
+        "dpa_reference": None,
+        "requires_auth": False,
+        "primitive": "lookup",
+        "adapter_mode": "live",
+    }
     defaults.update(overrides)
     return GovAPITool(**defaults)
 

@@ -27,9 +27,8 @@ import pytest
 import kosmos.tools.mock.data_go_kr.fines_pay  # noqa: F401
 import kosmos.tools.mock.mydata.welfare_application  # noqa: F401
 from kosmos.primitives._errors import AdapterNotFoundError
-from kosmos.primitives.submit import SubmitOutput, SubmitStatus, _ADAPTER_REGISTRY, submit
+from kosmos.primitives.submit import _ADAPTER_REGISTRY, SubmitOutput, SubmitStatus, submit
 from kosmos.tools.registry import AdapterPrimitive
-
 
 # ---------------------------------------------------------------------------
 # T030-A: Happy path — mock_traffic_fine_pay_v1

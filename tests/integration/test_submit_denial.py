@@ -30,7 +30,6 @@ import pytest
 import kosmos.tools.mock.data_go_kr.fines_pay  # noqa: F401
 from kosmos.primitives.submit import SubmitOutput, SubmitStatus, submit
 
-
 # ---------------------------------------------------------------------------
 # Shared fixtures
 # ---------------------------------------------------------------------------

@@ -34,7 +34,7 @@ from pydantic import BaseModel, ConfigDict
 # Import adapter modules so they self-register into the submit dispatcher
 import kosmos.tools.mock.data_go_kr.fines_pay  # noqa: F401
 import kosmos.tools.mock.mydata.welfare_application  # noqa: F401
-from kosmos.primitives.submit import SubmitOutput, SubmitStatus, _ADAPTER_REGISTRY, submit
+from kosmos.primitives.submit import _ADAPTER_REGISTRY, SubmitOutput, SubmitStatus, submit
 from kosmos.tools.registry import AdapterPrimitive
 
 # ---------------------------------------------------------------------------
@@ -189,21 +189,22 @@ class TestAuditTransactionIdDerivation:
     @pytest.mark.asyncio
     async def test_different_tool_ids_produce_different_transaction_ids(self) -> None:
         """Two adapters with identical params must produce different transaction_ids."""
-        from unittest.mock import patch
 
         # Use matching-tier auth contexts for both adapters
         auth_ctx_fines = _MinimalAuthContext(published_tier="ganpyeon_injeung_kakao_aal2")
-        auth_ctx_welfare = _MinimalAuthContext(published_tier="mydata_individual_aal2")
+        _MinimalAuthContext(published_tier="mydata_individual_aal2")  # verifies constructor
 
-        result_fines = await submit(
+        await submit(
             tool_id="mock_traffic_fine_pay_v1",
             params={"fine_reference": "FINE-SHARED-001", "payment_method": "card"},
             auth_context=auth_ctx_fines,
         )
         # welfare adapter has different required params, just test via derive_transaction_id
         from kosmos.primitives.submit import derive_transaction_id
-        from kosmos.tools.mock.data_go_kr.fines_pay import REGISTRATION as fines_reg
-        from kosmos.tools.mock.mydata.welfare_application import REGISTRATION as welfare_reg
+        from kosmos.tools.mock.data_go_kr.fines_pay import REGISTRATION as fines_reg  # noqa: N811
+        from kosmos.tools.mock.mydata.welfare_application import (
+            REGISTRATION as welfare_reg,  # noqa: N811
+        )
 
         txid_fines = derive_transaction_id(
             "mock_traffic_fine_pay_v1",

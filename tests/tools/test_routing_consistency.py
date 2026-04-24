@@ -14,13 +14,10 @@ from pathlib import Path
 import pytest
 
 from kosmos.tools.executor import ToolExecutor
-from kosmos.tools.models import GovAPITool
 from kosmos.tools.register_all import register_all_tools
 from kosmos.tools.registry import ToolRegistry
 from kosmos.tools.routing_index import (
     RoutingIndex,
-    RoutingValidationError,
-    build_routing_index,
 )
 
 REPO_ROOT = Path(__file__).parent.parent.parent
@@ -38,7 +35,8 @@ def live_registry() -> tuple[ToolRegistry, RoutingIndex]:
 # ---------------------------------------------------------------------------
 # Invariant 1 — Primitive declared
 # Every registered GovAPITool MUST have non-None primitive.
-# Failure message: "<tool_id>: invariant 1 (primitive declared) — primitive=None on registered adapter"
+# Failure message format:
+#   "<tool_id>: invariant 1 (primitive declared) — primitive=None on registered adapter"
 # ---------------------------------------------------------------------------
 
 
@@ -317,7 +315,7 @@ class TestCheck10PluginNamespace:
         registry, _ = live_registry
         violations = [
             tool_id
-            for tool_id in registry._tools.keys()
+            for tool_id in registry._tools
             if tool_id.startswith("plugin.")
             and not self._PLUGIN_PATTERN.match(tool_id)
         ]

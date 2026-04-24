@@ -38,11 +38,11 @@ class TestComputePermissionTierTotality:
 class TestComputePermissionTierInvariants:
     """Irreversibility always wins over AAL; AAL mapping is preserved otherwise."""
 
-    def test_irreversibility_overrides_lower_AAL(self):
+    def test_irreversibility_overrides_lower_AAL(self):  # noqa: N802 — AAL is a domain acronym
         for al in ("public", "AAL1", "AAL2"):
             assert compute_permission_tier(al, True) == 3
 
-    def test_non_irreversible_follows_AAL_mapping(self):
+    def test_non_irreversible_follows_AAL_mapping(self):  # noqa: N802 — AAL is a domain acronym
         assert compute_permission_tier("public", False) == 1
         assert compute_permission_tier("AAL1", False) == 1
         assert compute_permission_tier("AAL2", False) == 2

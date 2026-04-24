@@ -29,7 +29,7 @@ from kosmos.tools.executor import ToolExecutor
 from kosmos.tools.lookup import lookup
 from kosmos.tools.models import (
     AdapterCandidate,
-    LookupError,
+    LookupError,  # noqa: A004 — intentional: `LookupError` is KOSMOS domain model; shadowing is scoped.
     LookupFetchInput,
     LookupSearchInput,
     LookupSearchResult,
@@ -184,7 +184,8 @@ class TestLookupFetchMocked:
 
         # Load the existing fixture (matches the pattern in tests/tools/hira/)
         fixture_path = (
-            Path(__file__).resolve().parents[2] / "tests" / "fixtures" / "hira" / "hospital_search_happy.json"
+            Path(__file__).resolve().parents[2]
+            / "tests" / "fixtures" / "hira" / "hospital_search_happy.json"
         )
         fixture_data = json.loads(fixture_path.read_text())
 

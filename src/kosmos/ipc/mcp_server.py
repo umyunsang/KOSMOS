@@ -91,7 +91,9 @@ class MCPServer:
         params = request.get("params", {}) or {}
 
         if not isinstance(method, str):
-            return _error_response(rpc_id, JSONRPC_INVALID_REQUEST, "method missing or not a string")
+            return _error_response(
+                rpc_id, JSONRPC_INVALID_REQUEST, "method missing or not a string",
+            )
 
         try:
             if method == "initialize":
