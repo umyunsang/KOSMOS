@@ -7,7 +7,7 @@
  */
 
 import { feature } from 'bun:bundle'
-import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages.mjs'
+import type { ContentBlockParam } from 'src/sdk-compat.js'
 
 // ============================================================================
 // Permission Modes

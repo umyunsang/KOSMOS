@@ -1,4 +1,4 @@
-import type { BetaContentBlock } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
+import type { BetaContentBlock } from 'src/sdk-compat.js'
 import { randomUUID, type UUID } from 'crypto'
 import { getSessionId } from 'src/bootstrap/state.js'
 import {

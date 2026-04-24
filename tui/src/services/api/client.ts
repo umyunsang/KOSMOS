@@ -1,4 +1,4 @@
-import Anthropic, { type ClientOptions } from '@anthropic-ai/sdk'
+import Anthropic, { type ClientOptions } from 'src/sdk-compat.js'
 import { randomUUID } from 'crypto'
 import type { GoogleAuth } from 'google-auth-library'
 import {

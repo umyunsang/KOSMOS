@@ -1,4 +1,4 @@
-import type { APIError } from '@anthropic-ai/sdk'
+import type { APIError } from 'src/sdk-compat.js'
 import { classifyAPIError } from './errors.js'
 
 // SSL/TLS error codes from OpenSSL (used by both Node.js and Bun)

@@ -1,5 +1,5 @@
 import { c as _c } from "react/compiler-runtime";
-import type { ToolResultBlockParam } from '@anthropic-ai/sdk/resources/index.mjs';
+import type { ToolResultBlockParam } from 'src/sdk-compat.js';
 import type { StructuredPatchHunk } from 'diff';
 import * as React from 'react';
 import { Suspense, use, useState } from 'react';

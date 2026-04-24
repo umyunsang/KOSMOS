@@ -2,7 +2,7 @@ import type {
   ContentBlockParam,
   ImageBlockParam,
   TextBlockParam,
-} from '@anthropic-ai/sdk/resources/index.mjs'
+} from 'src/sdk-compat.js'
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '../services/analytics/growthbook.js'
 import {
   countMessagesTokensWithAPI,

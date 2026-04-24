@@ -1,5 +1,5 @@
-import type { Anthropic } from '@anthropic-ai/sdk'
-import type { BetaMessageParam as MessageParam } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
+import type { Anthropic } from 'src/sdk-compat.js'
+import type { BetaMessageParam as MessageParam } from 'src/sdk-compat.js'
 // @aws-sdk/client-bedrock-runtime is imported dynamically in countTokensWithBedrock()
 // to defer ~279KB of AWS SDK code until a Bedrock call is actually made
 import type { CountTokensCommandInput } from '@aws-sdk/client-bedrock-runtime'

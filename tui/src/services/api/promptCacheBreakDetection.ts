@@ -1,5 +1,5 @@
-import type { BetaToolUnion } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
-import type { TextBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'
+import type { BetaToolUnion } from 'src/sdk-compat.js'
+import type { TextBlockParam } from 'src/sdk-compat.js'
 import type { KosmosUsage } from '../../ipc/llmTypes.js'
 import { createPatch } from 'diff'
 import { mkdir, writeFile } from 'fs/promises'
