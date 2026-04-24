@@ -1,0 +1,1 @@
+# [P0 stub] ultraplan prompt placeholder (Epic #1633 will populate)

@@ -1,4 +1,3 @@
-// Source: .references/claude-code-sourcemap/restored-src/src/ink/focus.ts (Claude Code 2.1.88, research-use)
 import type { DOMElement } from './dom.js'
 import { FocusEvent } from './events/focus-event.js'
 

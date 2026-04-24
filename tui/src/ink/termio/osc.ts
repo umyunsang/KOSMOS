@@ -1,4 +1,3 @@
-// Source: .references/claude-code-sourcemap/restored-src/src/ink/termio/osc.ts (Claude Code 2.1.88, research-use)
 /**
  * OSC (Operating System Command) Types and Parser
  */

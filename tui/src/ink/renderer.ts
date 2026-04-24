@@ -1,4 +1,3 @@
-// Source: .references/claude-code-sourcemap/restored-src/src/ink/renderer.ts (Claude Code 2.1.88, research-use)
 import { logForDebugging } from 'src/utils/debug.js'
 import { type DOMElement, markDirty } from './dom.js'
 import type { Frame } from './frame.js'

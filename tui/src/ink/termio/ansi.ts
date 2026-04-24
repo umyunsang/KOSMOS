@@ -1,4 +1,3 @@
-// Source: .references/claude-code-sourcemap/restored-src/src/ink/termio/ansi.ts (Claude Code 2.1.88, research-use)
 /**
  * ANSI Control Characters and Escape Sequence Introducers
  *

@@ -1,4 +1,3 @@
-// Source: .references/claude-code-sourcemap/restored-src/src/ink/termio/tokenize.ts (Claude Code 2.1.88, research-use)
 /**
  * Input Tokenizer - Escape sequence boundary detection
  *

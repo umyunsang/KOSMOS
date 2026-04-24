@@ -85,7 +85,13 @@ jobs:
 
       - name: Unit tests
         working-directory: tui
-        run: bun test
+        # Use `bun run test` so the package.json script (narrowed to dirs
+        # that survive the Epic #1632 CC port) is respected. `bun test`
+        # without args would sweep every *.test.ts, including KOSMOS-native
+        # tests (LogoV2, onboarding, commands, components, keybindings)
+        # that reference files renamed/deleted by the CC 2.1.88 port. Epic
+        # #1633 will decide whether to forward-port or delete those tests.
+        run: bun run test
 
       - name: PTY boot smoke
         working-directory: tui

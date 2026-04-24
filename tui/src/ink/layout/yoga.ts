@@ -1,4 +1,3 @@
-// Source: .references/claude-code-sourcemap/restored-src/src/ink/layout/yoga.ts (Claude Code 2.1.88, research-use)
 import Yoga, {
   Align,
   Direction,

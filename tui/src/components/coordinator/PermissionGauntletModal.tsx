@@ -61,12 +61,11 @@ export function PermissionGauntletModal({
   const i18n = useI18n()
   const { pendingRequest, grant, deny } = useCanUseTool()
 
-  // When no pending request, render nothing (modal closed).
-  if (pendingRequest === null) return null
-
-  // useInput is active only while this component is mounted (i.e., modal open).
+  // useInput is registered on every render to preserve hook order, but active
+  // only while the permission modal is open.
   // All keystrokes are swallowed here, blocking the outer input buffer.
   useInput((input, key) => {
+    if (pendingRequest === null) return
     if (input === 'y' || input === 'Y') {
       grant()
       sendFrame({
@@ -91,7 +90,10 @@ export function PermissionGauntletModal({
       })
     }
     // All other keys are consumed (blocked) intentionally.
-  })
+  }, { isActive: pendingRequest !== null })
+
+  // When no pending request, render nothing (modal closed).
+  if (pendingRequest === null) return null
 
   const riskBorderColor = riskColor(pendingRequest.risk_level, theme)
 

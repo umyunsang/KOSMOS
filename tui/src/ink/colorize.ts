@@ -1,4 +1,3 @@
-// Source: .references/claude-code-sourcemap/restored-src/src/ink/colorize.ts (Claude Code 2.1.88, research-use)
 import chalk from 'chalk'
 import type { Color, TextStyles } from './styles.js'
 

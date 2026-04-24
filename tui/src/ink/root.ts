@@ -1,4 +1,3 @@
-// Source: .references/claude-code-sourcemap/restored-src/src/ink/root.ts (Claude Code 2.1.88, research-use)
 import type { ReactNode } from 'react'
 import { logForDebugging } from 'src/utils/debug.js'
 import { Stream } from 'stream'
@@ -152,14 +151,7 @@ export async function createRoot({
 
   return {
     render: node => instance.render(node),
-    unmount: () => {
-      instance.unmount()
-      // Only remove the map entry if it still points to this root's instance,
-      // so we don't delete a newer root's entry registered against the same stdout.
-      if (instances.get(stdout) === instance) {
-        instances.delete(stdout)
-      }
-    },
+    unmount: () => instance.unmount(),
     waitUntilExit: () => instance.waitUntilExit(),
   }
 }

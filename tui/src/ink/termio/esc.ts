@@ -1,4 +1,3 @@
-// Source: .references/claude-code-sourcemap/restored-src/src/ink/termio/esc.ts (Claude Code 2.1.88, research-use)
 /**
  * ESC Sequence Parser
  *

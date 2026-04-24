@@ -1,4 +1,3 @@
-// Source: .references/claude-code-sourcemap/restored-src/src/ink/tabstops.ts (Claude Code 2.1.88, research-use)
 // Tab expansion, inspired by Ghostty's Tabstops.zig
 // Uses 8-column intervals (POSIX default, hardcoded in terminals like Ghostty)
 

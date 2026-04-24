@@ -45,3 +45,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 export function useTheme(): ThemeToken {
   return useContext(ThemeContext)
 }
+
+/**
+ * Resolve a theme by name outside of React context — used by CC-ported
+ * utilities (`src/utils/theme.ts`) that expect an imperative `getTheme`
+ * accessor. Falls back to defaultTheme on unknown names.
+ */
+export function getThemeByName(name: string): ThemeToken {
+  return THEMES[name] ?? defaultTheme
+}
