@@ -6,7 +6,19 @@
 
 A conversational multi-agent platform that **migrates the Claude Code harness** (tool loop, permission gauntlet, context assembly, TUI) from the developer domain to the Korean public-service domain. It orchestrates Korean public APIs from `data.go.kr` through a Claude Code-style tool loop, powered by LG AI Research's K-EXAONE. Student portfolio project. Not affiliated with Anthropic, LG AI Research, or the Korean government.
 
-**Canonical vision**: `docs/vision.md` — thesis + six-layer design. Read before any architectural change. The thesis section fixes Claude Code as the first reference for any unclear design decision.
+**Canonical sources** (cite both in every spec and PR):
+- `docs/vision.md` — thesis + six-layer design. Claude Code is the first reference for any unclear design decision.
+- `docs/requirements/kosmos-migration-tree.md` — L1 pillars A/B/C · UI L2 decisions · brand · P0–P6 phase sequencing. **Approved 2026-04-24.**
+
+## L1 pillars (canonical)
+
+- **L1-A LLM Harness** — Single-fixed provider `FriendliAI Serverless + K-EXAONE` (`LGAI-EXAONE/EXAONE-4.0-32B`). CC agentic loop preserved 1:1. Native EXAONE function calling. `prompts/system_v1.md` + compaction + prompt cache. Sessions in `~/.kosmos/memdir/user/sessions/` JSONL. 4-tier OTEL, zero external egress.
+- **L1-B Tool System** — `Tool.ts` rewritten, registered on both TS and Python. Live / Mock 2-tier with 3-layer permissions + Spec 033. Discovery via BM25 + dense `lookup`. Composite tools removed. Korean-primary 5-tier plugin DX with PIPA trustee responsibility explicit.
+- **L1-C Main-Verb Abstraction** — Four reserved primitives (`lookup · submit · verify · subscribe`) with shared `PrimitiveInput/Output` envelope. System prompt exposes primitive signatures only; BM25 surfaces adapters dynamically. Permissions live at the adapter layer only.
+
+## Execution phases
+
+P0 Baseline Runnable (#1632 merged) → P1 Dead-code + P2 Anthropic→FriendliAI (#1633 in progress) → P3 Tool-system wiring → P4 UI L2 → P5 Plugin DX → P6 Docs + smoke. Phase sequencing is canonical; spec PRs cite their phase.
 
 ## Stack
 
