@@ -72,7 +72,16 @@ interface _TurnAccumulator {
   contentBlocks: KosmosContentBlockParam[]
   usage: KosmosUsage
   stopReason: KosmosStopReason
+  /** Index of the single text block. KOSMOS streams text into one block per
+   *  turn, so this stays at 0 and is the target of every `content_block_delta`
+   *  and the final `content_block_stop` for text. */
   blockIndex: number
+  /** Monotonic counter for tool_use blocks within this turn. The nth
+   *  tool_use block lands at index `blockIndex + n` (so text is 0, tool
+   *  blocks are 1, 2, 3, ...). Incrementing this counter must NOT mutate
+   *  `blockIndex` — otherwise the terminal `content_block_stop` for text
+   *  fires on the wrong index (Codex review P1 on PR #1706). */
+  toolBlockCounter: number
   seenFirstChunk: boolean
 }
 
@@ -83,6 +92,7 @@ function _defaultAccumulator(): _TurnAccumulator {
     usage: { input_tokens: 0, output_tokens: 0 },
     stopReason: 'end_turn',
     blockIndex: 0,
+    toolBlockCounter: 0,
     seenFirstChunk: false,
   }
 }
@@ -357,8 +367,11 @@ export class LLMClient {
         else if (frame.kind === 'tool_call') {
           const toolFrame = frame as ToolCallFrame
           // tool_call frames may arrive interleaved with text streaming in
-          // a multi-turn or parallel-tool scenario. Emit as a content block.
-          const toolBlockIndex = ++acc.blockIndex
+          // a multi-turn or parallel-tool scenario. Emit as a content block
+          // at a dedicated tool index (blockIndex + N); the text block's
+          // index (blockIndex) stays untouched so the terminal
+          // content_block_stop for text still targets the right block.
+          const toolBlockIndex = acc.blockIndex + (++acc.toolBlockCounter)
           yield {
             type: 'content_block_start',
             index: toolBlockIndex,
