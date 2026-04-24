@@ -85,7 +85,7 @@
 
 - [X] T027a [US1] Resolve FR-019/FR-029 undecided tools: for each of the 13 tools (`TodoWriteTool`, `ToolSearchTool`, `AskUserQuestionTool`, `SleepTool`, `MonitorTool`, `WorkflowTool`, `ScheduleCronTool`, `Task{Create,Get,List,Stop,Update}Tool`, `Team{Create,Delete}Tool`), make a concrete per-tool decision — kept-and-rewired / deferred-to-Epic-N / deleted — and record the decision matrix in `/Users/um-yunsang/KOSMOS/specs/1634-tool-system-wiring/decisions/undecided-tools.md` (new file); for "deleted" decisions, remove the directory in this task; for "deferred" decisions, add a row to spec.md Deferred Items table with target Epic — depends on T022 (dispatcher file path known)
 - [X] T028 [US1] Register the 4 new aux tools (T023–T026) + 4 primitive wrappers (T016–T019) + 5 retained CC aux tools (WebFetch, WebSearch, Brief, MCP, AgentTool-as-Task) into the TUI tool dispatcher so the MCP `tools/list` response matches the 13-tool closed set in contracts/primitive-envelope.md § 1, plus any tools kept-and-rewired from T027a — depends on T016–T019, T022, T023–T027, T027a
-- [ ] T029 [US1] Integration test: full `lookup` end-to-end (search then fetch) against `hira_hospital_search` with recorded fixture in `/Users/um-yunsang/KOSMOS/tests/integration/test_lookup_e2e.py` — verifies MCP handshake, tool list closure, search result shape, fetch result shape — depends on T015, T016, T028
+- [X] T029 [US1] Integration test: full `lookup` end-to-end (search then fetch) against `hira_hospital_search` with recorded fixture in `/Users/um-yunsang/KOSMOS/tests/integration/test_lookup_e2e.py` — verifies MCP handshake, tool list closure, search result shape, fetch result shape — depends on T015, T016, T028
 
 **Checkpoint**: `bun run tui` boots, LLM receives exactly 13 tools, hospital lookup completes end-to-end. US1 is an independently shippable MVP slice.
 
@@ -97,9 +97,9 @@
 
 **Independent Test**: Trigger a mock `submit`-mode adapter (e.g., `mock/verify_digital_onepass`); permission modal appears; receipt ID is displayed; audit ledger records `primitive="submit"` + `tool_id` separately.
 
-- [ ] T030 [US2] Integration test: `submit` end-to-end with consent + receipt ID surfaced in transcript + audit ledger entry inspected in `/Users/um-yunsang/KOSMOS/tests/integration/test_submit_e2e.py` — depends on T017, T028
-- [ ] T031 [US2] Integration test: `submit` with denial → LLM receives structured refusal + no adapter call + no audit ledger entry in `/Users/um-yunsang/KOSMOS/tests/integration/test_submit_denial.py` — depends on T017, T028
-- [ ] T032 [US2] Verify audit ledger schema (Spec 024) records `primitive` and resolved adapter `tool_id` as distinct fields, not concatenated; add assertion in `/Users/um-yunsang/KOSMOS/tests/integration/test_submit_audit_shape.py` — depends on T030
+- [X] T030 [US2] Integration test: `submit` end-to-end with consent + receipt ID surfaced in transcript + audit ledger entry inspected in `/Users/um-yunsang/KOSMOS/tests/integration/test_submit_e2e.py` — depends on T017, T028
+- [X] T031 [US2] Integration test: `submit` with denial → LLM receives structured refusal + no adapter call + no audit ledger entry in `/Users/um-yunsang/KOSMOS/tests/integration/test_submit_denial.py` — depends on T017, T028
+- [X] T032 [US2] Verify audit ledger schema (Spec 024) records `primitive` and resolved adapter `tool_id` as distinct fields, not concatenated; add assertion in `/Users/um-yunsang/KOSMOS/tests/integration/test_submit_audit_shape.py` — depends on T030
 
 **Checkpoint**: US2 shippable alongside US1 as a full citizen-consent → action → receipt flow.
 
@@ -111,9 +111,9 @@
 
 **Independent Test**: Inject an adapter with `primitive=None`; boot fails with `SystemExit(78)`; CI `test_routing_consistency.py` fails naming the offending adapter.
 
-- [ ] T033 [US3] Create `/Users/um-yunsang/KOSMOS/tests/tools/test_routing_consistency.py` covering all 6 invariants + 4 CI checks per contracts/routing-consistency.md § 2–3 **plus a composite-pattern detector per FR-028** (reject any registered adapter whose module imports another adapter's `_call`/`register` function) using the live registry + fixture-injected failures; failure-message format MUST match contract exactly — depends on T011
-- [ ] T034 [US3] Add CI grep guard check inside `test_routing_consistency.py` (check 8) — scans `/Users/um-yunsang/KOSMOS/src/kosmos/tools/register_all.py` + TUI tool dispatcher file (path confirmed in T022) for any of the 16 CC dev tool names listed in contracts/primitive-envelope.md § 7; fail-closed if found — depends on T022, T033
-- [ ] T035 [US3] Add CI tool-list closure snapshot check inside `test_routing_consistency.py` (check 7) — asserts the TUI-registered tool set equals the 13-entry closed set in contracts/primitive-envelope.md § 1; fails with diff on mismatch — depends on T028, T033
+- [X] T033 [US3] Create `/Users/um-yunsang/KOSMOS/tests/tools/test_routing_consistency.py` covering all 6 invariants + 4 CI checks per contracts/routing-consistency.md § 2–3 **plus a composite-pattern detector per FR-028** (reject any registered adapter whose module imports another adapter's `_call`/`register` function) using the live registry + fixture-injected failures; failure-message format MUST match contract exactly — depends on T011
+- [X] T034 [US3] Add CI grep guard check inside `test_routing_consistency.py` (check 8) — scans `/Users/um-yunsang/KOSMOS/src/kosmos/tools/register_all.py` + TUI tool dispatcher file (path confirmed in T022) for any of the 16 CC dev tool names listed in contracts/primitive-envelope.md § 7; fail-closed if found — depends on T022, T033
+- [X] T035 [US3] Add CI tool-list closure snapshot check inside `test_routing_consistency.py` (check 7) — asserts the TUI-registered tool set equals the 13-entry closed set in contracts/primitive-envelope.md § 1; fails with diff on mismatch — depends on T028, T033
 
 **Checkpoint**: `uv run pytest tests/tools/test_routing_consistency.py` is green and becomes the canonical governance gate for all future P4/P5 work.
 
@@ -125,8 +125,8 @@
 
 **Independent Test**: Issue `subscribe` against a mock weather-alert adapter; handle ID surfaces in transcript + audit ledger; `/consent revoke rcpt-<id>` invalidates the handle.
 
-- [ ] T036 [US4] Integration test: `subscribe` handle creation + audit-ledger entry in `/Users/um-yunsang/KOSMOS/tests/integration/test_subscribe_e2e.py` — depends on T019, T028
-- [ ] T037 [US4] Integration test: `subscribe` handle revocation via `/consent revoke rcpt-<id>` + follow-up `subscribe` confirms handle invalid in `/Users/um-yunsang/KOSMOS/tests/integration/test_subscribe_revoke.py` — depends on T036
+- [X] T036 [US4] Integration test: `subscribe` handle creation + audit-ledger entry in `/Users/um-yunsang/KOSMOS/tests/integration/test_subscribe_e2e.py` — depends on T019, T028
+- [X] T037 [US4] Integration test: `subscribe` handle revocation via `/consent revoke rcpt-<id>` + follow-up `subscribe` confirms handle invalid in `/Users/um-yunsang/KOSMOS/tests/integration/test_subscribe_revoke.py` — depends on T036
 
 **Checkpoint**: all four primitives exercised end-to-end. P3 functionally complete.
 
@@ -136,11 +136,11 @@
 
 **Purpose**: full-suite verification, manual E2E per SC-007, integrated PR prep.
 
-- [ ] T038 [P] Run `uv run pytest` full suite; confirm zero regressions vs T001 baseline; record duration delta
-- [ ] T039 [P] Run `bun test` full suite; confirm zero regressions vs T001 baseline
-- [ ] T040 Verify OTEL spans per contracts/mcp-bridge.md § 4.3: `kosmos.mcp.handshake_ms`, `kosmos.mcp.tool_call_id`, `kosmos.mcp.protocol_version` attributes flow to local Langfuse (Spec 028); **additionally assert SC-004 performance budget**: `kosmos.mcp.handshake_ms < 500` on cold-start and `< 100` on warm (second consecutive boot); capture both values in the test output — add assertion in `/Users/um-yunsang/KOSMOS/tests/integration/test_mcp_otel_spans.py`
-- [ ] T041 Manual E2E for SC-007: launch `bun run tui`, execute the User Story 1 hospital-lookup flow end-to-end, capture the session transcript (or screenshot if terminal graphics), attach to integrated PR description per `feedback_integrated_pr_only`
-- [ ] T042 Prepare integrated PR from `feat/1634-tool-system-wiring`: PR body `Closes #1634` only (never sub-issues per `feedback_pr_closing_refs`); commit message follows Conventional Commits `feat(1634): ...`; no Co-Authored-By Claude footer per `feedback_co_author`; PR description cites migration tree P3 + Spec 031 + Spec 025 v6 + Spec 032
+- [X] T038 [P] Run `uv run pytest` full suite; confirm zero regressions vs T001 baseline; record duration delta
+- [~] T039 [P] Run `bun test` full suite; confirm zero regressions vs T001 baseline
+- [X] T040 Verify OTEL spans per contracts/mcp-bridge.md § 4.3: `kosmos.mcp.handshake_ms`, `kosmos.mcp.tool_call_id`, `kosmos.mcp.protocol_version` attributes flow to local Langfuse (Spec 028); **additionally assert SC-004 performance budget**: `kosmos.mcp.handshake_ms < 500` on cold-start and `< 100` on warm (second consecutive boot); capture both values in the test output — add assertion in `/Users/um-yunsang/KOSMOS/tests/integration/test_mcp_otel_spans.py`
+- [~] T041 Manual E2E for SC-007: launch `bun run tui`, execute the User Story 1 hospital-lookup flow end-to-end, capture the session transcript (or screenshot if terminal graphics), attach to integrated PR description per `feedback_integrated_pr_only`
+- [X] T042 Prepare integrated PR from `feat/1634-tool-system-wiring`: PR body `Closes #1634` only (never sub-issues per `feedback_pr_closing_refs`); commit message follows Conventional Commits `feat(1634): ...`; no Co-Authored-By Claude footer per `feedback_co_author`; PR description cites migration tree P3 + Spec 031 + Spec 025 v6 + Spec 032
 
 ---
 
