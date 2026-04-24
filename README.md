@@ -62,21 +62,39 @@ The lineage of each layer:
 
 For deep dives into the Query Engine loop, the Permission Pipeline gauntlet, and the Agent Swarm coordination model, see [`docs/presentation.md`](docs/presentation.md) and [`docs/vision.md`](docs/vision.md).
 
-## Model Stack
+## L1 Pillars (approved 2026-04-24)
 
-- **Orchestrator** — K-EXAONE 236B (reasoning mode) for multi-agent synthesis and long-context civil-affairs flows
-- **Workers** — EXAONE 4.5 33B (non-reasoning) for single API calls, OCR, and fast response
-- **Router / Classifier** — EXAONE 4.0 1.2B for intent classification and ministry routing
+Canonical requirements tree: [`docs/requirements/kosmos-migration-tree.md`](docs/requirements/kosmos-migration-tree.md). Every subsequent spec and PR cites this tree as its source of truth.
 
-## Roadmap
+- **L1-A · LLM Harness Layer** — Single fixed provider: **FriendliAI Serverless + K-EXAONE** (model ID `LGAI-EXAONE/EXAONE-4.0-32B`). CC agentic-loop preserved 1:1. Native EXAONE function calling. Context from `prompts/system_v1.md` + compaction + prompt cache. Sessions in `~/.kosmos/memdir/user/sessions/` (JSONL). Error recovery: ordinary network retry only. Observability: 4-tier OTEL (GenAI / Tool / Permission / local Langfuse) with zero external egress.
+- **L1-B · Public-Service Tool System** — `Tool.ts` interface rewritten, registered on both TS and Python sides. Hybrid coverage (built-in live APIs + built-in mocks + plugin infra). Discovery via BM25 + dense `lookup`. Composite tools removed — LLM chains primitives. Full 5-tier plugin DX (template / guide / examples / submission / registry), Korean-primary, PIPA-trustee responsibility explicit.
+- **L1-C · Main-Verb Abstraction** — Four reserved primitives (`lookup` · `submit` · `verify` · `subscribe`) with a shared `PrimitiveInput/Output` envelope. Self-classifying adapters routed by central `build_routing_index()`. System prompt exposes primitive signatures only; BM25 surfaces everything else dynamically. Plugin extensions namespaced as `plugin.<id>.<verb>`.
 
-- **Phase 1 — Prototype** ✅ — FriendliAI Serverless + 10 high-value APIs + single query engine + CLI. Scenario 1 (route safety) end-to-end working with **33/33 live tests passing**.
-- **Phase 2 — Swarm** — Ministry-specialist agents, mailbox IPC, multi-API synthesis. Scenarios 1–3.
-- **Phase 3 — Production** — Full permission pipeline, identity verification, audit logging, all five scenarios, public beta.
+## Brand
+
+UFO mascot (dome + saucer + landing lights, 4-pose adaptation of CC's Clawd technique) · purple palette (`body #a78bfa` · `background #4c1d95`) · brand glyph `✻` · thread glyphs `⏺ · ⎿` (CC-preserved).
+
+## Architecture layers and L1 pillars
+
+The six-layer architecture above describes **how the harness is structured**. The three L1 pillars describe **what the harness delivers to citizens**. Both are canonical — layers answer the engineering "how", pillars answer the product "what". Every spec PR maps its changes to at least one pillar and one layer.
+
+## Execution phases (canonical)
+
+Migration from the CC port (Epic P0) to a shippable citizen harness is sequenced as seven phases. Each phase is a separate Epic issue citing the tree.
+
+| Phase | Epic | Scope |
+|---|---|---|
+| **P0** Baseline Runnable | [#1632](https://github.com/umyunsang/KOSMOS/issues/1632) (merged 2026-04-24) | CC 2.1.88 port compile/runtime recovery |
+| **P1** Dead code elimination | [#1633](https://github.com/umyunsang/KOSMOS/issues/1633) | ant-only branches · `feature()` flags · CC version migrations · CC telemetry |
+| **P2** Anthropic → FriendliAI | [#1633](https://github.com/umyunsang/KOSMOS/issues/1633) (combined with P1) | API · auth · OAuth → FriendliAI constants |
+| **P3** Tool-system wiring | #1634 (pending) | `Tool.ts` + Python stdio MCP · 4 primitives |
+| **P4** UI L2 implementation | #1635 (pending) | Components for REPL / Permission Gauntlet / Ministry Agent / Onboarding / aux |
+| **P5** Plugin DX | #1636 (pending) | template · CLI · docs · examples · registry |
+| **P6** Docs + smoke | #1637 (pending) | `docs/api` · `docs/plugins` · `bun run tui` validation |
 
 ## Status
 
-**Phase 1 complete.** Live integration validated against `data.go.kr` (33/33 pass). Phase 2 swarm work staged behind the Infra Initiative (Observability, Evals, Cost gateway, Safety rails, CI/CD, Secrets — see Issues #462–#468).
+Live integration against `data.go.kr` validated end-to-end for Scenario 1 (route safety) with 33/33 tests passing. Epic #1632 (P0) merged on 2026-04-24, restoring compile + runtime for the ported CC 2.1.88 harness. Epic #1633 (P1 + P2) spec in progress.
 
 ## Policy Alignment
 

@@ -2,7 +2,12 @@
 
 This project's agent instructions live in [`AGENTS.md`](./AGENTS.md). Read that file first.
 
+**Canonical sources** (cited by every spec and PR):
+- `docs/vision.md` — six-layer harness design + Claude Code reference thesis.
+- `docs/requirements/kosmos-migration-tree.md` — L1 pillars (A · B · C), UI L2 decisions, brand, and P0–P6 execution-phase sequencing. **Approved 2026-04-24.**
+
 @AGENTS.md
+@docs/requirements/kosmos-migration-tree.md
 
 ## Claude Code-specific notes
 
