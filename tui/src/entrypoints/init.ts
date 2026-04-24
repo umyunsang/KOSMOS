@@ -238,51 +238,26 @@ export const init = memoize(async (): Promise<void> => {
 })
 
 /**
- * Initialize telemetry after trust has been granted.
- * For remote-settings-eligible users, waits for settings to load (non-blocking),
- * then re-applies env vars (to include remote settings) before initializing telemetry.
- * For non-eligible users, initializes telemetry immediately.
- * This should only be called once, after the trust dialog has been accepted.
+ * Initialize KOSMOS OTEL after trust has been granted (Epic #1633 T012,
+ * replacing CC's Anthropic 3P telemetry init).
+ *
+ * KOSMOS observability is Spec 021 / Spec 028 — OTEL spans flow over the
+ * stdio IPC bridge to the Python backend, which batches and forwards them
+ * to the local Langfuse stack via the OTLP collector. The TUI side only
+ * needs to register a tracer name; all exporter wiring is done Python-side.
+ *
+ * If the Python backend is not running at call time, this is a no-op —
+ * the IPC bridge's own connect path handles that failure separately.
  */
 export function initializeTelemetryAfterTrust(): void {
-  if (isEligibleForRemoteManagedSettings()) {
-    // For SDK/headless mode with beta tracing, initialize eagerly first
-    // to ensure the tracer is ready before the first query runs.
-    // The async path below will still run but doInitializeTelemetry() guards against double init.
-    if (getIsNonInteractiveSession() && isBetaTracingEnabled()) {
-      void doInitializeTelemetry().catch(error => {
-        logForDebugging(
-          `[3P telemetry] Eager telemetry init failed (beta tracing): ${errorMessage(error)}`,
-          { level: 'error' },
-        )
-      })
-    }
-    logForDebugging(
-      '[3P telemetry] Waiting for remote managed settings before telemetry init',
-    )
-    void waitForRemoteManagedSettingsToLoad()
-      .then(async () => {
-        logForDebugging(
-          '[3P telemetry] Remote managed settings loaded, initializing telemetry',
-        )
-        // Re-apply env vars to pick up remote settings before initializing telemetry.
-        applyConfigEnvironmentVariables()
-        await doInitializeTelemetry()
-      })
-      .catch(error => {
-        logForDebugging(
-          `[3P telemetry] Telemetry init failed (remote settings path): ${errorMessage(error)}`,
-          { level: 'error' },
-        )
-      })
-  } else {
-    void doInitializeTelemetry().catch(error => {
-      logForDebugging(
-        `[3P telemetry] Telemetry init failed: ${errorMessage(error)}`,
-        { level: 'error' },
-      )
-    })
-  }
+  // TODO(1633-post-merge): Once KOSMOS OTEL SDK bootstrap lives in a
+  // dedicated module (Spec 021 follow-up), call it here. Until then,
+  // tracing works because `@opentelemetry/api` is initialized lazily by
+  // llmClient.ts on its first use (see tui/src/ipc/llmClient.ts T009).
+  logForDebugging(
+    '[KOSMOS OTEL] TUI-side OTEL init deferred to first LLMClient call ' +
+      '(Spec 021 Python backend owns exporter lifecycle).',
+  )
 }
 
 async function doInitializeTelemetry(): Promise<void> {
