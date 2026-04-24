@@ -134,8 +134,8 @@ TUI 가 첫 LLM 호출을 발사하는 시점에 system prompt 는 Spec 026 `Pro
 - **FR-011**: `tui/src/utils/model/antModels.ts::getDefaultMainLoopModel()` (및 동등 함수) 반환값이 `"LGAI-EXAONE/EXAONE-4.0-32B"` 이어야 한다. Anthropic 모델 ID 는 TUI 어디에도 런타임 참조가 없다.
 - **FR-012**: `tui/src/utils/modelCost.ts` 의 Anthropic 토큰 가격표를 제거한다 (KOSMOS 는 사용량 집계를 Python 백엔드 `UsageTracker` 가 수행).
 - **FR-013**: `tui/src/utils/betas.ts` 의 Anthropic beta-header 관리를 제거한다.
-- **FR-014**: `tui/src/services/services/policyLimits/index.ts` · `types.ts` · `tui/src/services/services/claudeAiLimits.ts` 를 전량 삭제한다. 시민 쿼터 정책은 이 Epic 의 범위가 아니며 별도 Initiative 에서 재설계.
-- **FR-015**: `tui/src/services/services/mcp/claudeai.ts` (Anthropic MCP 통합) 을 삭제한다. KOSMOS MCP 는 별도 후속 에픽에서 KOSMOS-scoped 로 재도입.
+- **FR-014**: `tui/src/services/services/policyLimits/index.ts` · `types.ts` · `tui/src/services/services/claudeAiLimits.ts` 를 전량 삭제한다. 시민 쿼터 정책의 KOSMOS-등가물 재설계는 본 Epic 범위 밖 (Deferred Items 표 "시민 쿼터 정책" 행 참조).
+- **FR-015**: `tui/src/services/services/mcp/claudeai.ts` (Anthropic MCP 통합) 을 삭제한다. KOSMOS-scoped MCP 재도입은 본 Epic 범위 밖 (Deferred Items 표 "Anthropic MCP 통합 재도입" 행 참조).
 - **FR-016**: `tui/src/entrypoints/init.ts` 의 `initializeTelemetryAfterTrust` 호출(및 관련 부팅 순서 코드) 을 Spec 021 기준 KOSMOS OTEL 초기화 함수 호출로 대체한다.
 - **FR-017**: `tui/src/query.ts` 와 `tui/src/QueryEngine.ts` 에서 `@anthropic-ai/sdk` 로부터 인스턴스화하는 클라이언트 객체를 KOSMOS stdio IPC 클라이언트(TS) 가 노출하는 `llmComplete` 또는 동등 메서드로 대체한다. Agentic loop 구조(메시지 턴, tool-use 디스패치) 는 보존 — AGENTS.md 의 rewrite boundary 원칙 준수.
 - **FR-018**: `tui/src/services/services/api/withRetry.ts` 의 재시도 로직(exponential backoff · max attempts) 은 유지하되, 매칭되는 에러 코드 집합을 FriendliAI HTTP 에러 및 stdio IPC 전송 에러 집합으로 재매핑한다.
