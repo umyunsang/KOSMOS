@@ -441,17 +441,32 @@ async def run(  # noqa: C901
         if _llm_system_prompt_cached[0] is not None:
             return _llm_system_prompt_cached[0] or None
         try:
-            from kosmos.prompts.loader import PromptLoader  # noqa: PLC0415
+            from pathlib import Path  # noqa: PLC0415
 
-            loader = PromptLoader()
-            _llm_system_prompt_cached[0] = loader.load("system_v1").content
+            from kosmos.context.prompt_loader import PromptLoader  # noqa: PLC0415
+
+            # Default manifest lives at repo-root/prompts/manifest.yaml. The
+            # stdio backend runs from repo root when invoked via
+            # `uv run kosmos --ipc stdio`, so resolve relative to CWD.
+            manifest = Path("prompts") / "manifest.yaml"
+            if not manifest.is_file():
+                _llm_system_prompt_cached[0] = ""
+                return None
+            loader = PromptLoader(manifest_path=manifest)
+            _llm_system_prompt_cached[0] = loader.load("system_v1")
         except Exception:  # noqa: BLE001
             _llm_system_prompt_cached[0] = ""  # remember "tried and failed"
         return _llm_system_prompt_cached[0] or None
 
     async def _handle_user_input_llm(frame: IPCFrame) -> None:  # noqa: C901
-        from kosmos.ipc.frame_schema import AssistantChunkFrame  # noqa: PLC0415
+        from kosmos.ipc.frame_schema import (  # noqa: PLC0415
+            AssistantChunkFrame,
+            UserInputFrame,
+        )
         from kosmos.llm.models import ChatMessage  # noqa: PLC0415
+
+        if not isinstance(frame, UserInputFrame):
+            return
 
         history = _llm_sessions.setdefault(frame.session_id, [])
         if not history:
@@ -547,7 +562,13 @@ async def run(  # noqa: C901
     _handler_mode = (_os.environ.get("KOSMOS_IPC_HANDLER") or "llm").lower()
 
     async def _handle_user_input_echo(frame: IPCFrame) -> None:
-        from kosmos.ipc.frame_schema import AssistantChunkFrame  # noqa: PLC0415
+        from kosmos.ipc.frame_schema import (  # noqa: PLC0415
+            AssistantChunkFrame,
+            UserInputFrame,
+        )
+
+        if not isinstance(frame, UserInputFrame):
+            return
 
         echo_frame = AssistantChunkFrame(
             session_id=frame.session_id,
