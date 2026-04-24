@@ -1,4 +1,3 @@
-// Source: .references/claude-code-sourcemap/restored-src/src/utils/debug.ts (Claude Code 2.1.88, research-use)
 import { appendFile, mkdir, symlink, unlink } from 'fs/promises'
 import memoize from 'lodash-es/memoize.js'
 import { dirname, join } from 'path'

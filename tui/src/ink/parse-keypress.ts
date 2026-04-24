@@ -1,4 +1,3 @@
-// Source: .references/claude-code-sourcemap/restored-src/src/ink/parse-keypress.ts (Claude Code 2.1.88, research-use)
 /**
  * Keyboard input parser - converts terminal input to key events
  *

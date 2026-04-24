@@ -1,4 +1,3 @@
-// Source: .references/claude-code-sourcemap/restored-src/src/ink/events/terminal-focus-event.ts (Claude Code 2.1.88, research-use)
 import { Event } from './event.js'
 
 export type TerminalFocusEventType = 'terminalfocus' | 'terminalblur'

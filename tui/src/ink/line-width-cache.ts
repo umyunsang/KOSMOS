@@ -1,4 +1,3 @@
-// Source: .references/claude-code-sourcemap/restored-src/src/ink/line-width-cache.ts (Claude Code 2.1.88, research-use)
 import { stringWidth } from './stringWidth.js'
 
 // During streaming, text grows but completed lines are immutable.

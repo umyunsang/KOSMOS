@@ -16,7 +16,16 @@
     "lib": ["es2022"],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "src/*": ["./src/*"],
+      "bun:bundle": ["./src/stubs/bun-bundle.ts"],
+      "react/compiler-runtime": ["./src/stubs/react-compiler-runtime"],
+      "@datadog/browser-logs": ["./src/stubs/any-stub"],
+      "@ant/claude-for-chrome-mcp": ["./src/stubs/any-stub"],
+      "@ant/computer-use-mcp": ["./src/stubs/any-stub"],
+      "@ant/computer-use-swift": ["./src/stubs/any-stub"],
+      "@ant/computer-use-input": ["./src/stubs/any-stub"],
+      "color-diff-napi": ["./src/stubs/color-diff-napi.ts"]
     }
   },
   "include": [

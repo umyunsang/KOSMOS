@@ -1,4 +1,3 @@
-// Source: .references/claude-code-sourcemap/restored-src/src/ink/layout/node.ts (Claude Code 2.1.88, research-use)
 // --
 // Adapter interface for the layout engine (Yoga)
 

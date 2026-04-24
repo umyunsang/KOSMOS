@@ -2,16 +2,32 @@
 // T035 — Onboarding full 3-step snapshot (Epic H #1302).
 // Covers FR-012 end-to-end + SC-002 + SC-012 (fast-path).
 
-import { describe, expect, it } from 'bun:test'
+import { afterEach, describe, expect, it } from 'bun:test'
 import React from 'react'
 import { render } from 'ink-testing-library'
 import { Onboarding } from '../../src/components/onboarding/Onboarding'
 import { ThemeProvider } from '../../src/theme/provider'
 
 const SESSION = '018f8a72-d4c9-7a1e-9c8b-0b2c3d4e5f60'
+const SAVED_NO_COLOR = process.env.NO_COLOR
+const SAVED_REDUCED_MOTION = process.env.KOSMOS_REDUCED_MOTION
+
+function disableReducedMotionForSnapshot(): void {
+  delete process.env.NO_COLOR
+  delete process.env.KOSMOS_REDUCED_MOTION
+}
+
+afterEach(() => {
+  if (SAVED_NO_COLOR !== undefined) process.env.NO_COLOR = SAVED_NO_COLOR
+  else delete process.env.NO_COLOR
+  if (SAVED_REDUCED_MOTION !== undefined)
+    process.env.KOSMOS_REDUCED_MOTION = SAVED_REDUCED_MOTION
+  else delete process.env.KOSMOS_REDUCED_MOTION
+})
 
 describe('Onboarding — initial splash', () => {
   it('renders the LogoV2 splash when no memdir state is supplied', () => {
+    disableReducedMotionForSnapshot()
     const { lastFrame } = render(
       <ThemeProvider>
         <Onboarding sessionId={SESSION} startStep="splash" />

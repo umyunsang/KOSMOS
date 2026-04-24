@@ -1,4 +1,3 @@
-// Source: .references/claude-code-sourcemap/restored-src/src/ink/wrap-text.ts (Claude Code 2.1.88, research-use)
 import sliceAnsi from '../utils/sliceAnsi.js'
 import { stringWidth } from './stringWidth.js'
 import type { Styles } from './styles.js'

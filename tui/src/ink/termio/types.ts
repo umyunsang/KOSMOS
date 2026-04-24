@@ -1,4 +1,3 @@
-// Source: .references/claude-code-sourcemap/restored-src/src/ink/termio/types.ts (Claude Code 2.1.88, research-use)
 /**
  * ANSI Parser - Semantic Types
  *

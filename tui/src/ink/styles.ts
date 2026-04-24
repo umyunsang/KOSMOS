@@ -1,4 +1,3 @@
-// Source: .references/claude-code-sourcemap/restored-src/src/ink/styles.ts (Claude Code 2.1.88, research-use)
 import {
   LayoutAlign,
   LayoutDisplay,

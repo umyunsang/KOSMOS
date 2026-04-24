@@ -1,4 +1,3 @@
-// Source: .references/claude-code-sourcemap/restored-src/src/ink/events/emitter.ts (Claude Code 2.1.88, research-use)
 import { EventEmitter as NodeEventEmitter } from 'events'
 import { Event } from './event.js'
 

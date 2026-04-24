@@ -1,4 +1,3 @@
-// Source: .references/claude-code-sourcemap/restored-src/src/ink/widest-line.ts (Claude Code 2.1.88, research-use)
 import { lineWidth } from './line-width-cache.js'
 
 export function widestLine(string: string): number {

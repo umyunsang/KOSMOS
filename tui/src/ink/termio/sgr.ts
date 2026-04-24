@@ -1,4 +1,3 @@
-// Source: .references/claude-code-sourcemap/restored-src/src/ink/termio/sgr.ts (Claude Code 2.1.88, research-use)
 /**
  * SGR (Select Graphic Rendition) Parser
  *

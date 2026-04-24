@@ -1,0 +1,6 @@
+# [P0 Baseline Runnable · Epic #1632]
+# Preload injects the Bun MACRO build-time constants that the CC 2.1.88
+# sourcemap reconstruction still references but Bun's bundler would normally
+# inline. Without preload, `bun run src/main.tsx` fails immediately with
+# `ReferenceError: MACRO is not defined` inside the commander version string.
+preload = ["./src/stubs/macro-preload.ts"]

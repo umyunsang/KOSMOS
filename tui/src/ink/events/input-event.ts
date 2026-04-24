@@ -1,4 +1,3 @@
-// Source: .references/claude-code-sourcemap/restored-src/src/ink/events/input-event.ts (Claude Code 2.1.88, research-use)
 import { nonAlphanumericKeys, type ParsedKey } from '../parse-keypress.js'
 import { Event } from './event.js'
 

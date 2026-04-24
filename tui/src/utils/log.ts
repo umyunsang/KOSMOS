@@ -1,4 +1,3 @@
-// Source: .references/claude-code-sourcemap/restored-src/src/utils/log.ts (Claude Code 2.1.88, research-use)
 import { feature } from 'bun:bundle'
 import type { BetaMessageStreamParams } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
 import { readdir, readFile, stat } from 'fs/promises'

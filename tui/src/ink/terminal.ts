@@ -1,4 +1,3 @@
-// Source: .references/claude-code-sourcemap/restored-src/src/ink/terminal.ts (Claude Code 2.1.88, research-use)
 import { coerce } from 'semver'
 import type { Writable } from 'stream'
 import { env } from '../utils/env.js'

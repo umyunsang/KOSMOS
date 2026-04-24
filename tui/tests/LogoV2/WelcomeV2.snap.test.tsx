@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: Apache-2.0
-// T041 — WelcomeV2 snapshot (Epic H #1302).
-// Korean welcome header + kosmosCore cluster; zero Apple-Terminal ASCII art.
+// WelcomeV2 snapshot — CC-fidelity English welcome header + orbital cluster.
+// Per user directive (2026-04-24): match CC's English welcome pattern
+// (`Welcome to KOSMOS` mirrors CC's `Welcome to Claude Code`) — prior
+// Korean-header Spec 035 invariant superseded.
 
 import { describe, expect, it, afterEach } from 'bun:test'
 import React from 'react'
 import { render } from 'ink-testing-library'
-import { WelcomeV2 } from '../../src/components/onboarding/LogoV2/WelcomeV2'
+import { WelcomeV2 } from '../../src/components/LogoV2/WelcomeV2'
 import { ThemeProvider } from '../../src/theme/provider'
 
 const SAVED_REDUCED = process.env.KOSMOS_REDUCED_MOTION
@@ -31,7 +33,7 @@ describe('WelcomeV2', () => {
       </ThemeProvider>,
     )
     const frame = lastFrame() ?? ''
-    expect(frame).toContain('KOSMOS에 오신 것을 환영합니다')
+    expect(frame).toContain('Welcome to KOSMOS')
     expect(frame).toContain('v0.1.0')
     expect(frame).toContain('*')
     for (const banned of BANNED) expect(frame).not.toContain(banned)
@@ -46,7 +48,7 @@ describe('WelcomeV2', () => {
       </ThemeProvider>,
     )
     const frame = lastFrame() ?? ''
-    expect(frame).toContain('KOSMOS에 오신 것을 환영합니다')
+    expect(frame).toContain('Welcome to KOSMOS')
     expect(frame).toMatchSnapshot()
   })
 })

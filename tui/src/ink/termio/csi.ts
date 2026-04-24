@@ -1,4 +1,3 @@
-// Source: .references/claude-code-sourcemap/restored-src/src/ink/termio/csi.ts (Claude Code 2.1.88, research-use)
 /**
  * CSI (Control Sequence Introducer) Types
  *
