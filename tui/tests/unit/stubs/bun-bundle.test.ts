@@ -7,7 +7,7 @@
 // `bun:bundle` virtual module), which bypasses the macro check.
 
 import { describe, expect, it } from 'bun:test'
-import { feature } from '../../../src/stubs/bun-bundle.ts'
+import { feature } from '../../../src/stubs/bun-bundle.js'
 
 const KNOWN_FLAGS = [
   'COORDINATOR_MODE',
