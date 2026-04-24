@@ -8,7 +8,9 @@ Single source of truth consumed by:
 
 from typing import Literal
 
-from kosmos.tools.models import AALLevel  # Literal["public","AAL1","AAL2","AAL3"]
+# AALLevel is re-exported via ``kosmos.security.audit`` (the canonical source).
+# Import from there directly to satisfy mypy's "explicitly exported" check.
+from kosmos.security.audit import AALLevel  # Literal["public","AAL1","AAL2","AAL3"]
 
 
 def compute_permission_tier(

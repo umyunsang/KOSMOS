@@ -223,6 +223,7 @@ async def _run_loop(server: MCPServer) -> None:
             return
         if not line.strip():
             continue
+        response: dict[str, Any] | None
         try:
             request = json.loads(line)
         except json.JSONDecodeError as exc:

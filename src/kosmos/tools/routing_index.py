@@ -19,6 +19,9 @@ from pydantic import BaseModel, ConfigDict
 from kosmos.tools.models import GovAPITool
 from kosmos.tools.permissions import compute_permission_tier
 
+# Primitive literal type — the closed set enforced by invariant 1.
+_PrimitiveT = Literal["lookup", "resolve_location", "submit", "subscribe", "verify"]
+
 
 class RoutingIndex(BaseModel):
     model_config = ConfigDict(frozen=True, arbitrary_types_allowed=True)
@@ -41,7 +44,7 @@ def build_routing_index(adapters: list[GovAPITool]) -> RoutingIndex:
     Raises RoutingValidationError on the first failure with a message of the
     form: "<tool_id>: <invariant> — <details>".
     """
-    by_primitive: dict[str, list[GovAPITool]] = defaultdict(list)
+    by_primitive: dict[_PrimitiveT, list[GovAPITool]] = defaultdict(list)
     by_tool_id: dict[str, GovAPITool] = {}
     warnings: list[str] = []
 
@@ -71,6 +74,9 @@ def build_routing_index(adapters: list[GovAPITool]) -> RoutingIndex:
         if hasattr(adapter, "ministry") and adapter.ministry == "OTHER":
             warnings.append(f"{adapter.id}: ministry='OTHER' (transitional escape hatch)")
 
+        # Invariant 1 guarantees adapter.primitive is non-None at this point;
+        # mypy narrows the Optional[Literal[...]] to Literal[...] via the early
+        # raise above, so the literal matches dict[_PrimitiveT, ...] directly.
         by_primitive[adapter.primitive].append(adapter)
         by_tool_id[adapter.id] = adapter
 
