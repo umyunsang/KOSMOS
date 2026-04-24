@@ -54,7 +54,7 @@
 
 ### MCP bridge (cross-cutting within US1)
 
-- [ ] T014 [US1] Create `/Users/um-yunsang/KOSMOS/src/kosmos/ipc/mcp_server.py` — stdio-MCP server stub wrapping existing `stdio.py` per contracts/mcp-bridge.md § 2 handshake + § 3 tool-call envelope + § 4 reuse contract (no re-implementation of Spec 032 concerns) — depends on T011
+- [X] T014 [US1] Create `/Users/um-yunsang/KOSMOS/src/kosmos/ipc/mcp_server.py` — stdio-MCP server stub wrapping existing `stdio.py` per contracts/mcp-bridge.md § 2 handshake + § 3 tool-call envelope + § 4 reuse contract (no re-implementation of Spec 032 concerns) — depends on T011
 - [ ] T015 [US1] Create `/Users/um-yunsang/KOSMOS/tui/src/ipc/mcp.ts` — stdio-MCP client reusing `bridge.ts` for transport; implements `initialize` handshake + `tools/list` discovery + `tools/call` routing per contracts/mcp-bridge.md § 2–3 — depends on T014
 
 ### Primitive wrappers (parallel)
@@ -66,16 +66,16 @@
 
 ### CC dev tool deletion (parallel batch)
 
-- [ ] T020 [P] [US1] Delete CC dev tool directories batch 1 (filesystem mutation tools): `rm -rf /Users/um-yunsang/KOSMOS/tui/src/tools/{BashTool,FileEditTool,FileReadTool,FileWriteTool,GlobTool,GrepTool,NotebookEditTool}` — verify with `ls`
-- [ ] T021 [P] [US1] Delete CC dev tool directories batch 2 (shell + mode tools): `rm -rf /Users/um-yunsang/KOSMOS/tui/src/tools/{PowerShellTool,LSPTool,REPLTool,ConfigTool,EnterWorktreeTool,ExitWorktreeTool,EnterPlanModeTool,ExitPlanModeTool}` — verify with `ls`
+- [~] T020 [P] [US1] Delete CC dev tool directories batch 1 (filesystem mutation tools): `rm -rf /Users/um-yunsang/KOSMOS/tui/src/tools/{BashTool,FileEditTool,FileReadTool,FileWriteTool,GlobTool,GrepTool,NotebookEditTool}` — verify with `ls`
+- [~] T021 [P] [US1] Delete CC dev tool directories batch 2 (shell + mode tools): `rm -rf /Users/um-yunsang/KOSMOS/tui/src/tools/{PowerShellTool,LSPTool,REPLTool,ConfigTool,EnterWorktreeTool,ExitWorktreeTool,EnterPlanModeTool,ExitPlanModeTool}` — verify with `ls`
 - [ ] T022 [US1] Remove imports + references to deleted CC dev tools from `/Users/um-yunsang/KOSMOS/tui/src/tools/index.ts` (or equivalent TUI tool dispatcher init file — confirm actual path during T022) — depends on T020, T021
 
 ### Auxiliary tools — new (parallel)
 
-- [ ] T023 [P] [US1] Create `/Users/um-yunsang/KOSMOS/tui/src/tools/TranslateTool/` with `input_schema` (`text`, `source_lang: Lang`, `target_lang: Lang`) + `output_schema` (`text`) + bilingual search_hint per contracts/primitive-envelope.md § 6; delegates to FriendliAI K-EXAONE via the existing LLM call path (no new dep)
-- [ ] T024 [P] [US1] Create `/Users/um-yunsang/KOSMOS/tui/src/tools/CalculatorTool/` with restricted-grammar expression parser using stdlib `decimal`+`math` equivalents + output `{result: Decimal, kind}` per contracts/primitive-envelope.md § 6
-- [ ] T025 [P] [US1] Create `/Users/um-yunsang/KOSMOS/tui/src/tools/DateParserTool/` using stdlib `datetime`+`zoneinfo` with `Asia/Seoul` default tz + output `{iso8601, interpreted_text}` per contracts/primitive-envelope.md § 6
-- [ ] T026 [P] [US1] Create `/Users/um-yunsang/KOSMOS/tui/src/tools/ExportPDFTool/` using existing `pdf-to-img` WASM (UI-B B.3) + Memdir USER tier scoped output path per contracts/primitive-envelope.md § 6
+- [X] T023 [P] [US1] Create `/Users/um-yunsang/KOSMOS/tui/src/tools/TranslateTool/` with `input_schema` (`text`, `source_lang: Lang`, `target_lang: Lang`) + `output_schema` (`text`) + bilingual search_hint per contracts/primitive-envelope.md § 6; delegates to FriendliAI K-EXAONE via the existing LLM call path (no new dep)
+- [X] T024 [P] [US1] Create `/Users/um-yunsang/KOSMOS/tui/src/tools/CalculatorTool/` with restricted-grammar expression parser using stdlib `decimal`+`math` equivalents + output `{result: Decimal, kind}` per contracts/primitive-envelope.md § 6
+- [X] T025 [P] [US1] Create `/Users/um-yunsang/KOSMOS/tui/src/tools/DateParserTool/` using stdlib `datetime`+`zoneinfo` with `Asia/Seoul` default tz + output `{iso8601, interpreted_text}` per contracts/primitive-envelope.md § 6
+- [X] T026 [P] [US1] Create `/Users/um-yunsang/KOSMOS/tui/src/tools/ExportPDFTool/` using existing `pdf-to-img` WASM (UI-B B.3) + Memdir USER tier scoped output path per contracts/primitive-envelope.md § 6
 
 ### Auxiliary tool — AgentTool rewire
 

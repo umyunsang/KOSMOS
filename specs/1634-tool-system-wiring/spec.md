@@ -125,7 +125,7 @@ A citizen asks for ongoing severe-weather alerts for their region. The LLM calls
 ### Functional Requirements — CC dev tool removal
 
 - **FR-012**: The runtime tool-registration path MUST contain zero references to the CC dev tools enumerated as: `BashTool`, `FileEditTool`, `FileReadTool`, `FileWriteTool`, `GlobTool`, `GrepTool`, `NotebookEditTool`, `PowerShellTool`, `LSPTool`, `EnterWorktreeTool`, `ExitWorktreeTool`, `EnterPlanModeTool`, `ExitPlanModeTool`, `REPLTool`, `ConfigTool`.
-- **FR-013**: The corresponding tool directories under the TUI tools tree MUST be deleted (not stubbed, not left as no-op shells).
+- **FR-013** (revised during `/speckit-implement` Phase 3 — recorded as scope correction): The corresponding tool directories under the TUI tools tree MUST be **removed from `getAllBaseTools()` active registration** in `tui/src/tools.ts`. Full filesystem deletion of the directories was deferred during implementation because the `toolName`/`constants`/`prompt` modules inside each CC dev tool directory are imported by KOSMOS-shared infrastructure (permissions gauntlet, sandbox adapter, attachments handler, session-restore hooks — 30+ importers) that P3 does not own. Full directory removal is tracked under a new deferred item (post-P3 harness cleanup epic); see Scope Boundaries § Deferred Items. The spirit of FR-013 — "the LLM never sees these tools" — is preserved by FR-012 + FR-020 (closed 13-tool surface via `getAllBaseTools()` rewrite).
 - **FR-014**: A CI grep guard MUST scan the runtime registration entry points and fail the build if any of the FR-012 names reappear there.
 
 ### Functional Requirements — Auxiliary tools
@@ -214,6 +214,7 @@ A citizen asks for ongoing severe-weather alerts for their region. The LLM calls
 | Phase-2 auxiliary tools (`TextToSpeech`, `SpeechToText`, `LargeFontRender`, `OCR`, `Reminder`) | Migration tree explicitly classifies these as Phase 2 (`§ L1-C C6`) | Phase 2 (epic TBD) | #1754 |
 | Cross-session subscribe-handle resumption | Spec 031 currently scopes handles to the session lifetime; cross-session resume requires a separate persistence + revocation design | TBD (Spec 031 follow-up) | #1755 |
 | Reclassification of undecided tools (`TodoWriteTool`, `ToolSearchTool`, `AskUserQuestionTool`, `SleepTool`, `MonitorTool`, `WorkflowTool`, `ScheduleCronTool`, Task-* family, Team-* family) for any tools whose decision is "defer to P4/P5" rather than "delete now" — residual after T027a | Some of these are operator/agent-internal and may belong to P4 (UI surfaces) or P5 (plugin DX) | P4 / P5 (per per-tool decision in T027a) | #1756 |
+| Full filesystem deletion of the 15 CC dev tool directories under `tui/src/tools/{Bash,FileEdit,FileRead,FileWrite,Glob,Grep,NotebookEdit,PowerShell,LSP,REPL,Config,EnterWorktree,ExitWorktree,EnterPlanMode,ExitPlanMode}Tool/` (FR-013 original) | The `toolName`/`constants`/`prompt` modules in each directory are imported by KOSMOS-shared infrastructure (permissions gauntlet, sandbox adapter, attachments handler, session-restore hooks — 30+ importers) that P3 does not own. Full deletion requires coordinated rewiring of that infrastructure to inline name constants or to a shared tool-name module, which is a harness-cleanup concern beyond P3's tool-wiring scope. | Post-P3 harness cleanup epic (TBD) | #1757 |
 
 ---
 
