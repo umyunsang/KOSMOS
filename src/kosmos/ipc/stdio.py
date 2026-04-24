@@ -465,9 +465,7 @@ async def run(  # noqa: C901
         for m in history:
             role = str(m.get("role", "user"))
             content = m.get("content")
-            if role in ("system", "user", "assistant", "tool") and isinstance(
-                content, str
-            ):
+            if role in ("system", "user", "assistant", "tool") and isinstance(content, str):
                 messages.append(
                     ChatMessage(
                         role=role,  # type: ignore[arg-type]
@@ -545,6 +543,7 @@ async def run(  # noqa: C901
     # Echo mode is used by integration tests that spawn the real backend but
     # must not depend on FRIENDLI_API_KEY or network reachability.
     import os as _os  # noqa: PLC0415
+
     _handler_mode = (_os.environ.get("KOSMOS_IPC_HANDLER") or "llm").lower()
 
     async def _handle_user_input_echo(frame: IPCFrame) -> None:
