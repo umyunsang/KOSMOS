@@ -1,8 +1,8 @@
 // biome-ignore-all assist/source/organizeImports: ANT-ONLY import markers must not be reordered
 import type {
-  ToolResultBlockParam,
-  ToolUseBlock,
-} from '@anthropic-ai/sdk/resources/index.mjs'
+  KosmosToolResultBlockParam as ToolResultBlockParam,
+  KosmosToolUseBlockParam as ToolUseBlock,
+} from './ipc/llmTypes.js'
 import type { CanUseToolFn } from './hooks/useCanUseTool.js'
 import { FallbackTriggeredError } from './services/api/withRetry.js'
 import {

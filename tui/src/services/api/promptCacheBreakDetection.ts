@@ -1,5 +1,6 @@
 import type { BetaToolUnion } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
 import type { TextBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'
+import type { KosmosUsage } from '../../ipc/llmTypes.js'
 import { createPatch } from 'diff'
 import { mkdir, writeFile } from 'fs/promises'
 import { join } from 'path'
@@ -429,10 +430,78 @@ export function recordPromptState(snapshot: PromptStateSnapshot): void {
   }
 }
 
+// ── FriendliAI / OpenAI-compat usage shape ──────────────────────────────────
+//
+// Anthropic exposes cache metrics as:
+//   usage.cache_read_input_tokens    (Anthropic SDK)
+//   usage.cache_creation_input_tokens
+//
+// FriendliAI (OpenAI-compat, K-EXAONE) exposes them as:
+//   usage.prompt_tokens_details.cached_tokens   ← cache read count
+//
+// `extractCacheReadTokens` normalises both shapes so `checkResponseForCacheBreak`
+// and `checkResponseForCacheBreakFromUsage` can work with either provider.
+// ────────────────────────────────────────────────────────────────────────────
+
+/** FriendliAI / OpenAI-compat usage object shape. */
+type FriendliAIUsage = {
+  prompt_tokens_details?: {
+    /** Tokens served from the server-side prompt cache (FriendliAI field). */
+    cached_tokens?: number
+  }
+}
+
+/**
+ * Extract the cache-read token count from either a FriendliAI usage object
+ * (OpenAI-compat: `usage.prompt_tokens_details.cached_tokens`) or a
+ * KOSMOS usage object (`usage.cache_read_input_tokens`).
+ *
+ * Returns 0 when neither field is present.
+ */
+export function extractCacheReadTokens(
+  usage: KosmosUsage | FriendliAIUsage,
+): number {
+  // FriendliAI OpenAI-compat path — takes precedence when present.
+  const friendli = (usage as FriendliAIUsage).prompt_tokens_details?.cached_tokens
+  if (typeof friendli === 'number') return friendli
+
+  // KOSMOS / legacy Anthropic-compat path.
+  const kosmos = (usage as KosmosUsage).cache_read_input_tokens
+  if (typeof kosmos === 'number') return kosmos
+
+  return 0
+}
+
+/**
+ * Convenience wrapper around `checkResponseForCacheBreak` that accepts a raw
+ * FriendliAI or KOSMOS usage object instead of pre-extracted token counts.
+ * Cache-creation tokens are not exposed by FriendliAI — passed as 0.
+ */
+export async function checkResponseForCacheBreakFromUsage(
+  querySource: QuerySource,
+  usage: KosmosUsage | FriendliAIUsage,
+  messages: Message[],
+  agentId?: AgentId,
+  requestId?: string | null,
+): Promise<void> {
+  const cacheReadTokens = extractCacheReadTokens(usage)
+  return checkResponseForCacheBreak(
+    querySource,
+    cacheReadTokens,
+    /* cacheCreationTokens — not exposed by FriendliAI */ 0,
+    messages,
+    agentId,
+    requestId,
+  )
+}
+
 /**
  * Phase 2 (post-call): Check the API response's cache tokens to determine
  * if a cache break actually occurred. If it did, use the pending changes
  * from phase 1 to explain why.
+ *
+ * For FriendliAI / OpenAI-compat providers, use `checkResponseForCacheBreakFromUsage`
+ * which reads `usage.prompt_tokens_details.cached_tokens` automatically.
  */
 export async function checkResponseForCacheBreak(
   querySource: QuerySource,

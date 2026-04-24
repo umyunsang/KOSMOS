@@ -1,4 +1,5 @@
 import type { APIError } from '@anthropic-ai/sdk'
+import { classifyAPIError } from './errors.js'
 
 // SSL/TLS error codes from OpenSSL (used by both Node.js and Bun)
 // See: https://www.openssl.org/docs/man3.1/man3/X509_STORE_CTX_get_error.html
@@ -195,6 +196,107 @@ function extractNestedErrorMessage(error: APIError): string | null {
   }
 
   return null
+}
+
+// ───── KOSMOS envelope ──────────────────────────────────────────────────────
+
+/** KOSMOS error envelope classes. */
+export type KosmosErrorClass = 'llm' | 'tool' | 'network'
+
+/**
+ * Normalized error envelope for the KOSMOS harness.
+ * Maps Anthropic-named API errors onto provider-agnostic classes
+ * so callers are insulated from Anthropic-specific error taxonomies.
+ */
+export type KosmosErrorEnvelope = {
+  /** Provider-agnostic error class. */
+  errorClass: KosmosErrorClass
+  /** Short identifier for the specific failure mode. */
+  code: string
+  /** Human-readable message safe for display. */
+  message: string
+  /** Milliseconds to wait before retrying, if the error is transient. */
+  retryAfterMs?: number
+}
+
+/**
+ * Convert any thrown value into a `KosmosErrorEnvelope`.
+ *
+ * Mapping strategy:
+ * - LLM capacity / auth / content errors → `errorClass: 'llm'`
+ * - Network / connection errors          → `errorClass: 'network'`
+ * - Tool I/O validation errors           → `errorClass: 'tool'`
+ *
+ * This function is additive: existing callers keep their own error handling;
+ * new KOSMOS code should call `toKosmosEnvelope` for a unified view.
+ */
+export function toKosmosEnvelope(err: unknown): KosmosErrorEnvelope {
+  const classification = classifyAPIError(err)
+  const rawMessage =
+    err instanceof Error
+      ? err.message
+      : typeof err === 'string'
+        ? err
+        : 'Unknown error'
+
+  // Network-level failures
+  if (
+    classification === 'timeout' ||
+    rawMessage.includes('ECONNRESET') ||
+    rawMessage.includes('ECONNREFUSED') ||
+    rawMessage.includes('ETIMEDOUT') ||
+    rawMessage.includes('Unable to connect') ||
+    rawMessage.includes('Connection error')
+  ) {
+    return {
+      errorClass: 'network',
+      code: classification === 'timeout' ? 'request_timeout' : 'connection_error',
+      message: rawMessage,
+    }
+  }
+
+  // LLM capacity (rate-limit / overload) — retryable
+  if (classification === 'llm_overloaded') {
+    // Extract Retry-After if present on the error object
+    const retryAfterRaw = (err as Record<string, unknown>)?.headers
+    const retryAfterHeader =
+      retryAfterRaw && typeof (retryAfterRaw as Record<string, unknown>)?.get === 'function'
+        ? ((retryAfterRaw as { get: (k: string) => string | null }).get('retry-after'))
+        : null
+    const retryAfterMs = retryAfterHeader ? parseInt(retryAfterHeader, 10) * 1000 : undefined
+    return {
+      errorClass: 'llm',
+      code: 'capacity_exceeded',
+      message: rawMessage,
+      retryAfterMs: Number.isFinite(retryAfterMs) ? retryAfterMs : undefined,
+    }
+  }
+
+  // LLM auth / billing / policy errors
+  if (
+    classification === 'invalid_api_key' ||
+    classification === 'token_revoked' ||
+    classification === 'credit_balance_too_low' ||
+    classification === 'org_disabled'
+  ) {
+    return {
+      errorClass: 'llm',
+      code: classification,
+      message: rawMessage,
+    }
+  }
+
+  // Context / content errors
+  if (classification === 'prompt_too_long') {
+    return { errorClass: 'llm', code: 'prompt_too_long', message: rawMessage }
+  }
+
+  if (classification === 'refusal') {
+    return { errorClass: 'llm', code: 'refusal', message: rawMessage }
+  }
+
+  // Default: treat as LLM-layer unknown
+  return { errorClass: 'llm', code: 'unknown', message: rawMessage }
 }
 
 export function formatAPIError(error: APIError): string {

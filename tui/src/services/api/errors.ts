@@ -14,11 +14,11 @@ export const CREDIT_BALANCE_TOO_LOW_ERROR_MESSAGE = 'Credit balance is too low'
 export const CUSTOM_OFF_SWITCH_MESSAGE = 'Custom off switch active'
 export const INVALID_API_KEY_ERROR_MESSAGE = 'Invalid API key'
 export const INVALID_API_KEY_ERROR_MESSAGE_EXTERNAL =
-  'Invalid API key · please set ANTHROPIC_API_KEY or run `claude login`'
+  'Invalid API key · please set KOSMOS_LLM_API_KEY'
 export const ORG_DISABLED_ERROR_MESSAGE_ENV_KEY =
   'Organization disabled for this API key'
 export const ORG_DISABLED_ERROR_MESSAGE_ENV_KEY_WITH_OAUTH =
-  'Organization disabled — run `claude login` to refresh credentials'
+  'Organization disabled — check your API credentials'
 export const PROMPT_TOO_LONG_ERROR_MESSAGE =
   'prompt is too long: '
 export const REPEATED_529_ERROR_MESSAGE =
@@ -41,7 +41,9 @@ export function categorizeRetryableAPIError(
   return 'unknown'
 }
 
-/** Fine-grained classification used for telemetry + UI dialogs. */
+/** Fine-grained classification used for telemetry + UI dialogs.
+ *  Anthropic-specific codes (overloaded_error, permission_error, etc.) are
+ *  removed; capacity exhaustion maps to the KOSMOS envelope class 'llm_overloaded'. */
 export function classifyAPIError(
   err: unknown,
 ):
@@ -51,7 +53,7 @@ export function classifyAPIError(
   | 'org_disabled'
   | 'prompt_too_long'
   | 'timeout'
-  | 'overloaded'
+  | 'llm_overloaded'
   | 'refusal'
   | 'unknown' {
   const msg = extractErrorMessage(err)
@@ -67,7 +69,15 @@ export function classifyAPIError(
     return 'org_disabled'
   if (msg.includes('prompt is too long')) return 'prompt_too_long'
   if (msg.includes('timed out') || msg.includes('timeout')) return 'timeout'
-  if (msg.includes('Overloaded') || msg.includes('529')) return 'overloaded'
+  // Capacity errors: 429 rate-limit and 5xx overload both map to llm_overloaded
+  if (
+    msg.includes('rate limit') ||
+    msg.includes('429') ||
+    msg.includes('503') ||
+    msg.includes('overloaded') ||
+    msg.includes('Overloaded')
+  )
+    return 'llm_overloaded'
   return 'unknown'
 }
 
