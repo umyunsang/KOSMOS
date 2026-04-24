@@ -51,7 +51,7 @@ def _make_tool(tool_id: str = "mock_tool") -> GovAPITool:
     return GovAPITool(
         id=tool_id,
         name_ko="모의도구",
-        provider="mock",
+        ministry="OTHER",
         category=["테스트"],
         endpoint="http://example.com/api",
         auth_type="public",

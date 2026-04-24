@@ -864,7 +864,7 @@ class _AccidentHazardSearchOutput(RootModel[dict[str, Any]]):
 KOROAD_ACCIDENT_HAZARD_SEARCH_TOOL = GovAPITool(
     id="koroad_accident_hazard_search",
     name_ko="교통사고 위험지점 조회 (행정동 코드)",
-    provider="도로교통공단 (KOROAD)",
+    ministry="KOROAD",
     category=["교통안전", "사고통계", "위험지역"],
     endpoint=_BASE_URL,
     auth_type="api_key",

@@ -86,7 +86,7 @@ def _make_registry() -> ToolRegistry:
         GovAPITool(
             id="test_tool",
             name_ko="테스트 도구",
-            provider="mock",
+            ministry="OTHER",
             category=["mock"],
             endpoint="https://mock.example.com/api",
             auth_type="public",

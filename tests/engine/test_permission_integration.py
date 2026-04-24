@@ -76,7 +76,7 @@ def _make_registry(
     tool = GovAPITool(
         id=tool_name,
         name_ko="Echo tool",
-        provider="test_provider",
+        ministry="OTHER",
         category=["test"],
         endpoint="https://test.example.com/api",
         auth_type="public",

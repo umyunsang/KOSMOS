@@ -116,7 +116,7 @@ def auth_tool() -> GovAPITool:
     return GovAPITool(
         id="auth_test_tool",
         name_ko="인증 테스트 도구",
-        provider="기관",
+        ministry="OTHER",
         category=["test"],
         endpoint="https://api.example.com/",
         auth_type="api_key",

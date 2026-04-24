@@ -78,7 +78,7 @@ def _make_tool(*, tool_id: str = "safety_wiring_probe") -> GovAPITool:
     return GovAPITool(
         id=tool_id,
         name_ko="안전 wiring 프로브",
-        provider="kosmos-test",
+        ministry="OTHER",
         category=["테스트"],
         endpoint="https://example.invalid/noop",
         auth_type="public",

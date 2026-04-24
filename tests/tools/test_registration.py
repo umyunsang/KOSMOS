@@ -25,7 +25,7 @@ class TestToolRegistration:
         registry = ToolRegistry()
         executor = ToolExecutor(registry)
         register_all_tools(registry, executor)
-        assert len(registry) == 15
+        assert len(registry) == 14  # Epic #1634 P3 FR-027: composite road_risk_score removed
 
     def test_tool_ids_present(self) -> None:
         """Each expected tool_id is in the registry.
@@ -46,7 +46,6 @@ class TestToolRegistration:
             "koroad_accident_hazard_search",
             "kma_weather_alert_status",
             "kma_current_observation",
-            "road_risk_score",
             # Stage 3 seed adapters (Epic #507)
             "nmc_emergency_search",
             "kma_forecast_fetch",
@@ -74,7 +73,6 @@ class TestToolRegistration:
             "koroad_accident_hazard_search",
             "kma_weather_alert_status",
             "kma_current_observation",
-            "road_risk_score",
             # Stage 3 seed adapters (Epic #507)
             "nmc_emergency_search",
             "kma_forecast_fetch",

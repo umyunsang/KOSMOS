@@ -51,7 +51,7 @@ def _make_tool(tool_id: str, search_hint: str) -> object:
     return GovAPITool(
         id=tool_id,
         name_ko=f"{tool_id} 도구",
-        provider="테스트",
+        ministry="OTHER",
         category=["테스트"],
         endpoint=f"https://example.com/{tool_id}",
         auth_type="public",

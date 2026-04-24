@@ -67,7 +67,7 @@ def _compliant_kwargs(**overrides: object) -> dict[str, object]:
     base: dict[str, object] = {
         "id": _NON_CANONICAL_ID,
         "name_ko": "테스트 도구",
-        "provider": "test_provider",
+        "ministry": "OTHER",
         "category": ["test"],
         "endpoint": "https://api.example.com/test",
         "auth_type": "api_key",

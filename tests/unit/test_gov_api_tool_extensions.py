@@ -49,7 +49,7 @@ class _StubOutput(BaseModel):
 _MINIMAL_KWARGS: dict[str, object] = {
     "id": "test_tool_ext",
     "name_ko": "보안 확장 테스트 도구",
-    "provider": "Test Provider",
+    "ministry": "OTHER",
     "category": ["test"],
     "endpoint": "https://apis.data.go.kr/test_ext",
     # V6 (FR-039/FR-040): baseline uses auth_type='public' so that the default

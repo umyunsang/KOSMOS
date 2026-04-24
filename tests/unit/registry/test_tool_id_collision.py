@@ -36,7 +36,7 @@ def _make_tool(tool_id: str) -> GovAPITool:
     return GovAPITool(
         id=tool_id,
         name_ko=f"테스트 {tool_id}",
-        provider="Test Provider",
+        ministry="OTHER",
         category=["test"],
         endpoint="https://example.com/api",
         auth_type="public",

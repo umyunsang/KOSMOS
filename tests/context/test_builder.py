@@ -55,7 +55,7 @@ def _make_tool(tool_id: str = "test_tool", is_core: bool = False) -> GovAPITool:
     return GovAPITool(
         id=tool_id,
         name_ko="테스트",
-        provider="테스트기관",
+        ministry="OTHER",
         category=["테스트"],
         endpoint="http://test.example.com",
         auth_type="public",
@@ -262,7 +262,7 @@ def test_build_assembled_context_performance(benchmark) -> None:  # type: ignore
         tool = GovAPITool(
             id=f"bench_tool_{i:03d}",
             name_ko=f"벤치마크 도구 {i}",
-            provider="test",
+            ministry="OTHER",
             category=["test"],
             endpoint="https://example.com",
             auth_type="public",
@@ -352,7 +352,7 @@ def test_all_tools_situational_warning(caplog) -> None:  # type: ignore[no-untyp
     tool = GovAPITool(
         id="situational_only",
         name_ko="상황 도구",
-        provider="test",
+        ministry="OTHER",
         category=["test"],
         endpoint="https://example.com",
         auth_type="public",

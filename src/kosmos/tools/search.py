@@ -231,7 +231,7 @@ def create_search_meta_tool() -> GovAPITool:
     return GovAPITool(
         id="search_tools",
         name_ko="도구검색",
-        provider="KOSMOS",
+        ministry="KOSMOS",
         category=["시스템", "검색"],
         endpoint="internal://search_tools",
         auth_type="public",

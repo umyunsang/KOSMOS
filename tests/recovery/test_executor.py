@@ -26,7 +26,7 @@ def cacheable_tool() -> GovAPITool:
     return GovAPITool(
         id="cache_tool",
         name_ko="캐시 도구",
-        provider="기관",
+        ministry="OTHER",
         category=["test"],
         endpoint="https://api.example.com/",
         auth_type="public",
@@ -50,7 +50,7 @@ def no_cache_tool() -> GovAPITool:
     return GovAPITool(
         id="no_cache_tool",
         name_ko="캐시없음 도구",
-        provider="기관",
+        ministry="OTHER",
         category=["test"],
         endpoint="https://api.example.com/",
         auth_type="public",

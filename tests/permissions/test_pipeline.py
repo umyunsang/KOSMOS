@@ -59,7 +59,7 @@ def _make_tool(
     return GovAPITool(
         id=tool_id,
         name_ko="테스트도구",
-        provider="테스트기관",
+        ministry="OTHER",
         category=["테스트"],
         endpoint="http://example.com/api",
         auth_type=auth_type,  # type: ignore[arg-type]

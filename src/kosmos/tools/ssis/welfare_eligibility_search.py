@@ -168,7 +168,7 @@ class _MohwWelfareEligibilitySearchOutputStub(RootModel[dict[str, Any]]):
 MOHW_WELFARE_ELIGIBILITY_SEARCH_TOOL = GovAPITool(
     id="mohw_welfare_eligibility_search",
     name_ko="복지서비스 목록 조회 (한국사회보장정보원 SSIS)",
-    provider="한국사회보장정보원 (SSIS) / 보건복지부 (MOHW)",
+    ministry="MOHW",
     category=["복지", "출산", "의료비", "보조금", "사회보장"],
     endpoint=(
         "https://apis.data.go.kr/B554287/NationalWelfareInformationsV001/NationalWelfarelistV001"
@@ -198,6 +198,7 @@ MOHW_WELFARE_ELIGIBILITY_SEARCH_TOOL = GovAPITool(
     cache_ttl_seconds=0,
     rate_limit_per_minute=10,
     is_core=False,
+    primitive="lookup",
 )
 
 

@@ -226,7 +226,7 @@ class _HiraHospitalSearchOutput(RootModel[dict[str, Any]]):
 HIRA_HOSPITAL_SEARCH_TOOL = GovAPITool(
     id="hira_hospital_search",
     name_ko="병원 기본정보 조회 (좌표+반경)",
-    provider="건강보험심사평가원 (HIRA)",
+    ministry="HIRA",
     category=["의료", "병원", "의료기관", "진료"],
     endpoint=_BASE_URL,
     auth_type="api_key",

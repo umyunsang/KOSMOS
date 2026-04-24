@@ -312,7 +312,7 @@ class TestToolDefinition:
         assert KMA_PRE_WARNING_TOOL.is_core is True
 
     def test_provider(self):
-        assert "KMA" in KMA_PRE_WARNING_TOOL.provider
+        assert KMA_PRE_WARNING_TOOL.ministry == "KMA"
 
     def test_cache_ttl(self):
         assert KMA_PRE_WARNING_TOOL.cache_ttl_seconds == 300

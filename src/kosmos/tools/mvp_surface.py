@@ -47,7 +47,7 @@ class _LookupInput(RootModel[LookupSearchInput | LookupFetchInput]):
 RESOLVE_LOCATION_TOOL = GovAPITool(
     id="resolve_location",
     name_ko="위치 정보 조회",
-    provider="KOSMOS",
+    ministry="KOSMOS",
     category=["위치", "지오코딩", "행정구역"],
     endpoint="internal://resolve_location",
     auth_type="public",
@@ -85,6 +85,7 @@ RESOLVE_LOCATION_TOOL = GovAPITool(
     cache_ttl_seconds=300,
     rate_limit_per_minute=60,
     is_core=True,
+    primitive="lookup",
 )
 
 
@@ -95,7 +96,7 @@ RESOLVE_LOCATION_TOOL = GovAPITool(
 LOOKUP_SEARCH_TOOL = GovAPITool(
     id="lookup",
     name_ko="데이터 조회",
-    provider="KOSMOS",
+    ministry="KOSMOS",
     category=["시스템", "도구검색", "데이터조회"],
     endpoint="internal://lookup",
     auth_type="public",
@@ -133,6 +134,7 @@ LOOKUP_SEARCH_TOOL = GovAPITool(
     cache_ttl_seconds=0,
     rate_limit_per_minute=60,
     is_core=True,
+    primitive="lookup",
 )
 
 

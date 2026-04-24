@@ -60,7 +60,12 @@ MINISTRY_TOOL_PREFIX: dict[str, MinistryCode] = {
 # ministry refuses the whole call.  Extend this map when a new composite is
 # registered in `src/kosmos/tools/register_all.py`.
 COMPOSITE_TOOL_MINISTRIES: dict[str, frozenset[MinistryCode]] = {
-    "road_risk_score": frozenset(("KOROAD", "KMA")),
+    # Epic #1634 P3 FR-027: `road_risk_score` was the sole composite adapter
+    # and was removed per migration tree § L1-B B6. The map is retained (empty)
+    # so the ``ministries_for_composite()`` API shape remains stable; if a new
+    # composite is ever registered it goes here. The CI composite-pattern
+    # detector in ``tests/tools/test_routing_consistency.py`` will flag any
+    # future adapter that fans out to multiple inner adapters.
 }
 
 

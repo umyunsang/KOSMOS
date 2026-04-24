@@ -309,7 +309,7 @@ class TestToolDefinition:
         assert KMA_SHORT_TERM_FORECAST_TOOL.is_core is True
 
     def test_provider(self):
-        assert "KMA" in KMA_SHORT_TERM_FORECAST_TOOL.provider
+        assert KMA_SHORT_TERM_FORECAST_TOOL.ministry == "KMA"
 
     def test_cache_ttl(self):
         assert KMA_SHORT_TERM_FORECAST_TOOL.cache_ttl_seconds == 1800

@@ -21,6 +21,28 @@ _DPA_REFERENCE_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9_-]{5,63}$")
 
 PIPAClass = Literal["non_personal", "personal", "sensitive", "identifier"]
 
+# Spec 1634 (P3 Tool System Wiring) — closed ministry / institution enum.
+# Typed replacement for the former free-form ``provider: str`` field. New
+# institutions are added by enum extension (small dedicated PR, ADR not
+# required). ``OTHER`` is a transitional escape hatch for adapters whose
+# institutional mapping is undecided; CI emits a warning via
+# ``RoutingIndex.warnings`` (non-fatal) when any registered adapter uses it.
+Ministry = Literal[
+    "KOROAD",   # 도로교통공단 — road safety
+    "KMA",      # 기상청 — weather
+    "NMC",      # 국립중앙의료원 — emergency medical
+    "HIRA",     # 건강보험심사평가원 — health insurance review
+    "NFA",      # 소방청 — fire / 119
+    "MOHW",     # 보건복지부 — welfare (includes SSIS adapters)
+    "MOLIT",    # 국토교통부 — land/infrastructure/transport
+    "MOIS",     # 행정안전부 — public administration / safety
+    "KEC",      # 한국교통안전공단 — vehicle inspection / e-signature
+    "MFDS",     # 식품의약품안전처 — food & drug safety
+    "GOV24",    # 정부24 — citizen submission portal (OPAQUE per feedback_mock_evidence_based)
+    "KOSMOS",   # harness-internal synthetic surface (resolve_location, lookup, mvp_surface)
+    "OTHER",    # transitional escape hatch — CI emits warning
+]
+
 # V6 canonical mapping — single source of truth for the (auth_type, auth_level)
 # consistency invariant owned by FR-039 / FR-040 / FR-042
 # (specs/025-tool-security-v6). Imported by the V6 model validator and the
@@ -53,8 +75,14 @@ class GovAPITool(BaseModel):
     name_ko: str
     """Korean display name shown to users."""
 
-    provider: str
-    """Ministry or agency that owns the API."""
+    ministry: Ministry
+    """Ministry or agency that owns the API.
+
+    Typed closed enum (see :data:`Ministry` at module top). Replaces the
+    former free-form ``provider: str`` field per Spec 1634 FR-010. New
+    institutions are added by enum extension; ``OTHER`` is a transitional
+    escape hatch (CI emits ``RoutingIndex.warnings`` entry — non-fatal).
+    """
 
     category: list[str]
     """Non-empty list of topic tags."""
@@ -133,6 +161,20 @@ class GovAPITool(BaseModel):
     tool — field-level descriptions on the input schema are only seen after the
     model has already picked this tool, which is too late for ordering rules.
     """
+
+    # Spec 1634 (P3 Tool System Wiring) FR-009 — runtime live/mock mode.
+    # Orthogonal to ``AdapterRegistration.source_mode`` (which classifies
+    # mirror fidelity: OPENAPI / OOS / HARNESS_ONLY). Default ``"live"`` is
+    # fail-explicit, not fail-closed: undeclared adapters should be live;
+    # mock adapters under ``src/kosmos/tools/mock/*`` MUST set this to
+    # ``"mock"`` explicitly (CI consistency invariant 3 enforces declaration
+    # at the filesystem layer). Documented deviation from Constitution § II
+    # recorded in ``specs/1634-tool-system-wiring/plan.md`` § Complexity
+    # Tracking + ``research.md`` § 5.1.
+    adapter_mode: Literal["live", "mock"] = "live"
+    """Runtime source. ``live`` = adapter calls the real public API.
+    ``mock`` = adapter returns recorded fixture or shape-compatible synthetic.
+    Distinct from ``AdapterRegistration.source_mode`` (mirror fidelity axis)."""
 
     # Spec 031 T032 dual-axis fields — None during pre-v1.2 compatibility window FR-028
     primitive: Literal["lookup", "resolve_location", "submit", "subscribe", "verify"] | None = None
@@ -434,8 +476,8 @@ class SearchToolMatch(BaseModel):
     name_ko: str
     """Korean display name."""
 
-    provider: str
-    """Ministry or agency that owns the API."""
+    ministry: Ministry
+    """Ministry or agency that owns the API (typed closed enum; Spec 1634 FR-010)."""
 
     category: list[str]
     """Topic tags."""

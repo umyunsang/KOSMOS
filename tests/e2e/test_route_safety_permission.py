@@ -58,7 +58,7 @@ async def test_t016_permission_pipeline_public_tool_succeeds() -> None:
     pub_tool = GovAPITool(
         id="public_test_tool",
         name_ko="공개 테스트 도구",
-        provider="test_provider",
+        ministry="OTHER",
         category=["test"],
         endpoint="https://test.example.com/api",
         auth_type="public",
@@ -131,7 +131,7 @@ async def test_t017_permission_pipeline_denies_authenticated_tool() -> None:
     auth_required_tool = GovAPITool(
         id="auth_required_tool",
         name_ko="인증 필요 도구",
-        provider="test_provider",
+        ministry="OTHER",
         category=["personal"],
         endpoint="https://secure.example.com/api",
         auth_type="oauth",
