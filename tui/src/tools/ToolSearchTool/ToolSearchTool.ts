@@ -1,4 +1,4 @@
-import type { ToolResultBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'
+import type { ToolResultBlockParam } from 'src/sdk-compat.js'
 import memoize from 'lodash-es/memoize.js'
 import { z } from 'zod/v4'
 import {

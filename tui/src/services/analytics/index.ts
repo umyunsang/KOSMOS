@@ -1,74 +1,69 @@
-// [P0 reconstructed · Pass 3 · Analytics NO-OP aggregator]
-// Reference: consumer imports across tui/src/ + KOSMOS FR-008
-//            (bootstrap egress 0) + PIPA §17 external-egress ban.
-// Original CC 2.1.88 source was not captured in the sourcemap. KOSMOS
-// strategy: provide real types for consumer type-safety, but route all
-// data sinks to /dev/null. Operational telemetry goes to local Langfuse
-// via OTEL (Spec 028), not to external analytics.
-/* eslint-disable @typescript-eslint/no-explicit-any */
+// SPDX-License-Identifier: Apache-2.0
+// KOSMOS-original — Epic #1633 P2 · stub-noop replacement for CC analytics.
+//
+// The original Anthropic analytics surface (GrowthBook + Datadog + FirstParty
+// event logger + sinks) has been removed. KOSMOS emits all runtime telemetry
+// via the Spec 021 OTEL pipeline (local Langfuse, zero external egress —
+// docs/vision.md § L1-A A7).
+//
+// This file preserves the original export surface so call sites compile
+// without mass-editing 300+ files; every function is a no-op at runtime.
+// KOSMOS OTEL span emission is orthogonal to these stubs — see
+// tui/src/ipc/llmClient.ts for the real observability path.
 
-// ───── Metadata tag types (PII hygiene) ─────────────────────────────────
-// The upstream uses nominal tagging (`_I_VERIFIED_THIS_IS_*`) to force
-// callers to explicitly declare PII status at the type layer. KOSMOS
-// preserves these nominal names so legacy callsites type-check.
+// ---------------------------------------------------------------------------
+// Type aliases (preserve the strange CC identifier used across the codebase)
+// ---------------------------------------------------------------------------
 
-export type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS =
-  Record<string, unknown>
+export type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS = Record<
+  string,
+  string | number | boolean | null | undefined
+>
 
-export type AnalyticsMetadata_I_VERIFIED_THIS_IS_PII_TAGGED =
-  Record<string, unknown>
+// ---------------------------------------------------------------------------
+// Event logging — no-op (callers retained for code-review auditability;
+// runtime effect is zero).
+// ---------------------------------------------------------------------------
 
-// ───── Event API ────────────────────────────────────────────────────────
-
-/**
- * Fire a telemetry event. No-op in KOSMOS baseline — all events are
- * dropped to honour FR-008 (zero bootstrap egress). Real KOSMOS telemetry
- * goes through `src/utils/telemetry/` (OTEL exporter to local Langfuse).
- */
 export function logEvent(
-  _name?: string,
-  _metadata?: unknown,
-  _opts?: unknown,
+  _eventName: string,
+  _metadata?: AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
 ): void {
-  return
+  // Intentional no-op (Epic #1633 stub). Do not add behaviour here.
 }
 
-/**
- * Async variant. Returns immediately — no queueing, no promise chain.
- */
-export async function logEventAsync(
-  _name?: string,
-  _metadata?: unknown,
-  _opts?: unknown,
-): Promise<void> {
-  return
+export function profileCheckpoint(
+  _name: string,
+  _metadata?: AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+): void {
+  // Intentional no-op.
 }
 
-/**
- * Attach a sink for analytics events. Ignored in KOSMOS — sinks are wired
- * at Epic #1633 when OTEL integration lands.
- */
-export function attachAnalyticsSink(_sink: unknown): void {
-  return
+// ---------------------------------------------------------------------------
+// Sink lifecycle — no-op (there is no KOSMOS analytics sink; Spec 021 OTEL
+// Collector is the sole telemetry destination).
+// ---------------------------------------------------------------------------
+
+export function initializeAnalyticsSink(): void {
+  // Intentional no-op.
 }
 
-/**
- * Strip Protobuf-only fields from a metadata object before sending.
- * CC does this so internal proto-generated keys (leading underscore etc.)
- * don't leak into the analytics sink. For KOSMOS (analytics disabled) we
- * still implement the transform honestly — returns a shallow copy with
- * leading-underscore keys removed. Callers thus stay idempotent whether
- * analytics is on or off.
- */
-export function stripProtoFields(
-  obj: Record<string, unknown>,
-): Record<string, unknown> {
-  const out: Record<string, unknown> = {}
-  for (const [k, v] of Object.entries(obj)) {
-    if (k.startsWith('_')) continue
-    out[k] = v
-  }
-  return out
+export function flushAnalyticsSink(): Promise<void> {
+  return Promise.resolve()
 }
 
-export default undefined as any
+export function shutdownAnalyticsSink(): Promise<void> {
+  return Promise.resolve()
+}
+
+// ---------------------------------------------------------------------------
+// Default export safety net — some callers may import the module namespace.
+// ---------------------------------------------------------------------------
+
+export default {
+  logEvent,
+  profileCheckpoint,
+  initializeAnalyticsSink,
+  flushAnalyticsSink,
+  shutdownAnalyticsSink,
+}

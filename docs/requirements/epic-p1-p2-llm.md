@@ -11,7 +11,7 @@ Remove all Anthropic-specific bootstrap, telemetry, auth, and migration cruft. R
 - [ ] All CC version migrations deleted (11 files listed below)
 - [ ] `FRIENDLI_API_KEY` env var wired via `LLMClient` (rewired `query.ts` / `QueryEngine.ts`)
 - [ ] `prompts/system_v1.md` loaded via `PromptLoader` (Spec 026)
-- [ ] Model ID = `LGAI-EXAONE/EXAONE-4.0-32B`
+- [ ] Model ID = `LGAI-EXAONE/K-EXAONE-236B-A23B`
 
 ---
 
@@ -79,7 +79,7 @@ Remove all Anthropic-specific bootstrap, telemetry, auth, and migration cruft. R
 
 ### OAuth / Model config
 - `tui/src/constants/constants/oauth.ts` — **replace** Anthropic OAuth constants with FriendliAI API key config
-- `tui/src/utils/model/antModels.ts` — **replace** `getDefaultMainLoopModel` return value with `LGAI-EXAONE/EXAONE-4.0-32B`
+- `tui/src/utils/model/antModels.ts` — **replace** `getDefaultMainLoopModel` return value with `LGAI-EXAONE/K-EXAONE-236B-A23B`
 - `tui/src/utils/modelCost.ts` — **strip**: Anthropic token pricing table
 - `tui/src/utils/betas.ts` — **strip**: Anthropic beta-header management
 

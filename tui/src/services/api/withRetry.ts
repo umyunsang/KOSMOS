@@ -1,10 +1,10 @@
 import { feature } from 'bun:bundle'
-import type Anthropic from '@anthropic-ai/sdk'
+import type Anthropic from 'src/sdk-compat.js'
 import {
   APIConnectionError,
   APIError,
   APIUserAbortError,
-} from '@anthropic-ai/sdk'
+} from 'src/sdk-compat.js'
 import type { QuerySource } from 'src/constants/querySource.js'
 import type { SystemAPIErrorMessage } from 'src/types/message.js'
 import { isAwsCredentialsProviderError } from 'src/utils/aws.js'
@@ -716,13 +716,6 @@ function shouldRetry(error: APIError): boolean {
     return true
   }
 
-  // Check for overloaded errors first by examining the message content
-  // The SDK sometimes fails to properly pass the 529 status code during streaming,
-  // so we need to check the error message directly
-  if (error.message?.includes('"type":"overloaded_error"')) {
-    return true
-  }
-
   // Check for max tokens context overflow errors that we can handle
   if (parseMaxTokensContextOverflowError(error)) {
     return true
@@ -732,20 +725,13 @@ function shouldRetry(error: APIError): boolean {
   const shouldRetryHeader = error.headers?.get('x-should-retry')
 
   // If the server explicitly says whether or not to retry, obey.
-  // For Max and Pro users, should-retry is true, but in several hours, so we shouldn't.
-  // Enterprise users can retry because they typically use PAYG instead of rate limits.
-  if (
-    shouldRetryHeader === 'true' &&
-    (!isClaudeAISubscriber() || isEnterpriseSubscriber())
-  ) {
+  if (shouldRetryHeader === 'true') {
     return true
   }
 
-  // Ants can ignore x-should-retry: false for 5xx server errors only.
-  // For other status codes (401, 403, 400, 429, etc.), respect the header.
   if (shouldRetryHeader === 'false') {
     const is5xxError = error.status !== undefined && error.status >= 500
-    if (!(process.env.USER_TYPE === 'ant' && is5xxError)) {
+    if (!is5xxError) {
       return false
     }
   }
@@ -756,32 +742,25 @@ function shouldRetry(error: APIError): boolean {
 
   if (!error.status) return false
 
-  // Retry on request timeouts.
-  if (error.status === 408) return true
+  // KOSMOS retry target set: { 429, 500, 502, 503, 504 }
+  // 401 is non-retryable (auth failures fail-closed; token refresh is handled
+  // in the main retry loop before the shouldRetry gate).
+  // 529 (Anthropic overloaded) is collapsed into generic 5xx below.
 
-  // Retry on lock timeouts.
-  if (error.status === 409) return true
-
-  // Retry on rate limits, but not for ClaudeAI Subscription users
-  // Enterprise users can retry because they typically use PAYG instead of rate limits
+  // Retry on rate limits.
   if (error.status === 429) {
-    return !isClaudeAISubscriber() || isEnterpriseSubscriber()
-  }
-
-  // Clear API key cache on 401 and allow retry.
-  // OAuth token handling is done in the main retry loop via handleOAuth401Error.
-  if (error.status === 401) {
-    clearApiKeyHelperCache()
     return true
   }
 
-  // Retry on 403 "token revoked" (same refresh logic as 401, see above)
-  if (isOAuthTokenRevokedError(error)) {
+  // Retry on retryable 5xx errors: 500, 502, 503, 504.
+  if (
+    error.status === 500 ||
+    error.status === 502 ||
+    error.status === 503 ||
+    error.status === 504
+  ) {
     return true
   }
-
-  // Retry internal errors.
-  if (error.status && error.status >= 500) return true
 
   return false
 }
