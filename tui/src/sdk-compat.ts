@@ -221,3 +221,53 @@ export class InternalServerError extends APIError {
     this.name = 'InternalServerError'
   }
 }
+
+export class NotFoundError extends APIError {
+  constructor(message: string = 'Not found.') {
+    super(404, undefined, message)
+    this.name = 'NotFoundError'
+  }
+}
+
+export class BadRequestError extends APIError {
+  constructor(message: string = 'Bad request.') {
+    super(400, undefined, message)
+    this.name = 'BadRequestError'
+  }
+}
+
+export class PermissionDeniedError extends APIError {
+  constructor(message: string = 'Permission denied.') {
+    super(403, undefined, message)
+    this.name = 'PermissionDeniedError'
+  }
+}
+
+export class UnprocessableEntityError extends APIError {
+  constructor(message: string = 'Unprocessable entity.') {
+    super(422, undefined, message)
+    this.name = 'UnprocessableEntityError'
+  }
+}
+
+export class ConflictError extends APIError {
+  constructor(message: string = 'Conflict.') {
+    super(409, undefined, message)
+    this.name = 'ConflictError'
+  }
+}
+
+// Beta namespace surface — Anthropic SDK's `@anthropic-ai/sdk/resources/beta`
+// exposed these via `Beta.Messages.*`. We re-expose as module-level type
+// aliases where reachable; the following is a no-op value namespace stub for
+// call sites that reference `Anthropic.Beta.Messages.MessageCreateParams` etc.
+export const Beta = {}
+export type Beta = typeof Beta
+export interface RedactedThinkingBlock {
+  type: 'redacted_thinking'
+  data: string
+}
+export type RedactedThinkingBlockParam = RedactedThinkingBlock
+export type BetaRedactedThinkingBlock = RedactedThinkingBlock
+export type BetaThinkingBlock = ThinkingBlock
+export type BetaWebSearchTool20250305 = Record<string, unknown>

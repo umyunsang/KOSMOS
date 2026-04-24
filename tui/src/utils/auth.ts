@@ -1,107 +1,195 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS-original — Epic #1633 P2 · stub-noop replacement for CC auth.
+// KOSMOS-original — Epic #1633 stub restoration.
 //
-// The Anthropic OAuth / Claude-ai / ant-internal subscriber surface has been
-// removed. KOSMOS authentication is API-key based and lives entirely in the
-// Python backend (KOSMOS_FRIENDLI_TOKEN / FRIENDLI_API_KEY environment
-// variable). The TUI never handles credentials directly.
-//
-// This file preserves the original export names so existing callers
-// (bridge/, tools/, interactiveHelpers, etc.) compile. Every function
-// resolves to the "unauthenticated / not-an-ant" branch at runtime, which
-// is the correct closed-state answer for a citizen-facing TUI.
+// All Anthropic OAuth / Claude.ai / ant-internal subscriber surfaces are
+// inert in KOSMOS (FriendliAI API-key auth only). Every getter returns null
+// or `false`; every clearer is a no-op.
 
-/**
- * Returns OAuth tokens for the legacy Anthropic Claude.ai subscription.
- * KOSMOS has no OAuth surface — always null.
- */
 export async function getClaudeAIOAuthTokens(): Promise<null> {
   return null
 }
 
-/**
- * True if the current user has a Claude.ai (consumer) subscription.
- * KOSMOS has no such concept — always false.
- */
 export function isClaudeAISubscriber(): boolean {
   return false
 }
 
-/**
- * True if the caller routes through a third-party (3P) LLM service
- * (in CC this included Bedrock / Vertex / Nova). KOSMOS has one provider
- * (FriendliAI) and treats it as first-party to KOSMOS, so this returns
- * false.
- */
-export function isUsing3PServices(): boolean {
+export function isConsumerSubscriber(): boolean {
   return false
 }
 
-/**
- * Clears the Anthropic `apiKeyHelper` cached credentials. KOSMOS does not
- * cache credentials in the TUI process — no-op.
- */
-export function clearApiKeyHelperCache(): void {
-  // Intentional no-op.
-}
-
-/**
- * Optionally pre-fetches an API key via the CC `apiKeyHelper` hook. KOSMOS
- * has no such hook — no-op.
- */
-export async function prefetchApiKeyFromApiKeyHelperIfSafe(): Promise<void> {
-  // Intentional no-op.
-}
-
-/**
- * Returns the account identifier associated with the active OAuth token.
- * KOSMOS has no OAuth surface — always null.
- */
-export function getOauthAccountInfo(): null {
-  return null
-}
-
-/**
- * Returns the organization UUID associated with the active OAuth token.
- * KOSMOS has no OAuth surface — always null.
- */
-export function getOauthOrgUUID(): null {
-  return null
-}
-
-/**
- * Returns true if the active OAuth token has enterprise scope. KOSMOS has
- * no OAuth surface — always false.
- */
-export function isEnterpriseSubscriber(): boolean {
-  return false
-}
-
-/**
- * Returns true if the active subscription includes "Max" tier features.
- * KOSMOS has no subscription concept — always false.
- */
 export function isMaxSubscriber(): boolean {
   return false
 }
 
-/**
- * Returns true if the active subscription includes "Team Premium" tier
- * features. KOSMOS has no subscription concept — always false.
- */
+export function isProSubscriber(): boolean {
+  return false
+}
+
+export function isTeamSubscriber(): boolean {
+  return false
+}
+
 export function isTeamPremiumSubscriber(): boolean {
   return false
 }
 
-export default {
+export function isEnterpriseSubscriber(): boolean {
+  return false
+}
+
+export function isAnthropicAuthEnabled(): boolean {
+  return false
+}
+
+export function is1PApiCustomer(): boolean {
+  return false
+}
+
+export function isUsing3PServices(): boolean {
+  return false
+}
+
+export function isOverageProvisioningAllowed(): boolean {
+  return false
+}
+
+export function hasProfileScope(): boolean {
+  return false
+}
+
+export function getAccountInformation(): null {
+  return null
+}
+
+export function getOauthAccountInfo(): null {
+  return null
+}
+
+export function getOauthOrgUUID(): null {
+  return null
+}
+
+export function getSubscriptionType(): 'free' {
+  return 'free'
+}
+
+export function getSubscriptionName(): string {
+  return ''
+}
+
+export function getAuthTokenSource(): 'none' {
+  return 'none'
+}
+
+export function getRateLimitTier(): 0 {
+  return 0
+}
+
+export function getAnthropicApiKey(): null {
+  return null
+}
+
+export function getAnthropicApiKeyWithSource(): { key: null; source: 'none' } {
+  return { key: null, source: 'none' }
+}
+
+export function getApiKeyFromApiKeyHelper(): null {
+  return null
+}
+
+export function getConfiguredApiKeyHelper(): null {
+  return null
+}
+
+export function getApiKeyHelperElapsedMs(): number {
+  return 0
+}
+
+export async function checkAndRefreshOAuthTokenIfNeeded(): Promise<void> {
+  /* no-op */
+}
+
+export async function refreshAndGetAwsCredentials(): Promise<null> {
+  return null
+}
+
+export async function prefetchAwsCredentialsAndBedRockInfoIfSafe(): Promise<void> {
+  /* no-op */
+}
+
+export async function prefetchGcpCredentialsIfSafe(): Promise<void> {
+  /* no-op */
+}
+
+export async function prefetchApiKeyFromApiKeyHelperIfSafe(): Promise<void> {
+  /* no-op */
+}
+
+export function clearApiKeyHelperCache(): void {
+  /* no-op */
+}
+
+export function clearAwsCredentialsCache(): void {
+  /* no-op */
+}
+
+export function clearGcpCredentialsCache(): void {
+  /* no-op */
+}
+
+export function clearOAuthTokenCache(): void {
+  /* no-op */
+}
+
+export async function handleOAuth401Error(): Promise<void> {
+  /* no-op */
+}
+
+export async function saveOAuthTokensIfNeeded(): Promise<void> {
+  /* no-op */
+}
+
+export async function validateForceLoginOrg(): Promise<boolean> {
+  return false
+}
+
+const _default = {
   getClaudeAIOAuthTokens,
   isClaudeAISubscriber,
+  isConsumerSubscriber,
+  isMaxSubscriber,
+  isProSubscriber,
+  isTeamSubscriber,
+  isTeamPremiumSubscriber,
+  isEnterpriseSubscriber,
+  isAnthropicAuthEnabled,
+  is1PApiCustomer,
   isUsing3PServices,
-  clearApiKeyHelperCache,
-  prefetchApiKeyFromApiKeyHelperIfSafe,
+  isOverageProvisioningAllowed,
+  hasProfileScope,
+  getAccountInformation,
   getOauthAccountInfo,
   getOauthOrgUUID,
-  isEnterpriseSubscriber,
-  isMaxSubscriber,
-  isTeamPremiumSubscriber,
+  getSubscriptionType,
+  getAuthTokenSource,
+  getRateLimitTier,
+  getAnthropicApiKey,
+  getAnthropicApiKeyWithSource,
+  getApiKeyFromApiKeyHelper,
+  getConfiguredApiKeyHelper,
+  getApiKeyHelperElapsedMs,
+  checkAndRefreshOAuthTokenIfNeeded,
+  refreshAndGetAwsCredentials,
+  prefetchAwsCredentialsAndBedRockInfoIfSafe,
+  prefetchGcpCredentialsIfSafe,
+  prefetchApiKeyFromApiKeyHelperIfSafe,
+  clearApiKeyHelperCache,
+  clearAwsCredentialsCache,
+  clearGcpCredentialsCache,
+  clearOAuthTokenCache,
+  handleOAuth401Error,
+  saveOAuthTokensIfNeeded,
+  validateForceLoginOrg,
 }
+
+export default _default

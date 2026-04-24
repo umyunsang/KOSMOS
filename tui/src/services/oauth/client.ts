@@ -44,10 +44,40 @@ export async function revokeAccessToken(): Promise<void> {
   // Intentional no-op.
 }
 
+export async function createAndStoreApiKey(): Promise<null> {
+  return null
+}
+
+export async function fetchAndStoreUserRoles(): Promise<void> {
+  /* no-op */
+}
+
+export async function populateOAuthAccountInfoIfNeeded(): Promise<void> {
+  /* no-op */
+}
+
+export async function refreshOAuthToken(): Promise<null> {
+  return null
+}
+
+export function shouldUseClaudeAIAuth(): boolean {
+  return false
+}
+
+export async function storeOAuthAccountInfo(): Promise<void> {
+  /* no-op */
+}
+
 export default {
   getOrganizationUUID,
   getUserUUID,
   getAccessToken,
   refreshAccessToken,
   revokeAccessToken,
+  createAndStoreApiKey,
+  fetchAndStoreUserRoles,
+  populateOAuthAccountInfoIfNeeded,
+  refreshOAuthToken,
+  shouldUseClaudeAIAuth,
+  storeOAuthAccountInfo,
 }
