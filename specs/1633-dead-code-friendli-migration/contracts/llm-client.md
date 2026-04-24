@@ -17,7 +17,7 @@ import type {
 import type { IPCBridge } from './bridge.js';
 
 export class LLMClient {
-  constructor(opts: { bridge: IPCBridge; model: string /* = 'LGAI-EXAONE/EXAONE-4.0-32B' */; sessionId: string });
+  constructor(opts: { bridge: IPCBridge; model: string /* = 'LGAI-EXAONE/K-EXAONE-236B-A23B' */; sessionId: string });
 
   /**
    * Start an LLM turn. Returns an async generator yielding stream events
@@ -51,7 +51,7 @@ export class LLMClientError extends Error {
 
 - **G1** `stream()` MUST NOT call any HTTPS endpoint directly. All outbound traffic goes via `bridge.sendFrame()` (stdio IPC to Python backend).
 - **G2** `stream()` MUST emit exactly one OTEL `gen_ai.client.invoke` span per call. Span ends on generator exhaustion, early return, or thrown error.
-- **G3** The `model` constructor argument MUST be `'LGAI-EXAONE/EXAONE-4.0-32B'` in production builds. Tests may pass a mock value.
+- **G3** The `model` constructor argument MUST be `'LGAI-EXAONE/K-EXAONE-236B-A23B'` in production builds. Tests may pass a mock value.
 - **G4** If the bridge emits an `ErrorFrame` with `class=llm, code=auth` (missing `FRIENDLI_API_KEY`), `stream()` MUST throw `LLMClientError` without retrying.
 - **G5** Rate-limit handling: `BackpressureSignalFrame` with `kind=llm_rate_limit` pauses consumption until `retry_after_ms` elapses; `stream()` does NOT retry the full turn — that is the Python backend's responsibility (Spec 019 semantics).
 - **G6** The generator's return value (final `KosmosMessageFinal`) carries `{ stop_reason, usage: { input_tokens, output_tokens, cache_read_input_tokens? } }` populated from the Python backend's done-frame trailer.
