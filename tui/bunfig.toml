@@ -4,3 +4,6 @@
 # inline. Without preload, `bun run src/main.tsx` fails immediately with
 # `ReferenceError: MACRO is not defined` inside the commander version string.
 preload = ["./src/stubs/macro-preload.ts"]
+
+[test]
+preload = ["./src/stubs/macro-preload.ts"]

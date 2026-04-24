@@ -1,3 +1,4 @@
+/// <reference types="bun-types" />
 // [P0 reconstructed · Bun MACRO shim + TTY shim + useEffectEvent polyfill]
 // CC 2.1.88 uses `MACRO.*` build-time constants that Bun's bundler would
 // normally inline. Without a build step, those references throw
@@ -7,6 +8,34 @@
 //
 // Referenced from `bunfig.toml` `preload = ["./src/stubs/macro-preload.ts"]`.
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
+// ═══════════════════════════════════════════════════════════════════════
+// bun:bundle virtual module plugin
+// Bun's default resolver treats `bun:` as a reserved built-in namespace and
+// ignores tsconfig paths for it. We register a Bun plugin that intercepts
+// imports of `bun:bundle` at runtime and routes them to our stub file.
+// ═══════════════════════════════════════════════════════════════════════
+try {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const bunGlobal = (globalThis as any).Bun
+  if (bunGlobal && typeof bunGlobal.plugin === 'function') {
+    bunGlobal.plugin({
+      name: 'kosmos-bun-bundle-shim',
+      setup(build: {
+        onResolve: (
+          opts: { filter: RegExp },
+          cb: (args: { path: string }) => { path: string } | undefined,
+        ) => void
+      }) {
+        build.onResolve({ filter: /^bun:bundle$/ }, () => ({
+          path: new URL('./bun-bundle.ts', import.meta.url).pathname,
+        }))
+      },
+    })
+  }
+} catch {
+  /* Bun plugin API not available — tsconfig paths will still cover tsc */
+}
 
 // ═══════════════════════════════════════════════════════════════════════
 // Bun MACRO.* build-time constants
