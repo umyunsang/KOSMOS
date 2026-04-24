@@ -196,11 +196,11 @@ TUI 가 첫 LLM 호출을 발사하는 시점에 system prompt 는 Spec 026 `Pro
 
 | Item | Reason for Deferral | Target Epic/Phase | Tracking Issue |
 |------|---------------------|-------------------|----------------|
-| Tool system 재설계 (CC `Tool.ts` 인터페이스 → KOSMOS primitive · live/mock 2-tier · plugin 인프라) | Epic body 에 "Out of scope (P3)" 로 명시. L1-B 승인 사항이며 별도 에픽에서 다룸. | Epic P3 (#1634) · Spec 031 연계 | NEEDS TRACKING |
-| UI component 한국어 포팅 (REPL · Onboarding 5-step · Permission Gauntlet · Ministry Agent) | Epic body 에 "Out of scope (P4)" 로 명시. UI L2 승인 사항이며 Spec 035 후속. | Epic P4 (#1635) · Spec 035 후속 | NEEDS TRACKING |
-| Plugin DX (template · guide · examples · submission · registry · 한국어 primary · PIPA 수탁자 책임) | Epic body 에 "Out of scope (P5)" 로 명시. L1-B B8 승인 사항. | Epic P5 (#1636) | NEEDS TRACKING |
-| docs/api 정리 (어댑터별 Markdown + JSON Schema/OpenAPI + index · L1-B B7) | Epic body 에 "Out of scope (P6)" 로 명시. | Epic P6 (#1637) | NEEDS TRACKING |
+| Tool system 재설계 (CC `Tool.ts` 인터페이스 → KOSMOS primitive · live/mock 2-tier · plugin 인프라) | Epic body 에 "Out of scope (P3)" 로 명시. L1-B 승인 사항이며 별도 에픽에서 다룸. | Epic P3 (#1634) · Spec 031 연계 | #1634 |
+| UI component 한국어 포팅 (REPL · Onboarding 5-step · Permission Gauntlet · Ministry Agent) | Epic body 에 "Out of scope (P4)" 로 명시. UI L2 승인 사항이며 Spec 035 후속. | Epic P4 (#1635) · Spec 035 후속 | #1635 |
+| Plugin DX (template · guide · examples · submission · registry · 한국어 primary · PIPA 수탁자 책임) | Epic body 에 "Out of scope (P5)" 로 명시. L1-B B8 승인 사항. | Epic P5 (#1636) | #1636 |
+| docs/api 정리 (어댑터별 Markdown + JSON Schema/OpenAPI + index · L1-B B7) | Epic body 에 "Out of scope (P6)" 로 명시. | Epic P6 (#1637) | #1637 |
 | `filesApi.ts` 의 FriendliAI Files API 호환성 최종 판정 및 TUI 경로 존속 여부 | FriendliAI 공개 문서의 Files API 스펙을 plan Phase 0 에서 조사 후 결정. 현 시점에서는 reasonable default 불가능. | Plan Phase 0 (본 Epic 내부) | PLAN-PHASE-0 |
 | `promptCacheBreakDetection.ts` 의 FriendliAI 프롬프트 캐시 토큰 지원 여부 조사 및 유지/삭제 결정 | FriendliAI Serverless 의 프롬프트 캐시 노출 방식이 Anthropic 과 다를 수 있음. 현 시점에서 단정 불가. | Plan Phase 0 (본 Epic 내부) | PLAN-PHASE-0 |
-| 시민 쿼터 정책 (과거 `policyLimits/*`, `claudeAiLimits.ts` 의 KOSMOS-등가물) | 본 Epic 은 삭제만 수행. 시민용 쿼터 정책은 PIPA 수탁자 책임 + 부처 API 한도 집계와 엮이므로 별도 Initiative 필요. | 후속 Initiative (미지정) | NEEDS TRACKING |
-| Anthropic MCP 통합 (`mcp/claudeai.ts`) 의 KOSMOS-scoped 재도입 | 본 Epic 은 Anthropic MCP 만 제거. KOSMOS MCP 통합은 별도 후속 에픽에서 재도입 설계. | 후속 MCP 에픽 | NEEDS TRACKING |
+| 시민 쿼터 정책 (과거 `policyLimits/*`, `claudeAiLimits.ts` 의 KOSMOS-등가물) | 본 Epic 은 삭제만 수행. 시민용 쿼터 정책은 PIPA 수탁자 책임 + 부처 API 한도 집계와 엮이므로 별도 Initiative 필요. | 후속 Initiative (미지정) | #1703 |
+| Anthropic MCP 통합 (`mcp/claudeai.ts`) 의 KOSMOS-scoped 재도입 | 본 Epic 은 Anthropic MCP 만 제거. KOSMOS MCP 통합은 별도 후속 에픽에서 재도입 설계. | 후속 MCP 에픽 | #1704 |
