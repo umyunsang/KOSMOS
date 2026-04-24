@@ -114,8 +114,9 @@ Column definitions:
 | `KOSMOS_PERMISSION_MODE` | OTel span attr | n/a | String span attribute key | `kosmos.permissions.otel_integration.KOSMOS_PERMISSION_MODE` | [Spec 033 Permission v2 (Epic #1297)](#permission-v2-epic-1297) |
 | `KOSMOS_PERMISSION_DECISION` | OTel span attr | n/a | String span attribute key | `kosmos.permissions.otel_integration.KOSMOS_PERMISSION_DECISION` | [Spec 033 Permission v2 (Epic #1297)](#permission-v2-epic-1297) |
 | `KOSMOS_CONSENT_RECEIPT_ID` | OTel span attr | n/a | String span attribute key | `kosmos.permissions.otel_integration.KOSMOS_CONSENT_RECEIPT_ID` | [Spec 033 Permission v2 (Epic #1297)](#permission-v2-epic-1297) |
+| `KOSMOS_IPC_HANDLER` | No | `llm` | `llm` \| `echo` | `kosmos.ipc.stdio.run` | [Epic #1633 dead-code + FriendliAI migration](#epic-1633-tui-boot-recovery) |
 
-> **Row count**: 52 rows (47 `KOSMOS_*` active + 2 `LANGFUSE_*` + 1 `KOSMOS_OTEL_ENDPOINT` +
+> **Row count**: 53 rows (48 `KOSMOS_*` active + 2 `LANGFUSE_*` + 1 `KOSMOS_OTEL_ENDPOINT` +
 > 1 override-family pattern + 1 deprecated). `KOSMOS_KOROAD_API_KEY` and
 > `KOSMOS_KOROAD_ACCIDENT_SEARCH_API_KEY` are concrete expansions of the
 > `KOSMOS_{TOOL_ID}_API_KEY` override-family pattern and are covered by that row.
@@ -712,6 +713,24 @@ oldest entries are evicted.
 | **Range** | Integer >= 1 |
 | **Consumed by** | `kosmos.ipc.tx_cache._DEFAULT_CAPACITY` |
 | **Spec** | Spec 032 FR-029, FR-031 |
+
+### `KOSMOS_IPC_HANDLER`
+
+Selects the `user_input` frame handler in the stdio IPC loop
+(`kosmos.ipc.stdio.run`). The production handler routes UserInputFrames
+through `LLMClient.stream()` to FriendliAI (K-EXAONE). The echo handler
+is a test-only fixture that mirrors every user_input back as
+`AssistantChunkFrame(delta="[echo] {text}", done=True)` — used by
+integration tests in `tui/tests/ipc/bridge.test.ts` that must not depend
+on `FRIENDLI_API_KEY` or network reachability.
+
+| Property | Value |
+|----------|-------|
+| **Default** | `llm` |
+| **Required** | No |
+| **Range** | `llm` \| `echo` |
+| **Consumed by** | `kosmos.ipc.stdio.run` |
+| **Spec** | Epic #1633 FR-007 |
 
 ### OTel span-attribute keys
 

@@ -38,9 +38,14 @@ function makeUserInputFrame(sid: string, text: string): IPCFrame {
 // Tests
 // ---------------------------------------------------------------------------
 
+// KOSMOS_IPC_HANDLER=echo selects the test-friendly echo handler in
+// src/kosmos/ipc/stdio.py — matches these tests' FIFO / lifecycle assertions
+// without requiring FRIENDLI_API_KEY on the CI runner.
+const ECHO_ENV = { KOSMOS_IPC_HANDLER: 'echo' }
+
 describe('bridge: process lifecycle', () => {
   test('backend spawns and starts within 5 s', async () => {
-    const bridge = createBridge({ cmd: BACKEND_CMD })
+    const bridge = createBridge({ cmd: BACKEND_CMD, env: ECHO_ENV })
     // Give it up to 5 s to be reachable.  The original 2 s bound was flaky
     // on shared CI runners under load (observed 2 002 ms on main-branch
     // runs where the PR CI passed at ~1.8 s).  5 s keeps the test fast
@@ -68,7 +73,7 @@ describe('bridge: process lifecycle', () => {
   })
 
   test('close() terminates the backend within 5 s', async () => {
-    const bridge = createBridge({ cmd: BACKEND_CMD })
+    const bridge = createBridge({ cmd: BACKEND_CMD, env: ECHO_ENV })
     // Send one frame to confirm it is live
     bridge.send(makeUserInputFrame('test-close-01', 'ping'))
     // Consume one frame
@@ -82,7 +87,7 @@ describe('bridge: process lifecycle', () => {
 
 describe('bridge: FIFO frame ordering (FR-005)', () => {
   test('10 user_input frames arrive back as assistant_chunks in order', async () => {
-    const bridge = createBridge({ cmd: BACKEND_CMD })
+    const bridge = createBridge({ cmd: BACKEND_CMD, env: ECHO_ENV })
     const sid = 'test-fifo-session-01'
     const texts = Array.from({ length: 10 }, (_, i) => `message-${i}`)
 

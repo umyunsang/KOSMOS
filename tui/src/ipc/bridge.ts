@@ -111,6 +111,14 @@ export interface BridgeOptions {
    * Called after all reconnect attempts are exhausted without success.
    */
   onReconnectFailed?: () => void
+
+  /**
+   * Additional env vars to merge onto the backend subprocess environment
+   * (on top of the inherited process env). Used primarily by tests to select
+   * the `echo` handler via `{ KOSMOS_IPC_HANDLER: 'echo' }` without needing
+   * FRIENDLI_API_KEY on the CI runner.
+   */
+  env?: Record<string, string>
 }
 
 export interface CrashNotice {
@@ -310,10 +318,14 @@ export function createBridge(opts: BridgeOptions = {}): IPCBridge {
   // ------------------------------------------------------------------
   // Spawn first process
   // ------------------------------------------------------------------
+  const spawnEnv = opts.env
+    ? ({ ...process.env, ...opts.env } as Record<string, string>)
+    : (process.env as Record<string, string>)
   let proc = Bun.spawn(cmd, {
     stdin: 'pipe',
     stdout: 'pipe',
     stderr: 'pipe',
+    env: spawnEnv,
   })
 
   const frameQueue = new AsyncQueue<IPCFrame>()

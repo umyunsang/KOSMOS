@@ -961,6 +961,7 @@ async function run(): Promise<CommanderCommand> {
         let reservedNameError: string | null = null;
         if (nonSdkConfigNames.some(isClaudeInChromeMCPServer)) {
           reservedNameError = `Invalid MCP configuration: "${CLAUDE_IN_CHROME_MCP_SERVER_NAME}" is a reserved MCP name.`;
+        }
         if (reservedNameError) {
           // stderr+exit(1) — a throw here becomes a silent unhandled
           // rejection in stream-json mode (void main() in cli.tsx).
@@ -1241,6 +1242,10 @@ async function run(): Promise<CommanderCommand> {
       initBuiltinPlugins();
       initBundledSkills();
     }
+    // UDS_INBOX feature removed in Epic #1633 — CC wired this through the
+    // Unix-domain inbox path, which KOSMOS does not use. Preserve the
+    // `setup()` signature by passing `undefined`.
+    const messagingSocketPath: string | undefined = undefined;
     const setupPromise = setup(preSetupCwd, permissionMode, allowDangerouslySkipPermissions, worktreeEnabled, worktreeName, tmuxEnabled, sessionId ? validateUuid(sessionId) : undefined, worktreePRNumber, messagingSocketPath);
     const commandsPromise = worktreeEnabled ? null : getCommands(preSetupCwd);
     const agentDefsPromise = worktreeEnabled ? null : getAgentDefinitionsWithOverrides(preSetupCwd);
