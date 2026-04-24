@@ -1,12 +1,14 @@
 // Unit test for the `bun:bundle` runtime stub (Epic #1632 · T007 · FR-003).
 //
-// Verifies that every known feature flag from the ported CC 2.1.88 source
-// resolves to `false`, and that unknown / edge-case flags are equally safe.
+// Bun's compiler treats `feature()` imported via `bun:bundle` as a special
+// macro that's only legal inside `if` conditions / ternaries — calling it as
+// a bare expression in a test is rejected at parse time. To still exercise
+// the stub's behavior, we import it directly from the stub file (not via the
+// `bun:bundle` virtual module), which bypasses the macro check.
 
-import { describe, expect, it } from 'bun:test';
-import { feature } from 'bun:bundle';
+import { describe, expect, it } from 'bun:test'
+import { feature } from '../../../src/stubs/bun-bundle.ts'
 
-// The 17 flags enumerated in Epic #1632 file-level scope.
 const KNOWN_FLAGS = [
   'COORDINATOR_MODE',
   'KAIROS',
@@ -26,26 +28,26 @@ const KNOWN_FLAGS = [
   'CCR_MIRROR',
   'AGENT_MEMORY_SNAPSHOT',
   'BRIDGE_MODE',
-] as const;
+] as const
 
 describe('bun:bundle feature stub', () => {
   for (const flag of KNOWN_FLAGS) {
     it(`returns false for known flag ${flag}`, () => {
-      expect(feature(flag)).toBe(false);
-    });
+      expect(feature(flag)).toBe(false)
+    })
   }
 
   it('returns false for an unknown flag', () => {
-    expect(feature('UNKNOWN_FLAG_XYZ')).toBe(false);
-  });
+    expect(feature('UNKNOWN_FLAG_XYZ')).toBe(false)
+  })
 
   it('returns false for an empty string without throwing', () => {
-    expect(() => feature('')).not.toThrow();
-    expect(feature('')).toBe(false);
-  });
+    expect(() => feature('')).not.toThrow()
+    expect(feature('')).toBe(false)
+  })
 
-  it('is a synchronous function (no promise return)', () => {
-    const result = feature('KAIROS');
-    expect(typeof result).toBe('boolean');
-  });
-});
+  it('returns a synchronous boolean', () => {
+    const result = feature('KAIROS')
+    expect(typeof result).toBe('boolean')
+  })
+})

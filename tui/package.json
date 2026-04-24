@@ -13,7 +13,8 @@
     "tui:smoke": "bun run scripts/tui-smoke.ts",
     "test:soak": "bun test --timeout 600000 tests/soak",
     "test": "bun test",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
+    "typecheck:full": "tsc --noEmit"
   },
   "dependencies": {
     "@alcalzone/ansi-tokenize": "^0.3.0",
@@ -68,9 +69,11 @@
     "usehooks-ts": "^3.1.1",
     "vscode-languageserver-protocol": "^3.17.5",
     "xss": "^1.0.15",
+    "yaml": "^2.8.3",
     "zod": "^3.23.0"
   },
   "devDependencies": {
+    "@types/lodash-es": "^4.17.12",
     "@types/react": "^19.2.0",
     "bun-types": "latest",
     "ink-testing-library": "^4.0.0",

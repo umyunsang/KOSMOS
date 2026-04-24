@@ -16,19 +16,22 @@ const makeStub = (): any => {
       if (p === Symbol.iterator) return function* () {}
       if (p === Symbol.asyncIterator) return async function* () {}
       if (p === Symbol.toStringTag) return 'Stub'
+      if (p === Symbol.for('nodejs.util.inspect.custom')) return () => '<Stub>'
+      // Node's util.format uses `inspect` internally — shim it too
+      if (p === 'inspect') return () => '<Stub>'
       if (p === 'then') return undefined // not a thenable
       if (p === 'toString') return () => ''
       if (p === 'valueOf') return () => undefined
       if (p === 'toJSON') return () => null
       if (p === 'length') return 0
+      if (p === 'name') return 'Stub'
+      if (p === 'message') return ''
+      if (p === 'stack') return ''
       if (p === 'constructor') return Object
       return __stub
     },
     apply() { return __stub },
     construct() { return __stub },
-    has() { return false },
-    ownKeys() { return [] },
-    getOwnPropertyDescriptor() { return undefined },
   })
 }
 

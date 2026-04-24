@@ -38,3 +38,17 @@ export function useCanUseTool(): CanUseToolResult {
 
   return { pendingRequest, grant, deny }
 }
+
+// [P0 CC-compat] CC source imports this as default via
+// `import useCanUseTool from '../hooks/useCanUseTool.js'` with a CC-shaped
+// signature `(setToolUseConfirmQueue, setToolPermissionContext) => ToolUseConfirmFn`.
+// For the baseline render we return a no-op function that accepts any args —
+// actual tool permission wiring is deferred to Epic #1633.
+/* eslint-disable @typescript-eslint/no-explicit-any */
+const ccCompatDefault = (..._args: unknown[]): any => {
+  // Returns a function CC expects (tool-use confirmation predicate).
+  return async (..._innerArgs: unknown[]) => {
+    return { behavior: 'allow' as const, updatedInput: {} }
+  }
+}
+export default ccCompatDefault

@@ -189,8 +189,11 @@ export function validateSettingsFileContent(content: string):
     // Parse the JSON first
     const jsonData = jsonParse(content)
 
-    // Validate against SettingsSchema in strict mode
-    const result = SettingsSchema().strict().safeParse(jsonData)
+    // [P0 · KOSMOS fidelity] Use passthrough instead of strict so settings
+    // from newer CC versions (2.1.119+) don't trigger rejection dialogs in
+    // our bundled 2.1.88 source. Unrecognized keys are silently ignored —
+    // they may be newer CC options or KOSMOS-specific extensions.
+    const result = SettingsSchema().passthrough().safeParse(jsonData)
 
     if (result.success) {
       return { isValid: true }
