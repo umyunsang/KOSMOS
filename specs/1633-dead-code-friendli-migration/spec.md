@@ -82,7 +82,7 @@ KOSMOS 기여자가 fresh clone 후 `grep -rn '@anthropic-ai/sdk' tui/src --incl
 
 **Acceptance Scenarios**:
 
-1. **Given** 머지 완료, **When** `ls tui/src/services/services/analytics/ tui/src/utils/telemetry/ tui/src/utils/secureStorage/ tui/src/services/services/oauth/ tui/src/remote/ 2>/dev/null` 실행, **Then** 모두 디렉터리가 존재하지 않거나 내부 파일이 0 (또는 KOSMOS-대체 파일만 존재).
+1. **Given** 머지 완료, **When** `ls tui/src/services/analytics/ tui/src/utils/telemetry/ tui/src/utils/secureStorage/ tui/src/services/oauth/ tui/src/remote/ 2>/dev/null` 실행, **Then** 모두 디렉터리가 존재하지 않거나 내부 파일이 0 (또는 KOSMOS-대체 파일만 존재).
 2. **Given** 동일 브랜치, **When** `find tui/src -name 'claudeai*.ts' -o -name 'antModels.ts' -o -name 'betas.ts' -o -name 'modelCost.ts' -o -name 'policyLimits' -type d 2>/dev/null` 실행, **Then** 전량 삭제 상태 (또는 KOSMOS-대체 파일 명시).
 3. **Given** 동일 브랜치, **When** 기여자가 `tui/src/entrypoints/init.ts` 를 열어 `initializeTelemetryAfterTrust` 호출을 찾음, **Then** 해당 호출은 삭제되고 대신 Spec 021 기준 KOSMOS OTEL init (예: `initKosmosOtel()`) 호출이 배치돼 있음.
 4. **Given** 동일 브랜치, **When** `bun test` 전량 실행, **Then** 실패 0 — "모듈 해석 실패" 또는 "삭제된 symbol 참조 누락" 에 의한 회귀 0.
@@ -122,25 +122,25 @@ TUI 가 첫 LLM 호출을 발사하는 시점에 system prompt 는 Spec 026 `Pro
 - **FR-001**: TUI 런타임 코드(`tui/src/**/*.{ts,tsx}`, 단 `__mocks__/` 또는 `*.test.*` 제외) 에 `@anthropic-ai/sdk` 의 런타임 import(`import ... from '@anthropic-ai/sdk/...'` · `require('@anthropic-ai/sdk')` 형태)는 **0** 이어야 한다. Type-only import 도 함께 제거하거나 KOSMOS 자체 타입으로 교체한다.
 - **FR-002**: `tui/src/migrations/migrate*.ts` 와 `tui/src/migrations/reset*.ts` 중 CC 버전 마이그레이션 11 개 파일을 전량 삭제한다. (파일 목록은 Epic body `docs/requirements/epic-p1-p2-llm.md § CC Migrations`.)
 - **FR-003**: `ANT_INTERNAL` 식별자와 `=== "ant"` 패턴의 가드 분기(Epic body 기준 58+ 사이트, 10 개 파일) 를 전부 제거하고 해당 코드 블록(분기의 Anthropic-only 측)을 함께 삭제한다.
-- **FR-004**: CC telemetry 자산을 제거한다 — `tui/src/services/services/analytics/` (7 파일), `tui/src/utils/telemetry/` (5 파일), `tui/src/types/types/generated/events_mono/`, `tui/src/services/services/internalLogging.ts`. 호출부(`logEvent` · `profileCheckpoint` · `growthbook` · `statsig`) 도 함께 제거하거나 KOSMOS OTEL 호출로 대체한다.
-- **FR-005**: CC auth 자산을 제거한다 — `tui/src/utils/auth.ts`, `tui/src/utils/secureStorage/` (6 파일), `tui/src/services/services/oauth/` (5 파일), `tui/src/commands/login/*`, `tui/src/commands/logout/*`. Slash command 레지스트리에서 `/login`·`/logout` 노출도 함께 제거.
-- **FR-006**: CC teleport / remote 자산을 제거한다 — `tui/src/remote/` (4 파일), `tui/src/services/services/remoteManagedSettings/securityCheck.tsx`, `tui/src/utils/teleport.tsx`, `tui/src/utils/teleport/gitBundle.ts`, `tui/src/utils/background/remote/remoteSession.ts`, `tui/src/utils/background/remote/preconditions.ts`, `tui/src/components/TeleportResumeWrapper.tsx`, `tui/src/hooks/useTeleportResume.tsx`.
+- **FR-004**: CC telemetry 자산을 제거한다 — `tui/src/services/analytics/` (7 파일), `tui/src/utils/telemetry/` (5 파일), `tui/src/types/types/generated/events_mono/`, `tui/src/services/internalLogging.ts`. 호출부(`logEvent` · `profileCheckpoint` · `growthbook` · `statsig`) 도 함께 제거하거나 KOSMOS OTEL 호출로 대체한다.
+- **FR-005**: CC auth 자산을 제거한다 — `tui/src/utils/auth.ts`, `tui/src/utils/secureStorage/` (6 파일), `tui/src/services/oauth/` (5 파일), `tui/src/commands/login/*`, `tui/src/commands/logout/*`. Slash command 레지스트리에서 `/login`·`/logout` 노출도 함께 제거.
+- **FR-006**: CC teleport / remote 자산을 제거한다 — `tui/src/remote/` (4 파일), `tui/src/services/remoteManagedSettings/securityCheck.tsx`, `tui/src/utils/teleport.tsx`, `tui/src/utils/teleport/gitBundle.ts`, `tui/src/utils/background/remote/remoteSession.ts`, `tui/src/utils/background/remote/preconditions.ts`, `tui/src/components/TeleportResumeWrapper.tsx`, `tui/src/hooks/useTeleportResume.tsx`.
 
 **Anthropic → FriendliAI rewire (P2 scope — replace or strip)**:
-- **FR-007**: `tui/src/services/services/api/claude.ts` · `client.ts` 를 KOSMOS stdio IPC 클라이언트(Spec 032 frame envelope) 로 재배선한다. TS 에서 직접 FriendliAI HTTPS 호출은 하지 않는다 — LLM 호출은 반드시 Python 백엔드 경유.
+- **FR-007**: `tui/src/services/api/claude.ts` · `client.ts` 를 KOSMOS stdio IPC 클라이언트(Spec 032 frame envelope) 로 재배선한다. TS 에서 직접 FriendliAI HTTPS 호출은 하지 않는다 — LLM 호출은 반드시 Python 백엔드 경유.
 - **FR-008**: Anthropic 전용 API 파일(`bootstrap.ts`, `usage.ts`, `overageCreditGrant.ts`, `referral.ts`, `adminRequests.ts`, `grove.ts`, 그리고 `tui/src/services/api/` 경로의 중복 stub `overageCreditGrant.ts` · `referral.ts` · `errors.ts`) 을 전량 삭제한다.
-- **FR-009**: `tui/src/services/services/api/filesApi.ts` 는 plan Phase 0 에서 keep-or-delete 를 결정한다 (본 spec 은 강제하지 않음). 결정 근거와 최종 상태는 plan `research.md` 에 기록.
+- **FR-009**: `tui/src/services/api/filesApi.ts` 의 keep-or-delete 는 plan Phase 0 (research.md Decision 2) 에서 **stub-out** 으로 결정됨 — 파일은 유지하되 내부는 rejecting no-op 으로 치환하여 P3 (Epic #1634) tool-system 재설계까지 호출 경로를 유지한다 (contracts/llm-client.md § 6).
 - **FR-010**: `tui/src/constants/constants/oauth.ts` 의 Anthropic OAuth 상수(토큰 URL · 클라이언트 ID · 리디렉션 URI 등) 를 제거하고 KOSMOS 용 환경변수 상수(`FRIENDLI_API_KEY` 이름만, 실제 값은 Python 백엔드가 소비) 로 교체한다. OAuth 플로 자체는 제거 (TUI 는 API-key 기반만).
 - **FR-011**: `tui/src/utils/model/antModels.ts::getDefaultMainLoopModel()` (및 동등 함수) 반환값이 `"LGAI-EXAONE/K-EXAONE-236B-A23B"` 이어야 한다. Anthropic 모델 ID 는 TUI 어디에도 런타임 참조가 없다.
 - **FR-012**: `tui/src/utils/modelCost.ts` 의 Anthropic 토큰 가격표를 제거한다 (KOSMOS 는 사용량 집계를 Python 백엔드 `UsageTracker` 가 수행).
 - **FR-013**: `tui/src/utils/betas.ts` 의 Anthropic beta-header 관리를 제거한다.
-- **FR-014**: `tui/src/services/services/policyLimits/index.ts` · `types.ts` · `tui/src/services/services/claudeAiLimits.ts` 를 전량 삭제한다. 시민 쿼터 정책의 KOSMOS-등가물 재설계는 본 Epic 범위 밖 (Deferred Items 표 "시민 쿼터 정책" 행 참조).
-- **FR-015**: `tui/src/services/services/mcp/claudeai.ts` (Anthropic MCP 통합) 을 삭제한다. KOSMOS-scoped MCP 재도입은 본 Epic 범위 밖 (Deferred Items 표 "Anthropic MCP 통합 재도입" 행 참조).
+- **FR-014**: `tui/src/services/policyLimits/index.ts` · `types.ts` · `tui/src/services/claudeAiLimits.ts` 를 전량 삭제한다. 시민 쿼터 정책의 KOSMOS-등가물 재설계는 본 Epic 범위 밖 (Deferred Items 표 "시민 쿼터 정책" 행 참조).
+- **FR-015**: `tui/src/services/mcp/claudeai.ts` (Anthropic MCP 통합) 을 삭제한다. KOSMOS-scoped MCP 재도입은 본 Epic 범위 밖 (Deferred Items 표 "Anthropic MCP 통합 재도입" 행 참조).
 - **FR-016**: `tui/src/entrypoints/init.ts` 의 `initializeTelemetryAfterTrust` 호출(및 관련 부팅 순서 코드) 을 Spec 021 기준 KOSMOS OTEL 초기화 함수 호출로 대체한다.
 - **FR-017**: `tui/src/query.ts` 와 `tui/src/QueryEngine.ts` 에서 `@anthropic-ai/sdk` 로부터 인스턴스화하는 클라이언트 객체를 KOSMOS stdio IPC 클라이언트(TS) 가 노출하는 `llmComplete` 또는 동등 메서드로 대체한다. Agentic loop 구조(메시지 턴, tool-use 디스패치) 는 보존 — AGENTS.md 의 rewrite boundary 원칙 준수.
-- **FR-018**: `tui/src/services/services/api/withRetry.ts` 의 재시도 로직(exponential backoff · max attempts) 은 유지하되, 매칭되는 에러 코드 집합을 FriendliAI HTTP 에러 및 stdio IPC 전송 에러 집합으로 재매핑한다.
-- **FR-019**: `tui/src/services/services/api/errors.ts` · `errorUtils.ts` 의 구조(에러 계층 · 사용자 친화 메시지 매핑) 는 유지하되, Anthropic-specific 에러 코드(`invalid_request_error` Anthropic 변형, `overloaded_error` 등) 는 제거하고 KOSMOS 에러 envelope(LLM · Tool · Network 3 종, Spec 032 frame 기준) 로 매핑.
-- **FR-020**: `tui/src/services/services/api/promptCacheBreakDetection.ts` 는 FriendliAI 가 프롬프트 캐시 토큰을 노출하는 경우에 한해 유지하고, 그렇지 않으면 plan Phase 0 에서 삭제 결정한다. 결정 근거는 `research.md` 에 기록.
+- **FR-018**: `tui/src/services/api/withRetry.ts` 의 재시도 로직(exponential backoff · max attempts) 은 유지하되, 매칭되는 에러 코드 집합을 FriendliAI HTTP 에러 및 stdio IPC 전송 에러 집합으로 재매핑한다.
+- **FR-019**: `tui/src/services/api/errors.ts` · `errorUtils.ts` 의 구조(에러 계층 · 사용자 친화 메시지 매핑) 는 유지하되, Anthropic-specific 에러 코드(`invalid_request_error` Anthropic 변형, `overloaded_error` 등) 는 제거하고 KOSMOS 에러 envelope(LLM · Tool · Network 3 종, Spec 032 frame 기준) 로 매핑.
+- **FR-020**: `tui/src/services/api/promptCacheBreakDetection.ts` 는 plan Phase 0 (research.md Decision 3) 에서 **keep + rewire** 로 결정됨 — FriendliAI 가 OpenAI-호환 응답의 `prompt_tokens_details.cached_tokens` 필드로 캐시 히트 메타데이터를 노출 (K-EXAONE 가격표에 cached-input $0.1/1M tier 존재로 확인). 기존 Anthropic `cache_read_input_tokens` 참조를 FriendliAI 필드로 재배선하여 유지한다.
 
 **Prompt Registry 연계 (P3 scope — ops)**:
 - **FR-021**: TUI 의 system prompt 조립 경로는 Spec 026 `PromptLoader` 를 경유하여 `prompts/system_v1.md` 를 로드한다 (Python 백엔드가 로드 후 IPC 응답 메시지로 TUI 에 전달하거나, TUI 가 Python 백엔드의 `PromptLoader` 결과를 RPC 로 조회 — 결정은 plan Phase 0). 하드코딩된 system prompt 문자열은 TUI 런타임 코드에서 0 매치여야 한다.
