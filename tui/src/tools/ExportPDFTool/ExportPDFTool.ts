@@ -163,6 +163,13 @@ export const ExportPDFTool = buildTool({
     }
   },
 
+  renderToolUseMessage() {
+    return null
+  },
+  renderToolResultMessage() {
+    return null
+  },
+
   async call({ markdown, title }) {
     const dir = exportsDir()
     mkdirSync(dir, { recursive: true, mode: 0o700 })

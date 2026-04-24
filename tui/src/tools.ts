@@ -2,6 +2,20 @@
 import { toolMatchesName, type Tool, type Tools } from './Tool.js'
 import { AgentTool } from './tools/AgentTool/AgentTool.js'
 import { SkillTool } from './tools/SkillTool/SkillTool.js'
+// Epic #1634 P3 FR-001: four reserved primitives exposed as top-level tools.
+import { LookupPrimitive } from './tools/LookupPrimitive/LookupPrimitive.js'
+import { SubmitPrimitive } from './tools/SubmitPrimitive/SubmitPrimitive.js'
+import { VerifyPrimitive } from './tools/VerifyPrimitive/VerifyPrimitive.js'
+import { SubscribePrimitive } from './tools/SubscribePrimitive/SubscribePrimitive.js'
+// Epic #1634 P3 FR-018: four new auxiliary tools completing the MVP-7 set.
+import { TranslateTool } from './tools/TranslateTool/TranslateTool.js'
+import { CalculatorTool } from './tools/CalculatorTool/CalculatorTool.js'
+import { DateParserTool } from './tools/DateParserTool/DateParserTool.js'
+import { ExportPDFTool } from './tools/ExportPDFTool/ExportPDFTool.js'
+// CC dev tool imports retained at compile-time — referenced by shared
+// infrastructure (permissions/sandbox/attachments) per FR-013 scope
+// correction (see spec.md § Deferred Items #1757). They are NOT registered
+// in getAllBaseTools() post-P3.
 import { BashTool } from './tools/BashTool/BashTool.js'
 import { FileEditTool } from './tools/FileEditTool/FileEditTool.js'
 import { FileReadTool } from './tools/FileReadTool/FileReadTool.js'
@@ -184,69 +198,61 @@ export function getToolsForDefaultPreset(): string[] {
 
 /**
  * Get the complete exhaustive list of all tools that could be available
- * in the current environment (respecting process.env flags).
- * This is the source of truth for ALL tools.
- */
-/**
- * NOTE: This MUST stay in sync with https://console.statsig.com/4aF3Ewatb6xPVpCwxb5nA3/dynamic_configs/claude_code_global_system_caching, in order to cache the system prompt across users.
+ * in the current environment.
+ *
+ * **Epic #1634 P3 — closed 13-tool citizen-facing surface** (contracts/primitive-envelope.md § 1):
+ *
+ *   Primitives (4):            lookup, submit, verify, subscribe
+ *   Retained CC auxiliary (2): WebFetch, WebSearch
+ *   New auxiliary (4):         Translate, Calculator, DateParser, ExportPDF
+ *   Task primitive backing:    AgentTool (rewired per T027)
+ *   Citizen document:          Brief
+ *   External MCP passthrough:  ListMcpResources, ReadMcpResource (paired for MCP semantics)
+ *
+ * Any tool outside this set is a regression caught by the CI tool-list closure
+ * snapshot test (T035; contracts/routing-consistency.md § 3 check 7).
+ *
+ * The 14 "undecided" CC tools (TodoWrite / ToolSearch / AskUserQuestion /
+ * Sleep / Monitor / Workflow / ScheduleCron / Task-* × 5 / Team-* × 2) were
+ * resolved per T027a: 9 defer-to-P4 (#1635), 5 delete-in-followup (#1757).
+ * None are registered here. See
+ * ``specs/1634-tool-system-wiring/decisions/undecided-tools.md``.
+ *
+ * The 15 CC dev tools (Bash, FileEdit, FileRead, FileWrite, Glob, Grep,
+ * NotebookEdit, PowerShell, LSP, REPL, Config, EnterWorktree, ExitWorktree,
+ * EnterPlanMode, ExitPlanMode) remain imported at compile time because their
+ * name constants are consumed by the permissions / sandbox / attachments
+ * infrastructure (FR-013 scope correction, #1757). They are NOT registered
+ * here and therefore NOT LLM-visible.
  */
 export function getAllBaseTools(): Tools {
   return [
-    AgentTool,
-    TaskOutputTool,
-    BashTool,
-    // Ant-native builds have bfs/ugrep embedded in the bun binary (same ARGV0
-    // trick as ripgrep). When available, find/grep in Claude's shell are aliased
-    // to these fast tools, so the dedicated Glob/Grep tools are unnecessary.
-    ...(hasEmbeddedSearchTools() ? [] : [GlobTool, GrepTool]),
-    ExitPlanModeV2Tool,
-    FileReadTool,
-    FileEditTool,
-    FileWriteTool,
-    NotebookEditTool,
+    // Four reserved primitives — FR-001
+    LookupPrimitive,
+    SubmitPrimitive,
+    VerifyPrimitive,
+    SubscribePrimitive,
+
+    // Retained CC auxiliary — FR-015 + FR-016
     WebFetchTool,
-    TodoWriteTool,
     WebSearchTool,
-    TaskStopTool,
-    AskUserQuestionTool,
-    SkillTool,
-    EnterPlanModeTool,
-    ...(process.env.USER_TYPE === 'ant' ? [ConfigTool] : []),
-    ...(process.env.USER_TYPE === 'ant' ? [TungstenTool] : []),
-    ...(SuggestBackgroundPRTool ? [SuggestBackgroundPRTool] : []),
-    ...(WebBrowserTool ? [WebBrowserTool] : []),
-    ...(isTodoV2Enabled()
-      ? [TaskCreateTool, TaskGetTool, TaskUpdateTool, TaskListTool]
-      : []),
-    ...(OverflowTestTool ? [OverflowTestTool] : []),
-    ...(CtxInspectTool ? [CtxInspectTool] : []),
-    ...(TerminalCaptureTool ? [TerminalCaptureTool] : []),
-    ...(isEnvTruthy(process.env.ENABLE_LSP_TOOL) ? [LSPTool] : []),
-    ...(isWorktreeModeEnabled() ? [EnterWorktreeTool, ExitWorktreeTool] : []),
-    getSendMessageTool(),
-    ...(ListPeersTool ? [ListPeersTool] : []),
-    ...(isAgentSwarmsEnabled()
-      ? [getTeamCreateTool(), getTeamDeleteTool()]
-      : []),
-    ...(VerifyPlanExecutionTool ? [VerifyPlanExecutionTool] : []),
-    ...(process.env.USER_TYPE === 'ant' && REPLTool ? [REPLTool] : []),
-    ...(WorkflowTool ? [WorkflowTool] : []),
-    ...(SleepTool ? [SleepTool] : []),
-    ...cronTools,
-    ...(RemoteTriggerTool ? [RemoteTriggerTool] : []),
-    ...(MonitorTool ? [MonitorTool] : []),
+
+    // New auxiliary (MVP-7 completion) — FR-018
+    TranslateTool,
+    CalculatorTool,
+    DateParserTool,
+    ExportPDFTool,
+
+    // AgentTool repurposed as Task primitive backing — FR-017
+    AgentTool,
+
+    // Citizen document surface — FR-016
     BriefTool,
-    ...(SendUserFileTool ? [SendUserFileTool] : []),
-    ...(PushNotificationTool ? [PushNotificationTool] : []),
-    ...(SubscribePRTool ? [SubscribePRTool] : []),
-    ...(getPowerShellTool() ? [getPowerShellTool()] : []),
-    ...(SnipTool ? [SnipTool] : []),
-    ...(process.env.NODE_ENV === 'test' ? [TestingPermissionTool] : []),
+
+    // External MCP passthrough — FR-016 (listed as single logical "MCP" in contract § 1;
+    // CC splits list + read into two tools, both kept as-is for CC parity)
     ListMcpResourcesTool,
     ReadMcpResourceTool,
-    // Include ToolSearchTool when tool search might be enabled (optimistic check)
-    // The actual decision to defer tools happens at request time in claude.ts
-    ...(isToolSearchEnabledOptimistic() ? [ToolSearchTool] : []),
   ]
 }
 

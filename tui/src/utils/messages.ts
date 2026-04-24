@@ -103,9 +103,14 @@ import type {
   HookEvent,
   SDKAssistantMessageError,
 } from 'src/entrypoints/agentSdkTypes.js'
-import { EXPLORE_AGENT } from 'src/tools/AgentTool/built-in/exploreAgent.js'
-import { PLAN_AGENT } from 'src/tools/AgentTool/built-in/planAgent.js'
-import { areExplorePlanAgentsEnabled } from 'src/tools/AgentTool/builtInAgents.js'
+// Epic #1634 P3 T027: explore/plan/guide/verify built-in CC agents removed.
+// AgentTool is retained as the Task primitive backing (FR-017); the 4 built-in
+// agents were specific to Claude Code's code-exploration workflow and are not
+// citizen-facing. Placeholder constants preserve the existing template-string
+// sites without resurrecting the deleted agents.
+const EXPLORE_AGENT = { agentType: 'explorer' } as const
+const PLAN_AGENT = { agentType: 'planner' } as const
+const areExplorePlanAgentsEnabled = (): boolean => false
 import { AGENT_TOOL_NAME } from 'src/tools/AgentTool/constants.js'
 import { ASK_USER_QUESTION_TOOL_NAME } from 'src/tools/AskUserQuestionTool/prompt.js'
 import { BashTool } from 'src/tools/BashTool/BashTool.js'

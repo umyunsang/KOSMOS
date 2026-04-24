@@ -199,7 +199,9 @@ assistant: "I'm going to use the ${AGENT_TOOL_NAME} tool to launch the greeting-
 ${effectiveAgents.map(agent => formatAgentLine(agent)).join('\n')}`
 
   // Shared core prompt used by both coordinator and non-coordinator modes
-  const shared = `Launch a new agent to handle complex, multi-step tasks autonomously.
+  // Task primitive backing (KOSMOS L1-C C6): AgentTool backs the reserved
+  // "Task" primitive verb for Korean public-service agent orchestration.
+  const shared = `Launch a new agent to handle complex, multi-step tasks autonomously. This tool backs the Task primitive for orchestrating Korean public-service agents.
 
 The ${AGENT_TOOL_NAME} tool launches specialized agents (subprocesses) that autonomously handle complex tasks. Each agent type has specific capabilities and tools available to it.
 

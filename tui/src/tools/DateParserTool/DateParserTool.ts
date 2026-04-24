@@ -77,6 +77,12 @@ export const DateParserTool = buildTool({
       content: `Parsed: ${output.iso8601} (${output.interpreted_text})`,
     }
   },
+  renderToolUseMessage() {
+    return null
+  },
+  renderToolResultMessage() {
+    return null
+  },
   async call({ text, tz }) {
     const effectiveTz = tz ?? 'Asia/Seoul'
     const parseResult = parseKoreanDate(text, effectiveTz)

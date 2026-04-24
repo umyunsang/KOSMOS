@@ -55,20 +55,20 @@
 ### MCP bridge (cross-cutting within US1)
 
 - [X] T014 [US1] Create `/Users/um-yunsang/KOSMOS/src/kosmos/ipc/mcp_server.py` — stdio-MCP server stub wrapping existing `stdio.py` per contracts/mcp-bridge.md § 2 handshake + § 3 tool-call envelope + § 4 reuse contract (no re-implementation of Spec 032 concerns) — depends on T011
-- [ ] T015 [US1] Create `/Users/um-yunsang/KOSMOS/tui/src/ipc/mcp.ts` — stdio-MCP client reusing `bridge.ts` for transport; implements `initialize` handshake + `tools/list` discovery + `tools/call` routing per contracts/mcp-bridge.md § 2–3 — depends on T014
+- [X] T015 [US1] Create `/Users/um-yunsang/KOSMOS/tui/src/ipc/mcp.ts` — stdio-MCP client reusing `bridge.ts` for transport; implements `initialize` handshake + `tools/list` discovery + `tools/call` routing per contracts/mcp-bridge.md § 2–3 — depends on T014
 
 ### Primitive wrappers (parallel)
 
-- [ ] T016 [P] [US1] Create `/Users/um-yunsang/KOSMOS/tui/src/tools/primitive/lookup.ts` — dispatcher forwarding `{mode, query, primitive_filter, top_k}` (search) and `{mode, tool_id, params}` (fetch) per contracts/primitive-envelope.md § 2 via `mcp.ts` to Python `kosmos.tools.lookup`
-- [ ] T017 [P] [US1] Create `/Users/um-yunsang/KOSMOS/tui/src/tools/primitive/submit.ts` — dispatcher forwarding `{tool_id, params}` per contracts/primitive-envelope.md § 3 to `kosmos.primitives.submit` (Spec 031 existing)
-- [ ] T018 [P] [US1] Create `/Users/um-yunsang/KOSMOS/tui/src/tools/primitive/verify.ts` — dispatcher forwarding `{tool_id, params}` per contracts/primitive-envelope.md § 4 to `kosmos.primitives.verify` (Spec 031 existing)
-- [ ] T019 [P] [US1] Create `/Users/um-yunsang/KOSMOS/tui/src/tools/primitive/subscribe.ts` — dispatcher forwarding `{tool_id, params, lifetime_hint}` per contracts/primitive-envelope.md § 5 to `kosmos.primitives.subscribe` (Spec 031 existing)
+- [X] T016 [P] [US1] Create `/Users/um-yunsang/KOSMOS/tui/src/tools/primitive/lookup.ts` — dispatcher forwarding `{mode, query, primitive_filter, top_k}` (search) and `{mode, tool_id, params}` (fetch) per contracts/primitive-envelope.md § 2 via `mcp.ts` to Python `kosmos.tools.lookup`
+- [X] T017 [P] [US1] Create `/Users/um-yunsang/KOSMOS/tui/src/tools/primitive/submit.ts` — dispatcher forwarding `{tool_id, params}` per contracts/primitive-envelope.md § 3 to `kosmos.primitives.submit` (Spec 031 existing)
+- [X] T018 [P] [US1] Create `/Users/um-yunsang/KOSMOS/tui/src/tools/primitive/verify.ts` — dispatcher forwarding `{tool_id, params}` per contracts/primitive-envelope.md § 4 to `kosmos.primitives.verify` (Spec 031 existing)
+- [X] T019 [P] [US1] Create `/Users/um-yunsang/KOSMOS/tui/src/tools/primitive/subscribe.ts` — dispatcher forwarding `{tool_id, params, lifetime_hint}` per contracts/primitive-envelope.md § 5 to `kosmos.primitives.subscribe` (Spec 031 existing)
 
 ### CC dev tool deletion (parallel batch)
 
 - [~] T020 [P] [US1] Delete CC dev tool directories batch 1 (filesystem mutation tools): `rm -rf /Users/um-yunsang/KOSMOS/tui/src/tools/{BashTool,FileEditTool,FileReadTool,FileWriteTool,GlobTool,GrepTool,NotebookEditTool}` — verify with `ls`
 - [~] T021 [P] [US1] Delete CC dev tool directories batch 2 (shell + mode tools): `rm -rf /Users/um-yunsang/KOSMOS/tui/src/tools/{PowerShellTool,LSPTool,REPLTool,ConfigTool,EnterWorktreeTool,ExitWorktreeTool,EnterPlanModeTool,ExitPlanModeTool}` — verify with `ls`
-- [ ] T022 [US1] Remove imports + references to deleted CC dev tools from `/Users/um-yunsang/KOSMOS/tui/src/tools/index.ts` (or equivalent TUI tool dispatcher init file — confirm actual path during T022) — depends on T020, T021
+- [X] T022 [US1] Remove imports + references to deleted CC dev tools from `/Users/um-yunsang/KOSMOS/tui/src/tools/index.ts` (or equivalent TUI tool dispatcher init file — confirm actual path during T022) — depends on T020, T021
 
 ### Auxiliary tools — new (parallel)
 
@@ -79,12 +79,12 @@
 
 ### Auxiliary tool — AgentTool rewire
 
-- [ ] T027 [US1] Rewire `/Users/um-yunsang/KOSMOS/tui/src/tools/AgentTool/` as `Task` primitive backing: delete the 4 built-in agent files (`claudeCodeGuideAgent.ts`, `exploreAgent.ts`, `planAgent.ts`, `verificationAgent.ts`), remove their registrations from `built-in/` index, and update `AgentTool.tsx` to surface generic agent dispatch only
+- [X] T027 [US1] Rewire `/Users/um-yunsang/KOSMOS/tui/src/tools/AgentTool/` as `Task` primitive backing: delete the 4 built-in agent files (`claudeCodeGuideAgent.ts`, `exploreAgent.ts`, `planAgent.ts`, `verificationAgent.ts`), remove their registrations from `built-in/` index, and update `AgentTool.tsx` to surface generic agent dispatch only
 
 ### Registry closure
 
-- [ ] T027a [US1] Resolve FR-019/FR-029 undecided tools: for each of the 13 tools (`TodoWriteTool`, `ToolSearchTool`, `AskUserQuestionTool`, `SleepTool`, `MonitorTool`, `WorkflowTool`, `ScheduleCronTool`, `Task{Create,Get,List,Stop,Update}Tool`, `Team{Create,Delete}Tool`), make a concrete per-tool decision — kept-and-rewired / deferred-to-Epic-N / deleted — and record the decision matrix in `/Users/um-yunsang/KOSMOS/specs/1634-tool-system-wiring/decisions/undecided-tools.md` (new file); for "deleted" decisions, remove the directory in this task; for "deferred" decisions, add a row to spec.md Deferred Items table with target Epic — depends on T022 (dispatcher file path known)
-- [ ] T028 [US1] Register the 4 new aux tools (T023–T026) + 4 primitive wrappers (T016–T019) + 5 retained CC aux tools (WebFetch, WebSearch, Brief, MCP, AgentTool-as-Task) into the TUI tool dispatcher so the MCP `tools/list` response matches the 13-tool closed set in contracts/primitive-envelope.md § 1, plus any tools kept-and-rewired from T027a — depends on T016–T019, T022, T023–T027, T027a
+- [X] T027a [US1] Resolve FR-019/FR-029 undecided tools: for each of the 13 tools (`TodoWriteTool`, `ToolSearchTool`, `AskUserQuestionTool`, `SleepTool`, `MonitorTool`, `WorkflowTool`, `ScheduleCronTool`, `Task{Create,Get,List,Stop,Update}Tool`, `Team{Create,Delete}Tool`), make a concrete per-tool decision — kept-and-rewired / deferred-to-Epic-N / deleted — and record the decision matrix in `/Users/um-yunsang/KOSMOS/specs/1634-tool-system-wiring/decisions/undecided-tools.md` (new file); for "deleted" decisions, remove the directory in this task; for "deferred" decisions, add a row to spec.md Deferred Items table with target Epic — depends on T022 (dispatcher file path known)
+- [X] T028 [US1] Register the 4 new aux tools (T023–T026) + 4 primitive wrappers (T016–T019) + 5 retained CC aux tools (WebFetch, WebSearch, Brief, MCP, AgentTool-as-Task) into the TUI tool dispatcher so the MCP `tools/list` response matches the 13-tool closed set in contracts/primitive-envelope.md § 1, plus any tools kept-and-rewired from T027a — depends on T016–T019, T022, T023–T027, T027a
 - [ ] T029 [US1] Integration test: full `lookup` end-to-end (search then fetch) against `hira_hospital_search` with recorded fixture in `/Users/um-yunsang/KOSMOS/tests/integration/test_lookup_e2e.py` — verifies MCP handshake, tool list closure, search result shape, fetch result shape — depends on T015, T016, T028
 
 **Checkpoint**: `bun run tui` boots, LLM receives exactly 13 tools, hospital lookup completes end-to-end. US1 is an independently shippable MVP slice.

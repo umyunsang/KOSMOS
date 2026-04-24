@@ -79,6 +79,12 @@ export const CalculatorTool = buildTool({
       content: `Result: ${output.result} (${output.kind})`,
     }
   },
+  renderToolUseMessage() {
+    return null
+  },
+  renderToolResultMessage() {
+    return null
+  },
   async call({ expression, precision }) {
     const effectivePrecision = Math.min(precision ?? 28, 21)
     const evalResult = evaluate(expression, effectivePrecision)

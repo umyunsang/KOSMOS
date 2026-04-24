@@ -35,11 +35,6 @@ import { GREP_TOOL_NAME } from 'src/tools/GrepTool/prompt.js'
 import { hasEmbeddedSearchTools } from 'src/utils/embeddedTools.js'
 import { ASK_USER_QUESTION_TOOL_NAME } from '../tools/AskUserQuestionTool/prompt.js'
 import {
-  EXPLORE_AGENT,
-  EXPLORE_AGENT_MIN_QUERIES,
-} from 'src/tools/AgentTool/built-in/exploreAgent.js'
-import { areExplorePlanAgentsEnabled } from 'src/tools/AgentTool/builtInAgents.js'
-import {
   isScratchpadEnabled,
   getScratchpadDir,
 } from '../utils/permissions/filesystem.js'
@@ -371,14 +366,6 @@ function getSessionSpecificGuidanceSection(
     // isForkSubagentEnabled() reads getIsNonInteractiveSession() — must be
     // post-boundary or it fragments the static prefix on session type.
     hasAgentTool ? getAgentToolSection() : null,
-    ...(hasAgentTool &&
-    areExplorePlanAgentsEnabled() &&
-    !isForkSubagentEnabled()
-      ? [
-          `For simple, directed codebase searches (e.g. for a specific file/class/function) use ${searchTools} directly.`,
-          `For broader codebase exploration and deep research, use the ${AGENT_TOOL_NAME} tool with subagent_type=${EXPLORE_AGENT.agentType}. This is slower than using ${searchTools} directly, so use this only when a simple, directed search proves to be insufficient or when your task will clearly require more than ${EXPLORE_AGENT_MIN_QUERIES} queries.`,
-        ]
-      : []),
     hasSkills
       ? `/<skill-name> (e.g., /commit) is shorthand for users to invoke a user-invocable skill. When executed, the skill gets expanded to a full prompt. Use the ${SKILL_TOOL_NAME} tool to execute them. IMPORTANT: Only use ${SKILL_TOOL_NAME} for skills listed in its user-invocable skills section - do not guess or use built-in CLI commands.`
       : null,
