@@ -415,26 +415,149 @@ async def run(  # noqa: C901
     protocol = asyncio.StreamReaderProtocol(stdin_reader)
     transport, _ = await loop.connect_read_pipe(lambda: protocol, sys.stdin.buffer)
 
-    # Default on_frame: echo user_input frames; route session_event frames to the
-    # session manager.  Wraps every handler in try/except so malformed payloads
-    # never crash the loop (FR-010).
+    # Default on_frame: route `user_input` to the FriendliAI LLM (Epic #1633
+    # FR-007/FR-017) and `session_event` to the session manager. Wraps every
+    # handler in try/except so malformed payloads never crash the loop
+    # (FR-010).
+    #
+    # Per-session conversation history is kept in `_llm_sessions` below; each
+    # user_input appends one message, the model's reply is appended as
+    # assistant, and subsequent turns see the full history. System prompt is
+    # loaded lazily from Spec 026 PromptLoader on first turn.
+    _llm_sessions: dict[str, list[dict[str, object]]] = {}
+    _llm_client_ref: list[object] = []  # holds the singleton LLMClient
+    _llm_system_prompt_cached: list[str | None] = [None]
+
+    async def _ensure_llm_client() -> object:
+        if not _llm_client_ref:
+            from kosmos.llm.client import LLMClient  # noqa: PLC0415
+            from kosmos.llm.config import LLMClientConfig  # noqa: PLC0415
+
+            cfg = LLMClientConfig()
+            _llm_client_ref.append(LLMClient(config=cfg))
+        return _llm_client_ref[0]
+
+    async def _ensure_system_prompt() -> str | None:
+        if _llm_system_prompt_cached[0] is not None:
+            return _llm_system_prompt_cached[0] or None
+        try:
+            from kosmos.prompts.loader import PromptLoader  # noqa: PLC0415
+
+            loader = PromptLoader()
+            _llm_system_prompt_cached[0] = loader.load("system_v1").content
+        except Exception:  # noqa: BLE001
+            _llm_system_prompt_cached[0] = ""  # remember "tried and failed"
+        return _llm_system_prompt_cached[0] or None
+
+    async def _handle_user_input_llm(frame: IPCFrame) -> None:
+        from kosmos.ipc.frame_schema import AssistantChunkFrame  # noqa: PLC0415
+        from kosmos.llm.models import ChatMessage  # noqa: PLC0415
+
+        history = _llm_sessions.setdefault(frame.session_id, [])
+        if not history:
+            system_text = await _ensure_system_prompt()
+            if system_text:
+                history.append({"role": "system", "content": system_text})
+        history.append({"role": "user", "content": frame.text})
+
+        client = await _ensure_llm_client()
+        messages: list[ChatMessage] = []
+        for m in history:
+            role = str(m.get("role", "user"))
+            content = m.get("content")
+            if role in ("system", "user", "assistant", "tool") and isinstance(
+                content, str
+            ):
+                messages.append(
+                    ChatMessage(
+                        role=role,  # type: ignore[arg-type]
+                        content=content,
+                    )
+                )
+
+        message_id = str(uuid.uuid4())
+        assistant_text_chunks: list[str] = []
+        stream_error: Exception | None = None
+
+        try:
+            async for event in client.stream(  # type: ignore[attr-defined]
+                messages=messages, max_tokens=2048
+            ):
+                event_type = getattr(event, "type", None)
+                if event_type == "content_delta":
+                    delta = getattr(event, "content", "") or ""
+                    if delta:
+                        assistant_text_chunks.append(delta)
+                        chunk_frame = AssistantChunkFrame(
+                            session_id=frame.session_id,
+                            correlation_id=frame.correlation_id,
+                            role="llm",
+                            ts=_utcnow(),
+                            kind="assistant_chunk",
+                            message_id=message_id,
+                            delta=delta,
+                            done=False,
+                        )
+                        await write_frame(chunk_frame)
+                elif event_type == "done":
+                    break
+                elif event_type == "error":
+                    stream_error = RuntimeError(
+                        str(getattr(event, "content", "unknown stream error"))
+                    )
+                    break
+        except Exception as exc:  # noqa: BLE001
+            stream_error = exc
+
+        full_text = "".join(assistant_text_chunks)
+        if stream_error is not None:
+            err = ErrorFrame(
+                session_id=frame.session_id,
+                correlation_id=frame.correlation_id or str(uuid.uuid4()),
+                role="llm",
+                ts=_utcnow(),
+                kind="error",
+                code="llm_stream_error",
+                message=str(stream_error),
+                details={"message_id": message_id},
+            )
+            await write_frame(err)
+            return
+
+        # Terminal chunk — done=True signals end-of-turn to the TS side.
+        terminal = AssistantChunkFrame(
+            session_id=frame.session_id,
+            correlation_id=frame.correlation_id,
+            role="llm",
+            ts=_utcnow(),
+            kind="assistant_chunk",
+            message_id=message_id,
+            delta="",
+            done=True,
+        )
+        await write_frame(terminal)
+
+        history.append({"role": "assistant", "content": full_text})
+
     if on_frame is None:
 
         async def _handle_frame(frame: IPCFrame) -> None:
             if frame.kind == "user_input":
-                from kosmos.ipc.frame_schema import AssistantChunkFrame
-
-                echo_frame = AssistantChunkFrame(
-                    session_id=frame.session_id,
-                    correlation_id=frame.correlation_id,
-                    role="backend",
-                    ts=_utcnow(),
-                    kind="assistant_chunk",
-                    message_id=str(uuid.uuid4()),
-                    delta=f"[echo] {frame.text}",
-                    done=True,
-                )
-                await write_frame(echo_frame)
+                try:
+                    await _handle_user_input_llm(frame)
+                except Exception as exc:  # noqa: BLE001
+                    logger.exception("user_input LLM handler failed: %s", exc)
+                    err = ErrorFrame(
+                        session_id=frame.session_id,
+                        correlation_id=frame.correlation_id or str(uuid.uuid4()),
+                        role="llm",
+                        ts=_utcnow(),
+                        kind="error",
+                        code="llm_handler_error",
+                        message=f"LLM handler failed: {exc}",
+                        details={},
+                    )
+                    await write_frame(err)
 
             elif frame.kind == "session_event":
                 evt = frame.event

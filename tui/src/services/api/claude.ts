@@ -1,12 +1,23 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS-original — Epic #1633 stub restoration.
+// KOSMOS-original — Epic #1633 FR-007 / FR-017 IPC rewire.
 //
-// The real Anthropic-backed `services/api/claude` module was deleted by Epic
-// #1633 in favour of `ipc/llmClient.ts` (FriendliAI-via-IPC). Several legacy
-// callers still import helper symbols from here. The stubs either delegate to
-// the IPC path (via `llmClient.ts` when invoked) or return empty payloads.
+// The legacy CC `services/api/claude` surface is preserved for `query.ts` /
+// compact / WebSearch call-sites, but its runtime now routes through Spec 032
+// stdio IPC to the Python backend (`uv run kosmos --ipc stdio`) rather than
+// calling FriendliAI HTTPS directly. The Python backend wraps
+// `kosmos.llm.client::LLMClient` and emits `AssistantChunkFrame` deltas that
+// `ipc/llmClient.ts::stream()` translates back into Anthropic-shaped stream
+// events. Here we collapse those events into the `{type:'assistant', message:
+// {...}}` envelope `query.ts::queryLoop` consumes.
 
 import type { KosmosUsage } from '../../ipc/llmTypes.js'
+import { LLMClient } from '../../ipc/llmClient.js'
+import {
+  getOrCreateKosmosBridge,
+  getKosmosBridgeSessionId,
+} from '../../ipc/bridgeSingleton.js'
+
+const KOSMOS_MODEL = 'LGAI-EXAONE/K-EXAONE-236B-A23B'
 
 export function getAPIMetadata(): Record<string, string> {
   return {}
@@ -20,7 +31,6 @@ const EMPTY_USAGE: KosmosUsage = {
   input_tokens: 0,
   output_tokens: 0,
   cache_read_input_tokens: 0,
-  cache_creation_input_tokens: 0,
 }
 
 export function accumulateUsage(
@@ -34,124 +44,107 @@ export function updateUsage(_usage: KosmosUsage | undefined): KosmosUsage {
   return EMPTY_USAGE
 }
 
-// Interim KOSMOS-original bridge — pending the full Epic #1633 rewire that
-// wires `query/deps.ts::callModel` directly to `ipc/llmClient.ts::stream()`.
-// For now, we short-circuit from this legacy CC entrypoint straight to
-// FriendliAI Serverless via fetch, transforming the OpenAI-compatible
-// response into the `{type:'assistant', message:{...}}` envelope that
-// `query.ts::queryLoop` expects. This violates contract G1 (no direct
-// HTTPS) but keeps the TUI demonstrably functional while the IPC path is
-// plumbed through the Python backend.
+// ---------------------------------------------------------------------------
+// Message normalization helpers — CC's internal shape → KosmosMessageParam.
+// ---------------------------------------------------------------------------
 
-const FRIENDLI_BASE_URL =
-  process.env.FRIENDLI_BASE_URL ?? 'https://api.friendli.ai/serverless'
+type NormalizedMessage = { role: 'user' | 'assistant'; content: string }
 
-function kosmosFriendliRequestBody(
-  messages: ReadonlyArray<{ role: string; content: unknown }>,
-  systemPrompt: unknown,
-  model: string,
-  maxTokens: number,
-): Record<string, unknown> {
-  const normalizedMessages: Array<{ role: string; content: string }> = []
-  // System prompt — CC sometimes passes array-of-TextBlock; coerce to string.
-  const sys = Array.isArray(systemPrompt)
-    ? systemPrompt
-        .map((b) =>
-          typeof b === 'string'
-            ? b
-            : typeof (b as { text?: unknown })?.text === 'string'
-              ? (b as { text: string }).text
-              : '',
-        )
-        .filter(Boolean)
-        .join('\n\n')
-    : typeof systemPrompt === 'string'
-      ? systemPrompt
-      : ''
-  if (sys) normalizedMessages.push({ role: 'system', content: sys })
-  for (const m of messages) {
-    // CC's internal Message shape: { type: 'user'|'assistant', message: { role, content } }.
-    // query.ts passes those directly, so we need to unwrap one level.
-    const mAny = m as {
-      role?: string
-      content?: unknown
-      type?: string
-      message?: { role?: string; content?: unknown }
+function _normalizeOneMessage(m: unknown): NormalizedMessage | null {
+  const mAny = m as {
+    role?: string
+    content?: unknown
+    type?: string
+    message?: { role?: string; content?: unknown }
+  }
+  const roleRaw =
+    mAny.role ??
+    mAny.message?.role ??
+    (mAny.type === 'assistant' ? 'assistant' : 'user')
+  const role: 'user' | 'assistant' =
+    roleRaw === 'assistant' ? 'assistant' : 'user'
+
+  const rawContent = mAny.content ?? mAny.message?.content
+  let content = ''
+  if (typeof rawContent === 'string') {
+    content = rawContent
+  } else if (Array.isArray(rawContent)) {
+    const parts: string[] = []
+    for (const block of rawContent) {
+      if (typeof block === 'string') {
+        parts.push(block)
+        continue
+      }
+      const b = block as { type?: string; text?: string; content?: unknown }
+      if (b?.type === 'text' && typeof b.text === 'string') {
+        parts.push(b.text)
+      } else if (
+        b?.type === 'tool_result' &&
+        typeof b.content === 'string'
+      ) {
+        parts.push(b.content)
+      }
     }
-    const role =
-      mAny.role ??
-      mAny.message?.role ??
-      (mAny.type === 'assistant' ? 'assistant' : 'user')
-    const rawContent = mAny.content ?? mAny.message?.content
-    const content =
-      typeof rawContent === 'string'
-        ? rawContent
-        : Array.isArray(rawContent)
-          ? rawContent
-              .map((block) => {
-                if (typeof block === 'string') return block
-                const b = block as {
-                  type?: string
-                  text?: string
-                  content?: unknown
-                }
-                if (b?.type === 'text' && typeof b.text === 'string') {
-                  return b.text
-                }
-                if (
-                  b?.type === 'tool_result' &&
-                  typeof b.content === 'string'
-                ) {
-                  return b.content
-                }
-                return ''
-              })
-              .filter(Boolean)
-              .join('\n')
-          : ''
-    if (!content) continue
-    normalizedMessages.push({ role, content })
+    content = parts.filter(Boolean).join('\n')
   }
-  // FriendliAI requires at least one user message — synthesize one if the
-  // entire batch collapsed to system + assistant-only (e.g. tool-only turns).
-  if (
-    !normalizedMessages.some((m) => m.role === 'user') &&
-    normalizedMessages.length > 0
-  ) {
-    normalizedMessages.push({ role: 'user', content: 'Continue.' })
-  }
-  // KOSMOS is a single-model system — always target K-EXAONE regardless of
-  // what upstream passes (CC defaults still leak "claude-opus-*" strings
-  // through commander parse).
-  const KOSMOS_MODEL = 'LGAI-EXAONE/K-EXAONE-236B-A23B'
-  void model
-  return {
-    model: KOSMOS_MODEL,
-    messages: normalizedMessages,
-    max_tokens: Math.min(maxTokens, 32_768),
-    stream: false,
-  }
+  if (!content) return null
+  return { role, content }
 }
 
+function _coerceSystemPrompt(systemPrompt: unknown): string | undefined {
+  if (Array.isArray(systemPrompt)) {
+    const parts = systemPrompt
+      .map((b) =>
+        typeof b === 'string'
+          ? b
+          : typeof (b as { text?: unknown })?.text === 'string'
+            ? (b as { text: string }).text
+            : '',
+      )
+      .filter(Boolean)
+    return parts.length > 0 ? parts.join('\n\n') : undefined
+  }
+  return typeof systemPrompt === 'string' && systemPrompt.length > 0
+    ? systemPrompt
+    : undefined
+}
+
+// ---------------------------------------------------------------------------
+// Main entry point — IPC-routed LLM turn.
+// ---------------------------------------------------------------------------
+
 export async function* queryModelWithStreaming(params: {
-  messages: ReadonlyArray<{ role: string; content: unknown }>
+  messages: ReadonlyArray<unknown>
   systemPrompt?: unknown
-  options: { model: string; maxOutputTokensOverride?: number }
+  options: { model?: string; maxOutputTokensOverride?: number }
   signal?: AbortSignal
 }): AsyncGenerator<unknown, void, unknown> {
-  const apiKey = process.env.FRIENDLI_API_KEY
-  if (!apiKey) {
+  const kosmosMessages: NormalizedMessage[] = []
+  for (const m of params.messages) {
+    const norm = _normalizeOneMessage(m)
+    if (norm) kosmosMessages.push(norm)
+  }
+  if (!kosmosMessages.some((m) => m.role === 'user')) {
+    kosmosMessages.push({ role: 'user', content: 'Continue.' })
+  }
+
+  const system = _coerceSystemPrompt(params.systemPrompt)
+
+  let bridge
+  try {
+    bridge = getOrCreateKosmosBridge()
+  } catch (err) {
     yield {
       type: 'assistant',
       uuid: crypto.randomUUID(),
       message: {
         id: `msg_err_${Date.now().toString(36)}`,
         role: 'assistant',
-        model: params.options.model,
+        model: KOSMOS_MODEL,
         content: [
           {
             type: 'text',
-            text: 'KOSMOS error: FRIENDLI_API_KEY is not set. Export it and restart the TUI.',
+            text: `KOSMOS bridge error: ${(err as Error).message}`,
           },
         ],
         stop_reason: 'end_turn',
@@ -161,86 +154,44 @@ export async function* queryModelWithStreaming(params: {
     return
   }
 
-  const body = kosmosFriendliRequestBody(
-    params.messages,
-    params.systemPrompt,
-    params.options.model,
-    params.options.maxOutputTokensOverride ?? 4_096,
-  )
+  const client = new LLMClient({
+    bridge,
+    model: KOSMOS_MODEL,
+    sessionId: getKosmosBridgeSessionId(),
+  })
+
+  const accumulated: string[] = []
+  let messageId: string | null = null
+  let usage: KosmosUsage = { input_tokens: 0, output_tokens: 0 }
+  let stopReason: 'end_turn' | 'max_tokens' | 'tool_use' | 'stop_sequence' =
+    'end_turn'
 
   try {
-    const url = `${FRIENDLI_BASE_URL}/v1/chat/completions`
-    if (process.env.KOSMOS_DEBUG_LLM === '1') {
-      const b = JSON.stringify(body)
-      process.stderr.write(
-        `[KOSMOS/LLM] POST ${url} body_len=${b.length} head=${b.slice(0, 200)} tail=${b.slice(-300)}\n`,
-      )
-    }
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify(body),
-      signal: params.signal,
+    const stream = client.stream({
+      model: KOSMOS_MODEL,
+      messages: kosmosMessages,
+      max_tokens: Math.min(
+        params.options.maxOutputTokensOverride ?? 2_048,
+        32_768,
+      ),
+      system,
     })
 
-    if (!response.ok) {
-      const errText = await response.text().catch(() => '<no body>')
-      yield {
-        type: 'assistant',
-        uuid: crypto.randomUUID(),
-        message: {
-          id: `msg_err_${Date.now().toString(36)}`,
-          role: 'assistant',
-          model: params.options.model,
-          content: [
-            {
-              type: 'text',
-              text: `KOSMOS API error ${response.status}: ${errText.slice(0, 500)}`,
-            },
-          ],
-          stop_reason: 'end_turn',
-          usage: { input_tokens: 0, output_tokens: 0 },
-        },
+    // Drain the stream for side-effect token streaming (the bridge forwards
+    // AssistantChunkFrames to the UI directly for rendering). queryLoop only
+    // needs the final aggregated assistant message.
+    for await (const evt of stream) {
+      if (evt.type === 'message_start') {
+        messageId = evt.message.id
+      } else if (evt.type === 'content_block_delta') {
+        if (evt.delta.type === 'text_delta') {
+          accumulated.push(evt.delta.text)
+        }
+      } else if (evt.type === 'message_delta') {
+        if (evt.delta.stop_reason) stopReason = evt.delta.stop_reason
+        if (evt.usage) usage = evt.usage
       }
-      return
-    }
-
-    const data = (await response.json()) as {
-      id?: string
-      model?: string
-      choices?: Array<{
-        message?: { content?: string | null }
-        finish_reason?: string
-      }>
-      usage?: {
-        prompt_tokens?: number
-        completion_tokens?: number
-        prompt_tokens_details?: { cached_tokens?: number }
-      }
-    }
-
-    const choice = data.choices?.[0]
-    const content = choice?.message?.content ?? ''
-    yield {
-      type: 'assistant',
-      uuid: crypto.randomUUID(),
-      message: {
-        id: data.id ?? `msg_${Date.now().toString(36)}`,
-        role: 'assistant',
-        model: data.model ?? params.options.model,
-        content: [{ type: 'text', text: content }],
-        stop_reason:
-          choice?.finish_reason === 'length' ? 'max_tokens' : 'end_turn',
-        usage: {
-          input_tokens: data.usage?.prompt_tokens ?? 0,
-          output_tokens: data.usage?.completion_tokens ?? 0,
-          cache_read_input_tokens:
-            data.usage?.prompt_tokens_details?.cached_tokens ?? 0,
-        },
-      },
+      if (params.signal?.aborted) break
     }
   } catch (err) {
     if ((err as Error).name === 'AbortError') return
@@ -250,22 +201,37 @@ export async function* queryModelWithStreaming(params: {
       message: {
         id: `msg_err_${Date.now().toString(36)}`,
         role: 'assistant',
-        model: params.options.model,
+        model: KOSMOS_MODEL,
         content: [
           {
             type: 'text',
-            text: `KOSMOS network error: ${(err as Error).message}`,
+            text: `KOSMOS LLM error: ${(err as Error).message}`,
           },
         ],
         stop_reason: 'end_turn',
         usage: { input_tokens: 0, output_tokens: 0 },
       },
     }
+    return
+  }
+
+  const text = accumulated.join('')
+  yield {
+    type: 'assistant',
+    uuid: crypto.randomUUID(),
+    message: {
+      id: messageId ?? `msg_${Date.now().toString(36)}`,
+      role: 'assistant',
+      model: KOSMOS_MODEL,
+      content: [{ type: 'text', text }],
+      stop_reason: stopReason,
+      usage,
+    },
   }
 }
 
 export async function* queryHaiku(params: {
-  messages: ReadonlyArray<{ role: string; content: unknown }>
+  messages: ReadonlyArray<unknown>
   systemPrompt?: unknown
   options?: { model?: string; maxOutputTokensOverride?: number }
   signal?: AbortSignal
@@ -274,7 +240,7 @@ export async function* queryHaiku(params: {
     messages: params.messages,
     systemPrompt: params.systemPrompt,
     options: {
-      model: params.options?.model ?? 'LGAI-EXAONE/K-EXAONE-236B-A23B',
+      model: params.options?.model ?? KOSMOS_MODEL,
       maxOutputTokensOverride: params.options?.maxOutputTokensOverride,
     },
     signal: params.signal,
@@ -282,18 +248,18 @@ export async function* queryHaiku(params: {
 }
 
 export async function* queryModelWithoutStreaming(params: {
-  messages: ReadonlyArray<{ role: string; content: unknown }>
+  messages: ReadonlyArray<unknown>
   systemPrompt?: unknown
-  options: { model: string; maxOutputTokensOverride?: number }
+  options: { model?: string; maxOutputTokensOverride?: number }
   signal?: AbortSignal
 }): AsyncGenerator<unknown, void, unknown> {
   yield* queryModelWithStreaming(params)
 }
 
 export async function* queryWithModel(params: {
-  messages: ReadonlyArray<{ role: string; content: unknown }>
+  messages: ReadonlyArray<unknown>
   systemPrompt?: unknown
-  options: { model: string; maxOutputTokensOverride?: number }
+  options: { model?: string; maxOutputTokensOverride?: number }
   signal?: AbortSignal
 }): AsyncGenerator<unknown, void, unknown> {
   yield* queryModelWithStreaming(params)
@@ -304,8 +270,6 @@ export async function verifyApiKey(): Promise<boolean> {
 }
 
 export function getMaxOutputTokensForModel(_model: string): number {
-  // K-EXAONE-236B supports up to 32k output tokens on FriendliAI Serverless.
-  // Callers use this to bound `max_tokens` in outbound requests.
   return 32_768
 }
 
