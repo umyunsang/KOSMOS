@@ -127,10 +127,15 @@ export async function sideQuery(opts: SideQueryOptions): Promise<BetaMessage> {
     source: 'side_query',
   })
   const betas = [...getModelBetas(model)]
-  // Add structured-outputs beta if using output_format and provider supports it
+  // Add structured-outputs beta if using output_format and provider supports it.
+  // Guard against the KOSMOS stub (Epic #1633 FR-013 left
+  // STRUCTURED_OUTPUTS_BETA_HEADER as '' so upstream callers short-circuit);
+  // without this truthy check we would push '' into `betas` and later fire a
+  // non-empty `betas` array containing an empty token.
   if (
     output_format &&
     modelSupportsStructuredOutputs(model) &&
+    STRUCTURED_OUTPUTS_BETA_HEADER &&
     !betas.includes(STRUCTURED_OUTPUTS_BETA_HEADER)
   ) {
     betas.push(STRUCTURED_OUTPUTS_BETA_HEADER)
