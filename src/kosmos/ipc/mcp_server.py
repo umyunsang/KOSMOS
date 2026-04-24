@@ -92,7 +92,9 @@ class MCPServer:
 
         if not isinstance(method, str):
             return _error_response(
-                rpc_id, JSONRPC_INVALID_REQUEST, "method missing or not a string",
+                rpc_id,
+                JSONRPC_INVALID_REQUEST,
+                "method missing or not a string",
             )
 
         try:
@@ -142,9 +144,7 @@ class MCPServer:
             tools.append(
                 {
                     "name": tool_id,
-                    "description": (
-                        tool.llm_description if tool.llm_description else tool.name_ko
-                    ),
+                    "description": (tool.llm_description if tool.llm_description else tool.name_ko),
                     "inputSchema": tool.input_schema.model_json_schema(),
                 }
             )

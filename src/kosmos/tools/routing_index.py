@@ -56,8 +56,7 @@ def build_routing_index(adapters: list[GovAPITool]) -> RoutingIndex:
         # Invariant 4: tool_id unique
         if adapter.id in by_tool_id:
             raise RoutingValidationError(
-                f"{adapter.id}: invariant 4 (unique tool_id) — "
-                f"duplicate registration"
+                f"{adapter.id}: invariant 4 (unique tool_id) — duplicate registration"
             )
 
         # Invariant 5: compute_permission_tier total
@@ -69,10 +68,8 @@ def build_routing_index(adapters: list[GovAPITool]) -> RoutingIndex:
             ) from e
 
         # Warning: ministry="OTHER"
-        if hasattr(adapter, 'ministry') and adapter.ministry == "OTHER":
-            warnings.append(
-                f"{adapter.id}: ministry='OTHER' (transitional escape hatch)"
-            )
+        if hasattr(adapter, "ministry") and adapter.ministry == "OTHER":
+            warnings.append(f"{adapter.id}: ministry='OTHER' (transitional escape hatch)")
 
         by_primitive[adapter.primitive].append(adapter)
         by_tool_id[adapter.id] = adapter

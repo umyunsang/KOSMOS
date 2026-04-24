@@ -28,19 +28,19 @@ PIPAClass = Literal["non_personal", "personal", "sensitive", "identifier"]
 # institutional mapping is undecided; CI emits a warning via
 # ``RoutingIndex.warnings`` (non-fatal) when any registered adapter uses it.
 Ministry = Literal[
-    "KOROAD",   # 도로교통공단 — road safety
-    "KMA",      # 기상청 — weather
-    "NMC",      # 국립중앙의료원 — emergency medical
-    "HIRA",     # 건강보험심사평가원 — health insurance review
-    "NFA",      # 소방청 — fire / 119
-    "MOHW",     # 보건복지부 — welfare (includes SSIS adapters)
-    "MOLIT",    # 국토교통부 — land/infrastructure/transport
-    "MOIS",     # 행정안전부 — public administration / safety
-    "KEC",      # 한국교통안전공단 — vehicle inspection / e-signature
-    "MFDS",     # 식품의약품안전처 — food & drug safety
-    "GOV24",    # 정부24 — citizen submission portal (OPAQUE per feedback_mock_evidence_based)
-    "KOSMOS",   # harness-internal synthetic surface (resolve_location, lookup, mvp_surface)
-    "OTHER",    # transitional escape hatch — CI emits warning
+    "KOROAD",  # 도로교통공단 — road safety
+    "KMA",  # 기상청 — weather
+    "NMC",  # 국립중앙의료원 — emergency medical
+    "HIRA",  # 건강보험심사평가원 — health insurance review
+    "NFA",  # 소방청 — fire / 119
+    "MOHW",  # 보건복지부 — welfare (includes SSIS adapters)
+    "MOLIT",  # 국토교통부 — land/infrastructure/transport
+    "MOIS",  # 행정안전부 — public administration / safety
+    "KEC",  # 한국교통안전공단 — vehicle inspection / e-signature
+    "MFDS",  # 식품의약품안전처 — food & drug safety
+    "GOV24",  # 정부24 — citizen submission portal (OPAQUE per feedback_mock_evidence_based)
+    "KOSMOS",  # harness-internal synthetic surface (resolve_location, lookup, mvp_surface)
+    "OTHER",  # transitional escape hatch — CI emits warning
 ]
 
 # V6 canonical mapping — single source of truth for the (auth_type, auth_level)

@@ -132,16 +132,15 @@ class TestInvariant4UniqueToolId:
         registry, _ = live_registry
         ids = list(registry._tools.keys())
         assert len(ids) == len(set(ids)), (
-            f"Duplicate tool_ids detected: "
-            f"{[x for x in ids if ids.count(x) > 1]}"
+            f"Duplicate tool_ids detected: {[x for x in ids if ids.count(x) > 1]}"
         )
 
     def test_routing_index_by_tool_id_matches_registry(self, live_registry):
         """RoutingIndex.by_tool_id is consistent with the registry's tool set."""
         registry, routing_index = live_registry
-        assert frozenset(registry._tools.keys()) == frozenset(
-            routing_index.by_tool_id.keys()
-        ), "RoutingIndex.by_tool_id diverges from registry._tools"
+        assert frozenset(registry._tools.keys()) == frozenset(routing_index.by_tool_id.keys()), (
+            "RoutingIndex.by_tool_id diverges from registry._tools"
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -158,9 +157,7 @@ class TestInvariant5PermissionTierTotal:
         registry, _ = live_registry
         for tool_id, tool in registry._tools.items():
             tier = compute_permission_tier(tool.auth_level, tool.is_irreversible)
-            assert tier in (1, 2, 3), (
-                f"{tool_id}: permission_tier={tier} not in {{1,2,3}}"
-            )
+            assert tier in (1, 2, 3), f"{tool_id}: permission_tier={tier} not in {{1,2,3}}"
 
 
 # ---------------------------------------------------------------------------
@@ -316,8 +313,7 @@ class TestCheck10PluginNamespace:
         violations = [
             tool_id
             for tool_id in registry._tools
-            if tool_id.startswith("plugin.")
-            and not self._PLUGIN_PATTERN.match(tool_id)
+            if tool_id.startswith("plugin.") and not self._PLUGIN_PATTERN.match(tool_id)
         ]
         assert not violations, (
             f"Plugin namespace violation(s): {violations} "

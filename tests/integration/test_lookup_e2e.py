@@ -79,9 +79,7 @@ class TestLookupSearchHospital:
         # At least one of the hospital/emergency adapters must rank in top-3
         hospital_adapters = {"hira_hospital_search", "nmc_emergency_search"}
         matching = hospital_adapters & set(tool_ids)
-        assert matching, (
-            f"Expected one of {hospital_adapters} in top-3; got {tool_ids}"
-        )
+        assert matching, f"Expected one of {hospital_adapters} in top-3; got {tool_ids}"
 
     @pytest.mark.asyncio
     async def test_search_result_shape(
@@ -164,9 +162,7 @@ class TestLookupFetchMocked:
     """Fetch mode with a fixture-backed mock httpx client — no real network."""
 
     @pytest.mark.asyncio
-    async def test_fetch_hira_with_fixture(
-        self, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    async def test_fetch_hira_with_fixture(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """lookup(fetch, hira_hospital_search) with a fixture returns LookupCollection."""
         import json
         from pathlib import Path
@@ -185,7 +181,10 @@ class TestLookupFetchMocked:
         # Load the existing fixture (matches the pattern in tests/tools/hira/)
         fixture_path = (
             Path(__file__).resolve().parents[2]
-            / "tests" / "fixtures" / "hira" / "hospital_search_happy.json"
+            / "tests"
+            / "fixtures"
+            / "hira"
+            / "hospital_search_happy.json"
         )
         fixture_data = json.loads(fixture_path.read_text())
 

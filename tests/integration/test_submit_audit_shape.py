@@ -113,8 +113,7 @@ class TestAuditFieldsDistinct:
         """primitive and tool_id MUST NOT be the same value (FR-026 distinct fields)."""
         reg = _get_registration(tool_id)
         assert reg.primitive != reg.tool_id, (
-            f"primitive {reg.primitive!r} and tool_id {reg.tool_id!r} "
-            "must be distinct (FR-026)"
+            f"primitive {reg.primitive!r} and tool_id {reg.tool_id!r} must be distinct (FR-026)"
         )
 
     @pytest.mark.parametrize(
@@ -265,12 +264,8 @@ def test_all_registered_submit_adapters_have_distinct_primitive_and_tool_id() ->
         tool_id_str = str(registration.tool_id)
 
         # Both fields non-empty
-        assert primitive_str, (
-            f"Adapter {tid!r}: primitive must be non-empty (FR-026)"
-        )
-        assert tool_id_str, (
-            f"Adapter {tid!r}: tool_id must be non-empty (FR-026)"
-        )
+        assert primitive_str, f"Adapter {tid!r}: primitive must be non-empty (FR-026)"
+        assert tool_id_str, f"Adapter {tid!r}: tool_id must be non-empty (FR-026)"
 
         # The fields must be distinct
         assert primitive_str != tool_id_str, (
