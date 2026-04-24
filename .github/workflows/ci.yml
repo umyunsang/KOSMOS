@@ -11,6 +11,8 @@ on:
       - "tests/**"
       - "prompts/**"
       - "tools/**"
+      - "tui/**"
+      - "specs/**"
       - ".github/workflows/ci.yml"
   push:
     branches: [main]
