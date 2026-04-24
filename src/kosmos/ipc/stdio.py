@@ -449,7 +449,7 @@ async def run(  # noqa: C901
             _llm_system_prompt_cached[0] = ""  # remember "tried and failed"
         return _llm_system_prompt_cached[0] or None
 
-    async def _handle_user_input_llm(frame: IPCFrame) -> None:
+    async def _handle_user_input_llm(frame: IPCFrame) -> None:  # noqa: C901
         from kosmos.ipc.frame_schema import AssistantChunkFrame  # noqa: PLC0415
         from kosmos.llm.models import ChatMessage  # noqa: PLC0415
 
@@ -539,14 +539,40 @@ async def run(  # noqa: C901
 
         history.append({"role": "assistant", "content": full_text})
 
+    # KOSMOS_IPC_HANDLER env var selects the user_input handler:
+    #   - "llm" (default): route UserInputFrame → LLMClient.stream() → FriendliAI
+    #   - "echo": mirror UserInputFrame back as AssistantChunkFrame "[echo] {text}"
+    # Echo mode is used by integration tests that spawn the real backend but
+    # must not depend on FRIENDLI_API_KEY or network reachability.
+    import os as _os  # noqa: PLC0415
+    _handler_mode = (_os.environ.get("KOSMOS_IPC_HANDLER") or "llm").lower()
+
+    async def _handle_user_input_echo(frame: IPCFrame) -> None:
+        from kosmos.ipc.frame_schema import AssistantChunkFrame  # noqa: PLC0415
+
+        echo_frame = AssistantChunkFrame(
+            session_id=frame.session_id,
+            correlation_id=frame.correlation_id,
+            role="backend",
+            ts=_utcnow(),
+            kind="assistant_chunk",
+            message_id=str(uuid.uuid4()),
+            delta=f"[echo] {frame.text}",
+            done=True,
+        )
+        await write_frame(echo_frame)
+
     if on_frame is None:
 
         async def _handle_frame(frame: IPCFrame) -> None:
             if frame.kind == "user_input":
                 try:
-                    await _handle_user_input_llm(frame)
+                    if _handler_mode == "echo":
+                        await _handle_user_input_echo(frame)
+                    else:
+                        await _handle_user_input_llm(frame)
                 except Exception as exc:  # noqa: BLE001
-                    logger.exception("user_input LLM handler failed: %s", exc)
+                    logger.exception("user_input handler failed: %s", exc)
                     err = ErrorFrame(
                         session_id=frame.session_id,
                         correlation_id=frame.correlation_id or str(uuid.uuid4()),
