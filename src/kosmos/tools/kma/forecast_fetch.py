@@ -342,7 +342,7 @@ class _ForecastFetchOutput(BaseModel):
 KMA_FORECAST_FETCH_TOOL = GovAPITool(
     id="kma_forecast_fetch",
     name_ko="단기예보 조회 (좌표 입력)",
-    provider="기상청 (KMA)",
+    ministry="KMA",
     category=["기상", "예보", "단기예보", "좌표"],
     endpoint=_BASE_URL,
     auth_type="api_key",

@@ -253,7 +253,7 @@ async def handle(inp: NmcEmergencySearchInput) -> dict[str, Any]:
 NMC_EMERGENCY_SEARCH_TOOL = GovAPITool(
     id="nmc_emergency_search",
     name_ko="응급실 실시간 병상 조회 (국립중앙의료원)",
-    provider="국립중앙의료원 (NMC)",
+    ministry="NMC",
     category=["응급의료", "실시간병상", "의료기관"],
     endpoint=_BASE_URL,
     auth_type="api_key",

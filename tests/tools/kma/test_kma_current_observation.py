@@ -291,7 +291,7 @@ class TestToolDefinition:
         assert KMA_CURRENT_OBSERVATION_TOOL.is_core is True
 
     def test_provider(self):
-        assert "KMA" in KMA_CURRENT_OBSERVATION_TOOL.provider
+        assert KMA_CURRENT_OBSERVATION_TOOL.ministry == "KMA"
 
     def test_cache_ttl(self):
         assert KMA_CURRENT_OBSERVATION_TOOL.cache_ttl_seconds == 600

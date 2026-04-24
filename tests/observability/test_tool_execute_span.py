@@ -81,7 +81,7 @@ def _build_registry_and_executor(
     tool = GovAPITool(
         id=tool_id,
         name_ko="테스트 도구",
-        provider="TestProvider",
+        ministry="OTHER",
         category=["test"],
         endpoint="http://example.com/api",
         auth_type="public",

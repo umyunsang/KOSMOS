@@ -27,7 +27,7 @@ def tool() -> GovAPITool:
     return GovAPITool(
         id="integ_tool",
         name_ko="통합 테스트 도구",
-        provider="기관",
+        ministry="OTHER",
         category=["test"],
         endpoint="https://api.example.com/",
         auth_type="public",

@@ -276,7 +276,7 @@ class _NfaEmergencyInfoServiceOutputStub(RootModel[dict[str, Any]]):
 NFA_EMERGENCY_INFO_SERVICE_TOOL = GovAPITool(
     id="nfa_emergency_info_service",
     name_ko="소방청 구급정보서비스 (구급활동 통계 조회)",
-    provider="소방청 (National Fire Agency, NFA)",
+    ministry="NFA",
     category=["안전", "응급", "소방", "119", "구급통계"],
     endpoint="https://apis.data.go.kr/1661000/EmergencyInformationService",
     auth_type="api_key",
@@ -304,6 +304,7 @@ NFA_EMERGENCY_INFO_SERVICE_TOOL = GovAPITool(
     cache_ttl_seconds=86400,
     rate_limit_per_minute=10,
     is_core=False,
+    primitive="lookup",
 )
 
 

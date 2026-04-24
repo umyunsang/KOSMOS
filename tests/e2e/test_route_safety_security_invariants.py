@@ -34,7 +34,7 @@ def _make_broken_tool(
     return GovAPITool(
         id="broken_koroad_clone",
         name_ko="깨진 테스트 도구",
-        provider="test_provider",
+        ministry="OTHER",
         category=["test"],
         endpoint="https://test.example.com/api",
         auth_type=auth_type,  # type: ignore[arg-type]
@@ -96,7 +96,7 @@ def test_v6_violation_also_blocked_by_registry() -> None:
         broken = GovAPITool.model_construct(
             id="bypass_attempt",
             name_ko="바이패스 시도",
-            provider="test",
+            ministry="OTHER",
             category=["test"],
             endpoint="https://test.example.com/api",
             auth_type="public",

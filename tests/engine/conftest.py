@@ -77,7 +77,7 @@ def _make_tool(
     return GovAPITool(
         id=tool_id,
         name_ko=name_ko,
-        provider="mock_provider",
+        ministry="OTHER",
         category=["mock"],
         endpoint="https://mock.example.com/api",
         auth_type=auth_type,

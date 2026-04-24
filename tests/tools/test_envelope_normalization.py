@@ -44,7 +44,7 @@ def _make_tool(tool_id: str = "test_tool") -> GovAPITool:
     return GovAPITool(
         id=tool_id,
         name_ko="테스트도구",
-        provider="테스트기관",
+        ministry="OTHER",
         category=["test"],
         endpoint="https://apis.data.go.kr/test",
         auth_type="api_key",

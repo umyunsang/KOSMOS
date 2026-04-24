@@ -115,7 +115,7 @@ def sample_tool() -> GovAPITool:
     return GovAPITool(
         id="test_tool",
         name_ko="테스트 도구",
-        provider="기관",
+        ministry="OTHER",
         category=["test"],
         endpoint="https://api.example.com/",
         auth_type="public",

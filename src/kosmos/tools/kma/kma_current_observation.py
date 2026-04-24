@@ -365,7 +365,7 @@ async def _call(
 KMA_CURRENT_OBSERVATION_TOOL = GovAPITool(
     id="kma_current_observation",
     name_ko="초단기실황 관측 조회",
-    provider="기상청 (KMA)",
+    ministry="KMA",
     category=["기상", "실황", "관측"],
     endpoint=_BASE_URL,
     auth_type="api_key",
@@ -385,6 +385,7 @@ KMA_CURRENT_OBSERVATION_TOOL = GovAPITool(
     cache_ttl_seconds=600,
     rate_limit_per_minute=10,
     is_core=True,
+    primitive="lookup",
 )
 
 

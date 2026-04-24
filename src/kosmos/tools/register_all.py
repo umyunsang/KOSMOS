@@ -15,6 +15,16 @@ NOTE (Stage 3 / T033, T048, T056): Three seed adapters added to the registry:
 forecast via LCC-projected grid), and ``hira_hospital_search`` (hospital search
 by radius).  All three are discoverable via ``lookup(mode="search")`` and
 invocable via ``lookup(mode="fetch")``.
+
+NOTE (Epic #1634 P3 / T010b + T011): The composite adapter ``road_risk_score``
+was removed per migration tree § L1-B B6 (``Composite 제거 · LLM primitive
+chain``). The LLM is expected to compose risk-assessment responses by chaining
+``lookup(mode="fetch")`` against the three underlying adapters
+(``koroad_accident_search``, ``kma_weather_alert_status``,
+``kma_current_observation``). Post-removal registered count is 14 (down from 15).
+``build_routing_index()`` is called at the end of registration and fails boot
+with ``SystemExit(78)`` (``EX_CONFIG``) if any adapter is misconfigured per
+``specs/1634-tool-system-wiring/contracts/routing-consistency.md § 5``.
 """
 
 from __future__ import annotations
@@ -26,14 +36,19 @@ from pydantic import BaseModel
 
 from kosmos.tools.executor import ToolExecutor
 from kosmos.tools.registry import ToolRegistry
+from kosmos.tools.routing_index import (
+    RoutingIndex,
+    RoutingValidationError,
+    build_routing_index,
+)
 
 logger = logging.getLogger(__name__)
 
 
-def register_all_tools(registry: ToolRegistry, executor: ToolExecutor) -> None:
+def register_all_tools(registry: ToolRegistry, executor: ToolExecutor) -> RoutingIndex:
     """Register all available government API tool adapters.
 
-    Registers the following tools in order:
+    Registers the following 14 tools in order (post-P3, composite removed):
       1. resolve_location — MVP LLM core surface: location resolution (is_core=True)
       2. lookup — MVP LLM core surface: adapter discovery + invocation (is_core=True)
       3. koroad_accident_search — KOROAD accident hotspot search (by enum codes)
@@ -43,22 +58,31 @@ def register_all_tools(registry: ToolRegistry, executor: ToolExecutor) -> None:
       7. kma_short_term_forecast — KMA short-term forecast (단기예보)
       8. kma_ultra_short_term_forecast — KMA ultra-short-term forecast (초단기예보)
       9. kma_pre_warning — KMA weather pre-warning list (기상예비특보목록)
-     10. road_risk_score — composite road risk score (fans out to all three)
-     11. nmc_emergency_search — NMC emergency room bed availability (Layer 3 gated)
-     12. kma_forecast_fetch — KMA short-term forecast by (lat, lon) → LCC grid
-     13. hira_hospital_search — HIRA hospital search by coordinates + radius
-     14. nfa_emergency_info_service — NFA EMS statistics (Phase 2, Layer 3 gated stub)
-     15. mohw_welfare_eligibility_search — SSIS welfare service list (Phase 2, Layer 3 gated stub)
+     10. nmc_emergency_search — NMC emergency room bed availability (Layer 3 gated)
+     11. kma_forecast_fetch — KMA short-term forecast by (lat, lon) → LCC grid
+     12. hira_hospital_search — HIRA hospital search by coordinates + radius
+     13. nfa_emergency_info_service — NFA EMS statistics (Phase 2, Layer 3 gated stub)
+     14. mohw_welfare_eligibility_search — SSIS welfare service list (Phase 2, Layer 3 gated stub)
+
+    After registration, ``build_routing_index()`` validates every adapter against
+    the six invariants in ``contracts/routing-consistency.md § 2``. Violations
+    cause ``SystemExit(78)`` (``EX_CONFIG``) at boot — fail-closed per
+    Constitution § II.
 
     Args:
         registry: The central ToolRegistry to add tools to.
         executor: The ToolExecutor to bind adapter functions to.
 
+    Returns:
+        ``RoutingIndex`` partitioned by primitive, consumed by
+        ``lookup(mode="search")`` for primitive-filtered ranking.
+
     Raises:
         DuplicateToolError: If any tool id is already registered (i.e., this
             function is called a second time on the same registry).
+        SystemExit(78): If ``build_routing_index()`` rejects any adapter
+            (invariant violation — see routing-consistency.md).
     """
-    from kosmos.tools.composite.road_risk_score import register as reg_risk
     from kosmos.tools.hira.hospital_search import register as reg_hira
     from kosmos.tools.kma.forecast_fetch import (
         KMA_FORECAST_FETCH_TOOL,
@@ -89,7 +113,7 @@ def register_all_tools(registry: ToolRegistry, executor: ToolExecutor) -> None:
     reg_kma_stf(registry, executor)
     reg_kma_ustf(registry, executor)
     reg_kma_pre_warning(registry, executor)
-    reg_risk(registry, executor)
+    # road_risk_score (composite) removed per Epic #1634 FR-027 (migration tree § L1-B B6).
 
     # Seed adapters for MVP Main-Tool (Epic #507, Stage 3)
     reg_nmc(registry, executor)  # T033 — NMC (Layer 3 gated stub)
@@ -113,3 +137,18 @@ def register_all_tools(registry: ToolRegistry, executor: ToolExecutor) -> None:
     reg_mohw(registry, executor)  # T022 — MOHW welfare eligibility search (interface-only)
 
     logger.info("All %d tools registered successfully", len(registry))
+
+    # Epic #1634 P3 / T011 — fail-closed routing validation.
+    # build_routing_index() walks every registered GovAPITool, validates
+    # primitive != None, unique tool_id, and compute_permission_tier() totality.
+    # Failure raises SystemExit(78) (EX_CONFIG) per contracts/routing-consistency.md § 5.
+    try:
+        routing_index = build_routing_index(list(registry._tools.values()))
+    except RoutingValidationError as exc:
+        logger.critical("Tool registry validation failed: %s", exc)
+        raise SystemExit(78) from exc
+
+    for warning in routing_index.warnings:
+        logger.warning("Routing index warning: %s", warning)
+
+    return routing_index

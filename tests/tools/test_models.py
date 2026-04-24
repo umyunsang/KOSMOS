@@ -22,7 +22,7 @@ class _MinimalOutput(BaseModel):
 _MINIMAL_KWARGS = {
     "id": "test_tool",
     "name_ko": "테스트도구",
-    "provider": "테스트기관",
+    "ministry": "OTHER",
     "category": ["test"],
     "endpoint": "https://apis.data.go.kr/test",
     # V6: auth_type='public' is consistent with auth_level='public'.

@@ -123,48 +123,15 @@ def test_no_scope_record_passes_non_ministry_tools(tmp_path: Path) -> None:
     assert check_ministry_scope("lookup", memdir_root=tmp_path) == "pass"
 
 
-def test_composite_tool_refuses_on_any_opt_out() -> None:
-    """`road_risk_score` fans out to KOROAD + KMA.  Opting out of either
-    ministry must refuse the composite call."""
-    assert "road_risk_score" in COMPOSITE_TOOL_MINISTRIES
-    assert ministries_for_composite("road_risk_score") == frozenset(("KOROAD", "KMA"))
-    # KOROAD declined → refuse (canonical refusal ministry = KOROAD since
-    # it's the first in sorted order).
-    scope_no_koroad = _scope_record({"KOROAD": False})
-    result = check_ministry_scope(
-        "road_risk_score",
-        memdir_root=Path("/nonexistent"),
-        scope_override=scope_no_koroad,
-    )
-    assert isinstance(result, MinistryOptOutRefusal)
-    assert result.ministry == "KOROAD"
-    # KMA declined → also refuses, this time naming KMA.
-    scope_no_kma = _scope_record({"KMA": False})
-    result = check_ministry_scope(
-        "road_risk_score",
-        memdir_root=Path("/nonexistent"),
-        scope_override=scope_no_kma,
-    )
-    assert isinstance(result, MinistryOptOutRefusal)
-    assert result.ministry == "KMA"
-    # Both opted in → pass.
-    assert (
-        check_ministry_scope(
-            "road_risk_score",
-            memdir_root=Path("/nonexistent"),
-            scope_override=_scope_record(),
-        )
-        == "pass"
-    )
-
-
-def test_composite_tool_refuses_on_missing_scope_record(tmp_path: Path) -> None:
-    """Fail-closed default for composite tools when no scope record exists."""
-    result = check_ministry_scope(
-        "road_risk_score",
-        memdir_root=tmp_path,
-    )
-    assert isinstance(result, MinistryOptOutRefusal)
+def test_composite_tool_ministries_empty_after_p3_removal() -> None:
+    """Epic #1634 P3 FR-027: ``road_risk_score`` (the sole composite adapter)
+    was removed per migration tree § L1-B B6. ``COMPOSITE_TOOL_MINISTRIES`` is
+    retained as an empty map so the ``ministries_for_composite()`` API shape
+    remains stable; future composites, if any, would go here and be caught by
+    the CI composite-pattern detector in test_routing_consistency.py.
+    """
+    assert COMPOSITE_TOOL_MINISTRIES == {}
+    assert ministries_for_composite("road_risk_score") is None
 
 
 def test_stale_scope_version_refuses(tmp_path: Path) -> None:

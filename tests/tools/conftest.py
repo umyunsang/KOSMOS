@@ -46,7 +46,7 @@ def sample_tool_factory():
     def _factory(
         id: str = "kma_weather_forecast",  # noqa: A002
         name_ko: str = "날씨예보",
-        provider: str = "기상청",
+        ministry: str = "KMA",
         category: list[str] | None = None,
         endpoint: str = "https://apis.data.go.kr/test",
         auth_type: str = "api_key",
@@ -74,7 +74,7 @@ def sample_tool_factory():
         return GovAPITool(
             id=id,
             name_ko=name_ko,
-            provider=provider,
+            ministry=ministry,
             category=category or ["날씨", "기상"],
             endpoint=endpoint,
             auth_type=auth_type,
@@ -124,7 +124,7 @@ def populated_registry(sample_tool_factory) -> ToolRegistry:
     weather = sample_tool_factory(
         id="kma_weather_forecast",
         name_ko="날씨예보",
-        provider="기상청",
+        ministry="KMA",
         category=["날씨", "기상"],
         search_hint="날씨 예보 weather forecast 기상청",
         is_core=True,
@@ -134,7 +134,7 @@ def populated_registry(sample_tool_factory) -> ToolRegistry:
     traffic = sample_tool_factory(
         id="koroad_accident_stats",
         name_ko="교통사고통계",
-        provider="도로교통공단",
+        ministry="KOROAD",
         category=["교통", "사고"],
         endpoint="https://apis.data.go.kr/koroad/accident",
         search_hint="교통사고 통계 traffic accident road safety",
@@ -144,7 +144,7 @@ def populated_registry(sample_tool_factory) -> ToolRegistry:
     hospital = sample_tool_factory(
         id="hira_hospital_info",
         name_ko="병원정보조회",
-        provider="건강보험심사평가원",
+        ministry="HIRA",
         category=["의료", "병원"],
         endpoint="https://apis.data.go.kr/hira/hospital",
         search_hint="병원 의원 의료기관 hospital clinic HIRA",
@@ -154,7 +154,7 @@ def populated_registry(sample_tool_factory) -> ToolRegistry:
     business = sample_tool_factory(
         id="nts_business_registration",
         name_ko="사업자등록정보조회",
-        provider="국세청",
+        ministry="OTHER",
         category=["사업자", "세금"],
         endpoint="https://apis.data.go.kr/nts/business",
         search_hint="사업자등록 법인 business registration NTS tax",

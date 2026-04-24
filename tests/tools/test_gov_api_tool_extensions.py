@@ -54,7 +54,7 @@ def _make_tool(
     return GovAPITool(
         id=tool_id,
         name_ko="테스트 도구",
-        provider="Test Provider",
+        ministry="OTHER",
         category=["test"],
         endpoint="https://example.com/api",
         auth_type=auth_type,  # type: ignore[arg-type]
@@ -186,7 +186,7 @@ def test_v6_fail_closed_on_unknown_auth_type() -> None:
     tool = GovAPITool.model_construct(
         id="stub_v6_fr048",
         name_ko="테스트 도구",
-        provider="Test Provider",
+        ministry="OTHER",
         category=["test"],
         endpoint="https://example.com/api",
         auth_type="bogus_type",  # bypasses Literal check

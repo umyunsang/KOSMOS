@@ -70,7 +70,7 @@ def _make_tool(
     tool = GovAPITool(
         id=tool_id,
         name_ko=f"테스트 도구 {tool_id}",
-        provider="Test Provider",
+        ministry="OTHER",
         category=["test"],
         endpoint="https://example.com/api",
         auth_type=auth_type,
@@ -245,7 +245,7 @@ class TestRegistryInvariantB2:
 _MC_DEFAULTS: dict[str, object] = {
     "id": "stub_v6_bypass",
     "name_ko": "V6 우회 스텁",
-    "provider": "Test Provider",
+    "ministry": "OTHER",
     "category": ["test"],
     "endpoint": "https://example.com/api",
     "input_schema": _StubInput,
@@ -318,7 +318,7 @@ class TestRegistryV6Backstop:
         tool = GovAPITool(
             id="stub_v6_setattr",
             name_ko="V6 setattr 스텁",
-            provider="Test Provider",
+            ministry="OTHER",
             category=["test"],
             endpoint="https://example.com/api",
             auth_type="public",
@@ -396,7 +396,7 @@ class TestRegistryV6Backstop:
             GovAPITool(
                 id="stub_v6_l1",
                 name_ko="V6 Layer1 스텁",
-                provider="Test Provider",
+                ministry="OTHER",
                 category=["test"],
                 endpoint="https://example.com/api",
                 auth_type="public",

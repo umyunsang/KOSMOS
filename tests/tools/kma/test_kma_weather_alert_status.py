@@ -316,7 +316,7 @@ class TestToolDefinition:
         assert KMA_WEATHER_ALERT_STATUS_TOOL.auth_type == "api_key"
 
     def test_provider(self) -> None:
-        assert "KMA" in KMA_WEATHER_ALERT_STATUS_TOOL.provider
+        assert KMA_WEATHER_ALERT_STATUS_TOOL.ministry == "KMA"
 
     def test_cache_ttl(self) -> None:
         assert KMA_WEATHER_ALERT_STATUS_TOOL.cache_ttl_seconds == 300

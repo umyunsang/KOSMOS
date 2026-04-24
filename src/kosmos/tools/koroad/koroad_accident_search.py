@@ -343,7 +343,7 @@ async def _call(
 KOROAD_ACCIDENT_SEARCH_TOOL = GovAPITool(
     id="koroad_accident_search",
     name_ko="교통사고 위험지역 조회",
-    provider="도로교통공단 (KOROAD)",
+    ministry="KOROAD",
     category=["교통안전", "사고통계", "위험지역"],
     endpoint=_BASE_URL,
     auth_type="api_key",
@@ -372,6 +372,7 @@ KOROAD_ACCIDENT_SEARCH_TOOL = GovAPITool(
     cache_ttl_seconds=3600,
     rate_limit_per_minute=10,
     is_core=True,
+    primitive="lookup",
 )
 
 

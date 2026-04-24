@@ -302,7 +302,7 @@ async def _call(
 KMA_WEATHER_ALERT_STATUS_TOOL = GovAPITool(
     id="kma_weather_alert_status",
     name_ko="기상특보 현황 조회",
-    provider="기상청 (KMA)",
+    ministry="KMA",
     category=["기상", "특보", "경보"],
     endpoint=_BASE_URL,
     auth_type="api_key",
@@ -322,6 +322,7 @@ KMA_WEATHER_ALERT_STATUS_TOOL = GovAPITool(
     cache_ttl_seconds=300,
     rate_limit_per_minute=10,
     is_core=True,
+    primitive="lookup",
 )
 
 
