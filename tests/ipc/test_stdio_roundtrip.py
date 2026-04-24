@@ -72,7 +72,16 @@ async def _read_lines(stream: asyncio.StreamReader, n: int, timeout: float = 10.
 
 @pytest.fixture
 async def backend_proc() -> AsyncIterator[asyncio.subprocess.Process]:
-    """Spawn ``uv run kosmos --ipc stdio`` and yield the process handle."""
+    """Spawn ``uv run kosmos --ipc stdio`` and yield the process handle.
+
+    KOSMOS_IPC_HANDLER=echo selects the test-friendly echo handler so the
+    round-trip test does not depend on FRIENDLI_API_KEY or network. The
+    production handler (Epic #1633) routes user_input frames through
+    LLMClient.stream() against FriendliAI.
+    """
+    import os
+
+    env = {**os.environ, "KOSMOS_IPC_HANDLER": "echo"}
     proc = await asyncio.create_subprocess_exec(
         sys.executable,
         "-m",
@@ -83,6 +92,7 @@ async def backend_proc() -> AsyncIterator[asyncio.subprocess.Process]:
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
         cwd=_PROJECT_ROOT,
+        env=env,
     )
     yield proc
     if proc.returncode is None:
