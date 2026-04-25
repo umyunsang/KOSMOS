@@ -1,0 +1,199 @@
+{
+  "$defs": {
+    "IntrsThemaCode": {
+      "description": "Interest-theme code (관심주제).",
+      "enum": [
+        "010",
+        "020",
+        "030",
+        "040",
+        "050",
+        "060",
+        "070",
+        "080",
+        "090",
+        "100",
+        "110",
+        "120",
+        "130",
+        "140"
+      ],
+      "title": "IntrsThemaCode",
+      "type": "string"
+    },
+    "LifeArrayCode": {
+      "description": "Life-stage code (생애주기). Source: 지자체복지서비스_코드표(v1.0).doc.",
+      "enum": [
+        "001",
+        "002",
+        "003",
+        "004",
+        "005",
+        "006",
+        "007"
+      ],
+      "title": "LifeArrayCode",
+      "type": "string"
+    },
+    "OrderBy": {
+      "description": "SSIS orderBy — 정렬순서.",
+      "enum": [
+        "date",
+        "popular"
+      ],
+      "title": "OrderBy",
+      "type": "string"
+    },
+    "SrchKeyCode": {
+      "description": "Service-list keyword search field code (SSIS 검색분류).",
+      "enum": [
+        "001",
+        "002",
+        "003"
+      ],
+      "title": "SrchKeyCode",
+      "type": "string"
+    },
+    "TrgterIndvdlCode": {
+      "description": "Target-individual / household-type code (가구상황).",
+      "enum": [
+        "010",
+        "020",
+        "030",
+        "040",
+        "050",
+        "060"
+      ],
+      "title": "TrgterIndvdlCode",
+      "type": "string"
+    },
+    "_MohwWelfareEligibilitySearchOutputStub": {
+      "additionalProperties": true,
+      "description": "Placeholder output schema for GovAPITool registration.\n\nReal XML-parsed output shape is deferred until Layer 3 auth is provisioned\n(Epic #16 / #20). Real models (SsisWelfareServiceItem +\nMohwWelfareEligibilitySearchOutput) are authored above ready for switch-over.",
+      "title": "_MohwWelfareEligibilitySearchOutputStub",
+      "type": "object"
+    }
+  },
+  "$id": "https://kosmos.example/api/schemas/mohw_welfare_eligibility_search.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "age": {
+      "anyOf": [
+        {
+          "maximum": 150,
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Citizen age in years. Used to filter age-eligible services. Do NOT request this from the citizen unless they have consented — this field is part of the is_personal_data=True surface.",
+      "title": "Age"
+    },
+    "call_tp": {
+      "const": "L",
+      "default": "L",
+      "description": "Call type — fixed to 'L' (list) for NationalWelfarelistV001. Do not override.",
+      "title": "Call Tp",
+      "type": "string"
+    },
+    "intrs_thema_array": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/IntrsThemaCode"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Interest-theme filter (e.g. '080' for 임신·출산, '010' for 신체건강). NOTE: Spec draft used '010' as a placeholder; the authoritative 임신·출산 code for intrsThemaArray is '080'."
+    },
+    "life_array": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/LifeArrayCode"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Life-stage filter (e.g. '007' for 임신·출산)."
+    },
+    "num_of_rows": {
+      "default": 10,
+      "description": "Records per page. Default 10, maximum 500 per SSIS API contract.",
+      "maximum": 500,
+      "minimum": 1,
+      "title": "Num Of Rows",
+      "type": "integer"
+    },
+    "onap_psblt_yn": {
+      "anyOf": [
+        {
+          "enum": [
+            "Y",
+            "N"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Filter to only online-applicable services when 'Y'. Omit to return both online and offline services.",
+      "title": "Onap Psblt Yn"
+    },
+    "order_by": {
+      "$ref": "#/$defs/OrderBy",
+      "default": "popular",
+      "description": "Sort order: 'popular' (조회 수) or 'date' (등록순)."
+    },
+    "page_no": {
+      "default": 1,
+      "description": "Page number (1-indexed). SSIS caps at 1000.",
+      "maximum": 1000,
+      "minimum": 1,
+      "title": "Page No",
+      "type": "integer"
+    },
+    "search_wrd": {
+      "anyOf": [
+        {
+          "maxLength": 100,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Free-text keyword to search welfare-service names/summaries. Korean preferred. Example: '출산' for childbirth benefits. Omit to filter by codes only.",
+      "title": "Search Wrd"
+    },
+    "srch_key_code": {
+      "$ref": "#/$defs/SrchKeyCode",
+      "default": "003",
+      "description": "Which fields to search (001 name, 002 summary, 003 both)."
+    },
+    "trgter_indvdl_array": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/TrgterIndvdlCode"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Target individual / household-type filter (e.g. '020' 다자녀)."
+    }
+  },
+  "title": "mohw_welfare_eligibility_search",
+  "type": "object"
+}

@@ -1,0 +1,167 @@
+{
+  "$defs": {
+    "KmaWeatherAlertStatusOutput": {
+      "description": "Output from the kma_weather_alert_status tool.",
+      "properties": {
+        "total_count": {
+          "title": "Total Count",
+          "type": "integer"
+        },
+        "warnings": {
+          "items": {
+            "$ref": "#/$defs/WeatherWarning"
+          },
+          "title": "Warnings",
+          "type": "array"
+        }
+      },
+      "required": [
+        "total_count",
+        "warnings"
+      ],
+      "title": "KmaWeatherAlertStatusOutput",
+      "type": "object"
+    },
+    "WeatherWarning": {
+      "description": "A single active weather warning or watch from KMA getWthrWrnList.\n\nThe wire response is inconsistent: some responses return the full 11-field\nschema, others return only a compact ``{stnId, tmFc, tmSeq}`` triple\n(observed live on 2026-04-14).  All fields other than ``stn_id`` and\n``tm_fc`` are therefore Optional; consumers should handle ``None``.\n``tm_fc`` arrives as int (e.g. ``202604141000``) in some responses and is\ncoerced to the canonical YYYYMMDDHHMI string.",
+      "properties": {
+        "area_code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Area Code"
+        },
+        "area_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Area Name"
+        },
+        "cancel": {
+          "default": 0,
+          "title": "Cancel",
+          "type": "integer"
+        },
+        "command": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Command"
+        },
+        "stn_id": {
+          "title": "Stn Id",
+          "type": "string"
+        },
+        "tm_ef": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tm Ef"
+        },
+        "tm_fc": {
+          "title": "Tm Fc",
+          "type": "string"
+        },
+        "tm_seq": {
+          "default": 0,
+          "title": "Tm Seq",
+          "type": "integer"
+        },
+        "warn_fc": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Warn Fc"
+        },
+        "warn_stress": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Warn Stress"
+        },
+        "warn_var": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Warn Var"
+        }
+      },
+      "required": [
+        "stn_id",
+        "tm_fc"
+      ],
+      "title": "WeatherWarning",
+      "type": "object"
+    }
+  },
+  "$id": "https://kosmos.example/api/schemas/kma_weather_alert_status.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Input parameters for the kma_weather_alert_status tool.",
+  "properties": {
+    "data_type": {
+      "default": "JSON",
+      "enum": [
+        "JSON",
+        "XML"
+      ],
+      "title": "Data Type",
+      "type": "string"
+    },
+    "num_of_rows": {
+      "default": 2000,
+      "minimum": 1,
+      "title": "Num Of Rows",
+      "type": "integer"
+    },
+    "page_no": {
+      "default": 1,
+      "minimum": 1,
+      "title": "Page No",
+      "type": "integer"
+    }
+  },
+  "title": "kma_weather_alert_status",
+  "type": "object"
+}

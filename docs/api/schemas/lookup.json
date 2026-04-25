@@ -1,0 +1,110 @@
+{
+  "$defs": {
+    "LookupFetchInput": {
+      "additionalProperties": false,
+      "description": "Input for lookup(mode='fetch'): typed invocation of a specific adapter.",
+      "properties": {
+        "mode": {
+          "const": "fetch",
+          "title": "Mode",
+          "type": "string"
+        },
+        "page": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Page"
+        },
+        "params": {
+          "additionalProperties": true,
+          "title": "Params",
+          "type": "object"
+        },
+        "tool_id": {
+          "pattern": "^([a-z][a-z0-9_]*|plugin\\.[a-z][a-z0-9_]*\\.(lookup|submit|verify|subscribe|resolve_location))$",
+          "title": "Tool Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "mode",
+        "tool_id",
+        "params"
+      ],
+      "title": "LookupFetchInput",
+      "type": "object"
+    },
+    "LookupSearchInput": {
+      "additionalProperties": false,
+      "description": "Input for lookup(mode='search'): BM25 gate over adapter registry.",
+      "properties": {
+        "domain": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Domain"
+        },
+        "mode": {
+          "const": "search",
+          "title": "Mode",
+          "type": "string"
+        },
+        "query": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Query",
+          "type": "string"
+        },
+        "top_k": {
+          "anyOf": [
+            {
+              "maximum": 20,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Top K"
+        }
+      },
+      "required": [
+        "mode",
+        "query"
+      ],
+      "title": "LookupSearchInput",
+      "type": "object"
+    },
+    "_LookupOutput": {
+      "description": "Placeholder output schema for lookup tool registration.",
+      "title": "_LookupOutput"
+    }
+  },
+  "$id": "https://kosmos.example/api/schemas/lookup.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "anyOf": [
+    {
+      "$ref": "#/$defs/LookupSearchInput"
+    },
+    {
+      "$ref": "#/$defs/LookupFetchInput"
+    }
+  ],
+  "description": "Combined input schema covering both search and fetch modes.",
+  "title": "lookup"
+}

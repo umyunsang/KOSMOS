@@ -1,0 +1,35 @@
+{
+  "$defs": {
+    "_AccidentHazardSearchOutput": {
+      "additionalProperties": true,
+      "description": "Placeholder output schema for GovAPITool registration.",
+      "title": "_AccidentHazardSearchOutput",
+      "type": "object"
+    }
+  },
+  "$id": "https://kosmos.example/api/schemas/koroad_accident_hazard_search.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Input schema for koroad_accident_hazard_search.\n\nUses a 10-digit 행정동 code (adm_cd) and a calendar year to look up\nthe KOROAD accident hazard spots for that municipality.",
+  "properties": {
+    "adm_cd": {
+      "description": "10-digit 행정동 administrative code. Obtain from resolve_location(want='adm_cd'). Example: '1111000000' for 서울특별시 종로구.",
+      "pattern": "^[0-9]{10}$",
+      "title": "Adm Cd",
+      "type": "string"
+    },
+    "year": {
+      "description": "Calendar year for the accident dataset. 2023+ uses 강원특별자치도(51)/전북특별자치도(52) codes automatically. Example: 2024.",
+      "maximum": 2100,
+      "minimum": 2019,
+      "title": "Year",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "adm_cd",
+    "year"
+  ],
+  "title": "koroad_accident_hazard_search",
+  "type": "object"
+}

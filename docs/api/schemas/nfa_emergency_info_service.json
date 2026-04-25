@@ -1,0 +1,87 @@
+{
+  "$defs": {
+    "NfaEmgOperation": {
+      "description": "Sub-endpoint selector for EmergencyInformationService.",
+      "enum": [
+        "getEmgencyActivityInfo",
+        "getEmgPatientTransferInfo",
+        "getEmgPatientConditionInfo",
+        "getEmgPatientFirstaidInfo",
+        "getEmgVehicleDispatchInfo",
+        "getEmgVehicleInfo"
+      ],
+      "title": "NfaEmgOperation",
+      "type": "string"
+    },
+    "_NfaEmergencyInfoServiceOutputStub": {
+      "additionalProperties": true,
+      "description": "Placeholder output schema for GovAPITool registration.\n\nReal output shape is deferred until Layer 3 auth is provisioned (Epic #16/#20).",
+      "title": "_NfaEmergencyInfoServiceOutputStub",
+      "type": "object"
+    }
+  },
+  "$id": "https://kosmos.example/api/schemas/nfa_emergency_info_service.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "num_of_rows": {
+      "default": 10,
+      "description": "Number of records per page. Default 10, maximum 100 per NFA API contract.",
+      "maximum": 100,
+      "minimum": 1,
+      "title": "Num Of Rows",
+      "type": "integer"
+    },
+    "operation": {
+      "$ref": "#/$defs/NfaEmgOperation",
+      "default": "getEmgencyActivityInfo",
+      "description": "Which emergency-info sub-endpoint to query. Pass the NfaEmgOperation enum value string directly. Default 'getEmgencyActivityInfo' returns dispatch distance, patient symptoms, and crew qualifications — the most citizen-relevant view. Use 'getEmgPatientTransferInfo' for patient transport, 'getEmgPatientConditionInfo' for vitals, 'getEmgPatientFirstaidInfo' for treatment codes, 'getEmgVehicleDispatchInfo' or 'getEmgVehicleInfo' for fleet data."
+    },
+    "page_no": {
+      "default": 1,
+      "description": "Page number (1-indexed). Default 1.",
+      "minimum": 1,
+      "title": "Page No",
+      "type": "integer"
+    },
+    "result_type": {
+      "const": "json",
+      "default": "json",
+      "description": "Response format. Fixed to 'json' — the adapter's Content-Type guard requires JSON to be requested. Do not override.",
+      "title": "Result Type",
+      "type": "string"
+    },
+    "rsac_gut_fstt_ogid_nm": {
+      "description": "Fire station name (출동소방서). Required. Example: '공주소방서', '파주소방서', '은평소방서'. Must be a valid NFA station name — do not guess. Use nfa_safety_center_lookup (future) or ask the citizen.",
+      "maxLength": 7,
+      "title": "Rsac Gut Fstt Ogid Nm",
+      "type": "string"
+    },
+    "sido_hq_ogid_nm": {
+      "anyOf": [
+        {
+          "maxLength": 22,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Regional fire headquarters name (시도본부). Example: '서울소방재난본부', '충청남도소방본부', '경기도소방재난본부'. Optional — omit to query all regions (may return a large result set).",
+      "title": "Sido Hq Ogid Nm"
+    },
+    "stmt_ym": {
+      "description": "Report year-month in YYYYMM format (신고년월 or 출동년월). Example: '202101' for January 2021. Required for all operations. Do not use future dates.",
+      "pattern": "^\\d{6}$",
+      "title": "Stmt Ym",
+      "type": "string"
+    }
+  },
+  "required": [
+    "rsac_gut_fstt_ogid_nm",
+    "stmt_ym"
+  ],
+  "title": "nfa_emergency_info_service",
+  "type": "object"
+}

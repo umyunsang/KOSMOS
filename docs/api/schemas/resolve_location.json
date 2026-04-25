@@ -1,0 +1,61 @@
+{
+  "$defs": {
+    "_ResolveLocationOutput": {
+      "description": "Placeholder output schema for resolve_location tool registration.",
+      "title": "_ResolveLocationOutput"
+    }
+  },
+  "$id": "https://kosmos.example/api/schemas/resolve_location.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Input to the resolve_location tool.\n\nConverts a free-text place query into typed location identifiers.\nField shapes and enum values are binding per contracts/resolve_location.input.schema.json.",
+  "properties": {
+    "near": {
+      "anyOf": [
+        {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Near"
+    },
+    "query": {
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Query",
+      "type": "string"
+    },
+    "want": {
+      "default": "coords_and_admcd",
+      "enum": [
+        "coords",
+        "adm_cd",
+        "coords_and_admcd",
+        "road_address",
+        "jibun_address",
+        "poi",
+        "all"
+      ],
+      "title": "Want",
+      "type": "string"
+    }
+  },
+  "required": [
+    "query"
+  ],
+  "title": "resolve_location",
+  "type": "object"
+}

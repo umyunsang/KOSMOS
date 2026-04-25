@@ -1,0 +1,129 @@
+{
+  "$defs": {
+    "ForecastItem": {
+      "description": "A single forecast data point from the KMA short-term or ultra-short-term API.",
+      "properties": {
+        "base_date": {
+          "title": "Base Date",
+          "type": "string"
+        },
+        "base_time": {
+          "title": "Base Time",
+          "type": "string"
+        },
+        "category": {
+          "title": "Category",
+          "type": "string"
+        },
+        "fcst_date": {
+          "title": "Fcst Date",
+          "type": "string"
+        },
+        "fcst_time": {
+          "title": "Fcst Time",
+          "type": "string"
+        },
+        "fcst_value": {
+          "title": "Fcst Value",
+          "type": "string"
+        },
+        "nx": {
+          "title": "Nx",
+          "type": "integer"
+        },
+        "ny": {
+          "title": "Ny",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "base_date",
+        "base_time",
+        "fcst_date",
+        "fcst_time",
+        "nx",
+        "ny",
+        "category",
+        "fcst_value"
+      ],
+      "title": "ForecastItem",
+      "type": "object"
+    },
+    "KmaShortTermForecastOutput": {
+      "description": "Output from the kma_short_term_forecast tool.",
+      "properties": {
+        "items": {
+          "items": {
+            "$ref": "#/$defs/ForecastItem"
+          },
+          "title": "Items",
+          "type": "array"
+        },
+        "total_count": {
+          "title": "Total Count",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "total_count",
+        "items"
+      ],
+      "title": "KmaShortTermForecastOutput",
+      "type": "object"
+    }
+  },
+  "$id": "https://kosmos.example/api/schemas/kma_ultra_short_term_forecast.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Input parameters for the KMA ultra-short-term forecast (초단기예보) API.",
+  "properties": {
+    "base_date": {
+      "title": "Base Date",
+      "type": "string"
+    },
+    "base_time": {
+      "title": "Base Time",
+      "type": "string"
+    },
+    "data_type": {
+      "default": "JSON",
+      "enum": [
+        "JSON",
+        "XML"
+      ],
+      "title": "Data Type",
+      "type": "string"
+    },
+    "num_of_rows": {
+      "default": 60,
+      "minimum": 1,
+      "title": "Num Of Rows",
+      "type": "integer"
+    },
+    "nx": {
+      "maximum": 149,
+      "minimum": 1,
+      "title": "Nx",
+      "type": "integer"
+    },
+    "ny": {
+      "maximum": 253,
+      "minimum": 1,
+      "title": "Ny",
+      "type": "integer"
+    },
+    "page_no": {
+      "default": 1,
+      "minimum": 1,
+      "title": "Page No",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "base_date",
+    "base_time",
+    "nx",
+    "ny"
+  ],
+  "title": "kma_ultra_short_term_forecast",
+  "type": "object"
+}

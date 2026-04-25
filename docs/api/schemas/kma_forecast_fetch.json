@@ -1,0 +1,55 @@
+{
+  "$defs": {
+    "_ForecastFetchOutput": {
+      "description": "Placeholder output schema for GovAPITool registration.\n\nActual output is LookupTimeseries (handled by envelope layer).",
+      "properties": {
+        "kind": {
+          "default": "timeseries",
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "title": "_ForecastFetchOutput",
+      "type": "object"
+    }
+  },
+  "$id": "https://kosmos.example/api/schemas/kma_forecast_fetch.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Input parameters for the kma_forecast_fetch adapter.\n\nThe adapter converts (lat, lon) internally to KMA grid (nx, ny) using\nLambert Conformal Conic projection — callers must NOT supply nx/ny.",
+  "properties": {
+    "base_date": {
+      "description": "Forecast base date in YYYYMMDD format, e.g. '20260416'. Use today's date or yesterday if today's data is not yet published.",
+      "pattern": "^\\d{8}$",
+      "title": "Base Date",
+      "type": "string"
+    },
+    "base_time": {
+      "description": "Forecast base time in HHMM format. Must be one of: 0200, 0500, 0800, 1100, 1400, 1700, 2000, 2300 (KST). Data is published approximately 10 minutes after each base time.",
+      "title": "Base Time",
+      "type": "string"
+    },
+    "lat": {
+      "description": "WGS-84 latitude of the target location, in decimal degrees. For Korean locations this is typically 33–38. Obtain from resolve_location(want='coords').",
+      "maximum": 90,
+      "minimum": -90,
+      "title": "Lat",
+      "type": "number"
+    },
+    "lon": {
+      "description": "WGS-84 longitude of the target location, in decimal degrees. For Korean locations this is typically 126–130. Obtain from resolve_location(want='coords').",
+      "maximum": 180,
+      "minimum": -180,
+      "title": "Lon",
+      "type": "number"
+    }
+  },
+  "required": [
+    "lat",
+    "lon",
+    "base_date",
+    "base_time"
+  ],
+  "title": "kma_forecast_fetch",
+  "type": "object"
+}
