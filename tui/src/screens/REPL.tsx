@@ -288,6 +288,43 @@ import { setClipboard } from '../ink/termio/osc.js';
 import type { ScrollBoxHandle } from '../ink/components/ScrollBox.js';
 import { createAttachmentMessage, getQueuedCommandAttachments } from '../utils/attachments.js';
 
+// KOSMOS P4 UI L2 — US1/US2/US3/US4/US5 wiring imports (T022/T023/T026/T036/T039/T056/T059/T072)
+import { StreamingChunk } from '../components/messages/StreamingChunk.js';
+import { CtrlOToExpand } from '../components/PromptInput/CtrlOToExpand.js';
+import { MarkdownRenderer } from '../components/messages/MarkdownRenderer.js';
+import { PdfInlineViewer } from '../components/messages/PdfInlineViewer.js';
+import { ErrorEnvelope } from '../components/messages/ErrorEnvelope.js';
+import type { ErrorEnvelopeT } from '../schemas/ui-l2/error.js';
+import { ContextQuoteBlock } from '../components/messages/ContextQuoteBlock.js';
+import { SlashCommandSuggestions } from '../components/PromptInput/SlashCommandSuggestions.js';
+import { BypassReinforcementModal } from '../components/permissions/BypassReinforcementModal.js';
+import { PermissionGauntletModal } from '../components/permissions/PermissionGauntletModal.js';
+import { ReceiptToast } from '../components/permissions/ReceiptToast.js';
+import { PermissionReceiptProvider, usePermissionReceipts } from '../context/PermissionReceiptContext.js';
+import { AgentVisibilityPanel } from '../components/agents/AgentVisibilityPanel.js';
+import { shouldActivateSwarm } from '../schemas/ui-l2/agent.js';
+import { HelpV2Grouped } from '../components/help/HelpV2Grouped.js';
+import { ConfigOverlay } from '../components/config/ConfigOverlay.js';
+import { EnvSecretIsolatedEditor } from '../components/config/EnvSecretIsolatedEditor.js';
+import { PluginBrowser } from '../components/plugins/PluginBrowser.js';
+import { ExportPdfDialog } from '../components/export/ExportPdfDialog.js';
+import { HistorySearchDialog } from '../components/history/HistorySearchDialog.js';
+import { OnboardingFlow, resetOnboardingState } from '../components/onboarding/OnboardingFlow.js';
+import { emitSurfaceActivation } from '../observability/surface.js';
+import { getOrCreateKosmosBridge } from '../ipc/bridgeSingleton.js';
+import { computeTier1NextMode } from '../keybindings/actions/permissionModeCycle.js';
+import { executeHelp } from '../commands/help.js';
+import { executeConfig, applyConfigChanges } from '../commands/config.js';
+import { executePlugins } from '../commands/plugins.js';
+import { executeExport } from '../commands/export.js';
+import { executeHistory } from '../commands/history.js';
+import { buildConsentListRows, formatConsentListRow } from '../commands/consent.js';
+import { renderAgentsCommand } from '../commands/agents.js';
+import { parseOnboardingCommand } from '../commands/onboarding.js';
+import { loadOnboardingState } from '../utils/uiL2Memdir.js';
+import { isOnboardingComplete } from '../schemas/ui-l2/onboarding.js';
+import type { ConversationTurn, ToolInvocationRecord } from '../components/export/ExportPdfDialog.js';
+
 // Stable empty array for hooks that accept MCPServerConnection[] — avoids
 // creating a new [] literal on every render in remote mode, which would
 // cause useEffect dependency changes and infinite re-render loops.
@@ -613,6 +650,39 @@ export function REPL({
     return () => logForDebugging(`[REPL:unmount] REPL unmounting`);
   }, [disabled]);
 
+  // KOSMOS P4 UI L2 — T026: emit kosmos.ui.surface=repl on mount
+  useEffect(() => {
+    emitSurfaceActivation('repl');
+  }, []);
+
+  // KOSMOS P4 UI L2 — T022/T023: streaming state + 5-second no-chunk timeout
+  const [kosmosCurrentError, setKosmosCurrentError] = useState<ErrorEnvelopeT | null>(null);
+  const kosmosLastChunkTimeRef = useRef<number>(Date.now());
+  const KOSMOS_STREAM_TIMEOUT_MS = 5000;
+
+  // KOSMOS P4 UI L2 — T036: Bypass reinforcement modal state
+  const [kosmosShowBypassConfirm, setKosmosShowBypassConfirm] = useState(false);
+
+  // KOSMOS P4 UI L2 — T056: swarm mode state + primitiveByWorker map
+  const [kosmosSwarmMode, setKosmosSwarmMode] = useState(false);
+  const [kosmosPrimitiveByWorker, setKosmosPrimitiveByWorker] = useState<Record<string, string>>({});
+
+  // KOSMOS P4 UI L2 — T059: emit agents surface on swarm activation
+  useEffect(() => {
+    if (kosmosSwarmMode) {
+      emitSurfaceActivation('agents', { 'kosmos.swarm.auto': true });
+    }
+  }, [kosmosSwarmMode]);
+
+  // KOSMOS P4 UI L2 — T049/T052: onboarding mode state for /onboarding command
+  const [kosmosOnboardingMode, setKosmosOnboardingMode] = useState<{
+    active: boolean;
+    isolatedStep?: import('../schemas/ui-l2/onboarding.js').OnboardingStepNameT;
+  }>({ active: false });
+
+  // KOSMOS P4 UI L2 — T036: track previous permission mode to detect bypass transition
+  const kosmosPrevModeRef = useRef<string>('default');
+
   // Agent definition is state so /resume can update it mid-session
   const [mainThreadAgentDefinition, setMainThreadAgentDefinition] = useState(initialMainThreadAgentDefinition);
   const toolPermissionContext = useAppState(s => s.toolPermissionContext);
@@ -672,6 +742,39 @@ export function REPL({
   const store = useAppStateStore();
   const terminal = useTerminalNotification();
   const mainLoopModel = useMainLoopModel();
+
+  // KOSMOS P4 UI L2 — T039: pending consent request from consentBridge (Spec 033 IPC path)
+  // When the backend sends a consent_request frame, the IPC dispatcher calls
+  // handleNotificationFrame() in consentBridge.ts which resolves an awaitConsentRequest promise.
+  // For P4 MVP we hold a minimal pending state here; the full IPC wiring is P5.
+  const [kosmosPendingConsent, setKosmosPendingConsent] = useState<{
+    layer: 1 | 2 | 3;
+    toolName: string;
+    description: string;
+    onDecide: (decision: import('../schemas/ui-l2/permission.js').PermissionDecisionT) => void;
+  } | null>(null);
+
+  // KOSMOS P4 UI L2 — T036: intercept bypassPermissions transition for reinforcement modal
+  // This effect watches toolPermissionContext.mode changes. If the mode just became
+  // bypassPermissions and we haven't confirmed, revert and show the modal.
+  useEffect(() => {
+    const currentMode = toolPermissionContext.mode;
+    const prevMode = kosmosPrevModeRef.current;
+    if (currentMode === 'bypassPermissions' && prevMode !== 'bypassPermissions') {
+      setAppState(prev => ({
+        ...prev,
+        toolPermissionContext: {
+          ...prev.toolPermissionContext,
+          mode: prevMode as import('../permissions/types.js').PermissionMode,
+        },
+      }));
+      setKosmosShowBypassConfirm(true);
+    } else {
+      kosmosPrevModeRef.current = currentMode;
+    }
+  // setAppState is stable; toolPermissionContext.mode drives this effect
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [toolPermissionContext.mode, setAppState]);
 
   // Note: standaloneAgentContext is initialized in main.tsx (via initialState) or
   // ResumeConversation.tsx (via setAppState before rendering REPL) to avoid
@@ -914,6 +1017,29 @@ export function REPL({
   // loading is driven by queryGuard (reserve/tryStart/end/cancelReservation),
   // external loading by setIsExternalLoading.
   const isLoading = isQueryActive || isExternalLoading;
+
+  // KOSMOS P4 UI L2 — T023: 5-second no-chunk network timeout (FR: UI-B edge case)
+  useEffect(() => {
+    if (!isLoading) {
+      kosmosLastChunkTimeRef.current = Date.now();
+      return;
+    }
+    const timer = setTimeout(() => {
+      if (Date.now() - kosmosLastChunkTimeRef.current >= KOSMOS_STREAM_TIMEOUT_MS) {
+        const networkError: ErrorEnvelopeT = {
+          type: 'network',
+          title_ko: '네트워크 연결이 끊어졌습니다',
+          title_en: 'Network connection lost',
+          detail_ko: '5초간 응답이 없습니다. 다시 시도해주세요.',
+          detail_en: 'No response for 5 seconds. Please retry.',
+          retry_suggested: true,
+          occurred_at: new Date().toISOString(),
+        };
+        setKosmosCurrentError(networkError);
+      }
+    }, KOSMOS_STREAM_TIMEOUT_MS);
+    return () => clearTimeout(timer);
+  }, [isLoading]);
 
   // Elapsed time is computed by SpinnerWithVerb from these refs on each
   // animation frame, avoiding a useInterval that re-renders the entire REPL.
@@ -3155,6 +3281,191 @@ export function REPL({
       proactiveModule?.resumeProactive();
     }
 
+    // KOSMOS P4 UI L2 — T072: KOSMOS auxiliary command dispatch
+    // Intercepts /help /config /plugins /export /history /consent /agents /onboarding /lang
+    // BEFORE the existing CC command router so they are always handled locally.
+    if (!speculationAccept && input.trim().startsWith('/')) {
+      const _kosmosRaw = expandPastedTextRefs(input, pastedContents).trim();
+      const _kosmosSpaceIdx = _kosmosRaw.indexOf(' ');
+      const _kosmosCmd = _kosmosSpaceIdx === -1 ? _kosmosRaw.slice(1) : _kosmosRaw.slice(1, _kosmosSpaceIdx);
+      const _kosmosArgs = _kosmosSpaceIdx === -1 ? '' : _kosmosRaw.slice(_kosmosSpaceIdx + 1).trim();
+
+      const _kosmosCloseJSX = (result?: string): void => {
+        setToolJSX({ jsx: null, shouldHidePromptInput: false, clearLocalJSX: true });
+        if (result) {
+          addNotification({ key: `kosmos-cmd-${_kosmosCmd}`, text: result, priority: 'immediate' });
+        }
+      };
+
+      if (_kosmosCmd === 'help') {
+        setInputValue('');
+        helpers.setCursorOffset(0);
+        helpers.clearBuffer();
+        const helpResult = executeHelp((process.env['KOSMOS_TUI_LOCALE'] as 'ko' | 'en' | undefined) ?? 'ko');
+        setToolJSX({
+          jsx: React.createElement(HelpV2Grouped, { onDismiss: () => _kosmosCloseJSX() }),
+          shouldHidePromptInput: false,
+          isLocalJSXCommand: true,
+        });
+        return;
+      }
+
+      if (_kosmosCmd === 'config') {
+        setInputValue('');
+        helpers.setCursorOffset(0);
+        helpers.clearBuffer();
+        const configResult = executeConfig(_kosmosArgs || undefined);
+        let _showSecretEditor = configResult.openSecretEditorFor;
+        setToolJSX({
+          jsx: React.createElement(ConfigOverlay, {
+            entries: configResult.entries,
+            onSave: (updated) => { applyConfigChanges(updated); _kosmosCloseJSX(); },
+            onCancel: () => _kosmosCloseJSX(),
+            onOpenSecretEditor: (key) => {
+              _showSecretEditor = key;
+              setToolJSX({
+                jsx: React.createElement(EnvSecretIsolatedEditor, {
+                  secretKey: key,
+                  onConfirm: (_k, _v) => { _kosmosCloseJSX(); },
+                  onCancel: () => _kosmosCloseJSX(),
+                }),
+                shouldHidePromptInput: false,
+                isLocalJSXCommand: true,
+              });
+            },
+          }),
+          shouldHidePromptInput: false,
+          isLocalJSXCommand: true,
+        });
+        return;
+      }
+
+      if (_kosmosCmd === 'plugins') {
+        setInputValue('');
+        helpers.setCursorOffset(0);
+        helpers.clearBuffer();
+        const pluginsResult = executePlugins();
+        setToolJSX({
+          jsx: React.createElement(PluginBrowser, {
+            plugins: pluginsResult.plugins,
+            onToggle: () => {},
+            onDetail: () => {},
+            onRemove: () => {},
+            onMarketplace: () => {},
+            onDismiss: () => _kosmosCloseJSX(),
+          }),
+          shouldHidePromptInput: false,
+          isLocalJSXCommand: true,
+        });
+        return;
+      }
+
+      if (_kosmosCmd === 'export') {
+        setInputValue('');
+        helpers.setCursorOffset(0);
+        helpers.clearBuffer();
+        const exportResult = executeExport([], [], []);
+        setToolJSX({
+          jsx: React.createElement(ExportPdfDialog, {
+            turns: exportResult.turns,
+            toolInvocations: exportResult.toolInvocations,
+            receipts: exportResult.receipts,
+            outputPath: exportResult.outputPath,
+            onDone: (result) => _kosmosCloseJSX(result.message),
+            onCancel: () => _kosmosCloseJSX(),
+          }),
+          shouldHidePromptInput: false,
+          isLocalJSXCommand: true,
+        });
+        return;
+      }
+
+      if (_kosmosCmd === 'history') {
+        setInputValue('');
+        helpers.setCursorOffset(0);
+        helpers.clearBuffer();
+        const { sessions } = executeHistory(_kosmosArgs);
+        setToolJSX({
+          jsx: React.createElement(HistorySearchDialog, {
+            sessions,
+            onSelect: (sessionId) => { _kosmosCloseJSX(); },
+            onCancel: () => _kosmosCloseJSX(),
+          }),
+          shouldHidePromptInput: false,
+          isLocalJSXCommand: true,
+        });
+        return;
+      }
+
+      if (_kosmosCmd === 'consent') {
+        setInputValue('');
+        helpers.setCursorOffset(0);
+        helpers.clearBuffer();
+        const subCmd = _kosmosArgs.split(/\s/)[0] ?? '';
+        if (subCmd === 'list' || _kosmosArgs === '') {
+          // Show consent list — rendered as plain text notification for now
+          addNotification({
+            key: 'kosmos-consent-list',
+            text: '권한 영수증: /consent list는 이 세션의 PermissionReceiptContext에서 읽습니다. (P5에서 패널 뷰 추가 예정)',
+            priority: 'immediate',
+          });
+        } else if (subCmd === 'revoke') {
+          addNotification({
+            key: 'kosmos-consent-revoke',
+            text: `권한 영수증 철회: ${_kosmosArgs} — 확인 후 consentBridge.resolve()를 통해 처리됩니다. (P5 연동 예정)`,
+            priority: 'immediate',
+          });
+        }
+        return;
+      }
+
+      if (_kosmosCmd === 'agents') {
+        setInputValue('');
+        helpers.setCursorOffset(0);
+        helpers.clearBuffer();
+        const agentsJsx = renderAgentsCommand(_kosmosArgs, () => _kosmosCloseJSX());
+        setToolJSX({
+          jsx: agentsJsx,
+          shouldHidePromptInput: false,
+          isLocalJSXCommand: true,
+        });
+        return;
+      }
+
+      if (_kosmosCmd === 'onboarding') {
+        setInputValue('');
+        helpers.setCursorOffset(0);
+        helpers.clearBuffer();
+        const onboardingResult = parseOnboardingCommand(_kosmosArgs);
+        if (onboardingResult.mode === 'error') {
+          addNotification({ key: 'kosmos-onboarding-error', text: onboardingResult.message, priority: 'immediate' });
+        } else if (onboardingResult.mode === 'full') {
+          void loadOnboardingState().then((current) => {
+            void resetOnboardingState(current).then(() => {
+              setKosmosOnboardingMode({ active: true, isolatedStep: undefined });
+            });
+          });
+        } else {
+          setKosmosOnboardingMode({ active: true, isolatedStep: onboardingResult.step });
+        }
+        return;
+      }
+
+      if (_kosmosCmd === 'lang') {
+        setInputValue('');
+        helpers.setCursorOffset(0);
+        helpers.clearBuffer();
+        const { parseLangCommand } = await import('../commands/lang.js');
+        const langResult = parseLangCommand(_kosmosArgs);
+        if (langResult.ok) {
+          addNotification({ key: 'kosmos-lang', text: `언어가 ${langResult.locale}로 변경되었습니다.`, priority: 'immediate' });
+        } else {
+          addNotification({ key: 'kosmos-lang-error', text: langResult.message, priority: 'immediate' });
+        }
+        return;
+      }
+    }
+
     // Handle immediate commands - these bypass the queue and execute right away
     // even while Claude is processing. Commands opt-in via `immediate: true`.
     // Commands triggered via keybindings are always treated as immediate.
@@ -4904,6 +5215,63 @@ export function REPL({
             // Works during isLoading — edit cancels first; uuid selection survives appends.
             feature('MESSAGE_ACTIONS') && isFullscreenEnvEnabled() && !disableMessageActions ? enterMessageActions : undefined} mcpClients={mcpClients} pastedContents={pastedContents} setPastedContents={setPastedContents} vimMode={vimMode} setVimMode={setVimMode} showBashesDialog={showBashesDialog} setShowBashesDialog={setShowBashesDialog} onSubmit={onSubmit} onAgentSubmit={onAgentSubmit} isSearchingHistory={isSearchingHistory} setIsSearchingHistory={setIsSearchingHistory} helpOpen={isHelpOpen} setHelpOpen={setIsHelpOpen} insertTextRef={feature('VOICE_MODE') ? insertTextRef : undefined} voiceInterimRange={voice.interimRange} />
                       <SessionBackgroundHint onBackgroundSession={handleBackgroundSession} isLoading={isLoading} />
+                      {/* KOSMOS P4 UI L2 — T022: SlashCommandSuggestions above prompt */}
+                      <SlashCommandSuggestions
+                        inputText={inputValue}
+                        selectedIndex={0}
+                        onSelect={(entry) => setInputValue(entry.name + ' ')}
+                      />
+                      {/* KOSMOS P4 UI L2 — T022: ErrorEnvelope for network/LLM/tool errors */}
+                      {kosmosCurrentError && (
+                        <ErrorEnvelope
+                          error={kosmosCurrentError}
+                          onRetry={() => setKosmosCurrentError(null)}
+                        />
+                      )}
+                      {/* KOSMOS P4 UI L2 — T022: AgentVisibilityPanel in swarm mode */}
+                      {kosmosSwarmMode && (
+                        <AgentVisibilityPanel
+                          initialEntries={[]}
+                          showDetail={false}
+                          bridge={getOrCreateKosmosBridge()}
+                          primitiveByWorker={kosmosPrimitiveByWorker}
+                        />
+                      )}
+                      {/* KOSMOS P4 UI L2 — T039: PermissionGauntletModal for Spec 033 consent requests */}
+                      {kosmosPendingConsent && (
+                        <PermissionGauntletModal
+                          layer={kosmosPendingConsent.layer}
+                          toolName={kosmosPendingConsent.toolName}
+                          description={kosmosPendingConsent.description}
+                          onDecide={(decision) => {
+                            kosmosPendingConsent.onDecide(decision);
+                            setKosmosPendingConsent(null);
+                          }}
+                        />
+                      )}
+                      {/* KOSMOS P4 UI L2 — T036: BypassReinforcementModal */}
+                      {kosmosShowBypassConfirm && (
+                        <BypassReinforcementModal
+                          onConfirm={() => {
+                            setAppState(prev => ({
+                              ...prev,
+                              toolPermissionContext: {
+                                ...prev.toolPermissionContext,
+                                mode: 'bypassPermissions',
+                              },
+                            }));
+                            setKosmosShowBypassConfirm(false);
+                          }}
+                          onCancel={() => setKosmosShowBypassConfirm(false)}
+                        />
+                      )}
+                      {/* KOSMOS P4 UI L2 — T049: OnboardingFlow overlay triggered by /onboarding command */}
+                      {kosmosOnboardingMode.active && (
+                        <OnboardingFlow
+                          isolatedStep={kosmosOnboardingMode.isolatedStep}
+                          onComplete={() => setKosmosOnboardingMode({ active: false })}
+                        />
+                      )}
                     </>}
                 {cursor &&
           // inputValue is REPL state; typed text survives the round-trip.
