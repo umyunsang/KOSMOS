@@ -1,476 +1,388 @@
-/**
- * User keybinding configuration loader with hot-reload support.
- *
- * Loads keybindings from ~/.claude/keybindings.json and watches
- * for changes to reload them automatically.
- *
- * NOTE: User keybinding customization is currently only available for
- * Anthropic employees (USER_TYPE === 'ant'). External users always
- * use the default bindings.
- */
+// SPDX-License-Identifier: Apache-2.0
+// Spec 288 — User keybinding override loader.
+//
+// Exports a SYNC `loadUserBindings(opts)` that:
+//   1. Reads defaults from DEFAULT_BINDINGS (KeybindingEntry[]).
+//   2. If opts.readFile is provided, calls it with opts.path to get JSON text.
+//      Returns null → treated as ENOENT (degrade to defaults, FR-023).
+//   3. Parses the JSON as a flat `{ <chord>: <action> | null }` map
+//      (the new simple format; no `bindings`-wrapper, no `$schema`).
+//   4. Validates each entry; emits LoaderWarning for errors; skips bad entries.
+//   5. Applies surviving overrides to a mutable copy of the defaults map.
+//   6. Returns a frozen LoaderResult.
+//
+// Reserved chords (ctrl+c, ctrl+d) and reserved actions (agent-interrupt,
+// session-exit) are immutable — override attempts emit a warning and are
+// silently discarded (FR-027, FR-028, Codex P1 on PR #1591).
+//
+// COMPATIBILITY: The legacy async `loadKeybindings()` and sync
+// `loadKeybindingsSyncWithWarnings()` functions are preserved for the
+// KeybindingSetup component. They delegate to the new sync function.
 
-import chokidar, { type FSWatcher } from 'chokidar'
 import { readFileSync } from 'fs'
-import { readFile, stat } from 'fs/promises'
-import { dirname, join } from 'path'
-import { getFeatureValue_CACHED_MAY_BE_STALE } from '../services/analytics/growthbook.js'
-import { logEvent } from '../services/analytics/index.js'
-import { registerCleanup } from '../utils/cleanupRegistry.js'
-import { logForDebugging } from '../utils/debug.js'
-import { getClaudeConfigHomeDir } from '../utils/envUtils.js'
-import { errorMessage, isENOENT } from '../utils/errors.js'
-import { createSignal } from '../utils/signal.js'
-import { jsonParse } from '../utils/slowOperations.js'
-import { DEFAULT_BINDINGS } from './defaultBindings.js'
-import { parseBindings } from './parser.js'
-import type { KeybindingBlock, ParsedBinding } from './types.js'
-import {
-  checkDuplicateKeysInJson,
-  type KeybindingWarning,
-  validateBindings,
-} from './validate.js'
+import { parseChord, tryParseChord } from './chord'
+import { DEFAULT_BINDINGS, defaultBindingsByAction, getKeybindingsPath } from './defaultBindings'
+import type {
+  ChordString,
+  KeybindingEntry,
+  TierOneAction,
+} from './types'
+import { TIER_ONE_ACTIONS } from './types'
+
+// ---------------------------------------------------------------------------
+// Re-export getKeybindingsPath for external callers that imported it from here
+// ---------------------------------------------------------------------------
+export { getKeybindingsPath }
+
+// ---------------------------------------------------------------------------
+// Warning types
+// ---------------------------------------------------------------------------
+
+export type LoaderWarningKind =
+  | 'parse-error'
+  | 'shape-invalid'
+  | 'invalid-chord'
+  | 'unknown-action'
+  | 'reserved-action-remap'
+  | 'reserved-chord-collision'
+
+export type LoaderWarning = Readonly<{
+  kind: LoaderWarningKind
+  message: string
+  chord?: string
+  action?: string
+}>
+
+// Back-compat alias for the legacy validate module.
+export type KeybindingWarning = LoaderWarning
+
+// ---------------------------------------------------------------------------
+// Loader result
+// ---------------------------------------------------------------------------
+
+export type LoaderResult = Readonly<{
+  /** Per-action effective binding map (defaults + overrides applied). */
+  bindings: ReadonlyMap<TierOneAction, KeybindingEntry>
+  /** All warnings emitted during loading. */
+  warnings: ReadonlyArray<LoaderWarning>
+  /** Chords that were explicitly disabled (effective_chord = null). */
+  disabled_chords: ReadonlyArray<ChordString>
+  /** Reverse map: effective_chord → action (disabled chords excluded). */
+  effective_chord_to_action: ReadonlyMap<ChordString, TierOneAction>
+}>
+
+// Back-compat alias.
+export type KeybindingsLoadResult = LoaderResult
+
+// ---------------------------------------------------------------------------
+// Reserved sets (FR-027, FR-028, Codex P1)
+// ---------------------------------------------------------------------------
+
+const RESERVED_ACTIONS: ReadonlySet<TierOneAction> = new Set([
+  'agent-interrupt',
+  'session-exit',
+])
+
+function reservedDefaultChords(): ReadonlySet<ChordString> {
+  const s = new Set<ChordString>()
+  for (const e of DEFAULT_BINDINGS) {
+    if (e.reserved && e.default_chord !== null) {
+      s.add(e.default_chord)
+    }
+  }
+  return s
+}
+
+// ---------------------------------------------------------------------------
+// Loader options
+// ---------------------------------------------------------------------------
+
+export type LoadUserBindingsOpts = {
+  /** Path to the override file (default: getKeybindingsPath()). */
+  path?: string
+  /**
+   * Synchronous file reader injection. Return null to signal ENOENT
+   * (degrade silently to defaults, FR-023). Return the file contents
+   * as a string. Throwing is treated as a hard error with a `parse-error`
+   * warning.
+   */
+  readFile?: (path: string) => string | null
+  /** Optional per-warning callback (fired before the warning is pushed). */
+  onWarning?: (warning: LoaderWarning) => void
+}
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+const ACTION_SET: ReadonlySet<string> = new Set(TIER_ONE_ACTIONS)
+
+function isTierOneAction(s: string): s is TierOneAction {
+  return ACTION_SET.has(s)
+}
+
+function warn(
+  warnings: LoaderWarning[],
+  onWarning: ((w: LoaderWarning) => void) | undefined,
+  w: LoaderWarning,
+): void {
+  warnings.push(w)
+  onWarning?.(w)
+}
+
+function buildResult(
+  bindings: Map<TierOneAction, KeybindingEntry>,
+  warnings: LoaderWarning[],
+): LoaderResult {
+  const disabled_chords: ChordString[] = []
+  const effective_chord_to_action = new Map<ChordString, TierOneAction>()
+
+  for (const [action, entry] of bindings) {
+    if (entry.effective_chord === null) {
+      // We track disabled chords only for non-reserved entries.
+      if (!entry.reserved) {
+        disabled_chords.push(entry.default_chord)
+      }
+    } else {
+      effective_chord_to_action.set(entry.effective_chord, action)
+    }
+  }
+
+  return Object.freeze({
+    bindings,
+    warnings: Object.freeze(warnings),
+    disabled_chords: Object.freeze(disabled_chords),
+    effective_chord_to_action,
+  })
+}
+
+// ---------------------------------------------------------------------------
+// Main sync loader
+// ---------------------------------------------------------------------------
 
 /**
- * Check if keybinding customization is enabled.
+ * Synchronously loads and merges user keybinding overrides.
  *
- * Returns true if the tengu_keybinding_customization_release GrowthBook gate is enabled.
- *
- * This function is exported so other parts of the codebase (e.g., /doctor)
- * can check the same condition consistently.
+ * Contract (tests are the authoritative spec):
+ *   - Returns default bindings unchanged when no override file exists (FR-023).
+ *   - Emits `parse-error` and falls back to defaults for malformed JSON (FR-024).
+ *   - `{"<chord>": null}` disables a non-reserved binding (FR-025).
+ *   - `{"<chord>": "<action>"}` remaps an action (FR-026).
+ *   - Reserved-action remap attempts emit `reserved-action-remap` (FR-027).
+ *   - Reserved-binding disable attempts emit `reserved-chord-collision` (FR-028 + Codex P1).
+ *   - Chord-onto-reserved-chord remap attempts emit `reserved-chord-collision` (Codex P1 PR #1591).
+ *   - Unknown chord syntax emits `invalid-chord`.
+ *   - Unknown action value emits `unknown-action`.
  */
+export function loadUserBindings(opts: LoadUserBindingsOpts = {}): LoaderResult {
+  const warnings: LoaderWarning[] = []
+  const { onWarning, path = getKeybindingsPath() } = opts
+
+  // Start with a mutable copy of the defaults keyed by action.
+  const bindings = new Map<TierOneAction, KeybindingEntry>(
+    defaultBindingsByAction() as Map<TierOneAction, KeybindingEntry>,
+  )
+  const reservedChords = reservedDefaultChords()
+
+  // -------------------------------------------------------------------------
+  // 1. Read the file.
+  // -------------------------------------------------------------------------
+  let content: string | null = null
+  if (opts.readFile !== undefined) {
+    try {
+      content = opts.readFile(path)
+    } catch (err) {
+      warn(warnings, onWarning, {
+        kind: 'parse-error',
+        message: `Failed to read ${path}: ${err instanceof Error ? err.message : String(err)}`,
+      })
+      return buildResult(bindings, warnings)
+    }
+  } else {
+    // Real filesystem read.
+    try {
+      content = readFileSync(path, 'utf-8')
+    } catch {
+      // ENOENT or unreadable → degrade silently (FR-023).
+      return buildResult(bindings, warnings)
+    }
+  }
+
+  // null from readFile = ENOENT sentinel (FR-023).
+  if (content === null) {
+    return buildResult(bindings, warnings)
+  }
+
+  // -------------------------------------------------------------------------
+  // 2. Parse JSON.
+  // -------------------------------------------------------------------------
+  let raw: unknown
+  try {
+    raw = JSON.parse(content)
+  } catch (err) {
+    warn(warnings, onWarning, {
+      kind: 'parse-error',
+      message: `Invalid JSON in ${path}: ${err instanceof Error ? err.message : String(err)}`,
+    })
+    return buildResult(bindings, warnings)
+  }
+
+  // -------------------------------------------------------------------------
+  // 3. Validate shape: must be a plain object (not array, not null).
+  // -------------------------------------------------------------------------
+  if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) {
+    warn(warnings, onWarning, {
+      kind: 'shape-invalid',
+      message: `${path} must be a plain JSON object with chord → action entries`,
+    })
+    return buildResult(bindings, warnings)
+  }
+
+  const overrideMap = raw as Record<string, unknown>
+
+  // -------------------------------------------------------------------------
+  // 4. Process each override entry.
+  // -------------------------------------------------------------------------
+  for (const [chordStr, rawAction] of Object.entries(overrideMap)) {
+    // 4a. Validate chord syntax.
+    const chord = tryParseChord(chordStr)
+    if (chord === null) {
+      warn(warnings, onWarning, {
+        kind: 'invalid-chord',
+        message: `Invalid chord syntax: ${JSON.stringify(chordStr)}`,
+        chord: chordStr,
+      })
+      continue
+    }
+
+    // 4b. Validate action type.
+    if (rawAction !== null && typeof rawAction !== 'string') {
+      warn(warnings, onWarning, {
+        kind: 'invalid-chord',
+        message: `Action for ${JSON.stringify(chordStr)} must be a string or null`,
+        chord: chordStr,
+      })
+      continue
+    }
+
+    // 4c. Reserved-chord collision guard (Codex P1 on PR #1591).
+    //     Any override (remap OR null-disable) targeting a reserved chord is
+    //     rejected with `reserved-chord-collision` regardless of the value.
+    if (reservedChords.has(chord)) {
+      warn(warnings, onWarning, {
+        kind: 'reserved-chord-collision',
+        message: `Cannot override reserved chord ${chordStr}; it is permanently bound to a reserved action`,
+        chord: chordStr,
+      })
+      continue
+    }
+
+    // 4d. Validate action value (for non-null remaps).
+    if (typeof rawAction === 'string') {
+      // 4d-i. Reject remap to reserved action.
+      if (isTierOneAction(rawAction) && RESERVED_ACTIONS.has(rawAction)) {
+        warn(warnings, onWarning, {
+          kind: 'reserved-action-remap',
+          message: `Cannot remap chord ${chordStr} to reserved action ${rawAction}`,
+          chord: chordStr,
+          action: rawAction,
+        })
+        continue
+      }
+
+      // 4d-ii. Reject unknown action.
+      if (!isTierOneAction(rawAction)) {
+        warn(warnings, onWarning, {
+          kind: 'unknown-action',
+          message: `Unknown action: ${JSON.stringify(rawAction)} (chord ${chordStr})`,
+          chord: chordStr,
+          action: rawAction,
+        })
+        continue
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // 4e. Apply the override.
+    //     Find the action currently bound to `chord` in defaults and override it.
+    // -------------------------------------------------------------------------
+    if (rawAction === null) {
+      // Disable: find which action currently has this chord, set effective_chord = null.
+      for (const [action, existing] of bindings) {
+        if (existing.default_chord === chord || existing.effective_chord === chord) {
+          if (!existing.reserved) {
+            bindings.set(action, Object.freeze({ ...existing, effective_chord: null }))
+          }
+          break
+        }
+      }
+    } else {
+      // Remap: update the action's effective_chord to `chord`.
+      const action = rawAction as TierOneAction
+
+      // Clear the chord from any action that currently holds it
+      // (so the old holder loses the chord).
+      for (const [existingAction, existing] of bindings) {
+        if (existingAction !== action && existing.effective_chord === chord) {
+          if (!existing.reserved) {
+            bindings.set(existingAction, Object.freeze({ ...existing, effective_chord: null }))
+          }
+          break
+        }
+      }
+
+      const current = bindings.get(action)
+      if (current !== undefined) {
+        bindings.set(action, Object.freeze({ ...current, effective_chord: chord }))
+      }
+    }
+  }
+
+  return buildResult(bindings, warnings)
+}
+
+// ---------------------------------------------------------------------------
+// Legacy API surface — keep existing callers compiling.
+// ---------------------------------------------------------------------------
+
+/** @deprecated Use loadUserBindings() instead. */
+export async function loadKeybindings(): Promise<LoaderResult> {
+  return loadUserBindings()
+}
+
+/** @deprecated Use loadUserBindings() instead. */
+export function loadKeybindingsSyncWithWarnings(): LoaderResult {
+  return loadUserBindings()
+}
+
+/** @deprecated Use loadUserBindings()?.bindings. */
+export function loadKeybindingsSync(): ReadonlyArray<KeybindingEntry> {
+  return Array.from(loadUserBindings().bindings.values())
+}
+
 export function isKeybindingCustomizationEnabled(): boolean {
-  return getFeatureValue_CACHED_MAY_BE_STALE(
-    'tengu_keybinding_customization_release',
-    false,
-  )
+  return true
 }
 
-/**
- * Time in milliseconds to wait for file writes to stabilize.
- */
-const FILE_STABILITY_THRESHOLD_MS = 500
-
-/**
- * Polling interval for checking file stability.
- */
-const FILE_STABILITY_POLL_INTERVAL_MS = 200
-
-/**
- * Result of loading keybindings, including any validation warnings.
- */
-export type KeybindingsLoadResult = {
-  bindings: ParsedBinding[]
-  warnings: KeybindingWarning[]
-}
-
-let watcher: FSWatcher | null = null
-let initialized = false
-let disposed = false
-let cachedBindings: ParsedBinding[] | null = null
-let cachedWarnings: KeybindingWarning[] = []
-const keybindingsChanged = createSignal<[result: KeybindingsLoadResult]>()
-
-/**
- * Tracks the date (YYYY-MM-DD) when we last logged a custom keybindings load event.
- * Used to ensure we fire the event at most once per day.
- */
-let lastCustomBindingsLogDate: string | null = null
-
-/**
- * Log a telemetry event when custom keybindings are loaded, at most once per day.
- * This lets us estimate the percentage of users who customize their keybindings.
- */
-function logCustomBindingsLoadedOncePerDay(userBindingCount: number): void {
-  const today = new Date().toISOString().slice(0, 10)
-  if (lastCustomBindingsLogDate === today) return
-  lastCustomBindingsLogDate = today
-  logEvent('tengu_custom_keybindings_loaded', {
-    user_binding_count: userBindingCount,
-  })
-}
-
-/**
- * Type guard to check if an object is a valid KeybindingBlock.
- */
-function isKeybindingBlock(obj: unknown): obj is KeybindingBlock {
-  if (typeof obj !== 'object' || obj === null) return false
-  const b = obj as Record<string, unknown>
-  return (
-    typeof b.context === 'string' &&
-    typeof b.bindings === 'object' &&
-    b.bindings !== null
-  )
-}
-
-/**
- * Type guard to check if an array contains only valid KeybindingBlocks.
- */
-function isKeybindingBlockArray(arr: unknown): arr is KeybindingBlock[] {
-  return Array.isArray(arr) && arr.every(isKeybindingBlock)
-}
-
-/**
- * Get the path to the user keybindings file.
- */
-export function getKeybindingsPath(): string {
-  return join(getClaudeConfigHomeDir(), 'keybindings.json')
-}
-
-/**
- * Parse default bindings (cached for performance).
- */
-function getDefaultParsedBindings(): ParsedBinding[] {
-  return parseBindings(DEFAULT_BINDINGS)
-}
-
-/**
- * Load and parse keybindings from user config file.
- * Returns merged default + user bindings along with validation warnings.
- *
- * For external users, always returns default bindings only.
- * User customization is currently gated to Anthropic employees.
- */
-export async function loadKeybindings(): Promise<KeybindingsLoadResult> {
-  const defaultBindings = getDefaultParsedBindings()
-
-  // Skip user config loading for external users
-  if (!isKeybindingCustomizationEnabled()) {
-    return { bindings: defaultBindings, warnings: [] }
-  }
-
-  const userPath = getKeybindingsPath()
-
-  try {
-    const content = await readFile(userPath, 'utf-8')
-    const parsed: unknown = jsonParse(content)
-
-    // Extract bindings array from object wrapper format: { "bindings": [...] }
-    let userBlocks: unknown
-    if (typeof parsed === 'object' && parsed !== null && 'bindings' in parsed) {
-      userBlocks = (parsed as { bindings: unknown }).bindings
-    } else {
-      // Invalid format - missing bindings property
-      const errorMessage = 'keybindings.json must have a "bindings" array'
-      const suggestion = 'Use format: { "bindings": [ ... ] }'
-      logForDebugging(`[keybindings] Invalid keybindings.json: ${errorMessage}`)
-      return {
-        bindings: defaultBindings,
-        warnings: [
-          {
-            type: 'parse_error',
-            severity: 'error',
-            message: errorMessage,
-            suggestion,
-          },
-        ],
-      }
-    }
-
-    // Validate structure - bindings must be an array of valid keybinding blocks
-    if (!isKeybindingBlockArray(userBlocks)) {
-      const errorMessage = !Array.isArray(userBlocks)
-        ? '"bindings" must be an array'
-        : 'keybindings.json contains invalid block structure'
-      const suggestion = !Array.isArray(userBlocks)
-        ? 'Set "bindings" to an array of keybinding blocks'
-        : 'Each block must have "context" (string) and "bindings" (object)'
-      logForDebugging(`[keybindings] Invalid keybindings.json: ${errorMessage}`)
-      return {
-        bindings: defaultBindings,
-        warnings: [
-          {
-            type: 'parse_error',
-            severity: 'error',
-            message: errorMessage,
-            suggestion,
-          },
-        ],
-      }
-    }
-
-    const userParsed = parseBindings(userBlocks)
-    logForDebugging(
-      `[keybindings] Loaded ${userParsed.length} user bindings from ${userPath}`,
-    )
-
-    // User bindings come after defaults, so they override
-    const mergedBindings = [...defaultBindings, ...userParsed]
-
-    logCustomBindingsLoadedOncePerDay(userParsed.length)
-
-    // Run validation on user config
-    // First check for duplicate keys in raw JSON (JSON.parse silently drops earlier values)
-    const duplicateKeyWarnings = checkDuplicateKeysInJson(content)
-    const warnings = [
-      ...duplicateKeyWarnings,
-      ...validateBindings(userBlocks, mergedBindings),
-    ]
-
-    if (warnings.length > 0) {
-      logForDebugging(
-        `[keybindings] Found ${warnings.length} validation issue(s)`,
-      )
-    }
-
-    return { bindings: mergedBindings, warnings }
-  } catch (error) {
-    // File doesn't exist - use defaults (user can run /keybindings to create)
-    if (isENOENT(error)) {
-      return { bindings: defaultBindings, warnings: [] }
-    }
-
-    // Other error - log and return defaults with warning
-    logForDebugging(
-      `[keybindings] Error loading ${userPath}: ${errorMessage(error)}`,
-    )
-    return {
-      bindings: defaultBindings,
-      warnings: [
-        {
-          type: 'parse_error',
-          severity: 'error',
-          message: `Failed to parse keybindings.json: ${errorMessage(error)}`,
-        },
-      ],
-    }
-  }
-}
-
-/**
- * Load keybindings synchronously (for initial render).
- * Uses cached value if available.
- */
-export function loadKeybindingsSync(): ParsedBinding[] {
-  if (cachedBindings) {
-    return cachedBindings
-  }
-
-  const result = loadKeybindingsSyncWithWarnings()
-  return result.bindings
-}
-
-/**
- * Load keybindings synchronously with validation warnings.
- * Uses cached values if available.
- *
- * For external users, always returns default bindings only.
- * User customization is currently gated to Anthropic employees.
- */
-export function loadKeybindingsSyncWithWarnings(): KeybindingsLoadResult {
-  if (cachedBindings) {
-    return { bindings: cachedBindings, warnings: cachedWarnings }
-  }
-
-  const defaultBindings = getDefaultParsedBindings()
-
-  // Skip user config loading for external users
-  if (!isKeybindingCustomizationEnabled()) {
-    cachedBindings = defaultBindings
-    cachedWarnings = []
-    return { bindings: cachedBindings, warnings: cachedWarnings }
-  }
-
-  const userPath = getKeybindingsPath()
-
-  try {
-    // sync IO: called from sync context (React useState initializer)
-    const content = readFileSync(userPath, 'utf-8')
-    const parsed: unknown = jsonParse(content)
-
-    // Extract bindings array from object wrapper format: { "bindings": [...] }
-    let userBlocks: unknown
-    if (typeof parsed === 'object' && parsed !== null && 'bindings' in parsed) {
-      userBlocks = (parsed as { bindings: unknown }).bindings
-    } else {
-      // Invalid format - missing bindings property
-      cachedBindings = defaultBindings
-      cachedWarnings = [
-        {
-          type: 'parse_error',
-          severity: 'error',
-          message: 'keybindings.json must have a "bindings" array',
-          suggestion: 'Use format: { "bindings": [ ... ] }',
-        },
-      ]
-      return { bindings: cachedBindings, warnings: cachedWarnings }
-    }
-
-    // Validate structure - bindings must be an array of valid keybinding blocks
-    if (!isKeybindingBlockArray(userBlocks)) {
-      const errorMessage = !Array.isArray(userBlocks)
-        ? '"bindings" must be an array'
-        : 'keybindings.json contains invalid block structure'
-      const suggestion = !Array.isArray(userBlocks)
-        ? 'Set "bindings" to an array of keybinding blocks'
-        : 'Each block must have "context" (string) and "bindings" (object)'
-      cachedBindings = defaultBindings
-      cachedWarnings = [
-        {
-          type: 'parse_error',
-          severity: 'error',
-          message: errorMessage,
-          suggestion,
-        },
-      ]
-      return { bindings: cachedBindings, warnings: cachedWarnings }
-    }
-
-    const userParsed = parseBindings(userBlocks)
-    logForDebugging(
-      `[keybindings] Loaded ${userParsed.length} user bindings from ${userPath}`,
-    )
-    cachedBindings = [...defaultBindings, ...userParsed]
-
-    logCustomBindingsLoadedOncePerDay(userParsed.length)
-
-    // Run validation - check for duplicate keys in raw JSON first
-    const duplicateKeyWarnings = checkDuplicateKeysInJson(content)
-    cachedWarnings = [
-      ...duplicateKeyWarnings,
-      ...validateBindings(userBlocks, cachedBindings),
-    ]
-    if (cachedWarnings.length > 0) {
-      logForDebugging(
-        `[keybindings] Found ${cachedWarnings.length} validation issue(s)`,
-      )
-    }
-
-    return { bindings: cachedBindings, warnings: cachedWarnings }
-  } catch {
-    // File doesn't exist or error - use defaults (user can run /keybindings to create)
-    cachedBindings = defaultBindings
-    cachedWarnings = []
-    return { bindings: cachedBindings, warnings: cachedWarnings }
-  }
-}
-
-/**
- * Initialize file watching for keybindings.json.
- * Call this once when the app starts.
- *
- * For external users, this is a no-op since user customization is disabled.
- */
-export async function initializeKeybindingWatcher(): Promise<void> {
-  if (initialized || disposed) return
-
-  // Skip file watching for external users
-  if (!isKeybindingCustomizationEnabled()) {
-    logForDebugging(
-      '[keybindings] Skipping file watcher - user customization disabled',
-    )
-    return
-  }
-
-  const userPath = getKeybindingsPath()
-  const watchDir = dirname(userPath)
-
-  // Only watch if parent directory exists
-  try {
-    const stats = await stat(watchDir)
-    if (!stats.isDirectory()) {
-      logForDebugging(
-        `[keybindings] Not watching: ${watchDir} is not a directory`,
-      )
-      return
-    }
-  } catch {
-    logForDebugging(`[keybindings] Not watching: ${watchDir} does not exist`)
-    return
-  }
-
-  // Set initialized only after we've confirmed we can watch
-  initialized = true
-
-  logForDebugging(`[keybindings] Watching for changes to ${userPath}`)
-
-  watcher = chokidar.watch(userPath, {
-    persistent: true,
-    ignoreInitial: true,
-    awaitWriteFinish: {
-      stabilityThreshold: FILE_STABILITY_THRESHOLD_MS,
-      pollInterval: FILE_STABILITY_POLL_INTERVAL_MS,
-    },
-    ignorePermissionErrors: true,
-    usePolling: false,
-    atomic: true,
-  })
-
-  watcher.on('add', handleChange)
-  watcher.on('change', handleChange)
-  watcher.on('unlink', handleDelete)
-
-  // Register cleanup
-  registerCleanup(async () => disposeKeybindingWatcher())
-}
-
-/**
- * Clean up the file watcher.
- */
-export function disposeKeybindingWatcher(): void {
-  disposed = true
-  if (watcher) {
-    void watcher.close()
-    watcher = null
-  }
-  keybindingsChanged.clear()
-}
-
-/**
- * Subscribe to keybinding changes.
- * The listener receives the new parsed bindings when the file changes.
- */
-export const subscribeToKeybindingChanges = keybindingsChanged.subscribe
-
-async function handleChange(path: string): Promise<void> {
-  logForDebugging(`[keybindings] Detected change to ${path}`)
-
-  try {
-    const result = await loadKeybindings()
-    cachedBindings = result.bindings
-    cachedWarnings = result.warnings
-
-    // Notify all listeners with the full result
-    keybindingsChanged.emit(result)
-  } catch (error) {
-    logForDebugging(`[keybindings] Error reloading: ${errorMessage(error)}`)
-  }
-}
-
-function handleDelete(path: string): void {
-  logForDebugging(`[keybindings] Detected deletion of ${path}`)
-
-  // Reset to defaults when file is deleted
-  const defaultBindings = getDefaultParsedBindings()
-  cachedBindings = defaultBindings
-  cachedWarnings = []
-
-  keybindingsChanged.emit({ bindings: defaultBindings, warnings: [] })
-}
-
-/**
- * Get the cached keybinding warnings.
- * Returns empty array if no warnings or bindings haven't been loaded yet.
- */
-export function getCachedKeybindingWarnings(): KeybindingWarning[] {
-  return cachedWarnings
-}
-
-/**
- * Reset internal state for testing.
- */
 export function resetKeybindingLoaderForTesting(): void {
-  initialized = false
-  disposed = false
-  cachedBindings = null
-  cachedWarnings = []
-  lastCustomBindingsLogDate = null
-  if (watcher) {
-    void watcher.close()
-    watcher = null
-  }
-  keybindingsChanged.clear()
+  /* no-op: new implementation is stateless */
 }
 
-// KOSMOS migration alias: legacy test naming retained for compatibility.
-// Refs: Spec 1637 P6 T032 — keybindings test contract preserved.
-export const loadUserBindings = loadKeybindings
+export function disposeKeybindingWatcher(): void {
+  /* no-op */
+}
+
+export async function initializeKeybindingWatcher(): Promise<void> {
+  /* no-op */
+}
+
+// Compat: subscribeToKeybindingChanges
+export const subscribeToKeybindingChanges: (
+  listener: (result: LoaderResult) => void,
+) => () => void = (_listener) => {
+  return () => {}
+}
+
+export function getCachedKeybindingWarnings(): LoaderWarning[] {
+  return []
+}

@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0
 // Spec 288 · T012 — immutable registry assembler.
 //
-// `buildRegistry` merges `DEFAULT_BINDINGS` with the user-override loader
-// output via `validateEntries` and produces a frozen `KeybindingRegistry`
-// whose `lookupByChord` respects context scoping (FR-001 / FR-003).
+// `buildRegistry` merges DEFAULT_BINDINGS with the user-override loader
+// output and produces a frozen `KeybindingRegistry` whose `lookupByChord`
+// respects context scoping (FR-001 / FR-003).
 //
-// The registry is constructed exactly once at TUI boot (see
-// `KeybindingProviderSetup.tsx`, T017) and is never mutated afterwards.
+// The registry is constructed exactly once at TUI boot and never mutated.
 
 import { DEFAULT_BINDINGS } from './defaultBindings'
 import { loadUserBindings, type LoaderResult } from './loadUserBindings'
@@ -18,6 +17,9 @@ import {
   type KeybindingRegistry,
   type TierOneAction,
 } from './types'
+
+// Re-export for external callers.
+export type { LoaderResult }
 
 export type BuildRegistryOptions = {
   /** Override loader result. Defaults to `loadUserBindings()` with default path. */
@@ -42,21 +44,16 @@ export function buildRegistry(
   const byAction = new Map<TierOneAction, KeybindingEntry>()
   for (const e of merged) byAction.set(e.action, e)
 
-  // Build the (chord, context) → entry lookup. Disabled entries
-  // (effective_chord === null) are excluded. Reserved actions live in
-  // context `Global` so they reach the resolver from every surface.
+  // Build the (chord, context) → entry lookup.
+  // Disabled entries (effective_chord === null) are excluded.
+  // Reserved actions live in context `Global` so they reach the resolver
+  // from every surface.
   //
   // Defense-in-depth against reserved-chord collisions (Codex P1 on PR
   // #1591, Spec 025 V6 two-layer pattern): reserved entries populate the
-  // map FIRST. If a later non-reserved entry's effective_chord would land
-  // on a slot already held by a reserved entry, we throw I4 rather than
-  // silently overwrite — loader-layer rejection is the primary guard
-  // (`reserved-chord-collision` warning), so reaching this path implies a
-  // bypass (e.g. direct `buildRegistry({ loaderResult })` injection with
-  // crafted bindings) and must surface loudly. The loader-produced
-  // `merged` map is a `ReadonlyMap<TierOneAction, KeybindingEntry>` that
-  // the loader guarantees never emits reserved-chord collisions, so this
-  // backstop is only exercised by adversarial `loaderResult` overrides.
+  // map FIRST. If a later non-reserved entry's effective_chord lands on a
+  // slot already held by a reserved entry, we throw I4 — the loader-layer
+  // rejection is the primary guard (`reserved-chord-collision` warning).
   const byChord = new Map<string, KeybindingEntry>()
   const reservedFirst: KeybindingEntry[] = []
   const nonReserved: KeybindingEntry[] = []
@@ -80,10 +77,7 @@ export function buildRegistry(
       )
     }
     // Also refuse to shadow a reserved Global slot when the non-reserved
-    // entry uses a non-Global context. The resolver's `lookupByChord`
-    // fallback resolves context → Global, so a non-reserved `Chat:ctrl+c`
-    // entry would win in Chat context and starve the Global reserved
-    // agent-interrupt — same safety violation, different scope.
+    // entry uses a non-Global context.
     if (e.context !== 'Global') {
       const globalKey = chordKey(e.effective_chord, 'Global')
       const globalHolder = byChord.get(globalKey)
