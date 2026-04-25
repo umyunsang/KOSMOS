@@ -51,12 +51,8 @@ def check_v2_dpa(ctx: CheckContext) -> CheckOutcome:
     a = ctx.manifest.adapter
     if a.pipa_class != "non_personal" and not a.dpa_reference:
         return failed(
-            ko=(
-                f"pipa_class={a.pipa_class!r} 일 때 dpa_reference 필수 (Spec 024 V2)"
-            ),
-            en=(
-                f"pipa_class={a.pipa_class!r} requires non-null dpa_reference (Spec 024 V2)"
-            ),
+            ko=(f"pipa_class={a.pipa_class!r} 일 때 dpa_reference 필수 (Spec 024 V2)"),
+            en=(f"pipa_class={a.pipa_class!r} requires non-null dpa_reference (Spec 024 V2)"),
         )
     return passed()
 
@@ -80,12 +76,8 @@ def check_v3_aal_match(ctx: CheckContext) -> CheckOutcome:
     expected = TOOL_MIN_AAL.get(a.tool_id)
     if expected is not None and expected != a.auth_level:
         return failed(
-            ko=(
-                f"V3 위반: declared {a.auth_level!r} != TOOL_MIN_AAL {expected!r}"
-            ),
-            en=(
-                f"V3 violation: declared {a.auth_level!r} != TOOL_MIN_AAL {expected!r}"
-            ),
+            ko=(f"V3 위반: declared {a.auth_level!r} != TOOL_MIN_AAL {expected!r}"),
+            en=(f"V3 violation: declared {a.auth_level!r} != TOOL_MIN_AAL {expected!r}"),
         )
     return passed()
 
@@ -99,14 +91,8 @@ def check_v4_irreversible_aal(ctx: CheckContext) -> CheckOutcome:
     a = ctx.manifest.adapter
     if a.is_irreversible and a.auth_level not in ("AAL2", "AAL3"):
         return failed(
-            ko=(
-                f"is_irreversible=True 인 어댑터는 auth_level ≥ AAL2 필요 "
-                f"(현재 {a.auth_level!r})"
-            ),
-            en=(
-                f"is_irreversible=True adapter requires auth_level ≥ AAL2 "
-                f"(got {a.auth_level!r})"
-            ),
+            ko=(f"is_irreversible=True 인 어댑터는 auth_level ≥ AAL2 필요 (현재 {a.auth_level!r})"),
+            en=(f"is_irreversible=True adapter requires auth_level ≥ AAL2 (got {a.auth_level!r})"),
         )
     return passed()
 

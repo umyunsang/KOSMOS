@@ -16,8 +16,6 @@ asserts the timing + OTEL contract.
 from __future__ import annotations
 
 import hashlib
-import json
-import shutil
 import tarfile
 import textwrap
 import time
@@ -40,8 +38,9 @@ from kosmos.tools.registry import ToolRegistry
 # ---------------------------------------------------------------------------
 
 
-_ADAPTER_SOURCE = textwrap.dedent(
-    """
+_ADAPTER_SOURCE = (
+    textwrap.dedent(
+        """
     from __future__ import annotations
     from typing import Any
     from pydantic import BaseModel, ConfigDict, Field
@@ -83,7 +82,9 @@ _ADAPTER_SOURCE = textwrap.dedent(
     async def adapter(payload: Any) -> dict[str, Any]:
         return {"echo": payload.query}
     """
-).strip() + "\n"
+    ).strip()
+    + "\n"
+)
 
 
 def _manifest_dict() -> dict[str, Any]:
@@ -137,9 +138,7 @@ def _build_bundle(tmp_path: Path) -> tuple[Path, str, Path]:
     return bundle, sha, provenance
 
 
-def _write_catalog(
-    tmp_path: Path, bundle: Path, sha: str, provenance: Path
-) -> Path:
+def _write_catalog(tmp_path: Path, bundle: Path, sha: str, provenance: Path) -> Path:
     catalog = CatalogIndex(
         schema_version="1.0.0",
         generated_iso="2026-04-26T00:00:00Z",
@@ -171,9 +170,7 @@ def _write_catalog(
 
 
 @pytest.fixture
-def isolated_settings(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> Path:
+def isolated_settings(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     install_root = tmp_path / "install"
     bundle_cache = tmp_path / "cache"
     user_memdir = tmp_path / "memdir" / "user"
@@ -193,9 +190,7 @@ def isolated_settings(
 
 
 class TestInstallTimingSC005:
-    def test_cold_install_under_30_seconds(
-        self, tmp_path: Path, isolated_settings: Path
-    ) -> None:
+    def test_cold_install_under_30_seconds(self, tmp_path: Path, isolated_settings: Path) -> None:
         bundle, sha, provenance = _build_bundle(tmp_path)
         catalog = _write_catalog(tmp_path, bundle, sha, provenance)
         registry = ToolRegistry()
@@ -304,7 +299,9 @@ class TestOtelEmissionSC007:
         assert result.exit_code == 0
         spans = list(exporter.get_finished_spans())
         install_spans = [s for s in spans if s.name == "kosmos.plugin.install"]
-        assert install_spans, f"no kosmos.plugin.install span emitted; got {[s.name for s in spans]}"
+        assert install_spans, (
+            f"no kosmos.plugin.install span emitted; got {[s.name for s in spans]}"
+        )
         attrs = dict(install_spans[-1].attributes or {})
         assert attrs.get("kosmos.plugin.id") == "timing_demo"
         assert attrs.get("kosmos.plugin.version") == "1.0.0"
@@ -366,9 +363,7 @@ class TestSlsaSkipL3Refusal:
         assert result.error_kind == "slsa_skip_in_production"
 
 
-def _build_bundle_with_manifest(
-    tmp_path: Path, manifest: dict[str, Any]
-) -> tuple[Path, str, Path]:
+def _build_bundle_with_manifest(tmp_path: Path, manifest: dict[str, Any]) -> tuple[Path, str, Path]:
     """Build a tarball with a custom manifest (used for L3 + irreversible test)."""
     src = tmp_path / "_bundle_src_l3"
     src.mkdir()

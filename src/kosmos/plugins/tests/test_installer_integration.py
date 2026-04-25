@@ -29,7 +29,6 @@ from __future__ import annotations
 
 import hashlib
 import json
-import shutil
 import tarfile
 import textwrap
 from pathlib import Path
@@ -38,25 +37,23 @@ from typing import Any
 import pytest
 import yaml
 
-from kosmos.plugins import CANONICAL_ACKNOWLEDGMENT_SHA256
 from kosmos.plugins.installer import (
     CatalogEntry,
     CatalogIndex,
     CatalogVersion,
-    InstallResult,
     install_plugin,
 )
 from kosmos.tools.executor import ToolExecutor
 from kosmos.tools.registry import ToolRegistry
-
 
 # ---------------------------------------------------------------------------
 # Synthetic plugin generator
 # ---------------------------------------------------------------------------
 
 
-_ADAPTER_SOURCE = textwrap.dedent(
-    """
+_ADAPTER_SOURCE = (
+    textwrap.dedent(
+        """
     from __future__ import annotations
     from typing import Any
     from pydantic import BaseModel, ConfigDict, Field
@@ -98,7 +95,9 @@ _ADAPTER_SOURCE = textwrap.dedent(
     async def adapter(payload: Any) -> dict[str, Any]:
         return {"echo": payload.query}
     """
-).strip() + "\n"
+    ).strip()
+    + "\n"
+)
 
 
 def _manifest_dict(*, plugin_id: str = "demo_plugin", tier: str = "live") -> dict[str, Any]:
@@ -118,9 +117,7 @@ def _manifest_dict(*, plugin_id: str = "demo_plugin", tier: str = "live") -> dic
             "pipa_class": "non_personal",
         },
         "tier": tier,
-        "mock_source_spec": (
-            "https://example.com/spec" if tier == "mock" else None
-        ),
+        "mock_source_spec": ("https://example.com/spec" if tier == "mock" else None),
         "processes_pii": False,
         "pipa_trustee_acknowledgment": None,
         "slsa_provenance_url": (
@@ -190,9 +187,7 @@ def _build_catalog(tmp_path: Path, *, bundle: Path, sha: str) -> Path:
 
 
 @pytest.fixture
-def isolated_settings(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> Path:
+def isolated_settings(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     """Confine plugin filesystem state to tmp_path + bypass SLSA."""
     install_root = tmp_path / "install"
     bundle_cache = tmp_path / "cache"
@@ -213,9 +208,7 @@ def isolated_settings(
 
 
 class TestInstallHappyPath:
-    def test_install_succeeds(
-        self, tmp_path: Path, isolated_settings: Path
-    ) -> None:
+    def test_install_succeeds(self, tmp_path: Path, isolated_settings: Path) -> None:
         bundle, sha = _build_bundle(tmp_path)
         catalog = _build_catalog(tmp_path, bundle=bundle, sha=sha)
         registry = ToolRegistry()
@@ -251,9 +244,7 @@ class TestInstallHappyPath:
 
 
 class TestInstallNegativePaths:
-    def test_catalog_miss(
-        self, tmp_path: Path, isolated_settings: Path
-    ) -> None:
+    def test_catalog_miss(self, tmp_path: Path, isolated_settings: Path) -> None:
         bundle, sha = _build_bundle(tmp_path)
         catalog = _build_catalog(tmp_path, bundle=bundle, sha=sha)
         registry = ToolRegistry()
@@ -269,9 +260,7 @@ class TestInstallNegativePaths:
         assert result.exit_code == 1
         assert result.error_kind == "catalog_miss"
 
-    def test_bundle_sha_mismatch(
-        self, tmp_path: Path, isolated_settings: Path
-    ) -> None:
+    def test_bundle_sha_mismatch(self, tmp_path: Path, isolated_settings: Path) -> None:
         bundle, _ = _build_bundle(tmp_path)
         # Catalog claims a different SHA — bundle on disk now mismatches.
         wrong_sha = "0" * 64
@@ -292,9 +281,7 @@ class TestInstallNegativePaths:
         cache_dir = isolated_settings / "cache"
         assert any(cache_dir.glob("*.tar.gz"))
 
-    def test_manifest_plugin_id_mismatch(
-        self, tmp_path: Path, isolated_settings: Path
-    ) -> None:
+    def test_manifest_plugin_id_mismatch(self, tmp_path: Path, isolated_settings: Path) -> None:
         # Build a bundle whose manifest declares a different plugin_id than
         # the catalog entry — installer must reject in phase 4.
         bad_manifest = _manifest_dict(plugin_id="other_id")
@@ -313,9 +300,7 @@ class TestInstallNegativePaths:
         assert result.exit_code == 4
         assert result.error_kind == "manifest_plugin_id_mismatch"
 
-    def test_consent_rejected(
-        self, tmp_path: Path, isolated_settings: Path
-    ) -> None:
+    def test_consent_rejected(self, tmp_path: Path, isolated_settings: Path) -> None:
         bundle, sha = _build_bundle(tmp_path)
         catalog = _build_catalog(tmp_path, bundle=bundle, sha=sha)
         registry = ToolRegistry()
@@ -338,9 +323,7 @@ class TestInstallNegativePaths:
 
 
 class TestInstallDryRun:
-    def test_dry_run_skips_phase_6_and_7(
-        self, tmp_path: Path, isolated_settings: Path
-    ) -> None:
+    def test_dry_run_skips_phase_6_and_7(self, tmp_path: Path, isolated_settings: Path) -> None:
         bundle, sha = _build_bundle(tmp_path)
         catalog = _build_catalog(tmp_path, bundle=bundle, sha=sha)
         registry = ToolRegistry()

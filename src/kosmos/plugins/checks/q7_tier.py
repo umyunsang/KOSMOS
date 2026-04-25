@@ -107,10 +107,7 @@ def check_live_uses_network(ctx: CheckContext) -> CheckOutcome:
                 "tier=live 어댑터는 httpx / aiohttp / requests 중 하나를 import 해야 함 "
                 "(Q7-LIVE-USES-NETWORK)"
             ),
-            en=(
-                "tier=live adapter must import httpx / aiohttp / requests "
-                "(Q7-LIVE-USES-NETWORK)"
-            ),
+            en=("tier=live adapter must import httpx / aiohttp / requests (Q7-LIVE-USES-NETWORK)"),
         )
     return passed()
 
@@ -138,12 +135,8 @@ def check_mock_no_egress(ctx: CheckContext) -> CheckOutcome:
     forbidden = imports & {"httpx", "aiohttp", "requests", "urllib3"}
     if forbidden:
         return failed(
-            ko=(
-                f"tier=mock 어댑터에 네트워크 라이브러리 import 금지: {sorted(forbidden)}"
-            ),
-            en=(
-                f"tier=mock adapter must not import network libraries: {sorted(forbidden)}"
-            ),
+            ko=(f"tier=mock 어댑터에 네트워크 라이브러리 import 금지: {sorted(forbidden)}"),
+            en=(f"tier=mock adapter must not import network libraries: {sorted(forbidden)}"),
         )
     return passed()
 

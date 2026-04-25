@@ -39,20 +39,13 @@ from kosmos.plugins import PluginManifest
 
 _REPO_ROOT = Path(__file__).resolve().parents[4]
 _CONTRACT_PATH = (
-    _REPO_ROOT
-    / "specs"
-    / "1636-plugin-dx-5tier"
-    / "contracts"
-    / "manifest.schema.json"
+    _REPO_ROOT / "specs" / "1636-plugin-dx-5tier" / "contracts" / "manifest.schema.json"
 )
 
 
 def _load_disk_schema() -> dict[str, Any]:
     if not _CONTRACT_PATH.is_file():
-        pytest.fail(
-            f"contract schema missing: {_CONTRACT_PATH} — regenerate per "
-            "module docstring."
-        )
+        pytest.fail(f"contract schema missing: {_CONTRACT_PATH} — regenerate per module docstring.")
     return json.loads(_CONTRACT_PATH.read_text(encoding="utf-8"))
 
 
@@ -81,9 +74,7 @@ class TestManifestSchemaParity:
     def test_schema_pins_canonical_id_and_dialect(self) -> None:
         disk = _load_disk_schema()
         assert disk.get("$schema") == "https://json-schema.org/draft/2020-12/schema"
-        assert disk.get("$id") == (
-            "https://kosmos.dev/schemas/plugin-manifest/1.0.0.json"
-        )
+        assert disk.get("$id") == ("https://kosmos.dev/schemas/plugin-manifest/1.0.0.json")
 
     def test_schema_carries_all_required_top_level_fields(self) -> None:
         disk = _load_disk_schema()

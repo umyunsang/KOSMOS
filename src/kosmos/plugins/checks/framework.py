@@ -93,9 +93,7 @@ def resolve_check(dotted_path: str) -> CheckFn:
     module = importlib.import_module(module_name)
     fn = getattr(module, fn_name, None)
     if fn is None or not callable(fn):
-        raise AttributeError(
-            f"check function {fn_name!r} not found in {module_name!r}"
-        )
+        raise AttributeError(f"check function {fn_name!r} not found in {module_name!r}")
     return fn  # type: ignore[return-value]
 
 
@@ -103,9 +101,7 @@ def load_checklist_rows(yaml_path: Path) -> list[ChecklistRow]:
     """Load + validate every row in the canonical YAML manifest."""
     raw = yaml.safe_load(yaml_path.read_text(encoding="utf-8"))
     if not isinstance(raw, list):
-        raise TypeError(
-            f"checklist YAML must decode to a list (got {type(raw).__name__})"
-        )
+        raise TypeError(f"checklist YAML must decode to a list (got {type(raw).__name__})")
     return [ChecklistRow.model_validate(r) for r in raw]
 
 
@@ -150,6 +146,33 @@ def run_all_checks(
     return results
 
 
+def _resolve_default_yaml_path() -> Path | None:
+    """Locate ``checklist_manifest.yaml`` from wheel resource or source tree.
+
+    Resolution order:
+    1. Wheel-bundled resource (``kosmos/_canonical/checklist_manifest.yaml``).
+    2. Source-tree fallback for editable installs (walk parents until
+       ``tests/fixtures/plugin_validation/checklist_manifest.yaml``).
+
+    Returns ``None`` when neither resolves.
+    """
+    try:
+        from importlib import resources
+
+        bundled = resources.files("kosmos._canonical").joinpath("checklist_manifest.yaml")
+        with resources.as_file(bundled) as p:
+            if Path(p).is_file():
+                return Path(p)
+    except (FileNotFoundError, ModuleNotFoundError, AttributeError):
+        pass
+
+    for parent in Path(__file__).resolve().parents:
+        candidate = parent / "tests" / "fixtures" / "plugin_validation" / "checklist_manifest.yaml"
+        if candidate.is_file():
+            return candidate
+    return None
+
+
 def _cli_main(argv: list[str] | None = None) -> int:
     """Entry point for ``kosmos-plugin-validate <plugin_root>``.
 
@@ -190,39 +213,13 @@ def _cli_main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
 
-    yaml_path = args.yaml
-    if yaml_path is None:
-        # 1. Wheel-bundled resource (kosmos/_canonical/checklist_manifest.yaml).
-        try:
-            from importlib import resources
-
-            bundled = resources.files("kosmos._canonical").joinpath(
-                "checklist_manifest.yaml"
-            )
-            with resources.as_file(bundled) as p:
-                if Path(p).is_file():
-                    yaml_path = Path(p)
-        except (FileNotFoundError, ModuleNotFoundError, AttributeError):
-            yaml_path = None
-
-        # 2. Source-tree fallback for editable installs.
-        if yaml_path is None or not yaml_path.is_file():
-            for parent in Path(__file__).resolve().parents:
-                candidate = (
-                    parent / "tests" / "fixtures" / "plugin_validation"
-                    / "checklist_manifest.yaml"
-                )
-                if candidate.is_file():
-                    yaml_path = candidate
-                    break
-
-        if yaml_path is None or not yaml_path.is_file():
-            print(
-                "error: could not locate checklist_manifest.yaml; "
-                "pass --yaml <path>",
-                file=sys.stderr,
-            )
-            return 2
+    yaml_path: Path | None = args.yaml or _resolve_default_yaml_path()
+    if yaml_path is None or not yaml_path.is_file():
+        print(
+            "error: could not locate checklist_manifest.yaml; pass --yaml <path>",
+            file=sys.stderr,
+        )
+        return 2
 
     plugin_root = args.plugin_root.resolve()
     if not plugin_root.is_dir():

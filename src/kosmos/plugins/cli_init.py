@@ -76,10 +76,7 @@ def _validate_name(name: str) -> str | None:
 
 def _validate_pipa(pii: bool, ack: PIPATrusteeArgs | None) -> str | None:
     if pii and ack is None:
-        return (
-            "pii=True requires --pipa-* flags "
-            "(see docs/plugins/security-review.md)"
-        )
+        return "pii=True requires --pipa-* flags (see docs/plugins/security-review.md)"
     if not pii and ack is not None:
         return "pii=False must NOT supply --pipa-* flags"
     if ack is not None and not _SHA256_RE.fullmatch(ack.acknowledgment_sha256):
@@ -677,9 +674,7 @@ def main(argv: list[str] | None = None) -> int:
         pipa = PIPATrusteeArgs(
             trustee_org_name=args.pipa_org,
             trustee_contact=args.pipa_contact,
-            pii_fields_handled=tuple(
-                f.strip() for f in args.pipa_fields.split(",") if f.strip()
-            ),
+            pii_fields_handled=tuple(f.strip() for f in args.pipa_fields.split(",") if f.strip()),
             legal_basis=args.pipa_legal_basis,
             acknowledgment_sha256=args.pipa_sha256,
         )

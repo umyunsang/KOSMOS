@@ -650,9 +650,7 @@ class PluginOpFrame(_BaseFrame):
     role allow-list: tui (request), backend (progress / complete).
     """
 
-    kind: Literal["plugin_op"] = Field(
-        default="plugin_op", description="Frame discriminator."
-    )
+    kind: Literal["plugin_op"] = Field(default="plugin_op", description="Frame discriminator.")
     op: Literal["request", "progress", "complete"] = Field(
         description=(
             "Operation phase. ``request`` = TUI initiates install/uninstall/list; "
@@ -664,9 +662,7 @@ class PluginOpFrame(_BaseFrame):
     # Request-only fields (op="request").
     request_op: Literal["install", "uninstall", "list"] | None = Field(
         default=None,
-        description=(
-            "Sub-action when op='request'. Required for op='request'; None otherwise."
-        ),
+        description=("Sub-action when op='request'. Required for op='request'; None otherwise."),
     )
     name: str | None = Field(
         default=None,
@@ -722,7 +718,7 @@ class PluginOpFrame(_BaseFrame):
     )
 
     @model_validator(mode="after")
-    def _v_plugin_op_shape(self) -> PluginOpFrame:
+    def _v_plugin_op_shape(self) -> PluginOpFrame:  # noqa: C901 — discriminated union shape
         """Enforce per-op-state required/forbidden field shape."""
         if self.op == "request":
             if self.request_op is None:
@@ -746,9 +742,7 @@ class PluginOpFrame(_BaseFrame):
                 )
         elif self.op == "progress":  # noqa: SIM114 — flow-level branches stay flat for clarity.
             if self.progress_phase is None or not (1 <= self.progress_phase <= 7):
-                raise ValueError(
-                    "plugin_op.progress requires progress_phase in [1, 7]"
-                )
+                raise ValueError("plugin_op.progress requires progress_phase in [1, 7]")
             if not self.progress_message_ko or not self.progress_message_en:
                 raise ValueError(
                     "plugin_op.progress requires progress_message_ko + progress_message_en"
@@ -773,9 +767,7 @@ class PluginOpFrame(_BaseFrame):
             if self.exit_code is None:
                 raise ValueError("plugin_op.complete requires exit_code")
             if self.result == "failure" and self.receipt_id is not None:
-                raise ValueError(
-                    "plugin_op.complete result='failure' must not set receipt_id"
-                )
+                raise ValueError("plugin_op.complete result='failure' must not set receipt_id")
             forbidden = {
                 "request_op": self.request_op,
                 "name": self.name,

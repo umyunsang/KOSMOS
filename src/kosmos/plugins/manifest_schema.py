@@ -214,8 +214,7 @@ class PluginManifest(BaseModel):
     def _v_otel_required_key(cls, value: dict[str, str]) -> dict[str, str]:
         if "kosmos.plugin.id" not in value:
             raise ValueError(
-                "otel_attributes must contain key 'kosmos.plugin.id' "
-                "(Spec 021 KOSMOS extension)."
+                "otel_attributes must contain key 'kosmos.plugin.id' (Spec 021 KOSMOS extension)."
             )
         return value
 
@@ -223,13 +222,9 @@ class PluginManifest(BaseModel):
     def _v_mock_source(self) -> PluginManifest:
         """tier ↔ mock_source_spec must be consistent (R-1 Q7-MOCK-SOURCE)."""
         if self.tier == "mock" and not self.mock_source_spec:
-            raise ValueError(
-                "mock_source_spec is required (non-empty) when tier='mock'"
-            )
+            raise ValueError("mock_source_spec is required (non-empty) when tier='mock'")
         if self.tier == "live" and self.mock_source_spec is not None:
-            raise ValueError(
-                "mock_source_spec must be None when tier='live'"
-            )
+            raise ValueError("mock_source_spec must be None when tier='live'")
         return self
 
     @model_validator(mode="after")
@@ -237,14 +232,10 @@ class PluginManifest(BaseModel):
         """processes_pii ↔ pipa_trustee_acknowledgment symmetry (FR-014)."""
         if self.processes_pii and self.pipa_trustee_acknowledgment is None:
             raise ValueError(
-                "pipa_trustee_acknowledgment required when "
-                "processes_pii=True (PIPA §26)"
+                "pipa_trustee_acknowledgment required when processes_pii=True (PIPA §26)"
             )
         if not self.processes_pii and self.pipa_trustee_acknowledgment is not None:
-            raise ValueError(
-                "pipa_trustee_acknowledgment must be None when "
-                "processes_pii=False"
-            )
+            raise ValueError("pipa_trustee_acknowledgment must be None when processes_pii=False")
         return self
 
     @model_validator(mode="after")
@@ -292,7 +283,7 @@ class PluginManifest(BaseModel):
                 f"adapter.tool_id must start with {expected_prefix!r} "
                 f"(got {self.adapter.tool_id!r})"
             )
-        suffix = self.adapter.tool_id[len(expected_prefix):]
+        suffix = self.adapter.tool_id[len(expected_prefix) :]
         if suffix not in _ROOT_PRIMITIVE_VERBS:
             raise ValueError(
                 "adapter.tool_id verb suffix must be one of "

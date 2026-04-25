@@ -41,6 +41,7 @@ local file:// or in-memory fixtures without monkeypatching httpx.
 
 from __future__ import annotations
 
+import contextlib
 import hashlib
 import json
 import logging
@@ -92,9 +93,7 @@ class CatalogVersion(BaseModel):
 
     version: str = Field(pattern=r"^\d+\.\d+\.\d+$")
     bundle_url: str = Field(pattern=r"^https?://.+\.tar\.gz$|^file://.+\.tar\.gz$")
-    provenance_url: str = Field(
-        pattern=r"^https?://.+\.intoto\.jsonl$|^file://.+\.intoto\.jsonl$"
-    )
+    provenance_url: str = Field(pattern=r"^https?://.+\.intoto\.jsonl$|^file://.+\.intoto\.jsonl$")
     bundle_sha256: str = Field(pattern=r"^[a-f0-9]{64}$")
     published_iso: str
 
@@ -117,9 +116,7 @@ class CatalogEntry(BaseModel):
         for v in self.versions:
             if v.version == target:
                 return v
-        raise ValueError(
-            f"version {target!r} not in catalog entry for {self.name!r}"
-        )
+        raise ValueError(f"version {target!r} not in catalog entry for {self.name!r}")
 
 
 class CatalogIndex(BaseModel):
@@ -272,9 +269,7 @@ def _safe_extract(tar: tarfile.TarFile, dest: Path) -> None:
     for member in tar.getmembers():
         target = dest / member.name
         if not _is_inside(target):
-            raise OSError(
-                f"plugin bundle entry {member.name!r} escapes install root"
-            )
+            raise OSError(f"plugin bundle entry {member.name!r} escapes install root")
         # Symlink + hardlink target validation (H6).
         if member.issym() or member.islnk():
             link_target_str = member.linkname or ""
@@ -284,7 +279,7 @@ def _safe_extract(tar: tarfile.TarFile, dest: Path) -> None:
                     f"sym/hardlink with empty linkname — refusing"
                 )
             # Resolve relative linknames against the entry's directory.
-            link_path = (target.parent / link_target_str)
+            link_path = target.parent / link_target_str
             if not _is_inside(link_path):
                 raise OSError(
                     f"plugin bundle entry {member.name!r} sym/hardlink "
@@ -316,7 +311,6 @@ def _write_consent_receipt(
     - fsync the parent directory after rename so the rename itself is
       durable on ext4 / xfs after a crash.
     """
-    import fcntl  # noqa: PLC0415
 
     consent_root.mkdir(parents=True, exist_ok=True)
     out = consent_root / f"{receipt.receipt_id}.json"
@@ -337,10 +331,8 @@ def _write_consent_receipt(
     try:
         # Some filesystems (notably APFS on older macOS) reject fsync on
         # directory fds; treat that as advisory rather than a hard error.
-        try:
+        with contextlib.suppress(OSError):
             os.fsync(dir_fd)
-        except OSError:
-            pass
     finally:
         os.close(dir_fd)
     return out
@@ -418,9 +410,7 @@ def install_plugin(  # noqa: C901, PLR0911, PLR0915 — phased flow.
             plugin_version=None,
             receipt_id=None,
             error_kind="catalog_fetch_failed",
-            error_message=(
-                f"could not fetch / parse catalog at {catalog_url}: {exc}"
-            ),
+            error_message=(f"could not fetch / parse catalog at {catalog_url}: {exc}"),
         )
 
     entry = catalog.find(name)
@@ -431,9 +421,7 @@ def install_plugin(  # noqa: C901, PLR0911, PLR0915 — phased flow.
             plugin_version=None,
             receipt_id=None,
             error_kind="catalog_miss",
-            error_message=(
-                f"plugin {name!r} not found in catalog at {catalog_url}"
-            ),
+            error_message=(f"plugin {name!r} not found in catalog at {catalog_url}"),
         )
 
     try:
@@ -474,9 +462,7 @@ def install_plugin(  # noqa: C901, PLR0911, PLR0915 — phased flow.
             plugin_version=version.version,
             receipt_id=None,
             error_kind="bundle_sha_mismatch",
-            error_message=(
-                f"bundle SHA-256 {actual_sha} != expected {version.bundle_sha256}"
-            ),
+            error_message=(f"bundle SHA-256 {actual_sha} != expected {version.bundle_sha256}"),
         )
 
     # --- Phase 3: SLSA verification ----------------------------------------
@@ -567,8 +553,7 @@ def install_plugin(  # noqa: C901, PLR0911, PLR0915 — phased flow.
             receipt_id=None,
             error_kind="manifest_plugin_id_mismatch",
             error_message=(
-                f"catalog plugin_id={plugin_id!r} != manifest plugin_id="
-                f"{manifest.plugin_id!r}"
+                f"catalog plugin_id={plugin_id!r} != manifest plugin_id={manifest.plugin_id!r}"
             ),
         )
     if manifest.tier != entry.tier:
@@ -578,9 +563,7 @@ def install_plugin(  # noqa: C901, PLR0911, PLR0915 — phased flow.
             plugin_version=version.version,
             receipt_id=None,
             error_kind="manifest_tier_mismatch",
-            error_message=(
-                f"catalog tier={entry.tier!r} != manifest tier={manifest.tier!r}"
-            ),
+            error_message=(f"catalog tier={entry.tier!r} != manifest tier={manifest.tier!r}"),
         )
 
     # The PluginManifest validators already enforce:

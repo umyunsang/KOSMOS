@@ -144,10 +144,13 @@ class TestMainArgvParser:
         rc = cli_init.main(
             [
                 "demo_plugin",
-                "--tier", "live",
-                "--layer", "1",
+                "--tier",
+                "live",
+                "--layer",
+                "1",
                 "--no-pii",
-                "--out", str(out),
+                "--out",
+                str(out),
             ]
         )
         assert rc == 0
@@ -161,10 +164,13 @@ class TestMainArgvParser:
         rc = cli_init.main(
             [
                 "demo_plugin",
-                "--tier", "live",
-                "--layer", "1",
+                "--tier",
+                "live",
+                "--layer",
+                "1",
                 "--pii",
-                "--out", str(tmp_path / "demo_plugin"),
+                "--out",
+                str(tmp_path / "demo_plugin"),
             ]
         )
         assert rc == 3
@@ -175,15 +181,23 @@ class TestMainArgvParser:
         rc = cli_init.main(
             [
                 "demo_plugin",
-                "--tier", "live",
-                "--layer", "1",
+                "--tier",
+                "live",
+                "--layer",
+                "1",
                 "--pii",
-                "--pipa-org", "KOSMOS Demo",
-                "--pipa-contact", "demo@example.com",
-                "--pipa-fields", "phone_number,resident_registration_number",
-                "--pipa-legal-basis", "PIPA §15-1-2",
-                "--pipa-sha256", "a" * 64,
-                "--out", str(tmp_path / "demo_plugin"),
+                "--pipa-org",
+                "KOSMOS Demo",
+                "--pipa-contact",
+                "demo@example.com",
+                "--pipa-fields",
+                "phone_number,resident_registration_number",
+                "--pipa-legal-basis",
+                "PIPA §15-1-2",
+                "--pipa-sha256",
+                "a" * 64,
+                "--out",
+                str(tmp_path / "demo_plugin"),
             ]
         )
         assert rc == 0

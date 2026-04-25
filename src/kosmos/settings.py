@@ -217,9 +217,7 @@ class KosmosSettings(BaseSettings):
     """
 
     plugin_catalog_url: str = Field(
-        default=(
-            "https://raw.githubusercontent.com/kosmos-plugin-store/index/main/index.json"
-        ),
+        default=("https://raw.githubusercontent.com/kosmos-plugin-store/index/main/index.json"),
     )
     """Plugin catalog URL (KOSMOS_PLUGIN_CATALOG_URL).
 

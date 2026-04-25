@@ -24,7 +24,6 @@ from __future__ import annotations
 import ast
 import re
 from pathlib import Path
-from typing import Any
 
 from kosmos.plugins.checks.framework import (
     CheckContext,
@@ -96,15 +95,19 @@ def check_noany(ctx: CheckContext) -> CheckOutcome:
             en="schema.py AST parse failed (Q1-NOANY)",
         )
     for node in ast.walk(tree):
-        if isinstance(node, ast.Name) and node.id == "Any":
-            # Allow `from typing import ...` line — only flag usage in annotations.
-            if isinstance(getattr(node, "ctx", None), ast.Load):
-                # Heuristic: if this Name appears inside an annotation parent,
-                # it's a violation. Walk up to find an AnnAssign / arg parent.
-                return failed(
-                    ko="schema.py 에 'Any' 타입 사용 금지 (Q1-NOANY)",
-                    en="`Any` type is banned in schema.py (Q1-NOANY)",
-                )
+        if (
+            isinstance(node, ast.Name)
+            and node.id == "Any"
+            and isinstance(getattr(node, "ctx", None), ast.Load)
+        ):
+            # Allow `from typing import ...` line — only flag usage in
+            # annotations. Heuristic: a Name in Load context is either
+            # imported or used in an annotation; either way `Any` is the
+            # violation we forbid.
+            return failed(
+                ko="schema.py 에 'Any' 타입 사용 금지 (Q1-NOANY)",
+                en="`Any` type is banned in schema.py (Q1-NOANY)",
+            )
     return passed()
 
 
@@ -117,7 +120,11 @@ def check_field_desc(ctx: CheckContext) -> CheckOutcome:
             en="schema.py AST parse failed (Q1-FIELD-DESC)",
         )
     for node in ast.walk(tree):
-        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == "Field":
+        if (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "Field"
+        ):
             kwarg_names = {kw.arg for kw in node.keywords if kw.arg}
             if "description" not in kwarg_names:
                 return failed(

@@ -11,7 +11,6 @@ prints the exact phrase :func:`_classify_failure` matches against.
 
 from __future__ import annotations
 
-import os
 import stat
 from pathlib import Path
 
@@ -63,9 +62,7 @@ def bundle_files(tmp_path: Path) -> tuple[Path, Path]:
 
 
 class TestVerifyArtifactSuccess:
-    def test_exit_zero_passes(
-        self, tmp_path: Path, bundle_files: tuple[Path, Path]
-    ) -> None:
+    def test_exit_zero_passes(self, tmp_path: Path, bundle_files: tuple[Path, Path]) -> None:
         bundle, provenance = bundle_files
         stub = _make_stub_verifier(tmp_path, exit_code=0)
 
@@ -110,10 +107,7 @@ class TestVerifyArtifactFailureModes:
         stub = _make_stub_verifier(
             tmp_path,
             exit_code=1,
-            stderr=(
-                "FAILED: source URI mismatch: expected github.com/x/y, "
-                "got github.com/x/z"
-            ),
+            stderr=("FAILED: source URI mismatch: expected github.com/x/y, got github.com/x/z"),
         )
 
         result = verify_artifact(
@@ -146,9 +140,7 @@ class TestVerifyArtifactFailureModes:
         assert result.failure_kind is SLSAFailureKind.UNKNOWN
         assert result.exit_code == 2
 
-    def test_timeout_classified(
-        self, tmp_path: Path, bundle_files: tuple[Path, Path]
-    ) -> None:
+    def test_timeout_classified(self, tmp_path: Path, bundle_files: tuple[Path, Path]) -> None:
         bundle, provenance = bundle_files
         stub = _make_stub_verifier(tmp_path, exit_code=0, sleep_sec=0.4)
 
@@ -200,11 +192,7 @@ class TestVerifyArtifactArgvShape:
         bundle, provenance = bundle_files
         # Stub writes its argv to a sibling file then exits 0.
         argv_log = tmp_path / "argv.log"
-        stub_body = (
-            "#!/bin/sh\n"
-            f'printf "%s\\n" "$@" > {argv_log}\n'
-            "exit 0\n"
-        )
+        stub_body = f'#!/bin/sh\nprintf "%s\\n" "$@" > {argv_log}\nexit 0\n'
         stub = tmp_path / "stub"
         stub.write_text(stub_body, encoding="utf-8")
         stub.chmod(stub.stat().st_mode | stat.S_IXUSR)

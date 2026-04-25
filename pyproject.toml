@@ -164,6 +164,14 @@ ignore = [
 # S603/S607 (subprocess security) suppressed only in the file that invokes docker CLI
 "tests/infra/test_docker_compose_dev.py" = ["S101", "S106", "S603", "S607"]
 "src/kosmos/cli/**" = ["T20"]  # allow print() in CLI layer only
+# Spec 1636 P5 — these modules ship CLI entry-points (kosmos-plugin-init,
+# kosmos-plugin-validate) declared in [project.scripts]. They print to
+# stdout/stderr by design; T20 is correctly enforced everywhere else.
+"src/kosmos/plugins/cli_init.py" = ["T20"]
+"src/kosmos/plugins/checks/framework.py" = ["T20"]
+# Plugin test suite mirrors `tests/**` permissions — assert + subprocess
+# (multi-process flock race tests) are intentional.
+"src/kosmos/plugins/tests/**" = ["S101", "S105", "S106", "S603", "S607"]
 
 [tool.ruff.lint.mccabe]
 max-complexity = 10

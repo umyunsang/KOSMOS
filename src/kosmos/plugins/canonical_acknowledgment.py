@@ -67,9 +67,7 @@ def _load_security_review_md(path: Path | None = None) -> str:
 
     # 1. Wheel-bundled resource (kosmos/_canonical/security-review.md).
     try:
-        bundled = resources.files("kosmos._canonical").joinpath(
-            "security-review.md"
-        )
+        bundled = resources.files("kosmos._canonical").joinpath("security-review.md")
         with resources.as_file(bundled) as resource_path:
             if Path(resource_path).is_file():
                 return Path(resource_path).read_text(encoding="utf-8")
@@ -127,17 +125,13 @@ def _compute_canonical_hash(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
-CANONICAL_ACKNOWLEDGMENT_TEXT: Final[str] = _extract_canonical_text(
-    _load_security_review_md()
-)
+CANONICAL_ACKNOWLEDGMENT_TEXT: Final[str] = _extract_canonical_text(_load_security_review_md())
 """Frozen canonical PIPA §26 trustee acknowledgment text.
 
 Loaded from ``docs/plugins/security-review.md`` at import time.
 """
 
-CANONICAL_ACKNOWLEDGMENT_SHA256: Final[str] = _compute_canonical_hash(
-    CANONICAL_ACKNOWLEDGMENT_TEXT
-)
+CANONICAL_ACKNOWLEDGMENT_SHA256: Final[str] = _compute_canonical_hash(CANONICAL_ACKNOWLEDGMENT_TEXT)
 """SHA-256 hash of the canonical acknowledgment text.
 
 Plugin manifests' ``acknowledgment_sha256`` field MUST equal this value.

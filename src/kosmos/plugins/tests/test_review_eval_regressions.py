@@ -44,7 +44,6 @@ from kosmos.plugins.checks.framework import CheckContext, run_all_checks
 from kosmos.plugins.checks.q10_tests import check_no_live_in_ci
 from kosmos.plugins.installer import _allocate_consent_position, _safe_extract
 
-
 # ---------------------------------------------------------------------------
 # T2 — Q10-NO-LIVE-IN-CI now actually catches a violation.
 # ---------------------------------------------------------------------------
@@ -255,9 +254,7 @@ class TestConsentLedgerPositionLocking:
         assert consent_root.is_dir()
         assert (consent_root / ".lock").is_file()
 
-    def test_concurrent_workers_observe_serialised_counts(
-        self, tmp_path: Path
-    ) -> None:
+    def test_concurrent_workers_observe_serialised_counts(self, tmp_path: Path) -> None:
         """Two child processes both call _allocate_consent_position +
         write a unique receipt under the lock. The total receipt count
         must equal 2 (no double-count, no skipped slot)."""
@@ -351,8 +348,7 @@ class TestQ1FrozenXorViolation:
         schema.write_text(mutated, encoding="utf-8")
 
         yaml_path = (
-            repo_root / "tests" / "fixtures" / "plugin_validation"
-            / "checklist_manifest.yaml"
+            repo_root / "tests" / "fixtures" / "plugin_validation" / "checklist_manifest.yaml"
         )
         results = run_all_checks(plugin_root=scaffold, yaml_path=yaml_path)
         outcomes = {row.id: outcome.passed for row, outcome in results}
@@ -370,16 +366,13 @@ class TestQ1FrozenXorViolation:
 
 class TestCliSubprocessSmoke:
     def test_help_returns_zero(self) -> None:
-        """The entry-point script should be invokable and print help."""
-        result = subprocess.run(
-            [sys.executable, "-m", "kosmos.plugins.checks.framework", "--help"],
-            capture_output=True,
-            text=True,
-            timeout=10,
-        )
-        # The framework module isn't directly executable (no __main__),
-        # so this would fail. Use the entry point via uv run instead.
-        # We verify the entry-point function is importable + callable.
+        """The entry-point function should be importable and callable.
+
+        The framework module isn't directly executable (no __main__),
+        so this asserts the import surface that the entry-point script
+        in pyproject.toml depends on. The actual exit-code paths are
+        exercised in the two tests below.
+        """
         from kosmos.plugins.checks.framework import _cli_main
 
         assert callable(_cli_main)
@@ -392,8 +385,8 @@ class TestCliSubprocessSmoke:
         empty_plugin.mkdir()
 
         # Capture stdout so the test doesn't pollute pytest's output.
+        from contextlib import redirect_stderr, redirect_stdout
         from io import StringIO
-        from contextlib import redirect_stdout, redirect_stderr
 
         out, err = StringIO(), StringIO()
         with redirect_stdout(out), redirect_stderr(err):
@@ -404,10 +397,10 @@ class TestCliSubprocessSmoke:
 
     def test_cli_rejects_nonexistent_path(self, tmp_path: Path) -> None:
         """Bad path → exit 2 with explanatory error."""
-        from kosmos.plugins.checks.framework import _cli_main
-
+        from contextlib import redirect_stderr, redirect_stdout
         from io import StringIO
-        from contextlib import redirect_stdout, redirect_stderr
+
+        from kosmos.plugins.checks.framework import _cli_main
 
         out, err = StringIO(), StringIO()
         with redirect_stdout(out), redirect_stderr(err):

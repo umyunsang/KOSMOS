@@ -35,13 +35,7 @@ from kosmos.plugins import CANONICAL_ACKNOWLEDGMENT_SHA256
 from kosmos.plugins.checks.framework import run_all_checks
 
 _REPO_ROOT = Path(__file__).resolve().parents[4]
-_YAML_PATH = (
-    _REPO_ROOT
-    / "tests"
-    / "fixtures"
-    / "plugin_validation"
-    / "checklist_manifest.yaml"
-)
+_YAML_PATH = _REPO_ROOT / "tests" / "fixtures" / "plugin_validation" / "checklist_manifest.yaml"
 _TEMPLATE_STAGING = _REPO_ROOT / "examples" / "plugin-template-staging"
 
 
@@ -106,9 +100,7 @@ class TestValidScaffoldScores50of50:
         assert len(failed) == 0, f"unmutated template should pass 50/50; failed: {failed}"
         assert len(passed) == 50
 
-    def test_mock_tier_passes_q7_mock_invariants(
-        self, scaffold: Path, tmp_path: Path
-    ) -> None:
+    def test_mock_tier_passes_q7_mock_invariants(self, scaffold: Path, tmp_path: Path) -> None:
         """Mock-tier scaffold: no httpx import + mock_source_spec set.
 
         Generates a fresh mock-tier scaffold via the Python entry-point and
@@ -199,7 +191,9 @@ class TestNegativeCases:
         _save_manifest(scaffold, manifest)
 
         outcomes = _outcomes_by_id(scaffold)
-        assert outcomes.get("Q6-PIPA-PRESENT") is False or outcomes.get("Q1-MANIFEST-VALID") is False
+        assert (
+            outcomes.get("Q6-PIPA-PRESENT") is False or outcomes.get("Q1-MANIFEST-VALID") is False
+        )
 
     def test_q6_pipa_hash_wrong(self, scaffold: Path) -> None:
         manifest = _load_manifest(scaffold)
@@ -224,10 +218,7 @@ class TestNegativeCases:
         outcomes = _outcomes_by_id(scaffold)
         # Q8-NAMESPACE itself passes (the regex still matches plugin.<id>.lookup),
         # but the manifest validator catches the prefix mismatch with plugin_id.
-        assert (
-            outcomes.get("Q1-MANIFEST-VALID") is False
-            or outcomes.get("Q8-NAMESPACE") is False
-        )
+        assert outcomes.get("Q1-MANIFEST-VALID") is False or outcomes.get("Q8-NAMESPACE") is False
 
     def test_q8_no_root_override(self, scaffold: Path) -> None:
         manifest = _load_manifest(scaffold)
@@ -249,10 +240,7 @@ class TestNegativeCases:
         _save_manifest(scaffold, manifest)
 
         outcomes = _outcomes_by_id(scaffold)
-        assert (
-            outcomes.get("Q9-OTEL-ATTR") is False
-            or outcomes.get("Q1-MANIFEST-VALID") is False
-        )
+        assert outcomes.get("Q9-OTEL-ATTR") is False or outcomes.get("Q1-MANIFEST-VALID") is False
 
     def test_q1_plugin_id_regex_violation(self, scaffold: Path) -> None:
         manifest = _load_manifest(scaffold)
@@ -286,10 +274,7 @@ class TestNegativeCases:
         outcomes = _outcomes_by_id(scaffold)
         # Either Q6-PIPA-ORG fires directly OR Q1-MANIFEST-VALID fails because
         # PIPATrusteeAcknowledgment field-level min_length=1 already rejects.
-        assert (
-            outcomes.get("Q6-PIPA-ORG") is False
-            or outcomes.get("Q1-MANIFEST-VALID") is False
-        )
+        assert outcomes.get("Q6-PIPA-ORG") is False or outcomes.get("Q1-MANIFEST-VALID") is False
 
     def test_q6_pipa_fields_list_empty(self, scaffold: Path) -> None:
         """Q6-PIPA-FIELDS-LIST — pii_fields_handled must be a non-empty list."""

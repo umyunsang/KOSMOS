@@ -107,17 +107,13 @@ def check_hint_nouns(ctx: CheckContext) -> CheckOutcome:
         nouns = [tok.form for tok in kiwi.tokenize(text) if tok.tag.startswith("N")]
     except Exception:
         # Fallback: count distinct sequences of 2+ Korean characters.
-        nouns = list({m for m in re.findall(r"[가-힣]{2,}", text)})
+        nouns = list(set(re.findall(r"[가-힣]{2,}", text)))
 
     if len(nouns) < _MIN_KOREAN_NOUNS:
         return failed(
-            ko=(
-                f"search_hint_ko 한국어 명사 ≥ {_MIN_KOREAN_NOUNS} 개 권장 "
-                f"(현재 {len(nouns)} 개)"
-            ),
+            ko=(f"search_hint_ko 한국어 명사 ≥ {_MIN_KOREAN_NOUNS} 개 권장 (현재 {len(nouns)} 개)"),
             en=(
-                f"search_hint_ko should have ≥ {_MIN_KOREAN_NOUNS} Korean nouns "
-                f"(got {len(nouns)})"
+                f"search_hint_ko should have ≥ {_MIN_KOREAN_NOUNS} Korean nouns (got {len(nouns)})"
             ),
         )
     return passed()
@@ -203,14 +199,8 @@ def check_readme_min_len(ctx: CheckContext) -> CheckOutcome:
     text = _read_text(ctx.plugin_root / "README.ko.md") or ""
     if len(text) < _MIN_README_LEN:
         return failed(
-            ko=(
-                f"README.ko.md 가 {_MIN_README_LEN} 자 미만 "
-                f"(현재 {len(text)} 자)"
-            ),
-            en=(
-                f"README.ko.md is shorter than {_MIN_README_LEN} chars "
-                f"(got {len(text)})"
-            ),
+            ko=(f"README.ko.md 가 {_MIN_README_LEN} 자 미만 (현재 {len(text)} 자)"),
+            en=(f"README.ko.md is shorter than {_MIN_README_LEN} chars (got {len(text)})"),
         )
     return passed()
 

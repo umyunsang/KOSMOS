@@ -124,9 +124,7 @@ class TestQ8Namespace:
         # for malformed tool_ids; the older "must start with" message
         # only surfaces when the regex passes but the prefix mismatches.
         msg = str(exc.value)
-        assert ("adapter.tool_id must match" in msg) or (
-            "adapter.tool_id must start with" in msg
-        )
+        assert ("adapter.tool_id must match" in msg) or ("adapter.tool_id must start with" in msg)
 
 
 class TestQ8NoRootOverride:
@@ -189,7 +187,8 @@ class TestQ8NoRootOverride:
         Without this backstop a direct registry.register(GovAPITool(...))
         call could install plugin.foo.resolve_location.
         """
-        from pydantic import BaseModel, ConfigDict, Field as PField
+        from pydantic import BaseModel, ConfigDict
+        from pydantic import Field as PField
 
         from kosmos.tools.models import GovAPITool
 
@@ -234,9 +233,7 @@ class TestQ8VerbInPrimitives:
             ("subscribe", AdapterPrimitive.subscribe),
         ],
     )
-    def test_each_root_verb_accepted(
-        self, verb: str, primitive: AdapterPrimitive
-    ) -> None:
+    def test_each_root_verb_accepted(self, verb: str, primitive: AdapterPrimitive) -> None:
         m = PluginManifest(
             **_manifest_kwargs(
                 adapter=_adapter(

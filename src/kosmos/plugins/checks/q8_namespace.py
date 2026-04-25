@@ -14,12 +14,8 @@ import re
 
 from kosmos.plugins.checks.framework import CheckContext, CheckOutcome, failed, passed
 
-_NAMESPACE_RE = re.compile(
-    r"^plugin\.[a-z][a-z0-9_]*\.(lookup|submit|verify|subscribe)$"
-)
-_ROOT_PRIMITIVES: frozenset[str] = frozenset(
-    {"lookup", "submit", "verify", "subscribe"}
-)
+_NAMESPACE_RE = re.compile(r"^plugin\.[a-z][a-z0-9_]*\.(lookup|submit|verify|subscribe)$")
+_ROOT_PRIMITIVES: frozenset[str] = frozenset({"lookup", "submit", "verify", "subscribe"})
 _HOST_RESERVED: frozenset[str] = frozenset({"resolve_location"})
 
 
@@ -74,12 +70,8 @@ def check_no_root_override(ctx: CheckContext) -> CheckOutcome:
     verb = parts[2]
     if verb in _HOST_RESERVED:
         return failed(
-            ko=(
-                f"verb {verb!r} 는 host 가 소유한 built-in primitive — 플러그인이 override 불가"
-            ),
-            en=(
-                f"verb {verb!r} is a host-owned built-in primitive — plugins cannot override"
-            ),
+            ko=(f"verb {verb!r} 는 host 가 소유한 built-in primitive — 플러그인이 override 불가"),
+            en=(f"verb {verb!r} is a host-owned built-in primitive — plugins cannot override"),
         )
     return passed()
 
@@ -100,14 +92,8 @@ def check_verb_in_primitives(ctx: CheckContext) -> CheckOutcome:
     verb = parts[2]
     if verb not in _ROOT_PRIMITIVES:
         return failed(
-            ko=(
-                f"verb {verb!r} 는 4 root primitive 중 하나가 아님 "
-                f"({sorted(_ROOT_PRIMITIVES)})"
-            ),
-            en=(
-                f"verb {verb!r} is not one of the 4 root primitives "
-                f"({sorted(_ROOT_PRIMITIVES)})"
-            ),
+            ko=(f"verb {verb!r} 는 4 root primitive 중 하나가 아님 ({sorted(_ROOT_PRIMITIVES)})"),
+            en=(f"verb {verb!r} is not one of the 4 root primitives ({sorted(_ROOT_PRIMITIVES)})"),
         )
     return passed()
 

@@ -45,7 +45,11 @@ def _has_decorator(fn: ast.FunctionDef | ast.AsyncFunctionDef, name: str) -> boo
         # @pytest.mark.allow_network  → similar
         if isinstance(dec, ast.Attribute) and dec.attr == name:
             return True
-        if isinstance(dec, ast.Call) and isinstance(dec.func, ast.Attribute) and dec.func.attr == name:
+        if (
+            isinstance(dec, ast.Call)
+            and isinstance(dec.func, ast.Attribute)
+            and dec.func.attr == name
+        ):
             return True
     return False
 
@@ -125,31 +129,46 @@ def _file_imports_httpx(tree: ast.Module) -> bool:
             for alias in node.names:
                 if alias.name == "httpx" or alias.name.startswith("httpx."):
                     return True
-        elif isinstance(node, ast.ImportFrom):
-            if node.module == "httpx" or (node.module or "").startswith("httpx."):
-                return True
+        elif isinstance(node, ast.ImportFrom) and (
+            node.module == "httpx" or (node.module or "").startswith("httpx.")
+        ):
+            return True
+    return False
+
+
+def _is_httpx_string_arg(arg: ast.expr) -> bool:
+    """True if `arg` is a string literal beginning with ``"httpx"``."""
+    return (
+        isinstance(arg, ast.Constant)
+        and isinstance(arg.value, str)
+        and arg.value.startswith("httpx")
+    )
+
+
+def _call_targets_httpx_attr(node: ast.Call) -> bool:
+    """True if `node` is monkeypatch.setattr("httpx...", …) / respx.<verb>(...)."""
+    func = node.func
+    if not (isinstance(func, ast.Attribute) and func.attr in {"setattr", "mock", "get", "post"}):
+        return False
+    return any(_is_httpx_string_arg(a) for a in node.args)
+
+
+def _imports_respx(node: ast.AST) -> bool:
+    """True if `node` is `import respx` / `from respx[...] import …`."""
+    if isinstance(node, ast.Import):
+        return any(alias.name == "respx" or alias.name.startswith("respx.") for alias in node.names)
+    if isinstance(node, ast.ImportFrom):
+        return node.module == "respx" or (node.module or "").startswith("respx.")
     return False
 
 
 def _file_uses_httpx_monkeypatch(tree: ast.Module) -> bool:
     """True if any test stubs httpx via monkeypatch.setattr or respx."""
     for node in ast.walk(tree):
-        if isinstance(node, ast.Call):
-            func = node.func
-            # monkeypatch.setattr("httpx....", ...) / respx.mock(...) / respx.get(...)
-            if isinstance(func, ast.Attribute) and func.attr in {"setattr", "mock", "get", "post"}:
-                for arg in node.args:
-                    if isinstance(arg, ast.Constant) and isinstance(arg.value, str):
-                        if arg.value.startswith("httpx"):
-                            return True
-        # `import respx` / `from respx import ...` → assume the test is mocking
-        if isinstance(node, ast.Import):
-            for alias in node.names:
-                if alias.name == "respx" or alias.name.startswith("respx."):
-                    return True
-        elif isinstance(node, ast.ImportFrom):
-            if node.module == "respx" or (node.module or "").startswith("respx."):
-                return True
+        if isinstance(node, ast.Call) and _call_targets_httpx_attr(node):
+            return True
+        if _imports_respx(node):
+            return True
     return False
 
 

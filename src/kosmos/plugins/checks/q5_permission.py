@@ -28,7 +28,7 @@ def check_layer_declared(ctx: CheckContext) -> CheckOutcome:
     assert ctx.manifest is not None
     if ctx.manifest.permission_layer not in (1, 2, 3):
         return failed(
-            ko=f"permission_layer 가 {{1,2,3}} 중 하나여야 함",
+            ko="permission_layer 가 {1,2,3} 중 하나여야 함",
             en="permission_layer must be one of {1, 2, 3}",
         )
     return passed()
@@ -42,9 +42,7 @@ def check_layer_matches_pii(ctx: CheckContext) -> CheckOutcome:
     assert ctx.manifest is not None
     if ctx.manifest.processes_pii and ctx.manifest.permission_layer < 2:
         return failed(
-            ko=(
-                "processes_pii=True 인데 permission_layer=1 — Layer 2 (orange) 이상 권장"
-            ),
+            ko=("processes_pii=True 인데 permission_layer=1 — Layer 2 (orange) 이상 권장"),
             en=(
                 "processes_pii=True but permission_layer=1 — Layer 2 (orange) or "
                 "higher is recommended"
@@ -63,13 +61,14 @@ def check_layer_doc(ctx: CheckContext) -> CheckOutcome:
     text = readme.read_text(encoding="utf-8") if readme.is_file() else ""
     layer_token = f"Layer {ctx.manifest.permission_layer}"
     layer_ko = f"권한 Layer {ctx.manifest.permission_layer}"
-    if layer_token not in text and layer_ko not in text and (
-        f"permission_layer: {ctx.manifest.permission_layer}" not in text
+    if (
+        layer_token not in text
+        and layer_ko not in text
+        and (f"permission_layer: {ctx.manifest.permission_layer}" not in text)
     ):
         return failed(
             ko=(
-                f"README.ko.md 에 permission_layer ({ctx.manifest.permission_layer}) "
-                "근거 설명 권장"
+                f"README.ko.md 에 permission_layer ({ctx.manifest.permission_layer}) 근거 설명 권장"
             ),
             en=(
                 f"README.ko.md should explain the chosen permission_layer "

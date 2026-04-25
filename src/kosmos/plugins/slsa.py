@@ -115,12 +115,7 @@ def _detect_platform_dir() -> str:
 
 def default_verifier_path() -> Path:
     """Return the configured-default path to the vendored slsa-verifier binary."""
-    return (
-        settings.plugin_vendor_root
-        / "slsa-verifier"
-        / _detect_platform_dir()
-        / "slsa-verifier"
-    )
+    return settings.plugin_vendor_root / "slsa-verifier" / _detect_platform_dir() / "slsa-verifier"
 
 
 def _classify_failure(stderr: str, exit_code: int) -> SLSAFailureKind:

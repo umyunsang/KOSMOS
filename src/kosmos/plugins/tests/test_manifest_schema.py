@@ -38,7 +38,6 @@ from kosmos.tools.registry import (
     AdapterSourceMode,
 )
 
-
 # ---------------------------------------------------------------------------
 # Builders — keep test setup tight + readable.
 # ---------------------------------------------------------------------------
@@ -291,7 +290,7 @@ class TestCanonicalAcknowledgmentHash:
     def test_canonical_text_normalised(self) -> None:
         # Normalisation invariants the loader promises: no leading / trailing
         # whitespace, LF line endings only.
-        assert CANONICAL_ACKNOWLEDGMENT_TEXT == CANONICAL_ACKNOWLEDGMENT_TEXT.strip()
+        assert CANONICAL_ACKNOWLEDGMENT_TEXT.strip() == CANONICAL_ACKNOWLEDGMENT_TEXT
         assert "\r\n" not in CANONICAL_ACKNOWLEDGMENT_TEXT
 
     def test_constant_shape(self) -> None:

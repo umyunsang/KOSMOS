@@ -93,9 +93,7 @@ def _import_adapter_module(module_path: str, *, plugin_root: Path | None) -> Mod
         spec_name = f"_kosmos_plugin_{plugin_root.name}_{leaf}"
         spec = importlib.util.spec_from_file_location(spec_name, candidate)
         if spec is None or spec.loader is None:
-            raise PluginRegistrationError(
-                f"failed to build import spec for {candidate}"
-            )
+            raise PluginRegistrationError(f"failed to build import spec for {candidate}")
         module = importlib.util.module_from_spec(spec)
         # H2 (review eval): pop any stale entry from a previous failed
         # install so a re-install gets a fresh module rather than the
@@ -107,9 +105,7 @@ def _import_adapter_module(module_path: str, *, plugin_root: Path | None) -> Mod
             spec.loader.exec_module(module)
         except Exception as exc:
             sys.modules.pop(spec_name, None)
-            raise PluginRegistrationError(
-                f"plugin adapter module failed to import: {exc}"
-            ) from exc
+            raise PluginRegistrationError(f"plugin adapter module failed to import: {exc}") from exc
         # NB: post-exec failures (resolve_tool_and_adapter, registry.register)
         # also pop this entry — see register_plugin_adapter's except blocks.
         return module
@@ -249,12 +245,8 @@ def register_plugin_adapter(
 
         module = None
         try:
-            module = _import_adapter_module(
-                manifest.adapter.module_path, plugin_root=plugin_root
-            )
-            tool, adapter_fn = _resolve_tool_and_adapter(
-                module, expected_tool_id=expected_tool_id
-            )
+            module = _import_adapter_module(manifest.adapter.module_path, plugin_root=plugin_root)
+            tool, adapter_fn = _resolve_tool_and_adapter(module, expected_tool_id=expected_tool_id)
             registry.register(tool)
             executor.register_adapter(tool.id, adapter_fn)
         except PluginRegistrationError:
@@ -287,9 +279,7 @@ def _load_manifest_from_yaml(path: Path) -> PluginManifest:
     try:
         raw = yaml.safe_load(path.read_text(encoding="utf-8"))
     except (OSError, yaml.YAMLError) as exc:
-        raise ManifestValidationError(
-            f"could not read manifest at {path}: {exc}"
-        ) from exc
+        raise ManifestValidationError(f"could not read manifest at {path}: {exc}") from exc
     if not isinstance(raw, dict):
         raise ManifestValidationError(
             f"manifest at {path} must decode to a mapping; got {type(raw).__name__}"
@@ -297,9 +287,7 @@ def _load_manifest_from_yaml(path: Path) -> PluginManifest:
     try:
         return PluginManifest.model_validate(raw)
     except Exception as exc:
-        raise ManifestValidationError(
-            f"manifest at {path} failed validation: {exc}"
-        ) from exc
+        raise ManifestValidationError(f"manifest at {path} failed validation: {exc}") from exc
 
 
 def auto_discover(
@@ -354,9 +342,7 @@ def auto_discover(
             )
             registered.append(tool)
         except (ManifestValidationError, PluginRegistrationError) as exc:
-            logger.error(
-                "plugin auto-discover failed for %s: %s", plugin_dir.name, exc
-            )
+            logger.error("plugin auto-discover failed for %s: %s", plugin_dir.name, exc)
             if strict:
                 raise
 
