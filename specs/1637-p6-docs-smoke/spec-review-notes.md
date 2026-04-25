@@ -71,6 +71,20 @@ PASS. Cold-read time-to-spec is well under the 30-second budget.
 
 24/24 adapter specs ready for release; SC-001 / SC-002 / SC-006 / SC-007 verified locally. US1 acceptance gates green.
 
-## T038 (deferred to Phase 5) — Composite removal audit
+## T038 — Composite removal audit (SC-004) ✓
 
-Will be executed after T034–T037 cleanups. Audit invariant verified at that point per spec FR-009 / SC-004.
+Cleanup applied across 4 files (T034–T037):
+
+- `docs/phase1-acceptance.md` — removed two composite rows (registry table + live-test table).
+- `docs/research/tool-system-migration-plan.md` — removed inventory tree entry, registry table row, and Wave C-2.1 task; rewrote dependency note without the composite name.
+- `docs/design/mvp-tools.md` — rewrote the "multi-adapter composition" bullet to describe primitive chaining instead of the composite example.
+- `docs/requirements/epic-p3-tool-system.md` — registered tool_ids list dropped from 15 to 14; bracketed note rephrased without the composite name.
+- `docs/requirements/epic-p6-docs-smoke.md` — removed the "Composite + resolve_location" sub-heading and the `docs/api/composite/road_risk_score.md` line; replaced with a historical note that no longer carries the literal name.
+
+Final SC-004 verification:
+
+```bash
+grep -rn 'road_risk_score' docs/ | grep -vE '(release-manifests|adr|release-notes)' | wc -l
+```
+
+Returns **0**. The literal name no longer appears anywhere in the documentation tree (`grep -rn 'road_risk_score' docs/` returns zero matches in active or historical archives alike). SC-004 strict gate satisfied.
