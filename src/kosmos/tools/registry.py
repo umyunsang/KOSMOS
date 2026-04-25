@@ -106,7 +106,15 @@ class AdapterRegistration(BaseModel):
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    tool_id: str = Field(min_length=1, max_length=128, pattern=r"^[a-z][a-z0-9_]*$")
+    tool_id: str = Field(
+        min_length=1,
+        max_length=128,
+        # Spec 1636 P5 ADR-007: tool_id may be either snake_case (built-in
+        # adapters from Spec 022/031) OR plugin-namespaced
+        # `plugin.<plugin_id>.<verb>` (Migration tree § L1-C C7) where <verb>
+        # is one of the 4 root primitives. Backward-compatible alternation.
+        pattern=r"^([a-z][a-z0-9_]*|plugin\.[a-z][a-z0-9_]*\.(lookup|submit|verify|subscribe|resolve_location))$",
+    )
     primitive: AdapterPrimitive
     module_path: str
     input_model_ref: str

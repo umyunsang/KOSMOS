@@ -663,7 +663,10 @@ class LookupFetchInput(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     mode: Literal["fetch"]
-    tool_id: str = Field(pattern=r"^[a-z][a-z0-9_]*$")
+    tool_id: str = Field(
+        # Spec 1636 P5 ADR-007: snake_case OR plugin-namespaced.
+        pattern=r"^([a-z][a-z0-9_]*|plugin\.[a-z][a-z0-9_]*\.(lookup|submit|verify|subscribe|resolve_location))$",
+    )
     """Must come from a previous `search` result. Never guess."""
 
     params: dict[str, object]
