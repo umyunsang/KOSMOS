@@ -231,10 +231,23 @@ class GovAPITool(BaseModel):
     @field_validator("id")
     @classmethod
     def _validate_id(cls, v: str) -> str:
-        if not re.fullmatch(r"^[a-z][a-z0-9_]*$", v):
+        # Spec 1636 P5 ADR-007: tool ids may be either snake_case
+        # (built-in adapters) OR plugin-namespaced
+        # ``plugin.<plugin_id>.<verb>`` where <verb> is one of the four
+        # root primitives (lookup / submit / verify / subscribe) plus
+        # the in-tree resolve_location surface. Mirrors the regex on
+        # :class:`kosmos.tools.registry.AdapterRegistration.tool_id` so
+        # the two validators stay drift-free.
+        if not re.fullmatch(
+            r"^([a-z][a-z0-9_]*"
+            r"|plugin\.[a-z][a-z0-9_]*\.(lookup|submit|verify|subscribe|resolve_location))$",
+            v,
+        ):
             raise ValueError(
                 f"Tool id {v!r} must match ^[a-z][a-z0-9_]*$ "
-                "(lowercase, start with a letter, underscores only)"
+                "(lowercase, start with a letter, underscores only) "
+                "OR ^plugin\\.<plugin_id>\\.(lookup|submit|verify|subscribe|"
+                "resolve_location)$ for plugin-namespaced tools (ADR-007)"
             )
         return v
 

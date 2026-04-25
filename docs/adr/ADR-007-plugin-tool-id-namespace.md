@@ -3,7 +3,7 @@
 **Status**: Accepted
 **Date**: 2026-04-25
 **Epic**: #1636 (P5 Plugin DX 5-tier)
-**Affected**: `src/kosmos/tools/registry.py:AdapterRegistration` · `src/kosmos/tools/models.py:LookupFetchInput`
+**Affected**: `src/kosmos/tools/registry.py:AdapterRegistration` · `src/kosmos/tools/models.py:LookupFetchInput` · `src/kosmos/tools/models.py:GovAPITool._validate_id` (extended in T014; the runtime registry holds GovAPITool instances, so the same alternation must apply there for plugin tools to round-trip through `ToolRegistry.register`)
 
 ## Context
 
