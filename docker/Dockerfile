@@ -47,8 +47,7 @@ RUN uv sync --frozen --no-install-project --no-dev
 COPY src/ ./src/
 COPY prompts/ ./prompts/
 COPY docs/plugins/security-review.md ./docs/plugins/security-review.md
-COPY tests/fixtures/plugin_validation/checklist_manifest.yaml \
-     ./tests/fixtures/plugin_validation/checklist_manifest.yaml
+COPY tests/fixtures/plugin_validation/ ./tests/fixtures/plugin_validation/
 RUN uv sync --frozen --no-dev
 
 # ---------------------------------------------------------------------------

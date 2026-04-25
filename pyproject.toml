@@ -90,7 +90,12 @@ packages = ["src/kosmos"]
 "tests/fixtures/plugin_validation/checklist_manifest.yaml" = "kosmos/_canonical/checklist_manifest.yaml"
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+# Spec 1636 P5 — plugin in-tree tests live alongside the plugin module
+# at src/kosmos/plugins/tests/ so they ship with the wheel and exercise
+# package-private helpers. Both roots must be in testpaths so CI's
+# `pytest -n auto --cov=src/kosmos` sees plugin tests AND records
+# coverage on the plugin sources they exercise.
+testpaths = ["tests", "src/kosmos/plugins/tests"]
 asyncio_mode = "auto"
 # -p no:unraisableexception disables pytest's unraisable-exception plugin
 # which in 8.4+ wraps late-gc ResourceWarnings (unclosed sockets, event
