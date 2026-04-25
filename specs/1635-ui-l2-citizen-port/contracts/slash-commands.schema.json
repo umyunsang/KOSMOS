@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kosmos.local/schemas/1635/slash-commands.schema.json",
+  "title": "KOSMOS UI L2 Slash Command Catalog",
+  "description": "Canonical schema for tui/src/commands/catalog.ts. Single source of truth for autocomplete dropdown (FR-014) and /help 4-group output (FR-029). Spec 1635-ui-l2-citizen-port.",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["name", "group", "description_ko", "description_en"],
+    "properties": {
+      "name": {
+        "type": "string",
+        "pattern": "^/[a-z][a-z0-9-]*( [a-z0-9-]+)?$",
+        "description": "Slash command including any positional sub-command (e.g., '/consent list')."
+      },
+      "group": {
+        "type": "string",
+        "enum": ["session", "permission", "tool", "storage"],
+        "description": "Help-screen group per FR-029. Each command belongs to exactly one group."
+      },
+      "description_ko": {
+        "type": "string",
+        "minLength": 1,
+        "description": "Korean primary description (FR-004)."
+      },
+      "description_en": {
+        "type": "string",
+        "minLength": 1,
+        "description": "English fallback description (FR-004)."
+      },
+      "arg_signature": {
+        "type": ["string", "null"],
+        "description": "Free-form argument signature shown in autocomplete dropdown, e.g., 'rcpt-<id>' or '--date FROM..TO'."
+      },
+      "hidden": {
+        "type": "boolean",
+        "default": false,
+        "description": "When true, excluded from /help and autocomplete. Reserved for development-only commands."
+      }
+    }
+  },
+  "examples": [
+    [
+      {
+        "name": "/onboarding",
+        "group": "session",
+        "description_ko": "온보딩을 처음부터 다시 진행합니다",
+        "description_en": "Restart onboarding from step 1",
+        "arg_signature": "[step-name]",
+        "hidden": false
+      },
+      {
+        "name": "/consent revoke",
+        "group": "permission",
+        "description_ko": "발급된 권한 영수증을 철회합니다",
+        "description_en": "Revoke a previously granted permission receipt",
+        "arg_signature": "rcpt-<id>",
+        "hidden": false
+      }
+    ]
+  ]
+}

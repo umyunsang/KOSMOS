@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kosmos.local/schemas/1635/keybindings.schema.json",
+  "title": "KOSMOS UI L2 Keybinding Contract Additions",
+  "description": "Keybindings introduced or modified by Spec 1635-ui-l2-citizen-port on top of the existing tui/src/keybindings/defaultBindings.ts. The full keybinding registry is owned by Spec 287/288; this contract enumerates only this epic's additions.",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["binding_id", "keys", "context", "action_id", "ime_safe", "fr_ref"],
+    "properties": {
+      "binding_id": {
+        "type": "string",
+        "pattern": "^kosmos\\.ui-l2\\.[a-z][a-z0-9-]*$"
+      },
+      "keys": {
+        "type": "string",
+        "description": "Key combo notation per CC keybindings/parser.ts (e.g., 'ctrl+o', 'shift+tab', '/')."
+      },
+      "context": {
+        "type": "string",
+        "enum": ["repl", "permission-modal", "onboarding", "agents-panel", "config-overlay", "plugin-browser", "history-search"],
+        "description": "Context in which this binding is active."
+      },
+      "action_id": {
+        "type": "string",
+        "description": "Action handler identifier (e.g., 'message.toggleExpand')."
+      },
+      "ime_safe": {
+        "type": "boolean",
+        "description": "True if this binding may fire while Korean IME is composing (vision.md § Keyboard-shortcut migration IME safety rule). False means the binding MUST check !useKoreanIME().isComposing before acting."
+      },
+      "fr_ref": {
+        "type": "string",
+        "pattern": "^FR-0(0[8-9]|1[0-9]|2[0-4]|3[0-3])$",
+        "description": "Functional requirement this binding satisfies."
+      }
+    }
+  },
+  "examples": [
+    [
+      {
+        "binding_id": "kosmos.ui-l2.toggle-expand",
+        "keys": "ctrl+o",
+        "context": "repl",
+        "action_id": "message.toggleExpand",
+        "ime_safe": false,
+        "fr_ref": "FR-009"
+      },
+      {
+        "binding_id": "kosmos.ui-l2.permission-mode-cycle",
+        "keys": "shift+tab",
+        "context": "repl",
+        "action_id": "permission.cycleMode",
+        "ime_safe": false,
+        "fr_ref": "FR-022"
+      },
+      {
+        "binding_id": "kosmos.ui-l2.slash-trigger",
+        "keys": "/",
+        "context": "repl",
+        "action_id": "promptInput.openAutocomplete",
+        "ime_safe": false,
+        "fr_ref": "FR-014"
+      },
+      {
+        "binding_id": "kosmos.ui-l2.permission-allow-once",
+        "keys": "y",
+        "context": "permission-modal",
+        "action_id": "permission.allowOnce",
+        "ime_safe": false,
+        "fr_ref": "FR-017"
+      },
+      {
+        "binding_id": "kosmos.ui-l2.permission-allow-session",
+        "keys": "a",
+        "context": "permission-modal",
+        "action_id": "permission.allowSession",
+        "ime_safe": false,
+        "fr_ref": "FR-017"
+      },
+      {
+        "binding_id": "kosmos.ui-l2.permission-deny",
+        "keys": "n",
+        "context": "permission-modal",
+        "action_id": "permission.deny",
+        "ime_safe": false,
+        "fr_ref": "FR-017"
+      },
+      {
+        "binding_id": "kosmos.ui-l2.plugin-toggle-active",
+        "keys": "space",
+        "context": "plugin-browser",
+        "action_id": "plugin.toggleActive",
+        "ime_safe": false,
+        "fr_ref": "FR-031"
+      },
+      {
+        "binding_id": "kosmos.ui-l2.plugin-detail",
+        "keys": "i",
+        "context": "plugin-browser",
+        "action_id": "plugin.openDetail",
+        "ime_safe": false,
+        "fr_ref": "FR-031"
+      },
+      {
+        "binding_id": "kosmos.ui-l2.plugin-remove",
+        "keys": "r",
+        "context": "plugin-browser",
+        "action_id": "plugin.remove",
+        "ime_safe": false,
+        "fr_ref": "FR-031"
+      },
+      {
+        "binding_id": "kosmos.ui-l2.plugin-marketplace",
+        "keys": "a",
+        "context": "plugin-browser",
+        "action_id": "plugin.openMarketplace",
+        "ime_safe": false,
+        "fr_ref": "FR-031"
+      }
+    ]
+  ]
+}
