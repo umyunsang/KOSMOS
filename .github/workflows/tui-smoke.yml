@@ -75,6 +75,28 @@ jobs:
           which script || (sudo apt-get update && sudo apt-get install -y bsdmainutils util-linux)
           script --version
 
+      - name: Install canvas/pdf-to-img system deps (Spec 1635 → 1636)
+        # Spec 1635 added `pdf-to-img` for inline PDF rendering (UI-B.3.a),
+        # which transitively depends on `node-canvas`. node-canvas distributes
+        # prebuilt binaries via `prebuild-install`, but on hosted runners with
+        # cache-cold node-gyp the prebuilt detection occasionally misses
+        # (target=napi target=7 libc=<empty> heuristic) and falls back to a
+        # source build. The source build needs cairo + pixman + pango + libjpeg
+        # + libgif + librsvg dev headers — without them the install fails with
+        # `Package 'pixman-1', required by 'virtual:world', not found`.
+        # Installing these unconditionally costs ~10 s and removes a recurrent
+        # CI flake; the prebuilt fast path is a no-op for the deps.
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libcairo2-dev \
+            libpixman-1-dev \
+            libpango1.0-dev \
+            libjpeg-dev \
+            libgif-dev \
+            librsvg2-dev \
+            pkg-config
+
       - name: Install TUI dependencies
         working-directory: tui
         run: bun install --frozen-lockfile
