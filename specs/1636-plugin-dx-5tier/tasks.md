@@ -50,7 +50,7 @@ description: "Task list for Epic #1636 — P5 Plugin DX 5-tier"
 
 **⚠️ CRITICAL**: No US1–US5 task starts until all of T005–T014 land.
 
-- [ ] T005 Implement `src/kosmos/plugins/canonical_acknowledgment.py`: `_extract_canonical_text()` + `_compute_canonical_hash()` + module-level `CANONICAL_ACKNOWLEDGMENT_SHA256` constant; populate canonical PIPA §26 text in `docs/plugins/security-review.md` between the markers per contracts/pipa-acknowledgment.md verbatim
+- [X] T005 Implement `src/kosmos/plugins/canonical_acknowledgment.py`: `_extract_canonical_text()` + `_compute_canonical_hash()` + module-level `CANONICAL_ACKNOWLEDGMENT_SHA256` constant; canonical PIPA §26 text already in `docs/plugins/security-review.md` markers from T003. Verified hash: `434074581cab35241c70f9b6e2191a7220fdac67aa627289ea64472cb87495d4` (540-char canonical text)
 - [ ] T006 Implement `src/kosmos/plugins/manifest_schema.py`: `PluginManifest` (Pydantic v2, frozen, extra=forbid) + nested `PIPATrusteeAcknowledgment` per data-model.md § 1+2; include all 5 cross-field validators (`_v_mock_source`, `_v_pipa_required`, `_v_pipa_hash`, `_v_otel_attribute`, `_v_namespace`)
 - [ ] T007 [P] Add unit tests `src/kosmos/plugins/tests/test_manifest_schema.py` + `tests/test_acknowledgment_hash.py` (combined file): positive sample + 8 negative cases (one per validator + 3 schema invariants)
 - [ ] T008 Generate `specs/1636-plugin-dx-5tier/contracts/manifest.schema.json` from the Pydantic model (`PluginManifest.model_json_schema()`) and add a parity test in `src/kosmos/plugins/tests/test_schema_parity.py` that diffs the on-disk JSON Schema against the live Pydantic export — drift fails CI
