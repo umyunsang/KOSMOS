@@ -7,6 +7,8 @@ description: "Tasks: P6 · Docs/API specs + Integration smoke (Epic #1637)"
 
 **Input**: Design documents from `/specs/1637-p6-docs-smoke/`
 **Prerequisites**: spec.md, plan.md, research.md, data-model.md, contracts/, quickstart.md
+**Parent Epic**: #1637
+**Issue range**: Tasks T001–T044 → #1928–#1971 · Deferred D1–D5 → #1972–#1976 (49 sub-issues of #1637)
 
 **Tests**: Tests are NOT explicitly requested by the user; this Epic's verification is via spec FR-010 (`bun test` recovery) and FR-013 (visual smoke). No new test-task tasks beyond fixing existing failures.
 
