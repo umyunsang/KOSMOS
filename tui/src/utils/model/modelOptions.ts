@@ -6,12 +6,11 @@ import {
   isTeamPremiumSubscriber,
 } from '../auth.js'
 import { getModelStrings } from './modelStrings.js'
-import {
-  COST_TIER_3_15,
-  COST_HAIKU_35,
-  COST_HAIKU_45,
-  formatModelPricing,
-} from '../modelCost.js'
+// utils/modelCost removed in P1+P2 (Spec 1633); KOSMOS uses K-EXAONE via FriendliAI, Anthropic pricing not applicable.
+const COST_TIER_3_15 = { input: 0, output: 0 }
+const COST_HAIKU_35 = { input: 0, output: 0 }
+const COST_HAIKU_45 = { input: 0, output: 0 }
+const formatModelPricing = (_cost: { input: number; output: number }): string => ''
 import { getSettings_DEPRECATED } from '../settings/settings.js'
 import { checkOpus1mAccess, checkSonnet1mAccess } from './check1mAccess.js'
 import { getAPIProvider } from './providers.js'

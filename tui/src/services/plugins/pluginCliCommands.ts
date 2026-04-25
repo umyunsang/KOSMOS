@@ -14,10 +14,9 @@ import { getManagedPluginNames } from '../../utils/plugins/managedPlugins.js'
 import { parsePluginIdentifier } from '../../utils/plugins/pluginIdentifier.js'
 import type { PluginScope } from '../../utils/plugins/schemas.js'
 import { writeToStdout } from '../../utils/process.js'
-import {
-  buildPluginTelemetryFields,
-  classifyPluginCommandError,
-} from '../../utils/telemetry/pluginTelemetry.js'
+// utils/telemetry/pluginTelemetry removed — KOSMOS telemetry handled by Spec 021 OTEL pipeline.
+const buildPluginTelemetryFields = (..._args: unknown[]): Record<string, unknown> => ({})
+const classifyPluginCommandError = (_err: unknown): string => 'unknown'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_PII_TAGGED,

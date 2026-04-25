@@ -32,7 +32,8 @@ import {
   isOfficialMarketplaceName,
   parsePluginIdentifier,
 } from 'src/utils/plugins/pluginIdentifier.js'
-import { buildPluginCommandTelemetryFields } from 'src/utils/telemetry/pluginTelemetry.js'
+// utils/telemetry/pluginTelemetry removed — KOSMOS telemetry handled by Spec 021 OTEL pipeline.
+const buildPluginCommandTelemetryFields = (_info: unknown): Record<string, unknown> => ({})
 import { z } from 'zod/v4'
 import {
   addInvokedSkill,

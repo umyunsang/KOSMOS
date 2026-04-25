@@ -102,6 +102,10 @@ async function runSmoke(): Promise<SmokeResult> {
       // substrings anyway.
       NO_COLOR: '1',
       FORCE_COLOR: '0',
+      // envGuard (Spec 1633 T011) requires a FriendliAI credential at boot.
+      // Use a placeholder so the smoke boot path does not exit before Ink renders.
+      // Real API calls never happen — KOSMOS_BACKEND_CMD is a no-op sleep.
+      FRIENDLI_API_KEY: process.env.FRIENDLI_API_KEY ?? 'smoke-test-placeholder',
     },
     stdio: ['ignore', 'pipe', 'pipe'],
   })

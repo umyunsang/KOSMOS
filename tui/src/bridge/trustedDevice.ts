@@ -1,7 +1,10 @@
 import axios from 'axios'
 import memoize from 'lodash-es/memoize.js'
 import { hostname } from 'os'
-import { getOauthConfig } from '../constants/oauth.js'
+// constants/oauth removed in P1+P2 (Spec 1633); KOSMOS uses FriendliAI, not Anthropic OAuth.
+const getOauthConfig = (): { authorizationUrl: string; tokenUrl: string; clientId: string; scopes: readonly string[]; BASE_API_URL: string } => ({
+  authorizationUrl: '', tokenUrl: '', clientId: '', scopes: [] as readonly string[], BASE_API_URL: '',
+})
 import {
   checkGate_CACHED_OR_BLOCKING,
   getFeatureValue_CACHED_MAY_BE_STALE,
@@ -9,7 +12,8 @@ import {
 import { logForDebugging } from '../utils/debug.js'
 import { errorMessage } from '../utils/errors.js'
 import { isEssentialTrafficOnly } from '../utils/privacyLevel.js'
-import { getSecureStorage } from '../utils/secureStorage/index.js'
+// utils/secureStorage removed in P1+P2 (Spec 1633); KOSMOS uses .env-backed secrets, not OS keychain.
+const getSecureStorage = (): { read: () => null } => ({ read: () => null })
 import { jsonStringify } from '../utils/slowOperations.js'
 
 /**

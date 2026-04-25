@@ -14,7 +14,19 @@ import type {
   SDKStatus,
   SDKUserMessageReplay,
 } from 'src/entrypoints/agentSdkTypes.js'
-import { accumulateUsage, updateUsage } from 'src/services/api/claude.js'
+// services/api/claude removed in P1+P2 (Spec 1633); KOSMOS uses FriendliAI/K-EXAONE, not Anthropic API.
+import type { NonNullableUsage as _NNU } from 'src/services/api/logging.js'
+const updateUsage = (current: _NNU, delta: _NNU): _NNU => {
+  if (!delta) return current
+  const out = { ...current }
+  for (const k of Object.keys(delta ?? {}) as (keyof _NNU)[]) {
+    const cv = (current as Record<string, number>)[k as string] ?? 0
+    const dv = (delta as Record<string, number>)[k as string] ?? 0
+    ;(out as Record<string, number>)[k as string] = cv + dv
+  }
+  return out
+}
+const accumulateUsage = (total: _NNU, current: _NNU): _NNU => updateUsage(total, current)
 import type { NonNullableUsage } from 'src/services/api/logging.js'
 import { EMPTY_USAGE } from 'src/services/api/logging.js'
 import stripAnsi from 'strip-ansi'

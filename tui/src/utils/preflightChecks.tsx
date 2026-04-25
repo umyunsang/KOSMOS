@@ -3,7 +3,8 @@ import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { logEvent } from 'src/services/analytics/index.js';
 import { Spinner } from '../components/Spinner.js';
-import { getOauthConfig } from '../constants/oauth.js';
+// constants/oauth removed in P1+P2 (Spec 1633); KOSMOS uses FriendliAI, not Anthropic OAuth.
+const getOauthConfig = (): { authorizationUrl: string; tokenUrl: string; clientId: string; scopes: readonly string[]; BASE_API_URL: string } => ({ authorizationUrl: '', tokenUrl: '', clientId: '', scopes: [] as readonly string[], BASE_API_URL: '' })
 import { useTimeout } from '../hooks/useTimeout.js';
 import { Box, Text } from '../ink.js';
 import { getSSLErrorHint } from '../services/api/errorUtils.js';

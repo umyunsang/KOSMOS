@@ -40,8 +40,8 @@ import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
 } from '../analytics/index.js'
-// KOSMOS: services/mcp/claudeai.js deleted by Spec 1633 P1. fetchClaudeAIMcpConfigsIfEligible → empty result.
-const fetchClaudeAIMcpConfigsIfEligible = async (): Promise<{ servers: Record<string, unknown> }> => ({ servers: {} })
+// services/mcp/claudeai removed in P1+P2 (Spec 1633); KOSMOS does not use claude.ai MCP proxy.
+const fetchClaudeAIMcpConfigsIfEligible = async (): Promise<Record<string, ScopedMcpServerConfig>> => ({})
 import { expandEnvVarsInString } from './envExpansion.js'
 import {
   type ConfigScope,

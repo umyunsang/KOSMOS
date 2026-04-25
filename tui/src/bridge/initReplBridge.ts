@@ -20,10 +20,9 @@ import type { SDKMessage } from '../entrypoints/agentSdkTypes.js'
 import type { SDKControlResponse } from '../entrypoints/sdk/controlTypes.js'
 import { getFeatureValue_CACHED_WITH_REFRESH } from '../services/analytics/growthbook.js'
 import { getOrganizationUUID } from '../services/oauth/client.js'
-import {
-  isPolicyAllowed,
-  waitForPolicyLimitsToLoad,
-} from '../services/policyLimits/index.js'
+// policyLimits removed in P1+P2 (Spec 1633); KOSMOS opens features by default via Spec 033 permission gauntlet.
+const isPolicyAllowed = (_policy: string): boolean => true
+const waitForPolicyLimitsToLoad = async (): Promise<void> => { /* no-op */ }
 import type { Message } from '../types/message.js'
 import {
   checkAndRefreshOAuthTokenIfNeeded,
