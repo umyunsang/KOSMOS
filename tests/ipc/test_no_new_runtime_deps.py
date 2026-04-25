@@ -104,6 +104,10 @@ _TUI_DEPS_SNAPSHOT: Final[frozenset[str]] = frozenset(
         "lru-cache",
         "marked",
         "p-map",
+        # Spec 1635 P4 UI L2 — FR-010 inline PDF preview (Apache-2.0, WASM)
+        "pdf-to-img",
+        # Spec 1635 P4 UI L2 — FR-032 /export PDF assembly (MIT)
+        "pdf-lib",
         "proper-lockfile",
         "qrcode",
         "react",
