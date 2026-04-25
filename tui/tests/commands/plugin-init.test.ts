@@ -358,4 +358,59 @@ describe('mainPluginInit', () => {
     expect(result.exitCode).toBe(0)
     expect(existsSync(join(out, 'manifest.yaml'))).toBe(true)
   })
+
+  it('returns exit 3 when --pii is set without --pipa-* flags', () => {
+    const out = join(tmp, 'demo_plugin')
+    const result = mainPluginInit([
+      'demo_plugin',
+      '--non-interactive',
+      '--tier',
+      'live',
+      '--layer',
+      '2',
+      '--pii',
+      '--out',
+      out,
+    ])
+    expect(result.exitCode).toBe(3)
+    expect(result.errorKind).toBe('pipa_acknowledgment_error')
+    expect(result.errorMessage).toContain('docs/plugins/security-review.md')
+  })
+
+  it('--pii with all five --pipa-* flags scaffolds with PIPA block', () => {
+    const out = join(tmp, 'demo_plugin')
+    const result = mainPluginInit([
+      'demo_plugin',
+      '--non-interactive',
+      '--tier',
+      'live',
+      '--layer',
+      '2',
+      '--pii',
+      '--pipa-org',
+      'KOSMOS Demo',
+      '--pipa-contact',
+      'demo@example.com',
+      '--pipa-fields',
+      'phone_number,resident_registration_number',
+      '--pipa-legal-basis',
+      'PIPA §15-1-2',
+      '--pipa-sha256',
+      'a'.repeat(64),
+      '--out',
+      out,
+    ])
+    expect(result.exitCode).toBe(0)
+    const manifest = yaml.parse(readFileSync(join(out, 'manifest.yaml'), 'utf-8'))
+    expect(manifest.processes_pii).toBe(true)
+    expect(manifest.pipa_trustee_acknowledgment.trustee_org_name).toBe('KOSMOS Demo')
+    expect(manifest.pipa_trustee_acknowledgment.pii_fields_handled).toEqual([
+      'phone_number',
+      'resident_registration_number',
+    ])
+    expect(manifest.pipa_trustee_acknowledgment.legal_basis).toBe('PIPA §15-1-2')
+    expect(manifest.pipa_trustee_acknowledgment.acknowledgment_sha256).toBe(
+      'a'.repeat(64),
+    )
+  })
 })

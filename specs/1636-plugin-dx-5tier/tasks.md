@@ -111,10 +111,10 @@ description: "Task list for Epic #1636 — P5 Plugin DX 5-tier"
 
 **Independent Test**: Submit a PR with `processes_pii: true` and no `pipa_trustee_acknowledgment` block → CI fails on Q6-PIPA-PRESENT. Submit with tampered hash → fails on Q6-PIPA-HASH. Submit with valid block → passes.
 
-- [ ] T033 [US3] Author `docs/plugins/security-review.md` full content: top section displays current canonical SHA-256 + version history; Trustee Acknowledgment Procedure (5 steps); L3 gate procedure; L2+ sandboxing guidelines (sandbox-exec / firejail); canonical PIPA §26 text already in markers from T005 — extend the surrounding doc
-- [ ] T034 [US3] Add PIPA acknowledgment sub-flow to `tui/src/commands/plugin-init.ts`: when `--pii` or interactive yes, render canonical text + SHA-256, prompt for `trustee_org_name` / `trustee_contact` / `pii_fields_handled` / `legal_basis`, write block to manifest.yaml; print `kosmos plugin pipa-text` helper command for re-display
-- [ ] T035 [US3] Add Q6-PIPA-PRESENT / Q6-PIPA-HASH / Q6-PIPA-ORG / Q6-PIPA-FIELDS-LIST checks to `src/kosmos/plugins/checks/q6_pipa.py` + 4 negative-case manifests in `src/kosmos/plugins/tests/test_validation_workflow.py` (FR-014, SC-003)
-- [ ] T036 [US3] Update `tests/fixtures/plugin_validation/checklist_manifest.yaml` Q6 rows with Korean+English failure messages pointing at `docs/plugins/security-review.md`; meta-CI verifies the rows render correctly in `docs/plugins/review-checklist.md`
+- [X] T033 [US3] Author `docs/plugins/security-review.md` full content: top section displays current canonical SHA-256 + version history; Trustee Acknowledgment Procedure (5 steps); L3 gate procedure; L2+ sandboxing guidelines (sandbox-exec / firejail); canonical PIPA §26 text already in markers from T005 — extend the surrounding doc
+- [X] T034 [US3] Add PIPA acknowledgment sub-flow to `tui/src/commands/plugin-init.ts`: when `--pii` or interactive yes, render canonical text + SHA-256, prompt for `trustee_org_name` / `trustee_contact` / `pii_fields_handled` / `legal_basis`, write block to manifest.yaml; print `kosmos plugin pipa-text` helper command for re-display
+- [X] T035 [US3] Add Q6-PIPA-PRESENT / Q6-PIPA-HASH / Q6-PIPA-ORG / Q6-PIPA-FIELDS-LIST checks to `src/kosmos/plugins/checks/q6_pipa.py` + 4 negative-case manifests in `src/kosmos/plugins/tests/test_validation_workflow.py` (FR-014, SC-003)
+- [X] T036 [US3] Update `tests/fixtures/plugin_validation/checklist_manifest.yaml` Q6 rows with Korean+English failure messages pointing at `docs/plugins/security-review.md`; meta-CI verifies the rows render correctly in `docs/plugins/review-checklist.md`
 
 **Checkpoint**: PIPA enforcement machine-active; legal-team-approved canonical text traceable to code via SHA-256.
 

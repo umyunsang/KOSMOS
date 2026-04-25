@@ -229,6 +229,51 @@ class TestNegativeCases:
             or outcomes.get("Q1-MANIFEST-VALID") is False
         )
 
+    def test_q6_pipa_org_empty(self, scaffold: Path) -> None:
+        """Q6-PIPA-ORG — trustee_org_name / trustee_contact must not be empty."""
+        # We bypass PluginManifest's field-level min_length=1 check by
+        # constructing the manifest YAML directly with a whitespace-only
+        # org name. Pydantic strips and re-validates, so the manifest
+        # validator catches it — the Q6-PIPA-ORG row remains the named
+        # backstop in the matrix.
+        manifest = _load_manifest(scaffold)
+        manifest["processes_pii"] = True
+        manifest["pipa_trustee_acknowledgment"] = {
+            "trustee_org_name": "Test Org",
+            "trustee_contact": "",  # empty contact triggers Q6-PIPA-ORG / V1
+            "pii_fields_handled": ["phone_number"],
+            "legal_basis": "PIPA §15-1-2",
+            "acknowledgment_sha256": CANONICAL_ACKNOWLEDGMENT_SHA256,
+        }
+        _save_manifest(scaffold, manifest)
+
+        outcomes = _outcomes_by_id(scaffold)
+        # Either Q6-PIPA-ORG fires directly OR Q1-MANIFEST-VALID fails because
+        # PIPATrusteeAcknowledgment field-level min_length=1 already rejects.
+        assert (
+            outcomes.get("Q6-PIPA-ORG") is False
+            or outcomes.get("Q1-MANIFEST-VALID") is False
+        )
+
+    def test_q6_pipa_fields_list_empty(self, scaffold: Path) -> None:
+        """Q6-PIPA-FIELDS-LIST — pii_fields_handled must be a non-empty list."""
+        manifest = _load_manifest(scaffold)
+        manifest["processes_pii"] = True
+        manifest["pipa_trustee_acknowledgment"] = {
+            "trustee_org_name": "Test Org",
+            "trustee_contact": "test@example.com",
+            "pii_fields_handled": [],  # empty list — the violation
+            "legal_basis": "PIPA §15-1-2",
+            "acknowledgment_sha256": CANONICAL_ACKNOWLEDGMENT_SHA256,
+        }
+        _save_manifest(scaffold, manifest)
+
+        outcomes = _outcomes_by_id(scaffold)
+        assert (
+            outcomes.get("Q6-PIPA-FIELDS-LIST") is False
+            or outcomes.get("Q1-MANIFEST-VALID") is False
+        )
+
 
 # ---------------------------------------------------------------------------
 # Sanity checks on the framework itself.

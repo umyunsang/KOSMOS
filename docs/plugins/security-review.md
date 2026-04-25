@@ -1,16 +1,33 @@
 # Security Review · PIPA §26 Trustee Acknowledgment · L3 Gate
 
-> 본 문서의 본문은 T033 (Epic #1636) 에서 작성됩니다.
-> 단, 아래 canonical PIPA §26 trustee acknowledgment text 는 T005 (Epic #1636) 에서
-> `src/kosmos/plugins/canonical_acknowledgment.py:_extract_canonical_text()` 가 추출하는
-> source-of-truth 이므로 Phase 1 스캐폴딩 시점부터 마커가 자리잡고 있어야 합니다.
+> 본 문서는 KOSMOS 플러그인이 PII 를 처리할 때 따라야 하는 「개인정보 보호법」 제26조 수탁자 의무와
+> Layer 2+ / Layer 3 어댑터의 보안 격리 가이드라인을 정의합니다.
+>
+> 참고: [Migration tree § B8](../requirements/kosmos-migration-tree.md), [Spec 033 permission v2](../../specs/033-permission-v2-spectrum/spec.md), [Memory `project_pipa_role`](../../specs/1636-plugin-dx-5tier/research.md), [contracts/pipa-acknowledgment.md](../../specs/1636-plugin-dx-5tier/contracts/pipa-acknowledgment.md), [Spec 1636 manifest_schema._v_pipa_hash](../../src/kosmos/plugins/manifest_schema.py).
 
 ## Current canonical SHA-256
 
-> T005 시점에 `src/kosmos/plugins/canonical_acknowledgment.py` 가 import 시점에 자동 산출.
-> 본 문서 상단에 산출된 값을 기록하는 작업은 T033 에서 수행됩니다.
+| | |
+|---|---|
+| Hash | `434074581cab35241c70f9b6e2191a7220fdac67aa627289ea64472cb87495d4` |
+| Source-of-truth | 본 문서의 `<!-- CANONICAL-PIPA-ACK-START -->` ↔ `<!-- CANONICAL-PIPA-ACK-END -->` 사이 텍스트 |
+| 산출 모듈 | [`src/kosmos/plugins/canonical_acknowledgment.py`](../../src/kosmos/plugins/canonical_acknowledgment.py) (`CANONICAL_ACKNOWLEDGMENT_SHA256`) |
+| 정규화 | UTF-8 + CRLF→LF + 양끝 whitespace strip 후 SHA-256 |
+| 길이 | 540자 (BMP 한글 + ASCII 혼용) |
 
-(아직 산출 전 — Phase 2 T005 작업 후 갱신)
+플러그인의 `manifest.yaml` 의 `pipa_trustee_acknowledgment.acknowledgment_sha256` 은 위 hash 와 byte-equal 해야 합니다 (`PluginManifest._v_pipa_hash` validator). 다르면 **install 자체가 차단** 되며 50-item 검증 워크플로의 Q6-PIPA-HASH 가 실패합니다.
+
+### Version history
+
+| Version | Date | Hash | 변경 사유 |
+|---|---|---|---|
+| v1 | 2026-04-25 | `434074581cab35241c70f9b6e2191a7220fdac67aa627289ea64472cb87495d4` | Spec 1636 P5 초안. 「개인정보 보호법」 제26조 + 시행령 제28조 의 수탁자 7대 의무 정문화. |
+
+> **변경 정책**: canonical 텍스트가 변경되면 hash 가 바뀌고 모든 기존 플러그인이 hash mismatch 로 거부됩니다. 변경은 다음 절차로만 허용:
+> 1. 법무 검토 + KOSMOS 운영자 합의로 새 텍스트 확정.
+> 2. 본 문서의 마커 사이 텍스트 + 위 history 표 갱신을 단일 PR 에 묶음.
+> 3. PR 머지 후 모든 published plugin 이 새 hash 로 manifest 재발행 필요.
+> 4. drift-audit workflow (#1926, deferred) 가 머지된 plugin 의 hash 를 일제 점검.
 
 ## Canonical PIPA §26 Trustee Acknowledgment Text
 
@@ -44,21 +61,207 @@
 
 <!-- CANONICAL-PIPA-ACK-END -->
 
-## L3 Gate Procedure (T033)
+## Trustee Acknowledgment Procedure
 
-본문은 T033 에서 작성.
+`processes_pii: true` 인 어댑터는 **반드시** 다음 5단계를 따릅니다:
+
+### 1단계 · Canonical 텍스트 정독
+
+본 문서의 `<!-- CANONICAL-PIPA-ACK-START -->` ↔ `<!-- CANONICAL-PIPA-ACK-END -->` 사이 7개 의무 항목을 정독합니다. 본 의무는 「개인정보 보호법」 제26조 (개인정보의 처리 위탁) + 시행령 제28조 (위탁자의 관리·감독 의무) 에 근거합니다.
+
+### 2단계 · `kosmos plugin pipa-text` 로 hash 재확인
+
+```bash
+uv run python -c "
+from kosmos.plugins import CANONICAL_ACKNOWLEDGMENT_SHA256
+print(CANONICAL_ACKNOWLEDGMENT_SHA256)
+"
+# → 434074581cab35241c70f9b6e2191a7220fdac67aa627289ea64472cb87495d4
+```
+
+또는 TUI 에서 `/plugin pipa-text` 슬래시 커맨드. **수동으로 hash 를 복사하지 말고** 위 명령의 출력을 사용하세요. 잘못 복사한 hash 는 install 시점 +  PR 의 plugin-validation 워크플로 양쪽에서 차단됩니다.
+
+### 3단계 · `manifest.yaml` 의 `pipa_trustee_acknowledgment` 블록 작성
+
+```yaml
+processes_pii: true
+pipa_trustee_acknowledgment:
+  trustee_org_name: "<수탁자 조직 법적 명칭, 예: 부산광역시청>"
+  trustee_contact: "<연락처: 이메일 또는 대표 전화>"
+  pii_fields_handled:
+    - resident_registration_number   # 주민등록번호 — pipa_class=personal_unique_id
+    - phone_number                   # 휴대전화번호 — pipa_class=personal_standard
+  legal_basis: "「개인정보 보호법」 제15조 제1항 제2호"
+  acknowledgment_sha256: "434074581cab35241c70f9b6e2191a7220fdac67aa627289ea64472cb87495d4"
+```
+
+규칙 (50-item 검증의 Q6 4 항목 + Spec 024 V2 가 enforce):
+- **`trustee_org_name`** — 법적 명칭. 약어 / 단축형 금지. 예: "부산광역시" 가 아니라 "부산광역시청".
+- **`trustee_contact`** — 정보주체 (시민) 가 연락 가능한 통로. 개인 이메일 ❌, 부서/팀 단위 대표 연락처 ✓.
+- **`pii_fields_handled`** — KOSMOS 의 `pipa_class` 분류 (`personal_standard` / `personal_sensitive` / `personal_unique_id`) 와 정합하는 식별자 목록. 빈 배열 금지.
+- **`legal_basis`** — PIPA 의 동의 근거 조항. 「개인정보 보호법」 제15조 (수집·이용) 또는 제17조 (제공) 또는 제18조 (목적 외 이용) + 해당 항/호 표기.
+- **`acknowledgment_sha256`** — 본 문서 상단의 hash. 64자 lowercase hex.
+
+### 4단계 · `dpa_reference` (Spec 024 V2)
+
+`pipa_class != non_personal` 인 모든 어댑터는 `dpa_reference` (Data Processing Agreement 식별자) 가 manifest 에 명시되어야 합니다 (Q3-V2-DPA). 예:
+
+```yaml
+adapter:
+  ...
+  pipa_class: personal_standard
+  dpa_reference: "DPA-busan-bts-2026-04"  # 자유 형식 식별자; 내부 추적용.
+```
+
+`non_personal` 인 경우 `dpa_reference: null` 허용.
+
+### 5단계 · 50-item 워크플로 녹색 확인
+
+```bash
+# 외부 plugin repo 의 plugin-validation.yml 가 자동 실행.
+# 로컬에서도 직접 가능:
+uv run python scripts/render_checklist.py --check  # 매트릭스 drift 가드
+```
+
+Q6 4 항목 (PIPA-PRESENT / PIPA-HASH / PIPA-ORG / PIPA-FIELDS-LIST) 모두 ✓ 가 떠야 PR merge 가능.
+
+---
+
+## L3 Gate Procedure
+
+`permission_layer: 3` (red) 어댑터는 **시민 동의 없이 호출 불가능** + **AAL2 이상 인증 필수**. Spec 033 permission gauntlet 가 enforce 하며 plugin 측은 다음을 추가로 준수:
+
+### L3 정의
+
+- 정부24 민원 제출 (`submit` primitive 가 irreversible)
+- 신고 / 신청 / 결제 / 발급 등 **시민 행위가 외부 시스템 상태를 변경** 하는 모든 동작
+- KEC 차량검사 결과 read-back, NPKI 본인인증 후 read-only 도 AAL2 정책상 L3.
+
+### L3 manifest 요건
+
+```yaml
+adapter:
+  ...
+  is_irreversible: true
+  auth_level: AAL2  # 또는 AAL3 (Q3-V4-IRREVERSIBLE-AAL)
+  pipa_class: personal_standard  # 또는 더 강한 분류
+  dpa_reference: "DPA-..."
+
+permission_layer: 3
+```
+
+추가 invariant (Spec 024 V4): `is_irreversible: true ⇒ auth_level ≥ AAL2`. 위반 시 manifest 자체가 거부됩니다.
+
+### L3 release gate
+
+L3 어댑터는 단순 plugin-validation 외에 maintainer 의 보안 리뷰가 필수:
+- `submit` primitive 가 호출하는 외부 endpoint 의 **idempotency key** 처리 검토.
+- `transaction_id` 발산 (Spec 031) 을 통한 중복 제출 방어 검토.
+- 실패 경로의 시민 통보 메시지 검토 (한국어 명확성).
+- SLSA provenance 가 KOSMOS 운영자 + plugin 작성자 양쪽 서명을 가지는지 확인.
+
+### L3 release-with-slsa 변경
+
+기본 `release-with-slsa.yml` 외에 `slsa-framework/slsa-github-generator` 의 `provenance` step 을 거쳐 발산된 `.intoto.jsonl` 이 install 시점 `slsa-verifier` 통과해야 합니다. L3 어댑터는 이 verification 을 절대 skip 할 수 없으며 `KOSMOS_PLUGIN_SLSA_SKIP=1` 은 dev 모드에서도 L3 install 시 거부됩니다 (향후 enforcement 추가 예정 — 현재는 정책상 약속).
+
+---
 
 ## L2+ Sandboxing Guidelines (FR-024)
 
-본문은 T033 에서 작성.
+`permission_layer ∈ {2, 3}` 어댑터의 실행 환경 격리 권장사항. KOSMOS host 가 install 시점에 강제하지는 않지만 (FR-024 deferred enforcement) 기여자가 **자발적으로** 다음 패턴을 따라야 추후 sandboxing 활성화 시 plugin 코드를 수정할 필요가 없습니다.
+
+### macOS · `sandbox-exec`
+
+```sh
+# 어댑터 호출만을 위한 격리 sandbox profile.
+sandbox-exec -p '
+(version 1)
+(deny default)
+(allow file-read* (subpath "/usr/lib"))
+(allow network-outbound (remote ip "<ALLOWED_HOST>:*"))
+(deny network-outbound)  ; 그 외 모든 outbound 차단
+' uv run pytest
+```
+
+원칙:
+- **Outbound network 화이트리스트만 허용**. 어댑터의 `endpoint` URL 의 호스트만 통과.
+- 파일시스템은 read-only + 어댑터 작업 디렉토리만 write.
+- IPC / shared memory 차단.
+
+### Linux · `firejail`
+
+```sh
+firejail \
+  --net=none \
+  --read-only=/usr \
+  --private-tmp \
+  --whitelist=/path/to/plugin \
+  uv run pytest
+```
+
+> **참고**: `--net=none` 은 Live tier 어댑터의 happy-path 테스트가 fixture replay 만 사용함을 전제로 합니다 (Constitution §IV). 스캐폴드의 `tests/conftest.py` `block_network` fixture 가 IPv4/IPv6 socket 을 막아주기 때문에 추가 sandboxing 없이도 CI 가 안전.
+
+### 컨테이너 · `--network=none`
+
+CI workflow (`plugin-validation.yml`) 의 GitHub Actions runner 자체는 격리 컨테이너이며 추가로 `docker run --network=none` 으로 어댑터 코드를 실행하는 것이 가장 강한 격리입니다. T047 의 reusable workflow 가 향후 이 옵션을 지원할 예정 (현재 Phase 6 시점에서는 host runner 에서 직접 pytest 실행).
+
+### 어댑터 코드 권장 패턴
+
+L2+ 어댑터는 다음 추가 안전장치 적용:
+
+```python
+# adapter.py
+import os
+from urllib.parse import urlparse
+
+_ALLOWED_HOST = urlparse(_ENDPOINT).netloc
+
+def _check_url_safety(url: str) -> None:
+    """Refuse to follow redirects to an unrelated host (SSRF defense)."""
+    parsed = urlparse(url)
+    if parsed.netloc != _ALLOWED_HOST:
+        raise RuntimeError(
+            f"refusing redirect to unrelated host: {parsed.netloc!r}"
+        )
+
+# httpx 호출 시 follow_redirects=False, 응답 검증
+async with httpx.AsyncClient(timeout=10.0, follow_redirects=False) as client:
+    response = await client.get(url)
+    response.raise_for_status()
+```
+
+핵심:
+- **Redirect 추적 비활성화** + 명시적 host 검증 (SSRF 방어).
+- **타임아웃 명시** — 무한 대기 차단.
+- **응답 본문 사이즈 제한** — 거대 응답으로 메모리 고갈 방지 (`response.read()` 대신 `iter_bytes()` + length cap).
+
+---
 
 ## Bilingual glossary
 
-(T033 에서 작성)
+> 이 섹션은 9개 가이드 (`docs/plugins/*.md`) 모두에 동일한 형식으로 포함됩니다 (FR-006).
+
+| 한국어 | English | 설명 |
+|---|---|---|
+| 위탁자 | controller | KOSMOS 운영자. 시민에게 동의를 받고 처리 책임을 짐 (PIPA §15). |
+| 수탁자 | trustee / processor | 플러그인 작성 조직. 위탁받은 범위 내에서만 PII 처리 (PIPA §26). |
+| 동의문 | acknowledgment text | 본 문서의 마커 사이 canonical 텍스트. SHA-256 으로 무결성 검증. |
+| 처리 위탁 | processing entrustment | PIPA §26 의 controller-trustee 체인. KOSMOS 의 기본 운영 모델. |
+| 재위탁 | sub-entrustment | 수탁자가 다시 다른 조직에 처리를 맡기는 행위. 사전 서면 동의 필수. |
+| 안전성 확보 조치 | safety measures | 기술적 (암호화, 접근통제) + 관리적 (인사보안, 교육) 조치 PIPA §29. |
+| 권한 레이어 | permission layer | 1/2/3. Layer 3 은 irreversible + AAL2+ 필수. Spec 033. |
+| Sandboxing | sandboxing | sandbox-exec / firejail / `--network=none` 컨테이너 등 OS 격리. |
+| SLSA 증빙 | SLSA provenance | slsa-github-generator 산출 `.intoto.jsonl`. install 시 verify-artifact. |
+
+---
 
 ## Reference
 
-- 「개인정보 보호법」 제26조: https://www.law.go.kr/법령/개인정보보호법/제26조
-- 「개인정보 보호법 시행령」 제28조: https://www.law.go.kr/법령/개인정보보호법시행령/제28조
-- Memory `project_pipa_role` (KOSMOS PIPA stance)
-- `specs/1636-plugin-dx-5tier/contracts/pipa-acknowledgment.md`
+- 「개인정보 보호법」 제26조 (개인정보의 처리 위탁): https://www.law.go.kr/법령/개인정보보호법/제26조
+- 「개인정보 보호법 시행령」 제28조 (위탁자의 관리·감독 의무): https://www.law.go.kr/법령/개인정보보호법시행령/제28조
+- 「개인정보 보호법」 제29조 (안전조치의무): https://www.law.go.kr/법령/개인정보보호법/제29조
+- Memory `project_pipa_role` — KOSMOS PIPA 기본 stance (수탁자 해석)
+- [`specs/1636-plugin-dx-5tier/contracts/pipa-acknowledgment.md`](../../specs/1636-plugin-dx-5tier/contracts/pipa-acknowledgment.md) — canonical 텍스트 contract
+- [`src/kosmos/plugins/canonical_acknowledgment.py`](../../src/kosmos/plugins/canonical_acknowledgment.py) — Python hash 산출 모듈
+- [Spec 033 Permission v2 spectrum](../../specs/033-permission-v2-spectrum/spec.md) — Layer 1/2/3 enforcement
+- [Spec 024 Tool Security V1-V4](../../specs/024-tool-security-v1/spec.md) — `pipa_class` / `dpa_reference` / V4 irreversible-AAL invariant

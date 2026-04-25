@@ -697,16 +697,29 @@ export interface ParsedArgv {
   errors: string[]
 }
 
+// PIPA flag names — kept as a constant array so positional filtering and
+// argv parsing share the same source-of-truth.
+const _PIPA_FLAGS = [
+  '--pipa-org',
+  '--pipa-contact',
+  '--pipa-fields',
+  '--pipa-legal-basis',
+  '--pipa-sha256',
+] as const
+
+const _VALUE_FLAGS = [
+  '--tier',
+  '--layer',
+  '--out',
+  ..._PIPA_FLAGS,
+] as const
+
 export function parsePluginInitArgv(argv: string[]): ParsedArgv {
   const errors: string[] = []
   const positional = argv.filter((tok, i) => {
     if (tok.startsWith('--')) return false
     const prev = argv[i - 1]
-    if (
-      prev === '--tier' ||
-      prev === '--layer' ||
-      prev === '--out'
-    ) {
+    if (prev !== undefined && _VALUE_FLAGS.includes(prev as (typeof _VALUE_FLAGS)[number])) {
       return false
     }
     return true
@@ -726,6 +739,28 @@ export function parsePluginInitArgv(argv: string[]): ParsedArgv {
   if (argv.includes('--pii')) options.pii = true
   if (argv.includes('--no-pii')) options.pii = false
   if (argv.includes('--force')) options.force = true
+
+  // PIPA trustee block — mirrors the Python fallback's --pipa-* flag set.
+  // All five sub-flags must be supplied together when --pii is set; partial
+  // input is rejected at the mainPluginInit boundary so contract negative
+  // case #3 ("--pii without acknowledgment") still surfaces.
+  const pipaOrg = parseFlag(argv, '--pipa-org', (v) => v)
+  const pipaContact = parseFlag(argv, '--pipa-contact', (v) => v)
+  const pipaFields = parseFlag(argv, '--pipa-fields', (v) => v)
+  const pipaLegalBasis = parseFlag(argv, '--pipa-legal-basis', (v) => v)
+  const pipaSha256 = parseFlag(argv, '--pipa-sha256', (v) => v)
+  if (pipaOrg && pipaContact && pipaFields && pipaLegalBasis && pipaSha256) {
+    options.pipaAcknowledgment = {
+      trustee_org_name: pipaOrg,
+      trustee_contact: pipaContact,
+      pii_fields_handled: pipaFields
+        .split(',')
+        .map((f) => f.trim())
+        .filter((f) => f.length > 0),
+      legal_basis: pipaLegalBasis,
+      acknowledgment_sha256: pipaSha256,
+    }
+  }
 
   return {
     name,
@@ -782,11 +817,26 @@ export function mainPluginInit(argv: string[]): PluginInitResult {
     }
   }
 
+  // When --pii is true, all five --pipa-* sub-flags must be supplied.
+  // The scaffolder layer (runPluginInit) re-validates this and returns
+  // exit 3 with a docs/plugins/security-review.md hint, but we surface a
+  // friendlier error at the CLI boundary.
+  if (opts.pii && opts.pipaAcknowledgment === undefined) {
+    return {
+      exitCode: 3,
+      errorKind: 'pipa_acknowledgment_error',
+      errorMessage:
+        '--pii requires --pipa-org / --pipa-contact / --pipa-fields / '
+        + '--pipa-legal-basis / --pipa-sha256 (see docs/plugins/security-review.md)',
+    }
+  }
+
   return runPluginInit({
     name: parsed.name,
     tier: opts.tier as PluginTier,
     layer: opts.layer as PermissionLayer,
     pii: opts.pii as boolean,
+    pipaAcknowledgment: opts.pipaAcknowledgment,
     out: opts.out,
     force: opts.force ?? false,
     // Default Korean hint includes a generic ministry-class noun ("공공")
