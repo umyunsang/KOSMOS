@@ -51,7 +51,12 @@ jobs:
           enable-cache: true
       - run: uv sync --frozen --all-extras --dev
       - name: pip-audit
-        run: uv run pip-audit
+        # CVE-2026-3219 (pip 26.0.1) — no fix version published as of 2026-04-25.
+        # `pip` is a transitively-installed build/install tool inside the uv-managed
+        # virtualenv; it never runs at KOSMOS runtime (no end-user execution path
+        # invokes `pip`). Removing the audit ignore once a fix version ships.
+        # Tracking: TODO (re-evaluate weekly until pip ships a fix release).
+        run: uv run pip-audit --ignore-vuln CVE-2026-3219
 
   license-check:
     name: License Compliance (Apache-2.0)
