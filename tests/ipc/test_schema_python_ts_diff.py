@@ -31,8 +31,9 @@ from kosmos.ipc.frame_schema import ipc_frame_json_schema
 _WORKTREE_ROOT = pathlib.Path(__file__).parent.parent.parent
 _COMMITTED_SCHEMA_PATH = _WORKTREE_ROOT / "tui" / "src" / "ipc" / "schema" / "frame.schema.json"
 
-# Expected number of frame arms (Spec 287 baseline 10 + Spec 032 additions 9)
-_EXPECTED_KIND_COUNT = 19
+# Expected number of frame arms (Spec 287 baseline 10 + Spec 032 additions 9
+# + Epic #1636 P5 plugin_op = 20).
+_EXPECTED_KIND_COUNT = 20
 
 
 # ---------------------------------------------------------------------------
@@ -136,6 +137,8 @@ class TestSchemaParity:
             "resume_rejected",
             "heartbeat",
             "notification_push",
+            # Epic #1636 P5 — plugin install/uninstall/list control plane
+            "plugin_op",
         }
         live_schema = ipc_frame_json_schema()
         live_kinds = _extract_kinds_from_schema(live_schema)
@@ -166,6 +169,8 @@ class TestSchemaParity:
             "resume_rejected",
             "heartbeat",
             "notification_push",
+            # Epic #1636 P5 — plugin install/uninstall/list control plane
+            "plugin_op",
         }
         committed_schema = json.loads(_COMMITTED_SCHEMA_PATH.read_text(encoding="utf-8"))
         committed_kinds = _extract_kinds_from_schema(committed_schema)

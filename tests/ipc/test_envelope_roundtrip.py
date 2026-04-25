@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Envelope round-trip tests for all 19 IPC frame kinds (Spec 032 T019).
+"""Envelope round-trip tests for all 20 IPC frame kinds (Spec 032 T019 + Epic #1636 P5).
 
 Tests:
 1. Serialize via Pydantic model_dump_json, parse back via TypeAdapter — byte-equal.
@@ -30,6 +30,7 @@ from kosmos.ipc.frame_schema import (
     PayloadStartFrame,
     PermissionRequestFrame,
     PermissionResponseFrame,
+    PluginOpFrame,
     ResumeRejectedFrame,
     ResumeRequestFrame,
     ResumeResponseFrame,
@@ -195,13 +196,22 @@ ALL_FRAMES: list[IPCFrame] = [
         payload_content_type="text/plain",
         payload="재난 경보: 서울시 강남구 폭우 경보",
     ),
+    # 20. plugin_op (Epic #1636 P5)
+    PluginOpFrame(
+        **_BASE,
+        role="tui",
+        kind="plugin_op",
+        op="request",
+        request_op="install",
+        name="seoul-subway",
+    ),
 ]
 
 _ADAPTER: TypeAdapter[IPCFrame] = TypeAdapter(IPCFrame)
 
 
 # ---------------------------------------------------------------------------
-# Test 1: All 19 kinds serialize and round-trip
+# Test 1: All 20 kinds serialize and round-trip
 # ---------------------------------------------------------------------------
 
 
@@ -239,12 +249,12 @@ def test_ndjson_emit_parse_roundtrip(frame: IPCFrame) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Test 2: Schema has all 19 discriminator values
+# Test 2: Schema has all 20 discriminator values
 # ---------------------------------------------------------------------------
 
 
 def test_schema_has_all_19_kinds() -> None:
-    """ipc_frame_json_schema() must enumerate all 19 kind values."""
+    """ipc_frame_json_schema() must enumerate all 20 kind values."""
     schema = ipc_frame_json_schema()
 
     expected_kinds = {
@@ -267,6 +277,8 @@ def test_schema_has_all_19_kinds() -> None:
         "resume_rejected",
         "heartbeat",
         "notification_push",
+        # Epic #1636 P5
+        "plugin_op",
     }
 
     # Pydantic generates a oneOf + discriminator schema

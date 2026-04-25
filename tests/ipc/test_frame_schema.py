@@ -284,6 +284,19 @@ _MINIMAL_EXAMPLES: dict[str, dict[str, Any]] = {
         "payload_content_type": "text/plain",
         "payload": "재난 알림 테스트",
     },
+    # --- Epic #1636 P5 plugin DX 5-tier ---
+    "plugin_op": {
+        "kind": "plugin_op",
+        "version": "1.0",
+        "session_id": _SESSION_ID,
+        "correlation_id": _CORR_ID,
+        "role": "tui",
+        "frame_seq": 18,
+        "ts": _TS,
+        "op": "request",
+        "request_op": "install",
+        "name": "seoul-subway",
+    },
 }
 
 _EXPECTED_ARMS = frozenset(_MINIMAL_EXAMPLES.keys())
