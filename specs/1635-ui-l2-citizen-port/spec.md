@@ -223,11 +223,11 @@ KOSMOS 첫 실행 시(또는 `/onboarding` 재실행 시) 다섯 단계가 순�
 
 | Item | Reason for Deferral | Target Epic/Phase | Tracking Issue |
 |------|---------------------|-------------------|----------------|
-| Plugin DX (5-tier template / guide / examples / submission / registry) | Citizen UI must stabilize before exposing third-party plugin authoring | Phase P5 — Plugin DX | NEEDS TRACKING |
-| `docs/api` and `docs/plugins` reference docs | Documentation site rebuild belongs to the docs phase | Phase P6 — Docs + Smoke | NEEDS TRACKING |
-| Phase 2 auxiliary tools (TextToSpeech / SpeechToText / LargeFontRender / OCR / Reminder) | Required only after MVP citizen surface ships and is observed in production | Phase P6 follow-up | NEEDS TRACKING |
-| Japanese (日本語) localization | Korean primary + English fallback covers MVP audience; Japanese is in the migration tree as "예정" | Post-P6 localization epic | NEEDS TRACKING |
-| `/agents` advanced views beyond `--detail` (e.g., per-ministry SLA history graphs) | Outside the proposal-iv 5-state scope; needs more usage data first | Phase P6 follow-up | NEEDS TRACKING |
-| Plugin marketplace store UI itself (the `a` keybinding's destination) | Marketplace is a separate epic; this epic only wires the entry-point keystroke | Phase P5 — Plugin DX | NEEDS TRACKING |
-| Re-styling of Spec 035 brand-port memdir layouts | Memdir storage paths are owned by Spec 035 and should not change here | Spec 035 follow-up | NEEDS TRACKING |
-| Composite tools (verb chains beyond the 4 primitives) | Decision in migration tree § L1-B6 to remove composites; primitive chains via LLM are the path | Out of scope by canonical decision | NEEDS TRACKING |
+| Plugin DX (5-tier template / guide / examples / submission / registry) | Citizen UI must stabilize before exposing third-party plugin authoring | Phase P5 — Plugin DX | #1810 |
+| `docs/api` and `docs/plugins` reference docs | Documentation site rebuild belongs to the docs phase | Phase P6 — Docs + Smoke | #1812 |
+| Phase 2 auxiliary tools (TextToSpeech / SpeechToText / LargeFontRender / OCR / Reminder) | Required only after MVP citizen surface ships and is observed in production | Phase P6 follow-up | #1814 |
+| Japanese (日本語) localization | Korean primary + English fallback covers MVP audience; Japanese is in the migration tree as "예정" | Post-P6 localization epic | #1816 |
+| `/agents` advanced views beyond `--detail` (e.g., per-ministry SLA history graphs) | Outside the proposal-iv 5-state scope; needs more usage data first | Phase P6 follow-up | #1818 |
+| Plugin marketplace store UI itself (the `a` keybinding's destination) | Marketplace is a separate epic; this epic only wires the entry-point keystroke | Phase P5 — Plugin DX | #1820 |
+| Re-styling of Spec 035 brand-port memdir layouts | Memdir storage paths are owned by Spec 035 and should not change here | Spec 035 follow-up | #1822 |
+| Composite tools (verb chains beyond the 4 primitives) | Decision in migration tree § L1-B6 to remove composites; primitive chains via LLM are the path | Out of scope by canonical decision | #1824 |
