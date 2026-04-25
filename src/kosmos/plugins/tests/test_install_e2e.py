@@ -262,9 +262,11 @@ class TestBm25SurfaceSC004:
 
 class TestOtelEmissionSC007:
     def test_install_span_carries_plugin_id(
-        self, tmp_path: Path, isolated_settings: Path
+        self,
+        tmp_path: Path,
+        isolated_settings: Path,
+        monkeypatch: pytest.MonkeyPatch,
     ) -> None:
-        from opentelemetry import trace
         from opentelemetry.sdk.trace import TracerProvider
         from opentelemetry.sdk.trace.export import SimpleSpanProcessor
         from opentelemetry.sdk.trace.export.in_memory_span_exporter import (
@@ -276,13 +278,17 @@ class TestOtelEmissionSC007:
         registry = ToolRegistry()
         executor = ToolExecutor(registry)
 
-        # Install our own provider for the duration of the install so the
-        # in-memory exporter captures the install span. Restore on teardown.
+        # Use a *local* TracerProvider — never touch global state.
+        # Setting the global provider is a one-time write in OTEL;
+        # subsequent set_tracer_provider(previous) calls in the finally
+        # block are silently rejected and leak the test's custom
+        # provider to every subsequent test in the session. Patching
+        # the registry-module's cached `_tracer` avoids the leak.
         exporter = InMemorySpanExporter()
         provider = TracerProvider()
         provider.add_span_processor(SimpleSpanProcessor(exporter))
-        previous = trace.get_tracer_provider()
-        trace.set_tracer_provider(provider)
+        local_tracer = provider.get_tracer("kosmos.plugins.registry")
+        monkeypatch.setattr("kosmos.plugins.registry._tracer", local_tracer)
         try:
             result = install_plugin(
                 "timing-demo",
@@ -293,7 +299,7 @@ class TestOtelEmissionSC007:
             )
             provider.force_flush()
         finally:
-            trace.set_tracer_provider(previous)
+            pass
 
         assert result.exit_code == 0
         spans = list(exporter.get_finished_spans())

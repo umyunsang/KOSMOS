@@ -206,7 +206,7 @@ pipa_trustee_acknowledgment:
   acknowledgment_sha256: "<canonical hash>"
 ```
 
-acknowledgment_sha256 는 `docs/plugins/security-review.md` 의 canonical 텍스트 SHA-256 과 byte-equal 해야 합니다 — `kosmos plugin pipa-text` 명령으로 자동 계산 + 표시 가능.
+acknowledgment_sha256 는 `docs/plugins/security-review.md` 의 canonical 텍스트 SHA-256 과 byte-equal 해야 합니다 — TUI 슬래시 커맨드 `/plugin pipa-text` 또는 `python -c "from kosmos.plugins import CANONICAL_ACKNOWLEDGMENT_SHA256; print(CANONICAL_ACKNOWLEDGMENT_SHA256)"` 한 줄로 자동 계산 + 표시 가능.
 
 자세한 PIPA §26 수탁자 책임은 [`docs/plugins/security-review.md`](security-review.md) 참고.
 

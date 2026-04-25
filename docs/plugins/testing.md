@@ -2,7 +2,7 @@
 
 > 플러그인의 `tests/` 디렉토리를 작성할 때 따라야 하는 pytest 컨벤션. 50-item 검증 워크플로의 Q10 (4 항목) 이 이 컨벤션을 enforce 합니다.
 >
-> 참고: [Constitution §IV — Live API CI 차단](../../.specify/memory/constitution.md), [`docs/testing.md`](../testing.md), [50-item Q10 그룹](review-checklist.md#q10-tests--fixtures-4).
+> 참고: [Constitution §IV — Live API CI 차단](../../.specify/memory/constitution.md), [`docs/testing.md`](../testing.md), [50-item Q10 그룹](review-checklist.md#q10--tests--fixtures-4).
 
 ---
 
@@ -288,7 +288,7 @@ async def adapter(payload):
 
 - [Constitution §IV](../../.specify/memory/constitution.md) — Government API Compliance + Live API CI 차단
 - [`docs/testing.md`](../testing.md) — KOSMOS 메인 테스트 가이드
-- [50-item Q10 그룹](review-checklist.md#q10-tests--fixtures-4) — 4 항목 매트릭스
+- [50-item Q10 그룹](review-checklist.md#q10--tests--fixtures-4) — 4 항목 매트릭스
 - [`src/kosmos/plugins/checks/q10_tests.py`](../../src/kosmos/plugins/checks/q10_tests.py) — 검사 구현
 - [docs/plugins/data-go-kr.md § 5](data-go-kr.md) — Fixture 기록 절차
 - [docs/plugins/live-vs-mock.md](live-vs-mock.md) — Tier 별 테스트 패턴 차이

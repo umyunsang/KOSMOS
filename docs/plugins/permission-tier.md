@@ -230,4 +230,4 @@ Plugin 작성자는 매니페스트의 `permission_layer` 값만 설정하면 TU
 - [Spec 024 V4 invariant](../../specs/024-tool-security-v1/spec.md) — `is_irreversible ⇒ auth_level ≥ AAL2`
 - [Migration tree § UI-C](../requirements/kosmos-migration-tree.md) — UI 색상 + icon 표준
 - [docs/plugins/security-review.md § L3 Gate Procedure](security-review.md) — Layer 3 release 절차
-- [50-item Q5 그룹](review-checklist.md#q5-permission-tier-3) — Q5-LAYER-DECLARED / Q5-LAYER-MATCHES-PII / Q5-LAYER-DOC
+- [50-item Q5 그룹](review-checklist.md#q5--permission-tier-3) — Q5-LAYER-DECLARED / Q5-LAYER-MATCHES-PII / Q5-LAYER-DOC

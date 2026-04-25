@@ -69,7 +69,9 @@
 
 본 문서의 `<!-- CANONICAL-PIPA-ACK-START -->` ↔ `<!-- CANONICAL-PIPA-ACK-END -->` 사이 7개 의무 항목을 정독합니다. 본 의무는 「개인정보 보호법」 제26조 (개인정보의 처리 위탁) + 시행령 제28조 (위탁자의 관리·감독 의무) 에 근거합니다.
 
-### 2단계 · `kosmos plugin pipa-text` 로 hash 재확인
+### 2단계 · canonical hash 재확인
+
+Python 한 줄 또는 TUI 슬래시 커맨드 두 경로 중 하나를 사용합니다.
 
 ```bash
 uv run python -c "
@@ -79,7 +81,9 @@ print(CANONICAL_ACKNOWLEDGMENT_SHA256)
 # → 434074581cab35241c70f9b6e2191a7220fdac67aa627289ea64472cb87495d4
 ```
 
-또는 TUI 에서 `/plugin pipa-text` 슬래시 커맨드. **수동으로 hash 를 복사하지 말고** 위 명령의 출력을 사용하세요. 잘못 복사한 hash 는 install 시점 +  PR 의 plugin-validation 워크플로 양쪽에서 차단됩니다.
+또는 TUI 에서 `/plugin pipa-text` 슬래시 커맨드 (canonical 본문 + hash 를 그대로 출력).
+**수동으로 hash 를 복사하지 말고** 위 두 명령 중 하나의 출력을 사용하세요. 잘못 복사한
+hash 는 install 시점 + PR 의 plugin-validation 워크플로 양쪽에서 차단됩니다.
 
 ### 3단계 · `manifest.yaml` 의 `pipa_trustee_acknowledgment` 블록 작성
 

@@ -118,13 +118,48 @@ def check_fixture_exists(ctx: CheckContext) -> CheckOutcome:
     return passed()
 
 
-def check_no_live_in_ci(ctx: CheckContext) -> CheckOutcome:
-    """Q10-NO-LIVE-IN-CI — any test_* with allow_network must also have @pytest.mark.live OR be part of a recorded-fixture replay.
+def _file_imports_httpx(tree: ast.Module) -> bool:
+    """True if the module imports `httpx` (any form)."""
+    for node in tree.body:
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                if alias.name == "httpx" or alias.name.startswith("httpx."):
+                    return True
+        elif isinstance(node, ast.ImportFrom):
+            if node.module == "httpx" or (node.module or "").startswith("httpx."):
+                return True
+    return False
 
-    Heuristic: if a test imports `httpx` AND does not carry
-    `@pytest.mark.live` / `@pytest.mark.allow_network`, we flag it. The
-    template's tests use `monkeypatch.setattr` to replay fixtures, so
-    they do not import httpx eagerly.
+
+def _file_uses_httpx_monkeypatch(tree: ast.Module) -> bool:
+    """True if any test stubs httpx via monkeypatch.setattr or respx."""
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Call):
+            func = node.func
+            # monkeypatch.setattr("httpx....", ...) / respx.mock(...) / respx.get(...)
+            if isinstance(func, ast.Attribute) and func.attr in {"setattr", "mock", "get", "post"}:
+                for arg in node.args:
+                    if isinstance(arg, ast.Constant) and isinstance(arg.value, str):
+                        if arg.value.startswith("httpx"):
+                            return True
+        # `import respx` / `from respx import ...` → assume the test is mocking
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                if alias.name == "respx" or alias.name.startswith("respx."):
+                    return True
+        elif isinstance(node, ast.ImportFrom):
+            if node.module == "respx" or (node.module or "").startswith("respx."):
+                return True
+    return False
+
+
+def check_no_live_in_ci(ctx: CheckContext) -> CheckOutcome:
+    """Q10-NO-LIVE-IN-CI — any test file that imports `httpx` must either
+    gate every test with ``@pytest.mark.live`` (so default ``pytest`` runs
+    skip them) or stub httpx via monkeypatch / respx so no real socket is
+    opened. A file that imports httpx, contains an un-marked test, and
+    does not stub it would hit data.go.kr during CI — FR-009 forbids
+    this. (Constitution §IV; AGENTS.md hard rule.)
     """
     test_root = ctx.plugin_root / "tests"
     if not test_root.is_dir():
@@ -132,13 +167,34 @@ def check_no_live_in_ci(ctx: CheckContext) -> CheckOutcome:
             ko="tests/ 디렉토리 없음 (Q10-NO-LIVE-IN-CI)",
             en="tests/ directory missing (Q10-NO-LIVE-IN-CI)",
         )
-    funcs = _collect_test_functions(test_root)
-    for fn in funcs:
-        # Only flag tests that explicitly carry @pytest.mark.live without skipping —
-        # if a test is marked live AND not deselected by default it'd hit the network.
-        if _has_decorator(fn, "live"):
-            # The marker is OK — it's the gate that keeps live tests opt-in.
+    for py_file in test_root.glob("test_*.py"):
+        try:
+            tree = ast.parse(py_file.read_text(encoding="utf-8"))
+        except (OSError, SyntaxError):
             continue
+        if not _file_imports_httpx(tree):
+            continue  # File doesn't touch the network — safe.
+        if _file_uses_httpx_monkeypatch(tree):
+            continue  # File stubs httpx — safe.
+        # File imports httpx, doesn't stub — every test_* must be live-gated.
+        for node in tree.body:
+            if (
+                isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+                and node.name.startswith("test_")
+                and not _has_decorator(node, "live")
+            ):
+                return failed(
+                    ko=(
+                        f"{py_file.name}::{node.name} 이 httpx 를 import 하지만 "
+                        "@pytest.mark.live 마커도 없고 monkeypatch/respx 로 "
+                        "stub 도 하지 않음 (Q10-NO-LIVE-IN-CI)"
+                    ),
+                    en=(
+                        f"{py_file.name}::{node.name} imports httpx without "
+                        "@pytest.mark.live marker and without monkeypatch/respx "
+                        "stub (Q10-NO-LIVE-IN-CI) — would hit network in CI"
+                    ),
+                )
     return passed()
 
 

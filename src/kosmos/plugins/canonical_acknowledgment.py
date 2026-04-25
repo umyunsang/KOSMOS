@@ -24,9 +24,11 @@ issue #1926).
 from __future__ import annotations
 
 import hashlib
+from importlib import resources
 from pathlib import Path
 from typing import Final
 
+# Source-tree fallback path (editable installs, in-tree pytest runs).
 _SECURITY_REVIEW_PATH: Final[Path] = (
     Path(__file__).resolve().parents[3] / "docs" / "plugins" / "security-review.md"
 )
@@ -43,12 +45,50 @@ class CanonicalAcknowledgmentLoadError(RuntimeError):
     """
 
 
-def _load_security_review_md(path: Path = _SECURITY_REVIEW_PATH) -> str:
-    if not path.is_file():
-        raise CanonicalAcknowledgmentLoadError(
-            f"docs/plugins/security-review.md not found at {path}"
+def _load_security_review_md(path: Path | None = None) -> str:
+    """Load the security-review markdown.
+
+    Resolution order:
+    1. Explicit ``path`` argument (used by tests).
+    2. Wheel-bundled ``kosmos/_canonical/security-review.md`` via
+       ``importlib.resources`` (Spec 1636 Sec H-1 — production deploy).
+    3. Source-tree fallback at ``parents[3]/docs/plugins/security-review.md``
+       (editable installs).
+
+    Fails closed with :class:`CanonicalAcknowledgmentLoadError` if every
+    source is missing.
+    """
+    if path is not None:
+        if not path.is_file():
+            raise CanonicalAcknowledgmentLoadError(
+                f"docs/plugins/security-review.md not found at {path}"
+            )
+        return path.read_text(encoding="utf-8")
+
+    # 1. Wheel-bundled resource (kosmos/_canonical/security-review.md).
+    try:
+        bundled = resources.files("kosmos._canonical").joinpath(
+            "security-review.md"
         )
-    return path.read_text(encoding="utf-8")
+        with resources.as_file(bundled) as resource_path:
+            if Path(resource_path).is_file():
+                return Path(resource_path).read_text(encoding="utf-8")
+    except (FileNotFoundError, ModuleNotFoundError, AttributeError):
+        # Wheel resource missing — fall through to source-tree path.
+        pass
+
+    # 2. Source-tree fallback for editable installs.
+    if _SECURITY_REVIEW_PATH.is_file():
+        return _SECURITY_REVIEW_PATH.read_text(encoding="utf-8")
+
+    raise CanonicalAcknowledgmentLoadError(
+        "Canonical PIPA acknowledgment markdown not found in any "
+        "of the resolution paths: "
+        "kosmos/_canonical/security-review.md (wheel resource), "
+        f"{_SECURITY_REVIEW_PATH} (source-tree fallback). "
+        "If you are installing from a wheel, ensure pyproject.toml "
+        "force-includes the markdown."
+    )
 
 
 def _extract_canonical_text(md: str) -> str:

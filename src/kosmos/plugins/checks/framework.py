@@ -192,21 +192,21 @@ def _cli_main(argv: list[str] | None = None) -> int:
 
     yaml_path = args.yaml
     if yaml_path is None:
-        # Resolve the bundled YAML via importlib.resources for installed
-        # wheels; fall back to the in-tree path for editable installs.
+        # 1. Wheel-bundled resource (kosmos/_canonical/checklist_manifest.yaml).
         try:
             from importlib import resources
 
-            with resources.as_file(
-                resources.files("kosmos.plugins.checks") / "_bundled_checklist.yaml"
-            ) as p:
-                yaml_path = Path(p)
-                if not yaml_path.is_file():
-                    yaml_path = None
-        except Exception:
+            bundled = resources.files("kosmos._canonical").joinpath(
+                "checklist_manifest.yaml"
+            )
+            with resources.as_file(bundled) as p:
+                if Path(p).is_file():
+                    yaml_path = Path(p)
+        except (FileNotFoundError, ModuleNotFoundError, AttributeError):
             yaml_path = None
+
+        # 2. Source-tree fallback for editable installs.
         if yaml_path is None or not yaml_path.is_file():
-            # Editable install fallback.
             for parent in Path(__file__).resolve().parents:
                 candidate = (
                     parent / "tests" / "fixtures" / "plugin_validation"
@@ -215,6 +215,7 @@ def _cli_main(argv: list[str] | None = None) -> int:
                 if candidate.is_file():
                     yaml_path = candidate
                     break
+
         if yaml_path is None or not yaml_path.is_file():
             print(
                 "error: could not locate checklist_manifest.yaml; "
