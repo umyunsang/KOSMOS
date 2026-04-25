@@ -170,21 +170,21 @@ description: "Task list for Epic #1636 — P5 Plugin DX 5-tier"
 
 **Purpose**: Catalog org + remaining docs + agent-context + final integration validation. Run after US1–US5 land.
 
-- [ ] T061 [P] Bootstrap `kosmos-plugin-store` GitHub org via `gh api` + create `kosmos-plugin-store/index` repo containing initial `index.json` (3 entries: seoul-subway, post-office, nts-homtax, nhis-check published) per contracts/catalog-index.schema.json
-- [ ] T062 [P] Author `scripts/regenerate_catalog.py`: walks `kosmos-plugin-store/<repo>` releases via `gh api`, emits `index.json`; install as a workflow in the `kosmos-plugin-store/index` repo triggered on plugin-repo release events
-- [ ] T063 [P] Vendor `slsa-verifier` binaries for darwin-amd64/arm64 + linux-amd64/arm64 into `~/.kosmos/vendor` bootstrap path; ship `scripts/bootstrap_slsa_verifier.sh` invoked on first `kosmos plugin install` if binary missing for current platform
-- [ ] T064 [P] Author `docs/plugins/search-hint.md`: Ko/En bilingual hint authoring guidelines, Kiwipiepy noun-extraction guidance per Q4-HINT-NOUNS, ministry-name inclusion rule per Q4-HINT-MINISTRY; cite Spec 022 BM25 retrieval
-- [ ] T065 [P] Author `docs/plugins/permission-tier.md`: Layer 1/2/3 decision tree (flowchart) mapping adapter properties to Layer; cite Spec 033 + AGENTS.md plugin-contract row 3
-- [ ] T066 [P] Author `docs/plugins/testing.md`: pytest fixture conventions (block_network autouse, recorded fixture pattern), `@pytest.mark.live` marker discipline; cite Constitution §IV + `docs/testing.md`
-- [ ] T067 Update `docs/plugins/README.md`: extend the existing 5-tier table with status badges (planned → shipped) per tier + version + link to canonical SHA-256; **verify all 9 guides under `docs/plugins/` contain a `## Bilingual glossary` heading (FR-006) — fail polish gate if any missing**
-- [ ] T068 Update `CLAUDE.md` Active Technologies + Recent Changes sections (revert grep noise from update-agent-context.sh; manually add P5 stack rows per project pattern); update spec.md Deferred table to remove R-2 obviated row (sub-dir migration)
-- [ ] T069 Update `AGENTS.md § New tool adapter` section to point at `docs/plugins/` as canonical contributor entry-point + add 2-line PIPA §26 trustee responsibility note
-- [ ] T070 SC-006 self-test: every example plugin's repo MUST run `plugin-validation.yml` against itself in CI with 50/50 green; verify all 4 example repos green via `gh pr checks` after creation
-- [ ] T071 SC-008 baseline measurement: record current `git log --author` external-contributor count = 0 in `specs/1636-plugin-dx-5tier/baseline-evidence.md`; document plan to re-measure 3 months post-merge
-- [ ] T072 SC-009 Korean reviewer signoff: invite a native-Korean-speaking reviewer to complete the quickstart with English source files closed; record outcome in `specs/1636-plugin-dx-5tier/sc009-evidence.md` (deferred-checkbox if no reviewer available, tracked but non-blocking for PR merge)
-- [ ] T073 Run `specs/1636-plugin-dx-5tier/quickstart.md` validation as final pre-PR gate: simulate fresh-shell walkthrough; assert all 9 steps complete green
-- [ ] T074 Update `docs/vision.md § Reference materials` table to add row for `kosmos-plugin-store` org (SLSA-provenance attribution); add new ADR `docs/adr/ADR-007-plugin-dx-5tier-architecture.md` documenting R-2 (standalone repos) + R-3 (vendored slsa-verifier) decisions
-- [ ] T075 Run `uv run pytest` + `bun test` from repo root; ensure all suites green; emit final test summary in PR body for the integrated commit
+- [X] T061 [P] Bootstrap `kosmos-plugin-store` GitHub org via `gh api` + create `kosmos-plugin-store/index` repo containing initial `index.json` (3 entries: seoul-subway, post-office, nts-homtax, nhis-check published) per contracts/catalog-index.schema.json
+- [X] T062 [P] Author `scripts/regenerate_catalog.py`: walks `kosmos-plugin-store/<repo>` releases via `gh api`, emits `index.json`; install as a workflow in the `kosmos-plugin-store/index` repo triggered on plugin-repo release events
+- [X] T063 [P] Vendor `slsa-verifier` binaries for darwin-amd64/arm64 + linux-amd64/arm64 into `~/.kosmos/vendor` bootstrap path; ship `scripts/bootstrap_slsa_verifier.sh` invoked on first `kosmos plugin install` if binary missing for current platform
+- [X] T064 [P] Author `docs/plugins/search-hint.md`: Ko/En bilingual hint authoring guidelines, Kiwipiepy noun-extraction guidance per Q4-HINT-NOUNS, ministry-name inclusion rule per Q4-HINT-MINISTRY; cite Spec 022 BM25 retrieval
+- [X] T065 [P] Author `docs/plugins/permission-tier.md`: Layer 1/2/3 decision tree (flowchart) mapping adapter properties to Layer; cite Spec 033 + AGENTS.md plugin-contract row 3
+- [X] T066 [P] Author `docs/plugins/testing.md`: pytest fixture conventions (block_network autouse, recorded fixture pattern), `@pytest.mark.live` marker discipline; cite Constitution §IV + `docs/testing.md`
+- [X] T067 Update `docs/plugins/README.md`: extend the existing 5-tier table with status badges (planned → shipped) per tier + version + link to canonical SHA-256; **verify all 9 guides under `docs/plugins/` contain a `## Bilingual glossary` heading (FR-006) — fail polish gate if any missing**
+- [X] T068 Update `CLAUDE.md` Active Technologies + Recent Changes sections (revert grep noise from update-agent-context.sh; manually add P5 stack rows per project pattern); update spec.md Deferred table to remove R-2 obviated row (sub-dir migration)
+- [X] T069 Update `AGENTS.md § New tool adapter` section to point at `docs/plugins/` as canonical contributor entry-point + add 2-line PIPA §26 trustee responsibility note
+- [X] T070 SC-006 self-test: every example plugin's repo MUST run `plugin-validation.yml` against itself in CI with 50/50 green; verify all 4 example repos green via `gh pr checks` after creation
+- [X] T071 SC-008 baseline measurement: record current `git log --author` external-contributor count = 0 in `specs/1636-plugin-dx-5tier/baseline-evidence.md`; document plan to re-measure 3 months post-merge
+- [X] T072 SC-009 Korean reviewer signoff: invite a native-Korean-speaking reviewer to complete the quickstart with English source files closed; record outcome in `specs/1636-plugin-dx-5tier/sc009-evidence.md` (deferred-checkbox if no reviewer available, tracked but non-blocking for PR merge)
+- [X] T073 Run `specs/1636-plugin-dx-5tier/quickstart.md` validation as final pre-PR gate: simulate fresh-shell walkthrough; assert all 9 steps complete green
+- [X] T074 Update `docs/vision.md § Reference materials` table to add row for `kosmos-plugin-store` org (SLSA-provenance attribution); add new ADR `docs/adr/ADR-007-plugin-dx-5tier-architecture.md` documenting R-2 (standalone repos) + R-3 (vendored slsa-verifier) decisions
+- [X] T075 Run `uv run pytest` + `bun test` from repo root; ensure all suites green; emit final test summary in PR body for the integrated commit
 
 ---
 
