@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kosmos.dev/schemas/plugin-manifest/1.0.0.json",
+  "title": "KOSMOS PluginManifest",
+  "description": "Versioned contract for KOSMOS plugin manifests. Mirrors src/kosmos/plugins/manifest_schema.py:PluginManifest. Source-of-truth: data-model.md § 1.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "plugin_id",
+    "version",
+    "adapter",
+    "tier",
+    "processes_pii",
+    "slsa_provenance_url",
+    "otel_attributes",
+    "search_hint_ko",
+    "search_hint_en",
+    "permission_layer"
+  ],
+  "properties": {
+    "plugin_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*$",
+      "maxLength": 64,
+      "description": "snake_case plugin identifier; immutable across versions."
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "SemVer major.minor.patch."
+    },
+    "adapter": {
+      "type": "object",
+      "description": "Embedded Spec 031 AdapterRegistration. Schema mirrors src/kosmos/tools/registry.py:AdapterRegistration; the parent PluginManifest re-validates the same V1-V6 invariant chain.",
+      "additionalProperties": false,
+      "required": ["tool_id", "primitive", "module_path", "input_model_ref", "source_mode"],
+      "properties": {
+        "tool_id": {
+          "type": "string",
+          "pattern": "^plugin\\.[a-z][a-z0-9_]*\\.(lookup|submit|verify|subscribe)$",
+          "description": "MUST follow plugin.<plugin_id>.<verb> namespace. <verb> MUST be one of 4 root primitives."
+        },
+        "primitive": {
+          "type": "string",
+          "enum": ["lookup", "resolve_location", "submit", "subscribe", "verify"]
+        },
+        "module_path": { "type": "string", "minLength": 1 },
+        "input_model_ref": { "type": "string", "minLength": 1 },
+        "source_mode": {
+          "type": "string",
+          "enum": ["OPENAPI", "OOS", "harness-only"]
+        },
+        "published_tier_minimum": {
+          "type": ["string", "null"],
+          "description": "Spec 031 v1.2 dual-axis primary."
+        },
+        "nist_aal_hint": {
+          "type": ["string", "null"],
+          "enum": ["AAL1", "AAL2", "AAL3", null]
+        }
+      }
+    },
+    "tier": {
+      "type": "string",
+      "enum": ["live", "mock"]
+    },
+    "mock_source_spec": {
+      "type": ["string", "null"],
+      "description": "Required (non-empty) when tier='mock'; MUST be null when tier='live'. URL or attribution string pointing to the public spec the mock mirrors."
+    },
+    "processes_pii": {
+      "type": "boolean",
+      "default": true,
+      "description": "Fail-closed default per Constitution §II."
+    },
+    "pipa_trustee_acknowledgment": {
+      "oneOf": [
+        { "type": "null" },
+        { "$ref": "#/$defs/PIPATrusteeAcknowledgment" }
+      ],
+      "description": "Required (non-null) when processes_pii=true. PIPA §26 trustee chain."
+    },
+    "slsa_provenance_url": {
+      "type": "string",
+      "pattern": "^https://github\\.com/"
+    },
+    "otel_attributes": {
+      "type": "object",
+      "additionalProperties": { "type": "string" },
+      "required": ["kosmos.plugin.id"],
+      "properties": {
+        "kosmos.plugin.id": {
+          "type": "string",
+          "description": "MUST equal PluginManifest.plugin_id."
+        }
+      }
+    },
+    "search_hint_ko": { "type": "string", "minLength": 1 },
+    "search_hint_en": { "type": "string", "minLength": 1 },
+    "permission_layer": {
+      "type": "integer",
+      "enum": [1, 2, 3]
+    }
+  },
+  "$defs": {
+    "PIPATrusteeAcknowledgment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "trustee_org_name",
+        "trustee_contact",
+        "pii_fields_handled",
+        "legal_basis",
+        "acknowledgment_sha256"
+      ],
+      "properties": {
+        "trustee_org_name": { "type": "string", "minLength": 1 },
+        "trustee_contact": { "type": "string", "minLength": 1 },
+        "pii_fields_handled": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string" }
+        },
+        "legal_basis": { "type": "string", "minLength": 1 },
+        "acknowledgment_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    }
+  }
+}
