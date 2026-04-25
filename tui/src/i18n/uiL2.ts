@@ -244,12 +244,27 @@ const EN: UiL2Bundle = {
   },
 };
 
-const LOCALE = process.env['KOSMOS_TUI_LOCALE'] ?? 'ko';
+/**
+ * Resolve the current locale from KOSMOS_TUI_LOCALE on every call so that
+ * /lang ko|en (which mutates process.env at runtime) takes effect on the
+ * next render without a process restart. Per Codex review on PR #1847.
+ */
+function currentLocale(): 'ko' | 'en' {
+  return process.env['KOSMOS_TUI_LOCALE'] === 'en' ? 'en' : 'ko';
+}
 
-export const uiL2I18n: UiL2Bundle = LOCALE === 'en' ? EN : KO;
+/** Backwards-compat default export — equals KO unless KOSMOS_TUI_LOCALE=en at module load. */
+export const uiL2I18n: UiL2Bundle = currentLocale() === 'en' ? EN : KO;
 
+/**
+ * Hook returning the active i18n bundle. Reads KOSMOS_TUI_LOCALE on every
+ * call so /lang ko|en applies on the next render frame. Components that
+ * already capture this value into closures (event handlers, useCallback
+ * deps) will need to remount or re-execute the closure to pick up the
+ * new locale — that is by design (FR-004 + Codex P2 fix).
+ */
 export function useUiL2I18n(): UiL2Bundle {
-  return uiL2I18n;
+  return currentLocale() === 'en' ? EN : KO;
 }
 
 export function getUiL2I18n(locale: 'ko' | 'en'): UiL2Bundle {

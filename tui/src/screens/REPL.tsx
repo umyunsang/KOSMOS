@@ -1018,28 +1018,9 @@ export function REPL({
   // external loading by setIsExternalLoading.
   const isLoading = isQueryActive || isExternalLoading;
 
-  // KOSMOS P4 UI L2 — T023: 5-second no-chunk network timeout (FR: UI-B edge case)
-  useEffect(() => {
-    if (!isLoading) {
-      kosmosLastChunkTimeRef.current = Date.now();
-      return;
-    }
-    const timer = setTimeout(() => {
-      if (Date.now() - kosmosLastChunkTimeRef.current >= KOSMOS_STREAM_TIMEOUT_MS) {
-        const networkError: ErrorEnvelopeT = {
-          type: 'network',
-          title_ko: '네트워크 연결이 끊어졌습니다',
-          title_en: 'Network connection lost',
-          detail_ko: '5초간 응답이 없습니다. 다시 시도해주세요.',
-          detail_en: 'No response for 5 seconds. Please retry.',
-          retry_suggested: true,
-          occurred_at: new Date().toISOString(),
-        };
-        setKosmosCurrentError(networkError);
-      }
-    }, KOSMOS_STREAM_TIMEOUT_MS);
-    return () => clearTimeout(timer);
-  }, [isLoading]);
+  // KOSMOS P4 UI L2 — T023 stream timeout effect moved below messages state
+  // declaration so messages.length can be a dependency (Codex P1 fix on
+  // PR #1847: chunk arrival now resets the 5s window).
 
   // Elapsed time is computed by SpinnerWithVerb from these refs on each
   // animation frame, avoiding a useInterval that re-renders the entire REPL.
@@ -1400,6 +1381,32 @@ export function REPL({
       repinScroll();
     }
   }, [lastMsgIsHuman, lastMsg, repinScroll]);
+  // KOSMOS P4 UI L2 — T023: 5-second no-chunk network timeout (FR-012 + edge
+  // case "streaming network drop"). Resets on every messages.length change
+  // so an in-flight long generation that is still producing chunks does not
+  // get falsely flagged as a network failure (Codex P1 fix on PR #1847).
+  useEffect(() => {
+    if (!isLoading) {
+      kosmosLastChunkTimeRef.current = Date.now();
+      return;
+    }
+    kosmosLastChunkTimeRef.current = Date.now();
+    const timer = setTimeout(() => {
+      if (Date.now() - kosmosLastChunkTimeRef.current >= KOSMOS_STREAM_TIMEOUT_MS) {
+        const networkError: ErrorEnvelopeT = {
+          type: 'network',
+          title_ko: '네트워크 연결이 끊어졌습니다',
+          title_en: 'Network connection lost',
+          detail_ko: '5초간 응답이 없습니다. 다시 시도해주세요.',
+          detail_en: 'No response for 5 seconds. Please retry.',
+          retry_suggested: true,
+          occurred_at: new Date().toISOString(),
+        };
+        setKosmosCurrentError(networkError);
+      }
+    }, KOSMOS_STREAM_TIMEOUT_MS);
+    return () => clearTimeout(timer);
+  }, [isLoading, messages.length]);
   // Assistant-chat: lazy-load remote history on scroll-up. No-op unless
   // KAIROS build + config.viewerOnly. feature() is build-time constant so
   // the branch is dead-code-eliminated in non-KAIROS builds (same pattern
@@ -3364,7 +3371,26 @@ export function REPL({
         setInputValue('');
         helpers.setCursorOffset(0);
         helpers.clearBuffer();
-        const exportResult = executeExport([], [], []);
+        // Codex P1 fix on PR #1847: pass active session messages instead of
+        // empty arrays so /export honours its FR-032 contract.
+        const exportTurns = messages.map((m): { role: 'citizen' | 'assistant'; content: string; timestamp: string } => {
+          const human = isHumanTurn(m);
+          const raw = (m as { message?: { content?: unknown } }).message?.content;
+          let content: string;
+          if (typeof raw === 'string') {
+            content = raw;
+          } else if (Array.isArray(raw)) {
+            content = raw
+              .map((b) => (typeof b === 'object' && b !== null && 'text' in b ? String((b as { text?: unknown }).text ?? '') : ''))
+              .join('\n');
+          } else {
+            content = '';
+          }
+          const ts = (m as { timestamp?: string | number | Date }).timestamp;
+          const timestamp = ts != null ? new Date(ts).toISOString() : new Date().toISOString();
+          return { role: human ? 'citizen' : 'assistant', content, timestamp };
+        });
+        const exportResult = executeExport(exportTurns, [], []);
         setToolJSX({
           jsx: React.createElement(ExportPdfDialog, {
             turns: exportResult.turns,
