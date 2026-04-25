@@ -86,6 +86,19 @@ class TestQ8Namespace:
             )
         assert "adapter.tool_id must start with 'plugin.demo_plugin.'" in str(exc.value)
 
+    def test_unicode_confusable_plugin_id_rejected(self) -> None:
+        """H5 regression (review eval): a Cyrillic 'о' in plugin_id (or
+        in adapter.tool_id) must NOT slip past the namespace check.
+        plugin_id itself is constrained by Pydantic's `[a-z]` regex so
+        the Cyrillic char is rejected at AdapterRegistration construction
+        even before manifest validation runs.
+        """
+        # Pydantic's pattern-validate-against-bytes catches Cyrillic 'о'
+        # (U+043E) that looks like Latin 'o' (U+006F).
+        cyrillic_o = "о"  # 'о' Cyrillic
+        with pytest.raises(ValidationError):
+            _adapter(tool_id=f"plugin.demo_plugin.l{cyrillic_o}okup")
+
     def test_namespace_unprefixed_rejected_by_adapter_regex(self) -> None:
         """Built-in adapter regex still rejects bare snake_case mismatching the alternation."""
         # The regex on AdapterRegistration permits either the snake_case form OR
@@ -107,7 +120,13 @@ class TestQ8Namespace:
         )
         with pytest.raises(ValidationError) as exc:
             PluginManifest(**_manifest_kwargs(adapter=bare_adapter))
-        assert "adapter.tool_id must start with" in str(exc.value)
+        # H5 (review eval): the ASCII-anchored regex check fires first
+        # for malformed tool_ids; the older "must start with" message
+        # only surfaces when the regex passes but the prefix mismatches.
+        msg = str(exc.value)
+        assert ("adapter.tool_id must match" in msg) or (
+            "adapter.tool_id must start with" in msg
+        )
 
 
 class TestQ8NoRootOverride:

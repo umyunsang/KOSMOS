@@ -10,11 +10,18 @@
 //
 // Each subcommand emits exactly ONE plugin_op_request frame via the
 // dependency-injected sendPluginOp callback. The backend installer
-// (src/kosmos/plugins/installer.py) replies with plugin_op_progress
-// (phase 1-7) and a final plugin_op_complete frame; the TUI's main view
-// renders that progress separately (deferred — for now the citizen sees
-// the acknowledgement text returned here, then the per-frame UI lands
-// in a follow-on PR within Phase 7).
+// (src/kosmos/plugins/installer.py) is what would consume those frames
+// and reply with plugin_op_progress (phase 1-7) + plugin_op_complete.
+//
+// H7 (review eval): the backend stdio dispatcher that routes incoming
+// plugin_op_request frames to install_plugin() is NOT wired in this
+// epic — install_plugin() is fully implemented (8-phase, 6 integration
+// tests + 4 SC tests), but the IPC bridge that turns a TUI request into
+// a Python install_plugin() call is deferred to a follow-up. Until that
+// lands, the slash command's acknowledgement carries an explicit
+// "(backend not yet wired — use `kosmos plugin install` shell entry-
+// point instead)" suffix so citizens are not surprised when the
+// progress overlay never advances.
 
 import type {
   CommandDefinition,
@@ -100,7 +107,9 @@ function _handleInstall(rest: string, args: CommandHandlerArgs): CommandResult {
   } as never)
   const dryNote = dryRun ? ' (dry-run)' : ''
   return {
-    acknowledgement: `🔄 ${name} 플러그인 설치 시작...${dryNote}`,
+    acknowledgement:
+      `🔄 ${name} 플러그인 설치 시작...${dryNote}\n` +
+      `   (backend dispatcher not yet wired — use \`uvx kosmos plugin install ${name}\` shell entry-point)`,
   }
 }
 
@@ -121,7 +130,9 @@ function _handleList(args: CommandHandlerArgs): CommandResult {
     request_op: 'list',
   } as never)
   return {
-    acknowledgement: '📋 설치된 플러그인 목록 조회 중...',
+    acknowledgement:
+      '📋 설치된 플러그인 목록 조회 중...\n' +
+      '   (backend dispatcher not yet wired — use `ls ~/.kosmos/memdir/user/plugins/` for now)',
   }
 }
 
@@ -149,7 +160,9 @@ function _handleUninstall(rest: string, args: CommandHandlerArgs): CommandResult
     name,
   } as never)
   return {
-    acknowledgement: `🗑️ ${name} 플러그인 제거 시작...`,
+    acknowledgement:
+      `🗑️ ${name} 플러그인 제거 시작...\n` +
+      `   (backend dispatcher not yet wired — manually remove ~/.kosmos/memdir/user/plugins/${name}/ for now)`,
   }
 }
 

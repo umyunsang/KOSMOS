@@ -97,8 +97,11 @@ def _import_adapter_module(module_path: str, *, plugin_root: Path | None) -> Mod
                 f"failed to build import spec for {candidate}"
             )
         module = importlib.util.module_from_spec(spec)
-        # Register on sys.modules BEFORE exec so dataclass/pydantic
-        # references inside the plugin can resolve themselves.
+        # H2 (review eval): pop any stale entry from a previous failed
+        # install so a re-install gets a fresh module rather than the
+        # leaked one. Also stamp the spec_name BEFORE exec so the
+        # plugin's own intra-package references resolve.
+        sys.modules.pop(spec_name, None)
         sys.modules[spec_name] = module
         try:
             spec.loader.exec_module(module)
@@ -107,6 +110,8 @@ def _import_adapter_module(module_path: str, *, plugin_root: Path | None) -> Mod
             raise PluginRegistrationError(
                 f"plugin adapter module failed to import: {exc}"
             ) from exc
+        # NB: post-exec failures (resolve_tool_and_adapter, registry.register)
+        # also pop this entry — see register_plugin_adapter's except blocks.
         return module
 
     try:
@@ -242,6 +247,7 @@ def register_plugin_adapter(
         # on production environments seeing 'skipped'.
         span.set_attribute("kosmos.plugin.slsa_verification", slsa_verification)
 
+        module = None
         try:
             module = _import_adapter_module(
                 manifest.adapter.module_path, plugin_root=plugin_root
@@ -252,9 +258,16 @@ def register_plugin_adapter(
             registry.register(tool)
             executor.register_adapter(tool.id, adapter_fn)
         except PluginRegistrationError:
+            # H2 (review eval): a post-exec failure (symbol resolution /
+            # tool.id mismatch / V1-V6 invariant) leaves the module in
+            # sys.modules. Pop it so a retry isn't poisoned.
+            if module is not None and module.__name__ in sys.modules:
+                sys.modules.pop(module.__name__, None)
             span.set_status(Status(StatusCode.ERROR))
             raise
         except Exception as exc:
+            if module is not None and module.__name__ in sys.modules:
+                sys.modules.pop(module.__name__, None)
             span.set_status(Status(StatusCode.ERROR, str(exc)))
             raise PluginRegistrationError(
                 f"plugin {plugin_id!r} registration failed: {exc}"

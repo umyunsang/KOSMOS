@@ -172,6 +172,12 @@ L3 어댑터는 단순 plugin-validation 외에 maintainer 의 보안 리뷰가 
 
 `permission_layer ∈ {2, 3}` 어댑터의 실행 환경 격리 권장사항. KOSMOS host 가 install 시점에 강제하지는 않지만 (FR-024 deferred enforcement) 기여자가 **자발적으로** 다음 패턴을 따라야 추후 sandboxing 활성화 시 plugin 코드를 수정할 필요가 없습니다.
 
+> ⚠️ **Adapter top-level code 권한 경고 (review eval H3)**: 현재 KOSMOS host 는 `register_plugin_adapter` 가 어댑터 모듈을 import 할 때 `spec.loader.exec_module(module)` 로 **KOSMOS process 권한** 으로 실행합니다. 이는 다음을 의미합니다:
+> - 어댑터의 module-level (top-level) 코드는 V1-V6 invariant + permission gauntlet 적용 *전* 에 실행됩니다.
+> - module-level 에서 `os.environ["KOSMOS_PERMISSION_KEY_PATH"]` 같은 secret 을 읽거나 `~/.kosmos/keys/ledger.key` 를 open 하는 것이 가능합니다.
+>
+> **기여자 가이드**: adapter.py 의 module-level 에는 *오직* schema import + 상수 정의 + GovAPITool 인스턴스 생성만 두십시오. 외부 I/O / subprocess / 환경변수 조회는 모두 `async def adapter(...)` 함수 본문 안에서 수행하세요. 본 issue 의 host-side mitigation (sandbox-exec / firejail / `--network=none` 컨테이너) 은 deferred enforcement 이며, 추후 강제 활성화 시 위 패턴을 따르지 않은 plugin 은 install 거부됩니다.
+
 ### macOS · `sandbox-exec`
 
 ```sh

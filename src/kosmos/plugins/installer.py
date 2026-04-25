@@ -251,18 +251,53 @@ def _safe_extract(tar: tarfile.TarFile, dest: Path) -> None:
     Pre-3.12 path-traversal check + Python 3.12+ ``filter='data'``
     member filter so the call is forward-compatible with the upcoming
     default behaviour change in Python 3.14.
+
+    H6 (review eval): the path-traversal check covers ``member.name``
+    AND ``member.linkname`` so symlink/hardlink targets pointing
+    outside the install root are rejected before the data filter sees
+    them. Defense-in-depth — Python 3.12's ``filter='data'`` already
+    rejects most cases, but the data filter has had CVEs (CVE-2024-12718
+    family) so a layered check is prudent.
     """
     dest_resolved = dest.resolve()
+    dest_str = str(dest_resolved)
+
+    def _is_inside(path: Path) -> bool:
+        try:
+            resolved = path.resolve()
+        except (OSError, RuntimeError):
+            return False
+        return str(resolved) == dest_str or str(resolved).startswith(dest_str + os.sep)
+
     for member in tar.getmembers():
-        target = (dest / member.name).resolve()
-        if not str(target).startswith(str(dest_resolved)):
+        target = dest / member.name
+        if not _is_inside(target):
             raise OSError(
                 f"plugin bundle entry {member.name!r} escapes install root"
             )
+        # Symlink + hardlink target validation (H6).
+        if member.issym() or member.islnk():
+            link_target_str = member.linkname or ""
+            if not link_target_str:
+                raise OSError(
+                    f"plugin bundle entry {member.name!r} is a "
+                    f"sym/hardlink with empty linkname — refusing"
+                )
+            # Resolve relative linknames against the entry's directory.
+            link_path = (target.parent / link_target_str)
+            if not _is_inside(link_path):
+                raise OSError(
+                    f"plugin bundle entry {member.name!r} sym/hardlink "
+                    f"target {link_target_str!r} escapes install root"
+                )
     tar.extractall(dest, filter="data")  # noqa: S202 — checked above.
 
 
 def _consent_ledger_next_position(consent_root: Path) -> int:
+    """Count existing receipts. Caller MUST hold an fcntl.flock on
+    consent_root before calling — otherwise concurrent installers see
+    stale counts (review eval H4).
+    """
     if not consent_root.is_dir():
         return 0
     return sum(1 for _ in consent_root.glob("*.json"))
@@ -273,20 +308,66 @@ def _write_consent_receipt(
     *,
     consent_root: Path,
 ) -> Path:
+    """Atomically write the receipt with proper fsync + dir fsync.
+
+    Review eval H1 fixes:
+    - Write through a fd we own; fsync THAT fd (not a fresh O_RDONLY one
+      which has nothing buffered to flush).
+    - fsync the parent directory after rename so the rename itself is
+      durable on ext4 / xfs after a crash.
+    """
+    import fcntl  # noqa: PLC0415
+
     consent_root.mkdir(parents=True, exist_ok=True)
     out = consent_root / f"{receipt.receipt_id}.json"
-    payload = json.dumps(receipt.to_json(), indent=2, ensure_ascii=False)
     tmp = out.with_suffix(out.suffix + ".tmp")
-    tmp.write_text(payload, encoding="utf-8")
-    import os  # noqa: PLC0415
+    payload = json.dumps(receipt.to_json(), indent=2, ensure_ascii=False).encode("utf-8")
 
-    fd = os.open(tmp, os.O_RDONLY)
+    # H1 fsync the actual write fd (not an O_RDONLY fd opened afterward).
+    fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
     try:
+        os.write(fd, payload)
         os.fsync(fd)
     finally:
         os.close(fd)
     tmp.replace(out)
+
+    # H1 fsync the parent dir so the rename is durable.
+    dir_fd = os.open(consent_root, os.O_RDONLY)
+    try:
+        # Some filesystems (notably APFS on older macOS) reject fsync on
+        # directory fds; treat that as advisory rather than a hard error.
+        try:
+            os.fsync(dir_fd)
+        except OSError:
+            pass
+    finally:
+        os.close(dir_fd)
     return out
+
+
+def _allocate_consent_position(consent_root: Path) -> int:
+    """Take an fcntl flock on consent_root, count receipts, return position.
+
+    Review eval H4 — concurrent installers race on counting *.json files.
+    flock serialises position assignment so receipts get monotonic ids.
+    Caller does NOT need to hold the lock during the actual receipt
+    write because the receipt_id includes a UUID4 hex — collision is
+    handled by the unique filename, not the position.
+    """
+    import fcntl  # noqa: PLC0415
+
+    consent_root.mkdir(parents=True, exist_ok=True)
+    lock_path = consent_root / ".lock"
+    fd = os.open(lock_path, os.O_RDWR | os.O_CREAT, 0o600)
+    try:
+        fcntl.flock(fd, fcntl.LOCK_EX)
+        try:
+            return _consent_ledger_next_position(consent_root)
+        finally:
+            fcntl.flock(fd, fcntl.LOCK_UN)
+    finally:
+        os.close(fd)
 
 
 # ---------------------------------------------------------------------------
@@ -619,7 +700,10 @@ def install_plugin(  # noqa: C901, PLR0911, PLR0915 — phased flow.
         )
 
     # --- Phase 7: consent receipt ------------------------------------------
-    receipt_id = f"rcpt-{uuid.uuid4().hex[:16]}"
+    # H4 (review eval): full UUID4 hex (128-bit, ~10^38 namespace) avoids
+    # collision attacks against the ledger; previous 64-bit truncation
+    # was feasible to attack on a long-running ledger.
+    receipt_id = f"rcpt-{uuid.uuid4().hex}"
     # Consent receipts live alongside Spec 035 onboarding consent records under
     # ~/.kosmos/memdir/user/consent/ (data-model.md § 5 + § Storage layout).
     # Earlier versions wrote to ~/.kosmos/consent/ which silently desynced
@@ -637,7 +721,7 @@ def install_plugin(  # noqa: C901, PLR0911, PLR0915 — phased flow.
             if manifest.pipa_trustee_acknowledgment is not None
             else None
         ),
-        consent_ledger_position=_consent_ledger_next_position(consent_root),
+        consent_ledger_position=_allocate_consent_position(consent_root),
     )
     try:
         _write_consent_receipt(receipt, consent_root=consent_root)

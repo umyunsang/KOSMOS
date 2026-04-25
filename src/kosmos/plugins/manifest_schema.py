@@ -41,12 +41,20 @@ itself never mutates.
 
 from __future__ import annotations
 
+import re
 from typing import Final, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from kosmos.plugins import canonical_acknowledgment
 from kosmos.tools.registry import AdapterRegistration
+
+# H5 (review eval): tool_id MUST be ASCII to prevent Unicode confusable
+# attacks (e.g. Cyrillic 'о' replacing Latin 'o' in plugin_id).
+_TOOL_ID_ASCII_RE: Final = re.compile(
+    r"^plugin\.[a-z][a-z0-9_]*\.(lookup|submit|verify|subscribe)$",
+    flags=re.ASCII,
+)
 
 _ROOT_PRIMITIVE_VERBS: Final[frozenset[str]] = frozenset(
     {"lookup", "submit", "verify", "subscribe"}
@@ -267,7 +275,17 @@ class PluginManifest(BaseModel):
 
     @model_validator(mode="after")
     def _v_namespace(self) -> PluginManifest:
-        """adapter.tool_id must be plugin.<plugin_id>.<root-primitive> (ADR-007)."""
+        """adapter.tool_id must be plugin.<plugin_id>.<root-primitive> (ADR-007).
+
+        H5 (review eval): use a re.ASCII regex full-match so Unicode
+        confusables (Cyrillic 'о', Greek 'ο' …) cannot slip past the
+        prefix check via :py:meth:`str.startswith`.
+        """
+        if not _TOOL_ID_ASCII_RE.fullmatch(self.adapter.tool_id):
+            raise ValueError(
+                f"adapter.tool_id must match {_TOOL_ID_ASCII_RE.pattern} "
+                f"(ASCII only, ADR-007); got {self.adapter.tool_id!r}"
+            )
         expected_prefix = f"plugin.{self.plugin_id}."
         if not self.adapter.tool_id.startswith(expected_prefix):
             raise ValueError(

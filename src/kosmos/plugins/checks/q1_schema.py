@@ -173,43 +173,64 @@ def check_manifest_valid(ctx: CheckContext) -> CheckOutcome:
     return passed()
 
 
-def _has_model_config_kwarg(tree: ast.Module, kwarg: str, expected_value: Any) -> bool:
-    """Scan every class's `model_config = ConfigDict(...)` for a kwarg=value match."""
-    found_any = False
+def _classes_with_model_config(tree: ast.Module) -> list[tuple[ast.ClassDef, ast.Call]]:
+    """Return (class, model_config_call) for every class declaring model_config."""
+    out: list[tuple[ast.ClassDef, ast.Call]] = []
     for cls in _iter_classes(tree):
         for stmt in cls.body:
-            if not isinstance(stmt, ast.Assign):
-                continue
-            if not stmt.targets or not isinstance(stmt.targets[0], ast.Name):
-                continue
-            if stmt.targets[0].id != "model_config":
-                continue
-            if not isinstance(stmt.value, ast.Call):
-                continue
-            for kw in stmt.value.keywords:
-                if kw.arg == kwarg:
-                    found_any = True
-                    val_node = kw.value
-                    if isinstance(val_node, ast.Constant) and val_node.value == expected_value:
-                        return True
-    # No matching class had this kwarg with the expected value. If no class
-    # had model_config at all, be strict and fail.
-    return not found_any and False  # always False — keeps the type checker happy
+            if (
+                isinstance(stmt, ast.Assign)
+                and stmt.targets
+                and isinstance(stmt.targets[0], ast.Name)
+                and stmt.targets[0].id == "model_config"
+                and isinstance(stmt.value, ast.Call)
+            ):
+                out.append((cls, stmt.value))
+    return out
+
+
+def _config_kwarg(call: ast.Call, kwarg: str) -> ast.AST | None:
+    """Return the AST node for a ConfigDict kwarg, or None if missing."""
+    for kw in call.keywords:
+        if kw.arg == kwarg:
+            return kw.value
+    return None
 
 
 def check_frozen(ctx: CheckContext) -> CheckOutcome:
-    """Q1-FROZEN — model_config(frozen=True) on input/output models."""
+    """Q1-FROZEN — every Pydantic class with model_config must declare frozen=True.
+
+    H8 (review eval): replace the ambiguous "any class has it" pattern
+    with a strict per-class check — if ANY model_config is missing
+    frozen=True (or sets it to False), the check fails. This catches
+    the case where LookupInput is frozen but LookupOutput isn't.
+    """
     tree = _parsed_schema_ast(ctx)
     if tree is None:
         return failed(
             ko="schema.py AST 파싱 실패 (Q1-FROZEN)",
             en="schema.py AST parse failed (Q1-FROZEN)",
         )
-    if not _has_model_config_kwarg(tree, "frozen", True):
+
+    pairs = _classes_with_model_config(tree)
+    if not pairs:
         return failed(
-            ko="schema.py 의 model_config 에 frozen=True 필요 (Q1-FROZEN)",
-            en="schema.py model_config must include frozen=True (Q1-FROZEN)",
+            ko="schema.py 의 어느 모델도 model_config 를 선언하지 않음 (Q1-FROZEN)",
+            en="no class in schema.py declares model_config (Q1-FROZEN)",
         )
+
+    for cls, call in pairs:
+        node = _config_kwarg(call, "frozen")
+        if node is None:
+            return failed(
+                ko=f"schema.py {cls.name} 의 model_config 에 frozen 미선언 (Q1-FROZEN)",
+                en=f"schema.py {cls.name} model_config missing frozen kwarg (Q1-FROZEN)",
+            )
+        if not (isinstance(node, ast.Constant) and node.value is True):
+            return failed(
+                ko=f"schema.py {cls.name} 의 model_config 가 frozen=True 가 아님 (Q1-FROZEN)",
+                en=f"schema.py {cls.name} model_config does not set frozen=True (Q1-FROZEN)",
+            )
     return passed()
 
 
