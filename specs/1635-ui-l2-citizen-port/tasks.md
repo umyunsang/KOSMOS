@@ -58,18 +58,18 @@
 
 ### Implementation for User Story 1
 
-- [ ] T014 [P] [US1] `StreamingChunk` component with ~20-token chunk batching and `KOSMOS_TUI_STREAM_CHUNK_TOKENS` env override (default 20) in `tui/src/components/messages/StreamingChunk.tsx` (FR-008, ref `cc:components/Messages.tsx`, `cc:components/Message.tsx`, `cc:components/VirtualMessageList.tsx`)
-- [ ] T015 [P] [US1] Port `CtrlOToExpand` to `tui/src/components/PromptInput/CtrlOToExpand.tsx` with collapsed/expanded toggle (FR-009, ref `cc:components/CtrlOToExpand.tsx`)
-- [ ] T016 [P] [US1] `PdfInlineViewer` with Kitty/iTerm2 graphics protocol detection and `pdf-to-img` first-page PNG render in `tui/src/components/messages/PdfInlineViewer.tsx`; fallback to OS `open`; final fallback to text-only (path + size + sha256) for headless terminals (FR-010 + edge case)
-- [ ] T017 [P] [US1] Port `MarkdownRenderer` (block-level inline preview) to `tui/src/components/messages/MarkdownRenderer.tsx` (FR-011 partial, ref `cc:components/Markdown.tsx`)
-- [ ] T018 [P] [US1] 1:1 port of `MarkdownTable` to `tui/src/components/messages/MarkdownTable.tsx` (FR-011, ref `cc:components/MarkdownTable.tsx`)
-- [ ] T019 [P] [US1] `ErrorEnvelope` with three differentiated styles (LLM purple+brain / Tool orange+wrench / Network red+signal-broken) in `tui/src/components/messages/ErrorEnvelope.tsx` (FR-012, ref `cc:components/FallbackToolUseErrorMessage.tsx`)
-- [ ] T020 [P] [US1] `ContextQuoteBlock` with `⎿` prefix and single-border box in `tui/src/components/messages/ContextQuoteBlock.tsx` (FR-013, ref `cc:components/Message.tsx` quote glyph)
-- [ ] T021 [P] [US1] Extend `PromptInputFooterSuggestions` with highlighted match + inline preview dropdown driven by the slash-command catalog in `tui/src/components/PromptInput/PromptInputFooterSuggestions.tsx` (FR-014, depends on T010)
+- [x] T014 [P] [US1] `StreamingChunk` component with ~20-token chunk batching and `KOSMOS_TUI_STREAM_CHUNK_TOKENS` env override (default 20) in `tui/src/components/messages/StreamingChunk.tsx` (FR-008, ref `cc:components/Messages.tsx`, `cc:components/Message.tsx`, `cc:components/VirtualMessageList.tsx`)
+- [x] T015 [P] [US1] Port `CtrlOToExpand` to `tui/src/components/PromptInput/CtrlOToExpand.tsx` with collapsed/expanded toggle (FR-009, ref `cc:components/CtrlOToExpand.tsx`)
+- [x] T016 [P] [US1] `PdfInlineViewer` with Kitty/iTerm2 graphics protocol detection and `pdf-to-img` first-page PNG render in `tui/src/components/messages/PdfInlineViewer.tsx`; fallback to OS `open`; final fallback to text-only (path + size + sha256) for headless terminals (FR-010 + edge case)
+- [x] T017 [P] [US1] Port `MarkdownRenderer` (block-level inline preview) to `tui/src/components/messages/MarkdownRenderer.tsx` (FR-011 partial, ref `cc:components/Markdown.tsx`)
+- [x] T018 [P] [US1] 1:1 port of `MarkdownTable` to `tui/src/components/messages/MarkdownTable.tsx` (FR-011, ref `cc:components/MarkdownTable.tsx`)
+- [x] T019 [P] [US1] `ErrorEnvelope` with three differentiated styles (LLM purple+brain / Tool orange+wrench / Network red+signal-broken) in `tui/src/components/messages/ErrorEnvelope.tsx` (FR-012, ref `cc:components/FallbackToolUseErrorMessage.tsx`)
+- [x] T020 [P] [US1] `ContextQuoteBlock` with `⎿` prefix and single-border box in `tui/src/components/messages/ContextQuoteBlock.tsx` (FR-013, ref `cc:components/Message.tsx` quote glyph)
+- [x] T021 [P] [US1] Extend `PromptInputFooterSuggestions` with highlighted match + inline preview dropdown driven by the slash-command catalog in `tui/src/components/PromptInput/SlashCommandSuggestions.tsx` (FR-014, depends on T010)
 - [ ] T022 [US1] Wire all UI-B components into `tui/src/screens/REPL.tsx` and emit `kosmos.ui.surface=repl` on render (FR-037, depends on T014–T021, T009)
 - [ ] T023 [US1] Network 5-second no-chunk transition handler — switch to `ErrorEnvelope` type=`network` with retry option in `tui/src/screens/REPL.tsx` (edge case "streaming network drop")
-- [ ] T024 [P] [US1] `bun:test` units in `tui/tests/components/messages/` covering `StreamingChunk`, `PdfInlineViewer`, `ErrorEnvelope`, `ContextQuoteBlock`, `MarkdownTable`, `MarkdownRenderer` (FR-008/010/011/012/013)
-- [ ] T025 [P] [US1] `bun:test` units in `tui/tests/components/PromptInput/` for `CtrlOToExpand` and `PromptInputFooterSuggestions` (FR-009/014, SC-005 100ms-after-`/` budget)
+- [x] T024 [P] [US1] `bun:test` units in `tui/tests/components/messages/` covering `StreamingChunk`, `PdfInlineViewer`, `ErrorEnvelope`, `ContextQuoteBlock`, `MarkdownTable`, `MarkdownRenderer` (FR-008/010/011/012/013)
+- [x] T025 [P] [US1] `bun:test` units in `tui/tests/components/PromptInput/` for `CtrlOToExpand` and `SlashCommandSuggestions` (FR-009/014, SC-005 100ms-after-`/` budget)
 - [ ] T026 [US1] OTEL surface attribute on every UI-B component activation (FR-037) — covered by T022 wiring + helper from T009
 
 **Checkpoint**: REPL Main is fully functional and testable independently.
