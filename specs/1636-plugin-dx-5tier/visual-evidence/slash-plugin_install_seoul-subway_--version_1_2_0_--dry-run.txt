@@ -1,0 +1,3 @@
+ > /plugin install seoul-subway --version 1.2.0 --dry-run
+
+ 🔄 seoul-subway 플러그인 설치 시작... (dry-run)

@@ -1,0 +1,26 @@
+ PIPA consent
+ ● ● ◉ ○ ○     3 / 5
+
+ ╭────────────────────────────────────────────────────────────────────────────────────────────────╮
+ │ ⚠ Trustee Responsibility Notice · PIPA §26                                                     │
+ │                                                                                                │
+ │ Under PIPA §26, KOSMOS acts as a data trustee. You can revoke consent any time via /consent    │
+ │ revoke.                                                                                        │
+ │                                                                                                │
+ │ Data categories processed:                                                                     │
+ │   · Query text (auto-delete on session end option)                                             │
+ │   · Location/address (only when resolve_location is invoked)                                   │
+ │   · Ministry submission forms (only when submit primitive is invoked)                          │
+ │                                                                                                │
+ │ Trustee recipients (public APIs only):                                                         │
+ │   · Korea Road Transport Authority (KOROAD)                                                    │
+ │   · Korea Meteorological Administration (KMA)                                                  │
+ │   · Health Insurance Review & Assessment (HIRA)                                                │
+ │   · National Medical Center (NMC)                                                              │
+ │                                                                                                │
+ │ Audit ledger and OTEL spans are preserved even after consent revocation (FR-007).              │
+ ╰────────────────────────────────────────────────────────────────────────────────────────────────╯
+
+ This system requires your consent to process personal data.
+
+ [Y/Enter] Agree and continue  ·  [N/Esc] Decline and exit

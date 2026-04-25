@@ -74,3 +74,4 @@ checkpoints/
 *.bin
 *.safetensors
 specs/1634-tool-system-wiring/scratch/
+tui/test-output/

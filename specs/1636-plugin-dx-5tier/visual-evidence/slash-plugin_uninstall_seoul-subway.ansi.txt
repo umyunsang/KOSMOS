@@ -1,0 +1,3 @@
+ > /plugin uninstall seoul-subway
+
+ 🗑️ seoul-subway 플러그인 제거 시작...

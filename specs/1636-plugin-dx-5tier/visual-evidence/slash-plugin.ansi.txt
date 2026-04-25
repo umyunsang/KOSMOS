@@ -1,0 +1,3 @@
+ > /plugin
+
+ 사용법: /plugin <install|list|uninstall|pipa-text> [...]
