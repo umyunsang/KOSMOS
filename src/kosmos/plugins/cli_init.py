@@ -166,10 +166,6 @@ license = {{ text = "Apache-2.0" }}
 dependencies = [
   "pydantic>=2.13",
   "httpx>=0.27",
-]
-
-[project.optional-dependencies]
-test = [
   "pytest>=8.0",
   "pytest-asyncio>=0.24",
 ]
@@ -177,15 +173,28 @@ test = [
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["plugin_{name}"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
 """
 
 _PKG_INIT = '''# SPDX-License-Identifier: Apache-2.0
-"""KOSMOS plugin package: {name}."""
+"""KOSMOS plugin package: {name}.
 
-from .adapter import TOOL, adapter
+NOTE: ``TOOL`` is intentionally NOT re-exported here. It is built
+lazily at access time (PEP 562) by ``adapter.py`` so the scaffold's
+tests can run without ``kosmos`` installed. Consumers that need the
+GovAPITool entry should ``from .adapter import TOOL`` directly — the
+KOSMOS host follows that convention.
+"""
+
+from .adapter import adapter
 from .schema import LookupInput, LookupOutput
 
-__all__ = ["TOOL", "adapter", "LookupInput", "LookupOutput"]
+__all__ = ["adapter", "LookupInput", "LookupOutput"]
 '''
 
 _ADAPTER = '''# SPDX-License-Identifier: Apache-2.0
@@ -202,6 +211,13 @@ from .schema import LookupInput, LookupOutput
 
 
 def _build_tool() -> Any:
+    """Construct the GovAPITool registry entry on first access.
+
+    Imported lazily so the scaffold's tests (which do not require the
+    KOSMOS host) can run without ``kosmos`` installed. The host triggers
+    construction at install time when reading the module-level ``TOOL``
+    attribute via PEP 562.
+    """
     from kosmos.tools.models import GovAPITool
 
     return GovAPITool(
@@ -225,7 +241,18 @@ def _build_tool() -> Any:
     )
 
 
-TOOL = _build_tool()
+_TOOL_CACHE: Any = None
+
+
+def __getattr__(name: str) -> Any:
+    """PEP 562: provide lazy module-level ``TOOL`` so this file imports
+    without ``kosmos`` being available (e.g. scaffold tests)."""
+    global _TOOL_CACHE
+    if name == "TOOL":
+        if _TOOL_CACHE is None:
+            _TOOL_CACHE = _build_tool()
+        return _TOOL_CACHE
+    raise AttributeError(name)
 
 
 async def adapter(payload: LookupInput) -> dict[str, Any]:
@@ -259,14 +286,22 @@ class LookupOutput(BaseModel):
 '''
 
 _CONFTEST = '''# SPDX-License-Identifier: Apache-2.0
-"""Pytest fixtures — Constitution §IV: no live network calls in CI."""
+"""Pytest fixtures — Constitution §IV: no live network calls in CI.
+
+Only IPv4 / IPv6 socket creation is blocked; AF_UNIX socketpairs used
+by the asyncio event loop continue to work (otherwise pytest-asyncio
+would fail to set up).
+"""
 
 from __future__ import annotations
 
 import socket
 from collections.abc import Iterator
+from typing import Any
 
 import pytest
+
+_REAL_SOCKET = socket.socket
 
 
 @pytest.fixture(autouse=True)
@@ -278,13 +313,21 @@ def block_network(
         yield
         return
 
-    def _blocked(*_a: object, **_k: object) -> socket.socket:
-        raise RuntimeError(
-            "Outbound network access is blocked in plugin tests "
-            "(Constitution §IV)."
+    def _maybe_block(*args: Any, **kwargs: Any) -> socket.socket:
+        family = (
+            kwargs.get("family")
+            if "family" in kwargs
+            else (args[0] if args else socket.AF_INET)
         )
+        if family in (socket.AF_INET, socket.AF_INET6):
+            raise RuntimeError(
+                "Outbound network access is blocked in plugin tests "
+                "(Constitution §IV). Use a recorded fixture or "
+                "@pytest.mark.allow_network for the rare opt-out."
+            )
+        return _REAL_SOCKET(*args, **kwargs)
 
-    monkeypatch.setattr(socket, "socket", _blocked)
+    monkeypatch.setattr(socket, "socket", _maybe_block)
     yield
 
 
@@ -296,7 +339,12 @@ def pytest_configure(config: pytest.Config) -> None:
 '''
 
 _TEST_ADAPTER = '''# SPDX-License-Identifier: Apache-2.0
-"""Adapter happy-path + error-path tests for {name}."""
+"""Adapter happy-path + error-path tests for {name}.
+
+The scaffolded test passes out of the box because the adapter stub
+echoes the input deterministically. Replace these assertions with real
+ones once the adapter calls the upstream public API.
+"""
 
 from __future__ import annotations
 
@@ -314,8 +362,7 @@ async def test_adapter_happy_path() -> None:
     assert result["echo"] == "hello"
 
 
-@pytest.mark.asyncio
-async def test_adapter_error_path() -> None:
+def test_input_validation_rejects_empty_query() -> None:
     with pytest.raises(Exception):
         LookupInput(query="")
 '''

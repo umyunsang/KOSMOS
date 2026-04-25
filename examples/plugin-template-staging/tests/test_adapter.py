@@ -1,5 +1,10 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Adapter happy-path + error-path tests for my_plugin."""
+"""Adapter happy-path + error-path tests for my_plugin.
+
+The scaffolded test passes out of the box because the adapter stub
+echoes the input deterministically. Replace these assertions with real
+ones once the adapter calls the upstream public API.
+"""
 
 from __future__ import annotations
 
@@ -17,7 +22,6 @@ async def test_adapter_happy_path() -> None:
     assert result["echo"] == "hello"
 
 
-@pytest.mark.asyncio
-async def test_adapter_error_path() -> None:
+def test_input_validation_rejects_empty_query() -> None:
     with pytest.raises(Exception):
         LookupInput(query="")

@@ -12,6 +12,13 @@ from .schema import LookupInput, LookupOutput
 
 
 def _build_tool() -> Any:
+    """Construct the GovAPITool registry entry on first access.
+
+    Imported lazily so the scaffold's tests (which do not require the
+    KOSMOS host) can run without ``kosmos`` installed. The host triggers
+    construction at install time when reading the module-level ``TOOL``
+    attribute via PEP 562.
+    """
     from kosmos.tools.models import GovAPITool
 
     return GovAPITool(
@@ -35,7 +42,18 @@ def _build_tool() -> Any:
     )
 
 
-TOOL = _build_tool()
+_TOOL_CACHE: Any = None
+
+
+def __getattr__(name: str) -> Any:
+    """PEP 562: provide lazy module-level ``TOOL`` so this file imports
+    without ``kosmos`` being available (e.g. scaffold tests)."""
+    global _TOOL_CACHE
+    if name == "TOOL":
+        if _TOOL_CACHE is None:
+            _TOOL_CACHE = _build_tool()
+        return _TOOL_CACHE
+    raise AttributeError(name)
 
 
 async def adapter(payload: LookupInput) -> dict[str, Any]:
