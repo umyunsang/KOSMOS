@@ -1,5 +1,8 @@
 import { open, stat } from 'fs/promises'
-import { CLAUDE_CODE_GUIDE_AGENT_TYPE } from 'src/tools/AgentTool/built-in/claudeCodeGuideAgent.js'
+// Epic #1634 P3 T027: claudeCodeGuideAgent removed (CC-specific built-in agent
+// not citizen-facing). The CLAUDE_CODE_GUIDE_AGENT_TYPE constant was used in
+// the bundled debug skill's prompt template; replaced with a generic placeholder.
+const CLAUDE_CODE_GUIDE_AGENT_TYPE = 'kosmos-debug'
 import { getSettingsFilePathForSource } from 'src/utils/settings/settings.js'
 import { enableDebugLogging, getDebugLogPath } from '../../utils/debug.js'
 import { errorMessage, isENOENT } from '../../utils/errors.js'
