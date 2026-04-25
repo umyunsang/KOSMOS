@@ -335,6 +335,9 @@ export const DEFAULT_BINDINGS: KeybindingBlock[] = [
     bindings: {
       space: 'plugin:toggle',
       i: 'plugin:install',
+      // Spec 1635 P4 UI L2 — FR-031 plugin browser keybindings
+      r: 'plugin:remove',
+      a: 'plugin:marketplace',
     },
   },
 ]

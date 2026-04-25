@@ -59,6 +59,8 @@
     "lru-cache": "^11.3.5",
     "marked": "^18.0.2",
     "p-map": "^7.0.4",
+    "pdf-lib": "^1.17",
+    "pdf-to-img": "^4",
     "proper-lockfile": "^4.1.2",
     "qrcode": "^1.5.4",
     "react": "^19.2.0",

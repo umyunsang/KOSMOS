@@ -23,8 +23,8 @@
 
 **Purpose**: Add the two TS-only dependencies authorised in the Epic body and scaffold the new directory tree.
 
-- [ ] T001 Add `pdf-to-img` (Apache-2.0, FR-010) and `pdf-lib` (MIT, FR-032) to `tui/package.json` dependencies and run `bun install` from `tui/`
-- [ ] T002 Scaffold the new directory tree under `tui/src/`: `schemas/ui-l2/`, `observability/`, `components/{onboarding,messages,permissions,agents,help,config,plugins,export,history}/`, `context/`, plus `tui/tests/components/{onboarding,messages,permissions,agents,help,config,plugins,export,history}/` and `tui/tests/commands/`
+- [x] T001 Add `pdf-to-img` (Apache-2.0, FR-010) and `pdf-lib` (MIT, FR-032) to `tui/package.json` dependencies and run `bun install` from `tui/`
+- [x] T002 Scaffold the new directory tree under `tui/src/`: `schemas/ui-l2/`, `observability/`, `components/{onboarding,messages,permissions,agents,help,config,plugins,export,history}/`, `context/`, plus `tui/tests/components/{onboarding,messages,permissions,agents,help,config,plugins,export,history}/` and `tui/tests/commands/`
 
 ---
 
@@ -34,17 +34,17 @@
 
 **⚠️ CRITICAL**: No user-story work can begin until this phase is complete.
 
-- [ ] T003 [P] Define `OnboardingState` (data-model §1, FR-001/002) and `AccessibilityPreference` (data-model §5, FR-005) Zod schemas in `tui/src/schemas/ui-l2/onboarding.ts` and `tui/src/schemas/ui-l2/a11y.ts`
-- [ ] T004 [P] Define `PermissionReceipt` Zod schema in `tui/src/schemas/ui-l2/permission.ts` (data-model §2, FR-018) — include `PermissionLayer`, `PermissionDecision` enums + `rcpt-<id>` regex
-- [ ] T005 [P] Define `AgentVisibilityEntry` Zod schema and `shouldActivateSwarm` predicate in `tui/src/schemas/ui-l2/agent.ts` (data-model §3, FR-025/027) — A+C union semantics
-- [ ] T006 [P] Define `SlashCommandCatalogEntry` Zod schema in `tui/src/schemas/ui-l2/slash-command.ts` (data-model §4, FR-014/029) matching `contracts/slash-commands.schema.json`
-- [ ] T007 [P] Define `ErrorEnvelope` and `UfoMascotPose` Zod schemas in `tui/src/schemas/ui-l2/error.ts` and `tui/src/schemas/ui-l2/ufo.ts` (data-model §6/7, FR-012/035)
-- [ ] T008 [P] Memdir read/write helper with atomic-rename and version-tag fallback in `tui/src/utils/memdir.ts` for `~/.kosmos/memdir/user/onboarding/state.json` and `~/.kosmos/memdir/user/preferences/a11y.json` (memdir-paths.md, FR-002/005)
-- [ ] T009 [P] OTEL `kosmos.ui.surface` attribute emitter in `tui/src/observability/surface.ts` wrapping the existing Spec 021 emit path (FR-037, no new collector route per FR-038)
-- [ ] T010 Slash command catalog SSOT in `tui/src/commands/catalog.ts` seeded with all 12 commands from data-model §4 (FR-014/029) — depends on T006
-- [ ] T011 Keybinding additions in `tui/src/keybindings/defaultBindings.ts` for Ctrl-O / Shift+Tab / `/` / Y/A/N / Space/i/r/a (FR-009/014/017/022/031) matching `contracts/keybindings.schema.json` — IME safety check (`!useKoreanIME().isComposing`) on every input-mutating binding per `vision.md § Keyboard-shortcut migration`
-- [ ] T012 [P] Korean i18n keys for onboarding / error / a11y / help / config / plugins / export / history in `tui/src/i18n/ko.ts` (FR-004 primary)
-- [ ] T013 [P] English fallback i18n keys mirroring T012 in `tui/src/i18n/en.ts` (FR-004 fallback)
+- [x] T003 [P] Define `OnboardingState` (data-model §1, FR-001/002) and `AccessibilityPreference` (data-model §5, FR-005) Zod schemas in `tui/src/schemas/ui-l2/onboarding.ts` and `tui/src/schemas/ui-l2/a11y.ts`
+- [x] T004 [P] Define `PermissionReceipt` Zod schema in `tui/src/schemas/ui-l2/permission.ts` (data-model §2, FR-018) — include `PermissionLayer`, `PermissionDecision` enums + `rcpt-<id>` regex
+- [x] T005 [P] Define `AgentVisibilityEntry` Zod schema and `shouldActivateSwarm` predicate in `tui/src/schemas/ui-l2/agent.ts` (data-model §3, FR-025/027) — A+C union semantics
+- [x] T006 [P] Define `SlashCommandCatalogEntry` Zod schema in `tui/src/schemas/ui-l2/slash-command.ts` (data-model §4, FR-014/029) matching `contracts/slash-commands.schema.json`
+- [x] T007 [P] Define `ErrorEnvelope` and `UfoMascotPose` Zod schemas in `tui/src/schemas/ui-l2/error.ts` and `tui/src/schemas/ui-l2/ufo.ts` (data-model §6/7, FR-012/035)
+- [x] T008 [P] Memdir read/write helper with atomic-rename and version-tag fallback in `tui/src/utils/memdir.ts` for `~/.kosmos/memdir/user/onboarding/state.json` and `~/.kosmos/memdir/user/preferences/a11y.json` (memdir-paths.md, FR-002/005)
+- [x] T009 [P] OTEL `kosmos.ui.surface` attribute emitter in `tui/src/observability/surface.ts` wrapping the existing Spec 021 emit path (FR-037, no new collector route per FR-038)
+- [x] T010 Slash command catalog SSOT in `tui/src/commands/catalog.ts` seeded with all 12 commands from data-model §4 (FR-014/029) — depends on T006
+- [x] T011 Keybinding additions in `tui/src/keybindings/defaultBindings.ts` for Ctrl-O / Shift+Tab / `/` / Y/A/N / Space/i/r/a (FR-009/014/017/022/031) matching `contracts/keybindings.schema.json` — IME safety check (`!useKoreanIME().isComposing`) on every input-mutating binding per `vision.md § Keyboard-shortcut migration`
+- [x] T012 [P] Korean i18n keys for onboarding / error / a11y / help / config / plugins / export / history in `tui/src/i18n/ko.ts` (FR-004 primary)
+- [x] T013 [P] English fallback i18n keys mirroring T012 in `tui/src/i18n/en.ts` (FR-004 fallback)
 
 **Checkpoint**: Schemas, catalog, keybindings, i18n, memdir, and OTEL helpers are in place. User-story phases may now proceed in parallel.
 
