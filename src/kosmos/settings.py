@@ -160,6 +160,76 @@ class KosmosSettings(BaseSettings):
             )
         return v
 
+    # --- Plugin DX (Epic #1636 P5; data-model.md storage layout) ---
+    plugin_install_root: Path = Field(
+        default_factory=lambda: Path.home() / ".kosmos" / "memdir" / "user" / "plugins",
+    )
+    """Root directory holding installed plugin bundles (KOSMOS_PLUGIN_INSTALL_ROOT).
+
+    One sub-directory per ``plugin_id`` containing the validated bundle (manifest.yaml,
+    adapter.py, schema.py, tests/, .signature/).  ``index.json`` cached catalog
+    snapshot lives here for offline ``kosmos plugin list``.  Must be an absolute path.
+    Default: ``~/.kosmos/memdir/user/plugins`` (sibling of Spec 035 consent ledger).
+    """
+
+    plugin_bundle_cache: Path = Field(
+        default_factory=lambda: Path.home() / ".kosmos" / "cache" / "plugin-bundles",
+    )
+    """Forensic cache for downloaded bundles (KOSMOS_PLUGIN_BUNDLE_CACHE).
+
+    Bundles are retained on failed verification so an operator can inspect the
+    artifact without re-downloading.  Must be an absolute path.
+    Default: ``~/.kosmos/cache/plugin-bundles``.
+    """
+
+    plugin_vendor_root: Path = Field(
+        default_factory=lambda: Path.home() / ".kosmos" / "vendor",
+    )
+    """Vendored helper binaries root (KOSMOS_PLUGIN_VENDOR_ROOT).
+
+    Houses platform-specific ``slsa-verifier`` binaries written by
+    ``scripts/bootstrap_slsa_verifier.sh`` on first install (R-3).  Must be an
+    absolute path.  Default: ``~/.kosmos/vendor``.
+    """
+
+    plugin_slsa_skip: bool = Field(default=False)
+    """Opt-in dev flag to skip SLSA provenance verification (KOSMOS_PLUGIN_SLSA_SKIP).
+
+    Off by default (fail-closed per Constitution §II).  Setting to True writes
+    ``slsa_verification="skipped"`` to the consent receipt and surfaces a banner
+    in the install UI.  Forbidden in production environments — CI gate enforces
+    via release-manifest workflow.
+    """
+
+    plugin_catalog_url: str = Field(
+        default=(
+            "https://raw.githubusercontent.com/kosmos-plugin-store/index/main/index.json"
+        ),
+    )
+    """Plugin catalog URL (KOSMOS_PLUGIN_CATALOG_URL).
+
+    Resolves ``kosmos plugin install <name>`` against the curated index. Override
+    to a ``file://`` URL in tests so the install integration test can use a fake
+    catalog without network access.
+    Default: the kosmos-plugin-store/index repo's main branch.
+    """
+
+    @field_validator(
+        "plugin_install_root",
+        "plugin_bundle_cache",
+        "plugin_vendor_root",
+        mode="after",
+    )
+    @classmethod
+    def _plugin_paths_must_be_absolute(cls, v: Path) -> Path:
+        """Reject relative paths for KOSMOS_PLUGIN_* path env vars (Epic #1636)."""
+        if not v.is_absolute():
+            raise ValueError(
+                f"plugin path must be absolute, got: {v!r}. "
+                "Set the matching KOSMOS_PLUGIN_*_ROOT/CACHE env var to an absolute path."
+            )
+        return v
+
 
 settings: KosmosSettings = KosmosSettings()
 """Module-level singleton.  Import this directly in production code."""
