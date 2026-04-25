@@ -1,23 +1,503 @@
 # SPDX-License-Identifier: Apache-2.0
-# Spec 1636 P5 Plugin DX — T004 placeholder.
 #
-# This file is the canonical source-of-truth for the 50-item review checklist
-# (Tier 4 / FR-013). Full content is generated in T037 from the derivation in
-# specs/1636-plugin-dx-5tier/research.md § R-1.
+# 50-item plugin review checklist — source-of-truth.
+# Per research § R-1, the workflow at .github/workflows/plugin-validation.yml
+# iterates this manifest to build its job matrix; the human-readable
+# rendering at docs/plugins/review-checklist.md is generated FROM this file
+# (scripts/render_checklist.py). The Python validator at
+# src/kosmos/plugins/checks/framework.py:run_all_checks loads + validates
+# every row before invoking each check.
 #
-# Schema: each entry is a row of ReviewChecklistItem per
-# specs/1636-plugin-dx-5tier/data-model.md § 3:
-#
-#   - id: Q1-PYV2
-#     description_ko: ...
-#     description_en: ...
-#     source_rule: Constitution §III
-#     check_type: static | unit | workflow
-#     check_implementation: kosmos.plugins.checks.q1_schema:check_pydantic_v2
-#     failure_message_ko: ...
-#     failure_message_en: ...
-#
-# Meta-CI invariant: row count MUST equal exactly 50 once T037 lands; CI fails
-# if the count drifts (verifies SC-002).
+# Total rows: 50 (Q1=10, Q2=6, Q3=5, Q4=8, Q5=3, Q6=4, Q7=5, Q8=3, Q9=2, Q10=4).
+# CI integrity step (T051) asserts row count == 50 and that every
+# check_implementation dotted path resolves to an importable function.
 
-[]
+# ---------------------------------------------------------------------------
+# Q1 — Schema integrity (10)
+# ---------------------------------------------------------------------------
+
+- id: Q1-PYV2
+  description_ko: "Pydantic v2 BaseModel 사용"
+  description_en: "Pydantic v2 BaseModel"
+  source_rule: "Constitution §III"
+  check_type: static
+  check_implementation: "kosmos.plugins.checks.q1_schema:check_pyv2"
+  failure_message_ko: "schema.py 가 Pydantic v2 BaseModel 을 import 하고 사용해야 합니다."
+  failure_message_en: "schema.py must import and subclass Pydantic v2 BaseModel."
+
+- id: Q1-NOANY
+  description_ko: "`Any` 타입 금지"
+  description_en: "No `Any` types"
+  source_rule: "Constitution §III"
+  check_type: static
+  check_implementation: "kosmos.plugins.checks.q1_schema:check_noany"
+  failure_message_ko: "schema.py 에서 'Any' 타입을 사용할 수 없습니다 — 명시적 타입을 선언하세요."
+  failure_message_en: "schema.py must not use the `Any` type — declare explicit types."
+
+- id: Q1-FIELD-DESC
+  description_ko: "모든 Field 에 description"
+  description_en: "Every Field has `description=`"
+  source_rule: "Spec 019 input discipline"
+  check_type: static
+  check_implementation: "kosmos.plugins.checks.q1_schema:check_field_desc"
+  failure_message_ko: "모든 Field(...) 호출에 description= kwarg 를 추가하세요."
+  failure_message_en: "Every Field(...) call must include the description= kwarg."
+
+- id: Q1-INPUT-MODEL
+  description_ko: "input_schema 클래스 존재"
+  description_en: "input_schema class present"
+  source_rule: "docs/tool-adapters.md"
+  check_type: static
+  check_implementation: "kosmos.plugins.checks.q1_schema:check_input_model"
+  failure_message_ko: "schema.py 에 LookupInput / SubmitInput / VerifyInput / SubscribeInput 중 하나가 필요합니다."
+  failure_message_en: "schema.py must define one of LookupInput / SubmitInput / VerifyInput / SubscribeInput."
+
+- id: Q1-OUTPUT-MODEL
+  description_ko: "output_schema 클래스 존재"
+  description_en: "output_schema class present"
+  source_rule: "docs/tool-adapters.md"
+  check_type: static
+  check_implementation: "kosmos.plugins.checks.q1_schema:check_output_model"
+  failure_message_ko: "schema.py 에 LookupOutput / SubmitOutput / VerifyOutput / SubscribeOutput 중 하나가 필요합니다."
+  failure_message_en: "schema.py must define one of LookupOutput / SubmitOutput / VerifyOutput / SubscribeOutput."
+
+- id: Q1-MANIFEST-VALID
+  description_ko: "manifest.yaml 이 PluginManifest 검증 통과"
+  description_en: "manifest.yaml validates against PluginManifest"
+  source_rule: "FR-019"
+  check_type: unit
+  check_implementation: "kosmos.plugins.checks.q1_schema:check_manifest_valid"
+  failure_message_ko: "manifest.yaml 이 PluginManifest 스키마 검증에 실패했습니다."
+  failure_message_en: "manifest.yaml does not validate as PluginManifest."
+
+- id: Q1-FROZEN
+  description_ko: "model_config(frozen=True) 선언"
+  description_en: "model_config(frozen=True)"
+  source_rule: "Spec 027/032 pattern"
+  check_type: static
+  check_implementation: "kosmos.plugins.checks.q1_schema:check_frozen"
+  failure_message_ko: "schema.py 의 model_config 에 frozen=True 가 필요합니다."
+  failure_message_en: "schema.py model_config must include frozen=True."
+
+- id: Q1-EXTRA-FORBID
+  description_ko: "model_config(extra=...) 명시"
+  description_en: "model_config(extra=...) declared"
+  source_rule: "Spec 024 V1"
+  check_type: static
+  check_implementation: "kosmos.plugins.checks.q1_schema:check_extra_forbid"
+  failure_message_ko: "schema.py 의 model_config 에 extra='forbid' 또는 'allow' 를 명시하세요."
+  failure_message_en: "schema.py model_config must declare extra='forbid' or 'allow' explicitly."
+
+- id: Q1-VERSION-SEMVER
+  description_ko: "version 이 SemVer 형식"
+  description_en: "version is SemVer"
+  source_rule: "FR-019"
+  check_type: unit
+  check_implementation: "kosmos.plugins.checks.q1_schema:check_version_semver"
+  failure_message_ko: "manifest.version 은 N.N.N 형식이어야 합니다."
+  failure_message_en: "manifest.version must follow N.N.N SemVer."
+
+- id: Q1-PLUGIN-ID-REGEX
+  description_ko: "plugin_id 가 snake_case [a-z][a-z0-9_]*"
+  description_en: "plugin_id matches snake_case regex"
+  source_rule: "Spec 022 tool_id pattern"
+  check_type: unit
+  check_implementation: "kosmos.plugins.checks.q1_schema:check_plugin_id_regex"
+  failure_message_ko: "plugin_id 는 ^[a-z][a-z0-9_]*$ 와 일치해야 합니다."
+  failure_message_en: "plugin_id must match ^[a-z][a-z0-9_]*$."
+
+# ---------------------------------------------------------------------------
+# Q2 — Fail-closed defaults (6)
+# ---------------------------------------------------------------------------
+
+- id: Q2-AUTH-DEFAULT
+  description_ko: "requires_auth 기본 True"
+  description_en: "requires_auth default True"
+  source_rule: "Constitution §II"
+  check_type: unit
+  check_implementation: "kosmos.plugins.checks.q2_failclosed:check_auth_default"
+  failure_message_ko: "requires_auth=True 가 fail-closed default 입니다 — 변경 시 명시적 사유가 필요합니다."
+  failure_message_en: "requires_auth=True is the fail-closed default — explicit override required."
+
+- id: Q2-PII-DEFAULT
+  description_ko: "is_personal_data 와 processes_pii 일치"
+  description_en: "is_personal_data matches processes_pii"
+  source_rule: "Constitution §II"
+  check_type: unit
+  check_implementation: "kosmos.plugins.checks.q2_failclosed:check_pii_default"
+  failure_message_ko: "adapter.is_personal_data 와 manifest.processes_pii 가 일치해야 합니다."
+  failure_message_en: "adapter.is_personal_data and manifest.processes_pii must agree."
+
+- id: Q2-CONCURRENCY-DEFAULT
+  description_ko: "is_concurrency_safe / is_irreversible 모순 없음"
+  description_en: "is_concurrency_safe and is_irreversible are not contradictory"
+  source_rule: "Constitution §II"
+  check_type: unit
+  check_implementation: "kosmos.plugins.checks.q2_failclosed:check_concurrency_default"
+  failure_message_ko: "is_concurrency_safe=True 와 is_irreversible=True 는 동시 선언할 수 없습니다."
+  failure_message_en: "is_concurrency_safe=True and is_irreversible=True cannot both be set."
+
+- id: Q2-CACHE-DEFAULT
+  description_ko: "cache_ttl_seconds ≥ 0"
+  description_en: "cache_ttl_seconds ≥ 0"
+  source_rule: "Constitution §II"
+  check_type: unit
+  check_implementation: "kosmos.plugins.checks.q2_failclosed:check_cache_default"
+  failure_message_ko: "cache_ttl_seconds 는 음수일 수 없습니다."
+  failure_message_en: "cache_ttl_seconds must not be negative."
+
+- id: Q2-RATE-LIMIT-CONSERVATIVE
+  description_ko: "rate_limit_per_minute ≤ 30"
+  description_en: "rate_limit_per_minute ≤ 30"
+  source_rule: "docs/tool-adapters.md guidance"
+  check_type: unit
+  check_implementation: "kosmos.plugins.checks.q2_failclosed:check_rate_limit_conservative"
+  failure_message_ko: "rate_limit_per_minute 는 30 이하 권장 (보수적 default)."
+  failure_message_en: "rate_limit_per_minute should be ≤ 30 (conservative default)."
+
+- id: Q2-AUTH-EXPLICIT
+  description_ko: "auth_level / pipa_class / dpa_reference 명시"
+  description_en: "auth_level / pipa_class / dpa_reference explicitly declared"
+  source_rule: "Spec 024 + docs/tool-adapters.md"
+  check_type: unit
+  check_implementation: "kosmos.plugins.checks.q2_failclosed:check_auth_explicit"
+  failure_message_ko: "Spec 024 필수 필드 (auth_level / pipa_class / dpa_reference) 를 명시하세요."
+  failure_message_en: "Spec 024 required fields (auth_level / pipa_class / dpa_reference) must be set."
+
+# ---------------------------------------------------------------------------
+# Q3 — Security V1–V6 invariants (5)
+# ---------------------------------------------------------------------------
+
+- id: Q3-V1-NO-EXTRA
+  description_ko: "manifest 에 정의되지 않은 키 금지"
+  description_en: "no unknown keys in manifest"
+  source_rule: "Spec 024 V1"
+  check_type: unit
+  check_implementation: "kosmos.plugins.checks.q3_security:check_v1_no_extra"
+  failure_message_ko: "manifest.yaml 에 PluginManifest 에 정의되지 않은 키가 있습니다."
+  failure_message_en: "manifest.yaml contains keys not defined on PluginManifest."
+
+- id: Q3-V2-DPA
+  description_ko: "pipa_class != non_personal ⇒ dpa_reference 비어 있지 않음"
+  description_en: "pipa_class != non_personal ⇒ dpa_reference non-null"
+  source_rule: "Spec 024 V2"
+  check_type: unit
+  check_implementation: "kosmos.plugins.checks.q3_security:check_v2_dpa"
+  failure_message_ko: "pipa_class 가 non_personal 이 아니면 dpa_reference 가 필요합니다."
+  failure_message_en: "pipa_class != non_personal requires non-null dpa_reference."
+
+- id: Q3-V3-AAL-MATCH
+  description_ko: "auth_level 이 TOOL_MIN_AAL 과 일치"
+  description_en: "auth_level matches TOOL_MIN_AAL row"
+  source_rule: "Spec 024 V3"
+  check_type: unit
+  check_implementation: "kosmos.plugins.checks.q3_security:check_v3_aal_match"
+  failure_message_ko: "auth_level 이 TOOL_MIN_AAL[tool_id] 와 일치해야 합니다."
+  failure_message_en: "auth_level must match TOOL_MIN_AAL[tool_id]."
+
+- id: Q3-V4-IRREVERSIBLE-AAL
+  description_ko: "is_irreversible=True ⇒ auth_level ≥ AAL2"
+  description_en: "is_irreversible=True ⇒ auth_level ≥ AAL2"
+  source_rule: "Spec 024 V4"
+  check_type: unit
+  check_implementation: "kosmos.plugins.checks.q3_security:check_v4_irreversible_aal"
+  failure_message_ko: "is_irreversible=True 인 어댑터는 auth_level ≥ AAL2 가 필요합니다."
+  failure_message_en: "is_irreversible=True adapter requires auth_level ≥ AAL2."
+
+- id: Q3-V6-AUTH-LEVEL-MAP
+  description_ko: "auth_type ↔ auth_level 허용 매핑"
+  description_en: "auth_type ↔ auth_level allow-list"
+  source_rule: "Spec 025 V6"
+  check_type: unit
+  check_implementation: "kosmos.plugins.checks.q3_security:check_v6_auth_level_map"
+  failure_message_ko: "auth_type 과 auth_level 조합이 _AUTH_TYPE_LEVEL_MAPPING 에 없습니다."
+  failure_message_en: "(auth_type, auth_level) pair is outside the canonical allow-list."
+
+# ---------------------------------------------------------------------------
+# Q4 — Discovery & docs (8)
+# ---------------------------------------------------------------------------
+
+- id: Q4-HINT-KO
+  description_ko: "search_hint_ko 비어 있지 않음"
+  description_en: "search_hint_ko non-empty"
+  source_rule: "docs/tool-adapters.md"
+  check_type: unit
+  check_implementation: "kosmos.plugins.checks.q4_discovery:check_hint_ko"
+  failure_message_ko: "search_hint_ko 가 비어 있습니다."
+  failure_message_en: "search_hint_ko is empty."
+
+- id: Q4-HINT-EN
+  description_ko: "search_hint_en 비어 있지 않음"
+  description_en: "search_hint_en non-empty"
+  source_rule: "docs/tool-adapters.md"
+  check_type: unit
+  check_implementation: "kosmos.plugins.checks.q4_discovery:check_hint_en"
+  failure_message_ko: "search_hint_en 이 비어 있습니다."
+  failure_message_en: "search_hint_en is empty."
+
+- id: Q4-HINT-NOUNS
+  description_ko: "search_hint_ko 한국어 명사 ≥ 3 개"
+  description_en: "search_hint_ko ≥ 3 Korean nouns"
+  source_rule: "docs/tool-adapters.md guidance"
+  check_type: unit
+  check_implementation: "kosmos.plugins.checks.q4_discovery:check_hint_nouns"
+  failure_message_ko: "search_hint_ko 에 한국어 명사 3개 이상 포함을 권장합니다 (BM25 검색 품질)."
+  failure_message_en: "search_hint_ko should include ≥ 3 Korean nouns for BM25 quality."
+
+- id: Q4-HINT-MINISTRY
+  description_ko: "search_hint_ko 에 부처 / 기관 이름 포함"
+  description_en: "search_hint_ko mentions ministry / agency name"
+  source_rule: "docs/tool-adapters.md"
+  check_type: unit
+  check_implementation: "kosmos.plugins.checks.q4_discovery:check_hint_ministry"
+  failure_message_ko: "search_hint_ko 에 부처 / 기관 / 지자체 이름 포함을 권장합니다."
+  failure_message_en: "search_hint_ko should mention a ministry / agency / city."
+
+- id: Q4-NAME-KO
+  description_ko: "search_hint_ko 에 한국어 텍스트 포함"
+  description_en: "search_hint_ko includes Korean script"
+  source_rule: "docs/tool-adapters.md"
+  check_type: unit
+  check_implementation: "kosmos.plugins.checks.q4_discovery:check_name_ko"
+  failure_message_ko: "search_hint_ko 에 한국어 문자가 없습니다."
+  failure_message_en: "search_hint_ko contains no Korean characters."
+
+- id: Q4-CITE
+  description_ko: "README.ko.md 에 참조 URL 1개 이상"
+  description_en: "README.ko.md cites at least one URL"
+  source_rule: "Constitution §I + FR-007"
+  check_type: static
+  check_implementation: "kosmos.plugins.checks.q4_discovery:check_cite"
+  failure_message_ko: "README.ko.md 에 외부 참조 URL 을 1개 이상 포함하세요."
+  failure_message_en: "README.ko.md must cite at least one external reference URL."
+
+- id: Q4-README-KO
+  description_ko: "README.ko.md 파일 존재"
+  description_en: "README.ko.md present"
+  source_rule: "FR-001 / FR-010"
+  check_type: static
+  check_implementation: "kosmos.plugins.checks.q4_discovery:check_readme_ko"
+  failure_message_ko: "README.ko.md 파일이 없습니다."
+  failure_message_en: "README.ko.md is missing."
+
+- id: Q4-README-MIN-LEN
+  description_ko: "README.ko.md ≥ 500 자"
+  description_en: "README.ko.md ≥ 500 chars"
+  source_rule: "Author-effort floor"
+  check_type: static
+  check_implementation: "kosmos.plugins.checks.q4_discovery:check_readme_min_len"
+  failure_message_ko: "README.ko.md 가 500 자 미만입니다."
+  failure_message_en: "README.ko.md is shorter than 500 chars."
+
+# ---------------------------------------------------------------------------
+# Q5 — Permission tier (3)
+# ---------------------------------------------------------------------------
+
+- id: Q5-LAYER-DECLARED
+  description_ko: "permission_layer ∈ {1, 2, 3}"
+  description_en: "permission_layer in {1, 2, 3}"
+  source_rule: "Spec 033"
+  check_type: unit
+  check_implementation: "kosmos.plugins.checks.q5_permission:check_layer_declared"
+  failure_message_ko: "permission_layer 는 1 / 2 / 3 중 하나여야 합니다."
+  failure_message_en: "permission_layer must be one of {1, 2, 3}."
+
+- id: Q5-LAYER-MATCHES-PII
+  description_ko: "processes_pii=True ⇒ permission_layer ≥ 2"
+  description_en: "processes_pii=True ⇒ permission_layer ≥ 2"
+  source_rule: "Spec 033"
+  check_type: unit
+  check_implementation: "kosmos.plugins.checks.q5_permission:check_layer_matches_pii"
+  failure_message_ko: "PII 를 처리하는 어댑터는 permission_layer ≥ 2 가 필요합니다."
+  failure_message_en: "PII-handling adapters require permission_layer ≥ 2."
+
+- id: Q5-LAYER-DOC
+  description_ko: "README.ko.md 에 layer 근거 설명"
+  description_en: "README.ko.md explains layer rationale"
+  source_rule: "FR-010"
+  check_type: static
+  check_implementation: "kosmos.plugins.checks.q5_permission:check_layer_doc"
+  failure_message_ko: "README.ko.md 에 선택한 permission_layer 의 근거를 설명하세요."
+  failure_message_en: "README.ko.md must explain the chosen permission_layer."
+
+# ---------------------------------------------------------------------------
+# Q6 — PIPA §26 trustee (4) — owned by Phase 5 T035
+# ---------------------------------------------------------------------------
+
+- id: Q6-PIPA-PRESENT
+  description_ko: "processes_pii=True ⇒ pipa_trustee_acknowledgment 블록 존재"
+  description_en: "block present when processes_pii=True"
+  source_rule: "FR-014 + Constitution §V"
+  check_type: unit
+  check_implementation: "kosmos.plugins.checks.q6_pipa:check_pipa_present"
+  failure_message_ko: "processes_pii=True 일 때 pipa_trustee_acknowledgment 블록이 필수입니다."
+  failure_message_en: "processes_pii=True requires the pipa_trustee_acknowledgment block."
+
+- id: Q6-PIPA-HASH
+  description_ko: "acknowledgment_sha256 == canonical SHA-256"
+  description_en: "acknowledgment_sha256 matches canonical hash"
+  source_rule: "FR-014"
+  check_type: unit
+  check_implementation: "kosmos.plugins.checks.q6_pipa:check_pipa_hash"
+  failure_message_ko: "acknowledgment_sha256 가 canonical 텍스트의 SHA-256 과 일치하지 않습니다."
+  failure_message_en: "acknowledgment_sha256 does not match the canonical text hash."
+
+- id: Q6-PIPA-ORG
+  description_ko: "trustee_org_name + trustee_contact 비어 있지 않음"
+  description_en: "trustee_org + contact non-empty"
+  source_rule: "FR-014"
+  check_type: unit
+  check_implementation: "kosmos.plugins.checks.q6_pipa:check_pipa_org"
+  failure_message_ko: "trustee_org_name 과 trustee_contact 가 비어 있을 수 없습니다."
+  failure_message_en: "trustee_org_name and trustee_contact must not be empty."
+
+- id: Q6-PIPA-FIELDS-LIST
+  description_ko: "pii_fields_handled 1개 이상"
+  description_en: "pii_fields_handled non-empty list"
+  source_rule: "FR-014"
+  check_type: unit
+  check_implementation: "kosmos.plugins.checks.q6_pipa:check_pipa_fields_list"
+  failure_message_ko: "pii_fields_handled 는 1개 이상이어야 합니다."
+  failure_message_en: "pii_fields_handled must contain at least one entry."
+
+# ---------------------------------------------------------------------------
+# Q7 — Tier classification + mocking discipline (5)
+# ---------------------------------------------------------------------------
+
+- id: Q7-TIER-LITERAL
+  description_ko: "tier ∈ {live, mock}"
+  description_en: "tier in {live, mock}"
+  source_rule: "FR-019"
+  check_type: unit
+  check_implementation: "kosmos.plugins.checks.q7_tier:check_tier_literal"
+  failure_message_ko: "tier 는 'live' 또는 'mock' 중 하나여야 합니다."
+  failure_message_en: "tier must be 'live' or 'mock'."
+
+- id: Q7-MOCK-SOURCE
+  description_ko: "tier=mock ⇒ mock_source_spec 비어 있지 않음"
+  description_en: "tier=mock ⇒ mock_source_spec non-empty"
+  source_rule: "FR-019 + memory feedback_mock_evidence_based"
+  check_type: unit
+  check_implementation: "kosmos.plugins.checks.q7_tier:check_mock_source"
+  failure_message_ko: "tier=mock 어댑터는 mock_source_spec 에 출처를 명시해야 합니다."
+  failure_message_en: "tier=mock adapter must declare mock_source_spec."
+
+- id: Q7-LIVE-USES-NETWORK
+  description_ko: "tier=live 어댑터는 httpx / aiohttp / requests 중 하나 import"
+  description_en: "tier=live adapter imports httpx / aiohttp / requests"
+  source_rule: "Heuristic from feedback_mock_evidence_based"
+  check_type: static
+  check_implementation: "kosmos.plugins.checks.q7_tier:check_live_uses_network"
+  failure_message_ko: "tier=live 어댑터에서 HTTP 클라이언트 (httpx 등) import 가 필요합니다."
+  failure_message_en: "tier=live adapter must import an HTTP client (httpx etc.)."
+
+- id: Q7-MOCK-NO-EGRESS
+  description_ko: "tier=mock 어댑터는 HTTP 클라이언트 import 금지"
+  description_en: "tier=mock adapter must not import HTTP clients"
+  source_rule: "Constitution §IV"
+  check_type: static
+  check_implementation: "kosmos.plugins.checks.q7_tier:check_mock_no_egress"
+  failure_message_ko: "tier=mock 어댑터는 httpx / aiohttp / requests 를 import 할 수 없습니다."
+  failure_message_en: "tier=mock adapter must not import httpx / aiohttp / requests."
+
+- id: Q7-LIVE-FIXTURE
+  description_ko: "tests/fixtures/ 에 *.json 1개 이상"
+  description_en: "tests/fixtures/ has at least one *.json"
+  source_rule: "Constitution §IV"
+  check_type: static
+  check_implementation: "kosmos.plugins.checks.q7_tier:check_live_fixture"
+  failure_message_ko: "tests/fixtures/ 에 recorded fixture (*.json) 1개 이상 필요합니다."
+  failure_message_en: "tests/fixtures/ must contain at least one recorded fixture (*.json)."
+
+# ---------------------------------------------------------------------------
+# Q8 — Reserved-name & namespace (3)
+# ---------------------------------------------------------------------------
+
+- id: Q8-NAMESPACE
+  description_ko: "tool_id 가 plugin.<id>.<verb> 형식"
+  description_en: "tool_id matches plugin.<id>.<verb>"
+  source_rule: "FR-022 + migration tree § L1-C C7"
+  check_type: unit
+  check_implementation: "kosmos.plugins.checks.q8_namespace:check_namespace"
+  failure_message_ko: "tool_id 는 plugin.<plugin_id>.<verb> 형식이어야 합니다."
+  failure_message_en: "tool_id must match plugin.<plugin_id>.<verb>."
+
+- id: Q8-NO-ROOT-OVERRIDE
+  description_ko: "tool_id verb 가 host 예약 (resolve_location) 과 충돌 안 함"
+  description_en: "tool_id verb is not a host-reserved primitive"
+  source_rule: "FR-022"
+  check_type: unit
+  check_implementation: "kosmos.plugins.checks.q8_namespace:check_no_root_override"
+  failure_message_ko: "resolve_location 등 host 예약 verb 는 plugin 이 override 할 수 없습니다."
+  failure_message_en: "host-reserved verbs (e.g. resolve_location) cannot be plugin-overridden."
+
+- id: Q8-VERB-IN-PRIMITIVES
+  description_ko: "verb ∈ 4 root primitive (lookup/submit/verify/subscribe)"
+  description_en: "verb is one of 4 root primitives"
+  source_rule: "FR-004 + migration tree § L1-C C1"
+  check_type: unit
+  check_implementation: "kosmos.plugins.checks.q8_namespace:check_verb_in_primitives"
+  failure_message_ko: "verb 는 lookup / submit / verify / subscribe 중 하나여야 합니다."
+  failure_message_en: "verb must be one of lookup / submit / verify / subscribe."
+
+# ---------------------------------------------------------------------------
+# Q9 — OTEL emission (2)
+# ---------------------------------------------------------------------------
+
+- id: Q9-OTEL-ATTR
+  description_ko: "otel_attributes['kosmos.plugin.id'] = plugin_id"
+  description_en: "otel_attributes['kosmos.plugin.id'] = plugin_id"
+  source_rule: "FR-021 + Spec 021"
+  check_type: unit
+  check_implementation: "kosmos.plugins.checks.q9_otel:check_otel_attr"
+  failure_message_ko: "otel_attributes['kosmos.plugin.id'] 가 plugin_id 와 일치해야 합니다."
+  failure_message_en: "otel_attributes['kosmos.plugin.id'] must equal plugin_id."
+
+- id: Q9-OTEL-EMIT
+  description_ko: "kosmos.plugin.install span 에 attribute 가 실제로 emit 됨"
+  description_en: "kosmos.plugin.install span actually emits attribute"
+  source_rule: "FR-021"
+  check_type: unit
+  check_implementation: "kosmos.plugins.checks.q9_otel:check_otel_emit"
+  failure_message_ko: "OTEL 발산 경로에서 kosmos.plugin.id attribute 가 attach 되지 않음."
+  failure_message_en: "OTEL emission path does not attach kosmos.plugin.id."
+
+# ---------------------------------------------------------------------------
+# Q10 — Tests & fixtures (4)
+# ---------------------------------------------------------------------------
+
+- id: Q10-HAPPY-PATH
+  description_ko: "happy-path 테스트 1개 이상"
+  description_en: "≥ 1 happy-path test"
+  source_rule: "docs/tool-adapters.md"
+  check_type: unit
+  check_implementation: "kosmos.plugins.checks.q10_tests:check_happy_path"
+  failure_message_ko: "tests/ 에 test_* 함수 1개 이상이 필요합니다."
+  failure_message_en: "tests/ must contain at least one test_* function."
+
+- id: Q10-ERROR-PATH
+  description_ko: "error-path 테스트 1개 이상 (pytest.raises 포함)"
+  description_en: "≥ 1 error-path test (uses pytest.raises)"
+  source_rule: "docs/tool-adapters.md"
+  check_type: unit
+  check_implementation: "kosmos.plugins.checks.q10_tests:check_error_path"
+  failure_message_ko: "tests/ 에 pytest.raises(...) 를 사용하는 error-path 테스트가 필요합니다."
+  failure_message_en: "tests/ must include an error-path test using pytest.raises(...)."
+
+- id: Q10-FIXTURE-EXISTS
+  description_ko: "tests/fixtures/*.json 이 valid JSON"
+  description_en: "tests/fixtures/*.json files are valid JSON"
+  source_rule: "docs/tool-adapters.md"
+  check_type: unit
+  check_implementation: "kosmos.plugins.checks.q10_tests:check_fixture_exists"
+  failure_message_ko: "tests/fixtures/*.json 중 valid JSON 이 아닌 파일이 있습니다."
+  failure_message_en: "one or more tests/fixtures/*.json is not valid JSON."
+
+- id: Q10-NO-LIVE-IN-CI
+  description_ko: "@pytest.mark.live 마커가 live-only 테스트에 부착"
+  description_en: "live-only tests are gated by @pytest.mark.live"
+  source_rule: "Constitution §IV"
+  check_type: unit
+  check_implementation: "kosmos.plugins.checks.q10_tests:check_no_live_in_ci"
+  failure_message_ko: "live-only 테스트는 @pytest.mark.live 마커로 격리되어야 합니다."
+  failure_message_en: "live-only tests must be gated by @pytest.mark.live."

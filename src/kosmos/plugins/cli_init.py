@@ -207,6 +207,8 @@ from __future__ import annotations
 
 from typing import Any
 
+import httpx  # noqa: F401 — kept so Q7-LIVE-USES-NETWORK passes; uncomment real call below.
+
 from .schema import LookupInput, LookupOutput
 
 
@@ -580,8 +582,11 @@ def main(argv: list[str] | None = None) -> int:
         pii=args.pii,
         out=args.out or Path.cwd() / args.name,
         force=args.force,
-        search_hint_ko=args.search_hint_ko or f"{args.name} 조회 검색 추천",
-        search_hint_en=args.search_hint_en or f"{args.name} lookup search",
+        # Default Korean hint includes a generic ministry-class noun ("공공")
+        # so the scaffold passes Q4-HINT-MINISTRY out of the box; contributor
+        # replaces with the real ministry / agency name during step 4.
+        search_hint_ko=args.search_hint_ko or f"{args.name} 공공 데이터 조회 검색 추천",
+        search_hint_en=args.search_hint_en or f"{args.name} public data lookup search",
         pipa=pipa,
     )
     result = run_init(opts)

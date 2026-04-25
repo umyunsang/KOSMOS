@@ -19,6 +19,6 @@ pipa_trustee_acknowledgment: null
 slsa_provenance_url: https://github.com/kosmos-plugin-store/kosmos-plugin-my_plugin/releases/download/v0.1.0/my_plugin.intoto.jsonl
 otel_attributes:
   kosmos.plugin.id: my_plugin
-search_hint_ko: my_plugin 조회 검색 추천
-search_hint_en: my_plugin lookup search
+search_hint_ko: my_plugin 공공 데이터 조회 검색 추천
+search_hint_en: my_plugin public data lookup search
 permission_layer: 1

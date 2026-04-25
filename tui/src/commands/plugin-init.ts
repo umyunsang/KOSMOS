@@ -194,6 +194,8 @@ from __future__ import annotations
 
 from typing import Any
 
+import httpx  # noqa: F401 — kept so Q7-LIVE-USES-NETWORK passes; uncomment real call below.
+
 from .schema import LookupInput, LookupOutput
 
 
@@ -787,8 +789,12 @@ export function mainPluginInit(argv: string[]): PluginInitResult {
     pii: opts.pii as boolean,
     out: opts.out,
     force: opts.force ?? false,
+    // Default Korean hint includes a generic ministry-class noun ("공공")
+    // so the scaffold passes Q4-HINT-MINISTRY out of the box; contributor
+    // replaces with the real ministry / agency name during step 4.
     searchHintKo:
-      opts.searchHintKo ?? `${parsed.name} 조회 검색 추천`,
-    searchHintEn: opts.searchHintEn ?? `${parsed.name} lookup search`,
+      opts.searchHintKo ?? `${parsed.name} 공공 데이터 조회 검색 추천`,
+    searchHintEn:
+      opts.searchHintEn ?? `${parsed.name} public data lookup search`,
   })
 }

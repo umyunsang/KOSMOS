@@ -126,22 +126,22 @@ description: "Task list for Epic #1636 — P5 Plugin DX 5-tier"
 
 **Independent Test**: Run the workflow against the 9 negative-case manifests in `test_validation_workflow.py`; expect each to fail on the right item. Run against a 50/50-valid manifest; expect green + summary comment.
 
-- [ ] T037 [US4] Author `tests/fixtures/plugin_validation/checklist_manifest.yaml`: all 50 rows per research § R-1 (Q1-PYV2 through Q10-NO-LIVE-IN-CI); each row has `id`, `description_ko`, `description_en`, `source_rule`, `check_type`, `check_implementation`, `failure_message_ko`, `failure_message_en`; meta-validator asserts row count == 50
-- [ ] T038 [P] [US4] Implement `src/kosmos/plugins/checks/q1_schema.py` (10 Q1 checks: PYV2, NOANY, FIELD-DESC, INPUT-MODEL, OUTPUT-MODEL, MANIFEST-VALID, FROZEN, EXTRA-FORBID, VERSION-SEMVER, PLUGIN-ID-REGEX) + per-check unit tests
-- [ ] T039 [P] [US4] Implement `src/kosmos/plugins/checks/q2_failclosed.py` (6 Q2 checks: AUTH-DEFAULT, PII-DEFAULT, CONCURRENCY-DEFAULT, CACHE-DEFAULT, RATE-LIMIT-CONSERVATIVE, AUTH-EXPLICIT) + per-check tests
-- [ ] T040 [P] [US4] Implement `src/kosmos/plugins/checks/q3_security.py` (5 Q3 checks: V1-NO-EXTRA, V2-DPA, V3-AAL-MATCH, V4-IRREVERSIBLE-AAL, V6-AUTH-LEVEL-MAP) — reuses existing Spec 024/025 validators; tests cover invariant violation paths
-- [ ] T041 [P] [US4] Implement `src/kosmos/plugins/checks/q4_discovery.py` (8 Q4 checks: HINT-KO, HINT-EN, HINT-NOUNS via existing Kiwipiepy from Spec 022, HINT-MINISTRY, NAME-KO, CITE, README-KO, README-MIN-LEN)
-- [ ] T042 [P] [US4] Implement `src/kosmos/plugins/checks/q5_permission.py` (3 Q5 checks: LAYER-DECLARED, LAYER-MATCHES-PII, LAYER-DOC)
-- [ ] T043 [P] [US4] Implement `src/kosmos/plugins/checks/q7_tier.py` (Q7-TIER-LITERAL, Q7-LIVE-FIXTURE; Q7-MOCK-SOURCE / Q7-LIVE-USES-NETWORK / Q7-MOCK-NO-EGRESS already added via T031/T032 — wire all 5 here cohesively)
-- [ ] T044 [P] [US4] Implement `src/kosmos/plugins/checks/q8_namespace.py` (3 Q8 checks: NAMESPACE, NO-ROOT-OVERRIDE, VERB-IN-PRIMITIVES) — reuses validators from T010
-- [ ] T045 [P] [US4] Implement `src/kosmos/plugins/checks/q9_otel.py` (2 Q9 checks: OTEL-ATTR, OTEL-EMIT) + fake-OTLP collector pytest fixture
-- [ ] T046 [P] [US4] Implement `src/kosmos/plugins/checks/q10_tests.py` (4 Q10 checks: HAPPY-PATH, ERROR-PATH, FIXTURE-EXISTS, NO-LIVE-IN-CI)
-- [ ] T047 [US4] Author `.github/workflows/plugin-validation.yml` per contracts/plugin-validation-workflow.md: matrix-driven from checklist_manifest.yaml, --network=none container, Korean+English summary comment, fail merge on N < 50, ≤ 5 min runtime budget
-- [ ] T048 [US4] Implement `src/kosmos/plugins/tests/test_validation_workflow.py` covering the 9 negative-case manifests per contracts/plugin-validation-workflow.md (Q1-FIELD-DESC missing, Q1-NOANY violation, Q7-MOCK-SOURCE missing, Q6-PIPA-PRESENT missing, Q6-PIPA-HASH wrong, Q8-NAMESPACE wrong, Q8-NO-ROOT-OVERRIDE, Q9-OTEL-ATTR missing, valid 50/50) — verifies SC-003
-- [ ] T049 [US4] Author `.github/ISSUE_TEMPLATE/plugin-submission.yml` (FR-011): structured form capturing plugin id, tier, ministry/agency, public-spec URL, contact, PII handling, target permission Layer
-- [ ] T050 [US4] Author `docs/plugins/review-checklist.md`: Markdown rendering of the 50 items derived from `checklist_manifest.yaml` (script: `scripts/render_checklist.py`); meta-CI step asserts rendered Markdown reflects the YAML source
-- [ ] T051 [US4] Add meta-CI step in `.github/workflows/plugin-validation.yml` verifying YAML row count == 50 + every `check_implementation` reference resolves to an existing function via `inspect.import_module`; fail fast if drift
-- [ ] T052 [P] [US4] Author `docs/plugins/pydantic-schema.md` (schema authoring rules per Constitution §III: BaseModel, frozen=True, extra=forbid, no Any, Field description=); cite Spec 019 input-discipline
+- [X] T037 [US4] Author `tests/fixtures/plugin_validation/checklist_manifest.yaml`: all 50 rows per research § R-1 (Q1-PYV2 through Q10-NO-LIVE-IN-CI); each row has `id`, `description_ko`, `description_en`, `source_rule`, `check_type`, `check_implementation`, `failure_message_ko`, `failure_message_en`; meta-validator asserts row count == 50
+- [X] T038 [P] [US4] Implement `src/kosmos/plugins/checks/q1_schema.py` (10 Q1 checks: PYV2, NOANY, FIELD-DESC, INPUT-MODEL, OUTPUT-MODEL, MANIFEST-VALID, FROZEN, EXTRA-FORBID, VERSION-SEMVER, PLUGIN-ID-REGEX) + per-check unit tests
+- [X] T039 [P] [US4] Implement `src/kosmos/plugins/checks/q2_failclosed.py` (6 Q2 checks: AUTH-DEFAULT, PII-DEFAULT, CONCURRENCY-DEFAULT, CACHE-DEFAULT, RATE-LIMIT-CONSERVATIVE, AUTH-EXPLICIT) + per-check tests
+- [X] T040 [P] [US4] Implement `src/kosmos/plugins/checks/q3_security.py` (5 Q3 checks: V1-NO-EXTRA, V2-DPA, V3-AAL-MATCH, V4-IRREVERSIBLE-AAL, V6-AUTH-LEVEL-MAP) — reuses existing Spec 024/025 validators; tests cover invariant violation paths
+- [X] T041 [P] [US4] Implement `src/kosmos/plugins/checks/q4_discovery.py` (8 Q4 checks: HINT-KO, HINT-EN, HINT-NOUNS via existing Kiwipiepy from Spec 022, HINT-MINISTRY, NAME-KO, CITE, README-KO, README-MIN-LEN)
+- [X] T042 [P] [US4] Implement `src/kosmos/plugins/checks/q5_permission.py` (3 Q5 checks: LAYER-DECLARED, LAYER-MATCHES-PII, LAYER-DOC)
+- [X] T043 [P] [US4] Implement `src/kosmos/plugins/checks/q7_tier.py` (Q7-TIER-LITERAL, Q7-LIVE-FIXTURE; Q7-MOCK-SOURCE / Q7-LIVE-USES-NETWORK / Q7-MOCK-NO-EGRESS already added via T031/T032 — wire all 5 here cohesively)
+- [X] T044 [P] [US4] Implement `src/kosmos/plugins/checks/q8_namespace.py` (3 Q8 checks: NAMESPACE, NO-ROOT-OVERRIDE, VERB-IN-PRIMITIVES) — reuses validators from T010
+- [X] T045 [P] [US4] Implement `src/kosmos/plugins/checks/q9_otel.py` (2 Q9 checks: OTEL-ATTR, OTEL-EMIT) + fake-OTLP collector pytest fixture
+- [X] T046 [P] [US4] Implement `src/kosmos/plugins/checks/q10_tests.py` (4 Q10 checks: HAPPY-PATH, ERROR-PATH, FIXTURE-EXISTS, NO-LIVE-IN-CI)
+- [X] T047 [US4] Author `.github/workflows/plugin-validation.yml` per contracts/plugin-validation-workflow.md: matrix-driven from checklist_manifest.yaml, --network=none container, Korean+English summary comment, fail merge on N < 50, ≤ 5 min runtime budget
+- [X] T048 [US4] Implement `src/kosmos/plugins/tests/test_validation_workflow.py` covering the 9 negative-case manifests per contracts/plugin-validation-workflow.md (Q1-FIELD-DESC missing, Q1-NOANY violation, Q7-MOCK-SOURCE missing, Q6-PIPA-PRESENT missing, Q6-PIPA-HASH wrong, Q8-NAMESPACE wrong, Q8-NO-ROOT-OVERRIDE, Q9-OTEL-ATTR missing, valid 50/50) — verifies SC-003
+- [X] T049 [US4] Author `.github/ISSUE_TEMPLATE/plugin-submission.yml` (FR-011): structured form capturing plugin id, tier, ministry/agency, public-spec URL, contact, PII handling, target permission Layer
+- [X] T050 [US4] Author `docs/plugins/review-checklist.md`: Markdown rendering of the 50 items derived from `checklist_manifest.yaml` (script: `scripts/render_checklist.py`); meta-CI step asserts rendered Markdown reflects the YAML source
+- [X] T051 [US4] Add meta-CI step in `.github/workflows/plugin-validation.yml` verifying YAML row count == 50 + every `check_implementation` reference resolves to an existing function via `inspect.import_module`; fail fast if drift
+- [X] T052 [P] [US4] Author `docs/plugins/pydantic-schema.md` (schema authoring rules per Constitution §III: BaseModel, frozen=True, extra=forbid, no Any, Field description=); cite Spec 019 input-discipline
 
 **Checkpoint**: 50/50 mechanical enforcement live. Maintainers no longer hand-verify mechanical items. SC-002 + SC-003 verifiable.
 

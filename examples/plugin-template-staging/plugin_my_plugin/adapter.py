@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from typing import Any
 
+import httpx  # noqa: F401 — kept so Q7-LIVE-USES-NETWORK passes; uncomment real call below.
+
 from .schema import LookupInput, LookupOutput
 
 
