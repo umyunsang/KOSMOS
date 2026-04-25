@@ -115,6 +115,12 @@ Column definitions:
 | `KOSMOS_PERMISSION_DECISION` | OTel span attr | n/a | String span attribute key | `kosmos.permissions.otel_integration.KOSMOS_PERMISSION_DECISION` | [Spec 033 Permission v2 (Epic #1297)](#permission-v2-epic-1297) |
 | `KOSMOS_CONSENT_RECEIPT_ID` | OTel span attr | n/a | String span attribute key | `kosmos.permissions.otel_integration.KOSMOS_CONSENT_RECEIPT_ID` | [Spec 033 Permission v2 (Epic #1297)](#permission-v2-epic-1297) |
 | `KOSMOS_IPC_HANDLER` | No | `llm` | `llm` \| `echo` | `kosmos.ipc.stdio.run` | [Epic #1633 dead-code + FriendliAI migration](#epic-1633-tui-boot-recovery) |
+| `KOSMOS_USER_MEMDIR_ROOT` | No | `~/.kosmos/memdir/user` | Absolute filesystem path | `kosmos.settings.KosmosSettings.user_memdir_root` | [Spec 1636 P5 plugin DX (Epic #1636)](#epic-1636-plugin-dx-5-tier) |
+| `KOSMOS_PLUGIN_INSTALL_ROOT` | No | `~/.kosmos/memdir/user/plugins` | Absolute filesystem path | `kosmos.settings.KosmosSettings.plugin_install_root` | [Spec 1636 P5 plugin DX (Epic #1636)](#epic-1636-plugin-dx-5-tier) |
+| `KOSMOS_PLUGIN_BUNDLE_CACHE` | No | `~/.kosmos/cache/plugin-bundles` | Absolute filesystem path | `kosmos.settings.KosmosSettings.plugin_bundle_cache` | [Spec 1636 P5 plugin DX (Epic #1636)](#epic-1636-plugin-dx-5-tier) |
+| `KOSMOS_PLUGIN_VENDOR_ROOT` | No | `~/.kosmos/vendor` | Absolute filesystem path | `kosmos.settings.KosmosSettings.plugin_vendor_root` | [Spec 1636 P5 plugin DX (Epic #1636)](#epic-1636-plugin-dx-5-tier) |
+| `KOSMOS_PLUGIN_CATALOG_URL` | No | `https://raw.githubusercontent.com/kosmos-plugin-store/index/main/index.json` | https:// URL or `file://` path (tests only) | `kosmos.settings.KosmosSettings.plugin_catalog_url` | [Spec 1636 P5 plugin DX (Epic #1636)](#epic-1636-plugin-dx-5-tier) |
+| `KOSMOS_PLUGIN_SLSA_SKIP` | No | `false` | `true` \| `false` | `kosmos.settings.KosmosSettings.plugin_slsa_skip` | [Spec 1636 P5 plugin DX (Epic #1636)](#epic-1636-plugin-dx-5-tier) |
 
 > **Row count**: 53 rows (48 `KOSMOS_*` active + 2 `LANGFUSE_*` + 1 `KOSMOS_OTEL_ENDPOINT` +
 > 1 override-family pattern + 1 deprecated). `KOSMOS_KOROAD_API_KEY` and
