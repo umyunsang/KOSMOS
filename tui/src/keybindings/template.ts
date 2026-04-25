@@ -50,3 +50,10 @@ export function generateKeybindingsTemplate(): string {
 
   return jsonStringify(config, null, 2) + '\n'
 }
+
+// KOSMOS migration alias: legacy test naming retained for compatibility.
+// Refs: Spec 1637 P6 T032 — keybindings test contract preserved.
+export const renderTier1CatalogueText = generateKeybindingsTemplate
+
+// KOSMOS migration alias: legacy test naming retained for compatibility.
+export const dumpTier1Catalogue = generateKeybindingsTemplate

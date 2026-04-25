@@ -72,11 +72,10 @@ import {
   asSystemPrompt,
   type SystemPrompt,
 } from '../../utils/systemPromptType.js'
-import {
-  isPerfettoTracingEnabled,
-  registerAgent as registerPerfettoAgent,
-  unregisterAgent as unregisterPerfettoAgent,
-} from '../../utils/telemetry/perfettoTracing.js'
+// KOSMOS: utils/telemetry/perfettoTracing.js deleted by Spec 1633 P1. Stubs provided.
+const isPerfettoTracingEnabled = (): false => false
+const registerPerfettoAgent = (_agentId: unknown, _agentType: unknown, _parentId: unknown): void => {}
+const unregisterPerfettoAgent = (_agentId: unknown): void => {}
 import type { ContentReplacementState } from '../../utils/toolResultStorage.js'
 import { createAgentId } from '../../utils/uuid.js'
 import { resolveAgentTools } from './agentToolUtils.js'

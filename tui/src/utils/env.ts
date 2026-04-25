@@ -1,7 +1,8 @@
 import memoize from 'lodash-es/memoize.js'
 import { homedir } from 'os'
 import { join } from 'path'
-import { fileSuffixForOauthConfig } from '../constants/oauth.js'
+// KOSMOS-original: oauth config suffix not used — KOSMOS uses FriendliAI, not Anthropic OAuth.
+const fileSuffixForOauthConfig = (): string => ''
 import { isRunningWithBun } from './bundledMode.js'
 import { getClaudeConfigHomeDir, isEnvTruthy } from './envUtils.js'
 import { findExecutable } from './findExecutable.js'

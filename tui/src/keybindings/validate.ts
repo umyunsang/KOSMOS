@@ -496,3 +496,15 @@ export function formatWarnings(warnings: KeybindingWarning[]): string {
 
   return lines.join('\n')
 }
+
+// KOSMOS migration: error class consumed by the registry-invariant test.
+// Refs: Spec 1637 P6 T032 — keybindings test contract preserved.
+export class RegistryInvariantError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'RegistryInvariantError'
+  }
+}
+
+// KOSMOS migration alias: legacy test naming retained for compatibility.
+export const validateEntries = validateBindings

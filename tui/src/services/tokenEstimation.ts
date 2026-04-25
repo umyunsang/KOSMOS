@@ -4,9 +4,11 @@ import type { BetaMessageParam as MessageParam } from 'src/sdk-compat.js'
 // to defer ~279KB of AWS SDK code until a Bedrock call is actually made
 import type { CountTokensCommandInput } from '@aws-sdk/client-bedrock-runtime'
 import { getAPIProvider } from 'src/utils/model/providers.js'
-import { VERTEX_COUNT_TOKENS_ALLOWED_BETAS } from '../constants/betas.js'
+// KOSMOS: constants/betas.js and utils/betas.js deleted by Spec 1633 P1.
+// VERTEX_COUNT_TOKENS_ALLOWED_BETAS → empty Set, getModelBetas → [] literal.
+const VERTEX_COUNT_TOKENS_ALLOWED_BETAS = new Set<string>()
+const getModelBetas = (_model: string): string[] => []
 import type { Attachment } from '../utils/attachments.js'
-import { getModelBetas } from '../utils/betas.js'
 import { getVertexRegionForModel, isEnvTruthy } from '../utils/envUtils.js'
 import { logError } from '../utils/log.js'
 import { normalizeAttachmentForAPI } from '../utils/messages.js'
@@ -23,8 +25,13 @@ import {
 } from '../utils/model/model.js'
 import { jsonStringify } from '../utils/slowOperations.js'
 import { isToolReferenceBlock } from '../utils/toolSearch.js'
-import { getAPIMetadata, getExtraBodyParams } from './api/claude.js'
-import { getAnthropicClient } from './api/client.js'
+// KOSMOS: services/api/claude.js and services/api/client.js deleted by Spec 1633 P1+P2.
+// getAPIMetadata → {} literal, getExtraBodyParams → {} literal, getAnthropicClient → throws.
+const getAPIMetadata = (): Record<string, unknown> => ({})
+const getExtraBodyParams = (): Record<string, unknown> => ({})
+const getAnthropicClient = async (_opts?: unknown): Promise<never> => {
+  throw new Error('Anthropic API not available in KOSMOS — Spec 1633')
+}
 import { withTokenCountVCR } from './vcr.js'
 
 // Minimal values for token counting with thinking enabled

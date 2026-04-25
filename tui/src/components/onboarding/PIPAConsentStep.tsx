@@ -223,3 +223,7 @@ export function PipaConsentStep({
     </Box>
   )
 }
+
+// KOSMOS migration alias: legacy test naming retained for compatibility.
+// Refs: Spec 1637 P6 T032 — onboarding test contract preserved.
+export const PIPAConsentStep = PipaConsentStep

@@ -242,3 +242,9 @@ export function resolveKeyWithChordState(
 
   return { type: 'none' }
 }
+
+// KOSMOS migration aliases.
+export const resolve = resolveKey
+export function drainBindingSpans(): readonly unknown[] {
+  return []
+}

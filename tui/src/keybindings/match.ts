@@ -1,5 +1,132 @@
 import type { Key } from '../ink.js'
-import type { ParsedBinding, ParsedKeystroke } from './types.js'
+import type { ChordEvent, ChordString, ParsedBinding, ParsedKeystroke } from './types.js'
+
+// ---------------------------------------------------------------------------
+// InkKeyLike — testable subset of Ink's Key type.
+// Tests use this instead of the full Ink Key to avoid pulling in the full
+// ink type surface. Structurally compatible with Ink's Key.
+// ---------------------------------------------------------------------------
+export type InkKeyLike = Partial<Key> & {
+  ctrl?: boolean
+  shift?: boolean
+  meta?: boolean
+  escape?: boolean
+  tab?: boolean
+  return?: boolean
+  backspace?: boolean
+  delete?: boolean
+  upArrow?: boolean
+  downArrow?: boolean
+  leftArrow?: boolean
+  rightArrow?: boolean
+  pageUp?: boolean
+  pageDown?: boolean
+  wheelUp?: boolean
+  wheelDown?: boolean
+  home?: boolean
+  end?: boolean
+  super?: boolean
+  fn?: boolean
+  insert?: boolean
+}
+
+// ---------------------------------------------------------------------------
+// Raw control-byte to (key, ctrl) mapping (FR-016: raw byte detection).
+// Ink does not always set modifier flags for control characters sent as
+// raw bytes; we detect these explicitly so ctrl+c / ctrl+d fire reliably.
+// ---------------------------------------------------------------------------
+const RAW_CTRL_MAP: ReadonlyMap<string, string> = new Map([
+  ['\x01', 'a'], ['\x02', 'b'], ['\x03', 'c'], ['\x04', 'd'],
+  ['\x05', 'e'], ['\x06', 'f'], ['\x07', 'g'], ['\x08', 'h'],
+  ['\x09', 'i'], ['\x0b', 'k'], ['\x0c', 'l'], ['\x0e', 'n'],
+  ['\x0f', 'o'], ['\x10', 'p'], ['\x11', 'q'], ['\x12', 'r'],
+  ['\x13', 's'], ['\x14', 't'], ['\x15', 'u'], ['\x16', 'v'],
+  ['\x17', 'w'], ['\x18', 'x'], ['\x19', 'y'], ['\x1a', 'z'],
+  ['\x1f', '-'], // ctrl+-
+])
+
+/**
+ * Build a ChordEvent from raw terminal input + Ink Key object.
+ *
+ * Returns null when the input cannot be interpreted as a known chord
+ * (e.g., empty input with no key flags set — typically mouse move events).
+ *
+ * FR-016: raw control bytes (e.g., \x03 = ctrl+c) are detected even when
+ * Ink's Key object does not set the ctrl modifier flag.
+ */
+export function buildChordEvent(
+  raw: string,
+  key: InkKeyLike,
+  getNow: () => number = () => Date.now(),
+): ChordEvent | null {
+  const k = key as Key
+
+  // -------------------------------------------------------------------------
+  // 1. FR-016 raw control-byte detection (highest priority).
+  //    Some terminals send ctrl+c as \x03 without setting key.ctrl.
+  // -------------------------------------------------------------------------
+  if (raw.length === 1 && !k.escape && !k.return && !k.tab) {
+    const mapped = RAW_CTRL_MAP.get(raw)
+    if (mapped) {
+      const chord = `ctrl+${mapped}` as ChordString
+      return {
+        raw,
+        chord,
+        ctrl: true,
+        shift: false,
+        alt: false,
+        meta: false,
+        timestamp: getNow(),
+      }
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // 2. Derive key name from Ink flags.
+  // -------------------------------------------------------------------------
+  let keyName: string | null = null
+  if (k.escape) keyName = 'escape'
+  else if (k.return) keyName = 'enter'
+  else if (k.tab) keyName = 'tab'
+  else if (k.backspace) keyName = 'backspace'
+  else if (k.delete) keyName = 'delete'
+  else if (k.upArrow) keyName = 'up'
+  else if (k.downArrow) keyName = 'down'
+  else if (k.leftArrow) keyName = 'left'
+  else if (k.rightArrow) keyName = 'right'
+  else if (k.pageUp) keyName = 'pageup'
+  else if (k.pageDown) keyName = 'pagedown'
+  else if (k.wheelUp) keyName = 'wheelup'
+  else if (k.wheelDown) keyName = 'wheeldown'
+  else if (k.home) keyName = 'home'
+  else if (k.end) keyName = 'end'
+  else if (raw.length === 1) keyName = raw.toLowerCase()
+
+  if (!keyName) return null
+
+  // -------------------------------------------------------------------------
+  // 3. Derive modifier flags.
+  // -------------------------------------------------------------------------
+  const ctrl = k.ctrl ?? false
+  const shift = k.shift ?? false
+  // Ink uses key.meta for both Alt and Meta; canonicalise to alt.
+  // Suppress meta on escape (Ink quirk: escape always sets meta=true).
+  const rawMeta = k.escape ? false : (k.meta ?? false)
+  const alt = rawMeta  // meta → alt per Codex P2 canonicalisation
+  const meta = false    // never surfaced as distinct from alt
+
+  // -------------------------------------------------------------------------
+  // 4. Build chord string: canonical modifier order ctrl+shift+alt+<key>.
+  // -------------------------------------------------------------------------
+  const parts: string[] = []
+  if (ctrl) parts.push('ctrl')
+  if (shift) parts.push('shift')
+  if (alt) parts.push('alt')
+  parts.push(keyName)
+  const chord = parts.join('+') as ChordString
+
+  return { raw, chord, ctrl, shift, alt, meta, timestamp: getNow() }
+}
 
 /**
  * Modifier keys from Ink's Key type that we care about for matching.

@@ -341,3 +341,10 @@ export const DEFAULT_BINDINGS: KeybindingBlock[] = [
     },
   },
 ]
+
+// KOSMOS migration alias: legacy test naming retained for compatibility.
+// Refs: Spec 1637 P6 T032 — keybindings test contract preserved.
+export const defaultBindingsByAction = DEFAULT_BINDINGS
+
+// KOSMOS migration alias for the test contract.
+export const MODE_CYCLE_DEFAULT_CHORD = MODE_CYCLE_KEY

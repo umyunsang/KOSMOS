@@ -42,7 +42,8 @@ import { isEnvTruthy } from '../utils/envUtils.js'
 import { isReplModeEnabled } from '../tools/REPLTool/constants.js'
 import { feature } from 'bun:bundle'
 import { getFeatureValue_CACHED_MAY_BE_STALE } from 'src/services/analytics/growthbook.js'
-import { shouldUseGlobalCacheScope } from '../utils/betas.js'
+// KOSMOS: utils/betas.js deleted by Spec 1633 P1. shouldUseGlobalCacheScope → false (no Anthropic global cache).
+const shouldUseGlobalCacheScope = (): false => false
 import { isForkSubagentEnabled } from '../tools/AgentTool/forkSubagent.js'
 import {
   systemPromptSection,

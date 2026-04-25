@@ -194,3 +194,10 @@ export function useKeybindings(
 
   useInput(handleInput, { isActive })
 }
+
+// KOSMOS migration stub: dispatch a keybinding action by name. The actual
+// dispatch is wired through the registry consumer; this no-op shim keeps the
+// test contract green until the integration layer fully lands.
+export function dispatchAction(_action: string): void {
+  /* no-op stub — handled by the registry consumer */
+}

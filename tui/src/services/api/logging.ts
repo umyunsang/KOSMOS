@@ -22,12 +22,12 @@ import { logError } from 'src/utils/log.js'
 import { getAPIProviderForStatsig } from 'src/utils/model/providers.js'
 import type { PermissionMode } from 'src/utils/permissions/PermissionMode.js'
 import { jsonStringify } from 'src/utils/slowOperations.js'
-import { logOTelEvent } from 'src/utils/telemetry/events.js'
-import {
-  endLLMRequestSpan,
-  isBetaTracingEnabled,
-  type Span,
-} from 'src/utils/telemetry/sessionTracing.js'
+// KOSMOS: utils/telemetry/events.js deleted by Spec 1633 P1. logOTelEvent → no-op.
+const logOTelEvent = (_event: string, _data?: unknown): void => {}
+// KOSMOS: utils/telemetry/sessionTracing.js deleted by Spec 1633 P1. Stubs provided.
+const endLLMRequestSpan = (_span: unknown): void => {}
+const isBetaTracingEnabled = (): false => false
+type Span = null
 import type { NonNullableUsage } from '../../entrypoints/sdk/sdkUtilityTypes.js'
 import { consumeInvokingRequestId } from '../../utils/agentContext.js'
 import {

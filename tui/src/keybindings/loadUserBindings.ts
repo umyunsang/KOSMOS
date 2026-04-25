@@ -470,3 +470,7 @@ export function resetKeybindingLoaderForTesting(): void {
   }
   keybindingsChanged.clear()
 }
+
+// KOSMOS migration alias: legacy test naming retained for compatibility.
+// Refs: Spec 1637 P6 T032 — keybindings test contract preserved.
+export const loadUserBindings = loadKeybindings

@@ -40,7 +40,8 @@ import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
 } from '../analytics/index.js'
-import { fetchClaudeAIMcpConfigsIfEligible } from './claudeai.js'
+// KOSMOS: services/mcp/claudeai.js deleted by Spec 1633 P1. fetchClaudeAIMcpConfigsIfEligible → empty result.
+const fetchClaudeAIMcpConfigsIfEligible = async (): Promise<{ servers: Record<string, unknown> }> => ({ servers: {} })
 import { expandEnvVarsInString } from './envExpansion.js'
 import {
   type ConfigScope,

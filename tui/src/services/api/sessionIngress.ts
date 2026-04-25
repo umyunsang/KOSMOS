@@ -1,6 +1,7 @@
 import axios, { type AxiosError } from 'axios'
 import type { UUID } from 'crypto'
-import { getOauthConfig } from '../../constants/oauth.js'
+// KOSMOS: constants/oauth.js deleted by Spec 1633 P1+P2. OAuth not used with FriendliAI provider.
+const getOauthConfig = (): { BASE_API_URL: string } => ({ BASE_API_URL: '' })
 import type { Entry, TranscriptMessage } from '../../types/logs.js'
 import { logForDebugging } from '../../utils/debug.js'
 import { logForDiagnosticsNoPII } from '../../utils/diagLogs.js'
@@ -10,7 +11,8 @@ import { sequential } from '../../utils/sequential.js'
 import { getSessionIngressAuthToken } from '../../utils/sessionIngressAuth.js'
 import { sleep } from '../../utils/sleep.js'
 import { jsonStringify } from '../../utils/slowOperations.js'
-import { getOAuthHeaders } from '../../utils/teleport/api.js'
+// KOSMOS: utils/teleport/api.js deleted by Spec 1633 P1. getOAuthHeaders → empty object (OAuth not used).
+const getOAuthHeaders = (_accessToken: unknown): Record<string, string> => ({})
 
 interface SessionIngressError {
   error?: {

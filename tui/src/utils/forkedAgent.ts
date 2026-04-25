@@ -18,7 +18,9 @@ import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
 } from '../services/analytics/index.js'
-import { accumulateUsage, updateUsage } from '../services/api/claude.js'
+// KOSMOS-original: CC usage accumulation not used with FriendliAI provider.
+const accumulateUsage = (a: unknown, _b: unknown): unknown => a
+const updateUsage = (base: unknown, _delta: unknown): unknown => base
 import { EMPTY_USAGE, type NonNullableUsage } from '../services/api/logging.js'
 import type { ToolUseContext } from '../Tool.js'
 import type { AgentDefinition } from '../tools/AgentTool/loadAgentsDir.js'

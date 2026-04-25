@@ -1,6 +1,7 @@
 import type { BetaUsage } from 'src/sdk-compat.js'
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '../services/analytics/growthbook.js'
-import { shouldIncludeFirstPartyOnlyBetas } from './betas.js'
+// KOSMOS-original: CC first-party betas not used with FriendliAI provider.
+const shouldIncludeFirstPartyOnlyBetas = (): boolean => false
 import { isEnvTruthy } from './envUtils.js'
 import { getInitialSettings } from './settings/settings.js'
 

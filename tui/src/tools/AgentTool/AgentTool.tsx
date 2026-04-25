@@ -36,7 +36,8 @@ import { asSystemPrompt } from '../../utils/systemPromptType.js';
 import { getTaskOutputPath } from '../../utils/task/diskOutput.js';
 import { getParentSessionId, isTeammate } from '../../utils/teammate.js';
 import { isInProcessTeammate } from '../../utils/teammateContext.js';
-import { teleportToRemote } from '../../utils/teleport.js';
+// KOSMOS-original: CC teleport (remote session) not used — no-op.
+const teleportToRemote = async (_opts?: unknown): Promise<null> => null
 import { getAssistantMessageContentLength } from '../../utils/tokens.js';
 import { createAgentId } from '../../utils/uuid.js';
 import { createAgentWorktree, hasWorktreeChanges, removeAgentWorktree } from '../../utils/worktree.js';

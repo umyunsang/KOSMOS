@@ -201,3 +201,7 @@ export function parseBindings(blocks: KeybindingBlock[]): ParsedBinding[] {
   }
   return bindings
 }
+
+// KOSMOS migration alias: legacy test naming retained for compatibility.
+// Refs: Spec 1637 P6 T032 — keybindings test contract preserved.
+export const tryParseChord = parseChord
