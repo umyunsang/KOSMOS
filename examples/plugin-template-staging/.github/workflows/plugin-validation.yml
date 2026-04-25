@@ -1,0 +1,11 @@
+name: plugin-validation
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  validate:
+    uses: umyunsang/KOSMOS/.github/workflows/plugin-validation.yml@main
+    secrets: inherit

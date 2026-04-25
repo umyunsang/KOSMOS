@@ -46,8 +46,8 @@ describe('Default registry shape (FR-036)', () => {
     const registry = buildDefaultRegistry()
     const commands = listCommands(registry)
 
-    // Must have exactly 4 unique commands (save/sessions/resume/new)
-    expect(commands).toHaveLength(4)
+    // 5 unique commands: save/sessions/resume/new (Spec 287) + plugin (Spec 1636 P5)
+    expect(commands).toHaveLength(5)
 
     // Must be sorted alphabetically
     const names = commands.map((c) => c.name)

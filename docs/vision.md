@@ -89,6 +89,8 @@ KOSMOS adapts architectural patterns from the conversational AI agent ecosystem 
 | @inkjs/ui (`vadimdemedes/ink-ui`) | MIT | Official Ink component library (TextInput, Spinner, Select, theming) — TUI widget foundation |
 | string-width (`sindresorhus/string-width`) | MIT | CJK full-width character column width calculation — Korean text terminal layout |
 | K-AI2026 (`hollobit/K-AI2026`) | Public dashboard | 국가인공지능전략위원회 · 대한민국 인공지능행동계획 (AI Action Plan 2026-2028) live tracker — authoritative source for 공공AX 원칙 8/9 task alignment and ministry-program traceability |
+| `kosmos-plugin-store` GitHub org | Apache-2.0 | KOSMOS plugin catalog — Tier 1 template + 4 example repos + index. SLSA v1.0 provenance source URI prefix (Spec 1636 R-3 + ADR-008). |
+| slsa-framework/slsa-verifier | Apache-2.0 | Vendored Go binary (~10 MB) for SLSA v1.0 provenance verification at install time (Spec 1636 R-3 + ADR-008). |
 
 Spec 031 ratifies the 5-primitive surface; see `specs/031-five-primitive-harness/research.md § 1` for the CC primitive-mapping table.
 

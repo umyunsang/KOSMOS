@@ -1,0 +1,182 @@
+name: plugin-validation
+
+# Reusable workflow that external `kosmos-plugin-<name>` repos call as:
+#   uses: umyunsang/KOSMOS/.github/workflows/plugin-validation.yml@main
+#
+# Runs the 50-item review checklist (research § R-1) against the calling
+# repo's plugin tree. The 50 rows are sourced from
+# `tests/fixtures/plugin_validation/checklist_manifest.yaml` in this repo;
+# every row resolves to a function under `kosmos.plugins.checks.q*`.
+#
+# Workflow steps:
+#   1. Check out KOSMOS at the pinned ref (so the validator code is current).
+#   2. Check out the calling plugin repo into ./plugin/.
+#   3. uv sync KOSMOS so kosmos.plugins.checks is importable.
+#   4. Meta-CI integrity: assert YAML row count == 50 + every dotted
+#      `check_implementation` resolves.
+#   5. Run the validator against ./plugin/ and emit a Korean+English
+#      summary.
+#
+# Exit non-zero (and post a failure summary comment on the PR) if N < 50.
+
+on:
+  workflow_call:
+    inputs:
+      plugin_path:
+        description: "Plugin root within the calling repo (default '.')."
+        required: false
+        type: string
+        default: "."
+      kosmos_ref:
+        description: "KOSMOS repo ref to pin the validator at."
+        required: false
+        type: string
+        default: "main"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  validate:
+    name: 50-item review checklist
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Check out KOSMOS validator
+        uses: actions/checkout@v6
+        with:
+          repository: umyunsang/KOSMOS
+          ref: ${{ inputs.kosmos_ref }}
+          path: kosmos
+
+      - name: Check out plugin repo
+        uses: actions/checkout@v6
+        with:
+          path: plugin
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: "kosmos/uv.lock"
+
+      - name: Install KOSMOS validator
+        working-directory: kosmos
+        run: uv sync --frozen --all-extras --dev
+
+      - name: Meta-CI integrity (T051)
+        working-directory: kosmos
+        run: |
+          uv run python <<'PY'
+          from pathlib import Path
+          from kosmos.plugins.checks.framework import (
+              load_checklist_rows,
+              resolve_check,
+          )
+
+          yaml_path = Path("tests/fixtures/plugin_validation/checklist_manifest.yaml")
+          rows = load_checklist_rows(yaml_path)
+          assert len(rows) == 50, f"row count drift: expected 50, got {len(rows)}"
+          for r in rows:
+              fn = resolve_check(r.check_implementation)
+              assert callable(fn), f"{r.id}: check_implementation does not resolve"
+          print(f"meta-CI: {len(rows)}/50 rows valid; all check fns resolve")
+          PY
+
+      - name: Run 50-item checklist against plugin
+        id: run_checks
+        working-directory: kosmos
+        env:
+          PLUGIN_ROOT: ${{ github.workspace }}/plugin/${{ inputs.plugin_path }}
+        run: |
+          uv run python <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          from kosmos.plugins.checks.framework import run_all_checks
+
+          plugin_root = Path(os.environ["PLUGIN_ROOT"]).resolve()
+          yaml_path = Path("tests/fixtures/plugin_validation/checklist_manifest.yaml")
+          results = run_all_checks(plugin_root=plugin_root, yaml_path=yaml_path)
+
+          passed = [row.id for row, o in results if o.passed]
+          failed = [
+              {
+                  "id": row.id,
+                  "ko": o.failure_message_ko or row.failure_message_ko,
+                  "en": o.failure_message_en or row.failure_message_en,
+              }
+              for row, o in results
+              if not o.passed
+          ]
+
+          summary = {
+              "total": len(results),
+              "passed": len(passed),
+              "failed": len(failed),
+              "failed_items": failed,
+          }
+          out_path = Path(os.environ["GITHUB_OUTPUT"])
+          out_path.write_text(
+              f"summary={json.dumps(summary)}\n", encoding="utf-8"
+          )
+
+          step_summary = Path(os.environ["GITHUB_STEP_SUMMARY"])
+          lines: list[str] = [
+              "# 🧪 KOSMOS Plugin Validation",
+              "",
+              f"**{summary['passed']} / {summary['total']} 통과** "
+              f"({summary['failed']} 실패)",
+              "",
+          ]
+          if failed:
+              lines.append("## ❌ 실패 항목")
+              for item in failed:
+                  lines.append(f"### {item['id']}")
+                  lines.append(f"- 🇰🇷 {item['ko']}")
+                  lines.append(f"- 🇬🇧 {item['en']}")
+                  lines.append("")
+          else:
+              lines.append("## ✅ 50 / 50 통과 — 검증 완료")
+              lines.append("머지 전 maintainer 의 리뷰가 필요합니다.")
+          step_summary.write_text("\n".join(lines), encoding="utf-8")
+
+          if failed:
+              raise SystemExit(1)
+          PY
+
+      - name: Post PR comment with summary
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const fs = require('node:fs')
+            const summaryPath = process.env.GITHUB_STEP_SUMMARY
+            if (!fs.existsSync(summaryPath)) return
+            const body = fs.readFileSync(summaryPath, 'utf-8')
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            })
+            const existing = comments.find(c =>
+              c.user && c.user.type === 'Bot' &&
+              c.body && c.body.includes('🧪 KOSMOS Plugin Validation')
+            )
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              })
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              })
+            }

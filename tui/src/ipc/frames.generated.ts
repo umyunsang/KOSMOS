@@ -28,7 +28,8 @@ export type IPCFrame =
   | ResumeResponseFrame
   | ResumeRejectedFrame
   | HeartbeatFrame
-  | NotificationPushFrame;
+  | NotificationPushFrame
+  | PluginOpFrame;
 /**
  * Opaque session identifier.
  */
@@ -866,6 +867,82 @@ export type PayloadContentType = 'text/plain' | 'application/json';
  * Inline notification content (Korean for civic users).
  */
 export type Payload2 = string;
+/**
+ * Opaque session identifier.
+ */
+export type SessionId19 = string;
+/**
+ * UUIDv7 string for new emissions; ULID accepted for back-compat. Non-empty; emitter SHOULD use UUIDv7. (E5)
+ */
+export type CorrelationId19 = string;
+/**
+ * ISO-8601 UTC timestamp with sub-ms precision.
+ */
+export type Ts19 = string;
+/**
+ * Envelope version. Hard-fail on mismatch (E1, FR-001).
+ */
+export type Version19 = '1.0';
+/**
+ * Origin role. Validated against kind<->role allow-list (E3, FR-004).
+ */
+export type Role19 = 'tui' | 'backend' | 'tool' | 'llm' | 'notification';
+/**
+ * Per-session monotonic sequence number (ge=0). Gap detection uses this.
+ */
+export type FrameSeq19 = number;
+/**
+ * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)
+ */
+export type TransactionId20 = string | null;
+/**
+ * Frame discriminator.
+ */
+export type Kind20 = 'plugin_op';
+/**
+ * Operation phase. ``request`` = TUI initiates install/uninstall/list; ``progress`` = backend reports phase tick; ``complete`` = backend reports terminal outcome.
+ */
+export type Op = 'request' | 'progress' | 'complete';
+/**
+ * Sub-action when op='request'. Required for op='request'; None otherwise.
+ */
+export type RequestOp = ('install' | 'uninstall' | 'list') | null;
+/**
+ * Plugin catalog name (matches CatalogEntry.name). Required when request_op in {install, uninstall}; None otherwise.
+ */
+export type Name1 = string | null;
+/**
+ * Optional SemVer pin for op='request'/install. Renamed from `version` to avoid shadowing the envelope's protocol version.
+ */
+export type RequestedVersion = string | null;
+/**
+ * When True, install verifies but writes nothing (op='request').
+ */
+export type DryRun = boolean | null;
+/**
+ * Install phase index 1-7 per contracts/plugin-install.cli.md. Required when op='progress'.
+ */
+export type ProgressPhase = number | null;
+/**
+ * Korean-primary progress message shown in the Ink overlay.
+ */
+export type ProgressMessageKo = string | null;
+/**
+ * English fallback progress message.
+ */
+export type ProgressMessageEn = string | null;
+/**
+ * Terminal outcome. Required when op='complete'.
+ */
+export type Result = ('success' | 'failure') | null;
+/**
+ * Process exit code per contracts/plugin-install.cli.md exit-code table. Required when op='complete'.
+ */
+export type ExitCode = number | null;
+/**
+ * Spec 035 consent receipt id when op='complete' AND result='success'.
+ */
+export type ReceiptId = string | null;
 
 /**
  * TUI -> backend: a citizen's typed input.
@@ -1305,4 +1382,52 @@ export interface NotificationPushFrame {
   event_guid: EventGuid;
   payload_content_type: PayloadContentType;
   payload: Payload2;
+}
+/**
+ * Plugin install / uninstall / list control-plane frame.
+ *
+ * Single arm carrying the three operation states discriminated by the
+ * inner ``op`` field. Modelled as one ``kind`` so the IPC discriminator
+ * keeps ``plugin_op`` as a single 20th arm — matching the migration
+ * tree's "20th arm" decision while preserving the per-phase shape
+ * documented in ``contracts/plugin-install.cli.md``.
+ *
+ * Op-specific shape rules (enforced by ``_v_plugin_op_shape``):
+ *
+ * * ``op="request"``: ``name`` required when ``request_op`` is
+ *   ``"install"`` or ``"uninstall"``; ``progress_phase`` /
+ *   ``progress_message_ko`` / ``progress_message_en`` / ``result`` /
+ *   ``exit_code`` MUST be ``None``.
+ * * ``op="progress"``: ``progress_phase`` (1-7), ``progress_message_ko``,
+ *   ``progress_message_en`` required; install-request fields must be
+ *   ``None``.
+ * * ``op="complete"``: ``result`` + ``exit_code`` required; everything
+ *   else None except optional ``receipt_id``.
+ *
+ * role allow-list: tui (request), backend (progress / complete).
+ */
+export interface PluginOpFrame {
+  session_id: SessionId19;
+  correlation_id: CorrelationId19;
+  ts: Ts19;
+  version?: Version19;
+  role: Role19;
+  frame_seq?: FrameSeq19;
+  transaction_id?: TransactionId20;
+  /**
+   * Completion/validation metadata. Populated on terminal frames. (FR-006)
+   */
+  trailer?: FrameTrailer | null;
+  kind?: Kind20;
+  op: Op;
+  request_op?: RequestOp;
+  name?: Name1;
+  requested_version?: RequestedVersion;
+  dry_run?: DryRun;
+  progress_phase?: ProgressPhase;
+  progress_message_ko?: ProgressMessageKo;
+  progress_message_en?: ProgressMessageEn;
+  result?: Result;
+  exit_code?: ExitCode;
+  receipt_id?: ReceiptId;
 }

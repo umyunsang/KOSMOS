@@ -1,0 +1,6 @@
+ > /plugin pipa-text
+
+ PIPA §26 trustee acknowledgment canonical SHA-256:
+   434074581cab35241c70f9b6e2191a7220fdac67aa627289ea64472cb87495d4
+ Source: docs/plugins/security-review.md (마커 사이 텍스트)
+ manifest.yaml 의 acknowledgment_sha256 필드에 위 값을 그대로 기록하세요.

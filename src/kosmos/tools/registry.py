@@ -106,7 +106,19 @@ class AdapterRegistration(BaseModel):
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    tool_id: str = Field(min_length=1, max_length=128, pattern=r"^[a-z][a-z0-9_]*$")
+    tool_id: str = Field(
+        min_length=1,
+        max_length=128,
+        # Spec 1636 P5 ADR-007 (revised by review eval C3): tool_id may be
+        # either snake_case (built-in adapters from Spec 022/031) OR
+        # plugin-namespaced ``plugin.<plugin_id>.<verb>`` (Migration tree
+        # § L1-C C7) where <verb> is one of the FOUR root primitives.
+        # resolve_location is host-reserved (Q8-NO-ROOT-OVERRIDE) and
+        # cannot be overridden by plugins; the regex enforces that on
+        # both AdapterRegistration and GovAPITool to keep the layers
+        # drift-free.
+        pattern=r"^([a-z][a-z0-9_]*|plugin\.[a-z][a-z0-9_]*\.(lookup|submit|verify|subscribe))$",
+    )
     primitive: AdapterPrimitive
     module_path: str
     input_model_ref: str
@@ -379,3 +391,56 @@ class ToolRegistry:
 
     def __contains__(self, tool_id: str) -> bool:
         return tool_id in self._tools
+
+
+# ---------------------------------------------------------------------------
+# Plugin shim (Epic #1636 P5 / T010)
+# ---------------------------------------------------------------------------
+
+
+def register_plugin_adapter(
+    manifest: object,
+    *,
+    registry: ToolRegistry,
+    executor: object,
+    plugin_root: object | None = None,
+) -> object:
+    """Plugin-adapter registration shim deferring to :mod:`kosmos.plugins.registry`.
+
+    The real implementation lives in ``kosmos.plugins.registry`` so the plugin
+    module owns its OTEL emission and module-import glue. This shim exists at
+    the canonical ``kosmos.tools.registry`` import path that downstream code
+    already consumes (Spec 022/024/025/031 callers) so they can register a
+    plugin without learning a new module name. The shim preserves the
+    existing V1-V6 invariant chain by routing through
+    :meth:`ToolRegistry.register` — there is no parallel registration path.
+
+    Args:
+        manifest: A validated :class:`kosmos.plugins.manifest_schema.PluginManifest`.
+        registry: Central :class:`ToolRegistry`.
+        executor: :class:`kosmos.tools.executor.ToolExecutor` instance.
+        plugin_root: Optional filesystem root for installed-bundle adapter
+            module loading. ``None`` means import via the standard import
+            system (development workflow with ``pip install -e``).
+
+    Returns:
+        The registered :class:`kosmos.tools.models.GovAPITool`.
+
+    Raises:
+        kosmos.plugins.exceptions.PluginRegistrationError: On any failure
+            in module import, symbol resolution, or invariant violation.
+    """
+    # Inline import to avoid a load-order cycle: kosmos.plugins.registry
+    # imports kosmos.tools.registry (ToolRegistry). The shim lives at the
+    # bottom of this module so a top-level import would re-enter before the
+    # ToolRegistry class object is bound.
+    from kosmos.plugins.registry import (  # noqa: PLC0415
+        register_plugin_adapter as _impl,
+    )
+
+    return _impl(
+        manifest,  # type: ignore[arg-type]
+        registry=registry,
+        executor=executor,  # type: ignore[arg-type]
+        plugin_root=plugin_root,  # type: ignore[arg-type]
+    )

@@ -10,6 +10,7 @@ import saveCommand from './save'
 import sessionsCommand from './sessions'
 import resumeCommand from './resume'
 import newCommand from './new'
+import pluginCommand from './plugin'
 
 /**
  * Build and return the default KOSMOS command registry containing:
@@ -17,6 +18,7 @@ import newCommand from './new'
  *   /sessions  — list sessions
  *   /resume    — resume session by id  (alias: /continue)
  *   /new       — start a new session
+ *   /plugin    — install / list / uninstall plugins (Spec 1636 P5)
  */
 export function buildDefaultRegistry(): CommandRegistry {
   const registry = createRegistry()
@@ -24,9 +26,16 @@ export function buildDefaultRegistry(): CommandRegistry {
   registerCommand(registry, sessionsCommand)
   registerCommand(registry, resumeCommand)
   registerCommand(registry, newCommand)
+  registerCommand(registry, pluginCommand)
   return registry
 }
 
 export { createRegistry, registerCommand, dispatchCommand, isSlashCommand, listCommands } from './dispatcher'
 export type { CommandRegistry, DispatchResult } from './dispatcher'
-export type { CommandDefinition, CommandHandlerArgs, CommandResult, SendFrame } from './types'
+export type {
+  CommandDefinition,
+  CommandHandlerArgs,
+  CommandResult,
+  SendFrame,
+  SendPluginOp,
+} from './types'

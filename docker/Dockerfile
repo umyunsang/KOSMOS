@@ -36,12 +36,18 @@ COPY pyproject.toml uv.lock README.md ./
 RUN uv sync --frozen --no-install-project --no-dev
 
 # Layer 2: install the project itself now that its source is present.
-# prompts/ is required here because pyproject.toml [tool.hatch.build.targets.wheel.force-include]
-# bundles the repo-root prompts/ directory into the wheel as kosmos/prompts/ — hatchling
-# resolves force-include paths at build time and fails with FileNotFoundError if they are
-# absent from the build context.
+# prompts/ + docs/plugins/security-review.md + tests/fixtures/plugin_validation/
+# checklist_manifest.yaml are required here because pyproject.toml
+# [tool.hatch.build.targets.wheel.force-include] bundles them into the wheel as
+# kosmos/prompts/, kosmos/_canonical/security-review.md, and
+# kosmos/_canonical/checklist_manifest.yaml respectively — hatchling resolves
+# force-include paths at build time and fails with FileNotFoundError if any are
+# absent from the build context. Spec 1636 P5 added the latter two so plugin
+# canonical PIPA hashing + 50-item validation work in production wheels.
 COPY src/ ./src/
 COPY prompts/ ./prompts/
+COPY docs/plugins/security-review.md ./docs/plugins/security-review.md
+COPY tests/fixtures/plugin_validation/ ./tests/fixtures/plugin_validation/
 RUN uv sync --frozen --no-dev
 
 # ---------------------------------------------------------------------------

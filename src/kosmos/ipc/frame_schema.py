@@ -62,6 +62,8 @@ _ROLE_KIND_ALLOW_LIST: dict[str, frozenset[str]] = {
     "resume_rejected": frozenset({"backend"}),
     "heartbeat": frozenset({"tui", "backend"}),
     "notification_push": frozenset({"notification"}),
+    # Epic #1636 P5 — plugin install/uninstall/list control plane
+    "plugin_op": frozenset({"tui", "backend"}),
 }
 
 # Kinds on which trailer.final=true is permitted (invariant E6).
@@ -72,6 +74,9 @@ _TERMINAL_KINDS: frozenset[str] = frozenset(
         "resume_response",
         "resume_rejected",
         "error",
+        # plugin_op carries op="complete" which terminates a plugin install
+        # control flow; trailer.final=True is permitted on those frames.
+        "plugin_op",
     }
 )
 
@@ -617,7 +622,171 @@ class NotificationPushFrame(_BaseFrame):
 
 
 # ---------------------------------------------------------------------------
-# Discriminated union — 19 kinds (T010)
+# Arm: plugin_op  (Epic #1636 P5 § contracts/plugin-install.cli.md)
+# ---------------------------------------------------------------------------
+
+
+class PluginOpFrame(_BaseFrame):
+    """Plugin install / uninstall / list control-plane frame.
+
+    Single arm carrying the three operation states discriminated by the
+    inner ``op`` field. Modelled as one ``kind`` so the IPC discriminator
+    keeps ``plugin_op`` as a single 20th arm — matching the migration
+    tree's "20th arm" decision while preserving the per-phase shape
+    documented in ``contracts/plugin-install.cli.md``.
+
+    Op-specific shape rules (enforced by ``_v_plugin_op_shape``):
+
+    * ``op="request"``: ``name`` required when ``request_op`` is
+      ``"install"`` or ``"uninstall"``; ``progress_phase`` /
+      ``progress_message_ko`` / ``progress_message_en`` / ``result`` /
+      ``exit_code`` MUST be ``None``.
+    * ``op="progress"``: ``progress_phase`` (1-7), ``progress_message_ko``,
+      ``progress_message_en`` required; install-request fields must be
+      ``None``.
+    * ``op="complete"``: ``result`` + ``exit_code`` required; everything
+      else None except optional ``receipt_id``.
+
+    role allow-list: tui (request), backend (progress / complete).
+    """
+
+    kind: Literal["plugin_op"] = Field(default="plugin_op", description="Frame discriminator.")
+    op: Literal["request", "progress", "complete"] = Field(
+        description=(
+            "Operation phase. ``request`` = TUI initiates install/uninstall/list; "
+            "``progress`` = backend reports phase tick; ``complete`` = backend "
+            "reports terminal outcome."
+        ),
+    )
+
+    # Request-only fields (op="request").
+    request_op: Literal["install", "uninstall", "list"] | None = Field(
+        default=None,
+        description=("Sub-action when op='request'. Required for op='request'; None otherwise."),
+    )
+    name: str | None = Field(
+        default=None,
+        description=(
+            "Plugin catalog name (matches CatalogEntry.name). Required when "
+            "request_op in {install, uninstall}; None otherwise."
+        ),
+    )
+    requested_version: str | None = Field(
+        default=None,
+        description=(
+            "Optional SemVer pin for op='request'/install. Renamed from "
+            "`version` to avoid shadowing the envelope's protocol version."
+        ),
+    )
+    dry_run: bool | None = Field(
+        default=None,
+        description="When True, install verifies but writes nothing (op='request').",
+    )
+
+    # Progress-only fields (op="progress").
+    progress_phase: int | None = Field(
+        default=None,
+        description=(
+            "Install phase index 1-7 per contracts/plugin-install.cli.md. "
+            "Required when op='progress'."
+        ),
+    )
+    progress_message_ko: str | None = Field(
+        default=None,
+        description="Korean-primary progress message shown in the Ink overlay.",
+    )
+    progress_message_en: str | None = Field(
+        default=None,
+        description="English fallback progress message.",
+    )
+
+    # Complete-only fields (op="complete").
+    result: Literal["success", "failure"] | None = Field(
+        default=None,
+        description="Terminal outcome. Required when op='complete'.",
+    )
+    exit_code: int | None = Field(
+        default=None,
+        description=(
+            "Process exit code per contracts/plugin-install.cli.md exit-code table. "
+            "Required when op='complete'."
+        ),
+    )
+    receipt_id: str | None = Field(
+        default=None,
+        description="Spec 035 consent receipt id when op='complete' AND result='success'.",
+    )
+
+    @model_validator(mode="after")
+    def _v_plugin_op_shape(self) -> PluginOpFrame:  # noqa: C901 — discriminated union shape
+        """Enforce per-op-state required/forbidden field shape."""
+        if self.op == "request":
+            if self.request_op is None:
+                raise ValueError("plugin_op.request requires request_op")
+            if self.request_op in ("install", "uninstall") and not self.name:
+                raise ValueError(
+                    f"plugin_op.request_op={self.request_op!r} requires non-empty name"
+                )
+            forbidden = {
+                "progress_phase": self.progress_phase,
+                "progress_message_ko": self.progress_message_ko,
+                "progress_message_en": self.progress_message_en,
+                "result": self.result,
+                "exit_code": self.exit_code,
+                "receipt_id": self.receipt_id,
+            }
+            extras = [k for k, v in forbidden.items() if v is not None]
+            if extras:
+                raise ValueError(
+                    f"plugin_op.request must not set progress/complete fields: {extras}"
+                )
+        elif self.op == "progress":  # noqa: SIM114 — flow-level branches stay flat for clarity.
+            if self.progress_phase is None or not (1 <= self.progress_phase <= 7):
+                raise ValueError("plugin_op.progress requires progress_phase in [1, 7]")
+            if not self.progress_message_ko or not self.progress_message_en:
+                raise ValueError(
+                    "plugin_op.progress requires progress_message_ko + progress_message_en"
+                )
+            forbidden = {
+                "request_op": self.request_op,
+                "name": self.name,
+                "requested_version": self.requested_version,
+                "dry_run": self.dry_run,
+                "result": self.result,
+                "exit_code": self.exit_code,
+                "receipt_id": self.receipt_id,
+            }
+            extras = [k for k, v in forbidden.items() if v is not None]
+            if extras:
+                raise ValueError(
+                    f"plugin_op.progress must not set request/complete fields: {extras}"
+                )
+        elif self.op == "complete":
+            if self.result is None:
+                raise ValueError("plugin_op.complete requires result")
+            if self.exit_code is None:
+                raise ValueError("plugin_op.complete requires exit_code")
+            if self.result == "failure" and self.receipt_id is not None:
+                raise ValueError("plugin_op.complete result='failure' must not set receipt_id")
+            forbidden = {
+                "request_op": self.request_op,
+                "name": self.name,
+                "requested_version": self.requested_version,
+                "dry_run": self.dry_run,
+                "progress_phase": self.progress_phase,
+                "progress_message_ko": self.progress_message_ko,
+                "progress_message_en": self.progress_message_en,
+            }
+            extras = [k for k, v in forbidden.items() if v is not None]
+            if extras:
+                raise ValueError(
+                    f"plugin_op.complete must not set request/progress fields: {extras}"
+                )
+        return self
+
+
+# ---------------------------------------------------------------------------
+# Discriminated union — 20 kinds (Epic #1636 adds plugin_op)
 # ---------------------------------------------------------------------------
 
 IPCFrame = Annotated[
@@ -639,13 +808,15 @@ IPCFrame = Annotated[
     | ResumeResponseFrame
     | ResumeRejectedFrame
     | HeartbeatFrame
-    | NotificationPushFrame,
+    | NotificationPushFrame
+    | PluginOpFrame,
     Field(discriminator="kind"),
 ]
-"""Discriminated union of all 19 IPC frame arms.
+"""Discriminated union of all 20 IPC frame arms.
 
 Spec 287 baseline: 10 arms (user_input .. error).
 Spec 032 additions: 9 arms (payload_start .. notification_push).
+Epic #1636 P5 addition: plugin_op (1 arm with internal op discriminator).
 
 Usage::
 
@@ -696,6 +867,8 @@ __all__ = [
     "ResumeRejectedFrame",
     "HeartbeatFrame",
     "NotificationPushFrame",
+    # Epic #1636 P5 addition
+    "PluginOpFrame",
     # Schema helper
     "ipc_frame_json_schema",
 ]

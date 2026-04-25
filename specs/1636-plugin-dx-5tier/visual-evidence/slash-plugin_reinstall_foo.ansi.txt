@@ -1,0 +1,4 @@
+ > /plugin reinstall foo
+
+ 알 수 없는 subcommand: reinstall
+ 사용법: /plugin <install|list|uninstall|pipa-text> [...]

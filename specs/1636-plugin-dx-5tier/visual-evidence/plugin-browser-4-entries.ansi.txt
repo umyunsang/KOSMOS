@@ -1,0 +1,18 @@
+
+ ✻ 플러그인 브라우저
+
+ ⏺  ›                       서울 지하철 실시간 도착 정보
+    kosmos-plugin-seouv0.1.0
+    -subway
+ ⏺                          우체국 등기 / EMS 배송 추적
+    kosmos-plugin-postv0.1.0
+    office
+ ○                          국세청 홈택스 자료 조회 (Mock)
+    kosmos-plugin-nts-v0.1.0
+    omtax
+ ⏺                          NHIS 건강검진 결과 (Mock)
+    kosmos-plugin-nhisv0.1.0
+    check
+
+ Space 활성 토글 · i 상세 · r 제거 · a 스토어
+ Esc · 닫기 (dismiss)

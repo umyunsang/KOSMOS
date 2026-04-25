@@ -1,0 +1,126 @@
+name: Plugin submission
+description: Submit a new KOSMOS plugin for inclusion in the kosmos-plugin-store catalog
+title: "plugin: submit <plugin_id>"
+labels: ["plugin-submission", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        이 템플릿으로 `kosmos-plugin-store` 카탈로그 등록을 요청합니다.
+        제출 전 [docs/plugins/quickstart.ko.md](https://github.com/umyunsang/KOSMOS/blob/main/docs/plugins/quickstart.ko.md)
+        의 9단계 walkthrough 를 마치고 `plugin-validation.yml` 가 50 / 50 녹색이어야 합니다.
+
+  - type: input
+    id: plugin_id
+    attributes:
+      label: plugin_id (snake_case)
+      placeholder: busan_bike
+      description: "regex: ^[a-z][a-z0-9_]*$"
+    validations:
+      required: true
+
+  - type: input
+    id: repo_url
+    attributes:
+      label: Plugin GitHub repo URL
+      placeholder: https://github.com/<your-org>/kosmos-plugin-busan-bike
+    validations:
+      required: true
+
+  - type: dropdown
+    id: tier
+    attributes:
+      label: Tier
+      options:
+        - live
+        - mock
+      description: |
+        `live` = 실제 외부 API 호출. `mock` = 출처 spec 만 참조 (mock_source_spec 필수).
+    validations:
+      required: true
+
+  - type: input
+    id: ministry
+    attributes:
+      label: Ministry / agency / 지자체
+      placeholder: 부산광역시 교통정보서비스
+      description: 어댑터가 호출하는 데이터 소유 기관.
+    validations:
+      required: true
+
+  - type: input
+    id: public_spec_url
+    attributes:
+      label: Public spec / API 문서 URL
+      placeholder: https://api.bts.go.kr/openapi/...
+      description: |
+        공식 API 문서 또는 데이터 포털 페이지. live tier 는 호출 endpoint
+        문서, mock tier 는 mirror 한 spec 의 출처.
+    validations:
+      required: true
+
+  - type: input
+    id: contact
+    attributes:
+      label: Contact (email or GitHub @handle)
+      placeholder: contributor@example.com
+    validations:
+      required: true
+
+  - type: dropdown
+    id: processes_pii
+    attributes:
+      label: Processes PII?
+      options:
+        - "false (no personal data)"
+        - "true (handles PII — requires PIPA §26 trustee acknowledgment)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: permission_layer
+    attributes:
+      label: Target permission Layer
+      options:
+        - "1 — public read-only"
+        - "2 — citizen-scoped, consent required"
+        - "3 — irreversible action, explicit consent + AAL2+"
+      description: 자세한 결정 트리는 docs/plugins/permission-tier.md 참고.
+    validations:
+      required: true
+
+  - type: textarea
+    id: pipa_org
+    attributes:
+      label: PIPA §26 trustee 정보 (processes_pii=true 일 때만)
+      placeholder: |
+        trustee_org_name: ...
+        trustee_contact: ...
+        pii_fields_handled: [...]
+        legal_basis: PIPA §15-1-2
+        acknowledgment_sha256: <docs/plugins/security-review.md 의 canonical hash>
+      description: |
+        processes_pii=true 일 때만 작성. acknowledgment_sha256 는
+        docs/plugins/security-review.md 의 canonical 텍스트 SHA-256 과 byte-equal.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: validation
+    attributes:
+      label: 사전 검증
+      options:
+        - label: "`plugin-validation.yml` 50 / 50 녹색"
+          required: true
+        - label: "`release-with-slsa.yml` workflow 가 SLSA v1.0 provenance 를 발산"
+          required: true
+        - label: "Apache-2.0 라이선스 명시"
+          required: true
+        - label: "README.ko.md ≥ 500 자 + 외부 참조 URL 1개 이상"
+          required: true
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: 추가 정보 (선택)
+      description: 리뷰어에게 알리고 싶은 특이사항.

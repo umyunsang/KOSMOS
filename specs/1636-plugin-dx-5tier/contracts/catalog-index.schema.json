@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kosmos.dev/schemas/plugin-catalog-index/1.0.0.json",
+  "title": "KOSMOS plugin-store catalog index",
+  "description": "Schema for kosmos-plugin-store/index/main/index.json. Source-of-truth for `kosmos plugin install` resolution.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "generated_iso", "entries"],
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0",
+      "description": "Versioned for future migration; bump on incompatible changes."
+    },
+    "generated_iso": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "entries": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/CatalogEntry" }
+    }
+  },
+  "$defs": {
+    "CatalogEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "plugin_id",
+        "latest_version",
+        "versions",
+        "tier",
+        "permission_layer",
+        "processes_pii",
+        "last_published_iso"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "plugin_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$"
+        },
+        "latest_version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "versions": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/CatalogVersion" }
+        },
+        "tier": {
+          "type": "string",
+          "enum": ["live", "mock"]
+        },
+        "permission_layer": {
+          "type": "integer",
+          "enum": [1, 2, 3]
+        },
+        "processes_pii": { "type": "boolean" },
+        "trustee_org_name": {
+          "type": ["string", "null"],
+          "description": "Required (non-null) when processes_pii=true."
+        },
+        "last_published_iso": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "CatalogVersion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "bundle_url",
+        "provenance_url",
+        "bundle_sha256",
+        "published_iso"
+      ],
+      "properties": {
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "bundle_url": {
+          "type": "string",
+          "pattern": "^https://github\\.com/.+\\.tar\\.gz$"
+        },
+        "provenance_url": {
+          "type": "string",
+          "pattern": "^https://github\\.com/.+\\.intoto\\.jsonl$"
+        },
+        "bundle_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "published_iso": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  }
+}
