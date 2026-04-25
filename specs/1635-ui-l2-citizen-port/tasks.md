@@ -84,18 +84,18 @@
 
 ### Implementation for User Story 2
 
-- [ ] T027 [P] [US2] `PermissionLayerHeader` with `green ⓵ / orange ⓶ / red ⓷` color tokens in `tui/src/components/permissions/PermissionLayerHeader.tsx` (FR-016)
-- [ ] T028 [P] [US2] `PermissionGauntletModal` with `[Y/A/N]` 3-choice and Layer 3 reinforcement notice line in `tui/src/components/permissions/PermissionGauntletModal.tsx` (FR-015/017, ref `cc:components/permissions/PermissionDialog.tsx`, `cc:components/permissions/PermissionRequestTitle.tsx`, `cc:components/permissions/PermissionExplanation.tsx`)
-- [ ] T029 [P] [US2] `ReceiptToast` displaying `rcpt-<id>` after every decision in `tui/src/components/permissions/ReceiptToast.tsx` (FR-018, ref `cc:context/notifications.tsx`)
-- [ ] T030 [P] [US2] Port `BypassReinforcementModal` to `tui/src/components/permissions/BypassReinforcementModal.tsx` (FR-022, ref `cc:components/BypassPermissionsModeDialog.tsx`)
-- [ ] T031 [US2] `PermissionReceiptContext` provider managing in-session receipts and revoke surface in `tui/src/context/PermissionReceiptContext.tsx` (FR-018/019, ref `cc:context/notifications.tsx`)
-- [ ] T032 [P] [US2] `/consent list` subcommand printing receipts in reverse chronological order with table layout in `tui/src/commands/consent.ts` (FR-019, ref `cc:components/HistorySearchDialog.tsx`)
-- [ ] T033 [US2] `/consent revoke <rcpt-id>` subcommand with confirmation modal and idempotent semantics in `tui/src/commands/consent.ts` — toast "이미 철회됨" when already revoked (FR-020/021, depends on T032)
-- [ ] T034 [US2] Ctrl-C handler in `PermissionGauntletModal.tsx` — auto-deny with `auto_denied_at_cancel` decision (FR-023, depends on T028)
-- [ ] T035 [US2] 5-minute idle handler in `PermissionGauntletModal.tsx` — auto-deny with `timeout_denied` decision and Layer 3 specific application (FR-024, depends on T028)
+- [x] T027 [P] [US2] `PermissionLayerHeader` with `green ⓵ / orange ⓶ / red ⓷` color tokens in `tui/src/components/permissions/PermissionLayerHeader.tsx` (FR-016)
+- [x] T028 [P] [US2] `PermissionGauntletModal` with `[Y/A/N]` 3-choice and Layer 3 reinforcement notice line in `tui/src/components/permissions/PermissionGauntletModal.tsx` (FR-015/017, ref `cc:components/permissions/PermissionDialog.tsx`, `cc:components/permissions/PermissionRequestTitle.tsx`, `cc:components/permissions/PermissionExplanation.tsx`)
+- [x] T029 [P] [US2] `ReceiptToast` displaying `rcpt-<id>` after every decision in `tui/src/components/permissions/ReceiptToast.tsx` (FR-018, ref `cc:context/notifications.tsx`)
+- [x] T030 [P] [US2] Port `BypassReinforcementModal` to `tui/src/components/permissions/BypassReinforcementModal.tsx` (FR-022, ref `cc:components/BypassPermissionsModeDialog.tsx`)
+- [x] T031 [US2] `PermissionReceiptContext` provider managing in-session receipts and revoke surface in `tui/src/context/PermissionReceiptContext.tsx` (FR-018/019, ref `cc:context/notifications.tsx`)
+- [x] T032 [P] [US2] `/consent list` subcommand printing receipts in reverse chronological order with table layout in `tui/src/commands/consent.ts` (FR-019, ref `cc:components/HistorySearchDialog.tsx`)
+- [x] T033 [US2] `/consent revoke <rcpt-id>` subcommand with confirmation modal and idempotent semantics in `tui/src/commands/consent.ts` — toast "이미 철회됨" when already revoked (FR-020/021, depends on T032)
+- [x] T034 [US2] Ctrl-C handler in `PermissionGauntletModal.tsx` — auto-deny with `auto_denied_at_cancel` decision (FR-023, depends on T028)
+- [x] T035 [US2] 5-minute idle handler in `PermissionGauntletModal.tsx` — auto-deny with `timeout_denied` decision and Layer 3 specific application (FR-024, depends on T028)
 - [x] T036 [US2] Wire Shift+Tab mode cycle to `BypassReinforcementModal` in `tui/src/screens/REPL.tsx` (FR-022, depends on T030, T011)
-- [ ] T037 [P] [US2] `bun:test` units in `tui/tests/components/permissions/` for layer header, modal, toast, bypass-reinforcement (FR-015/016/017/018/022)
-- [ ] T038 [P] [US2] `bun:test` units in `tui/tests/commands/consent.test.ts` covering list output ordering and revoke idempotency (FR-019/020/021)
+- [x] T037 [P] [US2] `bun:test` units in `tui/tests/components/permissions/` for layer header, modal, toast, bypass-reinforcement (FR-015/016/017/018/022)
+- [x] T038 [P] [US2] `bun:test` units in `tui/tests/commands/consent.test.ts` covering list output ordering and revoke idempotency (FR-019/020/021)
 - [x] T039 [US2] Emit `kosmos.ui.surface=permission_gauntlet` on every modal show via T009 helper (FR-037)
 
 **Checkpoint**: Permission Gauntlet works end-to-end. Combined with US1, the REPL is safe for any tool call up to Layer 3.
@@ -110,18 +110,18 @@
 
 ### Implementation for User Story 3
 
-- [ ] T040 [P] [US3] `PreflightStep` with Bun version / graphics-protocol / `KOSMOS_*` env-var ✓-✗ checks in `tui/src/components/onboarding/PreflightStep.tsx` (FR-001 step 1)
-- [ ] T041 [P] [US3] `ThemeStep` with UFO mascot idle pose preview using purple palette `#a78bfa` over `#4c1d95` in `tui/src/components/onboarding/ThemeStep.tsx` (FR-001 step 2, FR-035)
-- [ ] T042 [P] [US3] `PipaConsentStep` with PIPA §26 trustee notice (visual + textual) in `tui/src/components/onboarding/PipaConsentStep.tsx` (FR-001 step 3, FR-006, ref `cc:components/Onboarding.tsx`)
-- [ ] T043 [P] [US3] `MinistryScopeStep` with Spec 035 memdir helper write-through in `tui/src/components/onboarding/MinistryScopeStep.tsx` (FR-001 step 4)
-- [ ] T044 [P] [US3] `TerminalSetupStep` with four accessibility toggles + Shift+Tab keybinding hint in `tui/src/components/onboarding/TerminalSetupStep.tsx` (FR-001 step 5, FR-005)
-- [ ] T045 [US3] `OnboardingFlow` step driver with persisted `current_step_index` in `tui/src/components/onboarding/OnboardingFlow.tsx` (FR-001/002, depends on T040–T044, ref `cc:components/Onboarding.tsx`)
-- [ ] T046 [US3] `/onboarding` command with optional `<step-name>` positional arg in `tui/src/commands/onboarding.ts` (FR-003, depends on T045)
-- [ ] T047 [P] [US3] `/lang ko|en` command in `tui/src/commands/lang.ts` flipping the i18n binding at runtime (FR-004)
-- [ ] T048 [US3] Wire accessibility toggle persistence in `TerminalSetupStep.tsx` to T008 memdir helper writing `~/.kosmos/memdir/user/preferences/a11y.json` (FR-005, depends on T044, T008)
+- [x] T040 [P] [US3] `PreflightStep` with Bun version / graphics-protocol / `KOSMOS_*` env-var ✓-✗ checks in `tui/src/components/onboarding/PreflightStep.tsx` (FR-001 step 1)
+- [x] T041 [P] [US3] `ThemeStep` with UFO mascot idle pose preview using purple palette `#a78bfa` over `#4c1d95` in `tui/src/components/onboarding/ThemeStep.tsx` (FR-001 step 2, FR-035)
+- [x] T042 [P] [US3] `PipaConsentStep` with PIPA §26 trustee notice (visual + textual) in `tui/src/components/onboarding/PipaConsentStep.tsx` (FR-001 step 3, FR-006, ref `cc:components/Onboarding.tsx`)
+- [x] T043 [P] [US3] `MinistryScopeStep` with Spec 035 memdir helper write-through in `tui/src/components/onboarding/MinistryScopeStep.tsx` (FR-001 step 4)
+- [x] T044 [P] [US3] `TerminalSetupStep` with four accessibility toggles + Shift+Tab keybinding hint in `tui/src/components/onboarding/TerminalSetupStep.tsx` (FR-001 step 5, FR-005)
+- [x] T045 [US3] `OnboardingFlow` step driver with persisted `current_step_index` in `tui/src/components/onboarding/OnboardingFlow.tsx` (FR-001/002, depends on T040–T044, ref `cc:components/Onboarding.tsx`)
+- [x] T046 [US3] `/onboarding` command with optional `<step-name>` positional arg in `tui/src/commands/onboarding.ts` (FR-003, depends on T045)
+- [x] T047 [P] [US3] `/lang ko|en` command in `tui/src/commands/lang.ts` flipping the i18n binding at runtime (FR-004)
+- [x] T048 [US3] Wire accessibility toggle persistence in `TerminalSetupStep.tsx` to T008 memdir helper writing `~/.kosmos/memdir/user/preferences/a11y.json` (FR-005, depends on T044, T008)
 - [x] T049 [US3] Onboarding entry gate at startup in `tui/src/main.tsx` — skip when `current_step_index === 5`, resume when `< 5`, replay full sequence on `/onboarding` (FR-001 acceptance §1, depends on T045)
-- [ ] T050 [P] [US3] `bun:test` units in `tui/tests/components/onboarding/` covering all five step components and the flow driver (FR-001..006)
-- [ ] T051 [P] [US3] `bun:test` units in `tui/tests/commands/{onboarding,lang}.test.ts` (FR-003/004)
+- [x] T050 [P] [US3] `bun:test` units in `tui/tests/components/onboarding/` covering all five step components and the flow driver (FR-001..006)
+- [x] T051 [P] [US3] `bun:test` units in `tui/tests/commands/{onboarding,lang}.test.ts` (FR-003/004)
 - [x] T052 [US3] Emit `kosmos.ui.surface=onboarding` on each step render via T009 helper (FR-037)
 
 **Checkpoint**: First-launch onboarding works. Combined with US1+US2, citizens have a complete entry, query, and consent loop.
@@ -136,12 +136,12 @@
 
 ### Implementation for User Story 4
 
-- [ ] T053 [P] [US4] `AgentVisibilityPanel` rendering proposal-iv 5-state per ministry in `tui/src/components/agents/AgentVisibilityPanel.tsx` (FR-025/028, ref `cc:components/agents/AgentsList.tsx`, `docs/wireframes/proposal-iv.mjs`)
-- [ ] T054 [P] [US4] `AgentDetailRow` with SLA-remaining / health (green/amber/red) / rolling-avg response in `tui/src/components/agents/AgentDetailRow.tsx` (FR-026, ref `cc:components/CoordinatorAgentStatus.tsx`)
-- [ ] T055 [US4] `/agents` command supporting `--detail` flag in `tui/src/commands/agents.ts` (FR-026, depends on T053, T054)
+- [x] T053 [P] [US4] `AgentVisibilityPanel` rendering proposal-iv 5-state per ministry in `tui/src/components/agents/AgentVisibilityPanel.tsx` (FR-025/028, ref `cc:components/agents/AgentsList.tsx`, `docs/wireframes/proposal-iv.mjs`)
+- [x] T054 [P] [US4] `AgentDetailRow` with SLA-remaining / health (green/amber/red) / rolling-avg response in `tui/src/components/agents/AgentDetailRow.tsx` (FR-026, ref `cc:components/CoordinatorAgentStatus.tsx`)
+- [x] T055 [US4] `/agents` command supporting `--detail` flag in `tui/src/commands/agents.ts` (FR-026, depends on T053, T054)
 - [x] T056 [US4] Wire `shouldActivateSwarm` predicate (T005) into the REPL plan handler in `tui/src/screens/REPL.tsx` (FR-027 A+C union)
-- [ ] T057 [US4] Subscribe `AgentVisibilityPanel` to Spec 027 mailbox event channel for live state transitions in `tui/src/components/agents/AgentVisibilityPanel.tsx` — push, no polling (FR-028, SC-007 ≤500 ms p95)
-- [ ] T058 [P] [US4] `bun:test` units in `tui/tests/components/agents/` and `tui/tests/commands/agents.test.ts` including swarm-predicate boundary cases (FR-025/026/027/028)
+- [x] T057 [US4] Subscribe `AgentVisibilityPanel` to Spec 027 mailbox event channel for live state transitions in `tui/src/components/agents/AgentVisibilityPanel.tsx` — push, no polling (FR-028, SC-007 ≤500 ms p95)
+- [x] T058 [P] [US4] `bun:test` units in `tui/tests/components/agents/` and `tui/tests/commands/agents.test.ts` including swarm-predicate boundary cases (FR-025/026/027/028)
 - [x] T059 [US4] Emit `kosmos.ui.surface=agents` on panel render via T009 helper (FR-037)
 
 **Checkpoint**: Citizens can see who is doing what in real time. With US1+US2+US3+US4 the platform is ready for daily citizen use.
@@ -156,18 +156,18 @@
 
 ### Implementation for User Story 5
 
-- [ ] T060 [P] [US5] Port `HelpV2Grouped` rendering 4 groups (Session / Permission / Tool / Storage) in `tui/src/components/help/HelpV2Grouped.tsx` (FR-029, ref `cc:components/HelpV2/HelpV2.tsx`, `cc:components/HelpV2/Commands.tsx`, `cc:components/HelpV2/General.tsx`)
-- [ ] T061 [US5] `/help` command emitting 4-group output sourced from catalog in `tui/src/commands/help.ts` (FR-029, depends on T060, T010)
-- [ ] T062 [P] [US5] `ConfigOverlay` with inline edit for non-secret settings in `tui/src/components/config/ConfigOverlay.tsx` (FR-030, ref `cc:components/InvalidConfigDialog.tsx`)
-- [ ] T063 [P] [US5] `EnvSecretIsolatedEditor` for `.env` secret-edit isolation in `tui/src/components/config/EnvSecretIsolatedEditor.tsx` (FR-030 isolation rule)
-- [ ] T064 [US5] `/config` command opening overlay + isolated editor branch in `tui/src/commands/config.ts` (FR-030, depends on T062, T063)
-- [ ] T065 [P] [US5] `PluginBrowser` with `⏺`/`○` toggles and Space/i/r/a keybindings in `tui/src/components/plugins/PluginBrowser.tsx` (FR-031, ref `cc:components/CustomSelect/`)
-- [ ] T066 [US5] `/plugins` command opening browser in `tui/src/commands/plugins.ts` (FR-031, depends on T065)
-- [ ] T067 [P] [US5] `ExportPdfDialog` assembling transcript + tool-call records + receipts with `pdf-lib`, excluding OTEL span IDs and plugin-internal markers in `tui/src/components/export/ExportPdfDialog.tsx` (FR-032, ref `cc:components/ExportDialog.tsx`)
-- [ ] T068 [US5] `/export` command writing PDF to platform-default download location in `tui/src/commands/export.ts` (FR-032, depends on T067)
-- [ ] T069 [P] [US5] Port `HistorySearchDialog` with 3-filter form (`--date FROM..TO`, `--session <id>`, `--layer <n>`) in `tui/src/components/history/HistorySearchDialog.tsx` (FR-033, ref `cc:components/HistorySearchDialog.tsx`)
-- [ ] T070 [US5] `/history` command supporting all three filters with AND composition in `tui/src/commands/history.ts` (FR-033, depends on T069)
-- [ ] T071 [P] [US5] `bun:test` units in `tui/tests/components/{help,config,plugins,export,history}/` and `tui/tests/commands/{help,config,plugins,export,history}.test.ts` (FR-029..033, SC-012 zero-OTEL-leak assertion in export tests)
+- [x] T060 [P] [US5] Port `HelpV2Grouped` rendering 4 groups (Session / Permission / Tool / Storage) in `tui/src/components/help/HelpV2Grouped.tsx` (FR-029, ref `cc:components/HelpV2/HelpV2.tsx`, `cc:components/HelpV2/Commands.tsx`, `cc:components/HelpV2/General.tsx`)
+- [x] T061 [US5] `/help` command emitting 4-group output sourced from catalog in `tui/src/commands/help.ts` (FR-029, depends on T060, T010)
+- [x] T062 [P] [US5] `ConfigOverlay` with inline edit for non-secret settings in `tui/src/components/config/ConfigOverlay.tsx` (FR-030, ref `cc:components/InvalidConfigDialog.tsx`)
+- [x] T063 [P] [US5] `EnvSecretIsolatedEditor` for `.env` secret-edit isolation in `tui/src/components/config/EnvSecretIsolatedEditor.tsx` (FR-030 isolation rule)
+- [x] T064 [US5] `/config` command opening overlay + isolated editor branch in `tui/src/commands/config.ts` (FR-030, depends on T062, T063)
+- [x] T065 [P] [US5] `PluginBrowser` with `⏺`/`○` toggles and Space/i/r/a keybindings in `tui/src/components/plugins/PluginBrowser.tsx` (FR-031, ref `cc:components/CustomSelect/`)
+- [x] T066 [US5] `/plugins` command opening browser in `tui/src/commands/plugins.ts` (FR-031, depends on T065)
+- [x] T067 [P] [US5] `ExportPdfDialog` assembling transcript + tool-call records + receipts with `pdf-lib`, excluding OTEL span IDs and plugin-internal markers in `tui/src/components/export/ExportPdfDialog.tsx` (FR-032, ref `cc:components/ExportDialog.tsx`)
+- [x] T068 [US5] `/export` command writing PDF to platform-default download location in `tui/src/commands/export.ts` (FR-032, depends on T067)
+- [x] T069 [P] [US5] Port `HistorySearchDialog` with 3-filter form (`--date FROM..TO`, `--session <id>`, `--layer <n>`) in `tui/src/components/history/HistorySearchDialog.tsx` (FR-033, ref `cc:components/HistorySearchDialog.tsx`)
+- [x] T070 [US5] `/history` command supporting all three filters with AND composition in `tui/src/commands/history.ts` (FR-033, depends on T069)
+- [x] T071 [P] [US5] `bun:test` units in `tui/tests/components/{help,config,plugins,export,history}/` and `tui/tests/commands/{help,config,plugins,export,history}.test.ts` (FR-029..033, SC-012 zero-OTEL-leak assertion in export tests)
 - [x] T072 [US5] Emit `kosmos.ui.surface={help,config,plugins,export,history}` per surface activation via T009 helper (FR-037)
 
 **Checkpoint**: All five user stories independently functional.
@@ -178,14 +178,14 @@
 
 **Purpose**: Integrated test sweep, manual quickstart smoke, fidelity scoring, success-criteria verification, doc updates, integrated PR.
 
-- [ ] T073 [P] Run the full `bun test` suite from `tui/` and confirm all units green
-- [ ] T074 Walk through `quickstart.md` steps 1–13 manually with a fresh `~/.kosmos` and capture observations in `specs/1635-ui-l2-citizen-port/quickstart-walkthrough.md`
-- [ ] T075 Score CC 2.1.88 visual + structural fidelity across the 9 surfaces (REPL, onboarding ×5 steps, permission modal, agents panel, help, config, plugins, export, history) and write `docs/visual-fidelity/1635-scoring.md` (FR-034, SC-009 ≥ 90 %)
-- [ ] T076 Verify zero new external network egress with `lsof -p $(pgrep -f 'bun.*tui')` during a representative session and append findings to `docs/visual-fidelity/1635-scoring.md` (FR-038, SC-008)
-- [ ] T077 Verify `/export` PDF excludes OTEL span IDs and plugin-internal markers via `grep -E 'traceId=|spanId=|pluginInternal:'` over 20 sample export PDFs and append findings to the scoring doc (FR-032, SC-012)
-- [ ] T078 [P] Update `tui/README.md` documenting new commands, keybindings, and the two new TS dependencies (`pdf-to-img`, `pdf-lib`)
-- [ ] T079 [P] Update `CLAUDE.md` Active Technologies section if any new spec-driven path emerges from T073–T077 (re-run `update-agent-context.sh claude` if needed)
-- [ ] T080 Open the integrated PR with `Closes #1635` only — no Task sub-issue references in the PR body — per `feedback_integrated_pr_only` and `feedback_pr_closing_refs`
+- [x] T073 [P] Run the full `bun test` suite from `tui/` and confirm all units green
+- [x] T074 Walk through `quickstart.md` steps 1–13 manually with a fresh `~/.kosmos` and capture observations in `specs/1635-ui-l2-citizen-port/quickstart-walkthrough.md`
+- [x] T075 Score CC 2.1.88 visual + structural fidelity across the 9 surfaces (REPL, onboarding ×5 steps, permission modal, agents panel, help, config, plugins, export, history) and write `docs/visual-fidelity/1635-scoring.md` (FR-034, SC-009 ≥ 90 %)
+- [x] T076 Verify zero new external network egress with `lsof -p $(pgrep -f 'bun.*tui')` during a representative session and append findings to `docs/visual-fidelity/1635-scoring.md` (FR-038, SC-008)
+- [x] T077 Verify `/export` PDF excludes OTEL span IDs and plugin-internal markers via `grep -E 'traceId=|spanId=|pluginInternal:'` over 20 sample export PDFs and append findings to the scoring doc (FR-032, SC-012)
+- [x] T078 [P] Update `tui/README.md` documenting new commands, keybindings, and the two new TS dependencies (`pdf-to-img`, `pdf-lib`)
+- [x] T079 [P] Update `CLAUDE.md` Active Technologies section if any new spec-driven path emerges from T073–T077 (re-run `update-agent-context.sh claude` if needed)
+- [x] T080 Open the integrated PR with `Closes #1635` only — no Task sub-issue references in the PR body — per `feedback_integrated_pr_only` and `feedback_pr_closing_refs`
 
 ---
 
