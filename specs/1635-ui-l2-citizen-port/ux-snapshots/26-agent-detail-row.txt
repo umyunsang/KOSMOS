@@ -1,0 +1,32 @@
+# UX Snapshot: 26-agent-detail-row
+# Note: FR-026 — Single agent detail row
+# Generated: 2026-04-25T11:32:53.063Z
+
+
+  ERROR  undefined is not an object (evaluating 'entry.health')
+
+ src/components/agents/AgentDetailRow.tsx:75:36
+
+ 72:   },
+ 73: }: AgentDetailRowProps): React.ReactNode {
+ 74:   const dotHex = resolveDotHex(currentPrimitive)
+ 75:   const healthColor = HEALTH_COLOR[entry.health]
+ 76:
+ 77:   // SLA remaining
+ 78:   const slaDisplay =
+
+ - AgentDetailRow (src/components/agents/AgentDetailRow.tsx:75:36)
+ -react-stack-bottom-frame
+                         (node_modules/react-reconciler/cjs/react-reconciler.development.js:15859:2
+                         0)
+ - renderWithHooks (node_modules/react-reconciler/cjs/react-reconciler.development.js:3221:22)
+ -updateFunctionComponent
+                         (node_modules/react-reconciler/cjs/react-reconciler.development.js:6475:19
+                         )
+ - runWithFiberInDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:1738:13)
+ - performUnitOfWork (node_modules/react-reconciler/cjs/react-reconciler.development.js:12834:22)
+ - workLoopSync (node_modules/react-reconciler/cjs/react-reconciler.development.js:12644:41)
+ - renderRootSync (node_modules/react-reconciler/cjs/react-reconciler.development.js:12624:11)
+ - performWorkOnRoot (node_modules/react-reconciler/cjs/react-reconciler.development.js:12135:44)
+ - performSyncWorkOnRoot (node_modules/react-reconciler/cjs/react-reconciler.development.js:2446:7)
+

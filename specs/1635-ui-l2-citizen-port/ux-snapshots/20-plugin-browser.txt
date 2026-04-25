@@ -1,0 +1,15 @@
+# UX Snapshot: 20-plugin-browser
+# Note: FR-031 — /plugins browser ⏺/○ + Space/i/r/a
+# Generated: 2026-04-25T11:32:52.821Z
+
+
+ ✻ 플러그인 브라우저
+
+ ○  › KOROAD 교통 정보 v0.1.0
+
+ ○    HIRA 의료기관 v0.1.0
+ ○    정부24 민원 v0.0.5
+
+ Space 활성 토글 · i 상세 · r 제거 · a 스토어
+ Esc · 닫기 (dismiss)
+

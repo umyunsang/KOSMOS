@@ -1,0 +1,5 @@
+# UX Snapshot: 08-permission-layer-header-1
+# Note: FR-016 — Layer 1 header glyph component standalone
+# Generated: 2026-04-25T11:32:52.345Z
+
+⓵ Layer 1 ·

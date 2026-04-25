@@ -1,0 +1,5 @@
+# UX Snapshot: 06-receipt-toast-already-revoked
+# Note: FR-021 — Idempotent already-revoked toast
+# Generated: 2026-04-25T11:32:52.271Z
+
+ ✻ 이미 철회됨
