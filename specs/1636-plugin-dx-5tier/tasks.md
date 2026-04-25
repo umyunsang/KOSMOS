@@ -35,10 +35,10 @@ description: "Task list for Epic #1636 — P5 Plugin DX 5-tier"
 
 **Purpose**: Create the new module and stub directories so subsequent foundational tasks can land in parallel.
 
-- [ ] T001 Create `src/kosmos/plugins/` skeleton: `__init__.py` (re-exports), `exceptions.py` (PluginRegistrationError, ManifestValidationError, AcknowledgmentMismatchError stubs), `tests/__init__.py`, `tests/conftest.py` (block_network autouse fixture)
-- [ ] T002 [P] Create `tui/src/commands/` plugin command stubs: `plugin-init.ts`, `plugin-install.ts`, `plugin-list.ts`, `plugin-uninstall.ts` with empty default exports so `index.ts` registration scaffolding can land
-- [ ] T003 [P] Create `docs/plugins/` scaffolding: 9 stub files (`quickstart.ko.md`, `architecture.md`, `pydantic-schema.md`, `search-hint.md`, `permission-tier.md`, `data-go-kr.md`, `live-vs-mock.md`, `testing.md`, `review-checklist.md`) + `security-review.md` with `<!-- CANONICAL-PIPA-ACK-START -->` / `<!-- CANONICAL-PIPA-ACK-END -->` markers (empty body for now, filled in T005)
-- [ ] T004 [P] Create `tests/fixtures/plugin_validation/` directory + empty `checklist_manifest.yaml` placeholder (filled in T037)
+- [X] T001 Create `src/kosmos/plugins/` skeleton: `__init__.py` (re-exports), `exceptions.py` (PluginRegistrationError, ManifestValidationError, AcknowledgmentMismatchError stubs), `tests/__init__.py`, `tests/conftest.py` (block_network autouse fixture; opt-out via `@pytest.mark.allow_network`)
+- [~] T002 ~~[P] Create `tui/src/commands/` plugin command stubs~~ — **VOIDED**: TUI command files (`plugin-init.ts`, `plugin-install.ts`, `plugin-list.ts`, `plugin-uninstall.ts`) follow the existing `default export <CommandDefinition>` pattern (per `tui/src/commands/index.ts`); empty stubs with placeholder typings would be type-lies. T018 / T053 / T054 / T055 create the real files when their implementation lands. No artifact for T002.
+- [X] T003 [P] Create `docs/plugins/` scaffolding: 9 stub files (`quickstart.ko.md`, `architecture.md`, `pydantic-schema.md`, `search-hint.md`, `permission-tier.md`, `data-go-kr.md`, `live-vs-mock.md`, `testing.md`, `review-checklist.md`) + `security-review.md` with `<!-- CANONICAL-PIPA-ACK-START -->` / `<!-- CANONICAL-PIPA-ACK-END -->` markers **and the canonical PIPA §26 text in place** (so T005 only needs to write the Python extractor)
+- [X] T004 [P] Create `tests/fixtures/plugin_validation/` directory + empty `checklist_manifest.yaml` placeholder (filled in T037)
 
 **Checkpoint**: Module skeleton in place; foundational work can start.
 

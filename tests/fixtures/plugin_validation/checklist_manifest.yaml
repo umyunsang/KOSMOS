@@ -1,0 +1,23 @@
+# SPDX-License-Identifier: Apache-2.0
+# Spec 1636 P5 Plugin DX — T004 placeholder.
+#
+# This file is the canonical source-of-truth for the 50-item review checklist
+# (Tier 4 / FR-013). Full content is generated in T037 from the derivation in
+# specs/1636-plugin-dx-5tier/research.md § R-1.
+#
+# Schema: each entry is a row of ReviewChecklistItem per
+# specs/1636-plugin-dx-5tier/data-model.md § 3:
+#
+#   - id: Q1-PYV2
+#     description_ko: ...
+#     description_en: ...
+#     source_rule: Constitution §III
+#     check_type: static | unit | workflow
+#     check_implementation: kosmos.plugins.checks.q1_schema:check_pydantic_v2
+#     failure_message_ko: ...
+#     failure_message_en: ...
+#
+# Meta-CI invariant: row count MUST equal exactly 50 once T037 lands; CI fails
+# if the count drifts (verifies SC-002).
+
+[]
