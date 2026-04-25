@@ -94,12 +94,12 @@ description: "Task list for Epic #1636 — P5 Plugin DX 5-tier"
 
 **Independent Test**: Run `kosmos plugin init nts-homtax --mock`; the scaffold must produce a no-network test path. CI-replay of `tests/conftest.py` block_network fixture asserts zero outbound sockets during mock tests.
 
-- [ ] T027 [US2] Add `--mock` branch to `tui/src/commands/plugin-init.ts`: when selected, emit scaffold without `httpx`/`aiohttp` imports in adapter.py, replace network call with fixture-replay; require `mock_source_spec` value at scaffold time; add test cases to `tui/test/commands/plugin-init.test.ts`
-- [ ] T028 [P] [US2] Bootstrap `kosmos-plugin-store/kosmos-plugin-nts-homtax` Mock example repo: tier=mock, mock_source_spec="https://www.nts.go.kr/openapi/...", fixture replay only, README.ko.md explains why Mock (project lacks NTS partnership)
-- [ ] T029 [P] [US2] Bootstrap `kosmos-plugin-store/kosmos-plugin-nhis-check` Mock example repo (국민건강보험공단 health-checkup): same shape as T028 with mock_source_spec pointing at NHIS public docs
-- [ ] T030 [P] [US2] Author `docs/plugins/live-vs-mock.md`: when to use which tier, lint consequences (Q7-LIVE-USES-NETWORK / Q7-MOCK-NO-EGRESS), evidence rules per memory `feedback_mock_evidence_based`; cite `docs/mock/` directory pattern
-- [ ] T031 [US2] Add Q7-MOCK-NO-EGRESS check to `src/kosmos/plugins/checks/q7_tier.py` and the workflow step matrix: pytest fixture asserts zero outbound socket count during mock tier tests; negative test in `test_validation_workflow.py`
-- [ ] T032 [US2] Add Q7-LIVE-USES-NETWORK check (assert tier=live adapter source contains httpx/aiohttp import via AST scan) to the same checks module + negative test (live adapter labeled but with no network call → fail)
+- [X] T027 [US2] Add `--mock` branch to `tui/src/commands/plugin-init.ts`: when selected, emit scaffold without `httpx`/`aiohttp` imports in adapter.py, replace network call with fixture-replay; require `mock_source_spec` value at scaffold time; add test cases to `tui/test/commands/plugin-init.test.ts`
+- [X] T028 [P] [US2] Bootstrap `kosmos-plugin-store/kosmos-plugin-nts-homtax` Mock example repo: tier=mock, mock_source_spec="https://www.nts.go.kr/openapi/...", fixture replay only, README.ko.md explains why Mock (project lacks NTS partnership)
+- [X] T029 [P] [US2] Bootstrap `kosmos-plugin-store/kosmos-plugin-nhis-check` Mock example repo (국민건강보험공단 health-checkup): same shape as T028 with mock_source_spec pointing at NHIS public docs
+- [X] T030 [P] [US2] Author `docs/plugins/live-vs-mock.md`: when to use which tier, lint consequences (Q7-LIVE-USES-NETWORK / Q7-MOCK-NO-EGRESS), evidence rules per memory `feedback_mock_evidence_based`; cite `docs/mock/` directory pattern
+- [X] T031 [US2] Add Q7-MOCK-NO-EGRESS check to `src/kosmos/plugins/checks/q7_tier.py` and the workflow step matrix: pytest fixture asserts zero outbound socket count during mock tier tests; negative test in `test_validation_workflow.py`
+- [X] T032 [US2] Add Q7-LIVE-USES-NETWORK check (assert tier=live adapter source contains httpx/aiohttp import via AST scan) to the same checks module + negative test (live adapter labeled but with no network call → fail)
 
 **Checkpoint**: Mock-tier path production-ready; live/mock mislabeling caught by CI. SC-006 (4 of 4 examples) achievable after T031/T032 land.
 

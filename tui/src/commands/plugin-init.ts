@@ -65,6 +65,13 @@ export interface PluginInitOptions {
   searchHintEn: string
   /** Optional override of the SLSA provenance URL placeholder in manifest. */
   slsaProvenanceUrl?: string
+  /**
+   * Override for tier=mock: URL or attribution string pointing at the
+   * public spec the mock mirrors. Defaults to a placeholder that the
+   * contributor MUST replace before publishing (memory
+   * feedback_mock_evidence_based).
+   */
+  mockSourceSpec?: string
   /** Optional override for testing: workspace root used to resolve outDir. */
   cwd?: string
 }
@@ -146,7 +153,9 @@ function manifestForOptions(opts: PluginInitOptions): Record<string, unknown> {
     },
     tier: opts.tier,
     mock_source_spec:
-      opts.tier === 'mock' ? 'https://example.com/mock-source-spec' : null,
+      opts.tier === 'mock'
+        ? (opts.mockSourceSpec ?? 'https://example.com/mock-source-spec')
+        : null,
     processes_pii: opts.pii,
     pipa_trustee_acknowledgment: opts.pipaAcknowledgment ?? null,
     slsa_provenance_url:
@@ -183,7 +192,7 @@ packages = ["plugin_${name}"]
 asyncio_mode = "auto"
 `
 
-const ADAPTER_TEMPLATE = (name: string, layerNote: string) => `# SPDX-License-Identifier: Apache-2.0
+const ADAPTER_TEMPLATE_LIVE = (name: string, layerNote: string) => `# SPDX-License-Identifier: Apache-2.0
 """KOSMOS plugin adapter for ${name}.
 
 Scaffolded by 'kosmos plugin init'. Replace the placeholder lookup logic
@@ -258,6 +267,97 @@ def __getattr__(name: str) -> Any:
 async def adapter(payload: LookupInput) -> dict[str, Any]:
     """Replace this stub with a real httpx call against the upstream API."""
     return {"echo": payload.query, "source": "${name}-stub"}
+`
+
+const ADAPTER_TEMPLATE_MOCK = (name: string, layerNote: string) => `# SPDX-License-Identifier: Apache-2.0
+"""KOSMOS plugin adapter for ${name} (Mock tier).
+
+${layerNote}
+
+This adapter does NOT call the upstream API — it replays a recorded
+fixture under tests/fixtures/. Mock tier is the right choice when the
+upstream system has no public API, requires partnership credentials
+KOSMOS does not have, or the integration is documented but not
+implementable today (memory feedback_mock_evidence_based).
+
+When the partnership / API access is established, swap this adapter
+to a Live-tier implementation by:
+
+1. Adding \`import httpx\` at the top.
+2. Replacing the fixture-replay path below with a real network call.
+3. Updating manifest.yaml: \`tier: live\`, \`mock_source_spec: null\`.
+4. Re-running \`uv run pytest\` and the 50-item validation workflow.
+"""
+
+from __future__ import annotations
+
+import json
+from pathlib import Path
+from typing import Any
+
+from .schema import LookupInput, LookupOutput
+
+_FIXTURE_PATH = (
+    Path(__file__).resolve().parent.parent / "tests" / "fixtures"
+    / "plugin.${name}.lookup.json"
+)
+
+
+def _build_tool() -> Any:
+    """Construct the GovAPITool registry entry on first access (PEP 562)."""
+    from kosmos.tools.models import GovAPITool
+
+    return GovAPITool(
+        id="plugin.${name}.lookup",
+        name_ko="${name} 조회",
+        ministry="OTHER",
+        category=["${name}"],
+        endpoint="mock://${name}",
+        auth_type="api_key",
+        input_schema=LookupInput,
+        output_schema=LookupOutput,
+        search_hint="${name} 조회 lookup",
+        auth_level="AAL1",
+        pipa_class="non_personal",
+        is_irreversible=False,
+        dpa_reference=None,
+        is_personal_data=False,
+        primitive="lookup",
+        published_tier_minimum="digital_onepass_level1_aal1",
+        nist_aal_hint="AAL1",
+        adapter_mode="mock",
+    )
+
+
+_TOOL_CACHE: Any = None
+
+
+def __getattr__(name: str) -> Any:
+    """PEP 562 lazy TOOL — see plugin-template README.staging.md."""
+    global _TOOL_CACHE
+    if name == "TOOL":
+        if _TOOL_CACHE is None:
+            _TOOL_CACHE = _build_tool()
+        return _TOOL_CACHE
+    raise AttributeError(name)
+
+
+async def adapter(payload: LookupInput) -> dict[str, Any]:
+    """Mock-tier adapter: replays the recorded fixture under tests/fixtures/.
+
+    The recorded fixture IS the simulated upstream response — its shape
+    must match \`LookupOutput\`. Contributor adjusts the fixture directly
+    to reflect realistic shapes when promoting to live tier.
+    """
+    if not _FIXTURE_PATH.is_file():
+        raise RuntimeError(
+            f"mock fixture missing at {_FIXTURE_PATH}; record one and commit."
+        )
+    raw = json.loads(_FIXTURE_PATH.read_text(encoding="utf-8"))
+    # Touch the payload so unused-arg lints stay quiet; mock path doesn't
+    # parameterise the call — real adapters use payload fields here.
+    _ = payload.model_dump()
+    return raw
 `
 
 const SCHEMA_TEMPLATE = `# SPDX-License-Identifier: Apache-2.0
@@ -570,12 +670,14 @@ function buildFiles(opts: PluginInitOptions): FileSpec[] {
 
   const manifest = manifestForOptions(opts)
   const yamlBody = yaml.stringify(manifest, { indent: 2 })
+  const adapterTemplate =
+    opts.tier === 'live' ? ADAPTER_TEMPLATE_LIVE : ADAPTER_TEMPLATE_MOCK
 
   return [
     { path: 'pyproject.toml', body: PYPROJECT_TEMPLATE(opts.name) },
     { path: 'manifest.yaml', body: yamlBody },
     { path: `plugin_${opts.name}/__init__.py`, body: PKG_INIT_TEMPLATE(opts.name) },
-    { path: `plugin_${opts.name}/adapter.py`, body: ADAPTER_TEMPLATE(opts.name, layerNote) },
+    { path: `plugin_${opts.name}/adapter.py`, body: adapterTemplate(opts.name, layerNote) },
     { path: `plugin_${opts.name}/schema.py`, body: SCHEMA_TEMPLATE },
     { path: 'tests/__init__.py', body: TEST_INIT },
     { path: 'tests/conftest.py', body: CONFTEST_TEMPLATE },
@@ -711,6 +813,7 @@ const _VALUE_FLAGS = [
   '--tier',
   '--layer',
   '--out',
+  '--mock-source-spec',
   ..._PIPA_FLAGS,
 ] as const
 
@@ -739,6 +842,11 @@ export function parsePluginInitArgv(argv: string[]): ParsedArgv {
   if (argv.includes('--pii')) options.pii = true
   if (argv.includes('--no-pii')) options.pii = false
   if (argv.includes('--force')) options.force = true
+
+  const mockSourceSpec = parseFlag(argv, '--mock-source-spec', (v) => v)
+  if (mockSourceSpec !== undefined) {
+    options.mockSourceSpec = mockSourceSpec
+  }
 
   // PIPA trustee block — mirrors the Python fallback's --pipa-* flag set.
   // All five sub-flags must be supplied together when --pii is set; partial
@@ -837,6 +945,7 @@ export function mainPluginInit(argv: string[]): PluginInitResult {
     layer: opts.layer as PermissionLayer,
     pii: opts.pii as boolean,
     pipaAcknowledgment: opts.pipaAcknowledgment,
+    mockSourceSpec: opts.mockSourceSpec,
     out: opts.out,
     force: opts.force ?? false,
     // Default Korean hint includes a generic ministry-class noun ("공공")

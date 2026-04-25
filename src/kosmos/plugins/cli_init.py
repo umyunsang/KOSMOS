@@ -50,6 +50,11 @@ class InitOptions:
     search_hint_ko: str
     search_hint_en: str
     pipa: PIPATrusteeArgs | None = None
+    # Override for tier=mock: URL or attribution string pointing at the
+    # public spec the mock mirrors. Defaults to a placeholder that the
+    # contributor MUST replace before publishing (memory
+    # feedback_mock_evidence_based).
+    mock_source_spec: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -104,7 +109,9 @@ def _manifest_dict(opts: InitOptions) -> dict[str, object]:
         },
         "tier": opts.tier,
         "mock_source_spec": (
-            "https://example.com/mock-source-spec" if opts.tier == "mock" else None
+            (opts.mock_source_spec or "https://example.com/mock-source-spec")
+            if opts.tier == "mock"
+            else None
         ),
         "processes_pii": opts.pii,
         "pipa_trustee_acknowledgment": (
@@ -136,12 +143,13 @@ def _build_files(opts: InitOptions) -> dict[str, str]:
         2: "Layer 2 (orange) — citizen-scoped data; consent required.",
         3: "Layer 3 (red) — irreversible action; explicit consent required.",
     }[opts.layer]
+    adapter_template = _ADAPTER_LIVE if opts.tier == "live" else _ADAPTER_MOCK
     manifest_yaml = yaml.safe_dump(_manifest_dict(opts), allow_unicode=True, sort_keys=False)
     return {
         "pyproject.toml": _PYPROJECT.format(name=name),
         "manifest.yaml": manifest_yaml,
         f"plugin_{name}/__init__.py": _PKG_INIT.format(name=name),
-        f"plugin_{name}/adapter.py": _ADAPTER.format(name=name, layer_note=layer_note),
+        f"plugin_{name}/adapter.py": adapter_template.format(name=name, layer_note=layer_note),
         f"plugin_{name}/schema.py": _SCHEMA,
         "tests/__init__.py": "# SPDX-License-Identifier: Apache-2.0\n",
         "tests/conftest.py": _CONFTEST,
@@ -197,7 +205,7 @@ from .schema import LookupInput, LookupOutput
 __all__ = ["adapter", "LookupInput", "LookupOutput"]
 '''
 
-_ADAPTER = '''# SPDX-License-Identifier: Apache-2.0
+_ADAPTER_LIVE = '''# SPDX-License-Identifier: Apache-2.0
 """KOSMOS plugin adapter for {name}.
 
 {layer_note}
@@ -260,6 +268,99 @@ def __getattr__(name: str) -> Any:
 async def adapter(payload: LookupInput) -> dict[str, Any]:
     """Replace this stub with a real httpx call against the upstream API."""
     return {{"echo": payload.query, "source": "{name}-stub"}}
+'''
+
+
+_ADAPTER_MOCK = '''# SPDX-License-Identifier: Apache-2.0
+"""KOSMOS plugin adapter for {name} (Mock tier).
+
+{layer_note}
+
+This adapter does NOT call the upstream API — it replays a recorded
+fixture under tests/fixtures/. Mock tier is the right choice when the
+upstream system has no public API, requires partnership credentials
+KOSMOS does not have, or the integration is documented but not
+implementable today (memory feedback_mock_evidence_based).
+
+When the partnership / API access is established, swap this adapter
+to a Live-tier implementation by:
+
+1. Adding `import httpx` at the top.
+2. Replacing the fixture-replay path below with a real network call.
+3. Updating manifest.yaml: `tier: live`, `mock_source_spec: null`.
+4. Re-running ``uv run pytest`` and the 50-item validation workflow.
+"""
+
+from __future__ import annotations
+
+import json
+from pathlib import Path
+from typing import Any
+
+from .schema import LookupInput, LookupOutput
+
+_FIXTURE_PATH = (
+    Path(__file__).resolve().parent.parent / "tests" / "fixtures"
+    / "plugin.{name}.lookup.json"
+)
+
+
+def _build_tool() -> Any:
+    """Construct the GovAPITool registry entry on first access (PEP 562)."""
+    from kosmos.tools.models import GovAPITool
+
+    return GovAPITool(
+        id="plugin.{name}.lookup",
+        name_ko="{name} 조회",
+        ministry="OTHER",
+        category=["{name}"],
+        endpoint="mock://{name}",
+        auth_type="api_key",
+        input_schema=LookupInput,
+        output_schema=LookupOutput,
+        search_hint="{name} 조회 lookup",
+        auth_level="AAL1",
+        pipa_class="non_personal",
+        is_irreversible=False,
+        dpa_reference=None,
+        is_personal_data=False,
+        primitive="lookup",
+        published_tier_minimum="digital_onepass_level1_aal1",
+        nist_aal_hint="AAL1",
+        adapter_mode="mock",
+    )
+
+
+_TOOL_CACHE: Any = None
+
+
+def __getattr__(name: str) -> Any:
+    """PEP 562 lazy TOOL — see plugin-template README.staging.md."""
+    global _TOOL_CACHE
+    if name == "TOOL":
+        if _TOOL_CACHE is None:
+            _TOOL_CACHE = _build_tool()
+        return _TOOL_CACHE
+    raise AttributeError(name)
+
+
+async def adapter(payload: LookupInput) -> dict[str, Any]:
+    """Mock-tier adapter: replays the recorded fixture under tests/fixtures/.
+
+    The recorded fixture IS the simulated upstream response — its shape
+    must match :class:`LookupOutput`. We do not attach the input echo;
+    contributor adjusts the fixture directly to reflect realistic shapes.
+    """
+    if not _FIXTURE_PATH.is_file():
+        raise RuntimeError(
+            f"mock fixture missing at {{_FIXTURE_PATH}}; record one and commit."
+        )
+    raw = json.loads(_FIXTURE_PATH.read_text(encoding="utf-8"))
+    # Touch the payload so unused-arg lints stay quiet; the input is
+    # otherwise unused in the mock path. Real adapters use payload to
+    # parameterise the call — replace this when promoting to live tier.
+    _ = payload.model_dump()
+    return raw
 '''
 
 _SCHEMA = '''# SPDX-License-Identifier: Apache-2.0
@@ -545,6 +646,14 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--pipa-legal-basis")
     parser.add_argument("--pipa-sha256")
+    parser.add_argument(
+        "--mock-source-spec",
+        default=None,
+        help=(
+            "URL / attribution for tier=mock; ignored when tier=live "
+            "(memory feedback_mock_evidence_based)"
+        ),
+    )
 
     args = parser.parse_args(argv)
 
@@ -588,6 +697,7 @@ def main(argv: list[str] | None = None) -> int:
         search_hint_ko=args.search_hint_ko or f"{args.name} 공공 데이터 조회 검색 추천",
         search_hint_en=args.search_hint_en or f"{args.name} public data lookup search",
         pipa=pipa,
+        mock_source_spec=args.mock_source_spec,
     )
     result = run_init(opts)
     if result.exit_code != 0:

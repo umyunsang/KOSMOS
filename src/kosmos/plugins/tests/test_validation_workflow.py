@@ -106,6 +106,42 @@ class TestValidScaffoldScores50of50:
         assert len(failed) == 0, f"unmutated template should pass 50/50; failed: {failed}"
         assert len(passed) == 50
 
+    def test_mock_tier_passes_q7_mock_invariants(
+        self, scaffold: Path, tmp_path: Path
+    ) -> None:
+        """Mock-tier scaffold: no httpx import + mock_source_spec set.
+
+        Generates a fresh mock-tier scaffold via the Python entry-point and
+        asserts the two Q7 mock-specific checks (MOCK-NO-EGRESS,
+        MOCK-SOURCE) pass — i.e. the --mock branch in plugin-init / cli_init
+        is wired correctly. Doesn't require 50/50 since README content is
+        contributor-authored.
+        """
+        from kosmos.plugins import cli_init
+
+        out = tmp_path / "mock_scaffold"
+        result = cli_init.run_init(
+            cli_init.InitOptions(
+                name="mock_demo",
+                tier="mock",
+                layer=1,
+                pii=False,
+                out=out,
+                force=False,
+                search_hint_ko="공공 데모 모킹 plugin",
+                search_hint_en="public demo mock plugin",
+                mock_source_spec="https://example.com/mock-spec",
+            )
+        )
+        assert result.exit_code == 0, result.error_message
+        outcomes = _outcomes_by_id(out)
+        # The mock-specific Q7 invariants MUST pass.
+        assert outcomes["Q7-TIER-LITERAL"] is True
+        assert outcomes["Q7-MOCK-SOURCE"] is True
+        assert outcomes["Q7-MOCK-NO-EGRESS"] is True
+        # Live-only check must NOT trigger for mock tier.
+        assert outcomes["Q7-LIVE-USES-NETWORK"] is True
+
 
 # ---------------------------------------------------------------------------
 # Negative cases — one mutation per test, expected check ID must fail.
