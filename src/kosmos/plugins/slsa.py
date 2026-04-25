@@ -211,7 +211,11 @@ def verify_artifact(
         return SLSAVerificationResult(
             passed=False,
             failure_kind=SLSAFailureKind.TIMEOUT,
-            stderr_tail=_tail(exc.stderr or ""),
+            stderr_tail=_tail(
+                exc.stderr.decode("utf-8", errors="replace")
+                if isinstance(exc.stderr, bytes)
+                else (exc.stderr or "")
+            ),
             exit_code=-1,
         )
 

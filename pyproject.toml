@@ -193,6 +193,42 @@ plugins = ["pydantic.mypy"]
 module = "tests.*"
 disallow_untyped_defs = false
 
+# Spec 1636: in-tree plugin tests live under src/kosmos/plugins/tests/
+# (so they ship with the library and exercise package-private helpers).
+# They use **dict[str, object] kwargs against typed PluginManifest /
+# CatalogEntry constructors — a common test fixture pattern that strict
+# mypy flags. Disable strict checks for test modules; CI's pytest run
+# is the actual gate for behaviour.
+[[tool.mypy.overrides]]
+module = "kosmos.plugins.tests.*"
+disallow_untyped_defs = false
+disable_error_code = [
+    "arg-type",
+    "no-redef",
+    "no-any-return",
+    "call-arg",
+    "operator",
+    "unused-ignore",
+]
+
+# kiwipiepy ships no py.typed stubs (BSD licensed Korean tokenizer used
+# by q4 search-hint nouns check) — silence import-untyped for that one
+# module without disabling type checking for the file that uses it.
+[[tool.mypy.overrides]]
+module = "kiwipiepy"
+ignore_missing_imports = true
+
+# langfuse extras are opt-in (see [project.optional-dependencies]); they
+# are NOT installed in the default --all-extras --dev sync the lint job
+# uses. Skip the import check for the optional client.
+[[tool.mypy.overrides]]
+module = "langfuse"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "langfuse.*"
+ignore_missing_imports = true
+
 [tool.pydantic-mypy]
 init_forbid_extra = true
 init_typed = true

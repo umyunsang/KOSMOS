@@ -21,7 +21,7 @@ def _get_kiwi() -> object:
     global _KIWI  # noqa: PLW0603
     if _KIWI is None:
         try:
-            from kiwipiepy import Kiwi  # type: ignore[import-untyped]
+            from kiwipiepy import Kiwi
 
             _KIWI = Kiwi()
             logger.debug("kiwipiepy Kiwi singleton initialised")

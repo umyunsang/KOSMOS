@@ -94,7 +94,7 @@ def resolve_check(dotted_path: str) -> CheckFn:
     fn = getattr(module, fn_name, None)
     if fn is None or not callable(fn):
         raise AttributeError(f"check function {fn_name!r} not found in {module_name!r}")
-    return fn  # type: ignore[return-value]
+    return fn  # type: ignore[no-any-return]
 
 
 def load_checklist_rows(yaml_path: Path) -> list[ChecklistRow]:
