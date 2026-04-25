@@ -66,11 +66,11 @@
 - [x] T019 [P] [US1] `ErrorEnvelope` with three differentiated styles (LLM purple+brain / Tool orange+wrench / Network red+signal-broken) in `tui/src/components/messages/ErrorEnvelope.tsx` (FR-012, ref `cc:components/FallbackToolUseErrorMessage.tsx`)
 - [x] T020 [P] [US1] `ContextQuoteBlock` with `⎿` prefix and single-border box in `tui/src/components/messages/ContextQuoteBlock.tsx` (FR-013, ref `cc:components/Message.tsx` quote glyph)
 - [x] T021 [P] [US1] Extend `PromptInputFooterSuggestions` with highlighted match + inline preview dropdown driven by the slash-command catalog in `tui/src/components/PromptInput/SlashCommandSuggestions.tsx` (FR-014, depends on T010)
-- [ ] T022 [US1] Wire all UI-B components into `tui/src/screens/REPL.tsx` and emit `kosmos.ui.surface=repl` on render (FR-037, depends on T014–T021, T009)
-- [ ] T023 [US1] Network 5-second no-chunk transition handler — switch to `ErrorEnvelope` type=`network` with retry option in `tui/src/screens/REPL.tsx` (edge case "streaming network drop")
+- [x] T022 [US1] Wire all UI-B components into `tui/src/screens/REPL.tsx` and emit `kosmos.ui.surface=repl` on render (FR-037, depends on T014–T021, T009)
+- [x] T023 [US1] Network 5-second no-chunk transition handler — switch to `ErrorEnvelope` type=`network` with retry option in `tui/src/screens/REPL.tsx` (edge case "streaming network drop")
 - [x] T024 [P] [US1] `bun:test` units in `tui/tests/components/messages/` covering `StreamingChunk`, `PdfInlineViewer`, `ErrorEnvelope`, `ContextQuoteBlock`, `MarkdownTable`, `MarkdownRenderer` (FR-008/010/011/012/013)
 - [x] T025 [P] [US1] `bun:test` units in `tui/tests/components/PromptInput/` for `CtrlOToExpand` and `SlashCommandSuggestions` (FR-009/014, SC-005 100ms-after-`/` budget)
-- [ ] T026 [US1] OTEL surface attribute on every UI-B component activation (FR-037) — covered by T022 wiring + helper from T009
+- [x] T026 [US1] OTEL surface attribute on every UI-B component activation (FR-037) — covered by T022 wiring + helper from T009
 
 **Checkpoint**: REPL Main is fully functional and testable independently.
 
@@ -93,10 +93,10 @@
 - [ ] T033 [US2] `/consent revoke <rcpt-id>` subcommand with confirmation modal and idempotent semantics in `tui/src/commands/consent.ts` — toast "이미 철회됨" when already revoked (FR-020/021, depends on T032)
 - [ ] T034 [US2] Ctrl-C handler in `PermissionGauntletModal.tsx` — auto-deny with `auto_denied_at_cancel` decision (FR-023, depends on T028)
 - [ ] T035 [US2] 5-minute idle handler in `PermissionGauntletModal.tsx` — auto-deny with `timeout_denied` decision and Layer 3 specific application (FR-024, depends on T028)
-- [ ] T036 [US2] Wire Shift+Tab mode cycle to `BypassReinforcementModal` in `tui/src/screens/REPL.tsx` (FR-022, depends on T030, T011)
+- [x] T036 [US2] Wire Shift+Tab mode cycle to `BypassReinforcementModal` in `tui/src/screens/REPL.tsx` (FR-022, depends on T030, T011)
 - [ ] T037 [P] [US2] `bun:test` units in `tui/tests/components/permissions/` for layer header, modal, toast, bypass-reinforcement (FR-015/016/017/018/022)
 - [ ] T038 [P] [US2] `bun:test` units in `tui/tests/commands/consent.test.ts` covering list output ordering and revoke idempotency (FR-019/020/021)
-- [ ] T039 [US2] Emit `kosmos.ui.surface=permission_gauntlet` on every modal show via T009 helper (FR-037)
+- [x] T039 [US2] Emit `kosmos.ui.surface=permission_gauntlet` on every modal show via T009 helper (FR-037)
 
 **Checkpoint**: Permission Gauntlet works end-to-end. Combined with US1, the REPL is safe for any tool call up to Layer 3.
 
@@ -119,10 +119,10 @@
 - [ ] T046 [US3] `/onboarding` command with optional `<step-name>` positional arg in `tui/src/commands/onboarding.ts` (FR-003, depends on T045)
 - [ ] T047 [P] [US3] `/lang ko|en` command in `tui/src/commands/lang.ts` flipping the i18n binding at runtime (FR-004)
 - [ ] T048 [US3] Wire accessibility toggle persistence in `TerminalSetupStep.tsx` to T008 memdir helper writing `~/.kosmos/memdir/user/preferences/a11y.json` (FR-005, depends on T044, T008)
-- [ ] T049 [US3] Onboarding entry gate at startup in `tui/src/main.tsx` — skip when `current_step_index === 5`, resume when `< 5`, replay full sequence on `/onboarding` (FR-001 acceptance §1, depends on T045)
+- [x] T049 [US3] Onboarding entry gate at startup in `tui/src/main.tsx` — skip when `current_step_index === 5`, resume when `< 5`, replay full sequence on `/onboarding` (FR-001 acceptance §1, depends on T045)
 - [ ] T050 [P] [US3] `bun:test` units in `tui/tests/components/onboarding/` covering all five step components and the flow driver (FR-001..006)
 - [ ] T051 [P] [US3] `bun:test` units in `tui/tests/commands/{onboarding,lang}.test.ts` (FR-003/004)
-- [ ] T052 [US3] Emit `kosmos.ui.surface=onboarding` on each step render via T009 helper (FR-037)
+- [x] T052 [US3] Emit `kosmos.ui.surface=onboarding` on each step render via T009 helper (FR-037)
 
 **Checkpoint**: First-launch onboarding works. Combined with US1+US2, citizens have a complete entry, query, and consent loop.
 
@@ -139,10 +139,10 @@
 - [ ] T053 [P] [US4] `AgentVisibilityPanel` rendering proposal-iv 5-state per ministry in `tui/src/components/agents/AgentVisibilityPanel.tsx` (FR-025/028, ref `cc:components/agents/AgentsList.tsx`, `docs/wireframes/proposal-iv.mjs`)
 - [ ] T054 [P] [US4] `AgentDetailRow` with SLA-remaining / health (green/amber/red) / rolling-avg response in `tui/src/components/agents/AgentDetailRow.tsx` (FR-026, ref `cc:components/CoordinatorAgentStatus.tsx`)
 - [ ] T055 [US4] `/agents` command supporting `--detail` flag in `tui/src/commands/agents.ts` (FR-026, depends on T053, T054)
-- [ ] T056 [US4] Wire `shouldActivateSwarm` predicate (T005) into the REPL plan handler in `tui/src/screens/REPL.tsx` (FR-027 A+C union)
+- [x] T056 [US4] Wire `shouldActivateSwarm` predicate (T005) into the REPL plan handler in `tui/src/screens/REPL.tsx` (FR-027 A+C union)
 - [ ] T057 [US4] Subscribe `AgentVisibilityPanel` to Spec 027 mailbox event channel for live state transitions in `tui/src/components/agents/AgentVisibilityPanel.tsx` — push, no polling (FR-028, SC-007 ≤500 ms p95)
 - [ ] T058 [P] [US4] `bun:test` units in `tui/tests/components/agents/` and `tui/tests/commands/agents.test.ts` including swarm-predicate boundary cases (FR-025/026/027/028)
-- [ ] T059 [US4] Emit `kosmos.ui.surface=agents` on panel render via T009 helper (FR-037)
+- [x] T059 [US4] Emit `kosmos.ui.surface=agents` on panel render via T009 helper (FR-037)
 
 **Checkpoint**: Citizens can see who is doing what in real time. With US1+US2+US3+US4 the platform is ready for daily citizen use.
 
@@ -168,7 +168,7 @@
 - [ ] T069 [P] [US5] Port `HistorySearchDialog` with 3-filter form (`--date FROM..TO`, `--session <id>`, `--layer <n>`) in `tui/src/components/history/HistorySearchDialog.tsx` (FR-033, ref `cc:components/HistorySearchDialog.tsx`)
 - [ ] T070 [US5] `/history` command supporting all three filters with AND composition in `tui/src/commands/history.ts` (FR-033, depends on T069)
 - [ ] T071 [P] [US5] `bun:test` units in `tui/tests/components/{help,config,plugins,export,history}/` and `tui/tests/commands/{help,config,plugins,export,history}.test.ts` (FR-029..033, SC-012 zero-OTEL-leak assertion in export tests)
-- [ ] T072 [US5] Emit `kosmos.ui.surface={help,config,plugins,export,history}` per surface activation via T009 helper (FR-037)
+- [x] T072 [US5] Emit `kosmos.ui.surface={help,config,plugins,export,history}` per surface activation via T009 helper (FR-037)
 
 **Checkpoint**: All five user stories independently functional.
 
