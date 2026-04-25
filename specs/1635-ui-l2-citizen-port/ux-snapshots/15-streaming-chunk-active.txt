@@ -1,0 +1,5 @@
+# UX Snapshot: 15-streaming-chunk-active
+# Note: FR-008 — 20-token chunk streaming (mid-stream sample)
+# Generated: 2026-04-25T11:32:52.628Z
+
+응답 수신 중…

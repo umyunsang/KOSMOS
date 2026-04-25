@@ -1,0 +1,13 @@
+# UX Snapshot: 21-history-search-dialog
+# Note: FR-033 — /history 3-filter form
+# Generated: 2026-04-25T11:32:52.860Z
+
+ 과거 세션 검색
+
+ > █
+ --date YYYY-MM-DD..YYYY-MM-DD  --session <id>  --layer <1|2|3>
+
+ › 2026-04-20  sess-2026-04…  운전면허 갱신 안내
+   2026-04-22  sess-2026-04…  차상위 의료급여 신청
+
+ Enter 선택 · Esc 취소 · ↑↓ 이동 · Backspace 지우기

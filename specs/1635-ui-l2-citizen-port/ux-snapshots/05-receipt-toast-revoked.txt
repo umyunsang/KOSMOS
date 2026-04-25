@@ -1,0 +1,5 @@
+# UX Snapshot: 05-receipt-toast-revoked
+# Note: FR-020 — Receipt revoked toast
+# Generated: 2026-04-25T11:32:52.236Z
+
+ ✻ 철회 완료 rcpt-7d3a8f2e9c4b

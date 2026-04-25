@@ -1,0 +1,5 @@
+# UX Snapshot: 04-receipt-toast-issued
+# Note: FR-018 — Receipt issued toast
+# Generated: 2026-04-25T11:32:52.201Z
+
+ ✻ 발급됨 rcpt-7d3a8f2e9c4b
