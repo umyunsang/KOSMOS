@@ -9,6 +9,7 @@
   "scripts": {
     "tui": "bun run src/main.tsx",
     "gen:ipc": "bun run scripts/gen-ipc-types.ts",
+    "gen:pipa-hash": "bun run scripts/gen-pipa-hash.ts",
     "diff:upstream": "bun run scripts/diff-upstream.ts",
     "tui:smoke": "bun run scripts/tui-smoke.ts",
     "test:soak": "bun test --timeout 600000 tests/soak",

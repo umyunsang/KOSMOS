@@ -245,7 +245,7 @@ uv run pytest
 ## 단계 8 — 로컬 검증 (2분)
 
 ```sh
-uvx --from git+https://github.com/umyunsang/KOSMOS@main#subdirectory=src/kosmos/plugins \
+uvx --from git+https://github.com/umyunsang/KOSMOS@main \
     kosmos-plugin-validate .
 ```
 

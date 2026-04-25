@@ -160,6 +160,21 @@ class KosmosSettings(BaseSettings):
             )
         return v
 
+    # --- User-tier memdir root (Spec 027 / Spec 035 sibling) ---
+    user_memdir_root: Path = Field(
+        default_factory=lambda: Path.home() / ".kosmos" / "memdir" / "user",
+    )
+    """Root for user-tier memdir (KOSMOS_USER_MEMDIR_ROOT).
+
+    Houses session-lifetime + cross-session user state: ``consent/``
+    (Spec 035 ledger + Spec 1636 plugin install/uninstall receipts),
+    ``plugins/`` (installed plugin bundles, see ``plugin_install_root``),
+    ``onboarding/state.json`` (Spec 1635 resumable step state),
+    ``preferences/a11y.json`` (accessibility toggles).
+
+    Must be an absolute path. Default: ``~/.kosmos/memdir/user``.
+    """
+
     # --- Plugin DX (Epic #1636 P5; data-model.md storage layout) ---
     plugin_install_root: Path = Field(
         default_factory=lambda: Path.home() / ".kosmos" / "memdir" / "user" / "plugins",
@@ -215,6 +230,7 @@ class KosmosSettings(BaseSettings):
     """
 
     @field_validator(
+        "user_memdir_root",
         "plugin_install_root",
         "plugin_bundle_cache",
         "plugin_vendor_root",

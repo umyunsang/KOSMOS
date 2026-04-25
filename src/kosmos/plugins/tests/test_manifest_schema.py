@@ -228,19 +228,16 @@ class TestCrossFieldValidators:
             )
         assert "adapter.tool_id must start with 'plugin.demo_plugin.'" in str(exc.value)
 
-    def test_v_namespace_verb_must_be_root_primitive(self) -> None:
-        # ADR-007 regex permits resolve_location at the AdapterRegistration
-        # layer; PluginManifest specifically forbids it (Q8-NO-ROOT-OVERRIDE).
+    def test_v_namespace_verb_resolve_location_rejected(self) -> None:
+        """Post review-eval C3: AdapterRegistration regex rejects
+        ``plugin.<id>.resolve_location`` directly — no drift between
+        the adapter layer and PluginManifest._v_namespace.
+        """
         with pytest.raises(ValidationError) as exc:
-            PluginManifest(
-                **_make_manifest_kwargs(
-                    adapter=_make_adapter(
-                        tool_id="plugin.demo_plugin.resolve_location",
-                        primitive=AdapterPrimitive.resolve_location,
-                    ),
-                )
+            _make_adapter(
+                tool_id="plugin.demo_plugin.resolve_location",
+                primitive=AdapterPrimitive.resolve_location,
             )
-        assert "verb suffix must be one of" in str(exc.value)
         assert "resolve_location" in str(exc.value)
 
 
@@ -301,3 +298,34 @@ class TestCanonicalAcknowledgmentHash:
         # 64 lowercase hex chars; matches ack regex on the model.
         assert len(CANONICAL_ACKNOWLEDGMENT_SHA256) == 64
         assert all(c in "0123456789abcdef" for c in CANONICAL_ACKNOWLEDGMENT_SHA256)
+
+    def test_extracted_text_is_actual_canonical_block_not_prose(self) -> None:
+        """C5 regression: prose mentions of the markers in backticks must not
+        contaminate extraction. The actual canonical text is 540 chars of
+        the 7 PIPA §26 trustee duties — not the 5-char ` ↔ ` separator
+        between two prose marker mentions on the same line.
+        """
+        assert len(CANONICAL_ACKNOWLEDGMENT_TEXT) > 200, (
+            f"canonical text suspiciously short ({len(CANONICAL_ACKNOWLEDGMENT_TEXT)} chars) — "
+            "extraction probably captured a prose mention instead of the actual block"
+        )
+        # The actual canonical block opens with this exact phrase.
+        assert "본 플러그인의 기여 조직" in CANONICAL_ACKNOWLEDGMENT_TEXT
+        # And contains the 7 numbered duties.
+        for n in range(1, 8):
+            assert f"{n}. " in CANONICAL_ACKNOWLEDGMENT_TEXT, (
+                f"duty {n} missing — extraction did not capture the full block"
+            )
+
+    def test_extracted_hash_matches_documented_hash(self) -> None:
+        """C5 + D1 regression: the hash printed in docs/plugins/security-review.md
+        must equal the runtime constant. Catches drift in either direction."""
+        from pathlib import Path
+
+        md = Path(_canon._SECURITY_REVIEW_PATH).read_text(encoding="utf-8")
+        # The hash table row literally contains the 64-char hex digest.
+        assert CANONICAL_ACKNOWLEDGMENT_SHA256 in md, (
+            "docs/plugins/security-review.md does not display the runtime "
+            f"hash {CANONICAL_ACKNOWLEDGMENT_SHA256} — citizens copying the "
+            "documented value into manifest.yaml will fail Q6-PIPA-HASH"
+        )

@@ -19,7 +19,7 @@
         "tool_id": {
           "maxLength": 128,
           "minLength": 1,
-          "pattern": "^([a-z][a-z0-9_]*|plugin\\.[a-z][a-z0-9_]*\\.(lookup|submit|verify|subscribe|resolve_location))$",
+          "pattern": "^([a-z][a-z0-9_]*|plugin\\.[a-z][a-z0-9_]*\\.(lookup|submit|verify|subscribe))$",
           "title": "Tool Id",
           "type": "string"
         },

@@ -54,19 +54,33 @@ def _load_security_review_md(path: Path = _SECURITY_REVIEW_PATH) -> str:
 def _extract_canonical_text(md: str) -> str:
     """Extract the canonical PIPA §26 text from the security-review markdown.
 
-    Whitespace normalisation: strip leading/trailing whitespace and convert
-    CRLF to LF so the SHA-256 is platform-stable.
+    The markdown legitimately mentions the marker token several times in
+    prose (table cells, step procedure text) — those mentions are always
+    wrapped in inline-code backticks so they sit mid-line. The ACTUAL
+    canonical block places the markers on their own lines. We require
+    the standalone-line form (newline boundaries on both sides) so prose
+    mentions cannot contaminate extraction.
+
+    Whitespace normalisation: strip leading/trailing whitespace and
+    convert CRLF to LF so the SHA-256 is platform-stable.
     """
-    start = md.find(_START_MARKER)
-    end = md.find(_END_MARKER)
+    normalized = md.replace("\r\n", "\n")
+    # Markers must be on their own line — i.e. preceded by '\n' and
+    # followed by '\n'. Search those exact byte sequences.
+    start_token = "\n" + _START_MARKER + "\n"
+    end_token = "\n" + _END_MARKER + "\n"
+    start = normalized.find(start_token)
+    end = normalized.find(end_token)
     if start == -1 or end == -1 or end <= start:
         raise CanonicalAcknowledgmentLoadError(
             "Canonical PIPA acknowledgment markers not found in "
-            "docs/plugins/security-review.md. Expected "
-            f"{_START_MARKER!r} ... {_END_MARKER!r}."
+            "docs/plugins/security-review.md. Both "
+            f"{_START_MARKER!r} and {_END_MARKER!r} must appear on "
+            "their own line — prose mentions inside backticks are "
+            "intentionally ignored."
         )
-    raw = md[start + len(_START_MARKER) : end]
-    return raw.strip().replace("\r\n", "\n")
+    raw = normalized[start + len(start_token) : end]
+    return raw.strip()
 
 
 def _compute_canonical_hash(text: str) -> str:

@@ -39,6 +39,7 @@ dependencies = [
 kosmos = "kosmos.cli.app:main"
 kosmos-permissions = "kosmos.permissions.cli:main"
 kosmos-plugin-init = "kosmos.plugins.cli_init:main"
+kosmos-plugin-validate = "kosmos.plugins.checks.framework:_cli_main"
 
 [project.optional-dependencies]
 dev = [

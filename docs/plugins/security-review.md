@@ -102,6 +102,8 @@ pipa_trustee_acknowledgment:
 - **`legal_basis`** — PIPA 의 동의 근거 조항. 「개인정보 보호법」 제15조 (수집·이용) 또는 제17조 (제공) 또는 제18조 (목적 외 이용) + 해당 항/호 표기.
 - **`acknowledgment_sha256`** — 본 문서 상단의 hash. 64자 lowercase hex.
 
+> **`pipa_class` 두 enum 표기**: 위 예시의 `pipa_class: personal_standard` 는 `manifest.yaml` 의 `AdapterRegistration` enum 입니다. 같은 plugin 의 `adapter.py` 안에서 `GovAPITool(...)` 인스턴스를 만들 때는 별도의 단축 enum (`personal` / `sensitive` / `identifier`) 을 씁니다. 자세한 mapping 은 [`docs/plugins/permission-tier.md`](permission-tier.md) Layer 1 섹션의 "두 개의 `pipa_class` enum 표기" 박스를 참고.
+
 ### 4단계 · `dpa_reference` (Spec 024 V2)
 
 `pipa_class != non_personal` 인 모든 어댑터는 `dpa_reference` (Data Processing Agreement 식별자) 가 manifest 에 명시되어야 합니다 (Q3-V2-DPA). 예:

@@ -109,11 +109,15 @@ class AdapterRegistration(BaseModel):
     tool_id: str = Field(
         min_length=1,
         max_length=128,
-        # Spec 1636 P5 ADR-007: tool_id may be either snake_case (built-in
-        # adapters from Spec 022/031) OR plugin-namespaced
-        # `plugin.<plugin_id>.<verb>` (Migration tree § L1-C C7) where <verb>
-        # is one of the 4 root primitives. Backward-compatible alternation.
-        pattern=r"^([a-z][a-z0-9_]*|plugin\.[a-z][a-z0-9_]*\.(lookup|submit|verify|subscribe|resolve_location))$",
+        # Spec 1636 P5 ADR-007 (revised by review eval C3): tool_id may be
+        # either snake_case (built-in adapters from Spec 022/031) OR
+        # plugin-namespaced ``plugin.<plugin_id>.<verb>`` (Migration tree
+        # § L1-C C7) where <verb> is one of the FOUR root primitives.
+        # resolve_location is host-reserved (Q8-NO-ROOT-OVERRIDE) and
+        # cannot be overridden by plugins; the regex enforces that on
+        # both AdapterRegistration and GovAPITool to keep the layers
+        # drift-free.
+        pattern=r"^([a-z][a-z0-9_]*|plugin\.[a-z][a-z0-9_]*\.(lookup|submit|verify|subscribe))$",
     )
     primitive: AdapterPrimitive
     module_path: str

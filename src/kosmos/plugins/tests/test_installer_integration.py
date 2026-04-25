@@ -196,13 +196,13 @@ def isolated_settings(
     """Confine plugin filesystem state to tmp_path + bypass SLSA."""
     install_root = tmp_path / "install"
     bundle_cache = tmp_path / "cache"
-    consent_root = tmp_path / "consent_parent"
+    user_memdir = tmp_path / "memdir" / "user"
     monkeypatch.setattr("kosmos.plugins.installer.settings.plugin_install_root", install_root)
     monkeypatch.setattr("kosmos.plugins.installer.settings.plugin_bundle_cache", bundle_cache)
     monkeypatch.setattr("kosmos.plugins.installer.settings.plugin_slsa_skip", True)
     monkeypatch.setattr(
-        "kosmos.plugins.installer.settings.permission_ledger_path",
-        consent_root / "ledger.jsonl",
+        "kosmos.plugins.installer.settings.user_memdir_root",
+        user_memdir,
     )
     return tmp_path
 
@@ -242,7 +242,7 @@ class TestInstallHappyPath:
         assert (install_dir / "adapter.py").is_file()
         # Receipt written.
         receipt_files = list(
-            (isolated_settings / "consent_parent" / "consent").glob("rcpt-*.json")
+            (isolated_settings / "memdir" / "user" / "consent").glob("rcpt-*.json")
         )
         assert len(receipt_files) == 1
         receipt_payload = json.loads(receipt_files[0].read_text(encoding="utf-8"))
@@ -333,7 +333,7 @@ class TestInstallNegativePaths:
         # No install dir, no receipt.
         install_dir = isolated_settings / "install" / "demo_plugin"
         assert not install_dir.exists()
-        receipt_dir = isolated_settings / "consent_parent" / "consent"
+        receipt_dir = isolated_settings / "memdir" / "user" / "consent"
         assert not receipt_dir.exists() or not list(receipt_dir.glob("*.json"))
 
 
@@ -358,5 +358,5 @@ class TestInstallDryRun:
         assert "plugin.demo_plugin.lookup" not in registry
         install_dir = isolated_settings / "install" / "demo_plugin"
         assert not install_dir.exists()
-        receipt_dir = isolated_settings / "consent_parent" / "consent"
+        receipt_dir = isolated_settings / "memdir" / "user" / "consent"
         assert not receipt_dir.exists() or not list(receipt_dir.glob("*.json"))

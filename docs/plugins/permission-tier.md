@@ -48,6 +48,17 @@ adapter:
 
 **Spec 033 동작**: 동의 프롬프트 없이 즉시 호출. 시민이 결과만 확인.
 
+> **두 개의 `pipa_class` enum 표기**: `manifest.yaml` 의 `adapter.pipa_class` 는 `AdapterRegistration` enum (`non_personal` / `personal_standard` / `personal_sensitive` / `personal_unique_id`) 을 사용합니다. 한편 `adapter.py` 안에서 `GovAPITool(...)` 를 직접 생성할 때는 `GovAPITool.pipa_class` enum (`non_personal` / `personal` / `sensitive` / `identifier`) 을 사용합니다. 두 enum 의 매핑:
+>
+> | manifest.yaml (AdapterRegistration) | adapter.py (GovAPITool) |
+> |---|---|
+> | `non_personal` | `non_personal` |
+> | `personal_standard` | `personal` |
+> | `personal_sensitive` | `sensitive` |
+> | `personal_unique_id` | `identifier` |
+>
+> Default scaffold (`kosmos plugin init`) 는 양쪽 모두 `non_personal` 을 emit 하므로 처음 시작할 때는 신경 쓸 필요 없습니다. PII 처리로 전환할 때만 두 곳을 함께 갱신하세요.
+
 ---
 
 ### Layer 2 (orange) — Citizen-scoped, consent required

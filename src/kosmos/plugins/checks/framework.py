@@ -150,6 +150,106 @@ def run_all_checks(
     return results
 
 
+def _cli_main(argv: list[str] | None = None) -> int:
+    """Entry point for ``kosmos-plugin-validate <plugin_root>``.
+
+    Walks the 50-item review checklist against ``<plugin_root>`` and
+    prints a Korean+English per-row summary. Exits 0 if N=50/50, else
+    exits 1 with a per-failure-item summary.
+
+    Closes review eval D3: quickstart Step 8 promised ``kosmos-plugin-
+    validate .`` but no entry-point existed in pyproject.toml. Citizens
+    following step 8 had no path to the documented "✓ 50 / 50 통과".
+    """
+    import argparse
+    import sys
+
+    parser = argparse.ArgumentParser(
+        prog="kosmos-plugin-validate",
+        description=(
+            "Run KOSMOS plugin 50-item review checklist against a "
+            "plugin source tree. Same engine that powers the GitHub "
+            "Actions reusable workflow."
+        ),
+    )
+    parser.add_argument(
+        "plugin_root",
+        type=Path,
+        nargs="?",
+        default=Path("."),
+        help="Plugin source root (default: current dir).",
+    )
+    parser.add_argument(
+        "--yaml",
+        type=Path,
+        default=None,
+        help=(
+            "Path to checklist_manifest.yaml. Default: bundled "
+            "tests/fixtures/plugin_validation/checklist_manifest.yaml."
+        ),
+    )
+    args = parser.parse_args(argv)
+
+    yaml_path = args.yaml
+    if yaml_path is None:
+        # Resolve the bundled YAML via importlib.resources for installed
+        # wheels; fall back to the in-tree path for editable installs.
+        try:
+            from importlib import resources
+
+            with resources.as_file(
+                resources.files("kosmos.plugins.checks") / "_bundled_checklist.yaml"
+            ) as p:
+                yaml_path = Path(p)
+                if not yaml_path.is_file():
+                    yaml_path = None
+        except Exception:
+            yaml_path = None
+        if yaml_path is None or not yaml_path.is_file():
+            # Editable install fallback.
+            for parent in Path(__file__).resolve().parents:
+                candidate = (
+                    parent / "tests" / "fixtures" / "plugin_validation"
+                    / "checklist_manifest.yaml"
+                )
+                if candidate.is_file():
+                    yaml_path = candidate
+                    break
+        if yaml_path is None or not yaml_path.is_file():
+            print(
+                "error: could not locate checklist_manifest.yaml; "
+                "pass --yaml <path>",
+                file=sys.stderr,
+            )
+            return 2
+
+    plugin_root = args.plugin_root.resolve()
+    if not plugin_root.is_dir():
+        print(f"error: plugin_root {plugin_root} is not a directory", file=sys.stderr)
+        return 2
+
+    results = run_all_checks(plugin_root=plugin_root, yaml_path=yaml_path)
+    passed_rows = [row for row, o in results if o.passed]
+    failed_rows = [(row, o) for row, o in results if not o.passed]
+
+    print(f"# KOSMOS plugin validation — {plugin_root}")
+    print(f"# yaml: {yaml_path}")
+    print()
+    for row, outcome in results:
+        mark = "✓" if outcome.passed else "✗"
+        print(f"{mark} {row.id:<25} {row.description_ko}")
+        if not outcome.passed:
+            print(f"    🇰🇷 {outcome.failure_message_ko or row.failure_message_ko}")
+            print(f"    🇬🇧 {outcome.failure_message_en or row.failure_message_en}")
+    print()
+    print(f"## {len(passed_rows)} / {len(results)} 통과")
+    if failed_rows:
+        print(f"## ✗ {len(failed_rows)} 실패 — 수정 후 재실행하세요.")
+        return 1
+    print("## ✓ 50 / 50 통과 — 검증 완료.")
+    return 0
+
+
 __all__ = [
     "CheckContext",
     "CheckFn",

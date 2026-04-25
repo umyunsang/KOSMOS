@@ -231,23 +231,29 @@ class GovAPITool(BaseModel):
     @field_validator("id")
     @classmethod
     def _validate_id(cls, v: str) -> str:
-        # Spec 1636 P5 ADR-007: tool ids may be either snake_case
-        # (built-in adapters) OR plugin-namespaced
-        # ``plugin.<plugin_id>.<verb>`` where <verb> is one of the four
-        # root primitives (lookup / submit / verify / subscribe) plus
-        # the in-tree resolve_location surface. Mirrors the regex on
-        # :class:`kosmos.tools.registry.AdapterRegistration.tool_id` so
-        # the two validators stay drift-free.
+        # Spec 1636 P5 ADR-007 (revised by review eval C3):
+        # plugin-namespaced ids may use ONLY the four root primitives
+        # (lookup / submit / verify / subscribe). resolve_location is a
+        # host-reserved built-in primitive (Migration tree § L1-C C6) —
+        # plugins cannot override it. The earlier regex permitted
+        # resolve_location at the GovAPITool layer for symmetry with
+        # AdapterRegistration; that left a registry-layer bypass for
+        # Q8-NO-ROOT-OVERRIDE since direct register(GovAPITool(...))
+        # calls do not run PluginManifest._v_namespace. We now reject
+        # plugin.<id>.resolve_location at construction time so both
+        # layers agree.
         if not re.fullmatch(
             r"^([a-z][a-z0-9_]*"
-            r"|plugin\.[a-z][a-z0-9_]*\.(lookup|submit|verify|subscribe|resolve_location))$",
+            r"|plugin\.[a-z][a-z0-9_]*\.(lookup|submit|verify|subscribe))$",
             v,
         ):
             raise ValueError(
                 f"Tool id {v!r} must match ^[a-z][a-z0-9_]*$ "
                 "(lowercase, start with a letter, underscores only) "
-                "OR ^plugin\\.<plugin_id>\\.(lookup|submit|verify|subscribe|"
-                "resolve_location)$ for plugin-namespaced tools (ADR-007)"
+                "OR ^plugin\\.<plugin_id>\\.(lookup|submit|verify|subscribe)$ "
+                "for plugin-namespaced tools (ADR-007 + Q8-NO-ROOT-OVERRIDE). "
+                "resolve_location is a host-reserved primitive — plugins "
+                "cannot override it."
             )
         return v
 

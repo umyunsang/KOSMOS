@@ -176,6 +176,7 @@ def register_plugin_adapter(
     registry: ToolRegistry,
     executor: ToolExecutor,
     plugin_root: Path | None = None,
+    slsa_verification: str = "passed",
 ) -> GovAPITool:
     """Register a plugin's adapter with the running registry + executor.
 
@@ -211,6 +212,22 @@ def register_plugin_adapter(
             f"instance; got {type(manifest).__name__}"
         )
 
+    # C2 backstop (review eval): the five PluginManifest cross-field
+    # validators run at __init__ but are skipped if the caller bypassed
+    # validation via model_construct(). Mirror Spec 025's V6 pattern by
+    # re-running the invariant checks directly against field values, so a
+    # tampered manifest cannot reach the registry. We re-validate the
+    # whole instance — this catches drift on any of the five validators
+    # without enumerating them here.
+    try:
+        PluginManifest.model_validate(manifest.model_dump())
+    except Exception as exc:  # noqa: BLE001 — Pydantic ValidationError fan-out.
+        raise PluginRegistrationError(
+            "PluginManifest invariant violation at register_plugin_adapter "
+            "(model_construct bypass detected): "
+            f"{exc}"
+        ) from exc
+
     plugin_id = manifest.plugin_id
     expected_tool_id = manifest.adapter.tool_id
 
@@ -220,6 +237,10 @@ def register_plugin_adapter(
         span.set_attribute("kosmos.plugin.tier", manifest.tier)
         span.set_attribute("kosmos.plugin.tool_id", expected_tool_id)
         span.set_attribute("kosmos.plugin.permission_layer", manifest.permission_layer)
+        # C6 (review eval): emit the SLSA verification state on every
+        # install so OTEL collectors can graph skip-frequency + alert
+        # on production environments seeing 'skipped'.
+        span.set_attribute("kosmos.plugin.slsa_verification", slsa_verification)
 
         try:
             module = _import_adapter_module(

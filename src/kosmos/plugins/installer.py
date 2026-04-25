@@ -44,6 +44,7 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
+import os
 import shutil
 import tarfile
 import uuid
@@ -400,6 +401,23 @@ def install_plugin(  # noqa: C901, PLR0911, PLR0915 — phased flow.
     # --- Phase 3: SLSA verification ----------------------------------------
     slsa_state: Literal["passed", "failed", "skipped"]
     if settings.plugin_slsa_skip:
+        # C6 (review eval): production environments MUST refuse the dev
+        # skip flag. KOSMOS_ENV is the canonical env-var; "production" /
+        # "prod" / "release" all reject. Local dev (KOSMOS_ENV unset or
+        # "development" / "dev") proceeds with the warning.
+        env = os.environ.get("KOSMOS_ENV", "").strip().lower()
+        if env in {"production", "prod", "release"}:
+            return InstallResult(
+                exit_code=_EXIT_SLSA,
+                plugin_id=plugin_id,
+                plugin_version=version.version,
+                receipt_id=None,
+                error_kind="slsa_skip_in_production",
+                error_message=(
+                    f"KOSMOS_PLUGIN_SLSA_SKIP refused in KOSMOS_ENV={env!r}; "
+                    "SLSA verification is mandatory in production."
+                ),
+            )
         slsa_state = "skipped"
         logger.warning(
             "KOSMOS_PLUGIN_SLSA_SKIP=true — bypassing SLSA verification for %s",
@@ -505,6 +523,25 @@ def install_plugin(  # noqa: C901, PLR0911, PLR0915 — phased flow.
                 ),
             )
 
+    # --- Phase 4.5: SLSA-skip + L3 hard refusal (review eval C6) -----------
+    # security-review.md §L3 promises that L3 plugins cannot use the dev
+    # SLSA-skip path. Now we actually enforce it: a Layer-3 plugin with
+    # slsa_state="skipped" is refused outright.
+    if manifest.permission_layer == 3 and slsa_state == "skipped":
+        return InstallResult(
+            exit_code=_EXIT_SLSA,
+            plugin_id=plugin_id,
+            plugin_version=version.version,
+            receipt_id=None,
+            error_kind="slsa_skip_layer_3_forbidden",
+            error_message=(
+                "Layer-3 plugin install refused with slsa_state='skipped'. "
+                "Layer 3 (irreversible / AAL2+) requires SLSA verification "
+                "regardless of KOSMOS_PLUGIN_SLSA_SKIP — see "
+                "docs/plugins/security-review.md § L3 Gate Procedure."
+            ),
+        )
+
     # --- Phase 5: consent --------------------------------------------------
     if not yes and not dry_run:
         try:
@@ -558,6 +595,7 @@ def install_plugin(  # noqa: C901, PLR0911, PLR0915 — phased flow.
             registry=registry,
             executor=executor,
             plugin_root=plugin_dir,
+            slsa_verification=slsa_state,
         )
     except OSError as exc:
         shutil.rmtree(plugin_dir, ignore_errors=True)
@@ -582,7 +620,11 @@ def install_plugin(  # noqa: C901, PLR0911, PLR0915 — phased flow.
 
     # --- Phase 7: consent receipt ------------------------------------------
     receipt_id = f"rcpt-{uuid.uuid4().hex[:16]}"
-    consent_root = settings.permission_ledger_path.parent / "consent"
+    # Consent receipts live alongside Spec 035 onboarding consent records under
+    # ~/.kosmos/memdir/user/consent/ (data-model.md § 5 + § Storage layout).
+    # Earlier versions wrote to ~/.kosmos/consent/ which silently desynced
+    # plugin receipts from /consent list (C1 in agent team review eval).
+    consent_root = settings.user_memdir_root / "consent"
     receipt = PluginConsentReceipt(
         receipt_id=receipt_id,
         timestamp_iso=datetime.now(UTC).isoformat(),

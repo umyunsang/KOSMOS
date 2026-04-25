@@ -176,13 +176,13 @@ def isolated_settings(
 ) -> Path:
     install_root = tmp_path / "install"
     bundle_cache = tmp_path / "cache"
-    consent_root = tmp_path / "consent_parent"
+    user_memdir = tmp_path / "memdir" / "user"
     monkeypatch.setattr("kosmos.plugins.installer.settings.plugin_install_root", install_root)
     monkeypatch.setattr("kosmos.plugins.installer.settings.plugin_bundle_cache", bundle_cache)
     monkeypatch.setattr("kosmos.plugins.installer.settings.plugin_slsa_skip", True)
     monkeypatch.setattr(
-        "kosmos.plugins.installer.settings.permission_ledger_path",
-        consent_root / "ledger.jsonl",
+        "kosmos.plugins.installer.settings.user_memdir_root",
+        user_memdir,
     )
     return tmp_path
 
@@ -308,6 +308,118 @@ class TestOtelEmissionSC007:
 # ---------------------------------------------------------------------------
 # SC-010 — auto_discover boot cost < 200ms per plugin.
 # ---------------------------------------------------------------------------
+
+
+class TestSlsaSkipL3Refusal:
+    """Review eval C6 — Layer-3 plugins cannot use the dev SLSA-skip path."""
+
+    def test_layer_3_with_slsa_skip_returns_exit_3(
+        self, tmp_path: Path, isolated_settings: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        # Build a manifest with permission_layer=3 + is_irreversible=True
+        # (Spec 024 V4 requires AAL2 for irreversible).
+        manifest = _manifest_dict()
+        manifest["permission_layer"] = 3
+        manifest["adapter"]["is_irreversible"] = True
+        manifest["adapter"]["auth_level"] = "AAL2"
+
+        bundle, sha, provenance = _build_bundle_with_manifest(tmp_path, manifest)
+        catalog = _write_catalog(
+            tmp_path, bundle, sha, provenance, layer=3, plugin_id=manifest["plugin_id"]
+        )
+        registry = ToolRegistry()
+        executor = ToolExecutor(registry)
+
+        result = install_plugin(
+            "timing-demo",
+            registry=registry,
+            executor=executor,
+            catalog_url=f"file://{catalog}",
+            yes=True,
+        )
+        assert result.exit_code == 3, f"L3 + SLSA-skip should refuse with exit 3, got {result}"
+        assert result.error_kind == "slsa_skip_layer_3_forbidden"
+
+    def test_production_env_refuses_slsa_skip(
+        self, tmp_path: Path, isolated_settings: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setenv("KOSMOS_ENV", "production")
+        bundle, sha, provenance = _build_bundle(tmp_path)
+        catalog = _write_catalog(tmp_path, bundle, sha, provenance)
+        registry = ToolRegistry()
+        executor = ToolExecutor(registry)
+
+        result = install_plugin(
+            "timing-demo",
+            registry=registry,
+            executor=executor,
+            catalog_url=f"file://{catalog}",
+            yes=True,
+        )
+        assert result.exit_code == 3
+        assert result.error_kind == "slsa_skip_in_production"
+
+
+def _build_bundle_with_manifest(
+    tmp_path: Path, manifest: dict[str, Any]
+) -> tuple[Path, str, Path]:
+    """Build a tarball with a custom manifest (used for L3 + irreversible test)."""
+    src = tmp_path / "_bundle_src_l3"
+    src.mkdir()
+    (src / "adapter.py").write_text(_ADAPTER_SOURCE, encoding="utf-8")
+    import yaml as _yaml
+
+    (src / "manifest.yaml").write_text(
+        _yaml.safe_dump(manifest, allow_unicode=True), encoding="utf-8"
+    )
+    bundle = tmp_path / "l3_demo.tar.gz"
+    with tarfile.open(bundle, "w:gz") as tf:
+        for entry in sorted(src.iterdir()):
+            tf.add(entry, arcname=entry.name)
+    sha = hashlib.sha256(bundle.read_bytes()).hexdigest()
+    provenance = tmp_path / "l3_demo.intoto.jsonl"
+    provenance.write_bytes(b"{}")
+    return bundle, sha, provenance
+
+
+def _write_catalog(
+    tmp_path: Path,
+    bundle: Path,
+    sha: str,
+    provenance: Path,
+    *,
+    layer: int = 1,
+    plugin_id: str = "timing_demo",
+) -> Path:
+    """Write a catalog index with overridable layer + plugin_id (review eval C6)."""
+    catalog = CatalogIndex(
+        schema_version="1.0.0",
+        generated_iso="2026-04-26T00:00:00Z",
+        entries=[
+            CatalogEntry(
+                name="timing-demo",
+                plugin_id=plugin_id,
+                latest_version="1.0.0",
+                versions=[
+                    CatalogVersion(
+                        version="1.0.0",
+                        bundle_url=f"file://{bundle}",
+                        provenance_url=f"file://{provenance}",
+                        bundle_sha256=sha,
+                        published_iso="2026-04-26T00:00:00Z",
+                    )
+                ],
+                tier="live",
+                permission_layer=layer,
+                processes_pii=False,
+                trustee_org_name=None,
+                last_published_iso="2026-04-26T00:00:00Z",
+            )
+        ],
+    )
+    out = tmp_path / "index.json"
+    out.write_text(catalog.model_dump_json(indent=2), encoding="utf-8")
+    return out
 
 
 class TestAutoDiscoverBootCostSC010:

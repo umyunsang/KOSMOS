@@ -111,26 +111,22 @@ class TestQ8Namespace:
 
 
 class TestQ8NoRootOverride:
-    def test_resolve_location_verb_rejected_at_manifest(self) -> None:
+    def test_resolve_location_verb_rejected_at_adapter_layer(self) -> None:
         """Q8-NO-ROOT-OVERRIDE: resolve_location is a built-in; plugins cannot claim it.
 
-        ADR-007's regex on AdapterRegistration permits resolve_location for
-        symmetry with the in-tree resolve_location adapter; PluginManifest
-        layers an additional restriction on top so plugins specifically
-        cannot override the four reserved root primitives.
+        Post review-eval C3: the regex on AdapterRegistration itself
+        rejects ``plugin.<id>.resolve_location`` so the violation surfaces
+        at adapter construction (before the PluginManifest validators
+        run). Both layers agree — no drift surface.
         """
         with pytest.raises(ValidationError) as exc:
-            PluginManifest(
-                **_manifest_kwargs(
-                    adapter=_adapter(
-                        tool_id="plugin.demo_plugin.resolve_location",
-                        primitive=AdapterPrimitive.resolve_location,
-                    ),
-                )
+            _adapter(
+                tool_id="plugin.demo_plugin.resolve_location",
+                primitive=AdapterPrimitive.resolve_location,
             )
-        msg = str(exc.value)
-        assert "verb suffix must be one of" in msg
-        assert "resolve_location" in msg
+        # Pydantic Field(pattern=...) error message format.
+        assert "tool_id" in str(exc.value).lower()
+        assert "resolve_location" in str(exc.value)
 
     def test_unknown_verb_rejected_at_adapter_regex(self) -> None:
         """ADR-007 regex itself rejects verbs outside the alternation."""
@@ -147,6 +143,66 @@ class TestQ8NoRootOverride:
                 auth_level="AAL1",
                 pipa_class="non_personal",
             )
+
+    def test_resolve_location_rejected_at_adapter_regex(self) -> None:
+        """C3 regression (review eval): plugin-namespaced resolve_location
+        must be rejected at AdapterRegistration construction time —
+        previously the regex permitted it for symmetry, leaving a
+        registry-layer bypass of Q8-NO-ROOT-OVERRIDE.
+        """
+        with pytest.raises(ValidationError) as exc:
+            AdapterRegistration(
+                tool_id="plugin.demo_plugin.resolve_location",
+                primitive=AdapterPrimitive.resolve_location,
+                module_path="x",
+                input_model_ref="x:Y",
+                source_mode=AdapterSourceMode.OPENAPI,
+                published_tier_minimum="digital_onepass_level1_aal1",
+                nist_aal_hint="AAL1",
+                auth_type="api_key",
+                auth_level="AAL1",
+                pipa_class="non_personal",
+            )
+        assert "tool_id" in str(exc.value).lower()
+
+    def test_resolve_location_rejected_at_govapi_tool(self) -> None:
+        """C3 regression: same restriction enforced on GovAPITool._validate_id.
+        Without this backstop a direct registry.register(GovAPITool(...))
+        call could install plugin.foo.resolve_location.
+        """
+        from pydantic import BaseModel, ConfigDict, Field as PField
+
+        from kosmos.tools.models import GovAPITool
+
+        class _DummyIn(BaseModel):
+            model_config = ConfigDict(frozen=True, extra="forbid")
+            x: str = PField(min_length=1, description="x")
+
+        class _DummyOut(BaseModel):
+            model_config = ConfigDict(frozen=True, extra="allow")
+            y: str = PField(description="y")
+
+        with pytest.raises(ValidationError) as exc:
+            GovAPITool(
+                id="plugin.demo_plugin.resolve_location",
+                name_ko="x",
+                ministry="OTHER",
+                category=["x"],
+                endpoint="https://e",
+                auth_type="api_key",
+                input_schema=_DummyIn,
+                output_schema=_DummyOut,
+                search_hint="x",
+                auth_level="AAL1",
+                pipa_class="non_personal",
+                is_irreversible=False,
+                dpa_reference=None,
+                is_personal_data=False,
+                primitive="resolve_location",
+                published_tier_minimum="digital_onepass_level1_aal1",
+                nist_aal_hint="AAL1",
+            )
+        assert "resolve_location" in str(exc.value) or "Tool id" in str(exc.value)
 
 
 class TestQ8VerbInPrimitives:
@@ -202,3 +258,27 @@ class TestRegisterPluginAdapterShim:
         # the same 64-char lowercase hex digest.
         assert isinstance(CANONICAL_ACKNOWLEDGMENT_SHA256, str)
         assert len(CANONICAL_ACKNOWLEDGMENT_SHA256) == 64
+
+    def test_model_construct_bypass_blocked_at_registry(self) -> None:
+        """C2 regression (review eval): a manifest constructed via
+        model_construct skips the @model_validator chain. The registry
+        layer must re-validate so a tampered manifest cannot install.
+        """
+        # Build a valid manifest first, then construct a tampered variant
+        # via model_construct that violates _v_otel_attribute (otel id
+        # mismatches plugin_id).
+        valid = PluginManifest(**_manifest_kwargs())
+        tampered = PluginManifest.model_construct(
+            **{**valid.__dict__, "otel_attributes": {"kosmos.plugin.id": "wrong_id"}}
+        )
+        # Sanity: model_construct skipped the validator → the bad value sticks.
+        assert tampered.otel_attributes["kosmos.plugin.id"] == "wrong_id"
+
+        with pytest.raises(PluginRegistrationError) as exc:
+            tools_registry.register_plugin_adapter(
+                tampered,
+                registry=ToolRegistry(),
+                executor=object(),
+            )
+        msg = str(exc.value)
+        assert "invariant" in msg.lower() or "model_construct" in msg.lower()

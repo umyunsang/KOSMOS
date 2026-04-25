@@ -21,10 +21,15 @@ import type {
   CommandHandlerArgs,
   CommandResult,
 } from './types'
+// PIPA canonical hash is the Python source-of-truth (extracted from
+// docs/plugins/security-review.md). The .generated.ts file is rebuilt
+// by `bun run scripts/gen-pipa-hash.ts` so a TS-side drift cannot
+// silently linger after the legal team rotates the canonical text.
+import { CANONICAL_PIPA_ACK_SHA256 } from '../ipc/pipa.generated'
 
 const _USAGE_KO =
   '사용법: /plugin <install|list|uninstall|pipa-text> [...]'
-const _PIPA_HASH = '434074581cab35241c70f9b6e2191a7220fdac67aa627289ea64472cb87495d4'
+const _PIPA_HASH = CANONICAL_PIPA_ACK_SHA256
 
 function _newCorrelationId(): string {
   // Use crypto.randomUUID — UUIDv4 is acceptable here since the host

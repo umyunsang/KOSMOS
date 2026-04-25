@@ -138,50 +138,77 @@ Rules (enforced by Q1-PYV2 / Q1-NOANY / Q1-FIELD-DESC):
 ```python
 import os
 import httpx
-from kosmos.tools.models import GovAPITool, AuthType, PIPAClass
-from kosmos.security.audit import AuthLevel
+
+from kosmos.tools.models import GovAPITool
+
 from .schema import BusanBikeQueryInput, BusanBikeQueryOutput, BusanBikeStation
 
 ENDPOINT = "https://api.bts.go.kr/openapi/bike/stations"
 
-class BusanBikeAdapter(GovAPITool):
-    id = "plugin.busan_bike.lookup"
-    name_ko = "부산 따릉이 대여소 잔여 자전거 조회"
-    provider = "부산광역시 교통정보서비스 (BTS)"
-    category = ["교통", "자전거"]
-    endpoint = ENDPOINT
-    auth_type = AuthType.api_key
-    input_schema = BusanBikeQueryInput
-    output_schema = BusanBikeQueryOutput
-    requires_auth = True            # default; explicit for clarity
-    is_concurrency_safe = True      # GET-only public availability data
-    is_personal_data = False        # public availability counts
-    cache_ttl_seconds = 60          # bike availability changes minutely
-    rate_limit_per_minute = 30
-    search_hint = "부산 자전거 따릉이 대여소 잔여대수 / Busan bike rental availability"
-    auth_level = AuthLevel.AAL1
-    pipa_class = PIPAClass.non_personal
-    is_irreversible = False
-    dpa_reference = None            # null OK because pipa_class=non_personal
 
-    async def execute(self, params: BusanBikeQueryInput) -> BusanBikeQueryOutput:
-        api_key = os.environ["KOSMOS_DATA_GO_KR_KEY"]
-        async with httpx.AsyncClient(timeout=10.0) as client:
-            r = await client.get(ENDPOINT, params={
-                "serviceKey": api_key,
-                "district": params.district,
-            })
-            r.raise_for_status()
-            data = r.json()
-        stations = [
-            BusanBikeStation(
-                station_id=s["id"],
-                station_name_ko=s["name"],
-                bikes_available=s["available"],
-            )
+def _build_tool() -> GovAPITool:
+    """GovAPITool is a frozen Pydantic v2 BaseModel — instantiate via
+    constructor, not class-attribute override (review eval D5)."""
+    return GovAPITool(
+        id="plugin.busan_bike.lookup",
+        name_ko="부산 따릉이 대여소 잔여 자전거 조회",
+        ministry="OTHER",   # post-Spec-1634 FR-010: `provider` field replaced by `ministry`
+        category=["교통", "자전거"],
+        endpoint=ENDPOINT,
+        auth_type="api_key",
+        input_schema=BusanBikeQueryInput,
+        output_schema=BusanBikeQueryOutput,
+        search_hint="부산 자전거 따릉이 대여소 잔여대수 / Busan bike rental availability",
+        auth_level="AAL1",
+        # GovAPITool's pipa_class enum: non_personal / personal / sensitive / identifier.
+        # See docs/plugins/permission-tier.md "두 개의 pipa_class enum 표기" for the
+        # mapping to the manifest layer's enum (personal_standard, etc).
+        pipa_class="non_personal",
+        is_irreversible=False,
+        dpa_reference=None,            # null OK because pipa_class=non_personal
+        is_personal_data=False,        # public availability counts
+        primitive="lookup",
+        published_tier_minimum="digital_onepass_level1_aal1",
+        nist_aal_hint="AAL1",
+        is_concurrency_safe=True,      # GET-only public availability data
+        cache_ttl_seconds=60,          # bike availability changes minutely
+        rate_limit_per_minute=30,
+    )
+
+
+_TOOL_CACHE = None
+
+
+def __getattr__(name):
+    """PEP 562 lazy TOOL — keeps standalone scaffold tests runnable
+    without ``kosmos`` being installed."""
+    global _TOOL_CACHE
+    if name == "TOOL":
+        if _TOOL_CACHE is None:
+            _TOOL_CACHE = _build_tool()
+        return _TOOL_CACHE
+    raise AttributeError(name)
+
+
+async def adapter(payload: BusanBikeQueryInput) -> dict:
+    api_key = os.environ["KOSMOS_DATA_GO_KR_API_KEY"]
+    async with httpx.AsyncClient(timeout=10.0, follow_redirects=False) as client:
+        r = await client.get(
+            ENDPOINT,
+            params={"serviceKey": api_key, "district": payload.district},
+        )
+        r.raise_for_status()
+        data = r.json()
+    return {
+        "stations": [
+            {
+                "station_id": s["id"],
+                "station_name_ko": s["name"],
+                "bikes_available": s["available"],
+            }
             for s in data["stations"]
         ]
-        return BusanBikeQueryOutput(stations=stations)
+    }
 ```
 
 Rules:
@@ -227,7 +254,7 @@ Expected: `2 passed`.
 ## Step 8 — Run validation locally (2 min)
 
 ```sh
-uvx --from git+https://github.com/umyunsang/KOSMOS@main#subdirectory=src/kosmos/plugins \
+uvx --from git+https://github.com/umyunsang/KOSMOS@main \
     kosmos-plugin-validate .
 ```
 
