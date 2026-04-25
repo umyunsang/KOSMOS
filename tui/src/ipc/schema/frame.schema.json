@@ -1314,17 +1314,11 @@
           "type": "string"
         },
         "version": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "description": "Optional SemVer pin for op='request'/install.",
-          "title": "Version"
+          "const": "1.0",
+          "default": "1.0",
+          "description": "Envelope version. Hard-fail on mismatch (E1, FR-001).",
+          "title": "Version",
+          "type": "string"
         },
         "role": {
           "description": "Origin role. Validated against kind<->role allow-list (E3, FR-004).",
@@ -1417,6 +1411,19 @@
           "default": null,
           "description": "Plugin catalog name (matches CatalogEntry.name). Required when request_op in {install, uninstall}; None otherwise.",
           "title": "Name"
+        },
+        "requested_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional SemVer pin for op='request'/install. Renamed from `version` to avoid shadowing the envelope's protocol version.",
+          "title": "Requested Version"
         },
         "dry_run": {
           "anyOf": [

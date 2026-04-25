@@ -153,14 +153,14 @@ description: "Task list for Epic #1636 — P5 Plugin DX 5-tier"
 
 **Independent Test**: Fresh TUI session → `kosmos plugin install seoul-subway` → 30-s install (SC-005), then `lookup(search="지하철")` returns the adapter (SC-004), then `/consent list` shows the install receipt.
 
-- [ ] T053 [US5] Implement `tui/src/commands/plugin-install.ts` per contracts/plugin-install.cli.md: 8-phase Ink progress overlay, `--version`/`--catalog`/`--vendor-slsa-from`/`--yes`/`--dry-run` flags, IPC `plugin_op_request` frame, exit codes 0-7
-- [ ] T054 [US5] Implement `tui/src/commands/plugin-list.ts`: read `~/.kosmos/memdir/user/plugins/index.json`, render with active/inactive status; integrates with existing Spec 287 PluginBrowser if installed plugin entries are present
-- [ ] T055 [US5] Implement `tui/src/commands/plugin-uninstall.ts`: revoke flow + new `PluginConsentReceipt(action_type="plugin_uninstall")` write to `~/.kosmos/memdir/user/consent/`; backend deregisters from BM25 index
-- [ ] T056 [US5] Register the 3 new commands in `tui/src/commands/index.ts` + add to slash-command autocomplete dispatcher per Spec 287 pattern
-- [ ] T057 [P] [US5] Add `tui/test/commands/plugin-install.test.ts` with the 7 negative cases per contracts/plugin-install.cli.md (catalog miss, sha mismatch, slsa fail, manifest fail, citizen N, --dry-run no-write, KOSMOS_PLUGIN_SLSA_SKIP banner)
-- [ ] T058 [US5] Wire backend `installer.py` ↔ `plugin_op` IPC frames end-to-end: smoke test in `src/kosmos/plugins/tests/test_install_e2e.py` installs the bootstrapped seoul-subway repo from a local file:// catalog into a temp memdir
-- [ ] T059 [US5] Add SC-005 cold-install timing test (≤ 30 s) + SC-004 BM25 surface latency test (≤ 5 s after install) + SC-007 OTEL span attribute presence test (`kosmos.plugin.id` on every invocation via fake-OTLP collector)
-- [ ] T060 [US5] Add SC-010 microbenchmark gated in CI: auto-discovery boot cost < 200 ms per installed plugin; pytest-benchmark config + threshold assertion
+- [X] T053 [US5] Implement `tui/src/commands/plugin-install.ts` per contracts/plugin-install.cli.md: 8-phase Ink progress overlay, `--version`/`--catalog`/`--vendor-slsa-from`/`--yes`/`--dry-run` flags, IPC `plugin_op_request` frame, exit codes 0-7
+- [X] T054 [US5] Implement `tui/src/commands/plugin-list.ts`: read `~/.kosmos/memdir/user/plugins/index.json`, render with active/inactive status; integrates with existing Spec 287 PluginBrowser if installed plugin entries are present
+- [X] T055 [US5] Implement `tui/src/commands/plugin-uninstall.ts`: revoke flow + new `PluginConsentReceipt(action_type="plugin_uninstall")` write to `~/.kosmos/memdir/user/consent/`; backend deregisters from BM25 index
+- [X] T056 [US5] Register the 3 new commands in `tui/src/commands/index.ts` + add to slash-command autocomplete dispatcher per Spec 287 pattern
+- [X] T057 [P] [US5] Add `tui/test/commands/plugin-install.test.ts` with the 7 negative cases per contracts/plugin-install.cli.md (catalog miss, sha mismatch, slsa fail, manifest fail, citizen N, --dry-run no-write, KOSMOS_PLUGIN_SLSA_SKIP banner)
+- [X] T058 [US5] Wire backend `installer.py` ↔ `plugin_op` IPC frames end-to-end: smoke test in `src/kosmos/plugins/tests/test_install_e2e.py` installs the bootstrapped seoul-subway repo from a local file:// catalog into a temp memdir
+- [X] T059 [US5] Add SC-005 cold-install timing test (≤ 30 s) + SC-004 BM25 surface latency test (≤ 5 s after install) + SC-007 OTEL span attribute presence test (`kosmos.plugin.id` on every invocation via fake-OTLP collector)
+- [X] T060 [US5] Add SC-010 microbenchmark gated in CI: auto-discovery boot cost < 200 ms per installed plugin; pytest-benchmark config + threshold assertion
 
 **Checkpoint**: Citizen install/uninstall path live. All 5 user stories independently testable.
 

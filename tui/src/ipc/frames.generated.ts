@@ -880,9 +880,9 @@ export type CorrelationId19 = string;
  */
 export type Ts19 = string;
 /**
- * Optional SemVer pin for op='request'/install.
+ * Envelope version. Hard-fail on mismatch (E1, FR-001).
  */
-export type Version19 = string | null;
+export type Version19 = '1.0';
 /**
  * Origin role. Validated against kind<->role allow-list (E3, FR-004).
  */
@@ -911,6 +911,10 @@ export type RequestOp = ('install' | 'uninstall' | 'list') | null;
  * Plugin catalog name (matches CatalogEntry.name). Required when request_op in {install, uninstall}; None otherwise.
  */
 export type Name1 = string | null;
+/**
+ * Optional SemVer pin for op='request'/install. Renamed from `version` to avoid shadowing the envelope's protocol version.
+ */
+export type RequestedVersion = string | null;
 /**
  * When True, install verifies but writes nothing (op='request').
  */
@@ -1418,6 +1422,7 @@ export interface PluginOpFrame {
   op: Op;
   request_op?: RequestOp;
   name?: Name1;
+  requested_version?: RequestedVersion;
   dry_run?: DryRun;
   progress_phase?: ProgressPhase;
   progress_message_ko?: ProgressMessageKo;

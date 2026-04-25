@@ -1,7 +1,7 @@
 // KOSMOS-original command type definitions.
 // These are NOT lifted from .references/ — they are purpose-built for KOSMOS.
 
-import type { SessionEventFrame } from '../ipc/frames.generated'
+import type { PluginOpFrame, SessionEventFrame } from '../ipc/frames.generated'
 
 // ---------------------------------------------------------------------------
 // SendFrame callback type — dependency-injected, never imported directly
@@ -17,6 +17,14 @@ import type { SessionEventFrame } from '../ipc/frames.generated'
  */
 export type SendFrame = (frame: SessionEventFrame) => void
 
+/**
+ * Plugin-op frame send callback (Spec 032 IPC arm 20). Separate from
+ * `SendFrame` so existing session-event commands (save/sessions/resume/new)
+ * keep their narrow typing — only the new plugin commands receive this
+ * second callback.
+ */
+export type SendPluginOp = (frame: PluginOpFrame) => void
+
 // ---------------------------------------------------------------------------
 // CommandHandlerArgs
 // ---------------------------------------------------------------------------
@@ -27,6 +35,12 @@ export interface CommandHandlerArgs {
   args: string
   /** Injected IPC send callback — DO NOT import bridge directly */
   sendFrame: SendFrame
+  /**
+   * Optional plugin-op send callback. Present when the dispatcher was
+   * constructed with the plugin command set; only `/plugin install`,
+   * `/plugin list`, `/plugin uninstall` use it.
+   */
+  sendPluginOp?: SendPluginOp
 }
 
 // ---------------------------------------------------------------------------

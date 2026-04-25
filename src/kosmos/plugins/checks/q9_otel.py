@@ -55,9 +55,12 @@ def _collect_install_span_attributes(plugin_id: str) -> dict[str, object] | None
     """Use an in-memory span exporter to capture attributes on
     ``kosmos.plugin.install``. Returns the attribute dict for the most
     recent matching span, or None if the span was never emitted.
+
+    Uses a *local* TracerProvider — never touches the global state — so
+    repeated invocations across test sessions don't conflict with
+    OpenTelemetry's "global provider can only be set once" rule.
     """
     try:
-        from opentelemetry import trace  # noqa: PLC0415
         from opentelemetry.sdk.trace import TracerProvider  # noqa: PLC0415
         from opentelemetry.sdk.trace.export import SimpleSpanProcessor  # noqa: PLC0415
         from opentelemetry.sdk.trace.export.in_memory_span_exporter import (  # noqa: PLC0415
@@ -69,19 +72,10 @@ def _collect_install_span_attributes(plugin_id: str) -> dict[str, object] | None
     exporter = InMemorySpanExporter()
     provider = TracerProvider()
     provider.add_span_processor(SimpleSpanProcessor(exporter))
-    # We do NOT install the provider globally — instead we open a tracer
-    # that uses it explicitly. But OTEL's `start_as_current_span` is
-    # global so we set the provider for the duration of the span.
-    previous_provider = trace.get_tracer_provider()
-    trace.set_tracer_provider(provider)
-    try:
-        tracer = trace.get_tracer(__name__)
-        with tracer.start_as_current_span("kosmos.plugin.install") as span:
-            span.set_attribute("kosmos.plugin.id", plugin_id)
-        provider.force_flush()
-    finally:
-        # Restore the prior provider so we don't leak state into the test runner.
-        trace.set_tracer_provider(previous_provider)
+    tracer = provider.get_tracer(__name__)
+    with tracer.start_as_current_span("kosmos.plugin.install") as span:
+        span.set_attribute("kosmos.plugin.id", plugin_id)
+    provider.force_flush()
 
     spans = list(exporter.get_finished_spans())
     if not spans:

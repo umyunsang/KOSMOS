@@ -675,9 +675,12 @@ class PluginOpFrame(_BaseFrame):
             "request_op in {install, uninstall}; None otherwise."
         ),
     )
-    version: str | None = Field(
+    requested_version: str | None = Field(
         default=None,
-        description="Optional SemVer pin for op='request'/install.",
+        description=(
+            "Optional SemVer pin for op='request'/install. Renamed from "
+            "`version` to avoid shadowing the envelope's protocol version."
+        ),
     )
     dry_run: bool | None = Field(
         default=None,
@@ -741,7 +744,7 @@ class PluginOpFrame(_BaseFrame):
                 raise ValueError(
                     f"plugin_op.request must not set progress/complete fields: {extras}"
                 )
-        elif self.op == "progress":
+        elif self.op == "progress":  # noqa: SIM114 — flow-level branches stay flat for clarity.
             if self.progress_phase is None or not (1 <= self.progress_phase <= 7):
                 raise ValueError(
                     "plugin_op.progress requires progress_phase in [1, 7]"
@@ -753,7 +756,7 @@ class PluginOpFrame(_BaseFrame):
             forbidden = {
                 "request_op": self.request_op,
                 "name": self.name,
-                "version": self.version,
+                "requested_version": self.requested_version,
                 "dry_run": self.dry_run,
                 "result": self.result,
                 "exit_code": self.exit_code,
@@ -776,7 +779,7 @@ class PluginOpFrame(_BaseFrame):
             forbidden = {
                 "request_op": self.request_op,
                 "name": self.name,
-                "version": self.version,
+                "requested_version": self.requested_version,
                 "dry_run": self.dry_run,
                 "progress_phase": self.progress_phase,
                 "progress_message_ko": self.progress_message_ko,
