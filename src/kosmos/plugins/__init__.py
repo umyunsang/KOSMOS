@@ -16,14 +16,23 @@ is a stable contract:
 
 from __future__ import annotations
 
+from kosmos.plugins.canonical_acknowledgment import (
+    CANONICAL_ACKNOWLEDGMENT_SHA256,
+    CANONICAL_ACKNOWLEDGMENT_TEXT,
+)
 from kosmos.plugins.exceptions import (
     AcknowledgmentMismatchError,
     ManifestValidationError,
     PluginRegistrationError,
 )
+from kosmos.plugins.manifest_schema import PIPATrusteeAcknowledgment, PluginManifest
 
 __all__ = [
+    "CANONICAL_ACKNOWLEDGMENT_SHA256",
+    "CANONICAL_ACKNOWLEDGMENT_TEXT",
     "AcknowledgmentMismatchError",
     "ManifestValidationError",
+    "PIPATrusteeAcknowledgment",
+    "PluginManifest",
     "PluginRegistrationError",
 ]
