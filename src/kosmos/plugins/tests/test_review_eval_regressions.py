@@ -215,6 +215,97 @@ class TestSafeExtractRejectsMaliciousLinks:
             _safe_extract(tf, dest)
         assert "empty linkname" in str(exc.value)
 
+    def test_sibling_prefix_path_rejected(self, tmp_path: Path) -> None:
+        """Codex review: a tar entry whose absolute path starts with the
+        same characters as `dest` but is a SIBLING (e.g. dest=`/p/demo`,
+        target=`/p/demo_evil/x`) must be rejected. The earlier
+        `startswith(str(dest))` guard would have allowed this; the
+        Path.is_relative_to fix correctly treats sibling-prefix paths
+        as outside the dest directory.
+        """
+        # Create dest at a known location, then build a tarball whose
+        # entry name resolves to dest's sibling via absolute-path leak.
+        dest = tmp_path / "demo"
+        dest.mkdir()
+        sibling = tmp_path / "demo_evil"  # share prefix "demo"
+        sibling.mkdir()
+
+        bundle = tmp_path / "evil.tar.gz"
+        # The entry name uses an absolute path leak: when the tarfile
+        # extracts with dest, `dest / member.name` collapses to the
+        # absolute path. We craft member.name to navigate up + sideways.
+        with tarfile.open(bundle, "w:gz") as tf:
+            evil = tarfile.TarInfo(name="../demo_evil/leaked.txt")
+            evil.size = 0
+            tf.addfile(evil)
+
+        with tarfile.open(bundle, "r:gz") as tf, pytest.raises(OSError) as exc:
+            _safe_extract(tf, dest)
+        assert "escapes install root" in str(exc.value)
+
+
+# ---------------------------------------------------------------------------
+# Codex P1 #1 — module_path resolution under plugin_root.
+# ---------------------------------------------------------------------------
+
+
+class TestRegistryModulePathResolution:
+    """Codex review P1 #1 — `_import_adapter_module` must resolve dotted
+    `module_path` (e.g. `plugin_my_plugin.adapter`) to the corresponding
+    nested file (`<plugin_root>/plugin_my_plugin/adapter.py`), not just
+    the leaf segment. The earlier `module_path.split(".")[-1]` collapsed
+    every dotted path to a single file at `<plugin_root>/<leaf>.py`,
+    which broke the canonical scaffold layout shipped by `kosmos plugin
+    init` (`plugin_<id>/adapter.py`).
+    """
+
+    def test_dotted_module_path_resolves_to_nested_file(self, tmp_path: Path) -> None:
+        from kosmos.plugins.registry import _import_adapter_module
+
+        plugin_root = tmp_path / "demo_install"
+        package_dir = plugin_root / "plugin_demo"
+        package_dir.mkdir(parents=True)
+        (package_dir / "__init__.py").write_text("", encoding="utf-8")
+        (package_dir / "adapter.py").write_text(
+            "TOOL = object()\nasync def adapter(payload):\n    return {}\n",
+            encoding="utf-8",
+        )
+
+        # The dotted path "plugin_demo.adapter" must resolve to
+        # plugin_root/plugin_demo/adapter.py — not plugin_root/adapter.py.
+        module = _import_adapter_module("plugin_demo.adapter", plugin_root=plugin_root)
+        assert hasattr(module, "TOOL")
+        assert hasattr(module, "adapter")
+
+    def test_leaf_only_path_still_works(self, tmp_path: Path) -> None:
+        """Backwards-compat: a single-segment `module_path` (e.g.
+        `adapter`) must still resolve to `<plugin_root>/adapter.py`."""
+        from kosmos.plugins.registry import _import_adapter_module
+
+        plugin_root = tmp_path / "flat_install"
+        plugin_root.mkdir()
+        (plugin_root / "adapter.py").write_text(
+            "TOOL = object()\nasync def adapter(payload):\n    return {}\n",
+            encoding="utf-8",
+        )
+
+        module = _import_adapter_module("adapter", plugin_root=plugin_root)
+        assert hasattr(module, "TOOL")
+
+    def test_missing_nested_file_raises_registration_error(self, tmp_path: Path) -> None:
+        """Hint message must reference the FULL probed path so authors
+        can debug — not just the leaf. (Diagnostic regression guard.)"""
+        from kosmos.plugins.exceptions import PluginRegistrationError
+        from kosmos.plugins.registry import _import_adapter_module
+
+        plugin_root = tmp_path / "demo_install"
+        plugin_root.mkdir()
+        # `plugin_demo/adapter.py` does NOT exist → must error helpfully.
+        with pytest.raises(PluginRegistrationError) as exc:
+            _import_adapter_module("plugin_demo.adapter", plugin_root=plugin_root)
+        msg = str(exc.value)
+        assert "plugin_demo/adapter.py" in msg or "plugin_demo" in msg
+
 
 # ---------------------------------------------------------------------------
 # H4 — fcntl flock-serialised consent ledger position allocation.
@@ -407,3 +498,64 @@ class TestCliSubprocessSmoke:
             exit_code = _cli_main([str(tmp_path / "does_not_exist")])
         assert exit_code == 2
         assert "not a directory" in err.getvalue()
+
+
+# ---------------------------------------------------------------------------
+# Codex P2 #3 — install_plugin must catch httpx errors as InstallResult.
+# ---------------------------------------------------------------------------
+
+
+class TestInstallPluginHttpxErrorEnvelope:
+    """Codex review P2 #3 — `install_plugin` documents a non-throwing
+    contract. Phase-1 catalog and phase-2 bundle fetch use httpx via the
+    default fetcher; httpx.RequestError + HTTPStatusError must be caught
+    and converted to a structured InstallResult, not allowed to escape.
+    """
+
+    def test_catalog_fetcher_raising_arbitrary_exc_returns_exit_one(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """The default fetcher uses httpx; emulate any non-OSError
+        exception path (httpx.ConnectError, .HTTPStatusError, etc.) by
+        passing a raising fake fetcher. The wrapper must return
+        InstallResult.exit_code = 1 with error_kind='catalog_fetch_failed'."""
+        from kosmos.plugins.installer import install_plugin
+        from kosmos.tools.executor import ToolExecutor
+        from kosmos.tools.registry import ToolRegistry
+
+        # Isolate filesystem state.
+        monkeypatch.setattr(
+            "kosmos.plugins.installer.settings.plugin_install_root",
+            tmp_path / "install",
+        )
+        monkeypatch.setattr(
+            "kosmos.plugins.installer.settings.plugin_bundle_cache",
+            tmp_path / "cache",
+        )
+        monkeypatch.setattr(
+            "kosmos.plugins.installer.settings.user_memdir_root",
+            tmp_path / "memdir" / "user",
+        )
+
+        class _FakeHttpError(Exception):
+            """Stand-in for httpx.RequestError-style failures."""
+
+        def _raising_fetcher(url: str) -> bytes:
+            raise _FakeHttpError("simulated DNS failure")
+
+        registry = ToolRegistry()
+        executor = ToolExecutor(registry)
+        result = install_plugin(
+            "demo",
+            registry=registry,
+            executor=executor,
+            catalog_url="https://example.invalid/catalog.json",
+            catalog_fetcher=_raising_fetcher,  # type: ignore[arg-type]
+            yes=True,
+        )
+
+        # The contract guarantee: never throw. Always return an
+        # InstallResult with the documented exit code.
+        assert result.exit_code == 1
+        assert result.error_kind == "catalog_fetch_failed"
+        assert "simulated DNS failure" in (result.error_message or "")

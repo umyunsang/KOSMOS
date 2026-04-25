@@ -83,14 +83,21 @@ def _import_adapter_module(module_path: str, *, plugin_root: Path | None) -> Mod
     """
 
     if plugin_root is not None:
-        leaf = module_path.split(".")[-1]
-        candidate = plugin_root / f"{leaf}.py"
+        # Resolve dotted `module_path` (e.g. "plugin_my_plugin.adapter")
+        # to a filesystem path under `plugin_root`. Codex review: the
+        # earlier `leaf = module_path.split(".")[-1]` only probed the
+        # final segment, which broke installed bundles that ship the
+        # adapter inside a Python package (the default scaffold layout
+        # `plugin_<id>/adapter.py`). Convert each `.` to a path
+        # separator and probe the full relative location.
+        relative_path = Path(*module_path.split("."))
+        candidate = plugin_root / relative_path.with_suffix(".py")
         if not candidate.is_file():
             raise PluginRegistrationError(
                 f"plugin adapter module not found at {candidate} "
                 f"(module_path={module_path!r}, plugin_root={plugin_root})"
             )
-        spec_name = f"_kosmos_plugin_{plugin_root.name}_{leaf}"
+        spec_name = f"_kosmos_plugin_{plugin_root.name}_{module_path.replace('.', '_')}"
         spec = importlib.util.spec_from_file_location(spec_name, candidate)
         if spec is None or spec.loader is None:
             raise PluginRegistrationError(f"failed to build import spec for {candidate}")

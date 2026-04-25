@@ -257,14 +257,21 @@ def _safe_extract(tar: tarfile.TarFile, dest: Path) -> None:
     family) so a layered check is prudent.
     """
     dest_resolved = dest.resolve()
-    dest_str = str(dest_resolved)
 
     def _is_inside(path: Path) -> bool:
+        # Codex review: `str(target).startswith(str(dest))` is bypassable
+        # by sibling-prefix paths (e.g. dest=`/p/demo`, target=`/p/demo_evil/x`
+        # would pass). The earlier code added `+ os.sep` which mitigated
+        # that one case, but Path.is_relative_to (Python 3.9+) is the
+        # idiomatic way to assert "path is at or under dest" on resolved,
+        # normalised filesystem paths and is harder to misread in audit.
         try:
             resolved = path.resolve()
         except (OSError, RuntimeError):
             return False
-        return str(resolved) == dest_str or str(resolved).startswith(dest_str + os.sep)
+        if resolved == dest_resolved:
+            return True
+        return resolved.is_relative_to(dest_resolved)
 
     for member in tar.getmembers():
         target = dest / member.name
@@ -400,6 +407,11 @@ def install_plugin(  # noqa: C901, PLR0911, PLR0915 — phased flow.
     catalog_url = catalog_url or settings.plugin_catalog_url
 
     # --- Phase 1: catalog --------------------------------------------------
+    # Codex review: `install_plugin` documents a non-throwing contract,
+    # but the default fetcher uses httpx and can raise httpx.RequestError
+    # (DNS/connect/timeout) or httpx.HTTPStatusError (4xx/5xx with
+    # raise_for_status). Catch the broad set so callers always see an
+    # InstallResult with exit code 1 instead of an unhandled exception.
     try:
         raw = catalog_fetcher(catalog_url)
         catalog = CatalogIndex.model_validate(json.loads(raw))
@@ -411,6 +423,18 @@ def install_plugin(  # noqa: C901, PLR0911, PLR0915 — phased flow.
             receipt_id=None,
             error_kind="catalog_fetch_failed",
             error_message=(f"could not fetch / parse catalog at {catalog_url}: {exc}"),
+        )
+    except Exception as exc:
+        # httpx raises non-OSError RequestError/HTTPStatusError; treat
+        # the same as any other transport failure rather than letting
+        # the exception escape the documented non-throwing contract.
+        return InstallResult(
+            exit_code=_EXIT_CATALOG,
+            plugin_id=None,
+            plugin_version=None,
+            receipt_id=None,
+            error_kind="catalog_fetch_failed",
+            error_message=(f"could not fetch catalog at {catalog_url}: {exc}"),
         )
 
     entry = catalog.find(name)
@@ -452,6 +476,18 @@ def install_plugin(  # noqa: C901, PLR0911, PLR0915 — phased flow.
             receipt_id=None,
             error_kind="bundle_fetch_failed",
             error_message=str(exc),
+        )
+    except Exception as exc:
+        # Codex review: catch httpx.RequestError / HTTPStatusError so a
+        # transport failure on bundle download surfaces as a structured
+        # InstallResult instead of an unhandled exception bubbling up.
+        return InstallResult(
+            exit_code=_EXIT_IO,
+            plugin_id=plugin_id,
+            plugin_version=version.version,
+            receipt_id=None,
+            error_kind="bundle_fetch_failed",
+            error_message=f"bundle download failed: {exc}",
         )
 
     actual_sha = _sha256_of(bundle_path)
