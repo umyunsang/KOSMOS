@@ -22,6 +22,21 @@ specs/
 docs/
 .specify/
 
+# Spec 1636 P5 carve-out — pyproject.toml [tool.hatch.build.targets.wheel.force-include]
+# bundles two files into the wheel that hatchling resolves at build time
+# (it fails with FileNotFoundError if absent from the build context):
+#   - docs/plugins/security-review.md → kosmos/_canonical/security-review.md
+#   - tests/fixtures/plugin_validation/checklist_manifest.yaml → kosmos/_canonical/...
+# Negate the broad excludes above for these two leaves so they ship as
+# wheel resources and Q9 OTEL emit / kosmos-plugin-validate work in
+# production wheels. Total carve-out ≈ 40 KB; preserves the SC-1 ≤ 2 GB
+# image budget.
+!docs/plugins/
+!docs/plugins/security-review.md
+!tests/fixtures/
+!tests/fixtures/plugin_validation/
+!tests/fixtures/plugin_validation/checklist_manifest.yaml
+
 # CI / tooling
 .github/
 .claude/

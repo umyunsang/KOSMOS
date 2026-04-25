@@ -268,6 +268,14 @@ class TestOtelEmissionSC007:
             InMemorySpanExporter,
         )
 
+        # CI sets OTEL_SDK_DISABLED=true on the test job to keep the
+        # OTEL stack quiet during the matrix run. That makes the SDK a
+        # no-op and no spans are recorded — even on a local provider.
+        # The contract under test (kosmos.plugin.install span carries
+        # kosmos.plugin.id) requires real emission, so we re-enable the
+        # SDK for the duration of this single test only.
+        monkeypatch.delenv("OTEL_SDK_DISABLED", raising=False)
+
         bundle, sha, provenance = _build_bundle(tmp_path)
         catalog = _write_catalog(tmp_path, bundle, sha, provenance)
         registry = ToolRegistry()
