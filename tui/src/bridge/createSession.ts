@@ -55,7 +55,7 @@ export async function createBridgeSession({
   const { getClaudeAIOAuthTokens } = await import('../utils/auth.js')
   const { getOrganizationUUID } = await import('../services/oauth/client.js')
   const getOauthConfig = (): { BASE_API_URL: string } => ({ BASE_API_URL: '' }) /* KOSMOS-1633: oauth deleted */
-  const { getOAuthHeaders } = await import('../utils/teleport/api.js')
+  const getOAuthHeaders = (_token?: string): Record<string, string> => ({}) /* KOSMOS-1633 P1+P2 / KOSMOS-1978 T011 — utils/teleport deleted */
   const { parseGitHubRepository } = await import('../utils/detectRepository.js')
   const { getDefaultBranch } = await import('../utils/git.js')
   const { getMainLoopModel } = await import('../utils/model/model.js')
@@ -194,7 +194,7 @@ export async function getBridgeSession(
   const { getClaudeAIOAuthTokens } = await import('../utils/auth.js')
   const { getOrganizationUUID } = await import('../services/oauth/client.js')
   const getOauthConfig = (): { BASE_API_URL: string } => ({ BASE_API_URL: '' }) /* KOSMOS-1633: oauth deleted */
-  const { getOAuthHeaders } = await import('../utils/teleport/api.js')
+  const getOAuthHeaders = (_token?: string): Record<string, string> => ({}) /* KOSMOS-1633 P1+P2 / KOSMOS-1978 T011 — utils/teleport deleted */
   const { default: axios } = await import('axios')
 
   const accessToken =
@@ -271,7 +271,7 @@ export async function archiveBridgeSession(
   const { getClaudeAIOAuthTokens } = await import('../utils/auth.js')
   const { getOrganizationUUID } = await import('../services/oauth/client.js')
   const getOauthConfig = (): { BASE_API_URL: string } => ({ BASE_API_URL: '' }) /* KOSMOS-1633: oauth deleted */
-  const { getOAuthHeaders } = await import('../utils/teleport/api.js')
+  const getOAuthHeaders = (_token?: string): Record<string, string> => ({}) /* KOSMOS-1633 P1+P2 / KOSMOS-1978 T011 — utils/teleport deleted */
   const { default: axios } = await import('axios')
 
   const accessToken =
@@ -332,7 +332,7 @@ export async function updateBridgeSessionTitle(
   const { getClaudeAIOAuthTokens } = await import('../utils/auth.js')
   const { getOrganizationUUID } = await import('../services/oauth/client.js')
   const getOauthConfig = (): { BASE_API_URL: string } => ({ BASE_API_URL: '' }) /* KOSMOS-1633: oauth deleted */
-  const { getOAuthHeaders } = await import('../utils/teleport/api.js')
+  const getOAuthHeaders = (_token?: string): Record<string, string> => ({}) /* KOSMOS-1633 P1+P2 / KOSMOS-1978 T011 — utils/teleport deleted */
   const { default: axios } = await import('axios')
 
   const accessToken =

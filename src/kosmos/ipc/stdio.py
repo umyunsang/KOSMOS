@@ -33,7 +33,7 @@ import uuid
 from collections.abc import Callable
 from datetime import UTC
 from types import FrameType
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any, Literal, cast
 
 from opentelemetry import trace
 from opentelemetry.trace import Status, StatusCode
@@ -70,8 +70,12 @@ def _serialize_primitive_result(raw: object) -> dict[str, Any]:
     safe. Helper extracted from inline expressions to keep the dispatcher
     body under the line-length limit.
     """
-    if hasattr(raw, "model_dump"):
-        return raw.model_dump(mode="json")  # type: ignore[union-attr]
+    dump = getattr(raw, "model_dump", None)
+    if callable(dump):
+        result = dump(mode="json")
+        if isinstance(result, dict):
+            return result
+        return {"raw": result}
     return {"raw": str(raw)}
 
 
@@ -724,8 +728,8 @@ async def run(  # noqa: C901
                 perm_span.set_attribute("kosmos.permission.decision", "timeout")
                 _pending_perms.pop(request_id, None)
                 # Emit synthetic denied tool_result so the LLM turn resolves.
-                denied_env = ToolResultEnvelope(  # type: ignore[arg-type]
-                    kind=fname,
+                denied_env = ToolResultEnvelope(
+                    kind=cast("Any", fname),
                     **{"error": "permission_timeout", "denied": True},
                 )
                 fut = _pending_calls.get(call_id)
@@ -744,13 +748,18 @@ async def run(  # noqa: C901
             finally:
                 _pending_perms.pop(request_id, None)
 
-            # Map PermissionResponseFrame.decision → allow/deny
+            # Map PermissionResponseFrame.decision → allow/deny per Spec 1978
+            # ADR-0002. Spec 287 baseline emitted only "granted" / "denied"; the
+            # 3-decision UI vocabulary (allow_once | allow_session | deny) is
+            # accepted now that frame_schema.py extends the Literal.
             raw_decision: str = getattr(decision_frame, "decision", "denied")
-            if raw_decision == "denied":
+            is_deny = raw_decision in {"denied", "deny"}
+            is_allow_session = raw_decision == "allow_session"
+            if is_deny:
                 perm_span.set_attribute("kosmos.permission.decision", "deny")
                 # Emit synthetic denied tool_result.
-                denied_env2 = ToolResultEnvelope(  # type: ignore[arg-type]
-                    kind=fname,
+                denied_env2 = ToolResultEnvelope(
+                    kind=cast("Any", fname),
                     **{"error": "permission_denied", "denied": True},
                 )
                 fut2 = _pending_calls.get(call_id)
@@ -769,12 +778,16 @@ async def run(  # noqa: C901
 
             # Granted — write consent receipt + optionally update session grant cache.
             receipt_id = str(uuid.uuid4())
-            perm_span.set_attribute("kosmos.permission.decision", "allow_once")
+            decision_label = "allow_session" if is_allow_session else "allow_once"
+            perm_span.set_attribute("kosmos.permission.decision", decision_label)
             perm_span.set_attribute("kosmos.consent.receipt_id", receipt_id)
 
-            # For demo: treat "granted" as allow_once (no session cache expansion here).
-            # If the contract later extends PermissionResponseFrame with
-            # decision="allow_session", add that branch here.
+            # Spec 1978 T049 — allow_session caches the tool_id so subsequent
+            # same-session same-tool calls bypass the bridge entirely (handled
+            # at the top of this function via _session_grants lookup).
+            if is_allow_session:
+                tool_id_for_cache = str(args_obj.get("tool_id", fname))
+                _session_grants.setdefault(session_id, set()).add(tool_id_for_cache)
             try:
                 import json as _json_receipt  # noqa: PLC0415
                 from pathlib import Path as _Path  # noqa: PLC0415
@@ -787,7 +800,7 @@ async def run(  # noqa: C901
                     "session_id": session_id,
                     "tool_id": str(args_obj.get("tool_id", fname)),
                     "primitive": fname,
-                    "decision": "allow_once",
+                    "decision": decision_label,
                     "granted_at": _utcnow(),
                     "revoked_at": None,
                 }
@@ -868,6 +881,10 @@ async def run(  # noqa: C901
 
             result_payload: dict[str, object] = {}
             dispatch_error: str | None = None
+            # Each primitive returns a different Pydantic model. Annotate as
+            # Any so the branches below can assign without mypy assignment
+            # narrowing complaints.
+            raw: Any
 
             try:
                 if fname == "verify":
@@ -879,7 +896,7 @@ async def run(  # noqa: C901
                     # `family_hint` (primitive's internal arg name) — KOSMOS
                     # tools-bridge tolerates both.
                     family_hint = str(args_obj.get("family_hint") or args_obj.get("family") or "")
-                    session_ctx = dict(args_obj.get("session_context") or {})
+                    session_ctx = cast("dict[str, object]", args_obj.get("session_context") or {})
                     raw = await verify(family_hint=family_hint, session_context=session_ctx)
                     result_payload = {
                         "family": family_hint,
@@ -898,21 +915,25 @@ async def run(  # noqa: C901
                     mode = str(args_obj.get("mode", "search"))
                     registry = ToolRegistry()
                     executor = ToolExecutor(registry=registry)
+                    inp_lk: LookupSearchInput | LookupFetchInput
                     if mode == "search":
-                        inp = LookupSearchInput(
+                        inp_lk = LookupSearchInput(
                             mode="search",
                             query=str(args_obj.get("query", "")),
-                            domain=args_obj.get("domain"),  # type: ignore[arg-type]
-                            top_k=args_obj.get("top_k"),  # type: ignore[arg-type]
+                            domain=cast("Any", args_obj.get("domain")),
+                            top_k=cast("Any", args_obj.get("top_k")),
                         )
                     else:
-                        inp = LookupFetchInput(
+                        inp_lk = LookupFetchInput(
                             mode="fetch",
                             tool_id=str(args_obj.get("tool_id", "")),
-                            params=dict(args_obj.get("params") or {}),
+                            params=cast("dict[str, object]", args_obj.get("params") or {}),
                         )
                     raw = await lookup(
-                        inp, registry=registry, executor=executor, session_identity=session_id
+                        inp_lk,
+                        registry=registry,
+                        executor=executor,
+                        session_identity=session_id,
                     )
                     result_payload = {
                         "kind": "lookup",
@@ -938,7 +959,7 @@ async def run(  # noqa: C901
 
                     raw = await submit(
                         tool_id=str(args_obj.get("tool_id", "")),
-                        params=dict(args_obj.get("params") or {}),
+                        params=cast("dict[str, object]", args_obj.get("params") or {}),
                         session_id=session_id,
                     )
                     result_payload = {
@@ -955,8 +976,8 @@ async def run(  # noqa: C901
 
                     inp_sub = SubscribeInput(
                         tool_id=str(args_obj.get("tool_id", "")),
-                        params=dict(args_obj.get("params") or {}),
-                        lifetime_seconds=int(args_obj.get("lifetime_seconds", 300)),
+                        params=cast("dict[str, object]", args_obj.get("params") or {}),
+                        lifetime_seconds=int(cast("Any", args_obj.get("lifetime_seconds", 300))),
                     )
                     iterator_or_error = subscribe(inp_sub)
                     if hasattr(iterator_or_error, "_handle"):
@@ -996,7 +1017,7 @@ async def run(  # noqa: C901
             # ToolResultEnvelope uses extra="allow" so extra payload fields are kept.
             # Strip any payload-level "kind" so the kwarg is single-valued.
             payload_kw = {k: v for k, v in result_payload.items() if k != "kind"}
-            envelope = ToolResultEnvelope(kind=fname, **payload_kw)  # type: ignore[arg-type]
+            envelope = ToolResultEnvelope(kind=cast("Any", fname), **payload_kw)
             result_frame = ToolResultFrame(
                 session_id=session_id,
                 correlation_id=correlation_id,

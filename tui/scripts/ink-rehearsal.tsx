@@ -210,6 +210,9 @@ type Props = {
   timeoutMs: number
   injectPrimitiveTools?: boolean
   autoPermissionDecision?: 'allow_once' | 'allow_session' | 'deny'
+  // I1 fix (Code Reviewer 2026-04-27): used to verify all expected frame
+  // kinds were observed before declaring success.
+  scenarioExpectedKinds?: ReadonlyArray<string>
 }
 
 type RehearsalSummary = {
@@ -224,7 +227,7 @@ type RehearsalSummary = {
   error?: string
 }
 
-function RehearsalHarness({ bridge, prompt, onComplete, timeoutMs, injectPrimitiveTools, autoPermissionDecision }: Props): React.ReactElement {
+function RehearsalHarness({ bridge, prompt, onComplete, timeoutMs, injectPrimitiveTools, autoPermissionDecision, scenarioExpectedKinds }: Props): React.ReactElement {
   const [typed, setTyped] = useState('')
   const [submitted, setSubmitted] = useState(false)
   const [transcript, setTranscript] = useState<string[]>([])
@@ -316,7 +319,18 @@ function RehearsalHarness({ bridge, prompt, onComplete, timeoutMs, injectPrimiti
             if (done) {
               stopped = true
               clearTimeout(watchdog)
-              summary.success = true
+              // I1 fix — verify the scenario's expected kinds were ALL
+              // observed before declaring success. Previously success was
+              // set true on any terminal chunk, hiding cases where a
+              // tool_call / tool_result / permission_request never
+              // materialised (false positive on submit-fine-pay).
+              const expected = scenarioExpectedKinds ?? []
+              const missing = expected.filter((k) => (summary.kinds[k] ?? 0) === 0)
+              if (missing.length === 0) {
+                summary.success = true
+              } else {
+                summary.error = `expectedKinds missing: ${missing.join(', ')}`
+              }
               onComplete(summary)
               return
             }
@@ -421,6 +435,7 @@ async function main(): Promise<void> {
         timeoutMs={scenario.timeoutMs}
         injectPrimitiveTools={scenario.injectPrimitiveTools}
         autoPermissionDecision={scenario.autoPermissionDecision}
+        scenarioExpectedKinds={scenario.expectedKinds}
       />,
     )
 

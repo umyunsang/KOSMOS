@@ -468,7 +468,7 @@ export type RequestId1 = string;
 /**
  * Citizen's permission decision.
  */
-export type Decision = 'granted' | 'denied';
+export type Decision = 'granted' | 'allow_once' | 'allow_session' | 'denied' | 'deny';
 /**
  * Opaque session identifier.
  */

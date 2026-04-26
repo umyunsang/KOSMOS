@@ -1473,7 +1473,10 @@
           "description": "Citizen's permission decision.",
           "enum": [
             "granted",
-            "denied"
+            "allow_once",
+            "allow_session",
+            "denied",
+            "deny"
           ],
           "title": "Decision",
           "type": "string"

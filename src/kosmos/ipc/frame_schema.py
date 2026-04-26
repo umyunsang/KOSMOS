@@ -456,7 +456,18 @@ class PermissionResponseFrame(_BaseFrame):
     request_id: str = Field(
         description="ULID matching the originating permission_request.request_id."
     )
-    decision: Literal["granted", "denied"] = Field(description="Citizen's permission decision.")
+    # Spec 1978 ADR-0002 + Spec 033 — extends the Spec 287 baseline binary
+    # vocabulary (granted | denied) with the 3-decision UI gauntlet
+    # (allow_once | allow_session | deny). Backend treats granted == allow_once
+    # for backward compatibility; allow_session activates the per-session
+    # tool_id grant cache in stdio.py._check_permission_gate.
+    decision: Literal[
+        "granted",
+        "allow_once",
+        "allow_session",
+        "denied",
+        "deny",
+    ] = Field(description="Citizen's permission decision.")
 
 
 # ---------------------------------------------------------------------------
