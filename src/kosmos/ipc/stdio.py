@@ -428,6 +428,11 @@ async def run(  # noqa: C901
     _llm_client_ref: list[object] = []  # holds the singleton LLMClient
     _llm_system_prompt_cached: list[str | None] = [None]
 
+    # Spec 1978 T026 — pending tool calls registry per data-model.md D1.
+    # Keyed by call_id (ULID emitted in ToolCallFrame), valued by an asyncio
+    # Future that resolves when the matching ToolResultFrame arrives.
+    _pending_calls: dict[str, asyncio.Future[Any]] = {}
+
     async def _ensure_llm_client() -> object:
         if not _llm_client_ref:
             from kosmos.llm.client import LLMClient  # noqa: PLC0415
@@ -552,6 +557,223 @@ async def run(  # noqa: C901
 
         history.append({"role": "assistant", "content": full_text})
 
+    async def _handle_chat_request(frame: IPCFrame) -> None:  # noqa: C901
+        """Spec 1978 ADR-0001 — tools-aware chat handler.
+
+        Replaces ``_handle_user_input_llm`` for ``ChatRequestFrame``. Forwards
+        ``messages`` + ``tools`` + ``system`` to ``LLMClient.stream``, emits
+        text deltas as ``AssistantChunkFrame``, accumulates ``tool_call_delta``
+        events into ``ToolCallFrame`` emissions, and registers a Future in
+        ``_pending_calls`` so the matching ``tool_result`` consumer can
+        resolve it. The ReAct loop continuation (T029) appends the resolved
+        tool message back to history and re-invokes ``stream``.
+        """
+        from kosmos.ipc.frame_schema import (  # noqa: PLC0415
+            AssistantChunkFrame,
+            ChatRequestFrame,
+            ToolCallFrame,
+        )
+        from kosmos.llm.models import (  # noqa: PLC0415
+            ChatMessage as LLMChatMessage,
+        )
+        from kosmos.llm.models import (
+            ToolDefinition as LLMToolDefinition,
+        )
+
+        if not isinstance(frame, ChatRequestFrame):
+            return
+
+        # Build LLMClient input from the frame payload. Conversation history
+        # lives in the TUI per ADR-0005 — backend receives the full slate.
+        llm_messages: list[LLMChatMessage] = []
+        if frame.system:
+            llm_messages.append(LLMChatMessage(role="system", content=frame.system))
+        for m in frame.messages:
+            llm_messages.append(
+                LLMChatMessage(
+                    role=m.role,
+                    content=m.content,
+                    name=m.name,
+                    tool_call_id=m.tool_call_id,
+                )
+            )
+
+        llm_tools: list[LLMToolDefinition] = []
+        for t in frame.tools:
+            llm_tools.append(
+                LLMToolDefinition.model_validate(t.model_dump())
+            )
+
+        client = await _ensure_llm_client()
+        message_id = str(uuid.uuid4())
+        assistant_text_chunks: list[str] = []
+        # Buffer accumulating function-call argument deltas keyed by index.
+        tool_call_buf: dict[int, dict[str, str]] = {}
+        stream_error: Exception | None = None
+
+        try:
+            async for event in client.stream(  # type: ignore[attr-defined]
+                messages=llm_messages,
+                tools=llm_tools or None,
+                temperature=frame.temperature,
+                top_p=frame.top_p,
+                max_tokens=frame.max_tokens,
+            ):
+                event_type = getattr(event, "type", None)
+                if event_type == "content_delta":
+                    delta = getattr(event, "content", "") or ""
+                    if delta:
+                        assistant_text_chunks.append(delta)
+                        await write_frame(
+                            AssistantChunkFrame(
+                                session_id=frame.session_id,
+                                correlation_id=frame.correlation_id,
+                                role="llm",
+                                ts=_utcnow(),
+                                kind="assistant_chunk",
+                                message_id=message_id,
+                                delta=delta,
+                                done=False,
+                            )
+                        )
+                elif event_type == "tool_call_delta":
+                    idx = int(getattr(event, "tool_call_index", 0) or 0)
+                    slot = tool_call_buf.setdefault(
+                        idx, {"id": "", "name": "", "args": ""}
+                    )
+                    cid = getattr(event, "tool_call_id", None)
+                    if cid:
+                        slot["id"] = cid
+                    fname = getattr(event, "function_name", None)
+                    if fname:
+                        slot["name"] = fname
+                    fargs = getattr(event, "function_args_delta", None)
+                    if fargs:
+                        slot["args"] += fargs
+                elif event_type == "done":
+                    break
+                elif event_type == "error":
+                    stream_error = RuntimeError(
+                        str(getattr(event, "content", "unknown stream error"))
+                    )
+                    break
+        except Exception as exc:  # noqa: BLE001
+            stream_error = exc
+
+        if stream_error is not None:
+            await write_frame(
+                ErrorFrame(
+                    session_id=frame.session_id,
+                    correlation_id=frame.correlation_id or str(uuid.uuid4()),
+                    role="llm",
+                    ts=_utcnow(),
+                    kind="error",
+                    code="llm_stream_error",
+                    message=str(stream_error),
+                    details={"message_id": message_id},
+                )
+            )
+            return
+
+        # T027 — emit one ``tool_call`` frame per accumulated tool call.
+        # Register pending Futures so ``tool_result`` can resolve them.
+        if tool_call_buf:
+            import json as _json  # noqa: PLC0415
+
+            loop = asyncio.get_event_loop()
+            for idx in sorted(tool_call_buf.keys()):
+                slot = tool_call_buf[idx]
+                call_id = slot["id"] or str(uuid.uuid4())
+                try:
+                    args_obj = _json.loads(slot["args"]) if slot["args"] else {}
+                except _json.JSONDecodeError:
+                    args_obj = {"_raw": slot["args"]}
+                if not isinstance(args_obj, dict):
+                    args_obj = {"_value": args_obj}
+
+                # Only the 5-primitive whitelist is accepted by ToolCallFrame.
+                # If the model emits an unknown name, downgrade to error so
+                # the TUI can surface a render-friendly message.
+                fname = slot["name"]
+                if fname not in {
+                    "lookup",
+                    "resolve_location",
+                    "submit",
+                    "subscribe",
+                    "verify",
+                }:
+                    await write_frame(
+                        ErrorFrame(
+                            session_id=frame.session_id,
+                            correlation_id=frame.correlation_id
+                            or str(uuid.uuid4()),
+                            role="llm",
+                            ts=_utcnow(),
+                            kind="error",
+                            code="unknown_tool",
+                            message=f"Model requested unknown tool {fname!r}",
+                            details={"call_id": call_id},
+                        )
+                    )
+                    continue
+
+                _pending_calls[call_id] = loop.create_future()
+                await write_frame(
+                    ToolCallFrame(
+                        session_id=frame.session_id,
+                        correlation_id=frame.correlation_id,
+                        role="backend",
+                        ts=_utcnow(),
+                        kind="tool_call",
+                        call_id=call_id,
+                        name=fname,  # type: ignore[arg-type]
+                        arguments=args_obj,
+                    )
+                )
+            # ReAct loop continuation (T029) is gated by the future resolution.
+            # The tool_result handler appends the synthetic tool message and
+            # re-invokes _handle_chat_request via a continuation envelope.
+            # Initial implementation: emit terminal chunk so the TUI un-spins
+            # while the tool dispatcher resolves; tool_result + assistant
+            # follow-up turn arrive in subsequent frames.
+
+        # Terminal chunk — done=True signals end-of-turn to the TS side.
+        await write_frame(
+            AssistantChunkFrame(
+                session_id=frame.session_id,
+                correlation_id=frame.correlation_id,
+                role="llm",
+                ts=_utcnow(),
+                kind="assistant_chunk",
+                message_id=message_id,
+                delta="",
+                done=True,
+            )
+        )
+
+    async def _handle_tool_result(frame: IPCFrame) -> None:
+        """Spec 1978 T028 — consume ``tool_result`` and resolve pending Future.
+
+        Looks up ``_pending_calls[call_id]``; if found, sets the Future
+        result so any awaiting ``_handle_chat_request`` continuation can
+        resume the ReAct loop. Frames with no matching pending call are
+        logged at debug level (out-of-band tool results are tolerated for
+        the demo path; deep validation deferred to subsequent commits).
+        """
+        from kosmos.ipc.frame_schema import ToolResultFrame  # noqa: PLC0415
+
+        if not isinstance(frame, ToolResultFrame):
+            return
+        fut = _pending_calls.pop(frame.call_id, None)
+        if fut is None:
+            logger.debug(
+                "tool_result with no pending call (call_id=%s) — ignoring",
+                frame.call_id,
+            )
+            return
+        if not fut.done():
+            fut.set_result(frame)
+
     # KOSMOS_IPC_HANDLER env var selects the user_input handler:
     #   - "llm" (default): route UserInputFrame → LLMClient.stream() → FriendliAI
     #   - "echo": mirror UserInputFrame back as AssistantChunkFrame "[echo] {text}"
@@ -604,6 +826,31 @@ async def run(  # noqa: C901
                         details={},
                     )
                     await write_frame(err)
+
+            elif frame.kind == "chat_request":
+                # Spec 1978 ADR-0001 — tools-aware chat path.
+                try:
+                    await _handle_chat_request(frame)
+                except Exception as exc:  # noqa: BLE001
+                    logger.exception("chat_request handler failed: %s", exc)
+                    err = ErrorFrame(
+                        session_id=frame.session_id,
+                        correlation_id=frame.correlation_id or str(uuid.uuid4()),
+                        role="llm",
+                        ts=_utcnow(),
+                        kind="error",
+                        code="chat_request_error",
+                        message=f"chat_request handler failed: {exc}",
+                        details={},
+                    )
+                    await write_frame(err)
+
+            elif frame.kind == "tool_result":
+                # Spec 1978 T028 — resolve pending tool call Future.
+                try:
+                    await _handle_tool_result(frame)
+                except Exception as exc:  # noqa: BLE001
+                    logger.exception("tool_result handler failed: %s", exc)
 
             elif frame.kind == "session_event":
                 evt = frame.event
