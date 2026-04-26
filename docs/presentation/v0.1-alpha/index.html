@@ -54,14 +54,16 @@ html,body{
   position:absolute;
   width:var(--slide-w);
   height:var(--slide-h);
-  display:none;
+  display:none !important;
   flex-direction:column;
   background:var(--bg-deep);
   color:var(--ink-cream);
   padding:32px 56px 56px;
   overflow:hidden;
 }
-.slide.active{display:flex}
+.slide.active{display:flex !important}
+.slide.active.cover{display:grid !important}
+.slide.active.sec{display:grid !important}
 
 /* slide variants */
 .slide--cream{background:var(--ink-cream);color:var(--ink-paper)}
