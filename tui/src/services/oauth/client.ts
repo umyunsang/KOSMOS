@@ -68,26 +68,6 @@ export async function storeOAuthAccountInfo(): Promise<void> {
   /* no-op */
 }
 
-/**
- * Lifted from CC restored-src services/oauth/client.ts:344 (verbatim, CC 2.1.88,
- * research-use). Imported by services/analytics/firstPartyEventLoggingExporter.ts.
- *
- * Returns true if the OAuth access token expires within the next 5 minutes.
- * KOSMOS has no OAuth surface — every getter in this file returns null — so
- * `expiresAt` is always null at runtime and this returns false. Function shape
- * preserved per Constitution §I CC fidelity rule.
- */
-export function isOAuthTokenExpired(expiresAt: number | null): boolean {
-  if (expiresAt === null) {
-    return false
-  }
-
-  const bufferTime = 5 * 60 * 1000
-  const now = Date.now()
-  const expiresWithBuffer = now + bufferTime
-  return expiresWithBuffer >= expiresAt
-}
-
 export default {
   getOrganizationUUID,
   getUserUUID,

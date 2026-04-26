@@ -134,51 +134,6 @@ import { initUser } from './utils/user.js';
 import { getTmuxInstallInstructions, isTmuxAvailable, parsePRReference } from './utils/worktree.js';
 
 
-// KOSMOS-1978 T003b residual diag: trace which top-level branch terminates
-// the boot inside Claude Code Bash + Bun PTY harness. Drop after fix.
-const __kosmosTrace = (label: string) => {
-  if (process.env.KOSMOS_BOOT_TRACE === '1') {
-    try { process.stderr.write(`[KOSMOS-BOOT-TRACE] ${label}\n`); } catch {}
-  }
-};
-if (process.env.KOSMOS_BOOT_TRACE === '1') {
-  const _origExit = process.exit.bind(process);
-  (process as unknown as { exit: typeof process.exit }).exit = ((code?: number) => {
-    try {
-      const stk = new Error('process.exit trace').stack ?? '';
-      process.stderr.write(`[KOSMOS-BOOT-TRACE] process.exit(${code}) called\n[KOSMOS-BOOT-TRACE] ${stk.split('\n').slice(1, 12).join('\n')}\n`);
-    } catch {}
-    return _origExit(code);
-  }) as typeof process.exit;
-  process.on('unhandledRejection', (reason: unknown) => {
-    try {
-      process.stderr.write(`[KOSMOS-BOOT-TRACE] unhandledRejection: ${(reason as Error)?.stack ?? String(reason)}\n`);
-    } catch {}
-  });
-  process.on('uncaughtException', (err: Error) => {
-    try {
-      process.stderr.write(`[KOSMOS-BOOT-TRACE] uncaughtException: ${err.stack ?? err.message}\n`);
-    } catch {}
-  });
-  process.on('exit', (code) => {
-    try {
-      process.stderr.write(`[KOSMOS-BOOT-TRACE] process:exit event code=${code}\n`);
-    } catch {}
-  });
-  process.on('beforeExit', (code) => {
-    try {
-      process.stderr.write(`[KOSMOS-BOOT-TRACE] process:beforeExit event code=${code}\n`);
-    } catch {}
-  });
-  process.on('SIGINT', () => {
-    try { process.stderr.write(`[KOSMOS-BOOT-TRACE] process:SIGINT received\n`); } catch {}
-  });
-  process.on('SIGTERM', () => {
-    try { process.stderr.write(`[KOSMOS-BOOT-TRACE] process:SIGTERM received\n`); } catch {}
-  });
-}
-__kosmosTrace('top:imports-done');
-
 
 // Check if running in debug/inspection mode
 function isBeingDebugged() {
@@ -215,15 +170,12 @@ function isBeingDebugged() {
 }
 
 // Exit if we detect node debugging or inspection
-__kosmosTrace(`top:isBeingDebugged check (build="external") → ${isBeingDebugged()}`);
 if ("external" !== 'ant' && isBeingDebugged()) {
-  __kosmosTrace('top:exit-1 isBeingDebugged');
   // Use process.exit directly here since we're in the top-level code before imports
   // and gracefulShutdown is not yet available
   // eslint-disable-next-line custom-rules/no-top-level-side-effects
   process.exit(1);
 }
-__kosmosTrace('top:past-debugger-check');
 
 // TODO(1633): migrations removed — migration files deleted in Wave A-C.
 // If model-alias migrations are needed for KOSMOS, add them here.
@@ -409,21 +361,17 @@ function initializeEntrypoint(isNonInteractive: boolean): void {
 }
 
 export async function main() {
-  __kosmosTrace('main:start');
 
   // SECURITY: Prevent Windows from executing commands from current directory
   // This must be set before ANY command execution to prevent PATH hijacking attacks
   // See: https://docs.microsoft.com/en-us/windows/win32/api/processenv/nf-processenv-searchpathw
   process.env.NoDefaultCurrentDirectoryInExePath = '1';
-  __kosmosTrace('main:env-set');
 
   // Fail-closed: require FRIENDLI_API_KEY for KOSMOS (Epic #1633 T011)
   enforceFriendliCredential();
-  __kosmosTrace('main:friendli-cred-ok');
 
   // Initialize warning handler early to catch warnings
   initializeWarningHandler();
-  __kosmosTrace('main:warning-handler');
   process.on('exit', () => {
     resetCursor();
   });
@@ -501,22 +449,8 @@ export async function main() {
   }
 
   // Parse and load settings flags early, before init()
-  __kosmosTrace('main:before-eagerLoadSettings');
   eagerLoadSettings();
-  __kosmosTrace('main:before-run');
-  try {
-    await run();
-    __kosmosTrace('main:after-run');
-  } catch (err) {
-    if (process.env.KOSMOS_BOOT_TRACE === '1') {
-      const e = err as Error;
-      try {
-        process.stderr.write(`[KOSMOS-BOOT-TRACE] run-threw: ${e?.name ?? '?'}: ${e?.message ?? String(err)}\n`);
-        if (e?.stack) process.stderr.write(`[KOSMOS-BOOT-TRACE] stack:\n${e.stack}\n`);
-      } catch {}
-    }
-    throw err;
-  }
+  await run();
 }
 async function getInputPrompt(prompt: string, inputFormat: 'text' | 'stream-json'): Promise<string | AsyncIterable<string>> {
   if (!process.stdin.isTTY &&
@@ -546,7 +480,6 @@ async function getInputPrompt(prompt: string, inputFormat: 'text' | 'stream-json
   return prompt;
 }
 async function run(): Promise<CommanderCommand> {
-  __kosmosTrace('run:enter');
 
   // Create help config that sorts options by long option name.
   // Commander supports compareOptions at runtime but @commander-js/extra-typings
@@ -2825,9 +2758,7 @@ async function run(): Promise<CommanderCommand> {
     await installHandler(target, options);
   });
 
-  __kosmosTrace('run:before-parseAsync');
   await program.parseAsync(process.argv);
-  __kosmosTrace('run:after-parseAsync');
 
   // Record final checkpoint for total_time calculation
 
