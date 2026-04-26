@@ -557,16 +557,35 @@ async def run(  # noqa: C901
 
         history.append({"role": "assistant", "content": full_text})
 
-    async def _handle_chat_request(frame: IPCFrame) -> None:  # noqa: C901
-        """Spec 1978 ADR-0001 — tools-aware chat handler.
+    import os as _os_chat_env  # noqa: PLC0415
+    # Spec 1978 T030 — tool-result wait timeout (env-overridable).
+    # contracts/tool-bridge-protocol.md gates the asyncio.gather on this value.
+    _TOOL_RESULT_TIMEOUT_S = float(
+        _os_chat_env.environ.get("KOSMOS_TOOL_RESULT_TIMEOUT_SECONDS", "120")
+    )
+    # Spec 1978 T029 — bound the ReAct loop to prevent infinite tool-recall.
+    _REACT_MAX_TURNS = int(_os_chat_env.environ.get("KOSMOS_REACT_MAX_TURNS", "8"))
+    # Spec 1978 T053 — eager-import the Mock adapter tree so every adapter
+    # self-registers with its primitive dispatcher before the first chat
+    # turn arrives. Equivalent to plan.md "Mock adapter activation"; failure
+    # is logged-only because Live tooling can still serve simple queries.
+    try:
+        import kosmos.tools.mock  # noqa: F401, PLC0415
+    except Exception:  # noqa: BLE001
+        logger.exception("failed to import kosmos.tools.mock — Mock adapters unavailable")
 
-        Replaces ``_handle_user_input_llm`` for ``ChatRequestFrame``. Forwards
-        ``messages`` + ``tools`` + ``system`` to ``LLMClient.stream``, emits
-        text deltas as ``AssistantChunkFrame``, accumulates ``tool_call_delta``
-        events into ``ToolCallFrame`` emissions, and registers a Future in
-        ``_pending_calls`` so the matching ``tool_result`` consumer can
-        resolve it. The ReAct loop continuation (T029) appends the resolved
-        tool message back to history and re-invokes ``stream``.
+    async def _handle_chat_request(frame: IPCFrame) -> None:  # noqa: C901, PLR0915
+        """Spec 1978 ADR-0001 — tools-aware chat handler with ReAct loop.
+
+        Replaces ``_handle_user_input_llm`` for ``ChatRequestFrame``. Streams
+        text deltas as ``AssistantChunkFrame``, emits one ``ToolCallFrame``
+        per K-EXAONE function-call, awaits each matching ``ToolResultFrame``
+        via ``_pending_calls`` Futures, then injects synthetic
+        ``role="tool"`` messages into the local history and re-invokes
+        ``LLMClient.stream`` (ReAct continuation per ADR-0005).
+
+        Loop is bounded by ``KOSMOS_REACT_MAX_TURNS`` (default 8) and the
+        per-call wait by ``KOSMOS_TOOL_RESULT_TIMEOUT_SECONDS`` (default 120).
         """
         from kosmos.ipc.frame_schema import (  # noqa: PLC0415
             AssistantChunkFrame,
@@ -575,6 +594,12 @@ async def run(  # noqa: C901
         )
         from kosmos.llm.models import (  # noqa: PLC0415
             ChatMessage as LLMChatMessage,
+        )
+        from kosmos.llm.models import (
+            FunctionCall as LLMFunctionCall,
+        )
+        from kosmos.llm.models import (
+            ToolCall as LLMToolCall,
         )
         from kosmos.llm.models import (
             ToolDefinition as LLMToolDefinition,
@@ -605,82 +630,100 @@ async def run(  # noqa: C901
             )
 
         client = await _ensure_llm_client()
-        message_id = str(uuid.uuid4())
-        assistant_text_chunks: list[str] = []
-        # Buffer accumulating function-call argument deltas keyed by index.
-        tool_call_buf: dict[int, dict[str, str]] = {}
-        stream_error: Exception | None = None
 
-        try:
-            async for event in client.stream(  # type: ignore[attr-defined]
-                messages=llm_messages,
-                tools=llm_tools or None,
-                temperature=frame.temperature,
-                top_p=frame.top_p,
-                max_tokens=frame.max_tokens,
-            ):
-                event_type = getattr(event, "type", None)
-                if event_type == "content_delta":
-                    delta = getattr(event, "content", "") or ""
-                    if delta:
-                        assistant_text_chunks.append(delta)
-                        await write_frame(
-                            AssistantChunkFrame(
-                                session_id=frame.session_id,
-                                correlation_id=frame.correlation_id,
-                                role="llm",
-                                ts=_utcnow(),
-                                kind="assistant_chunk",
-                                message_id=message_id,
-                                delta=delta,
-                                done=False,
+        # ---- ReAct loop ---------------------------------------------------
+        import json as _json  # noqa: PLC0415
+
+        for _turn in range(_REACT_MAX_TURNS):
+            message_id = str(uuid.uuid4())
+            assistant_text_chunks: list[str] = []
+            tool_call_buf: dict[int, dict[str, str]] = {}
+            stream_error: Exception | None = None
+
+            try:
+                async for event in client.stream(  # type: ignore[attr-defined]
+                    messages=llm_messages,
+                    tools=llm_tools or None,
+                    temperature=frame.temperature,
+                    top_p=frame.top_p,
+                    max_tokens=frame.max_tokens,
+                ):
+                    event_type = getattr(event, "type", None)
+                    if event_type == "content_delta":
+                        delta = getattr(event, "content", "") or ""
+                        if delta:
+                            assistant_text_chunks.append(delta)
+                            await write_frame(
+                                AssistantChunkFrame(
+                                    session_id=frame.session_id,
+                                    correlation_id=frame.correlation_id,
+                                    role="llm",
+                                    ts=_utcnow(),
+                                    kind="assistant_chunk",
+                                    message_id=message_id,
+                                    delta=delta,
+                                    done=False,
+                                )
                             )
+                    elif event_type == "tool_call_delta":
+                        idx = int(getattr(event, "tool_call_index", 0) or 0)
+                        slot = tool_call_buf.setdefault(
+                            idx, {"id": "", "name": "", "args": ""}
                         )
-                elif event_type == "tool_call_delta":
-                    idx = int(getattr(event, "tool_call_index", 0) or 0)
-                    slot = tool_call_buf.setdefault(
-                        idx, {"id": "", "name": "", "args": ""}
-                    )
-                    cid = getattr(event, "tool_call_id", None)
-                    if cid:
-                        slot["id"] = cid
-                    fname = getattr(event, "function_name", None)
-                    if fname:
-                        slot["name"] = fname
-                    fargs = getattr(event, "function_args_delta", None)
-                    if fargs:
-                        slot["args"] += fargs
-                elif event_type == "done":
-                    break
-                elif event_type == "error":
-                    stream_error = RuntimeError(
-                        str(getattr(event, "content", "unknown stream error"))
-                    )
-                    break
-        except Exception as exc:  # noqa: BLE001
-            stream_error = exc
+                        cid = getattr(event, "tool_call_id", None)
+                        if cid:
+                            slot["id"] = cid
+                        fname = getattr(event, "function_name", None)
+                        if fname:
+                            slot["name"] = fname
+                        fargs = getattr(event, "function_args_delta", None)
+                        if fargs:
+                            slot["args"] += fargs
+                    elif event_type == "done":
+                        break
+                    elif event_type == "error":
+                        stream_error = RuntimeError(
+                            str(getattr(event, "content", "unknown stream error"))
+                        )
+                        break
+            except Exception as exc:  # noqa: BLE001
+                stream_error = exc
 
-        if stream_error is not None:
-            await write_frame(
-                ErrorFrame(
-                    session_id=frame.session_id,
-                    correlation_id=frame.correlation_id or str(uuid.uuid4()),
-                    role="llm",
-                    ts=_utcnow(),
-                    kind="error",
-                    code="llm_stream_error",
-                    message=str(stream_error),
-                    details={"message_id": message_id},
+            if stream_error is not None:
+                await write_frame(
+                    ErrorFrame(
+                        session_id=frame.session_id,
+                        correlation_id=frame.correlation_id or str(uuid.uuid4()),
+                        role="llm",
+                        ts=_utcnow(),
+                        kind="error",
+                        code="llm_stream_error",
+                        message=str(stream_error),
+                        details={"message_id": message_id},
+                    )
                 )
-            )
-            return
+                return
 
-        # T027 — emit one ``tool_call`` frame per accumulated tool call.
-        # Register pending Futures so ``tool_result`` can resolve them.
-        if tool_call_buf:
-            import json as _json  # noqa: PLC0415
+            # No tool calls this turn → terminal chunk + exit ReAct loop.
+            if not tool_call_buf:
+                await write_frame(
+                    AssistantChunkFrame(
+                        session_id=frame.session_id,
+                        correlation_id=frame.correlation_id,
+                        role="llm",
+                        ts=_utcnow(),
+                        kind="assistant_chunk",
+                        message_id=message_id,
+                        delta="",
+                        done=True,
+                    )
+                )
+                return
 
+            # ---- T027/T029 — emit tool_call frames + register Futures -----
             loop = asyncio.get_event_loop()
+            issued_calls: list[tuple[str, str]] = []  # (call_id, name)
+            assistant_tool_calls: list[LLMToolCall] = []
             for idx in sorted(tool_call_buf.keys()):
                 slot = tool_call_buf[idx]
                 call_id = slot["id"] or str(uuid.uuid4())
@@ -691,9 +734,6 @@ async def run(  # noqa: C901
                 if not isinstance(args_obj, dict):
                     args_obj = {"_value": args_obj}
 
-                # Only the 5-primitive whitelist is accepted by ToolCallFrame.
-                # If the model emits an unknown name, downgrade to error so
-                # the TUI can surface a render-friendly message.
                 fname = slot["name"]
                 if fname not in {
                     "lookup",
@@ -718,6 +758,17 @@ async def run(  # noqa: C901
                     continue
 
                 _pending_calls[call_id] = loop.create_future()
+                issued_calls.append((call_id, fname))
+                assistant_tool_calls.append(
+                    LLMToolCall(
+                        id=call_id,
+                        type="function",
+                        function=LLMFunctionCall(
+                            name=fname,
+                            arguments=_json.dumps(args_obj),
+                        ),
+                    )
+                )
                 await write_frame(
                     ToolCallFrame(
                         session_id=frame.session_id,
@@ -730,14 +781,107 @@ async def run(  # noqa: C901
                         arguments=args_obj,
                     )
                 )
-            # ReAct loop continuation (T029) is gated by the future resolution.
-            # The tool_result handler appends the synthetic tool message and
-            # re-invokes _handle_chat_request via a continuation envelope.
-            # Initial implementation: emit terminal chunk so the TUI un-spins
-            # while the tool dispatcher resolves; tool_result + assistant
-            # follow-up turn arrive in subsequent frames.
 
-        # Terminal chunk — done=True signals end-of-turn to the TS side.
+            # If every tool call was rejected (whitelist), terminate.
+            if not issued_calls:
+                await write_frame(
+                    AssistantChunkFrame(
+                        session_id=frame.session_id,
+                        correlation_id=frame.correlation_id,
+                        role="llm",
+                        ts=_utcnow(),
+                        kind="assistant_chunk",
+                        message_id=message_id,
+                        delta="",
+                        done=True,
+                    )
+                )
+                return
+
+            # Append the assistant message that requested tools — ReAct
+            # contract requires the function-call envelope to precede the
+            # tool messages in the next turn.
+            full_text = "".join(assistant_text_chunks)
+            llm_messages.append(
+                LLMChatMessage(
+                    role="assistant",
+                    content=full_text,
+                    tool_calls=assistant_tool_calls,
+                )
+            )
+
+            # ---- Await tool_result Futures (gated by T030 timeout) -------
+            tasks = [_pending_calls[cid] for cid, _ in issued_calls]
+            try:
+                results = await asyncio.wait_for(
+                    asyncio.gather(*tasks, return_exceptions=True),
+                    timeout=_TOOL_RESULT_TIMEOUT_S,
+                )
+            except asyncio.TimeoutError:
+                # Per contracts/tool-bridge-protocol.md timeout → synthetic
+                # error result. Drop pending entries to avoid leaks.
+                for cid, _ in issued_calls:
+                    pending = _pending_calls.pop(cid, None)
+                    if pending and not pending.done():
+                        pending.cancel()
+                await write_frame(
+                    ErrorFrame(
+                        session_id=frame.session_id,
+                        correlation_id=frame.correlation_id
+                        or str(uuid.uuid4()),
+                        role="backend",
+                        ts=_utcnow(),
+                        kind="error",
+                        code="tool_timeout",
+                        message=(
+                            f"Tool result timeout after "
+                            f"{_TOOL_RESULT_TIMEOUT_S:.0f}s"
+                        ),
+                        details={
+                            "call_ids": [cid for cid, _ in issued_calls],
+                        },
+                    )
+                )
+                return
+
+            # ---- Inject tool messages, continue ReAct loop ----------------
+            for (cid, fname), result in zip(
+                issued_calls, results, strict=False
+            ):
+                if isinstance(result, BaseException):
+                    payload = _json.dumps(
+                        {"error": "tool_dispatch_failed", "detail": str(result)}
+                    )
+                else:
+                    # ToolResultFrame.envelope is a Pydantic model.
+                    envelope = getattr(result, "envelope", None)
+                    if envelope is not None and hasattr(envelope, "model_dump"):
+                        payload = _json.dumps(
+                            envelope.model_dump(),
+                            ensure_ascii=False,
+                            default=str,
+                        )
+                    else:
+                        payload = _json.dumps(
+                            {"result": str(result)}, ensure_ascii=False
+                        )
+                llm_messages.append(
+                    LLMChatMessage(
+                        role="tool",
+                        content=payload,
+                        name=fname,
+                        tool_call_id=cid,
+                    )
+                )
+
+            # Loop back: re-invoke client.stream with extended history.
+
+        # Loop bound exhausted — emit terminal chunk anyway so the TUI
+        # un-spins; the model will not be re-invoked beyond the bound.
+        logger.warning(
+            "ReAct loop hit KOSMOS_REACT_MAX_TURNS=%d; terminating",
+            _REACT_MAX_TURNS,
+        )
         await write_frame(
             AssistantChunkFrame(
                 session_id=frame.session_id,
@@ -745,7 +889,7 @@ async def run(  # noqa: C901
                 role="llm",
                 ts=_utcnow(),
                 kind="assistant_chunk",
-                message_id=message_id,
+                message_id=str(uuid.uuid4()),
                 delta="",
                 done=True,
             )
