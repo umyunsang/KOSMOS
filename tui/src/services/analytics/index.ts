@@ -57,6 +57,50 @@ export function shutdownAnalyticsSink(): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
+// CC migration — `stripProtoFields` lifted verbatim from
+// `.references/claude-code-sourcemap/restored-src/src/services/analytics/index.ts:45`
+// (CC 2.1.88, research-use). Used by sink.ts:14 + firstPartyEventLoggingExporter.ts:33.
+// KOSMOS keeps the function shape so existing call sites compile; in the KOSMOS
+// stub-noop pipeline the helper still does the right thing — _PROTO_ keys are
+// dropped before any (currently disabled) sink could see them.
+//
+// `AnalyticsSink` is a structural type imported by analytics/sink.ts. CC ships
+// a richer interface with logEvent + logEventAsync; KOSMOS exposes the same
+// shape so import-link succeeds and the `attachAnalyticsSink` no-op accepts it.
+// ---------------------------------------------------------------------------
+
+export type AnalyticsSink = {
+  logEvent: (eventName: string, metadata: Record<string, unknown>) => void
+  logEventAsync: (
+    eventName: string,
+    metadata: Record<string, unknown>,
+  ) => Promise<void>
+}
+
+export function stripProtoFields<V>(
+  metadata: Record<string, V>,
+): Record<string, V> {
+  // Lifted from CC restored-src services/analytics/index.ts:45 (verbatim).
+  // Returns the same reference when no _PROTO_ keys present.
+  let result: Record<string, V> | undefined
+  for (const key in metadata) {
+    if (key.startsWith('_PROTO_')) {
+      if (result === undefined) {
+        result = { ...metadata }
+      }
+      delete result[key]
+    }
+  }
+  return result ?? metadata
+}
+
+export function attachAnalyticsSink(_sink: AnalyticsSink): void {
+  // KOSMOS-1633 P2 stub-noop — there is no Datadog / 1P sink to attach to.
+  // Matches CC's `attachAnalyticsSink` signature (idempotent, side-effect free).
+  // OTEL pipeline is wired separately via tui/src/ipc/llmClient.ts.
+}
+
+// ---------------------------------------------------------------------------
 // Default export safety net — some callers may import the module namespace.
 // ---------------------------------------------------------------------------
 
@@ -66,4 +110,6 @@ export default {
   initializeAnalyticsSink,
   flushAnalyticsSink,
   shutdownAnalyticsSink,
+  stripProtoFields,
+  attachAnalyticsSink,
 }

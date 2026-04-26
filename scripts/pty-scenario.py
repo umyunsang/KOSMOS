@@ -96,16 +96,22 @@ class HarnessResult:
         return self.captured_stderr.decode("utf-8", errors="replace")
 
 
-def _spawn_tui(env_overrides: dict[str, str]) -> tuple[int, int]:
-    """Fork the TUI under a PTY; returns (pid, master_fd).
+def _spawn_tui(env_overrides: dict[str, str]) -> tuple[int, int, int]:
+    """Fork the TUI under a PTY; returns ``(pid, master_fd, stderr_read_fd)``.
 
-    Use ``bun run tui`` (the canonical script entrypoint registered in
-    ``tui/package.json``). The TTY-detection bypass uses
-    ``KOSMOS_FORCE_INTERACTIVE=1`` (set in this function below) instead of
-    invocation tricks — that way both PTY harness AND citizen interactive
-    shells reach the same code path through ``bun run tui``.
+    Bun is invoked directly via ``bun src/main.tsx`` (NOT ``bun run tui``)
+    because the ``bun run`` wrapper double-forks and swallows the child's
+    real stderr. Direct invocation under PTY preserves TTY semantics for
+    fd 0/1 while letting us route fd 2 to a dedicated pipe so the harness
+    can read the actual error stream verbatim — without it, fatal errors
+    like "Cannot find module" or unhandled rejections silently disappear
+    into the PTY merge.
+
+    KOSMOS_FORCE_INTERACTIVE=1 still bypasses the ``isNonInteractive`` gate
+    in main.tsx so an actual interactive Ink session boots even though Bun's
+    ``process.stdout.isTTY`` reports ``undefined`` under our PTY harness.
     """
-    cmd = ["bun", "run", "tui"]
+    cmd = ["bun", "src/main.tsx"]
     env = os.environ.copy()
     env.setdefault("DISABLE_INSTALLATION_CHECKS", "1")
     env.setdefault("KOSMOS_TUI_LOG_LEVEL", "DEBUG")
@@ -114,19 +120,22 @@ def _spawn_tui(env_overrides: dict[str, str]) -> tuple[int, int]:
     env.setdefault("COLUMNS", "120")
     env.setdefault("LINES", "40")
     env.setdefault("FORCE_COLOR", "0")
-    # KOSMOS-1978 T003b: tell main.tsx that fd1 is a real TTY slave even
-    # though Bun's `process.stdout.isTTY` reports undefined under wrapper
-    # invocations. See `tui/src/main.tsx` `kosmosForceInteractive` for the
-    # consuming side. NEVER set this in citizen runtimes.
     env.setdefault("KOSMOS_FORCE_INTERACTIVE", "1")
     env.update(env_overrides)
 
-    pid, fd = pty.fork()
+    err_read, err_write = os.pipe()
+    pid, master_fd = pty.fork()
     if pid == 0:
-        # Child — exec the TUI in the worktree's tui/ directory.
+        # Child: redirect fd 2 to the dedicated stderr pipe BEFORE exec so
+        # we can distinguish bun/Node fatal errors from Ink frame stream noise.
+        os.dup2(err_write, 2)
+        os.close(err_read)
+        os.close(err_write)
         os.chdir(str(TUI_DIR))
         os.execvpe(cmd[0], cmd, env)
-    return pid, fd
+    # Parent: keep the read end, drop the write end so EOF arrives when child exits.
+    os.close(err_write)
+    return pid, master_fd, err_read
 
 
 def _drain(fd: int, deadline: float, dest: bytearray, label: str) -> None:
@@ -147,6 +156,31 @@ def _drain(fd: int, deadline: float, dest: bytearray, label: str) -> None:
         sys.stdout.flush()
 
 
+def _drain_pair(stdout_fd: int, stderr_fd: int, deadline: float,
+                stdout_buf: bytearray, stderr_buf: bytearray, label: str) -> None:
+    """Drain stdout (PTY master) and stderr (pipe read end) concurrently."""
+    fds = [stdout_fd, stderr_fd]
+    while fds and time.time() < deadline:
+        timeout = max(0.05, deadline - time.time())
+        readable, _, _ = select.select(fds, [], [], timeout)
+        if not readable:
+            continue
+        for r in readable:
+            try:
+                chunk = os.read(r, 65536)
+            except OSError:
+                fds = [f for f in fds if f != r]
+                continue
+            if not chunk:
+                # EOF on this fd — drop it from the watch list but keep draining the other.
+                fds = [f for f in fds if f != r]
+                continue
+            tag = "out" if r == stdout_fd else "err"
+            (stdout_buf if r == stdout_fd else stderr_buf).extend(chunk)
+            sys.stdout.write(f"[{label}-{tag}+{len(chunk)}B] ")
+            sys.stdout.flush()
+
+
 def _send(fd: int, payload: bytes, label: str) -> None:
     """Write bytes to PTY master."""
     os.write(fd, payload)
@@ -156,6 +190,17 @@ def _send(fd: int, payload: bytes, label: str) -> None:
 
 def _shutdown(pid: int, fd: int, grace_ms: int = 1500) -> int | None:
     """Send Ctrl-C twice + SIGTERM, then reap. Returns exit code if available."""
+    # Reap fast if already dead — avoids sending ctrl-C to a non-existent process
+    # (raises EIO that gets misread as a fresh error).
+    try:
+        done_pid, status = os.waitpid(pid, os.WNOHANG)
+        if done_pid != 0:
+            if os.WIFEXITED(status):
+                return os.WEXITSTATUS(status)
+            if os.WIFSIGNALED(status):
+                return 128 + os.WTERMSIG(status)
+    except ChildProcessError:
+        return None
     try:
         os.write(fd, b"\x03")  # Ctrl-C #1
         time.sleep(0.4)
@@ -212,7 +257,7 @@ def _run_skeleton(
 ) -> HarnessResult:
     env_overrides = env_overrides or {}
     started = time.time()
-    pid, fd = _spawn_tui(env_overrides)
+    pid, fd, err_fd = _spawn_tui(env_overrides)
     result = HarnessResult(
         scenario=scenario,
         pid=pid,
@@ -221,14 +266,20 @@ def _run_skeleton(
         total_ms=0,
     )
     try:
-        # Phase 1: drain boot output.
+        # Phase 1: drain boot output AND stderr concurrently. Real fatal
+        # errors arrive on stderr; the PTY merge would otherwise hide them.
         boot_deadline = started + boot_ms / 1000
-        _drain(fd, boot_deadline, result.captured_stdout, f"{scenario}-boot")
+        _drain_pair(fd, err_fd, boot_deadline,
+                    result.captured_stdout, result.captured_stderr,
+                    f"{scenario}-boot")
         result.boot_ms = int((time.time() - started) * 1000)
         # Phase 2-N: subcommand-specific keystrokes go here in Phase 7 tasks.
-        # For T001 skeleton we just clean up.
     finally:
         result.exit_code = _shutdown(pid, fd)
+        try:
+            os.close(err_fd)
+        except OSError:
+            pass
         result.total_ms = int((time.time() - started) * 1000)
     return result
 
