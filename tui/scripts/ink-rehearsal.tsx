@@ -156,8 +156,9 @@ const SCENARIOS: Record<string, Scenario> = {
     name: 'lookup-emergency-room',
     description: 'US1 — emergency room lookup chain (SC-001)',
     prompt: '강남구 응급실 알려줘',
-    timeoutMs: 90_000,
-    expectedKinds: ['assistant_chunk'],
+    timeoutMs: 120_000,
+    expectedKinds: ['assistant_chunk', 'tool_call', 'tool_result'],
+    injectPrimitiveTools: true,
   },
   // US2 — Mock submit + permission gauntlet (FR-002 / SC-002).
   // Triggers the `submit` primitive against `mock_traffic_fine_pay_v1`.
