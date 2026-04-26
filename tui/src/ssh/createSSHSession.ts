@@ -8,7 +8,8 @@
 // without running the actual SSH transport. Agent-reported v1 was missing
 // createManager/proc/proxy/getStderrTail — added here for type safety.
 
-import type { RemoteMessageContent } from '../utils/teleport/api.js'
+// KOSMOS-1633 P1+P2 / KOSMOS-1978 T011 — utils/teleport/ deleted; stub.
+type RemoteMessageContent = string | Array<{ type: string; [key: string]: unknown }>
 import type { SSHSessionManager } from './SSHSessionManager.js'
 
 /** ChildProcess-like handle surfaced by the SSH subprocess. */

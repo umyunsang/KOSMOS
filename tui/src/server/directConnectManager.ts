@@ -9,7 +9,8 @@ import type {
 type RemotePermissionResponse = unknown
 import { logForDebugging } from '../utils/debug.js'
 import { jsonParse, jsonStringify } from '../utils/slowOperations.js'
-import type { RemoteMessageContent } from '../utils/teleport/api.js'
+// KOSMOS-1633 P1+P2 / KOSMOS-1978 T011 — utils/teleport/ deleted; stub.
+type RemoteMessageContent = string | Array<{ type: string; [key: string]: unknown }>
 
 export type DirectConnectConfig = {
   serverUrl: string

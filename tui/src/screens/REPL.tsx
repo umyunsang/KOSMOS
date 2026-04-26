@@ -280,7 +280,8 @@ import { DevBar } from '../components/DevBar.js';
 // KOSMOS-1633 P1+P2 / KOSMOS-1978 T011 — remote/RemoteSessionManager deleted.
 import type { RemoteSessionConfig } from '../hooks/useRemoteSession.js';
 import { REMOTE_SAFE_COMMANDS } from '../commands.js';
-import type { RemoteMessageContent } from '../utils/teleport/api.js';
+// KOSMOS-1633 P1+P2 / KOSMOS-1978 T011 — utils/teleport/ deleted; stub.
+type RemoteMessageContent = string | Array<{ type: string; [key: string]: unknown }>
 import { FullscreenLayout, useUnseenDivider, computeUnseenDivider } from '../components/FullscreenLayout.js';
 import { isFullscreenEnvEnabled, maybeGetTmuxMouseHint, isMouseTrackingEnabled } from '../utils/fullscreen.js';
 import { AlternateScreen } from '../ink/components/AlternateScreen.js';

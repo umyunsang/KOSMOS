@@ -8,7 +8,8 @@
 // it stays a disconnected shell until Epic #1633 decides whether to port
 // or delete the SSH feature.
 
-import type { RemoteMessageContent } from '../utils/teleport/api.js'
+// KOSMOS-1633 P1+P2 / KOSMOS-1978 T011 — utils/teleport/ deleted; stub.
+type RemoteMessageContent = string | Array<{ type: string; [key: string]: unknown }>
 import type {
   SSHSession,
   SSHSessionManagerCallbacks,

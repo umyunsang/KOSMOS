@@ -14,11 +14,13 @@ import {
 } from '../../utils/detectRepository.js'
 import { getRemoteUrl } from '../../utils/git.js'
 import { jsonStringify } from '../../utils/slowOperations.js'
-import {
-  createDefaultCloudEnvironment,
-  type EnvironmentResource,
-  fetchEnvironments,
-} from '../../utils/teleport/environments.js'
+// KOSMOS-1633 P1+P2 / KOSMOS-1978 T011 — utils/teleport/ deleted; stub.
+type EnvironmentKind = 'anthropic_cloud' | 'byoc' | 'bridge'
+type EnvironmentResource = { kind: EnvironmentKind; environment_id: string; name: string; created_at: string; state: 'active' }
+const fetchEnvironments = async (): Promise<EnvironmentResource[]> => []
+const createDefaultCloudEnvironment = async (_name: string): Promise<EnvironmentResource> => {
+  throw new Error('KOSMOS: remote CCR environments not supported')
+}
 import { registerBundledSkill } from '../bundledSkills.js'
 
 // Base58 alphabet (Bitcoin-style) used by the tagged ID system

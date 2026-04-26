@@ -38,6 +38,8 @@ no external secrets once Phase F adapter registration lands.
 from __future__ import annotations
 
 import argparse
+import json
+import logging
 import os
 import pty
 import re
@@ -48,6 +50,8 @@ import time
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
+
+log = logging.getLogger("pty-scenario")
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -61,6 +65,9 @@ DEFAULT_PERMISSION_TIMEOUT_MS = 60_000
 DEFAULT_SUBSCRIBE_TIMEOUT_MS = 30_000
 
 ANSI_RE = re.compile(rb"\x1b\[[0-9;?]*[a-zA-Z]|\x1b\][^\x07]*\x07|\x1b[=>]|\x1b\([AB012]")
+
+# Seconds between small poll intervals when scanning for frame markers.
+_POLL_INTERVAL = 0.25
 
 
 def strip_ansi(buf: bytes) -> str:
@@ -201,6 +208,51 @@ def _scan_markers(text: str, needles: Sequence[str]) -> dict[str, int]:
     return counts
 
 
+def _parse_ipc_frames(raw: bytes) -> list[dict]:
+    """Extract NDJSON IPC frames from raw PTY output (which may include ANSI noise)."""
+    frames: list[dict] = []
+    for line in strip_ansi(raw).splitlines():
+        line = line.strip()
+        if not line.startswith("{"):
+            continue
+        try:
+            obj = json.loads(line)
+            if "kind" in obj:
+                frames.append(obj)
+        except json.JSONDecodeError:
+            pass
+    return frames
+
+
+def _drain_until(
+    fd: int,
+    dest: bytearray,
+    deadline: float,
+    predicate,  # (frames: list[dict]) -> bool
+    label: str,
+) -> bool:
+    """Drain PTY output into *dest* until *predicate(frames)* returns True or deadline expires.
+
+    Returns True if predicate was satisfied, False on timeout.
+    """
+    while time.time() < deadline:
+        timeout = max(_POLL_INTERVAL, deadline - time.time())
+        readable, _, _ = select.select([fd], [], [], min(_POLL_INTERVAL, timeout))
+        if readable:
+            try:
+                chunk = os.read(fd, 65536)
+            except OSError:
+                break
+            if not chunk:
+                break
+            dest.extend(chunk)
+            log.debug("[%s +%dB]", label, len(chunk))
+        frames = _parse_ipc_frames(bytes(dest))
+        if predicate(frames):
+            return True
+    return False
+
+
 # ---------------------------------------------------------------------------
 # Common scenario runner skeleton
 # ---------------------------------------------------------------------------
@@ -240,17 +292,139 @@ def _run_skeleton(
 
 
 def cmd_greeting(_args: argparse.Namespace) -> HarnessResult:
-    """T073 will fill this with the actual ``안녕하세요`` keystroke + assertion."""
-    result = _run_skeleton("greeting", DEFAULT_BOOT_MS)
-    result.markers_seen = _scan_markers(result.stdout_text, ["KOSMOS", "K-EXAONE"])
-    if "KOSMOS" not in result.markers_seen:
-        result.errors.append("boot banner missing KOSMOS marker")
+    """T073: send '안녕하세요', wait for assistant_chunk frames, capture latency."""
+    scenario = "greeting"
+    turn_timeout_ms = DEFAULT_TURN_TIMEOUT_MS
+    started = time.time()
+    pid, fd = _spawn_tui({})
+    result = HarnessResult(scenario=scenario, pid=pid, exit_code=None, boot_ms=0, total_ms=0)
+
+    first_chunk_ms: int | None = None
+    done_chunk_ms: int | None = None
+
+    try:
+        # Phase 1: drain boot output.
+        boot_deadline = started + DEFAULT_BOOT_MS / 1000
+        _drain(fd, boot_deadline, result.captured_stdout, f"{scenario}-boot")
+        result.boot_ms = int((time.time() - started) * 1000)
+        log.debug("boot done in %dms", result.boot_ms)
+
+        # Phase 2: send Korean greeting.
+        _send(fd, "안녕하세요\r".encode("utf-8"), f"{scenario}-input")
+        send_ts = time.time()
+
+        # Phase 3: wait for first assistant_chunk frame.
+        turn_deadline = send_ts + turn_timeout_ms / 1000
+
+        def _has_first_chunk(frames: list[dict]) -> bool:
+            return any(f.get("kind") == "assistant_chunk" for f in frames)
+
+        found_first = _drain_until(fd, result.captured_stdout, turn_deadline, _has_first_chunk, f"{scenario}-first-chunk")
+        if found_first:
+            first_chunk_ms = int((time.time() - send_ts) * 1000)
+            log.debug("first assistant_chunk in %dms", first_chunk_ms)
+
+        # Phase 4: wait for done=true assistant_chunk.
+        def _has_done_chunk(frames: list[dict]) -> bool:
+            return any(f.get("kind") == "assistant_chunk" and f.get("done") for f in frames)
+
+        found_done = _drain_until(fd, result.captured_stdout, turn_deadline, _has_done_chunk, f"{scenario}-done-chunk")
+        if found_done:
+            done_chunk_ms = int((time.time() - send_ts) * 1000)
+            log.debug("done assistant_chunk in %dms", done_chunk_ms)
+
+    finally:
+        result.exit_code = _shutdown(pid, fd)
+        result.total_ms = int((time.time() - started) * 1000)
+
+    # Evaluate success: at minimum a first assistant_chunk must have arrived.
+    success = first_chunk_ms is not None
+    if not success:
+        result.errors.append("timeout: no assistant_chunk frames received within turn timeout")
+
+    summary = {
+        "scenario": scenario,
+        "success": success,
+        "first_chunk_ms": first_chunk_ms,
+        "done_chunk_ms": done_chunk_ms,
+        "boot_ms": result.boot_ms,
+        "total_ms": result.total_ms,
+    }
+    # Print structured JSON summary to stdout as required by spec.
+    print(json.dumps(summary, ensure_ascii=False))
+    result.markers_seen = _scan_markers(result.stdout_text, ["assistant_chunk"])
     return result
 
 
 def cmd_lookup_emergency_room(_args: argparse.Namespace) -> HarnessResult:
-    """T074 will send '응급실 알려줘' AND '강남구 응급실' to exercise resolve_location chain."""
-    return _run_skeleton("lookup-emergency-room", DEFAULT_BOOT_MS)
+    """T074: send '응급실 알려줘' then '강남구 응급실'; assert tool_call frames for lookup + resolve_location."""
+    scenario = "lookup-emergency-room"
+    started = time.time()
+    pid, fd = _spawn_tui({})
+    result = HarnessResult(scenario=scenario, pid=pid, exit_code=None, boot_ms=0, total_ms=0)
+
+    seen_call_ids: list[dict] = []  # {name, call_id, arguments}
+
+    try:
+        # Phase 1: boot.
+        boot_deadline = started + DEFAULT_BOOT_MS / 1000
+        _drain(fd, boot_deadline, result.captured_stdout, f"{scenario}-boot")
+        result.boot_ms = int((time.time() - started) * 1000)
+        log.debug("boot done in %dms", result.boot_ms)
+
+        # Phase 2: first message.
+        _send(fd, "응급실 알려줘\r".encode("utf-8"), f"{scenario}-turn1")
+        turn1_deadline = time.time() + DEFAULT_TURN_TIMEOUT_MS / 1000
+
+        def _has_any_tool_call(frames: list[dict]) -> bool:
+            return any(f.get("kind") == "tool_call" for f in frames)
+
+        _drain_until(fd, result.captured_stdout, turn1_deadline, _has_any_tool_call, f"{scenario}-tc1")
+
+        # Phase 3: second message with location qualifier.
+        _send(fd, "강남구 응급실\r".encode("utf-8"), f"{scenario}-turn2")
+        turn2_deadline = time.time() + DEFAULT_TURN_TIMEOUT_MS / 1000
+        _drain_until(fd, result.captured_stdout, turn2_deadline, _has_any_tool_call, f"{scenario}-tc2")
+
+    finally:
+        result.exit_code = _shutdown(pid, fd)
+        result.total_ms = int((time.time() - started) * 1000)
+
+    # Collect all tool_call frames observed.
+    frames = _parse_ipc_frames(bytes(result.captured_stdout))
+    tool_calls = [f for f in frames if f.get("kind") == "tool_call"]
+    for tc in tool_calls:
+        seen_call_ids.append({
+            "name": tc.get("name"),
+            "call_id": tc.get("call_id"),
+            "arguments": tc.get("arguments", {}),
+        })
+
+    primitive_names_seen = {tc["name"] for tc in seen_call_ids}
+    has_lookup = "lookup" in primitive_names_seen
+    has_resolve = "resolve_location" in primitive_names_seen
+    # Accept either primitive alone or the chain — spec says "both expected primitives appear in the call sequence"
+    success = has_lookup or has_resolve
+
+    if not has_lookup:
+        result.errors.append("no tool_call with name='lookup' observed")
+    if not has_resolve:
+        result.errors.append("no tool_call with name='resolve_location' observed")
+    # Both required per SC-001; mark success only when chain is complete.
+    success = has_lookup and has_resolve
+
+    summary = {
+        "scenario": scenario,
+        "success": success,
+        "tool_calls": seen_call_ids,
+        "primitives_seen": sorted(primitive_names_seen),
+        "has_lookup": has_lookup,
+        "has_resolve_location": has_resolve,
+        "total_ms": result.total_ms,
+    }
+    print(json.dumps(summary, ensure_ascii=False))
+    result.markers_seen = _scan_markers(result.stdout_text, ["tool_call", "lookup", "resolve_location"])
+    return result
 
 
 def cmd_submit_fine_pay(_args: argparse.Namespace) -> HarnessResult:
@@ -278,6 +452,7 @@ def _build_parser() -> argparse.ArgumentParser:
         prog="pty-scenario.py",
         description="KOSMOS PTY scenario harness (Spec 1978).",
     )
+    parser.add_argument("--debug", action="store_true", help="Enable DEBUG logging to stderr.")
     sub = parser.add_subparsers(dest="cmd", required=True)
 
     for name, helptext, handler in [
@@ -300,6 +475,11 @@ def _build_parser() -> argparse.ArgumentParser:
 def main(argv: Sequence[str] | None = None) -> int:
     parser = _build_parser()
     args = parser.parse_args(argv)
+    logging.basicConfig(
+        level=logging.DEBUG if getattr(args, "debug", False) else logging.WARNING,
+        format="%(levelname)s %(name)s %(message)s",
+        stream=sys.stderr,
+    )
     handler = args.handler
 
     try:

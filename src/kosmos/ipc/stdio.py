@@ -563,8 +563,20 @@ async def run(  # noqa: C901
     _TOOL_RESULT_TIMEOUT_S = float(
         _os_chat_env.environ.get("KOSMOS_TOOL_RESULT_TIMEOUT_SECONDS", "120")
     )
-    # Spec 1978 T029 — bound the ReAct loop to prevent infinite tool-recall.
-    _REACT_MAX_TURNS = int(_os_chat_env.environ.get("KOSMOS_REACT_MAX_TURNS", "8"))
+    # Spec 1978 T029 — bound the CC query-engine agentic loop to prevent
+    # infinite tool-recall. KOSMOS adopts the CC 2.1.88 query engine
+    # architecture (native function calling + streaming + parallel tool
+    # dispatch), NOT the academic ReAct paradigm — see memory
+    # `feedback_kosmos_uses_cc_query_engine`. The KOSMOS_REACT_MAX_TURNS env
+    # name is preserved for backward compatibility with already-shipped
+    # configuration; the documented variable is logically the agentic-loop
+    # max-turn cap.
+    _AGENTIC_LOOP_MAX_TURNS = int(
+        _os_chat_env.environ.get(
+            "KOSMOS_AGENTIC_LOOP_MAX_TURNS",
+            _os_chat_env.environ.get("KOSMOS_REACT_MAX_TURNS", "8"),
+        )
+    )
     # Spec 1978 T053 — eager-import the Mock adapter tree so every adapter
     # self-registers with its primitive dispatcher before the first chat
     # turn arrives. Equivalent to plan.md "Mock adapter activation"; failure
@@ -575,16 +587,24 @@ async def run(  # noqa: C901
         logger.exception("failed to import kosmos.tools.mock — Mock adapters unavailable")
 
     async def _handle_chat_request(frame: IPCFrame) -> None:  # noqa: C901, PLR0915
-        """Spec 1978 ADR-0001 — tools-aware chat handler with ReAct loop.
+        """Spec 1978 ADR-0001 — tools-aware chat handler.
+
+        Implements the CC (Claude Code 2.1.88) query-engine agentic loop —
+        native function calling + token streaming + parallel tool dispatch
+        + content_block accumulation, NOT the academic ReAct paradigm
+        (text-marker-based Thought/Action). See memory
+        ``feedback_kosmos_uses_cc_query_engine`` for the architectural
+        rationale.
 
         Replaces ``_handle_user_input_llm`` for ``ChatRequestFrame``. Streams
         text deltas as ``AssistantChunkFrame``, emits one ``ToolCallFrame``
         per K-EXAONE function-call, awaits each matching ``ToolResultFrame``
         via ``_pending_calls`` Futures, then injects synthetic
         ``role="tool"`` messages into the local history and re-invokes
-        ``LLMClient.stream`` (ReAct continuation per ADR-0005).
+        ``LLMClient.stream`` (agentic-loop continuation per ADR-0005).
 
-        Loop is bounded by ``KOSMOS_REACT_MAX_TURNS`` (default 8) and the
+        Loop is bounded by ``KOSMOS_AGENTIC_LOOP_MAX_TURNS`` (default 8;
+        also accepts the legacy ``KOSMOS_REACT_MAX_TURNS``) and the
         per-call wait by ``KOSMOS_TOOL_RESULT_TIMEOUT_SECONDS`` (default 120).
         """
         from kosmos.ipc.frame_schema import (  # noqa: PLC0415
@@ -631,10 +651,10 @@ async def run(  # noqa: C901
 
         client = await _ensure_llm_client()
 
-        # ---- ReAct loop ---------------------------------------------------
+        # ---- CC query-engine agentic loop ---------------------------------
         import json as _json  # noqa: PLC0415
 
-        for _turn in range(_REACT_MAX_TURNS):
+        for _turn in range(_AGENTIC_LOOP_MAX_TURNS):
             message_id = str(uuid.uuid4())
             assistant_text_chunks: list[str] = []
             tool_call_buf: dict[int, dict[str, str]] = {}
@@ -704,7 +724,7 @@ async def run(  # noqa: C901
                 )
                 return
 
-            # No tool calls this turn → terminal chunk + exit ReAct loop.
+            # No tool calls this turn → terminal chunk + exit agentic loop.
             if not tool_call_buf:
                 await write_frame(
                     AssistantChunkFrame(
@@ -798,9 +818,9 @@ async def run(  # noqa: C901
                 )
                 return
 
-            # Append the assistant message that requested tools — ReAct
-            # contract requires the function-call envelope to precede the
-            # tool messages in the next turn.
+            # Append the assistant message that requested tools — the CC
+            # query-engine contract requires the function-call envelope to
+            # precede the tool messages in the next turn.
             full_text = "".join(assistant_text_chunks)
             llm_messages.append(
                 LLMChatMessage(
@@ -844,7 +864,7 @@ async def run(  # noqa: C901
                 )
                 return
 
-            # ---- Inject tool messages, continue ReAct loop ----------------
+            # ---- Inject tool messages, continue agentic loop --------------
             for (cid, fname), result in zip(
                 issued_calls, results, strict=False
             ):
@@ -879,8 +899,8 @@ async def run(  # noqa: C901
         # Loop bound exhausted — emit terminal chunk anyway so the TUI
         # un-spins; the model will not be re-invoked beyond the bound.
         logger.warning(
-            "ReAct loop hit KOSMOS_REACT_MAX_TURNS=%d; terminating",
-            _REACT_MAX_TURNS,
+            "agentic loop hit KOSMOS_AGENTIC_LOOP_MAX_TURNS=%d; terminating",
+            _AGENTIC_LOOP_MAX_TURNS,
         )
         await write_frame(
             AssistantChunkFrame(
@@ -900,7 +920,7 @@ async def run(  # noqa: C901
 
         Looks up ``_pending_calls[call_id]``; if found, sets the Future
         result so any awaiting ``_handle_chat_request`` continuation can
-        resume the ReAct loop. Frames with no matching pending call are
+        resume the agentic loop. Frames with no matching pending call are
         logged at debug level (out-of-band tool results are tolerated for
         the demo path; deep validation deferred to subsequent commits).
         """
