@@ -16,7 +16,10 @@ This preserves user direction (option 2 = avoid PTY harness; ink-testing-library
 ## Procedure (user runs in interactive Terminal/iTerm)
 
 ```bash
-cd ~/KOSMOS
+cd ~/KOSMOS/tui      # NOT ~/KOSMOS — the `tui` script lives in tui/package.json,
+                     # there is no root-level package.json. bun cannot resolve
+                     # `bun run tui` from the repo root.
+
 # Tail the structured DEBUG log in a SECOND terminal pane:
 #   tail -f /tmp/kosmos-tui.log
 
