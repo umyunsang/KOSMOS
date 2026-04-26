@@ -309,9 +309,7 @@ class ChatRequestFrame(_BaseFrame):
         for i, msg in enumerate(self.messages):
             if msg.role == "tool":
                 if not msg.name:
-                    raise ValueError(
-                        f"messages[{i}]: role='tool' requires non-empty 'name'"
-                    )
+                    raise ValueError(f"messages[{i}]: role='tool' requires non-empty 'name'")
                 if not msg.tool_call_id:
                     raise ValueError(
                         f"messages[{i}]: role='tool' requires non-empty 'tool_call_id'"
