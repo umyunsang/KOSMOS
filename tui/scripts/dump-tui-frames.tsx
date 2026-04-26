@@ -26,6 +26,12 @@ import { MinistryScopeStep } from '../src/components/onboarding/MinistryScopeSte
 import { ErrorEnvelope } from '../src/components/messages/ErrorEnvelope'
 import { PluginBrowser } from '../src/components/plugins/PluginBrowser'
 import type { PluginEntry } from '../src/components/plugins/PluginBrowser'
+import { CollectionList } from '../src/components/primitive/CollectionList'
+import { DetailView } from '../src/components/primitive/DetailView'
+import { TimeseriesTable } from '../src/components/primitive/TimeseriesTable'
+import { SubmitReceipt } from '../src/components/primitive/SubmitReceipt'
+import { AuthContextCard } from '../src/components/primitive/AuthContextCard'
+import { EventStream } from '../src/components/primitive/EventStream'
 
 const OUT_DIR = join(
   import.meta.dir,
@@ -129,6 +135,133 @@ const SURFACES: readonly Surface[] = [
         onRemove={() => {}}
         onOpenMarketplace={() => {}}
         onClose={() => {}}
+      />,
+    ),
+  },
+  {
+    slug: 'primitive-lookup-search',
+    description: 'Lookup primitive — search-mode candidate list (CollectionList)',
+    element: withTheme(
+      <CollectionList
+        payload={{
+          kind: 'lookup',
+          subtype: 'collection',
+          tool_id: 'lookup',
+          items: [
+            { index: 1, title: 'koroad_accident_search', meta: '교통사고 잦은 곳' },
+            { index: 2, title: 'koroad_accident_hazard_search', meta: '교통사고 위험구간' },
+            { index: 3, title: 'kma_weather_alert_status', meta: '기상 특보' },
+            { index: 4, title: 'kma_short_term_forecast', meta: '단기 예보' },
+            { index: 5, title: 'hira_hospital_search', meta: '병의원 검색' },
+          ],
+        }}
+      />,
+    ),
+  },
+  {
+    slug: 'primitive-lookup-fetch-point',
+    description: 'Lookup primitive — fetch-mode point detail (PointCard via DetailView)',
+    element: withTheme(
+      <DetailView
+        payload={{
+          kind: 'lookup',
+          subtype: 'detail',
+          tool_id: 'koroad_accident_search',
+          fields: [
+            { label: '사고 빈발 지점', value: '서울특별시 강남구 테헤란로 152' },
+            { label: '사고 건수 (연간)', value: '17건' },
+            { label: '주요 사고 유형', value: '차대차 측면충돌' },
+            { label: '제한 속도', value: '50 km/h' },
+            { label: '데이터 출처', value: 'KOROAD getRestFrequentzoneLg' },
+          ],
+        }}
+      />,
+    ),
+  },
+  {
+    slug: 'primitive-lookup-fetch-timeseries',
+    description: 'Lookup primitive — fetch-mode timeseries (KMA forecast)',
+    element: withTheme(
+      <TimeseriesTable
+        payload={{
+          kind: 'lookup',
+          subtype: 'timeseries',
+          tool_id: 'kma_short_term_forecast',
+          unit: '°C',
+          rows: [
+            { ts: '2026-04-26T09:00', value: '11.2' },
+            { ts: '2026-04-26T12:00', value: '15.8' },
+            { ts: '2026-04-26T15:00', value: '17.4' },
+            { ts: '2026-04-26T18:00', value: '14.1' },
+            { ts: '2026-04-26T21:00', value: '10.5' },
+          ],
+        }}
+      />,
+    ),
+  },
+  {
+    slug: 'primitive-submit-receipt',
+    description: 'Submit primitive — mock submit receipt (SubmitReceipt)',
+    element: withTheme(
+      <SubmitReceipt
+        payload={{
+          kind: 'submit',
+          tool_id: 'mock_traffic_fine_pay_v1',
+          family: 'fines_pay',
+          ok: true,
+          confirmation_id: 'TFP-20260426-09A2C7',
+          timestamp: '2026-04-26T09:14:32+09:00',
+          summary: '범칙금 80,000원 납부가 완료되었습니다 (서울지방경찰청).',
+          mock_reason: 'real_api_unreachable',
+        }}
+      />,
+    ),
+  },
+  {
+    slug: 'primitive-verify-auth-context',
+    description: 'Verify primitive — identity verification card (AuthContextCard)',
+    element: withTheme(
+      <AuthContextCard
+        payload={{
+          kind: 'verify',
+          tool_id: 'mock_verify_geumyung_injeungseo',
+          family: 'geumyung_injeungseo',
+          ok: true,
+          korea_tier: '금융인증서',
+          nist_aal_hint: 'AAL2',
+          identity_label: '홍길동 (1985년생)',
+        }}
+      />,
+    ),
+  },
+  {
+    slug: 'primitive-subscribe-stream',
+    description: 'Subscribe primitive — disaster CBS event stream (EventStream)',
+    element: withTheme(
+      <EventStream
+        payload={{
+          kind: 'subscribe',
+          tool_id: 'mock_cbs_disaster_v1',
+          modality: 'cbs',
+          closed: false,
+          events: [
+            {
+              id: 'cbs-2026-04-26-001',
+              ts: '2026-04-26T08:42:11+09:00',
+              body: '[행안부] 2026-04-26 08:42 서울특별시 호우 주의보 발효. 저지대·하수도 침수 주의.',
+            },
+            {
+              id: 'cbs-2026-04-26-002',
+              ts: '2026-04-26T09:01:55+09:00',
+              body: '[행안부] 2026-04-26 09:01 경기도 강풍 주의보 추가 발효. 노약자 외출 자제.',
+            },
+            {
+              id: 'cbs-2026-04-26-003',
+              ts: '2026-04-26T09:18:03+09:00',
+              body: '[기상청] 2026-04-26 09:18 인천 옹진군 풍랑 주의보 해제.',
+            },
+          ],
+        }}
       />,
     ),
   },

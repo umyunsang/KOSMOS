@@ -1,6 +1,6 @@
 # Visual evidence — onboarding-1-splash
 # Onboarding step 1 — splash (WelcomeV2 logo + brand glyph)
-# Captured 2026-04-26T00:24:21.215Z via ink-testing-library render()
+# Captured 2026-04-26T00:36:00.096Z via ink-testing-library render()
 
 Welcome to KOSMOS v2.1.88-kosmos
 …………………………………………………………………………………………………………………………………………………………

@@ -1,6 +1,6 @@
 # Visual evidence — error-llm-4xx
 # Error envelope — LLM 4xx (purple, brain glyph)
-# Captured 2026-04-26T00:24:21.273Z via ink-testing-library render()
+# Captured 2026-04-26T00:36:00.181Z via ink-testing-library render()
 
 ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
 │ 🧠 LLM 응답 오류                                                                                 │

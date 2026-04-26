@@ -15,7 +15,7 @@ bun run scripts/dump-tui-frames.tsx
 
 The script prints `[dump-tui-frames] N ok, M fail (out: ...)` and exits 0 if every surface rendered. Frames are deterministic — re-running the script must produce identical bytes per file (the only non-deterministic field is the `# Captured <timestamp>` comment header, which the validator ignores during diff review).
 
-## Surfaces dumped automatically (7 of 18)
+## Surfaces dumped automatically (13 of 18)
 
 | Step ID | Description | Pass criterion | Evidence | Result |
 |---|---|---|---|---|
@@ -26,22 +26,25 @@ The script prints `[dump-tui-frames] N ok, M fail (out: ...)` and exits 0 if eve
 | `error-llm-4xx` | Error envelope — LLM 4xx (purple border, 🧠 brain glyph, retry hint) | 🧠 glyph + 단/double border + retry "(R)" hint + Korean detail | `visual-evidence/error-llm-4xx.txt` (568 B) | ✓ |
 | `error-tool-fail-closed` | Error envelope — tool fail-closed (orange border, 🔧 wrench glyph, no retry hint) | 🔧 glyph + "도구 호출 차단" header + L3 fail-closed message | `visual-evidence/error-tool-fail-closed.txt` (567 B) | ✓ |
 | `error-network-timeout` | Error envelope — network timeout (red border, 📡 signal-broken glyph, retry hint) | 📡 glyph + "네트워크 시간 초과" header + 30 s timeout copy | `visual-evidence/error-network-timeout.txt` (555 B) | ✓ |
+| `primitive-lookup-search` | `lookup` search-mode candidate list (CollectionList) | 5 BM25 candidates rendered with index + tool_id + Korean meta | `visual-evidence/primitive-lookup-search.txt` | ✓ |
+| `primitive-lookup-fetch-point` | `lookup` fetch-mode point detail (DetailView) | 5 fields rendered (사고 빈발 지점, 사고 건수, 사고 유형, 제한 속도, 데이터 출처) | `visual-evidence/primitive-lookup-fetch-point.txt` | ✓ |
+| `primitive-lookup-fetch-timeseries` | `lookup` fetch-mode timeseries (KMA forecast) | Timestamp / Value (°C) header + 5 forecast rows | `visual-evidence/primitive-lookup-fetch-timeseries.txt` | ✓ |
+| `primitive-submit-receipt` | `submit` mock receipt (SubmitReceipt) | ✔ Submitted [MOCK: real_api_unreachable] + confirmation_id + Korean summary | `visual-evidence/primitive-submit-receipt.txt` | ✓ |
+| `primitive-verify-auth-context` | `verify` identity card (AuthContextCard) | ✔ Verified + identity + 금융인증서 + NIST AAL2 | `visual-evidence/primitive-verify-auth-context.txt` | ✓ |
+| `primitive-subscribe-stream` | `subscribe` CBS event stream (EventStream) | ● Live [cbs] header + 3 disaster events with timestamps | `visual-evidence/primitive-subscribe-stream.txt` | ✓ |
 
-## Surfaces deferred to PR-review hand-driven validation (11 of 18)
+## Surfaces deferred to PR-review hand-driven validation (5 of 18)
 
-These surfaces require either (a) live keystroke + state-machine drive (4 primitive flows + 4 slash commands beyond `/plugins`), (b) backend round-trip (LLM via FriendliAI), or (c) terminal-graphics-protocol detection (PDF inline render). The `dump-tui-frames.tsx` script cannot deterministically simulate these without touching the test contract.
+These surfaces require either (a) live keystroke driving the actual TUI shell (theme selector / terminal-setup / `/agents` / `/consent list` / `/help` keyboard-driven menus) or (b) terminal-graphics-protocol detection (PDF inline render). The `dump-tui-frames.tsx` script cannot deterministically simulate these without driving real keystrokes through a PTY.
 
-The PR reviewer drives them manually against `bun run tui` and attaches captured frames as a follow-up PR comment.
+Note: the **primitive flows** (5 above — `lookup` search/fetch ×2 / `submit` / `verify` / `subscribe`) are now covered by automated frame dumps using mock payloads. The visual contract (envelope shape, brand glyphs, Korean copy, MOCK badges, AAL labels) is fully validated. Live LLM round-trip and adapter dispatch remain integration concerns covered by the per-adapter unit tests under `tui/tests/components/primitive/*`, not by this visual smoke.
+
+The PR reviewer drives the remaining 5 surfaces manually against `bun run tui` and attaches captured frames as a follow-up PR comment.
 
 | Step ID | Description | Capture path | Status |
 |---|---|---|---|
 | `onboarding-2-theme` | Theme selector | `bun run tui` → arrows + Enter | manual |
 | `onboarding-5-terminal` | Terminal setup → REPL transition | `bun run tui` → Enter on done step | manual |
-| `primitive-lookup-search` | `lookup` BM25 search ("이 길 안전해?") | live LLM call → BM25 candidates | manual + mock backend |
-| `primitive-lookup-fetch` | `lookup` adapter fetch | adapter selection + envelope | manual + mock backend |
-| `primitive-submit` | `submit` mock adapter | mock submit dispatch | manual + mock backend |
-| `primitive-verify` | `verify` mock adapter | mock verify dispatch | manual + mock backend |
-| `primitive-subscribe` | `subscribe` mock adapter | mock subscribe handle | manual + mock backend |
 | `slash-agents` | `/agents` panel | `bun run tui` → `/agents` | manual |
 | `slash-consent-list` | `/consent list` | `bun run tui` → `/consent list` | manual |
 | `slash-help` | `/help` panel | `bun run tui` → `/help` | manual |
