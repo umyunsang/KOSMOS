@@ -53,6 +53,10 @@ Column definitions:
 | `KOSMOS_FRIENDLI_BASE_URL` | No | `https://api.friendli.ai/serverless/v1` | Valid HTTPS URL | `kosmos.llm.config.LLMClientConfig.base_url` | FriendliAI Suite |
 | `KOSMOS_FRIENDLI_MODEL` | No | `LGAI-EXAONE/K-EXAONE-236B-A23B` | Model identifier string | `kosmos.llm.config.LLMClientConfig.model` | FriendliAI Suite |
 | `KOSMOS_LLM_SESSION_BUDGET` | No | `100000` | Integer > 0 (tokens) | `kosmos.llm.config.LLMClientConfig.session_budget` | This doc |
+| `KOSMOS_AGENTIC_LOOP_MAX_TURNS` | No | `8` | Integer >= 1 (turns) | `kosmos.ipc.stdio` (Spec 1978 T029 — bounds the CC query-engine agentic loop) | Spec 1978 |
+| `KOSMOS_REACT_MAX_TURNS` | No | `8` | Integer >= 1 (turns) | `kosmos.ipc.stdio` (legacy alias for `KOSMOS_AGENTIC_LOOP_MAX_TURNS`; preserved for backward compatibility) | Spec 1978 |
+| `KOSMOS_TOOL_RESULT_TIMEOUT_SECONDS` | No | `120` | Float > 0 (seconds) | `kosmos.ipc.stdio` (Spec 1978 T030 — `asyncio.gather` timeout for primitive dispatch Futures, contracts/tool-bridge-protocol.md) | Spec 1978 |
+| `KOSMOS_PERMISSION_TIMEOUT_SECONDS` | No | `60` | Float > 0 (seconds) | `kosmos.ipc.stdio` (Spec 1978 T045 — permission_request → permission_response wait; D2 invariant default-deny on timeout) | Spec 1978 |
 | `KOSMOS_LOOKUP_TOPK` | No | `5` | Integer [1, 20] | `kosmos.settings.KosmosSettings.lookup_topk` | This doc |
 | `KOSMOS_NMC_FRESHNESS_MINUTES` | No | `30` | Integer [1, 1440] (minutes) | `kosmos.settings.KosmosSettings.nmc_freshness_minutes` | Epic #507 |
 | `KOSMOS_RETRIEVAL_BACKEND` | No | `bm25` | `bm25` \| `dense` \| `hybrid` | `kosmos.tools.retrieval.backend.build_retriever_from_env` | Epic #585 |
