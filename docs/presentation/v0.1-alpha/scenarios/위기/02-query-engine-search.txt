@@ -1,0 +1,14 @@
+# Citizen scenario frame — 위기/02-query-engine-search
+# 위기 시나리오 — 쿼리엔진 검색 (4 부처 fan-out)
+# Captured 2026-04-26T14:06:53.332Z via ink-testing-library render()
+# KOSMOS v0.1-alpha · K-EXAONE-236B-A23B + FriendliAI Serverless
+
+┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
+│  ⏺ 단계 2/5 · 쿼리엔진 → 도구 시스템 BM25 검색 (4 부처 fan-out)                                  │
+└──────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+   1. mock_unemployment_benefit 고용노동부 실업급여 자격 / 신청
+   2. mock_worknet_jobsearch 워크넷 직업훈련 + 재취업 매칭
+   3. mock_verify_mydata 마이데이터 — 소득 정보 자동 인증
+   4. mock_lh_priority_apply LH 임대주택 우선순위 (실직 가산점)
+   5. mock_welfare_application_submit_v1 정부24 통합 신청

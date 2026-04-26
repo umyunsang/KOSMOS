@@ -1,0 +1,14 @@
+# Citizen scenario frame — 응급/02-query-engine-search
+# 응급 시나리오 — 쿼리엔진이 BM25 검색으로 후보 어댑터 도출
+# Captured 2026-04-26T14:06:53.305Z via ink-testing-library render()
+# KOSMOS v0.1-alpha · K-EXAONE-236B-A23B + FriendliAI Serverless
+
+┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
+│  ⏺ 단계 2/5 · 쿼리엔진 → 도구 시스템 BM25 검색 (4 부처 후보)                                     │
+└──────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+   1. nfa_emergency_info_service 119 응급 신고 / 출동 안내
+   2. hira_hospital_search 병의원 + 응급실 검색
+   3. nmc_emergency_search 실시간 응급실 가용 병상 (L3 인증)
+   4. kma_weather_alert_status 도로 결빙 / 강풍 특보
+   5. resolve_location 시민 위치 → 좌표 (kakao/juso/sgis)

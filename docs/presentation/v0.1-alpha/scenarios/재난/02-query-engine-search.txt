@@ -1,0 +1,14 @@
+# Citizen scenario frame — 재난/02-query-engine-search
+# 재난 시나리오 — 쿼리엔진 검색 (4 부처 동시 트랙)
+# Captured 2026-04-26T14:06:53.354Z via ink-testing-library render()
+# KOSMOS v0.1-alpha · K-EXAONE-236B-A23B + FriendliAI Serverless
+
+┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
+│  ⏺ 단계 2/5 · 쿼리엔진 → 도구 시스템 BM25 검색 (4 트랙 동시)                                     │
+└──────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+   1. mock_hug_warranty_claim HUG 전세보증보험 청구
+   2. mock_lease_dispute_apply 주택임대차분쟁조정위원회
+   3. mock_legal_aid_consult 대한법률구조공단 무료 상담
+   4. mock_traffic_fine_pay_v1 경찰청 사기 신고 (mock)
+   5. mock_verify_gongdong_injeungseo 공동인증서 — 신청 본인 확인
