@@ -135,7 +135,7 @@ description: "Phase 2 task list for Epic H #1302 — Onboarding + brand port"
 
 ### Implementation for User Story 5
 
-- [X] T039 [US5] Create `tui/tests/LogoV2/CondensedLogo.snap.test.tsx` — snapshot with mock `{model: "EXAONE", effort: "normal", coordinatorMode: "default"}`; asserts wordmark = "KOSMOS", zero "Claude" / "Clawd" / "GuestPasses" strings in rendered output. Verifies FR-019.
+- [X] T039 [US5] Create `tui/tests/LogoV2/CondensedLogo.snap.test.tsx` — snapshot with mock `{model: "K-EXAONE", effort: "normal", coordinatorMode: "default"}`; asserts wordmark = "KOSMOS", zero "Claude" / "Clawd" / "GuestPasses" strings in rendered output. Verifies FR-019.
 - [X] T040 [P] [US5] Create the Feed family test trio `tui/tests/LogoV2/{Feed,FeedColumn,feedConfigs}.test.tsx` — (i) `Feed.snap.test.tsx` 2-column render with mock sessionHistory + ministryStatus, (ii) `FeedColumn.snap.test.tsx` primitive PORT (generic layout), (iii) `feedConfigs.test.tsx` unit tests for `createKosmosSessionHistoryFeed` + `createMinistryAvailabilityFeed` factory output shape. Verifies FR-021 + FR-022. Cohesion-merge per tasks-skill rule (same test-subdir + same verb).
 - [X] T041 [P] [US5] Create `tui/tests/LogoV2/WelcomeV2.snap.test.tsx` — Korean welcome header "KOSMOS에 오신 것을 환영합니다" + kosmosCore cluster render; zero Apple-Terminal ASCII art in output. Verifies FR-020.
 - [X] T042 [P] [US5] Create `tui/tests/LogoV2/KosmosCoreIcon.snap.test.tsx` — 2 snapshots (shimmering vs. static); zero "FastIcon" / "chromeYellow" / lightning-glyph references. Verifies FR-023 + I-22.

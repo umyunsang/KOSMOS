@@ -4,7 +4,7 @@
 
 ## What KOSMOS is
 
-A conversational multi-agent platform that **migrates the Claude Code harness** (tool loop, permission gauntlet, context assembly, TUI) from the developer domain to the Korean public-service domain. It orchestrates Korean public APIs from `data.go.kr` through a Claude Code-style tool loop, powered by LG AI Research's EXAONE. Student portfolio project. Not affiliated with Anthropic, LG AI Research, or the Korean government.
+A conversational multi-agent platform that **migrates the Claude Code harness** (tool loop, permission gauntlet, context assembly, TUI) from the developer domain to the Korean public-service domain. It orchestrates Korean public APIs from `data.go.kr` through a Claude Code-style tool loop, powered by LG AI Research's K-EXAONE. Student portfolio project. Not affiliated with Anthropic, LG AI Research, or the Korean government.
 
 **Canonical sources** (cite both in every spec and PR):
 - `docs/vision.md` — thesis + six-layer design. Claude Code is the first reference for any unclear design decision.
@@ -12,7 +12,7 @@ A conversational multi-agent platform that **migrates the Claude Code harness** 
 
 ## L1 pillars (canonical)
 
-- **L1-A LLM Harness** — Single-fixed provider `FriendliAI Serverless + EXAONE` (`LGAI-EXAONE/EXAONE-4.0-32B`). CC agentic loop preserved 1:1. Native EXAONE function calling. `prompts/system_v1.md` + compaction + prompt cache. Sessions in `~/.kosmos/memdir/user/sessions/` JSONL. 4-tier OTEL, zero external egress.
+- **L1-A LLM Harness** — Single-fixed provider `FriendliAI Serverless + K-EXAONE` (`LGAI-EXAONE/K-EXAONE-236B-A23B`). CC agentic loop preserved 1:1. Native K-EXAONE function calling. `prompts/system_v1.md` + compaction + prompt cache. Sessions in `~/.kosmos/memdir/user/sessions/` JSONL. 4-tier OTEL, zero external egress.
 - **L1-B Tool System** — `Tool.ts` rewritten, registered on both TS and Python. Live / Mock 2-tier with 3-layer permissions + Spec 033. Discovery via BM25 + dense `lookup`. Composite tools removed. Korean-primary 5-tier plugin DX with PIPA trustee responsibility explicit.
 - **L1-C Main-Verb Abstraction** — Four reserved primitives (`lookup · submit · verify · subscribe`) with shared `PrimitiveInput/Output` envelope. System prompt exposes primitive signatures only; BM25 surfaces adapters dynamically. Permissions live at the adapter layer only.
 
@@ -22,7 +22,7 @@ P0 Baseline Runnable (#1632 merged) → P1 Dead-code + P2 Anthropic→FriendliAI
 
 ## Stack
 
-**Backend**: Python 3.12+ · FriendliAI Serverless (OpenAI-compatible) for EXAONE · `httpx` (async) · `pydantic` v2 · `pytest` + `pytest-asyncio` · `uv` + `pyproject.toml` · Apache-2.0.
+**Backend**: Python 3.12+ · FriendliAI Serverless (OpenAI-compatible) for K-EXAONE · `httpx` (async) · `pydantic` v2 · `pytest` + `pytest-asyncio` · `uv` + `pyproject.toml` · Apache-2.0.
 **TUI**: Ink (React for CLIs) + Bun · TypeScript. Ref: Gemini CLI (Apache-2.0) + Claude Code reconstructed architecture.
 Stack changes require an ADR under `docs/adr/`.
 

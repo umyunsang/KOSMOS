@@ -12,7 +12,7 @@
 
 ## Background and Mission Anchor
 
-KOSMOS migrates the Claude Code harness from the developer domain to the Korean public-service domain. P0 (#1632) restored the CC 2.1.88 baseline; P1+P2 (#1633) eliminated dead code and migrated the LLM provider to FriendliAI + EXAONE. **P3 is where the LLM stops seeing developer tools and starts seeing the four citizen-facing primitives wired to real Korean public-service adapters.**
+KOSMOS migrates the Claude Code harness from the developer domain to the Korean public-service domain. P0 (#1632) restored the CC 2.1.88 baseline; P1+P2 (#1633) eliminated dead code and migrated the LLM provider to FriendliAI + K-EXAONE. **P3 is where the LLM stops seeing developer tools and starts seeing the four citizen-facing primitives wired to real Korean public-service adapters.**
 
 This is the load-bearing transition: after P3, the LLM's entire tool surface is `lookup` · `submit` · `verify` · `subscribe` (plus a small set of auxiliary utilities), with all 15 currently-registered Python adapters reachable by name through the `lookup(mode="fetch", tool_id=…)` envelope. CC's developer tools (Bash, FileEdit, Glob, Grep, etc.) must no longer appear in the runtime registry.
 
@@ -184,7 +184,7 @@ A citizen asks for ongoing severe-weather alerts for their region. The LLM calls
 
 ## Assumptions
 
-- The FriendliAI + EXAONE provider (P2) is operational and supports the function-calling format already in use.
+- The FriendliAI + K-EXAONE provider (P2) is operational and supports the function-calling format already in use.
 - The existing OTEL pipeline (Spec 021/028), permission system (Spec 033), audit ledger (Spec 024 schema), and IPC stdio transport (Spec 032) are stable and reused without modification.
 - The 15 currently-registered Python adapters represent the live + mock surface for this epic; new adapters added during P3 are out of scope unless required by the four-primitive coverage.
 - BM25 + dense hybrid retrieval (Spec 022 + `feat/585-retrieval-dense`) is already wired and only needs the routing-index integration.

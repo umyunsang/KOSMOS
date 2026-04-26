@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // KOSMOS-original — Epic #1634 P4 · TranslateTool.
 //
-// Delegates Korean↔English↔Japanese translation to the FriendliAI EXAONE
+// Delegates Korean↔English↔Japanese translation to the FriendliAI K-EXAONE
 // model through the existing stdio IPC bridge (LLMClient.complete()).
 // Zero new runtime dependencies — uses only the existing Bun stdlib and the
 // ipc/ modules already present in tui/package.json.
@@ -61,7 +61,7 @@ export type Output = z.infer<OutputSchema>
 // The KOSMOS model identifier (matches services/api/claude.ts)
 // ---------------------------------------------------------------------------
 
-const KOSMOS_MODEL = 'LGAI-EXAONE/EXAONE-236B-A23B'
+const KOSMOS_MODEL = 'LGAI-EXAONE/K-EXAONE-236B-A23B'
 
 // ---------------------------------------------------------------------------
 // Tool definition
@@ -116,7 +116,7 @@ export const TranslateTool = buildTool({
   renderToolResultMessage,
 
   /**
-   * Delegate translation to EXAONE via the existing stdio IPC bridge.
+   * Delegate translation to K-EXAONE via the existing stdio IPC bridge.
    *
    * Uses LLMClient.complete() — the non-streaming convenience wrapper —
    * so we get the full response as a single KosmosMessageFinal, then

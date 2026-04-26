@@ -10,7 +10,7 @@
 
 ## Summary
 
-Rewire TUI's LLM path from Anthropic to FriendliAI EXAONE by (a) deleting Anthropic-specific assets (OAuth + Keychain + analytics + CC version migrations + teleport + policy limits + MCP Anthropic integration), (b) replacing `@anthropic-ai/sdk` consumption points with a new `tui/src/ipc/llmClient.ts` that round-trips LLM turns over Spec 032 stdio IPC to the existing Python `LLMClient`, and (c) wiring Spec 026 PromptLoader into the system-prompt path. The agentic loop in `query.ts`/`QueryEngine.ts` is preserved 1:1 (rewrite boundary, Constitution Principle I). Model ID fixes to `LGAI-EXAONE/EXAONE-236B-A23B` (Python config default also updated).
+Rewire TUI's LLM path from Anthropic to FriendliAI K-EXAONE by (a) deleting Anthropic-specific assets (OAuth + Keychain + analytics + CC version migrations + teleport + policy limits + MCP Anthropic integration), (b) replacing `@anthropic-ai/sdk` consumption points with a new `tui/src/ipc/llmClient.ts` that round-trips LLM turns over Spec 032 stdio IPC to the existing Python `LLMClient`, and (c) wiring Spec 026 PromptLoader into the system-prompt path. The agentic loop in `query.ts`/`QueryEngine.ts` is preserved 1:1 (rewrite boundary, Constitution Principle I). Model ID fixes to `LGAI-EXAONE/K-EXAONE-236B-A23B` (Python config default also updated).
 
 ## Technical Context
 
@@ -97,7 +97,7 @@ tui/src/                           # TS TUI — most of this Epic's surface
 │   ├── background/remote/         # [DELETE] 2 files
 │   └── model/
 │       ├── antModels.ts           # [DELETE]
-│       └── model.ts               # [EDIT] getDefaultMainLoopModel returns "LGAI-EXAONE/EXAONE-236B-A23B"
+│       └── model.ts               # [EDIT] getDefaultMainLoopModel returns "LGAI-EXAONE/K-EXAONE-236B-A23B"
 ├── constants/
 │   └── betas.ts                   # [DELETE] (Finding C)
 ├── commands/

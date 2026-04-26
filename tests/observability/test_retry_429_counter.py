@@ -43,7 +43,7 @@ from kosmos.observability.metrics import MetricsCollector
 # ---------------------------------------------------------------------------
 
 _COMPLETIONS_URL = "https://api.friendli.ai/serverless/v1/chat/completions"
-_MODEL = "LGAI-EXAONE/EXAONE-236B-A23B"
+_MODEL = "LGAI-EXAONE/K-EXAONE-236B-A23B"
 
 # ---------------------------------------------------------------------------
 # SSE body helpers (mirrors test_streaming.py conventions)

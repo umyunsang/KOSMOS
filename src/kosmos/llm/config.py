@@ -8,7 +8,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class LLMClientConfig(BaseSettings):
-    """Settings for the FriendliAI EXAONE LLM client.
+    """Settings for the FriendliAI K-EXAONE LLM client.
 
     Environment variables (no global prefix — each field declares its own alias):
         KOSMOS_FRIENDLI_TOKEN       — required API token
@@ -34,7 +34,7 @@ class LLMClientConfig(BaseSettings):
         description="FriendliAI API base URL.",
     )
     model: str = Field(
-        default="LGAI-EXAONE/EXAONE-236B-A23B",
+        default="LGAI-EXAONE/K-EXAONE-236B-A23B",
         validation_alias="KOSMOS_FRIENDLI_MODEL",
         description="FriendliAI model identifier.",
     )

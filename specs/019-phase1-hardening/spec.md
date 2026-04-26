@@ -3,7 +3,7 @@
 **Feature Branch**: `019-phase1-hardening`
 **Created**: 2026-04-14
 **Status**: Draft
-**Input**: Epic #404 — Phase 1 live validation (#291, #380) surfaced two defects that mocked tests could not catch: (1) EXAONE producing incorrect district-level admin codes when the natural-language query targets a specific Seoul district ("강남역" → the assistant filled `gu_gun=110` / Jongno instead of `gu_gun=680` / Gangnam), and (2) HTTP 429 rate-limit failures mid-stream against FriendliAI Serverless. This feature hardens the Phase 1 MVP so it can be released and Phase 2 can start.
+**Input**: Epic #404 — Phase 1 live validation (#291, #380) surfaced two defects that mocked tests could not catch: (1) K-EXAONE producing incorrect district-level admin codes when the natural-language query targets a specific Seoul district ("강남역" → the assistant filled `gu_gun=110` / Jongno instead of `gu_gun=680` / Gangnam), and (2) HTTP 429 rate-limit failures mid-stream against FriendliAI Serverless. This feature hardens the Phase 1 MVP so it can be released and Phase 2 can start.
 
 ## User Scenarios & Testing *(mandatory)*
 

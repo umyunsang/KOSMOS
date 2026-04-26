@@ -327,8 +327,8 @@ const SURFACES: readonly Surface[] = [
           type: 'llm',
           title_ko: 'LLM 응답 오류',
           title_en: 'LLM response error',
-          detail_ko: 'EXAONE 모델이 4xx 오류를 반환했습니다. 잠시 후 다시 시도해 주세요.',
-          detail_en: 'EXAONE returned a 4xx error. Please retry in a moment.',
+          detail_ko: 'K-EXAONE 모델이 4xx 오류를 반환했습니다. 잠시 후 다시 시도해 주세요.',
+          detail_en: 'K-EXAONE returned a 4xx error. Please retry in a moment.',
           retry_suggested: true,
           occurred_at: '2026-04-26T00:00:00.000Z',
         }}

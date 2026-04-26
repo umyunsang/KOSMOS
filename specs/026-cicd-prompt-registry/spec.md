@@ -186,7 +186,7 @@ A new contributor clones KOSMOS, opens it in VS Code with the Dev Containers ext
 - Python 3.12 is the baseline runtime; the CI test matrix additionally covers 3.13 for forward compatibility, but the published Docker image targets 3.12 exclusively.
 - The release engineer and the prompt author are (for this Epic) the same maintainer; no multi-tenant secrets model is required.
 - `ghcr.io/umyunsang` is assumed to be the container image registry; GHCR access from GitHub Actions is expected to use the built-in `GITHUB_TOKEN` / OIDC path unless clarification resolves otherwise.
-- FriendliAI Serverless remains the LLM provider and EXAONE the primary model; the model identifier string travels in the manifest as `friendli_model_id`.
+- FriendliAI Serverless remains the LLM provider and K-EXAONE the primary model; the model identifier string travels in the manifest as `friendli_model_id`.
 - The LiteLLM Proxy image digest becomes authoritative only after Epic #465 ships; until then, `litellm_proxy_version` carries the placeholder string `"unknown"` and downstream consumers treat this as explicitly unpinned.
 - Epic #507 is merged; the MVP facade (`lookup`, `resolve_location`) is frozen and referenced by the v1 session-guidance prompt.
 - The maintainer runs Docker Desktop (or equivalent) locally for Story 1 and Story 4 verification.

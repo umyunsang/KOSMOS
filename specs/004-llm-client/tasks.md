@@ -1,4 +1,4 @@
-# Tasks: LLM Client Integration (FriendliAI EXAONE)
+# Tasks: LLM Client Integration (FriendliAI K-EXAONE)
 
 **Input**: Design documents from `specs/004-llm-client/`
 **Prerequisites**: plan.md, spec.md, research.md, data-model.md, contracts/
@@ -37,7 +37,7 @@
 
 ## Phase 3: User Story 1 — Single-turn Query Resolution (Priority: P1) MVP
 
-**Goal**: Send a prompt to EXAONE via FriendliAI and receive a streamed response with token usage metadata
+**Goal**: Send a prompt to K-EXAONE via FriendliAI and receive a streamed response with token usage metadata
 
 **Independent Test**: Send a prompt string, verify a streamed response is received chunk-by-chunk with correct content and token usage counts
 

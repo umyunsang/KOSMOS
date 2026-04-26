@@ -72,7 +72,7 @@ Resolve any `NEEDS CLARIFICATION` markers in plan.md Technical Context (none —
 
 - **Decision**: Default `temperature=1.0`, `top_p=0.95`, `presence_penalty=0.0`, `max_tokens=1024`, `enable_thinking=False`. Every default remains overridable by explicit caller argument. Payload assembly threads the new fields through for both `complete()` and `stream()`.
 - **Rationale**: The Korean LLM's published README recommends these settings for the latency-sensitive, non-reasoning interactive path that Phase 1 uses. Adopting them at the client default minimizes per-call overrides and gives every caller the recommended behavior unless they opt out.
-- **Primary reference**: HF EXAONE README (official provider documentation).
+- **Primary reference**: HF K-EXAONE README (official provider documentation).
 - **Alternatives considered**:
   - *Leave defaults as-is and override in each call site*: drift risk; future callers will diverge. Rejected.
   - *Enable `enable_thinking=True` by default*: violates the non-reasoning / latency-sensitive path this phase targets. Rejected.

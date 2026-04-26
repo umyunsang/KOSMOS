@@ -48,5 +48,5 @@ Coordinated disclosure is preferred. Once a fix is merged, the reporter will be 
 
 - Vulnerabilities in upstream dependencies (report to the upstream project)
 - Issues in `data.go.kr` APIs themselves (report to the operating ministry)
-- Model-level issues in EXAONE (report to LG AI Research)
+- Model-level issues in K-EXAONE (report to LG AI Research)
 - Theoretical issues without a reproducible impact on KOSMOS

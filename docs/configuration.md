@@ -51,7 +51,7 @@ Column definitions:
 | `KOSMOS_SGIS_KEY` | No (optional fallback) | — | Consumer key string | `kosmos.settings.KosmosSettings.sgis_key` | [SGIS API](https://sgis.kostat.go.kr) |
 | `KOSMOS_SGIS_SECRET` | No (optional fallback) | — | Consumer secret string | `kosmos.settings.KosmosSettings.sgis_secret` | [SGIS API](https://sgis.kostat.go.kr) |
 | `KOSMOS_FRIENDLI_BASE_URL` | No | `https://api.friendli.ai/serverless/v1` | Valid HTTPS URL | `kosmos.llm.config.LLMClientConfig.base_url` | FriendliAI Suite |
-| `KOSMOS_FRIENDLI_MODEL` | No | `LGAI-EXAONE/EXAONE-236B-A23B` | Model identifier string | `kosmos.llm.config.LLMClientConfig.model` | FriendliAI Suite |
+| `KOSMOS_FRIENDLI_MODEL` | No | `LGAI-EXAONE/K-EXAONE-236B-A23B` | Model identifier string | `kosmos.llm.config.LLMClientConfig.model` | FriendliAI Suite |
 | `KOSMOS_LLM_SESSION_BUDGET` | No | `100000` | Integer > 0 (tokens) | `kosmos.llm.config.LLMClientConfig.session_budget` | This doc |
 | `KOSMOS_LOOKUP_TOPK` | No | `5` | Integer [1, 20] | `kosmos.settings.KosmosSettings.lookup_topk` | This doc |
 | `KOSMOS_NMC_FRESHNESS_MINUTES` | No | `30` | Integer [1, 1440] (minutes) | `kosmos.settings.KosmosSettings.nmc_freshness_minutes` | Epic #507 |
@@ -166,7 +166,7 @@ REST API key.
 
 ### <a id="kosmos_friendli_token"></a>`KOSMOS_FRIENDLI_TOKEN`
 
-FriendliAI Serverless API bearer token for EXAONE inference. Required in all environments.
+FriendliAI Serverless API bearer token for K-EXAONE inference. Required in all environments.
 The `LLMClientConfig.token` field validates that the value is non-empty after stripping whitespace.
 
 Source: [FriendliAI Suite](https://suite.friendli.ai) → API Keys.
@@ -724,7 +724,7 @@ oldest entries are evicted.
 
 Selects the `user_input` frame handler in the stdio IPC loop
 (`kosmos.ipc.stdio.run`). The production handler routes UserInputFrames
-through `LLMClient.stream()` to FriendliAI (EXAONE). The echo handler
+through `LLMClient.stream()` to FriendliAI (K-EXAONE). The echo handler
 is a test-only fixture that mirrors every user_input back as
 `AssistantChunkFrame(delta="[echo] {text}", done=True)` — used by
 integration tests in `tui/tests/ipc/bridge.test.ts` that must not depend

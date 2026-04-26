@@ -84,8 +84,8 @@ _FAKE_ENV = {"KOSMOS_FRIENDLI_TOKEN": "test-token-for-t012"}
 
 # Fixed streaming SSE response that MockTransport returns for every POST.
 _SSE_LINES = [
-    b'data: {"id":"cmpl-t012","object":"chat.completion.chunk","model":"LGAI-EXAONE/EXAONE-236B-A23B","choices":[{"index":0,"delta":{"role":"assistant","content":"OK."},"finish_reason":null}]}\n\n',  # noqa: E501 — SSE wire fixture; breaking alters payload
-    b'data: {"id":"cmpl-t012","object":"chat.completion.chunk","model":"LGAI-EXAONE/EXAONE-236B-A23B","choices":[{"index":0,"delta":{},"finish_reason":"stop"}],"usage":{"prompt_tokens":10,"completion_tokens":3}}\n\n',  # noqa: E501 — SSE wire fixture; breaking alters payload
+    b'data: {"id":"cmpl-t012","object":"chat.completion.chunk","model":"LGAI-EXAONE/K-EXAONE-236B-A23B","choices":[{"index":0,"delta":{"role":"assistant","content":"OK."},"finish_reason":null}]}\n\n',  # noqa: E501 — SSE wire fixture; breaking alters payload
+    b'data: {"id":"cmpl-t012","object":"chat.completion.chunk","model":"LGAI-EXAONE/K-EXAONE-236B-A23B","choices":[{"index":0,"delta":{},"finish_reason":"stop"}],"usage":{"prompt_tokens":10,"completion_tokens":3}}\n\n',  # noqa: E501 — SSE wire fixture; breaking alters payload
     b"data: [DONE]\n\n",
 ]
 

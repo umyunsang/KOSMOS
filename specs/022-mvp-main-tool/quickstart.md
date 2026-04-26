@@ -42,7 +42,7 @@ Live-API tests are gated by `@pytest.mark.live` and stay skipped in CI.
 uv run python -m kosmos.cli
 ```
 
-The CLI starts a FriendliAI Serverless (OpenAI-compatible) session against EXAONE with the two-tool schema registered:
+The CLI starts a FriendliAI Serverless (OpenAI-compatible) session against K-EXAONE with the two-tool schema registered:
 
 - `resolve_location` — places → typed identifiers
 - `lookup` — cold-path adapter search + typed fetch

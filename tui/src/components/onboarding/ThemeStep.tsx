@@ -220,7 +220,7 @@ export function ThemeStep({
         </Box>
         <Box flexDirection="column" justifyContent="center">
           <Text bold>KOSMOS</Text>
-          <Text color={theme.subtle}>EXAONE · FriendliAI</Text>
+          <Text color={theme.subtle}>K-EXAONE · FriendliAI</Text>
           <Box marginTop={1}>
             <Text color={UFO_PALETTE.body}>✻</Text>
             <Text color={theme.subtle}> 보라 팔레트 · purple palette</Text>

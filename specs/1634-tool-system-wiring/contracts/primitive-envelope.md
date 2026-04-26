@@ -16,7 +16,7 @@ The LLM sees exactly the following tools after P3 ships. Anything else is a regr
 | `subscribe` | `tui/src/tools/primitive/subscribe.ts` → `kosmos.primitives.subscribe` (Spec 031) | Returns `SubscriptionHandle` with session lifetime |
 | `WebFetch` | `tui/src/tools/WebFetchTool/` (CC retained) | Unchanged from CC |
 | `WebSearch` | `tui/src/tools/WebSearchTool/` (CC retained) | Unchanged from CC |
-| `Translate` | `tui/src/tools/TranslateTool/` (NEW) | Delegates to FriendliAI EXAONE; no new dep |
+| `Translate` | `tui/src/tools/TranslateTool/` (NEW) | Delegates to FriendliAI K-EXAONE; no new dep |
 | `Calculator` | `tui/src/tools/CalculatorTool/` (NEW) | stdlib `decimal` + `math` |
 | `DateParser` | `tui/src/tools/DateParserTool/` (NEW) | stdlib `datetime` + `zoneinfo` (Asia/Seoul default) |
 | `ExportPDF` | `tui/src/tools/ExportPDFTool/` (NEW) | TUI side: existing `pdf-to-img` WASM (UI-B B.3) |

@@ -169,7 +169,7 @@ class LLMClient:
         Args:
             messages: Ordered list of conversation messages.
             tools: Optional tool definitions (ToolDefinition models or raw dicts).
-            temperature: Sampling temperature (default 1.0 per EXAONE recommendations).
+            temperature: Sampling temperature (default 1.0 per K-EXAONE recommendations).
             top_p: Nucleus sampling parameter (default 0.95).
             presence_penalty: Presence penalty (default 0.0).
             max_tokens: Maximum tokens in the completion (default 1024).
@@ -300,7 +300,7 @@ class LLMClient:
         Args:
             messages: Ordered list of conversation messages.
             tools: Optional tool definitions (ToolDefinition models or raw dicts).
-            temperature: Sampling temperature (default 1.0 per EXAONE recommendations).
+            temperature: Sampling temperature (default 1.0 per K-EXAONE recommendations).
             top_p: Nucleus sampling parameter (default 0.95).
             presence_penalty: Presence penalty (default 0.0).
             max_tokens: Maximum tokens in the completion (default 1024).
@@ -768,7 +768,7 @@ class LLMClient:
         if "content" in delta and delta["content"] is not None:
             yield StreamEvent(type="content_delta", content=delta["content"])
         elif "reasoning_content" in delta and delta["reasoning_content"] is not None:
-            # EXAONE emits reasoning_content (chain-of-thought) before content.
+            # K-EXAONE emits reasoning_content (chain-of-thought) before content.
             # Drop it to prevent CoT from persisting into chat history.
             # Log only the chunk length — never the raw content (CoT may contain
             # user PII or sensitive reasoning about user input).

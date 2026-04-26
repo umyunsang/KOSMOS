@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """Live E2E validation tests for the full KOSMOS Scenario 1 pipeline.
 
-These tests hit REAL APIs — FriendliAI EXAONE, data.go.kr, and KOROAD.
+These tests hit REAL APIs — FriendliAI K-EXAONE, data.go.kr, and KOROAD.
 No mocks. Tests hard-fail on API unavailability.
 
 Marked ``@pytest.mark.live`` and skipped by default. Run with::
@@ -90,7 +90,7 @@ async def test_live_e2e_scenario1_pipeline_structure(
     """Full Scenario 1 E2E: verify event sequence structure from real APIs.
 
     Sends "서울에서 부산 가는 안전한 경로 추천해줘" through a live QueryEngine wired
-    to real FriendliAI EXAONE and real Korean government APIs.
+    to real FriendliAI K-EXAONE and real Korean government APIs.
 
     Assertions are made on the EVENT SEQUENCE STRUCTURE only:
     - At least one ``tool_use`` event (LLM must dispatch tools)

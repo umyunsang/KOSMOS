@@ -180,7 +180,7 @@ The KOSMOS v0.1-alpha entry in `CHANGELOG.md`.
 ### Highlights
 
 - KOSMOS now routes a Korean citizen's request through the migrated Claude Code harness:
-  EXAONE function call → 4 primitives (`lookup` · `submit` · `verify` · `subscribe`) →
+  K-EXAONE function call → 4 primitives (`lookup` · `submit` · `verify` · `subscribe`) →
   registered adapter → permission gauntlet → response rendered in the migrated TUI.
 - 24 registry-bundled adapters documented with bilingual search hints under `docs/api/`.
 - 5-tier plugin DX (P5) onboards external contributors via `kosmos plugin init`.

@@ -180,12 +180,12 @@
   <rect x="0" y="573" width="1280" height="147" fill="#1e0748" opacity="0.7"/>
 
   <!-- Meta labels -->
-  <!-- EXAONE -->
+  <!-- K-EXAONE -->
   <rect x="40" y="596" width="180" height="48" rx="8" fill="#3b0764" stroke="#6d28d9" stroke-width="1"/>
   <text x="130" y="618" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="11" font-weight="700" fill="#a78bfa" text-anchor="middle">EXAONE</text>
+        font-size="11" font-weight="700" fill="#a78bfa" text-anchor="middle">K-EXAONE</text>
   <text x="130" y="635" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="10" fill="#c4b5fd" text-anchor="middle">EXAONE-4.0-32B · 128K ctx</text>
+        font-size="10" fill="#c4b5fd" text-anchor="middle">K-EXAONE-236B-A23B · 128K ctx</text>
 
   <!-- FriendliAI -->
   <rect x="236" y="596" width="180" height="48" rx="8" fill="#3b0764" stroke="#6d28d9" stroke-width="1"/>

@@ -53,7 +53,7 @@ No new state transitions introduced. Existing `CircuitBreaker` states (CLOSED �
 
 ```
 QueryEngine
-  ├── LLMClient (FriendliAI EXAONE)
+  ├── LLMClient (FriendliAI K-EXAONE)
   ├── ToolExecutor
   │   ├── koroad_accident_search → KOROAD API
   │   ├── kma_weather_alert_status → data.go.kr KMA

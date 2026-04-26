@@ -53,7 +53,7 @@ Static `*` in `kosmosCore` colour; no shimmer; no re-render triggered by the ani
 
 ```typescript
 type Props = {
-  model?: string        // e.g. "EXAONE"
+  model?: string        // e.g. "K-EXAONE"
   effort?: string       // e.g. "normal"
   coordinatorMode?: string  // from Spec 033 PermissionMode
 }

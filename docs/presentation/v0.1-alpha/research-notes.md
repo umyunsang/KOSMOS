@@ -107,7 +107,7 @@
 | Permission gauntlet | 없음 | 없음 | 3-layer + Spec 033 spectrum |
 | 플러그인 DX | 없음 | 없음 | 5-tier 오픈 플러그인 생태계 |
 | 오픈소스 | 아니오 | 아니오 | Apache-2.0 (학생 프로젝트) |
-| 한국어 LLM | 미정(범용) | 자체 모델 | EXAONE 4.0-32B (EXAONE) |
+| 한국어 LLM | 미정(범용) | 자체 모델 | K-EXAONE-236B-A23B (K-EXAONE) |
 
 ---
 
@@ -178,20 +178,20 @@
 
 ---
 
-## 6. EXAONE / FriendliAI 정량 데이터
+## 6. K-EXAONE / FriendliAI 정량 데이터
 
-### 6-1. EXAONE 4.0-32B 모델
+### 6-1. K-EXAONE-236B-A23B 모델
 
-- **공식 명칭**: LGAI-EXAONE/EXAONE-4.0-32B (HuggingFace)
+- **공식 명칭**: LGAI-EXAONE/K-EXAONE-236B-A23B (HuggingFace)
 - **출시일**: **2025년 7월** (arXiv 2507.11407)
 - **파라미터**: 30.95B (임베딩 레이어 제외)
 - **컨텍스트 길이**: **131,072 토큰** (128K)
 - **지원 언어**: 영어, 한국어, 스페인어
 - **특성**: 하이브리드 추론 모델 (Reasoning mode + Non-reasoning mode)
-- 출처: [HuggingFace LGAI-EXAONE/EXAONE-4.0-32B](https://huggingface.co/LGAI-EXAONE/EXAONE-4.0-32B)
-- 출처(PR Newswire): [LG Unveils Korea's First Open-weight Hybrid AI EXAONE 4.0](https://www.prnewswire.com/news-releases/lg-unveils-koreas-first-open-weight-hybrid-ai-exaone-4-0-302505577.html)
+- 출처: [HuggingFace LGAI-EXAONE/K-EXAONE-236B-A23B](https://huggingface.co/LGAI-EXAONE/K-EXAONE-236B-A23B)
+- 출처(PR Newswire): [LG Unveils Korea's First Open-weight Hybrid AI K-EXAONE](https://www.prnewswire.com/news-releases/lg-unveils-koreas-first-open-weight-hybrid-ai-exaone-4-0-302505577.html)
 
-### 6-2. 한국어 LLM 벤치마크 (EXAONE 4.0-32B)
+### 6-2. 한국어 LLM 벤치마크 (K-EXAONE-236B-A23B)
 
 | 벤치마크 | 모드 | 점수 |
 |---|---|---|
@@ -203,8 +203,8 @@
 | KSM (한국어 의미 매칭) | Reasoning | **87.6%** |
 | KSM | Non-reasoning | 59.8% |
 
-- 출처: [HuggingFace LGAI-EXAONE/EXAONE-4.0-32B 모델 카드](https://huggingface.co/LGAI-EXAONE/EXAONE-4.0-32B)
-- 벤치마크 원문: [KMMLU-Pro 데이터셋](https://huggingface.co/datasets/LGAI-EXAONE/KMMLU-Pro), [LG Research EXAONE 4.0 기술 보고서](https://www.lgresearch.ai/data/cdn/upload/EXAONE_4_0.pdf)
+- 출처: [HuggingFace LGAI-EXAONE/K-EXAONE-236B-A23B 모델 카드](https://huggingface.co/LGAI-EXAONE/K-EXAONE-236B-A23B)
+- 벤치마크 원문: [KMMLU-Pro 데이터셋](https://huggingface.co/datasets/LGAI-EXAONE/KMMLU-Pro), [LG Research K-EXAONE 기술 보고서](https://www.lgresearch.ai/data/cdn/upload/EXAONE_4_0.pdf)
 
 ### 6-3. FriendliAI Serverless 요금·한도
 
@@ -262,7 +262,7 @@
 | 보존된 Claude Code agentic loop | 1:1 포팅 | `docs/vision.md § 3`, Spec 031 |
 | OpenAPI 공공데이터 총 건수 (배경 시장) | 10만 건 (2024년 말) | 행정안전부 [data.go.kr](https://www.data.go.kr/data/15076332/fileData.do) |
 | 민간 데이터 활용 건수 (2024년) | 7,579만 건 | e-나라지표 [index.go.kr](https://www.index.go.kr/unity/potal/main/EachDtlPageDetail.do?idx_cd=2844) |
-| EXAONE 4.0-32B KMMLU-Redux (Reasoning) | 72.7% | HuggingFace 모델 카드 |
+| K-EXAONE-236B-A23B KMMLU-Redux (Reasoning) | 72.7% | HuggingFace 모델 카드 |
 | Pydantic 월간 다운로드 | 5억 5천만+ | pydantic.dev |
 
 ---

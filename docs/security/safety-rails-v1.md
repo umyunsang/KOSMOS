@@ -8,7 +8,7 @@
 
 KOSMOS wraps the Tool System and LLM Client with a four-layer safety pipeline
 that sanitises the payloads flowing between Korean public-API adapters and the
-EXAONE model. The pipeline runs **after** the six-step permission gauntlet
+K-EXAONE model. The pipeline runs **after** the six-step permission gauntlet
 approves a call and **before** the tool output reaches the LLM context window.
 
 ## Why it matters

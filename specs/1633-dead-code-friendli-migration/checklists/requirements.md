@@ -8,7 +8,7 @@
 ## Content Quality
 
 - [x] No implementation details (languages, frameworks, APIs) — *stdio IPC, OTEL semconv, SHA-256 verification are architectural constraints inherited from Spec 026/032/021, cited as references rather than prescribed implementation. File paths refer to deletion targets (scope boundary), not new implementation*
-- [x] Focused on user value and business needs — *US1 (citizen receives EXAONE answer) is product-level; US2-4 are contributor-facing structural invariants needed to deliver US1 safely*
+- [x] Focused on user value and business needs — *US1 (citizen receives K-EXAONE answer) is product-level; US2-4 are contributor-facing structural invariants needed to deliver US1 safely*
 - [x] Written for non-technical stakeholders — *DX→AX framing table explains the transition in product terms; technical file lists are scoped to the FR section for engineer audience*
 - [x] All mandatory sections completed — *User Scenarios & Testing, Requirements, Success Criteria, Scope Boundaries & Deferred Items all filled; Key Entities + Assumptions included*
 

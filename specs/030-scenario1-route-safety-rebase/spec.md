@@ -165,7 +165,7 @@ Every tool call during the scenario emits an OTel `gen_ai.tool.execute` span wit
 
 - **FR-001**: The system MUST execute the full query pipeline end-to-end: user message → context assembly → LLM stream → `resolve_location` × 2 → `lookup(search)` × 2 → `lookup(fetch)` × 2 → synthesis → final response.
 - **FR-002**: All tool calls MUST be routed through `resolve_location` and `lookup` exclusively. Zero direct adapter imports may appear in the test module. The test module must never reference adapter classes by fully qualified name.
-- **FR-003**: The mock LLM MUST be a deterministic stub (pre-loaded `StreamEvent` sequence) — not a live FriendliAI/EXAONE call in CI.
+- **FR-003**: The mock LLM MUST be a deterministic stub (pre-loaded `StreamEvent` sequence) — not a live FriendliAI/K-EXAONE call in CI.
 - **FR-004**: ALL HTTP calls to `data.go.kr`, Kakao, juso.go.kr, and SGIS MUST be intercepted by recorded fixtures during CI. No live outbound requests are permitted. Live variants MUST be gated behind `@pytest.mark.live`.
 
 **Return schema conformance**

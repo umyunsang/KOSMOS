@@ -21,7 +21,7 @@ Output:
 Use this tool whenever the user's request requires a language conversion. Do not add explanations or commentary in the output — return only the translation.`
 
 /**
- * Build the internal prompt sent to EXAONE via the LLMClient bridge.
+ * Build the internal prompt sent to K-EXAONE via the LLMClient bridge.
  * The model must return ONLY the translated text (no preamble, no quotes).
  */
 export function buildTranslatePrompt(

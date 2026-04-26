@@ -34,7 +34,7 @@ def _mock_completion_response() -> dict:
     return {
         "id": "chatcmpl-test-001",
         "object": "chat.completion",
-        "model": "LGAI-EXAONE/EXAONE-236B-A23B",
+        "model": "LGAI-EXAONE/K-EXAONE-236B-A23B",
         "choices": [
             {
                 "index": 0,

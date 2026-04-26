@@ -28,7 +28,7 @@ import { isEnvDefinedFalsy, isEnvTruthy } from '../envUtils.js'
 import { errorMessage } from '../errors.js'
 import { lazySchema } from '../lazySchema.js'
 import { extractTextContent } from '../messages.js'
-// KOSMOS-original: CC ant model registry not used with EXAONE provider.
+// KOSMOS-original: CC ant model registry not used with K-EXAONE provider.
 const resolveAntModel = (_model?: string): null => null
 import { getMainLoopModel } from '../model/model.js'
 import { getAutoModeConfig } from '../settings/settings.js'

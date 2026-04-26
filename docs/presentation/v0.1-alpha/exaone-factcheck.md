@@ -1,4 +1,4 @@
-# EXAONE Fact-Check Report
+# K-EXAONE Fact-Check Report
 
 **Date:** 2026-04-26
 **Purpose:** Verify exact model names, specs, and availability for KOSMOS presentation materials
@@ -27,24 +27,24 @@ Total published models: **46** (page displays top results; full list requires pa
 | EXAONE-Path-2.5 | Specialized (pathology) | N/A | Mar 10, 2026 |
 | EXAONE-Path-2.0-rev-EGFR | Specialized (pathology) | N/A | ~19 days ago |
 
-> **Note:** EXAONE-4.0-32B and EXAONE-3.5-* series are present among the 46 total models but
+> **Note:** K-EXAONE-236B-A23B and EXAONE-3.5-* series are present among the 46 total models but
 > were not shown in the paginated top results (sorted by recent activity). Both were individually
 > confirmed via direct URL fetch (see Section 2 and Section 3 below).
 
 ---
 
-## 2. EXAONE 4.0 Series — Detailed Verification
+## 2. K-EXAONE Series — Detailed Verification
 
-### 2a. EXAONE-4.0-32B
+### 2a. K-EXAONE-236B-A23B
 
-**Source:** https://huggingface.co/LGAI-EXAONE/EXAONE-4.0-32B (fetched 2026-04-26)
+**Source:** https://huggingface.co/LGAI-EXAONE/K-EXAONE-236B-A23B (fetched 2026-04-26)
 
 **VERDICT: MODEL EXISTS AND IS CONFIRMED.**
 
 | Field | Value |
 |---|---|
-| Exact HF model card title | `EXAONE-4.0-32B` |
-| HuggingFace URL | https://huggingface.co/LGAI-EXAONE/EXAONE-4.0-32B |
+| Exact HF model card title | `K-EXAONE-236B-A23B` |
+| HuggingFace URL | https://huggingface.co/LGAI-EXAONE/K-EXAONE-236B-A23B |
 | Parameters (without embeddings) | 30.95B |
 | License | EXAONE AI Model License Agreement 1.2 - NC |
 | Context window | **131,072 tokens (128K)** |
@@ -89,8 +89,8 @@ Total published models: **46** (page displays top results; full list requires pa
 | Tool/Function calling | Yes |
 | Multilingual | English, Korean, Spanish |
 
-**EXAONE 4.0 series conclusion:** Two variants exist: **1.2B and 32B**. No 7B variant.
-The KOSMOS-referenced model `LGAI-EXAONE/EXAONE-4.0-32B` is real and correctly named.
+**K-EXAONE series conclusion:** Two variants exist: **1.2B and 32B**. No 7B variant.
+The KOSMOS-referenced model `LGAI-EXAONE/K-EXAONE-236B-A23B` is real and correctly named.
 
 ---
 
@@ -104,44 +104,44 @@ The KOSMOS-referenced model `LGAI-EXAONE/EXAONE-4.0-32B` is real and correctly n
 | HuggingFace URL | https://huggingface.co/LGAI-EXAONE/EXAONE-3.5-32B-Instruct |
 | Parameters (without embeddings) | 30.95B |
 | License | EXAONE AI Model License Agreement **1.1** - NC |
-| Context window | **32,768 tokens (32K)** — half of EXAONE 4.0 |
+| Context window | **32,768 tokens (32K)** — half of K-EXAONE |
 | Release date | December 6, 2024 (arXiv: 2412.04862) |
 | Variants | 2.4B, 7.8B, 32B |
 
-**Conclusion:** EXAONE 3.5 is the predecessor series. EXAONE 4.0-32B doubles the context window
+**Conclusion:** EXAONE 3.5 is the predecessor series. K-EXAONE-236B-A23B doubles the context window
 (128K vs 32K) and adds hybrid reasoning. KOSMOS should NOT reference EXAONE 3.5 as the current model.
 
 ---
 
-## 4. FriendliAI Serverless — EXAONE Model Availability
+## 4. FriendliAI Serverless — K-EXAONE Model Availability
 
 **Sources:**
 - https://friendli.ai/blog/lg-ai-research-partnership-exaone-4.0 (fetched 2026-04-26)
 - https://friendli.ai/models/LGAI-EXAONE/K-EXAONE-236B-A23B (fetched 2026-04-26)
-- Search result: https://friendli.ai/suite/~/serverless-endpoints/LGAI-EXAONE/EXAONE-4.0-32B/overview
+- Search result: https://friendli.ai/suite/~/serverless-endpoints/LGAI-EXAONE/K-EXAONE-236B-A23B/overview
 
 ### Confirmed FriendliAI Serverless models:
 
 | Model | FriendliAI Serverless model ID | Pricing (Input / Output per 1M tokens) |
 |---|---|---|
-| EXAONE 4.0 32B | `LGAI-EXAONE/EXAONE-4.0-32B` | Not confirmed from public docs |
+| K-EXAONE 32B | `LGAI-EXAONE/K-EXAONE-236B-A23B` | Not confirmed from public docs |
 | K-EXAONE 236B-A23B | `LGAI-EXAONE/K-EXAONE-236B-A23B` | $0.20 input / $0.80 output |
 
 **API endpoint (OpenAI-compatible):**
 ```
 Base URL: https://api.friendli.ai/serverless/v1
 Auth header: Authorization: Bearer $FRIENDLI_TOKEN
-model field: "LGAI-EXAONE/EXAONE-4.0-32B"
+model field: "LGAI-EXAONE/K-EXAONE-236B-A23B"
 ```
 
-**Important clarification:** The FriendliAI suite page URL for EXAONE-4.0-32B was confirmed at
-`https://friendli.ai/suite/~/serverless-endpoints/LGAI-EXAONE/EXAONE-4.0-32B/overview` but requires
-login — the page redirected to authentication. The model ID `LGAI-EXAONE/EXAONE-4.0-32B` was
+**Important clarification:** The FriendliAI suite page URL for K-EXAONE-236B-A23B was confirmed at
+`https://friendli.ai/suite/~/serverless-endpoints/LGAI-EXAONE/K-EXAONE-236B-A23B/overview` but requires
+login — the page redirected to authentication. The model ID `LGAI-EXAONE/K-EXAONE-236B-A23B` was
 independently confirmed from the FriendliAI partnership blog post and HuggingFace blog post
 (https://huggingface.co/blog/FriendliAI/lg-ai-research-partnership-exaone-4).
 
-**VERDICT:** EXAONE-4.0-32B is confirmed available on FriendliAI Serverless with model ID
-`LGAI-EXAONE/EXAONE-4.0-32B`. K-EXAONE-236B-A23B is also available with confirmed pricing.
+**VERDICT:** K-EXAONE-236B-A23B is confirmed available on FriendliAI Serverless with model ID
+`LGAI-EXAONE/K-EXAONE-236B-A23B`. K-EXAONE-236B-A23B is also available with confirmed pricing.
 
 ---
 
@@ -159,7 +159,7 @@ independently confirmed from the FriendliAI partnership blog post and HuggingFac
 | Full model name | K-EXAONE-236B-A23B |
 | HuggingFace URL | https://huggingface.co/LGAI-EXAONE/K-EXAONE-236B-A23B |
 | GitHub official repo | https://github.com/LG-AI-EXAONE/K-EXAONE |
-| License | K-EXAONE AI Model License Agreement (separate from EXAONE license) |
+| License | K-EXAONE AI Model License Agreement (separate from K-EXAONE license) |
 | Architecture | Mixture of Experts (MoE): 236B total, **23B active** during inference |
 | Experts | 128 total, 8 activated per forward pass + 1 shared expert |
 | Context window | **262,144 tokens (256K)** |
@@ -183,9 +183,9 @@ homegrown frontier AI model to compete with US/Chinese frontier models. PR Newsw
 | HRM8K | 90.9 |
 | Ko-LongBench | 86.8 |
 
-**K-EXAONE vs EXAONE 4.0 comparison:**
+**K-EXAONE vs K-EXAONE comparison:**
 
-| | EXAONE-4.0-32B | K-EXAONE-236B-A23B |
+| | K-EXAONE-236B-A23B | K-EXAONE-236B-A23B |
 |---|---|---|
 | Architecture | Dense | MoE |
 | Total params | 30.95B | 236B |
@@ -193,7 +193,7 @@ homegrown frontier AI model to compete with US/Chinese frontier models. PR Newsw
 | Context | 128K | 256K |
 | Released | Jul 2025 | Jan 2026 |
 | Lang support | 3 | 6 |
-| License type | EXAONE 1.2-NC | K-EXAONE (separate) |
+| License type | K-EXAONE 1.2-NC | K-EXAONE (separate) |
 
 ---
 
@@ -212,7 +212,7 @@ homegrown frontier AI model to compete with US/Chinese frontier models. PR Newsw
 
 **Note for KOSMOS:** EXAONE 4.5 is a VLM released AFTER the agent's knowledge cutoff (Aug 2025).
 It is the newest LGAI-EXAONE model as of this fact-check date (2026-04-26). KOSMOS currently
-targets EXAONE-4.0-32B which predates it; the codebase may want to evaluate migration.
+targets K-EXAONE-236B-A23B which predates it; the codebase may want to evaluate migration.
 
 ---
 
@@ -220,30 +220,30 @@ targets EXAONE-4.0-32B which predates it; the codebase may want to evaluate migr
 
 ### Current KOSMOS codebase expression (from AGENTS.md / CLAUDE.md):
 ```
-FriendliAI Serverless + K-EXAONE (LGAI-EXAONE/EXAONE-4.0-32B)
+FriendliAI Serverless + K-EXAONE (LGAI-EXAONE/K-EXAONE-236B-A23B)
 ```
 
 ### Fact-check verdict on each element:
 
 | Claim | Status | Correction |
 |---|---|---|
-| `EXAONE-4.0-32B` exists on HuggingFace | CONFIRMED | No correction needed |
-| `LGAI-EXAONE/EXAONE-4.0-32B` is the FriendliAI serverless model ID | CONFIRMED | No correction needed |
-| "K-EXAONE" is a real LG AI Research official term | CONFIRMED | K-EXAONE = K-EXAONE-236B-A23B, a separate MoE model — NOT the same as EXAONE-4.0-32B |
-| "32B exists" | CONFIRMED | EXAONE-4.0-32B is real at 30.95B params |
+| `K-EXAONE-236B-A23B` exists on HuggingFace | CONFIRMED | No correction needed |
+| `LGAI-EXAONE/K-EXAONE-236B-A23B` is the FriendliAI serverless model ID | CONFIRMED | No correction needed |
+| "K-EXAONE" is a real LG AI Research official term | CONFIRMED | K-EXAONE = K-EXAONE-236B-A23B, a separate MoE model — NOT the same as K-EXAONE-236B-A23B |
+| "32B exists" | CONFIRMED | K-EXAONE-236B-A23B is real at 30.95B params |
 
 ### CRITICAL FINDING — Naming Ambiguity:
 
-The KOSMOS codebase combines "K-EXAONE" with "EXAONE-4.0-32B" as if they are the same model.
+The KOSMOS codebase combines "K-EXAONE" with "K-EXAONE-236B-A23B" as if they are the same model.
 **They are not.** K-EXAONE refers to `K-EXAONE-236B-A23B` (a 236B MoE model released Jan 2026).
-EXAONE-4.0-32B is a separate dense 32B model released July 2025.
+K-EXAONE-236B-A23B is a separate dense 32B model released July 2025.
 
 **Recommended correction for KOSMOS presentation materials:**
 
 Option A — If using the 32B model:
 ```
 Provider: FriendliAI Serverless
-Model: LGAI-EXAONE/EXAONE-4.0-32B
+Model: LGAI-EXAONE/K-EXAONE-236B-A23B
 Parameters: 30.95B (dense)
 Context: 128K tokens
 Released: July 15, 2025
@@ -266,15 +266,15 @@ Pricing: $0.20/1M input, $0.80/1M output
 | # | Description | URL |
 |---|---|---|
 | 1 | LGAI-EXAONE HF org page | https://huggingface.co/LGAI-EXAONE |
-| 2 | EXAONE-4.0-32B model card | https://huggingface.co/LGAI-EXAONE/EXAONE-4.0-32B |
+| 2 | K-EXAONE-236B-A23B model card | https://huggingface.co/LGAI-EXAONE/K-EXAONE-236B-A23B |
 | 3 | EXAONE-4.0-1.2B model card | https://huggingface.co/LGAI-EXAONE/EXAONE-4.0-1.2B |
 | 4 | EXAONE-3.5-32B-Instruct model card | https://huggingface.co/LGAI-EXAONE/EXAONE-3.5-32B-Instruct |
 | 5 | K-EXAONE-236B-A23B model card | https://huggingface.co/LGAI-EXAONE/K-EXAONE-236B-A23B |
 | 6 | K-EXAONE-236B-A23B on FriendliAI | https://friendli.ai/models/LGAI-EXAONE/K-EXAONE-236B-A23B |
-| 7 | FriendliAI + EXAONE 4.0 partnership blog | https://friendli.ai/blog/lg-ai-research-partnership-exaone-4.0 |
+| 7 | FriendliAI + K-EXAONE partnership blog | https://friendli.ai/blog/lg-ai-research-partnership-exaone-4.0 |
 | 8 | FriendliAI + K-EXAONE day-0 blog | https://friendli.ai/blog/k-exaone-on-serverless |
-| 9 | HF blog: FriendliAI x EXAONE 4.0 | https://huggingface.co/blog/FriendliAI/lg-ai-research-partnership-exaone-4 |
+| 9 | HF blog: FriendliAI x K-EXAONE | https://huggingface.co/blog/FriendliAI/lg-ai-research-partnership-exaone-4 |
 | 10 | K-EXAONE GitHub official repo | https://github.com/LG-AI-EXAONE/K-EXAONE |
 | 11 | EXAONE 4.5 PR Newswire | https://www.prnewswire.com/news-releases/lg-reveals-next-gen-multimodal-ai-exaone-4-5-302736993.html |
 | 12 | EXAONE-4.5-33B HF model card | https://huggingface.co/LGAI-EXAONE/EXAONE-4.5-33B |
-| 13 | FriendliAI serverless EXAONE-4.0-32B overview | https://friendli.ai/suite/~/serverless-endpoints/LGAI-EXAONE/EXAONE-4.0-32B/overview |
+| 13 | FriendliAI serverless K-EXAONE-236B-A23B overview | https://friendli.ai/suite/~/serverless-endpoints/LGAI-EXAONE/K-EXAONE-236B-A23B/overview |

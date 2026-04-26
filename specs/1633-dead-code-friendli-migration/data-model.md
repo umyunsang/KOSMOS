@@ -103,7 +103,7 @@ export type KosmosMessageParam = {
 };
 
 export type KosmosMessageStreamParams = {
-  model: string;            // 'LGAI-EXAONE/EXAONE-236B-A23B'
+  model: string;            // 'LGAI-EXAONE/K-EXAONE-236B-A23B'
   system?: string;          // loaded via PromptLoader
   messages: KosmosMessageParam[];
   tools?: KosmosToolDefinition[];

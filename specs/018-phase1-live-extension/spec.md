@@ -39,7 +39,7 @@ As the KOSMOS maintainer, before merging any change that touches the observabili
 **Acceptance Scenarios**:
 
 1. **Given** a real KOROAD accident-search call routed through the tool executor with observability wired in, **When** the call completes successfully, **Then** `tool.calls.total` counter increments by exactly 1 and `tool.latency_ms` histogram records at least 1 sample with a strictly positive value.
-2. **Given** a real FriendliAI EXAONE streaming completion routed through `LLMClient` with observability wired in, **When** the stream completes, **Then** `llm.requests.total` counter increments and `llm.tokens.prompt` / `llm.tokens.completion` histograms each record at least one sample with positive value.
+2. **Given** a real FriendliAI K-EXAONE streaming completion routed through `LLMClient` with observability wired in, **When** the stream completes, **Then** `llm.requests.total` counter increments and `llm.tokens.prompt` / `llm.tokens.completion` histograms each record at least one sample with positive value.
 3. **Given** a real tool call with the event logger attached, **When** the call completes, **Then** the event logger captured at least one `tool.call.started` event and at least one `tool.call.completed` event, each with valid schema fields (`tool_id`, `latency_ms`, `outcome`) populated.
 4. **Given** a real LLM streaming request with the event logger attached, **When** streaming completes, **Then** at least one `llm.stream.started` and one `llm.stream.completed` event are captured with valid schemas.
 5. **Given** required env vars (FriendliAI token, KOROAD key) are unset, **When** the observability suite starts, **Then** it hard-fails via `pytest.fail()` naming the missing variable — never xfail, never skip.

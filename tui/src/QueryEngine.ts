@@ -14,7 +14,7 @@ import type {
   SDKStatus,
   SDKUserMessageReplay,
 } from 'src/entrypoints/agentSdkTypes.js'
-// services/api/claude removed in P1+P2 (Spec 1633); KOSMOS uses FriendliAI/EXAONE, not Anthropic API.
+// services/api/claude removed in P1+P2 (Spec 1633); KOSMOS uses FriendliAI/K-EXAONE, not Anthropic API.
 import type { NonNullableUsage as _NNU } from 'src/services/api/logging.js'
 const updateUsage = (current: _NNU, delta: _NNU): _NNU => {
   if (!delta) return current

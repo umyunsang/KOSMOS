@@ -57,7 +57,7 @@ import {
   getFsImplementation,
   safeResolvePath,
 } from '../../utils/fsOperations.js'
-// KOSMOS-original: auto mode (fast mode) not supported with EXAONE provider.
+// KOSMOS-original: auto mode (fast mode) not supported with K-EXAONE provider.
 const modelSupportsAutoMode = (_model?: string): boolean => false
 import { logForDebugging } from '../debug.js'
 import { gracefulShutdown } from '../gracefulShutdown.js'

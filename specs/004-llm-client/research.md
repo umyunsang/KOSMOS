@@ -1,4 +1,4 @@
-# Phase 0 Research: LLM Client Integration (FriendliAI EXAONE)
+# Phase 0 Research: LLM Client Integration (FriendliAI K-EXAONE)
 
 **Feature**: Epic #4 — LLM Client Integration
 **Date**: 2026-04-12
@@ -8,7 +8,7 @@
 
 ### RT-1: FriendliAI Serverless API Compatibility
 
-**Question**: What is the exact API contract for FriendliAI Serverless with EXAONE?
+**Question**: What is the exact API contract for FriendliAI Serverless with K-EXAONE?
 
 **Decision**: Use the OpenAI-compatible chat completions API (`/v1/chat/completions`) exposed by FriendliAI Serverless.
 
@@ -87,14 +87,14 @@ delay = random.uniform(0, exp_delay)
 
 **Decision**: In-memory `UsageTracker` with per-call debit and session budget enforcement. Pre-flight check verifies remaining budget can cover `max_tokens` (or 1 token minimum) before each call.
 
-**Rationale**: From `docs/vision.md` Layer 1 — "Every LLM call and every public API call is debited against a session budget." The tracker maintains cumulative input/output token counts and compares against a configurable budget. Pre-flight check uses `can_afford(max_tokens or 1)` to reject calls when budget is exhausted. Input-token estimation via message size heuristics (1 token ≈ 4 chars for English, ≈ 2 chars for Korean) is deferred to Phase 2 pending EXAONE tokenizer validation.
+**Rationale**: From `docs/vision.md` Layer 1 — "Every LLM call and every public API call is debited against a session budget." The tracker maintains cumulative input/output token counts and compares against a configurable budget. Pre-flight check uses `can_afford(max_tokens or 1)` to reject calls when budget is exhausted. Input-token estimation via message size heuristics (1 token ≈ 4 chars for English, ≈ 2 chars for Korean) is deferred to Phase 2 pending K-EXAONE tokenizer validation.
 
 **Reference**: Claude Agent SDK — usage tracking and cost accounting.
 
 **Alternatives considered**:
 - Post-flight only: rejected — a single large call could blow the entire budget before we know the cost
 - Persistent tracker (DB/file): rejected for Phase 1 — in-memory is sufficient for single-session CLI
-- Token counting library (tiktoken): rejected — EXAONE tokenizer is not publicly available; heuristic is sufficient for budget guardrails
+- Token counting library (tiktoken): rejected — K-EXAONE tokenizer is not publicly available; heuristic is sufficient for budget guardrails
 
 ---
 

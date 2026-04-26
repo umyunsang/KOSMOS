@@ -24,7 +24,7 @@ _RAW: dict[str, object] = {
     "decision": "call",
     "user_input": "홍길동 010-1234-5678",
     "pii_email": "a@b.com",
-    "model": "EXAONE",
+    "model": "K-EXAONE",
     "payload": {"deep": "nested"},
     "error_class": "TimeoutError",
 }
@@ -34,7 +34,7 @@ _EXPECTED_VALUES = {
     "tool_id": "koroad_accident_search",
     "step": 1,
     "decision": "call",
-    "model": "EXAONE",
+    "model": "K-EXAONE",
     "error_class": "TimeoutError",
 }
 
@@ -121,11 +121,11 @@ def test_filter_metadata_drops_object_value() -> None:
 
     raw: dict[str, object] = {
         "tool_id": _Opaque(),  # non-primitive
-        "model": "EXAONE",
+        "model": "K-EXAONE",
     }
     result = filter_metadata(raw)
     assert "tool_id" not in result, "Object value under whitelisted key must be dropped"
-    assert result.get("model") == "EXAONE"
+    assert result.get("model") == "K-EXAONE"
 
 
 def test_filter_metadata_drops_list_of_mixed_types() -> None:
@@ -197,7 +197,7 @@ def test_filter_metadata_all_allowed_primitives() -> None:
         "step": 5,
         "decision": "allow",
         "error_class": "TimeoutError",
-        "model": "EXAONE",
+        "model": "K-EXAONE",
     }
     result = filter_metadata(raw)
     assert set(result.keys()) == _ALLOWED_METADATA_KEYS
@@ -205,4 +205,4 @@ def test_filter_metadata_all_allowed_primitives() -> None:
     assert result["step"] == 5
     assert result["decision"] == "allow"
     assert result["error_class"] == "TimeoutError"
-    assert result["model"] == "EXAONE"
+    assert result["model"] == "K-EXAONE"

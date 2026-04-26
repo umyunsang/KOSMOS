@@ -28,7 +28,7 @@ import type {
   KosmosStopReason,
 } from './llmTypes.js'
 
-export const KOSMOS_DEFAULT_MODEL = 'LGAI-EXAONE/EXAONE-236B-A23B'
+export const KOSMOS_DEFAULT_MODEL = 'LGAI-EXAONE/K-EXAONE-236B-A23B'
 
 export type LLMClientErrorClass = 'llm' | 'tool' | 'network'
 

@@ -11,7 +11,7 @@ The KOSMOS migration-completion release. Initiative #1631 closed; the six Phase 
 
 ### Highlights
 
-- KOSMOS now routes a Korean citizen's question through the migrated Claude Code harness end-to-end: EXAONE function call → `lookup` / `submit` / `verify` / `subscribe` primitives → registered adapter → permission gauntlet → response in the migrated TUI.
+- KOSMOS now routes a Korean citizen's question through the migrated Claude Code harness end-to-end: K-EXAONE function call → `lookup` / `submit` / `verify` / `subscribe` primitives → registered adapter → permission gauntlet → response in the migrated TUI.
 - 24 registry-bundled adapters documented under [`docs/api/`](./docs/api/) with seven mandatory fields (classification · envelope · bilingual ko/en search hints · endpoint · permission tier · worked example · constraints) and 25 Draft 2020-12 JSON Schema files under [`docs/api/schemas/`](./docs/api/schemas/), produced deterministically by [`scripts/build_schemas.py`](./scripts/build_schemas.py) (stdlib + Pydantic v2 only).
 - 5-tier plugin DX onboards external contributors via `kosmos plugin init` (Spec 1636); PIPA §26 trustee acknowledgment SHA-256 enforced in CI.
 - Integrated `bun test` reports 928 pass / 4 skip / 3 todo / 0 fail / 0 errors over 935 tests; legacy `docs/tools/` absorbed into `docs/api/`; the removed `road_risk_score` composite leaves zero non-historical references in the documentation tree.

@@ -125,11 +125,11 @@ QueryEvent:
 
 **Decision**: Use a character-based heuristic for token estimation (4 chars ≈ 1 token for English, 2 chars ≈ 1 token for Korean). Actual token counts come from LLM API usage responses.
 
-**Rationale**: The FriendliAI EXAONE tokenizer is not publicly available as a Python library. Exact token counting would require an API call, defeating the purpose of pre-flight budget checks. A heuristic suffices for preprocessing decisions; the actual usage from the API response is used for budget accounting.
+**Rationale**: The FriendliAI K-EXAONE tokenizer is not publicly available as a Python library. Exact token counting would require an API call, defeating the purpose of pre-flight budget checks. A heuristic suffices for preprocessing decisions; the actual usage from the API response is used for budget accounting.
 
 **Alternatives considered**:
-- `tiktoken` (OpenAI): Wrong tokenizer for EXAONE. Would give inaccurate estimates.
-- Custom tokenizer: Requires model-specific vocabulary files. Not available for EXAONE.
+- `tiktoken` (OpenAI): Wrong tokenizer for K-EXAONE. Would give inaccurate estimates.
+- Custom tokenizer: Requires model-specific vocabulary files. Not available for K-EXAONE.
 - API-based counting: Adds latency and cost for every preprocessing decision. Rejected.
 
 **Implementation**: `estimate_tokens(text: str) -> int` function using character ratio heuristic. Korean text detection via Unicode range check (Hangul syllables U+AC00–U+D7A3).

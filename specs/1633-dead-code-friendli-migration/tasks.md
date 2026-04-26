@@ -48,7 +48,7 @@ description: "Task list for Epic #1633 — P1+P2 Dead code elimination + Anthrop
 
 ---
 
-## Phase 3: User Story 1 — Citizen receives EXAONE streaming response (Priority: P1) 🎯 MVP
+## Phase 3: User Story 1 — Citizen receives K-EXAONE streaming response (Priority: P1) 🎯 MVP
 
 **Goal**: End-to-end LLM turn from TUI REPL input through stdio IPC to Python backend to FriendliAI `EXAONE-236B-A23B` and back as streaming tokens within 5 seconds.
 
@@ -58,7 +58,7 @@ description: "Task list for Epic #1633 — P1+P2 Dead code elimination + Anthrop
 
 - [ ] T004 [P] [US1] In `tui/src/query.ts`, replace `import type { ... } from '@anthropic-ai/sdk/resources/index.mjs'` with imports from `tui/src/ipc/llmTypes.ts`. Preserve agentic-loop control flow (rewrite-boundary rule, Constitution I). (FR-001, FR-017)
 - [ ] T005 [P] [US1] In `tui/src/QueryEngine.ts`, replace `import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages.mjs'` with `import type { KosmosContentBlockParam as ContentBlockParam } from './ipc/llmTypes.js'`. Rewire any `Stream` / `BetaMessageStreamParams` imports to their Kosmos counterparts. (FR-001, FR-017)
-- [ ] T006 [US1] In `tui/src/utils/model/model.ts`, modify `getDefaultMainLoopModel()` (line ~206) to return the string literal `"LGAI-EXAONE/EXAONE-236B-A23B"`. Remove any branch that reads `getAntModelOverrideConfig()?.defaultModel` or anthropic-scope fallbacks. The constant MUST be the sole production return value (Contract G3: model ID is a single constant in prod builds; tests may pass a mock through the LLMClient constructor). (FR-011, SC-010, Contract G3)
+- [ ] T006 [US1] In `tui/src/utils/model/model.ts`, modify `getDefaultMainLoopModel()` (line ~206) to return the string literal `"LGAI-EXAONE/K-EXAONE-236B-A23B"`. Remove any branch that reads `getAntModelOverrideConfig()?.defaultModel` or anthropic-scope fallbacks. The constant MUST be the sole production return value (Contract G3: model ID is a single constant in prod builds; tests may pass a mock through the LLMClient constructor). (FR-011, SC-010, Contract G3)
 - [ ] T007 [US1] In `tui/src/ipc/llmClient.ts`, implement `stream()`: construct `UserInputFrame` with fresh `makeUUIDv7()` correlation_id, send via `bridge.sendFrame()`, consume inbound `AssistantChunkFrame` / `ToolCallFrame` stream for that correlation_id, translate to `KosmosRawMessageStreamEvent` per [data-model.md](./data-model.md) mapping, finalize on `done=true` trailer. On `BackpressureSignalFrame(kind=llm_rate_limit)`, pause consumption for `retry_after_ms` before resuming the same generator — **do NOT** retry the full turn (Python backend owns retry per Spec 019; Contract G5). (FR-007, FR-017, Contract G1, G2, G5, G6)
 - [ ] T008 [US1] In `tui/src/ipc/llmClient.ts`, implement `complete()` as a thin wrapper that awaits `stream()` to exhaustion and returns `KosmosMessageFinal` (accumulated content blocks + stop_reason + usage). (Contract § 1.1)
 - [ ] T009 [US1] In `tui/src/ipc/llmClient.ts`, wire OTEL span `gen_ai.client.invoke` with attributes `gen_ai.system="friendli_exaone"`, `gen_ai.operation.name="chat"`, `gen_ai.request.model=<model>`, `gen_ai.request.max_tokens=<params.max_tokens>`, `kosmos.correlation_id=<envelope.correlation_id>`, `kosmos.session_id=<sessionId>`. Populate `gen_ai.usage.input_tokens` / `output_tokens` from final trailer. (FR-022, SC-008, Contract § 4)
@@ -76,9 +76,9 @@ description: "Task list for Epic #1633 — P1+P2 Dead code elimination + Anthrop
 - [ ] T018 [P] [US1] Add `tui/test/ipc/llmClient.test.ts`: mock `IPCBridge`, emit a canned `AssistantChunkFrame` sequence, assert `stream()` yields `message_start` + N × `content_block_delta` + `content_block_stop` + `message_delta` + `message_stop` in order with accumulated text equal to concatenated deltas. (FR-017, Contract G1/G2/G6)
 - [ ] T019 [P] [US1] Add `tui/test/ipc/llmClient.error.test.ts`: mock `ErrorFrame(class=llm, code=auth)`, assert `stream()` throws `LLMClientError` with `class='llm'` + `code='auth'` and does not retry. (FR-019, Contract G4)
 - [ ] T020 [P] [US1] Add `tui/test/entrypoints/failClosed.test.ts`: simulate `FRIENDLI_API_KEY` unset, invoke the init path, assert process.exit(1) with bilingual stderr message. Assert zero imports of `@anthropic-ai/sdk` in `require.cache`. (FR-004 Edge case, SC-009 partial)
-- [ ] T021 [P] [US1] Add `tui/test/ipc/otelSpan.test.ts`: with a fake OTEL SDK recorder, invoke `LLMClient.complete()`, assert a `gen_ai.client.invoke` span is recorded with non-empty `kosmos.prompt.hash` attribute and `gen_ai.request.model = "LGAI-EXAONE/EXAONE-236B-A23B"`. (SC-008, SC-010)
+- [ ] T021 [P] [US1] Add `tui/test/ipc/otelSpan.test.ts`: with a fake OTEL SDK recorder, invoke `LLMClient.complete()`, assert a `gen_ai.client.invoke` span is recorded with non-empty `kosmos.prompt.hash` attribute and `gen_ai.request.model = "LGAI-EXAONE/K-EXAONE-236B-A23B"`. (SC-008, SC-010)
 
-**Checkpoint**: User Story 1 functional. A citizen sees a EXAONE answer within 5 s. `@anthropic-ai/sdk` is still importable in some files (US2 handles full elimination), but the LLM call path no longer depends on it.
+**Checkpoint**: User Story 1 functional. A citizen sees a K-EXAONE answer within 5 s. `@anthropic-ai/sdk` is still importable in some files (US2 handles full elimination), but the LLM call path no longer depends on it.
 
 ---
 
@@ -183,7 +183,7 @@ description: "Task list for Epic #1633 — P1+P2 Dead code elimination + Anthrop
 
 ## Phase 6: User Story 4 — System prompt via PromptLoader (Priority: P3)
 
-**Goal**: Ensure the system prompt shipped to EXAONE originates from `prompts/system_v1.md` via Spec 026 `PromptLoader`, not an inline TS constant. Emit `kosmos.prompt.hash` attribute on every LLM invocation span.
+**Goal**: Ensure the system prompt shipped to K-EXAONE originates from `prompts/system_v1.md` via Spec 026 `PromptLoader`, not an inline TS constant. Emit `kosmos.prompt.hash` attribute on every LLM invocation span.
 
 **Independent Test**: Unit test that mocks `LLMClient.stream()` and asserts the `system` field in the outbound `UserInputFrame` matches `prompts/system_v1.md` content byte-for-byte, and the OTEL span carries `kosmos.prompt.hash` equal to that file's SHA-256. (SC-008, FR-021, FR-022)
 
@@ -199,7 +199,7 @@ description: "Task list for Epic #1633 — P1+P2 Dead code elimination + Anthrop
 - [ ] T045 [P] Run `bun run check:types` (or equivalent TypeScript strict typecheck) on `tui/`. Zero type errors expected. (FR-023 regression)
 - [ ] T046 [P] Regression — Spec 032 resume smoke: kill Python backend mid-stream, verify TUI emits `ResumeRequestFrame` with `last_seen_correlation_id`, backend re-streams buffered frames, answer completes without duplicate tokens. (Quickstart Scenario 4)
 - [ ] T047 [P] CI workflow update — append the Epic #1633 invariants block from [quickstart.md § CI regression harness](./quickstart.md) to the existing `.github/workflows/ci.yml` (or the CC-port job). Ensure the five grep invariants + `wc -l` invariant + `bun test` floor all run on every PR touching `tui/` or `specs/`.
-- [ ] T048 Capture `bun run tui` screenshots (cold boot + REPL with a EXAONE answer streaming) and attach to PR body as US1 visual evidence. (SC-001 visual · FR-024)
+- [ ] T048 Capture `bun run tui` screenshots (cold boot + REPL with a K-EXAONE answer streaming) and attach to PR body as US1 visual evidence. (SC-001 visual · FR-024)
 - [ ] T049 Update `README.md` Status line if Epic #1633 PR merges: bump from "P0 merged" to "P0+P1+P2 merged". No other README changes. (Docs propagation PR #1652 already covered canonical tree propagation.)
 - [ ] T050 Open PR with `Closes #1633` in the body (Epic only — per AGENTS.md `PR close rule`, never list Task sub-issues). Attach bun test count, `wc -l` result, grep-invariant outputs, and the bilingual fail-closed screenshot.
 
@@ -210,7 +210,7 @@ description: "Task list for Epic #1633 — P1+P2 Dead code elimination + Anthrop
 ```
 Setup (T001)
   └─ Foundational (T002, T003) ── blocks all stories
-      ├─ US1 (T004..T021) ── citizen EXAONE path
+      ├─ US1 (T004..T021) ── citizen K-EXAONE path
       │    └─ blocks US2 T029 (full @anthropic-ai/sdk sweep needs llmTypes first)
       ├─ US2 (T022..T032) ── dead-code + main.tsx reduction
       ├─ US3 (T033..T042) ── CC telemetry/auth/teleport
@@ -233,7 +233,7 @@ Polish (T045..T050) ── after every story's Checkpoint passes
 ## Implementation strategy — MVP first, incremental delivery
 
 1. **Setup + Foundational** (T001-T003) — 1-2 hours. Must merge-or-stage first.
-2. **MVP = US1** (T004-T021) — 1-2 days. At this point a citizen can talk to EXAONE end-to-end. This alone is a shippable increment if the remaining dead code is considered deferred.
+2. **MVP = US1** (T004-T021) — 1-2 days. At this point a citizen can talk to K-EXAONE end-to-end. This alone is a shippable increment if the remaining dead code is considered deferred.
 3. **US2** (T022-T032) — 2-3 days. Dead-code deletion batches (T022-T028) are parallel-safe; T029 SDK sweep + T030 main.tsx reduction are the highest-care single-file sequential work. Bun test regression floor enforced at T032.
 4. **US3** (T033-T042) — 1 day (mostly parallel deletions, a few consolidated into single tasks per directory).
 5. **US4** (T043-T044) — half a day.

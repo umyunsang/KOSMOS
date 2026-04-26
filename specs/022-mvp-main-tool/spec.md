@@ -200,7 +200,7 @@ The `GovAPITool` registration contract is frozen for this epic: every adapter de
 - The BM25 retrieval library (`rank_bm25`) and Korean tokenizer (`kiwipiepy>=0.17`) are acceptable new dependencies and will be added in this spec's PR per the dependency-change rule in `AGENTS.md`.
 - The `data.go.kr` shared key (`KOSMOS_DATA_GO_KR_API_KEY`) remains valid across KOROAD, KMA, and HIRA — this matches the KOROAD Portal reference memory.
 - Recorded fixtures exist or can be captured once (marked `@pytest.mark.live`) for each adapter's happy and error paths.
-- The FriendliAI EXAONE provider is Tier 1 (60 RPM) as of 2026-04-15 — sufficient for eval-harness smoke tests, though the eval harness is not expected to call the live LLM in CI.
+- The FriendliAI K-EXAONE provider is Tier 1 (60 RPM) as of 2026-04-15 — sufficient for eval-harness smoke tests, though the eval harness is not expected to call the live LLM in CI.
 - The Kakao REST key naming follows the spec `KOSMOS_KAKAO_REST_KEY` (not a prior shorter variant); any existing older naming is migrated in this epic.
 - `resolve_location` ambiguity handling returns a ranked bundle rather than erroring — consumers decide how to disambiguate.
 
