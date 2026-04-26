@@ -7,7 +7,7 @@
     "bun": ">=1.2.0 <1.3.0"
   },
   "scripts": {
-    "tui": "bun run src/main.tsx",
+    "tui": "bun run src/entrypoints/cli.tsx",
     "gen:ipc": "bun run scripts/gen-ipc-types.ts",
     "gen:pipa-hash": "bun run scripts/gen-pipa-hash.ts",
     "diff:upstream": "bun run scripts/diff-upstream.ts",
