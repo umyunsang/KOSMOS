@@ -1,0 +1,333 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+  <title>KOSMOS v0.1-alpha — Chapter 3: 프로젝트 진행 내용</title>
+  <desc>6-Phase migration timeline, spec-driven workflow, and Agent Teams. Source: content.md § Chapter 3, AGENTS.md</desc>
+
+  <defs>
+    <linearGradient id="bg3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4c1d95;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2d1259;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="phaseGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#6d28d9;stop-opacity:0.95" />
+      <stop offset="100%" style="stop-color:#4c1d95;stop-opacity:0.95" />
+    </linearGradient>
+    <linearGradient id="activePhase" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#7c3aed;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#5b21b6;stop-opacity:1" />
+    </linearGradient>
+    <filter id="glow3">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1280" height="720" fill="url(#bg3)"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1280" height="72" fill="#3b0764" opacity="0.9"/>
+  <line x1="0" y1="72" x2="1280" y2="72" stroke="#a78bfa" stroke-width="1.5" opacity="0.6"/>
+  <text x="48" y="46" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="28" font-weight="700" fill="#a78bfa" filter="url(#glow3)">✻ KOSMOS</text>
+  <text x="200" y="46" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="15" fill="#c4b5fd" opacity="0.8">v0.1-alpha · KSC 2026</text>
+  <text x="820" y="46" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="14" fill="#c4b5fd" opacity="0.6">Chapter 3 — 프로젝트 진행 내용</text>
+
+  <!-- Section title: Phase timeline -->
+  <text x="48" y="100" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="15" font-weight="700" fill="#e9d5ff">6-Phase Migration Timeline</text>
+  <text x="48" y="116" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="10" fill="#7c3aed">Source: docs/requirements/kosmos-migration-tree.md § 실행 Phase 순서 · content.md § Chapter 3</text>
+
+  <!-- Phase timeline horizontal connector -->
+  <line x1="88" y1="186" x2="1000" y2="186" stroke="#5b21b6" stroke-width="2" opacity="0.5"/>
+
+  <!-- Phase boxes -->
+  <!-- P0 -->
+  <rect x="48" y="128" width="145" height="116" rx="8" fill="url(#activePhase)" stroke="#a78bfa" stroke-width="1.5"/>
+  <circle cx="120" cy="186" r="8" fill="#a78bfa" filter="url(#glow3)"/>
+  <text x="120" y="148" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="12" font-weight="700" fill="#e9d5ff" text-anchor="middle">P0 · #1632</text>
+  <text x="120" y="164" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="10" fill="#c4b5fd" text-anchor="middle">Baseline Runnable</text>
+  <text x="120" y="204" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="9" fill="#a78bfa" text-anchor="middle">CC 2.1.88 복구</text>
+  <text x="120" y="217" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="9" fill="#c4b5fd" text-anchor="middle">TUI Ink+Bun 스캐폴드</text>
+  <text x="120" y="230" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="9" fill="#7c3aed" text-anchor="middle">7 commits</text>
+
+  <!-- P1+P2 -->
+  <rect x="209" y="128" width="155" height="116" rx="8" fill="url(#activePhase)" stroke="#a78bfa" stroke-width="1.5"/>
+  <circle cx="287" cy="186" r="8" fill="#a78bfa" filter="url(#glow3)"/>
+  <text x="287" y="148" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="12" font-weight="700" fill="#e9d5ff" text-anchor="middle">P1+P2 · #1633</text>
+  <text x="287" y="164" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="10" fill="#c4b5fd" text-anchor="middle">Dead-code + FriendliAI</text>
+  <text x="287" y="204" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="9" fill="#a78bfa" text-anchor="middle">Anthropic→FriendliAI</text>
+  <text x="287" y="217" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="9" fill="#c4b5fd" text-anchor="middle">-25,263 라인 제거</text>
+  <text x="287" y="230" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="9" fill="#7c3aed" text-anchor="middle">27 commits · 94 파일</text>
+
+  <!-- P3 -->
+  <rect x="380" y="128" width="150" height="116" rx="8" fill="url(#activePhase)" stroke="#a78bfa" stroke-width="1.5"/>
+  <circle cx="455" cy="186" r="8" fill="#a78bfa" filter="url(#glow3)"/>
+  <text x="455" y="148" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="12" font-weight="700" fill="#e9d5ff" text-anchor="middle">P3 · #1634</text>
+  <text x="455" y="164" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="10" fill="#c4b5fd" text-anchor="middle">Tool System Wiring</text>
+  <text x="455" y="204" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="9" fill="#a78bfa" text-anchor="middle">4 primitive + stdio MCP</text>
+  <text x="455" y="217" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="9" fill="#c4b5fd" text-anchor="middle">13-tool registry</text>
+  <text x="455" y="230" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="9" fill="#7c3aed" text-anchor="middle">9 commits</text>
+
+  <!-- P4 -->
+  <rect x="546" y="128" width="155" height="116" rx="8" fill="url(#activePhase)" stroke="#a78bfa" stroke-width="1.5"/>
+  <circle cx="623" cy="186" r="8" fill="#a78bfa" filter="url(#glow3)"/>
+  <text x="623" y="148" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="12" font-weight="700" fill="#e9d5ff" text-anchor="middle">P4 · #1635</text>
+  <text x="623" y="164" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="10" fill="#c4b5fd" text-anchor="middle">UI L2 Citizen Port</text>
+  <text x="623" y="204" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="9" fill="#a78bfa" text-anchor="middle">5-step onboarding</text>
+  <text x="623" y="217" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="9" fill="#c4b5fd" text-anchor="middle">REPL+Permission+Agents</text>
+  <text x="623" y="230" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="9" fill="#7c3aed" text-anchor="middle">15 commits · 51 tasks</text>
+
+  <!-- P5 -->
+  <rect x="717" y="128" width="150" height="116" rx="8" fill="url(#activePhase)" stroke="#a78bfa" stroke-width="1.5"/>
+  <circle cx="792" cy="186" r="8" fill="#a78bfa" filter="url(#glow3)"/>
+  <text x="792" y="148" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="12" font-weight="700" fill="#e9d5ff" text-anchor="middle">P5 · #1636</text>
+  <text x="792" y="164" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="10" fill="#c4b5fd" text-anchor="middle">Plugin DX 5-tier</text>
+  <text x="792" y="204" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="9" fill="#a78bfa" text-anchor="middle">PIPA §26 SHA-256 gate</text>
+  <text x="792" y="217" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="9" fill="#c4b5fd" text-anchor="middle">50-item validation</text>
+  <text x="792" y="230" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="9" fill="#7c3aed" text-anchor="middle">29 commits</text>
+
+  <!-- P6 -->
+  <rect x="883" y="128" width="155" height="116" rx="8" fill="url(#activePhase)" stroke="#a78bfa" stroke-width="1.5"/>
+  <circle cx="960" cy="186" r="8" fill="#a78bfa" filter="url(#glow3)"/>
+  <text x="960" y="148" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="12" font-weight="700" fill="#e9d5ff" text-anchor="middle">P6 · #1637</text>
+  <text x="960" y="164" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="10" fill="#c4b5fd" text-anchor="middle">Docs + Smoke</text>
+  <text x="960" y="204" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="9" fill="#a78bfa" text-anchor="middle">24 API spec + 25 schema</text>
+  <text x="960" y="217" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="9" fill="#c4b5fd" text-anchor="middle">19 visual evidence</text>
+  <text x="960" y="230" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="9" fill="#7c3aed" text-anchor="middle">15 commits · bun test 0 fail</text>
+
+  <!-- DIVIDER -->
+  <line x1="40" y1="258" x2="1050" y2="258" stroke="#5b21b6" stroke-width="1" opacity="0.5"/>
+
+  <!-- BOTTOM LEFT: Spec-driven Workflow -->
+  <text x="48" y="282" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="14" font-weight="700" fill="#e9d5ff">Spec-driven Workflow (7 단계)</text>
+  <text x="48" y="298" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="10" fill="#7c3aed">Source: AGENTS.md § Spec-driven workflow</text>
+
+  <!-- Workflow steps horizontal -->
+  <g>
+    <!-- Step 1 -->
+    <rect x="48" y="308" width="110" height="52" rx="6" fill="#1e0748" stroke="#6d28d9" stroke-width="1"/>
+    <text x="103" y="330" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+          font-size="10" font-weight="700" fill="#a78bfa" text-anchor="middle">① specify</text>
+    <text x="103" y="346" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+          font-size="9" fill="#c4b5fd" text-anchor="middle">spec.md 작성</text>
+    <text x="103" y="358" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+          font-size="8" fill="#7c3aed" text-anchor="middle">/speckit-specify</text>
+    <polygon points="158,330 168,334 158,338" fill="#7c3aed"/>
+
+    <!-- Step 2 -->
+    <rect x="172" y="308" width="110" height="52" rx="6" fill="#1e0748" stroke="#6d28d9" stroke-width="1"/>
+    <text x="227" y="330" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+          font-size="10" font-weight="700" fill="#a78bfa" text-anchor="middle">② plan</text>
+    <text x="227" y="346" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+          font-size="9" fill="#c4b5fd" text-anchor="middle">plan.md 작성</text>
+    <text x="227" y="358" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+          font-size="8" fill="#7c3aed" text-anchor="middle">/speckit-plan</text>
+    <polygon points="282,330 292,334 282,338" fill="#7c3aed"/>
+
+    <!-- Step 3 -->
+    <rect x="296" y="308" width="110" height="52" rx="6" fill="#1e0748" stroke="#6d28d9" stroke-width="1"/>
+    <text x="351" y="330" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+          font-size="10" font-weight="700" fill="#a78bfa" text-anchor="middle">③ tasks</text>
+    <text x="351" y="346" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+          font-size="9" fill="#c4b5fd" text-anchor="middle">tasks.md 생성</text>
+    <text x="351" y="358" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+          font-size="8" fill="#7c3aed" text-anchor="middle">/speckit-tasks</text>
+    <polygon points="406,330 416,334 406,338" fill="#7c3aed"/>
+
+    <!-- Step 4 -->
+    <rect x="420" y="308" width="110" height="52" rx="6" fill="#1e0748" stroke="#6d28d9" stroke-width="1"/>
+    <text x="475" y="330" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+          font-size="10" font-weight="700" fill="#a78bfa" text-anchor="middle">④ analyze</text>
+    <text x="475" y="346" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+          font-size="9" fill="#c4b5fd" text-anchor="middle">Constitution 검증</text>
+    <text x="475" y="358" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+          font-size="8" fill="#7c3aed" text-anchor="middle">/speckit-analyze</text>
+    <polygon points="530,330 540,334 530,338" fill="#7c3aed"/>
+
+    <!-- Step 5 -->
+    <rect x="544" y="308" width="120" height="52" rx="6" fill="#1e0748" stroke="#6d28d9" stroke-width="1"/>
+    <text x="604" y="330" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+          font-size="10" font-weight="700" fill="#a78bfa" text-anchor="middle">⑤ taskstoissues</text>
+    <text x="604" y="346" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+          font-size="9" fill="#c4b5fd" text-anchor="middle">GitHub Issues 생성</text>
+    <text x="604" y="358" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+          font-size="8" fill="#7c3aed" text-anchor="middle">/speckit-taskstoissues</text>
+    <polygon points="664,330 674,334 664,338" fill="#7c3aed"/>
+
+    <!-- Step 6 -->
+    <rect x="678" y="308" width="120" height="52" rx="6" fill="#1e0748" stroke="#6d28d9" stroke-width="1"/>
+    <text x="738" y="330" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+          font-size="10" font-weight="700" fill="#a78bfa" text-anchor="middle">⑥ implement</text>
+    <text x="738" y="346" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+          font-size="9" fill="#c4b5fd" text-anchor="middle">Agent Teams 병렬</text>
+    <text x="738" y="358" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+          font-size="8" fill="#7c3aed" text-anchor="middle">/speckit-implement</text>
+    <polygon points="798,330 808,334 798,338" fill="#7c3aed"/>
+
+    <!-- Step 7 -->
+    <rect x="812" y="308" width="110" height="52" rx="6" fill="#3b0764" stroke="#a78bfa" stroke-width="1.5"/>
+    <text x="867" y="330" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+          font-size="10" font-weight="700" fill="#e9d5ff" text-anchor="middle">⑦ PR + CI</text>
+    <text x="867" y="346" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+          font-size="9" fill="#c4b5fd" text-anchor="middle">Closes #EPIC</text>
+    <text x="867" y="358" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+          font-size="8" fill="#a78bfa" text-anchor="middle">CI 모니터링 → merge</text>
+  </g>
+
+  <!-- Constitution 6 principles mini -->
+  <rect x="48" y="374" width="930" height="64" rx="8" fill="#1e0748" stroke="#5b21b6" stroke-width="1" opacity="0.9"/>
+  <text x="60" y="393" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="11" font-weight="700" fill="#a78bfa">Constitution 6 Principles</text>
+  <g font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif" font-size="10" fill="#c4b5fd">
+    <text x="60" y="410">I. Reference-Driven Design</text>
+    <text x="215" y="410">II. Fail-Closed Defaults</text>
+    <text x="370" y="410">III. Pydantic v2 Everywhere</text>
+    <text x="540" y="410">IV. Gov API Compliance</text>
+    <text x="700" y="410">V. Policy Alignment</text>
+    <text x="840" y="410">VI. Deferred Work Tracking</text>
+    <text x="60" y="426" fill="#7c3aed" font-size="9">docs/vision.md 인용 의무</text>
+    <text x="215" y="426" fill="#7c3aed" font-size="9">requires_auth=True 기본값</text>
+    <text x="370" y="426" fill="#7c3aed" font-size="9">Any 타입 금지</text>
+    <text x="540" y="426" fill="#7c3aed" font-size="9">CI 라이브 API 호출 금지</text>
+    <text x="700" y="426" fill="#7c3aed" font-size="9">PIPA §26 · AI Action Plan</text>
+    <text x="840" y="426" fill="#7c3aed" font-size="9">[Deferred] sub-issue 추적</text>
+  </g>
+
+  <!-- RIGHT SIDEBAR: Agent Teams -->
+  <rect x="1060" y="88" width="200" height="354" rx="10" fill="#1e0748" stroke="#7c3aed" stroke-width="1.5" opacity="0.95"/>
+  <rect x="1060" y="88" width="200" height="36" rx="10" fill="#5b21b6" opacity="0.9"/>
+  <rect x="1060" y="106" width="200" height="18" fill="#5b21b6" opacity="0.9"/>
+  <text x="1160" y="112" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="12" font-weight="700" fill="#e9d5ff" text-anchor="middle">Agent Teams</text>
+
+  <g font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">
+    <!-- Lead Opus -->
+    <rect x="1076" y="132" width="168" height="52" rx="6" fill="#3b0764" stroke="#a78bfa" stroke-width="1.5"/>
+    <text x="1160" y="150" font-size="11" font-weight="700" fill="#a78bfa" text-anchor="middle">Lead · Opus</text>
+    <text x="1160" y="166" font-size="10" fill="#c4b5fd" text-anchor="middle">계획 · 리뷰 · 아키텍처</text>
+    <text x="1160" y="178" font-size="9" fill="#7c3aed" text-anchor="middle">spec · analyze · review</text>
+
+    <text x="1160" y="200" font-size="10" fill="#6d28d9" text-anchor="middle">↓ dispatch ↓</text>
+
+    <!-- Backend -->
+    <rect x="1076" y="208" width="168" height="36" rx="5" fill="#2d1259" stroke="#6d28d9" stroke-width="1"/>
+    <text x="1160" y="224" font-size="10" font-weight="700" fill="#ddd6fe" text-anchor="middle">Backend Architect · Sonnet</text>
+    <text x="1160" y="238" font-size="9" fill="#a78bfa" text-anchor="middle">Python · 어댑터 · 테스트</text>
+
+    <!-- Frontend -->
+    <rect x="1076" y="250" width="168" height="36" rx="5" fill="#2d1259" stroke="#6d28d9" stroke-width="1"/>
+    <text x="1160" y="266" font-size="10" font-weight="700" fill="#ddd6fe" text-anchor="middle">Frontend Developer · Sonnet</text>
+    <text x="1160" y="280" font-size="9" fill="#a78bfa" text-anchor="middle">TUI · Ink · Bun</text>
+
+    <!-- API Tester -->
+    <rect x="1076" y="292" width="168" height="36" rx="5" fill="#2d1259" stroke="#6d28d9" stroke-width="1"/>
+    <text x="1160" y="308" font-size="10" font-weight="700" fill="#ddd6fe" text-anchor="middle">API Tester · Sonnet</text>
+    <text x="1160" y="322" font-size="9" fill="#a78bfa" text-anchor="middle">pytest · bun test · fixture</text>
+
+    <!-- Security + Docs -->
+    <rect x="1076" y="334" width="168" height="36" rx="5" fill="#2d1259" stroke="#6d28d9" stroke-width="1"/>
+    <text x="1160" y="350" font-size="10" font-weight="700" fill="#ddd6fe" text-anchor="middle">Security + Tech Writer · Sonnet</text>
+    <text x="1160" y="364" font-size="9" fill="#a78bfa" text-anchor="middle">PIPA · OTEL · docs</text>
+
+    <text x="1160" y="394" font-size="9" fill="#7c3aed" text-anchor="middle">3+ 독립 Task → 병렬 dispatch</text>
+    <text x="1160" y="408" font-size="9" fill="#7c3aed" text-anchor="middle">1-2 Task → Lead 단독</text>
+    <text x="1160" y="422" font-size="8" fill="#5b21b6" text-anchor="middle">Source: AGENTS.md § Agent Teams</text>
+  </g>
+
+  <!-- BOTTOM SECTION -->
+  <rect x="0" y="452" width="1280" height="268" fill="#1e0748" opacity="0.6"/>
+  <line x1="0" y1="452" x2="1280" y2="452" stroke="#5b21b6" stroke-width="1" opacity="0.5"/>
+
+  <text x="48" y="476" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="14" font-weight="700" fill="#e9d5ff">Phase별 주요 산출물</text>
+
+  <!-- Phase stats table -->
+  <rect x="48" y="488" width="1184" height="32" rx="6" fill="#3b0764" opacity="0.9"/>
+  <g font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif" font-size="11" font-weight="700" fill="#c4b5fd">
+    <text x="90" y="509" text-anchor="middle">Phase</text>
+    <text x="185" y="509" text-anchor="middle">Epic</text>
+    <text x="460" y="509" text-anchor="middle">주요 산출물</text>
+    <text x="1050" y="509" text-anchor="middle">핵심 지표</text>
+  </g>
+
+  <!-- Rows -->
+  <g font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif" font-size="10">
+    <rect x="48" y="520" width="1184" height="26" fill="#2d1259" opacity="0.5"/>
+    <text x="90" y="537" fill="#a78bfa" text-anchor="middle">P0</text>
+    <text x="185" y="537" fill="#c4b5fd" text-anchor="middle">#1632</text>
+    <text x="460" y="537" fill="#ddd6fe" text-anchor="middle">CC 2.1.88 runtime 복구</text>
+    <text x="1050" y="537" fill="#c4b5fd" text-anchor="middle">컴파일 성공</text>
+
+    <rect x="48" y="546" width="1184" height="26" fill="#1e0748" opacity="0.5"/>
+    <text x="90" y="563" fill="#a78bfa" text-anchor="middle">P1+P2</text>
+    <text x="185" y="563" fill="#c4b5fd" text-anchor="middle">#1633</text>
+    <text x="460" y="563" fill="#ddd6fe" text-anchor="middle">dead-code 제거 + FriendliAI 전환</text>
+    <text x="1050" y="563" fill="#c4b5fd" text-anchor="middle">provider 단일화 · -25,263 LOC</text>
+
+    <rect x="48" y="572" width="1184" height="26" fill="#2d1259" opacity="0.5"/>
+    <text x="90" y="589" fill="#a78bfa" text-anchor="middle">P3</text>
+    <text x="185" y="589" fill="#c4b5fd" text-anchor="middle">#1634</text>
+    <text x="460" y="589" fill="#ddd6fe" text-anchor="middle">4 primitive + 13-tool registry + BM25 discovery</text>
+    <text x="1050" y="589" fill="#c4b5fd" text-anchor="middle">Spec 031 완성</text>
+
+    <rect x="48" y="598" width="1184" height="26" fill="#1e0748" opacity="0.5"/>
+    <text x="90" y="615" fill="#a78bfa" text-anchor="middle">P4</text>
+    <text x="185" y="615" fill="#c4b5fd" text-anchor="middle">#1847</text>
+    <text x="460" y="615" fill="#ddd6fe" text-anchor="middle">5-step onboarding + REPL + Permission + Agents</text>
+    <text x="1050" y="615" fill="#c4b5fd" text-anchor="middle">TUI CC 90% 포팅 · 279 tests</text>
+
+    <rect x="48" y="624" width="1184" height="26" fill="#2d1259" opacity="0.5"/>
+    <text x="90" y="641" fill="#a78bfa" text-anchor="middle">P5</text>
+    <text x="185" y="641" fill="#c4b5fd" text-anchor="middle">#1927</text>
+    <text x="460" y="641" fill="#ddd6fe" text-anchor="middle">5-tier plugin DX + PIPA §26 gate + SLSA v1.0</text>
+    <text x="1050" y="641" fill="#c4b5fd" text-anchor="middle">50-item validation · 30분 quickstart PASS</text>
+
+    <rect x="48" y="650" width="1184" height="26" fill="#1e0748" opacity="0.5"/>
+    <text x="90" y="667" fill="#a78bfa" text-anchor="middle">P6</text>
+    <text x="185" y="667" fill="#c4b5fd" text-anchor="middle">#1637</text>
+    <text x="460" y="667" fill="#ddd6fe" text-anchor="middle">24 어댑터 spec + 25 JSON Schema + 19 visual evidence</text>
+    <text x="1050" y="667" fill="#c4b5fd" text-anchor="middle">bun test 928/0/0/935 · 0 fail</text>
+  </g>
+
+  <!-- Footer -->
+  <text x="640" y="710" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="9" fill="#7c3aed" text-anchor="middle" opacity="0.7">
+    Source: content.md § Chapter 3 · AGENTS.md § Spec-driven workflow / Agent Teams · timeline.md § Phase 일정
+  </text>
+</svg>

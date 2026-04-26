@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOSMOS v0.1-alpha — KSC 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --primary:#a78bfa;
+  --dark:#4c1d95;
+  --mid:#5b21b6;
+  --accent:#7c3aed;
+  --bg:#0f0a1e;
+  --surface:#1a1033;
+  --surface2:#241748;
+  --text:#f5f3ff;
+  --muted:#c4b5fd;
+  --dim:#7c6fad;
+  --green:#34d399;
+  --orange:#fb923c;
+  --red:#f87171;
+  --font-ko:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;
+  --font-en:'Inter','SF Pro Display',sans-serif;
+}
+html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:var(--font-ko)}
+#deck{width:100vw;height:100vh;position:relative}
+.slide{
+  position:absolute;inset:0;
+  display:none;
+  flex-direction:column;
+  background:var(--bg);
+  color:var(--text);
+  padding:0;
+  overflow:hidden;
+}
+.slide.active{display:flex}
+
+/* ── LOGO HEADER ── */
+.slide-header{
+  position:absolute;top:18px;left:24px;
+  display:flex;align-items:center;gap:8px;
+  font-family:var(--font-en);font-size:13px;font-weight:600;
+  color:var(--primary);letter-spacing:.02em;z-index:10;
+}
+.logo-glyph{font-size:18px;color:var(--primary)}
+
+/* ── PAGE LABEL ── */
+.slide-footer{
+  position:absolute;bottom:14px;right:24px;
+  font-family:var(--font-en);font-size:11px;color:var(--dim);
+  display:flex;align-items:center;gap:10px;z-index:10;
+}
+.chapter-label{
+  background:var(--surface2);border:1px solid var(--mid);
+  padding:2px 8px;border-radius:12px;font-size:10px;
+  color:var(--muted);font-family:var(--font-en);
+}
+
+/* ── CONTENT WRAPPER ── */
+.slide-body{
+  flex:1;display:flex;flex-direction:column;
+  justify-content:center;align-items:center;
+  padding:60px 80px 50px;text-align:center;
+}
+.slide-body.left{text-align:left;align-items:flex-start}
+.slide-body.split{
+  flex-direction:row;gap:40px;
+  padding:60px 60px 50px;
+  text-align:left;align-items:stretch;
+}
+
+/* ── TYPOGRAPHY ── */
+h1{font-size:3rem;font-weight:900;line-height:1.1;letter-spacing:-.02em;font-family:var(--font-en)}
+h2{font-size:2rem;font-weight:700;line-height:1.2;letter-spacing:-.01em}
+h3{font-size:1.25rem;font-weight:600;color:var(--muted)}
+p,li{font-size:.95rem;line-height:1.7;color:var(--muted)}
+strong{color:var(--text);font-weight:700}
+code{font-family:'Menlo','Monaco',monospace;font-size:.82em;
+     background:var(--surface2);border:1px solid var(--mid);
+     padding:1px 5px;border-radius:4px;color:var(--primary)}
+
+/* ── DECORATIVE ── */
+.gradient-text{
+  background:linear-gradient(135deg,var(--primary),#60a5fa);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.tag{
+  display:inline-block;padding:3px 10px;border-radius:20px;
+  font-family:var(--font-en);font-size:.7rem;font-weight:600;
+  letter-spacing:.05em;text-transform:uppercase;
+}
+.tag-purple{background:var(--dark);color:var(--primary);border:1px solid var(--accent)}
+.tag-green{background:#064e3b;color:var(--green);border:1px solid var(--green)}
+.tag-orange{background:#431407;color:var(--orange);border:1px solid var(--orange)}
+
+/* ── CARDS ── */
+.card{
+  background:var(--surface);border:1px solid var(--mid);
+  border-radius:12px;padding:20px 24px;
+}
+.card-grid{display:grid;gap:16px;width:100%}
+.card-grid-2{grid-template-columns:1fr 1fr}
+.card-grid-3{grid-template-columns:1fr 1fr 1fr}
+
+/* ── TABLES ── */
+table{width:100%;border-collapse:collapse;font-size:.82rem}
+thead tr{background:var(--surface2)}
+th{padding:8px 12px;text-align:left;color:var(--primary);
+   font-family:var(--font-en);font-size:.75rem;font-weight:600;letter-spacing:.05em;
+   border-bottom:2px solid var(--accent)}
+td{padding:7px 12px;border-bottom:1px solid var(--surface2);color:var(--muted)}
+tr:hover td{background:var(--surface2)}
+
+/* ── SVG PLACEHOLDER ── */
+.svg-box{
+  background:var(--surface);border:1px solid var(--mid);border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.svg-box svg{width:100%;height:100%}
+.chapter-svg{width:100%;max-width:1100px;height:auto;display:block;margin:0 auto;background:rgba(76,29,149,.05);border-radius:12px}
+
+/* ── SPLIT PANEL ── */
+.panel{flex:1;display:flex;flex-direction:column;justify-content:center}
+.panel.svg-panel{flex:0 0 42%;justify-content:center;align-items:center}
+
+/* ── ACCENT LINE ── */
+.accent-line{
+  width:60px;height:4px;border-radius:2px;
+  background:linear-gradient(90deg,var(--primary),var(--accent));
+  margin:12px 0 20px;
+}
+.accent-line.center{margin:12px auto 20px}
+
+/* ── STAT BOXES ── */
+.stat-row{display:flex;gap:16px;width:100%;margin-top:16px}
+.stat-box{
+  flex:1;background:var(--surface);border:1px solid var(--mid);
+  border-radius:12px;padding:16px;text-align:center;
+}
+.stat-num{font-size:2rem;font-weight:800;color:var(--primary);font-family:var(--font-en)}
+.stat-lbl{font-size:.72rem;color:var(--dim);margin-top:4px;font-family:var(--font-en)}
+
+/* ── LIST BULLETS ── */
+ul.check{list-style:none}
+ul.check li{padding:4px 0;color:var(--muted)}
+ul.check li::before{content:"▸ ";color:var(--primary);font-weight:700}
+
+/* ── PHASE TIMELINE ── */
+.phase-row{
+  display:flex;align-items:center;gap:0;width:100%;margin:8px 0;
+}
+.phase-label{
+  font-family:var(--font-en);font-size:.72rem;font-weight:700;
+  color:var(--primary);width:38px;flex-shrink:0;
+}
+.phase-bar-wrap{flex:1;background:var(--surface);border-radius:6px;height:22px;overflow:hidden;margin:0 8px}
+.phase-bar{height:100%;border-radius:6px;display:flex;align-items:center;padding:0 8px;
+           font-size:.7rem;font-weight:600;font-family:var(--font-en);color:#fff;white-space:nowrap}
+.phase-time{font-size:.68rem;color:var(--dim);width:80px;text-align:right;flex-shrink:0;font-family:var(--font-en)}
+
+/* ── COVER SPECIFIC ── */
+.cover-bg{
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse at 60% 40%,rgba(124,58,237,.35) 0%,transparent 60%),
+             radial-gradient(ellipse at 20% 80%,rgba(167,139,250,.15) 0%,transparent 50%);
+  pointer-events:none;
+}
+.cover-grid{
+  position:absolute;inset:0;opacity:.04;
+  background-image:linear-gradient(var(--primary) 1px,transparent 1px),
+                   linear-gradient(90deg,var(--primary) 1px,transparent 1px);
+  background-size:40px 40px;
+  pointer-events:none;
+}
+.cover-disclaimer{
+  position:absolute;bottom:14px;left:0;right:0;text-align:center;
+  font-size:.65rem;color:var(--dim);font-family:var(--font-en);
+}
+
+/* ── TOC ── */
+.toc-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;width:100%;max-width:720px}
+.toc-item{
+  background:var(--surface);border:1px solid var(--mid);border-radius:10px;
+  padding:16px 20px;display:flex;align-items:flex-start;gap:14px;
+}
+.toc-num{
+  font-size:2rem;font-weight:900;color:var(--accent);
+  font-family:var(--font-en);line-height:1;flex-shrink:0;
+}
+.toc-title{font-size:.9rem;font-weight:600;color:var(--text);margin-bottom:2px}
+.toc-sub{font-size:.72rem;color:var(--dim)}
+
+/* ── BADGE ── */
+.badge{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:4px 12px;border-radius:20px;font-size:.72rem;font-weight:600;
+  font-family:var(--font-en);
+}
+.badge-purple{background:rgba(124,58,237,.25);border:1px solid var(--accent);color:var(--primary)}
+.badge-green{background:rgba(52,211,153,.15);border:1px solid var(--green);color:var(--green)}
+
+/* ── PROGRESS BAR ── */
+#progress{
+  position:fixed;bottom:0;left:0;height:2px;
+  background:linear-gradient(90deg,var(--primary),var(--accent));
+  transition:width .3s ease;z-index:100;
+}
+
+/* ── CONSTITUTION PRINCIPLES ── */
+.principle{
+  background:var(--surface);border-left:3px solid var(--primary);
+  border-radius:0 8px 8px 0;padding:10px 14px;margin:5px 0;
+}
+.principle-num{font-size:.65rem;color:var(--primary);font-family:var(--font-en);font-weight:700;letter-spacing:.08em}
+.principle-title{font-size:.85rem;font-weight:700;color:var(--text);margin:2px 0}
+.principle-desc{font-size:.75rem;color:var(--dim);line-height:1.5}
+
+/* ── DIFF TABLE CC vs KOSMOS ── */
+.diff-row{display:flex;gap:0;border-bottom:1px solid var(--surface2)}
+.diff-row:last-child{border-bottom:none}
+.diff-cell{flex:1;padding:9px 14px;font-size:.8rem;color:var(--muted)}
+.diff-cell:first-child{font-weight:600;color:var(--dim);flex:0 0 120px;border-right:1px solid var(--surface2)}
+.diff-cc{color:#60a5fa}
+.diff-kosmos{color:var(--primary)}
+
+/* ── LAYER CARDS ── */
+.layer-item{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:7px 0;border-bottom:1px solid var(--surface2);
+}
+.layer-item:last-child{border-bottom:none}
+.layer-num{
+  flex-shrink:0;width:26px;height:26px;border-radius:6px;
+  background:var(--accent);display:flex;align-items:center;justify-content:center;
+  font-size:.72rem;font-weight:800;color:#fff;font-family:var(--font-en);
+}
+.layer-name{font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:2px}
+.layer-desc{font-size:.72rem;color:var(--dim);line-height:1.4}
+
+/* ── ADAPTER TIERS ── */
+.tier-section{margin-bottom:14px}
+.tier-header{
+  font-size:.72rem;font-weight:700;letter-spacing:.06em;
+  font-family:var(--font-en);padding:4px 10px;border-radius:6px;
+  display:inline-block;margin-bottom:8px;
+}
+.tier-live{background:rgba(52,211,153,.15);color:var(--green);border:1px solid var(--green)}
+.tier-mock{background:rgba(251,146,60,.15);color:var(--orange);border:1px solid var(--orange)}
+.tier-meta{background:rgba(167,139,250,.15);color:var(--primary);border:1px solid var(--accent)}
+
+/* ── ROADMAP ── */
+.road-item{
+  display:flex;align-items:flex-start;gap:14px;
+  padding:10px 14px;background:var(--surface);
+  border-radius:8px;margin:5px 0;border:1px solid var(--surface2);
+}
+.road-q{
+  flex-shrink:0;font-family:var(--font-en);font-size:.72rem;
+  font-weight:700;color:var(--primary);width:60px;
+}
+.road-content{font-size:.82rem;color:var(--muted)}
+
+/* ── CITATION ── */
+.ref-item{
+  padding:5px 0;border-bottom:1px solid var(--surface2);
+  font-size:.72rem;color:var(--dim);font-family:var(--font-en);
+}
+.ref-item:last-child{border-bottom:none}
+.ref-num{color:var(--primary);font-weight:700;margin-right:6px}
+a{color:var(--primary);text-decoration:none}
+a:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+<div id="deck">
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SLIDE 1 — COVER -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="slide active" data-chapter="">
+  <div class="cover-bg"></div>
+  <div class="cover-grid"></div>
+  <div class="slide-body" style="justify-content:center;gap:0">
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:28px">
+      <span style="font-size:3.5rem;color:var(--primary)">✻</span>
+      <span style="font-family:var(--font-en);font-size:1rem;font-weight:600;color:var(--muted);letter-spacing:.15em">KOSMOS</span>
+    </div>
+    <h1 class="gradient-text" style="font-size:3.8rem;margin-bottom:8px">KOSMOS v0.1-alpha</h1>
+    <h2 style="font-size:1.4rem;font-weight:400;color:var(--muted);margin-bottom:32px">시민 대화형 공공 API 하네스</h2>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-bottom:40px">
+      <span class="tag tag-purple">KSC 2026</span>
+      <span class="tag tag-purple">학생 포트폴리오</span>
+      <span class="tag tag-purple">Apache-2.0</span>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--mid);border-radius:12px;padding:18px 32px;display:inline-block">
+      <p style="font-size:.9rem;color:var(--text);margin-bottom:4px"><strong>umyunsang</strong></p>
+      <p style="font-size:.8rem;color:var(--dim);font-family:var(--font-en)">2026-04-26</p>
+    </div>
+  </div>
+  <div class="cover-disclaimer">
+    Not affiliated with Anthropic, LG AI Research, or the Korean government. Student portfolio project. Apache-2.0.
+  </div>
+  <div class="slide-footer">
+    <span>1 / 22</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SLIDE 2 — 목차 -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="slide" data-chapter="목차">
+  <div class="slide-header"><span class="logo-glyph">✻</span> KOSMOS</div>
+  <div class="slide-body">
+    <h2 style="margin-bottom:6px">목차</h2>
+    <div class="accent-line center"></div>
+    <div class="toc-grid">
+      <div class="toc-item">
+        <div class="toc-num">1</div>
+        <div><div class="toc-title">프로젝트 개요</div><div class="toc-sub">정의 · 시나리오 · 아키텍처 · LLM 스택</div></div>
+      </div>
+      <div class="toc-item">
+        <div class="toc-num">2</div>
+        <div><div class="toc-title">기존 문제 및 차별성</div><div class="toc-sub">시장 현황 · 비교표 · 차별점 4종</div></div>
+      </div>
+      <div class="toc-item">
+        <div class="toc-num">3</div>
+        <div><div class="toc-title">프로젝트 진행 내용</div><div class="toc-sub">6 Phase · Spec-driven · Agent Teams · Constitution</div></div>
+      </div>
+      <div class="toc-item">
+        <div class="toc-num">4</div>
+        <div><div class="toc-title">역할 및 책임</div><div class="toc-sub">솔로 학생 · Opus/Sonnet 위임 패턴</div></div>
+      </div>
+      <div class="toc-item">
+        <div class="toc-num">5</div>
+        <div><div class="toc-title">진행 결과물</div><div class="toc-sub">24 어댑터 · 935 tests · 19 visual surface</div></div>
+      </div>
+      <div class="toc-item">
+        <div class="toc-num">6</div>
+        <div><div class="toc-title">프로젝트 관리 및 일정</div><div class="toc-sub">Gantt · 189 커밋 · 협업 도구 · 로드맵</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span>2 / 22</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SLIDE 3 — Ch1: 정의 + 시나리오 -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="slide" data-chapter="Ch 1 — 개요">
+  <div class="slide-header"><span class="logo-glyph">✻</span> KOSMOS</div>
+  <div class="slide-body left">
+    <span class="tag tag-purple" style="margin-bottom:16px">Chapter 1 — 프로젝트 개요</span>
+    <h2 style="margin-bottom:4px">KOSMOS 정의</h2>
+    <div class="accent-line"></div>
+    <div class="card" style="width:100%;margin-bottom:20px;border-color:var(--accent)">
+      <p style="font-size:1rem;color:var(--text);line-height:1.6">
+        <strong>Claude Code</strong>의 하네스를 한국 공공서비스 도메인으로 마이그레이션한
+        <strong>시민용 대화형 AI 플랫폼</strong> —
+        <code>data.go.kr</code>의 5,000+ 분산 공공 API를 단일 대화 인터페이스로
+      </p>
+    </div>
+    <h3 style="margin-bottom:12px">시민 사용 시나리오</h3>
+    <div class="card-grid card-grid-3" style="margin-top:0">
+      <div class="card">
+        <p style="font-size:.75rem;font-weight:700;color:var(--green);margin-bottom:6px">안전 경로</p>
+        <p style="font-size:.78rem;margin-bottom:8px">"내일 부산에서 서울 가는데, 안전한 경로 추천해줘"</p>
+        <p style="font-size:.7rem;color:var(--dim)">KOROAD 사고 데이터 + KMA 기상 특보 + 도로위험지수 융합</p>
+      </div>
+      <div class="card">
+        <p style="font-size:.75rem;font-weight:700;color:var(--orange);margin-bottom:6px">야간 응급실</p>
+        <p style="font-size:.78rem;margin-bottom:8px">"아이가 열이 나는데 근처 야간 응급실 어디야?"</p>
+        <p style="font-size:.7rem;color:var(--dim)">NFA119 응급정보 + HIRA 병원정보 융합 → 대기 시간</p>
+      </div>
+      <div class="card">
+        <p style="font-size:.75rem;font-weight:700;color:var(--primary);margin-bottom:6px">출산 보조금</p>
+        <p style="font-size:.78rem;margin-bottom:8px">"출산 보조금 신청하고 싶은데"</p>
+        <p style="font-size:.7rem;color:var(--dim)">MOHW 복지 자격 + Gov24 신청 안내 → 필요 서류</p>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span class="chapter-label">Ch 1</span>
+    <span>3 / 22</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SLIDE 4 — Ch1: Thesis + SVG placeholder -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="slide" data-chapter="Ch 1 — 개요">
+  <div class="slide-header"><span class="logo-glyph">✻</span> KOSMOS</div>
+  <div class="slide-body split">
+    <div class="panel">
+      <span class="tag tag-purple" style="margin-bottom:14px">Thesis</span>
+      <h2 style="margin-bottom:4px">하네스 마이그레이션</h2>
+      <div class="accent-line"></div>
+      <p style="font-size:.85rem;margin-bottom:18px;line-height:1.7">
+        Claude Code의 하네스(tool loop · permission gauntlet · context assembly · TUI)는
+        "올바른 도구를 올바른 순서로 호출하는" 문제로 환원되는
+        <strong>모든 도메인에 적용 가능한 범용 substrate</strong>
+      </p>
+      <div style="background:var(--surface);border:1px solid var(--mid);border-radius:10px;overflow:hidden;width:100%">
+        <div style="display:grid;grid-template-columns:90px 1fr 1fr;background:var(--surface2)">
+          <div style="padding:8px 10px;font-size:.7rem;color:var(--dim);font-family:var(--font-en);font-weight:600">항목</div>
+          <div style="padding:8px 10px;font-size:.7rem;color:#60a5fa;font-family:var(--font-en);font-weight:600">Claude Code</div>
+          <div style="padding:8px 10px;font-size:.7rem;color:var(--primary);font-family:var(--font-en);font-weight:600">KOSMOS</div>
+        </div>
+        <div class="diff-row"><div class="diff-cell">사용자</div><div class="diff-cell diff-cc">소프트웨어 개발자</div><div class="diff-cell diff-kosmos">대한민국 시민</div></div>
+        <div class="diff-row"><div class="diff-cell">도구 표면</div><div class="diff-cell diff-cc">파일시스템 · 쉘 · git</div><div class="diff-cell diff-kosmos">data.go.kr 공공 API</div></div>
+        <div class="diff-row"><div class="diff-cell">기본 동사</div><div class="diff-cell diff-cc">Read · Edit · Bash</div><div class="diff-cell diff-kosmos">lookup · submit · verify</div></div>
+        <div class="diff-row"><div class="diff-cell">권한 관심사</div><div class="diff-cell diff-cc">위험 쉘 명령</div><div class="diff-cell diff-kosmos">PIPA 개인정보 보호</div></div>
+      </div>
+    </div>
+    <div class="panel svg-panel">
+      <div class="svg-box" style="width:100%;height:320px">
+        <img src="svg/chapter-1.svg" alt="Chapter 1 visualization" class="chapter-svg" loading="lazy" />
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span class="chapter-label">Ch 1</span>
+    <span>4 / 22</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SLIDE 5 — Ch1: 6-Layer + LLM Stack -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="slide" data-chapter="Ch 1 — 개요">
+  <div class="slide-header"><span class="logo-glyph">✻</span> KOSMOS</div>
+  <div class="slide-body split">
+    <div class="panel" style="flex:1.2">
+      <h2 style="margin-bottom:4px">6-Layer Architecture</h2>
+      <div class="accent-line"></div>
+      <div style="background:var(--surface);border:1px solid var(--mid);border-radius:10px;padding:14px 16px;width:100%">
+        <div class="layer-item">
+          <div class="layer-num">1</div>
+          <div><div class="layer-name">Query Engine</div><div class="layer-desc">while(True) tool loop — 민원 요청 해소 (Async generator state machine)</div></div>
+        </div>
+        <div class="layer-item">
+          <div class="layer-num">2</div>
+          <div><div class="layer-name">Tool System</div><div class="layer-desc">data.go.kr API 어댑터 schema-driven 등록·팩토리</div></div>
+        </div>
+        <div class="layer-item">
+          <div class="layer-num">3</div>
+          <div><div class="layer-name">Permission Pipeline</div><div class="layer-desc">PIPA 기반 시민 인증·개인정보 보호 bypass-immune gauntlet</div></div>
+        </div>
+        <div class="layer-item">
+          <div class="layer-num">4</div>
+          <div><div class="layer-name">Agent Swarms</div><div class="layer-desc">부처별 전문 에이전트 + 코디네이터 (파일 기반 mailbox IPC)</div></div>
+        </div>
+        <div class="layer-item">
+          <div class="layer-num">5</div>
+          <div><div class="layer-name">Context Assembly</div><div class="layer-desc">3-tier 컨텍스트 (System · Memory · Attachments)</div></div>
+        </div>
+        <div class="layer-item" style="border-bottom:none">
+          <div class="layer-num">6</div>
+          <div><div class="layer-name">Error Recovery</div><div class="layer-desc">공공 API 장애 · Rate-limit · 점검 대응 resilience matrix</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="panel" style="flex:.8">
+      <h3 style="margin-bottom:12px">LLM Stack</h3>
+      <div class="card" style="margin-bottom:12px">
+        <p style="font-size:.72rem;color:var(--primary);font-weight:700;font-family:var(--font-en);margin-bottom:4px">MODEL</p>
+        <p style="font-size:.88rem;font-weight:700;color:var(--text)">EXAONE 4.0-32B</p>
+        <p style="font-size:.72rem;color:var(--dim)">LGAI-EXAONE / FriendliAI Serverless</p>
+        <p style="font-size:.7rem;color:var(--dim);margin-top:4px">128K context · 한국어 KMMLU 72.7%</p>
+      </div>
+      <div class="card" style="margin-bottom:12px">
+        <p style="font-size:.72rem;color:var(--primary);font-weight:700;font-family:var(--font-en);margin-bottom:4px">LOOP</p>
+        <p style="font-size:.85rem;color:var(--text)">CC agentic loop <strong>1:1 보존</strong></p>
+        <p style="font-size:.72rem;color:var(--dim)">EXAONE native function calling</p>
+      </div>
+      <div class="card">
+        <p style="font-size:.72rem;color:var(--primary);font-weight:700;font-family:var(--font-en);margin-bottom:4px">PRIMITIVES</p>
+        <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:2px">
+          <code style="font-size:.75rem">lookup</code>
+          <code style="font-size:.75rem">submit</code>
+          <code style="font-size:.75rem">verify</code>
+          <code style="font-size:.75rem">subscribe</code>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span class="chapter-label">Ch 1</span>
+    <span>5 / 22</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SLIDE 6 — Ch2: 시장 현황 -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="slide" data-chapter="Ch 2 — 차별성">
+  <div class="slide-header"><span class="logo-glyph">✻</span> KOSMOS</div>
+  <div class="slide-body left">
+    <span class="tag tag-purple" style="margin-bottom:16px">Chapter 2 — 기존 문제 및 차별성</span>
+    <h2 style="margin-bottom:4px">시장 현황</h2>
+    <div class="accent-line"></div>
+    <div class="card-grid card-grid-3" style="margin-bottom:20px">
+      <div class="card" style="text-align:center">
+        <div class="stat-num">10만+</div>
+        <div class="stat-lbl">data.go.kr 개방 건수<br>(2024년 말 기준)</div>
+        <p style="font-size:.65rem;color:var(--dim);margin-top:6px">2013년 5,272건 대비 19배 증가</p>
+      </div>
+      <div class="card" style="text-align:center">
+        <div class="stat-num">7,579만</div>
+        <div class="stat-lbl">민간 데이터 활용 건수<br>(2024년 말)</div>
+        <p style="font-size:.65rem;color:var(--dim);margin-top:6px">2013년 대비 5,413배 증가</p>
+      </div>
+      <div class="card" style="text-align:center">
+        <div class="stat-num">4회</div>
+        <div class="stat-lbl">OECD OURdata 지수 1위<br>(2015·2017·2019·2023)</div>
+        <p style="font-size:.65rem;color:var(--dim);margin-top:6px">점수 0.91/1.0 · OECD 평균 0.48의 2배</p>
+      </div>
+    </div>
+    <div class="card" style="border-color:var(--accent)">
+      <p style="font-size:.82rem;line-height:1.7">
+        <strong>문제</strong>: 10만 건 이상의 공공 API가 개방되어 있지만,
+        시민이 부처를 횡단하며 AI 기반으로 통합 활용할 수 있는 오픈소스 플랫폼은 존재하지 않는다.
+        기존 서비스(정부24 AI · CLOVA · 카카오 i)는 단일 도메인 안내 또는 규칙 기반 챗봇 수준에 머물러 있다.
+      </p>
+    </div>
+    <div style="margin-top:14px">
+      <p style="font-size:.72rem;color:var(--dim)">출처: 행정안전부 공공데이터 개방 현황 (data.go.kr/data/15076332) · e-나라지표 (index.go.kr idx_cd=2844) · mois.go.kr</p>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span class="chapter-label">Ch 2</span>
+    <span>6 / 22</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SLIDE 7 — Ch2: 비교표 + SVG placeholder -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="slide" data-chapter="Ch 2 — 차별성">
+  <div class="slide-header"><span class="logo-glyph">✻</span> KOSMOS</div>
+  <div class="slide-body split">
+    <div class="panel">
+      <h2 style="margin-bottom:4px">기존 서비스 비교</h2>
+      <div class="accent-line"></div>
+      <table>
+        <thead>
+          <tr>
+            <th>항목</th>
+            <th>정부24 AI</th>
+            <th>네이버/카카오</th>
+            <th>KOSMOS</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>부처 횡단</td>
+            <td style="color:#f87171">제한적</td>
+            <td style="color:#f87171">파편화</td>
+            <td style="color:var(--green)">완전 횡단</td>
+          </tr>
+          <tr>
+            <td>LLM tool-loop</td>
+            <td style="color:#f87171">미적용</td>
+            <td style="color:#f87171">미적용</td>
+            <td style="color:var(--green)">CC 1:1 포팅</td>
+          </tr>
+          <tr>
+            <td>Permission gauntlet</td>
+            <td style="color:#f87171">없음</td>
+            <td style="color:#f87171">없음</td>
+            <td style="color:var(--green)">3-layer + Spec 033</td>
+          </tr>
+          <tr>
+            <td>플러그인 DX</td>
+            <td style="color:#f87171">없음</td>
+            <td style="color:#f87171">없음</td>
+            <td style="color:var(--green)">5-tier 오픈 생태계</td>
+          </tr>
+          <tr>
+            <td>오픈소스</td>
+            <td style="color:#f87171">아니오</td>
+            <td style="color:#f87171">아니오</td>
+            <td style="color:var(--green)">Apache-2.0</td>
+          </tr>
+          <tr>
+            <td>한국어 LLM</td>
+            <td style="color:var(--dim)">범용 미정</td>
+            <td style="color:var(--orange)">자체 모델</td>
+            <td style="color:var(--green)">EXAONE 4.0-32B</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="panel svg-panel">
+      <div class="svg-box" style="width:100%;height:300px">
+        <img src="svg/chapter-2.svg" alt="Chapter 2 visualization" class="chapter-svg" loading="lazy" />
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span class="chapter-label">Ch 2</span>
+    <span>7 / 22</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SLIDE 8 — Ch2: 차별점 4종 + 출처 -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="slide" data-chapter="Ch 2 — 차별성">
+  <div class="slide-header"><span class="logo-glyph">✻</span> KOSMOS</div>
+  <div class="slide-body left">
+    <h2 style="margin-bottom:4px">KOSMOS 차별점 4종</h2>
+    <div class="accent-line"></div>
+    <div class="card-grid card-grid-2" style="margin-bottom:20px">
+      <div class="card" style="border-color:var(--green)">
+        <p style="color:var(--green);font-weight:700;font-size:.82rem;margin-bottom:6px">① 부처 횡단 agentic loop</p>
+        <p style="font-size:.78rem">CC의 tool-loop skeleton을 1:1 보존 — 단일 대화에서 KOROAD · KMA · HIRA를 동시 호출하는 부처 횡단 쿼리 지원</p>
+      </div>
+      <div class="card" style="border-color:var(--primary)">
+        <p style="color:var(--primary);font-weight:700;font-size:.82rem;margin-bottom:6px">② PIPA §26 수탁자 모델</p>
+        <p style="font-size:.78rem">3-layer permission gauntlet + Spec 033 spectrum — 개인정보 처리 어댑터 전부 bypass-immune 게이트 통과 의무</p>
+      </div>
+      <div class="card" style="border-color:var(--orange)">
+        <p style="color:var(--orange);font-weight:700;font-size:.82rem;margin-bottom:6px">③ 5-tier 오픈 플러그인 DX</p>
+        <p style="font-size:.78rem">Template · Guide · Examples · Submission · Registry — 외부 기여자가 30분 안에 신규 공공 API 어댑터 등록 가능</p>
+      </div>
+      <div class="card" style="border-color:#60a5fa">
+        <p style="color:#60a5fa;font-weight:700;font-size:.82rem;margin-bottom:6px">④ Apache-2.0 오픈소스</p>
+        <p style="font-size:.78rem">전체 스택 공개 (Python 백엔드 + TypeScript TUI) — 연구·재현·기여 완전 허용 학생 포트폴리오</p>
+      </div>
+    </div>
+    <div style="background:var(--surface2);border-radius:8px;padding:10px 14px">
+      <p style="font-size:.7rem;color:var(--dim)">
+        <strong style="color:var(--muted)">배경 출처</strong> —
+        AI 행동계획(2026-2028): msit.go.kr · smartcity.go.kr |
+        CLOVA Chatbot: gov-ncloud.com |
+        카카오 i: dktechin.com |
+        정부24 AI: etnews.com/20251217000077
+      </p>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span class="chapter-label">Ch 2</span>
+    <span>8 / 22</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SLIDE 9 — Ch3: 6 Phase + SVG -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="slide" data-chapter="Ch 3 — 진행">
+  <div class="slide-header"><span class="logo-glyph">✻</span> KOSMOS</div>
+  <div class="slide-body split">
+    <div class="panel" style="flex:1.3">
+      <span class="tag tag-purple" style="margin-bottom:14px">Chapter 3 — 프로젝트 진행 내용</span>
+      <h2 style="margin-bottom:4px">6 Phase 마이그레이션</h2>
+      <div class="accent-line"></div>
+      <div style="width:100%">
+        <div class="phase-row"><div class="phase-label">P0</div><div class="phase-bar-wrap"><div class="phase-bar" style="width:100%;background:#1d4ed8">Baseline Runnable — CC 2.1.88 포트 (#1632)</div></div><div class="phase-time">~1일</div></div>
+        <div class="phase-row"><div class="phase-label">P1+2</div><div class="phase-bar-wrap"><div class="phase-bar" style="width:90%;background:#2563eb">Dead-code + Anthropic→FriendliAI (#1633)</div></div><div class="phase-time">~3시간</div></div>
+        <div class="phase-row"><div class="phase-label">P3</div><div class="phase-bar-wrap"><div class="phase-bar" style="width:95%;background:#7c3aed">Tool system wiring — 4 primitive (#1634)</div></div><div class="phase-time">~9시간</div></div>
+        <div class="phase-row"><div class="phase-label">P4</div><div class="phase-bar-wrap"><div class="phase-bar" style="width:100%;background:#6d28d9">UI L2 citizen port (#1635)</div></div><div class="phase-time">~20시간</div></div>
+        <div class="phase-row"><div class="phase-label">P5</div><div class="phase-bar-wrap"><div class="phase-bar" style="width:100%;background:#5b21b6">Plugin DX 5-tier (#1636)</div></div><div class="phase-time">~22시간</div></div>
+        <div class="phase-row"><div class="phase-label">P6</div><div class="phase-bar-wrap"><div class="phase-bar" style="width:95%;background:#4c1d95">Docs/API specs + Smoke (#1637)</div></div><div class="phase-time">~20시간</div></div>
+      </div>
+      <div class="stat-row" style="margin-top:18px">
+        <div class="stat-box"><div class="stat-num">15일</div><div class="stat-lbl">총 개발 기간</div></div>
+        <div class="stat-box"><div class="stat-num">3일</div><div class="stat-lbl">집중 마이그레이션</div></div>
+        <div class="stat-box"><div class="stat-num">6</div><div class="stat-lbl">Phase Epics closed</div></div>
+      </div>
+    </div>
+    <div class="panel svg-panel" style="flex:.7">
+      <div class="svg-box" style="width:100%;height:320px">
+        <img src="svg/chapter-3.svg" alt="Chapter 3 visualization" class="chapter-svg" loading="lazy" />
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span class="chapter-label">Ch 3</span>
+    <span>9 / 22</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SLIDE 10 — Ch3: Spec-driven + Agent Teams -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="slide" data-chapter="Ch 3 — 진행">
+  <div class="slide-header"><span class="logo-glyph">✻</span> KOSMOS</div>
+  <div class="slide-body split">
+    <div class="panel">
+      <h2 style="margin-bottom:4px">Spec-driven Workflow</h2>
+      <div class="accent-line"></div>
+      <div style="background:var(--surface);border:1px solid var(--mid);border-radius:10px;padding:14px;width:100%;margin-bottom:16px">
+        <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center">
+          <span class="badge badge-purple">Epic 생성</span>
+          <span style="color:var(--dim)">→</span>
+          <span class="badge badge-purple">/speckit-specify</span>
+          <span style="color:var(--dim)">→</span>
+          <span class="badge badge-purple">/speckit-plan</span>
+          <span style="color:var(--dim)">→</span>
+          <span class="badge badge-purple">/speckit-tasks</span>
+          <span style="color:var(--dim)">→</span>
+          <span class="badge badge-purple">/speckit-analyze</span>
+          <span style="color:var(--dim)">→</span>
+          <span class="badge badge-purple">/speckit-taskstoissues</span>
+          <span style="color:var(--dim)">→</span>
+          <span class="badge badge-green">/speckit-implement</span>
+          <span style="color:var(--dim)">→</span>
+          <span class="badge badge-green">PR merge</span>
+        </div>
+      </div>
+      <ul class="check" style="font-size:.82rem">
+        <li>스펙 없이 코드 작성 <strong>금지</strong> (AGENTS.md hard rule)</li>
+        <li>41개 spec 디렉터리 (<code>specs/</code>) 버전 관리</li>
+        <li>PR 본문: <code>Closes #EPIC</code> 만 등록 (Task sub-issue 미포함)</li>
+        <li>커밋 전 <code>uv run pytest</code> 의무</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h2 style="margin-bottom:4px">Agent Teams</h2>
+      <div class="accent-line"></div>
+      <table style="margin-bottom:14px">
+        <thead><tr><th>역할</th><th>에이전트</th><th>모델</th></tr></thead>
+        <tbody>
+          <tr><td>아키텍처·스펙·리뷰</td><td>Lead</td><td style="color:#60a5fa">Claude Opus</td></tr>
+          <tr><td>백엔드 구현·테스트</td><td>Backend Architect</td><td style="color:var(--primary)">Claude Sonnet</td></tr>
+          <tr><td>TUI/CLI 구현</td><td>Frontend Developer</td><td style="color:var(--primary)">Claude Sonnet</td></tr>
+          <tr><td>테스트 작성</td><td>API Tester</td><td style="color:var(--primary)">Claude Sonnet</td></tr>
+          <tr><td>코드 리뷰</td><td>Code Reviewer</td><td style="color:#60a5fa">Claude Opus</td></tr>
+          <tr><td>보안 검토</td><td>Security Engineer</td><td style="color:var(--primary)">Claude Sonnet</td></tr>
+        </tbody>
+      </table>
+      <div class="card" style="border-color:var(--accent)">
+        <p style="font-size:.78rem">3개 이상 독립 Task → <strong>Agent Teams 병렬 실행</strong><br>1-2개 또는 결합 Task → Lead 단독</p>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span class="chapter-label">Ch 3</span>
+    <span>10 / 22</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SLIDE 11 — Ch3: Constitution 6 Principles -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="slide" data-chapter="Ch 3 — 진행">
+  <div class="slide-header"><span class="logo-glyph">✻</span> KOSMOS</div>
+  <div class="slide-body left">
+    <h2 style="margin-bottom:4px">Constitution 6 Principles</h2>
+    <div class="accent-line"></div>
+    <p style="font-size:.8rem;color:var(--dim);margin-bottom:14px">각 <code>/speckit-analyze</code> 단계에서 검증하는 아키텍처 준수 원칙</p>
+    <div style="width:100%;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div class="principle">
+        <div class="principle-num">I</div>
+        <div class="principle-title">Reference-Driven Design</div>
+        <div class="principle-desc">모든 설계 결정은 <code>docs/vision.md</code> 또는 Claude Code 소스맵 인용 후 정당화</div>
+      </div>
+      <div class="principle">
+        <div class="principle-num">II</div>
+        <div class="principle-title">Fail-Closed Defaults</div>
+        <div class="principle-desc">어댑터 신규 등록 시 <code>requires_auth=True</code>, <code>is_personal_data=True</code> 기본값 — 명시 override 없이 공개 불가</div>
+      </div>
+      <div class="principle">
+        <div class="principle-num">III</div>
+        <div class="principle-title">Pydantic v2 Everywhere</div>
+        <div class="principle-desc">tool I/O 전부 Pydantic v2 모델 — <code>Any</code> 타입 사용 금지</div>
+      </div>
+      <div class="principle">
+        <div class="principle-num">IV</div>
+        <div class="principle-title">Government API Compliance</div>
+        <div class="principle-desc">CI에서 실제 <code>data.go.kr</code> API 호출 금지 — 라이브 테스트는 <code>@pytest.mark.live</code> 격리</div>
+      </div>
+      <div class="principle">
+        <div class="principle-num">V</div>
+        <div class="principle-title">Policy Alignment</div>
+        <div class="principle-desc">PIPA §26 수탁자 책임 · Korea AI Action Plan 원칙 8/9 정렬</div>
+      </div>
+      <div class="principle">
+        <div class="principle-num">VI</div>
+        <div class="principle-title">Deferred Work Tracking</div>
+        <div class="principle-desc">설계 범위 밖 항목 삭제 금지 — [Deferred] 레이블 sub-issue로 후속 추적</div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span class="chapter-label">Ch 3</span>
+    <span>11 / 22</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SLIDE 12 — Ch4: R&R + SVG -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="slide" data-chapter="Ch 4 — R&R">
+  <div class="slide-header"><span class="logo-glyph">✻</span> KOSMOS</div>
+  <div class="slide-body split">
+    <div class="panel svg-panel" style="flex:.7">
+      <div class="svg-box" style="width:100%;height:320px">
+        <img src="svg/chapter-4.svg" alt="Chapter 4 visualization" class="chapter-svg" loading="lazy" />
+      </div>
+    </div>
+    <div class="panel">
+      <span class="tag tag-purple" style="margin-bottom:14px">Chapter 4 — Role and Responsibilities</span>
+      <h2 style="margin-bottom:4px">솔로 학생 프로젝트</h2>
+      <div class="accent-line"></div>
+      <div class="card" style="margin-bottom:14px;border-color:var(--accent)">
+        <p style="font-size:.85rem;line-height:1.7">
+          단독 개발자 <strong>umyunsang</strong>이 Lead 역할을 수행하며,
+          Opus/Sonnet 에이전트를 지시·검토·합성하는 AI-assisted solo development 모델
+        </p>
+      </div>
+      <ul class="check" style="font-size:.82rem">
+        <li><strong>아키텍처 설계</strong> — docs/vision.md · migration-tree 승인</li>
+        <li><strong>Spec 작성</strong> — 41개 spec 디렉터리 전부 직접 검토</li>
+        <li><strong>PR 리뷰</strong> — Copilot Gate + Codex Review 이중 검증</li>
+        <li><strong>이슈 계층 관리</strong> — GraphQL Sub-Issues API v2 직접 운영</li>
+        <li><strong>정책 정렬</strong> — PIPA §26 · AI Action Plan 해석 책임</li>
+      </ul>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span class="chapter-label">Ch 4</span>
+    <span>12 / 22</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SLIDE 13 — Ch4: Opus/Sonnet 위임 패턴 -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="slide" data-chapter="Ch 4 — R&R">
+  <div class="slide-header"><span class="logo-glyph">✻</span> KOSMOS</div>
+  <div class="slide-body left">
+    <h2 style="margin-bottom:4px">Lead Opus + Teammates Sonnet 위임 패턴</h2>
+    <div class="accent-line"></div>
+    <div class="card-grid card-grid-2" style="margin-bottom:16px">
+      <div class="card" style="border-color:#60a5fa">
+        <p style="color:#60a5fa;font-weight:700;font-size:.82rem;margin-bottom:8px">Lead — Claude Opus</p>
+        <ul class="check" style="font-size:.78rem">
+          <li>Epic spec 작성 · plan 검토</li>
+          <li>아키텍처 결정 · ADR 승인</li>
+          <li>Constitution 준수 검증</li>
+          <li>PR 코드 리뷰 · merge 판단</li>
+        </ul>
+      </div>
+      <div class="card" style="border-color:var(--primary)">
+        <p style="color:var(--primary);font-weight:700;font-size:.82rem;margin-bottom:8px">Teammates — Claude Sonnet</p>
+        <ul class="check" style="font-size:.78rem">
+          <li>백엔드 어댑터 구현</li>
+          <li>TUI 컴포넌트 포팅</li>
+          <li>테스트 작성 (pytest · bun test)</li>
+          <li>문서 작성 (docs/api/)</li>
+        </ul>
+      </div>
+    </div>
+    <div style="background:var(--surface2);border-radius:10px;padding:16px 20px;width:100%">
+      <p style="font-size:.82rem;color:var(--muted);line-height:1.7">
+        <strong>/speckit-implement</strong> 단계에서만 Agent Teams 병렬 dispatch —
+        3개 이상 독립 Task는 Sonnet Teammates에게 위임.
+        각 Teammate는 별도 컨텍스트에서 실행되며, Lead가 산출물을 합성·리뷰한 후 PR에 통합.
+        <strong>모든 코드 변경은 단일 통합 PR</strong>로 병합 (<code>bun test</code> 통과 확인 후).
+      </p>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span class="chapter-label">Ch 4</span>
+    <span>13 / 22</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SLIDE 14 — Ch5: 정량 결과 + SVG -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="slide" data-chapter="Ch 5 — 결과물">
+  <div class="slide-header"><span class="logo-glyph">✻</span> KOSMOS</div>
+  <div class="slide-body split">
+    <div class="panel" style="flex:1.2">
+      <span class="tag tag-purple" style="margin-bottom:14px">Chapter 5 — 진행 결과물</span>
+      <h2 style="margin-bottom:4px">정량 결과</h2>
+      <div class="accent-line"></div>
+      <div class="stat-row">
+        <div class="stat-box"><div class="stat-num">24</div><div class="stat-lbl">어댑터 (12 Live + 11 Mock + 1 Meta)</div></div>
+        <div class="stat-box"><div class="stat-num">935</div><div class="stat-lbl">tests (928 pass / 4 skip / 0 fail)</div></div>
+        <div class="stat-box"><div class="stat-num">19</div><div class="stat-lbl">visual surface (자동 캡처)</div></div>
+      </div>
+      <div style="margin-top:14px;width:100%">
+        <div class="tier-section">
+          <span class="tier-header tier-live">LIVE (12)</span>
+          <p style="font-size:.75rem;color:var(--dim)">KOROAD · KMA × 6 · HIRA · NMC · NFA119 · MOHW — 실제 data.go.kr endpoint 호출</p>
+        </div>
+        <div class="tier-section">
+          <span class="tier-header tier-mock">MOCK (11)</span>
+          <p style="font-size:.75rem;color:var(--dim)">verify × 6 · submit × 2 · subscribe × 3 — 공개 스펙 기반 fixture-replay</p>
+        </div>
+        <div class="tier-section" style="margin-bottom:0">
+          <span class="tier-header tier-meta">META (1)</span>
+          <p style="font-size:.75rem;color:var(--dim)">resolve_location — Geocoding meta-tool</p>
+        </div>
+      </div>
+      <div class="card" style="margin-top:12px">
+        <p style="font-size:.75rem;color:var(--muted)">
+          <strong>25 JSON Schema</strong> Draft 2020-12 (<code>docs/api/schemas/</code>) ·
+          <strong>keybindings 189 pass</strong> ·
+          <strong>30초 cold-read 실제 19초</strong> (SC-007 PASS)
+        </p>
+      </div>
+    </div>
+    <div class="panel svg-panel" style="flex:.8">
+      <div class="svg-box" style="width:100%;height:330px">
+        <img src="svg/chapter-5.svg" alt="Chapter 5 visualization" class="chapter-svg" loading="lazy" />
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span class="chapter-label">Ch 5</span>
+    <span>14 / 22</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SLIDE 15 — Ch5: Phase Epics closed + Deferred -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="slide" data-chapter="Ch 5 — 결과물">
+  <div class="slide-header"><span class="logo-glyph">✻</span> KOSMOS</div>
+  <div class="slide-body left">
+    <h2 style="margin-bottom:4px">6 Phase Epics Closed · 5 Deferred 후속</h2>
+    <div class="accent-line"></div>
+    <table style="margin-bottom:16px">
+      <thead><tr><th>Phase</th><th>Epic</th><th>주요 산출물</th><th>핵심 지표</th></tr></thead>
+      <tbody>
+        <tr><td>P0</td><td>#1632</td><td>CC 2.1.88 runtime 복구</td><td style="color:var(--green)">컴파일 성공</td></tr>
+        <tr><td>P1+P2</td><td>#1633</td><td>dead-code 제거 + FriendliAI 전환</td><td style="color:var(--green)">provider 단일화</td></tr>
+        <tr><td>P3</td><td>#1634</td><td>4 primitive + 13-tool registry</td><td style="color:var(--green)">Spec 031 완성</td></tr>
+        <tr><td>P4</td><td>#1847</td><td>5-step onboarding + REPL + Permission + Agents</td><td style="color:var(--green)">TUI CC 90% 포팅</td></tr>
+        <tr><td>P5</td><td>#1927</td><td>5-tier plugin DX + PIPA §26 gate</td><td style="color:var(--green)">50-item validation</td></tr>
+        <tr><td>P6</td><td>#1637</td><td>24 어댑터 spec + 25 schema + 19 visual</td><td style="color:var(--green)">bun test 0 fail</td></tr>
+      </tbody>
+    </table>
+    <h3 style="margin-bottom:8px">Deferred 5종 (후속 사이클)</h3>
+    <div style="display:flex;flex-direction:column;gap:5px;width:100%">
+      <div style="display:flex;gap:10px;font-size:.75rem;padding:5px 10px;background:var(--surface);border-radius:6px;align-items:center">
+        <span style="color:var(--red);font-family:var(--font-en);font-weight:700">#1974</span>
+        <span style="color:var(--muted)">12 Live-tier 어댑터 live regression coverage</span>
+        <span class="tag tag-orange" style="margin-left:auto;font-size:.6rem">상</span>
+      </div>
+      <div style="display:flex;gap:10px;font-size:.75rem;padding:5px 10px;background:var(--surface);border-radius:6px;align-items:center">
+        <span style="color:var(--primary);font-family:var(--font-en);font-weight:700">#1972</span>
+        <span style="color:var(--muted)">/agent-delegation Full OpenAPI 3.0 specification</span>
+        <span class="tag tag-purple" style="margin-left:auto;font-size:.6rem">중</span>
+      </div>
+      <div style="display:flex;gap:10px;font-size:.75rem;padding:5px 10px;background:var(--surface);border-radius:6px;align-items:center">
+        <span style="color:var(--primary);font-family:var(--font-en);font-weight:700">#1975</span>
+        <span style="color:var(--muted)">Pydantic docstring 기반 어댑터 spec stub 자동 생성</span>
+        <span class="tag tag-purple" style="margin-left:auto;font-size:.6rem">중</span>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span class="chapter-label">Ch 5</span>
+    <span>15 / 22</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SLIDE 16 — Ch5: 정렬 (AI Action Plan + PIPA) -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="slide" data-chapter="Ch 5 — 결과물">
+  <div class="slide-header"><span class="logo-glyph">✻</span> KOSMOS</div>
+  <div class="slide-body left">
+    <h2 style="margin-bottom:4px">정책 정렬</h2>
+    <div class="accent-line"></div>
+    <div class="card-grid card-grid-2" style="margin-bottom:16px">
+      <div>
+        <h3 style="margin-bottom:10px">Korea AI Action Plan (2026-2028)</h3>
+        <div class="card" style="margin-bottom:8px;border-color:var(--green)">
+          <p style="font-size:.75rem;font-weight:700;color:var(--green);margin-bottom:4px">원칙 8 — 단일 대화형 인터페이스</p>
+          <p style="font-size:.75rem;color:var(--dim)">5,000+ 공공 API를 단일 대화 창구로 — KOSMOS 핵심 미션 직접 대응</p>
+        </div>
+        <div class="card" style="margin-bottom:8px;border-color:var(--green)">
+          <p style="font-size:.75rem;font-weight:700;color:var(--green);margin-bottom:4px">원칙 9 — Open API + OpenMCP</p>
+          <p style="font-size:.75rem;color:var(--dim)">BM25 discovery + 5-tier 플러그인 DX — 오픈 생태계 구조 정렬</p>
+        </div>
+        <div class="card" style="border-color:var(--green)">
+          <p style="font-size:.75rem;font-weight:700;color:var(--green);margin-bottom:4px">원칙 5 — 동의 기반 접근</p>
+          <p style="font-size:.75rem;color:var(--dim)">PIPA §26 수탁자 모델 + permission gauntlet receipt ledger</p>
+        </div>
+      </div>
+      <div>
+        <h3 style="margin-bottom:10px">PIPA §26 수탁자 모델</h3>
+        <div class="card" style="border-color:var(--primary);margin-bottom:8px">
+          <p style="font-size:.75rem;font-weight:700;color:var(--primary);margin-bottom:4px">수탁자(Trustee) 기본 해석</p>
+          <p style="font-size:.75rem;color:var(--dim)">LLM 합성 단계만 controller-level carve-out — 나머지 전부 수탁자 책임</p>
+        </div>
+        <div class="card" style="border-color:var(--primary);margin-bottom:8px">
+          <p style="font-size:.75rem;font-weight:700;color:var(--primary);margin-bottom:4px">처리 영수증 기록</p>
+          <p style="font-size:.75rem;color:var(--dim);font-family:var(--font-en)">~/.kosmos/memdir/user/consent/ 영구 보존</p>
+        </div>
+        <div class="card" style="border-color:var(--primary)">
+          <p style="font-size:.75rem;font-weight:700;color:var(--primary);margin-bottom:4px">Plugin SHA-256 Gate</p>
+          <p style="font-size:.75rem;color:var(--dim)">processes_pii: true 시 CI SHA-256 trustee acknowledgment 강제 검증</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span class="chapter-label">Ch 5</span>
+    <span>16 / 22</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SLIDE 17 — Ch6: Gantt + 통계 + SVG -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="slide" data-chapter="Ch 6 — 관리">
+  <div class="slide-header"><span class="logo-glyph">✻</span> KOSMOS</div>
+  <div class="slide-body split">
+    <div class="panel" style="flex:1.1">
+      <span class="tag tag-purple" style="margin-bottom:14px">Chapter 6 — 프로젝트 관리 및 일정</span>
+      <h2 style="margin-bottom:4px">타임라인 & 통계</h2>
+      <div class="accent-line"></div>
+      <div class="stat-row" style="margin-bottom:14px">
+        <div class="stat-box"><div class="stat-num">189</div><div class="stat-lbl">총 커밋 수</div></div>
+        <div class="stat-box"><div class="stat-num">79</div><div class="stat-lbl">PR 머지 수</div></div>
+        <div class="stat-box"><div class="stat-num">41</div><div class="stat-lbl">Spec 디렉터리</div></div>
+      </div>
+      <table>
+        <thead><tr><th>Phase</th><th>커밋</th><th>주요 특징</th></tr></thead>
+        <tbody>
+          <tr><td>P0</td><td>7</td><td>CC 2.1.88 컴파일·런타임 복구</td></tr>
+          <tr><td>P1+P2</td><td>27</td><td>94개 파일 변경, -25,263 라인 삭제</td></tr>
+          <tr><td>P3</td><td>9</td><td>4 primitive + stdio MCP 13-tool surface</td></tr>
+          <tr><td>P4</td><td>15</td><td>51 tasks, 279 tests, 26 surface 검증</td></tr>
+          <tr><td>P5</td><td>29</td><td>50-item 검증 매트릭스, PIPA §26 집행</td></tr>
+          <tr><td>P6</td><td>15</td><td>24 API spec + 25 schema + 19 TUI surface</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="panel svg-panel" style="flex:.9">
+      <div class="svg-box" style="width:100%;height:320px">
+        <img src="svg/chapter-6.svg" alt="Chapter 6 visualization" class="chapter-svg" loading="lazy" />
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span class="chapter-label">Ch 6</span>
+    <span>17 / 22</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SLIDE 18 — Ch6: 협업 도구 + Review Gate -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="slide" data-chapter="Ch 6 — 관리">
+  <div class="slide-header"><span class="logo-glyph">✻</span> KOSMOS</div>
+  <div class="slide-body left">
+    <h2 style="margin-bottom:4px">협업 도구 · 거버넌스</h2>
+    <div class="accent-line"></div>
+    <div class="card-grid card-grid-2" style="margin-bottom:14px">
+      <div>
+        <table>
+          <thead><tr><th>범주</th><th>도구</th></tr></thead>
+          <tbody>
+            <tr><td>이슈 관리</td><td>GitHub Issues + Sub-Issues API v2</td></tr>
+            <tr><td>사양 관리</td><td>GitHub Spec Kit (<code>.specify/</code>)</td></tr>
+            <tr><td>CI/CD</td><td>GitHub Actions (pytest + bun test)</td></tr>
+            <tr><td>관찰성</td><td>4-tier OTEL + 로컬 Langfuse</td></tr>
+            <tr><td>비밀값</td><td>Infisical OIDC (Project de83ba22)</td></tr>
+            <tr><td>패키지</td><td><code>uv</code> (Python) · <code>bun</code> (TUI)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:10px;border-color:var(--accent)">
+          <p style="font-size:.75rem;font-weight:700;color:var(--primary);margin-bottom:6px">Copilot Review Gate</p>
+          <ul class="check" style="font-size:.75rem">
+            <li>Cloudflare Worker → GitHub Check Run</li>
+            <li>CRITICAL ≥ 1 → fail · IMPORTANT ≥ 3 → fail</li>
+            <li>PR merge 전 gate passed 필수</li>
+          </ul>
+        </div>
+        <div class="card" style="border-color:var(--mid)">
+          <p style="font-size:.75rem;font-weight:700;color:var(--muted);margin-bottom:6px">Codex Review</p>
+          <ul class="check" style="font-size:.75rem">
+            <li>chatgpt-codex-connector PR 인라인 리뷰</li>
+            <li>Copilot Gate와 병행 이중 검증</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="border-color:var(--green)">
+      <p style="font-size:.8rem;color:var(--muted)">
+        <strong style="color:var(--green)">Zero new runtime dependencies</strong> 원칙 —
+        마이그레이션 전 단계에서 AGENTS.md hard rule 유지.
+        <strong style="color:var(--green)">Zero CRITICAL Copilot Review Gate findings</strong> — PR #1977 merge 조건 (SC-008 PASS).
+      </p>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span class="chapter-label">Ch 6</span>
+    <span>18 / 22</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SLIDE 19 — Ch6: 향후 로드맵 -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="slide" data-chapter="Ch 6 — 관리">
+  <div class="slide-header"><span class="logo-glyph">✻</span> KOSMOS</div>
+  <div class="slide-body left">
+    <h2 style="margin-bottom:4px">향후 로드맵</h2>
+    <div class="accent-line"></div>
+    <div class="road-item">
+      <div class="road-q">Q2 2026</div>
+      <div class="road-content">5 Deferred 이슈 처리 완료 (#1972~#1976 순서대로 spec 사이클) · Live API regression 커버리지 확보</div>
+    </div>
+    <div class="road-item">
+      <div class="road-q">Q3 2026</div>
+      <div class="road-content"><strong>v0.1.0 stable 릴리즈</strong> — smoke 완전 통과 + Live-mode 회귀 커버리지 + FriendliAI Tier 2 승급 시 12개 Live-tier 실 트래픽 검증</div>
+    </div>
+    <div class="road-item">
+      <div class="road-q" style="color:var(--green)">KSC 2026</div>
+      <div class="road-content" style="color:var(--green)"><strong>학술 논문 제출 + 시연</strong> — 2026 하반기 한국소프트웨어종합학술대회</div>
+    </div>
+    <div class="road-item">
+      <div class="road-q">Q4 2026</div>
+      <div class="road-content">P7 예비 — 일본어 지원 (UI-A.3) + Phase 2 보조 도구 5종 (TextToSpeech · SpeechToText · LargeFontRender · OCR · Reminder)</div>
+    </div>
+    <div class="card" style="margin-top:14px;border-color:var(--mid)">
+      <p style="font-size:.78rem;color:var(--muted)">
+        이슈 계층 Initiative → Epic → Task는 GitHub Sub-Issues API v2(GraphQL)로 추적.
+        Epic당 Task 최대 90개 예산. 6개 마이그레이션 Epic = 44 Task + 5 Deferred (합계 49 서브이슈).
+      </p>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span class="chapter-label">Ch 6</span>
+    <span>19 / 22</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SLIDE 20 — 요약 -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="slide" data-chapter="요약">
+  <div class="slide-header"><span class="logo-glyph">✻</span> KOSMOS</div>
+  <div class="cover-bg"></div>
+  <div class="slide-body" style="gap:24px">
+    <h2 style="font-size:1.6rem;margin-bottom:0">핵심 메시지</h2>
+    <div class="accent-line center"></div>
+    <div class="card" style="max-width:700px;width:100%;border-color:var(--accent);padding:24px 30px">
+      <p style="font-size:1.05rem;color:var(--text);line-height:1.8;margin-bottom:16px">
+        <strong>① Claude Code의 하네스는 도메인-무관 substrate다.</strong><br>
+        <span style="color:var(--muted);font-size:.9rem">tool loop · permission gauntlet · context assembly · TUI를 1:1 보존하고 도구 표면만 교체하면 공공 AI 하네스가 된다.</span>
+      </p>
+      <p style="font-size:1.05rem;color:var(--text);line-height:1.8;margin-bottom:16px">
+        <strong>② 15일, 189 커밋, 24 어댑터, 935 테스트 — 0 fail.</strong><br>
+        <span style="color:var(--muted);font-size:.9rem">Spec-driven + Agent Teams 방법론으로 학생 솔로 프로젝트가 6 Phase 마이그레이션을 완주했다.</span>
+      </p>
+      <p style="font-size:1.05rem;color:var(--text);line-height:1.8">
+        <strong>③ Korea AI Action Plan 원칙 8/9 + PIPA §26 정렬.</strong><br>
+        <span style="color:var(--muted);font-size:.9rem">정책 기반 공공 AI 하네스로서 재현 가능하고 기여 가능한 오픈소스(Apache-2.0) 참조 구현.</span>
+      </p>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span>20 / 22</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SLIDE 21 — Q&A -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="slide" data-chapter="Q&A">
+  <div class="slide-header"><span class="logo-glyph">✻</span> KOSMOS</div>
+  <div class="cover-bg"></div>
+  <div class="slide-body" style="gap:20px">
+    <div style="font-size:3rem;color:var(--primary)">✻</div>
+    <h1 class="gradient-text" style="font-size:3rem">Q &amp; A</h1>
+    <div class="card" style="max-width:560px;width:100%;border-color:var(--mid);margin-top:8px">
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div>
+          <p style="font-size:.72rem;color:var(--dim);font-family:var(--font-en);margin-bottom:2px">GITHUB</p>
+          <p style="font-size:.9rem;color:var(--primary);font-family:var(--font-en)">github.com/umyunsang/KOSMOS</p>
+        </div>
+        <div>
+          <p style="font-size:.72rem;color:var(--dim);font-family:var(--font-en);margin-bottom:2px">EMAIL</p>
+          <p style="font-size:.9rem;color:var(--primary);font-family:var(--font-en)">dbstkd5865@gmail.com</p>
+        </div>
+        <div>
+          <p style="font-size:.72rem;color:var(--dim);font-family:var(--font-en);margin-bottom:2px">LICENSE</p>
+          <p style="font-size:.9rem;color:var(--muted);font-family:var(--font-en)">Apache-2.0</p>
+        </div>
+      </div>
+    </div>
+    <p style="font-size:.7rem;color:var(--dim);max-width:560px;text-align:center;font-family:var(--font-en)">
+      Not affiliated with Anthropic, LG AI Research, or the Korean government.<br>
+      Student portfolio project. KSC 2026 submission.
+    </p>
+  </div>
+  <div class="slide-footer">
+    <span>21 / 22</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SLIDE 22 — References -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="slide" data-chapter="References">
+  <div class="slide-header"><span class="logo-glyph">✻</span> KOSMOS</div>
+  <div class="slide-body left" style="padding-top:52px;justify-content:flex-start;overflow-y:auto">
+    <h2 style="margin-bottom:4px">References</h2>
+    <div class="accent-line"></div>
+    <div style="width:100%;columns:2;column-gap:24px">
+      <div class="ref-item"><span class="ref-num">[1]</span>행안부 공공데이터 활용 현황 (2024.12) — <a href="https://www.data.go.kr/data/15076332/fileData.do">data.go.kr/data/15076332</a></div>
+      <div class="ref-item"><span class="ref-num">[2]</span>e-나라지표 공공데이터 개방·활용 — <a href="https://www.index.go.kr/unity/potal/main/EachDtlPageDetail.do?idx_cd=2844">index.go.kr idx_cd=2844</a></div>
+      <div class="ref-item"><span class="ref-num">[3]</span>행안부 공공데이터 개방 (OECD OURdata 1위) — <a href="https://www.mois.go.kr/frt/sub/a06/b02/openData/screen.do">mois.go.kr</a></div>
+      <div class="ref-item"><span class="ref-num">[4]</span>대한민국 AI 행동계획 2026-2028 PDF — <a href="https://smartcity.go.kr/wp-content/uploads/2026/03/%EC%95%88%EA%B1%B41%EB%8C%80%ED%95%9C%EB%AF%BC%EA%B5%AD%EC%9D%B8%EA%B3%B5%EC%A7%80%EB%8A%A5%ED%96%89%EB%8F%99%EA%B3%84%ED%9A%8D%EC%9D%B8%EA%B3%B5%EC%A7%80%EB%8A%A5%EA%B8%B0%EB%B3%B8%EA%B3%84%ED%9A%8D20262028.pdf">smartcity.go.kr</a></div>
+      <div class="ref-item"><span class="ref-num">[5]</span>과기정통부 AI 행동계획 보도자료 — <a href="https://www.msit.go.kr/bbs/view.do?mId=113&bbsSeqNo=94&nttSeqNo=3185327">msit.go.kr</a></div>
+      <div class="ref-item"><span class="ref-num">[6]</span>AI 행동계획 ZDNet — <a href="https://zdnet.co.kr/view/?no=20260224183212">zdnet.co.kr/view/?no=20260224183212</a></div>
+      <div class="ref-item"><span class="ref-num">[7]</span>공공AX 추진 (행안부 지방행정 청사진) — <a href="https://zdnet.co.kr/view/?no=20251224140303">zdnet.co.kr/view/?no=20251224140303</a></div>
+      <div class="ref-item"><span class="ref-num">[8]</span>AI 정부24 + 네이버·카카오 협약 — <a href="https://www.etnews.com/20251217000077">etnews.com/20251217000077</a></div>
+      <div class="ref-item"><span class="ref-num">[9]</span>범정부 AI 챗서비스 정책브리핑 — <a href="https://www.korea.kr/news/policyNewsView.do?newsId=148955271">korea.kr</a></div>
+      <div class="ref-item"><span class="ref-num">[10]</span>CLOVA Chatbot 공공기관용 — <a href="https://www.gov-ncloud.com/v2/product/aiService/chatbot">gov-ncloud.com</a></div>
+      <div class="ref-item"><span class="ref-num">[11]</span>카카오 i 커넥트톡 — <a href="https://www.dktechin.com/service/kakaoiconnecttalk">dktechin.com</a></div>
+      <div class="ref-item"><span class="ref-num">[12]</span>CLOVA X vs 카나나 공공서비스 경쟁 — <a href="https://v.daum.net/v/20260310143546645">v.daum.net/v/20260310143546645</a></div>
+      <div class="ref-item"><span class="ref-num">[13]</span>Claude Code overview — <a href="https://code.claude.com/docs/en/overview">code.claude.com</a></div>
+      <div class="ref-item"><span class="ref-num">[14]</span>Gemini CLI 오픈소스 공개 — <a href="https://blog.google/innovation-and-ai/technology/developers-tools/introducing-gemini-cli-open-source-ai-agent/">blog.google</a></div>
+      <div class="ref-item"><span class="ref-num">[15]</span>GitHub Copilot CLI GA — <a href="https://github.blog/changelog/2026-02-25-github-copilot-cli-is-now-generally-available/">github.blog/changelog</a></div>
+      <div class="ref-item"><span class="ref-num">[16]</span>EXAONE 4.0-32B HuggingFace — <a href="https://huggingface.co/LGAI-EXAONE/EXAONE-4.0-32B">huggingface.co/LGAI-EXAONE/EXAONE-4.0-32B</a></div>
+      <div class="ref-item"><span class="ref-num">[17]</span>LG EXAONE 4.0 PR Newswire — <a href="https://www.prnewswire.com/news-releases/lg-unveils-koreas-first-open-weight-hybrid-ai-exaone-4-0-302505577.html">prnewswire.com</a></div>
+      <div class="ref-item"><span class="ref-num">[18]</span>FriendliAI Rate Limits — <a href="https://friendli.ai/docs/guides/serverless_endpoints/rate_limit">friendli.ai/docs</a></div>
+      <div class="ref-item"><span class="ref-num">[19]</span>JSON Schema Draft 2020-12 — <a href="https://json-schema.org/draft/2020-12">json-schema.org/draft/2020-12</a></div>
+      <div class="ref-item"><span class="ref-num">[20]</span>Pydantic 100억 다운로드 — <a href="https://pydantic.dev/articles/pydantic-validation-10-billion-downloads">pydantic.dev</a></div>
+      <div class="ref-item"><span class="ref-num">[21]</span>개인정보보호법 제26조 — <a href="https://www.law.go.kr/LSW//lsLawLinkInfo.do?lsJoLnkSeq=900079061&lsId=011357">law.go.kr</a></div>
+      <div class="ref-item"><span class="ref-num">[22]</span>마이데이터 표준 API v240930 — <a href="https://www.mydatacenter.or.kr:3441/myd/bbsctt/normal1/normal/a77c34fb-32c6-448c-81c4-51154196e50e/47/bbsctt.do">mydatacenter.or.kr</a></div>
+      <div class="ref-item"><span class="ref-num">[23]</span>AI Korea 행동계획 게시판 — <a href="https://www.aikorea.go.kr/web/board/brdDetail.do?menu_cd=000010&num=136">aikorea.go.kr</a></div>
+      <div class="ref-item"><span class="ref-num">[24]</span>KOSMOS AGENTS.md · docs/vision.md · docs/requirements/kosmos-migration-tree.md — github.com/umyunsang/KOSMOS</div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span>22 / 22</span>
+  </div>
+</div>
+
+</div><!-- #deck -->
+
+<div id="progress" style="width:4.5%"></div>
+
+<script>
+(function(){
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const total = slides.length;
+  let cur = 0;
+
+  function go(n){
+    slides[cur].classList.remove('active');
+    cur = Math.max(0, Math.min(total-1, n));
+    slides[cur].classList.add('active');
+    document.getElementById('progress').style.width = ((cur+1)/total*100)+'%';
+  }
+
+  document.addEventListener('keydown', e => {
+    if(['ArrowRight','Space','PageDown'].includes(e.key)) { e.preventDefault(); go(cur+1); }
+    if(['ArrowLeft','PageUp'].includes(e.key)) { e.preventDefault(); go(cur-1); }
+    if(e.key==='Home') go(0);
+    if(e.key==='End') go(total-1);
+  });
+
+  document.getElementById('deck').addEventListener('click', e => {
+    const x = e.clientX / window.innerWidth;
+    go(x > .5 ? cur+1 : cur-1);
+  });
+
+  // Touch swipe
+  let tx = 0;
+  document.addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, {passive:true});
+  document.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - tx;
+    if(Math.abs(dx)>40) go(dx<0 ? cur+1 : cur-1);
+  }, {passive:true});
+})();
+</script>
+</body>
+</html>

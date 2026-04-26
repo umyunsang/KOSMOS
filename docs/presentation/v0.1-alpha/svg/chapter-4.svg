@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+  <title>KOSMOS v0.1-alpha — Chapter 4: Role and Responsibilities</title>
+  <desc>Solo student project umyunsang — role matrix, tools, and Agent Teams delegation pattern. Source: AGENTS.md</desc>
+
+  <defs>
+    <linearGradient id="bg4" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4c1d95;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2d1259;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="roleGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#5b21b6;stop-opacity:0.95" />
+      <stop offset="100%" style="stop-color:#3b0764;stop-opacity:0.95" />
+    </linearGradient>
+    <linearGradient id="leadGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#7c3aed;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#5b21b6;stop-opacity:1" />
+    </linearGradient>
+    <filter id="glow4">
+      <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
+      <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1280" height="720" fill="url(#bg4)"/>
+
+  <!-- Decorative circles -->
+  <circle cx="1100" cy="400" r="280" fill="#5b21b6" opacity="0.04"/>
+  <circle cx="200" cy="600" r="180" fill="#7c3aed" opacity="0.04"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1280" height="72" fill="#3b0764" opacity="0.9"/>
+  <line x1="0" y1="72" x2="1280" y2="72" stroke="#a78bfa" stroke-width="1.5" opacity="0.6"/>
+  <text x="48" y="46" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="28" font-weight="700" fill="#a78bfa" filter="url(#glow4)">✻ KOSMOS</text>
+  <text x="200" y="46" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="15" fill="#c4b5fd" opacity="0.8">v0.1-alpha · KSC 2026</text>
+  <text x="820" y="46" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="14" fill="#c4b5fd" opacity="0.6">Chapter 4 — Role and Responsibilities</text>
+
+  <!-- HERO: Solo student card -->
+  <rect x="48" y="88" width="420" height="200" rx="12" fill="url(#leadGrad)" stroke="#a78bfa" stroke-width="2"/>
+  <rect x="48" y="88" width="420" height="10" rx="6" fill="#c4b5fd" opacity="0.3"/>
+
+  <!-- UFO icon -->
+  <g transform="translate(58, 96)">
+    <ellipse cx="36" cy="22" rx="18" ry="12" fill="#a78bfa" opacity="0.95"/>
+    <ellipse cx="36" cy="22" rx="12" ry="8" fill="#c4b5fd" opacity="0.4"/>
+    <ellipse cx="36" cy="31" rx="28" ry="8" fill="#7c3aed"/>
+    <ellipse cx="36" cy="31" rx="22" ry="5" fill="#a78bfa"/>
+    <circle cx="20" cy="35" r="2.5" fill="#fbbf24" opacity="0.9"/>
+    <circle cx="36" cy="37" r="2.5" fill="#a78bfa" opacity="0.9"/>
+    <circle cx="52" cy="35" r="2.5" fill="#fbbf24" opacity="0.9"/>
+  </g>
+
+  <text x="268" y="122" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="22" font-weight="900" fill="#e9d5ff" text-anchor="middle" filter="url(#glow4)">umyunsang</text>
+  <text x="268" y="145" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="14" fill="#c4b5fd" text-anchor="middle">Project Lead · Solo Student Developer</text>
+
+  <line x1="72" y1="158" x2="444" y2="158" stroke="#6d28d9" stroke-width="0.8" opacity="0.6"/>
+
+  <text x="268" y="178" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="12" fill="#ddd6fe" text-anchor="middle">모든 역할 단독 수행 (Solo Portfolio)</text>
+  <text x="268" y="196" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="11" fill="#a78bfa" text-anchor="middle">Architecture · Backend · TUI · Tests · Docs · Plugin DX · Release</text>
+
+  <rect x="78" y="210" width="360" height="60" rx="8" fill="#1e0748" stroke="#6d28d9" stroke-width="1" opacity="0.9"/>
+  <text x="258" y="230" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="11" font-weight="700" fill="#a78bfa" text-anchor="middle">주요 도구</text>
+  <text x="258" y="248" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="10" fill="#c4b5fd" text-anchor="middle">Claude Code (Opus 4.7) · GitHub Spec Kit · GitHub Actions</text>
+  <text x="258" y="264" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="10" fill="#c4b5fd" text-anchor="middle">Copilot Review Gate · Codex Review · Infisical OIDC</text>
+
+  <!-- Role Matrix -->
+  <text x="504" y="104" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="14" font-weight="700" fill="#e9d5ff">역할 매트릭스</text>
+  <text x="504" y="120" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="10" fill="#7c3aed">Source: AGENTS.md § Agent Teams</text>
+
+  <!-- Role grid: 3x2 + 1 -->
+  <!-- Architecture -->
+  <rect x="504" y="130" width="216" height="82" rx="8" fill="url(#roleGrad)" stroke="#7c3aed" stroke-width="1"/>
+  <rect x="504" y="130" width="216" height="6" rx="4" fill="#a78bfa" opacity="0.7"/>
+  <text x="612" y="152" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="12" font-weight="700" fill="#e9d5ff" text-anchor="middle">Architecture</text>
+  <text x="612" y="168" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="10" fill="#c4b5fd" text-anchor="middle">Lead · Claude Opus</text>
+  <text x="612" y="182" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="9" fill="#a78bfa" text-anchor="middle">docs/vision.md · ADR · 6-layer design</text>
+  <text x="612" y="196" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="9" fill="#7c3aed" text-anchor="middle">Spec Kit + GitHub Issues</text>
+
+  <!-- Backend -->
+  <rect x="732" y="130" width="216" height="82" rx="8" fill="url(#roleGrad)" stroke="#7c3aed" stroke-width="1"/>
+  <rect x="732" y="130" width="216" height="6" rx="4" fill="#a78bfa" opacity="0.7"/>
+  <text x="840" y="152" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="12" font-weight="700" fill="#e9d5ff" text-anchor="middle">Backend</text>
+  <text x="840" y="168" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="10" fill="#c4b5fd" text-anchor="middle">Backend Architect · Sonnet</text>
+  <text x="840" y="182" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="9" fill="#a78bfa" text-anchor="middle">Python 3.12 · Pydantic v2 · httpx</text>
+  <text x="840" y="196" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="9" fill="#7c3aed" text-anchor="middle">어댑터 · BM25 · OTEL · pytest</text>
+
+  <!-- TUI -->
+  <rect x="960" y="130" width="272" height="82" rx="8" fill="url(#roleGrad)" stroke="#7c3aed" stroke-width="1"/>
+  <rect x="960" y="130" width="272" height="6" rx="4" fill="#a78bfa" opacity="0.7"/>
+  <text x="1096" y="152" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="12" font-weight="700" fill="#e9d5ff" text-anchor="middle">TUI / CLI</text>
+  <text x="1096" y="168" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="10" fill="#c4b5fd" text-anchor="middle">Frontend Developer · Sonnet</text>
+  <text x="1096" y="182" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="9" fill="#a78bfa" text-anchor="middle">TypeScript 5.6 · Ink · Bun v1.2</text>
+  <text x="1096" y="196" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="9" fill="#7c3aed" text-anchor="middle">onboarding · REPL · plugin browser</text>
+
+  <!-- Tests -->
+  <rect x="504" y="224" width="216" height="82" rx="8" fill="url(#roleGrad)" stroke="#7c3aed" stroke-width="1"/>
+  <rect x="504" y="224" width="216" height="6" rx="4" fill="#a78bfa" opacity="0.7"/>
+  <text x="612" y="246" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="12" font-weight="700" fill="#e9d5ff" text-anchor="middle">Tests</text>
+  <text x="612" y="262" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="10" fill="#c4b5fd" text-anchor="middle">API Tester · Sonnet</text>
+  <text x="612" y="276" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="9" fill="#a78bfa" text-anchor="middle">pytest-asyncio · bun test · @pytest.mark.live</text>
+  <text x="612" y="290" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="9" fill="#7c3aed" text-anchor="middle">fixture-replay · ink-testing-library</text>
+
+  <!-- Docs -->
+  <rect x="732" y="224" width="216" height="82" rx="8" fill="url(#roleGrad)" stroke="#7c3aed" stroke-width="1"/>
+  <rect x="732" y="224" width="216" height="6" rx="4" fill="#a78bfa" opacity="0.7"/>
+  <text x="840" y="246" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="12" font-weight="700" fill="#e9d5ff" text-anchor="middle">Docs</text>
+  <text x="840" y="262" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="10" fill="#c4b5fd" text-anchor="middle">Technical Writer · Sonnet</text>
+  <text x="840" y="276" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="9" fill="#a78bfa" text-anchor="middle">docs/api/ · 7-section template</text>
+  <text x="840" y="290" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="9" fill="#7c3aed" text-anchor="middle">Korean primary · EN fallback</text>
+
+  <!-- Plugin DX -->
+  <rect x="960" y="224" width="216" height="82" rx="8" fill="url(#roleGrad)" stroke="#7c3aed" stroke-width="1"/>
+  <rect x="960" y="224" width="216" height="6" rx="4" fill="#a78bfa" opacity="0.7"/>
+  <text x="1068" y="246" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="12" font-weight="700" fill="#e9d5ff" text-anchor="middle">Plugin DX</text>
+  <text x="1068" y="262" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="10" fill="#c4b5fd" text-anchor="middle">Security Engineer · Sonnet</text>
+  <text x="1068" y="276" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="9" fill="#a78bfa" text-anchor="middle">PIPA §26 · SLSA v1.0 · SHA-256</text>
+  <text x="1068" y="290" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="9" fill="#7c3aed" text-anchor="middle">50-item checklist validation</text>
+
+  <!-- Release -->
+  <rect x="1188" y="224" width="44" height="82" rx="8" fill="url(#roleGrad)" stroke="#a78bfa" stroke-width="1.5"/>
+  <text x="1210" y="268" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="9" font-weight="700" fill="#e9d5ff" text-anchor="middle" writing-mode="tb">Release</text>
+
+  <!-- Agent Teams Delegation flow diagram -->
+  <rect x="48" y="320" width="420" height="200" rx="10" fill="#1e0748" stroke="#5b21b6" stroke-width="1.5" opacity="0.9"/>
+  <rect x="48" y="320" width="420" height="32" rx="10" fill="#3b0764" opacity="0.9"/>
+  <rect x="48" y="336" width="420" height="16" fill="#3b0764" opacity="0.9"/>
+  <text x="258" y="342" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="12" font-weight="700" fill="#e9d5ff" text-anchor="middle">Agent Teams 위임 패턴</text>
+
+  <!-- Lead node -->
+  <rect x="160" y="368" width="196" height="48" rx="8" fill="url(#leadGrad)" stroke="#a78bfa" stroke-width="1.5"/>
+  <text x="258" y="390" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="12" font-weight="700" fill="#e9d5ff" text-anchor="middle">Lead (Opus)</text>
+  <text x="258" y="407" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="10" fill="#c4b5fd" text-anchor="middle">spec · plan · review · architecture</text>
+
+  <!-- Arrow down -->
+  <line x1="258" y1="416" x2="258" y2="436" stroke="#a78bfa" stroke-width="1.5" stroke-dasharray="3,2"/>
+  <polygon points="252,432 258,442 264,432" fill="#a78bfa"/>
+  <text x="290" y="430" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="10" fill="#7c3aed">/speckit-implement</text>
+
+  <!-- Teammates row -->
+  <g>
+    <rect x="64" y="446" width="98" height="36" rx="6" fill="#2d1259" stroke="#6d28d9" stroke-width="1"/>
+    <text x="113" y="462" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+          font-size="9" fill="#ddd6fe" text-anchor="middle">Backend</text>
+    <text x="113" y="476" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+          font-size="9" fill="#a78bfa" text-anchor="middle">Sonnet</text>
+
+    <rect x="176" y="446" width="98" height="36" rx="6" fill="#2d1259" stroke="#6d28d9" stroke-width="1"/>
+    <text x="225" y="462" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+          font-size="9" fill="#ddd6fe" text-anchor="middle">Frontend</text>
+    <text x="225" y="476" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+          font-size="9" fill="#a78bfa" text-anchor="middle">Sonnet</text>
+
+    <rect x="288" y="446" width="98" height="36" rx="6" fill="#2d1259" stroke="#6d28d9" stroke-width="1"/>
+    <text x="337" y="462" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+          font-size="9" fill="#ddd6fe" text-anchor="middle">Tester</text>
+    <text x="337" y="476" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+          font-size="9" fill="#a78bfa" text-anchor="middle">Sonnet</text>
+
+    <rect x="400" y="446" width="52" height="36" rx="6" fill="#2d1259" stroke="#6d28d9" stroke-width="1"/>
+    <text x="426" y="462" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+          font-size="9" fill="#ddd6fe" text-anchor="middle">Sec</text>
+    <text x="426" y="476" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+          font-size="9" fill="#a78bfa" text-anchor="middle">Sonnet</text>
+  </g>
+
+  <!-- Lines from Lead to teammates -->
+  <g stroke="#6d28d9" stroke-width="1" stroke-dasharray="2,2" opacity="0.6">
+    <line x1="210" y1="416" x2="113" y2="446"/>
+    <line x1="240" y1="416" x2="225" y2="446"/>
+    <line x1="276" y1="416" x2="337" y2="446"/>
+    <line x1="306" y1="416" x2="426" y2="446"/>
+  </g>
+
+  <text x="258" y="504" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="9" fill="#7c3aed" text-anchor="middle">3+ 독립 Task → 병렬 dispatch · 1-2 Task → Lead 단독</text>
+
+  <!-- Governance tools panel -->
+  <rect x="504" y="320" width="728" height="200" rx="10" fill="#1e0748" stroke="#5b21b6" stroke-width="1.5" opacity="0.9"/>
+  <rect x="504" y="320" width="728" height="32" rx="10" fill="#3b0764" opacity="0.9"/>
+  <rect x="504" y="336" width="728" height="16" fill="#3b0764" opacity="0.9"/>
+  <text x="868" y="342" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="12" font-weight="700" fill="#e9d5ff" text-anchor="middle">거버넌스 도구</text>
+
+  <g font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">
+    <!-- Tool 1 -->
+    <rect x="520" y="360" width="200" height="60" rx="6" fill="#2d1259" stroke="#6d28d9" stroke-width="1"/>
+    <text x="620" y="380" font-size="11" font-weight="700" fill="#a78bfa" text-anchor="middle">GitHub Spec Kit</text>
+    <text x="620" y="396" font-size="9" fill="#c4b5fd" text-anchor="middle">.specify/ · spec→plan→tasks</text>
+    <text x="620" y="410" font-size="9" fill="#7c3aed" text-anchor="middle">→analyze→implement 자동화</text>
+
+    <!-- Tool 2 -->
+    <rect x="732" y="360" width="200" height="60" rx="6" fill="#2d1259" stroke="#6d28d9" stroke-width="1"/>
+    <text x="832" y="380" font-size="11" font-weight="700" fill="#a78bfa" text-anchor="middle">Copilot Review Gate</text>
+    <text x="832" y="396" font-size="9" fill="#c4b5fd" text-anchor="middle">Cloudflare Worker Check Run</text>
+    <text x="832" y="410" font-size="9" fill="#7c3aed" text-anchor="middle">CRITICAL ≥1 → fail</text>
+
+    <!-- Tool 3 -->
+    <rect x="944" y="360" width="272" height="60" rx="6" fill="#2d1259" stroke="#6d28d9" stroke-width="1"/>
+    <text x="1080" y="380" font-size="11" font-weight="700" fill="#a78bfa" text-anchor="middle">4-tier OTEL + Langfuse</text>
+    <text x="1080" y="396" font-size="9" fill="#c4b5fd" text-anchor="middle">GenAI / Tool / Permission / 세션</text>
+    <text x="1080" y="410" font-size="9" fill="#7c3aed" text-anchor="middle">로컬 Langfuse · 외부 egress 0</text>
+
+    <!-- Tool 4 -->
+    <rect x="520" y="432" width="200" height="60" rx="6" fill="#2d1259" stroke="#6d28d9" stroke-width="1"/>
+    <text x="620" y="452" font-size="11" font-weight="700" fill="#a78bfa" text-anchor="middle">Infisical OIDC</text>
+    <text x="620" y="468" font-size="9" fill="#c4b5fd" text-anchor="middle">Project de83ba22…</text>
+    <text x="620" y="482" font-size="9" fill="#7c3aed" text-anchor="middle">CI 비밀값 · git 미포함</text>
+
+    <!-- Tool 5 -->
+    <rect x="732" y="432" width="200" height="60" rx="6" fill="#2d1259" stroke="#6d28d9" stroke-width="1"/>
+    <text x="832" y="452" font-size="11" font-weight="700" fill="#a78bfa" text-anchor="middle">uv + bun</text>
+    <text x="832" y="468" font-size="9" fill="#c4b5fd" text-anchor="middle">Python: uv + pyproject.toml</text>
+    <text x="832" y="482" font-size="9" fill="#7c3aed" text-anchor="middle">TUI: Bun v1.2 + TypeScript</text>
+
+    <!-- Tool 6 -->
+    <rect x="944" y="432" width="272" height="60" rx="6" fill="#2d1259" stroke="#6d28d9" stroke-width="1"/>
+    <text x="1080" y="452" font-size="11" font-weight="700" fill="#a78bfa" text-anchor="middle">GitHub Actions CI</text>
+    <text x="1080" y="468" font-size="9" fill="#c4b5fd" text-anchor="middle">pytest + bun test + lint + typecheck</text>
+    <text x="1080" y="482" font-size="9" fill="#7c3aed" text-anchor="middle">uv run pytest before every commit</text>
+  </g>
+
+  <!-- Bottom banner -->
+  <rect x="0" y="536" width="1280" height="184" fill="#1e0748" opacity="0.7"/>
+  <line x1="0" y1="536" x2="1280" y2="536" stroke="#5b21b6" stroke-width="1" opacity="0.5"/>
+
+  <!-- Hard rules -->
+  <text x="48" y="562" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="13" font-weight="700" fill="#e9d5ff">AGENTS.md Hard Rules (never violate)</text>
+
+  <g font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif" font-size="11" fill="#c4b5fd">
+    <text x="48" y="584">⏺ All source text in English · Korean domain data only exception</text>
+    <text x="48" y="602">⏺ Env vars prefixed KOSMOS_* · Never commit .env or secrets/</text>
+    <text x="48" y="620">⏺ Pydantic v2 for all tool I/O · Never Any · stdlib logging only</text>
+    <text x="48" y="638">⏺ Never call live data.go.kr APIs from CI tests</text>
+    <text x="48" y="656">⏺ Never add a dependency outside a spec-driven PR</text>
+    <text x="48" y="674">⏺ Zero new runtime deps policy maintained through all 6 Phases</text>
+
+    <text x="640" y="584">⏺ Never force-push main · Never --no-verify · Never bypass signing</text>
+    <text x="640" y="602">⏺ Never create requirements.txt / setup.py / Pipfile</text>
+    <text x="640" y="620">⏺ Never commit a file larger than 1 MB without asking</text>
+    <text x="640" y="638">⏺ Never introduce Go or Rust · TypeScript allowed only for TUI</text>
+    <text x="640" y="656">⏺ Issue tracking via GraphQL only (Sub-Issues API v2)</text>
+    <text x="640" y="674">⏺ PR body: Closes #EPIC only — never Task sub-issues</text>
+  </g>
+
+  <!-- Bottom label -->
+  <rect x="400" y="690" width="480" height="24" rx="8" fill="#3b0764" stroke="#7c3aed" stroke-width="1" opacity="0.8"/>
+  <text x="640" y="706" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+        font-size="11" font-weight="700" fill="#a78bfa" text-anchor="middle">
+    Solo student portfolio · KSC 2026 · Apache-2.0 · Not affiliated with Anthropic / LG AI Research / Korean Government
+  </text>
+</svg>
