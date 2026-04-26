@@ -1,355 +1,231 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
-  <title>KOSMOS v0.1-alpha — Chapter 6: 프로젝트 관리 및 일정</title>
-  <desc>Gantt chart 2026-04-11 to 2026-04-26, milestone markers, quantitative stats, roadmap. Source: timeline.md</desc>
-
   <defs>
     <linearGradient id="bg6" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#4c1d95;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#2d1259;stop-opacity:1" />
+      <stop offset="0%" style="stop-color:#1e0748"/>
+      <stop offset="100%" style="stop-color:#3b0764"/>
     </linearGradient>
-    <linearGradient id="barGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" style="stop-color:#7c3aed;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#a78bfa;stop-opacity:1" />
+    <linearGradient id="bar-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#5b21b6"/>
+      <stop offset="100%" style="stop-color:#a78bfa"/>
     </linearGradient>
-    <linearGradient id="prepGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" style="stop-color:#4c1d95;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#5b21b6;stop-opacity:1" />
+    <linearGradient id="cg6" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#2d1259;stop-opacity:0.95"/>
+      <stop offset="100%" style="stop-color:#1e0748;stop-opacity:0.95"/>
     </linearGradient>
-    <linearGradient id="futureGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" style="stop-color:#2d1259;stop-opacity:0.7" />
-      <stop offset="100%" style="stop-color:#4c1d95;stop-opacity:0.7" />
-    </linearGradient>
-    <filter id="glow6">
-      <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
-      <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    <filter id="gs6">
+      <feGaussianBlur stdDeviation="2" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
-    <filter id="milestoneGlow">
-      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-      <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    <filter id="glow6">
+      <feGaussianBlur stdDeviation="4" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
   </defs>
 
-  <!-- Background -->
   <rect width="1280" height="720" fill="url(#bg6)"/>
 
   <!-- Header -->
-  <rect x="0" y="0" width="1280" height="72" fill="#3b0764" opacity="0.9"/>
-  <line x1="0" y1="72" x2="1280" y2="72" stroke="#a78bfa" stroke-width="1.5" opacity="0.6"/>
-  <text x="48" y="46" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="28" font-weight="700" fill="#a78bfa" filter="url(#glow6)">✻ KOSMOS</text>
-  <text x="200" y="46" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="15" fill="#c4b5fd" opacity="0.8">v0.1-alpha · KSC 2026</text>
-  <text x="760" y="46" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="14" fill="#c4b5fd" opacity="0.6">Chapter 6 — 프로젝트 관리 및 일정</text>
+  <rect x="0" y="0" width="1280" height="62" fill="#1e0748" opacity="0.92"/>
+  <line x1="0" y1="62" x2="1280" y2="62" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="40" y="41" font-size="26" font-weight="700" fill="#e9d5ff"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">
+    ✻  프로젝트 관리 및 일정
+  </text>
+  <text x="1240" y="41" font-size="13" fill="#7c3aed" text-anchor="end"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">Chapter 6</text>
 
-  <!-- ============ GANTT CHART ============ -->
-  <!-- Timeline spans: 2026-04-11 to 2026-04-26 = 15 days -->
-  <!-- Gantt area: x=48..840, y=88..460 -->
+  <!-- ===== Gantt chart ===== -->
+  <text x="50" y="85" font-size="14" font-weight="700" fill="#c4b5fd"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">일정 (2026-04-11 ~ 2026-04-26)</text>
 
-  <!-- Gantt title -->
-  <text x="48" y="100" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="13" font-weight="700" fill="#e9d5ff">Gantt: 2026-04-11 → 2026-04-26 (15일 총 개발 기간)</text>
-  <text x="48" y="114" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="9" fill="#7c3aed">Source: timeline.md § 6.2 Phase 일정 · git log --date=iso · gh pr view --json mergedAt</text>
+  <!-- Gantt axis -->
+  <line x1="160" y1="96" x2="1080" y2="96" stroke="#5b21b6" stroke-width="1" opacity="0.6"/>
+  <text x="165" y="93" font-size="10" fill="#7c3aed"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">04-11</text>
+  <text x="325" y="93" font-size="10" fill="#7c3aed"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">04-13</text>
+  <text x="485" y="93" font-size="10" fill="#7c3aed"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">04-17</text>
+  <text x="645" y="93" font-size="10" fill="#7c3aed"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">04-20</text>
+  <text x="805" y="93" font-size="10" fill="#7c3aed"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">04-23</text>
+  <text x="965" y="93" font-size="10" fill="#7c3aed"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">04-26</text>
 
-  <!-- Date ruler -->
-  <!-- Total width for gantt: 680px (x=160 to x=840) for 15 days -->
-  <!-- Each day = 680/15 = ~45.3px -->
-  <rect x="160" y="122" width="680" height="16" rx="3" fill="#1e0748" opacity="0.8"/>
-  <g font-family="monospace" font-size="8" fill="#7c3aed">
-    <text x="160" y="134">04/11</text>
-    <text x="205" y="134">04/12</text>
-    <text x="250" y="134">04/13</text>
-    <text x="295" y="134">04/14</text>
-    <text x="340" y="134">04/15</text>
-    <text x="385" y="134">04/16</text>
-    <text x="430" y="134">04/17</text>
-    <text x="475" y="134">04/18</text>
-    <text x="520" y="134">04/19</text>
-    <text x="565" y="134">04/20</text>
-    <text x="610" y="134">04/21</text>
-    <text x="655" y="134">04/22</text>
-    <text x="700" y="134">04/23</text>
-    <text x="745" y="134">04/24</text>
-    <text x="790" y="134">04/25</text>
-    <text x="835" y="134">04/26</text>
-  </g>
+  <!-- Vertical guides -->
+  <line x1="165" y1="96" x2="165" y2="330" stroke="#5b21b6" stroke-width="0.5" opacity="0.3"/>
+  <line x1="325" y1="96" x2="325" y2="330" stroke="#5b21b6" stroke-width="0.5" opacity="0.3"/>
+  <line x1="485" y1="96" x2="485" y2="330" stroke="#5b21b6" stroke-width="0.5" opacity="0.3"/>
+  <line x1="645" y1="96" x2="645" y2="330" stroke="#5b21b6" stroke-width="0.5" opacity="0.3"/>
+  <line x1="805" y1="96" x2="805" y2="330" stroke="#5b21b6" stroke-width="0.5" opacity="0.3"/>
+  <line x1="965" y1="96" x2="965" y2="330" stroke="#5b21b6" stroke-width="0.5" opacity="0.3"/>
 
-  <!-- Vertical grid lines for each day -->
-  <g stroke="#3b0764" stroke-width="0.5" opacity="0.5">
-    <line x1="160" y1="138" x2="160" y2="448"/>
-    <line x1="205" y1="138" x2="205" y2="448"/>
-    <line x1="250" y1="138" x2="250" y2="448"/>
-    <line x1="295" y1="138" x2="295" y2="448"/>
-    <line x1="340" y1="138" x2="340" y2="448"/>
-    <line x1="385" y1="138" x2="385" y2="448"/>
-    <line x1="430" y1="138" x2="430" y2="448"/>
-    <line x1="475" y1="138" x2="475" y2="448"/>
-    <line x1="520" y1="138" x2="520" y2="448"/>
-    <line x1="565" y1="138" x2="565" y2="448"/>
-    <line x1="610" y1="138" x2="610" y2="448"/>
-    <line x1="655" y1="138" x2="655" y2="448"/>
-    <line x1="700" y1="138" x2="700" y2="448"/>
-    <line x1="745" y1="138" x2="745" y2="448"/>
-    <line x1="790" y1="138" x2="790" y2="448"/>
-    <line x1="840" y1="138" x2="840" y2="448"/>
-  </g>
+  <!-- Phase rows. Total span: 16 days = 04-11 to 04-26 → 900px → 56.25px/day -->
+  <!-- day0=165, each day=56.25px -->
 
-  <!-- ROW BACKGROUNDS -->
-  <g opacity="0.4">
-    <rect x="40" y="138" width="800" height="32" fill="#1e0748"/>
-    <rect x="40" y="170" width="800" height="32" fill="#2d1259"/>
-    <rect x="40" y="202" width="800" height="32" fill="#1e0748"/>
-    <rect x="40" y="234" width="800" height="32" fill="#2d1259"/>
-    <rect x="40" y="266" width="800" height="32" fill="#1e0748"/>
-    <rect x="40" y="298" width="800" height="32" fill="#2d1259"/>
-    <rect x="40" y="330" width="800" height="32" fill="#1e0748"/>
-    <rect x="40" y="362" width="800" height="32" fill="#2d1259"/>
-    <rect x="40" y="394" width="800" height="32" fill="#1e0748"/>
-    <rect x="40" y="426" width="800" height="32" fill="#2d1259"/>
-  </g>
+  <!-- P0 #1632: 04-11 ~ 04-13 (2d) -->
+  <text x="40" y="118" font-size="11" fill="#c4b5fd" text-anchor="end"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">P0 #1632</text>
+  <rect x="165" y="104" width="113" height="22" rx="5" fill="url(#bar-grad)" opacity="0.9"/>
+  <text x="221" y="119" font-size="10" fill="#fff" text-anchor="middle"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">Baseline</text>
+  <circle cx="278" cy="115" r="6" fill="#10b981" filter="url(#gs6)"/>
 
-  <!-- ROW LABELS -->
-  <g font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif" font-size="10" fill="#c4b5fd">
-    <text x="48" y="158">사전 준비</text>
-    <text x="48" y="190">TUI 포트 #287</text>
-    <text x="48" y="222">요구사항 승인</text>
-    <text x="48" y="254">P0 · #1632</text>
-    <text x="48" y="286">P1+P2 · #1633</text>
-    <text x="48" y="318">P3 · #1634</text>
-    <text x="48" y="350">P4 · #1635</text>
-    <text x="48" y="382">P5 · #1636</text>
-    <text x="48" y="414">P6 · #1637</text>
-    <text x="48" y="446">향후 Deferred</text>
-  </g>
+  <!-- P1+2 #1633: 04-13 ~ 04-16 (3d) -->
+  <text x="40" y="150" font-size="11" fill="#c4b5fd" text-anchor="end"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">P1+2 #1633</text>
+  <rect x="278" y="136" width="169" height="22" rx="5" fill="url(#bar-grad)" opacity="0.9"/>
+  <text x="362" y="151" font-size="10" fill="#fff" text-anchor="middle"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">Provider Migration</text>
+  <circle cx="447" cy="147" r="6" fill="#10b981" filter="url(#gs6)"/>
 
-  <!-- GANTT BARS -->
-  <!-- 사전 준비: 04/11 - 04/19 = days 0-8 = 160 to 520 -->
-  <rect x="160" y="142" width="360" height="24" rx="4" fill="url(#prepGrad)" stroke="#5b21b6" stroke-width="1"/>
-  <text x="340" y="158" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="9" fill="#c4b5fd" text-anchor="middle">프로젝트 스캐폴드 · 비전 수립</text>
+  <!-- P3 #1634: 04-16 ~ 04-19 (3d) -->
+  <text x="40" y="182" font-size="11" fill="#c4b5fd" text-anchor="end"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">P3 #1634</text>
+  <rect x="447" y="168" width="169" height="22" rx="5" fill="url(#bar-grad)" opacity="0.9"/>
+  <text x="531" y="183" font-size="10" fill="#fff" text-anchor="middle"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">Tool System</text>
+  <circle cx="616" cy="179" r="6" fill="#10b981" filter="url(#gs6)"/>
 
-  <!-- TUI 포트: 04/15 - 04/19 = days 4-8 = 340 to 520 -->
-  <rect x="340" y="174" width="180" height="24" rx="4" fill="url(#prepGrad)" stroke="#5b21b6" stroke-width="1"/>
-  <text x="430" y="190" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="9" fill="#c4b5fd" text-anchor="middle">Ink+React+Bun 포트</text>
+  <!-- P4 #1847: 04-19 ~ 04-22 (3d) -->
+  <text x="40" y="214" font-size="11" fill="#c4b5fd" text-anchor="end"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">P4 #1847</text>
+  <rect x="616" y="200" width="169" height="22" rx="5" fill="url(#bar-grad)" opacity="0.9"/>
+  <text x="700" y="215" font-size="10" fill="#fff" text-anchor="middle"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">UI L2 Citizen</text>
+  <circle cx="785" cy="211" r="6" fill="#10b981" filter="url(#gs6)"/>
 
-  <!-- 요구사항 승인 milestone: 04/24 = day 13 = 745px -->
-  <!-- milestone diamond -->
-  <polygon points="745,218 757,230 745,242 733,230" fill="#fbbf24" filter="url(#milestoneGlow)"/>
-  <text x="757" y="228" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="8" fill="#fbbf24">✻ 요구사항 트리 승인</text>
+  <!-- P5 #1927: 04-22 ~ 04-24 (2d) -->
+  <text x="40" y="246" font-size="11" fill="#c4b5fd" text-anchor="end"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">P5 #1927</text>
+  <rect x="785" y="232" width="113" height="22" rx="5" fill="url(#bar-grad)" opacity="0.9"/>
+  <text x="841" y="247" font-size="10" fill="#fff" text-anchor="middle"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">Plugin DX</text>
+  <circle cx="898" cy="243" r="6" fill="#10b981" filter="url(#gs6)"/>
 
-  <!-- P0: 04/24 (day 13 = 745px, ~0px duration, 1 day = 45px) -->
-  <rect x="745" y="238" width="45" height="24" rx="4" fill="url(#barGrad)" stroke="#a78bfa" stroke-width="1"/>
-  <text x="767" y="254" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="8" fill="#fff" text-anchor="middle">04/24</text>
-  <!-- milestone -->
-  <polygon points="790,234 802,246 790,258 778,246" fill="#a78bfa" filter="url(#milestoneGlow)"/>
-  <text x="814" y="252" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="7" fill="#a78bfa">✻ PR#1651</text>
+  <!-- P6 #1637: 04-24 ~ 04-26 (2d) -->
+  <text x="40" y="278" font-size="11" fill="#c4b5fd" text-anchor="end"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">P6 #1637</text>
+  <rect x="898" y="264" width="113" height="22" rx="5" fill="url(#bar-grad)" opacity="0.9"/>
+  <text x="954" y="279" font-size="10" fill="#fff" text-anchor="middle"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">Docs + Smoke</text>
 
-  <!-- P1+P2: 04/24 (same day) -->
-  <rect x="745" y="270" width="45" height="24" rx="4" fill="url(#barGrad)" stroke="#a78bfa" stroke-width="1"/>
-  <text x="767" y="286" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="8" fill="#fff" text-anchor="middle">04/24</text>
-  <polygon points="790,266 802,278 790,290 778,278" fill="#a78bfa" filter="url(#milestoneGlow)"/>
-  <text x="814" y="284" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="7" fill="#a78bfa">✻ PR#1706</text>
+  <!-- v0.1-alpha marker -->
+  <line x1="965" y1="90" x2="965" y2="298" stroke="#f59e0b" stroke-width="2" stroke-dasharray="5,3"/>
+  <rect x="950" y="295" width="90" height="24" rx="5" fill="#f59e0b" opacity="0.2" stroke="#f59e0b" stroke-width="1"/>
+  <text x="995" y="311" font-size="11" font-weight="700" fill="#f59e0b" text-anchor="middle"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">v0.1-alpha</text>
 
-  <!-- P3: 04/24 (same day, slightly extended) -->
-  <rect x="745" y="302" width="45" height="24" rx="4" fill="url(#barGrad)" stroke="#a78bfa" stroke-width="1"/>
-  <text x="767" y="318" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="8" fill="#fff" text-anchor="middle">04/24</text>
-  <polygon points="790,298 802,310 790,322 778,310" fill="#a78bfa" filter="url(#milestoneGlow)"/>
-  <text x="814" y="316" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="7" fill="#a78bfa">✻ PR#1758</text>
+  <!-- ===== Stats sidebar ===== -->
+  <line x1="1100" y1="72" x2="1100" y2="480" stroke="#5b21b6" stroke-width="1" opacity="0.5"/>
+  <text x="1110" y="92" font-size="13" font-weight="700" fill="#a78bfa"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">정량 통계</text>
 
-  <!-- P4: 04/25 = day 14 = 790px -->
-  <rect x="745" y="334" width="90" height="24" rx="4" fill="url(#barGrad)" stroke="#a78bfa" stroke-width="1"/>
-  <text x="790" y="350" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="8" fill="#fff" text-anchor="middle">04/24~04/25</text>
-  <polygon points="835,330 847,342 835,354 823,342" fill="#a78bfa" filter="url(#milestoneGlow)"/>
-  <text x="849" y="348" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="7" fill="#a78bfa">✻ PR#1847</text>
+  <text x="1110" y="120" font-size="22" font-weight="800" fill="#e9d5ff"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">189</text>
+  <text x="1110" y="138" font-size="11" fill="#c4b5fd"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">commits</text>
 
-  <!-- P5: 04/25 -->
-  <rect x="745" y="366" width="90" height="24" rx="4" fill="url(#barGrad)" stroke="#a78bfa" stroke-width="1"/>
-  <text x="790" y="382" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="8" fill="#fff" text-anchor="middle">04/25</text>
-  <polygon points="835,362 847,374 835,386 823,374" fill="#a78bfa" filter="url(#milestoneGlow)"/>
-  <text x="849" y="380" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="7" fill="#a78bfa">✻ PR#1927</text>
+  <text x="1110" y="166" font-size="22" font-weight="800" fill="#e9d5ff"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">79</text>
+  <text x="1110" y="184" font-size="11" fill="#c4b5fd"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">PRs merged</text>
 
-  <!-- P6: 04/26 = day 15 = 835px -->
-  <rect x="790" y="398" width="45" height="24" rx="4" fill="url(#barGrad)" stroke="#c4b5fd" stroke-width="1.5" filter="url(#glow6)"/>
-  <text x="812" y="414" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="8" fill="#fff" text-anchor="middle">04/26</text>
-  <polygon points="835,394 847,406 835,418 823,406" fill="#e9d5ff" filter="url(#milestoneGlow)"/>
-  <text x="849" y="412" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="7" fill="#e9d5ff" font-weight="700">✻ v0.1-alpha!</text>
+  <text x="1110" y="212" font-size="22" font-weight="800" fill="#e9d5ff"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">41</text>
+  <text x="1110" y="230" font-size="11" fill="#c4b5fd"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">specs</text>
 
-  <!-- Deferred: post 04/26 (future bar, shown as dashed) -->
-  <rect x="840" y="430" width="0" height="24" rx="4" fill="#3b0764" stroke="#5b21b6" stroke-width="1" stroke-dasharray="4,2" opacity="0.7"/>
+  <text x="1110" y="258" font-size="22" font-weight="800" fill="#e9d5ff"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">49</text>
+  <text x="1110" y="276" font-size="11" fill="#c4b5fd"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">sub-issues</text>
 
-  <!-- v0.1-alpha vertical marker line -->
-  <line x1="840" y1="120" x2="840" y2="458" stroke="#e9d5ff" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.4"/>
-  <text x="843" y="134" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="8" fill="#e9d5ff" opacity="0.6">04/26 v0.1-alpha</text>
+  <text x="1110" y="304" font-size="22" font-weight="800" fill="#e9d5ff"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">16,498</text>
+  <text x="1110" y="322" font-size="11" fill="#c4b5fd"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">Py LOC</text>
 
-  <!-- ============ RIGHT SIDEBAR: Stats ============ -->
-  <rect x="872" y="88" width="368" height="372" rx="10" fill="#1e0748" stroke="#5b21b6" stroke-width="1.5" opacity="0.95"/>
-  <rect x="872" y="88" width="368" height="36" rx="10" fill="#3b0764" opacity="0.9"/>
-  <rect x="872" y="106" width="368" height="18" fill="#3b0764" opacity="0.9"/>
-  <text x="1056" y="113" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="13" font-weight="700" fill="#e9d5ff" text-anchor="middle">정량 통계</text>
-  <text x="1056" y="122" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="8" fill="#7c3aed" text-anchor="middle">Source: timeline.md § 6.3</text>
+  <text x="1110" y="350" font-size="22" font-weight="800" fill="#e9d5ff"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">5,935</text>
+  <text x="1110" y="368" font-size="11" fill="#c4b5fd"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">TS LOC</text>
 
-  <!-- Stat items -->
-  <g font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">
-    <!-- Row 1 -->
-    <rect x="888" y="134" width="152" height="52" rx="6" fill="#2d1259" stroke="#6d28d9" stroke-width="1"/>
-    <text x="964" y="158" font-size="28" font-weight="900" fill="#a78bfa" text-anchor="middle" filter="url(#glow6)">189</text>
-    <text x="964" y="176" font-size="9" fill="#c4b5fd" text-anchor="middle">총 커밋 수</text>
-
-    <rect x="1052" y="134" width="172" height="52" rx="6" fill="#2d1259" stroke="#6d28d9" stroke-width="1"/>
-    <text x="1138" y="158" font-size="28" font-weight="900" fill="#a78bfa" text-anchor="middle" filter="url(#glow6)">79</text>
-    <text x="1138" y="176" font-size="9" fill="#c4b5fd" text-anchor="middle">총 PR 머지 수</text>
-
-    <!-- Row 2 -->
-    <rect x="888" y="196" width="152" height="52" rx="6" fill="#2d1259" stroke="#6d28d9" stroke-width="1"/>
-    <text x="964" y="220" font-size="28" font-weight="900" fill="#a78bfa" text-anchor="middle" filter="url(#glow6)">41</text>
-    <text x="964" y="238" font-size="9" fill="#c4b5fd" text-anchor="middle">Spec 디렉터리</text>
-
-    <rect x="1052" y="196" width="172" height="52" rx="6" fill="#2d1259" stroke="#6d28d9" stroke-width="1"/>
-    <text x="1138" y="220" font-size="28" font-weight="900" fill="#a78bfa" text-anchor="middle" filter="url(#glow6)">49</text>
-    <text x="1138" y="238" font-size="9" fill="#c4b5fd" text-anchor="middle">Sub-issues (44+5)</text>
-
-    <!-- Row 3 -->
-    <rect x="888" y="258" width="152" height="52" rx="6" fill="#2d1259" stroke="#6d28d9" stroke-width="1"/>
-    <text x="964" y="276" font-size="20" font-weight="900" fill="#a78bfa" text-anchor="middle" filter="url(#glow6)">16,498</text>
-    <text x="964" y="294" font-size="9" fill="#c4b5fd" text-anchor="middle">Python LOC (.py)</text>
-
-    <rect x="1052" y="258" width="172" height="52" rx="6" fill="#2d1259" stroke="#6d28d9" stroke-width="1"/>
-    <text x="1138" y="276" font-size="20" font-weight="900" fill="#a78bfa" text-anchor="middle" filter="url(#glow6)">5,935</text>
-    <text x="1138" y="294" font-size="9" fill="#c4b5fd" text-anchor="middle">TS/TSX LOC</text>
-
-    <!-- Row 4 -->
-    <rect x="888" y="320" width="152" height="52" rx="6" fill="#3b0764" stroke="#a78bfa" stroke-width="1.5"/>
-    <text x="964" y="344" font-size="20" font-weight="900" fill="#e9d5ff" text-anchor="middle" filter="url(#glow6)">15일</text>
-    <text x="964" y="362" font-size="9" fill="#c4b5fd" text-anchor="middle">총 개발 기간</text>
-
-    <rect x="1052" y="320" width="172" height="52" rx="6" fill="#3b0764" stroke="#a78bfa" stroke-width="1.5"/>
-    <text x="1138" y="344" font-size="20" font-weight="900" fill="#e9d5ff" text-anchor="middle" filter="url(#glow6)">3일</text>
-    <text x="1138" y="362" font-size="9" fill="#c4b5fd" text-anchor="middle">집중 마이그레이션 (P0~P6)</text>
-
-    <!-- Phase commit dist -->
-    <rect x="888" y="382" width="336" height="68" rx="6" fill="#1e0748" stroke="#3b0764" stroke-width="1"/>
-    <text x="896" y="398" font-size="9" font-weight="700" fill="#a78bfa">Phase별 커밋 분포</text>
-    <text x="896" y="412" font-size="8" fill="#c4b5fd">P0: 7  ·  P1+P2: 27  ·  P3: 9  ·  P4: 15  ·  P5: 29  ·  P6: 15</text>
-    <text x="896" y="428" font-size="8" fill="#7c3aed">P1+P2: 94파일 변경 · -25,263라인  ·  P5: 50-item validation</text>
-    <text x="896" y="442" font-size="8" fill="#7c3aed">집중 마이그레이션: 04-24 04:26 UTC → 04-26 01:26 UTC</text>
-  </g>
-
-  <!-- ============ BOTTOM: Roadmap ============ -->
-  <rect x="0" y="470" width="1280" height="250" fill="#1e0748" opacity="0.65"/>
-  <line x1="0" y1="470" x2="1280" y2="470" stroke="#5b21b6" stroke-width="1" opacity="0.5"/>
-
-  <text x="48" y="494" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="14" font-weight="700" fill="#e9d5ff">향후 로드맵</text>
-  <text x="48" y="508" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="9" fill="#7c3aed">Source: timeline.md § 6.4 · CHANGELOG.md [v0.1-alpha] § Out of v0.1-alpha</text>
-
-  <!-- Roadmap timeline bars -->
-  <!-- Current: v0.1-alpha shipped -->
-  <rect x="48" y="516" width="160" height="36" rx="6" fill="#5b21b6" stroke="#a78bfa" stroke-width="1.5"/>
-  <text x="128" y="532" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="11" font-weight="700" fill="#e9d5ff" text-anchor="middle">NOW · 2026-04-26</text>
-  <text x="128" y="546" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="9" fill="#a78bfa" text-anchor="middle">v0.1-alpha shipped ✻</text>
-
-  <!-- Arrow -->
-  <polygon points="208,530 220,534 208,538" fill="#7c3aed"/>
-  <line x1="208" y1="534" x2="220" y2="534" stroke="#7c3aed" stroke-width="1"/>
+  <!-- ===== Roadmap section ===== -->
+  <line x1="40" y1="340" x2="1080" y2="340" stroke="#5b21b6" stroke-width="1" opacity="0.5"/>
+  <text x="50" y="362" font-size="14" font-weight="700" fill="#c4b5fd"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">향후 로드맵</text>
 
   <!-- Q2 2026 -->
-  <rect x="224" y="516" width="200" height="36" rx="6" fill="url(#futureGrad)" stroke="#6d28d9" stroke-width="1" stroke-dasharray="3,2"/>
-  <text x="324" y="532" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="11" font-weight="700" fill="#c4b5fd" text-anchor="middle">2026 Q2 말</text>
-  <text x="324" y="546" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="9" fill="#a78bfa" text-anchor="middle">5 Deferred 처리 완료 (#1972~#1976)</text>
-
-  <!-- Arrow -->
-  <polygon points="424,530 436,534 424,538" fill="#7c3aed"/>
-  <line x1="424" y1="534" x2="436" y2="534" stroke="#7c3aed" stroke-width="1"/>
+  <rect x="40" y="376" width="220" height="100" rx="8" fill="url(#cg6)" stroke="#5b21b6" stroke-width="1.5"/>
+  <text x="150" y="398" font-size="13" font-weight="700" fill="#a78bfa" text-anchor="middle"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">Q2 2026</text>
+  <text x="58" y="418" font-size="11" fill="#ddd6fe"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">Live API 회귀 커버리지</text>
+  <text x="58" y="436" font-size="11" fill="#ddd6fe"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">OpenAPI /agent-delegation</text>
+  <text x="58" y="454" font-size="11" fill="#ddd6fe"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">어댑터 스펙 자동 생성</text>
+  <text x="58" y="469" font-size="11" fill="#7c3aed"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">#1972 · #1973 · #1974 · #1975</text>
 
   <!-- Q3 2026 -->
-  <rect x="440" y="516" width="200" height="36" rx="6" fill="url(#futureGrad)" stroke="#6d28d9" stroke-width="1" stroke-dasharray="3,2"/>
-  <text x="540" y="532" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="11" font-weight="700" fill="#c4b5fd" text-anchor="middle">2026 Q3</text>
-  <text x="540" y="546" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="9" fill="#a78bfa" text-anchor="middle">v0.1.0 stable 릴리즈</text>
-
-  <!-- Arrow -->
-  <polygon points="640,530 652,534 640,538" fill="#7c3aed"/>
-  <line x1="640" y1="534" x2="652" y2="534" stroke="#7c3aed" stroke-width="1"/>
-
-  <!-- KSC 2026 -->
-  <rect x="656" y="516" width="200" height="36" rx="6" fill="#3b0764" stroke="#a78bfa" stroke-width="1.5"/>
-  <text x="756" y="532" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="11" font-weight="700" fill="#e9d5ff" text-anchor="middle">KSC 2026 · 하반기</text>
-  <text x="756" y="546" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="9" fill="#a78bfa" text-anchor="middle">학술 논문 제출 + 시연</text>
-
-  <!-- Arrow -->
-  <polygon points="856,530 868,534 856,538" fill="#7c3aed"/>
-  <line x1="856" y1="534" x2="868" y2="534" stroke="#7c3aed" stroke-width="1"/>
+  <rect x="278" y="376" width="220" height="100" rx="8" fill="url(#cg6)" stroke="#5b21b6" stroke-width="1.5"/>
+  <text x="388" y="398" font-size="13" font-weight="700" fill="#a78bfa" text-anchor="middle"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">Q3 2026</text>
+  <text x="296" y="418" font-size="11" fill="#ddd6fe"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">OPAQUE Mock 이전 (#1976)</text>
+  <text x="296" y="436" font-size="11" fill="#ddd6fe"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">In-TUI 마켓플레이스 브라우저</text>
+  <text x="296" y="454" font-size="11" fill="#ddd6fe"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">추가 부처 어댑터 확장</text>
 
   <!-- Q4 2026 -->
-  <rect x="872" y="516" width="200" height="36" rx="6" fill="url(#futureGrad)" stroke="#6d28d9" stroke-width="1" stroke-dasharray="3,2"/>
-  <text x="972" y="532" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="11" font-weight="700" fill="#c4b5fd" text-anchor="middle">2026 Q4</text>
-  <text x="972" y="546" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="9" fill="#a78bfa" text-anchor="middle">P7 국제화 · 일본어 지원 · 보조도구 5종</text>
+  <rect x="516" y="376" width="220" height="100" rx="8" fill="url(#cg6)" stroke="#5b21b6" stroke-width="1.5"/>
+  <text x="626" y="398" font-size="13" font-weight="700" fill="#a78bfa" text-anchor="middle"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">Q4 2026</text>
+  <text x="534" y="418" font-size="11" fill="#ddd6fe"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">모바일 / 웹 UI 확장</text>
+  <text x="534" y="436" font-size="11" fill="#ddd6fe"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">외부 플러그인 스토어 론칭</text>
+  <text x="534" y="454" font-size="11" fill="#ddd6fe"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">부처 파트너십 MOU</text>
 
-  <!-- Deferred issues mini cards -->
-  <text x="48" y="572" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="11" font-weight="700" fill="#e9d5ff">5 Deferred 이슈</text>
+  <!-- KSC 2026 highlight -->
+  <rect x="754" y="376" width="316" height="100" rx="8" fill="#4c1d95" stroke="#a78bfa" stroke-width="2" filter="url(#gs6)"/>
+  <text x="912" y="410" font-size="18" font-weight="800" fill="#e9d5ff" text-anchor="middle"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">KSC 2026</text>
+  <text x="912" y="434" font-size="13" fill="#c4b5fd" text-anchor="middle"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">한국컴퓨터종합학술대회 발표</text>
+  <text x="912" y="454" font-size="12" fill="#a78bfa" text-anchor="middle"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">✻ KOSMOS v0.1-alpha 포트폴리오</text>
+  <text x="912" y="470" font-size="11" fill="#7c3aed" text-anchor="middle"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">umyunsang · dbstkd5865@gmail.com</text>
 
-  <g font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">
-    <rect x="48" y="580" width="220" height="40" rx="5" fill="#2d1259" stroke="#5b21b6" stroke-width="1"/>
-    <text x="158" y="596" font-size="9" font-weight="700" fill="#f59e0b" text-anchor="middle">#1972 · 중</text>
-    <text x="158" y="612" font-size="8" fill="#c4b5fd" text-anchor="middle">/agent-delegation Full OpenAPI 3.0</text>
+  <!-- ===== Bottom: References ===== -->
+  <line x1="40" y1="495" x2="1240" y2="495" stroke="#5b21b6" stroke-width="1" opacity="0.5"/>
+  <text x="50" y="516" font-size="13" font-weight="700" fill="#7c3aed"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">References (KOSMOS internal)</text>
+  <text x="50" y="536" font-size="11" fill="#7c3aed"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">Ink (MIT) · Gemini CLI (Apache-2.0) · Pydantic AI (MIT) · AutoGen (MIT) · OpenAI Agents SDK (MIT) · Claude Agent SDK (MIT)</text>
+  <text x="50" y="554" font-size="11" fill="#7c3aed"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">행정안전부 공공데이터 통계 2024 · OECD OURdata Index · AI Action Plan 2026-2028 (과학기술정보통신부)</text>
 
-    <rect x="280" y="580" width="230" height="40" rx="5" fill="#2d1259" stroke="#5b21b6" stroke-width="1"/>
-    <text x="395" y="596" font-size="9" font-weight="700" fill="#6d9e5b" text-anchor="middle">#1973 · 하</text>
-    <text x="395" y="612" font-size="8" fill="#c4b5fd" text-anchor="middle">ministries_for_composite() 영구 제거</text>
-
-    <rect x="522" y="580" width="230" height="40" rx="5" fill="#2d1259" stroke="#a78bfa" stroke-width="1.5"/>
-    <text x="637" y="596" font-size="9" font-weight="700" fill="#f87171" text-anchor="middle">#1974 · 상</text>
-    <text x="637" y="612" font-size="8" fill="#c4b5fd" text-anchor="middle">12 Live-tier live regression coverage</text>
-
-    <rect x="764" y="580" width="230" height="40" rx="5" fill="#2d1259" stroke="#5b21b6" stroke-width="1"/>
-    <text x="879" y="596" font-size="9" font-weight="700" fill="#f59e0b" text-anchor="middle">#1975 · 중</text>
-    <text x="879" y="612" font-size="8" fill="#c4b5fd" text-anchor="middle">Pydantic docstring 스텁 자동 생성</text>
-
-    <rect x="1006" y="580" width="234" height="40" rx="5" fill="#2d1259" stroke="#5b21b6" stroke-width="1"/>
-    <text x="1123" y="596" font-size="9" font-weight="700" fill="#6d9e5b" text-anchor="middle">#1976 · 하</text>
-    <text x="1123" y="612" font-size="8" fill="#c4b5fd" text-anchor="middle">OPAQUE mock → docs/scenarios/ 이전</text>
-  </g>
-
-  <!-- Collaboration tools mini row -->
-  <rect x="48" y="636" width="1184" height="42" rx="6" fill="#2d1259" stroke="#3b0764" stroke-width="1" opacity="0.8"/>
-  <g font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif" font-size="9" fill="#c4b5fd">
-    <text x="60" y="652" font-weight="700" fill="#a78bfa">협업 도구</text>
-    <text x="60" y="668">GitHub Issues (Sub-Issues API v2) · Spec Kit · GitHub Actions CI · Copilot Gate · Codex Review · 4-tier OTEL + Langfuse · Infisical OIDC · uv + bun</text>
-  </g>
+  <!-- ===== Final tagline ===== -->
+  <rect x="40" y="572" width="1200" height="60" rx="10" fill="#1e0748" stroke="#7c3aed" stroke-width="1"/>
+  <text x="640" y="597" font-size="17" font-weight="700" fill="#e9d5ff" text-anchor="middle"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">
+    KOSMOS — 5,000개 공공 API를 한 문장으로 연결하는 대한민국 시민 AI 플랫폼
+  </text>
+  <text x="640" y="620" font-size="13" fill="#a78bfa" text-anchor="middle"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">
+    K-EXAONE-236B-A23B · FriendliAI Serverless · Apache-2.0 · github.com/umyunsang/KOSMOS
+  </text>
 
   <!-- Footer -->
-  <text x="640" y="710" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="9" fill="#7c3aed" text-anchor="middle" opacity="0.7">
-    Source: timeline.md § 6.2/6.3/6.4 · git log --date=iso · gh pr view --json mergedAt · CHANGELOG.md [v0.1-alpha]
-  </text>
+  <line x1="0" y1="646" x2="1280" y2="646" stroke="#7c3aed" stroke-width="1"/>
+  <text x="1240" y="666" font-size="12" fill="#7c3aed" text-anchor="end"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">✻ KOSMOS v0.1-alpha · KSC 2026</text>
 </svg>

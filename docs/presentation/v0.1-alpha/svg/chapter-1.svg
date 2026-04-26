@@ -1,239 +1,215 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
-  <title>KOSMOS v0.1-alpha — Chapter 1: 프로젝트 개요</title>
-  <desc>Claude Code harness migration to Korean public-service domain. Source: docs/vision.md, docs/requirements/kosmos-migration-tree.md</desc>
-
   <defs>
-    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#4c1d95;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#2d1259;stop-opacity:1" />
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1e0748"/>
+      <stop offset="60%" style="stop-color:#2d1259"/>
+      <stop offset="100%" style="stop-color:#3b0764"/>
     </linearGradient>
-    <linearGradient id="arrowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" style="stop-color:#5b21b6;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#a78bfa;stop-opacity:1" />
+    <linearGradient id="ufo-body-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#c4b5fd"/>
+      <stop offset="50%" style="stop-color:#a78bfa"/>
+      <stop offset="100%" style="stop-color:#7c3aed"/>
     </linearGradient>
-    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" style="stop-color:#5b21b6;stop-opacity:0.8" />
-      <stop offset="100%" style="stop-color:#3b0764;stop-opacity:0.8" />
+    <linearGradient id="card-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b0764;stop-opacity:0.9"/>
+      <stop offset="100%" style="stop-color:#1e0748;stop-opacity:0.9"/>
     </linearGradient>
     <filter id="glow">
-      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glow-sm">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
       <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
   </defs>
 
   <!-- Background -->
-  <rect width="1280" height="720" fill="url(#bgGrad)"/>
+  <rect width="1280" height="720" fill="url(#bg-grad)"/>
 
-  <!-- Subtle grid pattern -->
-  <g opacity="0.06">
-    <line x1="0" y1="180" x2="1280" y2="180" stroke="#a78bfa" stroke-width="0.5"/>
-    <line x1="0" y1="360" x2="1280" y2="360" stroke="#a78bfa" stroke-width="0.5"/>
-    <line x1="0" y1="540" x2="1280" y2="540" stroke="#a78bfa" stroke-width="0.5"/>
-    <line x1="320" y1="0" x2="320" y2="720" stroke="#a78bfa" stroke-width="0.5"/>
-    <line x1="640" y1="0" x2="640" y2="720" stroke="#a78bfa" stroke-width="0.5"/>
-    <line x1="960" y1="0" x2="960" y2="720" stroke="#a78bfa" stroke-width="0.5"/>
+  <!-- Subtle grid lines -->
+  <g opacity="0.05" stroke="#a78bfa" stroke-width="1">
+    <line x1="0" y1="120" x2="1280" y2="120"/>
+    <line x1="0" y1="240" x2="1280" y2="240"/>
+    <line x1="0" y1="360" x2="1280" y2="360"/>
+    <line x1="0" y1="480" x2="1280" y2="480"/>
+    <line x1="0" y1="600" x2="1280" y2="600"/>
+    <line x1="160" y1="0" x2="160" y2="720"/>
+    <line x1="320" y1="0" x2="320" y2="720"/>
+    <line x1="480" y1="0" x2="480" y2="720"/>
+    <line x1="640" y1="0" x2="640" y2="720"/>
+    <line x1="800" y1="0" x2="800" y2="720"/>
+    <line x1="960" y1="0" x2="960" y2="720"/>
+    <line x1="1120" y1="0" x2="1120" y2="720"/>
   </g>
 
-  <!-- Top header bar -->
-  <rect x="0" y="0" width="1280" height="72" fill="#3b0764" opacity="0.9"/>
-  <line x1="0" y1="72" x2="1280" y2="72" stroke="#a78bfa" stroke-width="1.5" opacity="0.6"/>
+  <!-- Left side: UFO Mascot -->
+  <!-- UFO beam -->
+  <polygon points="120,290 220,290 200,420 140,420" fill="#a78bfa" opacity="0.12"/>
+  <polygon points="130,290 210,290 196,380 144,380" fill="#a78bfa" opacity="0.08"/>
 
-  <!-- Brand glyph + title -->
-  <text x="48" y="46" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="28" font-weight="700" fill="#a78bfa" filter="url(#glow)">✻ KOSMOS</text>
-  <text x="200" y="46" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="15" fill="#c4b5fd" opacity="0.8">v0.1-alpha · KSC 2026</text>
-  <text x="900" y="46" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="14" fill="#c4b5fd" opacity="0.6">Chapter 1 — 프로젝트 개요</text>
+  <!-- UFO dish (bottom) -->
+  <ellipse cx="170" cy="292" rx="80" ry="18" fill="#5b21b6"/>
+  <ellipse cx="170" cy="289" rx="75" ry="16" fill="url(#ufo-body-grad)"/>
 
-  <!-- Main title -->
-  <text x="640" y="118" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="22" font-weight="700" fill="#e9d5ff" text-anchor="middle">
-    Claude Code 하네스를 한국 공공서비스 도메인으로 마이그레이션
+  <!-- UFO dome (top) -->
+  <path d="M 110 285 Q 110 235 170 228 Q 230 235 230 285 Z" fill="#c4b5fd" opacity="0.9"/>
+  <path d="M 125 280 Q 125 248 170 243 Q 215 248 215 280 Z" fill="#e9d5ff" opacity="0.6"/>
+
+  <!-- UFO lights -->
+  <circle cx="130" cy="292" r="6" fill="#10b981" filter="url(#glow-sm)"/>
+  <circle cx="155" cy="296" r="6" fill="#f59e0b" filter="url(#glow-sm)"/>
+  <circle cx="185" cy="297" r="6" fill="#f87171" filter="url(#glow-sm)"/>
+  <circle cx="210" cy="293" r="6" fill="#10b981" filter="url(#glow-sm)"/>
+
+  <!-- Landing lights (bottom of beam) -->
+  <circle cx="150" cy="418" r="4" fill="#a78bfa" opacity="0.6"/>
+  <circle cx="165" cy="422" r="3" fill="#a78bfa" opacity="0.4"/>
+  <circle cx="180" cy="420" r="4" fill="#a78bfa" opacity="0.5"/>
+
+  <!-- Brand glyph ✻ big -->
+  <text x="168" y="268" font-size="22" fill="#e9d5ff" text-anchor="middle" font-family="serif" filter="url(#glow-sm)">✻</text>
+
+  <!-- KOSMOS Logo area: right of UFO -->
+  <text x="290" y="130" font-size="72" font-weight="700" fill="#e9d5ff"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+    filter="url(#glow)" letter-spacing="6">KOSMOS</text>
+  <text x="293" y="160" font-size="22" fill="#c4b5fd"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
+    letter-spacing="2">✻  v0.1-alpha  ·  KSC 2026</text>
+
+  <!-- Horizontal divider -->
+  <line x1="290" y1="178" x2="1220" y2="178" stroke="#7c3aed" stroke-width="1.5" opacity="0.6"/>
+
+  <!-- One-liner definition -->
+  <text x="290" y="218" font-size="26" font-weight="600" fill="#ddd6fe"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">
+    한국 공공 API를 자연어로 만나는 시민 대화형 AI 플랫폼
   </text>
-  <text x="640" y="144" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="14" fill="#a78bfa" text-anchor="middle" opacity="0.8">
-    Migrating the Claude Code harness to the Korean public-service domain
-  </text>
 
-  <!-- LEFT PANEL: Claude Code -->
-  <rect x="40" y="164" width="340" height="380" rx="12" fill="url(#cardGrad)" stroke="#7c3aed" stroke-width="1.5" opacity="0.9"/>
-  <rect x="40" y="164" width="340" height="48" rx="12" fill="#5b21b6" opacity="0.9"/>
-  <rect x="40" y="188" width="340" height="24" fill="#5b21b6" opacity="0.9"/>
-  <text x="210" y="195" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="15" font-weight="700" fill="#e9d5ff" text-anchor="middle">Claude Code</text>
-  <text x="210" y="213" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="11" fill="#c4b5fd" text-anchor="middle">개발자 중심 코딩 하네스</text>
+  <!-- Scenario cards: 3 cards below -->
+  <!-- Card 1: Safe Route -->
+  <rect x="290" y="258" width="288" height="210" rx="14" fill="url(#card-grad)" stroke="#7c3aed" stroke-width="1.5"/>
+  <rect x="290" y="258" width="288" height="36" rx="14" fill="#5b21b6" opacity="0.7"/>
+  <rect x="290" y="280" width="288" height="14" rx="0" fill="#5b21b6" opacity="0.7"/>
+  <text x="306" y="282" font-size="13" font-weight="700" fill="#10b981"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">안전 경로</text>
+  <text x="356" y="282" font-size="12" fill="#a78bfa"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">KOROAD + KMA</text>
 
-  <!-- CC terminal icon (simplified) -->
-  <rect x="160" y="232" width="100" height="64" rx="6" fill="#1e0748" stroke="#7c3aed" stroke-width="1"/>
-  <text x="172" y="252" font-family="monospace" font-size="9" fill="#a78bfa">$ claude code</text>
-  <text x="172" y="268" font-family="monospace" font-size="9" fill="#c4b5fd">⏺ Reading file...</text>
-  <text x="172" y="284" font-family="monospace" font-size="9" fill="#c4b5fd">⎿ Edit: main.py</text>
+  <text x="306" y="312" font-size="13" fill="#c4b5fd"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">시민:</text>
+  <text x="336" y="312" font-size="13" fill="#e9d5ff"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">"내일 부산→서울, 안전한</text>
+  <text x="336" y="330" font-size="13" fill="#e9d5ff"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">경로 추천해줘"</text>
 
-  <text x="210" y="320" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="12" fill="#c4b5fd" text-anchor="middle">사용자: 소프트웨어 개발자</text>
+  <line x1="306" y1="342" x2="562" y2="342" stroke="#7c3aed" stroke-width="1" opacity="0.5"/>
 
-  <!-- CC tools list -->
-  <g font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif" font-size="12" fill="#ddd6fe">
-    <text x="68" y="346">⏺ Read · Edit · Bash · Grep</text>
-    <text x="68" y="366">⏺ WebFetch · WebSearch · Glob</text>
-    <text x="68" y="386">⏺ tool-loop + permission gauntlet</text>
-    <text x="68" y="406">⏺ context assembly + TUI</text>
-  </g>
+  <text x="306" y="362" font-size="12" fill="#a78bfa"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">KOSMOS:</text>
+  <text x="306" y="380" font-size="12" fill="#ddd6fe"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">교통사고 위험 구간 + 기상 특보</text>
+  <text x="306" y="398" font-size="12" fill="#ddd6fe"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">융합 → 위험 등급 + 우회로 추천</text>
 
-  <rect x="68" y="422" width="284" height="28" rx="6" fill="#3b0764" stroke="#6d28d9" stroke-width="1"/>
-  <text x="210" y="441" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="11" fill="#a78bfa" text-anchor="middle">Apache-2.0 · GA 2025년 5월</text>
+  <rect x="306" y="416" width="82" height="22" rx="4" fill="#10b981" opacity="0.2"/>
+  <text x="347" y="431" font-size="11" fill="#10b981" text-anchor="middle"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">도로 위험도</text>
+  <rect x="396" y="416" width="82" height="22" rx="4" fill="#10b981" opacity="0.2"/>
+  <text x="437" y="431" font-size="11" fill="#10b981" text-anchor="middle"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">우회 경로</text>
 
-  <rect x="68" y="462" width="284" height="60" rx="6" fill="#1e0748" stroke="#7c3aed" stroke-width="0.8" opacity="0.8"/>
-  <text x="210" y="480" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="11" fill="#c4b5fd" text-anchor="middle">Harness Layer</text>
-  <text x="210" y="496" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="10" fill="#a78bfa" text-anchor="middle">tool loop · permission gauntlet</text>
-  <text x="210" y="510" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="10" fill="#a78bfa" text-anchor="middle">context assembly · TUI</text>
+  <!-- Card 2: Night Emergency -->
+  <rect x="596" y="258" width="288" height="210" rx="14" fill="url(#card-grad)" stroke="#7c3aed" stroke-width="1.5"/>
+  <rect x="596" y="258" width="288" height="36" rx="14" fill="#5b21b6" opacity="0.7"/>
+  <rect x="596" y="280" width="288" height="14" rx="0" fill="#5b21b6" opacity="0.7"/>
+  <text x="612" y="282" font-size="13" font-weight="700" fill="#f87171"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">야간 응급실</text>
+  <text x="668" y="282" font-size="12" fill="#a78bfa"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">119 + HIRA</text>
 
-  <!-- CENTER ARROW SECTION -->
-  <g>
-    <!-- Arrow body -->
-    <rect x="415" y="300" width="200" height="44" rx="8" fill="url(#arrowGrad)" opacity="0.9"/>
-    <polygon points="615,300 650,322 615,344" fill="#a78bfa"/>
-    <!-- Arrow text -->
-    <text x="515" y="319" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-          font-size="13" font-weight="700" fill="#1e0748" text-anchor="middle">harness</text>
-    <text x="515" y="337" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-          font-size="13" font-weight="700" fill="#1e0748" text-anchor="middle">migration</text>
-  </g>
+  <text x="612" y="312" font-size="13" fill="#c4b5fd"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">시민:</text>
+  <text x="642" y="312" font-size="13" fill="#e9d5ff"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">"아이 고열, 근처 야간</text>
+  <text x="642" y="330" font-size="13" fill="#e9d5ff"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">응급실 어디야?"</text>
 
-  <!-- UFO mascot (SVG path, centered) -->
-  <g transform="translate(510, 170)">
-    <!-- UFO dome -->
-    <ellipse cx="65" cy="38" rx="32" ry="22" fill="#a78bfa" opacity="0.95"/>
-    <ellipse cx="65" cy="38" rx="22" ry="14" fill="#c4b5fd" opacity="0.5"/>
-    <!-- UFO disc -->
-    <ellipse cx="65" cy="56" rx="50" ry="14" fill="#7c3aed"/>
-    <ellipse cx="65" cy="56" rx="42" ry="10" fill="#a78bfa"/>
-    <!-- Landing lights -->
-    <circle cx="35" cy="62" r="4" fill="#fbbf24" opacity="0.9"/>
-    <circle cx="55" cy="66" r="4" fill="#a78bfa" opacity="0.9"/>
-    <circle cx="75" cy="66" r="4" fill="#fbbf24" opacity="0.9"/>
-    <circle cx="95" cy="62" r="4" fill="#a78bfa" opacity="0.9"/>
-    <!-- Beam -->
-    <polygon points="45,70 85,70 100,96 30,96" fill="#a78bfa" opacity="0.15"/>
-    <!-- Star glints -->
-    <text x="10" y="20" font-size="10" fill="#e9d5ff" opacity="0.7">✦</text>
-    <text x="108" y="30" font-size="8" fill="#e9d5ff" opacity="0.5">✦</text>
-    <text x="0" y="50" font-size="6" fill="#c4b5fd" opacity="0.6">·</text>
-    <text x="120" y="55" font-size="6" fill="#c4b5fd" opacity="0.6">·</text>
-  </g>
+  <line x1="612" y1="342" x2="868" y2="342" stroke="#7c3aed" stroke-width="1" opacity="0.5"/>
 
-  <!-- RIGHT PANEL: KOSMOS scenarios -->
-  <rect x="700" y="164" width="540" height="380" rx="12" fill="url(#cardGrad)" stroke="#7c3aed" stroke-width="1.5" opacity="0.9"/>
-  <rect x="700" y="164" width="540" height="48" rx="12" fill="#5b21b6" opacity="0.9"/>
-  <rect x="700" y="188" width="540" height="24" fill="#5b21b6" opacity="0.9"/>
-  <text x="970" y="195" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="15" font-weight="700" fill="#e9d5ff" text-anchor="middle">KOSMOS</text>
-  <text x="970" y="213" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="11" fill="#c4b5fd" text-anchor="middle">국민·국가행정시스템 작업 하네스</text>
+  <text x="612" y="362" font-size="12" fill="#a78bfa"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">KOSMOS:</text>
+  <text x="612" y="380" font-size="12" fill="#ddd6fe"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">위치 기반 응급실 검색 +</text>
+  <text x="612" y="398" font-size="12" fill="#ddd6fe"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">실시간 대기시간 융합 제공</text>
 
-  <!-- Scenario cards -->
-  <!-- Scenario 1: 안전 경로 -->
-  <rect x="720" y="230" width="500" height="88" rx="8" fill="#1e0748" stroke="#6d28d9" stroke-width="1" opacity="0.9"/>
-  <rect x="720" y="230" width="6" height="88" rx="3" fill="#10b981"/>
-  <text x="740" y="251" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="12" font-weight="700" fill="#10b981">안전 경로 추천</text>
-  <text x="740" y="269" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="11" fill="#ddd6fe">"내일 부산에서 서울 가는데, 안전한 경로 추천해줘"</text>
-  <text x="740" y="287" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="10" fill="#a78bfa">⎿ KOROAD 사고 데이터 + KMA 기상 특보 + 도로위험지수 융합</text>
-  <text x="740" y="305" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="10" fill="#c4b5fd">"경부고속도로 대전-천안 구간 위험 등급, 안개 주의보. 중부내륙 우회 추천"</text>
+  <rect x="612" y="416" width="82" height="22" rx="4" fill="#f87171" opacity="0.2"/>
+  <text x="653" y="431" font-size="11" fill="#f87171" text-anchor="middle"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">응급실 위치</text>
+  <rect x="702" y="416" width="82" height="22" rx="4" fill="#f87171" opacity="0.2"/>
+  <text x="743" y="431" font-size="11" fill="#f87171" text-anchor="middle"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">대기시간</text>
 
-  <!-- Scenario 2: 야간 응급실 -->
-  <rect x="720" y="330" width="500" height="88" rx="8" fill="#1e0748" stroke="#6d28d9" stroke-width="1" opacity="0.9"/>
-  <rect x="720" y="330" width="6" height="88" rx="3" fill="#f59e0b"/>
-  <text x="740" y="351" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="12" font-weight="700" fill="#f59e0b">야간 응급실 안내</text>
-  <text x="740" y="369" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="11" fill="#ddd6fe">"아이가 열이 나는데 근처 야간 응급실 어디야?"</text>
-  <text x="740" y="387" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="10" fill="#a78bfa">⎿ 119 응급정보 API (NFA119) + HIRA 병원정보 융합</text>
-  <text x="740" y="405" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="10" fill="#c4b5fd">위치 기반 응급실 목록 + 현재 대기 시간</text>
+  <!-- Card 3: Birth Subsidy -->
+  <rect x="902" y="258" width="288" height="210" rx="14" fill="url(#card-grad)" stroke="#7c3aed" stroke-width="1.5"/>
+  <rect x="902" y="258" width="288" height="36" rx="14" fill="#5b21b6" opacity="0.7"/>
+  <rect x="902" y="280" width="288" height="14" rx="0" fill="#5b21b6" opacity="0.7"/>
+  <text x="918" y="282" font-size="13" font-weight="700" fill="#f59e0b"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">출산 보조금</text>
+  <text x="978" y="282" font-size="12" fill="#a78bfa"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">MOHW + Gov24</text>
 
-  <!-- Scenario 3: 출산 보조금 -->
-  <rect x="720" y="430" width="500" height="88" rx="8" fill="#1e0748" stroke="#6d28d9" stroke-width="1" opacity="0.9"/>
-  <rect x="720" y="430" width="6" height="88" rx="3" fill="#a78bfa"/>
-  <text x="740" y="451" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="12" font-weight="700" fill="#a78bfa">출산 보조금 신청</text>
-  <text x="740" y="469" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="11" fill="#ddd6fe">"출산 보조금 신청하고 싶은데"</text>
-  <text x="740" y="487" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="10" fill="#a78bfa">⎿ MOHW 복지 자격 API + Gov24 신청 안내</text>
-  <text x="740" y="505" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="10" fill="#c4b5fd">자격 확인 · 필요 서류 · 온라인 신청 가이드</text>
+  <text x="918" y="312" font-size="13" fill="#c4b5fd"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">시민:</text>
+  <text x="948" y="312" font-size="13" fill="#e9d5ff"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">"출산 보조금 신청하고</text>
+  <text x="948" y="330" font-size="13" fill="#e9d5ff"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">싶은데"</text>
+
+  <line x1="918" y1="342" x2="1174" y2="342" stroke="#7c3aed" stroke-width="1" opacity="0.5"/>
+
+  <text x="918" y="362" font-size="12" fill="#a78bfa"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">KOSMOS:</text>
+  <text x="918" y="380" font-size="12" fill="#ddd6fe"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">자격 확인 + 필요 서류 안내</text>
+  <text x="918" y="398" font-size="12" fill="#ddd6fe"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">+ 온라인 신청 가이드 제공</text>
+
+  <rect x="918" y="416" width="82" height="22" rx="4" fill="#f59e0b" opacity="0.2"/>
+  <text x="959" y="431" font-size="11" fill="#f59e0b" text-anchor="middle"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">자격 확인</text>
+  <rect x="1008" y="416" width="82" height="22" rx="4" fill="#f59e0b" opacity="0.2"/>
+  <text x="1049" y="431" font-size="11" fill="#f59e0b" text-anchor="middle"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">신청 가이드</text>
+
+  <!-- Connecting label between cards -->
+  <text x="640" y="246" font-size="14" fill="#7c3aed" text-anchor="middle"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">시민 시나리오 3종 — 부처를 몰라도, KOSMOS가 API를 연결한다</text>
 
   <!-- Bottom meta bar -->
-  <rect x="0" y="572" width="1280" height="1" fill="#7c3aed" opacity="0.5"/>
-  <rect x="0" y="573" width="1280" height="147" fill="#1e0748" opacity="0.7"/>
+  <rect x="0" y="648" width="1280" height="72" fill="#1e0748" opacity="0.95"/>
+  <line x1="0" y1="648" x2="1280" y2="648" stroke="#7c3aed" stroke-width="1.5"/>
 
-  <!-- Meta labels -->
-  <!-- K-EXAONE -->
-  <rect x="40" y="596" width="180" height="48" rx="8" fill="#3b0764" stroke="#6d28d9" stroke-width="1"/>
-  <text x="130" y="618" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="11" font-weight="700" fill="#a78bfa" text-anchor="middle">K-EXAONE</text>
-  <text x="130" y="635" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="10" fill="#c4b5fd" text-anchor="middle">K-EXAONE-236B-A23B · 128K ctx</text>
+  <!-- Bottom meta items -->
+  <rect x="30" y="664" width="160" height="26" rx="6" fill="#3b0764" stroke="#7c3aed" stroke-width="1"/>
+  <text x="110" y="681" font-size="12" fill="#c4b5fd" text-anchor="middle"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">K-EXAONE-236B-A23B</text>
 
-  <!-- FriendliAI -->
-  <rect x="236" y="596" width="180" height="48" rx="8" fill="#3b0764" stroke="#6d28d9" stroke-width="1"/>
-  <text x="326" y="618" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="11" font-weight="700" fill="#a78bfa" text-anchor="middle">FriendliAI Serverless</text>
-  <text x="326" y="635" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="10" fill="#c4b5fd" text-anchor="middle">OpenAI-compatible · Tier 1</text>
+  <rect x="202" y="664" width="170" height="26" rx="6" fill="#3b0764" stroke="#7c3aed" stroke-width="1"/>
+  <text x="287" y="681" font-size="12" fill="#c4b5fd" text-anchor="middle"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">FriendliAI Serverless</text>
 
-  <!-- Apache -->
-  <rect x="432" y="596" width="140" height="48" rx="8" fill="#3b0764" stroke="#6d28d9" stroke-width="1"/>
-  <text x="502" y="618" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="11" font-weight="700" fill="#a78bfa" text-anchor="middle">Apache-2.0</text>
-  <text x="502" y="635" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="10" fill="#c4b5fd" text-anchor="middle">Open Source</text>
+  <rect x="384" y="664" width="108" height="26" rx="6" fill="#3b0764" stroke="#7c3aed" stroke-width="1"/>
+  <text x="438" y="681" font-size="12" fill="#c4b5fd" text-anchor="middle"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">Apache-2.0</text>
 
-  <!-- Student portfolio -->
-  <rect x="588" y="596" width="200" height="48" rx="8" fill="#3b0764" stroke="#6d28d9" stroke-width="1"/>
-  <text x="688" y="618" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="11" font-weight="700" fill="#a78bfa" text-anchor="middle">Student Portfolio</text>
-  <text x="688" y="635" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="10" fill="#c4b5fd" text-anchor="middle">umyunsang · Not affiliated</text>
+  <rect x="504" y="664" width="140" height="26" rx="6" fill="#3b0764" stroke="#7c3aed" stroke-width="1"/>
+  <text x="574" y="681" font-size="12" fill="#c4b5fd" text-anchor="middle"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">학생 포트폴리오</text>
 
-  <!-- KSC 2026 -->
-  <rect x="804" y="596" width="140" height="48" rx="8" fill="#3b0764" stroke="#a78bfa" stroke-width="1.5"/>
-  <text x="874" y="618" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="11" font-weight="700" fill="#e9d5ff" text-anchor="middle">KSC 2026</text>
-  <text x="874" y="635" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="10" fill="#c4b5fd" text-anchor="middle">한국소프트웨어종합학술대회</text>
-
-  <!-- data.go.kr -->
-  <rect x="960" y="596" width="280" height="48" rx="8" fill="#3b0764" stroke="#6d28d9" stroke-width="1"/>
-  <text x="1100" y="618" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="11" font-weight="700" fill="#a78bfa" text-anchor="middle">data.go.kr</text>
-  <text x="1100" y="635" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="10" fill="#c4b5fd" text-anchor="middle">5,000+ 공공 API · 10만 건 데이터셋</text>
-
-  <!-- 6-layer architecture mini summary -->
-  <g transform="translate(40, 658)">
-    <text font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-          font-size="10" fill="#7c3aed" font-weight="700">6-Layer Architecture:</text>
-    <text x="145" font-family="monospace" font-size="10" fill="#c4b5fd">
-      L1 Query Engine · L2 Tool System · L3 Permission Pipeline · L4 Agent Swarms · L5 Context Assembly · L6 Error Recovery
-    </text>
-  </g>
-
-  <!-- Bottom note -->
-  <text x="640" y="710" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="9" fill="#7c3aed" text-anchor="middle" opacity="0.7">
-    Source: docs/vision.md § The thesis · docs/requirements/kosmos-migration-tree.md § ROOT
-  </text>
+  <text x="1240" y="684" font-size="13" fill="#7c3aed" text-anchor="end"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">✻ KOSMOS</text>
 </svg>

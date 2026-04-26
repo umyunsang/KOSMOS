@@ -1,277 +1,208 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
-  <title>KOSMOS v0.1-alpha — Chapter 5: 진행 결과물</title>
-  <desc>Deliverables quadrant: 24 adapters, test metrics, 6 Phase Epics closed, alignment. Source: content.md § Chapter 5, docs/api/README.md, smoke-checklist</desc>
-
   <defs>
     <linearGradient id="bg5" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#4c1d95;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#2d1259;stop-opacity:1" />
+      <stop offset="0%" style="stop-color:#1e0748"/>
+      <stop offset="100%" style="stop-color:#3b0764"/>
     </linearGradient>
-    <linearGradient id="quadGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" style="stop-color:#5b21b6;stop-opacity:0.9" />
-      <stop offset="100%" style="stop-color:#3b0764;stop-opacity:0.9" />
-    </linearGradient>
-    <linearGradient id="centerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#6d28d9;stop-opacity:0.95" />
-      <stop offset="100%" style="stop-color:#4c1d95;stop-opacity:0.95" />
+    <linearGradient id="cg5" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#2d1259;stop-opacity:0.95"/>
+      <stop offset="100%" style="stop-color:#1e0748;stop-opacity:0.95"/>
     </linearGradient>
     <filter id="glow5">
-      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-      <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+      <feGaussianBlur stdDeviation="4" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
-    <filter id="softGlow">
-      <feGaussianBlur stdDeviation="1.5" result="coloredBlur"/>
-      <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    <filter id="gs5">
+      <feGaussianBlur stdDeviation="2" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
   </defs>
 
-  <!-- Background -->
   <rect width="1280" height="720" fill="url(#bg5)"/>
 
-  <!-- Subtle glow at center -->
-  <circle cx="640" cy="400" r="200" fill="#7c3aed" opacity="0.05"/>
-
   <!-- Header -->
-  <rect x="0" y="0" width="1280" height="72" fill="#3b0764" opacity="0.9"/>
-  <line x1="0" y1="72" x2="1280" y2="72" stroke="#a78bfa" stroke-width="1.5" opacity="0.6"/>
-  <text x="48" y="46" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="28" font-weight="700" fill="#a78bfa" filter="url(#glow5)">✻ KOSMOS</text>
-  <text x="200" y="46" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="15" fill="#c4b5fd" opacity="0.8">v0.1-alpha · KSC 2026</text>
-  <text x="840" y="46" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="14" fill="#c4b5fd" opacity="0.6">Chapter 5 — 진행 결과물</text>
+  <rect x="0" y="0" width="1280" height="62" fill="#1e0748" opacity="0.92"/>
+  <line x1="0" y1="62" x2="1280" y2="62" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="40" y="41" font-size="26" font-weight="700" fill="#e9d5ff"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">
+    ✻  진행 결과물
+  </text>
+  <text x="1240" y="41" font-size="13" fill="#7c3aed" text-anchor="end"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">Chapter 5</text>
 
-  <!-- QUADRANT GRID -->
+  <!-- ===== Center badge ===== -->
+  <rect x="460" y="74" width="360" height="60" rx="12" fill="#4c1d95" stroke="#a78bfa" stroke-width="2" filter="url(#glow5)"/>
+  <text x="640" y="104" font-size="20" font-weight="800" fill="#e9d5ff" text-anchor="middle"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">✻  KOSMOS v0.1-alpha  shipped</text>
+  <text x="640" y="124" font-size="13" fill="#c4b5fd" text-anchor="middle"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">2026-04-26 · Initiative #1631 closed</text>
 
-  <!-- Q1: 좌상 — 어댑터 카탈로그 -->
-  <rect x="40" y="88" width="538" height="284" rx="10" fill="url(#quadGrad)" stroke="#7c3aed" stroke-width="1.5"/>
-  <rect x="40" y="88" width="538" height="36" rx="10" fill="#5b21b6" opacity="0.9"/>
-  <rect x="40" y="108" width="538" height="16" fill="#5b21b6" opacity="0.9"/>
-  <text x="309" y="113" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="13" font-weight="700" fill="#e9d5ff" text-anchor="middle">① 어댑터 카탈로그</text>
-  <text x="309" y="120" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="9" fill="#7c3aed" text-anchor="middle">Source: docs/api/README.md Matrix A</text>
+  <!-- ===== Quadrant grid ===== -->
+  <!-- Horizontal divider -->
+  <line x1="40" y1="400" x2="1240" y2="400" stroke="#5b21b6" stroke-width="1.5" opacity="0.5"/>
+  <!-- Vertical divider -->
+  <line x1="640" y1="148" x2="640" y2="648" stroke="#5b21b6" stroke-width="1.5" opacity="0.5"/>
 
-  <!-- Big number -->
-  <text x="309" y="168" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="56" font-weight="900" fill="#a78bfa" text-anchor="middle" filter="url(#glow5)">24</text>
-  <text x="309" y="188" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="13" fill="#e9d5ff" text-anchor="middle">total adapters · 7개 기관</text>
+  <!-- ===== Q1 (top-left): 24 Adapter catalog ===== -->
+  <text x="50" y="168" font-size="14" font-weight="700" fill="#10b981"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">24 어댑터 카탈로그</text>
 
-  <!-- Breakdown bar -->
-  <rect x="60" y="198" width="518" height="20" rx="4" fill="#1e0748"/>
-  <!-- Live: 12/24 = 50% -->
-  <rect x="60" y="198" width="259" height="20" rx="4" fill="#10b981" opacity="0.8"/>
-  <!-- Mock: 11/24 = ~46% -->
-  <rect x="319" y="198" width="236" height="20" rx="4" fill="#7c3aed" opacity="0.8"/>
-  <!-- Meta: 1/24 -->
-  <rect x="555" y="198" width="23" height="20" rx="4" fill="#f59e0b" opacity="0.8"/>
+  <!-- Live adapters -->
+  <rect x="40" y="178" width="265" height="188" rx="8" fill="url(#cg5)" stroke="#10b981" stroke-width="1.5"/>
+  <text x="173" y="200" font-size="13" font-weight="700" fill="#10b981" text-anchor="middle"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">Live 12</text>
+  <text x="56" y="220" font-size="11" fill="#ddd6fe"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">KOROAD (2) · KMA (6) · HIRA (1)</text>
+  <text x="56" y="238" font-size="11" fill="#ddd6fe"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">NMC (1) · NFA119 (1) · MOHW (1)</text>
+  <line x1="56" y1="248" x2="289" y2="248" stroke="#10b981" stroke-width="0.5" opacity="0.4"/>
+  <text x="173" y="270" font-size="13" font-weight="700" fill="#a78bfa" text-anchor="middle"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">Mock 11</text>
+  <text x="56" y="290" font-size="11" fill="#ddd6fe"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">Verify (6) · Submit (2) · Subscribe (3)</text>
+  <line x1="56" y1="300" x2="289" y2="300" stroke="#a78bfa" stroke-width="0.5" opacity="0.4"/>
+  <text x="173" y="322" font-size="13" font-weight="700" fill="#f59e0b" text-anchor="middle"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">Meta: resolve_location (1)</text>
+  <text x="56" y="342" font-size="11" fill="#ddd6fe"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">Geocoding: juso/sgis/kakao</text>
+  <text x="56" y="358" font-size="11" fill="#ddd6fe"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">25 Draft 2020-12 JSON Schemas</text>
 
-  <text x="189" y="213" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="11" font-weight="700" fill="#fff" text-anchor="middle">Live 12</text>
-  <text x="435" y="213" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="11" font-weight="700" fill="#fff" text-anchor="middle">Mock 11</text>
-  <text x="567" y="213" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="9" fill="#fff" text-anchor="middle">+1</text>
+  <!-- Primitive breakdown -->
+  <rect x="318" y="178" width="295" height="188" rx="8" fill="url(#cg5)" stroke="#a78bfa" stroke-width="1.5"/>
+  <text x="466" y="200" font-size="13" font-weight="700" fill="#a78bfa" text-anchor="middle"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">4 Primitive 분포</text>
 
-  <!-- Adapter breakdown rows -->
-  <g font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif" font-size="10">
-    <rect x="60" y="226" width="518" height="20" rx="3" fill="#1e0748" opacity="0.6"/>
-    <text x="70" y="240" fill="#10b981" font-weight="700">Live tier (12)</text>
-    <text x="200" y="240" fill="#c4b5fd">KOROAD×2 · KMA×8 · HIRA · NMC(L3) · NFA119 · MOHW</text>
+  <rect x="334" y="212" width="80" height="30" rx="5" fill="#10b981" opacity="0.15" stroke="#10b981" stroke-width="1"/>
+  <text x="374" y="231" font-size="13" font-weight="700" fill="#10b981" text-anchor="middle"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">lookup</text>
 
-    <rect x="60" y="248" width="518" height="20" rx="3" fill="#2d1259" opacity="0.6"/>
-    <text x="70" y="262" fill="#a78bfa" font-weight="700">Mock tier (11)</text>
-    <text x="200" y="262" fill="#c4b5fd">verify×6 · submit×2 · subscribe×3</text>
+  <text x="422" y="231" font-size="12" fill="#ddd6fe"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">13 어댑터</text>
 
-    <rect x="60" y="270" width="518" height="20" rx="3" fill="#1e0748" opacity="0.6"/>
-    <text x="70" y="284" fill="#f59e0b" font-weight="700">Meta (1)</text>
-    <text x="200" y="284" fill="#c4b5fd">resolve_location (Geocoding · juso/sgis/kakao)</text>
+  <rect x="334" y="252" width="80" height="30" rx="5" fill="#f87171" opacity="0.15" stroke="#f87171" stroke-width="1"/>
+  <text x="374" y="271" font-size="13" font-weight="700" fill="#f87171" text-anchor="middle"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">verify</text>
+  <text x="422" y="271" font-size="12" fill="#ddd6fe"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">6 어댑터</text>
 
-    <rect x="60" y="292" width="518" height="20" rx="3" fill="#2d1259" opacity="0.6"/>
-    <text x="70" y="306" fill="#ddd6fe" font-weight="700">Primitives</text>
-    <text x="200" y="306" fill="#c4b5fd">lookup×13 · verify×6 · submit×2 · subscribe×3</text>
+  <rect x="334" y="292" width="80" height="30" rx="5" fill="#f59e0b" opacity="0.15" stroke="#f59e0b" stroke-width="1"/>
+  <text x="374" y="311" font-size="13" font-weight="700" fill="#f59e0b" text-anchor="middle"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">submit</text>
+  <text x="422" y="311" font-size="12" fill="#ddd6fe"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">2 어댑터</text>
 
-    <rect x="60" y="314" width="518" height="20" rx="3" fill="#1e0748" opacity="0.6"/>
-    <text x="70" y="328" fill="#ddd6fe" font-weight="700">JSON Schema</text>
-    <text x="200" y="328" fill="#c4b5fd">25 Draft 2020-12 파일 · docs/api/schemas/ · idempotent build</text>
+  <rect x="334" y="332" width="80" height="30" rx="5" fill="#c4b5fd" opacity="0.15" stroke="#c4b5fd" stroke-width="1"/>
+  <text x="374" y="351" font-size="13" font-weight="700" fill="#c4b5fd" text-anchor="middle"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">subscribe</text>
+  <text x="422" y="351" font-size="12" fill="#ddd6fe"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">3 어댑터</text>
 
-    <rect x="60" y="336" width="518" height="20" rx="3" fill="#2d1259" opacity="0.6"/>
-    <text x="70" y="350" fill="#ddd6fe" font-weight="700">Spec 구조</text>
-    <text x="200" y="350" fill="#c4b5fd">24/24 YAML front matter · 23/24 정확히 7-section template</text>
-  </g>
+  <!-- ===== Q2 (top-right): Quality metrics ===== -->
+  <text x="660" y="168" font-size="14" font-weight="700" fill="#10b981"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">품질 지표</text>
 
-  <!-- Q2: 우상 — 품질 지표 -->
-  <rect x="594" y="88" width="646" height="284" rx="10" fill="url(#quadGrad)" stroke="#7c3aed" stroke-width="1.5"/>
-  <rect x="594" y="88" width="646" height="36" rx="10" fill="#5b21b6" opacity="0.9"/>
-  <rect x="594" y="108" width="646" height="16" fill="#5b21b6" opacity="0.9"/>
-  <text x="917" y="113" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="13" font-weight="700" fill="#e9d5ff" text-anchor="middle">② 품질 지표</text>
-  <text x="917" y="120" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="9" fill="#7c3aed" text-anchor="middle">Source: smoke-checklist.md · spec-review-notes.md</text>
+  <rect x="650" y="178" width="560" height="100" rx="8" fill="url(#cg5)" stroke="#10b981" stroke-width="1.5"/>
+  <text x="668" y="204" font-size="13" font-weight="700" fill="#10b981"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">bun test 결과</text>
 
-  <!-- bun test result large display -->
-  <rect x="614" y="132" width="606" height="72" rx="8" fill="#1e0748" stroke="#10b981" stroke-width="1.5"/>
-  <text x="688" y="155" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="12" font-weight="700" fill="#a78bfa">bun test</text>
-  <text x="917" y="155" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="11" fill="#10b981" text-anchor="middle" filter="url(#softGlow)">928 pass</text>
-  <text x="688" y="178" font-family="monospace" font-size="14" fill="#e9d5ff">928 / 4 skip / 3 todo /</text>
-  <text x="960" y="178" font-family="monospace" font-size="18" font-weight="700" fill="#10b981" filter="url(#softGlow)">0 fail</text>
-  <text x="917" y="196" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="10" fill="#7c3aed" text-anchor="middle">총 935 tests · keybindings 189 pass · 0 errors</text>
+  <text x="668" y="226" font-size="22" font-weight="800" fill="#e9d5ff"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">928 pass</text>
+  <text x="820" y="226" font-size="18" fill="#10b981"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">/ 0 fail / 0 errors</text>
+  <text x="668" y="252" font-size="12" fill="#c4b5fd"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">4 skip · 3 todo · 935 tests total</text>
+  <text x="668" y="268" font-size="12" fill="#c4b5fd"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">pytest + pytest-asyncio + bun test 통합</text>
 
-  <!-- Metric cards row -->
-  <g font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">
-    <!-- 25 JSON Schema -->
-    <rect x="614" y="214" width="140" height="60" rx="6" fill="#2d1259" stroke="#6d28d9" stroke-width="1"/>
-    <text x="684" y="238" font-size="28" font-weight="900" fill="#a78bfa" text-anchor="middle" filter="url(#softGlow)">25</text>
-    <text x="684" y="256" font-size="9" fill="#c4b5fd" text-anchor="middle">JSON Schema</text>
-    <text x="684" y="268" font-size="8" fill="#7c3aed" text-anchor="middle">Draft 2020-12</text>
+  <!-- Schema / evidence row -->
+  <rect x="650" y="288" width="268" height="76" rx="8" fill="url(#cg5)" stroke="#a78bfa" stroke-width="1.5"/>
+  <text x="784" y="314" font-size="13" font-weight="700" fill="#a78bfa" text-anchor="middle"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">JSON Schema</text>
+  <text x="784" y="340" font-size="26" font-weight="800" fill="#e9d5ff" text-anchor="middle"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">25</text>
+  <text x="784" y="358" font-size="11" fill="#7c3aed" text-anchor="middle"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">Draft 2020-12 · 결정론적 생성</text>
 
-    <!-- 19 visual evidence -->
-    <rect x="764" y="214" width="140" height="60" rx="6" fill="#2d1259" stroke="#6d28d9" stroke-width="1"/>
-    <text x="834" y="238" font-size="28" font-weight="900" fill="#a78bfa" text-anchor="middle" filter="url(#softGlow)">19</text>
-    <text x="834" y="256" font-size="9" fill="#c4b5fd" text-anchor="middle">visual evidence</text>
-    <text x="834" y="268" font-size="8" fill="#7c3aed" text-anchor="middle">surface 자동 캡처</text>
+  <rect x="942" y="288" width="268" height="76" rx="8" fill="url(#cg5)" stroke="#a78bfa" stroke-width="1.5"/>
+  <text x="1076" y="314" font-size="13" font-weight="700" fill="#a78bfa" text-anchor="middle"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">Visual Evidence</text>
+  <text x="1076" y="340" font-size="26" font-weight="800" fill="#e9d5ff" text-anchor="middle"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">19 / 18</text>
+  <text x="1076" y="358" font-size="11" fill="#7c3aed" text-anchor="middle"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">증거 스크린샷 · 통합 검증</text>
 
-    <!-- 30sec cold-read -->
-    <rect x="914" y="214" width="140" height="60" rx="6" fill="#2d1259" stroke="#6d28d9" stroke-width="1"/>
-    <text x="984" y="238" font-size="24" font-weight="900" fill="#10b981" text-anchor="middle" filter="url(#softGlow)">19초</text>
-    <text x="984" y="256" font-size="9" fill="#c4b5fd" text-anchor="middle">cold-read self-test</text>
-    <text x="984" y="268" font-size="8" fill="#7c3aed" text-anchor="middle">목표 30초 → 19초 PASS</text>
+  <!-- ===== Q3 (bottom-left): Epics closed ===== -->
+  <text x="50" y="422" font-size="14" font-weight="700" fill="#10b981"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">6 Phase Epic — 전부 closed</text>
 
-    <!-- 0 CRITICAL -->
-    <rect x="1064" y="214" width="136" height="60" rx="6" fill="#2d1259" stroke="#6d28d9" stroke-width="1"/>
-    <text x="1132" y="238" font-size="24" font-weight="900" fill="#10b981" text-anchor="middle" filter="url(#softGlow)">0</text>
-    <text x="1132" y="256" font-size="9" fill="#c4b5fd" text-anchor="middle">Copilot CRITICAL</text>
-    <text x="1132" y="268" font-size="8" fill="#7c3aed" text-anchor="middle">Review Gate PASS</text>
-  </g>
+  <rect x="40" y="436" width="570" height="185" rx="8" fill="url(#cg5)" stroke="#10b981" stroke-width="1.5"/>
 
-  <!-- Visual evidence breakdown -->
-  <g font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif" font-size="9">
-    <rect x="614" y="282" width="606" height="72" rx="6" fill="#1e0748" stroke="#3b0764" stroke-width="1" opacity="0.9"/>
-    <text x="625" y="298" fill="#a78bfa" font-weight="700" font-size="10">Visual Evidence (19 surface)</text>
-    <text x="625" y="312" fill="#c4b5fd">5-step Onboarding (5) · Primitive flows (5) · Error envelopes (3)</text>
-    <text x="625" y="326" fill="#c4b5fd">Slash commands (3) · PDF render (1) · 수동 deferred (2)</text>
-    <text x="625" y="340" fill="#7c3aed">브랜드 글리프 ✻ · 한국어 primary + EN hint · AAL 라벨 · 에러 border 3종 검증</text>
-    <text x="625" y="354" fill="#7c3aed">purple(LLM) / orange(tool) / red(network) · ink-testing-library render()+lastFrame()</text>
-  </g>
+  <rect x="60" y="452" width="126" height="26" rx="5" fill="#10b981" opacity="0.15" stroke="#10b981" stroke-width="1"/>
+  <text x="123" y="469" font-size="12" fill="#10b981" text-anchor="middle"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">#1632 P0 Baseline</text>
 
-  <!-- Q3: 좌하 — Epics closed -->
-  <rect x="40" y="384" width="538" height="256" rx="10" fill="url(#quadGrad)" stroke="#7c3aed" stroke-width="1.5"/>
-  <rect x="40" y="384" width="538" height="36" rx="10" fill="#5b21b6" opacity="0.9"/>
-  <rect x="40" y="400" width="538" height="20" fill="#5b21b6" opacity="0.9"/>
-  <text x="309" y="409" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="13" font-weight="700" fill="#e9d5ff" text-anchor="middle">③ Initiative #1631 — 6 Phase Epics ALL CLOSED</text>
+  <rect x="200" y="452" width="142" height="26" rx="5" fill="#10b981" opacity="0.15" stroke="#10b981" stroke-width="1"/>
+  <text x="271" y="469" font-size="12" fill="#10b981" text-anchor="middle"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">#1633 P1+2 Provider</text>
 
-  <!-- Epic badges -->
-  <g font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">
-    <rect x="60" y="428" width="80" height="44" rx="6" fill="#10b981" opacity="0.15" stroke="#10b981" stroke-width="1.5"/>
-    <text x="100" y="447" font-size="11" font-weight="700" fill="#10b981" text-anchor="middle">#1632</text>
-    <text x="100" y="462" font-size="9" fill="#c4b5fd" text-anchor="middle">P0 · Baseline</text>
+  <rect x="356" y="452" width="130" height="26" rx="5" fill="#10b981" opacity="0.15" stroke="#10b981" stroke-width="1"/>
+  <text x="421" y="469" font-size="12" fill="#10b981" text-anchor="middle"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">#1634 P3 Tools</text>
 
-    <rect x="152" y="428" width="80" height="44" rx="6" fill="#10b981" opacity="0.15" stroke="#10b981" stroke-width="1.5"/>
-    <text x="192" y="447" font-size="11" font-weight="700" fill="#10b981" text-anchor="middle">#1633</text>
-    <text x="192" y="462" font-size="9" fill="#c4b5fd" text-anchor="middle">P1+P2 · Friendli</text>
+  <rect x="60" y="490" width="126" height="26" rx="5" fill="#10b981" opacity="0.15" stroke="#10b981" stroke-width="1"/>
+  <text x="123" y="507" font-size="12" fill="#10b981" text-anchor="middle"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">#1847 P4 UI L2</text>
 
-    <rect x="244" y="428" width="80" height="44" rx="6" fill="#10b981" opacity="0.15" stroke="#10b981" stroke-width="1.5"/>
-    <text x="284" y="447" font-size="11" font-weight="700" fill="#10b981" text-anchor="middle">#1634</text>
-    <text x="284" y="462" font-size="9" fill="#c4b5fd" text-anchor="middle">P3 · Tool</text>
+  <rect x="200" y="490" width="142" height="26" rx="5" fill="#10b981" opacity="0.15" stroke="#10b981" stroke-width="1"/>
+  <text x="271" y="507" font-size="12" fill="#10b981" text-anchor="middle"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">#1927 P5 Plugin DX</text>
 
-    <rect x="336" y="428" width="80" height="44" rx="6" fill="#10b981" opacity="0.15" stroke="#10b981" stroke-width="1.5"/>
-    <text x="376" y="447" font-size="11" font-weight="700" fill="#10b981" text-anchor="middle">#1847</text>
-    <text x="376" y="462" font-size="9" fill="#c4b5fd" text-anchor="middle">P4 · UI L2</text>
+  <rect x="356" y="490" width="130" height="26" rx="5" fill="#10b981" opacity="0.15" stroke="#10b981" stroke-width="1"/>
+  <text x="421" y="507" font-size="12" fill="#10b981" text-anchor="middle"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">#1637 P6 Docs</text>
 
-    <rect x="428" y="428" width="80" height="44" rx="6" fill="#10b981" opacity="0.15" stroke="#10b981" stroke-width="1.5"/>
-    <text x="468" y="447" font-size="11" font-weight="700" fill="#10b981" text-anchor="middle">#1927</text>
-    <text x="468" y="462" font-size="9" fill="#c4b5fd" text-anchor="middle">P5 · Plugin DX</text>
+  <text x="60" y="542" font-size="12" fill="#ddd6fe"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">Initiative #1631 closed · 2026-04-26</text>
 
-    <rect x="60" y="482" width="80" height="44" rx="6" fill="#10b981" opacity="0.15" stroke="#10b981" stroke-width="1.5"/>
-    <text x="100" y="501" font-size="11" font-weight="700" fill="#10b981" text-anchor="middle">#1637</text>
-    <text x="100" y="516" font-size="9" fill="#c4b5fd" text-anchor="middle">P6 · Docs</text>
-  </g>
+  <!-- Deferred -->
+  <text x="60" y="570" font-size="12" font-weight="600" fill="#f59e0b"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">5 Deferred follow-up:</text>
+  <text x="60" y="590" font-size="11" fill="#c4b5fd"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">#1972 OpenAPI agent-delegation  ·  #1973 API 정리  ·  #1974 Live 회귀</text>
+  <text x="60" y="608" font-size="11" fill="#c4b5fd"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">#1975 어댑터 스펙 자동 생성  ·  #1976 OPAQUE mock 이전</text>
 
-  <!-- Key achievements list -->
-  <g font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif" font-size="10" fill="#c4b5fd">
-    <text x="60" y="544">⏺ Initiative #1631 closed — 6 Phase Epic 전체 병합 완료</text>
-    <text x="60" y="560">⏺ Zero new runtime dependencies — AGENTS.md hard rule 전 Phase 유지</text>
-    <text x="60" y="576">⏺ docs/tools/ 완전 제거 → docs/api/ 흡수 (SC-006 ✓)</text>
-    <text x="60" y="592">⏺ road_risk_score 복합 참조 0건 (SC-004 ✓)</text>
-    <text x="60" y="608">⏺ BM25 ≤5s / install ≤30s / auto_discover &lt;200ms (SC criteria ✓)</text>
-    <text x="60" y="624">⏺ KOSMOS v0.1-alpha shipped 2026-04-26</text>
-  </g>
+  <!-- ===== Q4 (bottom-right): Alignment ===== -->
+  <text x="660" y="422" font-size="14" font-weight="700" fill="#f59e0b"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">정책 정렬</text>
 
-  <!-- Q4: 우하 — 정렬 -->
-  <rect x="594" y="384" width="646" height="256" rx="10" fill="url(#quadGrad)" stroke="#7c3aed" stroke-width="1.5"/>
-  <rect x="594" y="384" width="646" height="36" rx="10" fill="#5b21b6" opacity="0.9"/>
-  <rect x="594" y="400" width="646" height="20" fill="#5b21b6" opacity="0.9"/>
-  <text x="917" y="409" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="13" font-weight="700" fill="#e9d5ff" text-anchor="middle">④ 정책 정렬</text>
+  <rect x="650" y="436" width="570" height="185" rx="8" fill="url(#cg5)" stroke="#f59e0b" stroke-width="1.5"/>
 
-  <!-- AI Action Plan cards -->
-  <g font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">
-    <rect x="614" y="428" width="186" height="72" rx="8" fill="#1e0748" stroke="#a78bfa" stroke-width="1.5"/>
-    <text x="707" y="449" font-size="14" font-weight="900" fill="#a78bfa" text-anchor="middle" filter="url(#softGlow)">원칙 8</text>
-    <text x="707" y="467" font-size="10" fill="#e9d5ff" text-anchor="middle">단일 대화형 인터페이스</text>
-    <text x="707" y="482" font-size="9" fill="#c4b5fd" text-anchor="middle">5,000+ 공공 API 접근</text>
-    <text x="707" y="494" font-size="8" fill="#7c3aed" text-anchor="middle">AI 행동계획 2026-2028</text>
+  <text x="670" y="462" font-size="13" font-weight="700" fill="#f59e0b"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">AI Action Plan 2026-2028</text>
+  <text x="670" y="482" font-size="12" fill="#ddd6fe"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">원칙 8 — 단일 대화형 창구</text>
+  <text x="670" y="500" font-size="12" fill="#ddd6fe"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">원칙 9 — Open API + OpenMCP</text>
+  <text x="670" y="518" font-size="12" fill="#ddd6fe"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">원칙 5 — 동의 기반 접근, 서류 제출 폐지</text>
 
-    <rect x="812" y="428" width="186" height="72" rx="8" fill="#1e0748" stroke="#a78bfa" stroke-width="1.5"/>
-    <text x="905" y="449" font-size="14" font-weight="900" fill="#a78bfa" text-anchor="middle" filter="url(#softGlow)">원칙 9</text>
-    <text x="905" y="467" font-size="10" fill="#e9d5ff" text-anchor="middle">Open API + OpenMCP</text>
-    <text x="905" y="482" font-size="9" fill="#c4b5fd" text-anchor="middle">BM25 discovery + 5-tier plugin</text>
-    <text x="905" y="494" font-size="8" fill="#7c3aed" text-anchor="middle">AI 행동계획 2026-2028</text>
+  <line x1="670" y1="530" x2="1200" y2="530" stroke="#f59e0b" stroke-width="0.5" opacity="0.4"/>
 
-    <rect x="1010" y="428" width="214" height="72" rx="8" fill="#1e0748" stroke="#a78bfa" stroke-width="1.5"/>
-    <text x="1117" y="449" font-size="14" font-weight="900" fill="#a78bfa" text-anchor="middle" filter="url(#softGlow)">원칙 5</text>
-    <text x="1117" y="467" font-size="10" fill="#e9d5ff" text-anchor="middle">동의 기반 데이터 접근</text>
-    <text x="1117" y="482" font-size="9" fill="#c4b5fd" text-anchor="middle">PIPA §26 + permission gauntlet</text>
-    <text x="1117" y="494" font-size="8" fill="#7c3aed" text-anchor="middle">consent receipt memdir</text>
-  </g>
+  <text x="670" y="552" font-size="13" font-weight="700" fill="#f87171"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">PIPA §26 수탁자 모델</text>
+  <text x="670" y="572" font-size="12" fill="#ddd6fe"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">PII 처리 어댑터 — 권한 게이트 + 영수증 원장</text>
+  <text x="670" y="590" font-size="12" fill="#ddd6fe"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">user-tier memdir 감사 로그</text>
 
-  <!-- PIPA + Apache row -->
-  <g font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">
-    <rect x="614" y="510" width="290" height="56" rx="8" fill="#1e0748" stroke="#6d28d9" stroke-width="1"/>
-    <text x="759" y="530" font-size="11" font-weight="700" fill="#a78bfa" text-anchor="middle">PIPA §26 수탁자 모델</text>
-    <text x="759" y="546" font-size="9" fill="#c4b5fd" text-anchor="middle">처리 영수증 user-tier memdir 기록</text>
-    <text x="759" y="558" font-size="9" fill="#c4b5fd" text-anchor="middle">plugin processes_pii → SHA-256 CI 강제 검증</text>
-
-    <rect x="916" y="510" width="308" height="56" rx="8" fill="#1e0748" stroke="#6d28d9" stroke-width="1"/>
-    <text x="1070" y="530" font-size="11" font-weight="700" fill="#a78bfa" text-anchor="middle">Apache-2.0 · Open Source</text>
-    <text x="1070" y="546" font-size="9" fill="#c4b5fd" text-anchor="middle">학생 포트폴리오 · 정부/기업 미제휴</text>
-    <text x="1070" y="558" font-size="9" fill="#c4b5fd" text-anchor="middle">CC agentic loop 1:1 포팅 + K-EXAONE</text>
-  </g>
-
-  <!-- Deferred follow-ups -->
-  <g font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif" font-size="9">
-    <rect x="614" y="576" width="606" height="52" rx="6" fill="#2d1259" stroke="#3b0764" stroke-width="1" opacity="0.9"/>
-    <text x="625" y="592" fill="#7c3aed" font-size="10" font-weight="700">5 Deferred Follow-up (post v0.1-alpha)</text>
-    <text x="625" y="607" fill="#c4b5fd">#1972 /agent-delegation OpenAPI 3.0  ·  #1973 ministries_for_composite() 영구 제거</text>
-    <text x="625" y="620" fill="#c4b5fd">#1974 Live 12종 회귀 커버리지  ·  #1975 Pydantic docstring 스텁 자동 생성  ·  #1976 OPAQUE mock → docs/scenarios/</text>
-  </g>
-
-  <!-- CENTER MASCOT + VERSION STAMP -->
-  <g transform="translate(580, 348)">
-    <!-- UFO center marker -->
-    <ellipse cx="60" cy="20" rx="24" ry="16" fill="#a78bfa" opacity="0.9" filter="url(#glow5)"/>
-    <ellipse cx="60" cy="20" rx="16" ry="10" fill="#c4b5fd" opacity="0.4"/>
-    <ellipse cx="60" cy="30" rx="38" ry="10" fill="#7c3aed"/>
-    <ellipse cx="60" cy="30" rx="30" ry="6" fill="#a78bfa"/>
-    <circle cx="38" cy="35" r="3" fill="#fbbf24" opacity="0.9" filter="url(#glow5)"/>
-    <circle cx="60" cy="38" r="3" fill="#a78bfa" opacity="0.9"/>
-    <circle cx="82" cy="35" r="3" fill="#fbbf24" opacity="0.9" filter="url(#glow5)"/>
-  </g>
-
-  <text x="640" y="388" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="11" font-weight="700" fill="#e9d5ff" text-anchor="middle" filter="url(#glow5)">v0.1-alpha shipped</text>
-  <text x="640" y="402" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="10" fill="#a78bfa" text-anchor="middle">2026-04-26</text>
+  <text x="670" y="614" font-size="12" font-weight="700" fill="#a78bfa"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">Apache-2.0 · 오픈소스</text>
 
   <!-- Footer -->
-  <text x="640" y="710" font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif"
-        font-size="9" fill="#7c3aed" text-anchor="middle" opacity="0.7">
-    Source: content.md § Chapter 5 · docs/api/README.md · specs/1637-p6-docs-smoke/smoke-checklist.md · spec-review-notes.md
-  </text>
+  <line x1="0" y1="640" x2="1280" y2="640" stroke="#7c3aed" stroke-width="1"/>
+  <text x="1240" y="660" font-size="12" fill="#7c3aed" text-anchor="end"
+    font-family="'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif">✻ KOSMOS v0.1-alpha · KSC 2026</text>
 </svg>
