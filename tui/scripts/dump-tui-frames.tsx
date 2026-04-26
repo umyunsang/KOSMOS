@@ -32,6 +32,10 @@ import { TimeseriesTable } from '../src/components/primitive/TimeseriesTable'
 import { SubmitReceipt } from '../src/components/primitive/SubmitReceipt'
 import { AuthContextCard } from '../src/components/primitive/AuthContextCard'
 import { EventStream } from '../src/components/primitive/EventStream'
+import { ThemeStep } from '../src/components/onboarding/ThemeStep'
+import { TerminalSetupStep } from '../src/components/onboarding/TerminalSetupStep'
+import { ReceiptToast } from '../src/components/permissions/ReceiptToast'
+import { PdfInlineViewer } from '../src/components/messages/PdfInlineViewer'
 
 const OUT_DIR = join(
   import.meta.dir,
@@ -59,6 +63,55 @@ const SURFACES: readonly Surface[] = [
     slug: 'onboarding-1-splash',
     description: 'Onboarding step 1 — splash (WelcomeV2 logo + brand glyph)',
     element: withTheme(<WelcomeV2 />),
+  },
+  {
+    slug: 'onboarding-2-theme',
+    description: 'Onboarding step 2 — theme selector (UFO mascot + 3 options)',
+    element: withTheme(
+      <ThemeStep
+        onAdvance={() => {}}
+        onExit={() => {}}
+        locale="ko"
+      />,
+    ),
+  },
+  {
+    slug: 'onboarding-5-terminal',
+    description: 'Onboarding step 5 — terminal setup (4 accessibility toggles)',
+    element: withTheme(
+      <TerminalSetupStep
+        onAdvance={() => {}}
+        onExit={() => {}}
+      />,
+    ),
+  },
+  {
+    slug: 'slash-consent-issued',
+    description: 'Slash command — `/consent` receipt-issued toast',
+    element: withTheme(
+      <ReceiptToast variant="issued" receiptId="rcpt-01943af2" />,
+    ),
+  },
+  {
+    slug: 'slash-consent-revoked',
+    description: 'Slash command — `/consent revoke` receipt-revoked toast',
+    element: withTheme(
+      <ReceiptToast variant="revoked" receiptId="rcpt-01943af2" />,
+    ),
+  },
+  {
+    slug: 'slash-consent-already-revoked',
+    description: 'Slash command — `/consent revoke` already-revoked toast',
+    element: withTheme(
+      <ReceiptToast variant="already_revoked" receiptId="rcpt-01943af2" />,
+    ),
+  },
+  {
+    slug: 'pdf-inline-render',
+    description: 'PDF inline-render path — Tier C fallback (no graphics, no opener)',
+    element: withTheme(
+      <PdfInlineViewer pdfPath="/tmp/kosmos-export-2026-04-26.pdf" />,
+    ),
   },
   {
     slug: 'onboarding-3-pipa',

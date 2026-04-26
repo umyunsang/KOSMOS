@@ -1,6 +1,6 @@
 # Visual evidence — onboarding-3-pipa
 # Onboarding step 3 — PIPA consent prompt
-# Captured 2026-04-26T00:36:00.128Z via ink-testing-library render()
+# Captured 2026-04-26T01:08:33.233Z via ink-testing-library render()
 
  개인정보 활용 동의 (v1)
  개인정보 보호법 § 26 수탁자 고지

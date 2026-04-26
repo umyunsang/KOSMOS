@@ -1,6 +1,6 @@
 # Visual evidence — plugin-browser
 # Slash command — `/plugins` browser
-# Captured 2026-04-26T00:36:00.141Z via ink-testing-library render()
+# Captured 2026-04-26T01:08:33.246Z via ink-testing-library render()
 
 
  ✻ 플러그인 브라우저

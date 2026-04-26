@@ -1,6 +1,6 @@
 # Visual evidence — primitive-subscribe-stream
 # Subscribe primitive — disaster CBS event stream (EventStream)
-# Captured 2026-04-26T00:36:00.163Z via ink-testing-library render()
+# Captured 2026-04-26T01:08:33.265Z via ink-testing-library render()
 
 ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
 │ ● Live [cbs] mock_cbs_disaster_v1                                                                │

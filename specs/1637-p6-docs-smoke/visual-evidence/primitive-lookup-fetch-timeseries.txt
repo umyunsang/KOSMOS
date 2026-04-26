@@ -1,6 +1,6 @@
 # Visual evidence — primitive-lookup-fetch-timeseries
 # Lookup primitive — fetch-mode timeseries (KMA forecast)
-# Captured 2026-04-26T00:36:00.152Z via ink-testing-library render()
+# Captured 2026-04-26T01:08:33.257Z via ink-testing-library render()
 
 ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
 │ Timestamp               Value (°C)                                                               │

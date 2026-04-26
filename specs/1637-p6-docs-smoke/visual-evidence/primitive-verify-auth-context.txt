@@ -1,6 +1,6 @@
 # Visual evidence — primitive-verify-auth-context
 # Verify primitive — identity verification card (AuthContextCard)
-# Captured 2026-04-26T00:36:00.159Z via ink-testing-library render()
+# Captured 2026-04-26T01:08:33.262Z via ink-testing-library render()
 
 ╭──────────────────────────────────────────────────────────────────────────────────────────────────╮
 │ ✔ Verified                                                                                       │

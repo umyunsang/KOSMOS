@@ -1,6 +1,6 @@
 # Visual evidence — primitive-lookup-fetch-point
 # Lookup primitive — fetch-mode point detail (PointCard via DetailView)
-# Captured 2026-04-26T00:36:00.149Z via ink-testing-library render()
+# Captured 2026-04-26T01:08:33.254Z via ink-testing-library render()
 
 ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
 │ 사고 빈발 지점         서울특별시 강남구 테헤란로 152                                            │

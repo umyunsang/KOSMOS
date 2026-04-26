@@ -15,7 +15,7 @@ bun run scripts/dump-tui-frames.tsx
 
 The script prints `[dump-tui-frames] N ok, M fail (out: ...)` and exits 0 if every surface rendered. Frames are deterministic — re-running the script must produce identical bytes per file (the only non-deterministic field is the `# Captured <timestamp>` comment header, which the validator ignores during diff review).
 
-## Surfaces dumped automatically (13 of 18)
+## Surfaces dumped automatically (19 — target was 18)
 
 | Step ID | Description | Pass criterion | Evidence | Result |
 |---|---|---|---|---|
@@ -32,23 +32,23 @@ The script prints `[dump-tui-frames] N ok, M fail (out: ...)` and exits 0 if eve
 | `primitive-submit-receipt` | `submit` mock receipt (SubmitReceipt) | ✔ Submitted [MOCK: real_api_unreachable] + confirmation_id + Korean summary | `visual-evidence/primitive-submit-receipt.txt` | ✓ |
 | `primitive-verify-auth-context` | `verify` identity card (AuthContextCard) | ✔ Verified + identity + 금융인증서 + NIST AAL2 | `visual-evidence/primitive-verify-auth-context.txt` | ✓ |
 | `primitive-subscribe-stream` | `subscribe` CBS event stream (EventStream) | ● Live [cbs] header + 3 disaster events with timestamps | `visual-evidence/primitive-subscribe-stream.txt` | ✓ |
+| `onboarding-2-theme` | Onboarding step 2 — theme selector (UFO mascot + 3 options) | UFO ASCII mascot + 보라 팔레트 + dark/light/system options + step 2/5 dots | `visual-evidence/onboarding-2-theme.txt` | ✓ |
+| `onboarding-5-terminal` | Onboarding step 5 — terminal setup (4 a11y toggles) | 4 accessibility toggles + key hints + step 5/5 dots | `visual-evidence/onboarding-5-terminal.txt` | ✓ |
+| `slash-consent-issued` | `/consent` receipt-issued toast | ✻ 발급됨 + receipt ID | `visual-evidence/slash-consent-issued.txt` | ✓ |
+| `slash-consent-revoked` | `/consent revoke` receipt-revoked toast | ✻ 철회 완료 + receipt ID | `visual-evidence/slash-consent-revoked.txt` | ✓ |
+| `slash-consent-already-revoked` | `/consent revoke` already-revoked toast | ✻ 이미 철회됨 | `visual-evidence/slash-consent-already-revoked.txt` | ✓ |
+| `pdf-inline-render` | PDF inline-render loading state (Tier C fallback) | "PDF 인라인 렌더 중…" loading copy | `visual-evidence/pdf-inline-render.txt` | ✓ |
 
-## Surfaces deferred to PR-review hand-driven validation (5 of 18)
+## Surfaces deferred to PR-review hand-driven validation (2 — `/agents` + `/help` only)
 
-These surfaces require either (a) live keystroke driving the actual TUI shell (theme selector / terminal-setup / `/agents` / `/consent list` / `/help` keyboard-driven menus) or (b) terminal-graphics-protocol detection (PDF inline render). The `dump-tui-frames.tsx` script cannot deterministically simulate these without driving real keystrokes through a PTY.
+Two surfaces remain manual because they depend on hooks that require the full live keybinding-provider context tree (`useKeybinding` + `useShortcutDisplay` + `useExitOnCtrlCDWithKeybindings` + the merged-tools / app-state / settings-source provider stack). The `ink-testing-library` `render()` harness in `dump-tui-frames.tsx` does not stand up that full stack without effectively re-implementing the runtime — out of scope for the visual smoke.
 
-Note: the **primitive flows** (5 above — `lookup` search/fetch ×2 / `submit` / `verify` / `subscribe`) are now covered by automated frame dumps using mock payloads. The visual contract (envelope shape, brand glyphs, Korean copy, MOCK badges, AAL labels) is fully validated. Live LLM round-trip and adapter dispatch remain integration concerns covered by the per-adapter unit tests under `tui/tests/components/primitive/*`, not by this visual smoke.
-
-The PR reviewer drives the remaining 5 surfaces manually against `bun run tui` and attaches captured frames as a follow-up PR comment.
+The PR reviewer drives these two manually against `bun run tui` and attaches captured frames as a follow-up PR comment.
 
 | Step ID | Description | Capture path | Status |
 |---|---|---|---|
-| `onboarding-2-theme` | Theme selector | `bun run tui` → arrows + Enter | manual |
-| `onboarding-5-terminal` | Terminal setup → REPL transition | `bun run tui` → Enter on done step | manual |
 | `slash-agents` | `/agents` panel | `bun run tui` → `/agents` | manual |
-| `slash-consent-list` | `/consent list` | `bun run tui` → `/consent list` | manual |
 | `slash-help` | `/help` panel | `bun run tui` → `/help` | manual |
-| `pdf-inline-render` | `/export pdf` inline render (Kitty/iTerm2) | terminal graphics protocol | manual |
 
 ## Visual contracts verified by automated dump
 

@@ -1,6 +1,6 @@
 # Visual evidence — error-tool-fail-closed
 # Error envelope — tool fail-closed (orange, wrench glyph)
-# Captured 2026-04-26T00:36:00.184Z via ink-testing-library render()
+# Captured 2026-04-26T01:08:33.279Z via ink-testing-library render()
 
 ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
 │ 🔧 도구 호출 오류: 도구 호출 차단                                                                │

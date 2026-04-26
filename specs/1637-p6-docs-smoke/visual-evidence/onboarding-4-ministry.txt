@@ -1,6 +1,6 @@
 # Visual evidence — onboarding-4-ministry
 # Onboarding step 4 — ministry-scope acknowledgement
-# Captured 2026-04-26T00:36:00.134Z via ink-testing-library render()
+# Captured 2026-04-26T01:08:33.238Z via ink-testing-library render()
 
  부처 API 사용 동의 (v1)
  KOSMOS가 호출할 수 있는 공개 API 부처를 선택하세요.
