@@ -22,9 +22,12 @@
 import { readFileSync } from 'fs'
 import { parseChord, tryParseChord } from './chord'
 import { DEFAULT_BINDINGS, defaultBindingsByAction, getKeybindingsPath } from './defaultBindings'
+import { parseBindings } from './parser'
 import type {
   ChordString,
+  KeybindingBlock,
   KeybindingEntry,
+  ParsedBinding,
   TierOneAction,
 } from './types'
 import { TIER_ONE_ACTIONS } from './types'
@@ -71,8 +74,21 @@ export type LoaderResult = Readonly<{
   effective_chord_to_action: ReadonlyMap<ChordString, TierOneAction>
 }>
 
-// Back-compat alias.
-export type KeybindingsLoadResult = LoaderResult
+// ---------------------------------------------------------------------------
+// Legacy load result — the shape that KeybindingProviderSetup expects.
+// ParsedBinding[] is array-shaped so .length and .filter() work at runtime.
+// ---------------------------------------------------------------------------
+
+/**
+ * Legacy result type consumed by KeybindingSetup / KeybindingProviderSetup.
+ * Distinct from LoaderResult (which carries a Map). The legacy surface
+ * keeps bindings as a ParsedBinding[] so that resolveKeyWithChordState
+ * can call bindings.filter(...) without a runtime throw.
+ */
+export type KeybindingsLoadResult = Readonly<{
+  bindings: ParsedBinding[]
+  warnings: ReadonlyArray<LoaderWarning>
+}>
 
 // ---------------------------------------------------------------------------
 // Reserved sets (FR-027, FR-028, Codex P1)
@@ -350,9 +366,36 @@ export async function loadKeybindings(): Promise<LoaderResult> {
   return loadUserBindings()
 }
 
-/** @deprecated Use loadUserBindings() instead. */
-export function loadKeybindingsSyncWithWarnings(): LoaderResult {
-  return loadUserBindings()
+/**
+ * @deprecated Use loadUserBindings() instead.
+ *
+ * Returns the LEGACY shape { bindings: ParsedBinding[]; warnings } so that
+ * KeybindingProviderSetup can call bindings.length and pass the array to
+ * resolveKeyWithChordState without a runtime throw (Codex P0 fix, PR #1977).
+ *
+ * Converts LoaderResult.bindings (Map<TierOneAction, KeybindingEntry>) to a
+ * flat ParsedBinding[] by synthesising a KeybindingBlock per entry and
+ * passing it through parseBindings(). Entries with no effective_chord
+ * (explicitly disabled) are skipped.
+ */
+export function loadKeybindingsSyncWithWarnings(): KeybindingsLoadResult {
+  const result = loadUserBindings()
+
+  // Build one synthetic KeybindingBlock per entry that has an effective_chord.
+  const blocks: KeybindingBlock[] = []
+  for (const entry of result.bindings.values()) {
+    if (entry.effective_chord === null) {
+      // Disabled binding — omit from the legacy surface (no chord to fire).
+      continue
+    }
+    blocks.push({
+      context: entry.context,
+      bindings: { [entry.effective_chord]: entry.action },
+    })
+  }
+
+  const bindings: ParsedBinding[] = parseBindings(blocks)
+  return Object.freeze({ bindings, warnings: result.warnings })
 }
 
 /** @deprecated Use loadUserBindings()?.bindings. */
@@ -377,8 +420,10 @@ export async function initializeKeybindingWatcher(): Promise<void> {
 }
 
 // Compat: subscribeToKeybindingChanges
+// TODO(post-v0.1-alpha): implement real hot-reload via fs.watch on getKeybindingsPath()
+//   and call listeners with the new KeybindingsLoadResult. Tracking: P6 docs+smoke epic.
 export const subscribeToKeybindingChanges: (
-  listener: (result: LoaderResult) => void,
+  listener: (result: KeybindingsLoadResult) => void,
 ) => () => void = (_listener) => {
   return () => {}
 }

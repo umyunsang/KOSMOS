@@ -10,6 +10,52 @@
 // in sibling files; this module contributes only the types they implement.
 
 // -----------------------------------------------------------------------------
+// Legacy types — retained for the legacy resolver/parser/validate surface.
+// ParsedKeystroke, Chord, KeybindingBlock, KeybindingContextName, and
+// ParsedBinding were previously defined elsewhere; they live here so every
+// import of `./types` (or `./types.js`) resolves without error.
+// -----------------------------------------------------------------------------
+
+/** A parsed keystroke with modifier flags. Matches the shape built by parser.ts. */
+export type ParsedKeystroke = {
+  key: string
+  ctrl: boolean
+  alt: boolean
+  shift: boolean
+  meta: boolean
+  super: boolean
+}
+
+/** An ordered sequence of keystrokes forming a chord (e.g. ctrl+k ctrl+s). */
+export type Chord = ParsedKeystroke[]
+
+/**
+ * A broad context name string used by the legacy resolver/validate surface.
+ * Intentionally wider than the Spec 288 `KeybindingContext` union — the legacy
+ * system accepts any string context (e.g. "Autocomplete", "Plugin", etc.).
+ */
+export type KeybindingContextName = string
+
+/**
+ * A block in the legacy JSON keybindings format:
+ *   { "context": "Chat", "bindings": { "ctrl+k": "history-search" } }
+ */
+export type KeybindingBlock = {
+  context: string
+  bindings: Record<string, string | null>
+}
+
+/**
+ * A single parsed binding from a KeybindingBlock row.
+ * `action` is null when the chord is explicitly unbound.
+ */
+export type ParsedBinding = Readonly<{
+  chord: ParsedKeystroke[]
+  action: string | null
+  context: KeybindingContextName
+}>
+
+// -----------------------------------------------------------------------------
 // Context enum — narrowed subset of CC's 18 contexts
 // -----------------------------------------------------------------------------
 
