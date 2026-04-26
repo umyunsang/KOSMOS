@@ -153,7 +153,7 @@
     <text x="116" y="426" fill="#c4b5fd" text-anchor="middle">한국어 LLM</text>
     <text x="256" y="426" fill="#f59e0b" text-anchor="middle">미정(범용)</text>
     <text x="386" y="426" fill="#f59e0b" text-anchor="middle">자체 모델</text>
-    <text x="556" y="426" fill="#34d399" text-anchor="middle">EXAONE 4.0-32B ✓</text>
+    <text x="556" y="426" fill="#34d399" text-anchor="middle">K-EXAONE 4.0-32B ✓</text>
   </g>
 
   <!-- Table borders -->

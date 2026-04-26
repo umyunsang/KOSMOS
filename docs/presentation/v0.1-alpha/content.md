@@ -51,9 +51,9 @@
 
 ### LLM Stack 및 프로젝트 정보 (slide 4)
 
-- **LLM**: `LGAI-EXAONE/EXAONE-4.0-32B` via FriendliAI Serverless (OpenAI-compatible endpoint)
+- **LLM**: **K-EXAONE 4.0-32B** (`LGAI-EXAONE/EXAONE-4.0-32B`) via FriendliAI Serverless (OpenAI-compatible endpoint)
   (`docs/requirements/kosmos-migration-tree.md § L1-A A1`)
-- **Claude Code agentic loop 1:1 보존**: EXAONE native function calling + 동일 loop skeleton 적용
+- **Claude Code agentic loop 1:1 보존**: K-EXAONE native function calling + 동일 loop skeleton 적용
   (`docs/requirements/kosmos-migration-tree.md § L1-A A2`)
 - **라이선스**: Apache-2.0
 - **분류**: 학생 포트폴리오 프로젝트 · KSC 2026 제출
