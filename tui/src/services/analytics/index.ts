@@ -57,6 +57,43 @@ export function shutdownAnalyticsSink(): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
+// Lifted verbatim from CC restored-src services/analytics/index.ts:45
+// (CC 2.1.88, research-use). Used by sink.ts:14 + firstPartyEventLoggingExporter.ts:33.
+// Returns the same reference when no _PROTO_ keys present — KOSMOS payloads
+// have no protobuf-typed PII layer, so it is a fast path. The KOSMOS-OTEL
+// pipeline does not consume these results, but CC's import sites still
+// require the function to link.
+// ---------------------------------------------------------------------------
+
+export type AnalyticsSink = {
+  logEvent: (eventName: string, metadata: Record<string, unknown>) => void
+  logEventAsync: (
+    eventName: string,
+    metadata: Record<string, unknown>,
+  ) => Promise<void>
+}
+
+export function stripProtoFields<V>(
+  metadata: Record<string, V>,
+): Record<string, V> {
+  let result: Record<string, V> | undefined
+  for (const key in metadata) {
+    if (key.startsWith('_PROTO_')) {
+      if (result === undefined) {
+        result = { ...metadata }
+      }
+      delete result[key]
+    }
+  }
+  return result ?? metadata
+}
+
+export function attachAnalyticsSink(_sink: AnalyticsSink): void {
+  // KOSMOS-1633 P2 — there is no Datadog / 1P sink. CC's body queued events
+  // until a sink attached; KOSMOS drops events at the noop logEvent above.
+}
+
+// ---------------------------------------------------------------------------
 // Default export safety net — some callers may import the module namespace.
 // ---------------------------------------------------------------------------
 
@@ -66,4 +103,6 @@ export default {
   initializeAnalyticsSink,
   flushAnalyticsSink,
   shutdownAnalyticsSink,
+  stripProtoFields,
+  attachAnalyticsSink,
 }

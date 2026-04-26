@@ -1,5 +1,47 @@
 import { feature } from 'bun:bundle';
 
+// KOSMOS-1978 T003 boot tracer — opt-in via KOSMOS_BOOT_TRACE=1.
+// Captures every step of the cli.tsx → main.tsx flow plus uncaught
+// rejections / signals / process.exit calls so silent crashes (the symptom
+// of `bun run tui` exiting with code 1 and no error visible to the user)
+// surface to stderr. Drop after T004 (PromptInput.onSubmit guard) lands.
+// eslint-disable-next-line custom-rules/no-top-level-side-effects
+const __kBoot = (label: string): void => {
+  if (process.env.KOSMOS_BOOT_TRACE === '1') {
+    try {
+      require('fs').writeSync(2, `[KOSMOS-BOOT-TRACE] ${label}\n`);
+    } catch {
+      /* stderr torn down */
+    }
+  }
+};
+__kBoot('cli.tsx:top');
+if (process.env.KOSMOS_BOOT_TRACE === '1') {
+  // eslint-disable-next-line custom-rules/no-top-level-side-effects, @typescript-eslint/no-explicit-any
+  const _origExit = process.exit.bind(process);
+  // eslint-disable-next-line custom-rules/no-top-level-side-effects, @typescript-eslint/no-explicit-any
+  (process as unknown as { exit: typeof process.exit }).exit = ((code?: number) => {
+    try {
+      const stk = (new Error('exit-trace').stack ?? '').split('\n').slice(1, 10).join('\n');
+      require('fs').writeSync(2, `[KOSMOS-BOOT-TRACE] process.exit(${code}) called\n${stk}\n`);
+    } catch {}
+    return _origExit(code);
+  }) as typeof process.exit;
+  // eslint-disable-next-line custom-rules/no-top-level-side-effects
+  process.on('unhandledRejection', (reason: unknown) => {
+    try {
+      const e = reason as Error;
+      require('fs').writeSync(2, `[KOSMOS-BOOT-TRACE] unhandledRejection: ${e?.stack ?? String(reason)}\n`);
+    } catch {}
+  });
+  // eslint-disable-next-line custom-rules/no-top-level-side-effects
+  process.on('uncaughtException', (err: Error) => {
+    try {
+      require('fs').writeSync(2, `[KOSMOS-BOOT-TRACE] uncaughtException: ${err.stack ?? err.message}\n`);
+    } catch {}
+  });
+}
+
 // Bugfix for corepack auto-pinning, which adds yarnpkg to peoples' package.jsons
 // eslint-disable-next-line custom-rules/no-top-level-side-effects
 process.env.COREPACK_ENABLE_AUTO_PIN = '0';
@@ -31,7 +73,9 @@ if (feature('ABLATION_BASELINE') && process.env.CLAUDE_CODE_ABLATION_BASELINE) {
  * Fast-path for --version has zero imports beyond this file.
  */
 async function main(): Promise<void> {
+  __kBoot('cli.tsx:main:enter');
   const args = process.argv.slice(2);
+  __kBoot(`cli.tsx:main:args=${JSON.stringify(args)}`);
 
   // Fast-path for --version/-v: zero module loading needed
   if (args.length === 1 && (args[0] === '--version' || args[0] === '-v' || args[0] === '-V')) {
@@ -278,16 +322,26 @@ async function main(): Promise<void> {
   }
 
   // No special flags detected, load and run the full CLI
+  __kBoot('cli.tsx:main:before-startCapturingEarlyInput');
   const {
     startCapturingEarlyInput
   } = await import('../utils/earlyInput.js');
   startCapturingEarlyInput();
+  __kBoot('cli.tsx:main:before-main-import');
   profileCheckpoint('cli_before_main_import');
   const {
     main: cliMain
   } = await import('../main.js');
+  __kBoot('cli.tsx:main:after-main-import');
   profileCheckpoint('cli_after_main_import');
-  await cliMain();
+  try {
+    await cliMain();
+    __kBoot('cli.tsx:main:after-cliMain');
+  } catch (err) {
+    const e = err as Error;
+    __kBoot(`cli.tsx:main:cliMain-threw: ${e?.name}: ${e?.message}\n${e?.stack?.split('\n').slice(0, 8).join('\n')}`);
+    throw err;
+  }
   profileCheckpoint('cli_after_main_complete');
 }
 
