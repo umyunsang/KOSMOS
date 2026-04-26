@@ -96,7 +96,8 @@ import {
   readMailbox,
   writeToMailbox,
 } from '../teammateMailbox.js'
-import { unregisterAgent as unregisterPerfettoAgent } from '../telemetry/perfettoTracing.js'
+// KOSMOS: utils/telemetry/perfettoTracing.js deleted by Spec 1633 P1. unregisterPerfettoAgent → no-op.
+const unregisterPerfettoAgent = (_agentId: unknown): void => {}
 import { createContentReplacementState } from '../toolResultStorage.js'
 import { TEAM_LEAD_NAME } from './constants.js'
 import {

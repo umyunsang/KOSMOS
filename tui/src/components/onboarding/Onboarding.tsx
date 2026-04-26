@@ -16,7 +16,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Box, Text, useApp, useInput } from 'ink'
 import { useTheme } from '../../theme/provider'
 import { useKoreanIME } from '../../hooks/useKoreanIME'
-import { LogoV2 } from '../LogoV2/LogoV2'
+import { WelcomeV2 } from '../LogoV2/WelcomeV2'
 import { PIPAConsentStep } from './PIPAConsentStep'
 import { MinistryScopeStep } from './MinistryScopeStep'
 import { writeConsentRecord, writeScopeRecord } from '../../memdir/io'
@@ -72,7 +72,7 @@ const SplashStep: React.FC<StepComponentProps> = () => {
   const theme = useTheme()
   return (
     <Box flexDirection="column" alignItems="center">
-      <LogoV2 />
+      <WelcomeV2 />
       <Box marginTop={1}>
         <Text color={theme.kosmosCore}>
           계속하려면 Enter  ·  종료하려면 Esc

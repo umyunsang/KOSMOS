@@ -30,7 +30,8 @@ import {
   TOOL_TOKEN_COUNT_OVERHEAD,
 } from './analyzeContext.js'
 import { count } from './array.js'
-import { getMergedBetas } from './betas.js'
+// KOSMOS: betas.js deleted by Spec 1633 P1. getMergedBetas → [] literal.
+const getMergedBetas = (_model: string): string[] => []
 import { getContextWindowForModel } from './context.js'
 import { logForDebugging } from './debug.js'
 import { isEnvDefinedFalsy, isEnvTruthy } from './envUtils.js'

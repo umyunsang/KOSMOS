@@ -1,4 +1,5 @@
-import { isRemoteManagedSettingsEligible } from '../services/remoteManagedSettings/syncCache.js'
+// remoteManagedSettings removed in P1+P2 (Spec 1633); KOSMOS does not use Anthropic enterprise policy.
+const isRemoteManagedSettingsEligible = (): boolean => false
 import { clearCACertsCache } from './caCerts.js'
 import { getGlobalConfig } from './config.js'
 import { isEnvTruthy } from './envUtils.js'

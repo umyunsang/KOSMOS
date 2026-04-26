@@ -36,10 +36,11 @@ import { EXIT_PLAN_MODE_V2_TOOL_NAME } from '../tools/ExitPlanModeTool/constants
 import { TASK_OUTPUT_TOOL_NAME } from '../tools/TaskOutputTool/constants.js'
 import type { Message } from '../types/message.js'
 import { isAgentSwarmsEnabled } from './agentSwarmsEnabled.js'
-import {
-  modelSupportsStructuredOutputs,
-  shouldUseGlobalCacheScope,
-} from './betas.js'
+// KOSMOS: betas.js deleted by Spec 1633 P1.
+// modelSupportsStructuredOutputs → false literal (no beta headers with FriendliAI).
+// shouldUseGlobalCacheScope → false literal (no Anthropic global cache).
+const modelSupportsStructuredOutputs = (_model: string): false => false
+const shouldUseGlobalCacheScope = (): false => false
 import { getCwd } from './cwd.js'
 import { logForDebugging } from './debug.js'
 import { isEnvTruthy } from './envUtils.js'

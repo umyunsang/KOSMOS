@@ -7,7 +7,7 @@ Wire Python adapters (`src/kosmos/tools/`) as the LLM tool surface via stdio MCP
 ## Context from codebase audit
 
 **Python side — already built:**
-- 15 registered tool_ids: `resolve_location`, `lookup`, `koroad_accident_search`, `koroad_accident_hazard_search`, `kma_weather_alert_status`, `kma_current_observation`, `kma_short_term_forecast`, `kma_ultra_short_term_forecast`, `kma_pre_warning`, `road_risk_score`, `nmc_emergency_search`, `kma_forecast_fetch`, `hira_hospital_search`, `nfa_emergency_info_service`, `mohw_welfare_eligibility_search`
+- 14 registered tool_ids: `resolve_location`, `lookup`, `koroad_accident_search`, `koroad_accident_hazard_search`, `kma_weather_alert_status`, `kma_current_observation`, `kma_short_term_forecast`, `kma_ultra_short_term_forecast`, `kma_pre_warning`, `nmc_emergency_search`, `kma_forecast_fetch`, `hira_hospital_search`, `nfa_emergency_info_service`, `mohw_welfare_eligibility_search` (an earlier composite adapter was removed in Epic #1634 per migration tree § L1-B B6)
 - `GovAPITool` model already has `primitive` field — but only 4 adapters set it (`accident_hazard_search`, `kma_forecast_fetch`, `hira_hospital_search`, `nmc_emergency_search` → `"lookup"`). 11 adapters have `primitive=None`
 - Mock adapters cover `verify` (6), `submit` (2), subscribe (3 — wired to `kosmos.primitives.subscribe`, not `GovAPITool.primitive`)
 - `GovAPITool` does NOT have `permission_tier`, `ministry`, `mode` (live/mock) fields — see clarification below

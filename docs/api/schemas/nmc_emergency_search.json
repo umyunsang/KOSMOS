@@ -1,0 +1,44 @@
+{
+  "$defs": {
+    "_NmcEmergencySearchOutput": {
+      "additionalProperties": true,
+      "description": "Placeholder output schema for GovAPITool registration.\n\nReal output shape is deferred until NMC auth is provisioned.",
+      "title": "_NmcEmergencySearchOutput",
+      "type": "object"
+    }
+  },
+  "$id": "https://kosmos.example/api/schemas/nmc_emergency_search.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Input schema for nmc_emergency_search.\n\nPydantic v2 strict model (extra='forbid', frozen=True).\nAll three fields are required; no defaults are provided so that the LLM\nmust explicitly supply values rather than silently relying on fallbacks.",
+  "properties": {
+    "lat": {
+      "description": "Latitude of the search origin in decimal degrees (WGS-84). Obtain from resolve_location(want='coords'). Example: 37.5665 for central Seoul.",
+      "maximum": 90,
+      "minimum": -90,
+      "title": "Lat",
+      "type": "number"
+    },
+    "limit": {
+      "description": "Maximum number of nearest emergency rooms to return. Capped at 100 per NMC API contract. Example: 5 for the five nearest ERs.",
+      "maximum": 100,
+      "minimum": 1,
+      "title": "Limit",
+      "type": "integer"
+    },
+    "lon": {
+      "description": "Longitude of the search origin in decimal degrees (WGS-84). Obtain from resolve_location(want='coords'). Example: 126.9780 for central Seoul.",
+      "maximum": 180,
+      "minimum": -180,
+      "title": "Lon",
+      "type": "number"
+    }
+  },
+  "required": [
+    "lat",
+    "lon",
+    "limit"
+  ],
+  "title": "nmc_emergency_search",
+  "type": "object"
+}

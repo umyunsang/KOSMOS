@@ -1,0 +1,339 @@
+{
+  "$defs": {
+    "AccidentHotspot": {
+      "description": "A single accident hotspot zone returned by KOROAD getRestFrequentzoneLg.",
+      "properties": {
+        "afos_fid": {
+          "title": "Afos Fid",
+          "type": "string"
+        },
+        "afos_id": {
+          "title": "Afos Id",
+          "type": "string"
+        },
+        "bjd_cd": {
+          "title": "Bjd Cd",
+          "type": "string"
+        },
+        "caslt_cnt": {
+          "title": "Caslt Cnt",
+          "type": "integer"
+        },
+        "dth_dnv_cnt": {
+          "title": "Dth Dnv Cnt",
+          "type": "integer"
+        },
+        "geom_json": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Geom Json"
+        },
+        "la_crd": {
+          "title": "La Crd",
+          "type": "number"
+        },
+        "lo_crd": {
+          "title": "Lo Crd",
+          "type": "number"
+        },
+        "occrrnc_cnt": {
+          "title": "Occrrnc Cnt",
+          "type": "integer"
+        },
+        "se_dnv_cnt": {
+          "title": "Se Dnv Cnt",
+          "type": "integer"
+        },
+        "sido_sgg_nm": {
+          "title": "Sido Sgg Nm",
+          "type": "string"
+        },
+        "sl_dnv_cnt": {
+          "title": "Sl Dnv Cnt",
+          "type": "integer"
+        },
+        "spot_cd": {
+          "title": "Spot Cd",
+          "type": "string"
+        },
+        "spot_nm": {
+          "title": "Spot Nm",
+          "type": "string"
+        },
+        "wnd_dnv_cnt": {
+          "title": "Wnd Dnv Cnt",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "spot_cd",
+        "spot_nm",
+        "sido_sgg_nm",
+        "bjd_cd",
+        "occrrnc_cnt",
+        "caslt_cnt",
+        "dth_dnv_cnt",
+        "se_dnv_cnt",
+        "sl_dnv_cnt",
+        "wnd_dnv_cnt",
+        "la_crd",
+        "lo_crd",
+        "afos_id",
+        "afos_fid"
+      ],
+      "title": "AccidentHotspot",
+      "type": "object"
+    },
+    "GugunCode": {
+      "description": "District (gu/gun) codes for KOROAD accident data API (guGun parameter).\n\nBecause district code integers overlap across sido (multiple sido use code 110\nfor their Jung-gu), member names are qualified with the sido prefix.\n\nSource: koroad_AccidentHazard_CodeList.md § Gugun 요청값",
+      "enum": [
+        110,
+        140,
+        170,
+        200,
+        215,
+        230,
+        260,
+        290,
+        305,
+        320,
+        350,
+        380,
+        410,
+        440,
+        470,
+        500,
+        530,
+        545,
+        560,
+        590,
+        620,
+        650,
+        680,
+        710,
+        740,
+        110,
+        140,
+        170,
+        200,
+        230,
+        260,
+        290,
+        320,
+        350,
+        380,
+        410,
+        440,
+        470,
+        500,
+        530,
+        710,
+        110,
+        140,
+        170,
+        200,
+        230,
+        260,
+        290,
+        710,
+        110,
+        140,
+        177,
+        185,
+        200,
+        237,
+        245,
+        259,
+        261,
+        710,
+        720,
+        110,
+        140,
+        155,
+        170,
+        200,
+        110,
+        140,
+        170,
+        200,
+        230,
+        110,
+        140,
+        170,
+        200,
+        710,
+        111,
+        113,
+        115,
+        117,
+        131,
+        133,
+        135,
+        150,
+        171,
+        173,
+        191,
+        193,
+        195,
+        210,
+        220,
+        250,
+        271,
+        273,
+        281,
+        285,
+        287,
+        290,
+        310,
+        390,
+        550,
+        461,
+        463,
+        465,
+        480,
+        500,
+        550,
+        570,
+        590,
+        610,
+        630,
+        680,
+        670,
+        820,
+        830,
+        840
+      ],
+      "title": "GugunCode",
+      "type": "integer"
+    },
+    "KoroadAccidentSearchOutput": {
+      "description": "Output from the koroad_accident_search tool.",
+      "properties": {
+        "hotspots": {
+          "items": {
+            "$ref": "#/$defs/AccidentHotspot"
+          },
+          "title": "Hotspots",
+          "type": "array"
+        },
+        "num_of_rows": {
+          "title": "Num Of Rows",
+          "type": "integer"
+        },
+        "page_no": {
+          "title": "Page No",
+          "type": "integer"
+        },
+        "total_count": {
+          "title": "Total Count",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "total_count",
+        "page_no",
+        "num_of_rows",
+        "hotspots"
+      ],
+      "title": "KoroadAccidentSearchOutput",
+      "type": "object"
+    },
+    "SearchYearCd": {
+      "description": "Year/category codes for KOROAD accident dataset queries (searchYearCd parameter).\n\nThe numeric string values are the official API parameter values.\nSource: koroad_AccidentHazard_CodeList.md § serachYearCd 요청값",
+      "enum": [
+        "2025119",
+        "2024056",
+        "2023026",
+        "2022046",
+        "2025113",
+        "2024055",
+        "2025066",
+        "2024041",
+        "2025108",
+        "2024042",
+        "2025076",
+        "2024044",
+        "2025081",
+        "2024046",
+        "2025111",
+        "2025110",
+        "2025112",
+        "2025091",
+        "2025083",
+        "2025085",
+        "2025089"
+      ],
+      "title": "SearchYearCd",
+      "type": "string"
+    },
+    "SidoCode": {
+      "description": "Province/city codes for KOROAD accident data API (siDo parameter).\n\nCodes 42 (Gangwon-do) and 45 (Jeonbuk) are legacy codes valid only for\npre-2023 datasets. Use 51 (강원특별자치도) and 52 (전북특별자치도) for 2023+.",
+      "enum": [
+        11,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        36,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        50,
+        51,
+        52
+      ],
+      "title": "SidoCode",
+      "type": "integer"
+    }
+  },
+  "$id": "https://kosmos.example/api/schemas/koroad_accident_search.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Input parameters for the koroad_accident_search tool.\n\nCross-validates legacy sido codes against modern search year codes.",
+  "properties": {
+    "gu_gun": {
+      "$ref": "#/$defs/GugunCode",
+      "description": "District/county code (guGun wire parameter). Required by the KOROAD API. MUST be derived from a prior resolve_location geocoding tool call on the user-provided location string — never fill this from model memory. Empirical counter-example: a Korean-domain LLM produced gu_gun=110 (Jongno) instead of gu_gun=680 (Gangnam) for a '강남역' query because it guessed from memory rather than consulting geocoding. Valid codes are defined in the GugunCode enumeration; codes are specific to the paired si_do value."
+    },
+    "num_of_rows": {
+      "default": 10,
+      "maximum": 100,
+      "minimum": 1,
+      "title": "Num Of Rows",
+      "type": "integer"
+    },
+    "page_no": {
+      "default": 1,
+      "minimum": 1,
+      "title": "Page No",
+      "type": "integer"
+    },
+    "search_year_cd": {
+      "$ref": "#/$defs/SearchYearCd"
+    },
+    "si_do": {
+      "$ref": "#/$defs/SidoCode",
+      "description": "Province/city code (siDo wire parameter). MUST be derived from a prior resolve_location geocoding tool call on the user-provided location string — never fill this from model memory. Empirical counter-example: a Korean-domain LLM produced gu_gun=110 (Jongno) instead of gu_gun=680 (Gangnam) for a '강남역' query because it guessed from memory rather than consulting geocoding. Valid codes are defined in the SidoCode enumeration."
+    }
+  },
+  "required": [
+    "search_year_cd",
+    "si_do",
+    "gu_gun"
+  ],
+  "title": "koroad_accident_search",
+  "type": "object"
+}

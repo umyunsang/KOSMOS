@@ -465,15 +465,8 @@ function _temp4(s) {
   return s.replBridgeSessionUrl;
 }
 async function checkBridgePrerequisites(): Promise<string | null> {
-  // Check organization policy — remote control may be disabled
-  const {
-    waitForPolicyLimitsToLoad,
-    isPolicyAllowed
-  } = await import('../../services/policyLimits/index.js');
-  await waitForPolicyLimitsToLoad();
-  if (!isPolicyAllowed('allow_remote_control')) {
-    return "Remote Control is disabled by your organization's policy.";
-  }
+  // policyLimits removed in P1+P2 (Spec 1633); KOSMOS opens features by default via Spec 033 permission gauntlet.
+  // No policy gate in KOSMOS — remote control allowed by default.
   const disabledReason = await getBridgeDisabledReason();
   if (disabledReason) {
     return disabledReason;

@@ -13,7 +13,14 @@ import { parseZipModes, unzipFile } from '../dxt/zip.js'
 import { errorMessage, getErrnoCode, isENOENT, toError } from '../errors.js'
 import { getFsImplementation } from '../fsOperations.js'
 import { logError } from '../log.js'
-import { getSecureStorage } from '../secureStorage/index.js'
+// KOSMOS: secureStorage deleted by Spec 1633 P1. KOSMOS uses .env-backed secrets, not OS keychain.
+const getSecureStorage = (): {
+  read: () => null
+  update: (_data: unknown) => { success: true; warning?: string }
+} => ({
+  read: () => null,
+  update: (_data: unknown) => ({ success: true as const }),
+})
 import {
   getSettings_DEPRECATED,
   updateSettingsForSource,

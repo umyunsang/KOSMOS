@@ -16,7 +16,15 @@ import memoize from 'lodash-es/memoize.js'
 import type { LoadedPlugin } from '../../types/plugin.js'
 import { logForDebugging } from '../debug.js'
 import { logError } from '../log.js'
-import { getSecureStorage } from '../secureStorage/index.js'
+// KOSMOS: secureStorage deleted by Spec 1633 P1. KOSMOS uses .env-backed secrets, not OS keychain.
+// Provide a no-op stub so all getSecureStorage() call sites compile without the deleted module.
+const getSecureStorage = (): {
+  read: () => null
+  update: (_data: unknown) => { success: true; warning?: string }
+} => ({
+  read: () => null,
+  update: (_data: unknown) => ({ success: true as const }),
+})
 import {
   getSettings_DEPRECATED,
   updateSettingsForSource,

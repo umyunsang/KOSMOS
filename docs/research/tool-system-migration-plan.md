@@ -29,7 +29,6 @@ src/kosmos/tools/                  (70 .py files)
 ├── lookup.py · main_router.py · models.py · mvp_surface.py
 ├── rate_limiter.py · register_all.py · registry.py · resolve_location.py
 ├── search.py · tokenizer.py
-├── composite/            1 adapter  (road_risk_score.py)
 ├── geocoding/            backend-only (kakao_client.py, juso.py, sgis.py, region_mapping.py)
 ├── hira/                 1 adapter  (hospital_search.py)
 ├── kma/                  6 adapters + grid_coords + projection
@@ -91,10 +90,11 @@ Source-of-truth: `src/kosmos/tools/register_all.py:33-115` (registration order).
 | 9 | `kma_pre_warning` | KMA | KMA 기상예비특보목록 | **yes** | `api_key` / AAL1 | non_personal | `kma/kma_pre_warning.py:252` |
 | 10 | `kma_forecast_fetch` | KMA | same as getVilageFcst (lat/lon → LCC grid) | **yes** | `api_key` / AAL1 | non_personal | `kma/forecast_fetch.py:342` |
 | 11 | `hira_hospital_search` | HIRA | `apis.data.go.kr/B551182/hospInfoServicev2/getHospBasisList` | **yes** | `api_key` / AAL1 | non_personal | `hira/hospital_search.py:226` |
-| 12 | `road_risk_score` | composite (KOROAD+KMA) | n/a (fan-out) | **yes** (chains 3+5) | composite | non_personal | `composite/road_risk_score.py:326` |
-| 13 | `nmc_emergency_search` | NMC | `api1.odcloud.kr/api/nmc/v1/realtime-beds` | **gated stub** — Layer-3 refuses until auth provisioned | AAL2 | personal_standard | `nmc/emergency_search.py:253` |
-| 14 | `nfa_emergency_info_service` | NFA 119 | NFA getEmg*Info endpoints | **gated stub** | AAL2 | personal_standard | `nfa119/emergency_info_service.py:276` |
-| 15 | `mohw_welfare_eligibility_search` | MOHW/SSIS | SSIS NationalWelfarelistV001 | **gated stub** | AAL2 | personal_standard | `ssis/welfare_eligibility_search.py:168` |
+| 12 | `nmc_emergency_search` | NMC | `api1.odcloud.kr/api/nmc/v1/realtime-beds` | **gated stub** — Layer-3 refuses until auth provisioned | AAL2 | personal_standard | `nmc/emergency_search.py:253` |
+| 13 | `nfa_emergency_info_service` | NFA 119 | NFA getEmg*Info endpoints | **gated stub** | AAL2 | personal_standard | `nfa119/emergency_info_service.py:276` |
+| 14 | `mohw_welfare_eligibility_search` | MOHW/SSIS | SSIS NationalWelfarelistV001 | **gated stub** | AAL2 | personal_standard | `ssis/welfare_eligibility_search.py:168` |
+
+Composite tools have been removed (Epic #1634); the LLM now chains primitive adapters end-to-end through `lookup` per migration tree § L1-B B6.
 
 Mock-only (under `mock/`, evidence in `docs/mock/<system>/`):
 - **verify primitive**: `mock_verify_digital_onepass`, `mock_verify_ganpyeon_injeung`, `mock_verify_geumyung_injeungseo`, `mock_verify_gongdong_injeungseo`, `mock_verify_mobile_id`, `mock_verify_mydata` — shape-mirror of OpenDID / PASS / 공동인증서 / 모바일신분증 / MyData APIs. (`src/kosmos/tools/mock/verify_*.py`).
@@ -353,9 +353,8 @@ Backend side: add a thin `kosmos.tools.metadata.manifest()` generator that seria
 | T5: Port `kma_short_term_forecast` + `kma_forecast_fetch` (shared projection.py) | Sonnet-C | 9 |
 | T6: Port `kma_ultra_short_term_forecast` + `kma_pre_warning` | Sonnet-C | 9 |
 | T7: Port `hira_hospital_search` | Sonnet-D | 7 |
-| T8: Port `road_risk_score` (composite) | Sonnet-D | 7 |
 
-Dependencies: T8 depends on T1-T6 merging first (composite imports the atoms).
+Dependencies: T1–T7 are independent. (An early Wave C-2.1 included a port of a composite adapter, which has since been removed per Epic #1634 / migration tree § L1-B B6.)
 
 #### Wave C-2.2 — Layer-3 gated stubs (NMC / NFA / MOHW)
 

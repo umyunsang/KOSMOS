@@ -3,6 +3,8 @@
 > This document is the canonical architectural vision for KOSMOS. It is the single source of truth for *what we are trying to build* and *why*. Specs under `specs/` describe how to build individual features; this document describes the whole.
 >
 > Any spec, ADR, or implementation decision must align with this vision. If a later insight contradicts it, update this file in the same pull request.
+>
+> **Migration status (2026-04-26)** — KOSMOS v0.1-alpha shipped. The six-Phase migration (P0 #1632 → P1+P2 #1633 → P3 #1634 → P4 #1847 → P5 #1927 → P6 #1637) completed under Initiative #1631. The harness migration described below is no longer aspirational: the LLM Harness pillar runs through FriendliAI Serverless + K-EXAONE with Claude Code's agent loop preserved; the Tool System pillar exposes 24 registry-bundled adapters across seven Korean ministries through `lookup` / `submit` / `verify` / `subscribe` primitives, all documented in [`docs/api/`](./api/) with Pydantic v2 envelopes and Draft 2020-12 JSON Schemas; the 5-tier plugin DX (Spec 1636) is open for external citizen and ministry contributors. Live API regression and the in-TUI marketplace browser are tracked as deferred follow-ups.
 
 ## The ambition
 

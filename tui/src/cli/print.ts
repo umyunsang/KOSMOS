@@ -6,7 +6,8 @@ import {
   downloadUserSettings,
   redownloadUserSettings,
 } from 'src/services/settingsSync/index.js'
-import { waitForRemoteManagedSettingsToLoad } from 'src/services/remoteManagedSettings/index.js'
+// remoteManagedSettings removed in P1+P2 (Spec 1633); KOSMOS does not use Anthropic enterprise policy.
+const waitForRemoteManagedSettingsToLoad = async (): Promise<void> => { /* no-op */ }
 import { StructuredIO } from 'src/cli/structuredIO.js'
 import { RemoteIO } from 'src/cli/remoteIO.js'
 import {
@@ -133,7 +134,8 @@ import { cwd } from 'process'
 import { getCwd } from 'src/utils/cwd.js'
 import omit from 'lodash-es/omit.js'
 import reject from 'lodash-es/reject.js'
-import { isPolicyAllowed } from 'src/services/policyLimits/index.js'
+// policyLimits removed in P1+P2 (Spec 1633); KOSMOS opens features by default via Spec 033 permission gauntlet.
+const isPolicyAllowed = (_policy: string): boolean => true
 import type { ReplBridgeHandle } from 'src/bridge/replBridge.js'
 import { getRemoteSessionUrl } from 'src/constants/product.js'
 import { buildBridgeConnectUrl } from 'src/bridge/bridgeStatusUtil.js'
@@ -260,10 +262,9 @@ import {
 import { createModelSwitchBreadcrumbs } from 'src/utils/messages.js'
 import { collectContextData } from 'src/commands/context/context-noninteractive.js'
 import { LOCAL_COMMAND_STDOUT_TAG } from 'src/constants/xml.js'
-import {
-  statusListeners,
-  type ClaudeAILimits,
-} from 'src/services/claudeAiLimits.js'
+// services/claudeAiLimits removed in P1+P2 (Spec 1633); KOSMOS uses FriendliAI, claude.ai limits not applicable.
+type ClaudeAILimits = Record<string, unknown>
+const statusListeners: Set<(limits: ClaudeAILimits) => void> = new Set()
 import {
   getDefaultMainLoopModel,
   getMainLoopModel,
@@ -278,7 +279,8 @@ import {
   resolveAppliedEffort,
 } from 'src/utils/effort.js'
 import { modelSupportsAdaptiveThinking } from 'src/utils/thinking.js'
-import { modelSupportsAutoMode } from 'src/utils/betas.js'
+// utils/betas removed in P1+P2 (Spec 1633); KOSMOS K-EXAONE does not have Anthropic betas.
+const modelSupportsAutoMode = (_model: string): boolean => false
 import { ensureModelStringsInitialized } from 'src/utils/model/modelStrings.js'
 import {
   getSessionId,

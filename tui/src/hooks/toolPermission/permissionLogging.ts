@@ -11,7 +11,8 @@ import { getCodeEditToolDecisionCounter } from '../../bootstrap/state.js'
 import type { Tool as ToolType, ToolUseContext } from '../../Tool.js'
 import { getLanguageName } from '../../utils/cliHighlight.js'
 import { SandboxManager } from '../../utils/sandbox/sandbox-adapter.js'
-import { logOTelEvent } from '../../utils/telemetry/events.js'
+// KOSMOS: utils/telemetry/events.js deleted by Spec 1633 P1. logOTelEvent → no-op.
+const logOTelEvent = (_event: string, _data?: unknown): void => {}
 import type {
   PermissionApprovalSource,
   PermissionRejectionSource,

@@ -148,15 +148,8 @@ async function main(): Promise<void> {
       exitWithError(versionError);
     }
 
-    // Bridge is a remote control feature - check policy limits
-    const {
-      waitForPolicyLimitsToLoad,
-      isPolicyAllowed
-    } = await import('../services/policyLimits/index.js');
-    await waitForPolicyLimitsToLoad();
-    if (!isPolicyAllowed('allow_remote_control')) {
-      exitWithError("Error: Remote Control is disabled by your organization's policy.");
-    }
+    // policyLimits removed in P1+P2 (Spec 1633); KOSMOS opens features by default via Spec 033 permission gauntlet.
+    // Bridge is a remote control feature - no policy gate in KOSMOS.
     await bridgeMain(args.slice(1));
     return;
   }

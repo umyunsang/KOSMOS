@@ -8,7 +8,7 @@ import React from 'react'
 import { Box, Text, useInput } from 'ink'
 import { useTheme } from '../../theme/provider'
 import { useI18n } from '../../i18n'
-import { useCanUseTool } from '../../hooks/useCanUseTool'
+import { useSessionStore, dispatchSessionAction } from '../../store/session-store'
 import type { PermissionResponseFrame } from '../../ipc/frames.generated'
 
 // ---------------------------------------------------------------------------
@@ -59,13 +59,23 @@ export function PermissionGauntletModal({
 }: PermissionGauntletModalProps): React.ReactElement | null {
   const theme = useTheme()
   const i18n = useI18n()
-  const { pendingRequest, grant, deny } = useCanUseTool()
+  // Subscribe directly to avoid hook-composition issues with useSyncExternalStore
+  // across module boundaries in test environments.
+  const pendingRequest = useSessionStore((s) => s.pending_permission)
+
+  function grant(): void {
+    dispatchSessionAction({ type: 'PERMISSION_RESPONSE' })
+  }
+
+  function deny(): void {
+    dispatchSessionAction({ type: 'PERMISSION_RESPONSE' })
+  }
 
   // useInput is registered on every render to preserve hook order, but active
   // only while the permission modal is open.
   // All keystrokes are swallowed here, blocking the outer input buffer.
   useInput((input, key) => {
-    if (pendingRequest === null) return
+    if (pendingRequest == null) return
     if (input === 'y' || input === 'Y') {
       grant()
       sendFrame({
@@ -90,10 +100,10 @@ export function PermissionGauntletModal({
       })
     }
     // All other keys are consumed (blocked) intentionally.
-  }, { isActive: pendingRequest !== null })
+  }, { isActive: pendingRequest != null })
 
   // When no pending request, render nothing (modal closed).
-  if (pendingRequest === null) return null
+  if (pendingRequest == null) return null
 
   const riskBorderColor = riskColor(pendingRequest.risk_level, theme)
 

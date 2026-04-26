@@ -76,8 +76,9 @@ export function parseKeystroke(input: string): ParsedKeystroke {
 
 /**
  * Parse a chord string like "ctrl+k ctrl+s" into an array of ParsedKeystrokes.
+ * @internal Used by parseBindings. External callers should use parseChord from chord.ts.
  */
-export function parseChord(input: string): Chord {
+function parseChordToKeystrokes(input: string): Chord {
   // A lone space character IS the space key binding, not a separator
   if (input === ' ') return [parseKeystroke('space')]
   return input.trim().split(/\s+/).map(parseKeystroke)
@@ -138,7 +139,7 @@ function keyToDisplayName(key: string): string {
 }
 
 /**
- * Convert a Chord to its canonical string representation for display.
+ * Convert a Chord (ParsedKeystroke[]) to its canonical string representation for display.
  */
 export function chordToString(chord: Chord): string {
   return chord.map(keystrokeToString).join(' ')
@@ -193,7 +194,7 @@ export function parseBindings(blocks: KeybindingBlock[]): ParsedBinding[] {
   for (const block of blocks) {
     for (const [key, action] of Object.entries(block.bindings)) {
       bindings.push({
-        chord: parseChord(key),
+        chord: parseChordToKeystrokes(key),
         action,
         context: block.context,
       })
@@ -201,3 +202,18 @@ export function parseBindings(blocks: KeybindingBlock[]): ParsedBinding[] {
   }
   return bindings
 }
+
+// ---------------------------------------------------------------------------
+// KOSMOS canonical chord parser — re-exports from chord.ts so that
+// `import { parseChord, tryParseChord } from './parser'` uses the
+// canonical throwing + null-returning variants (Spec 288 T022).
+//
+// The local `parseChord` function (ParsedKeystroke[]) is still used
+// by `parseBindings` above (it was already called there); we shadow the
+// *export* with the branded ChordString variant from chord.ts.
+// ---------------------------------------------------------------------------
+
+export {
+  parseChord,
+  tryParseChord,
+} from './chord'

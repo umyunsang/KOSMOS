@@ -88,8 +88,7 @@ Phase 1 스코프의 모든 도구 어댑터 구현 완료 및 테스트 통과.
 | `kma_current_observation` | KMA `getUltraSrtNcst` | `src/kosmos/tools/kma/kma_current_observation.py` | `tests/tools/kma/test_kma_current_observation.py` | `docs/tools/kma.md` | ✅ |
 | `kma_short_term_forecast` | KMA `getVilageFcst` | `src/kosmos/tools/kma/kma_short_term_forecast.py` | `tests/tools/kma/test_kma_short_term_forecast.py` | `docs/tools/kma.md` | ✅ |
 | `kma_ultra_short_term_forecast` | KMA `getUltraSrtFcst` | `src/kosmos/tools/kma/kma_ultra_short_term_forecast.py` | `tests/tools/kma/test_kma_ultra_short_term_forecast.py` | `docs/tools/kma.md` | ✅ |
-| `kma_pre_warning` | KMA `getWthrPwnList` | `src/kosmos/tools/kma/kma_pre_warning.py` | `tests/tools/kma/test_kma_pre_warning.py` | `docs/tools/kma.md` | ✅ |
-| `road_risk_score` | Composite (KOROAD + KMA) | `src/kosmos/tools/composite/road_risk_score.py` | `tests/live/test_live_composite.py` | `docs/tools/composite.md` | ✅ |
+| `kma_pre_warning` | KMA `getWthrPwnList` | `src/kosmos/tools/kma/kma_pre_warning.py` | `tests/tools/kma/test_kma_pre_warning.py` | `docs/api/kma/pre_warning.md` | ✅ |
 | `address_to_region` | Kakao Local API | `src/kosmos/tools/geocoding/address_to_region.py` | `tests/tools/geocoding/test_address_to_region.py` | — | ✅ |
 | `address_to_grid` | Kakao Local API | `src/kosmos/tools/geocoding/address_to_grid.py` | `tests/tools/geocoding/test_grid_conversion.py` | — | ✅ |
 | `search_address` (Kakao client) | Kakao Local API | `src/kosmos/tools/geocoding/kakao_client.py` | `tests/tools/geocoding/test_kakao_client.py` | — | ✅ |
@@ -110,7 +109,6 @@ Phase 1 스코프의 모든 도구 어댑터 구현 완료 및 테스트 통과.
 | `tests/live/test_live_kma.py` | KMA 기상 경보/현재 관측 | SC-01 | ✅ |
 | `tests/live/test_live_kma_forecast.py` | KMA 단기/초단기 예보 | SC-01 | ✅ |
 | `tests/live/test_live_llm.py` | FriendliAI K-EXAONE SSE 스트리밍 | SC-01 | ✅ |
-| `tests/live/test_live_composite.py` | `road_risk_score` 복합 도구 | SC-01, SC-09 | ✅ |
 | `tests/live/test_live_e2e.py` | Scenario 1 전체 파이프라인 | SC-02, SC-03 | ✅ |
 
 #### Epic #380 (spec 018) — Phase 1 Live Extension (PR #401)

@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto'
 import type { HookEvent } from 'src/entrypoints/agentSdkTypes.js'
-import { queryModelWithoutStreaming } from '../../services/api/claude.js'
+// KOSMOS: services/api/claude.js deleted by Spec 1633 P1+P2. queryModelWithoutStreaming not available.
 import type { ToolUseContext } from '../../Tool.js'
 import type { Message } from '../../types/message.js'
 import { createAttachmentMessage } from '../attachments.js'
@@ -59,45 +59,11 @@ export async function execPromptHook(
       createCombinedAbortSignal(signal, { timeoutMs: hookTimeoutMs })
 
     try {
-      const response = await queryModelWithoutStreaming({
-        messages: messagesToQuery,
-        systemPrompt: asSystemPrompt([
-          `You are evaluating a hook in Claude Code.
-
-Your response must be a JSON object matching one of the following schemas:
-1. If the condition is met, return: {"ok": true}
-2. If the condition is not met, return: {"ok": false, "reason": "Reason for why it is not met"}`,
-        ]),
-        thinkingConfig: { type: 'disabled' as const },
-        tools: toolUseContext.options.tools,
-        signal: combinedSignal,
-        options: {
-          async getToolPermissionContext() {
-            const appState = toolUseContext.getAppState()
-            return appState.toolPermissionContext
-          },
-          model: hook.model ?? getSmallFastModel(),
-          toolChoice: undefined,
-          isNonInteractiveSession: true,
-          hasAppendSystemPrompt: false,
-          agents: [],
-          querySource: 'hook_prompt',
-          mcpTools: [],
-          agentId: toolUseContext.agentId,
-          outputFormat: {
-            type: 'json_schema',
-            schema: {
-              type: 'object',
-              properties: {
-                ok: { type: 'boolean' },
-                reason: { type: 'string' },
-              },
-              required: ['ok'],
-              additionalProperties: false,
-            },
-          },
-        },
-      })
+      // KOSMOS: queryModelWithoutStreaming removed (Spec 1633 P1+P2). Anthropic API not available.
+      // Prompt-based hooks are not executable in KOSMOS — FriendliAI backend handles LLM calls.
+      throw new Error('Anthropic API not available in KOSMOS — Spec 1633')
+      // eslint-disable-next-line no-unreachable
+      const response = await Promise.resolve(null as never)
 
       cleanupSignal()
 

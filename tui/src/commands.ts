@@ -741,3 +741,18 @@ export function formatDescriptionWithSource(cmd: Command): string {
 
   return `${cmd.description} (${getSettingSourceName(cmd.source)})`
 }
+
+// KOSMOS migration: re-export the dispatcher API so tests / consumers that
+// `import { buildDefaultRegistry, dispatchCommand } from 'src/commands'`
+// resolve to the new dispatcher (Spec 1637 P6 T032). The legacy `commands.ts`
+// barrel takes precedence over `commands/index.ts` in Bun's module
+// resolution, so the new exports must be hoisted up.
+export {
+  buildDefaultRegistry,
+  dispatchCommand,
+  createRegistry,
+  registerCommand,
+  isSlashCommand,
+  listCommands,
+} from './commands/index.js'
+export type { CommandRegistry, DispatchResult } from './commands/index.js'

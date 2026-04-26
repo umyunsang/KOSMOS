@@ -8,15 +8,21 @@ import type { AttributedCounter } from '../bootstrap/state.js'
 import { getSessionCounter, setMeter } from '../bootstrap/state.js'
 import { shutdownLspServerManager } from '../services/lsp/manager.js'
 import { populateOAuthAccountInfoIfNeeded } from '../services/oauth/client.js'
-import {
-  initializePolicyLimitsLoadingPromise,
-  isPolicyLimitsEligible,
-} from '../services/policyLimits/index.js'
-import {
-  initializeRemoteManagedSettingsLoadingPromise,
-  isEligibleForRemoteManagedSettings,
-  waitForRemoteManagedSettingsToLoad,
-} from '../services/remoteManagedSettings/index.js'
+// policyLimits removed in P1+P2 (Spec 1633); KOSMOS does not consume Anthropic
+// enterprise per-feature policy limits. The eligibility check is a no-op.
+const isPolicyLimitsEligible = (): boolean => false
+const initializePolicyLimitsLoadingPromise = (): void => {
+  /* no-op */
+}
+// remoteManagedSettings removed in P1+P2 (Spec 1633); KOSMOS does not consume
+// Anthropic enterprise remote-managed settings.
+const isEligibleForRemoteManagedSettings = (): boolean => false
+const initializeRemoteManagedSettingsLoadingPromise = (): void => {
+  /* no-op */
+}
+const waitForRemoteManagedSettingsToLoad = async (): Promise<void> => {
+  /* no-op */
+}
 import { preconnectAnthropicApi } from '../utils/apiPreconnect.js'
 import { applyExtraCACertsFromConfig } from '../utils/caCertsConfig.js'
 import { registerCleanup } from '../utils/cleanupRegistry.js'
@@ -45,7 +51,8 @@ import {
 // ~400KB of OpenTelemetry + protobuf modules until telemetry is actually initialized.
 // gRPC exporters (~700KB via @grpc/grpc-js) are further lazy-loaded within instrumentation.ts.
 import { configureGlobalAgents } from '../utils/proxy.js'
-import { isBetaTracingEnabled } from '../utils/telemetry/betaSessionTracing.js'
+// utils/telemetry/betaSessionTracing removed — KOSMOS does not use Anthropic beta tracing.
+const isBetaTracingEnabled = (): boolean => false
 import { getTelemetryAttributes } from '../utils/telemetryAttributes.js'
 import { setShellIfWindows } from '../utils/windowsPaths.js'
 

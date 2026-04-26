@@ -1,5 +1,5 @@
 import type { Command } from '../../commands.js'
-import { isPolicyAllowed } from '../../services/policyLimits/index.js'
+// KOSMOS: policyLimits deleted by Spec 1633 P1. isPolicyAllowed → true (no Anthropic policy limits in KOSMOS).
 import { isEnvTruthy } from '../../utils/envUtils.js'
 import { isEssentialTrafficOnly } from '../../utils/privacyLevel.js'
 
@@ -18,7 +18,7 @@ const feedback = {
       isEnvTruthy(process.env.DISABLE_BUG_COMMAND) ||
       isEssentialTrafficOnly() ||
       process.env.USER_TYPE === 'ant' ||
-      !isPolicyAllowed('allow_product_feedback')
+      false /* isPolicyAllowed: deleted Spec 1633 P1 — always allowed */
     ),
   load: () => import('./feedback.js'),
 } satisfies Command

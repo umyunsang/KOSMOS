@@ -1,5 +1,6 @@
 import type { Command } from '../../commands.js'
-import { isPolicyAllowed } from '../../services/policyLimits/index.js'
+// KOSMOS: policyLimits deleted by Spec 1633 P1. isPolicyAllowed → false (remote sessions disabled in KOSMOS).
+const isPolicyAllowed = (_policy: string): boolean => false
 import { isClaudeAISubscriber } from '../../utils/auth.js'
 
 export default {

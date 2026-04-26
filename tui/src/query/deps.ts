@@ -1,5 +1,8 @@
 import { randomUUID } from 'crypto'
-import { queryModelWithStreaming } from '../services/api/claude.js'
+// KOSMOS: services/api/claude.js deleted by Spec 1633 P1+P2. queryModelWithStreaming → throws.
+async function* queryModelWithStreaming(..._args: unknown[]): AsyncGenerator<never> {
+  throw new Error('Anthropic API not available in KOSMOS — Spec 1633')
+}
 import { autoCompactIfNeeded } from '../services/compact/autoCompact.js'
 import { microcompactMessages } from '../services/compact/microCompact.js'
 

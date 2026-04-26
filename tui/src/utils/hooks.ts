@@ -55,13 +55,13 @@ import {
   logEvent,
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
 } from 'src/services/analytics/index.js'
-import { logOTelEvent } from './telemetry/events.js'
+// KOSMOS-original: CC telemetry events not used — no-op.
+const logOTelEvent = (_eventName: string, _data?: unknown): void => {}
 import { ALLOWED_OFFICIAL_MARKETPLACE_NAMES } from './plugins/schemas.js'
-import {
-  startHookSpan,
-  endHookSpan,
-  isBetaTracingEnabled,
-} from './telemetry/sessionTracing.js'
+// KOSMOS-original: CC session tracing not used — no-ops.
+const startHookSpan = (_name: string, _data?: unknown): unknown => ({})
+const endHookSpan = (_span: unknown, _data?: unknown): void => {}
+const isBetaTracingEnabled = (): boolean => false
 import {
   hookJSONOutputSchema,
   promptRequestSchema,

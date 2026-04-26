@@ -27,7 +27,6 @@
 
 import React, { memo, useCallback, useMemo } from 'react'
 import { Box, Static } from 'ink'
-import { useVirtualScroll } from '../../hooks/useVirtualScroll'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -95,11 +94,41 @@ function VirtualizedListInner<T>(
     [items, keyExtractor],
   )
 
-  const {
-    range: [start, end],
-    topSpacer,
-    bottomSpacer,
-  } = useVirtualScroll(itemKeys, scrollTop)
+  // ---------------------------------------------------------------------------
+  // Inline windowing — simple slice-based viewport calculation.
+  //
+  // VirtualizedList is a standalone component that does NOT use <ScrollBox>.
+  // It computes the visible window from `scrollTop` + estimated row height
+  // without the full hook machinery (no Yoga measurements, no ScrollBox ref).
+  //
+  // WINDOW_SIZE: max items mounted at once. Matches useVirtualScroll's
+  // COLD_START_COUNT + OVERSCAN_ROWS as a conservative bound that keeps
+  // renderItem calls << 200 for any list size.
+  // ---------------------------------------------------------------------------
+  const WINDOW_SIZE = 99
+  const OVERSCAN = 10
+
+  const totalCount = items.length
+  const stickyTail = scrollTop >= Number.MAX_SAFE_INTEGER / 2
+
+  // Compute [start, end) half-open range for the viewport.
+  const [start, end] = useMemo((): readonly [number, number] => {
+    if (totalCount === 0) return [0, 0]
+    if (stickyTail) {
+      // Sticky tail: always show the last WINDOW_SIZE items.
+      const s = Math.max(0, totalCount - WINDOW_SIZE)
+      return [s, totalCount]
+    }
+    // Scroll-position based: treat scrollTop as a row index into the list.
+    const estimatedStart = Math.max(0, scrollTop - OVERSCAN)
+    const estimatedEnd = Math.min(totalCount, estimatedStart + WINDOW_SIZE)
+    return [estimatedStart, estimatedEnd]
+  }, [totalCount, stickyTail, scrollTop])
+
+  // Spacers hold the scroll height constant for unmounted rows (no-ops in
+  // Ink since there's no real scroll coordinate, but harmless).
+  const topSpacer = start
+  const bottomSpacer = totalCount - end
 
   // ---------------------------------------------------------------------------
   // overflowToBackbuffer: slice of items that have scrolled off (index < start)

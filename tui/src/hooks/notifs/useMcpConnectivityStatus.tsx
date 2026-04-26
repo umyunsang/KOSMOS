@@ -4,7 +4,8 @@ import { useEffect } from 'react';
 import { useNotifications } from 'src/context/notifications.js';
 import { getIsRemoteMode } from '../../bootstrap/state.js';
 import { Text } from '../../ink.js';
-import { hasClaudeAiMcpEverConnected } from '../../services/mcp/claudeai.js';
+// services/mcp/claudeai removed in P1+P2 (Spec 1633); KOSMOS does not use claude.ai MCP proxy.
+const hasClaudeAiMcpEverConnected = (_name: string): boolean => false
 import type { MCPServerConnection } from '../../services/mcp/types.js';
 type Props = {
   mcpClients?: MCPServerConnection[];

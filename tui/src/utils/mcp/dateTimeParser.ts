@@ -1,4 +1,8 @@
-import { queryHaiku } from '../../services/api/claude.js'
+// Anthropic API removed in P1+P2 (Spec 1633); KOSMOS routes LLM calls
+// through FriendliAI Serverless via the Python backend. Stub throws on use.
+const queryHaiku = async (..._args: readonly unknown[]): Promise<never> => {
+  throw new Error('Anthropic API not available in KOSMOS — Spec 1633')
+}
 import { logError } from '../log.js'
 import { extractTextContent } from '../messages.js'
 import { asSystemPrompt } from '../systemPromptType.js'

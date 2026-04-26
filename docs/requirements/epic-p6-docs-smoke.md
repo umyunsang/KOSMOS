@@ -54,9 +54,10 @@ JSON Schema + OpenAPI 참조 형태로 작성. (b) 통합 bun test 회귀 없음
 - `docs/api/subscribe/rss_notices.md`
 - `docs/api/subscribe/rest_pull_tick.md`
 
-#### Composite + resolve_location
-- `docs/api/composite/road_risk_score.md`
+#### resolve_location
 - `docs/api/resolve_location/index.md` (juso · sgis · kakao)
+
+> Historical note: an earlier draft of this scope listed a composite adapter under `docs/api/composite/`. That adapter was removed in Epic #1634 per migration tree § L1-B B6 and is no longer in P6 scope.
 
 #### JSON Schema export
 - `docs/api/schemas/<tool_id>.json` — JSON Schema Draft 2020-12

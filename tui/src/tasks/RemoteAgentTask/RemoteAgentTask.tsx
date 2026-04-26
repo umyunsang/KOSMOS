@@ -15,8 +15,15 @@ import { deleteRemoteAgentMetadata, listRemoteAgentMetadata, type RemoteAgentMet
 import { jsonStringify } from '../../utils/slowOperations.js';
 import { appendTaskOutput, evictTaskOutput, getTaskOutputPath, initTaskOutput } from '../../utils/task/diskOutput.js';
 import { registerTask, updateTaskState } from '../../utils/task/framework.js';
-import { fetchSession } from '../../utils/teleport/api.js';
-import { archiveRemoteSession, pollRemoteSessionEvents } from '../../utils/teleport.js';
+// KOSMOS: utils/teleport/api.js deleted by Spec 1633 P1. fetchSession → throws (remote sessions not available).
+const fetchSession = async (_sessionId: unknown): Promise<never> => {
+  throw new Error('Remote sessions not available in KOSMOS — Spec 1633')
+}
+// KOSMOS: utils/teleport.js deleted by Spec 1633 P1. Remote sessions not available.
+const pollRemoteSessionEvents = async (_sessionId: unknown, _lastEventId: unknown): Promise<never> => {
+  throw new Error('Remote sessions not available in KOSMOS — Spec 1633')
+}
+const archiveRemoteSession = async (_sessionId: unknown): Promise<void> => {}
 import type { TodoList } from '../../utils/todo/types.js';
 import type { UltraplanPhase } from '../../utils/ultraplan/ccrSession.js';
 export type RemoteAgentTaskState = TaskStateBase & {

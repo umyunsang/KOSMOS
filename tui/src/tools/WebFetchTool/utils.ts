@@ -4,7 +4,7 @@ import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
 } from '../../services/analytics/index.js'
-import { queryHaiku } from '../../services/api/claude.js'
+// KOSMOS: services/api/claude.js deleted by Spec 1633 P1+P2. queryHaiku not available.
 import { AbortError } from '../../utils/errors.js'
 import { getWebFetchUserAgent } from '../../utils/http.js'
 import { logError } from '../../utils/log.js'
@@ -500,18 +500,10 @@ export async function applyPromptToMarkdown(
     prompt,
     isPreapprovedDomain,
   )
-  const assistantMessage = await queryHaiku({
-    systemPrompt: asSystemPrompt([]),
-    userPrompt: modelPrompt,
-    signal,
-    options: {
-      querySource: 'web_fetch_apply',
-      agents: [],
-      isNonInteractiveSession,
-      hasAppendSystemPrompt: false,
-      mcpTools: [],
-    },
-  })
+  // KOSMOS: queryHaiku removed (Spec 1633 P1+P2). Return raw truncated content.
+  throw new Error('Anthropic API not available in KOSMOS — Spec 1633')
+  const assistantMessage = await Promise.resolve(null as never)
+  void assistantMessage
 
   // We need to bubble this up, so that the tool call throws, causing us to return
   // an is_error tool_use block to the server, and render a red dot in the UI.

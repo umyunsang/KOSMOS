@@ -20,7 +20,9 @@ import {
 } from '../context.js'
 import { isEnvTruthy } from '../envUtils.js'
 import { getModelStrings, resolveOverriddenModel } from './modelStrings.js'
-import { formatModelPricing, getOpus46CostTier } from '../modelCost.js'
+// KOSMOS-original: CC model cost/pricing not used with FriendliAI/EXAONE.
+const formatModelPricing = (_tier?: unknown): string => ''
+const getOpus46CostTier = (_fastMode?: unknown): unknown => null
 import { getSettings_DEPRECATED } from '../settings/settings.js'
 import type { PermissionMode } from '../permissions/PermissionMode.js'
 import { getAPIProvider } from './providers.js'

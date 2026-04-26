@@ -1,9 +1,8 @@
 /* eslint-disable custom-rules/no-process-exit -- CLI subcommand handler intentionally exits */
 
-import {
-  clearAuthRelatedCaches,
-  performLogout,
-} from '../../commands/logout/logout.js'
+// commands/logout removed in P1+P2 (Spec 1633); KOSMOS auth is FriendliAI API key via .env only.
+const performLogout = async (_opts?: unknown): Promise<void> => { /* no-op in KOSMOS */ }
+const clearAuthRelatedCaches = async (): Promise<void> => { /* no-op in KOSMOS */ }
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,

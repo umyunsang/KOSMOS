@@ -9,16 +9,9 @@
 
 import chalk from 'chalk'
 import type { QuerySource } from '../../constants/querySource.js'
-import { getFeatureValue_CACHED_MAY_BE_STALE } from '../../services/analytics/growthbook.js'
-import {
-  type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
-  logEvent,
-} from '../../services/analytics/index.js'
-import { queryHaiku } from '../../services/api/claude.js'
-import { startsWithApiErrorPrefix } from '../../services/api/errors.js'
+// KOSMOS: services/api/claude.js deleted by Spec 1633 P1+P2. queryHaiku not available — FriendliAI backend handles all LLM calls.
 import { memoizeWithLRU } from '../memoize.js'
 import { jsonStringify } from '../slowOperations.js'
-import { asSystemPrompt } from '../systemPromptType.js'
 
 /**
  * Shell executables that must never be accepted as bare prefixes.
@@ -191,142 +184,19 @@ async function getCommandPrefixImpl(
     }
   }
 
-  let preflightCheckTimeoutId: NodeJS.Timeout | undefined
-  const startTime = Date.now()
-  let result: CommandPrefixResult | null = null
-
-  try {
-    // Log a warning if the pre-flight check takes too long
-    preflightCheckTimeoutId = setTimeout(
-      (tn, nonInteractive) => {
-        const message = `[${tn}Tool] Pre-flight check is taking longer than expected. Run with ANTHROPIC_LOG=debug to check for failed or slow API requests.`
-        if (nonInteractive) {
-          process.stderr.write(jsonStringify({ level: 'warn', message }) + '\n')
-        } else {
-          // biome-ignore lint/suspicious/noConsole: intentional warning
-          console.warn(chalk.yellow(`⚠️  ${message}`))
-        }
-      },
-      10000, // 10 seconds
-      toolName,
-      isNonInteractiveSession,
-    )
-
-    const useSystemPromptPolicySpec = getFeatureValue_CACHED_MAY_BE_STALE(
-      'tengu_cork_m4q',
-      false,
-    )
-
-    const response = await queryHaiku({
-      systemPrompt: asSystemPrompt(
-        useSystemPromptPolicySpec
-          ? [
-              `Your task is to process ${toolName} commands that an AI coding agent wants to run.\n\n${policySpec}`,
-            ]
-          : [
-              `Your task is to process ${toolName} commands that an AI coding agent wants to run.\n\nThis policy spec defines how to determine the prefix of a ${toolName} command:`,
-            ],
-      ),
-      userPrompt: useSystemPromptPolicySpec
-        ? `Command: ${command}`
-        : `${policySpec}\n\nCommand: ${command}`,
-      signal: abortSignal,
-      options: {
-        enablePromptCaching: useSystemPromptPolicySpec,
-        querySource,
-        agents: [],
-        isNonInteractiveSession,
-        hasAppendSystemPrompt: false,
-        mcpTools: [],
-      },
-    })
-
-    // Clear the timeout since the query completed
-    clearTimeout(preflightCheckTimeoutId)
-    const durationMs = Date.now() - startTime
-
-    const prefix =
-      typeof response.message.content === 'string'
-        ? response.message.content
-        : Array.isArray(response.message.content)
-          ? (response.message.content.find(_ => _.type === 'text')?.text ??
-            'none')
-          : 'none'
-
-    if (startsWithApiErrorPrefix(prefix)) {
-      logEvent(eventName, {
-        success: false,
-        error:
-          'API error' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
-        durationMs,
-      })
-      result = null
-    } else if (prefix === 'command_injection_detected') {
-      // Haiku detected something suspicious - treat as no prefix available
-      logEvent(eventName, {
-        success: false,
-        error:
-          'command_injection_detected' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
-        durationMs,
-      })
-      result = {
-        commandPrefix: null,
-      }
-    } else if (
-      prefix === 'git' ||
-      DANGEROUS_SHELL_PREFIXES.has(prefix.toLowerCase())
-    ) {
-      // Never accept bare `git` or shell executables as a prefix
-      logEvent(eventName, {
-        success: false,
-        error:
-          'dangerous_shell_prefix' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
-        durationMs,
-      })
-      result = {
-        commandPrefix: null,
-      }
-    } else if (prefix === 'none') {
-      // No prefix detected
-      logEvent(eventName, {
-        success: false,
-        error:
-          'prefix "none"' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
-        durationMs,
-      })
-      result = {
-        commandPrefix: null,
-      }
+  // KOSMOS: queryHaiku (Anthropic Haiku API) removed by Spec 1633 P1+P2.
+  // FriendliAI backend handles all LLM calls; Haiku-based prefix extraction
+  // is not available. Return null so callers fall back to default permission check.
+  if (process.env.NODE_ENV !== 'test') {
+    const message = `[${toolName}Tool] LLM-based prefix extraction not available in KOSMOS (Spec 1633).`
+    if (isNonInteractiveSession) {
+      process.stderr.write(jsonStringify({ level: 'warn', message }) + '\n')
     } else {
-      // Validate that the prefix is actually a prefix of the command
-
-      if (!command.startsWith(prefix)) {
-        // Prefix isn't actually a prefix of the command
-        logEvent(eventName, {
-          success: false,
-          error:
-            'command did not start with prefix' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
-          durationMs,
-        })
-        result = {
-          commandPrefix: null,
-        }
-      } else {
-        logEvent(eventName, {
-          success: true,
-          durationMs,
-        })
-        result = {
-          commandPrefix: prefix,
-        }
-      }
+      // biome-ignore lint/suspicious/noConsole: intentional warning
+      console.warn(chalk.yellow(`⚠️  ${message}`))
     }
-
-    return result
-  } catch (error) {
-    clearTimeout(preflightCheckTimeoutId)
-    throw error
   }
+  return null
 }
 
 async function getCommandSubcommandPrefixImpl(

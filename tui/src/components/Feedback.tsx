@@ -10,7 +10,11 @@ import type { CommandResultDisplay } from '../commands.js';
 import { useTerminalSize } from '../hooks/useTerminalSize.js';
 import { Box, Text, useInput } from '../ink.js';
 import { useKeybinding } from '../keybindings/useKeybinding.js';
-import { queryHaiku } from '../services/api/claude.js';
+// Anthropic API removed in P1+P2 (Spec 1633); KOSMOS routes LLM calls
+// through FriendliAI Serverless via the Python backend.
+const queryHaiku = async (..._args: readonly unknown[]): Promise<never> => {
+  throw new Error('Anthropic API not available in KOSMOS — Spec 1633')
+}
 import { startsWithApiErrorPrefix } from '../services/api/errors.js';
 import type { Message } from '../types/message.js';
 import { checkAndRefreshOAuthTokenIfNeeded } from '../utils/auth.js';

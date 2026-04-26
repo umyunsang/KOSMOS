@@ -87,17 +87,17 @@ import {
 } from '../../utils/sessionActivity.js'
 import { jsonStringify } from '../../utils/slowOperations.js'
 import { Stream } from '../../utils/stream.js'
-import { logOTelEvent } from '../../utils/telemetry/events.js'
-import {
-  addToolContentEvent,
-  endToolBlockedOnUserSpan,
-  endToolExecutionSpan,
-  endToolSpan,
-  isBetaTracingEnabled,
-  startToolBlockedOnUserSpan,
-  startToolExecutionSpan,
-  startToolSpan,
-} from '../../utils/telemetry/sessionTracing.js'
+// KOSMOS: utils/telemetry/events.js deleted by Spec 1633 P1. logOTelEvent → no-op.
+const logOTelEvent = (_event: string, _data?: unknown): void => {}
+// KOSMOS: utils/telemetry/sessionTracing.js deleted by Spec 1633 P1. Stubs provided.
+const addToolContentEvent = (_span: unknown, _event: unknown): void => {}
+const endToolBlockedOnUserSpan = (_span: unknown): void => {}
+const endToolExecutionSpan = (_span: unknown, _result: unknown): void => {}
+const endToolSpan = (_span: unknown): void => {}
+const isBetaTracingEnabled = (): false => false
+const startToolBlockedOnUserSpan = (_span: unknown): null => null
+const startToolExecutionSpan = (_span: unknown, _name: unknown): null => null
+const startToolSpan = (_name: unknown, _attrs?: unknown): null => null
 import {
   formatError,
   formatZodValidationError,

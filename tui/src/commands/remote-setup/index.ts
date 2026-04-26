@@ -1,6 +1,7 @@
 import type { Command } from '../../commands.js'
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '../../services/analytics/growthbook.js'
-import { isPolicyAllowed } from '../../services/policyLimits/index.js'
+// policyLimits removed in P1+P2 (Spec 1633); KOSMOS opens features by default via Spec 033 permission gauntlet.
+const isPolicyAllowed = (_policy: string): boolean => true
 
 const web = {
   type: 'local-jsx',

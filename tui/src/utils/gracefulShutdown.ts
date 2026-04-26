@@ -29,8 +29,9 @@ import {
   supportsTabStatus,
   wrapForMultiplexer,
 } from '../ink/termio/osc.js'
-import { shutdownDatadog } from '../services/analytics/datadog.js'
-import { shutdown1PEventLogging } from '../services/analytics/firstPartyEventLogger.js'
+// KOSMOS-original: CC analytics/datadog not used — no-ops.
+const shutdownDatadog = async (): Promise<void> => {}
+const shutdown1PEventLogging = async (): Promise<void> => {}
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,

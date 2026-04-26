@@ -1,0 +1,59 @@
+{
+  "$defs": {
+    "_HiraHospitalSearchOutput": {
+      "additionalProperties": true,
+      "description": "Placeholder output schema for GovAPITool registration.",
+      "title": "_HiraHospitalSearchOutput",
+      "type": "object"
+    }
+  },
+  "$id": "https://kosmos.example/api/schemas/hira_hospital_search.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Input schema for hira_hospital_search.\n\nQueries HIRA's hospital basis list endpoint by WGS84 coordinate and\nradius. All three parameters are required.\n\nObtain xPos / yPos from resolve_location(want='coords') before calling\nthis tool — never guess coordinate values from model memory.",
+  "properties": {
+    "numOfRows": {
+      "default": 20,
+      "description": "Number of rows per page (1–100). Default 20.",
+      "maximum": 100,
+      "minimum": 1,
+      "title": "Numofrows",
+      "type": "integer"
+    },
+    "pageNo": {
+      "default": 1,
+      "description": "Page number for pagination (1-based). Default 1.",
+      "minimum": 1,
+      "title": "Pageno",
+      "type": "integer"
+    },
+    "radius": {
+      "default": 2000,
+      "description": "Search radius in meters. Maximum 10 000 m. Default 2 000 m (2 km). Increase only if initial results are empty.",
+      "maximum": 10000,
+      "minimum": 1,
+      "title": "Radius",
+      "type": "integer"
+    },
+    "xPos": {
+      "description": "Longitude (WGS84, decimal degrees). Korean peninsula range: 124–132. Obtain from resolve_location(want='coords'). Never guess.",
+      "maximum": 132.0,
+      "minimum": 124.0,
+      "title": "Xpos",
+      "type": "number"
+    },
+    "yPos": {
+      "description": "Latitude (WGS84, decimal degrees). Korean peninsula range: 33–39. Obtain from resolve_location(want='coords'). Never guess.",
+      "maximum": 39.0,
+      "minimum": 33.0,
+      "title": "Ypos",
+      "type": "number"
+    }
+  },
+  "required": [
+    "xPos",
+    "yPos"
+  ],
+  "title": "hira_hospital_search",
+  "type": "object"
+}

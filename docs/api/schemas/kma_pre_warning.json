@@ -1,0 +1,95 @@
+{
+  "$defs": {
+    "KmaPreWarningOutput": {
+      "description": "Output from the kma_pre_warning tool.",
+      "properties": {
+        "items": {
+          "items": {
+            "$ref": "#/$defs/PreWarningItem"
+          },
+          "title": "Items",
+          "type": "array"
+        },
+        "total_count": {
+          "title": "Total Count",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "total_count",
+        "items"
+      ],
+      "title": "KmaPreWarningOutput",
+      "type": "object"
+    },
+    "PreWarningItem": {
+      "description": "A single pre-warning announcement from KMA getWthrPwnList.",
+      "properties": {
+        "stn_id": {
+          "title": "Stn Id",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "tm_fc": {
+          "title": "Tm Fc",
+          "type": "string"
+        },
+        "tm_seq": {
+          "title": "Tm Seq",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "stn_id",
+        "title",
+        "tm_fc",
+        "tm_seq"
+      ],
+      "title": "PreWarningItem",
+      "type": "object"
+    }
+  },
+  "$id": "https://kosmos.example/api/schemas/kma_pre_warning.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Input parameters for the KMA weather pre-warning list (기상예비특보목록) API.",
+  "properties": {
+    "data_type": {
+      "default": "JSON",
+      "enum": [
+        "JSON",
+        "XML"
+      ],
+      "title": "Data Type",
+      "type": "string"
+    },
+    "num_of_rows": {
+      "default": 100,
+      "minimum": 1,
+      "title": "Num Of Rows",
+      "type": "integer"
+    },
+    "page_no": {
+      "default": 1,
+      "minimum": 1,
+      "title": "Page No",
+      "type": "integer"
+    },
+    "stn_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Stn Id"
+    }
+  },
+  "title": "kma_pre_warning",
+  "type": "object"
+}

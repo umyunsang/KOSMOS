@@ -622,7 +622,7 @@ This preserves the architectural shape for KSC 2026 evaluation while keeping sco
 - Vector-retrieval upgrade for `lookup.search` (only if BM25 precision <60% on eval set).
 - Per-turn result caching (beyond `cache_ttl_seconds`).
 - Write-oriented tools (`submit_application`, `pay`, etc.) — legal/auth barriers.
-- Multi-adapter composition within `lookup.fetch` (e.g., automatic `road_risk_score` that chains 3 KOROAD calls — existing in `composite/` but kept as a single adapter from `lookup`'s view).
+- Multi-adapter composition within `lookup.fetch` — the LLM chains primitive adapters (e.g., `koroad_accident_search` + `kma_*`) end-to-end through `lookup`. Composite adapters were prototyped early and then removed in Epic #1634 per migration tree § L1-B B6 in favour of primitive chaining.
 - HIRA `MadmDtlInfoService2.7` (11 sub-operations joined on `ykiho`) — adapter surface too large for MVP; add post-MVP once the `ykiho` join idiom is validated by `hira_hospital_search`.
 - NMC real-time bed fields (`hv1`~`hv61`, acceptance mkiosk fields `mkioskty1`~`28`) are surfaced in `nmc_emergency_nearby` responses but not individually queryable — post-MVP may add a dedicated `nmc_bed_availability` adapter.
 - Cost/budget tracking across chains (planned for Phase 2).

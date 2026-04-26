@@ -9,8 +9,10 @@ import type {
 import { logEvent } from '../../services/analytics/index.js'
 import type { PermissionMode } from '../../types/permissions.js'
 import { createUserMessage } from '../messages.js'
-import { logOTelEvent, redactIfDisabled } from '../telemetry/events.js'
-import { startInteractionSpan } from '../telemetry/sessionTracing.js'
+// utils/telemetry removed — KOSMOS telemetry handled by Spec 021 OTEL pipeline.
+const logOTelEvent = (_event: string, _attrs?: Record<string, unknown>): void => { /* no-op */ }
+const redactIfDisabled = (val: string): string => val
+const startInteractionSpan = (): void => { /* no-op */ }
 import {
   matchesKeepGoingKeyword,
   matchesNegativeKeyword,

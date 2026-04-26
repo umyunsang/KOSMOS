@@ -194,3 +194,61 @@ export function useKeybindings(
 
   useInput(handleInput, { isActive })
 }
+
+// ---------------------------------------------------------------------------
+// Tier 1 action dispatch surface
+//
+// The module-level handler registry is populated by KeybindingProviderSetup
+// via `registerHandlers(context, bag)` when the provider mounts.
+// `dispatchAction(context, action)` looks up the registered handler for the
+// given (context, action) pair and invokes it synchronously. Returns true if
+// a handler was found and invoked, false otherwise.
+// ---------------------------------------------------------------------------
+
+export type ActionHandlers = Record<string, () => void>
+
+type HandlerBag = {
+  context: KeybindingContextName
+  handlers: ActionHandlers
+}
+
+const _handlerRegistry: HandlerBag[] = []
+
+/**
+ * Register a bag of action handlers for a context.
+ * Called by KeybindingProviderSetup.
+ * Returns an unregister function.
+ */
+export function registerHandlers(
+  context: KeybindingContextName,
+  handlers: ActionHandlers,
+): () => void {
+  const bag: HandlerBag = { context, handlers }
+  _handlerRegistry.push(bag)
+  return () => {
+    const idx = _handlerRegistry.indexOf(bag)
+    if (idx !== -1) _handlerRegistry.splice(idx, 1)
+  }
+}
+
+/**
+ * Dispatch a keybinding action by context + action name.
+ * Returns true if a registered handler was found and invoked, false otherwise.
+ */
+export function dispatchAction(
+  context: KeybindingContextName,
+  action: string,
+): boolean {
+  // Search from newest registration to oldest (last-registered wins).
+  for (let i = _handlerRegistry.length - 1; i >= 0; i -= 1) {
+    const bag = _handlerRegistry[i]
+    if (!bag) continue
+    if (bag.context !== context) continue
+    const handler = bag.handlers[action]
+    if (handler !== undefined) {
+      handler()
+      return true
+    }
+  }
+  return false
+}

@@ -88,7 +88,8 @@ import {
   buildYoloRejectionMessage,
   DONT_ASK_REJECT_MESSAGE,
 } from '../messages.js'
-import { calculateCostFromTokens } from '../modelCost.js'
+// KOSMOS-original: model cost calculation not used — FriendliAI pricing N/A.
+const calculateCostFromTokens = (_model?: string, _usage?: unknown): undefined => undefined
 /* eslint-enable @typescript-eslint/no-require-imports */
 import { jsonStringify } from '../slowOperations.js'
 import {

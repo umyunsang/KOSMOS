@@ -9,7 +9,8 @@ import { API_ERROR_MESSAGE_PREFIX, API_TIMEOUT_ERROR_MESSAGE, CREDIT_BALANCE_TOO
 import { isEmptyMessageText, NO_RESPONSE_REQUESTED } from '../../utils/messages.js';
 import { getUpgradeMessage } from '../../utils/model/contextWindowUpgradeCheck.js';
 import { getDefaultSonnetModel, renderModelName } from '../../utils/model/model.js';
-import { isMacOsKeychainLocked } from '../../utils/secureStorage/macOsKeychainStorage.js';
+// KOSMOS: secureStorage deleted by Spec 1633 P1. isMacOsKeychainLocked → false (no OS keychain in KOSMOS).
+const isMacOsKeychainLocked = (): false => false
 import { CtrlOToExpand } from '../CtrlOToExpand.js';
 import { InterruptedByUser } from '../InterruptedByUser.js';
 import { Markdown } from '../Markdown.js';

@@ -1,5 +1,7 @@
 import axios from 'axios'
-import { getOauthConfig, OAUTH_BETA_HEADER } from 'src/constants/oauth.js'
+// KOSMOS: constants/oauth.js deleted by Spec 1633 P1+P2. OAuth not used with FriendliAI provider.
+const getOauthConfig = (): { BASE_API_URL: string } => ({ BASE_API_URL: '' })
+const OAUTH_BETA_HEADER = ''
 import { getFeatureValue_CACHED_MAY_BE_STALE } from 'src/services/analytics/growthbook.js'
 import {
   getIsNonInteractiveSession,

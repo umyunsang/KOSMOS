@@ -1,0 +1,72 @@
+{
+  "$defs": {
+    "SubmitOutput": {
+      "additionalProperties": false,
+      "description": "Shape-only submit envelope output.\n\n``adapter_receipt`` is opaque — domain-specific receipt data lives there.\n``transaction_id`` is deterministic per invocation (content-hash, FR-004).",
+      "properties": {
+        "adapter_receipt": {
+          "additionalProperties": true,
+          "description": "Opaque adapter-specific receipt (e.g. 접수번호, authorization code). Main envelope does NOT narrow this shape.",
+          "title": "Adapter Receipt",
+          "type": "object"
+        },
+        "status": {
+          "$ref": "#/$defs/SubmitStatus"
+        },
+        "transaction_id": {
+          "description": "Deterministic per invocation (content-hash of input + adapter_nonce) — FR-004.",
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Transaction Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "transaction_id",
+        "status"
+      ],
+      "title": "SubmitOutput",
+      "type": "object"
+    },
+    "SubmitStatus": {
+      "description": "Terminal / non-terminal disposition from the adapter.\n\nFailed adapter invocations surface as ``failed`` or ``rejected``,\nnever as an unhandled Python exception (FR-005).",
+      "enum": [
+        "pending",
+        "succeeded",
+        "failed",
+        "rejected"
+      ],
+      "title": "SubmitStatus",
+      "type": "string"
+    }
+  },
+  "$id": "https://kosmos.example/api/schemas/mock_traffic_fine_pay_v1.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Typed params for the traffic fine payment adapter.\n\nMinistry-specific vocabulary lives HERE, not on the main SubmitInput envelope.\nAdapters validate params against this model at invocation time.\n\nSC-002: ``payment_method``, ``fine_reference`` are domain fields and MUST\nNOT appear on ``SubmitInput`` / ``SubmitOutput``.",
+  "properties": {
+    "fine_reference": {
+      "description": "Unique identifier for the traffic fine (e.g. 이의신청번호 or 고지서번호).",
+      "maxLength": 32,
+      "minLength": 1,
+      "title": "Fine Reference",
+      "type": "string"
+    },
+    "payment_method": {
+      "description": "Payment channel for the fine settlement.",
+      "enum": [
+        "virtual_account",
+        "card",
+        "bank_transfer"
+      ],
+      "title": "Payment Method",
+      "type": "string"
+    }
+  },
+  "required": [
+    "fine_reference",
+    "payment_method"
+  ],
+  "title": "mock_traffic_fine_pay_v1",
+  "type": "object"
+}
