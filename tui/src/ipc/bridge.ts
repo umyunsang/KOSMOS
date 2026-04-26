@@ -198,7 +198,12 @@ function _getLogLevel(): LogLevel {
 
 function _log(level: LogLevel, ...args: unknown[]): void {
   if (_levelOrder[level] >= _levelOrder[_getLogLevel()]) {
-    // Write to stderr so frame logs do not corrupt the IPC protocol on stdout.
+    // CRITICAL: writes go to stderr only — the stdout channel carries pure
+    // NDJSON IPC frames consumed by the parent harness. Mixing log output
+    // into stdout corrupts the frame parser (Spec 032 FR-035 fail-closed
+    // drop-and-log) and breaks PTY scenarios (Spec 1978 T002 regression
+    // guard — see docs/spec-1978/B1-root-cause-trace.md). Do NOT switch to
+    // console.log here even temporarily.
     process.stderr.write(`[KOSMOS IPC ${level}] ${args.map(String).join(' ')}\n`)
   }
 }
