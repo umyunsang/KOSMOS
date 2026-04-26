@@ -50,7 +50,10 @@ import type {
 // Base fields present on every frame arm (Spec 032 extended envelope).
 const BaseFrame = z.object({
   version: z.literal('1.0'),
-  session_id: z.string().min(1),
+  // contracts/chat-request-frame.md envelope: session_id may be "" before
+  // the first session_event handshake. Accept any string (incl. empty);
+  // backend is the authority on when the session is materialised.
+  session_id: z.string(),
   correlation_id: z.string().min(1),
   role: z.enum(['tui', 'backend', 'tool', 'llm', 'notification']),
   frame_seq: z.number().int().min(0),
