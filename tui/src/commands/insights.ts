@@ -14,7 +14,18 @@ import {
 import { tmpdir } from 'os'
 import { extname, join } from 'path'
 import type { Command } from '../commands.js'
-import { queryWithModel } from '../services/api/claude.js'
+// KOSMOS-1633 P2 / KOSMOS-1978 T008: `queryWithModel` import severed.
+// `/insights` is Anthropic-internal usage analytics. KOSMOS routes telemetry
+// through Spec 021 OTEL → local Langfuse (vision.md § L1-A A7), so the
+// LLM-driven summarisation in this file (lines 883/1026/1577) is short-
+// circuited via the local stub below. Same `{message: {content: [{type,text}]}}`
+// shape as the CC original — downstream parsing yields empty insights output,
+// which is correct: the analytics surface is non-functional in KOSMOS by design.
+async function queryWithModel(_args: unknown): Promise<{
+  message: { content: { type: 'text'; text: string }[] }
+}> {
+  return { message: { content: [{ type: 'text', text: '{}' }] } }
+}
 import {
   AGENT_TOOL_NAME,
   LEGACY_AGENT_TOOL_NAME,

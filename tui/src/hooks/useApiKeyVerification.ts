@@ -1,12 +1,22 @@
+// SPDX-License-Identifier: Apache-2.0
+// KOSMOS-1633 P2 / KOSMOS-1978 T005 — Anthropic API key verification removed.
+//
+// Original CC module: .references/claude-code-sourcemap/restored-src/src/hooks/useApiKeyVerification.ts
+// CC version: 2.1.88
+// KOSMOS deviation: KOSMOS uses a single fixed provider (FriendliAI Serverless
+// + K-EXAONE per kosmos-migration-tree.md § L1-A A1). Authentication is the
+// `KOSMOS_FRIENDLI_TOKEN` (or `FRIENDLI_API_KEY`) env var consumed by the
+// Python backend via `src/kosmos/llm/config.py`. The TUI never authenticates
+// with Anthropic — every Anthropic credential lookup path (Keychain, OAuth,
+// apiKeyHelper, Console subscription) is intentionally severed.
+//
+// This hook preserves the `VerificationStatus` discriminated-union shape so
+// every existing consumer (PromptInputFooter, Notifications, REPL.tsx, etc)
+// type-checks and reads `apiKeyStatus === 'valid'` as a green light. The
+// status is computed from `KOSMOS_FRIENDLI_TOKEN` / `FRIENDLI_API_KEY` env
+// presence — no network round-trip, no Anthropic API call.
+
 import { useCallback, useState } from 'react'
-import { getIsNonInteractiveSession } from '../bootstrap/state.js'
-import { verifyApiKey } from '../services/api/claude.js'
-import {
-  getAnthropicApiKeyWithSource,
-  getApiKeyFromApiKeyHelper,
-  isAnthropicAuthEnabled,
-  isClaudeAISubscriber,
-} from '../utils/auth.js'
 
 export type VerificationStatus =
   | 'loading'
@@ -21,59 +31,29 @@ export type ApiKeyVerificationResult = {
   error: Error | null
 }
 
+/**
+ * KOSMOS-1978 T005: env-var presence check, not Anthropic API verification.
+ * Mirrors the canonical Python guard at `src/kosmos/llm/envGuard.ts:hasFriendliCredential`
+ * (Spec 1633 T011) — both names accepted for backwards compatibility.
+ */
+function hasFriendliCredential(): boolean {
+  const friendli = process.env.FRIENDLI_API_KEY
+  const kosmos = process.env.KOSMOS_FRIENDLI_TOKEN
+  return Boolean(
+    (friendli && friendli.trim().length > 0) ||
+      (kosmos && kosmos.trim().length > 0),
+  )
+}
+
 export function useApiKeyVerification(): ApiKeyVerificationResult {
-  const [status, setStatus] = useState<VerificationStatus>(() => {
-    if (!isAnthropicAuthEnabled() || isClaudeAISubscriber()) {
-      return 'valid'
-    }
-    // Use skipRetrievingKeyFromApiKeyHelper to avoid executing apiKeyHelper
-    // before trust dialog is shown (security: prevents RCE via settings.json)
-    const { key, source } = getAnthropicApiKeyWithSource({
-      skipRetrievingKeyFromApiKeyHelper: true,
-    })
-    // If apiKeyHelper is configured, we have a key source even though we
-    // haven't executed it yet - return 'loading' to indicate we'll verify later
-    if (key || source === 'apiKeyHelper') {
-      return 'loading'
-    }
-    return 'missing'
-  })
-  const [error, setError] = useState<Error | null>(null)
+  const [status, setStatus] = useState<VerificationStatus>(() =>
+    hasFriendliCredential() ? 'valid' : 'missing',
+  )
+  // KOSMOS deviation: error is always null — no network failure path here.
+  const [error] = useState<Error | null>(null)
 
   const verify = useCallback(async (): Promise<void> => {
-    if (!isAnthropicAuthEnabled() || isClaudeAISubscriber()) {
-      setStatus('valid')
-      return
-    }
-    // Warm the apiKeyHelper cache (no-op if not configured), then read from
-    // all sources. getAnthropicApiKeyWithSource() reads the now-warm cache.
-    await getApiKeyFromApiKeyHelper(getIsNonInteractiveSession())
-    const { key: apiKey, source } = getAnthropicApiKeyWithSource()
-    if (!apiKey) {
-      if (source === 'apiKeyHelper') {
-        setStatus('error')
-        setError(new Error('API key helper did not return a valid key'))
-        return
-      }
-      const newStatus = 'missing'
-      setStatus(newStatus)
-      return
-    }
-
-    try {
-      const isValid = await verifyApiKey(apiKey, false)
-      const newStatus = isValid ? 'valid' : 'invalid'
-      setStatus(newStatus)
-      return
-    } catch (error) {
-      // This happens when there an error response from the API but it's not an invalid API key error
-      // In this case, we still mark the API key as invalid - but we also log the error so we can
-      // display it to the user to be more helpful
-      setError(error as Error)
-      const newStatus = 'error'
-      setStatus(newStatus)
-      return
-    }
+    setStatus(hasFriendliCredential() ? 'valid' : 'missing')
   }, [])
 
   return {

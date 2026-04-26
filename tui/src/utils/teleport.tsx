@@ -12,7 +12,8 @@ import { getOauthConfig } from '../constants/oauth.js';
 import type { SDKMessage } from '../entrypoints/agentSdkTypes.js';
 import type { Root } from '../ink.js';
 import { KeybindingSetup } from '../keybindings/KeybindingProviderSetup.js';
-import { queryHaiku } from '../services/api/claude.js';
+// KOSMOS-1978 T006: queryHaiku import severed — teleport is an Anthropic-only
+// feature; KOSMOS uses the fallback title/branch path inside generateTitleAndBranch.
 import { getSessionLogsViaOAuth, getTeleportEvents } from '../services/api/sessionIngress.js';
 import { getOrganizationUUID } from '../services/oauth/client.js';
 import { AppStateProvider } from '../state/AppState.js';
@@ -99,70 +100,19 @@ type TitleAndBranch = {
  * @param description The description/prompt for the session
  * @returns Promise<TitleAndBranch> The generated title and branch name
  */
-async function generateTitleAndBranch(description: string, signal: AbortSignal): Promise<TitleAndBranch> {
+async function generateTitleAndBranch(description: string, _signal: AbortSignal): Promise<TitleAndBranch> {
+  // KOSMOS-1978 T006: teleport is an Anthropic-only feature (CC remote-session
+  // teleport surface — see kosmos-migration-tree.md § "삭제 대상" cc-module-
+  // relevance audit). KOSMOS does not ship teleport, so the canonical CC LLM
+  // call to Haiku is replaced with the deterministic fallback path that the
+  // CC original itself fell back to on parse failure or LLM error. Function
+  // shape preserved so any unintended caller still type-checks.
   const fallbackTitle = truncateToWidth(description, 75);
   const fallbackBranch = 'claude/task';
-  try {
-    const userPrompt = SESSION_TITLE_AND_BRANCH_PROMPT.replace('{description}', description);
-    const response = await queryHaiku({
-      systemPrompt: asSystemPrompt([]),
-      userPrompt,
-      outputFormat: {
-        type: 'json_schema',
-        schema: {
-          type: 'object',
-          properties: {
-            title: {
-              type: 'string'
-            },
-            branch: {
-              type: 'string'
-            }
-          },
-          required: ['title', 'branch'],
-          additionalProperties: false
-        }
-      },
-      signal,
-      options: {
-        querySource: 'teleport_generate_title',
-        agents: [],
-        isNonInteractiveSession: false,
-        hasAppendSystemPrompt: false,
-        mcpTools: []
-      }
-    });
-
-    // Extract text from the response
-    const firstBlock = response.message.content[0];
-    if (firstBlock?.type !== 'text') {
-      return {
-        title: fallbackTitle,
-        branchName: fallbackBranch
-      };
-    }
-    const parsed = safeParseJSON(firstBlock.text.trim());
-    const parseResult = z.object({
-      title: z.string(),
-      branch: z.string()
-    }).safeParse(parsed);
-    if (parseResult.success) {
-      return {
-        title: parseResult.data.title || fallbackTitle,
-        branchName: parseResult.data.branch || fallbackBranch
-      };
-    }
-    return {
-      title: fallbackTitle,
-      branchName: fallbackBranch
-    };
-  } catch (error) {
-    logError(new Error(`Error generating title and branch: ${error}`));
-    return {
-      title: fallbackTitle,
-      branchName: fallbackBranch
-    };
-  }
+  return {
+    title: fallbackTitle,
+    branchName: fallbackBranch
+  };
 }
 
 /**
