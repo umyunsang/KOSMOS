@@ -14,7 +14,10 @@ __pycache__/
 .Python
 venv/
 .venv/
-env/
+# Anchor `env/` to the repo root so it does NOT match `tui/src/commands/env/`
+# (Spec 1632 P0 auto-stub) or `kosmos.tools.env` modules. Only top-level
+# Python virtualenv directories are intended to be ignored.
+/env/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/

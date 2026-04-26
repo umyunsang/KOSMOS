@@ -1,6 +1,8 @@
 import React, { useCallback, useState } from 'react';
 import { useTerminalSize } from 'src/hooks/useTerminalSize.js';
-import { type CodeSession, fetchCodeSessionsFromSessionsAPI } from 'src/utils/teleport/api.js';
+// KOSMOS-1633 P1+P2 / KOSMOS-1978 T011 — utils/teleport/ deleted; stub.
+type CodeSession = { id: string; title: string; description: string; status: 'idle' | 'working' | 'waiting' | 'completed' | 'archived' | 'cancelled' | 'rejected'; repo: { name: string; owner: { login: string }; default_branch?: string } | null; turns: string[]; created_at: string; updated_at: string }
+const fetchCodeSessionsFromSessionsAPI = async (): Promise<CodeSession[]> => []
 // eslint-disable-next-line custom-rules/prefer-use-keybindings -- raw j/k/arrow list navigation
 import { Box, Text, useInput } from '../ink.js';
 import { useKeybinding } from '../keybindings/useKeybinding.js';

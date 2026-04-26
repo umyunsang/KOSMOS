@@ -43,6 +43,8 @@ ENVELOPE_VERSION: Literal["1.0"] = "1.0"
 _ROLE_KIND_ALLOW_LIST: dict[str, frozenset[str]] = {
     # Spec 287 baseline arms
     "user_input": frozenset({"tui"}),
+    # Spec 1978 ADR-0001 — tools-aware chat request from TUI
+    "chat_request": frozenset({"tui"}),
     "assistant_chunk": frozenset({"backend", "llm"}),
     "tool_call": frozenset({"backend", "tool"}),
     "tool_result": frozenset({"backend", "tool"}),
@@ -199,6 +201,123 @@ class UserInputFrame(_BaseFrame):
 
 
 # ---------------------------------------------------------------------------
+# Arm: chat_request  (Spec 1978 ADR-0001 — TUI tools-aware chat request)
+# ---------------------------------------------------------------------------
+
+
+class ChatMessage(BaseModel):
+    """One conversation-history entry carried by ``ChatRequestFrame.messages``.
+
+    ``role="tool"`` messages MUST also set ``name`` (the tool name that was
+    invoked) and ``tool_call_id`` (the originating ``tool_call`` envelope's
+    correlation id). This is the data-model invariant D4 (tool message
+    integrity) enforced by the ``ChatRequestFrame`` validator below.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid", populate_by_name=True)
+
+    role: Literal["system", "user", "assistant", "tool"] = Field(
+        description="Conversation turn author."
+    )
+    content: str = Field(description="UTF-8 message body.")
+    name: str | None = Field(
+        default=None,
+        description="Tool name when role='tool'; None otherwise.",
+    )
+    tool_call_id: str | None = Field(
+        default=None,
+        description="Matching ``ToolCallFrame.call_id`` when role='tool'; None otherwise.",
+    )
+
+
+class ToolDefinitionFunction(BaseModel):
+    """Inner ``function`` block of an OpenAI-style tool definition."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid", populate_by_name=True)
+
+    name: str = Field(description="Tool name (matches the primitive registry id).")
+    description: str | None = Field(
+        default=None,
+        description="Human-readable description shown to the model for tool selection.",
+    )
+    parameters: dict[str, object] = Field(
+        default_factory=dict,
+        description=(
+            "JSON Schema (Draft 2020-12) for the tool input. Pydantic accepts any "
+            "dict shape; deeper schema validation is delegated to LLMClient."
+        ),
+    )
+
+
+class ToolDefinition(BaseModel):
+    """OpenAI-style tool definition (function-calling)."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid", populate_by_name=True)
+
+    type: Literal["function"] = Field(
+        default="function",
+        description="OpenAI tool envelope; only 'function' is currently supported.",
+    )
+    function: ToolDefinitionFunction = Field(description="Inner function metadata.")
+
+
+class ChatRequestFrame(_BaseFrame):
+    """TUI -> backend: tools-aware chat request (Spec 1978 ADR-0001).
+
+    Coexists with ``UserInputFrame`` (which remains the echo / smoke-test path).
+    The backend treats a ``UserInputFrame{text=t}`` as
+    ``ChatRequestFrame{messages=[{role:'user', content:t}], tools=[]}``.
+    """
+
+    kind: Literal["chat_request"] = Field(
+        default="chat_request", description="Frame discriminator."
+    )
+    messages: list[ChatMessage] = Field(
+        min_length=1,
+        description="Conversation history; tail message has role 'user' or 'tool'.",
+    )
+    tools: list[ToolDefinition] = Field(
+        default_factory=list,
+        description="Tools available to the model this turn.",
+    )
+    system: str | None = Field(
+        default=None,
+        description="Effective system prompt (may be None if backend supplies its own).",
+    )
+    max_tokens: int = Field(
+        default=8192,
+        ge=1,
+        le=32000,
+        description="Maximum tokens for the assistant turn.",
+    )
+    temperature: float = Field(
+        default=1.0,
+        ge=0.0,
+        le=2.0,
+        description="Sampling temperature.",
+    )
+    top_p: float = Field(
+        default=0.95,
+        ge=0.0,
+        le=1.0,
+        description="Nucleus sampling threshold.",
+    )
+
+    @model_validator(mode="after")
+    def _v_tool_message_integrity(self) -> ChatRequestFrame:
+        """Invariant D4: tool messages require both name and tool_call_id."""
+        for i, msg in enumerate(self.messages):
+            if msg.role == "tool":
+                if not msg.name:
+                    raise ValueError(f"messages[{i}]: role='tool' requires non-empty 'name'")
+                if not msg.tool_call_id:
+                    raise ValueError(
+                        f"messages[{i}]: role='tool' requires non-empty 'tool_call_id'"
+                    )
+        return self
+
+
+# ---------------------------------------------------------------------------
 # Arm: assistant_chunk  (Spec 287 baseline — unchanged)
 # ---------------------------------------------------------------------------
 
@@ -337,7 +456,18 @@ class PermissionResponseFrame(_BaseFrame):
     request_id: str = Field(
         description="ULID matching the originating permission_request.request_id."
     )
-    decision: Literal["granted", "denied"] = Field(description="Citizen's permission decision.")
+    # Spec 1978 ADR-0002 + Spec 033 — extends the Spec 287 baseline binary
+    # vocabulary (granted | denied) with the 3-decision UI gauntlet
+    # (allow_once | allow_session | deny). Backend treats granted == allow_once
+    # for backward compatibility; allow_session activates the per-session
+    # tool_id grant cache in stdio.py._check_permission_gate.
+    decision: Literal[
+        "granted",
+        "allow_once",
+        "allow_session",
+        "denied",
+        "deny",
+    ] = Field(description="Citizen's permission decision.")
 
 
 # ---------------------------------------------------------------------------
@@ -791,6 +921,7 @@ class PluginOpFrame(_BaseFrame):
 
 IPCFrame = Annotated[
     UserInputFrame
+    | ChatRequestFrame
     | AssistantChunkFrame
     | ToolCallFrame
     | ToolResultFrame
@@ -812,11 +943,12 @@ IPCFrame = Annotated[
     | PluginOpFrame,
     Field(discriminator="kind"),
 ]
-"""Discriminated union of all 20 IPC frame arms.
+"""Discriminated union of all 21 IPC frame arms.
 
 Spec 287 baseline: 10 arms (user_input .. error).
 Spec 032 additions: 9 arms (payload_start .. notification_push).
 Epic #1636 P5 addition: plugin_op (1 arm with internal op discriminator).
+Spec 1978 ADR-0001 addition: chat_request (tools-aware chat from TUI).
 
 Usage::
 
@@ -847,6 +979,11 @@ __all__ = [
     # Spec 287 baseline arms
     "IPCFrame",
     "UserInputFrame",
+    # Spec 1978 ADR-0001 — chat_request + sub-models
+    "ChatRequestFrame",
+    "ChatMessage",
+    "ToolDefinition",
+    "ToolDefinitionFunction",
     "AssistantChunkFrame",
     "ToolCallFrame",
     "ToolResultFrame",

@@ -50,7 +50,10 @@ import type {
 // Base fields present on every frame arm (Spec 032 extended envelope).
 const BaseFrame = z.object({
   version: z.literal('1.0'),
-  session_id: z.string().min(1),
+  // contracts/chat-request-frame.md envelope: session_id may be "" before
+  // the first session_event handshake. Accept any string (incl. empty);
+  // backend is the authority on when the session is materialised.
+  session_id: z.string(),
   correlation_id: z.string().min(1),
   role: z.enum(['tui', 'backend', 'tool', 'llm', 'notification']),
   frame_seq: z.number().int().min(0),
@@ -73,6 +76,35 @@ const BaseFrame = z.object({
 const UserInputFrameSchema = BaseFrame.extend({
   kind: z.literal('user_input'),
   text: z.string(),
+})
+
+// Spec 1978 ADR-0001 — TUI tools-aware chat request.
+const ChatMessageSchema = z.object({
+  role: z.enum(['system', 'user', 'assistant', 'tool']),
+  content: z.string(),
+  name: z.string().nullable().optional(),
+  tool_call_id: z.string().nullable().optional(),
+})
+
+const ToolDefinitionFunctionSchema = z.object({
+  name: z.string(),
+  description: z.string().nullable().optional(),
+  parameters: z.record(z.string(), z.unknown()).default({}),
+})
+
+const ToolDefinitionSchema = z.object({
+  type: z.literal('function').default('function'),
+  function: ToolDefinitionFunctionSchema,
+})
+
+const ChatRequestFrameSchema = BaseFrame.extend({
+  kind: z.literal('chat_request'),
+  messages: z.array(ChatMessageSchema).min(1),
+  tools: z.array(ToolDefinitionSchema).default([]),
+  system: z.string().nullable().optional(),
+  max_tokens: z.number().int().min(1).max(32000).default(8192),
+  temperature: z.number().min(0).max(2).default(1.0),
+  top_p: z.number().min(0).max(1).default(0.95),
 })
 
 const AssistantChunkFrameSchema = BaseFrame.extend({
@@ -216,11 +248,29 @@ const NotificationPushFrameSchema = BaseFrame.extend({
   payload: z.string(),
 })
 
+// Epic #1636 P5 — plugin_op control plane.
+const PluginOpFrameSchema = BaseFrame.extend({
+  kind: z.literal('plugin_op'),
+  op: z.enum(['request', 'progress', 'complete']),
+  request_op: z.enum(['install', 'uninstall', 'list']).nullable().optional(),
+  name: z.string().nullable().optional(),
+  requested_version: z.string().nullable().optional(),
+  dry_run: z.boolean().nullable().optional(),
+  progress_phase: z.number().int().min(1).max(7).nullable().optional(),
+  progress_message_ko: z.string().nullable().optional(),
+  progress_message_en: z.string().nullable().optional(),
+  result: z.enum(['success', 'failure']).nullable().optional(),
+  exit_code: z.number().int().nullable().optional(),
+  receipt_id: z.string().nullable().optional(),
+})
+
 // ---------------------------------------------------------------------------
-// Zod discriminated-union validator — all 19 IPCFrame arms
+// Zod discriminated-union validator — all 21 IPCFrame arms
+// (Spec 287 baseline 10 + Spec 032 9 + Epic #1636 plugin_op + Spec 1978
+// chat_request)
 // ---------------------------------------------------------------------------
 
-/** Zod discriminated-union validator for all 19 IPCFrame arms. */
+/** Zod discriminated-union validator for all 21 IPCFrame arms. */
 export const IPCFrameSchema = z.discriminatedUnion('kind', [
   // Spec 287 baseline (10)
   UserInputFrameSchema,
@@ -243,6 +293,10 @@ export const IPCFrameSchema = z.discriminatedUnion('kind', [
   ResumeRejectedFrameSchema,
   HeartbeatFrameSchema,
   NotificationPushFrameSchema,
+  // Epic #1636 P5
+  PluginOpFrameSchema,
+  // Spec 1978 ADR-0001
+  ChatRequestFrameSchema,
 ])
 
 // ---------------------------------------------------------------------------

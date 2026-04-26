@@ -19,6 +19,8 @@ from kosmos.ipc.envelope import emit_ndjson, parse_ndjson_line
 from kosmos.ipc.frame_schema import (
     AssistantChunkFrame,
     BackpressureSignalFrame,
+    ChatMessage,
+    ChatRequestFrame,
     CoordinatorPhaseFrame,
     ErrorFrame,
     FrameTrailer,
@@ -59,6 +61,14 @@ _BASE = {
 ALL_FRAMES: list[IPCFrame] = [
     # 1. user_input
     UserInputFrame(**_BASE, role="tui", kind="user_input", text="서울 강남구 응급실 병상"),
+    # 2a. chat_request (Spec 1978 ADR-0001)
+    ChatRequestFrame(
+        **_BASE,
+        role="tui",
+        kind="chat_request",
+        messages=[ChatMessage(role="user", content="서울 강남구 응급실 병상")],
+        tools=[],
+    ),
     # 2. assistant_chunk
     AssistantChunkFrame(
         **_BASE,
@@ -211,12 +221,12 @@ _ADAPTER: TypeAdapter[IPCFrame] = TypeAdapter(IPCFrame)
 
 
 # ---------------------------------------------------------------------------
-# Test 1: All 20 kinds serialize and round-trip
+# Test 1: All 21 kinds serialize and round-trip
 # ---------------------------------------------------------------------------
 
 
 @pytest.mark.parametrize("frame", ALL_FRAMES, ids=lambda f: f.kind)
-def test_pydantic_roundtrip_all_19_kinds(frame: IPCFrame) -> None:
+def test_pydantic_roundtrip_all_21_kinds(frame: IPCFrame) -> None:
     """Serialize via model_dump_json, validate back — byte-equal round-trip."""
     serialized = frame.model_dump_json()
     parsed = _ADAPTER.validate_json(serialized)
@@ -253,8 +263,8 @@ def test_ndjson_emit_parse_roundtrip(frame: IPCFrame) -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_schema_has_all_19_kinds() -> None:
-    """ipc_frame_json_schema() must enumerate all 20 kind values."""
+def test_schema_has_all_21_kinds() -> None:
+    """ipc_frame_json_schema() must enumerate all 21 kind values."""
     schema = ipc_frame_json_schema()
 
     expected_kinds = {
@@ -279,6 +289,8 @@ def test_schema_has_all_19_kinds() -> None:
         "notification_push",
         # Epic #1636 P5
         "plugin_op",
+        # Spec 1978 ADR-0001
+        "chat_request",
     }
 
     # Pydantic generates a oneOf + discriminator schema

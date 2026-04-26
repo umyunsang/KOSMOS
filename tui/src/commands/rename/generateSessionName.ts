@@ -1,67 +1,62 @@
-import { queryHaiku } from '../../services/api/claude.js'
+// SPDX-License-Identifier: Apache-2.0
+// KOSMOS-1633 P2 / KOSMOS-1978 T007 — `queryHaiku` import severed.
+//
+// Original CC module: .references/claude-code-sourcemap/restored-src/src/commands/rename/generateSessionName.ts
+// CC version: 2.1.88
+// KOSMOS deviation: Auto session-name generation called Anthropic Haiku to
+// produce a kebab-case session label. KOSMOS routes all LLM traffic to
+// FriendliAI K-EXAONE via stdio bridge (Spec 1633 P2) — calling the
+// deprecated `queryHaiku` from the rename path would either reach
+// `anthropic.com` (FR-004 violation) or throw the Anthropic-removed
+// stub error mid-bridge call.
+//
+// Cheaper, deterministic alternative: derive the session name from the
+// first non-empty user message via the same `extractConversationText`
+// helper CC already used for the prompt. Lowercase, hyphenate, truncate.
+// No LLM call, no network, no `anthropic.com`. Same call-site contract
+// (`Promise<string | null>`) so consumers see no shape change.
+
 import type { Message } from '../../types/message.js'
-import { logForDebugging } from '../../utils/debug.js'
-import { errorMessage } from '../../utils/errors.js'
-import { safeParseJSON } from '../../utils/json.js'
-import { extractTextContent } from '../../utils/messages.js'
 import { extractConversationText } from '../../utils/sessionTitle.js'
-import { asSystemPrompt } from '../../utils/systemPromptType.js'
+
+const MAX_NAME_WORDS = 4
+const MAX_NAME_CHARS = 48
+
+/**
+ * KOSMOS-1978 T007: deterministic session name from conversation text.
+ * Returns kebab-case (e.g. `fix-login-bug`) or null when the conversation
+ * is too short / empty to summarise. Mirrors the CC contract — null is a
+ * legal "skip rename" signal.
+ */
+function deriveKebabName(conversationText: string): string | null {
+  const cleaned = conversationText
+    // Strip control / non-printable / punctuation runs, keep word characters
+    // and CJK letters (Spec 1633 P2 keeps Korean intact in domain text).
+    .replace(/[^\p{L}\p{N}\s-]+/gu, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase()
+  if (!cleaned) {
+    return null
+  }
+  const words = cleaned.split(' ').filter((w) => w.length >= 2).slice(0, MAX_NAME_WORDS)
+  if (words.length === 0) {
+    return null
+  }
+  let name = words.join('-')
+  if (name.length > MAX_NAME_CHARS) {
+    name = name.slice(0, MAX_NAME_CHARS).replace(/-+$/, '')
+  }
+  return name || null
+}
 
 export async function generateSessionName(
   messages: Message[],
-  signal: AbortSignal,
+  _signal: AbortSignal,
 ): Promise<string | null> {
   const conversationText = extractConversationText(messages)
   if (!conversationText) {
     return null
   }
-
-  try {
-    const result = await queryHaiku({
-      systemPrompt: asSystemPrompt([
-        'Generate a short kebab-case name (2-4 words) that captures the main topic of this conversation. Use lowercase words separated by hyphens. Examples: "fix-login-bug", "add-auth-feature", "refactor-api-client", "debug-test-failures". Return JSON with a "name" field.',
-      ]),
-      userPrompt: conversationText,
-      outputFormat: {
-        type: 'json_schema',
-        schema: {
-          type: 'object',
-          properties: {
-            name: { type: 'string' },
-          },
-          required: ['name'],
-          additionalProperties: false,
-        },
-      },
-      signal,
-      options: {
-        querySource: 'rename_generate_name',
-        agents: [],
-        isNonInteractiveSession: false,
-        hasAppendSystemPrompt: false,
-        mcpTools: [],
-      },
-    })
-
-    const content = extractTextContent(result.message.content)
-
-    const response = safeParseJSON(content)
-    if (
-      response &&
-      typeof response === 'object' &&
-      'name' in response &&
-      typeof (response as { name: unknown }).name === 'string'
-    ) {
-      return (response as { name: string }).name
-    }
-    return null
-  } catch (error) {
-    // Haiku timeout/rate-limit/network are expected operational failures —
-    // logForDebugging, not logError. Called automatically on every 3rd bridge
-    // message (initReplBridge.ts), so errors here would flood the error file.
-    logForDebugging(`generateSessionName failed: ${errorMessage(error)}`, {
-      level: 'error',
-    })
-    return null
-  }
+  return deriveKebabName(conversationText)
 }

@@ -5,10 +5,12 @@ import type {
   SDKControlPermissionRequest,
   StdoutMessage,
 } from '../entrypoints/sdk/controlTypes.js'
-import type { RemotePermissionResponse } from '../remote/RemoteSessionManager.js'
+// KOSMOS-1633 P1+P2 / KOSMOS-1978 T011 — remote/RemoteSessionManager deleted.
+type RemotePermissionResponse = unknown
 import { logForDebugging } from '../utils/debug.js'
 import { jsonParse, jsonStringify } from '../utils/slowOperations.js'
-import type { RemoteMessageContent } from '../utils/teleport/api.js'
+// KOSMOS-1633 P1+P2 / KOSMOS-1978 T011 — utils/teleport/ deleted; stub.
+type RemoteMessageContent = string | Array<{ type: string; [key: string]: unknown }>
 
 export type DirectConnectConfig = {
   serverUrl: string

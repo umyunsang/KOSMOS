@@ -12,11 +12,12 @@ import type { SDKMessage } from '../../entrypoints/agentSdkTypes.js'
 import { EXIT_PLAN_MODE_V2_TOOL_NAME } from '../../tools/ExitPlanModeTool/constants.js'
 import { logForDebugging } from '../debug.js'
 import { sleep } from '../sleep.js'
-import { isTransientNetworkError } from '../teleport/api.js'
-import {
-  type PollRemoteSessionResponse,
-  pollRemoteSessionEvents,
-} from '../teleport.js'
+// KOSMOS-1633 P1+P2 / KOSMOS-1978 T011 — utils/teleport/ deleted; stub.
+const isTransientNetworkError = (_error: unknown): boolean => false
+type PollRemoteSessionResponse = { newEvents: SDKMessage[]; lastEventId: string | null; sessionStatus: 'requires_action' | 'running' | 'idle' | 'archived' }
+const pollRemoteSessionEvents = async (_sessionId: string, _lastEventId: string | null): Promise<PollRemoteSessionResponse> => {
+  throw new Error('KOSMOS: remote CCR session polling not supported')
+}
 
 const POLL_INTERVAL_MS = 3000
 // pollRemoteSessionEvents doesn't retry. A 30min poll makes ~600 calls;

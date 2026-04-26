@@ -982,6 +982,10 @@ function PromptInput({
     setSuggestionsStateRaw(prev => typeof updater === 'function' ? updater(prev) : updater);
   }, []);
   const onSubmit = useCallback(async (inputParam: string, isSubmittingSlashCommand = false) => {
+    // KOSMOS-1978 T003 diag: trace which guard swallows Enter.
+    // Set KOSMOS_TUI_LOG_LEVEL=DEBUG and the entries below appear on stderr
+    // (per tui/src/ipc/bridge.ts:_log — stderr-only, never on the frame stdout).
+    logForDebugging(`[onSubmit] enter input=${JSON.stringify(inputParam)} slashCmd=${isSubmittingSlashCommand}`);
     inputParam = inputParam.trimEnd();
 
     // Don't submit if a footer indicator is being opened. Read fresh from
@@ -991,6 +995,7 @@ function PromptInput({
     // selection (pill disappeared) doesn't swallow Enter.
     const state = store.getState();
     if (state.footerSelection && footerItems.includes(state.footerSelection)) {
+      logForDebugging(`[onSubmit] guard:footerSelection swallow (selection=${String(state.footerSelection)})`);
       return;
     }
 
@@ -998,6 +1003,7 @@ function PromptInput({
     // BaseTextInput's useInput registers before that hook (child effects fire first),
     // so without this guard Enter would double-fire and auto-submit the suggestion.
     if (state.viewSelectionMode === 'selecting-agent') {
+      logForDebugging(`[onSubmit] guard:viewSelectionMode=selecting-agent swallow`);
       return;
     }
 
@@ -1065,6 +1071,7 @@ function PromptInput({
 
     // Allow submission if there are images attached, even without text
     if (inputParam.trim() === '' && !hasImages) {
+      logForDebugging(`[onSubmit] guard:empty-input swallow`);
       return;
     }
 
@@ -1072,7 +1079,7 @@ function PromptInput({
     // For directory suggestions, allow submission (Tab is used for completion)
     const hasDirectorySuggestions = suggestionsState.suggestions.length > 0 && suggestionsState.suggestions.every(s => s.description === 'directory');
     if (suggestionsState.suggestions.length > 0 && !isSubmittingSlashCommand && !hasDirectorySuggestions) {
-      logForDebugging(`[onSubmit] early return: suggestions showing (count=${suggestionsState.suggestions.length})`);
+      logForDebugging(`[onSubmit] guard:suggestions-showing swallow (count=${suggestionsState.suggestions.length})`);
       return; // Don't submit, user needs to clear suggestions first
     }
 
@@ -1087,6 +1094,7 @@ function PromptInput({
     // Route input to viewed agent (in-process teammate or named local_agent).
     const activeAgent = getActiveAgentForInput(store.getState());
     if (activeAgent.type !== 'leader' && onAgentSubmit) {
+      logForDebugging(`[onSubmit] route:onAgentSubmit (agent.type=${activeAgent.type})`);
       logEvent('tengu_transcript_input_to_teammate', {});
       await onAgentSubmit(inputParam, activeAgent.task, {
         setCursorOffset,
@@ -1097,11 +1105,13 @@ function PromptInput({
     }
 
     // Normal leader submission
+    logForDebugging(`[onSubmit] route:onSubmitProp (normal leader)`);
     await onSubmitProp(inputParam, {
       setCursorOffset,
       clearBuffer,
       resetHistory
     });
+    logForDebugging(`[onSubmit] onSubmitProp returned`);
   }, [promptSuggestionState, speculation, speculationSessionTimeSavedMs, teamContext, store, footerItems, suggestionsState.suggestions, onSubmitProp, onAgentSubmit, clearBuffer, resetHistory, logOutcomeAtSubmission, setAppState, markAccepted, pastedContents, removeNotification]);
   const {
     suggestions,
