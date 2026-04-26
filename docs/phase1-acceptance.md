@@ -17,7 +17,7 @@
 1. 6-layer 아키텍처 코어 구현 (L1–L6)
 2. CLI(Python Typer+Rich) 동작
 3. Scenario 1 ("내일 부산에서 서울 가는데, 안전한 경로 추천해줘") 자동화된 E2E 검증
-4. Live API(data.go.kr, KOROAD, FriendliAI K-EXAONE) 연동 검증
+4. Live API(data.go.kr, KOROAD, FriendliAI EXAONE) 연동 검증
 
 ### 기간
 
@@ -99,7 +99,7 @@ Phase 1 스코프의 모든 도구 어댑터 구현 완료 및 테스트 통과.
 
 ### AC-4: Live API 검증 ✅
 
-실제 외부 API(data.go.kr, KOROAD portal, FriendliAI K-EXAONE, Kakao Local API)를 대상으로 한 live 테스트 스위트 정의 및 구조 확인 완료.
+실제 외부 API(data.go.kr, KOROAD portal, FriendliAI EXAONE, Kakao Local API)를 대상으로 한 live 테스트 스위트 정의 및 구조 확인 완료.
 
 #### Epic #291 (spec 014) — Phase 1 Live Validation (PR #348, #351)
 
@@ -108,7 +108,7 @@ Phase 1 스코프의 모든 도구 어댑터 구현 완료 및 테스트 통과.
 | `tests/live/test_live_koroad.py` | KOROAD 어댑터 실제 API 응답 | SC-01 | ✅ |
 | `tests/live/test_live_kma.py` | KMA 기상 경보/현재 관측 | SC-01 | ✅ |
 | `tests/live/test_live_kma_forecast.py` | KMA 단기/초단기 예보 | SC-01 | ✅ |
-| `tests/live/test_live_llm.py` | FriendliAI K-EXAONE SSE 스트리밍 | SC-01 | ✅ |
+| `tests/live/test_live_llm.py` | FriendliAI EXAONE SSE 스트리밍 | SC-01 | ✅ |
 | `tests/live/test_live_e2e.py` | Scenario 1 전체 파이프라인 | SC-02, SC-03 | ✅ |
 
 #### Epic #380 (spec 018) — Phase 1 Live Extension (PR #401)
@@ -172,7 +172,7 @@ Metrics, Event Logger 동작 검증.
 
 | Spec # | 제목 | Epic 이슈 | 구현 PR | 레이어 | 상태 |
 |--------|------|-----------|---------|--------|------|
-| 004 | LLM Client Integration (FriendliAI K-EXAONE) | #4 | PR #82 | L1(LLM) | ✅ 완료 |
+| 004 | LLM Client Integration (FriendliAI EXAONE) | #4 | PR #82 | L1(LLM) | ✅ 완료 |
 | 005 | Query Engine Core | #5 | PR #117 | L1 | ✅ 완료 |
 | 006 | Tool System (Registry + Executor) | #6 | PR #82 | L2 | ✅ 완료 |
 | 007 | Phase 1 API Adapters (KOROAD, KMA, Road Risk) | #7 | PR #221 | L2 | ✅ 완료 |
@@ -218,7 +218,7 @@ Metrics, Event Logger 동작 검증.
 
 1. **Spec 008·009 `Status: Draft`**: speckit 메타데이터 필드가 구현 후 갱신되지 않음. 실제 코드는 완성 상태.
 
-2. **FriendliAI 분당 rate limit**: spec 014 Assumptions에서 "1000 calls/day (data.go.kr)" 언급. FriendliAI Serverless K-EXAONE의 분당 요청 한도가 live 테스트 중 간헐적으로 적용됨. `tests/live/conftest.py`에 `_live_rate_limit_pause` (10초 쿨다운) 자동 fixture로 완화.
+2. **FriendliAI 분당 rate limit**: spec 014 Assumptions에서 "1000 calls/day (data.go.kr)" 언급. FriendliAI Serverless EXAONE의 분당 요청 한도가 live 테스트 중 간헐적으로 적용됨. `tests/live/conftest.py`에 `_live_rate_limit_pause` (10초 쿨다운) 자동 fixture로 완화.
 
 3. **L4 Agent Swarms 없음**: `docs/vision.md`의 Scenario 2–5 ("응급실", "출산보조금", "이사준비", "재해대응")는 L4가 필요하므로 Phase 1에서 달성 불가. Scenario 1만 Phase 1 acceptance test로 확인.
 

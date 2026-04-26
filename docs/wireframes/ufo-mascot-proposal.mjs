@@ -107,7 +107,7 @@ function Splash({ pose, palette }) {
         h(Text, { bold: true }, 'KOSMOS '),
         h(Text, { color: C.subtle }, 'v0.1-alpha'),
       ),
-      h(Text, { color: C.subtle }, 'K-EXAONE · FriendliAI'),
+      h(Text, { color: C.subtle }, 'EXAONE · FriendliAI'),
       h(Text, { color: C.dim, dimColor: true }, '~/KOSMOS/tui'),
     ),
   )

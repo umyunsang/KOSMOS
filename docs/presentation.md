@@ -10,13 +10,13 @@
 >
 > 5,000+ 정부 공공 API를 단일 대화형 인터페이스로 통합하는 학생 포트폴리오 프로젝트
 >
-> **Target**: KSC 2026 · **License**: Apache-2.0 · **Stack**: Python 3.12 + FriendliAI K-EXAONE + Ink TUI
+> **Target**: KSC 2026 · **License**: Apache-2.0 · **Stack**: Python 3.12 + FriendliAI EXAONE + Ink TUI
 
 ---
 
 ## 1. 무엇을 만드는가
 
-**LG AI Research의 K-EXAONE 주변에서 `data.go.kr`에 흩어진 5,000여 개의 정부 공공 API를 Claude Code-style 도구 루프로 오케스트레이션하는 대화형 멀티에이전트 하네스.** 시민은 어느 부처가 어떤 API를 운영하는지 알 필요 없이, 자연어 한 번이면 됩니다.
+**LG AI Research의 EXAONE 주변에서 `data.go.kr`에 흩어진 5,000여 개의 정부 공공 API를 Claude Code-style 도구 루프로 오케스트레이션하는 대화형 멀티에이전트 하네스.** 시민은 어느 부처가 어떤 API를 운영하는지 알 필요 없이, 자연어 한 번이면 됩니다.
 
 ```text
 시민:   "내일 부산에서 서울 가는데, 안전한 경로 추천해줘"

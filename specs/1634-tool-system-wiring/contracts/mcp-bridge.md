@@ -7,7 +7,7 @@
 The MCP bridge is **additive** on top of the existing Spec 287/032 stdio JSONL transport. It does NOT replace `bridge.ts` ↔ `stdio.py`; it adds protocol concerns above them.
 
 ```
-LLM (FriendliAI K-EXAONE)
+LLM (FriendliAI EXAONE)
        │
        │ tool_use(tool="lookup", input=…)
        ▼

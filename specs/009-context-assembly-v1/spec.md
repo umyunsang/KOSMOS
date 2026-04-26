@@ -236,7 +236,7 @@ format already consumed by `QueryEngine.query()` via
 
 - **NFR-001**: `build_assembled_context()` MUST complete in under 10 ms on a session with up to 50 resolved tasks and 20 registered tools (pure in-memory computation).
 - **NFR-002**: `ContextBuilder` MUST be stateless between turns; all session state is passed in at call time. No instance variables that accumulate per-turn state.
-- **NFR-003**: The system message content MUST be identical across calls with the same `SystemPromptConfig` so the FriendliAI/K-EXAONE prompt cache is not invalidated between turns.
+- **NFR-003**: The system message content MUST be identical across calls with the same `SystemPromptConfig` so the FriendliAI/EXAONE prompt cache is not invalidated between turns.
 - **NFR-004**: All logging MUST use `logging.getLogger(__name__)` at appropriate levels; no `print()` statements.
 - **NFR-005**: The module MUST be located at `src/kosmos/context/` (new sub-package), keeping it isolated from `engine/` and `llm/` to respect layer separation.
 

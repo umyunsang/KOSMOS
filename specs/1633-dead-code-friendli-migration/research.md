@@ -10,25 +10,25 @@ Resolve the 9 PLAN-PHASE-0 items flagged in the spec's Deferred Items table and 
 
 ## Decision 1 — Model ID final form
 
-**Decision**: `LGAI-EXAONE/K-EXAONE-236B-A23B`
+**Decision**: `LGAI-EXAONE/EXAONE-236B-A23B`
 
 **Rationale**:
-- Canonical tree `docs/requirements/kosmos-migration-tree.md § L1-A A1` pins **"K-EXAONE 단일 고정"** — the K-EXAONE brand. `K-EXAONE-236B-A23B` is the literal K-EXAONE release; `EXAONE-4.0-32B` belongs to a different brand family (EXAONE 4.0), not K-EXAONE. Brand-name alignment with the tree's normative language dominates unrelated generation-novelty arguments.
-- FriendliAI provides **exclusive Day-0 support** for `K-EXAONE-236B-A23B` (https://friendli.ai/blog/k-exaone-on-serverless · https://friendli.ai/models/LGAI-EXAONE/K-EXAONE-236B-A23B). LG AI Research + FriendliAI partnership flagship → highest operational confidence on Serverless.
-- `src/kosmos/llm/config.py:37` **already uses** `LGAI-EXAONE/K-EXAONE-236B-A23B` as its default, set before this Epic. Retaining it avoids otherwise-unnecessary Python config churn and preserves the baseline that Spec 019/020/021 live-validation work already exercised.
+- Canonical tree `docs/requirements/kosmos-migration-tree.md § L1-A A1` pins **"EXAONE 단일 고정"** — the EXAONE brand. `EXAONE-236B-A23B` is the literal EXAONE release; `EXAONE-4.0-32B` belongs to a different brand family (EXAONE 4.0), not EXAONE. Brand-name alignment with the tree's normative language dominates unrelated generation-novelty arguments.
+- FriendliAI provides **exclusive Day-0 support** for `EXAONE-236B-A23B` (https://friendli.ai/blog/k-exaone-on-serverless · https://friendli.ai/models/LGAI-EXAONE/EXAONE-236B-A23B). LG AI Research + FriendliAI partnership flagship → highest operational confidence on Serverless.
+- `src/kosmos/llm/config.py:37` **already uses** `LGAI-EXAONE/EXAONE-236B-A23B` as its default, set before this Epic. Retaining it avoids otherwise-unnecessary Python config churn and preserves the baseline that Spec 019/020/021 live-validation work already exercised.
 - MoE architecture (236B total params / A23B = ~23B activated per token) yields **~23B-dense-equivalent inference compute** — comparable cost/latency to a 32B dense model, while the 236B parameter pool serves quality on longer-tail civil-affairs queries where rare-domain knowledge matters.
-- FriendliAI public pricing for `K-EXAONE-236B-A23B` is $0.2 / 1 M input, $0.1 / 1 M cached input, $0.8 / 1 M output — the cached-input tier is what makes Decision 3 (keep `promptCacheBreakDetection.ts`) viable.
+- FriendliAI public pricing for `EXAONE-236B-A23B` is $0.2 / 1 M input, $0.1 / 1 M cached input, $0.8 / 1 M output — the cached-input tier is what makes Decision 3 (keep `promptCacheBreakDetection.ts`) viable.
 
 **Alternatives considered**:
-- `LGAI-EXAONE/EXAONE-4.0-32B` — 32B dense, hybrid attention + QK-Reorder-Norm, 131 K context, open-weight on Hugging Face, agentic tool use. **Rejected**: (a) brand-name mismatch against canonical tree "K-EXAONE" pinning; (b) Epic body previously referenced this ID in error (see "Epic body correction" below — corrected during this plan cycle after Epic-author reconfirmation); (c) no compelling citizen-UX delta that overcomes (a) and (b).
+- `LGAI-EXAONE/EXAONE-4.0-32B` — 32B dense, hybrid attention + QK-Reorder-Norm, 131 K context, open-weight on Hugging Face, agentic tool use. **Rejected**: (a) brand-name mismatch against canonical tree "EXAONE" pinning; (b) Epic body previously referenced this ID in error (see "Epic body correction" below — corrected during this plan cycle after Epic-author reconfirmation); (c) no compelling citizen-UX delta that overcomes (a) and (b).
 - `LGAI-EXAONE/EXAONE-4.0.1-32B` — minor release on Hugging Face. **Rejected** for the same brand-alignment reason.
 - `KOSMOS_FRIENDLI_MODEL` env-var-driven multi-model switching. **Rejected** — violates canonical tree's "단일 고정" directive (L1-A A1).
 
 **Epic body correction (executed during Phase 0)**:
-- `docs/requirements/epic-p1-p2-llm.md` and Epic #1633 body originally stated `Model ID = LGAI-EXAONE/EXAONE-4.0-32B`. The Epic author reconfirmed intent against (a) canonical tree brand pinning, (b) existing Python config default, (c) FriendliAI Day-0 support status and directed a correction to `LGAI-EXAONE/K-EXAONE-236B-A23B`. Both the Epic body and the doc are updated in the same commit as this research file.
+- `docs/requirements/epic-p1-p2-llm.md` and Epic #1633 body originally stated `Model ID = LGAI-EXAONE/EXAONE-4.0-32B`. The Epic author reconfirmed intent against (a) canonical tree brand pinning, (b) existing Python config default, (c) FriendliAI Day-0 support status and directed a correction to `LGAI-EXAONE/EXAONE-236B-A23B`. Both the Epic body and the doc are updated in the same commit as this research file.
 
 **Spec/code adjustments this forces**:
-- **`src/kosmos/llm/config.py:37` — NO change** (default already `"LGAI-EXAONE/K-EXAONE-236B-A23B"`).
+- **`src/kosmos/llm/config.py:37` — NO change** (default already `"LGAI-EXAONE/EXAONE-236B-A23B"`).
 - spec.md FR-011 path correction (see Decision 12 / Finding B) — unrelated to model ID, still required.
 
 ## Decision 2 — `filesApi.ts` keep-or-delete
@@ -53,7 +53,7 @@ Resolve the 9 PLAN-PHASE-0 items flagged in the spec's Deferred Items table and 
 **Decision**: **Keep and rewire** to read FriendliAI's `prompt_tokens_details.cached_tokens`.
 
 **Rationale**:
-- FriendliAI public pricing for `K-EXAONE-236B-A23B` and `EXAONE-4.0-32B` explicitly lists **cached input tokens** as a separate billing tier (cached input @ $0.1 / 1 M vs regular input @ $0.2 / 1 M for K-EXAONE). This is a hard signal that FriendliAI exposes cache-hit metadata.
+- FriendliAI public pricing for `EXAONE-236B-A23B` and `EXAONE-4.0-32B` explicitly lists **cached input tokens** as a separate billing tier (cached input @ $0.1 / 1 M vs regular input @ $0.2 / 1 M for EXAONE). This is a hard signal that FriendliAI exposes cache-hit metadata.
 - FriendliAI dedicated chat-completions docs (https://friendli.ai/docs/openapi/dedicated/inference/chat-completions) document `prompt_tokens_details.cached_tokens` in the response `usage` field — OpenAI-compatible schema.
 - `promptCacheBreakDetection.ts` in CC detects cache-hit discontinuities (large cached-token drop between turns) to avoid prefix-breakage — a useful signal that is provider-agnostic once the field name is correct.
 
@@ -95,7 +95,7 @@ and the resolved usage/stop-reason trailers.
 2. Serialize to a Spec 032 `UserInputFrame` (system prompt in metadata, messages in payload) and push via `bridge.ts`.
 3. Consume Python-backend-originated `AssistantChunkFrame` + `ToolCallFrame` stream and yield `BetaRawMessageStreamEvent`-shaped events (type translation layer, not a protocol change).
 4. Finalize on `done=true` trailer; surface `ErrorFrame` as thrown error.
-5. Emit OTEL `gen_ai.client.invoke` span with `gen_ai.system=friendli_exaone`, `gen_ai.request.model=LGAI-EXAONE/K-EXAONE-236B-A23B`, `kosmos.prompt.hash=<sha256>`.
+5. Emit OTEL `gen_ai.client.invoke` span with `gen_ai.system=friendli_exaone`, `gen_ai.request.model=LGAI-EXAONE/EXAONE-236B-A23B`, `kosmos.prompt.hash=<sha256>`.
 
 **KOSMOS type replacement**:
 - Define `tui/src/ipc/llmTypes.ts` with `KosmosMessageStreamParams`, `KosmosRawMessageStreamEvent`, `KosmosContentBlockParam`, `KosmosTextBlockParam` as structural supersets of the Anthropic SDK types currently imported. This lets us delete `@anthropic-ai/sdk` imports without rewriting QueryEngine's control flow.
@@ -144,7 +144,7 @@ Anthropic-specific error codes (from `tui/src/services/api/errors.ts` CC referen
 | Attribute | Source | Notes |
 |---|---|---|
 | `gen_ai.system` | constant `"friendli_exaone"` | GenAI semconv v1.40 |
-| `gen_ai.request.model` | `LGAI-EXAONE/K-EXAONE-236B-A23B` | Decision 1 |
+| `gen_ai.request.model` | `LGAI-EXAONE/EXAONE-236B-A23B` | Decision 1 |
 | `gen_ai.operation.name` | `"chat"` | constant |
 | `gen_ai.usage.input_tokens` | from `AssistantChunkFrame` final trailer | populated on done |
 | `gen_ai.usage.output_tokens` | from final trailer | populated on done |
@@ -194,7 +194,7 @@ Epic body `docs/requirements/epic-p1-p2-llm.md` uses paths like `tui/src/service
 
 Epic body / spec FR-011 says `tui/src/utils/model/antModels.ts::getDefaultMainLoopModel()`. Real definition is at `tui/src/utils/model/model.ts:206` (antModels.ts defines the Ant-only override override type, not the default getter).
 
-**Correction for tasks**: target `model.ts:206` for the `LGAI-EXAONE/K-EXAONE-236B-A23B` return-value rewire; delete `antModels.ts` entirely (Ant-only GrowthBook override is dead code under P1).
+**Correction for tasks**: target `model.ts:206` for the `LGAI-EXAONE/EXAONE-236B-A23B` return-value rewire; delete `antModels.ts` entirely (Ant-only GrowthBook override is dead code under P1).
 
 ### Finding C — Additional dead-code files beyond Epic body
 
@@ -231,9 +231,9 @@ Spec `Scope Boundaries & Deferred Items` table has 8 rows. Review:
 This research produces the following downstream outputs (tracked in plan.md Phase 1):
 
 1. **Code edits (TS)**: ~137 `@anthropic-ai/sdk` imports removed; new `tui/src/ipc/llmClient.ts` + `llmTypes.ts`; `tui/src/utils/model/model.ts:206` return-value change; ~50 file deletions; `/login`·`/logout` slash commands removed.
-2. **Code edits (Python)**: none — `src/kosmos/llm/config.py:37` default is already `LGAI-EXAONE/K-EXAONE-236B-A23B` (matches Decision 1).
+2. **Code edits (Python)**: none — `src/kosmos/llm/config.py:37` default is already `LGAI-EXAONE/EXAONE-236B-A23B` (matches Decision 1).
 3. **Tests**: regression tests for each FR (grep-based invariants); US1 end-to-end test harness (mocked Python backend responding with fake `AssistantChunkFrame` stream).
-4. **Docs (in-Epic)**: `data-model.md` (frame envelope LLM usage), `contracts/llm-client.md` (TS LLMClient interface + IPC frame contract), `quickstart.md` (fresh-clone → first-K-EXAONE-token flow).
+4. **Docs (in-Epic)**: `data-model.md` (frame envelope LLM usage), `contracts/llm-client.md` (TS LLMClient interface + IPC frame contract), `quickstart.md` (fresh-clone → first-EXAONE-token flow).
 5. **Docs (post-merge)**: none — Tree propagation PR #1652 already covers README/CLAUDE/AGENTS.
 
 ## References
@@ -252,6 +252,6 @@ This research produces the following downstream outputs (tracked in plan.md Phas
 - Spec 032 (IPC stdio hardening) — envelope + role=llm + `AssistantChunkFrame`
 - Spec 035 (Onboarding) — 5-step flow terminating at `terminal-setup`
 - FriendliAI announcement 2025-10: https://friendli.ai/blog/lg-ai-research-partnership-exaone-4.0
-- FriendliAI model page: https://friendli.ai/suite/~/serverless-endpoints/LGAI-EXAONE/K-EXAONE-236B-A23B/overview
-- FriendliAI K-EXAONE page (cached-input pricing reference): https://friendli.ai/blog/k-exaone-on-serverless
+- FriendliAI model page: https://friendli.ai/suite/~/serverless-endpoints/LGAI-EXAONE/EXAONE-236B-A23B/overview
+- FriendliAI EXAONE page (cached-input pricing reference): https://friendli.ai/blog/k-exaone-on-serverless
 - FriendliAI dedicated chat-completions (usage field reference): https://friendli.ai/docs/openapi/dedicated/inference/chat-completions

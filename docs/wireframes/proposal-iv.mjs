@@ -47,7 +47,7 @@ function EmptyState() {
       h(Box, { flexDirection: 'column', width: 40, paddingRight: 2 },
         WelcomeV2Block(),
         h(Box, { marginTop: 1 },
-          h(Text, { color: C.subtle }, '   K-EXAONE · FriendliAI')
+          h(Text, { color: C.subtle }, '   EXAONE · FriendliAI')
         ),
         h(Box, null, h(Text, { color: C.dim }, '   ~/KOSMOS/tui')),
       ),

@@ -15,7 +15,7 @@
 import { z } from 'zod/v4'
 import { getIsNonInteractiveSession } from '../bootstrap/state.js'
 import { logEvent } from '../services/analytics/index.js'
-// services/api/claude removed in P1+P2 (Spec 1633); KOSMOS uses FriendliAI/K-EXAONE, Anthropic Haiku not available.
+// services/api/claude removed in P1+P2 (Spec 1633); KOSMOS uses FriendliAI/EXAONE, Anthropic Haiku not available.
 const queryHaiku = async (_opts: unknown): Promise<never> => {
   throw new Error('Anthropic API not available in KOSMOS — Spec 1633')
 }

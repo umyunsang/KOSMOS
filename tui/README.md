@@ -1,6 +1,6 @@
 # KOSMOS TUI (Ink + Bun)
 
-The terminal user interface for KOSMOS — a Korean public-service multi-agent harness ported from Claude Code 2.1.88 onto the FriendliAI/K-EXAONE backend.
+The terminal user interface for KOSMOS — a Korean public-service multi-agent harness ported from Claude Code 2.1.88 onto the FriendliAI/EXAONE backend.
 
 ## Stack
 

@@ -72,7 +72,7 @@
 
 ### Auxiliary tools — new (parallel)
 
-- [X] T023 [P] [US1] Create `/Users/um-yunsang/KOSMOS/tui/src/tools/TranslateTool/` with `input_schema` (`text`, `source_lang: Lang`, `target_lang: Lang`) + `output_schema` (`text`) + bilingual search_hint per contracts/primitive-envelope.md § 6; delegates to FriendliAI K-EXAONE via the existing LLM call path (no new dep)
+- [X] T023 [P] [US1] Create `/Users/um-yunsang/KOSMOS/tui/src/tools/TranslateTool/` with `input_schema` (`text`, `source_lang: Lang`, `target_lang: Lang`) + `output_schema` (`text`) + bilingual search_hint per contracts/primitive-envelope.md § 6; delegates to FriendliAI EXAONE via the existing LLM call path (no new dep)
 - [X] T024 [P] [US1] Create `/Users/um-yunsang/KOSMOS/tui/src/tools/CalculatorTool/` with restricted-grammar expression parser using stdlib `decimal`+`math` equivalents + output `{result: Decimal, kind}` per contracts/primitive-envelope.md § 6
 - [X] T025 [P] [US1] Create `/Users/um-yunsang/KOSMOS/tui/src/tools/DateParserTool/` using stdlib `datetime`+`zoneinfo` with `Asia/Seoul` default tz + output `{iso8601, interpreted_text}` per contracts/primitive-envelope.md § 6
 - [X] T026 [P] [US1] Create `/Users/um-yunsang/KOSMOS/tui/src/tools/ExportPDFTool/` using existing `pdf-to-img` WASM (UI-B B.3) + Memdir USER tier scoped output path per contracts/primitive-envelope.md § 6

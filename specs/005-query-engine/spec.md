@@ -120,4 +120,4 @@ When the LLM requests multiple independent tool calls in a single turn, the engi
 - Context Assembly (Epic #9, in progress) will provide the system prompt and per-turn context; for v1, the query engine uses a minimal hardcoded system prompt.
 - Error Recovery (Epic #10, in progress) will provide retry and circuit breaker logic; for v1, the query engine does basic try/except with logged errors.
 - The Permission Pipeline (Epic #8, future) will gate tool calls; for v1, the engine executes tools directly without permission checks.
-- The model context window is at least 128K tokens (FriendliAI K-EXAONE via OpenAI-compatible API).
+- The model context window is at least 128K tokens (FriendliAI EXAONE via OpenAI-compatible API).

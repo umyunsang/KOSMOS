@@ -139,7 +139,7 @@ The following ten amendments bring `docs/vision.md` back in sync with shipped st
 >
 > - **Tier 1 (pre-citizen-launch blocker)**: `ctrl+c` (interrupt active agent), `ctrl+d` (clean exit), `escape` in InputBar (cancel draft, gated on `!ime.isComposing`), `ctrl+r` (history search), `up`/`down` in InputBar (history prev/next, gated on empty buffer).
 > - **Tier 2 (post-launch hardening)**: `pageup`/`pagedown`, `ctrl+l` (redraw), `shift+tab` (cycle PermissionMode — binds A-5), `ctrl+_` (undo), `ctrl+shift+c` (copy selection).
-> - **Tier 3 (deferred until dependent specs)**: `ctrl+x ctrl+k` (killAll — needs multi-worker), `ctrl+e` (external editor), `meta+p` (modelPicker — KOSMOS uses K-EXAONE only), `ctrl+s` (stash), `ctrl+v` (image paste).
+> - **Tier 3 (deferred until dependent specs)**: `ctrl+x ctrl+k` (killAll — needs multi-worker), `ctrl+e` (external editor), `meta+p` (modelPicker — KOSMOS uses EXAONE only), `ctrl+s` (stash), `ctrl+v` (image paste).
 >
 > IME safety rule: every binding that mutates the input buffer MUST check `!useKoreanIME().isComposing` before acting (Hangul composition must not be interrupted by a shortcut).
 

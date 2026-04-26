@@ -171,12 +171,12 @@ export function getRuntimeMainLoopModel(params: {
 /**
  * Get the default main loop model setting.
  *
- * KOSMOS always uses the canonical K-EXAONE model via FriendliAI Serverless.
+ * KOSMOS always uses the canonical EXAONE model via FriendliAI Serverless.
  *
  * @returns The default model setting to use
  */
 export function getDefaultMainLoopModelSetting(): ModelName | ModelAlias {
-  return 'LGAI-EXAONE/K-EXAONE-236B-A23B'
+  return 'LGAI-EXAONE/EXAONE-236B-A23B'
 }
 
 /**
@@ -184,7 +184,7 @@ export function getDefaultMainLoopModelSetting(): ModelName | ModelAlias {
  * (bypassing any user-specified values).
  */
 export function getDefaultMainLoopModel(): ModelName {
-  return 'LGAI-EXAONE/K-EXAONE-236B-A23B' as ModelName
+  return 'LGAI-EXAONE/EXAONE-236B-A23B' as ModelName
 }
 
 // @[MODEL LAUNCH]: Add a canonical name mapping for the new model below.

@@ -27,7 +27,7 @@
 
 운영 책임자가 "지난 24시간 동안 어느 도구가 가장 많은 LLM 입력 토큰을 유발했는지"를 주간 리뷰에서 확인해야 한다. Langfuse 대시보드에서 모델별·도구별 토큰 합계와 호출 횟수를 곧바로 필터링할 수 있고, 각 `chat` span의 시작~종료 duration으로 총 응답 시간을 확인할 수 있다.
 
-**Why this priority**: K-EXAONE 서버리스는 토큰당 과금 모델이며, 도구 호출 루프가 비정상적으로 길어지면 비용이 수 배 증가한다. 장애가 없어도 관측이 되지 않으면 비용 통제 자체가 불가능하다.
+**Why this priority**: EXAONE 서버리스는 토큰당 과금 모델이며, 도구 호출 루프가 비정상적으로 길어지면 비용이 수 배 증가한다. 장애가 없어도 관측이 되지 않으면 비용 통제 자체가 불가능하다.
 
 **Independent Test**: 임의의 프롬프트로 스트리밍 chat 호출 1회를 수행한 뒤 Langfuse의 usage 리포트에서 입력/출력 토큰과 총 소요시간이 각각 별개 값으로 기록되었는지 확인.
 
@@ -138,7 +138,7 @@
 
 - KSC 심사자 및 운영자는 Docker Desktop 또는 Docker Engine을 로컬에서 실행할 수 있다. Docker가 없는 환경을 위한 대체 부트스트랩은 제공하지 않는다.
 - Langfuse v3.x 계열의 자체 호스팅 공식 `docker-compose` 참조 구성을 기반으로 프로젝트 로컬용을 파생한다. Langfuse Cloud는 선택지가 아니다.
-- K-EXAONE 호출은 FriendliAI Serverless(OpenAI-compatible)을 통해 순수 `httpx`로 수행되고 있다. `openai` SDK 객체는 존재하지 않기 때문에 auto-instrumentor는 원천적으로 불가능하다. 수동 span authoring만 가능하다.
+- EXAONE 호출은 FriendliAI Serverless(OpenAI-compatible)을 통해 순수 `httpx`로 수행되고 있다. `openai` SDK 객체는 존재하지 않기 때문에 auto-instrumentor는 원천적으로 불가능하다. 수동 span authoring만 가능하다.
 - 프로덕션 환경(배포용)의 OTLP collector 운영 방식은 이 epic의 범위가 아니다. 로컬 self-hosted 구동만 대상.
 - OTel GenAI semconv v1.40은 전 속성이 "Development" 안정성이며, 향후 rename이 있을 수 있다. 그 경우 새 속성명으로 **대체**하며 legacy alias는 유지하지 않는다.
 - PII 정책은 기존 `ObservabilityEventLogger`의 whitelist 정책을 단일 진실 소스로 본다. 속성 이름 정책은 OTel semconv를 따르되, **값은** whitelist를 통과한 것만 전파한다.

@@ -232,7 +232,7 @@ A citizen uses an assistive device that claims `ctrl+r` for screen-reader reload
 
 - **Image paste binding** — KOSMOS is a Korean-public-API harness; citizen queries are text-only. No image-input flow exists in the product vision (`docs/vision.md`).
 - **External editor binding** (`ctrl+e` in CC) — citizens do not edit source files; this is a DX-only affordance.
-- **Model picker binding** (`meta+p` in CC) — KOSMOS uses K-EXAONE via FriendliAI as a single model; no picker surface exists.
+- **Model picker binding** (`meta+p` in CC) — KOSMOS uses EXAONE via FriendliAI as a single model; no picker surface exists.
 - **Tier 3 killAll binding** (`ctrl+x ctrl+k`) — requires multi-worker supervision surface that the coordinator does not yet expose; and citizens do not multi-task across workers in the current TUI.
 
 ### Deferred to Future Work

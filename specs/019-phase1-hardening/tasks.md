@@ -90,7 +90,7 @@ No new dependencies or scaffolding required — this feature edits existing file
 
 ## Phase 5: User Story 3 — Public record corrected (Priority: P2)
 
-**Goal**: Retract the earlier public-discussion claim that K-EXAONE reliably memorizes Korean district administrative codes and cite the empirical counter-example.
+**Goal**: Retract the earlier public-discussion claim that EXAONE reliably memorizes Korean district administrative codes and cite the empirical counter-example.
 
 **Independent Test**: Open the referenced public discussion thread; verify a dated retraction comment exists, cites the counter-example, and links to Epic #404.
 

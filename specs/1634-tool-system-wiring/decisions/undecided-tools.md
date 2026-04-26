@@ -49,7 +49,7 @@ These are treated as a family below.
 ### TodoWriteTool
 
 - **Current behavior**: Maintains a developer in-session todo list (pending / in_progress / completed states) to help the LLM track multi-step coding work and signal progress to the developer user. Explicitly scoped to "coding session."
-- **Citizen relevance**: None. Citizens interact with KOSMOS to query public services — they do not manage LLM-internal task lists. Progress tracking in the citizen harness is surfaced through the conversation transcript and `subscribe` handle status, not an internal todo ledger. The tool description is saturated with "coding" context that would confuse K-EXAONE about its citizen role.
+- **Citizen relevance**: None. Citizens interact with KOSMOS to query public services — they do not manage LLM-internal task lists. Progress tracking in the citizen harness is surfaced through the conversation transcript and `subscribe` handle status, not an internal todo ledger. The tool description is saturated with "coding" context that would confuse EXAONE about its citizen role.
 - **Decision**: delete-in-followup
 - **Target Epic**: #1757
 - **Rationale**: Developer coding-session task tracker with no citizen-harness equivalent; removing it from `getAllBaseTools()` in P3 and its directory in the post-P3 cleanup epic (#1757) is the correct outcome.

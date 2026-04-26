@@ -436,7 +436,7 @@ export function recordPromptState(snapshot: PromptStateSnapshot): void {
 //   usage.cache_read_input_tokens    (Anthropic SDK)
 //   usage.cache_creation_input_tokens
 //
-// FriendliAI (OpenAI-compat, K-EXAONE) exposes them as:
+// FriendliAI (OpenAI-compat, EXAONE) exposes them as:
 //   usage.prompt_tokens_details.cached_tokens   ← cache read count
 //
 // `extractCacheReadTokens` normalises both shapes so `checkResponseForCacheBreak`

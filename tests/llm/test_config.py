@@ -55,10 +55,10 @@ def test_default_base_url(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_default_model(monkeypatch: pytest.MonkeyPatch) -> None:
-    """model defaults to the canonical K-EXAONE deployment identifier."""
+    """model defaults to the canonical EXAONE deployment identifier."""
     monkeypatch.setenv("KOSMOS_FRIENDLI_TOKEN", "test-token-123")
     config = LLMClientConfig()
-    assert config.model == "LGAI-EXAONE/K-EXAONE-236B-A23B"
+    assert config.model == "LGAI-EXAONE/EXAONE-236B-A23B"
 
 
 def test_default_session_budget(monkeypatch: pytest.MonkeyPatch) -> None:

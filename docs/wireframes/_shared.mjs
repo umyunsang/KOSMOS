@@ -60,7 +60,7 @@ export function Divider({ label }) {
   )
 }
 
-export function CondensedLogo({ cwd = '~/KOSMOS/tui', model = 'K-EXAONE' }) {
+export function CondensedLogo({ cwd = '~/KOSMOS/tui', model = 'EXAONE' }) {
   return h(Box, null,
     h(Text, { color: C.brand }, '✱ '),
     h(Text, { bold: true, color: C.brand }, 'KOSMOS'),

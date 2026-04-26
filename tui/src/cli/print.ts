@@ -279,7 +279,7 @@ import {
   resolveAppliedEffort,
 } from 'src/utils/effort.js'
 import { modelSupportsAdaptiveThinking } from 'src/utils/thinking.js'
-// utils/betas removed in P1+P2 (Spec 1633); KOSMOS K-EXAONE does not have Anthropic betas.
+// utils/betas removed in P1+P2 (Spec 1633); KOSMOS EXAONE does not have Anthropic betas.
 const modelSupportsAutoMode = (_model: string): boolean => false
 import { ensureModelStringsInitialized } from 'src/utils/model/modelStrings.js'
 import {

@@ -75,7 +75,7 @@ export function ReplHeader({ sessionReadyText }: ReplHeaderProps): React.ReactEl
           <Text color={theme.inactive} dimColor>session </Text>
           <Text color={theme.subtle}>{shortSession}</Text>
           <Text color={theme.inactive} dimColor>   model   </Text>
-          <Text color={theme.subtle}>K-EXAONE / FriendliAI</Text>
+          <Text color={theme.subtle}>EXAONE / FriendliAI</Text>
         </Box>
         <Box flexDirection="row" marginTop={1}>
           <Text color={theme.inactive} dimColor>agents  </Text>

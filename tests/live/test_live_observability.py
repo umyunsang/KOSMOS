@@ -201,7 +201,7 @@ async def test_live_metrics_collector_under_live_llm_stream(
     friendli_token: str,
 ) -> None:
     """Verify MetricsCollector records a counter and duration histogram for one real
-    FriendliAI K-EXAONE streaming completion via LLMClient.
+    FriendliAI EXAONE streaming completion via LLMClient.
 
     Metric-name mapping (spec → real):
       ``llm.requests.total``       → ``llm.call_count``      labelled {model=<model>}
@@ -322,7 +322,7 @@ async def test_live_event_logger_emits_llm_events(
     friendli_token: str,
 ) -> None:
     """Verify ObservabilityEventLogger emits a valid 'llm_call' event for one real
-    FriendliAI K-EXAONE streaming completion.
+    FriendliAI EXAONE streaming completion.
 
     Event-type mapping (spec → real):
       ``llm.stream.started``   → no separate start event; the real code emits ONE

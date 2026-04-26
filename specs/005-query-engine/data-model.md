@@ -273,4 +273,4 @@ def estimate_tokens(text: str) -> int:
     """
 ```
 
-**Rationale**: FriendliAI K-EXAONE tokenizer is not publicly available. Heuristic suffices for preprocessing; actual usage from API is authoritative for budget accounting (R-006).
+**Rationale**: FriendliAI EXAONE tokenizer is not publicly available. Heuristic suffices for preprocessing; actual usage from API is authoritative for budget accounting (R-006).

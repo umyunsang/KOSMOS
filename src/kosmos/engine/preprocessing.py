@@ -2,7 +2,7 @@
 """Context-window preprocessing pipeline for the KOSMOS Query Engine.
 
 Four stages compress the conversation history before each LLM call to keep
-the message list within the model's context window (128K tokens for K-EXAONE).
+the message list within the model's context window (128K tokens for EXAONE).
 
 Stage execution order:
 1. ``tool_result_budget``  — truncate oversized individual tool results

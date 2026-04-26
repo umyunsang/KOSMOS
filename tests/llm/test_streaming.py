@@ -53,7 +53,7 @@ def _delta_chunk(content: str, finish_reason: str | None = None) -> dict:
 
 
 def _reasoning_chunk(reasoning_content: str) -> dict:
-    """Build an SSE chunk containing only reasoning_content (K-EXAONE CoT)."""
+    """Build an SSE chunk containing only reasoning_content (EXAONE CoT)."""
     return {
         "id": "chatcmpl-test-123",
         "object": "chat.completion.chunk",
@@ -207,7 +207,7 @@ async def test_stream_drops_reasoning_content(
     llm_client: LLMClient,
     sample_messages: list[ChatMessage],
 ) -> None:
-    """K-EXAONE reasoning_content chunks are silently dropped (not emitted)."""
+    """EXAONE reasoning_content chunks are silently dropped (not emitted)."""
     body = _build_sse_body(
         _reasoning_chunk("Let me think about this..."),
         _reasoning_chunk("The user wants a greeting."),

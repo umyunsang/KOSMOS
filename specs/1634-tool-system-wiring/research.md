@@ -94,7 +94,7 @@ is_irreversible=True (overrides AAL)   → 3
 **Primary reference**: no direct CC analog (CC has no Translate or PDF export — its domain is code).
 
 **Secondary references**:
-- Translate: delegates to FriendliAI K-EXAONE itself (no external translation API). Existing Spec 022 LLM call path is reused. No new dep.
+- Translate: delegates to FriendliAI EXAONE itself (no external translation API). Existing Spec 022 LLM call path is reused. No new dep.
 - Calculator: stdlib `decimal` + `math`. No new dep.
 - DateParser: stdlib `datetime` + `zoneinfo` (Asia/Seoul TZ defaults). No new dep.
 - ExportPDF: existing `pdf-to-img` WASM (already shipped in TUI per UI-B B.3 decision); on the Python side, fixture export via stdlib `reportlab`-free path — defer the actual PDF rendering choice to a single-decision point in `data-model.md § ExportPDF`.

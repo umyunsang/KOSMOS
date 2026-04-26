@@ -1,11 +1,11 @@
-# Implementation Plan: LLM Client Integration (FriendliAI K-EXAONE)
+# Implementation Plan: LLM Client Integration (FriendliAI EXAONE)
 
 **Branch**: `spec/wave-1` | **Date**: 2026-04-12 | **Spec**: [spec.md](./spec.md)
 **Input**: Feature specification from `specs/004-llm-client/spec.md`
 
 ## Summary
 
-Implement an async LLM client for FriendliAI Serverless endpoint serving K-EXAONE, with streaming SSE support, token usage tracking, session budget enforcement, and exponential backoff retry logic. The client uses httpx for HTTP, Pydantic v2 for all I/O models, and async generators for streaming — following the Claude Agent SDK communication protocol pattern.
+Implement an async LLM client for FriendliAI Serverless endpoint serving EXAONE, with streaming SSE support, token usage tracking, session budget enforcement, and exponential backoff retry logic. The client uses httpx for HTTP, Pydantic v2 for all I/O models, and async generators for streaming — following the Claude Agent SDK communication protocol pattern.
 
 ## Technical Context
 

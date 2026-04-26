@@ -27,7 +27,7 @@ Citations abbreviated; full URLs in § 11.
 | **Single "universal" API-call facade hallucinates 30–45% of params** | ToolBench (arXiv:2307.16789), API-Bank (arXiv:2304.08244) | Do NOT expose `lookup(api_id, params)` as a flat tool. |
 | **Hierarchical retrieval router beats flat facades** on 16k-tool benchmarks | AnyTool (arXiv:2402.04253) | `lookup` must be a *retrieval surface*, not a monolithic dispatcher. |
 | **Tree dispatcher anti-pattern**: nested tool calls amplify failure up to 17× | NESTful (EMNLP'25, arXiv:2409.03797); multi-agent-trap survey | Dispatcher tool calling sub-tools is banned. Use 2-step flat chain: retrieve → call. |
-| **Anthropic Tool Search Tool (BM25)** ships as first-party primitive (2025-11) | Anthropic docs; Arcade, Spring, Stacklok replications | Pattern is validated. KOSMOS reimplements client-side (FriendliAI/K-EXAONE has no server-side equivalent). |
+| **Anthropic Tool Search Tool (BM25)** ships as first-party primitive (2025-11) | Anthropic docs; Arcade, Spring, Stacklok replications | Pattern is validated. KOSMOS reimplements client-side (FriendliAI/EXAONE has no server-side equivalent). |
 | **Cursor Dynamic Context Discovery: 46.9% token reduction** (production A/B) | Cursor blog (2026-01) | Realistic ceiling; design for 30–50% savings, not 90%. |
 | **Structured envelope `{items, next_cursor, meta}` + opaque cursor** | LangChain / MCP reference servers; data.go.kr convention | Canonical shape for `lookup` return. Offset/page pagination causes loops. |
 | **`shape` discriminator beats inference** (record / timeseries / collection) | Anthropic computer-use; Cursor `@docs` | Return `shape` field explicitly. |
@@ -444,7 +444,7 @@ To prevent the BM25 retriever from silently degrading as adapters are added, `/s
 
 - All registered `GovAPITool` instances are **not** sent to the LLM as individual tools. They live only in the BM25 index.
 - The LLM only ever sees `lookup` + `resolve_location`. Context tokens for adapters: **zero until requested**.
-- This is the KOSMOS equivalent of Anthropic's `defer_loading: true`, implemented client-side because FriendliAI/K-EXAONE has no server-side Tool Search primitive.
+- This is the KOSMOS equivalent of Anthropic's `defer_loading: true`, implemented client-side because FriendliAI/EXAONE has no server-side Tool Search primitive.
 - When `lookup(mode="search")` returns candidates, their `input_schema` field provides the just-in-time schema the LLM needs to construct a correct `fetch` call. Mirrors Cursor's `describe_tools` and Claude Code's `shouldDefer` + ToolSearch hint pattern (`02-tool-system.md:250-263, 371-398`).
 
 ### 5.8 Seed adapter set (MVP closure)

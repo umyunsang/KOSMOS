@@ -1,16 +1,16 @@
-# Feature Specification: LLM Client Integration (FriendliAI K-EXAONE)
+# Feature Specification: LLM Client Integration (FriendliAI EXAONE)
 
 **Epic**: #4
 **Created**: 2026-04-12
 **Status**: Draft
 **Layer**: Cross-cutting (LLM infrastructure)
-**Input**: Async LLM client for FriendliAI Serverless endpoint serving K-EXAONE model, with streaming, token tracking, budget enforcement, and retry logic.
+**Input**: Async LLM client for FriendliAI Serverless endpoint serving EXAONE model, with streaming, token tracking, budget enforcement, and retry logic.
 
 ## User Scenarios & Testing
 
 ### User Story 1 - Single-turn Query Resolution (Priority: P1)
 
-A citizen asks a natural-language question through the CLI. The system sends the query to K-EXAONE via FriendliAI Serverless and streams the response back in real time, so the citizen sees progressive output rather than waiting for the entire response.
+A citizen asks a natural-language question through the CLI. The system sends the query to EXAONE via FriendliAI Serverless and streams the response back in real time, so the citizen sees progressive output rather than waiting for the entire response.
 
 **Why this priority**: This is the fundamental interaction loop. Without a working LLM client, no other layer functions.
 
@@ -18,7 +18,7 @@ A citizen asks a natural-language question through the CLI. The system sends the
 
 **Acceptance Scenarios**:
 
-1. **Given** a valid KOSMOS_FRIENDLI_TOKEN is configured, **When** the system sends a prompt to K-EXAONE, **Then** a streamed response is received with content and token usage counts (input tokens, output tokens).
+1. **Given** a valid KOSMOS_FRIENDLI_TOKEN is configured, **When** the system sends a prompt to EXAONE, **Then** a streamed response is received with content and token usage counts (input tokens, output tokens).
 2. **Given** a valid configuration, **When** a prompt is sent, **Then** the response streams incrementally (chunk by chunk) rather than arriving as a single block.
 
 ---
@@ -115,7 +115,7 @@ The LLM client supports assembling messages with tool definitions and tool resul
 ## Assumptions
 
 - FriendliAI Serverless endpoint is OpenAI-compatible (chat/completions API with tool support).
-- The K-EXAONE model supports function calling / tool use in the OpenAI format.
+- The EXAONE model supports function calling / tool use in the OpenAI format.
 - The FriendliAI API returns token usage statistics (input_tokens, output_tokens) in each response.
 - Network connectivity to FriendliAI Serverless is generally stable; transient errors are the exception, not the norm.
 - Session budget is configured per-session at initialization; dynamic budget adjustment mid-session is out of scope for Phase 1.

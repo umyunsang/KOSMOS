@@ -105,7 +105,7 @@ async def test_complete_success(
 
     assert response.id == "chatcmpl-test-123"
     assert response.content == "Test response"
-    assert response.model == "LGAI-EXAONE/K-EXAONE-236B-A23B"
+    assert response.model == "LGAI-EXAONE/EXAONE-236B-A23B"
     assert response.finish_reason == "stop"
 
 
@@ -198,7 +198,7 @@ async def test_complete_with_tools(
     tool_response = {
         "id": "chatcmpl-tool-test",
         "object": "chat.completion",
-        "model": "LGAI-EXAONE/K-EXAONE-236B-A23B",
+        "model": "LGAI-EXAONE/EXAONE-236B-A23B",
         "choices": [
             {
                 "index": 0,
@@ -267,7 +267,7 @@ async def test_complete_tool_result_continuation(
     continuation_response = {
         "id": "chatcmpl-continuation-test",
         "object": "chat.completion",
-        "model": "LGAI-EXAONE/K-EXAONE-236B-A23B",
+        "model": "LGAI-EXAONE/EXAONE-236B-A23B",
         "choices": [
             {
                 "index": 0,
@@ -353,7 +353,7 @@ async def test_complete_budget_exhaustion(
     first_response = {
         "id": "chatcmpl-budget-1",
         "object": "chat.completion",
-        "model": "LGAI-EXAONE/K-EXAONE-236B-A23B",
+        "model": "LGAI-EXAONE/EXAONE-236B-A23B",
         "choices": [
             {
                 "index": 0,
@@ -369,7 +369,7 @@ async def test_complete_budget_exhaustion(
     second_response = {
         "id": "chatcmpl-budget-2",
         "object": "chat.completion",
-        "model": "LGAI-EXAONE/K-EXAONE-236B-A23B",
+        "model": "LGAI-EXAONE/EXAONE-236B-A23B",
         "choices": [
             {
                 "index": 0,
@@ -407,7 +407,7 @@ async def test_complete_budget_exhaustion(
 _SUCCESS_RESPONSE = {
     "id": "chatcmpl-retry-ok",
     "object": "chat.completion",
-    "model": "LGAI-EXAONE/K-EXAONE-236B-A23B",
+    "model": "LGAI-EXAONE/EXAONE-236B-A23B",
     "choices": [
         {
             "index": 0,

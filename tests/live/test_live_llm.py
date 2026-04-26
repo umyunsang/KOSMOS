@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Live validation tests for the KOSMOS LLM client against the real FriendliAI K-EXAONE API.
+"""Live validation tests for the KOSMOS LLM client against the real FriendliAI EXAONE API.
 
 These tests hit the actual FriendliAI Serverless endpoint — no mocks.  They are
 marked ``@pytest.mark.live`` and are skipped by default; run them with::
@@ -40,7 +40,7 @@ async def test_live_llm_stream_basic(friendli_token: str) -> None:
     events: list[StreamEvent] = []
 
     async with LLMClient() as client:
-        # K-EXAONE is a reasoning-first model: it emits reasoning_content tokens
+        # EXAONE is a reasoning-first model: it emits reasoning_content tokens
         # (dropped by the client) before content tokens. A large max_tokens
         # budget is required, but on short prompts the model can still spend
         # the entire budget on reasoning and produce zero content tokens —
@@ -102,7 +102,7 @@ async def test_live_llm_stream_with_tool_definitions(friendli_token: str) -> Non
     events: list[StreamEvent] = []
 
     async with LLMClient() as client:
-        # K-EXAONE uses reasoning_content tokens before content tokens.
+        # EXAONE uses reasoning_content tokens before content tokens.
         async for event in client.stream(messages, tools=[weather_tool], max_tokens=300):
             events.append(event)
 

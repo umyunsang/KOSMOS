@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""LLM client integration for FriendliAI K-EXAONE."""
+"""LLM client integration for FriendliAI EXAONE."""
 
 from kosmos.llm.client import LLMClient
 from kosmos.llm.config import LLMClientConfig

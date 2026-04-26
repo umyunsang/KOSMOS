@@ -6,7 +6,7 @@ import {
   isTeamPremiumSubscriber,
 } from '../auth.js'
 import { getModelStrings } from './modelStrings.js'
-// utils/modelCost removed in P1+P2 (Spec 1633); KOSMOS uses K-EXAONE via FriendliAI, Anthropic pricing not applicable.
+// utils/modelCost removed in P1+P2 (Spec 1633); KOSMOS uses EXAONE via FriendliAI, Anthropic pricing not applicable.
 const COST_TIER_3_15 = { input: 0, output: 0 }
 const COST_HAIKU_35 = { input: 0, output: 0 }
 const COST_HAIKU_45 = { input: 0, output: 0 }

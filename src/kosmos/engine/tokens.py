@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """Token estimation utilities for KOSMOS Query Engine.
 
-The FriendliAI K-EXAONE tokenizer is not publicly available, so this module
+The FriendliAI EXAONE tokenizer is not publicly available, so this module
 provides a character-based heuristic for pre-processing decisions.  Actual
 token counts are obtained from the LLM API for budget accounting.
 """

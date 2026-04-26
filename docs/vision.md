@@ -4,7 +4,7 @@
 >
 > Any spec, ADR, or implementation decision must align with this vision. If a later insight contradicts it, update this file in the same pull request.
 >
-> **Migration status (2026-04-26)** — KOSMOS v0.1-alpha shipped. The six-Phase migration (P0 #1632 → P1+P2 #1633 → P3 #1634 → P4 #1847 → P5 #1927 → P6 #1637) completed under Initiative #1631. The harness migration described below is no longer aspirational: the LLM Harness pillar runs through FriendliAI Serverless + K-EXAONE with Claude Code's agent loop preserved; the Tool System pillar exposes 24 registry-bundled adapters across seven Korean ministries through `lookup` / `submit` / `verify` / `subscribe` primitives, all documented in [`docs/api/`](./api/) with Pydantic v2 envelopes and Draft 2020-12 JSON Schemas; the 5-tier plugin DX (Spec 1636) is open for external citizen and ministry contributors. Live API regression and the in-TUI marketplace browser are tracked as deferred follow-ups.
+> **Migration status (2026-04-26)** — KOSMOS v0.1-alpha shipped. The six-Phase migration (P0 #1632 → P1+P2 #1633 → P3 #1634 → P4 #1847 → P5 #1927 → P6 #1637) completed under Initiative #1631. The harness migration described below is no longer aspirational: the LLM Harness pillar runs through FriendliAI Serverless + EXAONE with Claude Code's agent loop preserved; the Tool System pillar exposes 24 registry-bundled adapters across seven Korean ministries through `lookup` / `submit` / `verify` / `subscribe` primitives, all documented in [`docs/api/`](./api/) with Pydantic v2 envelopes and Draft 2020-12 JSON Schemas; the 5-tier plugin DX (Spec 1636) is open for external citizen and ministry contributors. Live API regression and the in-TUI marketplace browser are tracked as deferred follow-ups.
 
 ## The ambition
 
@@ -382,7 +382,7 @@ Claude Code defines 65 bindings across 20 contexts (`src/keybindings/defaultBind
 
 - **Tier 1 (pre-citizen-launch blocker)**: `ctrl+c` (interrupt active agent), `ctrl+d` (clean exit), `escape` in InputBar (cancel draft, gated on `!ime.isComposing`), `ctrl+r` (history search), `up`/`down` in InputBar (history prev/next, gated on empty buffer).
 - **Tier 2 (post-launch hardening)**: `pageup`/`pagedown`, `ctrl+l` (redraw), `shift+tab` (cycle PermissionMode — binds to the Layer 3 spectrum), `ctrl+_` (undo), `ctrl+shift+c` (copy selection).
-- **Tier 3 (deferred until dependent specs)**: `ctrl+x ctrl+k` (killAll — requires multi-worker), `ctrl+e` (external editor), `meta+p` (modelPicker — KOSMOS uses K-EXAONE only), `ctrl+s` (stash), `ctrl+v` (image paste).
+- **Tier 3 (deferred until dependent specs)**: `ctrl+x ctrl+k` (killAll — requires multi-worker), `ctrl+e` (external editor), `meta+p` (modelPicker — KOSMOS uses EXAONE only), `ctrl+s` (stash), `ctrl+v` (image paste).
 
 IME safety rule: every binding that mutates the input buffer MUST check `!useKoreanIME().isComposing` before acting. Hangul composition must not be interrupted by a shortcut. The current `tui/src/hooks/useKoreanIME.ts` exposes the required predicate.
 

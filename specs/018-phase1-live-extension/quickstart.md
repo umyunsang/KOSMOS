@@ -6,7 +6,7 @@
 
 1. Kakao Developers app with the **Local API** activated. Console path: `앱 설정 → 제품 설정 → 카카오맵 → 사용 설정 → 상태 ON`. Platform registration is **not** required for server-side REST calls.
 2. `data.go.kr` API key with KOROAD Accident Search service activated.
-3. FriendliAI Serverless token with access to the K-EXAONE endpoint.
+3. FriendliAI Serverless token with access to the EXAONE endpoint.
 
 ## Environment Setup
 

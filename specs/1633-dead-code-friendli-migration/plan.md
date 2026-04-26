@@ -10,7 +10,7 @@
 
 ## Summary
 
-Rewire TUI's LLM path from Anthropic to FriendliAI K-EXAONE by (a) deleting Anthropic-specific assets (OAuth + Keychain + analytics + CC version migrations + teleport + policy limits + MCP Anthropic integration), (b) replacing `@anthropic-ai/sdk` consumption points with a new `tui/src/ipc/llmClient.ts` that round-trips LLM turns over Spec 032 stdio IPC to the existing Python `LLMClient`, and (c) wiring Spec 026 PromptLoader into the system-prompt path. The agentic loop in `query.ts`/`QueryEngine.ts` is preserved 1:1 (rewrite boundary, Constitution Principle I). Model ID fixes to `LGAI-EXAONE/K-EXAONE-236B-A23B` (Python config default also updated).
+Rewire TUI's LLM path from Anthropic to FriendliAI EXAONE by (a) deleting Anthropic-specific assets (OAuth + Keychain + analytics + CC version migrations + teleport + policy limits + MCP Anthropic integration), (b) replacing `@anthropic-ai/sdk` consumption points with a new `tui/src/ipc/llmClient.ts` that round-trips LLM turns over Spec 032 stdio IPC to the existing Python `LLMClient`, and (c) wiring Spec 026 PromptLoader into the system-prompt path. The agentic loop in `query.ts`/`QueryEngine.ts` is preserved 1:1 (rewrite boundary, Constitution Principle I). Model ID fixes to `LGAI-EXAONE/EXAONE-236B-A23B` (Python config default also updated).
 
 ## Technical Context
 
@@ -97,7 +97,7 @@ tui/src/                           # TS TUI — most of this Epic's surface
 │   ├── background/remote/         # [DELETE] 2 files
 │   └── model/
 │       ├── antModels.ts           # [DELETE]
-│       └── model.ts               # [EDIT] getDefaultMainLoopModel returns "LGAI-EXAONE/K-EXAONE-236B-A23B"
+│       └── model.ts               # [EDIT] getDefaultMainLoopModel returns "LGAI-EXAONE/EXAONE-236B-A23B"
 ├── constants/
 │   └── betas.ts                   # [DELETE] (Finding C)
 ├── commands/
@@ -153,7 +153,7 @@ Expected total: **60-70 tasks**, well under the Sub-Issues 90-budget (AGENTS.md 
 | Risk | Likelihood | Impact | Mitigation |
 |---|---|---|---|
 | Epic #1632 tools depending on deleted files | Medium | Build break | Compatibility shim (contracts § 6) keeps P3 tool files compiling until Epic #1634 |
-| FriendliAI K-EXAONE-236B-A23B model ID renamed / deprecated | Low | SC-010 fails | Plan treats model ID as a **single constant** in one Python config line; rename requires one-line edit + release-manifest bump (Spec 026). FriendliAI partnership status (Day-0 support) suggests stable naming. |
+| FriendliAI EXAONE-236B-A23B model ID renamed / deprecated | Low | SC-010 fails | Plan treats model ID as a **single constant** in one Python config line; rename requires one-line edit + release-manifest bump (Spec 026). FriendliAI partnership status (Day-0 support) suggests stable naming. |
 | Spec 032 backpressure didn't anticipate FriendliAI 429 volume | Medium | Throttling UX | Existing `BackpressureSignal(kind=llm_rate_limit)` already designed for this; Python-side retry from Spec 019 is battle-tested |
 | TS tests referencing `@anthropic-ai/sdk` types | High | Mass test failures | Type shim in `llmTypes.ts` provides structural equivalents; tests compile without edit as long as imports are updated |
 | `main.tsx` ≤ 2,500 line target unreachable | Low | SC-003 miss | Current file is 4,693 lines; removing ant-guards (58+ sites) + login/logout boot + telemetry init + CC version migrations easily yields > 2,000 line reduction per `grep -c` estimates |

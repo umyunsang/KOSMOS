@@ -16,7 +16,7 @@ Implement the async generator tool loop (Layer 1) that is the heartbeat of a KOS
 **Target Platform**: Linux/macOS server (CLI interface for Phase 1)
 **Project Type**: Library (query engine module within the KOSMOS monorepo)
 **Performance Goals**: SC-004 — concurrent tool dispatch reduces turn latency by 30%+
-**Constraints**: 128K context window (FriendliAI K-EXAONE), <100K token session budget default
+**Constraints**: 128K context window (FriendliAI EXAONE), <100K token session budget default
 **Scale/Scope**: Single-session conversational agent, 50+ turns, 5,000+ potential tools
 
 ## Constitution Check
@@ -91,7 +91,7 @@ Each design decision traces to concrete reference sources per Constitution § I:
 | R-003: Mutable history + immutable snapshots | Claude Code reconstructed (`QueryEngine.ts`) | "Don't Break the Cache" (arxiv 2601.06007) |
 | R-004: Concurrent tool dispatch | Google ADK (`asyncio.gather()` + `ThreadPoolExecutor`) | Python 3.11+ `asyncio.TaskGroup` |
 | R-005: Multi-stage preprocessing | Claude Code reconstructed (5-stage pipeline) | "Don't Break the Cache" paper |
-| R-006: Token estimation heuristic | K-EXAONE Korean token density research | No public tokenizer available |
+| R-006: Token estimation heuristic | EXAONE Korean token density research | No public tokenizer available |
 | R-007: Three-dimensional budget | Google ADK (`InvocationCostManager`) | KOSMOS `UsageTracker` (existing) |
 | R-008: State isolation pattern | Google ADK (`InvocationContext`) | Claude Code reconstructed (`QueryState`) |
 

@@ -207,7 +207,7 @@ The coordinator and workers emit OpenTelemetry spans that are compatible with th
 - Epic #507 (2-tool facade: `lookup` + `resolve_location` + 4 seed adapters) is merged and stable before implementation of this epic begins.
 - Epic #468 (env-var registry) is either merged or its `docs/configuration.md` section is open for additive edits when this epic lands.
 - Epic #501 (observability boundary table) is either merged or its attribute boundary table is available in draft form so that the `kosmos.agent.*` attribute names declared here can be submitted before any collector deploys.
-- The FriendliAI K-EXAONE endpoint supports independent LLM clients for each coordinator and worker without additional provisioning (each `LLMClient` instance uses the per-session semaphore from #019; no new concurrency infrastructure is needed).
+- The FriendliAI EXAONE endpoint supports independent LLM clients for each coordinator and worker without additional provisioning (each `LLMClient` instance uses the per-session semaphore from #019; no new concurrency infrastructure is needed).
 - Ministry specialist system prompts (#14) are not required for this epic's integration tests — workers operate with a generic "specialist" system prompt stub that exercises the tool loop without ministry-specific intent.
 - The file system where `KOSMOS_AGENT_MAILBOX_ROOT` resides supports POSIX fsync semantics (macOS and Linux CI environments both satisfy this).
 - The `AgentContext` model uses `arbitrary_types_allowed=True` to accommodate `LLMClient` and `ToolRegistry` which are not Pydantic models. This follows the precedent set by `QueryContext` in `src/kosmos/engine/models.py`.
