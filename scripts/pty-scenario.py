@@ -427,14 +427,220 @@ def cmd_lookup_emergency_room(_args: argparse.Namespace) -> HarnessResult:
     return result
 
 
-def cmd_submit_fine_pay(_args: argparse.Namespace) -> HarnessResult:
-    """T075 will send '교통 범칙금 납부 시뮬' + handle the consent modal per --auto-* flag."""
-    return _run_skeleton("submit-fine-pay", DEFAULT_BOOT_MS)
+def _check_friendli_token(scenario: str) -> None:
+    """Emit structured error JSON and raise SystemExit(1) if FRIENDLI_API_KEY is absent."""
+    if not os.environ.get("FRIENDLI_API_KEY") and not os.environ.get("KOSMOS_FRIENDLI_TOKEN"):
+        msg = {"success": False, "reason": "FRIENDLI_API_KEY (or KOSMOS_FRIENDLI_TOKEN) is not set — TUI cannot authenticate"}
+        print(json.dumps(msg, ensure_ascii=False))
+        raise SystemExit(1)
+
+
+def cmd_submit_fine_pay(args: argparse.Namespace) -> HarnessResult:
+    """T075: send '교통 범칙금 납부할게', handle permission_request per --auto-* flag, assert submit tool_call/tool_result."""
+    _check_friendli_token("submit-fine-pay")
+    scenario = "submit-fine-pay"
+    started = time.time()
+
+    # Determine permission decision from mutually-exclusive flags.
+    if args.auto_allow_once:
+        decision = "allow_once"
+    elif args.auto_allow_session:
+        decision = "allow_session"
+    elif args.auto_deny:
+        decision = "deny"
+    else:
+        decision = "allow_once"  # default when caller omits flag (non-crash path)
+
+    pid, fd = _spawn_tui({})
+    result = HarnessResult(scenario=scenario, pid=pid, exit_code=None, boot_ms=0, total_ms=0)
+
+    permission_request_seen: bool = False
+    permission_response_sent: bool = False
+    tool_call_seen: bool = False
+    tool_result_seen: bool = False
+
+    try:
+        # Phase 1: boot.
+        boot_deadline = started + DEFAULT_BOOT_MS / 1000
+        _drain(fd, boot_deadline, result.captured_stdout, f"{scenario}-boot")
+        result.boot_ms = int((time.time() - started) * 1000)
+        log.debug("boot done in %dms", result.boot_ms)
+
+        # Phase 2: send citizen prompt that triggers submit primitive.
+        _send(fd, "교통 범칙금 납부할게\r".encode("utf-8"), f"{scenario}-input")
+        send_ts = time.time()
+
+        # Phase 3: wait for permission_request frame.
+        perm_deadline = send_ts + DEFAULT_PERMISSION_TIMEOUT_MS / 1000
+
+        def _has_permission_request(frames: list[dict]) -> bool:
+            return any(f.get("kind") == "permission_request" for f in frames)
+
+        found_perm = _drain_until(
+            fd, result.captured_stdout, perm_deadline, _has_permission_request, f"{scenario}-perm-req"
+        )
+        if found_perm:
+            permission_request_seen = True
+            log.debug("permission_request received; sending decision=%s", decision)
+
+            # Phase 4: respond with the chosen permission decision.
+            perm_response = json.dumps({"kind": "permission_response", "decision": decision}, ensure_ascii=False) + "\r\n"
+            _send(fd, perm_response.encode("utf-8"), f"{scenario}-perm-resp")
+            permission_response_sent = True
+        else:
+            log.debug("no permission_request within timeout; proceeding to tool_call watch")
+
+        # Phase 5: wait for tool_call{name:"submit"} frame.
+        tc_deadline = time.time() + DEFAULT_TURN_TIMEOUT_MS / 1000
+
+        def _has_submit_tool_call(frames: list[dict]) -> bool:
+            return any(f.get("kind") == "tool_call" and f.get("name") == "submit" for f in frames)
+
+        found_tc = _drain_until(
+            fd, result.captured_stdout, tc_deadline, _has_submit_tool_call, f"{scenario}-tool-call"
+        )
+        tool_call_seen = found_tc
+
+        # Phase 6: wait for matching tool_result (or error frame when denied).
+        tr_deadline = time.time() + DEFAULT_TURN_TIMEOUT_MS / 1000
+
+        def _has_tool_result_or_error(frames: list[dict]) -> bool:
+            return any(f.get("kind") in ("tool_result", "error") for f in frames)
+
+        found_tr = _drain_until(
+            fd, result.captured_stdout, tr_deadline, _has_tool_result_or_error, f"{scenario}-tool-result"
+        )
+        tool_result_seen = found_tr
+
+    finally:
+        result.exit_code = _shutdown(pid, fd)
+        result.total_ms = int((time.time() - started) * 1000)
+
+    # Evaluate success per decision path.
+    frames = _parse_ipc_frames(bytes(result.captured_stdout))
+    tool_calls = [f for f in frames if f.get("kind") == "tool_call" and f.get("name") == "submit"]
+    tool_results = [f for f in frames if f.get("kind") in ("tool_result", "error")]
+
+    if decision == "deny":
+        # Deny path: no submit tool_call should have been dispatched.
+        success = not tool_calls
+        if tool_calls:
+            result.errors.append("deny path: submit tool_call was dispatched despite deny decision")
+    else:
+        # Allow path: both tool_call and a tool_result must be present.
+        success = bool(tool_calls) and bool(tool_results)
+        if not tool_calls:
+            result.errors.append("allow path: no tool_call{name:'submit'} observed")
+        if not tool_results:
+            result.errors.append("allow path: no tool_result observed after submit dispatch")
+
+    summary = {
+        "scenario": scenario,
+        "success": success,
+        "decision": decision,
+        "permission_request_seen": permission_request_seen,
+        "permission_response_sent": permission_response_sent,
+        "tool_call_seen": tool_call_seen,
+        "tool_result_seen": tool_result_seen,
+        "boot_ms": result.boot_ms,
+        "total_ms": result.total_ms,
+    }
+    print(json.dumps(summary, ensure_ascii=False))
+    result.markers_seen = _scan_markers(result.stdout_text, ["permission_request", "tool_call", "tool_result"])
+    return result
 
 
 def cmd_verify_gongdong(_args: argparse.Namespace) -> HarnessResult:
-    """T076 will send '공동인증서로 인증해줘'."""
-    return _run_skeleton("verify-gongdong", DEFAULT_BOOT_MS)
+    """T076: send '공동인증서로 본인인증 부탁해', assert verify tool_call + AuthContext tool_result."""
+    _check_friendli_token("verify-gongdong")
+    scenario = "verify-gongdong"
+    started = time.time()
+    pid, fd = _spawn_tui({})
+    result = HarnessResult(scenario=scenario, pid=pid, exit_code=None, boot_ms=0, total_ms=0)
+
+    tool_call_ms: int | None = None
+    auth_context_ms: int | None = None
+
+    try:
+        # Phase 1: boot.
+        boot_deadline = started + DEFAULT_BOOT_MS / 1000
+        _drain(fd, boot_deadline, result.captured_stdout, f"{scenario}-boot")
+        result.boot_ms = int((time.time() - started) * 1000)
+        log.debug("boot done in %dms", result.boot_ms)
+
+        # Phase 2: send citizen verify prompt.
+        _send(fd, "공동인증서로 본인인증 부탁해\r".encode("utf-8"), f"{scenario}-input")
+        send_ts = time.time()
+
+        # Phase 3: wait for tool_call{name:"verify"}.
+        tc_deadline = send_ts + DEFAULT_TURN_TIMEOUT_MS / 1000
+
+        def _has_verify_tool_call(frames: list[dict]) -> bool:
+            return any(f.get("kind") == "tool_call" and f.get("name") == "verify" for f in frames)
+
+        found_tc = _drain_until(
+            fd, result.captured_stdout, tc_deadline, _has_verify_tool_call, f"{scenario}-tool-call"
+        )
+        if found_tc:
+            tool_call_ms = int((time.time() - send_ts) * 1000)
+            log.debug("verify tool_call in %dms", tool_call_ms)
+
+        # Phase 4: wait for tool_result with kind="verify" + family="gongdong_injeungseo".
+        tr_deadline = time.time() + DEFAULT_TURN_TIMEOUT_MS / 1000
+
+        def _has_auth_context(frames: list[dict]) -> bool:
+            return any(
+                f.get("kind") == "tool_result"
+                and f.get("output", {}).get("kind") == "verify"
+                and f.get("output", {}).get("family") == "gongdong_injeungseo"
+                for f in frames
+            )
+
+        found_tr = _drain_until(
+            fd, result.captured_stdout, tr_deadline, _has_auth_context, f"{scenario}-auth-ctx"
+        )
+        if found_tr:
+            auth_context_ms = int((time.time() - send_ts) * 1000)
+            log.debug("AuthContext envelope in %dms", auth_context_ms)
+
+    finally:
+        result.exit_code = _shutdown(pid, fd)
+        result.total_ms = int((time.time() - started) * 1000)
+
+    # Collect verify tool_result details.
+    frames = _parse_ipc_frames(bytes(result.captured_stdout))
+    verify_results = [
+        f for f in frames
+        if f.get("kind") == "tool_result" and f.get("output", {}).get("kind") == "verify"
+    ]
+
+    auth_fields: dict = {}
+    if verify_results:
+        output = verify_results[0].get("output", {})
+        auth_fields = {
+            "family": output.get("family"),
+            "published_tier": output.get("published_tier"),
+            "nist_aal_hint": output.get("nist_aal_hint"),
+        }
+
+    success = tool_call_ms is not None and auth_context_ms is not None
+    if tool_call_ms is None:
+        result.errors.append("timeout: no tool_call{name:'verify'} observed")
+    if auth_context_ms is None:
+        result.errors.append("timeout: no tool_result{kind:'verify', family:'gongdong_injeungseo'} observed")
+
+    summary = {
+        "scenario": scenario,
+        "success": success,
+        "tool_call_ms": tool_call_ms,
+        "auth_context_ms": auth_context_ms,
+        "auth_fields": auth_fields,
+        "boot_ms": result.boot_ms,
+        "total_ms": result.total_ms,
+    }
+    print(json.dumps(summary, ensure_ascii=False))
+    result.markers_seen = _scan_markers(result.stdout_text, ["tool_call", "tool_result", "gongdong_injeungseo"])
+    return result
 
 
 def cmd_subscribe_cbs(_args: argparse.Namespace) -> HarnessResult:
@@ -465,9 +671,23 @@ def _build_parser() -> argparse.ArgumentParser:
         p = sub.add_parser(name, help=helptext)
         p.add_argument("--capture-out", type=Path, default=None, help="Persist stdout (frame stream) here.")
         p.add_argument("--capture-err", type=Path, default=None, help="Persist stderr (DEBUG log) here.")
-        p.add_argument("--auto-allow-once", action="store_true", help="(submit) auto-tap 'allow once' button.")
-        p.add_argument("--auto-allow-session", action="store_true", help="(submit) auto-tap 'allow for this session'.")
-        p.add_argument("--auto-deny", action="store_true", help="(submit) auto-tap 'deny'.")
+        if name == "submit-fine-pay":
+            perm_group = p.add_mutually_exclusive_group(required=False)
+            perm_group.add_argument(
+                "--auto-allow-once",
+                action="store_true",
+                help="Auto-respond to permission_request with decision='allow_once'.",
+            )
+            perm_group.add_argument(
+                "--auto-allow-session",
+                action="store_true",
+                help="Auto-respond to permission_request with decision='allow_session'.",
+            )
+            perm_group.add_argument(
+                "--auto-deny",
+                action="store_true",
+                help="Auto-respond to permission_request with decision='deny' and assert no submit dispatch.",
+            )
         p.set_defaults(handler=handler)
     return parser
 

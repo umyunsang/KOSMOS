@@ -1044,32 +1044,52 @@ async def run(  # noqa: C901
 
         on_frame = _handle_frame
 
-    # Run reader loop concurrently with shutdown watcher
-    reader_task = asyncio.create_task(
-        _reader_loop(stdin_reader, on_frame, sid),
-        name="ipc-reader",
-    )
-    shutdown_task = asyncio.create_task(_shutdown.wait(), name="ipc-shutdown")
+    # Spec 1978 T081 / ADR-0004 — root span ``kosmos.session`` covers the
+    # entire stdio session lifetime. All inbound/outbound frame spans
+    # (kosmos.ipc.frame), LLM chat spans, tool dispatch spans, and
+    # permission spans are nested under this root via OTEL implicit
+    # context propagation. Closes at session exit (graceful shutdown
+    # path or session_event{event=exit}).
+    with _tracer.start_as_current_span("kosmos.session") as _session_span:
+        _session_span.set_attribute("kosmos.session.id", sid)
+        _session_span.set_attribute(
+            "kosmos.ipc.handler_mode", _handler_mode
+        )
 
-    done, pending = await asyncio.wait(
-        {reader_task, shutdown_task},
-        return_when=asyncio.FIRST_COMPLETED,
-    )
+        # Run reader loop concurrently with shutdown watcher
+        reader_task = asyncio.create_task(
+            _reader_loop(stdin_reader, on_frame, sid),
+            name="ipc-reader",
+        )
+        shutdown_task = asyncio.create_task(_shutdown.wait(), name="ipc-shutdown")
 
-    # Cancel whatever is still running
-    for task in pending:
-        task.cancel()
-        with contextlib.suppress(asyncio.CancelledError, Exception):
-            await task
+        done, pending = await asyncio.wait(
+            {reader_task, shutdown_task},
+            return_when=asyncio.FIRST_COMPLETED,
+        )
 
-    # Emit exit frame and flush
-    try:
-        await _emit_exit_frame(sid)
-    except Exception as exc:  # noqa: BLE001
-        logger.warning("Failed to emit exit frame: %s", exc)
+        # Record which task completed first so post-mortem traces show
+        # whether the session ended on stdin EOF (reader_task) vs SIGTERM /
+        # session_event{event=exit} (shutdown_task).
+        if reader_task in done:
+            _session_span.set_attribute("kosmos.session.exit_reason", "stdin_closed")
+        elif shutdown_task in done:
+            _session_span.set_attribute("kosmos.session.exit_reason", "shutdown_signal")
 
-    transport.close()
-    logger.info("IPC stdio loop exited cleanly — session_id=%s", sid)
+        # Cancel whatever is still running
+        for task in pending:
+            task.cancel()
+            with contextlib.suppress(asyncio.CancelledError, Exception):
+                await task
+
+        # Emit exit frame and flush
+        try:
+            await _emit_exit_frame(sid)
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("Failed to emit exit frame: %s", exc)
+
+        transport.close()
+        logger.info("IPC stdio loop exited cleanly — session_id=%s", sid)
 
 
 __all__ = [
