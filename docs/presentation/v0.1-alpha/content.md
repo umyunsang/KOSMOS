@@ -51,9 +51,9 @@
 
 ### LLM Stack 및 프로젝트 정보 (slide 4)
 
-- **LLM**: **K-EXAONE 4.0-32B** (`LGAI-EXAONE/EXAONE-4.0-32B`) via FriendliAI Serverless (OpenAI-compatible endpoint)
+- **LLM**: **EXAONE 4.0-32B** (`LGAI-EXAONE/EXAONE-4.0-32B`) via FriendliAI Serverless (OpenAI-compatible endpoint)
   (`docs/requirements/kosmos-migration-tree.md § L1-A A1`)
-- **Claude Code agentic loop 1:1 보존**: K-EXAONE native function calling + 동일 loop skeleton 적용
+- **Claude Code agentic loop 1:1 보존**: EXAONE native function calling + 동일 loop skeleton 적용
   (`docs/requirements/kosmos-migration-tree.md § L1-A A2`)
 - **라이선스**: Apache-2.0
 - **분류**: 학생 포트폴리오 프로젝트 · KSC 2026 제출
@@ -87,7 +87,7 @@
 - **P1+P2 #1633 — Dead-code elimination + Anthropic → FriendliAI 마이그레이션**
   - CC 전용 dead code (`ant-only`, `feature()`, `migration`, `telemetry` 브랜치) 제거
   - Anthropic API 상수 → FriendliAI Serverless 상수 교체
-  - K-EXAONE 함수 호출 프로토콜 적용
+  - EXAONE 함수 호출 프로토콜 적용
   - 산출물: FriendliAI endpoint 단일 고정화 + Spec 1633 병합
 
 - **P3 #1634 — Tool system wiring** (`feat/1634-tool-system-wiring`)
