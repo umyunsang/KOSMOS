@@ -433,6 +433,16 @@ async def run(  # noqa: C901
     # Future that resolves when the matching ToolResultFrame arrives.
     _pending_calls: dict[str, asyncio.Future[Any]] = {}
 
+    # Spec 1978 T043-T049 — pending permission requests (D2 invariant).
+    # Keyed by request_id (UUID4), resolved when the TUI sends a
+    # permission_response frame with the matching request_id.
+    # Timeout = 60s; synthetic deny on expiry.
+    _pending_perms: dict[str, asyncio.Future[Any]] = {}
+
+    # Per-session auto-approved tool IDs (allow_session grants).
+    # Keyed by session_id → set of tool_ids approved for the session lifetime.
+    _session_grants: dict[str, set[str]] = {}
+
     async def _ensure_llm_client() -> object:
         if not _llm_client_ref:
             from kosmos.llm.client import LLMClient  # noqa: PLC0415
@@ -585,6 +595,412 @@ async def run(  # noqa: C901
         import kosmos.tools.mock  # noqa: F401, PLC0415
     except Exception:  # noqa: BLE001
         logger.exception("failed to import kosmos.tools.mock — Mock adapters unavailable")
+
+    # -----------------------------------------------------------------------
+    # Spec 1978 T043-T049/T052 — Permission gauntlet bridge
+    # -----------------------------------------------------------------------
+
+    _PERM_TIMEOUT_S: float = float(
+        _os_chat_env.environ.get("KOSMOS_PERMISSION_TIMEOUT_SECONDS", "60")
+    )
+
+    # Primitives that require a citizen permission request when called outside
+    # an existing session-grant. Spec 033 Layer 1 (L1) exempts verify/lookup/
+    # resolve_location (read-only, public-tier); submit/subscribe are side-
+    # effecting (Layer 2/3) and always enter the bridge.
+    _PERMISSION_GATED_PRIMITIVES: frozenset[str] = frozenset({"submit", "subscribe"})
+
+    async def _check_permission_gate(
+        call_id: str,
+        fname: str,
+        args_obj: dict[str, object],
+        session_id: str,
+        correlation_id: str,
+    ) -> bool:
+        """Return True if the tool call is permitted to proceed.
+
+        For gated primitives (submit/subscribe):
+        1. Check session_grants cache — auto-allow if already approved.
+        2. Emit PermissionRequestFrame and await citizen decision (60 s).
+        3. On allow_session: cache grant; write consent receipt.
+        4. On allow_once: write consent receipt, no cache.
+        5. On deny or timeout: emit synthetic tool_result with error, return False.
+
+        For non-gated primitives (lookup/resolve_location/verify): return True
+        immediately without touching the bridge.
+        """
+        from kosmos.ipc.frame_schema import (  # noqa: PLC0415
+            PermissionRequestFrame,
+            ToolResultEnvelope,
+            ToolResultFrame,
+        )
+
+        if fname not in _PERMISSION_GATED_PRIMITIVES:
+            with _tracer.start_as_current_span("kosmos.permission") as span:
+                span.set_attribute("kosmos.permission.mode", "auto_allow")
+                span.set_attribute("kosmos.permission.decision", "allow_once")
+                span.set_attribute("kosmos.tool.dispatched", fname)
+            return True
+
+        # Check session grant cache first (allow_session shortcut — T048).
+        session_grant_set = _session_grants.get(session_id, set())
+        tool_key = f"{fname}:{args_obj.get('tool_id', fname)}"
+        if tool_key in session_grant_set:
+            with _tracer.start_as_current_span("kosmos.permission") as span:
+                span.set_attribute("kosmos.permission.mode", "auto_allow")
+                span.set_attribute("kosmos.permission.decision", "allow_session")
+                span.set_attribute("kosmos.tool.dispatched", fname)
+            logger.debug(
+                "permission: session_grant hit for %s session=%s", tool_key, session_id
+            )
+            return True
+
+        # Determine risk level and description from primitive type
+        _PRIM_RISK: dict[str, str] = {"submit": "high", "subscribe": "medium"}
+        _PRIM_KO: dict[str, str] = {
+            "submit": "정부 API에 데이터를 제출합니다. 이 작업은 되돌릴 수 없습니다.",
+            "subscribe": "공공 데이터 스트림을 구독합니다.",
+        }
+        _PRIM_EN: dict[str, str] = {
+            "submit": "Submit data to a government API. This action is irreversible.",
+            "subscribe": "Subscribe to a public data stream.",
+        }
+
+        request_id = str(uuid.uuid4())
+        loop = asyncio.get_running_loop()
+        _pending_perms[request_id] = loop.create_future()
+
+        with _tracer.start_as_current_span("kosmos.permission") as perm_span:
+            perm_span.set_attribute("kosmos.permission.mode", "ask")
+            perm_span.set_attribute("kosmos.tool.dispatched", fname)
+
+            try:
+                await write_frame(
+                    PermissionRequestFrame(
+                        session_id=session_id,
+                        correlation_id=correlation_id,
+                        role="backend",
+                        ts=_utcnow(),
+                        kind="permission_request",
+                        request_id=request_id,
+                        worker_id="main",
+                        primitive_kind=fname,  # type: ignore[arg-type]
+                        description_ko=_PRIM_KO.get(fname, "도구를 실행합니다."),
+                        description_en=_PRIM_EN.get(fname, "Invoke tool."),
+                        risk_level=_PRIM_RISK.get(fname, "medium"),  # type: ignore[arg-type]
+                    )
+                )
+            except Exception as exc:  # noqa: BLE001
+                logger.error("permission: failed to emit permission_request: %s", exc)
+                _pending_perms.pop(request_id, None)
+                perm_span.set_attribute("kosmos.permission.decision", "deny")
+                return False
+
+            # Await citizen decision with timeout (D2 invariant).
+            decision_frame: Any = None
+            try:
+                decision_frame = await asyncio.wait_for(
+                    _pending_perms[request_id],
+                    timeout=_PERM_TIMEOUT_S,
+                )
+                perm_span.set_attribute("kosmos.permission.decision", "allow_once")
+            except asyncio.TimeoutError:
+                logger.warning(
+                    "permission: timeout waiting for response to request_id=%s", request_id
+                )
+                perm_span.set_attribute("kosmos.permission.decision", "timeout")
+                _pending_perms.pop(request_id, None)
+                # Emit synthetic denied tool_result so the LLM turn resolves.
+                denied_env = ToolResultEnvelope(kind=fname, **{"error": "permission_timeout", "denied": True})  # type: ignore[arg-type]
+                fut = _pending_calls.get(call_id)
+                if fut and not fut.done():
+                    denied_result_frame = ToolResultFrame(
+                        session_id=session_id,
+                        correlation_id=correlation_id,
+                        role="backend",
+                        ts=_utcnow(),
+                        kind="tool_result",
+                        call_id=call_id,
+                        envelope=denied_env,
+                    )
+                    fut.set_result(denied_result_frame)
+                return False
+            finally:
+                _pending_perms.pop(request_id, None)
+
+            # Map PermissionResponseFrame.decision → allow/deny
+            raw_decision: str = getattr(decision_frame, "decision", "denied")
+            if raw_decision == "denied":
+                perm_span.set_attribute("kosmos.permission.decision", "deny")
+                # Emit synthetic denied tool_result.
+                denied_env2 = ToolResultEnvelope(kind=fname, **{"error": "permission_denied", "denied": True})  # type: ignore[arg-type]
+                fut2 = _pending_calls.get(call_id)
+                if fut2 and not fut2.done():
+                    denied_result_frame2 = ToolResultFrame(
+                        session_id=session_id,
+                        correlation_id=correlation_id,
+                        role="backend",
+                        ts=_utcnow(),
+                        kind="tool_result",
+                        call_id=call_id,
+                        envelope=denied_env2,
+                    )
+                    fut2.set_result(denied_result_frame2)
+                return False
+
+            # Granted — write consent receipt + optionally update session grant cache.
+            receipt_id = str(uuid.uuid4())
+            perm_span.set_attribute("kosmos.permission.decision", "allow_once")
+            perm_span.set_attribute("kosmos.consent.receipt_id", receipt_id)
+
+            # For demo: treat "granted" as allow_once (no session cache expansion here).
+            # If the contract later extends PermissionResponseFrame with
+            # decision="allow_session", add that branch here.
+            try:
+                import json as _json_receipt  # noqa: PLC0415
+                from pathlib import Path as _Path  # noqa: PLC0415
+
+                consent_dir = _Path.home() / ".kosmos" / "memdir" / "user" / "consent"
+                consent_dir.mkdir(parents=True, exist_ok=True)
+                receipt_path = consent_dir / f"{receipt_id}.json"
+                receipt_data = {
+                    "receipt_id": receipt_id,
+                    "session_id": session_id,
+                    "tool_id": str(args_obj.get("tool_id", fname)),
+                    "primitive": fname,
+                    "decision": "allow_once",
+                    "granted_at": _utcnow(),
+                    "revoked_at": None,
+                }
+                receipt_path.write_text(
+                    _json_receipt.dumps(receipt_data, ensure_ascii=False, indent=2),
+                    encoding="utf-8",
+                )
+                logger.debug("permission: wrote consent receipt %s", receipt_id)
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("permission: failed to write consent receipt: %s", exc)
+
+            return True
+
+    async def _handle_permission_response(frame: IPCFrame) -> None:
+        """Spec 1978 T047 — consume permission_response and resolve pending Future.
+
+        Maps incoming PermissionResponseFrame.request_id to the waiting
+        _pending_perms entry. Frames with no matching request_id are logged
+        and silently dropped (forward-compat: stale responses after timeout).
+        """
+        from kosmos.ipc.frame_schema import PermissionResponseFrame  # noqa: PLC0415
+
+        if not isinstance(frame, PermissionResponseFrame):
+            return
+        fut = _pending_perms.pop(frame.request_id, None)
+        if fut is None:
+            logger.debug(
+                "permission_response with no pending request (request_id=%s) — ignoring",
+                frame.request_id,
+            )
+            return
+        if not fut.done():
+            fut.set_result(frame)
+
+    # -----------------------------------------------------------------------
+    # Spec 1978 T053b — internal primitive dispatcher
+    # -----------------------------------------------------------------------
+
+    async def _dispatch_primitive(  # noqa: C901, PLR0912
+        call_id: str,
+        fname: str,
+        args_obj: dict[str, object],
+        session_id: str,
+        correlation_id: str,
+    ) -> None:
+        """Dispatch a single primitive call internally and resolve its pending Future.
+
+        Called immediately after a tool_call frame is emitted and the Future
+        is registered in _pending_calls. Routes by fname, awaits the primitive,
+        wraps the result in a ToolResultFrame, emits it to the TUI, then
+        resolves _pending_calls[call_id] so the agentic-loop continuation can
+        inject the result as a role="tool" message.
+
+        Permission gate: submit/subscribe go through _check_permission_gate
+        first. On denial/timeout, the gate itself resolves the Future with an
+        error envelope, so this function exits early without double-resolution.
+
+        OTEL: sets kosmos.tool.dispatched on the existing session span.
+        """
+        import json as _json_dispatch  # noqa: PLC0415
+
+        from kosmos.ipc.frame_schema import (  # noqa: PLC0415
+            ToolResultEnvelope,
+            ToolResultFrame,
+        )
+
+        with _tracer.start_as_current_span("kosmos.tool.dispatch") as span:
+            span.set_attribute("kosmos.tool.dispatched", fname)
+            span.set_attribute("kosmos.session.id", session_id)
+
+            # ----- Permission gate (T043-T049) -----
+            allowed = await _check_permission_gate(
+                call_id, fname, args_obj, session_id, correlation_id
+            )
+            if not allowed:
+                # Gate already resolved the Future with an error envelope.
+                span.set_attribute("kosmos.permission.decision", "deny")
+                return
+
+            result_payload: dict[str, object] = {}
+            dispatch_error: str | None = None
+
+            try:
+                if fname == "verify":
+                    from kosmos.primitives.verify import (  # noqa: PLC0415
+                        VerifyInput,
+                        VerifyOutput,
+                        verify,
+                    )
+
+                    # Accept both `family` (citizen-facing tool schema) and
+                    # `family_hint` (primitive's internal arg name) — KOSMOS
+                    # tools-bridge tolerates both.
+                    family_hint = str(
+                        args_obj.get("family_hint")
+                        or args_obj.get("family")
+                        or ""
+                    )
+                    session_ctx = dict(args_obj.get("session_context") or {})
+                    raw = await verify(family_hint=family_hint, session_context=session_ctx)
+                    result_payload = {
+                        "family": family_hint,
+                        "result": raw.model_dump(mode="json") if hasattr(raw, "model_dump") else {"raw": str(raw)},
+                    }
+
+                elif fname == "lookup":
+                    from kosmos.tools.executor import ToolExecutor  # noqa: PLC0415
+                    from kosmos.tools.models import (  # noqa: PLC0415
+                        LookupFetchInput,
+                        LookupSearchInput,
+                    )
+                    from kosmos.tools.registry import ToolRegistry  # noqa: PLC0415
+                    from kosmos.tools.lookup import lookup  # noqa: PLC0415
+
+                    mode = str(args_obj.get("mode", "search"))
+                    registry = ToolRegistry()
+                    executor = ToolExecutor(registry=registry)
+                    if mode == "search":
+                        inp = LookupSearchInput(
+                            mode="search",
+                            query=str(args_obj.get("query", "")),
+                            domain=args_obj.get("domain"),  # type: ignore[arg-type]
+                            top_k=args_obj.get("top_k"),  # type: ignore[arg-type]
+                        )
+                    else:
+                        inp = LookupFetchInput(
+                            mode="fetch",
+                            tool_id=str(args_obj.get("tool_id", "")),
+                            params=dict(args_obj.get("params") or {}),
+                        )
+                    raw = await lookup(inp, registry=registry, executor=executor, session_identity=session_id)
+                    result_payload = {
+                        "kind": "lookup",
+                        "result": raw.model_dump(mode="json") if hasattr(raw, "model_dump") else {"raw": str(raw)},
+                    }
+
+                elif fname == "resolve_location":
+                    from kosmos.tools.models import ResolveLocationInput  # noqa: PLC0415
+                    from kosmos.tools.resolve_location import resolve_location  # noqa: PLC0415
+
+                    inp_rl = ResolveLocationInput(
+                        query=str(args_obj.get("query", "")),
+                        want=str(args_obj.get("want", "coords_and_admcd")),  # type: ignore[arg-type]
+                    )
+                    raw = await resolve_location(inp_rl)
+                    result_payload = {
+                        "kind": "resolve_location",
+                        "result": raw.model_dump(mode="json") if hasattr(raw, "model_dump") else {"raw": str(raw)},
+                    }
+
+                elif fname == "submit":
+                    from kosmos.primitives.submit import submit  # noqa: PLC0415
+
+                    raw = await submit(
+                        tool_id=str(args_obj.get("tool_id", "")),
+                        params=dict(args_obj.get("params") or {}),
+                        session_id=session_id,
+                    )
+                    result_payload = {
+                        "kind": "submit",
+                        "result": raw.model_dump(mode="json") if hasattr(raw, "model_dump") else {"raw": str(raw)},
+                    }
+
+                elif fname == "subscribe":
+                    # T069 streaming events are deferred. Return the SubscriptionHandle.
+                    from kosmos.primitives.subscribe import (  # noqa: PLC0415
+                        SubscribeInput,
+                        subscribe,
+                    )
+
+                    inp_sub = SubscribeInput(
+                        tool_id=str(args_obj.get("tool_id", "")),
+                        params=dict(args_obj.get("params") or {}),
+                        lifetime_seconds=int(args_obj.get("lifetime_seconds", 300)),
+                    )
+                    iterator_or_error = subscribe(inp_sub)
+                    if hasattr(iterator_or_error, "_handle"):
+                        handle = getattr(iterator_or_error, "_handle", None)
+                        result_payload = {
+                            "kind": "subscribe",
+                            "subscription_id": str(uuid.uuid4()),
+                            "tool_id": inp_sub.tool_id,
+                            "status": "opened",
+                            "note": "Streaming events deferred (T069).",
+                        }
+                    else:
+                        # AdapterNotFoundError or similar
+                        result_payload = {
+                            "kind": "subscribe",
+                            "error": str(iterator_or_error),
+                            "tool_id": str(args_obj.get("tool_id", "")),
+                        }
+
+                else:
+                    dispatch_error = f"unknown primitive {fname!r}"
+
+            except Exception as exc:  # noqa: BLE001
+                logger.exception("_dispatch_primitive: %s dispatch failed: %s", fname, exc)
+                dispatch_error = str(exc)
+
+            if dispatch_error:
+                result_payload = {
+                    "kind": fname,
+                    "error": dispatch_error,
+                    "tool_id": str(args_obj.get("tool_id", fname)),
+                }
+
+            # Build ToolResultEnvelope + ToolResultFrame.
+            # ToolResultEnvelope uses extra="allow" so extra payload fields are kept.
+            # Strip any payload-level "kind" so the kwarg is single-valued.
+            payload_kw = {k: v for k, v in result_payload.items() if k != "kind"}
+            envelope = ToolResultEnvelope(kind=fname, **payload_kw)  # type: ignore[arg-type]
+            result_frame = ToolResultFrame(
+                session_id=session_id,
+                correlation_id=correlation_id,
+                role="backend",
+                ts=_utcnow(),
+                kind="tool_result",
+                call_id=call_id,
+                envelope=envelope,
+            )
+
+            # Emit to TUI for display.
+            try:
+                await write_frame(result_frame)
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("_dispatch_primitive: failed to emit tool_result frame: %s", exc)
+
+            # Resolve the pending Future so the agentic loop can continue.
+            fut = _pending_calls.pop(call_id, None)
+            if fut is not None and not fut.done():
+                fut.set_result(result_frame)
 
     async def _handle_chat_request(frame: IPCFrame) -> None:  # noqa: C901, PLR0915
         """Spec 1978 ADR-0001 — tools-aware chat handler.
@@ -802,6 +1218,21 @@ async def run(  # noqa: C901
                     )
                 )
 
+                # Spec 1978 T053b — fire internal primitive dispatch as a
+                # background task. The task resolves _pending_calls[call_id]
+                # when the primitive returns, allowing the gather below to
+                # proceed without waiting for an external tool_result frame.
+                asyncio.create_task(
+                    _dispatch_primitive(
+                        call_id,
+                        fname,
+                        args_obj,
+                        frame.session_id,
+                        frame.correlation_id,
+                    ),
+                    name=f"primitive-{fname}-{call_id[:8]}",
+                )
+
             # If every tool call was rejected (whitelist), terminate.
             if not issued_calls:
                 await write_frame(
@@ -1015,6 +1446,13 @@ async def run(  # noqa: C901
                     await _handle_tool_result(frame)
                 except Exception as exc:  # noqa: BLE001
                     logger.exception("tool_result handler failed: %s", exc)
+
+            elif frame.kind == "permission_response":
+                # Spec 1978 T047 — resolve pending permission Future.
+                try:
+                    await _handle_permission_response(frame)
+                except Exception as exc:  # noqa: BLE001
+                    logger.exception("permission_response handler failed: %s", exc)
 
             elif frame.kind == "session_event":
                 evt = frame.event

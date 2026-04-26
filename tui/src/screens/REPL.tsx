@@ -302,6 +302,9 @@ import { ContextQuoteBlock } from '../components/messages/ContextQuoteBlock.js';
 import { SlashCommandSuggestions } from '../components/PromptInput/SlashCommandSuggestions.js';
 import { BypassReinforcementModal } from '../components/permissions/BypassReinforcementModal.js';
 import { PermissionGauntletModal } from '../components/permissions/PermissionGauntletModal.js';
+// KOSMOS-1978 T050 — IPC-wired permission gauntlet (reads session-store.pending_permission)
+import { PermissionGauntletModal as KosmosIpcPermissionGauntletModal } from '../components/coordinator/PermissionGauntletModal.js';
+import { useSessionStore } from '../store/session-store.js';
 import { ReceiptToast } from '../components/permissions/ReceiptToast.js';
 import { PermissionReceiptProvider, usePermissionReceipts } from '../context/PermissionReceiptContext.js';
 import { AgentVisibilityPanel } from '../components/agents/AgentVisibilityPanel.js';
@@ -745,6 +748,9 @@ export function REPL({
   const store = useAppStateStore();
   const terminal = useTerminalNotification();
   const mainLoopModel = useMainLoopModel();
+
+  // KOSMOS-1978 T050 — session ID from IPC session-store (for PermissionResponseFrame header)
+  const kosmosIpcSessionId = useSessionStore((s) => s.session_id)
 
   // KOSMOS P4 UI L2 — T039: pending consent request from consentBridge (Spec 033 IPC path)
   // When the backend sends a consent_request frame, the IPC dispatcher calls
@@ -5278,6 +5284,13 @@ export function REPL({
                           }}
                         />
                       )}
+                      {/* KOSMOS-1978 T050 — IPC permission_request frame → citizen consent modal.
+                          Reads session-store.pending_permission (set by useReplBridge frame router).
+                          Emits permission_response frame via bridge on Y/N keystroke. */}
+                      <KosmosIpcPermissionGauntletModal
+                        sendFrame={(frame) => getOrCreateKosmosBridge().send(frame)}
+                        sessionId={kosmosIpcSessionId}
+                      />
                       {/* KOSMOS P4 UI L2 — T036: BypassReinforcementModal */}
                       {kosmosShowBypassConfirm && (
                         <BypassReinforcementModal
