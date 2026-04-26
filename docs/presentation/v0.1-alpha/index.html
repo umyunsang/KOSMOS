@@ -131,16 +131,117 @@
     .slide-inner::-webkit-scrollbar-thumb { background: rgba(167,139,250,.35); border-radius: 3px; }
     .slide-inner::-webkit-scrollbar-thumb:hover { background: rgba(167,139,250,.6); }
 
-    /* SVG visualization — fit-to-slide responsive */
-    .chapter-svg {
-      width: 100%;
-      max-width: 100%;
-      max-height: 540px;
-      height: auto;
-      display: block;
-      margin: 12px auto;
-      object-fit: contain;
+    /* ─── CSS-only Flow diagram ───────────────────────────────── */
+    .flow-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      margin-top: 12px;
+      flex: 1;
     }
+    .flow-row { display: flex; align-items: center; justify-content: center; gap: 0; }
+    .flow-step {
+      width: 198px;
+      min-height: 100px;
+      background: linear-gradient(135deg, rgba(124,58,237,.55) 0%, rgba(109,40,217,.7) 100%);
+      border: 1.5px solid rgba(167,139,250,.45);
+      border-radius: 12px;
+      padding: 14px 12px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      position: relative;
+    }
+    .flow-step.citizen {
+      background: linear-gradient(135deg, rgba(167,139,250,.35) 0%, rgba(124,58,237,.5) 100%);
+      border-color: var(--violet-400);
+    }
+    .flow-step.answer {
+      background: linear-gradient(135deg, rgba(74,222,128,.18) 0%, rgba(124,58,237,.5) 100%);
+      border-color: rgba(74,222,128,.5);
+    }
+    .flow-step-num {
+      font-size: 26px;
+      font-weight: 700;
+      font-family: var(--font-en);
+      color: var(--violet-400);
+      line-height: 1;
+    }
+    .flow-step.citizen .flow-step-num { color: var(--violet-200); }
+    .flow-step.answer .flow-step-num { color: var(--green-400); }
+    .flow-step-title { font-size: 13px; font-weight: 700; color: var(--white); line-height: 1.2; }
+    .flow-step-sub { font-size: 10.5px; color: var(--violet-300); line-height: 1.4; margin-top: 2px; }
+    .flow-step-tech { font-size: 10px; color: var(--violet-400); font-family: var(--font-en); margin-top: 4px; background: rgba(0,0,0,.2); border-radius: 4px; padding: 2px 5px; display: inline-block; }
+
+    /* arrows */
+    .flow-arr-h {
+      width: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--violet-400);
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    .flow-arr-h.rev { transform: scaleX(-1); }
+    .flow-arr-v {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--violet-400);
+      font-size: 18px;
+      height: 24px;
+    }
+    .flow-spacer { width: 198px; flex-shrink: 0; }
+    .flow-spacer-gap { width: 36px; flex-shrink: 0; }
+    .flow-loop-hint {
+      text-align: center;
+      font-size: 10px;
+      color: var(--violet-400);
+      opacity: .6;
+      font-family: var(--font-en);
+      letter-spacing: .05em;
+      margin-top: 2px;
+      font-style: italic;
+    }
+
+    /* ─── Primitive bar diagram ───────────────────────────────── */
+    .prim-diagram { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+    .prim-bar-row { display: grid; grid-template-columns: 90px 1fr 40px; align-items: center; gap: 10px; }
+    .prim-bar-label { font-family: var(--font-en); font-size: 14px; font-weight: 600; color: var(--violet-400); }
+    .prim-bar-track { height: 22px; background: rgba(167,139,250,.12); border-radius: 6px; overflow: hidden; }
+    .prim-bar-fill { height: 100%; border-radius: 6px; background: linear-gradient(90deg, var(--violet-700), var(--violet-400)); display: flex; align-items: center; padding-left: 8px; font-size: 10px; color: var(--violet-200); font-family: var(--font-en); white-space: nowrap; }
+    .prim-bar-count { font-size: 13px; font-weight: 700; color: var(--violet-400); font-family: var(--font-en); text-align: right; }
+
+    /* ─── Ministry matrix ─────────────────────────────────────── */
+    .ministry-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .ministry-tile {
+      background: rgba(167,139,250,.12);
+      border: 1px solid rgba(167,139,250,.25);
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 11.5px;
+      color: var(--violet-200);
+      font-weight: 600;
+    }
+
+    /* ─── CSS-only inline diagrams for chapter slides ─────────── */
+    .inline-diagram { display: flex; flex-direction: column; gap: 8px; flex: 1; justify-content: center; }
+    .diag-row { display: flex; gap: 8px; align-items: stretch; }
+    .diag-box {
+      flex: 1;
+      background: rgba(167,139,250,.12);
+      border: 1px solid rgba(167,139,250,.22);
+      border-radius: 10px;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .diag-box-title { font-size: 13px; font-weight: 700; color: var(--violet-400); }
+    .diag-box-body { font-size: 11.5px; color: var(--violet-200); line-height: 1.45; }
+    .diag-arr { width: 28px; display: flex; align-items: center; justify-content: center; color: var(--violet-400); font-size: 16px; flex-shrink: 0; }
+    .diag-label { font-size: 10px; font-family: var(--font-en); color: var(--violet-400); font-weight: 600; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 2px; }
 
     /* ─── Typography (compacted to fit 720px slide) ────────────── */
     h1 { font-size: 44px; font-weight: 700; line-height: 1.15; letter-spacing: -.02em; color: var(--white); }
@@ -394,17 +495,48 @@
     .ref-item a:hover { text-decoration: underline; }
     .ref-section-title { font-size: 13px; font-weight: 700; color: var(--violet-200); margin-top: 16px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: .06em; font-family: var(--font-en); }
 
-    /* ─── Chapter SVG visual asset ───────────────────────────── */
-    .chapter-svg {
-      width: 100%;
-      max-width: 1100px;
-      height: auto;
-      display: block;
-      margin: 24px auto;
-      background: rgba(76, 29, 149, 0.08);
-      border-radius: 12px;
-      border: 1px solid rgba(167, 139, 250, 0.2);
-      box-shadow: 0 8px 32px rgba(76, 29, 149, 0.3);
+    /* (chapter-svg removed — CSS-only diagrams used instead) */
+    /* ─── Demo flow (시나리오 시연 슬라이드) ──────────────────── */
+    .demo-flow {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+      overflow: auto;
+    }
+    .demo-step {
+      display: grid;
+      grid-template-columns: 28px 110px 1fr;
+      gap: 10px;
+      align-items: start;
+      padding: 6px 0;
+    }
+    .demo-step-num {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--violet-400);
+      font-family: var(--font-en);
+      text-align: center;
+      line-height: 1.2;
+    }
+    .demo-step-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--violet-300);
+      padding-top: 3px;
+    }
+    .demo-frame {
+      font-family: 'JetBrains Mono', 'Consolas', monospace;
+      font-size: 8.5px;
+      line-height: 1.25;
+      color: var(--violet-100);
+      background: rgba(30, 7, 72, 0.7);
+      border: 1px solid rgba(167, 139, 250, 0.25);
+      border-radius: 6px;
+      padding: 8px 10px;
+      overflow-x: auto;
+      white-space: pre;
+      margin: 0;
     }
   </style>
 </head>
@@ -439,7 +571,7 @@
         <div class="cover-disclaimer">Not affiliated with LG AI Research or the Korean Government.</div>
       </div>
       <div class="logo">✻ KOSMOS</div>
-      <div class="page-info">1 / 22<br>Cover</div>
+      <div class="page-info">1 / 27<br>Cover</div>
     </div>
 
     <!-- ══════════════════════════════════════════════════════════
@@ -478,7 +610,7 @@
         </div>
       </div>
       <div class="logo">✻ KOSMOS</div>
-      <div class="page-info">2 / 22<br>목차</div>
+      <div class="page-info">2 / 27<br>목차</div>
     </div>
 
     <!-- ══════════════════════════════════════════════════════════
@@ -536,7 +668,7 @@
         </div>
       </div>
       <div class="logo">✻ KOSMOS</div>
-      <div class="page-info">3 / 22<br>Ch.1 개요</div>
+      <div class="page-info">3 / 27<br>Ch.1 개요</div>
     </div>
 
     <!-- ══════════════════════════════════════════════════════════
@@ -547,29 +679,312 @@
       <div class="blob blob-2"></div>
       <div class="slide-inner">
         <div class="chapter-label">Chapter 1 — 프로젝트 개요</div>
-        <h2>시민 사용 시나리오</h2>
+        <h2>시민 사용 시나리오 — 부처 횡단 긴급 대응</h2>
         <div class="scenario">
-          <div class="scenario-q">"내일 부산에서 서울 가는데, 안전한 경로 추천해줘"</div>
-          <div class="scenario-a">KOROAD 사고 데이터 + KMA 기상특보 + 도로 위험 지수 융합<br>→ "경부고속도로 대전-천안 구간 위험 등급, 안개 주의보. 중부내륙 우회를 추천합니다."</div>
+          <div class="scenario-q">"엄마가 갑자기 쓰러지셨어요. 119 부르고 가장 가까운 응급실 어디예요?"</div>
+          <div class="scenario-a"><strong>3 부처 동시 대응 (NFA119 · HIRA · KMA)</strong>: 119 자동 호출 가이드 + NMC 가용 병상 실시간 조회 + KMA 낙상위험 기상경보<br>→ "119 출동 요청됨. 가장 가까운 응급실: <strong>강남세브란스 8분, 가용병상 3</strong>. 빙판 주의 — 도로 결빙 경보 발효 중."</div>
         </div>
         <div class="scenario">
-          <div class="scenario-q">"아이가 열이 나는데 근처 야간 응급실 어디야?"</div>
-          <div class="scenario-a">119 응급의료 API + HIRA 병원정보 융합<br>→ 위치순 가용 응급실 + 현재 대기시간</div>
+          <div class="scenario-q">"회사가 갑자기 망했어요. 실업급여·직업훈련·임대주택 우선순위까지 알아봐야 해요."</div>
+          <div class="scenario-a"><strong>4 부처 동시 대응 (고용부 · 워크넷 · 마이데이터 · LH)</strong>: 실업급여 자격 + 직업훈련 매칭 + 소득 자동 인증 + LH 가산점<br>→ "실업급여 <strong>월 184만원 × 240일</strong> 신청 가능. 훈련 5종 추천. LH 임대 우선순위 +20점. 14일 내 고용센터 방문."</div>
         </div>
         <div class="scenario">
-          <div class="scenario-q">"출산 보조금 신청하고 싶은데"</div>
-          <div class="scenario-a">보건복지부 자격조회 API + Gov24 신청 API<br>→ 자격 확인 → 필요 서류 → 온라인 신청 가이드</div>
+          <div class="scenario-q">"전세사기 당했어요. 어떻게 해야 해요?"</div>
+          <div class="scenario-a"><strong>4 부처 동시 대응 (HUG · 법무부 · 법률구조공단 · 경찰청)</strong>: 보증보험 청구 + 임대차분쟁조정 + 무료 상담 예약 + 형사 신고<br>→ "HUG 청구 → 조정신청 → 형사 신고 <strong>3트랙 동시 권고</strong>. 법률구조공단 무료 상담 예약: <strong>내일 14시</strong>."</div>
         </div>
-        <img src="svg/chapter-1.svg" alt="Chapter 1 visualization" class="chapter-svg" loading="lazy" />
       </div>
       <div class="logo">✻ KOSMOS</div>
-      <div class="page-info">4 / 22<br>Ch.1 시나리오</div>
+      <div class="page-info">4 / 27<br>Ch.1 시나리오</div>
     </div>
 
     <!-- ══════════════════════════════════════════════════════════
-         Slide 5 — 6-Layer Architecture
+         Slide 5 — 시연 ① 응급 — 다급한 한 질문, 4 부처 통합 응답 (8분 8초)
     ══════════════════════════════════════════════════════════ -->
     <div class="slide" id="s5">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+      <div class="slide-inner">
+        <div class="chapter-label">Chapter 1 — 시연</div>
+        <h2>시연 ① 응급 — 다급한 한 질문, 4 부처 통합 응답 (8분 8초)</h2>
+        <p style="color:var(--violet-300);font-size:13px;margin-bottom:12px;">ink-testing-library 로 캡쳐한 KOSMOS TUI 실제 화면. 시민 입력 → 쿼리엔진 → 권한 → 어댑터 → 통합 응답.</p>
+        <div class="demo-flow">
+      <div class="demo-step">
+        <span class="demo-step-num">①</span>
+        <span class="demo-step-label">시민 입력</span>
+        <pre class="demo-frame">╭──────────────────────────────────────────────────────────────────────────────────────────────────╮
+│                                                                                                  │
+│  ✻ 시민                                                                                          │
+│  엄마가 갑자기 쓰러지셨어요. 119 부르고 가장 가까운 응급실 어디예요?                             │
+│                                                                                                  │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────╯
+</pre>
+      </div>
+      <div class="demo-step">
+        <span class="demo-step-num">②</span>
+        <span class="demo-step-label">쿼리엔진 BM25 검색</span>
+        <pre class="demo-frame">┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
+│  ⏺ 단계 2/5 · 쿼리엔진 → 도구 시스템 BM25 검색 (4 부처 후보)                                     │
+└──────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+   1. nfa_emergency_info_service 119 응급 신고 / 출동 안내
+   2. hira_hospital_search 병의원 + 응급실 검색
+   3. nmc_emergency_search 실시간 응급실 가용 병상 (L3 인증)
+   4. kma_weather_alert_status 도로 결빙 / 강풍 특보
+   5. resolve_location 시민 위치 → 좌표 (kakao/juso/sgis)
+</pre>
+      </div>
+      <div class="demo-step">
+        <span class="demo-step-num">③</span>
+        <span class="demo-step-label">권한 게이트 Layer-3</span>
+        <pre class="demo-frame">┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
+│  ⏺ 단계 3/5 · 권한 게이트 — NMC 실시간 병상 (Layer 3)                                            │
+└──────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+╭──────────────────────────────────────────────────────────────────────────────────────────────────╮
+│                                                                                                  │
+│  ⓷ Layer 3 — 본인 인증 필요                                                                      │
+│  도구: nmc_emergency_search (실시간 병상)                                                        │
+│  사유: 의료기관 가용 정보 · PIPA §26 수탁자                                                      │
+│                                                                                                  │
+│  [Y] 한 번만 허용  [A] 세션 자동  [N] 거부                                                       │
+│  → 영수증: rcpt-emergency-2026-04-26-7B3F                                                        │
+│                                                                                                  │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────╯
+</pre>
+      </div>
+      <div class="demo-step">
+        <span class="demo-step-num">④</span>
+        <span class="demo-step-label">어댑터 응답</span>
+        <pre class="demo-frame">┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
+│  ⏺ 단계 4/5 · 어댑터 실행 → 다부처 응답 합성                                                     │
+└──────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ 추천 응급실            강남세브란스병원 응급의료센터                                             │
+│ 거리 / 예상 도착       8분 (2.4 km, 차량)                                                        │
+│ 실시간 가용 병상       3 / 28 (NMC 갱신 1분 전)                                                  │
+│ 진료과                 응급의학 · 심혈관 · 신경과 24시간                                         │
+│ KMA 도로 기상          ⚠ 빙판 결빙 주의보 발효 중 (서울 전역)                                    │
+│ 119 신고               자동 호출 가이드 — 시민 위치 좌표 첨부됨                                  │
+└──────────────────────────────────────────────────────────────────────────────────────────────────┘
+</pre>
+      </div>
+      <div class="demo-step">
+        <span class="demo-step-num">⑤</span>
+        <span class="demo-step-label">KOSMOS 통합 응답</span>
+        <pre class="demo-frame">╭──────────────────────────────────────────────────────────────────────────────────────────────────╮
+│                                                                                                  │
+│  ✻ KOSMOS · 응답 (4 부처 통합)                                                                   │
+│  1. 119 즉시 호출 — 위치 좌표 자동 전달 가능 (탭하여 호출).                                      │
+│  2. 가장 가까운 응급실: 강남세브란스 (8분, 2.4 km).                                              │
+│     · 가용 병상 3 / 28 · 응급·심혈관·신경과 24시간                                               │
+│  3. ⚠ 빙판 주의 — 도로 결빙 경보 발효, 보호자 차량 이동 시 감속 필수.                            │
+│  권한 영수증: rcpt-emergency-2026-04-26-7B3F (NMC L3 사용)                                       │
+│  데이터 출처: NFA 119 · HIRA · NMC · KMA · 카카오 로컬                                           │
+│                                                                                                  │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────╯
+</pre>
+      </div>
+        </div>
+      </div>
+      <div class="logo">✻ KOSMOS</div>
+      <div class="page-info">5 / 27<br>Ch.1 시연 ①</div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════
+         Slide 6 — 시연 ② 위기 — 회사가 망했을 때, 4 부처 동시 안전망
+    ══════════════════════════════════════════════════════════ -->
+    <div class="slide" id="s6">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+      <div class="slide-inner">
+        <div class="chapter-label">Chapter 1 — 시연</div>
+        <h2>시연 ② 위기 — 회사가 망했을 때, 4 부처 동시 안전망</h2>
+        <p style="color:var(--violet-300);font-size:13px;margin-bottom:12px;">ink-testing-library 로 캡쳐한 KOSMOS TUI 실제 화면. 시민 입력 → 쿼리엔진 → 마이데이터 인증 → 어댑터 → 통합 응답.</p>
+        <div class="demo-flow">
+      <div class="demo-step">
+        <span class="demo-step-num">①</span>
+        <span class="demo-step-label">시민 입력</span>
+        <pre class="demo-frame">╭──────────────────────────────────────────────────────────────────────────────────────────────────╮
+│                                                                                                  │
+│  ✻ 시민                                                                                          │
+│  회사가 갑자기 망했어요. 실업급여 받고 새 직장도 알아봐야 하고, 임대주택 우선순위까지 신청하고   │
+│  싶어요.                                                                                         │
+│                                                                                                  │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────╯
+</pre>
+      </div>
+      <div class="demo-step">
+        <span class="demo-step-num">②</span>
+        <span class="demo-step-label">쿼리엔진 BM25 검색</span>
+        <pre class="demo-frame">┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
+│  ⏺ 단계 2/5 · 쿼리엔진 → 도구 시스템 BM25 검색 (4 부처 fan-out)                                  │
+└──────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+   1. mock_unemployment_benefit 고용노동부 실업급여 자격 / 신청
+   2. mock_worknet_jobsearch 워크넷 직업훈련 + 재취업 매칭
+   3. mock_verify_mydata 마이데이터 — 소득 정보 자동 인증
+   4. mock_lh_priority_apply LH 임대주택 우선순위 (실직 가산점)
+   5. mock_welfare_application_submit_v1 정부24 통합 신청
+</pre>
+      </div>
+      <div class="demo-step">
+        <span class="demo-step-num">③</span>
+        <span class="demo-step-label">마이데이터 AAL2 인증</span>
+        <pre class="demo-frame">┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
+│  ⏺ 단계 3/5 · 마이데이터 인증 — 소득 정보 자동 조회 (AAL2)                                       │
+└──────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+╭──────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ ✔ Verified                                                                                       │
+│ Identity 홍길동 (1985년생) · 인증 완료                                                           │
+│ Level 마이데이터 v240930                                                                         │
+│ NIST AAL2                                                                                        │
+│ Family mydata                                                                                    │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────╯
+</pre>
+      </div>
+      <div class="demo-step">
+        <span class="demo-step-num">④</span>
+        <span class="demo-step-label">어댑터 응답</span>
+        <pre class="demo-frame">┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
+│  ⏺ 단계 4/5 · 4 부처 응답 합성 → 자격 / 우선순위 / 다음 단계                                     │
+└──────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ 실업급여 자격          ✓ 적격 — 고용보험 18개월 가입 (12개월 이상)                               │
+│ 예상 수급액            월 184만원 × 240일 (총 1,472만원)                                         │
+│ 직업훈련 추천          IT 5종 · 디자인 3종 · 사무직 7종 (워크넷)                                 │
+│ LH 임대주택 가산점     +20점 (실직자 우선순위)                                                   │
+│ 신청 마감일            실직 후 14일 내 고용센터 방문 필수                                        │
+│ 소득 인증              마이데이터 자동 인증 완료 — 별도 서류 불요                                │
+└──────────────────────────────────────────────────────────────────────────────────────────────────┘
+</pre>
+      </div>
+      <div class="demo-step">
+        <span class="demo-step-num">⑤</span>
+        <span class="demo-step-label">KOSMOS 통합 응답</span>
+        <pre class="demo-frame">╭──────────────────────────────────────────────────────────────────────────────────────────────────╮
+│                                                                                                  │
+│  ✻ KOSMOS · 응답 (4 부처 통합 + 다음 단계)                                                       │
+│  ✓ 실업급여 신청 가능: 월 184만원 × 240일 (총 1,472만원)                                         │
+│  ✓ LH 임대주택 우선순위 +20점 부여 (실직 가산)                                                   │
+│  ✓ 추천 직업훈련: IT 5종 · 디자인 3종 · 사무직 7종                                               │
+│  ✓ 마이데이터 소득 인증 완료 — 종이 서류 불요                                                    │
+│  다음 단계 (시간순):                                                                             │
+│    ① 14일 내 가까운 고용센터 방문 (위치 안내 →)                                                  │
+│    ② 워크넷 직업훈련 신청 (자격 인정 후 즉시)                                                    │
+│    ③ LH 임대 신청 (다음 분기 선정 cycle)                                                         │
+│                                                                                                  │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────╯
+</pre>
+      </div>
+        </div>
+      </div>
+      <div class="logo">✻ KOSMOS</div>
+      <div class="page-info">6 / 27<br>Ch.1 시연 ②</div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════
+         Slide 7 — 시연 ③ 재난 — 전세사기, 3 트랙 동시 권고 (60일 85%)
+    ══════════════════════════════════════════════════════════ -->
+    <div class="slide" id="s7">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+      <div class="slide-inner">
+        <div class="chapter-label">Chapter 1 — 시연</div>
+        <h2>시연 ③ 재난 — 전세사기, 3 트랙 동시 권고 (60일 85%)</h2>
+        <p style="color:var(--violet-300);font-size:13px;margin-bottom:12px;">ink-testing-library 로 캡쳐한 KOSMOS TUI 실제 화면. 시민 입력 → 쿼리엔진 → 권한 → 어댑터 → 통합 응답.</p>
+        <div class="demo-flow">
+      <div class="demo-step">
+        <span class="demo-step-num">①</span>
+        <span class="demo-step-label">시민 입력</span>
+        <pre class="demo-frame">╭──────────────────────────────────────────────────────────────────────────────────────────────────╮
+│                                                                                                  │
+│  ✻ 시민                                                                                          │
+│  전세사기 당했어요. 보증금 못 돌려받을 것 같아요. 어떻게 해야 해요?                              │
+│                                                                                                  │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────╯
+</pre>
+      </div>
+      <div class="demo-step">
+        <span class="demo-step-num">②</span>
+        <span class="demo-step-label">쿼리엔진 BM25 검색</span>
+        <pre class="demo-frame">┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
+│  ⏺ 단계 2/5 · 쿼리엔진 → 도구 시스템 BM25 검색 (4 트랙 동시)                                     │
+└──────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+   1. mock_hug_warranty_claim HUG 전세보증보험 청구
+   2. mock_lease_dispute_apply 주택임대차분쟁조정위원회
+   3. mock_legal_aid_consult 대한법률구조공단 무료 상담
+   4. mock_traffic_fine_pay_v1 경찰청 사기 신고 (mock)
+   5. mock_verify_gongdong_injeungseo 공동인증서 — 신청 본인 확인
+</pre>
+      </div>
+      <div class="demo-step">
+        <span class="demo-step-num">③</span>
+        <span class="demo-step-label">권한 게이트 Layer-2</span>
+        <pre class="demo-frame">┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
+│  ⏺ 단계 3/5 · 권한 게이트 — L2 인증 (4 부처 동시 신청)                                           │
+└──────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+╭──────────────────────────────────────────────────────────────────────────────────────────────────╮
+│                                                                                                  │
+│  ⓶ Layer 2 — 본인 인증 필요                                                                      │
+│  도구: HUG · 분쟁조정 · 법률구조 · 경찰 (4 트랙)                                                 │
+│  인증 옵션: 공동인증서 · 금융인증서 · 간편인증                                                   │
+│                                                                                                  │
+│  [Y] 한 번만 허용  [A] 세션 자동  [N] 거부                                                       │
+│  → 영수증: rcpt-jeonse-2026-04-26-9C2D                                                           │
+│                                                                                                  │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────╯
+</pre>
+      </div>
+      <div class="demo-step">
+        <span class="demo-step-num">④</span>
+        <span class="demo-step-label">어댑터 응답</span>
+        <pre class="demo-frame">┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
+│  ⏺ 단계 4/5 · 4 부처 응답 합성 → 동시 트랙 권고                                                  │
+└──────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ ① HUG 보증금 반환      ✓ 청구 가능 — 보증보험 가입 확인                                          │
+│ ② 임대차분쟁조정       신청 가능 (서울지부 — 강남구) · 7~14일 결정                               │
+│ ③ 법률구조공단         무료 상담 — 내일 14시 예약 가능                                           │
+│ ④ 형사 신고 (경찰)     사기죄 + 가해자 출국금지 신청 동반 권고                                   │
+│ 예상 보증금 회수       85% 확률 (HUG 보증) · 60일 이내                                           │
+│ 필요 서류              임대차계약서 · 보증보험증 · 통장사본 (자동첨부)                           │
+└──────────────────────────────────────────────────────────────────────────────────────────────────┘
+</pre>
+      </div>
+      <div class="demo-step">
+        <span class="demo-step-num">⑤</span>
+        <span class="demo-step-label">KOSMOS 통합 응답</span>
+        <pre class="demo-frame">╭──────────────────────────────────────────────────────────────────────────────────────────────────╮
+│                                                                                                  │
+│  ✻ KOSMOS · 응답 (4 부처 통합 · 3 트랙 동시 권고)                                                │
+│  동시에 진행하셔야 할 3 트랙:                                                                    │
+│    ① HUG 보증금 반환 청구 — 오늘 신청, 60일 이내 회수 (85% 확률)                                 │
+│    ② 임대차분쟁조정 신청 — 강남지부, 7~14일 결정                                                 │
+│    ③ 형사 신고 + 가해자 출국금지 — 가까운 경찰서, 즉시                                           │
+│  먼저 받으실 무료 법률 상담:                                                                     │
+│    → 대한법률구조공단 강남지부 — 내일 14시 예약 (자동 등록 가능)                                 │
+│  필요 서류 자동 첨부 완료 (임대차계약서 · 보증보험 · 통장)                                       │
+│  권한 영수증: rcpt-jeonse-2026-04-26-9C2D                                                        │
+│                                                                                                  │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────╯
+</pre>
+      </div>
+        </div>
+      </div>
+      <div class="logo">✻ KOSMOS</div>
+      <div class="page-info">7 / 27<br>Ch.1 시연 ③</div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════
+         Slide 8 — 6-Layer Architecture
+    ══════════════════════════════════════════════════════════ -->
+    <div class="slide" id="s8">
       <div class="blob blob-1"></div>
       <div class="blob blob-2"></div>
       <div class="slide-inner">
@@ -591,13 +1006,161 @@
         </div>
       </div>
       <div class="logo">✻ KOSMOS</div>
-      <div class="page-info">5 / 22<br>Ch.1 Architecture</div>
+      <div class="page-info">8 / 27<br>Ch.1 Architecture</div>
     </div>
 
     <!-- ══════════════════════════════════════════════════════════
-         Slide 6 — 한국 공공 API 시장
+         Slide 9 — KOSMOS 핵심 동작 Flow (신규)
     ══════════════════════════════════════════════════════════ -->
-    <div class="slide" id="s6">
+    <div class="slide" id="s9">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+      <div class="slide-inner">
+        <div class="chapter-label">Chapter 1 — 프로젝트 개요</div>
+        <h2>KOSMOS 핵심 동작 — 한 질문이 답이 되기까지</h2>
+        <div class="flow-wrap">
+          <!-- Row 1: ① → ② → ③ -->
+          <div class="flow-row">
+            <div class="flow-step citizen">
+              <div class="flow-step-num">①</div>
+              <div class="flow-step-title">시민 질문</div>
+              <div class="flow-step-sub">"엄마가 쓰러지셨어요"<br>(자연어 입력)</div>
+              <span class="flow-step-tech">TUI · Ink + Bun</span>
+            </div>
+            <div class="flow-arr-h">→</div>
+            <div class="flow-step">
+              <div class="flow-step-num">②</div>
+              <div class="flow-step-title">쿼리 엔진</div>
+              <div class="flow-step-sub">의도 분석 + 도구 루프<br>while(True) async</div>
+              <span class="flow-step-tech">K-EXAONE-236B-A23B</span>
+            </div>
+            <div class="flow-arr-h">→</div>
+            <div class="flow-step">
+              <div class="flow-step-num">③</div>
+              <div class="flow-step-title">도구 검색</div>
+              <div class="flow-step-sub">어댑터 동적 탐색<br>한국어 형태소 분석</div>
+              <span class="flow-step-tech">BM25 + Dense hybrid · kiwipiepy</span>
+            </div>
+          </div>
+          <!-- Row 2: vertical arrows -->
+          <div class="flow-row" style="justify-content:flex-end;padding-right:0;">
+            <div class="flow-spacer"></div>
+            <div class="flow-spacer-gap"></div>
+            <div class="flow-spacer"></div>
+            <div class="flow-spacer-gap"></div>
+            <div class="flow-arr-v">↓</div>
+          </div>
+          <!-- Row 3: ⑦ ← ⑥ ← ⑤, plus ④ on right -->
+          <div class="flow-row">
+            <div class="flow-step answer">
+              <div class="flow-step-num" style="color:var(--green-400);">⑦</div>
+              <div class="flow-step-title">시민 응답</div>
+              <div class="flow-step-sub">"강남세브란스 8분<br>빙판 주의 경보"</div>
+              <span class="flow-step-tech">streaming ≈20 token/chunk</span>
+            </div>
+            <div class="flow-arr-h rev">→</div>
+            <div class="flow-step">
+              <div class="flow-step-num">⑥</div>
+              <div class="flow-step-title">응답 합성</div>
+              <div class="flow-step-sub">다부처 결과 통합<br>한국어 자연어 생성</div>
+              <span class="flow-step-tech">K-EXAONE-236B-A23B</span>
+            </div>
+            <div class="flow-arr-h rev">→</div>
+            <div class="flow-step">
+              <div class="flow-step-num">⑤</div>
+              <div class="flow-step-title">어댑터 실행</div>
+              <div class="flow-step-sub">24 어댑터 / 7 부처<br>Live + Mock 2-tier</div>
+              <span class="flow-step-tech">NFA119 · HIRA · KMA · NMC</span>
+            </div>
+            <div class="flow-arr-h rev">→</div>
+            <div class="flow-step">
+              <div class="flow-step-num">④</div>
+              <div class="flow-step-title">권한 게이트</div>
+              <div class="flow-step-sub">3-Layer + PIPA §26<br>bypass-immune</div>
+              <span class="flow-step-tech">Layer 1/2/3 · Spec 033</span>
+            </div>
+          </div>
+          <!-- loop hint -->
+          <div class="flow-loop-hint">⟲ 시민 다음 turn → ① 재진입 (multi-turn context)</div>
+        </div>
+      </div>
+      <div class="logo">✻ KOSMOS</div>
+      <div class="page-info">9 / 27<br>Ch.1 Flow</div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════
+         Slide 10 — 도구 시스템 상세 (신규)
+    ══════════════════════════════════════════════════════════ -->
+    <div class="slide" id="s10">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+      <div class="slide-inner">
+        <div class="chapter-label">Chapter 1 — 프로젝트 개요</div>
+        <h2>도구 시스템 상세 — 4 Primitives × 7 Ministries</h2>
+        <div class="two-col">
+          <div class="col">
+            <h3>4 Primitive 동사</h3>
+            <div class="prim-diagram">
+              <div class="prim-bar-row">
+                <div class="prim-bar-label">lookup</div>
+                <div class="prim-bar-track"><div class="prim-bar-fill" style="width:72%;">조회 · 검색 · 예보 · 위치</div></div>
+                <div class="prim-bar-count">13</div>
+              </div>
+              <div class="prim-bar-row">
+                <div class="prim-bar-label">verify</div>
+                <div class="prim-bar-track"><div class="prim-bar-fill" style="width:33%;">본인·자격 인증 Mock</div></div>
+                <div class="prim-bar-count">6</div>
+              </div>
+              <div class="prim-bar-row">
+                <div class="prim-bar-label">subscribe</div>
+                <div class="prim-bar-track"><div class="prim-bar-fill" style="width:18%;">CBS · RSS · REST-pull</div></div>
+                <div class="prim-bar-count">3</div>
+              </div>
+              <div class="prim-bar-row">
+                <div class="prim-bar-label">submit</div>
+                <div class="prim-bar-track"><div class="prim-bar-fill" style="width:12%;">납부 · 신청 Mock</div></div>
+                <div class="prim-bar-count">2</div>
+              </div>
+            </div>
+            <div style="margin-top:12px;">
+              <h3>권한 Layer × 분류</h3>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:6px;font-size:11px;">
+                <div style="background:rgba(74,222,128,.12);border:1px solid rgba(74,222,128,.3);border-radius:6px;padding:6px 8px;"><strong style="color:var(--green-400);">Layer 1</strong><br>read-only<br>기본값</div>
+                <div style="background:rgba(251,146,60,.12);border:1px solid rgba(251,146,60,.3);border-radius:6px;padding:6px 8px;"><strong style="color:var(--orange-400);">Layer 2</strong><br>API 키<br>사용자 동의</div>
+                <div style="background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.3);border-radius:6px;padding:6px 8px;"><strong style="color:var(--red-400);">Layer 3</strong><br>PIPA §26<br>bypass-immune</div>
+              </div>
+            </div>
+          </div>
+          <div class="col">
+            <h3>7 Ministry 카테고리</h3>
+            <div class="ministry-grid">
+              <div class="ministry-tile">KOROAD<br><span style="font-size:9px;font-weight:400;color:var(--violet-400);">사고·교통</span></div>
+              <div class="ministry-tile">KMA<br><span style="font-size:9px;font-weight:400;color:var(--violet-400);">기상·예보</span></div>
+              <div class="ministry-tile">HIRA<br><span style="font-size:9px;font-weight:400;color:var(--violet-400);">병원정보</span></div>
+              <div class="ministry-tile">NMC<br><span style="font-size:9px;font-weight:400;color:var(--violet-400);">응급실</span></div>
+              <div class="ministry-tile">NFA119<br><span style="font-size:9px;font-weight:400;color:var(--violet-400);">응급신고</span></div>
+              <div class="ministry-tile">MOHW<br><span style="font-size:9px;font-weight:400;color:var(--violet-400);">복지서비스</span></div>
+              <div class="ministry-tile">마이데이터<br><span style="font-size:9px;font-weight:400;color:var(--violet-400);">소득·자격</span></div>
+            </div>
+            <div style="height:14px"></div>
+            <h3>BM25 + Dense 하이브리드 검색</h3>
+            <ul style="margin-top:6px;">
+              <li><code>kiwipiepy</code> 한국어 형태소 분석 → BM25 토큰</li>
+              <li>Dense embedding 병렬 실행 → RRF 통합 순위</li>
+              <li>SC-004: 검색 결과 ≤5s PASS</li>
+              <li>plugin.&lt;id&gt;.&lt;verb&gt; 네임스페이스 확장 가능</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="logo">✻ KOSMOS</div>
+      <div class="page-info">10 / 27<br>Ch.1 Tool System</div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════
+         Slide 11 — 한국 공공 API 시장
+    ══════════════════════════════════════════════════════════ -->
+    <div class="slide" id="s11">
       <div class="blob blob-1"></div>
       <div class="blob blob-2"></div>
       <div class="slide-inner">
@@ -633,13 +1196,13 @@
         <div style="font-size:10px;color:var(--violet-400);opacity:.55;margin-top:10px;">출처: 행안부 공공데이터 활용 현황 2024-12-31 · OECD OURdata 2023 · 국가인공지능전략위원회 AI 행동계획 2026.2.25</div>
       </div>
       <div class="logo">✻ KOSMOS</div>
-      <div class="page-info">6 / 22<br>Ch.2 시장</div>
+      <div class="page-info">11 / 27<br>Ch.2 시장</div>
     </div>
 
     <!-- ══════════════════════════════════════════════════════════
-         Slide 7 — 기존 챗봇 한계
+         Slide 12 — 기존 챗봇 한계
     ══════════════════════════════════════════════════════════ -->
-    <div class="slide" id="s7">
+    <div class="slide" id="s12">
       <div class="blob blob-1"></div>
       <div class="blob blob-2"></div>
       <div class="slide-inner">
@@ -667,16 +1230,45 @@
             </tr>
           </tbody>
         </table>
-        <img src="svg/chapter-2.svg" alt="Chapter 2 visualization" class="chapter-svg" loading="lazy" />
+        <div class="inline-diagram" style="margin-top:18px;">
+          <div class="diag-label">비교 요약</div>
+          <div class="diag-row">
+            <div class="diag-box" style="border-color:rgba(248,113,113,.35);background:rgba(248,113,113,.08);">
+              <div class="diag-box-title" style="color:var(--red-400);">기존 챗봇</div>
+              <div class="diag-box-body">단일 부처 · FAQ 고정 · 실시간 API 없음 · 도구 루프 부재 · PIPA 게이트 없음</div>
+            </div>
+            <div class="diag-arr">→</div>
+            <div class="diag-box" style="border-color:rgba(74,222,128,.35);background:rgba(74,222,128,.08);">
+              <div class="diag-box-title" style="color:var(--green-400);">KOSMOS</div>
+              <div class="diag-box-body">7 부처 횡단 · 5,000+ API · BM25+dense 동적 도구 검색 · 3-Layer 권한 게이트 · bypass-immune PIPA §26</div>
+            </div>
+          </div>
+          <div class="diag-row" style="gap:0;">
+            <div class="diag-box" style="max-width:280px;">
+              <div class="diag-box-title">AI 정책 정합</div>
+              <div class="diag-box-body">원칙 8: 공공AX 단일창구<br>원칙 9: Open API / OpenMCP</div>
+            </div>
+            <div class="diag-arr"></div>
+            <div class="diag-box" style="max-width:280px;">
+              <div class="diag-box-title">OECD 개방성</div>
+              <div class="diag-box-body">OURdata 지수 1위 (2023)<br>data.go.kr 10만 데이터셋 · 5,000+ API</div>
+            </div>
+            <div class="diag-arr"></div>
+            <div class="diag-box" style="max-width:280px;">
+              <div class="diag-box-title">시민 활용 격차</div>
+              <div class="diag-box-body">개발자가 아닌 시민은 API 직접 접근 불가<br>→ KOSMOS가 자연어 bridge 역할</div>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="logo">✻ KOSMOS</div>
-      <div class="page-info">7 / 22<br>Ch.2 기존 한계</div>
+      <div class="page-info">12 / 27<br>Ch.2 기존 한계</div>
     </div>
 
     <!-- ══════════════════════════════════════════════════════════
-         Slide 8 — KOSMOS 차별점
+         Slide 13 — KOSMOS 차별점
     ══════════════════════════════════════════════════════════ -->
-    <div class="slide" id="s8">
+    <div class="slide" id="s13">
       <div class="blob blob-1"></div>
       <div class="blob blob-2"></div>
       <div class="slide-inner">
@@ -721,13 +1313,13 @@
         </div>
       </div>
       <div class="logo">✻ KOSMOS</div>
-      <div class="page-info">8 / 22<br>Ch.2 차별점</div>
+      <div class="page-info">13 / 27<br>Ch.2 차별점</div>
     </div>
 
     <!-- ══════════════════════════════════════════════════════════
-         Slide 9 — 6 Phase 개요
+         Slide 14 — 6 Phase 개요
     ══════════════════════════════════════════════════════════ -->
-    <div class="slide" id="s9">
+    <div class="slide" id="s14">
       <div class="blob blob-1"></div>
       <div class="blob blob-2"></div>
       <div class="slide-inner">
@@ -753,28 +1345,58 @@
         </div>
       </div>
       <div class="logo">✻ KOSMOS</div>
-      <div class="page-info">9 / 22<br>Ch.3 Phase 개요</div>
+      <div class="page-info">14 / 27<br>Ch.3 Phase 개요</div>
     </div>
 
     <!-- ══════════════════════════════════════════════════════════
-         Slide 10 — Phase 상세 P0~P2
+         Slide 15 — Phase 상세 P0~P2
     ══════════════════════════════════════════════════════════ -->
-    <div class="slide" id="s10">
+    <div class="slide" id="s15">
       <div class="blob blob-1"></div>
       <div class="blob blob-2"></div>
       <div class="slide-inner">
         <div class="chapter-label">Chapter 3 — 프로젝트 진행 내용</div>
         <h2>Phase 0 · 1 · 2 상세</h2>
-        <img src="svg/chapter-3.svg" alt="Chapter 3 visualization" class="chapter-svg" loading="lazy" />
+        <div class="inline-diagram">
+          <div class="diag-row">
+            <div class="diag-box" style="border-color:rgba(74,222,128,.35);background:rgba(74,222,128,.06);">
+              <div class="diag-label">P0 · Baseline Runnable · #1632</div>
+              <div class="diag-box-title">TUI 런타임 기초 구축</div>
+              <div class="diag-box-body">Ink + Bun TUI 컴파일 복구 · stdin/stdout IPC wiring · 기본 슬라이드쇼 렌더 · 초기 Python 백엔드 연결</div>
+            </div>
+          </div>
+          <div class="diag-row">
+            <div class="diag-box" style="border-color:rgba(251,146,60,.35);background:rgba(251,146,60,.06);">
+              <div class="diag-label">P1 · Dead-code Elimination · #1633</div>
+              <div class="diag-box-title">FriendliAI 단일 고정 Provider 전환 완료</div>
+              <div class="diag-box-body">
+                <strong>P1</strong>: ant-only · feature() flag · migration telemetry 데드코드 제거<br>
+                <strong>P2</strong>: API endpoint / auth / OAuth 상수를 FriendliAI로 일괄 교체<br>
+                K-EXAONE-236B-A23B native function calling 활성화 · prompts/system_v1.md 로드
+              </div>
+            </div>
+          </div>
+          <div class="diag-row">
+            <div class="diag-box">
+              <div class="diag-label">주요 성과</div>
+              <div class="diag-box-body" style="display:flex;gap:24px;flex-wrap:wrap;">
+                <span>✓ K-EXAONE-236B-A23B 단일 고정 provider</span>
+                <span>✓ FriendliAI 60 RPM Tier 1 확정</span>
+                <span>✓ Spec 026 prompt registry (SHA-256 무결성)</span>
+                <span>✓ OTEL 4-tier 기반 구축</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="logo">✻ KOSMOS</div>
-      <div class="page-info">10 / 22<br>Ch.3 P0-P2</div>
+      <div class="page-info">15 / 27<br>Ch.3 P0-P2</div>
     </div>
 
     <!-- ══════════════════════════════════════════════════════════
-         Slide 11 — Phase 상세 P3~P4
+         Slide 16 — Phase 상세 P3~P4
     ══════════════════════════════════════════════════════════ -->
-    <div class="slide" id="s11">
+    <div class="slide" id="s16">
       <div class="blob blob-1"></div>
       <div class="blob blob-2"></div>
       <div class="slide-inner">
@@ -805,13 +1427,13 @@
         </div>
       </div>
       <div class="logo">✻ KOSMOS</div>
-      <div class="page-info">11 / 22<br>Ch.3 P3-P4</div>
+      <div class="page-info">16 / 27<br>Ch.3 P3-P4</div>
     </div>
 
     <!-- ══════════════════════════════════════════════════════════
-         Slide 12 — Spec-Driven Workflow & Constitution
+         Slide 17 — Spec-Driven Workflow & Constitution
     ══════════════════════════════════════════════════════════ -->
-    <div class="slide" id="s12">
+    <div class="slide" id="s17">
       <div class="blob blob-1"></div>
       <div class="blob blob-2"></div>
       <div class="slide-inner">
@@ -844,28 +1466,69 @@
         </div>
       </div>
       <div class="logo">✻ KOSMOS</div>
-      <div class="page-info">12 / 22<br>Ch.3 Workflow</div>
+      <div class="page-info">17 / 27<br>Ch.3 Workflow</div>
     </div>
 
     <!-- ══════════════════════════════════════════════════════════
-         Slide 13 — R&R
+         Slide 18 — R&R
     ══════════════════════════════════════════════════════════ -->
-    <div class="slide" id="s13">
+    <div class="slide" id="s18">
       <div class="blob blob-1"></div>
       <div class="blob blob-2"></div>
       <div class="slide-inner">
         <div class="chapter-label">Chapter 4 — Role and Responsibilities</div>
-        <h2>역할 & 협업 패턴</h2>
-        <img src="svg/chapter-4.svg" alt="Chapter 4 visualization" class="chapter-svg" loading="lazy" />
+        <h2>역할 &amp; 협업 패턴</h2>
+        <div class="inline-diagram">
+          <div class="diag-row">
+            <div class="diag-box" style="flex:0 0 200px;border-color:rgba(167,139,250,.5);background:rgba(167,139,250,.12);">
+              <div class="diag-label">Lead (Opus)</div>
+              <div class="diag-box-title">솔로 학생 개발자</div>
+              <div class="diag-box-body">기획 · Spec 작성<br>아키텍처 설계<br>코드 리뷰 · 합성</div>
+            </div>
+            <div class="diag-arr">→</div>
+            <div class="diag-box">
+              <div class="diag-label">Teammates (Sonnet) — 병렬 실행</div>
+              <div class="diag-box-title">7 AI 역할 동시 수행</div>
+              <div class="diag-box-body" style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;">
+                <span>Software Architect</span><span>Backend Architect</span>
+                <span>Frontend Developer</span><span>API Tester</span>
+                <span>Code Reviewer</span><span>Security Engineer</span>
+                <span>Technical Writer</span><span></span>
+              </div>
+            </div>
+          </div>
+          <div class="diag-row">
+            <div class="diag-box">
+              <div class="diag-label">협업 패턴</div>
+              <div class="diag-box-body" style="display:flex;gap:20px;flex-wrap:wrap;">
+                <span>3+ 독립 태스크 → <strong>병렬 Agent Teams</strong></span>
+                <span>1-2 태스크 → Lead 단독</span>
+                <span>/speckit-implement → Teammates 자동 생성</span>
+                <span>38 Spec · 49 sub-issue · 79 PR · 194 커밋</span>
+              </div>
+            </div>
+          </div>
+          <div class="diag-row">
+            <div class="diag-box" style="flex:1;border-color:rgba(74,222,128,.3);background:rgba(74,222,128,.06);">
+              <div class="diag-label">Copilot + Codex 리뷰 게이트</div>
+              <div class="diag-box-body">모든 PR: CRITICAL ≥1 → fail · IMPORTANT ≥3 → fail · Cloudflare Worker 자동 검사</div>
+            </div>
+            <div class="diag-arr"></div>
+            <div class="diag-box" style="flex:1;border-color:rgba(251,146,60,.3);background:rgba(251,146,60,.06);">
+              <div class="diag-label">Spec-driven 품질 보증</div>
+              <div class="diag-box-body">Constitution 6원칙 · /speckit-analyze 컴플라이언스 · CI uv run pytest 935 tests 0 fail</div>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="logo">✻ KOSMOS</div>
-      <div class="page-info">13 / 22<br>Ch.4 R&R</div>
+      <div class="page-info">18 / 27<br>Ch.4 R&R</div>
     </div>
 
     <!-- ══════════════════════════════════════════════════════════
          Slide 14 — 24 어댑터 카탈로그 (Live)
     ══════════════════════════════════════════════════════════ -->
-    <div class="slide" id="s14">
+    <div class="slide" id="s19">
       <div class="blob blob-1"></div>
       <div class="blob blob-2"></div>
       <div class="slide-inner">
@@ -910,28 +1573,71 @@
         </div>
       </div>
       <div class="logo">✻ KOSMOS</div>
-      <div class="page-info">14 / 22<br>Ch.5 어댑터</div>
+      <div class="page-info">19 / 27<br>Ch.5 어댑터</div>
     </div>
 
     <!-- ══════════════════════════════════════════════════════════
          Slide 15 — 테스트 & 스키마
     ══════════════════════════════════════════════════════════ -->
-    <div class="slide" id="s15">
+    <div class="slide" id="s20">
       <div class="blob blob-1"></div>
       <div class="blob blob-2"></div>
       <div class="slide-inner">
         <div class="chapter-label">Chapter 5 — 진행 결과물</div>
-        <h2>테스트 & 스키마 결과물</h2>
-        <img src="svg/chapter-5.svg" alt="Chapter 5 visualization" class="chapter-svg" loading="lazy" />
+        <h2>테스트 &amp; 스키마 결과물</h2>
+        <div class="inline-diagram">
+          <div class="diag-row">
+            <div class="diag-box" style="flex:0 0 180px;text-align:center;border-color:rgba(74,222,128,.4);background:rgba(74,222,128,.08);">
+              <div class="diag-box-title" style="color:var(--green-400);font-size:32px;font-family:var(--font-en);font-weight:700;">935</div>
+              <div class="diag-box-body">테스트 · 0 fail<br><code>uv run pytest</code></div>
+            </div>
+            <div class="diag-arr"></div>
+            <div class="diag-box" style="flex:0 0 180px;text-align:center;">
+              <div class="diag-box-title" style="font-size:28px;font-family:var(--font-en);font-weight:700;color:var(--violet-400);">38</div>
+              <div class="diag-box-body">Spec 문서<br>JSON Schema · OpenAPI 3.0</div>
+            </div>
+            <div class="diag-arr"></div>
+            <div class="diag-box" style="flex:0 0 180px;text-align:center;">
+              <div class="diag-box-title" style="font-size:28px;font-family:var(--font-en);font-weight:700;color:var(--violet-400);">25</div>
+              <div class="diag-box-body">JSON Schema<br>Draft 2020-12 도구 스키마</div>
+            </div>
+            <div class="diag-arr"></div>
+            <div class="diag-box" style="flex:0 0 180px;text-align:center;">
+              <div class="diag-box-title" style="font-size:28px;font-family:var(--font-en);font-weight:700;color:var(--violet-400);">50</div>
+              <div class="diag-box-body">플러그인 검증<br>Q1-Q10 체크리스트</div>
+            </div>
+          </div>
+          <div class="diag-row">
+            <div class="diag-box">
+              <div class="diag-label">테스트 분류</div>
+              <div class="diag-box-body" style="display:flex;gap:16px;flex-wrap:wrap;">
+                <span><strong style="color:var(--violet-400);">Unit</strong>: Pydantic 스키마 · 어댑터 픽스처 · BM25 검색 로직</span>
+                <span><strong style="color:var(--violet-400);">E2E</strong>: 시나리오 라우팅 · Permission 3-Layer · IPC 세션</span>
+                <span><strong style="color:var(--orange-400);">@pytest.mark.live</strong>: data.go.kr 실제 API (CI 스킵 · 개발 전용)</span>
+              </div>
+            </div>
+          </div>
+          <div class="diag-row">
+            <div class="diag-box">
+              <div class="diag-label">보안 스키마</div>
+              <div class="diag-box-body" style="display:flex;gap:14px;flex-wrap:wrap;">
+                <span>ToolCallAuditRecord v1 (I1-I4 불변성)</span>
+                <span>PIPA §26 SHA-256 해시 게이트</span>
+                <span>SBOM SPDX 2.3 + CycloneDX 1.6</span>
+                <span>V6 auth_type↔auth_level 일관성 검사</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="logo">✻ KOSMOS</div>
-      <div class="page-info">15 / 22<br>Ch.5 테스트</div>
+      <div class="page-info">20 / 27<br>Ch.5 테스트</div>
     </div>
 
     <!-- ══════════════════════════════════════════════════════════
-         Slide 16 — Epic 완료 & 정책 정합
+         Slide 19 — Epic 완료 & 정책 정합
     ══════════════════════════════════════════════════════════ -->
-    <div class="slide" id="s16">
+    <div class="slide" id="s21">
       <div class="blob blob-1"></div>
       <div class="blob blob-2"></div>
       <div class="slide-inner">
@@ -971,28 +1677,82 @@
         </div>
       </div>
       <div class="logo">✻ KOSMOS</div>
-      <div class="page-info">16 / 22<br>Ch.5 결과물</div>
+      <div class="page-info">21 / 27<br>Ch.5 결과물</div>
     </div>
 
     <!-- ══════════════════════════════════════════════════════════
-         Slide 17 — 일정 & 통계
+         Slide 20 — 일정 & 통계
     ══════════════════════════════════════════════════════════ -->
-    <div class="slide" id="s17">
+    <div class="slide" id="s22">
       <div class="blob blob-1"></div>
       <div class="blob blob-2"></div>
       <div class="slide-inner">
         <div class="chapter-label">Chapter 6 — 프로젝트 관리 및 일정</div>
-        <h2>일정 & 통계</h2>
-        <img src="svg/chapter-6.svg" alt="Chapter 6 visualization" class="chapter-svg" loading="lazy" />
+        <h2>일정 &amp; 통계</h2>
+        <div class="inline-diagram">
+          <div class="diag-row">
+            <div class="diag-box" style="text-align:center;flex:0 0 140px;border-color:rgba(167,139,250,.5);">
+              <div class="diag-box-title" style="font-size:30px;font-weight:700;font-family:var(--font-en);color:var(--violet-400);">194</div>
+              <div class="diag-box-body">커밋</div>
+            </div>
+            <div class="diag-arr"></div>
+            <div class="diag-box" style="text-align:center;flex:0 0 140px;">
+              <div class="diag-box-title" style="font-size:30px;font-weight:700;font-family:var(--font-en);color:var(--violet-400);">79</div>
+              <div class="diag-box-body">Pull Requests</div>
+            </div>
+            <div class="diag-arr"></div>
+            <div class="diag-box" style="text-align:center;flex:0 0 140px;">
+              <div class="diag-box-title" style="font-size:30px;font-weight:700;font-family:var(--font-en);color:var(--violet-400);">49</div>
+              <div class="diag-box-body">sub-issues 완료</div>
+            </div>
+            <div class="diag-arr"></div>
+            <div class="diag-box" style="text-align:center;flex:0 0 140px;border-color:rgba(74,222,128,.4);background:rgba(74,222,128,.08);">
+              <div class="diag-box-title" style="font-size:30px;font-weight:700;font-family:var(--font-en);color:var(--green-400);">6/6</div>
+              <div class="diag-box-body">Epic 전체 closed</div>
+            </div>
+          </div>
+          <div class="diag-row">
+            <div class="diag-box">
+              <div class="diag-label">Phase 타임라인 (2025-12 → 2026-04)</div>
+              <div class="prim-diagram" style="margin-top:6px;">
+                <div class="prim-bar-row">
+                  <div class="prim-bar-label">P0</div>
+                  <div class="prim-bar-track"><div class="prim-bar-fill" style="width:20%;">Baseline</div></div>
+                  <div class="prim-bar-count" style="color:var(--green-400);">✓</div>
+                </div>
+                <div class="prim-bar-row">
+                  <div class="prim-bar-label">P1+P2</div>
+                  <div class="prim-bar-track"><div class="prim-bar-fill" style="width:40%;">FriendliAI</div></div>
+                  <div class="prim-bar-count" style="color:var(--green-400);">✓</div>
+                </div>
+                <div class="prim-bar-row">
+                  <div class="prim-bar-label">P3</div>
+                  <div class="prim-bar-track"><div class="prim-bar-fill" style="width:60%;">Tool System</div></div>
+                  <div class="prim-bar-count" style="color:var(--green-400);">✓</div>
+                </div>
+                <div class="prim-bar-row">
+                  <div class="prim-bar-label">P4</div>
+                  <div class="prim-bar-track"><div class="prim-bar-fill" style="width:80%;">UI L2</div></div>
+                  <div class="prim-bar-count" style="color:var(--green-400);">✓</div>
+                </div>
+                <div class="prim-bar-row">
+                  <div class="prim-bar-label">P5+P6</div>
+                  <div class="prim-bar-track"><div class="prim-bar-fill" style="width:100%;">Plugin DX + Docs</div></div>
+                  <div class="prim-bar-count" style="color:var(--green-400);">✓</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="logo">✻ KOSMOS</div>
-      <div class="page-info">17 / 22<br>Ch.6 일정</div>
+      <div class="page-info">22 / 27<br>Ch.6 일정</div>
     </div>
 
     <!-- ══════════════════════════════════════════════════════════
-         Slide 18 — CI/CD & 협업 도구
+         Slide 21 — CI/CD & 협업 도구
     ══════════════════════════════════════════════════════════ -->
-    <div class="slide" id="s18">
+    <div class="slide" id="s23">
       <div class="blob blob-1"></div>
       <div class="blob blob-2"></div>
       <div class="slide-inner">
@@ -1028,13 +1788,13 @@
         </div>
       </div>
       <div class="logo">✻ KOSMOS</div>
-      <div class="page-info">18 / 22<br>Ch.6 CI/CD</div>
+      <div class="page-info">23 / 27<br>Ch.6 CI/CD</div>
     </div>
 
     <!-- ══════════════════════════════════════════════════════════
-         Slide 19 — 향후 로드맵
+         Slide 22 — 향후 로드맵
     ══════════════════════════════════════════════════════════ -->
-    <div class="slide" id="s19">
+    <div class="slide" id="s24">
       <div class="blob blob-1"></div>
       <div class="blob blob-2"></div>
       <div class="slide-inner">
@@ -1072,13 +1832,13 @@
         </div>
       </div>
       <div class="logo">✻ KOSMOS</div>
-      <div class="page-info">19 / 22<br>Ch.6 로드맵</div>
+      <div class="page-info">24 / 27<br>Ch.6 로드맵</div>
     </div>
 
     <!-- ══════════════════════════════════════════════════════════
-         Slide 20 — 요약
+         Slide 23 — 요약
     ══════════════════════════════════════════════════════════ -->
-    <div class="slide" id="s20">
+    <div class="slide" id="s25">
       <div class="blob blob-1"></div>
       <div class="blob blob-2"></div>
       <div class="slide-inner" style="justify-content:center;gap:24px;">
@@ -1100,13 +1860,13 @@
         </div>
       </div>
       <div class="logo">✻ KOSMOS</div>
-      <div class="page-info">20 / 22<br>요약</div>
+      <div class="page-info">25 / 27<br>요약</div>
     </div>
 
     <!-- ══════════════════════════════════════════════════════════
-         Slide 21 — Q&A
+         Slide 24 — Q&A
     ══════════════════════════════════════════════════════════ -->
-    <div class="slide" id="s21">
+    <div class="slide" id="s26">
       <div class="blob blob-1"></div>
       <div class="blob blob-2"></div>
       <div class="slide-inner" style="justify-content:center;align-items:center;gap:28px;text-align:center;">
@@ -1129,13 +1889,13 @@
         </p>
       </div>
       <div class="logo">✻ KOSMOS</div>
-      <div class="page-info">21 / 22<br>Q&amp;A</div>
+      <div class="page-info">26 / 27<br>Q&amp;A</div>
     </div>
 
     <!-- ══════════════════════════════════════════════════════════
-         Slide 22 — References
+         Slide 25 — References
     ══════════════════════════════════════════════════════════ -->
-    <div class="slide" id="s22">
+    <div class="slide" id="s27">
       <div class="blob blob-1"></div>
       <div class="blob blob-2"></div>
       <div class="slide-inner">
@@ -1161,7 +1921,7 @@
         </div>
       </div>
       <div class="logo">✻ KOSMOS</div>
-      <div class="page-info">22 / 22<br>References</div>
+      <div class="page-info">27 / 27<br>References</div>
     </div>
 
   </div><!-- /scaler -->
@@ -1170,12 +1930,12 @@
 <!-- Navigation -->
 <div id="nav">
   <button onclick="go(-1)" title="이전 (←)">&#8592;</button>
-  <div id="nav-counter">1 / 22</div>
+  <div id="nav-counter">1 / 27</div>
   <button onclick="go(1)" title="다음 (→)">&#8594;</button>
 </div>
 
 <script>
-  const TOTAL = 22;
+  const TOTAL = 27;
   let cur = 1;
 
   function updateProgress() {
