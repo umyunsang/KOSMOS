@@ -120,14 +120,33 @@
       display: flex;
       flex-direction: column;
       height: 100%;
-      padding: 68px 72px 48px;
+      padding: 48px 64px 32px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(167,139,250,.4) transparent;
+    }
+    .slide-inner::-webkit-scrollbar { width: 6px; }
+    .slide-inner::-webkit-scrollbar-track { background: transparent; }
+    .slide-inner::-webkit-scrollbar-thumb { background: rgba(167,139,250,.35); border-radius: 3px; }
+    .slide-inner::-webkit-scrollbar-thumb:hover { background: rgba(167,139,250,.6); }
+
+    /* SVG visualization — fit-to-slide responsive */
+    .chapter-svg {
+      width: 100%;
+      max-width: 100%;
+      max-height: 540px;
+      height: auto;
+      display: block;
+      margin: 12px auto;
+      object-fit: contain;
     }
 
-    /* ─── Typography ──────────────────────────────────────────── */
-    h1 { font-size: 52px; font-weight: 700; line-height: 1.15; letter-spacing: -.02em; color: var(--white); }
-    h2 { font-size: 34px; font-weight: 700; line-height: 1.2; letter-spacing: -.01em; color: var(--violet-200); margin-bottom: 28px; }
-    h3 { font-size: 20px; font-weight: 600; color: var(--violet-400); margin-bottom: 10px; margin-top: 18px; }
-    p  { font-size: 16px; line-height: 1.7; color: var(--violet-100); }
+    /* ─── Typography (compacted to fit 720px slide) ────────────── */
+    h1 { font-size: 44px; font-weight: 700; line-height: 1.15; letter-spacing: -.02em; color: var(--white); }
+    h2 { font-size: 28px; font-weight: 700; line-height: 1.2; letter-spacing: -.01em; color: var(--violet-200); margin-bottom: 18px; }
+    h3 { font-size: 17px; font-weight: 600; color: var(--violet-400); margin-bottom: 8px; margin-top: 12px; }
+    p  { font-size: 14px; line-height: 1.55; color: var(--violet-100); }
     code, .mono {
       font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
       font-size: .88em;
@@ -139,7 +158,7 @@
 
     /* ─── Bullet list ─────────────────────────────────────────── */
     ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
-    ul li { font-size: 16px; line-height: 1.6; color: var(--violet-100); padding-left: 22px; position: relative; }
+    ul li { font-size: 13px; line-height: 1.5; color: var(--violet-100); padding-left: 22px; position: relative; }
     ul li::before { content: "✦"; position: absolute; left: 0; color: var(--violet-400); font-size: 10px; top: 5px; }
     ul li strong { color: var(--white); font-weight: 600; }
     ul li em { color: var(--violet-300); font-style: normal; }
@@ -170,25 +189,25 @@
     .badge-violet { background: rgba(167,139,250,.22); color: var(--violet-400); border: 1px solid rgba(167,139,250,.35); }
 
     /* ─── Stat card ───────────────────────────────────────────── */
-    .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 4px; }
+    .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 4px; }
     .stat-card {
       background: rgba(255,255,255,.06);
       border: 1px solid rgba(167,139,250,.2);
       border-radius: 12px;
-      padding: 18px 16px;
+      padding: 12px 14px;
       text-align: center;
     }
     .stat-num { font-size: 32px; font-weight: 700; font-family: var(--font-en); color: var(--violet-400); line-height: 1; }
     .stat-label { font-size: 12px; color: var(--violet-300); margin-top: 6px; }
 
     /* ─── Two-column layout ────────────────────────────────────── */
-    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; flex: 1; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; flex: 1; }
     .col { display: flex; flex-direction: column; }
 
     /* ─── Callout / quote ─────────────────────────────────────── */
     .callout {
       border-left: 3px solid var(--violet-400);
-      padding: 10px 18px;
+      padding: 8px 14px;
       background: rgba(167,139,250,.1);
       border-radius: 0 8px 8px 0;
       font-size: 14px;
@@ -204,7 +223,7 @@
       background: rgba(255,255,255,.05);
       border: 1px solid rgba(167,139,250,.2);
       border-radius: 10px;
-      padding: 14px 18px;
+      padding: 10px 14px;
       margin-bottom: 12px;
     }
     .scenario-q { font-size: 14px; color: var(--violet-300); margin-bottom: 6px; }
@@ -230,12 +249,12 @@
       background: rgba(167,139,250,.14);
       border: 1px solid rgba(167,139,250,.3);
       border-radius: 10px;
-      padding: 14px 20px;
+      padding: 10px 16px;
       margin-top: 12px;
     }
 
     /* ─── Cover-specific ──────────────────────────────────────── */
-    .slide-cover .slide-inner { justify-content: center; align-items: flex-start; gap: 16px; padding-top: 120px; }
+    .slide-cover .slide-inner { justify-content: center; align-items: flex-start; gap: 12px; padding-top: 120px; }
     .cover-glyph { font-size: 48px; color: var(--violet-400); margin-bottom: 4px; }
     .cover-title { font-size: 56px; font-weight: 700; color: var(--white); line-height: 1.1; letter-spacing: -.03em; }
     .cover-subtitle { font-size: 22px; color: var(--violet-300); font-weight: 400; }
@@ -248,7 +267,7 @@
       background: rgba(255,255,255,.05);
       border: 1px solid rgba(167,139,250,.18);
       border-radius: 10px;
-      padding: 16px 20px;
+      padding: 12px 16px;
       display: flex;
       align-items: flex-start;
       gap: 14px;
