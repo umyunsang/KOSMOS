@@ -40,10 +40,23 @@ try {
 // ═══════════════════════════════════════════════════════════════════════
 // Bun MACRO.* build-time constants
 // ═══════════════════════════════════════════════════════════════════════
+// KOSMOS version is sourced from tui/package.json — the single source of
+// truth. Bun supports native JSON imports, so editing package.json (manually
+// or via `npm version` / `bun pm version`) is the only step required to
+// bump the user-visible version. The previous "2.1.88-kosmos" hardcode was
+// a residue of the CC 2.1.88 source-map import; KOSMOS is a separate
+// project with its own release cadence (github.com/umyunsang/KOSMOS).
+//
+// BUILD_TIME is injected from the env var KOSMOS_BUILD_TIME at runtime
+// (set by the packaging step). When unset (e.g. local dev) we fall back to
+// the deterministic epoch-zero ISO string so reproducible builds stay
+// byte-stable across machines.
+import pkg from '../../package.json' with { type: 'json' }
+
 ;(globalThis as any).MACRO = {
-  VERSION: '2.1.88-kosmos',
+  VERSION: pkg.version,
   VERSION_CHANGELOG: 'https://github.com/umyunsang/KOSMOS/releases',
-  BUILD_TIME: new Date(0).toISOString(),
+  BUILD_TIME: process.env.KOSMOS_BUILD_TIME ?? new Date(0).toISOString(),
   FEEDBACK_CHANNEL: 'https://github.com/umyunsang/KOSMOS/issues',
   ISSUES_EXPLAINER:
     'Please open a GitHub issue at https://github.com/umyunsang/KOSMOS/issues',
