@@ -1,4 +1,5 @@
-import type { OverageDisabledReason } from 'src/services/claudeAiLimits.js'
+// KOSMOS-1633 P1+P2 / KOSMOS-1978 T011 — services/claudeAiLimits deleted.
+type OverageDisabledReason = null | string
 import { isClaudeAISubscriber } from '../auth.js'
 import { getGlobalConfig } from '../config.js'
 import { is1mContextDisabled } from '../context.js'

@@ -11,7 +11,10 @@ import type {
   SDKMessage,
   SDKRateLimitInfo,
 } from 'src/entrypoints/agentSdkTypes.js'
-import type { ClaudeAILimits } from 'src/services/claudeAiLimits.js'
+// KOSMOS-1633 P1+P2 / KOSMOS-1978 T011 — services/claudeAiLimits deleted;
+// FriendliAI K-EXAONE has no Anthropic Claude.ai usage envelope. Local type
+// alias preserves the historic shape so message-mapping code links cleanly.
+type ClaudeAILimits = null
 import { EXIT_PLAN_MODE_V2_TOOL_NAME } from 'src/tools/ExitPlanModeTool/constants.js'
 import type {
   AssistantMessage,

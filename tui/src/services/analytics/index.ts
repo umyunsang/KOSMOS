@@ -32,6 +32,14 @@ export function logEvent(
   // Intentional no-op (Epic #1633 stub). Do not add behaviour here.
 }
 
+export function logEventAsync(
+  _eventName: string,
+  _metadata?: AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+): Promise<void> {
+  // Intentional no-op (Epic #1633 stub).
+  return Promise.resolve()
+}
+
 export function profileCheckpoint(
   _name: string,
   _metadata?: AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
@@ -94,6 +102,30 @@ export function attachAnalyticsSink(_sink: AnalyticsSink): void {
 }
 
 // ---------------------------------------------------------------------------
+// Vendor-aliased shutdown helpers — KOSMOS-1633 P1+P2 / KOSMOS-1978 T011.
+// Original CC modules (services/analytics/datadog.ts, sink.ts,
+// firstPartyEventLogger.ts) are deleted by Spec 1633 P1+P2 invariant. These
+// aliases preserve the call signatures so the bridge / chrome MCP / computer-
+// use MCP shutdown paths link cleanly without redirecting to vendor sinks
+// (KOSMOS does not ship Datadog or 1P event logging).
+// ---------------------------------------------------------------------------
+
+export function shutdownDatadog(): Promise<void> {
+  return Promise.resolve()
+}
+
+export function shutdown1PEventLogging(): Promise<void> {
+  return Promise.resolve()
+}
+
+export function logEventTo1P(
+  _eventName: string,
+  _metadata?: AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+): void {
+  // Intentional no-op (KOSMOS-1633 P2 stub).
+}
+
+// ---------------------------------------------------------------------------
 // Default export safety net — some callers may import the module namespace.
 // ---------------------------------------------------------------------------
 
@@ -103,6 +135,9 @@ export default {
   initializeAnalyticsSink,
   flushAnalyticsSink,
   shutdownAnalyticsSink,
+  shutdownDatadog,
+  shutdown1PEventLogging,
+  logEventTo1P,
   stripProtoFields,
   attachAnalyticsSink,
 }

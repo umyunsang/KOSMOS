@@ -3,8 +3,16 @@ import * as React from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNotifications } from 'src/context/notifications.js';
 import { Text } from 'src/ink.js';
-import { getRateLimitWarning, getUsingOverageText } from 'src/services/claudeAiLimits.js';
-import { useClaudeAiLimits } from 'src/services/claudeAiLimitsHook.js';
+// KOSMOS-1633 P1+P2 / KOSMOS-1978 T011 — services/claudeAiLimits +
+// claudeAiLimitsHook deleted. FriendliAI K-EXAONE has no Claude.ai usage
+// envelope to surface — all rate-limit notifications are silently no-op.
+const getRateLimitWarning = (_limits: unknown, _model: unknown): string | null => null;
+const getUsingOverageText = (_limits: unknown): string => '';
+const useClaudeAiLimits = (): {
+  status: 'allowed' | 'rejected';
+  resetsAt: number | undefined;
+  isUsingOverage: boolean;
+} => ({ status: 'allowed', resetsAt: undefined, isUsingOverage: false });
 import { getSubscriptionType } from 'src/utils/auth.js';
 import { hasClaudeAiBillingAccess } from 'src/utils/billing.js';
 import { getIsRemoteMode } from '../../bootstrap/state.js';

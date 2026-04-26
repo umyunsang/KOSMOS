@@ -5,7 +5,8 @@ import { type OptionWithDescription, Select } from '../../components/CustomSelec
 import { Dialog } from '../../components/design-system/Dialog.js';
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '../../services/analytics/growthbook.js';
 import { logEvent } from '../../services/analytics/index.js';
-import { useClaudeAiLimits } from '../../services/claudeAiLimitsHook.js';
+// KOSMOS-1633 P1+P2 / KOSMOS-1978 T011 — claudeAiLimitsHook deleted.
+const useClaudeAiLimits = (): { isUsingOverage: boolean; status: 'allowed' | 'rejected'; resetsAt: number | undefined } => ({ isUsingOverage: false, status: 'allowed', resetsAt: undefined });
 import type { ToolUseContext } from '../../Tool.js';
 import type { LocalJSXCommandOnDone } from '../../types/command.js';
 import { getOauthAccountInfo, getRateLimitTier, getSubscriptionType } from '../../utils/auth.js';

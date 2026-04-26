@@ -54,7 +54,7 @@ export async function createBridgeSession({
 }): Promise<string | null> {
   const { getClaudeAIOAuthTokens } = await import('../utils/auth.js')
   const { getOrganizationUUID } = await import('../services/oauth/client.js')
-  const { getOauthConfig } = await import('../constants/oauth.js')
+  const getOauthConfig = (): { BASE_API_URL: string } => ({ BASE_API_URL: '' }) /* KOSMOS-1633: oauth deleted */
   const { getOAuthHeaders } = await import('../utils/teleport/api.js')
   const { parseGitHubRepository } = await import('../utils/detectRepository.js')
   const { getDefaultBranch } = await import('../utils/git.js')
@@ -193,7 +193,7 @@ export async function getBridgeSession(
 ): Promise<{ environment_id?: string; title?: string } | null> {
   const { getClaudeAIOAuthTokens } = await import('../utils/auth.js')
   const { getOrganizationUUID } = await import('../services/oauth/client.js')
-  const { getOauthConfig } = await import('../constants/oauth.js')
+  const getOauthConfig = (): { BASE_API_URL: string } => ({ BASE_API_URL: '' }) /* KOSMOS-1633: oauth deleted */
   const { getOAuthHeaders } = await import('../utils/teleport/api.js')
   const { default: axios } = await import('axios')
 
@@ -270,7 +270,7 @@ export async function archiveBridgeSession(
 ): Promise<void> {
   const { getClaudeAIOAuthTokens } = await import('../utils/auth.js')
   const { getOrganizationUUID } = await import('../services/oauth/client.js')
-  const { getOauthConfig } = await import('../constants/oauth.js')
+  const getOauthConfig = (): { BASE_API_URL: string } => ({ BASE_API_URL: '' }) /* KOSMOS-1633: oauth deleted */
   const { getOAuthHeaders } = await import('../utils/teleport/api.js')
   const { default: axios } = await import('axios')
 
@@ -331,7 +331,7 @@ export async function updateBridgeSessionTitle(
 ): Promise<void> {
   const { getClaudeAIOAuthTokens } = await import('../utils/auth.js')
   const { getOrganizationUUID } = await import('../services/oauth/client.js')
-  const { getOauthConfig } = await import('../constants/oauth.js')
+  const getOauthConfig = (): { BASE_API_URL: string } => ({ BASE_API_URL: '' }) /* KOSMOS-1633: oauth deleted */
   const { getOAuthHeaders } = await import('../utils/teleport/api.js')
   const { default: axios } = await import('axios')
 

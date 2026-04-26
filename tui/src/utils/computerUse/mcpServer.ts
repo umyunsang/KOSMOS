@@ -6,9 +6,13 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js'
 import { homedir } from 'os'
 
-import { shutdownDatadog } from '../../services/analytics/datadog.js'
-import { shutdown1PEventLogging } from '../../services/analytics/firstPartyEventLogger.js'
-import { initializeAnalyticsSink } from '../../services/analytics/sink.js'
+// KOSMOS-1633 P1+P2 / KOSMOS-1978 T011 — vendor analytics modules deleted;
+// use the canonical analytics/index.ts surface (no-op stubs).
+import {
+  initializeAnalyticsSink,
+  shutdown1PEventLogging,
+  shutdownDatadog,
+} from '../../services/analytics/index.js'
 import { enableConfigs } from '../config.js'
 import { logForDebugging } from '../debug.js'
 import { filterAppsForDescription } from './appNames.js'

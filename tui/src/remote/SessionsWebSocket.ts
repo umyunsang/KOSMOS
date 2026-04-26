@@ -1,5 +1,6 @@
 import { randomUUID } from 'crypto'
-import { getOauthConfig } from '../constants/oauth.js'
+// KOSMOS-1633 P1+P2 / KOSMOS-1978 T011 — constants/oauth deleted.
+const getOauthConfig = (): { BASE_API_URL: string } => ({ BASE_API_URL: '' })
 import type { SDKMessage } from '../entrypoints/agentSdkTypes.js'
 import type {
   SDKControlCancelRequest,
