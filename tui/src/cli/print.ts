@@ -5002,12 +5002,13 @@ async function loadInitialMessages(
         throw new Error('No session ID provided for teleport')
       }
 
-      const {
-        checkOutTeleportedSessionBranch,
-        processMessagesForTeleportResume,
-        teleportResumeCodeSession,
-        validateGitState,
-      } = await import('src/utils/teleport.js')
+      // KOSMOS-1633 P1+P2 / KOSMOS-1978 T011 — utils/teleport deleted.
+      // Replace dynamic import with inline disabled stubs; the entire teleport
+      // codepath is unreachable in citizen-TUI-only mode but must link.
+      const checkOutTeleportedSessionBranch = async (..._args: unknown[]): Promise<{ branchError?: string }> => ({ branchError: 'KOSMOS: teleport disabled' })
+      const processMessagesForTeleportResume = (..._args: unknown[]): unknown[] => []
+      const teleportResumeCodeSession = async (..._args: unknown[]): Promise<{ branch: string; log: unknown[] }> => ({ branch: '', log: [] })
+      const validateGitState = async (): Promise<void> => undefined
       await validateGitState()
       const teleportResult = await teleportResumeCodeSession(options.teleport)
       const { branchError } = await checkOutTeleportedSessionBranch(

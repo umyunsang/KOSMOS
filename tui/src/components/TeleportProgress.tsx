@@ -5,7 +5,15 @@ import { useState } from 'react';
 import type { Root } from '../ink.js';
 import { Box, Text, useAnimationFrame } from '../ink.js';
 import { AppStateProvider } from '../state/AppState.js';
-import { checkOutTeleportedSessionBranch, processMessagesForTeleportResume, type TeleportProgressStep, type TeleportResult, teleportResumeCodeSession } from '../utils/teleport.js';
+// KOSMOS-1633 P1+P2 / KOSMOS-1978 T011 — utils/teleport deleted. KOSMOS
+// citizen TUI does not ship Anthropic CCR teleport; the Progress UI is
+// retained as an unreachable component (no live trigger). Stubs preserve
+// the type contract so existing renders compile.
+type TeleportProgressStep = 'idle' | 'preparing' | 'pushing' | 'creating' | 'resuming' | 'completing' | 'completed' | 'failed';
+type TeleportResult = { success: boolean; sessionId?: string; error?: string };
+const checkOutTeleportedSessionBranch = async (..._args: unknown[]): Promise<void> => undefined;
+const processMessagesForTeleportResume = async (..._args: unknown[]): Promise<void> => undefined;
+const teleportResumeCodeSession = async (..._args: unknown[]): Promise<TeleportResult> => ({ success: false, error: 'KOSMOS: teleport disabled' });
 type Props = {
   currentStep: TeleportProgressStep;
   sessionId?: string;

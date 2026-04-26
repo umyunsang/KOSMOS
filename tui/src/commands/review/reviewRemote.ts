@@ -28,7 +28,8 @@ import { isEnterpriseSubscriber, isTeamSubscriber } from '../../utils/auth.js'
 import { detectCurrentRepositoryWithHost } from '../../utils/detectRepository.js'
 import { execFileNoThrow } from '../../utils/execFileNoThrow.js'
 import { getDefaultBranch, gitExe } from '../../utils/git.js'
-import { teleportToRemote } from '../../utils/teleport.js'
+// KOSMOS-1633 P1+P2 / KOSMOS-1978 T011 — utils/teleport deleted.
+const teleportToRemote = async (..._args: unknown[]): Promise<{ success: boolean; sessionId?: string; error?: string }> => ({ success: false, error: 'KOSMOS: teleport disabled' })
 
 // One-time session flag: once the user confirms overage billing via the
 // dialog, all subsequent /ultrareview invocations in this session proceed
