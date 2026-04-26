@@ -47,7 +47,7 @@ WORKTREE_ROOT = Path(__file__).resolve().parent.parent
 
 
 def _now_iso() -> str:
-    return datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="milliseconds")
+    return datetime.datetime.now(datetime.UTC).isoformat(timespec="milliseconds")
 
 
 def _make_chat_request(message: str, session_id: str = "", correlation_id: str | None = None) -> dict:
@@ -199,6 +199,7 @@ def _try_validate_frames(frames: list[dict]) -> list[str]:
     errors: list[str] = []
     try:
         from pydantic import TypeAdapter, ValidationError  # type: ignore[import]
+
         from kosmos.ipc.frame_schema import IPCFrame  # type: ignore[import]
 
         adapter: TypeAdapter = TypeAdapter(IPCFrame)  # type: ignore[type-arg]

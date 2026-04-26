@@ -17,11 +17,10 @@ import re
 import pytest
 
 import kosmos.tools.mock  # noqa: F401 — side-effect: registers all mock adapters
-
 from kosmos.primitives.subscribe import (
+    _SUBSCRIBE_ADAPTERS,
     CbsBroadcastEvent,
     SubscribeInput,
-    _SUBSCRIBE_ADAPTERS,
     subscribe,
 )
 
@@ -111,6 +110,7 @@ class TestSubscribeCbsMockIterator:
         assert handle.subscription_id, "subscription_id must not be empty"
         # Must be a valid UUID4 pattern
         import uuid
+
         parsed = uuid.UUID(handle.subscription_id)
         assert str(parsed) == handle.subscription_id
         assert handle.tool_id == _TOOL_ID

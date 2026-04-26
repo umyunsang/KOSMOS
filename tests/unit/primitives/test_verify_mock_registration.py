@@ -75,15 +75,15 @@ def test_adapter_returns_auth_context_shape(family: str) -> None:
     import kosmos.tools.mock  # noqa: F401
     from kosmos.primitives.verify import (
         _VERIFY_ADAPTERS,
-        GanpyeonInjeungContext,
         DigitalOnepassContext,
+        GanpyeonInjeungContext,
         GeumyungInjeungseoContext,
         GongdongInjeungseoContext,
         MobileIdContext,
         MyDataContext,
     )
 
-    _AUTH_CONTEXT_TYPES = (
+    auth_context_types = (
         GongdongInjeungseoContext,
         GeumyungInjeungseoContext,
         GanpyeonInjeungContext,
@@ -95,7 +95,7 @@ def test_adapter_returns_auth_context_shape(family: str) -> None:
     adapter = _VERIFY_ADAPTERS[family]
     result = adapter({})  # type: ignore[operator]
 
-    assert isinstance(result, _AUTH_CONTEXT_TYPES), (
+    assert isinstance(result, auth_context_types), (
         f"Adapter for {family!r} returned {type(result).__name__!r}, "
         "expected an AuthContext variant"
     )

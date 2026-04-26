@@ -201,10 +201,8 @@ class _PermissionBridgeHarness:
         self.pending_perms[request_id] = future
 
         try:
-            response_bundle = await asyncio.wait_for(
-                asyncio.shield(future), timeout=self.timeout
-            )
-        except asyncio.TimeoutError:
+            response_bundle = await asyncio.wait_for(asyncio.shield(future), timeout=self.timeout)
+        except TimeoutError:
             # D7: default deny on timeout
             self.pending_perms.pop(request_id, None)
             logger.warning("permission_bridge: timeout for request_id=%s", request_id)
@@ -417,9 +415,7 @@ async def test_d5_allow_session_adds_to_session_grants(
 
     assert outcome == "allow"
     assert receipt_id is not None
-    assert ctx.tool_id in harness.session_grants, (
-        "allow_session must add tool_id to session_grants"
-    )
+    assert ctx.tool_id in harness.session_grants, "allow_session must add tool_id to session_grants"
 
 
 async def test_d5_allow_session_subsequent_call_skips_bridge(
@@ -541,9 +537,7 @@ async def test_d8_receipt_written_on_allow_session(
     assert receipt["decision"] == _DECISION_ALLOW_SESSION
 
 
-async def test_d8_no_receipt_on_deny(
-    harness: _PermissionBridgeHarness, consent_dir: Path
-) -> None:
+async def test_d8_no_receipt_on_deny(harness: _PermissionBridgeHarness, consent_dir: Path) -> None:
     """deny: NO receipt file must be written (D8 — non-deny only)."""
     ctx = _make_tool_permission_ctx()
     request_id = str(uuid.uuid4())

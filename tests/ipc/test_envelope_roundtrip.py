@@ -19,11 +19,11 @@ from kosmos.ipc.envelope import emit_ndjson, parse_ndjson_line
 from kosmos.ipc.frame_schema import (
     AssistantChunkFrame,
     BackpressureSignalFrame,
+    ChatMessage,
+    ChatRequestFrame,
     CoordinatorPhaseFrame,
     ErrorFrame,
     FrameTrailer,
-    ChatMessage,
-    ChatRequestFrame,
     HeartbeatFrame,
     IPCFrame,
     NotificationPushFrame,

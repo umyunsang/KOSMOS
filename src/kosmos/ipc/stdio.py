@@ -61,6 +61,20 @@ _tracer = trace.get_tracer(__name__)
 
 _frame_adapter: TypeAdapter[Any] = TypeAdapter(IPCFrame)
 
+
+def _serialize_primitive_result(raw: object) -> dict[str, Any]:
+    """Coerce a primitive return value to a JSON-serialisable dict.
+
+    Pydantic models go through ``model_dump(mode="json")``; everything else
+    falls back to ``{"raw": str(value)}`` so the envelope round-trip stays
+    safe. Helper extracted from inline expressions to keep the dispatcher
+    body under the line-length limit.
+    """
+    if hasattr(raw, "model_dump"):
+        return raw.model_dump(mode="json")  # type: ignore[union-attr]
+    return {"raw": str(raw)}
+
+
 # Module-level stdout lock — prevents interleaved JSON if multiple async tasks
 # write simultaneously (guards the flush-after-every-frame invariant).
 _stdout_lock: asyncio.Lock | None = None
@@ -568,9 +582,10 @@ async def run(  # noqa: C901
         history.append({"role": "assistant", "content": full_text})
 
     import os as _os_chat_env  # noqa: PLC0415
+
     # Spec 1978 T030 — tool-result wait timeout (env-overridable).
     # contracts/tool-bridge-protocol.md gates the asyncio.gather on this value.
-    _TOOL_RESULT_TIMEOUT_S = float(
+    _TOOL_RESULT_TIMEOUT_S = float(  # noqa: N806 — env-derived constant, function-scoped to avoid module-import-time env reads
         _os_chat_env.environ.get("KOSMOS_TOOL_RESULT_TIMEOUT_SECONDS", "120")
     )
     # Spec 1978 T029 — bound the CC query-engine agentic loop to prevent
@@ -581,7 +596,7 @@ async def run(  # noqa: C901
     # name is preserved for backward compatibility with already-shipped
     # configuration; the documented variable is logically the agentic-loop
     # max-turn cap.
-    _AGENTIC_LOOP_MAX_TURNS = int(
+    _AGENTIC_LOOP_MAX_TURNS = int(  # noqa: N806 — env-derived constant
         _os_chat_env.environ.get(
             "KOSMOS_AGENTIC_LOOP_MAX_TURNS",
             _os_chat_env.environ.get("KOSMOS_REACT_MAX_TURNS", "8"),
@@ -600,7 +615,7 @@ async def run(  # noqa: C901
     # Spec 1978 T043-T049/T052 — Permission gauntlet bridge
     # -----------------------------------------------------------------------
 
-    _PERM_TIMEOUT_S: float = float(
+    _PERM_TIMEOUT_S: float = float(  # noqa: N806 — env-derived constant
         _os_chat_env.environ.get("KOSMOS_PERMISSION_TIMEOUT_SECONDS", "60")
     )
 
@@ -608,7 +623,7 @@ async def run(  # noqa: C901
     # an existing session-grant. Spec 033 Layer 1 (L1) exempts verify/lookup/
     # resolve_location (read-only, public-tier); submit/subscribe are side-
     # effecting (Layer 2/3) and always enter the bridge.
-    _PERMISSION_GATED_PRIMITIVES: frozenset[str] = frozenset({"submit", "subscribe"})
+    _PERMISSION_GATED_PRIMITIVES: frozenset[str] = frozenset({"submit", "subscribe"})  # noqa: N806
 
     async def _check_permission_gate(
         call_id: str,
@@ -650,18 +665,16 @@ async def run(  # noqa: C901
                 span.set_attribute("kosmos.permission.mode", "auto_allow")
                 span.set_attribute("kosmos.permission.decision", "allow_session")
                 span.set_attribute("kosmos.tool.dispatched", fname)
-            logger.debug(
-                "permission: session_grant hit for %s session=%s", tool_key, session_id
-            )
+            logger.debug("permission: session_grant hit for %s session=%s", tool_key, session_id)
             return True
 
         # Determine risk level and description from primitive type
-        _PRIM_RISK: dict[str, str] = {"submit": "high", "subscribe": "medium"}
-        _PRIM_KO: dict[str, str] = {
+        _PRIM_RISK: dict[str, str] = {"submit": "high", "subscribe": "medium"}  # noqa: N806
+        _PRIM_KO: dict[str, str] = {  # noqa: N806
             "submit": "정부 API에 데이터를 제출합니다. 이 작업은 되돌릴 수 없습니다.",
             "subscribe": "공공 데이터 스트림을 구독합니다.",
         }
-        _PRIM_EN: dict[str, str] = {
+        _PRIM_EN: dict[str, str] = {  # noqa: N806
             "submit": "Submit data to a government API. This action is irreversible.",
             "subscribe": "Subscribe to a public data stream.",
         }
@@ -704,14 +717,17 @@ async def run(  # noqa: C901
                     timeout=_PERM_TIMEOUT_S,
                 )
                 perm_span.set_attribute("kosmos.permission.decision", "allow_once")
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 logger.warning(
                     "permission: timeout waiting for response to request_id=%s", request_id
                 )
                 perm_span.set_attribute("kosmos.permission.decision", "timeout")
                 _pending_perms.pop(request_id, None)
                 # Emit synthetic denied tool_result so the LLM turn resolves.
-                denied_env = ToolResultEnvelope(kind=fname, **{"error": "permission_timeout", "denied": True})  # type: ignore[arg-type]
+                denied_env = ToolResultEnvelope(  # type: ignore[arg-type]
+                    kind=fname,
+                    **{"error": "permission_timeout", "denied": True},
+                )
                 fut = _pending_calls.get(call_id)
                 if fut and not fut.done():
                     denied_result_frame = ToolResultFrame(
@@ -733,7 +749,10 @@ async def run(  # noqa: C901
             if raw_decision == "denied":
                 perm_span.set_attribute("kosmos.permission.decision", "deny")
                 # Emit synthetic denied tool_result.
-                denied_env2 = ToolResultEnvelope(kind=fname, **{"error": "permission_denied", "denied": True})  # type: ignore[arg-type]
+                denied_env2 = ToolResultEnvelope(  # type: ignore[arg-type]
+                    kind=fname,
+                    **{"error": "permission_denied", "denied": True},
+                )
                 fut2 = _pending_calls.get(call_id)
                 if fut2 and not fut2.done():
                     denied_result_frame2 = ToolResultFrame(
@@ -828,7 +847,6 @@ async def run(  # noqa: C901
 
         OTEL: sets kosmos.tool.dispatched on the existing session span.
         """
-        import json as _json_dispatch  # noqa: PLC0415
 
         from kosmos.ipc.frame_schema import (  # noqa: PLC0415
             ToolResultEnvelope,
@@ -854,34 +872,28 @@ async def run(  # noqa: C901
             try:
                 if fname == "verify":
                     from kosmos.primitives.verify import (  # noqa: PLC0415
-                        VerifyInput,
-                        VerifyOutput,
                         verify,
                     )
 
                     # Accept both `family` (citizen-facing tool schema) and
                     # `family_hint` (primitive's internal arg name) — KOSMOS
                     # tools-bridge tolerates both.
-                    family_hint = str(
-                        args_obj.get("family_hint")
-                        or args_obj.get("family")
-                        or ""
-                    )
+                    family_hint = str(args_obj.get("family_hint") or args_obj.get("family") or "")
                     session_ctx = dict(args_obj.get("session_context") or {})
                     raw = await verify(family_hint=family_hint, session_context=session_ctx)
                     result_payload = {
                         "family": family_hint,
-                        "result": raw.model_dump(mode="json") if hasattr(raw, "model_dump") else {"raw": str(raw)},
+                        "result": _serialize_primitive_result(raw),
                     }
 
                 elif fname == "lookup":
                     from kosmos.tools.executor import ToolExecutor  # noqa: PLC0415
+                    from kosmos.tools.lookup import lookup  # noqa: PLC0415
                     from kosmos.tools.models import (  # noqa: PLC0415
                         LookupFetchInput,
                         LookupSearchInput,
                     )
                     from kosmos.tools.registry import ToolRegistry  # noqa: PLC0415
-                    from kosmos.tools.lookup import lookup  # noqa: PLC0415
 
                     mode = str(args_obj.get("mode", "search"))
                     registry = ToolRegistry()
@@ -899,10 +911,12 @@ async def run(  # noqa: C901
                             tool_id=str(args_obj.get("tool_id", "")),
                             params=dict(args_obj.get("params") or {}),
                         )
-                    raw = await lookup(inp, registry=registry, executor=executor, session_identity=session_id)
+                    raw = await lookup(
+                        inp, registry=registry, executor=executor, session_identity=session_id
+                    )
                     result_payload = {
                         "kind": "lookup",
-                        "result": raw.model_dump(mode="json") if hasattr(raw, "model_dump") else {"raw": str(raw)},
+                        "result": _serialize_primitive_result(raw),
                     }
 
                 elif fname == "resolve_location":
@@ -916,7 +930,7 @@ async def run(  # noqa: C901
                     raw = await resolve_location(inp_rl)
                     result_payload = {
                         "kind": "resolve_location",
-                        "result": raw.model_dump(mode="json") if hasattr(raw, "model_dump") else {"raw": str(raw)},
+                        "result": _serialize_primitive_result(raw),
                     }
 
                 elif fname == "submit":
@@ -929,7 +943,7 @@ async def run(  # noqa: C901
                     )
                     result_payload = {
                         "kind": "submit",
-                        "result": raw.model_dump(mode="json") if hasattr(raw, "model_dump") else {"raw": str(raw)},
+                        "result": _serialize_primitive_result(raw),
                     }
 
                 elif fname == "subscribe":
@@ -946,7 +960,9 @@ async def run(  # noqa: C901
                     )
                     iterator_or_error = subscribe(inp_sub)
                     if hasattr(iterator_or_error, "_handle"):
-                        handle = getattr(iterator_or_error, "_handle", None)
+                        # T069 deferred — keep handle attribute reachable for
+                        # future streaming wiring; for now we only confirm
+                        # iterator construction and emit a synthetic envelope.
                         result_payload = {
                             "kind": "subscribe",
                             "subscription_id": str(uuid.uuid4()),
@@ -1061,9 +1077,7 @@ async def run(  # noqa: C901
 
         llm_tools: list[LLMToolDefinition] = []
         for t in frame.tools:
-            llm_tools.append(
-                LLMToolDefinition.model_validate(t.model_dump())
-            )
+            llm_tools.append(LLMToolDefinition.model_validate(t.model_dump()))
 
         client = await _ensure_llm_client()
 
@@ -1103,9 +1117,7 @@ async def run(  # noqa: C901
                             )
                     elif event_type == "tool_call_delta":
                         idx = int(getattr(event, "tool_call_index", 0) or 0)
-                        slot = tool_call_buf.setdefault(
-                            idx, {"id": "", "name": "", "args": ""}
-                        )
+                        slot = tool_call_buf.setdefault(idx, {"id": "", "name": "", "args": ""})
                         cid = getattr(event, "tool_call_id", None)
                         if cid:
                             slot["id"] = cid
@@ -1181,8 +1193,7 @@ async def run(  # noqa: C901
                     await write_frame(
                         ErrorFrame(
                             session_id=frame.session_id,
-                            correlation_id=frame.correlation_id
-                            or str(uuid.uuid4()),
+                            correlation_id=frame.correlation_id or str(uuid.uuid4()),
                             role="llm",
                             ts=_utcnow(),
                             kind="error",
@@ -1268,7 +1279,7 @@ async def run(  # noqa: C901
                     asyncio.gather(*tasks, return_exceptions=True),
                     timeout=_TOOL_RESULT_TIMEOUT_S,
                 )
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 # Per contracts/tool-bridge-protocol.md timeout → synthetic
                 # error result. Drop pending entries to avoid leaks.
                 for cid, _ in issued_calls:
@@ -1278,16 +1289,12 @@ async def run(  # noqa: C901
                 await write_frame(
                     ErrorFrame(
                         session_id=frame.session_id,
-                        correlation_id=frame.correlation_id
-                        or str(uuid.uuid4()),
+                        correlation_id=frame.correlation_id or str(uuid.uuid4()),
                         role="backend",
                         ts=_utcnow(),
                         kind="error",
                         code="tool_timeout",
-                        message=(
-                            f"Tool result timeout after "
-                            f"{_TOOL_RESULT_TIMEOUT_S:.0f}s"
-                        ),
+                        message=(f"Tool result timeout after {_TOOL_RESULT_TIMEOUT_S:.0f}s"),
                         details={
                             "call_ids": [cid for cid, _ in issued_calls],
                         },
@@ -1296,13 +1303,9 @@ async def run(  # noqa: C901
                 return
 
             # ---- Inject tool messages, continue agentic loop --------------
-            for (cid, fname), result in zip(
-                issued_calls, results, strict=False
-            ):
+            for (cid, fname), result in zip(issued_calls, results, strict=False):
                 if isinstance(result, BaseException):
-                    payload = _json.dumps(
-                        {"error": "tool_dispatch_failed", "detail": str(result)}
-                    )
+                    payload = _json.dumps({"error": "tool_dispatch_failed", "detail": str(result)})
                 else:
                     # ToolResultFrame.envelope is a Pydantic model.
                     envelope = getattr(result, "envelope", None)
@@ -1313,9 +1316,7 @@ async def run(  # noqa: C901
                             default=str,
                         )
                     else:
-                        payload = _json.dumps(
-                            {"result": str(result)}, ensure_ascii=False
-                        )
+                        payload = _json.dumps({"result": str(result)}, ensure_ascii=False)
                 llm_messages.append(
                     LLMChatMessage(
                         role="tool",
@@ -1401,7 +1402,7 @@ async def run(  # noqa: C901
 
     if on_frame is None:
 
-        async def _handle_frame(frame: IPCFrame) -> None:
+        async def _handle_frame(frame: IPCFrame) -> None:  # noqa: C901
             if frame.kind == "user_input":
                 try:
                     if _handler_mode == "echo":
@@ -1490,9 +1491,7 @@ async def run(  # noqa: C901
     # path or session_event{event=exit}).
     with _tracer.start_as_current_span("kosmos.session") as _session_span:
         _session_span.set_attribute("kosmos.session.id", sid)
-        _session_span.set_attribute(
-            "kosmos.ipc.handler_mode", _handler_mode
-        )
+        _session_span.set_attribute("kosmos.ipc.handler_mode", _handler_mode)
 
         # Run reader loop concurrently with shutdown watcher
         reader_task = asyncio.create_task(
