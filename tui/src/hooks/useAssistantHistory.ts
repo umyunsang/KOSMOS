@@ -14,8 +14,11 @@ import {
   type HistoryPage,
 } from '../assistant/sessionHistory.js'
 import type { ScrollBoxHandle } from '../ink/components/ScrollBox.js'
-import type { RemoteSessionConfig } from '../remote/RemoteSessionManager.js'
-import { convertSDKMessage } from '../remote/sdkMessageAdapter.js'
+// KOSMOS-1633 P1+P2 / KOSMOS-1978 T011 — remote/ deleted; types live in
+// the no-op hook stubs. convertSDKMessage downgraded to identity for any
+// straggling caller (KOSMOS local TUI never enters this path).
+import type { RemoteSessionConfig } from './useRemoteSession.js'
+const convertSDKMessage = <T,>(msg: T): T => msg
 import type { Message, SystemInformationalMessage } from '../types/message.js'
 import { logForDebugging } from '../utils/debug.js'
 
