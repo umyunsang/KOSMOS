@@ -728,6 +728,15 @@ def main(argv: Sequence[str] | None = None) -> int:
         args.capture_err.write_bytes(bytes(result.captured_stderr))
         print(f"[capture] stderr → {args.capture_err}")
 
+    # Codex P1 (PR #2074): a crashed/terminated TUI process must fail the
+    # scenario even if the marker checks did not append an error. Treat
+    # exit_code != 0 (and None/SIGKILL) as a hard failure so silently
+    # broken backends never report a false-positive pass.
+    if result.exit_code is None or result.exit_code != 0:
+        result.errors.append(
+            f"TUI process exited with non-zero status: exit_code={result.exit_code!r}"
+        )
+
     return 1 if result.errors else 0
 
 
