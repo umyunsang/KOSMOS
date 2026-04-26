@@ -391,7 +391,17 @@ export async function main() {
   const hasPrintFlag = cliArgs.includes('-p') || cliArgs.includes('--print');
   const hasInitOnlyFlag = cliArgs.includes('--init-only');
   const hasSdkUrl = cliArgs.some(arg => arg.startsWith('--sdk-url'));
-  const isNonInteractive = hasPrintFlag || hasInitOnlyFlag || hasSdkUrl || !process.stdout.isTTY;
+  // KOSMOS-1978 T003b: Bun's `process.stdout.isTTY` is `undefined` (not `true`)
+  // when invoked through wrappers like `bun run ...` or under PTY harnesses
+  // where the parent shell already wrapped fd1. The CC original assumed Node's
+  // strict-boolean isTTY (true under TTY, false under pipes). To preserve the
+  // PTY-driven verification path required by memory `feedback_runtime_verification`,
+  // KOSMOS adds an explicit `KOSMOS_FORCE_INTERACTIVE` env override that the
+  // PTY scenario harness sets when it knows fd1 is a real TTY slave. The
+  // override must NEVER be set in a citizen's environment — it is a test-harness
+  // signal, not a runtime configuration.
+  const kosmosForceInteractive = process.env.KOSMOS_FORCE_INTERACTIVE === '1';
+  const isNonInteractive = hasPrintFlag || hasInitOnlyFlag || hasSdkUrl || (!kosmosForceInteractive && !process.stdout.isTTY);
 
   // Stop capturing early input for non-interactive modes
   if (isNonInteractive) {

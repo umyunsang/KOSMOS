@@ -99,13 +99,13 @@ class HarnessResult:
 def _spawn_tui(env_overrides: dict[str, str]) -> tuple[int, int]:
     """Fork the TUI under a PTY; returns (pid, master_fd).
 
-    Direct ``bun src/main.tsx`` invocation, NOT ``bun run tui``: the ``bun run``
-    wrapper does not pass through stdin/stdout TTY-ness to the child, which
-    causes ``process.stdout.isTTY === false`` inside main.tsx and triggers the
-    non-interactive --print branch (then dies with "Input must be provided ...").
-    Direct invocation under PTY preserves TTY semantics on every fd.
+    Use ``bun run tui`` (the canonical script entrypoint registered in
+    ``tui/package.json``). The TTY-detection bypass uses
+    ``KOSMOS_FORCE_INTERACTIVE=1`` (set in this function below) instead of
+    invocation tricks — that way both PTY harness AND citizen interactive
+    shells reach the same code path through ``bun run tui``.
     """
-    cmd = ["bun", "src/main.tsx"]
+    cmd = ["bun", "run", "tui"]
     env = os.environ.copy()
     env.setdefault("DISABLE_INSTALLATION_CHECKS", "1")
     env.setdefault("KOSMOS_TUI_LOG_LEVEL", "DEBUG")
@@ -114,6 +114,11 @@ def _spawn_tui(env_overrides: dict[str, str]) -> tuple[int, int]:
     env.setdefault("COLUMNS", "120")
     env.setdefault("LINES", "40")
     env.setdefault("FORCE_COLOR", "0")
+    # KOSMOS-1978 T003b: tell main.tsx that fd1 is a real TTY slave even
+    # though Bun's `process.stdout.isTTY` reports undefined under wrapper
+    # invocations. See `tui/src/main.tsx` `kosmosForceInteractive` for the
+    # consuming side. NEVER set this in citizen runtimes.
+    env.setdefault("KOSMOS_FORCE_INTERACTIVE", "1")
     env.update(env_overrides)
 
     pid, fd = pty.fork()
