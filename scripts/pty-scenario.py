@@ -99,13 +99,14 @@ class HarnessResult:
 def _spawn_tui(env_overrides: dict[str, str]) -> tuple[int, int]:
     """Fork the TUI under a PTY; returns (pid, master_fd).
 
-    Use ``bun run tui`` (the canonical script entrypoint registered in
-    ``tui/package.json``). The TTY-detection bypass uses
-    ``KOSMOS_FORCE_INTERACTIVE=1`` (set in this function below) instead of
-    invocation tricks — that way both PTY harness AND citizen interactive
-    shells reach the same code path through ``bun run tui``.
+    KOSMOS-1978 T003b: invoke bun directly (bypassing `bun run` wrapper) AND
+    explicitly preload the MACRO shim. `bun run` (a) loses TTY-ness on its
+    child (process.stdout.isTTY=undefined → main.tsx isNonInteractive=true →
+    --print branch crash) and (b) skips bunfig.toml's preload entry, which
+    leaves CC's `MACRO.VERSION` build-time constant undefined and crashes
+    commander. Direct invocation + explicit --preload closes both gaps.
     """
-    cmd = ["bun", "run", "tui"]
+    cmd = ["bun", "--preload", "./src/stubs/macro-preload.ts", "src/main.tsx"]
     env = os.environ.copy()
     env.setdefault("DISABLE_INSTALLATION_CHECKS", "1")
     env.setdefault("KOSMOS_TUI_LOG_LEVEL", "DEBUG")
