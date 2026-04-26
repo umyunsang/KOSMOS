@@ -44,7 +44,105 @@ type Scenario = {
   prompt: string  // text typed into the prompt before Enter
   timeoutMs: number
   expectedKinds: ReadonlyArray<string>
+  /**
+   * When true the harness sends the 5-primitive tool surface in
+   * ChatRequestFrame.tools so the backend forwards them to K-EXAONE.
+   * Without this the model produces plain text only (no tool dispatch).
+   */
+  injectPrimitiveTools?: boolean
+  /**
+   * When true the harness auto-emits permission_response{decision} for any
+   * inbound permission_request. Used to exercise the permission gauntlet
+   * without a human-in-the-loop modal.
+   */
+  autoPermissionDecision?: 'allow_once' | 'allow_session' | 'deny'
 }
+
+// 5-primitive function tool definitions (Spec 031). Sent in
+// ChatRequestFrame.tools so K-EXAONE can decide to invoke them.
+const PRIMITIVE_TOOLS = [
+  {
+    type: 'function',
+    function: {
+      name: 'lookup',
+      description: 'Discover and invoke a Korean public-API adapter. Two modes: search (BM25 retrieve adapters by keyword) or fetch (call the resolved adapter with parameters).',
+      parameters: {
+        type: 'object',
+        properties: {
+          mode: { type: 'string', enum: ['search', 'fetch'] },
+          tool_id: { type: 'string', description: 'Required for fetch mode' },
+          params: { type: 'object', description: 'Adapter-specific parameters' },
+          query: { type: 'string', description: 'Required for search mode (Korean or English keywords)' },
+        },
+        required: ['mode'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'resolve_location',
+      description: 'Resolve a Korean address or place name into administrative codes (adm_cd) and lat/lon, suitable for chaining into lookup adapters.',
+      parameters: {
+        type: 'object',
+        properties: {
+          query: { type: 'string', description: '주소·시설명·랜드마크 (예: 강남구청, 역삼동)' },
+          want: { type: 'string', enum: ['adm_cd', 'latlon', 'both'], default: 'both' },
+        },
+        required: ['query'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'submit',
+      description: 'Submit a write action (form fill, payment, registration) against a registered Mock or Live adapter. Triggers the L3 permission gauntlet — citizen consent required before dispatch.',
+      parameters: {
+        type: 'object',
+        properties: {
+          tool_id: { type: 'string', description: 'Adapter id (e.g., mock_traffic_fine_pay_v1)' },
+          payload: { type: 'object', description: 'Form / request body' },
+          idempotency_key: { type: 'string', description: 'Optional dedupe key' },
+        },
+        required: ['tool_id', 'payload'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'verify',
+      description: 'Korean public-tier identity verification (공동인증서, 금융인증서, 간편인증, Digital Onepass, 모바일 신분증, MyData). Returns an AuthContext envelope with published_tier + nist_aal_hint.',
+      parameters: {
+        type: 'object',
+        properties: {
+          family: {
+            type: 'string',
+            enum: ['gongdong_injeungseo', 'geumyung_injeungseo', 'ganpyeon_injeung', 'digital_onepass', 'mobile_id', 'mydata'],
+          },
+          family_hint: { type: 'string', description: 'Optional disambiguation hint' },
+        },
+        required: ['family'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'subscribe',
+      description: 'Open a long-running subscription to a public broadcast feed (재난문자 CBS, 공공 RSS, REST poll). Returns a SubscriptionHandle and streams events for `lifetime_seconds`.',
+      parameters: {
+        type: 'object',
+        properties: {
+          tool_id: { type: 'string', description: 'Adapter id (e.g., mock_cbs_disaster_v1)' },
+          lifetime_seconds: { type: 'number', minimum: 1, maximum: 3600, default: 60 },
+        },
+        required: ['tool_id'],
+      },
+    },
+  },
+]
 
 const SCENARIOS: Record<string, Scenario> = {
   greeting: {
@@ -61,6 +159,43 @@ const SCENARIOS: Record<string, Scenario> = {
     timeoutMs: 90_000,
     expectedKinds: ['assistant_chunk'],
   },
+  // US2 — Mock submit + permission gauntlet (FR-002 / SC-002).
+  // Triggers the `submit` primitive against `mock_traffic_fine_pay_v1`.
+  // Permission flow is exercised once T043-T049 backend wiring lands (the
+  // harness will emit a `permission_response{decision:"allow_once"}` upon
+  // receiving a `permission_request` frame).
+  'submit-fine-pay': {
+    name: 'submit-fine-pay',
+    description: 'US2 — Mock submit + permission gauntlet (SC-002)',
+    prompt: '교통 범칙금 납부할게',
+    timeoutMs: 90_000,
+    expectedKinds: ['tool_call', 'permission_request', 'tool_result'],
+    injectPrimitiveTools: true,
+    autoPermissionDecision: 'allow_once',
+  },
+  // US3 — Mock verify gongdong_injeungseo (FR-005 / SC-003).
+  // Returns an AuthContext envelope that the TUI's AuthContextDisplay
+  // would render in the citizen-facing transcript.
+  'verify-gongdong': {
+    name: 'verify-gongdong',
+    description: 'US3 — Mock verify gongdong_injeungseo (SC-003)',
+    prompt: '공동인증서로 본인인증 부탁해',
+    timeoutMs: 60_000,
+    expectedKinds: ['tool_call', 'tool_result'],
+    injectPrimitiveTools: true,
+  },
+  // US4 — Mock CBS subscribe (FR-012, demo-time gated). Long-running stream
+  // emits multiple disaster-alert events under a SubscriptionHandle.
+  // Requires the T069 SubscriptionHandle lifetime wiring; the rehearsal
+  // honours timeoutMs and surfaces whatever frames arrive.
+  'subscribe-cbs': {
+    name: 'subscribe-cbs',
+    description: 'US4 — Mock CBS subscribe (demo-time gated)',
+    prompt: '재난 안전문자 알림 받을래',
+    timeoutMs: 30_000,
+    expectedKinds: ['tool_call', 'tool_result', 'assistant_chunk'],
+    injectPrimitiveTools: true,
+  },
 }
 
 // ---------------------------------------------------------------------------
@@ -72,6 +207,8 @@ type Props = {
   prompt: string
   onComplete: (summary: RehearsalSummary) => void
   timeoutMs: number
+  injectPrimitiveTools?: boolean
+  autoPermissionDecision?: 'allow_once' | 'allow_session' | 'deny'
 }
 
 type RehearsalSummary = {
@@ -86,7 +223,7 @@ type RehearsalSummary = {
   error?: string
 }
 
-function RehearsalHarness({ bridge, prompt, onComplete, timeoutMs }: Props): React.ReactElement {
+function RehearsalHarness({ bridge, prompt, onComplete, timeoutMs, injectPrimitiveTools, autoPermissionDecision }: Props): React.ReactElement {
   const [typed, setTyped] = useState('')
   const [submitted, setSubmitted] = useState(false)
   const [transcript, setTranscript] = useState<string[]>([])
@@ -133,7 +270,7 @@ function RehearsalHarness({ bridge, prompt, onComplete, timeoutMs }: Props): Rea
       trailer: null,
       ts: new Date().toISOString(),
       messages: [{ role: 'user', content: typed }],
-      tools: [],
+      tools: injectPrimitiveTools ? PRIMITIVE_TOOLS : [],
       system: null,
       max_tokens: 8192,
       temperature: 1.0,
@@ -182,6 +319,24 @@ function RehearsalHarness({ bridge, prompt, onComplete, timeoutMs }: Props): Rea
               onComplete(summary)
               return
             }
+          } else if (frame.kind === 'permission_request') {
+            // Auto-respond per scenario config (T044-T052 backend wiring
+            // emits these). Without a configured decision we default-deny.
+            const reqId = (frame as { request_id?: string }).request_id
+            const decision = autoPermissionDecision ?? 'deny'
+            bridge.send({
+              kind: 'permission_response',
+              version: '1.0',
+              session_id: frame.session_id,
+              correlation_id: frame.correlation_id,
+              role: 'tui',
+              frame_seq: 0,
+              transaction_id: null,
+              trailer: null,
+              ts: new Date().toISOString(),
+              request_id: reqId,
+              decision,
+            } as unknown as IPCFrame)
           } else if (frame.kind === 'error') {
             stopped = true
             clearTimeout(watchdog)
@@ -263,6 +418,8 @@ async function main(): Promise<void> {
         prompt={scenario.prompt}
         onComplete={onComplete}
         timeoutMs={scenario.timeoutMs}
+        injectPrimitiveTools={scenario.injectPrimitiveTools}
+        autoPermissionDecision={scenario.autoPermissionDecision}
       />,
     )
 
