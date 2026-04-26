@@ -258,6 +258,203 @@
       "title": "BackpressureSignalFrame",
       "type": "object"
     },
+    "ChatMessage": {
+      "additionalProperties": false,
+      "description": "One conversation-history entry carried by ``ChatRequestFrame.messages``.\n\n``role=\"tool\"`` messages MUST also set ``name`` (the tool name that was\ninvoked) and ``tool_call_id`` (the originating ``tool_call`` envelope's\ncorrelation id). This is the data-model invariant D4 (tool message\nintegrity) enforced by the ``ChatRequestFrame`` validator below.",
+      "properties": {
+        "role": {
+          "description": "Conversation turn author.",
+          "enum": [
+            "system",
+            "user",
+            "assistant",
+            "tool"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "content": {
+          "description": "UTF-8 message body.",
+          "title": "Content",
+          "type": "string"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Tool name when role='tool'; None otherwise.",
+          "title": "Name"
+        },
+        "tool_call_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Matching ``ToolCallFrame.call_id`` when role='tool'; None otherwise.",
+          "title": "Tool Call Id"
+        }
+      },
+      "required": [
+        "role",
+        "content"
+      ],
+      "title": "ChatMessage",
+      "type": "object"
+    },
+    "ChatRequestFrame": {
+      "additionalProperties": false,
+      "description": "TUI -> backend: tools-aware chat request (Spec 1978 ADR-0001).\n\nCoexists with ``UserInputFrame`` (which remains the echo / smoke-test path).\nThe backend treats a ``UserInputFrame{text=t}`` as\n``ChatRequestFrame{messages=[{role:'user', content:t}], tools=[]}``.",
+      "properties": {
+        "session_id": {
+          "description": "Opaque session identifier.",
+          "title": "Session Id",
+          "type": "string"
+        },
+        "correlation_id": {
+          "description": "UUIDv7 string for new emissions; ULID accepted for back-compat. Non-empty; emitter SHOULD use UUIDv7. (E5)",
+          "minLength": 1,
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "ts": {
+          "description": "ISO-8601 UTC timestamp with sub-ms precision.",
+          "title": "Ts",
+          "type": "string"
+        },
+        "version": {
+          "const": "1.0",
+          "default": "1.0",
+          "description": "Envelope version. Hard-fail on mismatch (E1, FR-001).",
+          "title": "Version",
+          "type": "string"
+        },
+        "role": {
+          "description": "Origin role. Validated against kind<->role allow-list (E3, FR-004).",
+          "enum": [
+            "tui",
+            "backend",
+            "tool",
+            "llm",
+            "notification"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "frame_seq": {
+          "default": 0,
+          "description": "Per-session monotonic sequence number (ge=0). Gap detection uses this.",
+          "minimum": 0,
+          "title": "Frame Seq",
+          "type": "integer"
+        },
+        "transaction_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)",
+          "title": "Transaction Id"
+        },
+        "trailer": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FrameTrailer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Completion/validation metadata. Populated on terminal frames. (FR-006)"
+        },
+        "kind": {
+          "const": "chat_request",
+          "default": "chat_request",
+          "description": "Frame discriminator.",
+          "title": "Kind",
+          "type": "string"
+        },
+        "messages": {
+          "description": "Conversation history; tail message has role 'user' or 'tool'.",
+          "items": {
+            "$ref": "#/$defs/ChatMessage"
+          },
+          "minItems": 1,
+          "title": "Messages",
+          "type": "array"
+        },
+        "tools": {
+          "description": "Tools available to the model this turn.",
+          "items": {
+            "$ref": "#/$defs/ToolDefinition"
+          },
+          "title": "Tools",
+          "type": "array"
+        },
+        "system": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Effective system prompt (may be None if backend supplies its own).",
+          "title": "System"
+        },
+        "max_tokens": {
+          "default": 8192,
+          "description": "Maximum tokens for the assistant turn.",
+          "maximum": 32000,
+          "minimum": 1,
+          "title": "Max Tokens",
+          "type": "integer"
+        },
+        "temperature": {
+          "default": 1.0,
+          "description": "Sampling temperature.",
+          "maximum": 2.0,
+          "minimum": 0.0,
+          "title": "Temperature",
+          "type": "number"
+        },
+        "top_p": {
+          "default": 0.95,
+          "description": "Nucleus sampling threshold.",
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Top P",
+          "type": "number"
+        }
+      },
+      "required": [
+        "session_id",
+        "correlation_id",
+        "ts",
+        "role",
+        "messages"
+      ],
+      "title": "ChatRequestFrame",
+      "type": "object"
+    },
     "CoordinatorPhaseFrame": {
       "additionalProperties": false,
       "description": "backend -> TUI: Spec 027 coordinator phase update.",
@@ -2098,6 +2295,63 @@
       "title": "ToolCallFrame",
       "type": "object"
     },
+    "ToolDefinition": {
+      "additionalProperties": false,
+      "description": "OpenAI-style tool definition (function-calling).",
+      "properties": {
+        "type": {
+          "const": "function",
+          "default": "function",
+          "description": "OpenAI tool envelope; only 'function' is currently supported.",
+          "title": "Type",
+          "type": "string"
+        },
+        "function": {
+          "$ref": "#/$defs/ToolDefinitionFunction",
+          "description": "Inner function metadata."
+        }
+      },
+      "required": [
+        "function"
+      ],
+      "title": "ToolDefinition",
+      "type": "object"
+    },
+    "ToolDefinitionFunction": {
+      "additionalProperties": false,
+      "description": "Inner ``function`` block of an OpenAI-style tool definition.",
+      "properties": {
+        "name": {
+          "description": "Tool name (matches the primitive registry id).",
+          "title": "Name",
+          "type": "string"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Human-readable description shown to the model for tool selection.",
+          "title": "Description"
+        },
+        "parameters": {
+          "additionalProperties": true,
+          "description": "JSON Schema (Draft 2020-12) for the tool input. Pydantic accepts any dict shape; deeper schema validation is delegated to LLMClient.",
+          "title": "Parameters",
+          "type": "object"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "ToolDefinitionFunction",
+      "type": "object"
+    },
     "ToolResultEnvelope": {
       "additionalProperties": true,
       "description": "5-primitive discriminated union envelope (open schema).",
@@ -2444,6 +2698,7 @@
     "mapping": {
       "assistant_chunk": "#/$defs/AssistantChunkFrame",
       "backpressure": "#/$defs/BackpressureSignalFrame",
+      "chat_request": "#/$defs/ChatRequestFrame",
       "coordinator_phase": "#/$defs/CoordinatorPhaseFrame",
       "error": "#/$defs/ErrorFrame",
       "heartbeat": "#/$defs/HeartbeatFrame",
@@ -2468,6 +2723,9 @@
   "oneOf": [
     {
       "$ref": "#/$defs/UserInputFrame"
+    },
+    {
+      "$ref": "#/$defs/ChatRequestFrame"
     },
     {
       "$ref": "#/$defs/AssistantChunkFrame"

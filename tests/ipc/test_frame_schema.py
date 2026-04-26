@@ -66,6 +66,18 @@ _MINIMAL_EXAMPLES: dict[str, dict[str, Any]] = {
         "ts": _TS,
         "text": "안녕하세요",
     },
+    # Spec 1978 ADR-0001 — tools-aware chat from TUI
+    "chat_request": {
+        "kind": "chat_request",
+        "version": "1.0",
+        "session_id": _SESSION_ID,
+        "correlation_id": _CORR_ID,
+        "role": "tui",
+        "frame_seq": 0,
+        "ts": _TS,
+        "messages": [{"role": "user", "content": "안녕하세요"}],
+        "tools": [],
+    },
     "assistant_chunk": {
         "kind": "assistant_chunk",
         "version": "1.0",
@@ -344,7 +356,8 @@ def test_arm_kind_field(arm: str) -> None:
 
 
 def test_json_schema_contains_all_discriminators() -> None:
-    """ipc_frame_json_schema() exposes all 19 discriminator values (10 baseline + 9 Spec 032)."""
+    """ipc_frame_json_schema() exposes all 21 discriminator values
+    (10 baseline + 9 Spec 032 + 1 Epic #1636 + 1 Spec 1978 = 21)."""
     schema = ipc_frame_json_schema()
     discriminator = schema.get("discriminator", {})
     mapping = discriminator.get("mapping", {})
