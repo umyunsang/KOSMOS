@@ -472,6 +472,15 @@ async def run(  # noqa: C901
         Thread loop: blocks on readline() until EOF, then feeds EOF to the
         StreamReader so _reader_loop terminates naturally.  Any OSError or
         ValueError (e.g. closed file during shutdown) also terminates the loop.
+
+        On task cancellation (signalled by the outer shutdown coordinator at
+        :func:`run`'s ``asyncio.wait`` boundary), the in-flight ``readline()``
+        executor Future is cancelled so the awaiting coroutine returns and
+        ``stdin_reader.feed_eof()`` runs in ``finally`` (Codex P1, PR #2111).
+        The blocked worker thread itself does not exit — Python cannot kill
+        threads — but Python's default-executor shutdown path on
+        ``asyncio.run()`` exit is bounded by ``shutdown_default_executor``'s
+        timeout, so the interpreter still terminates.
         """
         loop_inner = asyncio.get_running_loop()
         try:
@@ -480,12 +489,12 @@ async def run(  # noqa: C901
                 if not line:
                     break
                 stdin_reader.feed_data(line)
-        except (OSError, ValueError):
+        except (OSError, ValueError, asyncio.CancelledError):
             pass
         finally:
             stdin_reader.feed_eof()
 
-    asyncio.create_task(_stdin_feed_task(), name="ipc-stdin-feed")
+    _stdin_feed_handle = asyncio.create_task(_stdin_feed_task(), name="ipc-stdin-feed")
 
     # Default on_frame: route `user_input` to the FriendliAI LLM (Epic #1633
     # FR-007/FR-017) and `session_event` to the session manager. Wraps every
@@ -1673,6 +1682,14 @@ async def run(  # noqa: C901
             task.cancel()
             with contextlib.suppress(asyncio.CancelledError, Exception):
                 await task
+
+        # Cancel the stdin feed task too — its awaiting coroutine winds
+        # down so finally runs feed_eof() (Codex P1, PR #2111). The blocked
+        # readline() thread keeps running but asyncio.run()'s
+        # shutdown_default_executor step bounds the wait at process exit.
+        _stdin_feed_handle.cancel()
+        with contextlib.suppress(asyncio.CancelledError, Exception):
+            await _stdin_feed_handle
 
         # Emit exit frame and flush
         try:

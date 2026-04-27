@@ -369,15 +369,36 @@ async function* queryModelWithStreaming(params: {
       // Lazy import to avoid pulling the React store into modules that don't
       // need it; deps.ts is the only IPC↔store seam for this surface.
       const { setPendingPermission } = await import('../store/pendingPermissionSlot.js')
-      const decision = await setPendingPermission({
+      const { dispatchSessionAction } = await import('../store/session-store.js')
+      // Mirror the request into the reducer's pending_permission field so
+      // KosmosIpcPermissionGauntletModal — which reads `s.pending_permission`
+      // — actually paints. The pendingPermissionSlot owns the Promise +
+      // FIFO queue lifecycle; the reducer field is a render-only mirror.
+      const reducerRequest = {
         request_id: fp.request_id ?? '',
+        correlation_id: correlationId,
+        worker_id: '',
         primitive_kind: fp.primitive_kind ?? 'submit',
         description_ko: fp.description_ko ?? '',
         description_en: fp.description_en ?? '',
-        risk_level: fp.risk_level ?? 'medium',
-        receipt_id: fp.receipt_id ?? '',
-        enqueued_at: performance.now(),
-      })
+        risk_level: fp.risk_level ?? ('medium' as const),
+      }
+      dispatchSessionAction({ type: 'PERMISSION_REQUEST', request: reducerRequest })
+      try {
+        var decision = await setPendingPermission({
+          request_id: fp.request_id ?? '',
+          primitive_kind: fp.primitive_kind ?? 'submit',
+          description_ko: fp.description_ko ?? '',
+          description_en: fp.description_en ?? '',
+          risk_level: fp.risk_level ?? 'medium',
+          receipt_id: fp.receipt_id ?? '',
+          enqueued_at: performance.now(),
+        })
+      } finally {
+        // Always clear the reducer mirror so a stale `pending_permission`
+        // never blocks the next turn even on grant/deny/timeout/throw.
+        dispatchSessionAction({ type: 'PERMISSION_RESPONSE' })
+      }
       // Backend's permission_response schema accepts only granted/denied;
       // collapse 'timeout' into 'denied' at the wire boundary (the timeout
       // distinction stays in the audit ledger via Spec 035 receipt).
