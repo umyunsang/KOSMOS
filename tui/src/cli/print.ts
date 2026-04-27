@@ -354,16 +354,18 @@ import { initializeGrowthBook } from '../services/analytics/growthbook.js'
 import { errorMessage, toError } from '../utils/errors.js'
 import { sleep } from '../utils/sleep.js'
 import { isExtractModeActive } from '../memdir/paths.js'
+import {
+  isProactiveActive,
+  isProactivePaused,
+  activateProactive,
+  deactivateProactive,
+} from '../utils/proactiveModule.js'
 
 // Dead code elimination: conditional imports
 /* eslint-disable @typescript-eslint/no-require-imports */
 const coordinatorModeModule = feature('COORDINATOR_MODE')
   ? (require('../coordinator/coordinatorMode.js') as typeof import('../coordinator/coordinatorMode.js'))
   : null
-const proactiveModule =
-  feature('PROACTIVE') || feature('KAIROS')
-    ? (require('../proactive/index.js') as typeof import('../proactive/index.js'))
-    : null
 const cronSchedulerModule = feature('AGENT_TRIGGERS')
   ? (require('../utils/cronScheduler.js') as typeof import('../utils/cronScheduler.js'))
   : null
@@ -539,11 +541,10 @@ export async function runHeadless(
   // (e.g. env was injected by the SDK transport after argv parsing).
   if (
     (feature('PROACTIVE') || feature('KAIROS')) &&
-    proactiveModule &&
-    !proactiveModule.isProactiveActive() &&
+    !isProactiveActive() &&
     isEnvTruthy(process.env.CLAUDE_CODE_PROACTIVE)
   ) {
-    proactiveModule.activateProactive('command')
+    activateProactive('command')
   }
 
   // Periodically force a full GC to keep memory usage in check
@@ -557,6 +558,7 @@ export async function runHeadless(
   headlessProfilerCheckpoint('runHeadless_entry')
 
   // Check Grove requirements for non-interactive consumer subscribers
+  // (KOSMOS no-op — services/api/grove.ts returns false unconditionally).
   if (await isQualifiedForGrove()) {
     await checkGroveForNonInteractive()
   }
@@ -1838,8 +1840,8 @@ function runHeadlessStreaming(
       ? () => {
           setTimeout(() => {
             if (
-              !proactiveModule?.isProactiveActive() ||
-              proactiveModule.isProactivePaused() ||
+              !isProactiveActive() ||
+              isProactivePaused() ||
               inputClosed
             ) {
               return
@@ -2477,8 +2479,8 @@ function runHeadlessStreaming(
     // Proactive tick: if proactive is active and queue is empty, inject a tick
     if (
       (feature('PROACTIVE') || feature('KAIROS')) &&
-      proactiveModule?.isProactiveActive() &&
-      !proactiveModule.isProactivePaused()
+      isProactiveActive() &&
+      !isProactivePaused()
     ) {
       if (peek(isMainThread) === undefined && !inputClosed) {
         scheduleProactiveTick!()
@@ -3883,12 +3885,12 @@ function runHeadlessStreaming(
             enabled: boolean
           }
           if (req.enabled) {
-            if (!proactiveModule!.isProactiveActive()) {
-              proactiveModule!.activateProactive('command')
+            if (!isProactiveActive()) {
+              activateProactive('command')
               scheduleProactiveTick!()
             }
           } else {
-            proactiveModule!.deactivateProactive()
+            deactivateProactive()
           }
           sendControlResponseSuccess(message)
         } else if (message.request.subtype === 'remote_control') {

@@ -1,0 +1,35 @@
+# Epic #2077 K-EXAONE Tool Wiring — Baseline Test Counts
+
+Recorded at T001 pre-flight on branch `2077-kexaone-tool-wiring` at HEAD `523b520` + the cleanup below.
+
+## TUI (full `bun test`)
+
+- **945 tests** across 109 files
+- **0 fail** · 4 skip · 3 todo
+- 45 snapshots / 3435 expect() calls
+- Wall: ~12s
+
+## Python (`uv run pytest tests/llm tests/ipc`)
+
+- **426 passed** in 5.44s
+- 0 fail / 0 error
+
+## Pre-flight cleanup applied (T001)
+
+- Removed empty directory `tui/src/commands/login/` — leftover from prior exploration that broke the `tests/invariants/deletions.test.ts` Spec 1633 dead-code invariant ("commands/login MUST NOT exist"). Empty dir was not git-tracked; rmdir restored baseline to 0 fail.
+
+## Regression budget for Epic #2077
+
+- **TUI**: ≥ 945 pass / 0 fail at every phase boundary (Phase 2/3/4/5/6 checkpoints).
+- **Python**: ≥ 426 pass / 0 fail (will grow as new test files land for T009/T011/T014/T017).
+- New tests added by this epic MUST raise the pass count, never the fail count.
+- Skip / todo counters tracked but not gated.
+
+## Verification context
+
+- Branch: `2077-kexaone-tool-wiring` (✓)
+- `.env` carries `KOSMOS_FRIENDLI_TOKEN` (✓ grep -c = 1)
+- Spec docs present: spec.md, plan.md, research.md, data-model.md, 5 contracts/, quickstart.md, tasks.md (✓ all 10)
+- Sub-issues linked to Epic #2077: 32 (verified via GraphQL `subIssues.totalCount` after `/speckit-taskstoissues`)
+
+T001 status: ✅ COMPLETE.

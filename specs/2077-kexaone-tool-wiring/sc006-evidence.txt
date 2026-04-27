@@ -1,0 +1,32 @@
+SC-006 Evidence — Zero new runtime dependencies
+
+Date: 2026-04-27
+Branch: 2077-kexaone-tool-wiring
+HEAD: see `git rev-parse HEAD`
+Baseline: origin/main (HEAD = 523b520 at epic kickoff)
+
+Test:
+  $ git diff origin/main -- pyproject.toml
+  (empty — no output)
+
+  $ git diff origin/main -- tui/package.json
+  (empty — no output)
+
+Result: PASS — neither dependency manifest was modified by Epic #2077.
+
+Rationale:
+- Backend Python: stdlib only for new modules (system_prompt_builder.py uses
+  json/logging/typing). No new pyproject.toml `[project.dependencies]` lines.
+- TUI TypeScript: zod/v4 namespace already in repo (zod 3.25.x ships v4 preview),
+  so z.toJSONSchema() works without zod-to-json-schema lib (verified at
+  research § R-1). No new tui/package.json `dependencies` lines.
+
+Constitution Principle / AGENTS.md hard rule:
+- "Never add a dependency outside a spec-driven PR."
+- "Zero new runtime dependencies" SC-006 acceptance criterion.
+
+Scope of changes — purely Pydantic v2 + existing httpx/opentelemetry on Python
+side; existing zod/v4 + ink + react on TUI side. CC reference cp files in
+src/kosmos/llm/_cc_reference/ are research-use mirrors (Constitution §I) and
+do not contribute to the runtime build (TS files there are read-only references,
+not imported by KOSMOS code).

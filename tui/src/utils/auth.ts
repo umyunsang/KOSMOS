@@ -97,6 +97,10 @@ export function getApiKeyFromApiKeyHelper(): null {
   return null
 }
 
+export function getApiKeyFromConfigOrMacOSKeychain(): null {
+  return null
+}
+
 export function getConfiguredApiKeyHelper(): null {
   return null
 }

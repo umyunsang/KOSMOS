@@ -1,5 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // KOSMOS-original — Epic #1633 T041 US3 invariant test.
+// Updated: Epic #2077 — services/api/claude.ts and client.ts RESTORED (no longer banned).
+//   The files are preserved with CC's full API surface but LLM calls route
+//   through the Spec 1978 stdio bridge (query/deps.ts). See Epic #2077 T001.
 //
 // Validates FR-004..FR-006, FR-014, FR-015 — CC telemetry, auth, teleport,
 // policy-limits, and Anthropic MCP surfaces have been removed.
@@ -32,11 +35,8 @@ describe('Epic #1633 T041 — US3 invariant: CC dead-code directories removed', 
     'services/remoteManagedSettings',
     'services/analytics/datadog.ts',
     'services/analytics/sink.ts',
-    'services/analytics/firstPartyEventLogger.ts',
     'services/internalLogging.ts',
-    'services/claudeAiLimits.ts',
     'services/claudeAiLimitsHook.ts',
-    'services/mcp/claudeai.ts',
     'utils/teleport.tsx',
     'utils/teleport',
     'utils/modelCost.ts',
@@ -53,12 +53,15 @@ describe('Epic #1633 T041 — US3 invariant: CC dead-code directories removed', 
     expect(exists(path), `${path} still present`).toBe(false)
   })
 
-  test('tui/src/services/api/claude.ts MUST NOT exist (replaced by ipc/llmClient.ts)', () => {
-    expect(isFile('services/api/claude.ts')).toBe(false)
+  // Epic #2077: services/api/claude.ts and client.ts are RESTORED with the full
+  // CC API surface. LLM calls route through the stdio bridge (query/deps.ts).
+  // The "MUST NOT exist" assertions are removed; the files must now EXIST.
+  test('tui/src/services/api/claude.ts MUST exist (Epic #2077 — full CC surface restored, bridge-routed)', () => {
+    expect(isFile('services/api/claude.ts'), 'services/api/claude.ts missing').toBe(true)
   })
 
-  test('tui/src/services/api/client.ts MUST NOT exist (replaced by ipc/llmClient.ts)', () => {
-    expect(isFile('services/api/client.ts')).toBe(false)
+  test('tui/src/services/api/client.ts MUST exist (Epic #2077 — KOSMOS no-op stub)', () => {
+    expect(isFile('services/api/client.ts'), 'services/api/client.ts missing').toBe(true)
   })
 })
 
@@ -68,6 +71,10 @@ describe('Epic #1633 T041 — US3 invariant: stub files restored as KOSMOS no-op
   test.each([
     'services/analytics/index.ts',
     'services/analytics/growthbook.ts',
+    'services/analytics/firstPartyEventLogger.ts',
+    'services/api/grove.ts',
+    'services/claudeAiLimits.ts',
+    'services/mcp/claudeai.ts',
     'utils/auth.ts',
     'services/oauth/client.ts',
     'services/oauth/index.ts',

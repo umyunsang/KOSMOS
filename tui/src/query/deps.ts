@@ -4,7 +4,8 @@ import { autoCompactIfNeeded } from '../services/compact/autoCompact.js'
 import { microcompactMessages } from '../services/compact/microCompact.js'
 import { getOrCreateKosmosBridge, getKosmosBridgeSessionId } from '../ipc/bridgeSingleton.js'
 import type { ChatMessage, ChatRequestFrame, IPCFrame } from '../ipc/frames.generated.js'
-import { createAssistantMessage, createSystemMessage, SYNTHETIC_MODEL } from '../utils/messages.js'
+import { getToolDefinitionsForFrame } from './toolSerialization.js'
+import { createAssistantMessage, createSystemMessage, createUserMessage, SYNTHETIC_MODEL } from '../utils/messages.js'
 
 /**
  * KOSMOS-1633 P3 wire-up — replaces the Anthropic-SDK queryModelWithStreaming.
@@ -70,6 +71,12 @@ async function* queryModelWithStreaming(params: {
   const bridge = getOrCreateKosmosBridge()
   const sessionId = getKosmosBridgeSessionId()
 
+  // Publish the active tool inventory to the LLM on every turn (FR-001).
+  // Backend authoritative-execution rule (FR-005): backend rejects any
+  // tool name not in its registry, so unknown entries here are harmless.
+  // Per data-model.md § 1: emit per turn, no caching.
+  const tools = await getToolDefinitionsForFrame()
+
   const frame: ChatRequestFrame = {
     session_id: sessionId,
     correlation_id: correlationId,
@@ -78,6 +85,7 @@ async function* queryModelWithStreaming(params: {
     kind: 'chat_request',
     messages: chatMessages as ChatRequestFrame['messages'],
     ...(systemText ? { system: systemText } : {}),
+    tools: tools as ChatRequestFrame['tools'],
   }
 
   // Flip the spinner from idle → 'requesting' before the network round-trip
@@ -104,6 +112,27 @@ async function* queryModelWithStreaming(params: {
   let accumulated = ''
   let messageStartEmitted = false
   let frameCount = 0
+  // Epic #2077 T012 — turn-scoped CC content-block index. Index 0 is the
+  // text block opened on the first ``assistant_chunk``; tool_use blocks
+  // claim 1, 2, 3, … in arrival order. ``pendingContentBlocks`` mirrors the
+  // CC pattern of ``messages.ts:normalizeContentFromAPI`` — every tool_use
+  // block emitted during the turn is also accumulated so the terminal
+  // ``createAssistantMessage`` carries the canonical ``BetaContentBlock[]``
+  // shape (text + tool_use blocks) instead of a raw string. Required by
+  // FR-006 (transcript-native invocation record) + FR-009 (one-to-one
+  // pairing with tool_result content blocks).
+  let blockIndex = 0
+  const pendingContentBlocks: Array<{
+    type: 'tool_use'
+    id: string
+    name: string
+    input: unknown
+  }> = []
+  // Epic #2077 T016 — FR-009 one-to-one pairing invariant.
+  // Every tool_call frame registers its call_id here; every tool_result frame
+  // checks against this set. An unmatched tool_use_id surfaces as a visible
+  // error (orphan), satisfying FR-009 "no orphan results".
+  const seenToolUseIds = new Set<string>()
   for await (const f of bridge.frames()) {
     frameCount++
     if (frameCount <= 30) {
@@ -209,7 +238,24 @@ async function* queryModelWithStreaming(params: {
         // the deferred → final transition is atomic and matches CC behavior.
         // K-EXAONE often prefixes its first delta with `\n\n`; trim leading
         // whitespace so the rendered turn doesn't open with blank lines.
-        const finalMsg = createAssistantMessage({ content: accumulated.trimStart() }) as {
+        // Epic #2077 T012 — when tool_use blocks accumulated during the
+        // turn, the terminal AssistantMessage's content array carries them
+        // alongside the text block (CC's BetaContentBlock[] shape). Empty
+        // text + tool blocks stays valid (the assistant did only tool calls
+        // before yielding); empty text + no tool blocks falls through to the
+        // string path and createAssistantMessage substitutes NO_CONTENT_MESSAGE.
+        const trimmedText = accumulated.trimStart()
+        const finalContent =
+          pendingContentBlocks.length > 0
+            ? trimmedText.length > 0
+              ? ([{ type: 'text' as const, text: trimmedText }, ...pendingContentBlocks] as Parameters<
+                  typeof createAssistantMessage
+                >[0]['content'])
+              : (pendingContentBlocks as unknown as Parameters<
+                  typeof createAssistantMessage
+                >[0]['content'])
+            : trimmedText
+        const finalMsg = createAssistantMessage({ content: finalContent }) as {
           uuid: string
           message: { id: string }
         }
@@ -235,35 +281,107 @@ async function* queryModelWithStreaming(params: {
         return
       }
     } else if (fa.kind === 'tool_call') {
-      // Backend executes the tool itself (Spec 1978 ADR-0001 _pending_calls
-      // futures); the TUI only paints a display-only progress line so users
-      // see what the agentic loop is doing in real time.
-      const argsPreview = summarizeArgs(fa.arguments)
-      yield createSystemMessage(`🔧 ${fa.name ?? '(unknown tool)'}${argsPreview}`, 'info', fa.call_id)
+      // Epic #2077 T012 (Step 5) — CC stream-event projection. Mirrors
+      // ``_cc_reference/claude.ts:1995-2052`` (content_block_start tool_use
+      // case). ``handleMessageFromStream`` (utils/messages.ts:3024-3037)
+      // routes the start event into ``streamingToolUses`` so the existing
+      // ``AssistantToolUseMessage`` component (367 LOC, REPL-mounted)
+      // renders the invocation as a transcript-native record (FR-006).
+      // ``pendingContentBlocks.push`` accumulates the same block so the
+      // terminal AssistantMessage's ``content`` array carries it (CC's
+      // ``messages.ts:normalizeContentFromAPI`` shape).
+      const toolUseBlock = {
+        type: 'tool_use' as const,
+        id: fa.call_id ?? '',
+        name: fa.name ?? '(unknown tool)',
+        input: fa.arguments ?? {},
+      }
+      // Register the call_id so tool_result frames can verify pairing (FR-009).
+      if (fa.call_id) {
+        seenToolUseIds.add(fa.call_id)
+      }
+      pendingContentBlocks.push(toolUseBlock)
+      blockIndex += 1
+      yield {
+        type: 'stream_event' as const,
+        event: {
+          type: 'content_block_start' as const,
+          index: blockIndex,
+          content_block: toolUseBlock,
+        },
+      }
+      yield {
+        type: 'stream_event' as const,
+        event: { type: 'content_block_stop' as const, index: blockIndex },
+      }
     } else if (fa.kind === 'tool_result') {
-      // Tool finished server-side; surface the outcome as a progress line.
-      // The envelope's `kind` is the result discriminator (ok / error / etc).
+      // Epic #2077 T012 (Step 6) — user-role tool_result content block.
+      // Mirrors ``_cc_reference/messages.ts:ensureToolResultPairing`` (line
+      // 1150-1250). The result enters the transcript as a user message so
+      // the next agentic-loop turn picks it up as LLM context (FR-010).
+      // Pairing to the originating tool_use is by ``tool_use_id`` (FR-009).
+      // ``is_error: true`` flag is set when the envelope's discriminator is
+      // ``'error'`` so downstream rendering can surface it distinctly.
+      //
+      // Epic #2077 T016 — FR-009 orphan detection. A tool_result whose
+      // call_id was NOT registered by any prior tool_call in this turn is an
+      // orphan. The tool_result user-message is still emitted (transcript
+      // preservation), but a visible error SystemMessage precedes it so the
+      // citizen sees the pairing failure immediately.
+      const resultCallId = fa.call_id ?? ''
+      if (resultCallId && !seenToolUseIds.has(resultCallId)) {
+        yield createSystemMessage(
+          `tool_result_orphan: Tool result references unknown tool_use_id "${resultCallId}"`,
+          'error',
+          resultCallId,
+        )
+      }
       const env = fa.envelope ?? {}
-      const status = (env.kind as string | undefined) ?? 'done'
-      const summary = summarizeResult(env)
-      yield createSystemMessage(`✓ ${status}${summary}`, 'info', fa.call_id)
+      const isError = env.kind === 'error'
+      yield createUserMessage({
+        content: [
+          {
+            type: 'tool_result' as const,
+            tool_use_id: resultCallId,
+            content: JSON.stringify(env),
+            ...(isError ? { is_error: true as const } : {}),
+          },
+        ] as Parameters<typeof createUserMessage>[0]['content'],
+      })
     } else if (fa.kind === 'permission_request') {
-      // KOSMOS permission gauntlet — backend asks before running gated
-      // primitives (submit, etc). The full UI modal (consent capture +
-      // session-scope cache + audit ledger receipt) is a separate spec;
-      // this minimum wire surfaces the request and auto-denies so the
-      // backend can move on with a synthetic error instead of hanging on
-      // its 60s timeout.
+      // Epic #2077 T020 (Step 7) — CC permission gauntlet wire. Routes the
+      // backend permission_request frame through sessionStore's pending
+      // permission slot (T018 / contracts/pending-permission-slot.md). The
+      // store dispatches the request to the mounted PermissionGauntletModal
+      // (T021), awaits the citizen's Y/N decision (or 5-min timeout), and
+      // resolves the Promise here. We then send the permission_response
+      // frame upstream with the resolved decision (granted / denied /
+      // timeout). 'timeout' is treated by the backend as 'denied' for
+      // fail-closed (Constitution §II + FR-017).
       const fp = f as {
         request_id?: string
-        primitive_kind?: string
+        primitive_kind?: 'submit' | 'subscribe'
         description_ko?: string
         description_en?: string
-        risk_level?: string
+        risk_level?: 'low' | 'medium' | 'high'
+        receipt_id?: string
       }
-      const desc = fp.description_ko || fp.description_en || fp.primitive_kind || '(unknown primitive)'
-      const risk = fp.risk_level ? ` [risk=${fp.risk_level}]` : ''
-      yield createSystemMessage(`🛡️  permission_request${risk} ${desc} — 자동 거부 (UI 모달 미구현, 별도 spec)`, 'warning', fp.request_id)
+      // Lazy import to avoid pulling the React store into modules that don't
+      // need it; deps.ts is the only IPC↔store seam for this surface.
+      const { setPendingPermission } = await import('../store/pendingPermissionSlot.js')
+      const decision = await setPendingPermission({
+        request_id: fp.request_id ?? '',
+        primitive_kind: fp.primitive_kind ?? 'submit',
+        description_ko: fp.description_ko ?? '',
+        description_en: fp.description_en ?? '',
+        risk_level: fp.risk_level ?? 'medium',
+        receipt_id: fp.receipt_id ?? '',
+        enqueued_at: performance.now(),
+      })
+      // Backend's permission_response schema accepts only granted/denied;
+      // collapse 'timeout' into 'denied' at the wire boundary (the timeout
+      // distinction stays in the audit ledger via Spec 035 receipt).
+      const wireDecision = decision === 'timeout' ? 'denied' : decision
       const respFrame = {
         session_id: sessionId,
         correlation_id: correlationId,
@@ -271,7 +389,7 @@ async function* queryModelWithStreaming(params: {
         role: 'tui' as const,
         kind: 'permission_response' as const,
         request_id: fp.request_id ?? '',
-        decision: 'denied' as const,
+        decision: wireDecision,
       }
       bridge.send(respFrame as unknown as IPCFrame)
     } else if (fa.kind === 'error') {
@@ -296,8 +414,19 @@ async function* queryModelWithStreaming(params: {
   }
   // Stream ended without a `done:true` chunk — yield the accumulated text
   // (so the turn isn't silently dropped), then close any open block in CC's
-  // AssistantMessage-first order.
-  const finalMsg = createAssistantMessage({ content: accumulated.trimStart() }) as {
+  // AssistantMessage-first order. Epic #2077 T012 — same content-array
+  // promotion as the done=true path so any tool_use blocks captured before
+  // the abrupt close still appear in the persisted transcript.
+  const trimmedTailText = accumulated.trimStart()
+  const finalTailContent =
+    pendingContentBlocks.length > 0
+      ? trimmedTailText.length > 0
+        ? ([{ type: 'text' as const, text: trimmedTailText }, ...pendingContentBlocks] as Parameters<
+            typeof createAssistantMessage
+          >[0]['content'])
+        : (pendingContentBlocks as unknown as Parameters<typeof createAssistantMessage>[0]['content'])
+      : trimmedTailText
+  const finalMsg = createAssistantMessage({ content: finalTailContent }) as {
     uuid: string
     message: { id: string }
   }
@@ -383,4 +512,37 @@ export function productionDeps(): QueryDeps {
     autocompact: autoCompactIfNeeded,
     uuid: randomUUID,
   }
+}
+
+// ---------------------------------------------------------------------------
+// Pure helpers (exported for unit tests — no bridge dependency)
+// ---------------------------------------------------------------------------
+
+/**
+ * Checks whether a tool_result call_id is an orphan given the set of
+ * tool_use ids seen so far in the same turn. Returns true when the id is
+ * absent from the seen set (orphan) or false when it is paired.
+ *
+ * This pure function lets tests exercise the FR-009 pairing invariant
+ * without spinning up a mock bridge or the full queryModelWithStreaming
+ * generator.
+ *
+ * @param toolUseId  - The tool_use_id carried by the tool_result frame.
+ * @param seenIds    - The Set of call_ids registered by tool_call frames so far.
+ */
+export function isOrphanToolResult(
+  toolUseId: string,
+  seenIds: ReadonlySet<string>,
+): boolean {
+  if (!toolUseId) return false
+  return !seenIds.has(toolUseId)
+}
+
+/**
+ * Builds the error message string that queryModelWithStreaming emits when it
+ * detects an orphan tool_result. Tests assert on this exact string to verify
+ * the visible-error contract (FR-009).
+ */
+export function orphanErrorMessage(toolUseId: string): string {
+  return `tool_result_orphan: Tool result references unknown tool_use_id "${toolUseId}"`
 }

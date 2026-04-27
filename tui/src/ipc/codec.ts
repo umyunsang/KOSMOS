@@ -375,6 +375,24 @@ export type DecodeSuccess = { ok: true; frame: IPCFrame }
 export type DecodeError = { ok: false; error: string; raw: string }
 export type DecodeResult = DecodeSuccess | DecodeError
 
+/**
+ * The three outcomes a pending permission request can resolve to.
+ *
+ * - 'granted' — citizen approved the primitive call.
+ * - 'denied'  — citizen rejected the call (Esc / 'n' key / cleanup).
+ * - 'timeout' — KOSMOS_PERMISSION_TIMEOUT_SEC elapsed with no response
+ *               (fail-closed per Constitution §II; backend treats identically
+ *               to 'denied').
+ *
+ * Used by setPendingPermission / resolvePermissionDecision in sessionStore
+ * (data-model.md § 4, contract pending-permission-slot.md).
+ */
+export type PermissionDecision = 'granted' | 'denied' | 'timeout'
+
+// Re-export ToolDefinition from generated types so consumers can import from
+// a single entry point (codec.ts) without depending on frames.generated.ts.
+export type { ToolDefinition, ToolDefinitionFunction } from './frames.generated.js'
+
 // ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------

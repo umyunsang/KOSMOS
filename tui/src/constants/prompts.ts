@@ -56,6 +56,7 @@ import { logForDebugging } from '../utils/debug.js'
 import { loadMemoryPrompt } from '../memdir/memdir.js'
 import { isUndercover } from '../utils/undercover.js'
 import { isMcpInstructionsDeltaEnabled } from '../utils/mcpInstructionsDelta.js'
+import { isProactiveActive } from '../utils/proactiveModule.js'
 
 // Dead code elimination: conditional imports for feature-gated modules
 /* eslint-disable @typescript-eslint/no-require-imports */
@@ -64,11 +65,6 @@ const getCachedMCConfigForFRC = feature('CACHED_MICROCOMPACT')
       require('../services/compact/cachedMCConfig.js') as typeof import('../services/compact/cachedMCConfig.js')
     ).getCachedMCConfig
   : null
-
-const proactiveModule =
-  feature('PROACTIVE') || feature('KAIROS')
-    ? require('../proactive/index.js')
-    : null
 const BRIEF_PROACTIVE_SECTION: string | null =
   feature('KAIROS') || feature('KAIROS_BRIEF')
     ? (
@@ -453,7 +449,7 @@ export async function getSystemPrompt(
 
   if (
     (feature('PROACTIVE') || feature('KAIROS')) &&
-    proactiveModule?.isProactiveActive()
+    isProactiveActive()
   ) {
     logForDebugging(`[SystemPrompt] path=simple-proactive`)
     return [
@@ -839,7 +835,7 @@ function getBriefSection(): string | null {
   // section inline. Skip here to avoid duplicating it in the system prompt.
   if (
     (feature('PROACTIVE') || feature('KAIROS')) &&
-    proactiveModule?.isProactiveActive()
+    isProactiveActive()
   )
     return null
   return BRIEF_PROACTIVE_SECTION
@@ -847,7 +843,7 @@ function getBriefSection(): string | null {
 
 function getProactiveSection(): string | null {
   if (!(feature('PROACTIVE') || feature('KAIROS'))) return null
-  if (!proactiveModule?.isProactiveActive()) return null
+  if (!isProactiveActive()) return null
 
   return `# Autonomous work
 
