@@ -122,7 +122,7 @@ KOSMOS canonical layout (per AGENTS.md):
 - [x] T030 [P] Run `cd tui && bun test 2>&1 | tail -3` and `uv run pytest 2>&1 | tail -3`. Confirm both ≥ baseline (≥ 984 / ≥ 437). Append output to `audit-report.md`. Validates FR-010 / SC-004 final state.
 - [x] T031 Run citizen smoke per `quickstart.md § 3` via `specs/2112-dead-anthropic-models/smoke.expect` (per memory `feedback_vhs_tui_smoke` — TUI text-log smoke). Produces `smoke.txt` (plain text, grep-able by LLM/Codex). Audit commands C9.1-C9.4 verify (a) Korean reply paint, (b) lookup primitive call, (c) zero `anthropic-ratelimit-unified` matches, (d) zero legacy-model-name matches. Manual `bash | tee` fallback if `expect` unavailable. Validates FR-011 / SC-003.
 - [x] T032 [P] Update `tui/CLAUDE.md` (or `CLAUDE.md` if no TUI-specific file) Active Technologies section: add a one-line "P1 dead Anthropic matrix removed (Epic #2112)" note. Do NOT add new dependencies (FR-009).
-- [ ] T033 Stage all changes (`git add -A`), commit using Conventional Commits format (`feat(2112): remove dead Anthropic model matrix + migrate to K-EXAONE single branch`), push to `origin 2112-dead-anthropic-models`.
+- [x] T033 Stage all changes (`git add -A`), commit using Conventional Commits format (`feat(2112): remove dead Anthropic model matrix + migrate to K-EXAONE single branch`), push to `origin 2112-dead-anthropic-models`. **Done 2026-04-28 — commit 470fc45 pushed to origin/2112-dead-anthropic-models.**
 
 ---
 
