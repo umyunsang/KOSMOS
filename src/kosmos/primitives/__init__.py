@@ -15,7 +15,7 @@ placeholders have been fully replaced by their user-story coroutines.
 
 from __future__ import annotations
 
-from collections.abc import Awaitable, Callable
+from collections.abc import Callable
 from typing import Any
 
 from kosmos.primitives.submit import submit
@@ -29,10 +29,13 @@ from kosmos.tools.resolve_location import resolve_location
 # hardcoded enumerations scattered in ``kosmos.ipc.stdio``. The registry is
 # the authoritative answer to "which tool names is the platform permitted
 # to execute"; downstream code MUST read from this constant rather than
-# duplicating the list. ``Callable[..., Awaitable[Any]]`` is intentionally
-# loose because each primitive accepts a different keyword shape — call-
-# shape adaptation lives in the IPC dispatcher, not here.
-PRIMITIVE_REGISTRY: dict[str, Callable[..., Awaitable[Any]]] = {
+# duplicating the list.
+#
+# Return type is intentionally ``Any`` because the five primitives have
+# heterogeneous return shapes (lookup/resolve_location/submit/verify return
+# ``Awaitable[<Output>]``; subscribe returns ``AsyncIterator[<Event>]``).
+# Call-shape adaptation lives in the IPC dispatcher, not here.
+PRIMITIVE_REGISTRY: dict[str, Callable[..., Any]] = {
     "lookup": lookup,
     "resolve_location": resolve_location,
     "submit": submit,

@@ -9,14 +9,14 @@
 // This keeps the tests fast, deterministic, and free of process-spawn overhead
 // while still verifying the exact logic that enforces the invariant.
 
-import { describe, test, expect, mock } from 'bun:test'
-
-// Bun's preload plugin onResolve does not always intercept `bun:bundle` for
-// modules pulled in by a static import that crosses package boundaries; mock
-// it explicitly so deps.ts' transitive load of autoCompact.ts resolves.
-mock.module('bun:bundle', () => ({ feature: () => false }))
-
-import { isOrphanToolResult, orphanErrorMessage } from '../../src/query/deps.js'
+import { describe, test, expect } from 'bun:test'
+// Import from the leaf orphanHelpers module rather than deps.ts so this
+// test does not transitively load autoCompact.ts → 'bun:bundle'. deps.ts
+// re-exports these helpers for backwards compatibility.
+import {
+  isOrphanToolResult,
+  orphanErrorMessage,
+} from '../../src/query/orphanHelpers.js'
 
 // ---------------------------------------------------------------------------
 // Helpers

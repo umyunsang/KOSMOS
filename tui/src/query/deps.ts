@@ -518,31 +518,7 @@ export function productionDeps(): QueryDeps {
 // Pure helpers (exported for unit tests — no bridge dependency)
 // ---------------------------------------------------------------------------
 
-/**
- * Checks whether a tool_result call_id is an orphan given the set of
- * tool_use ids seen so far in the same turn. Returns true when the id is
- * absent from the seen set (orphan) or false when it is paired.
- *
- * This pure function lets tests exercise the FR-009 pairing invariant
- * without spinning up a mock bridge or the full queryModelWithStreaming
- * generator.
- *
- * @param toolUseId  - The tool_use_id carried by the tool_result frame.
- * @param seenIds    - The Set of call_ids registered by tool_call frames so far.
- */
-export function isOrphanToolResult(
-  toolUseId: string,
-  seenIds: ReadonlySet<string>,
-): boolean {
-  if (!toolUseId) return false
-  return !seenIds.has(toolUseId)
-}
-
-/**
- * Builds the error message string that queryModelWithStreaming emits when it
- * detects an orphan tool_result. Tests assert on this exact string to verify
- * the visible-error contract (FR-009).
- */
-export function orphanErrorMessage(toolUseId: string): string {
-  return `tool_result_orphan: Tool result references unknown tool_use_id "${toolUseId}"`
-}
+// FR-009 pairing-invariant helpers live in a leaf module so unit tests can
+// import them without dragging the deps.ts → autoCompact.ts → 'bun:bundle'
+// chain through Bun's resolver.
+export { isOrphanToolResult, orphanErrorMessage } from './orphanHelpers.js'
