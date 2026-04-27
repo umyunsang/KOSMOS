@@ -102,6 +102,12 @@ function installBridge(factory: FrameFactory): void {
 // autoCompact directly is the most reliable way to keep this test self-
 // contained — productionDeps().callModel does not invoke autocompact() in
 // any of these scenarios anyway.
+// deps.ts statically imports from services/compact/{autoCompact,microCompact}.ts,
+// both of which `import { feature } from 'bun:bundle'`. Bun 1.2.x in CI does
+// not honour preload plugin onResolve for `bun:bundle` under the test runner,
+// so mocking these compact modules directly is the most reliable way to keep
+// this test self-contained — productionDeps().callModel does not invoke
+// autocompact() or microcompact() in any of these scenarios.
 mock.module(join(TUI_ROOT, 'src/services/compact/autoCompact.js'), () => ({
   autoCompactIfNeeded: async () => ({ messages: [], compacted: false }),
   getEffectiveContextWindowSize: () => 200_000,
@@ -113,6 +119,18 @@ mock.module(join(TUI_ROOT, 'src/services/compact/autoCompact.js'), () => ({
   calculateTokenWarningState: () => null,
   isAutoCompactEnabled: () => false,
   shouldAutoCompact: async () => false,
+}))
+
+mock.module(join(TUI_ROOT, 'src/services/compact/microCompact.js'), () => ({
+  microcompactMessages: async (messages: unknown[]) => messages,
+  TIME_BASED_MC_CLEARED_MESSAGE: '[Old tool result content cleared]',
+  consumePendingCacheEdits: () => null,
+  getPinnedCacheEdits: () => [],
+  pinCacheEdits: () => {},
+  markToolsSentToAPIState: () => {},
+  resetMicrocompactState: () => {},
+  estimateMessageTokens: () => 0,
+  evaluateTimeBasedTrigger: () => null,
 }))
 
 mock.module(join(TUI_ROOT, 'src/ipc/bridgeSingleton.js'), () => ({
