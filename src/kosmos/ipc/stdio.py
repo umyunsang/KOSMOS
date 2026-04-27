@@ -1136,6 +1136,36 @@ async def run(  # noqa: C901
                                     done=False,
                                 )
                             )
+                    elif event_type == "thinking_delta":
+                        # K-EXAONE chain-of-thought channel — mirrors CC's
+                        # Anthropic ``thinking_delta`` content_block_delta
+                        # (``kosmos/llm/_cc_reference/claude.ts:2148-2161``).
+                        # Forward as an AssistantChunkFrame on the
+                        # ``thinking`` channel; the TUI's deps.ts projects
+                        # this to a ``stream_event{thinking_delta}`` and
+                        # ``handleMessageFromStream`` routes it via
+                        # ``onUpdateLength`` into ``streamingThinking`` so
+                        # ``AssistantThinkingMessage`` paints the reasoning
+                        # inline. CoT is *not* appended to
+                        # ``assistant_text_chunks`` — the inline-tool-call
+                        # XML parser only inspects the visible answer
+                        # channel, and we never persist reasoning back to
+                        # the LLM context.
+                        thinking_text = getattr(event, "thinking", "") or ""
+                        if thinking_text:
+                            await write_frame(
+                                AssistantChunkFrame(
+                                    session_id=frame.session_id,
+                                    correlation_id=frame.correlation_id,
+                                    role="llm",
+                                    ts=_utcnow(),
+                                    kind="assistant_chunk",
+                                    message_id=message_id,
+                                    delta="",
+                                    thinking=thinking_text,
+                                    done=False,
+                                )
+                            )
                     elif event_type == "tool_call_delta":
                         idx = int(getattr(event, "tool_call_index", 0) or 0)
                         slot = tool_call_buf.setdefault(idx, {"id": "", "name": "", "args": ""})

@@ -83,12 +83,42 @@ class ChatCompletionResponse(BaseModel):
 
 
 class StreamEvent(BaseModel):
-    """A single event emitted during a streaming LLM response."""
+    """A single event emitted during a streaming LLM response.
+
+    Mirrors the Anthropic Messages API streaming event shape used by the
+    Claude Code reference (``_cc_reference/claude.ts:1979-2304``). KOSMOS
+    flattens the nested ``content_block_start/delta/stop`` envelope into a
+    single discriminated event because the OpenAI-compatible FriendliAI SSE
+    feed never opens or closes a content block — every chunk is a delta on
+    an implicit single-block message. The event types map 1:1 to the deltas
+    CC's reducer cares about:
+
+    * ``content_delta`` ↔ Anthropic ``text_delta``
+    * ``thinking_delta`` ↔ Anthropic ``thinking_delta``  — K-EXAONE emits
+      this on the ``delta.reasoning_content`` channel; CC mirrors it on its
+      ``thinking`` content block. Forwarding (rather than dropping) lets the
+      TUI render the reasoning in ``AssistantThinkingMessage`` so users see
+      *why* the model answered the way it did.
+    * ``tool_call_delta`` ↔ Anthropic ``input_json_delta`` (function call
+      streaming)
+    * ``usage``           ↔ Anthropic ``message_delta.usage``
+    * ``done``            ↔ Anthropic ``message_stop``
+    """
 
     model_config = ConfigDict(frozen=True)
 
-    type: Literal["content_delta", "tool_call_delta", "usage", "done", "error"]
+    type: Literal[
+        "content_delta",
+        "thinking_delta",
+        "tool_call_delta",
+        "usage",
+        "done",
+        "error",
+    ]
     content: str | None = None
+    # Mirror of Anthropic's ``BetaThinkingDelta.thinking`` (claude.ts:2148)
+    # populated when the provider emits ``delta.reasoning_content``.
+    thinking: str | None = None
     tool_call_index: int | None = None
     tool_call_id: str | None = None
     function_name: str | None = None

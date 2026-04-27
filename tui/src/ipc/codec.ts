@@ -110,7 +110,13 @@ const ChatRequestFrameSchema = BaseFrame.extend({
 const AssistantChunkFrameSchema = BaseFrame.extend({
   kind: z.literal('assistant_chunk'),
   message_id: z.string(),
-  delta: z.string(),
+  // ``delta`` (visible answer) and ``thinking`` (chain-of-thought) are two
+  // independent channels on the same frame — mirror of Anthropic's
+  // ``content_block_delta`` (CC reference at
+  // ``src/kosmos/llm/_cc_reference/claude.ts:2053-2169``). Either may be
+  // empty on a given chunk; ``done=true`` terminates the message.
+  delta: z.string().default(''),
+  thinking: z.string().default(''),
   done: z.boolean(),
 })
 

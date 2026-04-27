@@ -768,14 +768,20 @@ class LLMClient:
         if "content" in delta and delta["content"] is not None:
             yield StreamEvent(type="content_delta", content=delta["content"])
         elif "reasoning_content" in delta and delta["reasoning_content"] is not None:
-            # K-EXAONE emits reasoning_content (chain-of-thought) before content.
-            # Drop it to prevent CoT from persisting into chat history.
-            # Log only the chunk length — never the raw content (CoT may contain
-            # user PII or sensitive reasoning about user input).
+            # K-EXAONE emits chain-of-thought on a separate ``delta`` channel.
+            # CC mirrors this with Anthropic's ``thinking_delta`` content_block
+            # delta event (``_cc_reference/claude.ts:2148-2161``); forwarding
+            # the same shape on KOSMOS lets the TUI's
+            # ``AssistantThinkingMessage`` component render the reasoning
+            # inline instead of swallowing it. Log only the chunk length —
+            # never the raw content (CoT may contain user PII or sensitive
+            # reasoning about user input).
+            reasoning_text = delta["reasoning_content"]
             logger.debug(
-                "Dropping reasoning_content chunk (len=%d)",
-                len(delta["reasoning_content"]),
+                "Forwarding reasoning_content as thinking_delta (len=%d)",
+                len(reasoning_text),
             )
+            yield StreamEvent(type="thinking_delta", thinking=reasoning_text)
 
         if "tool_calls" in delta and delta["tool_calls"]:
             for tc_delta in delta["tool_calls"]:

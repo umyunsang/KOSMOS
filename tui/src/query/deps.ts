@@ -106,9 +106,11 @@ async function* queryModelWithStreaming(params: {
   let frameCount = 0
   for await (const f of bridge.frames()) {
     frameCount++
-    if (frameCount <= 20) {
-      const fAll = f as { kind?: string; correlation_id?: string; delta?: string; done?: boolean; message_id?: string }
-      __t(`recv #${frameCount} kind=${fAll.kind} corr=${fAll.correlation_id?.slice(-8)} done=${fAll.done} delta=${JSON.stringify(fAll.delta).slice(0, 60)}`)
+    if (frameCount <= 30) {
+      const fAll = f as { kind?: string; correlation_id?: string; delta?: string; thinking?: string; done?: boolean; message_id?: string }
+      const dStr = JSON.stringify(fAll.delta ?? '').slice(0, 40)
+      const tStr = JSON.stringify(fAll.thinking ?? '').slice(0, 40)
+      __t(`recv #${frameCount} kind=${fAll.kind} corr=${fAll.correlation_id?.slice(-8)} done=${fAll.done} delta=${dStr} thinking=${tStr}`)
     }
     if (signal?.aborted) {
       throw new APIUserAbortError()
@@ -117,6 +119,7 @@ async function* queryModelWithStreaming(params: {
       kind?: string
       correlation_id?: string
       delta?: string
+      thinking?: string
       done?: boolean
       message?: string
       // tool_call fields
@@ -129,6 +132,7 @@ async function* queryModelWithStreaming(params: {
     if (fa.correlation_id !== correlationId) continue
     if (fa.kind === 'assistant_chunk') {
       const deltaText = fa.delta ?? ''
+      const thinkingText = fa.thinking ?? ''
       // First chunk: emit message_start (carries ttftMs for OTPS) +
       // content_block_start so the spinner flips to 'responding'.
       if (!messageStartEmitted) {
@@ -164,6 +168,22 @@ async function* queryModelWithStreaming(params: {
           },
         }
         messageStartEmitted = true
+      }
+
+      // K-EXAONE chain-of-thought channel — backend forwards
+      // delta.reasoning_content here. Mirror Anthropic's thinking_delta
+      // (kosmos/llm/_cc_reference/claude.ts:2148-2161). handleMessageFromStream
+      // (utils/messages.ts:3080) routes thinking_delta through onUpdateLength
+      // so AssistantThinkingMessage paints the reasoning inline.
+      if (thinkingText.length > 0) {
+        yield {
+          type: 'stream_event' as const,
+          event: {
+            type: 'content_block_delta' as const,
+            index: 0,
+            delta: { type: 'thinking_delta' as const, thinking: thinkingText },
+          },
+        }
       }
 
       accumulated += deltaText
