@@ -2,7 +2,7 @@
   "$defs": {
     "AssistantChunkFrame": {
       "additionalProperties": false,
-      "description": "backend -> TUI: streaming assistant text delta.",
+      "description": "backend -> TUI: streaming assistant text delta.\n\nMirrors Anthropic's ``content_block_delta`` (CC reference at\n``kosmos/llm/_cc_reference/claude.ts:2053-2169``). The ``delta`` field\ncarries the visible answer text (``text_delta`` in CC nomenclature);\n``thinking`` carries the model's chain-of-thought (``thinking_delta``\non the Anthropic side, K-EXAONE's ``delta.reasoning_content`` on the\nOpenAI-compatible FriendliAI feed). Exactly one of ``delta`` /\n``thinking`` carries content per frame — the empty one is the\nbackward-compatible default. ``done`` terminates the message\nregardless of channel.",
       "properties": {
         "session_id": {
           "description": "Opaque session identifier.",
@@ -84,8 +84,15 @@
           "type": "string"
         },
         "delta": {
-          "description": "UTF-8 text appended to the message.",
+          "default": "",
+          "description": "UTF-8 text appended to the visible answer (text_delta channel).",
           "title": "Delta",
+          "type": "string"
+        },
+        "thinking": {
+          "default": "",
+          "description": "UTF-8 text appended to the model's chain-of-thought (thinking_delta channel — K-EXAONE delta.reasoning_content).",
+          "title": "Thinking",
           "type": "string"
         },
         "done": {
@@ -100,7 +107,6 @@
         "ts",
         "role",
         "message_id",
-        "delta",
         "done"
       ],
       "title": "AssistantChunkFrame",

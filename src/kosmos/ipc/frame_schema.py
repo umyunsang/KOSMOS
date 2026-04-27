@@ -323,13 +323,34 @@ class ChatRequestFrame(_BaseFrame):
 
 
 class AssistantChunkFrame(_BaseFrame):
-    """backend -> TUI: streaming assistant text delta."""
+    """backend -> TUI: streaming assistant text delta.
+
+    Mirrors Anthropic's ``content_block_delta`` (CC reference at
+    ``kosmos/llm/_cc_reference/claude.ts:2053-2169``). The ``delta`` field
+    carries the visible answer text (``text_delta`` in CC nomenclature);
+    ``thinking`` carries the model's chain-of-thought (``thinking_delta``
+    on the Anthropic side, K-EXAONE's ``delta.reasoning_content`` on the
+    OpenAI-compatible FriendliAI feed). Exactly one of ``delta`` /
+    ``thinking`` carries content per frame — the empty one is the
+    backward-compatible default. ``done`` terminates the message
+    regardless of channel.
+    """
 
     kind: Literal["assistant_chunk"] = Field(
         default="assistant_chunk", description="Frame discriminator."
     )
     message_id: str = Field(description="ULID of the assistant message this delta belongs to.")
-    delta: str = Field(description="UTF-8 text appended to the message.")
+    delta: str = Field(
+        default="",
+        description="UTF-8 text appended to the visible answer (text_delta channel).",
+    )
+    thinking: str = Field(
+        default="",
+        description=(
+            "UTF-8 text appended to the model's chain-of-thought "
+            "(thinking_delta channel — K-EXAONE delta.reasoning_content)."
+        ),
+    )
     done: bool = Field(description="True if this is the terminal chunk for this message_id.")
 
 

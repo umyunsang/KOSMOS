@@ -202,9 +202,13 @@ export type Kind2 = 'assistant_chunk';
  */
 export type MessageId = string;
 /**
- * UTF-8 text appended to the message.
+ * UTF-8 text appended to the visible answer (text_delta channel).
  */
 export type Delta = string;
+/**
+ * UTF-8 text appended to the model's chain-of-thought (thinking_delta channel — K-EXAONE delta.reasoning_content).
+ */
+export type Thinking = string;
 /**
  * True if this is the terminal chunk for this message_id.
  */
@@ -1121,6 +1125,16 @@ export interface Parameters {
 }
 /**
  * backend -> TUI: streaming assistant text delta.
+ *
+ * Mirrors Anthropic's ``content_block_delta`` (CC reference at
+ * ``kosmos/llm/_cc_reference/claude.ts:2053-2169``). The ``delta`` field
+ * carries the visible answer text (``text_delta`` in CC nomenclature);
+ * ``thinking`` carries the model's chain-of-thought (``thinking_delta``
+ * on the Anthropic side, K-EXAONE's ``delta.reasoning_content`` on the
+ * OpenAI-compatible FriendliAI feed). Exactly one of ``delta`` /
+ * ``thinking`` carries content per frame — the empty one is the
+ * backward-compatible default. ``done`` terminates the message
+ * regardless of channel.
  */
 export interface AssistantChunkFrame {
   session_id: SessionId2;
@@ -1136,7 +1150,8 @@ export interface AssistantChunkFrame {
   trailer?: FrameTrailer | null;
   kind?: Kind2;
   message_id: MessageId;
-  delta: Delta;
+  delta?: Delta;
+  thinking?: Thinking;
   done: Done;
 }
 /**
