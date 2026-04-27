@@ -165,7 +165,7 @@ import {
   clearPluginSkillsCache,
 } from './utils/plugins/loadPluginCommands.js'
 import memoize from 'lodash-es/memoize.js'
-import { isFirstPartyAnthropicBaseUrl } from './utils/model/providers.js'
+import { isFirstPartyKosmosBaseUrl } from './utils/model/providers.js'
 import env from './commands/env/index.js'
 import exit from './commands/exit/index.js'
 import exportCommand from './commands/export/index.js'
@@ -419,7 +419,7 @@ export function meetsAvailabilityRequirement(cmd: Command): boolean {
         break
       case 'console':
         // Anthropic console API key check removed (KOSMOS uses FriendliAI)
-        if (isFirstPartyAnthropicBaseUrl()) return true
+        if (isFirstPartyKosmosBaseUrl()) return true
         break
       default: {
         const _exhaustive: never = a

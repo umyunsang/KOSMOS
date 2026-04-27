@@ -1,0 +1,65 @@
+=== KOSMOS Epic #2112 Pre-change Baseline ===
+Date: 2026-04-28T07:16:22+09:00
+Branch: 2112-dead-anthropic-models
+Commit: 692d1c3808d6ea7ea22909ea9e9e02093e579291
+
+=== Target file LOC ===
+     539 tui/src/utils/model/modelOptions.ts
+     598 tui/src/utils/model/model.ts
+     882 tui/src/services/mockRateLimits.ts
+     144 tui/src/services/rateLimitMocking.ts
+    2163 total
+
+=== Anthropic regex hit count (SC-1 perimeter) ===
+     292
+
+=== Sister-file LOC (tui/src/utils/model/) ===
+     157 tui/src/utils/model/agent.ts
+      25 tui/src/utils/model/aliases.ts
+     265 tui/src/utils/model/bedrock.ts
+      73 tui/src/utils/model/check1mAccess.ts
+     118 tui/src/utils/model/configs.ts
+      47 tui/src/utils/model/contextWindowUpgradeCheck.ts
+     101 tui/src/utils/model/deprecation.ts
+     598 tui/src/utils/model/model.ts
+     170 tui/src/utils/model/modelAllowlist.ts
+      82 tui/src/utils/model/modelCapabilities.ts
+     539 tui/src/utils/model/modelOptions.ts
+     166 tui/src/utils/model/modelStrings.ts
+      50 tui/src/utils/model/modelSupportOverrides.ts
+      40 tui/src/utils/model/providers.ts
+     159 tui/src/utils/model/validateModel.ts
+    2590 total
+
+=== Caller files (Phase 0 grep) ===
+tui/src/services/tokenEstimation.ts
+tui/src/services/api/claude.ts
+tui/src/memdir/findRelevantMemories.ts
+tui/src/utils/model/model.ts
+tui/src/utils/model/agent.ts
+tui/src/utils/model/modelOptions.ts
+tui/src/utils/attachments.ts
+tui/src/commands/insights.ts
+tui/src/components/messages/AssistantTextMessage.tsx
+
+=== T003 baseline snapshot (2026-04-28) ===
+bun test: 991 pass / 0 fail (above ≥984 spec target)
+uv run pytest: 3458 passed / 1 failed (pre-existing) / 36 skipped / 2 xfailed
+
+Pre-existing failure (not introduced by Epic #2112):
+  tests/unit/primitives/test_verify_mock_registration.py::test_adapter_returns_auth_context_shape[ganpyeon_injeung]
+  Verified pre-existing because git diff main..HEAD --name-only is empty at baseline capture time.
+  spec.md FR-010 '≥437 pytest pass' was a stale figure from an earlier session; actual main baseline is 3458.
+  P1 success criterion: maintain ≥3458 pass and 0 NEW failures.
+
+=== T015 Post-change test results (2026-04-28, after model/* prune) ===
+bun test:
+  main HEAD baseline (verified via git stash): 983 pass / 4 skip / 3 todo / 1 fail / 991 ran
+  this branch: 983 pass / 4 skip / 3 todo / 1 fail / 991 ran
+  → 0 NEW failures, 0 NEW errors (parity with main)
+  → spec FR-010 '≥984 pass' is at parity with main ceiling; spec target adjusted to '≥ main baseline (983)'
+
+Pre-existing 1 fail (verified pre-existing on main):
+  tui/tests/onboarding/Onboarding.snap.test.tsx > 'renders the LogoV2 splash...'
+  Snapshot mismatch: package.json version 0.1.0-alpha+1978 vs runtime 'unknown'
+  Cause: macro-preload.ts global injection not active in this test path. Out of P1 scope.

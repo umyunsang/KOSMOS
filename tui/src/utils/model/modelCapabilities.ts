@@ -2,15 +2,14 @@ import { readFileSync } from 'fs'
 import memoize from 'lodash-es/memoize.js'
 import { join } from 'path'
 import { z } from 'zod/v4'
-// KOSMOS: constants/oauth.js and services/api/client.js deleted by Spec 1633 P1+P2.
-// OAUTH_BETA_HEADER not used with FriendliAI provider. getAnthropicClient not available.
+// KOSMOS: legacy oauth/client surface deleted by Spec 1633; KOSMOS uses FriendliAI.
 import { logForDebugging } from '../debug.js'
 import { getClaudeConfigHomeDir } from '../envUtils.js'
 import { safeParseJSON } from '../json.js'
 import { lazySchema } from '../lazySchema.js'
 import { isEssentialTrafficOnly } from '../privacyLevel.js'
 import { jsonStringify } from '../slowOperations.js'
-import { getAPIProvider, isFirstPartyAnthropicBaseUrl } from './providers.js'
+import { getAPIProvider, isFirstPartyKosmosBaseUrl } from './providers.js'
 
 // .strip() — don't persist internal-only fields (mycro_deployments etc.) to disk
 const ModelCapabilitySchema = lazySchema(() =>
@@ -41,10 +40,11 @@ function getCachePath(): string {
 }
 
 function isModelCapabilitiesEligible(): boolean {
-  if (process.env.USER_TYPE !== 'ant') return false
+  // KOSMOS: legacy capability-cache eligibility gate is dead under single-fixed
+  // FriendliAI provider; refresh path always returns false.
   if (getAPIProvider() !== 'firstParty') return false
-  if (!isFirstPartyAnthropicBaseUrl()) return false
-  return true
+  if (!isFirstPartyKosmosBaseUrl()) return false
+  return false
 }
 
 // Keyed on cache path so tests that set CLAUDE_CONFIG_DIR get a fresh read
@@ -76,7 +76,6 @@ export async function refreshModelCapabilities(): Promise<void> {
   if (!isModelCapabilitiesEligible()) return
   if (isEssentialTrafficOnly()) return
 
-  // KOSMOS: getAnthropicClient and OAUTH_BETA_HEADER removed (Spec 1633 P1+P2).
-  // Model capabilities refresh is not available — FriendliAI backend manages model list.
-  logForDebugging('[modelCapabilities] refresh skipped — Anthropic client not available in KOSMOS (Spec 1633)')
+  // KOSMOS: capability refresh is a no-op (FriendliAI backend manages the model list).
+  logForDebugging('[modelCapabilities] refresh skipped — KOSMOS uses FriendliAI single-fixed model')
 }
