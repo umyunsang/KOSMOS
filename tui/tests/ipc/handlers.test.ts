@@ -96,10 +96,24 @@ function installBridge(factory: FrameFactory): void {
   _currentBridge = makeFakeBridge(factory)
 }
 
-// Bun's preload plugin onResolve does not always intercept `bun:bundle` for
-// modules pulled in via `await import(...)`. Mock it directly so deps.ts'
-// transitive load of autoCompact.ts (which `import 'bun:bundle'`) resolves.
-mock.module('bun:bundle', () => ({ feature: () => false }))
+// deps.ts statically imports `services/compact/autoCompact.js`, which itself
+// `import { feature } from 'bun:bundle'`. Bun 1.2.x in CI does not honour
+// preload plugin onResolve for `bun:bundle` under the test runner, so mocking
+// autoCompact directly is the most reliable way to keep this test self-
+// contained — productionDeps().callModel does not invoke autocompact() in
+// any of these scenarios anyway.
+mock.module(join(TUI_ROOT, 'src/services/compact/autoCompact.js'), () => ({
+  autoCompactIfNeeded: async () => ({ messages: [], compacted: false }),
+  getEffectiveContextWindowSize: () => 200_000,
+  AUTOCOMPACT_BUFFER_TOKENS: 13_000,
+  WARNING_THRESHOLD_BUFFER_TOKENS: 20_000,
+  ERROR_THRESHOLD_BUFFER_TOKENS: 20_000,
+  MANUAL_COMPACT_BUFFER_TOKENS: 3_000,
+  getAutoCompactThreshold: () => 100_000,
+  calculateTokenWarningState: () => null,
+  isAutoCompactEnabled: () => false,
+  shouldAutoCompact: async () => false,
+}))
 
 mock.module(join(TUI_ROOT, 'src/ipc/bridgeSingleton.js'), () => ({
   getOrCreateKosmosBridge: () => _currentBridge,

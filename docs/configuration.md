@@ -57,6 +57,8 @@ Column definitions:
 | `KOSMOS_REACT_MAX_TURNS` | No | `8` | Integer >= 1 (turns) | `kosmos.ipc.stdio` (legacy alias for `KOSMOS_AGENTIC_LOOP_MAX_TURNS`; preserved for backward compatibility) | Spec 1978 |
 | `KOSMOS_TOOL_RESULT_TIMEOUT_SECONDS` | No | `120` | Float > 0 (seconds) | `kosmos.ipc.stdio` (Spec 1978 T030 — `asyncio.gather` timeout for primitive dispatch Futures, contracts/tool-bridge-protocol.md) | Spec 1978 |
 | `KOSMOS_PERMISSION_TIMEOUT_SECONDS` | No | `60` | Float > 0 (seconds) | `kosmos.ipc.stdio` (Spec 1978 T045 — permission_request → permission_response wait; D2 invariant default-deny on timeout) | Spec 1978 |
+| `KOSMOS_K_EXAONE_THINKING` | No | `false` | `true` \| `false` (case-insensitive; `1`/`yes` also accepted) | `kosmos.llm.client._build_payload` (Epic #2077 — opts in to K-EXAONE-236B-A23B's chain-of-thought channel via `chat_template_kwargs.enable_thinking`; default `false` so first-chunk latency stays sub-second instead of 1–3 minutes) | Epic #2077 |
+| `KOSMOS_STREAM_TIMEOUT_MS` | No | `300000` | Integer > 0 (milliseconds) | `kosmos.llm.client.LLMClient.stream` (Epic #2077 — chunk-arrival watchdog for the LLM stream; reset on every chunk so total request time is unbounded) | Epic #2077 |
 | `KOSMOS_LOOKUP_TOPK` | No | `5` | Integer [1, 20] | `kosmos.settings.KosmosSettings.lookup_topk` | This doc |
 | `KOSMOS_NMC_FRESHNESS_MINUTES` | No | `30` | Integer [1, 1440] (minutes) | `kosmos.settings.KosmosSettings.nmc_freshness_minutes` | Epic #507 |
 | `KOSMOS_RETRIEVAL_BACKEND` | No | `bm25` | `bm25` \| `dense` \| `hybrid` | `kosmos.tools.retrieval.backend.build_retriever_from_env` | Epic #585 |
