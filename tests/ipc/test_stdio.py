@@ -116,6 +116,7 @@ def _restore_llmclient_pydantic_validators_after_module() -> Any:  # noqa: ANN40
     importlib.reload(kosmos.engine.query)
     kosmos.engine.models.QueryContext.model_rebuild(force=True)
 
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -336,7 +337,6 @@ async def _run_with_frame(  # noqa: C901 — test harness deliberately covers ma
     ]
 
     import kosmos.tools.registry as registry_mod
-
 
     def _fake_export_core_tools_openai(self: Any) -> list[dict[str, object]]:  # type: ignore[misc]
         return _MINIMAL_TEST_TOOLS
@@ -566,8 +566,7 @@ async def test_unknown_tool_in_frame_dropped_silently(
     spans = exporter.get_finished_spans()
     span_names = [s.name for s in spans]
     assert "kosmos.tool.unknown_in_frame" in span_names, (
-        f"Expected a 'kosmos.tool.unknown_in_frame' span event. "
-        f"Actual span names: {span_names}"
+        f"Expected a 'kosmos.tool.unknown_in_frame' span event. Actual span names: {span_names}"
     )
 
 
@@ -769,7 +768,7 @@ async def test_otel_spans_preserved(
     # *actual* emitted attributes.  When the contract-specified names are
     # implemented, this list can be updated accordingly.
     required_keys = {
-        "kosmos.tool.dispatched",    # actual impl (contract: kosmos.tool.name)
+        "kosmos.tool.dispatched",  # actual impl (contract: kosmos.tool.name)
         "kosmos.permission.mode",
         "kosmos.permission.decision",
         "kosmos.session.id",

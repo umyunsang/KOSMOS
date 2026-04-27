@@ -96,6 +96,11 @@ function installBridge(factory: FrameFactory): void {
   _currentBridge = makeFakeBridge(factory)
 }
 
+// Bun's preload plugin onResolve does not always intercept `bun:bundle` for
+// modules pulled in via `await import(...)`. Mock it directly so deps.ts'
+// transitive load of autoCompact.ts (which `import 'bun:bundle'`) resolves.
+mock.module('bun:bundle', () => ({ feature: () => false }))
+
 mock.module(join(TUI_ROOT, 'src/ipc/bridgeSingleton.js'), () => ({
   getOrCreateKosmosBridge: () => _currentBridge,
   getKosmosBridgeSessionId: () => 'test-session-handlers',

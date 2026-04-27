@@ -476,9 +476,7 @@ async def run(  # noqa: C901
         loop_inner = asyncio.get_running_loop()
         try:
             while True:
-                line: bytes = await loop_inner.run_in_executor(
-                    None, _stdin_buf_capture.readline
-                )
+                line: bytes = await loop_inner.run_in_executor(None, _stdin_buf_capture.readline)
                 if not line:
                     break
                 stdin_reader.feed_data(line)
@@ -1345,6 +1343,7 @@ async def run(  # noqa: C901
                 # outside the registry; ``PRIMITIVE_REGISTRY`` is the single
                 # source of truth for LLM-visible primitive names.
                 from kosmos.primitives import PRIMITIVE_REGISTRY  # noqa: PLC0415
+
                 if fname not in PRIMITIVE_REGISTRY:
                     await write_frame(
                         ErrorFrame(

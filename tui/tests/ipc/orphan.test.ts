@@ -9,7 +9,13 @@
 // This keeps the tests fast, deterministic, and free of process-spawn overhead
 // while still verifying the exact logic that enforces the invariant.
 
-import { describe, test, expect } from 'bun:test'
+import { describe, test, expect, mock } from 'bun:test'
+
+// Bun's preload plugin onResolve does not always intercept `bun:bundle` for
+// modules pulled in by a static import that crosses package boundaries; mock
+// it explicitly so deps.ts' transitive load of autoCompact.ts resolves.
+mock.module('bun:bundle', () => ({ feature: () => false }))
+
 import { isOrphanToolResult, orphanErrorMessage } from '../../src/query/deps.js'
 
 // ---------------------------------------------------------------------------

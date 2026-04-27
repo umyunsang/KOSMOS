@@ -441,9 +441,7 @@ async def test_single_tool_call_closure(monkeypatch: pytest.MonkeyPatch) -> None
     assert assistant_chunks, (
         "No assistant_chunk frames emitted. Expected a final answer from Turn 2."
     )
-    all_delta_text = "".join(
-        str(f.get("delta", "")) for f in assistant_chunks if f.get("delta")
-    )
+    all_delta_text = "".join(str(f.get("delta", "")) for f in assistant_chunks if f.get("delta"))
     assert "강남세브란스" in all_delta_text or "강남구 응급실" in all_delta_text, (
         f"Final answer text not found in assistant_chunk deltas. "
         f"Concatenated deltas: {all_delta_text!r}"
@@ -613,7 +611,8 @@ async def test_five_turn_agentic_loop(monkeypatch: pytest.MonkeyPatch) -> None:
     # --- Assert: NO rate_limit error frame (FR-012) ---
     error_frames = [f for f in emitted if f.get("kind") == "error"]
     rate_limit_errors = [
-        f for f in error_frames
+        f
+        for f in error_frames
         if "rate_limit" in str(f.get("code", "")).lower()
         or "rate_limit" in str(f.get("message", "")).lower()
     ]
@@ -681,9 +680,7 @@ class _ThreeToolsInOneTurnLLMClient(_BaseFakeLLMClient):
         if turn == 1:
             # Emit three parallel tool_call_deltas with indices 0, 1, 2.
             queries = ["응급실 강남", "응급실 서초", "응급실 송파"]
-            for idx, (call_id, query) in enumerate(
-                zip(type(self)._call_ids, queries, strict=True)
-            ):
+            for idx, (call_id, query) in enumerate(zip(type(self)._call_ids, queries, strict=True)):
                 yield StreamEvent(
                     type="tool_call_delta",
                     tool_call_index=idx,
@@ -832,9 +829,7 @@ async def test_three_tools_in_one_turn_paired_correctly(
         "No assistant_chunk frames emitted after the 3 tool_results. "
         "The agentic loop must emit a Turn-2 final answer."
     )
-    all_delta_text = "".join(
-        str(f.get("delta", "")) for f in assistant_chunks if f.get("delta")
-    )
+    all_delta_text = "".join(str(f.get("delta", "")) for f in assistant_chunks if f.get("delta"))
     assert "근처 응급실" in all_delta_text or "응급실" in all_delta_text, (
         f"Turn-2 final answer text not found in assistant_chunk deltas. "
         f"Concatenated deltas: {all_delta_text!r}"
