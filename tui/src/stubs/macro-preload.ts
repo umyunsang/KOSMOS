@@ -153,4 +153,25 @@ if (process.env.KOSMOS_DEBUG_PRELOAD === '1') {
       /* stderr torn down */
     }
   })
+
+  // Patch process.exit so we can see WHO is calling it before the process
+  // dies (boot crashes were silent — KOSMOS_FORCE_INTERACTIVE=1 prevents
+  // the documented isTTY exit but a downstream caller is still firing
+  // process.exit(1) without a stack trace). Wraps once per process; the
+  // original is preserved on `process._origExit`.
+  if (!(process as any)._origExit) {
+    ;(process as any)._origExit = process.exit.bind(process)
+    process.exit = ((code?: number) => {
+      try {
+        const stack = new Error('process.exit caller').stack ?? ''
+        require('fs').writeSync(
+          2,
+          `[KOSMOS/DEBUG] process.exit(${code}) called\n${stack}\n`,
+        )
+      } catch {
+        /* stderr torn down */
+      }
+      return (process as any)._origExit(code)
+    }) as typeof process.exit
+  }
 }

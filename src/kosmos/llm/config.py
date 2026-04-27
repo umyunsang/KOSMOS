@@ -39,7 +39,13 @@ class LLMClientConfig(BaseSettings):
         description="FriendliAI model identifier.",
     )
     session_budget: int = Field(
-        default=100000,
+        # Default 1_000_000 — K-EXAONE 236B-A23B + FriendliAI Tier 1 supports
+        # 1M context. KOSMOS agentic loop emits a system prompt + Available
+        # tools catalog (12 tools — 5 primitives + MVP-7) + per-turn message
+        # history; each turn consumes 5-15K tokens. The prior 100K budget was
+        # exhausted within 2-3 turns of a real citizen scenario. Override via
+        # KOSMOS_LLM_SESSION_BUDGET if a session needs further tuning.
+        default=1_000_000,
         validation_alias="KOSMOS_LLM_SESSION_BUDGET",
         description="Maximum tokens allowed per session.",
     )

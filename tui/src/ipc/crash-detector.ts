@@ -135,6 +135,23 @@ export function startCrashDetector(
   // anyway so a future fd-based caller degrades silently instead of throwing.
   const stderrStream = proc.stderr
   if (stderrStream instanceof ReadableStream) {
+    // KOSMOS Epic #2077 diagnostics — when KOSMOS_BACKEND_STDERR_FILE is
+    // set, tee every backend stderr chunk to that path. Used to diagnose
+    // why interactive mode hangs while print mode succeeds: the ring
+    // buffer above only retains the last 20 lines, but K-EXAONE
+    // long-reasoning traces + chat_request handler logs need full history.
+    const teePath = process.env.KOSMOS_BACKEND_STDERR_FILE
+    let teeWriter: { write(data: Uint8Array): unknown; end(): unknown } | null = null
+    if (teePath) {
+      try {
+        teeWriter = Bun.file(teePath).writer() as unknown as {
+          write(data: Uint8Array): unknown
+          end(): unknown
+        }
+      } catch {
+        teeWriter = null
+      }
+    }
     ;(async () => {
       const reader = stderrStream.getReader()
       const decoder = new TextDecoder('utf-8')
@@ -143,9 +160,20 @@ export function startCrashDetector(
           const { value, done } = await reader.read()
           if (done) break
           stderrBuf.push(decoder.decode(value, { stream: true }))
+          if (teeWriter && value) {
+            try {
+              teeWriter.write(value)
+            } catch {
+              /* tee best-effort */
+            }
+          }
         }
       } catch {
         // Ignore read errors — the process may have exited
+      } finally {
+        if (teeWriter) {
+          try { teeWriter.end() } catch { /* close best-effort */ }
+        }
       }
     })()
   }

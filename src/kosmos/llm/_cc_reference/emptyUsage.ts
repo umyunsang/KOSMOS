@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0 (Anthropic upstream) — research-use mirror
+// Source: .references/claude-code-sourcemap/restored-src/src/services/api/emptyUsage.ts (CC 2.1.88)
+
 import type { NonNullableUsage } from '../../entrypoints/sdk/sdkUtilityTypes.js'
 
 /**

@@ -95,29 +95,44 @@ import { errorMessage } from '../utils/errors.js';
 import { isHumanTurn } from '../utils/messagePredicates.js';
 import { logError } from '../utils/log.js';
 // Dead code elimination: conditional imports
+// Use function declarations (not const arrows) so these are hoisted and not
+// subject to TDZ when REPL.tsx is part of a circular import chain.
+// See: tui/src/utils/proactiveModule.ts for the same pattern (Round 1 fix).
 /* eslint-disable custom-rules/no-process-env-top-level, @typescript-eslint/no-require-imports */
-const useVoiceIntegration: typeof import('../hooks/useVoiceIntegration.js').useVoiceIntegration = feature('VOICE_MODE') ? require('../hooks/useVoiceIntegration.js').useVoiceIntegration : () => ({
-  stripTrailing: () => 0,
-  handleKeyEvent: () => {},
-  resetAnchor: () => {}
-});
-const VoiceKeybindingHandler: typeof import('../hooks/useVoiceIntegration.js').VoiceKeybindingHandler = feature('VOICE_MODE') ? require('../hooks/useVoiceIntegration.js').VoiceKeybindingHandler : () => null;
+function useVoiceIntegration(...args: Parameters<typeof import('../hooks/useVoiceIntegration.js').useVoiceIntegration>) {
+  if (feature('VOICE_MODE')) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (require('../hooks/useVoiceIntegration.js').useVoiceIntegration as (...a: any[]) => any)(...args)
+  }
+  return { stripTrailing: () => 0, handleKeyEvent: () => {}, resetAnchor: () => {} }
+}
+function VoiceKeybindingHandler(props: Parameters<typeof import('../hooks/useVoiceIntegration.js').VoiceKeybindingHandler>[0]) {
+  if (feature('VOICE_MODE')) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (require('../hooks/useVoiceIntegration.js').VoiceKeybindingHandler as (p: any) => any)(props)
+  }
+  return null
+}
 // Frustration detection is ant-only (dogfooding). Conditional require so external
 // builds eliminate the module entirely (including its two O(n) useMemos that run
 // on every messages change, plus the GrowthBook fetch).
-const useFrustrationDetection: typeof import('../components/FeedbackSurvey/useFrustrationDetection.js').useFrustrationDetection = "external" === 'ant' ? require('../components/FeedbackSurvey/useFrustrationDetection.js').useFrustrationDetection : () => ({
-  state: 'closed',
-  handleTranscriptSelect: () => {}
-});
+function useFrustrationDetection(...args: Parameters<typeof import('../components/FeedbackSurvey/useFrustrationDetection.js').useFrustrationDetection>) {
+  // "external" === 'ant' is always false — keep as no-op for KOSMOS builds.
+  return { state: 'closed' as const, handleTranscriptSelect: () => {} }
+}
 // Ant-only org warning. Conditional require so the org UUID list is
 // eliminated from external builds (one UUID is on excluded-strings).
-const useAntOrgWarningNotification: typeof import('../hooks/notifs/useAntOrgWarningNotification.js').useAntOrgWarningNotification = "external" === 'ant' ? require('../hooks/notifs/useAntOrgWarningNotification.js').useAntOrgWarningNotification : () => {};
+function useAntOrgWarningNotification() {
+  // "external" === 'ant' is always false — no-op for KOSMOS builds.
+}
 // Dead code elimination: conditional import for coordinator mode
-const getCoordinatorUserContext: (mcpClients: ReadonlyArray<{
-  name: string;
-}>, scratchpadDir?: string) => {
-  [k: string]: string;
-} = feature('COORDINATOR_MODE') ? require('../coordinator/coordinatorMode.js').getCoordinatorUserContext : () => ({});
+function getCoordinatorUserContext(mcpClients: ReadonlyArray<{ name: string }>, scratchpadDir?: string): { [k: string]: string } {
+  if (feature('COORDINATOR_MODE')) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (require('../coordinator/coordinatorMode.js').getCoordinatorUserContext as (...a: any[]) => any)(mcpClients, scratchpadDir)
+  }
+  return {}
+}
 /* eslint-enable custom-rules/no-process-env-top-level, @typescript-eslint/no-require-imports */
 import useCanUseTool from '../hooks/useCanUseTool.js';
 import type { ToolPermissionContext, Tool } from '../Tool.js';
@@ -190,12 +205,20 @@ import { isBgSession, updateSessionName, updateSessionActivity } from '../utils/
 import { isInProcessTeammateTask, type InProcessTeammateTaskState } from '../tasks/InProcessTeammateTask/types.js';
 import { restoreRemoteAgentTasks } from '../tasks/RemoteAgentTask/RemoteAgentTask.js';
 import { useInboxPoller } from '../hooks/useInboxPoller.js';
+import {
+  getProactiveModule,
+  isProactiveActive,
+  pauseProactive,
+  resumeProactive,
+  setContextBlocked,
+} from '../utils/proactiveModule.js'
 // Dead code elimination: conditional import for loop mode
 /* eslint-disable @typescript-eslint/no-require-imports */
-const proactiveModule = feature('PROACTIVE') || feature('KAIROS') ? require('../proactive/index.js') : null;
-const PROACTIVE_NO_OP_SUBSCRIBE = (_cb: () => void) => () => {};
-const PROACTIVE_FALSE = () => false;
-const SUGGEST_BG_PR_NOOP = (_p: string, _n: string): boolean => false;
+// Use function declarations (not const arrows) so these are hoisted and not
+// subject to TDZ when REPL.tsx is part of a circular import chain.
+function PROACTIVE_NO_OP_SUBSCRIBE(_cb: () => void): () => void { return () => {} }
+function PROACTIVE_FALSE(): boolean { return false }
+function SUGGEST_BG_PR_NOOP(_p: string, _n: string): boolean { return false }
 const useProactive = feature('PROACTIVE') || feature('KAIROS') ? require('../proactive/useProactive.js').useProactive : null;
 const useScheduledTasks = feature('AGENT_TRIGGERS') ? require('../hooks/useScheduledTasks.js').useScheduledTasks : null;
 /* eslint-enable @typescript-eslint/no-require-imports */
@@ -218,10 +241,24 @@ import { IdeOnboardingDialog } from '../components/IdeOnboardingDialog.js';
 import { EffortCallout, shouldShowEffortCallout } from '../components/EffortCallout.js';
 import type { EffortValue } from '../utils/effort.js';
 import { RemoteCallout } from '../components/RemoteCallout.js';
+// Use function declarations (hoisted, no TDZ) for ant-only conditionally required modules.
 /* eslint-disable custom-rules/no-process-env-top-level, @typescript-eslint/no-require-imports */
-const AntModelSwitchCallout = "external" === 'ant' ? require('../components/AntModelSwitchCallout.js').AntModelSwitchCallout : null;
-const shouldShowAntModelSwitch = "external" === 'ant' ? require('../components/AntModelSwitchCallout.js').shouldShowModelSwitchCallout : (): boolean => false;
-const UndercoverAutoCallout = "external" === 'ant' ? require('../components/UndercoverAutoCallout.js').UndercoverAutoCallout : null;
+function AntModelSwitchCallout(props: Record<string, unknown>) {
+  if ("external" !== 'ant') return null
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const Comp = require('../components/AntModelSwitchCallout.js').AntModelSwitchCallout as (p: any) => any
+  return Comp(props)
+}
+function shouldShowAntModelSwitch(): boolean {
+  if ("external" !== 'ant') return false
+  return require('../components/AntModelSwitchCallout.js').shouldShowModelSwitchCallout()
+}
+function UndercoverAutoCallout(props: Record<string, unknown>) {
+  if ("external" !== 'ant') return null
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const Comp = require('../components/UndercoverAutoCallout.js').UndercoverAutoCallout as (p: any) => any
+  return Comp(props)
+}
 /* eslint-enable custom-rules/no-process-env-top-level, @typescript-eslint/no-require-imports */
 import { activityManager } from '../utils/activityManager.js';
 import { createAbortController } from '../utils/abortController.js';
@@ -269,8 +306,12 @@ import { useFastModeNotification } from 'src/hooks/notifs/useFastModeNotificatio
 import { AutoRunIssueNotification, shouldAutoRunIssue, getAutoRunIssueReasonText, getAutoRunCommand, type AutoRunIssueReason } from '../utils/autoRunIssue.js';
 import type { HookProgress } from '../types/hooks.js';
 import { TungstenLiveMonitor } from '../tools/TungstenTool/TungstenLiveMonitor.js';
+// Use function declaration (hoisted, no TDZ) for feature-gated panel module.
 /* eslint-disable @typescript-eslint/no-require-imports */
-const WebBrowserPanelModule = feature('WEB_BROWSER_TOOL') ? require('../tools/WebBrowserTool/WebBrowserPanel.js') as typeof import('../tools/WebBrowserTool/WebBrowserPanel.js') : null;
+function getWebBrowserPanelModule() {
+  if (!feature('WEB_BROWSER_TOOL')) return null
+  return require('../tools/WebBrowserTool/WebBrowserPanel.js') as typeof import('../tools/WebBrowserTool/WebBrowserPanel.js')
+}
 /* eslint-enable @typescript-eslint/no-require-imports */
 import { IssueFlagBanner } from '../components/PromptInput/IssueFlagBanner.js';
 import { useIssueFlagBanner } from '../hooks/useIssueFlagBanner.js';
@@ -304,7 +345,7 @@ import { BypassReinforcementModal } from '../components/permissions/BypassReinfo
 import { PermissionGauntletModal } from '../components/permissions/PermissionGauntletModal.js';
 // KOSMOS-1978 T050 — IPC-wired permission gauntlet (reads session-store.pending_permission)
 import { PermissionGauntletModal as KosmosIpcPermissionGauntletModal } from '../components/coordinator/PermissionGauntletModal.js';
-import { useSessionStore } from '../store/session-store.js';
+import { useSessionStore, getActivePermission, resolvePermissionDecision } from '../store/session-store.js';
 import { ReceiptToast } from '../components/permissions/ReceiptToast.js';
 import { PermissionReceiptProvider, usePermissionReceipts } from '../context/PermissionReceiptContext.js';
 import { AgentVisibilityPanel } from '../components/agents/AgentVisibilityPanel.js';
@@ -336,11 +377,9 @@ import type { ConversationTurn, ToolInvocationRecord } from '../components/expor
 // cause useEffect dependency changes and infinite re-render loops.
 const EMPTY_MCP_CLIENTS: MCPServerConnection[] = [];
 
-// Stable stub for useAssistantHistory's non-KAIROS branch — avoids a new
-// function identity each render, which would break composedOnScroll's memo.
-const HISTORY_STUB = {
-  maybeLoadOlder: (_: ScrollBoxHandle) => {}
-};
+// Stub for useAssistantHistory's non-KAIROS branch.
+// Declared as a function (hoisted) to avoid TDZ in circular import chains.
+function _getHistoryStub() { return { maybeLoadOlder: (_h: ScrollBoxHandle) => {} } }
 // Window after a user-initiated scroll during which type-into-empty does NOT
 // repin to bottom. Josh Rosen's workflow: Claude emits long output → scroll
 // up to read the start → start typing → before this fix, snapped to bottom.
@@ -513,9 +552,12 @@ function TranscriptSearchBar({
         </Text> : null}
     </Box>;
 }
-const TITLE_ANIMATION_FRAMES = ['⠂', '⠐'];
-const TITLE_STATIC_PREFIX = '✳';
-const TITLE_ANIMATION_INTERVAL_MS = 960;
+// These constants are used inside AnimatedTerminalTitle (and React-Compiler-extracted
+// _temp* functions). To avoid TDZ in circular-import scenarios, they are defined
+// as lazily-initialised getters via functions so hoisting applies.
+function _getTitleAnimationFrames() { return ['⠂', '⠐'] }
+function _getTitleStaticPrefix() { return '✳' }
+function _getTitleAnimationIntervalMs() { return 960 }
 
 /**
  * Sets the terminal tab title, with an animated prefix glyph while a query
@@ -541,7 +583,7 @@ function AnimatedTerminalTitle(t0) {
       if (disabled || noPrefix || !isAnimating || !terminalFocused) {
         return;
       }
-      const interval = setInterval(_temp2, TITLE_ANIMATION_INTERVAL_MS, setFrame);
+      const interval = setInterval(_temp2, _getTitleAnimationIntervalMs(), setFrame);
       return () => clearInterval(interval);
     };
     t2 = [disabled, noPrefix, isAnimating, terminalFocused];
@@ -556,7 +598,7 @@ function AnimatedTerminalTitle(t0) {
     t2 = $[5];
   }
   useEffect(t1, t2);
-  const prefix = isAnimating ? TITLE_ANIMATION_FRAMES[frame] ?? TITLE_STATIC_PREFIX : TITLE_STATIC_PREFIX;
+  const prefix = isAnimating ? _getTitleAnimationFrames()[frame] ?? _getTitleStaticPrefix() : _getTitleStaticPrefix();
   useTerminalTitle(disabled ? null : noPrefix ? title : `${prefix} ${title}`);
   return null;
 }
@@ -564,8 +606,58 @@ function _temp2(setFrame_0) {
   return setFrame_0(_temp);
 }
 function _temp(f) {
-  return (f + 1) % TITLE_ANIMATION_FRAMES.length;
+  return (f + 1) % _getTitleAnimationFrames().length;
 }
+// ---------------------------------------------------------------------------
+// KOSMOS-2077 T021 — sessionStore activePermission gate
+//
+// Subscribes to the pendingPermissionSlot (via useSessionStore, which subscribes
+// to subscribeToPermissionSlot in addition to the reducer store).  Renders null
+// when the slot is empty so the coordinator modal is not painted.  When a request
+// is active it mounts the IPC-wired coordinator modal and adapts the sendFrame
+// callback to also call resolvePermissionDecision, unblocking the Promise that
+// deps.ts (T020) awaits before sending the permission_response IPC frame.
+//
+// Props are passed through to the inner KosmosIpcPermissionGauntletModal so
+// callers do not need to change their mount point signature.
+// ---------------------------------------------------------------------------
+
+interface KosmosActivePermissionGateProps {
+  sendFrame: (frame: import('../ipc/frames.generated.js').PermissionResponseFrame) => void
+  sessionId: string
+}
+
+function KosmosActivePermissionGate({
+  sendFrame,
+  sessionId,
+}: KosmosActivePermissionGateProps): React.ReactElement | null {
+  // getActivePermission is called inside the selector body so that re-renders
+  // are triggered by subscribeToPermissionSlot (wired into useSessionStore).
+  const active = useSessionStore(() => getActivePermission())
+
+  if (active == null) return null
+
+  // Adapt sendFrame so that each decision also resolves the Promise that
+  // setPendingPermission() returned to deps.ts (T020).
+  const adaptedSendFrame = (frame: import('../ipc/frames.generated.js').PermissionResponseFrame): void => {
+    sendFrame(frame)
+    // frame.decision is 'granted' | 'denied' per PermissionResponseFrame schema.
+    // PermissionDecision is 'granted' | 'denied' | 'timeout'; both values are
+    // valid members of the union so the cast is safe here.
+    resolvePermissionDecision(
+      frame.request_id,
+      frame.decision as import('../store/session-store.js').PermissionDecision,
+    )
+  }
+
+  return (
+    <KosmosIpcPermissionGauntletModal
+      sendFrame={adaptedSendFrame}
+      sessionId={sessionId}
+    />
+  )
+}
+
 export type Props = {
   commands: Command[];
   debug: boolean;
@@ -664,7 +756,17 @@ export function REPL({
   // KOSMOS P4 UI L2 — T022/T023: streaming state + 5-second no-chunk timeout
   const [kosmosCurrentError, setKosmosCurrentError] = useState<ErrorEnvelopeT | null>(null);
   const kosmosLastChunkTimeRef = useRef<number>(Date.now());
-  const KOSMOS_STREAM_TIMEOUT_MS = 5000;
+  // KOSMOS_STREAM_TIMEOUT_MS — first-token / inter-chunk silence detector
+  // for the "no response" network-error envelope. K-EXAONE 236B on FriendliAI
+  // Tier 1 with `high effort` reasoning routinely takes 1-3 minutes for the
+  // very first chunk when the system prompt + tool catalog is large (12
+  // tools — 5 primitives + MVP-7); the original 5_000 / 90_000 thresholds
+  // false-flagged every turn before the model finished its reasoning trace.
+  // 300_000 (5 min) is safely above the empirical p99 first-token latency
+  // and still surfaces real network outages without burying the citizen
+  // under a hung spinner. Override via KOSMOS_STREAM_TIMEOUT_MS env var if
+  // a deployment needs further tuning.
+  const KOSMOS_STREAM_TIMEOUT_MS = Number(process.env.KOSMOS_STREAM_TIMEOUT_MS ?? 300000);
 
   // KOSMOS P4 UI L2 — T036: Bypass reinforcement modal state
   const [kosmosShowBypassConfirm, setKosmosShowBypassConfirm] = useState(false);
@@ -796,7 +898,10 @@ export function REPL({
   useSkillsChange(isRemoteSession ? undefined : getProjectRoot(), setLocalCommands);
 
   // Track proactive mode for tools dependency - SleepTool filters by proactive state
-  const proactiveActive = React.useSyncExternalStore(proactiveModule?.subscribeToProactiveChanges ?? PROACTIVE_NO_OP_SUBSCRIBE, proactiveModule?.isProactiveActive ?? PROACTIVE_FALSE);
+  const proactiveActive = React.useSyncExternalStore(
+    getProactiveModule()?.subscribeToProactiveChanges ?? PROACTIVE_NO_OP_SUBSCRIBE,
+    getProactiveModule()?.isProactiveActive ?? PROACTIVE_FALSE,
+  );
 
   // BriefTool.isEnabled() reads getUserMsgOptIn() from bootstrap state, which
   // /brief flips mid-session alongside isBriefOnly. The memo below needs a
@@ -1390,32 +1495,10 @@ export function REPL({
       repinScroll();
     }
   }, [lastMsgIsHuman, lastMsg, repinScroll]);
-  // KOSMOS P4 UI L2 — T023: 5-second no-chunk network timeout (FR-012 + edge
-  // case "streaming network drop"). Resets on every messages.length change
-  // so an in-flight long generation that is still producing chunks does not
-  // get falsely flagged as a network failure (Codex P1 fix on PR #1847).
-  useEffect(() => {
-    if (!isLoading) {
-      kosmosLastChunkTimeRef.current = Date.now();
-      return;
-    }
-    kosmosLastChunkTimeRef.current = Date.now();
-    const timer = setTimeout(() => {
-      if (Date.now() - kosmosLastChunkTimeRef.current >= KOSMOS_STREAM_TIMEOUT_MS) {
-        const networkError: ErrorEnvelopeT = {
-          type: 'network',
-          title_ko: '네트워크 연결이 끊어졌습니다',
-          title_en: 'Network connection lost',
-          detail_ko: '5초간 응답이 없습니다. 다시 시도해주세요.',
-          detail_en: 'No response for 5 seconds. Please retry.',
-          retry_suggested: true,
-          occurred_at: new Date().toISOString(),
-        };
-        setKosmosCurrentError(networkError);
-      }
-    }, KOSMOS_STREAM_TIMEOUT_MS);
-    return () => clearTimeout(timer);
-  }, [isLoading, messages.length]);
+  // KOSMOS Epic #2077 — inter-chunk silence detector moved below the
+  // streamingText / streamingThinking state declarations (line ~1716+) so
+  // the dep array can reference them without hitting TS TDZ. See the
+  // useEffect at the streamingText declaration site.
   // Assistant-chat: lazy-load remote history on scroll-up. No-op unless
   // KAIROS build + config.viewerOnly. feature() is build-time constant so
   // the branch is dead-code-eliminated in non-KAIROS builds (same pattern
@@ -1429,7 +1512,8 @@ export function REPL({
     setMessages,
     scrollRef,
     onPrepend: shiftDivider
-  }) : HISTORY_STUB;
+  // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+  }) : _getHistoryStub();
   // Compose useUnseenDivider's callbacks with the lazy-load trigger.
   const composedOnScroll = useCallback((sticky: boolean, handle: ScrollBoxHandle) => {
     lastUserScrollTsRef.current = Date.now();
@@ -1607,6 +1691,43 @@ export function REPL({
     if (!showStreamingText) return;
     setStreamingText(f);
   }, [showStreamingText]);
+
+  // KOSMOS Epic #2077 — inter-chunk silence detector. Reschedules the
+  // network-error timer on EVERY chunk arrival so K-EXAONE high-effort
+  // reasoning (which can stream `thinking_delta` tokens for minutes before
+  // emitting the first visible `text_delta`) does not falsely fire the
+  // network-error envelope. Original logic only re-armed on `messages.length`
+  // (turn completion — too late). Dep on streamingText/streamingThinking
+  // length keeps the timer rolling per chunk; the 5-minute hard ceiling
+  // (KOSMOS_STREAM_TIMEOUT_MS) still surfaces real outages.
+  useEffect(() => {
+    if (!isLoading) {
+      kosmosLastChunkTimeRef.current = Date.now();
+      return;
+    }
+    kosmosLastChunkTimeRef.current = Date.now();
+    const timer = setTimeout(() => {
+      if (Date.now() - kosmosLastChunkTimeRef.current >= KOSMOS_STREAM_TIMEOUT_MS) {
+        const networkError: ErrorEnvelopeT = {
+          type: 'network',
+          title_ko: '네트워크 연결이 끊어졌습니다',
+          title_en: 'Network connection lost',
+          detail_ko: '5분간 응답이 없습니다. 다시 시도해주세요.',
+          detail_en: 'No response for 5 minutes. Please retry.',
+          retry_suggested: true,
+          occurred_at: new Date().toISOString(),
+        };
+        setKosmosCurrentError(networkError);
+      }
+    }, KOSMOS_STREAM_TIMEOUT_MS);
+    return () => clearTimeout(timer);
+  }, [
+    isLoading,
+    messages.length,
+    streamingText?.length ?? 0,
+    streamingThinking?.thinking?.length ?? 0,
+    KOSMOS_STREAM_TIMEOUT_MS,
+  ]);
 
   // Hide the in-progress source line so text streams line-by-line, not
   // char-by-char. lastIndexOf returns -1 when no newline, giving '' → null.
@@ -2255,7 +2376,7 @@ export function REPL({
     // Pause proactive mode so the user gets control back.
     // It will resume when they submit their next input (see onSubmit).
     if (feature('PROACTIVE') || feature('KAIROS')) {
-      proactiveModule?.pauseProactive();
+      pauseProactive();
     }
     queryGuard.forceEnd();
     skipIdleCheckRef.current = false;
@@ -2745,7 +2866,7 @@ export function REPL({
         setConversationId(randomUUID());
         // Compaction succeeded — clear the context-blocked flag so ticks resume
         if (feature('PROACTIVE') || feature('KAIROS')) {
-          proactiveModule?.setContextBlocked(false);
+          setContextBlocked(false);
         }
       } else if (newMessage.type === 'progress' && isEphemeralToolProgress(newMessage.data.type)) {
         // Replace the previous ephemeral progress tick for the same tool
@@ -2775,9 +2896,9 @@ export function REPL({
       // Cleared on compact boundary (above) or successful response (below).
       if (feature('PROACTIVE') || feature('KAIROS')) {
         if (newMessage.type === 'assistant' && 'isApiErrorMessage' in newMessage && newMessage.isApiErrorMessage) {
-          proactiveModule?.setContextBlocked(true);
+          setContextBlocked(true);
         } else if (newMessage.type === 'assistant') {
-          proactiveModule?.setContextBlocked(false);
+          setContextBlocked(false);
         }
       }
     }, newContent => {
@@ -2878,7 +2999,7 @@ export function REPL({
         // stale memoized rows remount with post-compact content.
         setConversationId(randomUUID());
         if (feature('PROACTIVE') || feature('KAIROS')) {
-          proactiveModule?.setContextBlocked(false);
+          setContextBlocked(false);
         }
       }
       resetLoadingState();
@@ -2915,7 +3036,7 @@ export function REPL({
     const userContext = {
       ...baseUserContext,
       ...getCoordinatorUserContext(freshMcpClients, isScratchpadEnabled() ? getScratchpadDir() : undefined),
-      ...((feature('PROACTIVE') || feature('KAIROS')) && proactiveModule?.isProactiveActive() && !terminalFocusRef.current ? {
+      ...((feature('PROACTIVE') || feature('KAIROS')) && isProactiveActive() && !terminalFocusRef.current ? {
         terminalFocus: 'The terminal is unfocused \u2014 the user is not actively watching.'
       } : {})
     };
@@ -3294,7 +3415,7 @@ export function REPL({
 
     // Resume loop mode if paused
     if (feature('PROACTIVE') || feature('KAIROS')) {
-      proactiveModule?.resumeProactive();
+      resumeProactive();
     }
 
     // KOSMOS P4 UI L2 — T072: KOSMOS auxiliary command dispatch
@@ -4928,7 +5049,7 @@ export function REPL({
                     {toolJSX.jsx}
                   </Box>}
               {"external" === 'ant' && <TungstenLiveMonitor />}
-              {feature('WEB_BROWSER_TOOL') ? WebBrowserPanelModule && <WebBrowserPanelModule.WebBrowserPanel /> : null}
+              {feature('WEB_BROWSER_TOOL') ? (() => { const m = getWebBrowserPanelModule(); return m && <m.WebBrowserPanel /> })() : null}
               <Box flexGrow={1} />
               {showSpinner && <SpinnerWithVerb mode={streamMode} spinnerTip={spinnerTip} responseLengthRef={responseLengthRef} apiMetricsRef={apiMetricsRef} overrideMessage={spinnerMessage} spinnerSuffix={stopHookSpinnerSuffix} verbose={verbose} loadingStartTimeRef={loadingStartTimeRef} totalPausedMsRef={totalPausedMsRef} pauseStartTimeRef={pauseStartTimeRef} overrideColor={spinnerColor} overrideShimmerColor={spinnerShimmerColor} hasActiveTools={inProgressToolUseIDs.size > 0} leaderIsIdle={!isLoading} />}
               {!showSpinner && !isLoading && !userInputOnProcessing && !hasRunningTeammates && isBriefOnly && !viewedAgentTask && <BriefIdleStatus />}
@@ -5284,10 +5405,14 @@ export function REPL({
                           }}
                         />
                       )}
-                      {/* KOSMOS-1978 T050 — IPC permission_request frame → citizen consent modal.
-                          Reads session-store.pending_permission (set by useReplBridge frame router).
-                          Emits permission_response frame via bridge on Y/N keystroke. */}
-                      <KosmosIpcPermissionGauntletModal
+                      {/* KOSMOS-2077 T021 — Wire PermissionGauntletModal mount to
+                          sessionStore activePermission slot.
+                          Subscribes to pendingPermissionSlot (via useSessionStore which
+                          also subscribes to subscribeToPermissionSlot); renders null when
+                          slot is empty; calls resolvePermissionDecision on grant/deny so
+                          the Promise returned by setPendingPermission (T020/deps.ts)
+                          unblocks and sends the permission_response IPC frame. */}
+                      <KosmosActivePermissionGate
                         sendFrame={(frame) => getOrCreateKosmosBridge().send(frame)}
                         sessionId={kosmosIpcSessionId}
                       />
@@ -5376,7 +5501,7 @@ export function REPL({
             // Partial compact bypasses handleMessageFromStream — clear
             // the context-blocked flag so proactive ticks resume.
             if (feature('PROACTIVE') || feature('KAIROS')) {
-              proactiveModule?.setContextBlocked(false);
+              setContextBlocked(false);
             }
             setConversationId(randomUUID());
             runPostCompactCleanup(context.options.querySource);

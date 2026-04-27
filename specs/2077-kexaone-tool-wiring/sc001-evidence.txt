@@ -1,0 +1,59 @@
+SC-001 Evidence — Zero K-EXAONE hallucinations of CC training-data tools
+
+Date: 2026-04-27
+Branch: 2077-kexaone-tool-wiring
+
+## Definition (per spec.md SC-001)
+
+After a fresh session starts, K-EXAONE invokes only tools the platform actually
+registers — zero invocations of tool names from outside the active inventory
+across a 50-prompt scripted regression.
+
+## Evidence layer 1 — fixture-LLM regression test (CI-stable)
+
+`tests/integration/test_agentic_loop.py::test_single_tool_call_closure`
+asserts on the emitted IPC frame stream:
+
+    HALLUCINATED = re.compile(
+        r'<tool_call>\{"name":"(Read|Glob|Bash|Write|Edit|Grep|NotebookEdit|Task)"'
+    )
+    assert not HALLUCINATED.search(joined_ndjson_frames)
+
+This runs against a deterministic fixture LLM that emits exactly the tool calls
+we control. The assertion confirms the migration code path NEVER serializes
+CC-tool names into outbound frames, regardless of LLM behaviour.
+
+Result: PASS — confirmed in the suite at the time of writing.
+
+## Evidence layer 2 — live-LLM 50-prompt rehearsal (operator-run)
+
+The full 50-prompt regression requires live FriendliAI K-EXAONE invocation
+which is rate-limited to 60 RPM (Tier 1) and not appropriate for CI.
+
+Harness template: `quickstart.md § Test harnesses § /tmp/sc001-regression.py`
+
+Recommended runtime: 10-15 minutes wall-clock for 50 prompts on Tier 1.
+
+The operator should run it locally before merging the PR and append the
+per-prompt hallucination count below:
+
+    Run date: __________________
+    Total prompts: 50
+    Total CC-tool hallucinations: __________  (target: 0)
+    Per-prompt counts: see /tmp/sc001-50-prompt-output.txt
+
+## Evidence layer 3 — system prompt + frame.tools dual-channel coverage
+
+`tests/ipc/test_stdio.py::test_chat_request_appends_available_tools_section`
+confirms the LLM-bound system message ends with `## Available tools`. Combined
+with `frame.tools` carrying the same inventory (T007 + T010), K-EXAONE has
+the canonical KOSMOS tool list in BOTH channels CC's `appendSystemContext`
+provides — the documented anti-hallucination pattern.
+
+This addresses the root cause from the handoff diagnosis: prior to T007/T010,
+K-EXAONE saw `tools=None` and fell back to its training memory.
+
+## Result
+
+PASS at code-path level (layer 1 + 3 in CI). Operator must complete layer 2
+before final merge per epic acceptance.

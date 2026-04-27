@@ -29,8 +29,14 @@ export function isModifierPressed(modifier: ModifierKey): boolean {
     return false
   }
   // Dynamic import to avoid loading native module at top level
-  const { isModifierPressed: nativeIsModifierPressed } =
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    require('modifiers-napi') as { isModifierPressed: (m: string) => boolean }
+  // Guard: the stub modifiers-napi (used in Bun / non-native environments)
+  // exports `{}`, so isModifierPressed may be undefined. Fall back to false
+  // so handleEnter does not throw and blocks prompt submission.
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const mod = require('modifiers-napi') as { isModifierPressed?: (m: string) => boolean }
+  const nativeIsModifierPressed = mod.isModifierPressed
+  if (typeof nativeIsModifierPressed !== 'function') {
+    return false
+  }
   return nativeIsModifierPressed(modifier)
 }

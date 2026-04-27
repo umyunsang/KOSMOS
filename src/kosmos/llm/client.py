@@ -824,7 +824,25 @@ class LLMClient:
         The four sampling/generation parameters (temperature, top_p,
         presence_penalty, max_tokens) are always included so the provider
         uses the caller's values — defaults are set at the call site.
+
+        K-EXAONE specific: ``chat_template_kwargs.enable_thinking`` controls
+        the model's reasoning mode (default ON for K-EXAONE per HuggingFace
+        model card). KOSMOS defaults this to ``False`` for citizen-facing
+        latency (sub-10s vs 1-3min reasoning trace) but keeps the toggle
+        env-var driven via ``KOSMOS_K_EXAONE_THINKING`` for slash-command
+        ``/effort high`` integration in a follow-up. When tools are present
+        we still default to non-reasoning — the agentic loop itself handles
+        multi-step reasoning across turns; per-turn deep thinking compounds
+        with loop-level thinking and exceeds the 5-min ``KOSMOS_STREAM_TIMEOUT_MS``.
         """
+        import os  # noqa: PLC0415 — local import keeps top-level imports thin
+
+        enable_thinking = os.environ.get("KOSMOS_K_EXAONE_THINKING", "false").lower() in (
+            "true",
+            "1",
+            "yes",
+        )
+
         payload: dict[str, object] = {
             "model": self._config.model,
             "messages": [m.model_dump(exclude_none=True) for m in messages],
@@ -832,6 +850,12 @@ class LLMClient:
             "top_p": top_p,
             "presence_penalty": presence_penalty,
             "max_tokens": max_tokens,
+            # K-EXAONE chat-template hint — FriendliAI / vLLM forward this
+            # to the model's tokenizer.apply_chat_template(...) call. With
+            # enable_thinking=False the model emits an answer directly
+            # without the <think>...</think> trace, dropping first-token
+            # latency from ~60-180s to <10s for typical citizen prompts.
+            "chat_template_kwargs": {"enable_thinking": enable_thinking},
         }
         if stop is not None:
             payload["stop"] = stop

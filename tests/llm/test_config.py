@@ -62,10 +62,10 @@ def test_default_model(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_default_session_budget(monkeypatch: pytest.MonkeyPatch) -> None:
-    """session_budget defaults to 100 000 tokens."""
+    """session_budget defaults to 1 000 000 tokens (Epic #2077 — K-EXAONE 1M context)."""
     monkeypatch.setenv("KOSMOS_FRIENDLI_TOKEN", "test-token-123")
     config = LLMClientConfig()
-    assert config.session_budget == 100000
+    assert config.session_budget == 1_000_000
 
 
 def test_default_timeout(monkeypatch: pytest.MonkeyPatch) -> None:

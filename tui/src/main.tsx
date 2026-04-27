@@ -1495,6 +1495,12 @@ async function run(): Promise<CommanderCommand> {
 
       logForDebugging('[STARTUP] Running showSetupScreens()...');
       const setupScreensStart = Date.now();
+      // KOSMOS — `devChannels` was lost during CC sourcemap reconstruction
+      // (Spec 1632 baseline drop). Upstream Claude Code uses it for the
+      // ``--dangerously-load-development-channels`` private-plugin path,
+      // which KOSMOS does not ship (Spec 1633 P1 dead-code clause). Pass
+      // ``undefined`` so showSetupScreens routes to the citizen flow.
+      const devChannels = undefined;
       const onboardingShown = await showSetupScreens(root, permissionMode, allowDangerouslySkipPermissions, commands, enableClaudeInChrome, devChannels);
       logForDebugging(`[STARTUP] showSetupScreens() completed in ${Date.now() - setupScreensStart}ms`);
 
@@ -2185,6 +2191,11 @@ async function run(): Promise<CommanderCommand> {
     // adding a new top-level await in main.tsx (performance-critical path).
     // The per-turn auth logic in sessionDataUploader.ts handles unauthenticated
     // state gracefully (re-checks each turn, so auth recovery mid-session works).
+    // KOSMOS — sessionDataUploader is upstream-only (Anthropic claude.ai
+    // session sync); KOSMOS does not exfiltrate sessions. Set the promise to
+    // null so the lazy-resolve path becomes a no-op (Spec 1633 dead-code
+    // policy + ReferenceError fix from Spec 1632 sourcemap reconstruction).
+    const sessionUploaderPromise: Promise<{ createSessionTurnUploader: () => unknown }> | null = null;
     const uploaderReady = sessionUploaderPromise ? sessionUploaderPromise.then(mod => mod.createSessionTurnUploader()).catch(() => null) : null;
     const sessionConfig = {
       debug: debug || debugToStderr,
@@ -2807,6 +2818,19 @@ function extractTeammateOptions(options: unknown): TeammateOptions {
 // Without this, `bun run src/main.tsx` loads the module and exits immediately
 // without reaching the splash render path.
 main().catch((err) => {
+  // KOSMOS Epic #2077 verification — write rich debug info to a known file
+  // so VHS / PTY captures show why main() rejected. The original
+  // process.stderr.write was sometimes swallowed when stderr was redirected.
+  try {
+    require('fs').writeSync(
+      2,
+      `[KOSMOS/CC] fatal: typeof=${typeof err} isError=${err instanceof Error} ` +
+        `stack=${err instanceof Error ? err.stack : '(none)'} message=${err instanceof Error ? err.message : '(none)'} ` +
+        `string=${String(err)} json=${(() => { try { return JSON.stringify(err); } catch { return '(unserializable)'; } })()}\n`,
+    );
+  } catch {
+    /* stderr torn down */
+  }
   process.stderr.write(`[KOSMOS/CC] fatal: ${err instanceof Error ? err.stack || err.message : String(err)}\n`);
   process.exit(1);
 });

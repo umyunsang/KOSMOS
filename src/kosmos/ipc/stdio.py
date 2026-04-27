@@ -428,10 +428,73 @@ async def run(  # noqa: C901
             # Windows or restricted environments — fall back to signal.signal
             signal.signal(sig, _handle_signal)
 
-    # Connect asyncio StreamReader to sys.stdin.buffer
-    stdin_reader = asyncio.StreamReader()
-    protocol = asyncio.StreamReaderProtocol(stdin_reader)
-    transport, _ = await loop.connect_read_pipe(lambda: protocol, sys.stdin.buffer)
+    # Connect asyncio StreamReader to sys.stdin.buffer.
+    #
+    # macOS / kqueue fix (Fix Strategy 2 — thread-based bypass):
+    #
+    # When the backend is spawned as a child process by Bun.spawn
+    # (tui/src/ipc/bridge.ts) with stdin: 'pipe', Python's
+    # asyncio.SelectorEventLoop on macOS uses kqueue.  kqueue raises
+    # OSError: [Errno 22] Invalid argument (EINVAL) when
+    # connect_read_pipe attempts to register a pipe fd via kqueue.control().
+    # This happens even after setting O_NONBLOCK on the dup'd fd because
+    # the fd type (anonymous pipe) is not accepted by kqueue on macOS 15+
+    # (Darwin 25).  The same error also manifests when stdin is a tty.
+    #
+    # Fix: run a blocking sys.stdin.buffer.readline() loop inside a thread
+    # (via loop.run_in_executor with None = default ThreadPoolExecutor),
+    # push each line directly into a StreamReader via feed_data()/feed_eof().
+    # This bypasses connect_read_pipe entirely so kqueue never sees the fd.
+    # On Linux (epoll-based asyncio) connect_read_pipe works fine; we still
+    # use the thread path there for portability since run_in_executor has
+    # negligible overhead compared to inter-process pipe I/O.
+    #
+    # Unit-test compatibility: the in-process harness (tests/ipc/test_stdio.py,
+    # _run_with_frame) wraps an os.pipe() read-end as sys.stdin.buffer.
+    # The thread reads from the same buffer object, so the test payload arrives
+    # via the same readline() path — no change needed in the tests.
+    # KOSMOS Epic #2077 — limit=16 MiB. The default asyncio.StreamReader limit
+    # is 64 KiB (asyncio.streams._DEFAULT_LIMIT), which is too small once the
+    # TUI's ChatRequestFrame includes the full 11-tool catalog (~13 KB JSON)
+    # plus accumulated message history across agentic-loop turns. A single
+    # ``\n``-terminated line easily exceeds 64 KiB after 3-5 turns, causing
+    # ``readline()`` to raise ``ValueError('Separator is found, but chunk is
+    # longer than limit')`` and the IPC reader loop to silently die — the
+    # TUI then waits forever for assistant_chunk frames that never come.
+    # 16 MiB matches the K-EXAONE 1M-token context budget in bytes (1M tokens
+    # × ~1.5 byte/token UTF-8 average × 10× safety margin).
+    stdin_reader = asyncio.StreamReader(limit=16 * 1024 * 1024)
+    _stdin_buf_capture = sys.stdin.buffer  # capture now; monkeypatching may change sys.stdin
+
+    async def _stdin_feed_task() -> None:
+        """Read stdin synchronously in a thread executor; push lines into stdin_reader.
+
+        Thread loop: blocks on readline() until EOF, then feeds EOF to the
+        StreamReader so _reader_loop terminates naturally.  Any OSError or
+        ValueError (e.g. closed file during shutdown) also terminates the loop.
+
+        On task cancellation (signalled by the outer shutdown coordinator at
+        :func:`run`'s ``asyncio.wait`` boundary), the in-flight ``readline()``
+        executor Future is cancelled so the awaiting coroutine returns and
+        ``stdin_reader.feed_eof()`` runs in ``finally`` (Codex P1, PR #2111).
+        The blocked worker thread itself does not exit — Python cannot kill
+        threads — but Python's default-executor shutdown path on
+        ``asyncio.run()`` exit is bounded by ``shutdown_default_executor``'s
+        timeout, so the interpreter still terminates.
+        """
+        loop_inner = asyncio.get_running_loop()
+        try:
+            while True:
+                line: bytes = await loop_inner.run_in_executor(None, _stdin_buf_capture.readline)
+                if not line:
+                    break
+                stdin_reader.feed_data(line)
+        except (OSError, ValueError, asyncio.CancelledError):
+            pass
+        finally:
+            stdin_reader.feed_eof()
+
+    _stdin_feed_handle = asyncio.create_task(_stdin_feed_task(), name="ipc-stdin-feed")
 
     # Default on_frame: route `user_input` to the FriendliAI LLM (Epic #1633
     # FR-007/FR-017) and `session_event` to the session manager. Wraps every
@@ -460,6 +523,22 @@ async def run(  # noqa: C901
     # Per-session auto-approved tool IDs (allow_session grants).
     # Keyed by session_id → set of tool_ids approved for the session lifetime.
     _session_grants: dict[str, set[str]] = {}
+
+    # Epic #2077 T010 — single ToolRegistry instance reused across every
+    # chat_request. The registry rebuilds its in-memory adapter index at
+    # backend boot via ``register_all`` side-effects (Spec 1634); rebuilding
+    # it per turn would re-execute every adapter ``__init_subclass__`` hook
+    # for no observable gain. The list-of-one indirection mirrors the
+    # ``_llm_client_ref`` pattern above so the closure-bound name binding
+    # survives reassignment under typing strictness.
+    _tool_registry_ref: list[object] = []
+
+    def _ensure_tool_registry() -> object:
+        if not _tool_registry_ref:
+            from kosmos.tools.registry import ToolRegistry  # noqa: PLC0415
+
+            _tool_registry_ref.append(ToolRegistry())
+        return _tool_registry_ref[0]
 
     async def _ensure_llm_client() -> object:
         if not _llm_client_ref:
@@ -560,7 +639,7 @@ async def run(  # noqa: C901
             err = ErrorFrame(
                 session_id=frame.session_id,
                 correlation_id=frame.correlation_id or str(uuid.uuid4()),
-                role="llm",
+                role="backend",
                 ts=_utcnow(),
                 kind="error",
                 code="llm_stream_error",
@@ -627,7 +706,15 @@ async def run(  # noqa: C901
     # an existing session-grant. Spec 033 Layer 1 (L1) exempts verify/lookup/
     # resolve_location (read-only, public-tier); submit/subscribe are side-
     # effecting (Layer 2/3) and always enter the bridge.
-    _PERMISSION_GATED_PRIMITIVES: frozenset[str] = frozenset({"submit", "subscribe"})  # noqa: N806
+    #
+    # Epic #2077 T010 (FR-003) — single-source-of-truth migration: read the
+    # gated set from ``kosmos.primitives.GATED_PRIMITIVES`` rather than
+    # duplicating the literal set here. The local alias is preserved for
+    # downstream call-site brevity (and to keep diff churn minimal in this
+    # epic) but the literal set is no longer maintained in this module.
+    from kosmos.primitives import (
+        GATED_PRIMITIVES as _PERMISSION_GATED_PRIMITIVES,  # noqa: PLC0415, N811
+    )
 
     async def _check_permission_gate(
         call_id: str,
@@ -1077,15 +1164,41 @@ async def run(  # noqa: C901
         from kosmos.llm.models import (
             ToolDefinition as LLMToolDefinition,
         )
+        from kosmos.llm.system_prompt_builder import (  # noqa: PLC0415
+            build_system_prompt_with_tools,
+        )
 
         if not isinstance(frame, ChatRequestFrame):
             return
 
+        # Epic #2077 T010 — assemble the active tool inventory FIRST so the
+        # system-prompt augmentation (Step 3) and the LLM ``tools`` parameter
+        # (Step 2) consume the same shape. Order: (1) trust the TUI's
+        # ``frame.tools`` if non-empty (citizen authority — Step 2); (2)
+        # fall back to ``ToolRegistry.export_core_tools_openai()`` if the
+        # frame omits tools (Step 4). Backend remains authoritative for
+        # *execution* (FR-005): unknown names are dropped at dispatch time.
+        llm_tools: list[LLMToolDefinition] = []
+        for t in frame.tools:
+            llm_tools.append(LLMToolDefinition.model_validate(t.model_dump()))
+        if not llm_tools:
+            registry = _ensure_tool_registry()
+            for raw in registry.export_core_tools_openai():  # type: ignore[attr-defined]
+                llm_tools.append(LLMToolDefinition.model_validate(raw))
+
         # Build LLMClient input from the frame payload. Conversation history
         # lives in the TUI per ADR-0005 — backend receives the full slate.
+        # Epic #2077 T010 (Step 3) — augment the system prompt with a
+        # ``## Available tools`` section so K-EXAONE sees the same inventory
+        # in BOTH the structured ``tools`` param AND the prose system message
+        # (mirrors ``_cc_reference/api.ts:appendSystemContext``). Returns
+        # ``base`` unchanged when ``llm_tools`` is empty (no inventory to
+        # publish), so the no-tools path is byte-stable with the old code.
+        base_system = frame.system or ""
+        augmented_system = build_system_prompt_with_tools(base_system, llm_tools)
         llm_messages: list[LLMChatMessage] = []
-        if frame.system:
-            llm_messages.append(LLMChatMessage(role="system", content=frame.system))
+        if augmented_system:
+            llm_messages.append(LLMChatMessage(role="system", content=augmented_system))
         for m in frame.messages:
             llm_messages.append(
                 LLMChatMessage(
@@ -1095,10 +1208,6 @@ async def run(  # noqa: C901
                     tool_call_id=m.tool_call_id,
                 )
             )
-
-        llm_tools: list[LLMToolDefinition] = []
-        for t in frame.tools:
-            llm_tools.append(LLMToolDefinition.model_validate(t.model_dump()))
 
         client = await _ensure_llm_client()
 
@@ -1189,11 +1298,15 @@ async def run(  # noqa: C901
                 stream_error = exc
 
             if stream_error is not None:
+                # Schema constraint: ErrorFrame.role ∈ {'backend','tui'} —
+                # 'llm' was rejected by Pydantic validation. Backend is the
+                # correct sender role since this frame originates from the
+                # backend's own LLM-stream error handler.
                 await write_frame(
                     ErrorFrame(
                         session_id=frame.session_id,
                         correlation_id=frame.correlation_id or str(uuid.uuid4()),
-                        role="llm",
+                        role="backend",
                         ts=_utcnow(),
                         kind="error",
                         code="llm_stream_error",
@@ -1234,18 +1347,18 @@ async def run(  # noqa: C901
                     args_obj = {"_value": args_obj}
 
                 fname = slot["name"]
-                if fname not in {
-                    "lookup",
-                    "resolve_location",
-                    "submit",
-                    "subscribe",
-                    "verify",
-                }:
+                # Epic #2077 FR-003 — registry-derived whitelist. spec.md
+                # § Out of Scope (Permanent) forbids hardcoded enumerations
+                # outside the registry; ``PRIMITIVE_REGISTRY`` is the single
+                # source of truth for LLM-visible primitive names.
+                from kosmos.primitives import PRIMITIVE_REGISTRY  # noqa: PLC0415
+
+                if fname not in PRIMITIVE_REGISTRY:
                     await write_frame(
                         ErrorFrame(
                             session_id=frame.session_id,
                             correlation_id=frame.correlation_id or str(uuid.uuid4()),
-                            role="llm",
+                            role="backend",
                             ts=_utcnow(),
                             kind="error",
                             code="unknown_tool",
@@ -1465,7 +1578,7 @@ async def run(  # noqa: C901
                     err = ErrorFrame(
                         session_id=frame.session_id,
                         correlation_id=frame.correlation_id or str(uuid.uuid4()),
-                        role="llm",
+                        role="backend",
                         ts=_utcnow(),
                         kind="error",
                         code="llm_handler_error",
@@ -1570,13 +1683,20 @@ async def run(  # noqa: C901
             with contextlib.suppress(asyncio.CancelledError, Exception):
                 await task
 
+        # Cancel the stdin feed task too — its awaiting coroutine winds
+        # down so finally runs feed_eof() (Codex P1, PR #2111). The blocked
+        # readline() thread keeps running but asyncio.run()'s
+        # shutdown_default_executor step bounds the wait at process exit.
+        _stdin_feed_handle.cancel()
+        with contextlib.suppress(asyncio.CancelledError, Exception):
+            await _stdin_feed_handle
+
         # Emit exit frame and flush
         try:
             await _emit_exit_frame(sid)
         except Exception as exc:  # noqa: BLE001
             logger.warning("Failed to emit exit frame: %s", exc)
 
-        transport.close()
         logger.info("IPC stdio loop exited cleanly — session_id=%s", sid)
 
 

@@ -2,6 +2,14 @@
 // createStore pattern lifted verbatim; SessionState, Action discriminated union,
 // and useSessionStore hook are KOSMOS-original following data-model.md § 3.
 import { useSyncExternalStore } from 'react'
+import {
+  setPendingPermission as _setPendingPermission,
+  resolvePermissionDecision as _resolvePermissionDecision,
+  getActivePermission as _getActivePermission,
+  subscribeToPermissionSlot,
+} from './pendingPermissionSlot.js'
+export type { PendingPermissionRequest } from './pendingPermissionSlot.js'
+export type { PermissionDecision } from '../ipc/codec.js'
 
 // ---------------------------------------------------------------------------
 // Generic store primitive (≈35-line pattern from restored-src/src/state/store.ts)
@@ -355,9 +363,30 @@ const sessionStore = createStore<SessionState>(
   sessionReducer,
 )
 
+// ---------------------------------------------------------------------------
+// SessionStoreActions — the full capability surface (session state + permission
+// slot).  Non-React callers access this via useSessionStore.getState().
+// ---------------------------------------------------------------------------
+
+export interface SessionStoreActions {
+  /** Read the current session state snapshot. */
+  getState: () => SessionState
+  /** Enqueue a permission request; returns a Promise that resolves when the
+   *  citizen responds or the 5-minute timeout fires. */
+  setPendingPermission: (request: import('./pendingPermissionSlot.js').PendingPermissionRequest) => Promise<import('../ipc/codec.js').PermissionDecision>
+  /** Resolve a pending permission request by id.  No-op for unknown ids. */
+  resolvePermissionDecision: (request_id: string, decision: import('../ipc/codec.js').PermissionDecision) => void
+  /** Snapshot accessor for the currently active request (null when empty). */
+  getActivePermission: () => import('./pendingPermissionSlot.js').PendingPermissionRequest | null
+}
+
 /**
  * Subscribe to a slice of SessionState via useSyncExternalStore.
  * Only components whose selector result changes (Object.is) re-render.
+ *
+ * Also exposes `.getState()` for non-React callers (mirrors Zustand API shape
+ * so the contract caller pattern `useSessionStore.getState().setPendingPermission(…)`
+ * works outside React component trees).
  *
  * @example
  *   const phase = useSessionStore(s => s.coordinator_phase)
@@ -365,11 +394,38 @@ const sessionStore = createStore<SessionState>(
  */
 export function useSessionStore<T>(selector: (state: SessionState) => T): T {
   return useSyncExternalStore(
-    sessionStore.subscribe,
+    (listener) => {
+      // Subscribe to both the reducer store AND the permission slot so that
+      // selectors that read activePermission via getActivePermission() trigger
+      // re-renders when the slot changes.
+      const unsubReducer = sessionStore.subscribe(listener)
+      const unsubSlot = subscribeToPermissionSlot(listener)
+      return () => {
+        unsubReducer()
+        unsubSlot()
+      }
+    },
     () => selector(sessionStore.getState()),
     () => selector(sessionStore.getState()),
   )
 }
+
+// Attach Zustand-compatible getState + actions to the hook function so that
+// non-React callers can do:
+//   useSessionStore.getState().setPendingPermission(...)
+//   useSessionStore.getState().resolvePermissionDecision(...)
+//   useSessionStore.getState().getActivePermission()
+// This avoids coupling the smoke-check / deps.ts callers to the internal
+// sessionStore singleton.
+Object.assign(useSessionStore, {
+  getState: (): SessionStoreActions & SessionState => ({
+    ...sessionStore.getState(),
+    getState: () => sessionStore.getState(),
+    setPendingPermission: _setPendingPermission,
+    resolvePermissionDecision: _resolvePermissionDecision,
+    getActivePermission: _getActivePermission,
+  }),
+})
 
 /** Dispatch an action to the session store */
 export function dispatchSessionAction(action: SessionAction): void {
@@ -380,6 +436,22 @@ export function dispatchSessionAction(action: SessionAction): void {
 export function getSessionSnapshot(): SessionState {
   return sessionStore.getState()
 }
+
+// ---------------------------------------------------------------------------
+// Pending permission slot — re-exported for direct import by non-React code.
+//
+// Use these when you don't need the Zustand-compat getState() pattern:
+//   import { setPendingPermission, resolvePermissionDecision } from './session-store.js'
+// ---------------------------------------------------------------------------
+
+/** @see pendingPermissionSlot.ts */
+export const setPendingPermission = _setPendingPermission
+
+/** @see pendingPermissionSlot.ts */
+export const resolvePermissionDecision = _resolvePermissionDecision
+
+/** @see pendingPermissionSlot.ts */
+export const getActivePermission = _getActivePermission
 
 // ---------------------------------------------------------------------------
 // Derived agent-loop probes — Spec 288 Codex P1 regression fix.

@@ -1,5 +1,21 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
+exports[`Onboarding — initial splash renders the LogoV2 splash when no memdir state is supplied 1`] = `
+"                     Welcome to KOSMOS v0.1.0-alpha+1978
+                     …………………………………………………………………………………………………………………………………………………………
+                     *                                       █████▓▓░
+                     *         ███▓░     ░░               ░░░░░░
+                     ███▓░               ░░░   ░░░░░░░░░░
+                     ███▓░            *                                 ░░░░
+                     ░░░░░░░░
+                     ░░░░░░░░░░░░░░░░
+                     *         ▗ ▗     ▖ ▖                       *
+                     *                                   …………………
+                     ………………………………………………………………………………………………………………
+
+                                 계속하려면 Enter  ·  종료하려면 Esc"
+`;
+
 exports[`Onboarding — direct pipa-consent renders PIPAConsentStep when startStep="pipa-consent" 1`] = `
 " 개인정보 활용 동의 (v1)
  개인정보 보호법 § 26 수탁자 고지
@@ -28,20 +44,4 @@ exports[`Onboarding — direct ministry-scope-ack renders MinistryScopeStep when
          ☑ 국립중앙의료원 (NMC) — 응급실 실시간 가용 현황
 
  ↑↓: 이동  ·  Space: 토글  ·  Enter: 확인하고 계속  ·  Esc: 종료"
-`;
-
-exports[`Onboarding — initial splash renders the LogoV2 splash when no memdir state is supplied 1`] = `
-"                     Welcome to KOSMOS vunknown
-                     …………………………………………………………………………………………………………………………………………………………
-                     *                                       █████▓▓░
-                     *         ███▓░     ░░               ░░░░░░
-                     ███▓░               ░░░   ░░░░░░░░░░
-                     ███▓░            *                                 ░░░░
-                     ░░░░░░░░
-                     ░░░░░░░░░░░░░░░░
-                     *         ▗ ▗     ▖ ▖                       *
-                     *                                   …………………
-                     ………………………………………………………………………………………………………………
-
-                                 계속하려면 Enter  ·  종료하려면 Esc"
 `;

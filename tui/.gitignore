@@ -24,6 +24,13 @@ node_modules/
 # /plugin pipa-text always shows the live hash without import-time
 # Python bridge calls.
 !src/ipc/pipa.generated.ts
+# Epic #1632 P0 baseline runnable — hand-written stubs that match the CC
+# 2.1.88 sourcemap's generated file naming. Real implementations are
+# tracked for recovery in Epic #1633 (dead code elimination may remove
+# callers entirely). Committing keeps `bun run test`/`bun run typecheck`
+# self-contained without requiring a code-generation step in CI.
+!src/entrypoints/sdk/coreTypes.generated.ts
+!src/entrypoints/sdk/settingsTypes.generated.ts
 
 # --- Build outputs ---
 dist/

@@ -45,7 +45,7 @@ export function Opus1mMergeNotice() {
   }
   let t2;
   if ($[3] === Symbol.for("react.memo_cache_sentinel")) {
-    t2 = <Box paddingLeft={2}><AnimatedAsterisk char={UP_ARROW} /><Text dimColor={true}>{" "}Opus now defaults to 1M context · 5x more room, same pricing</Text></Box>;
+    t2 = <Box paddingLeft={2}><AnimatedAsterisk char={UP_ARROW} /><Text dimColor={true}>{" "}공공 API 도구를 자율 호출하는 K-EXAONE 하네스 · 시민 누구나 정부 서비스를 자연어로</Text></Box>;
     $[3] = t2;
   } else {
     t2 = $[3];

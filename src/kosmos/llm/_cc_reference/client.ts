@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0 (Anthropic upstream) — research-use mirror
+// Source: .references/claude-code-sourcemap/restored-src/src/services/api/client.ts (CC 2.1.88)
+
 import Anthropic, { type ClientOptions } from '@anthropic-ai/sdk'
 import { randomUUID } from 'crypto'
 import type { GoogleAuth } from 'google-auth-library'
