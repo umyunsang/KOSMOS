@@ -42,6 +42,7 @@ instead.  Test (e) asserts on the actual emitted attributes.
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import importlib
 import io
 import json
@@ -49,8 +50,26 @@ import logging
 import os
 import sys
 import uuid
+from collections.abc import AsyncIterator
+from datetime import UTC, datetime
+from typing import Any
 
 import pytest
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import SimpleSpanProcessor
+from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
+
+from kosmos.ipc.frame_schema import (
+    ChatMessage as IPCChatMessage,
+)
+from kosmos.ipc.frame_schema import (
+    ChatRequestFrame,
+    ToolDefinition,
+    ToolDefinitionFunction,
+)
+from kosmos.llm.models import StreamEvent
+
+logger = logging.getLogger(__name__)
 
 
 @pytest.fixture(autouse=True, scope="module")
@@ -96,24 +115,6 @@ def _restore_llmclient_pydantic_validators_after_module() -> Any:  # noqa: ANN40
     importlib.reload(kosmos.engine.engine)
     importlib.reload(kosmos.engine.query)
     kosmos.engine.models.QueryContext.model_rebuild(force=True)
-from collections.abc import AsyncIterator
-from datetime import UTC, datetime
-from typing import Any
-
-import pytest
-from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.trace.export import SimpleSpanProcessor
-from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
-
-from kosmos.ipc.frame_schema import (
-    ChatRequestFrame,
-    ChatMessage as IPCChatMessage,
-    ToolDefinition,
-    ToolDefinitionFunction,
-)
-from kosmos.llm.models import StreamEvent
-
-logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -178,10 +179,8 @@ class _CaptureBuf:
         for line in self._buf:
             stripped = line.strip()
             if stripped:
-                try:
+                with contextlib.suppress(json.JSONDecodeError):
                     frames.append(json.loads(stripped))
-                except json.JSONDecodeError:
-                    pass
         return frames
 
 
@@ -242,7 +241,7 @@ class _FakeLLMClientNoTools(_BaseFakeLLMClient):
 _RUNNER_TIMEOUT = 8.0  # seconds; well above what a smoke test needs
 
 
-async def _run_with_frame(
+async def _run_with_frame(  # noqa: C901 — test harness deliberately covers many branches
     frame: ChatRequestFrame,
     fake_client_cls: type,
     *,
@@ -293,7 +292,7 @@ async def _run_with_frame(
     # ToolRegistry starts empty (no tools registered by default in test env).
     # Return a minimal set of primitive tool definitions so the Step 4 fallback
     # and Step 3 system-prompt augmentation paths produce non-empty output.
-    _MINIMAL_TEST_TOOLS: list[dict[str, object]] = [
+    _MINIMAL_TEST_TOOLS: list[dict[str, object]] = [  # noqa: N806 — module-level constant style retained inside fixture
         {
             "type": "function",
             "function": {
@@ -338,7 +337,6 @@ async def _run_with_frame(
 
     import kosmos.tools.registry as registry_mod
 
-    original_export = registry_mod.ToolRegistry.export_core_tools_openai
 
     def _fake_export_core_tools_openai(self: Any) -> list[dict[str, object]]:  # type: ignore[misc]
         return _MINIMAL_TEST_TOOLS
@@ -408,9 +406,9 @@ async def _run_with_frame(
 
     try:
         await asyncio.wait_for(ipc_run(session_id=session_id), timeout=_RUNNER_TIMEOUT)
-    except asyncio.TimeoutError:
+    except TimeoutError:
         pass  # Loop hit max turns or timed out — still inspect captured state
-    except Exception:  # noqa: BLE001
+    except Exception:  # noqa: BLE001, S110 — test inspects captured state regardless of how the loop exited
         pass  # Some paths raise on pipe close; inspect state regardless
 
     try:

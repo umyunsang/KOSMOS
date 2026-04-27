@@ -13,8 +13,6 @@ Coverage table (contracts/system-prompt-builder.md § Test coverage):
 
 from __future__ import annotations
 
-import pytest
-
 from kosmos.llm.models import FunctionSchema, ToolDefinition
 from kosmos.llm.system_prompt_builder import build_system_prompt_with_tools
 

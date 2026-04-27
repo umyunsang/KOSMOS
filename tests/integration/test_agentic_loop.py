@@ -30,6 +30,7 @@ reviewers can verify the approach at a glance.
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import io
 import json
 import logging
@@ -46,9 +47,10 @@ import pytest
 
 from kosmos.ipc.frame_schema import (
     ChatMessage as IPCChatMessage,
+)
+from kosmos.ipc.frame_schema import (
     ChatRequestFrame,
     ToolDefinition,
-    ToolDefinitionFunction,
 )
 from kosmos.llm.models import StreamEvent
 
@@ -107,10 +109,8 @@ class _CaptureBuf:
         for line in self._buf:
             stripped = line.strip()
             if stripped:
-                try:
+                with contextlib.suppress(json.JSONDecodeError):
                     frames.append(json.loads(stripped))
-                except json.JSONDecodeError:
-                    pass
         return frames
 
 
@@ -183,7 +183,7 @@ _MINIMAL_TEST_TOOLS: list[dict[str, object]] = [
 _RUNNER_TIMEOUT = 20.0  # seconds
 
 
-async def _run_with_frame(
+async def _run_with_frame(  # noqa: C901 — test harness deliberately covers many branches
     frame: ChatRequestFrame,
     fake_client_cls: type,
     *,
@@ -280,9 +280,9 @@ async def _run_with_frame(
 
     try:
         await asyncio.wait_for(ipc_run(session_id=session_id), timeout=_RUNNER_TIMEOUT)
-    except asyncio.TimeoutError:
+    except TimeoutError:
         pass
-    except Exception:  # noqa: BLE001
+    except Exception:  # noqa: BLE001, S110 — test inspects captured state regardless of how the loop exited
         pass
 
     try:
@@ -309,7 +309,7 @@ _CC_TOOL_NAMES = re.compile(
 class _SingleLookupThenAnswerLLMClient(_BaseFakeLLMClient):
     """LLM that calls lookup once on Turn 1, then answers on Turn 2.
 
-    Turn 1: emits tool_call_delta(name='lookup', args='{"mode":"search","query":"강남구 응급실"}') + done.
+    Turn 1: tool_call_delta(name='lookup', args='{"mode":"search","query":"강남구 응급실"}') + done.
     Turn 2: emits content_delta('강남구 응급실은 강남세브란스병원입니다.') + done.
     """
 

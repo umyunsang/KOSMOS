@@ -25,10 +25,7 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
-import fcntl
-import io
 import logging
-import os
 import signal
 import sys
 import time
@@ -708,7 +705,9 @@ async def run(  # noqa: C901
     # duplicating the literal set here. The local alias is preserved for
     # downstream call-site brevity (and to keep diff churn minimal in this
     # epic) but the literal set is no longer maintained in this module.
-    from kosmos.primitives import GATED_PRIMITIVES as _PERMISSION_GATED_PRIMITIVES  # noqa: PLC0415, N811
+    from kosmos.primitives import (
+        GATED_PRIMITIVES as _PERMISSION_GATED_PRIMITIVES,  # noqa: PLC0415, N811
+    )
 
     async def _check_permission_gate(
         call_id: str,
