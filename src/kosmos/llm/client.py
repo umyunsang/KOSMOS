@@ -92,6 +92,28 @@ def _log_rate_limit_attempt(
     )
 
 
+_PROMPT_DYNAMIC_BOUNDARY_MARKER = "\nSYSTEM_PROMPT_DYNAMIC_BOUNDARY\n"
+
+
+def _compute_prompt_hash(system_text: str) -> str:
+    """Return SHA-256 of the cacheable prefix of ``system_text``.
+
+    Epic #2152 R4 — when the system message contains the
+    ``SYSTEM_PROMPT_DYNAMIC_BOUNDARY`` marker (CC ``prompts.ts:572-575``), hash
+    only the bytes UP TO (and including) the marker so the hash captures the
+    cacheable static prefix and stays stable across turns even when the
+    dynamic suffix grows. Falls back to full-content hashing when the marker
+    is absent (transitional path for callers that have not migrated).
+    """
+    idx = system_text.find(_PROMPT_DYNAMIC_BOUNDARY_MARKER)
+    hashed = (
+        system_text
+        if idx == -1
+        else system_text[: idx + len(_PROMPT_DYNAMIC_BOUNDARY_MARKER)]
+    )
+    return hashlib.sha256(hashed.encode("utf-8")).hexdigest()
+
+
 class LLMClient:
     """Async LLM client for FriendliAI Serverless endpoint."""
 
@@ -355,24 +377,10 @@ class LLMClient:
         # T032: kosmos.prompt.hash — SHA-256 of the system-prompt bytes actually
         # sent on the wire. KOSMOS extension namespace per Spec 021; consumed by
         # Epic #501. Satisfies FR-C07 / SC-007.
-        #
-        # Epic #2152 R4 — when the system message contains the
-        # ``SYSTEM_PROMPT_DYNAMIC_BOUNDARY`` marker, hash only the bytes UP
-        # TO (and including) the marker so the hash captures the cacheable
-        # static prefix and stays stable across turns even when the dynamic
-        # suffix grows. Falls back to full-content hashing when the marker is
-        # absent (transitional path for callers that have not migrated).
         if messages and messages[0].role == "system" and messages[0].content is not None:
-            _system_text = messages[0].content
-            _marker = "\nSYSTEM_PROMPT_DYNAMIC_BOUNDARY\n"
-            _marker_idx = _system_text.find(_marker)
-            if _marker_idx != -1:
-                _hashed = _system_text[: _marker_idx + len(_marker)]
-            else:
-                _hashed = _system_text
             span.set_attribute(
                 "kosmos.prompt.hash",
-                hashlib.sha256(_hashed.encode("utf-8")).hexdigest(),
+                _compute_prompt_hash(messages[0].content),
             )
 
         # Attach span as the active context for child spans (execute_tool, etc.)

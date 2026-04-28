@@ -11,7 +11,6 @@ import re
 
 import pytest
 
-
 _BOUNDARY = "\nSYSTEM_PROMPT_DYNAMIC_BOUNDARY\n"
 
 
@@ -23,10 +22,7 @@ def _hash_static_prefix(system_text: str) -> str:
     production helper is later renamed/inlined.
     """
     idx = system_text.find(_BOUNDARY)
-    if idx == -1:
-        hashed = system_text
-    else:
-        hashed = system_text[: idx + len(_BOUNDARY)]
+    hashed = system_text if idx == -1 else system_text[: idx + len(_BOUNDARY)]
     return hashlib.sha256(hashed.encode("utf-8")).hexdigest()
 
 
@@ -94,10 +90,11 @@ def test_production_client_uses_same_logic() -> None:
     the test file stays runnable without spinning up an LLMClient."""
     from kosmos.llm import client as _client_module
 
-    src = (_client_module.__file__ or "")
+    src = _client_module.__file__ or ""
     if not src:
         pytest.skip("client.py source not available")
-    text = open(src, encoding="utf-8").read()
+    with open(src, encoding="utf-8") as fp:
+        text = fp.read()
     assert "SYSTEM_PROMPT_DYNAMIC_BOUNDARY" in text, (
         "client.py must reference SYSTEM_PROMPT_DYNAMIC_BOUNDARY for R4 hash slicing"
     )

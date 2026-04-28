@@ -4,7 +4,7 @@
 # grep against deterministic artefacts (memory `feedback_vhs_tui_smoke`).
 #
 # Requires:
-#   - KOSMOS_FRIENDLI_API_KEY set in the environment.
+#   - KOSMOS_FRIENDLI_TOKEN set in the environment.
 #   - Backend reachable (the TUI auto-starts the Python stdio server).
 #   - `expect` available (macOS: `brew install expect`).
 #
@@ -25,8 +25,8 @@ if ! command -v expect >/dev/null 2>&1; then
   exit 2
 fi
 
-if [[ -z "${KOSMOS_FRIENDLI_API_KEY:-}" ]]; then
-  echo "ERROR: KOSMOS_FRIENDLI_API_KEY must be set in the environment" >&2
+if [[ -z "${KOSMOS_FRIENDLI_TOKEN:-}" ]]; then
+  echo "ERROR: KOSMOS_FRIENDLI_TOKEN must be set in the environment" >&2
   exit 2
 fi
 

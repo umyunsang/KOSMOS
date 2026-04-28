@@ -41,12 +41,12 @@ def assembler() -> PromptAssembler:
 
 
 def _ctx(**overrides: object) -> PromptAssemblyContext:
-    base: dict[str, object] = dict(
-        session_id="0193f3c9-9eaf-7000-a000-000000000001",
-        session_started_at=datetime(2026, 4, 28, 12, 0, 0, tzinfo=UTC),
-        tool_inventory=("lookup", "resolve_location"),
-        dynamic_inputs={},
-    )
+    base: dict[str, object] = {
+        "session_id": "0193f3c9-9eaf-7000-a000-000000000001",
+        "session_started_at": datetime(2026, 4, 28, 12, 0, 0, tzinfo=UTC),
+        "tool_inventory": ("lookup", "resolve_location"),
+        "dynamic_inputs": {},
+    }
     base.update(overrides)
     return PromptAssemblyContext(**base)  # type: ignore[arg-type]
 
@@ -182,7 +182,7 @@ def test_manifest_rejects_hash_drift() -> None:
         )
 
 
-def test_construction_fails_when_prompt_missing_xml_tag(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+def test_construction_fails_when_prompt_missing_xml_tag() -> None:
     """Fail-closed — assembler refuses to construct from an incomplete prompt."""
 
     class _BadLoader:

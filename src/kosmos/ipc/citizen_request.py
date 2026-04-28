@@ -11,7 +11,6 @@ invariants I-C3, I-C4, I-C6.
 
 from __future__ import annotations
 
-
 _OPEN_TAG = "<citizen_request>\n"
 _CLOSE_TAG = "\n</citizen_request>"
 
