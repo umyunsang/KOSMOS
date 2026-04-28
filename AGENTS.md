@@ -8,9 +8,11 @@ A conversational multi-agent platform that **migrates the Claude Code harness** 
 
 ## **CORE THESIS — the unit of work**
 
-**KOSMOS = CC-original harness + 2 swaps:** (a) LLM = K-EXAONE on FriendliAI; (b) tool surface = Korean public-service APIs. Everything else is byte-identical with `.references/claude-code-sourcemap/restored-src/`.
+**KOSMOS = CC-original harness + 2 swaps:** (a) LLM = K-EXAONE on FriendliAI; (b) tool surface = Korean public-service domain access. Everything else is byte-identical with `.references/claude-code-sourcemap/restored-src/`.
 
-**The unit of work is wrapping one agency's API as one tool and registering it.** Nothing more, nothing less.
+**KOSMOS is a browser substitute, not a protocol pioneer.** Anthropic Claude for Computer Use / OpenAI Operator / Google Project Mariner — but for Korean government domains, in Korean, on the citizen's behalf. Existing agency systems (hometax.go.kr, gov.kr, 간편인증, 모바일신분증, 공동/금융인증서) are **never asked to change**. The LLM navigates the same web/mobile UX that a citizen would use today.
+
+**The unit of work is wrapping one agency's domain-access flow as one tool and registering it.** "Domain-access flow" is broad — it can be a REST API call (data.go.kr public datasets), a browser-automation sequence (hometax form fill via Playwright), or a mobile-companion handshake (KOMSCO 모바일신분증 push + biometric).
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
@@ -32,15 +34,17 @@ A conversational multi-agent platform that **migrates the Claude Code harness** 
 └──────────────────────────────────────────────────────────────────┘
 ```
 
-- **Public API + we have the data.go.kr key** → wrap as **Live tool** (real HTTP call).
-- **API exists but we have no credential** (학부생 권한 한계) → wrap as **Mock tool** (fixture replay, byte/shape-mirror per public spec).
-- **OPAQUE domain** (홈택스 신고, 정부24 민원 제출, 모바일ID 발급, KEC/yessign 서명, mydata-live) → **never wrap as a tool**. LLM hands off via `docs/scenarios/<domain>.md` guidance.
+- **Public REST API + we have the data.go.kr key** → wrap as **Live tool** (real HTTP call).
+- **REST API exists but we have no credential** (학부생 권한 한계) → wrap as **Mock tool** (fixture replay, byte/shape-mirror per public spec).
+- **No REST API (only web/mobile UX)** — 홈택스 신고, 정부24 민원 제출 등 → wrap as **browser-automation tool** (Playwright-driven) or **Mock tool** that mirrors the *web UX surface* (form fields, session cookies, 접수번호 shape). The citizen still does authentication on their phone (간편인증 push, 모바일신분증 biometric) — KOSMOS just drives the form filling and submission afterwards.
+- **Live navigation requires production credentials we lack** → ship as **Mock** with `_mode: "mock"` + `_existing_system: true` + `_real_navigation_url` transparency fields. Live mode is a Phase 2 (post-graduation / partnership / startup).
 
 **KOSMOS does not invent permission policy.** Each adapter cites the agency's own published policy via `real_classification_url`. Permission UX uses CC's canonical `<PermissionRequest>` pipeline — no KOSMOS-invented `permission_tier`, `pipa_class`, `auth_level`, `dontAsk` mode, or PIPA §15(2) `ConsentDecision` 4-tuple.
 
 **Authority for this thesis:**
 - `specs/1979-plugin-dx-tui-integration/domain-harness-design.md` — 16-domain research matrix, 5-point mock fidelity grade, citation URLs.
 - `specs/1979-plugin-dx-tui-integration/cc-source-migration-plan.md` — file-by-file migration path from CC original.
+- `specs/1979-plugin-dx-tui-integration/delegation-flow-design.md` — delegation flow research; **§11 carries the corrected browser-substitute architecture** (the canonical interpretation; §5-§9 were a misread that has been superseded).
 
 **Canonical sources** (cite all three in every spec and PR):
 - `docs/vision.md` — thesis + six-layer design. Claude Code is the first reference for any unclear design decision.
