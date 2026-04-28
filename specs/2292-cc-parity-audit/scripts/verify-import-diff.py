@@ -84,13 +84,31 @@ def main() -> int:
     pending = []
     for kosmos_path in paths:
         if not kosmos_path.startswith("tui/src/"):
-            continue
+            print(
+                f"FATAL: unexpected prefix in candidate path {kosmos_path}; "
+                f"enumeration manifest is stale — re-run T003/T004",
+                file=sys.stderr,
+            )
+            return 2
         cc_path_rel = f"{CC_SRC_REL}/{kosmos_path[len('tui/src/'):]}"
         kosmos_abs = REPO_ROOT / kosmos_path
         cc_abs = REPO_ROOT / cc_path_rel
-        if not kosmos_abs.exists() or not cc_abs.exists():
-            print(f"WARN: missing pair for {kosmos_path}", file=sys.stderr)
-            continue
+        if not kosmos_abs.exists():
+            print(
+                f"FATAL: candidate KOSMOS file missing: {kosmos_path}; "
+                f"the enumeration manifest is stale or the working tree is "
+                f"partial. Aborting — fix and re-run audit.",
+                file=sys.stderr,
+            )
+            return 2
+        if not cc_abs.exists():
+            print(
+                f"FATAL: candidate CC file missing: {cc_path_rel}; "
+                f"`.references/claude-code-sourcemap/restored-src/src/` is "
+                f"incomplete. Aborting — fix and re-run audit.",
+                file=sys.stderr,
+            )
+            return 2
 
         body = diff_pair(kosmos_abs, cc_abs)
         imports, bodies = split_diff(body)
@@ -106,6 +124,19 @@ def main() -> int:
         entries.append(entry)
         if reclassified:
             pending.append(entry)
+
+    if len(entries) != len(paths):
+        # Defensive — every input row must produce exactly one entry.
+        # Without this guard, stale-manifest paths could be silently dropped
+        # while the report still claims complete coverage (Codex P1 fail-closed
+        # gate).
+        print(
+            f"FATAL: processed {len(entries)} entries but input had "
+            f"{len(paths)} candidates; refusing to write partial verify "
+            f"manifest.",
+            file=sys.stderr,
+        )
+        return 2
 
     OUT_RESULTS.write_text(
         json.dumps(entries, indent=2, ensure_ascii=False) + "\n",
