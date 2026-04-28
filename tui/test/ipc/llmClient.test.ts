@@ -201,7 +201,7 @@ describe('LLMClient.stream() — happy-path (T018)', () => {
     expect(textBlock!.text).toContain('하세요')
   })
 
-  test('sends exactly one UserInputFrame with UUIDv7 correlation_id', async () => {
+  test('sends exactly one ChatRequestFrame with UUIDv7 correlation_id', async () => {
     const gen = client.stream({
       model: 'test-model',
       messages: [{ role: 'user', content: '안녕' }],
@@ -212,7 +212,9 @@ describe('LLMClient.stream() — happy-path (T018)', () => {
     while (!(await gen.next()).done) {}
 
     expect(sentFrames).toHaveLength(1)
-    expect(sentFrames[0]!.kind).toBe('user_input')
+    // Epic #2112: TUI now emits ChatRequestFrame (Spec 1978 ADR-0001) so the
+    // backend's _handle_chat_request runs the CC agentic loop with tools.
+    expect(sentFrames[0]!.kind).toBe('chat_request')
 
     // UUIDv7 regex: 8-4-7xxx-... pattern
     const uuidV7Regex = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-/

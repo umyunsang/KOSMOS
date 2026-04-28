@@ -126,7 +126,7 @@ describe('LLMClient.stream() — ErrorFrame auth fail-closed (T019, G4)', () => 
     expect(thrown!.code).toBe('auth')
   })
 
-  test('exactly one outbound UserInputFrame sent — no retry (G4)', async () => {
+  test('exactly one outbound ChatRequestFrame sent — no retry (G4)', async () => {
     try {
       for await (const _ of client.stream({
         model: 'test-model',
@@ -138,7 +138,8 @@ describe('LLMClient.stream() — ErrorFrame auth fail-closed (T019, G4)', () => 
     }
 
     // G4: fail-closed on auth — no retry means exactly one outbound frame.
+    // Epic #2112: TUI now emits ChatRequestFrame (Spec 1978 ADR-0001).
     expect(sentFrames).toHaveLength(1)
-    expect(sentFrames[0]!.kind).toBe('user_input')
+    expect(sentFrames[0]!.kind).toBe('chat_request')
   })
 })
