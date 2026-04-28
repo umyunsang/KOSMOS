@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0.0",
+  "generated_iso": "2026-04-28T00:00:00Z",
+  "entries": [
+    {
+      "name": "seoul-subway",
+      "plugin_id": "seoul_subway",
+      "latest_version": "1.0.0",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "bundle_url": "file:///Users/um-yunsang/KOSMOS/specs/1979-plugin-dx-tui-integration/scripts/fixtures/seoul-subway-1.0.0.tar.gz",
+          "provenance_url": "file:///Users/um-yunsang/KOSMOS/specs/1979-plugin-dx-tui-integration/scripts/fixtures/seoul-subway-1.0.0.intoto.jsonl",
+          "bundle_sha256": "1e5821d89059574c693ffb828c5da4c2a52f0ca3c20c563bc767b84fad012317",
+          "published_iso": "2026-04-28T00:00:00Z"
+        }
+      ],
+      "tier": "live",
+      "permission_layer": 1,
+      "processes_pii": false,
+      "trustee_org_name": null,
+      "last_published_iso": "2026-04-28T00:00:00Z"
+    }
+  ]
+}

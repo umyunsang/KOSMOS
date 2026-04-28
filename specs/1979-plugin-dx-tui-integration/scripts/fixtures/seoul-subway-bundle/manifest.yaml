@@ -1,0 +1,27 @@
+# SPDX-License-Identifier: Apache-2.0
+# Spec 1979 T031 — fixture plugin manifest for E2E PTY scenario.
+# Pre-validated against PluginManifest schema (Spec 1636); stays in sync
+# with the catalog.json entry's plugin_id + tier + permission_layer.
+
+plugin_id: seoul_subway
+version: "1.0.0"
+tier: live
+permission_layer: 1
+processes_pii: false
+
+description_ko: "서울 지하철 도착 정보 조회 (fixture)"
+description_en: "Seoul subway arrival lookup (fixture)"
+
+search_hint_ko: "지하철 도착 시간 강남역 역곡역"
+search_hint_en: "subway arrival time station gangnam"
+
+mock_source_spec: null  # tier=live so this MUST be null per Spec 1636 invariant
+slsa_provenance_url: "file:///dev/null"
+
+otel_attributes:
+  kosmos.plugin.id: seoul_subway
+  kosmos.plugin.tier: live
+
+adapter:
+  module_path: plugin_seoul_subway.adapter
+  tool_id: plugin.seoul_subway.lookup
