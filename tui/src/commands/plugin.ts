@@ -107,9 +107,7 @@ function _handleInstall(rest: string, args: CommandHandlerArgs): CommandResult {
   } as never)
   const dryNote = dryRun ? ' (dry-run)' : ''
   return {
-    acknowledgement:
-      `🔄 ${name} 플러그인 설치 시작...${dryNote}\n` +
-      `   (backend dispatcher not yet wired — use \`uvx kosmos plugin install ${name}\` shell entry-point)`,
+    acknowledgement: `🔄 ${name} 플러그인 설치 시작...${dryNote}`,
   }
 }
 
@@ -130,9 +128,7 @@ function _handleList(args: CommandHandlerArgs): CommandResult {
     request_op: 'list',
   } as never)
   return {
-    acknowledgement:
-      '📋 설치된 플러그인 목록 조회 중...\n' +
-      '   (backend dispatcher not yet wired — use `ls ~/.kosmos/memdir/user/plugins/` for now)',
+    acknowledgement: '📋 설치된 플러그인 목록 조회 중...',
   }
 }
 
@@ -160,9 +156,7 @@ function _handleUninstall(rest: string, args: CommandHandlerArgs): CommandResult
     name,
   } as never)
   return {
-    acknowledgement:
-      `🗑️ ${name} 플러그인 제거 시작...\n` +
-      `   (backend dispatcher not yet wired — manually remove ~/.kosmos/memdir/user/plugins/${name}/ for now)`,
+    acknowledgement: `🗑️ ${name} 플러그인 제거 시작...`,
   }
 }
 

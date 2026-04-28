@@ -3492,6 +3492,11 @@ export function REPL({
             onToggle: () => {},
             onDetail: () => {},
             onRemove: () => {},
+            // Spec 1979 T028 — `a` keystroke is wired but the marketplace
+            // catalog browser is deferred to #1820. PluginBrowser itself
+            // renders a deferred banner via its keystroke-hint footer so
+            // citizens see the deferral inline. This callback is therefore
+            // a no-op at the REPL level; PluginBrowser reflects the state.
             onMarketplace: () => {},
             onDismiss: () => _kosmosCloseJSX(),
           }),

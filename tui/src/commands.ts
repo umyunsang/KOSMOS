@@ -130,7 +130,14 @@ import hooks from './commands/hooks/index.js'
 import files from './commands/files/index.js'
 import branch from './commands/branch/index.js'
 import agents from './commands/agents/index.js'
-import plugin from './commands/plugin/index.js'
+// Spec 1979 T021 — KOSMOS citizen plugin command (singular file). The previous
+// import (`./commands/plugin/index.js`) routed `/plugin` to the CC marketplace
+// surface; the singular file emits `plugin_op_request` IPC frames consumed by
+// the backend dispatcher in `src/kosmos/ipc/plugin_op_dispatcher.py`. The CC
+// marketplace residue under `commands/plugin/`, `services/plugins/`, and
+// `utils/plugins/` is now unreachable from citizen surface; cleanup tracked
+// in #2242 (deferred to a Spec 1633-style follow-up Epic).
+import plugin from './commands/plugin.js'
 import reloadPlugins from './commands/reload-plugins/index.js'
 import rewind from './commands/rewind/index.js'
 import heapDump from './commands/heapdump/index.js'

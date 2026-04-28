@@ -78,10 +78,19 @@ export function PluginBrowser({
   const locale = (process.env['KOSMOS_TUI_LOCALE'] ?? 'ko') as 'ko' | 'en';
 
   const [cursor, setCursor] = useState(0);
+  // Spec 1979 T028 — `a` keystroke renders a deferred-to-#1820 banner inline
+  // rather than a no-op so citizens see why the marketplace catalog browser
+  // is unavailable. The banner clears on next keypress.
+  const [marketplaceDeferredVisible, setMarketplaceDeferredVisible] =
+    useState<boolean>(false);
   const clamp = (n: number) => Math.min(Math.max(0, n), Math.max(0, plugins.length - 1));
 
   const handleInput = useCallback(
     (input: string, key: { upArrow: boolean; downArrow: boolean; escape: boolean; ctrl: boolean }) => {
+      // Any keypress after a deferred banner clears it.
+      if (marketplaceDeferredVisible) {
+        setMarketplaceDeferredVisible(false);
+      }
       if (key.escape) { onDismiss(); return; }
       if (key.upArrow) { setCursor((c) => clamp(c - 1)); return; }
       if (key.downArrow) { setCursor((c) => clamp(c + 1)); return; }
@@ -103,11 +112,14 @@ export function PluginBrowser({
         return;
       }
       if (input === 'a' || input === 'A') {
+        // Spec 1979 T028 — show deferred banner then invoke parent callback
+        // (kept for caller telemetry; the banner is the citizen-visible UX).
+        setMarketplaceDeferredVisible(true);
         onMarketplace();
         return;
       }
     },
-    [cursor, plugins, onToggle, onDetail, onRemove, onMarketplace, onDismiss],
+    [cursor, plugins, onToggle, onDetail, onRemove, onMarketplace, onDismiss, marketplaceDeferredVisible],
   );
 
   useInput(handleInput);
@@ -158,6 +170,15 @@ export function PluginBrowser({
           );
         })
       )}
+
+      {/* Spec 1979 T028 — deferred banner for `a` keystroke */}
+      {marketplaceDeferredVisible ? (
+        <Box marginTop={1}>
+          <Text color={theme.subtle}>
+            {'⚠ 스토어 브라우저는 #1820 에서 작업 중입니다 (deferred) · Marketplace browser deferred to #1820'}
+          </Text>
+        </Box>
+      ) : null}
 
       {/* Keybinding hint (FR-031) */}
       <Box marginTop={1}>
