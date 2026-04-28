@@ -188,16 +188,28 @@ $ git worktree list
 
 ## 핸드오프 메모
 
-### 가장 큰 방법론 교훈 (다음 세션 적용 필수)
+### 가장 큰 방법론 교훈 (다음 세션 적용 필수) — Two-layer Parallelism
 
-**Dispatch 단위 = task/task-group (≤ 5 task / ≤ 10 file). 1 Epic = 1 sonnet 패턴 금지.**
+```
+Initiative
+├─ Epic β  →  Lead Opus β  +  Sonnet team β (sonnet-B1, B2, B3)
+└─ Epic δ  →  Lead Opus δ  +  Sonnet team δ (sonnet-D1, D2, D3)
+```
 
-이번 세션이 두 번 (Epic β + δ) 실패한 진짜 원인은 sonnet teammate 한 명에게 1 Epic 통째 (T001-T020 + commit + push + PR + CI monitoring + Codex P1 처리) 위임한 것. 30+ file edit + grep + diff + tool output 누적이 sonnet 의 입력 컨텍스트 (~200K) 를 넘김. 두 finisher dispatch 도 같은 패턴으로 같은 한계 반복.
+**Layer 1 (Epic 단위)**: 각 Epic 마다 **별도 Lead Opus 1명** 배정. 의존성 없는 Epic 들 동시 진행 시 = N Lead Opus 가 별도 session/worktree 에서 동시 작동. **"1 Lead Opus = N Epic" 금지** — Lead 컨텍스트 한계.
+
+**Layer 2 (Task 단위)**: 각 Epic 의 Lead 가 `/speckit-implement` 시 **Sonnet teammates 의 Agent Team** 꾸림. dispatch 단위 = task/task-group (≤ 5 task / ≤ 10 file). **"1 Sonnet teammate = 1 Epic" 금지** — sonnet 컨텍스트 한계. `[P]` 마커 = 즉시 병렬 신호. Sonnet 책임 = 코드 변경 + WIP commit 만; push/PR/CI/Codex 는 Lead.
+
+이번 세션이 두 번 (Epic β + δ) 실패한 진짜 원인 = **두 layer 모두 위반**: Lead 1명 (이 conversation) 이 Epic α 머지 후 Epic β + δ 둘 다 spec-cycle 진행 → Lead 컨텍스트 부담 + 그 Lead 가 각 Epic 을 1 sonnet teammate 에게 통째 위임 → sonnet 도 컨텍스트 한계.
 
 - 박제 위치:
-  - `AGENTS.md § Agent Teams` (Dispatch unit 섹션 신설, 2026-04-29)
+  - `AGENTS.md § Agent Teams` (Layer 1 + Layer 2 섹션, 2026-04-29)
   - `~/.claude/projects/.../memory/feedback_dispatch_unit_is_task_group.md` (★★★ 최상위 우선 메모)
-- 다음 세션 첫 `/speckit-implement` 진입 시 반드시 `specs/<feature>/dispatch-tree.md` 에 dispatch tree 명시 + sonnet teammate 책임 = 코드 변경 + WIP commit 만 (push/PR/CI 는 Lead).
+- 다음 세션 진입 시 반드시:
+  1. Epic β 와 Epic δ 를 **각각 별도 Lead Opus session 으로 분리** (`/clear` 후 사용자가 두 세션 각자 진입, 또는 한 session 에서 한 Epic 만 처리)
+  2. 각 Lead 가 자기 Epic 의 `specs/<feature>/dispatch-tree.md` 작성
+  3. 그 dispatch tree 에 따라 ≤ 5 task / ≤ 10 file 단위로 Sonnet teammates 병렬 dispatch
+  4. 모든 teammate 완료 후 Lead 가 push/PR/CI/Codex 처리
 
 ### 도메인 교훈
 

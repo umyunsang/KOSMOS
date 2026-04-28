@@ -79,17 +79,35 @@ Small fixes (typos, one-line bugs, docs-only) skip the cycle.
 
 ## Agent Teams
 
-- Lead (Opus): planning, spec authoring, code review, synthesis, **dispatch tree design**, commit / push / PR / CI monitoring / Codex P1 handling.
-- Teammates (Sonnet): **implementation only** — code edits + tests + WIP commit + tasks.md `[X]` marking.
-- 3+ independent tasks → parallel Agent Teams. 1-2 tasks → Lead solo.
+The unit hierarchy is two-layer parallelism:
+
+```
+Initiative
+├─ Epic α  →  Lead Opus α  +  Sonnet team α (sonnet-A1, A2, A3, ...)
+├─ Epic β  →  Lead Opus β  +  Sonnet team β (sonnet-B1, B2, B3, ...)
+├─ Epic δ  →  Lead Opus δ  +  Sonnet team δ (sonnet-D1, D2, D3, ...)
+└─ ...
+```
+
+### Layer 1 — Epic-level parallelism (Lead Opus per Epic)
+
+Each Epic is owned by exactly **one Lead (Opus)** for its full lifecycle: spec authoring, planning, dispatch-tree design, code review of teammate output, commit / push / PR / CI monitoring / Codex P1 handling, merge.
+
+Multiple Epics with no dependency may run in parallel — that means **multiple Lead Opus agents** running concurrently in **separate sessions or worktrees**, NOT one Lead serializing through several Epics. "1 Lead Opus = N Epics" is forbidden — it exhausts the Lead's context just like the teammate-level mistake (verified by Initiative #2290 Epic β/δ failures, 2026-04-29, where one Lead drove both Epics' spec cycles back-to-back).
+
+### Layer 2 — Task-level parallelism inside an Epic (Sonnet teammates)
+
+Inside each Epic, Lead spawns **Sonnet teammates** at `/speckit-implement`. Teammate responsibility is **implementation only**: code edits + tests + WIP commit + tasks.md `[X]` marking. Sonnet does NOT do `git push` / `gh pr create` / `gh pr checks --watch` / Codex reply — those stay with Lead (sequential, after all teammates complete).
+
+3+ independent tasks → parallel Sonnet teammates. 1-2 tasks → Lead solo.
 
 ### Dispatch unit (NON-NEGOTIABLE)
 
-**The dispatch unit is a task or task-group from `tasks.md`, NOT an Epic.** A single Sonnet teammate gets ≤ 5 tasks AND ≤ 10 file changes. Anything larger MUST be subdivided. "1 Epic = 1 teammate" is forbidden — it exhausts the teammate's input context window before the work completes (verified by Initiative #2290 Epic β/δ failures, 2026-04-29).
+**The dispatch unit per Sonnet teammate is a task or task-group from `tasks.md`, NEVER an entire Epic.** A single Sonnet teammate gets ≤ 5 tasks AND ≤ 10 file changes. Anything larger MUST be subdivided. "1 Epic = 1 Sonnet teammate" is forbidden for the same context-exhaustion reason as the Lead rule above.
 
-Lead reads `tasks.md` `[P]` markers — every `[P]` task or `[P]` task-group is an immediate parallel-dispatch candidate. User Story phases (US1 / US2 / US3) are independent by spec-kit definition — they go to **separate** Sonnet teammates.
+Lead reads `tasks.md` `[P]` markers — every `[P]` task or `[P]` task-group is an immediate parallel-dispatch candidate. User Story phases (US1 / US2 / US3) are independent by spec-kit definition → **separate** Sonnet teammates.
 
-Sonnet teammate prompt MUST be ≤ 30 lines. Long instructions must reference `specs/<feature>/quickstart.md` rather than inlining. Sonnet does NOT do `git push` / `gh pr create` / `gh pr checks --watch` / Codex reply — those are Lead responsibility (sequential, after all teammates complete).
+Sonnet teammate prompt MUST be ≤ 30 lines. Long instructions must reference `specs/<feature>/quickstart.md` or `research.md` rather than inlining.
 
 ### Dispatch tree (Lead draws explicitly before any Agent call)
 
@@ -104,7 +122,7 @@ Phase 5 US3 (T013-T015): sonnet-us3            ┘
 Phase 6 Polish (T016-T020): Lead solo
 ```
 
-The tree is committed to `specs/<feature>/dispatch-tree.md` so any handoff session can reproduce the parallelism.
+The tree is committed to `specs/<feature>/dispatch-tree.md` so any handoff session can reproduce both layers of parallelism.
 
 ### Role mapping
 
