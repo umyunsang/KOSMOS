@@ -1,16 +1,30 @@
 // SPDX-License-Identifier: Apache-2.0
 // Spec 1635 P4 UI L2 — US2 T028 + T034 + T035
-// PermissionGauntletModal — 3-choice [Y/A/N] permission modal (FR-015..017).
+// Spec 1979 — KOSMOS Y/A/N direct-keystroke pattern replaced with CC arrow+Enter
+//             selection pattern for parity with the rest of the TUI.
+//
+// PermissionGauntletModal — 3-choice permission modal (FR-015..017).
 // Ctrl-C handler → auto_denied_at_cancel (FR-023, T034).
 // 5-minute idle timeout → timeout_denied (FR-024, T035).
 //
-// Source: docs/wireframes/ui-c-permission.mjs § C.2 (PermissionModal)
-// CC reference: .references/claude-code-sourcemap/restored-src/src/components/permissions/PermissionDialog.tsx (Claude Code 2.1.88, research-use)
-// CC reference: .references/claude-code-sourcemap/restored-src/src/components/permissions/PermissionExplanation.tsx (Claude Code 2.1.88, research-use)
-// KOSMOS adaptation: adds Layer 1/2/3 color coding, [Y/A/N] 3-choice, Layer 3
-//   reinforcement notice, Ctrl-C fail-closed, and 5-min idle timeout.
+// Source pattern:
+//   .references/claude-code-sourcemap/restored-src/src/components/permissions/PermissionPrompt.tsx
+//   (Claude Code 2.1.88, research-use)
+//
+// CC's PermissionPrompt uses arrow+Enter selection (NOT direct Y/A/N
+// keystrokes).  We adopt that pattern here while preserving KOSMOS's
+// Layer 1/2/3 color coding, Layer 3 reinforcement notice, Ctrl-C →
+// auto_denied_at_cancel, and 5-min idle timeout invariants from Spec 1635
+// FR-017/FR-023/FR-024.
+//
+// Implementation note: we drive arrow navigation via raw `useInput`
+// (the same approach the OnboardingFlow ThemeStep uses) instead of the
+// `<Select>` component, because `<Select>` routes Up/Down/Enter through
+// `useKeybindings`, which ink-testing-library's stdin emulator cannot
+// drive in unit tests.  The interaction model is identical to CC's Select
+// from the citizen's perspective.
 
-import React, { useCallback, useEffect, useRef } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Box, Text, useInput } from 'ink'
 import { PermissionLayerHeader } from './PermissionLayerHeader.js'
 import { useUiL2I18n } from '../../i18n/uiL2.js'
@@ -38,16 +52,18 @@ export interface PermissionGauntletModalProps {
   onDecide: (decision: PermissionDecisionT) => void
 }
 
+type ChoiceValue = Extract<PermissionDecisionT, 'allow_once' | 'allow_session' | 'deny'>
+
 /**
- * Permission gauntlet modal with 3-choice [Y/A/N].
+ * Permission gauntlet modal with 3-choice arrow+Enter selection.
  *
- * - Y → allow_once (FR-017)
- * - A → allow_session (FR-017)
- * - N / Escape → deny (FR-017)
- * - Ctrl-C → auto_denied_at_cancel (FR-023)
- * - 5-minute idle (Layer 3 only by default; applies to all layers per spec) → timeout_denied (FR-024)
+ * - allow_once    → grant for this single call (FR-017)
+ * - allow_session → grant for the current session (FR-017)
+ * - deny          → reject (FR-017); also fires on Esc
+ * - Ctrl-C        → auto_denied_at_cancel (FR-023)
+ * - 5-minute idle → timeout_denied (FR-024)
  *
- * The component emits `kosmos.ui.surface=permission_gauntlet` on mount (FR-037 / T039).
+ * Emits `kosmos.ui.surface=permission_gauntlet` on mount (FR-037 / T039).
  */
 export function PermissionGauntletModal({
   layer,
@@ -58,6 +74,16 @@ export function PermissionGauntletModal({
   const i18n = useUiL2I18n()
   const color = LAYER_HEX[layer]
   const decidedRef = useRef(false)
+  const [focusedIdx, setFocusedIdx] = useState(0)
+
+  const choices: { label: string; value: ChoiceValue }[] = useMemo(
+    () => [
+      { label: i18n.permissionAllowOnce, value: 'allow_once' },
+      { label: i18n.permissionAllowSession, value: 'allow_session' },
+      { label: i18n.permissionDeny, value: 'deny' },
+    ],
+    [i18n],
+  )
 
   // Emit OTEL surface activation on mount (FR-037 / T039).
   useEffect(() => {
@@ -65,9 +91,6 @@ export function PermissionGauntletModal({
   }, [layer])
 
   // 5-minute idle auto-deny (FR-024).
-  // Per spec edge-case: "Layer 3 modal with 5-minute inactivity → timeout_denied".
-  // The spec says "Layer 3 modal" specifically; we apply to all layers defensively
-  // as the spec's general FR-024 language ("a Layer 3 modal") covers this path.
   useEffect(() => {
     const id = setTimeout(() => {
       if (!decidedRef.current) {
@@ -87,17 +110,28 @@ export function PermissionGauntletModal({
     [onDecide],
   )
 
-  // Keyboard handler (FR-017 Y/A/N, FR-023 Ctrl-C).
+  // CC arrow+Enter pattern (replaces previous Y/A/N direct-keystroke pattern).
+  // FR-017: 3-choice selection.  FR-023: Ctrl-C → auto_denied_at_cancel.  Esc → deny.
   useInput((input, key) => {
-    if (input === 'y' || input === 'Y') {
-      handleDecide('allow_once')
-    } else if (input === 'a' || input === 'A') {
-      handleDecide('allow_session')
-    } else if (input === 'n' || input === 'N' || key.escape) {
-      handleDecide('deny')
-    } else if (key.ctrl && input === 'c') {
-      // FR-023: Ctrl-C inside an open permission modal → auto_denied_at_cancel.
+    if (key.ctrl && input === 'c') {
       handleDecide('auto_denied_at_cancel')
+      return
+    }
+    if (key.escape) {
+      handleDecide('deny')
+      return
+    }
+    if (key.upArrow) {
+      setFocusedIdx((i) => (i - 1 + choices.length) % choices.length)
+      return
+    }
+    if (key.downArrow) {
+      setFocusedIdx((i) => (i + 1) % choices.length)
+      return
+    }
+    if (key.return) {
+      const choice = choices[focusedIdx]
+      if (choice) handleDecide(choice.value)
     }
   })
 
@@ -126,26 +160,24 @@ export function PermissionGauntletModal({
         </Box>
       )}
 
-      {/* 3-choice footer (FR-017) */}
-      <Box marginTop={1} flexDirection="row" gap={2}>
-        <Text>
-          <Text color="#a78bfa" bold>
-            Y{' '}
-          </Text>
-          <Text>{i18n.permissionAllowOnce}</Text>
-        </Text>
-        <Text>
-          <Text color="#a78bfa" bold>
-            A{' '}
-          </Text>
-          <Text>{i18n.permissionAllowSession}</Text>
-        </Text>
-        <Text>
-          <Text color="#a78bfa" bold>
-            N{' '}
-          </Text>
-          <Text>{i18n.permissionDeny}</Text>
-        </Text>
+      {/* Arrow+Enter choice list (CC pattern; replaces Y/A/N keystrokes) */}
+      <Box marginTop={1} flexDirection="column">
+        {choices.map((c, i) => {
+          const focused = i === focusedIdx
+          return (
+            <Box key={c.value}>
+              <Text color={focused ? '#a78bfa' : undefined} bold={focused}>
+                {focused ? '› ' : '  '}
+                {c.label}
+              </Text>
+            </Box>
+          )
+        })}
+      </Box>
+
+      {/* Hint footer */}
+      <Box marginTop={1}>
+        <Text dimColor>{'↑↓ 선택 · Enter 확정 · Esc 거부 (Ctrl-C 취소)'}</Text>
       </Box>
     </Box>
   )

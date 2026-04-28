@@ -1,25 +1,21 @@
 // SPDX-License-Identifier: Apache-2.0
 // Spec 1635 P4 UI L2 — US2 T037 (partial)
+// Spec 1979 — Y/A/N direct-keystroke pattern replaced with CC arrow+Enter.
 // bun:test units for PermissionGauntletModal (FR-015/017/023/024).
-//
-// Covers:
-//   - Renders layer glyph + description (FR-015/016)
-//   - Y key → allow_once decision (FR-017)
-//   - A key → allow_session decision (FR-017)
-//   - N key → deny decision (FR-017)
-//   - Ctrl-C → auto_denied_at_cancel (FR-023)
-//   - Layer 3 reinforcement notice is shown only for Layer 3 (FR-017)
-//   - Timeout auto-deny fires after timeout (FR-024, uses fake timer)
 
-import { describe, test, expect, mock, beforeEach, afterEach } from 'bun:test'
+import { describe, test, expect, mock } from 'bun:test'
 import React from 'react'
 import { render } from 'ink-testing-library'
 import { PermissionGauntletModal } from '../../../src/components/permissions/PermissionGauntletModal'
 import type { PermissionDecisionT } from '../../../src/schemas/ui-l2/permission'
 
 // ---------------------------------------------------------------------------
-// Helpers
+// Helpers — VT100 escape sequences as emitted by Ink's stdin.
 // ---------------------------------------------------------------------------
+
+function tick(ms = 20): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
 
 function wrap(
   layer: 1 | 2 | 3,
@@ -35,11 +31,16 @@ function wrap(
   )
 }
 
+const ENTER = '\r'
+const DOWN = '[B'
+const ESC = ''
+const CTRL_C = '\x03'
+
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
 
-describe('PermissionGauntletModal — FR-015/016/017/023', () => {
+describe('PermissionGauntletModal — FR-015/016/017/023 (CC arrow+Enter pattern)', () => {
   test('renders Layer 2 glyph ⓶', () => {
     const onDecide = mock(() => {})
     const { lastFrame } = render(wrap(2, onDecide))
@@ -52,44 +53,56 @@ describe('PermissionGauntletModal — FR-015/016/017/023', () => {
     expect(lastFrame()).toContain('Test tool description')
   })
 
-  test('Y key → allow_once (FR-017)', () => {
+  test('Enter on first option → allow_once (FR-017)', async () => {
     const decisions: PermissionDecisionT[] = []
     const onDecide = mock((d: PermissionDecisionT) => decisions.push(d))
     const { stdin } = render(wrap(1, onDecide))
-    stdin.write('y')
+    await tick()
+    stdin.write(ENTER)
+    await tick()
     expect(decisions).toEqual(['allow_once'])
   })
 
-  test('A key → allow_session (FR-017)', () => {
+  test('Down → Enter → allow_session (FR-017)', async () => {
     const decisions: PermissionDecisionT[] = []
     const onDecide = mock((d: PermissionDecisionT) => decisions.push(d))
     const { stdin } = render(wrap(2, onDecide))
-    stdin.write('a')
+    await tick()
+    stdin.write(DOWN)
+    await tick()
+    stdin.write(ENTER)
+    await tick()
     expect(decisions).toEqual(['allow_session'])
   })
 
-  test('N key → deny (FR-017)', () => {
+  test('Down → Down → Enter → deny (FR-017)', async () => {
     const decisions: PermissionDecisionT[] = []
     const onDecide = mock((d: PermissionDecisionT) => decisions.push(d))
     const { stdin } = render(wrap(2, onDecide))
-    stdin.write('n')
+    await tick()
+    stdin.write(DOWN)
+    await tick()
+    stdin.write(DOWN)
+    await tick()
+    stdin.write(ENTER)
+    await tick()
     expect(decisions).toEqual(['deny'])
   })
 
-  test('Uppercase Y → allow_once', () => {
+  test('Esc → deny (FR-017)', async () => {
     const decisions: PermissionDecisionT[] = []
     const onDecide = mock((d: PermissionDecisionT) => decisions.push(d))
     const { stdin } = render(wrap(1, onDecide))
-    stdin.write('Y')
-    expect(decisions).toEqual(['allow_once'])
+    await tick()
+    stdin.write(ESC)
+    await tick()
+    expect(decisions).toEqual(['deny'])
   })
 
   test('Layer 3 shows reinforcement notice (FR-017)', () => {
     const onDecide = mock(() => {})
     const { lastFrame } = render(wrap(3, onDecide))
-    // The reinforcement text contains "⚠️" or the i18n string
     const frame = lastFrame() ?? ''
-    // Should contain some warning indicator
     expect(
       frame.includes('⚠') ||
         frame.includes('외부 시스템') ||
@@ -101,30 +114,33 @@ describe('PermissionGauntletModal — FR-015/016/017/023', () => {
     const onDecide = mock(() => {})
     const { lastFrame } = render(wrap(1, onDecide))
     const frame = lastFrame() ?? ''
-    // Reinforcement text should not appear for layer 1
     expect(frame.includes('외부 시스템') || frame.includes('external systems')).toBe(
       false,
     )
   })
 
-  test('onDecide fires at most once (idempotent on double-press)', () => {
+  test('onDecide fires at most once (idempotent on double-press)', async () => {
     const decisions: PermissionDecisionT[] = []
     const onDecide = mock((d: PermissionDecisionT) => decisions.push(d))
     const { stdin } = render(wrap(1, onDecide))
-    stdin.write('y')
-    stdin.write('n') // second press should be ignored after decision is made
+    await tick()
+    stdin.write(ENTER) // selects allow_once
+    await tick()
+    stdin.write(ENTER) // second press — decidedRef guards
+    await tick()
     expect(decisions).toHaveLength(1)
     expect(decisions[0]).toBe('allow_once')
   })
 })
 
 describe('PermissionGauntletModal — Ctrl-C auto_denied_at_cancel (FR-023)', () => {
-  test('Ctrl-C → auto_denied_at_cancel', () => {
+  test('Ctrl-C → auto_denied_at_cancel', async () => {
     const decisions: PermissionDecisionT[] = []
     const onDecide = mock((d: PermissionDecisionT) => decisions.push(d))
     const { stdin } = render(wrap(1, onDecide))
-    // Simulate Ctrl-C (ASCII 0x03)
-    stdin.write('\x03')
+    await tick()
+    stdin.write(CTRL_C)
+    await tick()
     expect(decisions).toEqual(['auto_denied_at_cancel'])
   })
 })
