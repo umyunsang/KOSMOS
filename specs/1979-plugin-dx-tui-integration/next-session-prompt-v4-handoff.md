@@ -188,6 +188,44 @@ $ git worktree list
 
 ## 핸드오프 메모
 
-- 본 세션 의 가장 큰 교훈: Sonnet teammate 가 30+ file 변경 작업을 한 번에 못 함 (컨텍스트 한계). 다음 세션에서는 (a) 작업을 5–10 file 단위로 더 잘게 쪼개거나, (b) Lead 가 직접 deletion 위주 단순 작업 진행하는 편이 안전.
+### 가장 큰 방법론 교훈 (다음 세션 적용 필수)
+
+**Dispatch 단위 = task/task-group (≤ 5 task / ≤ 10 file). 1 Epic = 1 sonnet 패턴 금지.**
+
+이번 세션이 두 번 (Epic β + δ) 실패한 진짜 원인은 sonnet teammate 한 명에게 1 Epic 통째 (T001-T020 + commit + push + PR + CI monitoring + Codex P1 처리) 위임한 것. 30+ file edit + grep + diff + tool output 누적이 sonnet 의 입력 컨텍스트 (~200K) 를 넘김. 두 finisher dispatch 도 같은 패턴으로 같은 한계 반복.
+
+- 박제 위치:
+  - `AGENTS.md § Agent Teams` (Dispatch unit 섹션 신설, 2026-04-29)
+  - `~/.claude/projects/.../memory/feedback_dispatch_unit_is_task_group.md` (★★★ 최상위 우선 메모)
+- 다음 세션 첫 `/speckit-implement` 진입 시 반드시 `specs/<feature>/dispatch-tree.md` 에 dispatch tree 명시 + sonnet teammate 책임 = 코드 변경 + WIP commit 만 (push/PR/CI 는 Lead).
+
+### 도메인 교훈
+
 - `auth_level` 광범위 합법 사용 발견은 Initiative #2290 전체 thesis 검토 입력. KOSMOS thesis 의 "기관 정책 cite only" 와 Spec 024/025 의 "auth_level 매트릭스 invariant" 가 양립할 수 있는 형태로 spec 보정 필요.
 - Epic γ #2294 (5-primitive align with CC Tool.ts) 진입 전 Epic β + δ 정리 권장.
+
+### Epic β + δ 재진입 시 dispatch tree (권장)
+
+**Epic β 재진입**:
+```
+Lead solo: hard-reset to 2f9663d (sonnet 2차 광범위 변경 폐기)
+            ↓
+sonnet-A: T006 (16 services/api file deletion via git rm only)
+sonnet-B: T010+T011 (utils/permissions 3 + ui-l2/permission deletion)
+sonnet-C: T014 (tools.ts registry + REPL.tsx + constants/tools.ts cleanup)
+            ↓ (병렬, 각 ≤ 5 file)
+Lead solo: T009+T012+T015+T018 (grep gates) + T016+T017 (typecheck/test) + T019+T020 (commit/push/PR/CI)
+```
+
+**Epic δ 재진입**:
+```
+Lead solo: spec.md FR-008 보정 (auth_level grep gate 를 src/kosmos/tools/ adapter metadata 영역으로만 좁힘)
+            ↓
+sonnet-D: T005-T006 (잔재 16 file deletion + steps/ — 단 models.py KEEP, credentials.py KEEP)
+sonnet-E: T007 (__init__.py 재작성)
+sonnet-F: T010 (5 unit test 추가)
+            ↓ (병렬, 각 ≤ 5 file)
+Lead solo: T008+T018 (grep gates + pytest verify) + T019+T020 (commit/push/PR/CI)
+```
+
+총 6 sonnet 병렬 + Lead 4 sequential phase. 한 sonnet 도 컨텍스트 한계 안 만남.

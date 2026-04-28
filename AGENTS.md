@@ -79,9 +79,34 @@ Small fixes (typos, one-line bugs, docs-only) skip the cycle.
 
 ## Agent Teams
 
-- Lead (Opus): planning, spec authoring, code review, synthesis.
-- Teammates (Sonnet): implementation, tests, refactoring — spawned at `/speckit-implement`.
+- Lead (Opus): planning, spec authoring, code review, synthesis, **dispatch tree design**, commit / push / PR / CI monitoring / Codex P1 handling.
+- Teammates (Sonnet): **implementation only** — code edits + tests + WIP commit + tasks.md `[X]` marking.
 - 3+ independent tasks → parallel Agent Teams. 1-2 tasks → Lead solo.
+
+### Dispatch unit (NON-NEGOTIABLE)
+
+**The dispatch unit is a task or task-group from `tasks.md`, NOT an Epic.** A single Sonnet teammate gets ≤ 5 tasks AND ≤ 10 file changes. Anything larger MUST be subdivided. "1 Epic = 1 teammate" is forbidden — it exhausts the teammate's input context window before the work completes (verified by Initiative #2290 Epic β/δ failures, 2026-04-29).
+
+Lead reads `tasks.md` `[P]` markers — every `[P]` task or `[P]` task-group is an immediate parallel-dispatch candidate. User Story phases (US1 / US2 / US3) are independent by spec-kit definition — they go to **separate** Sonnet teammates.
+
+Sonnet teammate prompt MUST be ≤ 30 lines. Long instructions must reference `specs/<feature>/quickstart.md` rather than inlining. Sonnet does NOT do `git push` / `gh pr create` / `gh pr checks --watch` / Codex reply — those are Lead responsibility (sequential, after all teammates complete).
+
+### Dispatch tree (Lead draws explicitly before any Agent call)
+
+For each `/speckit-implement`, Lead writes a dispatch tree mapping Task IDs → Sonnet teammates. Example:
+
+```text
+Phase 1 Setup (T001-T002): Lead solo
+Phase 2 Foundational (T003-T005): sonnet-foundational
+Phase 3 US1 (T006-T009): sonnet-us1            ┐
+Phase 4 US2 (T010-T012): sonnet-us2            ├─ parallel
+Phase 5 US3 (T013-T015): sonnet-us3            ┘
+Phase 6 Polish (T016-T020): Lead solo
+```
+
+The tree is committed to `specs/<feature>/dispatch-tree.md` so any handoff session can reproduce the parallelism.
+
+### Role mapping
 
 | Role | Agent | Model |
 |------|-------|-------|
