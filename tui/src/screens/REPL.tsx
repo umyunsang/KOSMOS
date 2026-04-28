@@ -340,12 +340,9 @@ import { ErrorEnvelope } from '../components/messages/ErrorEnvelope.js';
 import type { ErrorEnvelopeT } from '../schemas/ui-l2/error.js';
 import { ContextQuoteBlock } from '../components/messages/ContextQuoteBlock.js';
 import { SlashCommandSuggestions } from '../components/PromptInput/SlashCommandSuggestions.js';
-import { BypassReinforcementModal } from '../components/permissions/BypassReinforcementModal.js';
-import { PermissionGauntletModal } from '../components/permissions/PermissionGauntletModal.js';
-// KOSMOS-1978 T050 — IPC-wired permission gauntlet (reads session-store.pending_permission)
-import { PermissionGauntletModal as KosmosIpcPermissionGauntletModal } from '../components/coordinator/PermissionGauntletModal.js';
-import { useSessionStore, getActivePermission, resolvePermissionDecision } from '../store/session-store.js';
-import { ReceiptToast } from '../components/permissions/ReceiptToast.js';
+// KOSMOS Spec 1979 — KOSMOS-original permission UI imports removed.
+// CC's canonical PermissionRequest pipeline carries permission UX.
+import { useSessionStore } from '../store/session-store.js';
 import { PermissionReceiptProvider, usePermissionReceipts } from '../context/PermissionReceiptContext.js';
 import { AgentVisibilityPanel } from '../components/agents/AgentVisibilityPanel.js';
 import { shouldActivateSwarm } from '../schemas/ui-l2/agent.js';
@@ -607,55 +604,9 @@ function _temp2(setFrame_0) {
 function _temp(f) {
   return (f + 1) % _getTitleAnimationFrames().length;
 }
-// ---------------------------------------------------------------------------
-// KOSMOS-2077 T021 — sessionStore activePermission gate
-//
-// Subscribes to the pendingPermissionSlot (via useSessionStore, which subscribes
-// to subscribeToPermissionSlot in addition to the reducer store).  Renders null
-// when the slot is empty so the coordinator modal is not painted.  When a request
-// is active it mounts the IPC-wired coordinator modal and adapts the sendFrame
-// callback to also call resolvePermissionDecision, unblocking the Promise that
-// deps.ts (T020) awaits before sending the permission_response IPC frame.
-//
-// Props are passed through to the inner KosmosIpcPermissionGauntletModal so
-// callers do not need to change their mount point signature.
-// ---------------------------------------------------------------------------
-
-interface KosmosActivePermissionGateProps {
-  sendFrame: (frame: import('../ipc/frames.generated.js').PermissionResponseFrame) => void
-  sessionId: string
-}
-
-function KosmosActivePermissionGate({
-  sendFrame,
-  sessionId,
-}: KosmosActivePermissionGateProps): React.ReactElement | null {
-  // getActivePermission is called inside the selector body so that re-renders
-  // are triggered by subscribeToPermissionSlot (wired into useSessionStore).
-  const active = useSessionStore(() => getActivePermission())
-
-  if (active == null) return null
-
-  // Adapt sendFrame so that each decision also resolves the Promise that
-  // setPendingPermission() returned to deps.ts (T020).
-  const adaptedSendFrame = (frame: import('../ipc/frames.generated.js').PermissionResponseFrame): void => {
-    sendFrame(frame)
-    // frame.decision is 'granted' | 'denied' per PermissionResponseFrame schema.
-    // PermissionDecision is 'granted' | 'denied' | 'timeout'; both values are
-    // valid members of the union so the cast is safe here.
-    resolvePermissionDecision(
-      frame.request_id,
-      frame.decision as import('../store/session-store.js').PermissionDecision,
-    )
-  }
-
-  return (
-    <KosmosIpcPermissionGauntletModal
-      sendFrame={adaptedSendFrame}
-      sessionId={sessionId}
-    />
-  )
-}
+// KOSMOS Spec 1979 — KosmosActivePermissionGate removed.  Permission UX now
+// flows through CC's canonical PermissionRequest pipeline.  See
+// specs/1979-plugin-dx-tui-integration/migration-scope-analysis.md.
 
 export type Props = {
   commands: Command[];
@@ -767,9 +718,6 @@ export function REPL({
   // a deployment needs further tuning.
   const KOSMOS_STREAM_TIMEOUT_MS = Number(process.env.KOSMOS_STREAM_TIMEOUT_MS ?? 300000);
 
-  // KOSMOS P4 UI L2 — T036: Bypass reinforcement modal state
-  const [kosmosShowBypassConfirm, setKosmosShowBypassConfirm] = useState(false);
-
   // KOSMOS P4 UI L2 — T056: swarm mode state + primitiveByWorker map
   const [kosmosSwarmMode, setKosmosSwarmMode] = useState(false);
   const [kosmosPrimitiveByWorker, setKosmosPrimitiveByWorker] = useState<Record<string, string>>({});
@@ -786,9 +734,6 @@ export function REPL({
     active: boolean;
     isolatedStep?: import('../schemas/ui-l2/onboarding.js').OnboardingStepNameT;
   }>({ active: false });
-
-  // KOSMOS P4 UI L2 — T036: track previous permission mode to detect bypass transition
-  const kosmosPrevModeRef = useRef<string>('default');
 
   // Agent definition is state so /resume can update it mid-session
   const [mainThreadAgentDefinition, setMainThreadAgentDefinition] = useState(initialMainThreadAgentDefinition);
@@ -850,41 +795,12 @@ export function REPL({
   const terminal = useTerminalNotification();
   const mainLoopModel = useMainLoopModel();
 
-  // KOSMOS-1978 T050 — session ID from IPC session-store (for PermissionResponseFrame header)
-  const kosmosIpcSessionId = useSessionStore((s) => s.session_id)
+  // KOSMOS-1978 T050 — session ID from IPC session-store
+  // (still used elsewhere in REPL for IPC frame headers)
+  void useSessionStore((s) => s.session_id)
 
-  // KOSMOS P4 UI L2 — T039: pending consent request from consentBridge (Spec 033 IPC path)
-  // When the backend sends a consent_request frame, the IPC dispatcher calls
-  // handleNotificationFrame() in consentBridge.ts which resolves an awaitConsentRequest promise.
-  // For P4 MVP we hold a minimal pending state here; the full IPC wiring is P5.
-  const [kosmosPendingConsent, setKosmosPendingConsent] = useState<{
-    layer: 1 | 2 | 3;
-    toolName: string;
-    description: string;
-    onDecide: (decision: import('../schemas/ui-l2/permission.js').PermissionDecisionT) => void;
-  } | null>(null);
-
-  // KOSMOS P4 UI L2 — T036: intercept bypassPermissions transition for reinforcement modal
-  // This effect watches toolPermissionContext.mode changes. If the mode just became
-  // bypassPermissions and we haven't confirmed, revert and show the modal.
-  useEffect(() => {
-    const currentMode = toolPermissionContext.mode;
-    const prevMode = kosmosPrevModeRef.current;
-    if (currentMode === 'bypassPermissions' && prevMode !== 'bypassPermissions') {
-      setAppState(prev => ({
-        ...prev,
-        toolPermissionContext: {
-          ...prev.toolPermissionContext,
-          mode: prevMode as import('../permissions/types.js').PermissionMode,
-        },
-      }));
-      setKosmosShowBypassConfirm(true);
-    } else {
-      kosmosPrevModeRef.current = currentMode;
-    }
-  // setAppState is stable; toolPermissionContext.mode drives this effect
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [toolPermissionContext.mode, setAppState]);
+  // KOSMOS Spec 1979 — bypassPermissions reinforcement intercept removed.
+  // CC's PermissionRequest pipeline owns the dangerous-mode UX.
 
   // Note: standaloneAgentContext is initialized in main.tsx (via initialState) or
   // ResumeConversation.tsx (via setAppState before rendering REPL) to avoid
@@ -5519,45 +5435,11 @@ export function REPL({
                           primitiveByWorker={kosmosPrimitiveByWorker}
                         />
                       )}
-                      {/* KOSMOS P4 UI L2 — T039: PermissionGauntletModal for Spec 033 consent requests */}
-                      {kosmosPendingConsent && (
-                        <PermissionGauntletModal
-                          layer={kosmosPendingConsent.layer}
-                          toolName={kosmosPendingConsent.toolName}
-                          description={kosmosPendingConsent.description}
-                          onDecide={(decision) => {
-                            kosmosPendingConsent.onDecide(decision);
-                            setKosmosPendingConsent(null);
-                          }}
-                        />
-                      )}
-                      {/* KOSMOS-2077 T021 — Wire PermissionGauntletModal mount to
-                          sessionStore activePermission slot.
-                          Subscribes to pendingPermissionSlot (via useSessionStore which
-                          also subscribes to subscribeToPermissionSlot); renders null when
-                          slot is empty; calls resolvePermissionDecision on grant/deny so
-                          the Promise returned by setPendingPermission (T020/deps.ts)
-                          unblocks and sends the permission_response IPC frame. */}
-                      <KosmosActivePermissionGate
-                        sendFrame={(frame) => getOrCreateKosmosBridge().send(frame)}
-                        sessionId={kosmosIpcSessionId}
-                      />
-                      {/* KOSMOS P4 UI L2 — T036: BypassReinforcementModal */}
-                      {kosmosShowBypassConfirm && (
-                        <BypassReinforcementModal
-                          onConfirm={() => {
-                            setAppState(prev => ({
-                              ...prev,
-                              toolPermissionContext: {
-                                ...prev.toolPermissionContext,
-                                mode: 'bypassPermissions',
-                              },
-                            }));
-                            setKosmosShowBypassConfirm(false);
-                          }}
-                          onCancel={() => setKosmosShowBypassConfirm(false)}
-                        />
-                      )}
+                      {/* KOSMOS Spec 1979 — KOSMOS-original permission UI components
+                          (PermissionGauntletModal × 2, BypassReinforcementModal,
+                          KosmosActivePermissionGate) removed.  Permission UX falls
+                          back to CC's canonical PermissionRequest pipeline mounted
+                          in the message stream by the agentic loop. */}
                       {/* KOSMOS P4 UI L2 — T049: OnboardingFlow overlay triggered by /onboarding command */}
                       {kosmosOnboardingMode.active && (
                         <OnboardingFlow

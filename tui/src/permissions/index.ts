@@ -24,10 +24,6 @@ export type { StatusBarProps } from './StatusBar'
 export { ModeCycle, getNextModeCycle } from './ModeCycle'
 export type { ModeCycleProps } from './ModeCycle'
 
-// ConsentPrompt (T018)
-export { ConsentPrompt, validateConsentDecision, ConsentValidationError } from './ConsentPrompt'
-export type { ConsentPromptProps } from './ConsentPrompt'
-
 // ConsentBridge (T019)
 export {
   awaitConsentRequest,
@@ -41,18 +37,6 @@ export type {
   ConsentRequestPayload,
   ConsentDecisionPayload,
 } from './consentBridge'
-
-// BypassConfirmDialog (T032)
-export { BypassConfirmDialog } from './BypassConfirmDialog'
-export type { BypassConfirmDialogProps } from './BypassConfirmDialog'
-
-// DontAskConfirmDialog (T045)
-export { DontAskConfirmDialog } from './DontAskConfirmDialog'
-export type { DontAskConfirmDialogProps } from './DontAskConfirmDialog'
-
-// RuleListView (T039)
-export { RuleListView } from './RuleListView'
-export type { RuleListViewProps } from './RuleListView'
 
 // CommandRouter (T043)
 export {
