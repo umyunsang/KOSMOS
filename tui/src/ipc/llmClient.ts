@@ -18,7 +18,7 @@ import { trace, SpanStatusCode } from '@opentelemetry/api'
 import type { Span } from '@opentelemetry/api'
 import type { IPCBridge } from './bridge.js'
 import { makeUUIDv7, makeBaseEnvelope } from './envelope.js'
-import type { UserInputFrame, AssistantChunkFrame, ErrorFrame, BackpressureSignalFrame, ToolCallFrame } from './frames.generated.js'
+import type { AssistantChunkFrame, BackpressureSignalFrame, ChatMessage as IPCChatMessage, ChatRequestFrame, ErrorFrame, ToolCallFrame, ToolDefinition as IPCToolDefinition } from './frames.generated.js'
 import type {
   KosmosMessageStreamParams,
   KosmosRawMessageStreamEvent,
@@ -203,50 +203,88 @@ export class LLMClient {
 
     try {
       // ----------------------------------------------------------------
-      // Step 3: construct UserInputFrame.
+      // Step 3: construct ChatRequestFrame (Spec 1978 ADR-0001).
       //
-      // The UserInputFrame shape is defined in frames.generated.ts; `text`
-      // carries the last user message.  System prompt (params.system) is
-      // loaded once per session at handshake time and cached on the bridge;
-      // every UserInputFrame is correlated with it implicitly via the
-      // bridge's cached session state.  We do NOT embed it in the frame.
+      // ChatRequestFrame is the tools-aware frame consumed by the backend's
+      // _handle_chat_request handler (src/kosmos/ipc/stdio.py:1130). It
+      // carries:
+      //   - `messages`: full conversation history flattened to plain text
+      //   - `tools`: OpenAI-style function-calling tool definitions
+      //   - `system`: dynamic system prompt (override of bridge's cached one)
       //
-      // TODO(T007b): params.tools — the current UserInputFrame schema has
-      // no slot for a tool-definition list.  When Spec 032 adds a
-      // `tool_hints` field to UserInputFrame, forward params.tools here.
+      // The legacy UserInputFrame path is dead — backend explicitly notes
+      // "UserInputFrame{text=t} ≡ ChatRequestFrame{messages=[{role:'user',
+      // content:t}], tools=[]}" (frame_schema.py:267-268). We bypass that
+      // legacy translation and emit ChatRequestFrame directly so K-EXAONE
+      // sees the tool inventory + autonomously routes to lookup / kma /
+      // hira / nmc / etc. tools.
+      //
+      // Per Epic #2112 (memory feedback_kosmos_uses_cc_query_engine): the
+      // agentic loop runs INSIDE the backend's _handle_chat_request — TS
+      // sends one ChatRequestFrame per user turn, backend loops internally
+      // (LLM → tool_use → tool_result → LLM → … up to KOSMOS_AGENTIC_LOOP_
+      // MAX_TURNS) and emits AssistantChunkFrame on the final answer.
       // ----------------------------------------------------------------
 
-      // Resolve last user message text.
-      const lastMessage = params.messages[params.messages.length - 1]
-      let userText = ''
-      if (lastMessage) {
-        if (typeof lastMessage.content === 'string') {
-          userText = lastMessage.content
+      // Translate Anthropic-shape KosmosMessageParam[] → OpenAI-shape ChatMessage[].
+      // ChatRequestFrame.messages.content is a plain string (frames.generated.ts
+      // Content = string), so multi-block content is flattened to a single
+      // text payload. tool_use and tool_result blocks from prior turns are
+      // dropped here — the backend's internal agentic loop maintains its
+      // own intra-turn tool history; TUI history retains only user / assistant
+      // textual exchanges per ADR-0005.
+      const ipcMessages = params.messages.map<IPCChatMessage>(m => {
+        const role: IPCChatMessage['role'] = m.role === 'assistant' ? 'assistant' : 'user'
+        let content = ''
+        if (typeof m.content === 'string') {
+          content = m.content
         } else {
-          // Concatenate text blocks; ignore non-text (tool_use, tool_result).
-          userText = lastMessage.content
+          content = m.content
             .filter((b): b is { type: 'text'; text: string } => b.type === 'text')
             .map(b => b.text)
             .join('')
         }
-      }
+        return { role, content }
+      })
+      // ChatRequestFrame requires Messages = [ChatMessage, ...ChatMessage[]] — non-empty.
+      // If params.messages somehow arrives empty, synthesise an empty user turn so the
+      // schema validator on the backend does not reject the frame.
+      const safeMessages: IPCChatMessage[] = ipcMessages.length > 0
+        ? ipcMessages
+        : [{ role: 'user', content: '' }]
+
+      // Translate Anthropic-shape KosmosToolDefinition[] → OpenAI-shape ToolDefinition[].
+      const ipcTools: IPCToolDefinition[] | undefined = params.tools && params.tools.length > 0
+        ? params.tools.map<IPCToolDefinition>(t => ({
+            type: 'function',
+            function: {
+              name: t.name,
+              ...(t.description !== undefined ? { description: t.description } : {}),
+              parameters: t.input_schema as Record<string, unknown>,
+            },
+          }))
+        : undefined
 
       const baseEnvelope = makeBaseEnvelope({
         sessionId: this.sessionId,
         correlationId,
       })
 
-      const userInputFrame: UserInputFrame = {
+      const chatRequestFrame: ChatRequestFrame = {
         ...baseEnvelope,
-        kind: 'user_input',
+        kind: 'chat_request',
         role: 'tui',
-        text: userText,
+        messages: safeMessages as ChatRequestFrame['messages'],
+        ...(ipcTools !== undefined ? { tools: ipcTools } : {}),
+        ...(params.system !== undefined ? { system: params.system } : {}),
+        max_tokens: params.max_tokens,
+        ...(params.temperature !== undefined ? { temperature: params.temperature } : {}),
       }
 
       // ----------------------------------------------------------------
       // Step 4: send the frame.
       // ----------------------------------------------------------------
-      const sent = this.bridge.send(userInputFrame)
+      const sent = this.bridge.send(chatRequestFrame)
       if (!sent) {
         throw new LLMClientError(
           'network',

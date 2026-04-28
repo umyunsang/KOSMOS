@@ -1,3 +1,7 @@
+// KOSMOS Epic #2112: legacy first-party base-URL check rewritten for FriendliAI.
+// All callers updated to `isFirstPartyKosmosBaseUrl` (see grep history pre-Spec
+// 2112 for the legacy alias name).
+
 import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '../../services/analytics/index.js'
 import { isEnvTruthy } from '../envUtils.js'
 
@@ -18,23 +22,19 @@ export function getAPIProviderForStatsig(): AnalyticsMetadata_I_VERIFIED_THIS_IS
 }
 
 /**
- * Check if ANTHROPIC_BASE_URL is a first-party Anthropic API URL.
- * Returns true if not set (default API) or points to api.anthropic.com
- * (or api-staging.anthropic.com for ant users).
+ * Check if KOSMOS_FRIENDLI_BASE_URL points to FriendliAI Serverless.
+ * Returns true if not set (default endpoint) or points to api.friendli.ai.
  */
-export function isFirstPartyAnthropicBaseUrl(): boolean {
-  const baseUrl = process.env.ANTHROPIC_BASE_URL
+export function isFirstPartyKosmosBaseUrl(): boolean {
+  const baseUrl = process.env.KOSMOS_FRIENDLI_BASE_URL
   if (!baseUrl) {
     return true
   }
   try {
     const host = new URL(baseUrl).host
-    const allowedHosts = ['api.anthropic.com']
-    if (process.env.USER_TYPE === 'ant') {
-      allowedHosts.push('api-staging.anthropic.com')
-    }
-    return allowedHosts.includes(host)
+    return host === 'api.friendli.ai'
   } catch {
     return false
   }
 }
+

@@ -1,25 +1,22 @@
-export const MODEL_ALIASES = [
-  'sonnet',
-  'opus',
-  'haiku',
-  'best',
-  'sonnet[1m]',
-  'opus[1m]',
-  'opusplan',
-] as const
+// KOSMOS Epic #2112: legacy model aliases removed; only the `default` alias survives
+// (resolves to K-EXAONE via parseUserSpecifiedModel).
+//
+// Pre-existing legacy alias names ('opus', 'sonnet', 'haiku', 'best', 'opusplan',
+// '*[1m]') are dead under KOSMOS's single-fixed FriendliAI provider invariant.
+// Removing them entirely would break callers that still pass these strings (e.g.
+// stale settings.json or skill frontmatter) — parseUserSpecifiedModel collapses
+// them to K-EXAONE silently, so the union type can be empty here without runtime
+// breakage. Kept as `'default'` to retain a non-empty union.
+export const MODEL_ALIASES = ['default'] as const
+
 export type ModelAlias = (typeof MODEL_ALIASES)[number]
 
 export function isModelAlias(modelInput: string): modelInput is ModelAlias {
   return MODEL_ALIASES.includes(modelInput as ModelAlias)
 }
 
-/**
- * Bare model family aliases that act as wildcards in the availableModels allowlist.
- * When "opus" is in the allowlist, ANY opus model is allowed (opus 4.5, 4.6, etc.).
- * When a specific model ID is in the allowlist, only that exact version is allowed.
- */
-export const MODEL_FAMILY_ALIASES = ['sonnet', 'opus', 'haiku'] as const
+export const MODEL_FAMILY_ALIASES: readonly string[] = []
 
-export function isModelFamilyAlias(model: string): boolean {
-  return (MODEL_FAMILY_ALIASES as readonly string[]).includes(model)
+export function isModelFamilyAlias(_model: string): boolean {
+  return false
 }
