@@ -40,9 +40,29 @@ export type PluginEntry = {
   search_hint_en?: string;
 };
 
+/**
+ * Spec 1979 T029 — in-flight install placeholder row.
+ *
+ * Each entry represents a plugin currently being installed (via the backend
+ * dispatcher's plugin_op_progress stream); the browser renders an
+ * "(설치 중… 단계 N/7)" placeholder for each until the matching
+ * plugin_op_complete arrives at which point the parent removes the entry
+ * and refetches the plugin list to surface the newly-registered tool.
+ */
+export type InflightInstallEntry = {
+  /** Catalog name (matches plugin_op_request.name). */
+  name: string;
+  /** Current install phase (1-7). */
+  phase: 1 | 2 | 3 | 4 | 5 | 6 | 7;
+  /** Korean-primary phase message from PluginOpFrame.progress_message_ko. */
+  message_ko?: string;
+};
+
 export type PluginBrowserProps = {
   /** Current plugin list */
   plugins: PluginEntry[];
+  /** Spec 1979 T029 — in-flight installs being tracked by the parent. */
+  inflightInstalls?: InflightInstallEntry[];
   /** Called when toggle is confirmed */
   onToggle: (id: string, newActive: boolean) => void;
   /** Called when the citizen requests detail view for a plugin */
@@ -75,6 +95,7 @@ const GLYPH_INACTIVE = '○'; // empty circle — inactive plugin
  */
 export function PluginBrowser({
   plugins,
+  inflightInstalls = [],
   onToggle,
   onDetail,
   onRemove,
@@ -140,8 +161,28 @@ export function PluginBrowser({
         <Text bold color={theme.wordmark}>{i18n.pluginBrowserTitle}</Text>
       </Box>
 
+      {/* Spec 1979 T029 — in-flight install placeholder rows render BEFORE
+          the installed list so citizens see the active operation prominently. */}
+      {inflightInstalls.map((entry) => (
+        <Box key={`inflight-${entry.name}`} marginBottom={0}>
+          <Box width={3} flexShrink={0}>
+            <Text color={theme.subtle}>{'⏳'}</Text>
+          </Box>
+          <Box width={24} flexShrink={0}>
+            <Text color={theme.subtle}>{`  ${entry.name}`}</Text>
+          </Box>
+          <Box flexGrow={1}>
+            <Text color={theme.subtle}>
+              {entry.message_ko
+                ? `(설치 중… 단계 ${entry.phase}/7 · ${entry.message_ko})`
+                : `(설치 중… 단계 ${entry.phase}/7)`}
+            </Text>
+          </Box>
+        </Box>
+      ))}
+
       {/* Plugin list */}
-      {plugins.length === 0 ? (
+      {plugins.length === 0 && inflightInstalls.length === 0 ? (
         <Box paddingLeft={2}>
           <Text dimColor>{'플러그인이 없습니다 · No plugins installed'}</Text>
         </Box>

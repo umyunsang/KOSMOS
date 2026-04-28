@@ -1,0 +1,28 @@
+#!/usr/bin/env expect -f
+# SPDX-License-Identifier: Apache-2.0
+# Spec 1979 T033 — L3 PTY negative scenario: catalog miss.
+# Expected: plugin_op_complete with exit_code=1, error_kind="catalog_miss".
+
+set timeout 60
+
+set spec_dir [file dirname [file dirname [info script]]]
+set log_path "$spec_dir/smoke-1979-bad-name.txt"
+
+spawn script -q $log_path bun run --cwd tui dev
+
+expect {
+  -re ".*✻.*" {}
+  timeout { exit 1 }
+}
+
+send -- "/plugin install nonexistent-fixture-plugin\r"
+
+expect {
+  -re ".*not found.*|.*catalog.*|.*exit_code=1.*" {
+    puts "✓ catalog miss path observed"
+  }
+  timeout { puts "✗ catalog miss timeout"; exit 1 }
+}
+
+send -- "\033"
+expect eof
