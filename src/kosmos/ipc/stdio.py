@@ -685,6 +685,14 @@ async def run(  # noqa: C901
             _os_chat_env.environ.get("KOSMOS_REACT_MAX_TURNS", "8"),
         )
     )
+    # Epic #2152 R4 — separator between the cacheable static prefix (the
+    # PromptLoader-resolved citizen system prompt + the augmented
+    # ``## Available tools`` block) and the per-turn dynamic suffix. The
+    # literal mirrors CC ``prompts.ts:572-575`` so the same identifier reads
+    # familiar to anyone with CC source-map context. Downstream tooling
+    # (kosmos.prompt.hash slicing in ``kosmos.llm.client``) splits on this
+    # marker to compute the static-prefix-only hash.
+    _DYNAMIC_BOUNDARY_MARKER = "\nSYSTEM_PROMPT_DYNAMIC_BOUNDARY\n"  # noqa: N806
     # Spec 1978 T053 — eager-import the Mock adapter tree so every adapter
     # self-registers with its primitive dispatcher before the first chat
     # turn arrives. Equivalent to plan.md "Mock adapter activation"; failure
@@ -1194,16 +1202,35 @@ async def run(  # noqa: C901
         # (mirrors ``_cc_reference/api.ts:appendSystemContext``). Returns
         # ``base`` unchanged when ``llm_tools`` is empty (no inventory to
         # publish), so the no-tools path is byte-stable with the old code.
-        base_system = frame.system or ""
+        # Epic #2152 R3 + R4 — when the TUI sends an empty ``frame.system``
+        # (the new default after R5 dev-context excision), fall back to the
+        # PromptLoader-resolved citizen system prompt. Append the boundary
+        # marker so the prefix hash emitted by the LLM client is meaningful.
+        from kosmos.ipc.citizen_request import (  # noqa: PLC0415
+            wrap_citizen_request,
+        )
+
+        base_system = frame.system
+        if not base_system:
+            loaded = await _ensure_system_prompt()
+            base_system = loaded or ""
         augmented_system = build_system_prompt_with_tools(base_system, llm_tools)
+        if augmented_system:
+            augmented_system = augmented_system + _DYNAMIC_BOUNDARY_MARKER
         llm_messages: list[LLMChatMessage] = []
         if augmented_system:
             llm_messages.append(LLMChatMessage(role="system", content=augmented_system))
         for m in frame.messages:
+            # Epic #2152 R3 — wrap citizen utterances in <citizen_request>
+            # XML tags so prompt-injection-shaped pastes cannot escalate into
+            # instructions (contract chat-request-envelope.md I-C3, I-C4, I-C6).
+            content = m.content
+            if m.role == "user" and content:
+                content = wrap_citizen_request(content)
             llm_messages.append(
                 LLMChatMessage(
                     role=m.role,
-                    content=m.content,
+                    content=content,
                     name=m.name,
                     tool_call_id=m.tool_call_id,
                 )
@@ -1214,11 +1241,24 @@ async def run(  # noqa: C901
         # ---- CC query-engine agentic loop ---------------------------------
         import json as _json  # noqa: PLC0415
 
+        # Epic #2152 follow-up — citizen-facing stream gate. K-EXAONE may
+        # interleave a textual ``<tool_call>{...}</tool_call>`` marker with
+        # the natural-language reply even when the structured ``tool_calls``
+        # field is also populated, so the marker leaks into the streamed
+        # AssistantChunkFrame content unless filtered. The gate strips those
+        # blocks character-accurately while ``assistant_text_chunks`` still
+        # accumulates the *full raw stream* — the post-stream
+        # ``extract_textual_tool_calls`` fallback (below) needs the markers
+        # to synthesise tool_call_buf entries when the structured form is
+        # absent.
+        from kosmos.llm.tool_call_parser import StreamGate  # noqa: PLC0415
+
         for _turn in range(_AGENTIC_LOOP_MAX_TURNS):
             message_id = str(uuid.uuid4())
             assistant_text_chunks: list[str] = []
             tool_call_buf: dict[int, dict[str, str]] = {}
             stream_error: Exception | None = None
+            stream_gate = StreamGate()
 
             try:
                 async for event in client.stream(  # type: ignore[attr-defined]
@@ -1233,18 +1273,20 @@ async def run(  # noqa: C901
                         delta = getattr(event, "content", "") or ""
                         if delta:
                             assistant_text_chunks.append(delta)
-                            await write_frame(
-                                AssistantChunkFrame(
-                                    session_id=frame.session_id,
-                                    correlation_id=frame.correlation_id,
-                                    role="llm",
-                                    ts=_utcnow(),
-                                    kind="assistant_chunk",
-                                    message_id=message_id,
-                                    delta=delta,
-                                    done=False,
+                            visible = stream_gate.feed(delta)
+                            if visible:
+                                await write_frame(
+                                    AssistantChunkFrame(
+                                        session_id=frame.session_id,
+                                        correlation_id=frame.correlation_id,
+                                        role="llm",
+                                        ts=_utcnow(),
+                                        kind="assistant_chunk",
+                                        message_id=message_id,
+                                        delta=visible,
+                                        done=False,
+                                    )
                                 )
-                            )
                     elif event_type == "thinking_delta":
                         # K-EXAONE chain-of-thought channel — mirrors CC's
                         # Anthropic ``thinking_delta`` content_block_delta
@@ -1297,6 +1339,25 @@ async def run(  # noqa: C901
             except Exception as exc:  # noqa: BLE001
                 stream_error = exc
 
+            # Drain any pending bytes the stream gate held back at stream end.
+            # ``flush()`` returns the safe trailing window (i.e. bytes that
+            # were too short to disambiguate during streaming but are now
+            # known not to be the start of a ``<tool_call>`` marker).
+            tail = stream_gate.flush()
+            if tail:
+                await write_frame(
+                    AssistantChunkFrame(
+                        session_id=frame.session_id,
+                        correlation_id=frame.correlation_id,
+                        role="llm",
+                        ts=_utcnow(),
+                        kind="assistant_chunk",
+                        message_id=message_id,
+                        delta=tail,
+                        done=False,
+                    )
+                )
+
             if stream_error is not None:
                 # Schema constraint: ErrorFrame.role ∈ {'backend','tui'} —
                 # 'llm' was rejected by Pydantic validation. Backend is the
@@ -1315,6 +1376,35 @@ async def run(  # noqa: C901
                     )
                 )
                 return
+
+            # Epic #2152 follow-up — K-EXAONE on FriendliAI sometimes emits
+            # its tool-call intent as a textual ``<tool_call>{...}</tool_call>``
+            # marker inside the assistant content rather than the OpenAI
+            # ``tool_calls`` field. Extract any such markers from the
+            # accumulated turn text and synthesise ``tool_call_buf`` entries so
+            # the existing dispatch path picks them up as if the model had used
+            # the structured form. The cleaned text (markers stripped) is what
+            # we record into the assistant history for the next turn.
+            assistant_text_full = "".join(assistant_text_chunks)
+            cleaned_text = assistant_text_full
+            if not tool_call_buf and "<tool_call>" in assistant_text_full:
+                from kosmos.llm.tool_call_parser import (  # noqa: PLC0415
+                    extract_textual_tool_calls,
+                )
+
+                parsed_calls, cleaned_text = extract_textual_tool_calls(assistant_text_full)
+                for synth_idx, parsed in enumerate(parsed_calls):
+                    tool_call_buf[synth_idx] = {
+                        "id": str(uuid.uuid4()),
+                        "name": parsed.name,
+                        "args": _json.dumps(parsed.arguments, ensure_ascii=False),
+                    }
+                if parsed_calls:
+                    logger.info(
+                        "_handle_chat_request: synthesised %d tool_call(s) from "
+                        "K-EXAONE textual <tool_call> markers (Epic #2152 follow-up)",
+                        len(parsed_calls),
+                    )
 
             # No tool calls this turn → terminal chunk + exit agentic loop.
             if not tool_call_buf:
@@ -1427,11 +1517,26 @@ async def run(  # noqa: C901
             # Append the assistant message that requested tools — the CC
             # query-engine contract requires the function-call envelope to
             # precede the tool messages in the next turn.
-            full_text = "".join(assistant_text_chunks)
+            #
+            # Epic #2152 follow-up — record the *cleaned* text (markers
+            # stripped) into the LLM history so subsequent turns don't see
+            # the textual ``<tool_call>`` blocks and double-emit them. The
+            # post-stream extractor above sets ``cleaned_text`` only when
+            # it ran (i.e. tool_call_buf was empty + marker present); when
+            # both structured tool_calls AND a textual marker were emitted
+            # in the same turn, run the extractor here too so the marker is
+            # stripped from history even though we don't synthesise an
+            # additional tool_call_buf entry.
+            if "<tool_call>" in cleaned_text:
+                from kosmos.llm.tool_call_parser import (  # noqa: PLC0415
+                    extract_textual_tool_calls,
+                )
+
+                _, cleaned_text = extract_textual_tool_calls(cleaned_text)
             llm_messages.append(
                 LLMChatMessage(
                     role="assistant",
-                    content=full_text,
+                    content=cleaned_text,
                     tool_calls=assistant_tool_calls,
                 )
             )

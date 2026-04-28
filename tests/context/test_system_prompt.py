@@ -24,28 +24,37 @@ class TestSystemPromptAssembler:
         cfg = SystemPromptConfig(platform_name="KOSMOS")
         result = self._assembler().assemble(cfg)
         assert "KOSMOS" in result
-        assert "Korean public service AI assistant" in result
+        # Epic #2152 R1 — citizen-domain framing in Korean prose.
+        assert "공공" in result and "시민" in result
 
     def test_contains_language_policy(self) -> None:
         cfg = SystemPromptConfig(language="ko")
         result = self._assembler().assemble(cfg)
-        assert "ko" in result
-        assert "language" in result.lower() or "respond" in result.lower()
+        # Epic #2152 R1 — language rule lives in <core_rules> Korean prose.
+        assert "한국어" in result
 
     def test_contains_tool_use_policy(self) -> None:
         result = self._assembler().assemble(SystemPromptConfig())
-        assert "tools" in result.lower()
-        assert "fabricate" in result.lower()
+        # Epic #2152 R1 — <tool_usage> section enumerates citizen-domain
+        # tool triggers; fabrication ban lives in <core_rules>.
+        assert "도구" in result
+        assert "지어내지" in result or "fabricate" in result.lower()
 
     def test_contains_personal_data_reminder_when_enabled(self) -> None:
         cfg = SystemPromptConfig(personal_data_warning=True)
         result = self._assembler().assemble(cfg)
-        assert "personal data" in result.lower()
+        # Epic #2152 R1 — personal-data reminder in <output_style> uses PIPA.
+        assert "personal data" in result.lower() or "PIPA" in result or "개인정보" in result
 
     def test_omits_personal_data_reminder_when_disabled(self) -> None:
         cfg = SystemPromptConfig(personal_data_warning=False)
         result = self._assembler().assemble(cfg)
+        # The personal-data reminder paragraph (output_style) must be absent
+        # when the config gate disables it; both English and Korean sentinels
+        # tracked.
         assert "personal data" not in result.lower()
+        assert "PIPA" not in result
+        assert "개인정보" not in result
 
     def test_deterministic_same_instance(self) -> None:
         cfg = SystemPromptConfig()

@@ -386,6 +386,10 @@ KMA_CURRENT_OBSERVATION_TOOL = GovAPITool(
     rate_limit_per_minute=10,
     is_core=True,
     primitive="lookup",
+    trigger_examples=[
+        "지금 서울 기온",
+        "현재 풍속",
+    ],
 )
 
 

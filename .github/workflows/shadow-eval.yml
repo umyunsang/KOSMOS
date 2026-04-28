@@ -77,7 +77,17 @@ jobs:
         run: rm -rf tests/shadow_eval
 
       - name: Checkout PR head for shadow run
-        run: git checkout "${{ github.event.pull_request.head.sha }}"
+        # ``git checkout <sha>`` (no --) only switches HEAD; it does not
+        # restore tracked files that were `rm -rf`'d in the previous step.
+        # Empirically this surfaced as `ModuleNotFoundError: No module named
+        # 'tests.shadow_eval'` on PR #2203 even though tests/shadow_eval/ is
+        # tracked at the PR head. Force-restore the working tree from the
+        # target commit so every tracked file (including the previously
+        # grafted-then-removed shadow_eval directory) is materialised.
+        run: |
+          git checkout --force "${{ github.event.pull_request.head.sha }}"
+          git restore --source="${{ github.event.pull_request.head.sha }}" --worktree -- tests/shadow_eval
+          ls -la tests/shadow_eval/__init__.py tests/__init__.py
 
       - name: Install dependencies (PR head)
         run: uv sync --frozen --all-extras --dev

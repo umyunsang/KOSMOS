@@ -6,7 +6,6 @@ import mapValues from 'lodash-es/mapValues.js';
 import pickBy from 'lodash-es/pickBy.js';
 import uniqBy from 'lodash-es/uniqBy.js';
 import React from 'react';
-import { getSystemContext, getUserContext } from './context.js';
 import { init } from './entrypoints/init.js';
 import { addToHistory } from './history.js';
 import type { Root } from './ink.js';
@@ -196,21 +195,16 @@ function prefetchSystemContextIfSafe(): void {
 
   // In non-interactive mode (--print), trust dialog is skipped and
   // execution is considered trusted (as documented in help text)
+  // Epic #2152 R5 — citizen chat-request path no longer reads getSystemContext
+  // (cwd / gitStatus / claudeMd are developer-domain). Prefetch warm-ups are
+  // dead under the citizen harness; the AgentTool path that legitimately
+  // consumes the developer context still calls getSystemContext on demand
+  // inside its own module (tools/AgentTool/runAgent.ts).
   if (isNonInteractiveSession) {
-    logForDiagnosticsNoPII('info', 'prefetch_system_context_non_interactive');
-    void getSystemContext();
+    logForDiagnosticsNoPII('info', 'prefetch_system_context_non_interactive_skipped');
     return;
   }
-
-  // In interactive mode, only prefetch if trust has already been established
-  const hasTrust = checkHasTrustDialogAccepted();
-  if (hasTrust) {
-    logForDiagnosticsNoPII('info', 'prefetch_system_context_has_trust');
-    void getSystemContext();
-  } else {
-    logForDiagnosticsNoPII('info', 'prefetch_system_context_skipped_no_trust');
-  }
-  // Otherwise, don't prefetch - wait for trust to be established first
+  logForDiagnosticsNoPII('info', 'prefetch_system_context_skipped_citizen_path');
 }
 
 /**
@@ -234,10 +228,10 @@ export function startDeferredPrefetches(): void {
     return;
   }
 
-  // Process-spawning prefetches (consumed at first API call, user is still typing)
+  // Process-spawning prefetches (consumed at first API call, user is still typing).
+  // Epic #2152 R5 — getUserContext / getSystemContext warm-ups removed: the
+  // citizen chat-request path does not read CLAUDE.md / cwd / gitStatus.
   void initUser();
-  void getUserContext();
-  prefetchSystemContextIfSafe();
   void getRelevantTips();
   void countFilesRoundedRg(getCwd(), AbortSignal.timeout(3000), []);
 
@@ -1290,23 +1284,11 @@ async function run(): Promise<CommanderCommand> {
       // sources including projectSettings/localSettings.
       applyConfigEnvironmentVariables();
 
-      // Spawn git status/log/branch now so the subprocess execution overlaps
-      // with the getCommands await below and startDeferredPrefetches. After
-      // setup() so cwd is final (setup.ts:254 may process.chdir(worktreePath)
-      // for --worktree) and after the applyConfigEnvironmentVariables above
-      // so PATH/GIT_DIR/GIT_WORK_TREE from all sources (trusted + project)
-      // are applied. getSystemContext is memoized; the
-      // prefetchSystemContextIfSafe call in startDeferredPrefetches becomes
-      // a cache hit. The microtask from await getIsGit() drains at the
-      // getCommands Promise.all await below. Trust is implicit in -p mode
-      // (same gate as prefetchSystemContextIfSafe).
-      void getSystemContext();
-      // Kick getUserContext now too — its first await (fs.readFile in
-      // getMemoryFiles) yields naturally, so the CLAUDE.md directory walk
-      // runs during the ~280ms overlap window before the context
-      // Promise.all join in print.ts. The void getUserContext() in
-      // startDeferredPrefetches becomes a memoize cache-hit.
-      void getUserContext();
+      // Epic #2152 R5 — citizen chat-request path no longer reads
+      // getSystemContext / getUserContext (cwd / gitStatus / CLAUDE.md are
+      // developer-domain). The original CC warm-ups here pre-spawned git
+      // subprocess + CLAUDE.md fs.readFile during the ~280ms config-init
+      // window; both are dead under KOSMOS.
       // Kick ensureModelStringsInitialized now — for Bedrock this triggers
       // a 100-200ms profile fetch that was awaited serially at
       // print.ts:739. updateBedrockModelStrings is sequential()-wrapped so

@@ -56,11 +56,21 @@ def build_system_prompt_with_tools(
     blocks: list[str] = []
     for tool in tools:
         parameters: dict[str, Any] = tool.function.parameters or {}
+        # Epic #2152 R6 — emit the per-tool trigger phrase between description
+        # and parameters when ``FunctionSchema.trigger_phrase`` is populated.
+        # Anthropic prompt-engineering guide §"Tool use triggering" — Opus 4.7+
+        # under-triggers tools without an explicit "when and how" hint.
+        trigger_segment = (
+            f"**Trigger**: {tool.function.trigger_phrase}\n\n"
+            if tool.function.trigger_phrase
+            else ""
+        )
         block = (
             f"### {tool.function.name}\n"
             f"\n"
             f"{tool.function.description}\n"
             f"\n"
+            f"{trigger_segment}"
             f"**Parameters**:\n"
             f"\n"
             f"```json\n"

@@ -260,6 +260,11 @@ HIRA_HOSPITAL_SEARCH_TOOL = GovAPITool(
     primitive="lookup",
     published_tier_minimum=None,
     nist_aal_hint=None,
+    trigger_examples=[
+        "근처 내과 병원",
+        "이비인후과 추천",
+        "야간 진료 병원",
+    ],
 )
 
 

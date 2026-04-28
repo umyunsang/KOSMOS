@@ -300,6 +300,10 @@ KMA_ULTRA_SHORT_TERM_FORECAST_TOOL = GovAPITool(
     rate_limit_per_minute=10,
     is_core=True,
     primitive="lookup",
+    trigger_examples=[
+        "한 시간 뒤 서울 비 와?",
+        "지금 비 그칠까",
+    ],
 )
 
 

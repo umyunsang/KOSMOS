@@ -371,6 +371,11 @@ KMA_FORECAST_FETCH_TOOL = GovAPITool(
     primitive="lookup",
     published_tier_minimum=None,
     nist_aal_hint=None,
+    trigger_examples=[
+        "오늘 서울 날씨 알려줘",
+        "내일 부산 비 와?",
+        "주말 제주 날씨",
+    ],
 )
 
 

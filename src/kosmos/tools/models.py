@@ -162,6 +162,20 @@ class GovAPITool(BaseModel):
     model has already picked this tool, which is too late for ordering rules.
     """
 
+    # Epic #2152 R6 — per-tool trigger phrase examples shown alongside each tool's
+    # description in the system prompt's ``## Available tools`` block. Concrete
+    # citizen-language utterances the tool covers, used to defeat Opus 4.7-class
+    # tool under-triggering (Anthropic guide § "Tool use triggering"). Default
+    # empty list keeps backward compatibility for adapters that have not yet
+    # opted in. Capped at 5 entries to keep the system-prompt token cost bounded.
+    trigger_examples: list[str] = Field(default_factory=list, max_length=5)
+    """Korean citizen-utterance examples that should trigger this tool.
+
+    Examples are emitted by ``build_system_prompt_with_tools`` as the
+    ``— 예: "..."`` clause of the per-tool ``**Trigger**:`` line. Default ``[]``
+    keeps the trigger line description-only when no examples are authored.
+    """
+
     # Spec 1634 (P3 Tool System Wiring) FR-009 — runtime live/mock mode.
     # Orthogonal to ``AdapterRegistration.source_mode`` (which classifies
     # mirror fidelity: OPENAPI / OOS / HARNESS_ONLY). Default ``"live"`` is
@@ -400,16 +414,46 @@ class GovAPITool(BaseModel):
 
         Uses ``llm_description`` when set (richer ordering/prereq guidance),
         falling back to ``name_ko`` otherwise.
+
+        Epic #2152 R6 — populates ``function.trigger_phrase`` from the bilingual
+        ``search_hint`` plus the optional ``trigger_examples`` list. The phrase
+        is consumed by ``kosmos.llm.system_prompt_builder.build_system_prompt_with_tools``
+        and stripped from the OpenAI payload by ``FunctionSchema``'s
+        ``exclude=True`` annotation.
         """
         description = self.llm_description or self.name_ko
-        return {
-            "type": "function",
-            "function": {
-                "name": self.id,
-                "description": description,
-                "parameters": self.input_schema.model_json_schema(),
-            },
+        function: dict[str, object] = {
+            "name": self.id,
+            "description": description,
+            "parameters": self.input_schema.model_json_schema(),
         }
+        trigger_phrase = self._build_trigger_phrase()
+        if trigger_phrase is not None:
+            function["trigger_phrase"] = trigger_phrase
+        return {"type": "function", "function": function}
+
+    def _build_trigger_phrase(self) -> str | None:
+        """Compose the human-readable trigger sentence + example clause.
+
+        Format::
+
+            <korean sentence ending with period> — 예: "<utt 1>", "<utt 2>"
+
+        Empty ``trigger_examples`` yields the description-only variant
+        (no ``— 예:`` clause). When neither a Korean ``search_hint`` nor any
+        examples are available the helper returns ``None`` so callers can
+        omit the trigger line entirely.
+        """
+        sentence = (self.search_hint or "").strip()
+        if not sentence and not self.trigger_examples:
+            return None
+        if sentence and not sentence.endswith((".", "。", ":", "—")):
+            sentence = sentence + "."
+        if self.trigger_examples:
+            quoted = ", ".join(f'"{ex}"' for ex in self.trigger_examples)
+            sep = " — " if sentence else ""
+            return f"{sentence}{sep}예: {quoted}"
+        return sentence
 
 
 class ToolResult(BaseModel):

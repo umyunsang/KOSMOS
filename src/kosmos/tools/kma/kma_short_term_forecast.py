@@ -360,6 +360,10 @@ KMA_SHORT_TERM_FORECAST_TOOL = GovAPITool(
     rate_limit_per_minute=10,
     is_core=True,
     primitive="lookup",
+    trigger_examples=[
+        "내일부터 3일 서울 날씨",
+        "이번 주 서울 비 예보",
+    ],
 )
 
 

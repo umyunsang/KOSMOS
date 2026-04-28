@@ -273,6 +273,10 @@ KMA_PRE_WARNING_TOOL = GovAPITool(
     rate_limit_per_minute=10,
     is_core=True,
     primitive="lookup",
+    trigger_examples=[
+        "오늘 서울 호우주의 예비특보",
+        "태풍 예비특보",
+    ],
 )
 
 

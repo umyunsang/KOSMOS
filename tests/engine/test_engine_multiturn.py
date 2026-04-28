@@ -435,11 +435,12 @@ async def test_preprocessing_compresses_stale_tool_results(
     """
     config = QueryEngineConfig(
         # context_window must be large enough that the budget guard
-        # (hard_limit=context_window) does not block turns, while
-        # preprocessing_threshold is small enough that the absolute
-        # threshold fires on typical test message sizes (~500 tokens).
-        # 1000 * 0.05 = 50-token threshold → preprocessing fires early.
-        context_window=1000,
+        # (hard_limit=context_window) does not block turns. The XML-tagged
+        # citizen prompt + per-tool trigger inventory introduced by Epic #2152
+        # baselines around 1300 tokens; bump the window to 3000 so the
+        # preprocessing threshold (0.05 * 3000 = 150) still fires on typical
+        # test message sizes while leaving headroom for the new prompt.
+        context_window=3000,
         preprocessing_threshold=0.05,
         snip_turn_age=1,
         microcompact_turn_age=1,

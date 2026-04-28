@@ -296,6 +296,11 @@ NMC_EMERGENCY_SEARCH_TOOL = GovAPITool(
     primitive="lookup",
     published_tier_minimum=None,
     nist_aal_hint=None,
+    trigger_examples=[
+        "근처 응급실",
+        "야간 응급의료센터",
+        "어린이 응급실",
+    ],
 )
 
 
