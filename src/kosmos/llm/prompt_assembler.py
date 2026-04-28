@@ -16,6 +16,7 @@ Reference sources (Constitution Principle I — reference-driven):
   (the ``dynamicSections`` array) and ``systemPromptSections.ts:1-68``
   (memoization framework).
 """
+
 from __future__ import annotations
 
 import hashlib

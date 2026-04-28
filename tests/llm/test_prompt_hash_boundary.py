@@ -4,6 +4,7 @@
 Contract: ``specs/2152-system-prompt-redesign/contracts/chat-request-envelope.md``
 invariants I-C1, I-C2, I-C5.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -72,9 +73,10 @@ def test_marker_must_appear_exactly_once_in_static_prefix() -> None:
     [
         "<role>citizen</role>" + _BOUNDARY,
         "<role>citizen</role>\n<core_rules>r</core_rules>" + _BOUNDARY,
-        ("<role>citizen</role>\n<core_rules>r</core_rules>\n"
-         "<tool_usage>t</tool_usage>\n<output_style>o</output_style>"
-         + _BOUNDARY),
+        (
+            "<role>citizen</role>\n<core_rules>r</core_rules>\n"
+            "<tool_usage>t</tool_usage>\n<output_style>o</output_style>" + _BOUNDARY
+        ),
     ],
 )
 def test_hash_isolated_from_dynamic_growth(static_prefix: str) -> None:

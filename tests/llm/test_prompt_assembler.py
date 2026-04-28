@@ -4,6 +4,7 @@
 Contract: ``specs/2152-system-prompt-redesign/contracts/prompt-assembler.md``
 invariants I-A1..I-A7.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -133,6 +134,7 @@ def test_register_dup_name(assembler: PromptAssembler) -> None:
     assembler.register("foo", _fn)
     # Same (name, fn) pair → idempotent re-registration is allowed.
     assembler.register("foo", _fn)
+
     # Different fn under same name → must raise.
     def _other(ctx: PromptAssemblyContext) -> str | None:
         return "x"
@@ -146,6 +148,7 @@ def test_register_dup_name(assembler: PromptAssembler) -> None:
 
 def test_decorator_name_must_be_snake_case(assembler: PromptAssembler) -> None:
     with pytest.raises(PromptAssemblyError):
+
         @system_prompt(assembler, name="BadCaseName")
         def _bad(ctx: PromptAssemblyContext) -> str | None:  # pragma: no cover
             return None

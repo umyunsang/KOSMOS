@@ -9,6 +9,7 @@ loses a section fails CI before reaching production.
 Contract: ``specs/2152-system-prompt-redesign/contracts/prompt-assembler.md``
 invariant I-A4. Spec: SC-2.
 """
+
 from __future__ import annotations
 
 from pathlib import Path

@@ -106,11 +106,7 @@ def _compute_prompt_hash(system_text: str) -> str:
     is absent (transitional path for callers that have not migrated).
     """
     idx = system_text.find(_PROMPT_DYNAMIC_BOUNDARY_MARKER)
-    hashed = (
-        system_text
-        if idx == -1
-        else system_text[: idx + len(_PROMPT_DYNAMIC_BOUNDARY_MARKER)]
-    )
+    hashed = system_text if idx == -1 else system_text[: idx + len(_PROMPT_DYNAMIC_BOUNDARY_MARKER)]
     return hashlib.sha256(hashed.encode("utf-8")).hexdigest()
 
 

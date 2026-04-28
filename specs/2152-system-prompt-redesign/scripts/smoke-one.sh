@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Single-scenario citizen smoke — drives the live TUI through one prompt
-# with the user-provided FriendliAI token, captures the session as text.
+# with the user-provided FriendliAI token, captures the session as text via
+# script(1) which records the full pty stream including the TUI display.
 set -euo pipefail
 
 REPO_ROOT="$(CDPATH= cd -- "$(dirname -- "$0")/../../.." && pwd)"
@@ -19,40 +20,44 @@ fi
 
 PROMPT="${1:-강남역 어디야?}"
 SLUG="${2:-location}"
-TIMEOUT="${3:-120}"
+WAIT_RESPONSE="${3:-60}"
 OUT="${SPEC_DIR}/smoke-scenario-${SLUG}.txt"
 
-echo "==== smoke scenario: ${SLUG} ===="
-echo "prompt: ${PROMPT}"
-echo "output: ${OUT}"
-echo
+echo "==== smoke scenario: ${SLUG} ====" >&2
+echo "prompt: ${PROMPT}" >&2
+echo "output: ${OUT}" >&2
 
-# expect script — change directory before spawn so `bun run tui` resolves
-# correctly against tui/package.json. log_file appends the full pty stream.
-expect <<EOF >"${OUT}" 2>&1
-log_file -a "${OUT}.raw"
+# Build a tiny expect script as a temp file; macOS `script -q file cmd args`
+# captures the pty session into `file`. The expect driver inside drives the
+# TUI: boot wait → send prompt → settle wait → Ctrl-C exit.
+EXPECT_FILE="$(mktemp -t kosmos-smoke.XXXXXX)"
+trap 'rm -f "${EXPECT_FILE}"' EXIT
+
+cat >"${EXPECT_FILE}" <<EXPECT_EOF
+#!/usr/bin/env expect
+set timeout [expr {${WAIT_RESPONSE} + 30}]
 log_user 1
-set timeout ${TIMEOUT}
 cd "${TUI_DIR}"
 spawn -noecho bun run tui
-expect {
-  -re {>\\s*\$|어떻게 도와|시민과 대화|공공 서비스|✻|⏵} { send -- "${PROMPT}\\r" }
-  timeout { puts "ERROR: TUI did not reach REPL prompt"; exit 3 }
-}
-# Wait for assistant turn to complete or for tool/data signature
-expect {
-  -re {tool_use|tool_call|기상청|HIRA|도로교통|응급|좌표|주소|경기도|서울시|행정동} { sleep 5 }
-  timeout { puts "WARN: scenario did not surface a tool/data signature in ${TIMEOUT}s" }
-}
-sleep 3
-# Send Ctrl-C to exit the TUI
-send -- "\\003"
+sleep 6
+send -- "${PROMPT}\r"
+sleep ${WAIT_RESPONSE}
+send -- "\x03"
+sleep 1
+send -- "\x03"
 expect eof
-EOF
+EXPECT_EOF
+chmod +x "${EXPECT_FILE}"
 
-echo
-echo "==== capture summary ===="
-echo "size: $(wc -c < "${OUT}") bytes"
-echo "tool_use|tool_call hits: $(grep -c -E 'tool_use|tool_call' "${OUT}" || echo 0)"
-echo "data attribution hits: $(grep -c -E '기상청|HIRA|도로교통|응급|좌표' "${OUT}" || echo 0)"
-echo "cwd / path leaks: $(grep -c -E '/Users/|gitStatus|Current branch' "${OUT}" || echo 0)"
+# macOS script(1):  script -q output.txt command args...
+script -q "${OUT}" "${EXPECT_FILE}" >/dev/null 2>&1 || true
+
+echo >&2
+echo "==== capture summary ====" >&2
+echo "size: $(wc -c < "${OUT}") bytes" >&2
+TC=$(grep -c -E 'tool_use|tool_call' "${OUT}" || true)
+DA=$(grep -c -E '기상청|HIRA|도로교통|응급|좌표|주소|행정동|광장구|강남|병원|복지' "${OUT}" || true)
+LK=$(grep -c -E '/Users/|gitStatus|Current branch|claudeMd' "${OUT}" || true)
+echo "tool_use|tool_call hits: ${TC:-0}" >&2
+echo "data attribution / Korean place hits: ${DA:-0}" >&2
+echo "cwd / dev-context leaks: ${LK:-0}" >&2

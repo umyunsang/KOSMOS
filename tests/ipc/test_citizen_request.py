@@ -4,6 +4,7 @@
 Contract: ``specs/2152-system-prompt-redesign/contracts/chat-request-envelope.md``
 invariants I-C3, I-C4, I-C6.
 """
+
 from __future__ import annotations
 
 from kosmos.ipc.citizen_request import wrap_citizen_request

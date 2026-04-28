@@ -225,16 +225,14 @@ def test_trigger_line_present_per_tool() -> None:
         name="resolve_location",
         description="Resolve a Korean place name to coordinates.",
         trigger_phrase=(
-            '한국 지역의 위치, 주소, 역, 관공서 질문에 호출. — '
+            "한국 지역의 위치, 주소, 역, 관공서 질문에 호출. — "
             '예: "강남역 어디야?", "서울시청 주소"'
         ),
     )
     result = build_system_prompt_with_tools(BASE_PROMPT, [tool_with_trigger])
 
     # Trigger line is present, exactly once.
-    trigger_lines = [
-        line for line in result.splitlines() if line.startswith("**Trigger**: ")
-    ]
+    trigger_lines = [line for line in result.splitlines() if line.startswith("**Trigger**: ")]
     assert len(trigger_lines) == 1, (
         f"Expected exactly one **Trigger**: line, got {len(trigger_lines)}"
     )
@@ -270,8 +268,7 @@ def test_trigger_line_with_examples_quotes() -> None:
         name="kma_forecast_fetch",
         description="KMA forecast.",
         trigger_phrase=(
-            "한국 지역의 날씨 질문에 호출. — 예: "
-            + ", ".join(f'"{ex}"' for ex in examples)
+            "한국 지역의 날씨 질문에 호출. — 예: " + ", ".join(f'"{ex}"' for ex in examples)
         ),
     )
     result = build_system_prompt_with_tools(BASE_PROMPT, [tool])
