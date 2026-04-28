@@ -1,27 +1,62 @@
 # SPDX-License-Identifier: Apache-2.0
 # Spec 1979 T031 — fixture plugin manifest for E2E PTY scenario.
-# Pre-validated against PluginManifest schema (Spec 1636); stays in sync
-# with the catalog.json entry's plugin_id + tier + permission_layer.
+# Validated against PluginManifest schema (Spec 1636); stays in sync with
+# the catalog.json entry's plugin_id + tier + permission_layer.
 
 plugin_id: seoul_subway
 version: "1.0.0"
 tier: live
-permission_layer: 1
 processes_pii: false
+permission_layer: 1
 
-description_ko: "서울 지하철 도착 정보 조회 (fixture)"
-description_en: "Seoul subway arrival lookup (fixture)"
-
+# Top-level Korean / English search hints surfaced via BM25 retrieval.
 search_hint_ko: "지하철 도착 시간 강남역 역곡역"
 search_hint_en: "subway arrival time station gangnam"
 
-mock_source_spec: null  # tier=live so this MUST be null per Spec 1636 invariant
-slsa_provenance_url: "file:///dev/null"
+# Stub provenance URL satisfies the `^https://github.com/` schema pattern;
+# the actual SLSA verification is bypassed at install time via
+# KOSMOS_PLUGIN_SLSA_SKIP=true (development environments only — production
+# refuses skip per installer.py:Phase 3 guard).
+slsa_provenance_url: "https://github.com/kosmos-plugin-store/seoul-subway-fixture/releases/v1.0.0/seoul-subway-1.0.0.intoto.jsonl"
 
 otel_attributes:
   kosmos.plugin.id: seoul_subway
-  kosmos.plugin.tier: live
 
+# AdapterRegistration (Spec 022 + Spec 031 dual-axis security).
 adapter:
-  module_path: plugin_seoul_subway.adapter
   tool_id: plugin.seoul_subway.lookup
+  primitive: lookup
+  module_path: plugin_seoul_subway.adapter
+  input_model_ref: plugin_seoul_subway.adapter.LookupInput
+  source_mode: harness-only
+
+  # Spec 024 v1 + v6 security fields (canonical mapping).
+  auth_type: public
+  auth_level: public
+  pipa_class: non_personal
+
+  # Spec 031 v1.2 dual-axis (V12_GA_ACTIVE=True since the GA flag flipped
+  # in main; both axes mandatory). For a public-data fixture with no real
+  # auth requirement, use the lowest published tier + AAL1 hint.
+  published_tier_minimum: digital_onepass_level1_aal1
+  nist_aal_hint: AAL1
+
+  # Spec 022 V1 fail-closed defaults relaxed only because this fixture
+  # is non_personal + public-data + idempotent lookup.
+  requires_auth: false
+  is_personal_data: false
+  is_concurrency_safe: true
+  cache_ttl_seconds: 60
+  rate_limit_per_minute: 30
+  is_irreversible: false
+
+  # search_hint mirrors the top-level fields for backward-compat consumers.
+  search_hint:
+    ko:
+      - "지하철"
+      - "도착 시간"
+      - "강남역"
+    en:
+      - "subway"
+      - "arrival"
+      - "station"

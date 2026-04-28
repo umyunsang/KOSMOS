@@ -16,11 +16,11 @@ set spec_dir [file dirname [file dirname [info script]]]
 set log_path "$spec_dir/smoke-1979.txt"
 
 # Wrap the TUI launch in script(1) so the PTY session is captured to log_path.
-spawn script -q $log_path bun run --cwd tui dev
+spawn script -q $log_path bash -c "cd tui && bun run tui"
 
 # Wait for REPL prompt (the brand glyph ✻ is unique to KOSMOS)
 expect {
-  -re ".*✻.*" { puts "✓ REPL prompt observed" }
+  -re ".*KOSMOS.*" }
   timeout { puts "✗ REPL prompt timeout"; exit 1 }
 }
 

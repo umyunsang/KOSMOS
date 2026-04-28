@@ -14,26 +14,36 @@ Set Width 1200
 Set Height 700
 Set FontSize 14
 Set FontFamily "JetBrains Mono"
-Set Theme "Tokyo Night Storm"
+Set Theme "TokyoNightStorm"
 
-# Launch KOSMOS TUI (assumes `bun run --cwd tui dev` reachable)
-Type "bun run --cwd tui dev"
+# Inject fixture catalog env vars so the backend can install the seoul-subway
+# fixture without going through the live kosmos-plugin-store catalog.
+Type "export KOSMOS_PLUGIN_CATALOG_URL=file:///Users/um-yunsang/KOSMOS/specs/1979-plugin-dx-tui-integration/scripts/fixtures/catalog.json"
 Enter
-Sleep 3s
+Type "export KOSMOS_PLUGIN_SLSA_SKIP=true"
+Enter
+Type "export KOSMOS_ENV=development"
+Enter
+Sleep 500ms
+
+# Launch KOSMOS TUI (mirrors Spec 2112 working pattern: cd tui && bun run tui)
+Type "cd tui && bun run tui"
+Enter
+Sleep 8s
 
 # Citizen install command
 Type "/plugin install seoul-subway"
 Enter
-Sleep 6s
+Sleep 7s
 
 # Approve at consent modal
 Type "Y"
-Sleep 4s
+Sleep 5s
 
 # Citizen query — model should invoke the new plugin via 5-primitive surface
 Type "강남역 다음 열차 언제?"
 Enter
-Sleep 6s
+Sleep 8s
 
 # Open browser to verify the plugin is registered
 Type "/plugins"
