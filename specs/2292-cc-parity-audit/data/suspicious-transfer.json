@@ -1,0 +1,23 @@
+{
+  "schema": "data-model.md § SuspiciousTransferList",
+  "generated_from": "data/modified-218-classification.json (T006/T007 산출)",
+  "generation_date": "2026-04-29",
+  "rationale": "T007 Lead manual review 결과 218 modified 파일에 Suspicious 분류 0 건. 후속 Epic 으로 transfer 할 의심 항목이 없음을 명시. 단 Cleanup-needed 30 건은 별도로 Epic β (#2293) 에 transfer 됨 — `cleanup_needed_transfer_summary` 참조.",
+  "epic_beta_2293": [],
+  "epic_delta_2295": [],
+  "uncategorized": [],
+  "cleanup_needed_transfer_summary": {
+    "destination_epic": "#2293 — Epic β · KOSMOS-original UI residue cleanup",
+    "count": 30,
+    "category_breakdown": {
+      "tui/src/services/api/*": 15,
+      "tui/src/utils/permissions/*": 3,
+      "queryHaiku / verifyApiKey / queryWithModel residue (claude.ts dispatcher)": 8,
+      "@anthropic-ai/ import": 2,
+      "anthropic-sdk import": 1,
+      "기타 (Feedback.tsx 등)": 1
+    },
+    "input_for_epic_beta": "data/modified-218-classification.json — `jq '[.[] | select(.classification == \"Cleanup-needed\")]'` 으로 30 entry 추출 가능. paste-ready (FR-005 / SC-004 충족)."
+  },
+  "verdict": "Suspicious 0 = audit 결과 모든 modified 파일 분류 명확. Epic β 진입 가능 (Cleanup-needed 30 transfer); Epic δ 는 본 audit 산출이 직접 transfer 항목 없음 (백엔드 src/kosmos/permissions/ 정리는 별도 audit 필요 — Out of Scope Permanent)."
+}

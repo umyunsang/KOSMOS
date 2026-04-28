@@ -1,0 +1,2836 @@
+[
+  {
+    "kosmos_path": "tui/src/QueryEngine.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/QueryEngine.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS, EXAONE, FriendliAI) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1633, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633,1637",
+      "import_scan_match": "kosmos:KOSMOS|EXAONE|FriendliAI"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/Tool.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/Tool.ts",
+    "classification": "Legitimate",
+    "change_summary": "Spec id 인용 (1632, 1633) — git 기록 기반 정당 변경",
+    "reference_citation": "Specs: #1632, #1633",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633",
+      "import_scan_match": null
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/assistant/sessionHistory.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/assistant/sessionHistory.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS, FriendliAI) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637, 1978",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637,1978",
+      "import_scan_match": "kosmos:KOSMOS|FriendliAI"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/bridge/bridgeConfig.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/bridge/bridgeConfig.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS 인프라 디렉토리 (tui/src/bridge/) — 정당 변경",
+    "reference_citation": "Spec 287 (TUI Ink+React+Bun) 또는 Spec 032 (IPC stdio hardening)",
+    "signals": {
+      "directory_match": "legitimate:tui/src/bridge/",
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "kosmos:KOSMOS|FriendliAI"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/bridge/bridgeMain.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/bridge/bridgeMain.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS 인프라 디렉토리 (tui/src/bridge/) — 정당 변경",
+    "reference_citation": "Spec 287 (TUI Ink+React+Bun) 또는 Spec 032 (IPC stdio hardening)",
+    "signals": {
+      "directory_match": "legitimate:tui/src/bridge/",
+      "git_history_match": "spec:1632,1978",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/bridge/createSession.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/bridge/createSession.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS 인프라 디렉토리 (tui/src/bridge/) — 정당 변경",
+    "reference_citation": "Spec 287 (TUI Ink+React+Bun) 또는 Spec 032 (IPC stdio hardening)",
+    "signals": {
+      "directory_match": "legitimate:tui/src/bridge/",
+      "git_history_match": "spec:1632,1978",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/bridge/inboundMessages.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/bridge/inboundMessages.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS 인프라 디렉토리 (tui/src/bridge/) — 정당 변경",
+    "reference_citation": "Spec 287 (TUI Ink+React+Bun) 또는 Spec 032 (IPC stdio hardening)",
+    "signals": {
+      "directory_match": "legitimate:tui/src/bridge/",
+      "git_history_match": "spec:1632,1633",
+      "import_scan_match": null
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/bridge/initReplBridge.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/bridge/initReplBridge.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS 인프라 디렉토리 (tui/src/bridge/) — 정당 변경",
+    "reference_citation": "Spec 287 (TUI Ink+React+Bun) 또는 Spec 032 (IPC stdio hardening)",
+    "signals": {
+      "directory_match": "legitimate:tui/src/bridge/",
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/bridge/trustedDevice.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/bridge/trustedDevice.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS 인프라 디렉토리 (tui/src/bridge/) — 정당 변경",
+    "reference_citation": "Spec 287 (TUI Ink+React+Bun) 또는 Spec 032 (IPC stdio hardening)",
+    "signals": {
+      "directory_match": "legitimate:tui/src/bridge/",
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "kosmos:KOSMOS|FriendliAI"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/cli/handlers/auth.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/cli/handlers/auth.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS, FriendliAI) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "kosmos:KOSMOS|FriendliAI"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/cli/print.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/cli/print.ts",
+    "classification": "Cleanup-needed",
+    "change_summary": "Anthropic / Spec 033 잔재 토큰 감지: @anthropic-ai/, queryHaiku",
+    "reference_citation": "Spec 1633 closure pending",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633,1637,1978,2077",
+      "import_scan_match": "residue:@anthropic-ai/|queryHaiku"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/commands.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/commands.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS, kosmos, FriendliAI) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1633, 1637, 1979, 2112",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633,1637,1979,2112",
+      "import_scan_match": "kosmos:KOSMOS|kosmos|FriendliAI"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/commands/bridge/bridge.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/commands/bridge/bridge.tsx",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/commands/cost/cost.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/commands/cost/cost.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1978",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1978",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/commands/fast/fast.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/commands/fast/fast.tsx",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS, EXAONE, FriendliAI) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1978",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1978",
+      "import_scan_match": "kosmos:KOSMOS|EXAONE|FriendliAI"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/commands/feedback/index.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/commands/feedback/index.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/commands/insights.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/commands/insights.ts",
+    "classification": "Cleanup-needed",
+    "change_summary": "Anthropic / Spec 033 잔재 토큰 감지: queryWithModel",
+    "reference_citation": "Spec 1633 closure pending",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1978",
+      "import_scan_match": "residue:queryWithModel"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/commands/privacy-settings/privacy-settings.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/commands/privacy-settings/privacy-settings.tsx",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1978",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1978",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/commands/rate-limit-options/rate-limit-options.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/commands/rate-limit-options/rate-limit-options.tsx",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1978",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1978",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/commands/remote-env/index.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/commands/remote-env/index.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/commands/remote-setup/api.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/commands/remote-setup/api.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS, FriendliAI) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637, 1978",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637,1978",
+      "import_scan_match": "kosmos:KOSMOS|FriendliAI"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/commands/remote-setup/index.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/commands/remote-setup/index.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/commands/rename/generateSessionName.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/commands/rename/generateSessionName.ts",
+    "classification": "Cleanup-needed",
+    "change_summary": "Anthropic / Spec 033 잔재 토큰 감지: queryHaiku",
+    "reference_citation": "Spec 1633 closure pending",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1978",
+      "import_scan_match": "residue:queryHaiku"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/commands/review/reviewRemote.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/commands/review/reviewRemote.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1633, 1978",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633,1978",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/commands/ultraplan.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/commands/ultraplan.tsx",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1978",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1978",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/components/Feedback.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/Feedback.tsx",
+    "classification": "Cleanup-needed",
+    "change_summary": "Anthropic / Spec 033 잔재 토큰 감지: queryHaiku",
+    "reference_citation": "Spec 1633 closure pending",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637,1978",
+      "import_scan_match": "residue:queryHaiku"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/components/FeedbackSurvey/useFeedbackSurvey.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/FeedbackSurvey/useFeedbackSurvey.tsx",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/components/FeedbackSurvey/useMemorySurvey.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/FeedbackSurvey/useMemorySurvey.tsx",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/components/FeedbackSurvey/usePostCompactSurvey.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/FeedbackSurvey/usePostCompactSurvey.tsx",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/components/HelpV2/HelpV2.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/HelpV2/HelpV2.tsx",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 2077",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,2077",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/components/IdeOnboardingDialog.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/IdeOnboardingDialog.tsx",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 2077",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,2077",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/components/LogoV2/AnimatedClawd.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/LogoV2/AnimatedClawd.tsx",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/components/LogoV2/Clawd.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/LogoV2/Clawd.tsx",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/components/LogoV2/CondensedLogo.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/LogoV2/CondensedLogo.tsx",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 2077",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,2077",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/components/LogoV2/LogoV2.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/LogoV2/LogoV2.tsx",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 2077",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,2077",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/components/LogoV2/Opus1mMergeNotice.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/LogoV2/Opus1mMergeNotice.tsx",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (EXAONE) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 2077",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,2077",
+      "import_scan_match": "kosmos:EXAONE"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/components/LogoV2/WelcomeV2.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/LogoV2/WelcomeV2.tsx",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/components/Markdown.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/Markdown.tsx",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/components/Messages.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/Messages.tsx",
+    "classification": "Legitimate",
+    "change_summary": "Spec id 인용 (1632, 2077) — git 기록 기반 정당 변경",
+    "reference_citation": "Specs: #1632, #2077",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,2077",
+      "import_scan_match": null
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/components/PromptInput/Notifications.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/PromptInput/Notifications.tsx",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1978",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1978",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/components/PromptInput/PromptInput.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/PromptInput/PromptInput.tsx",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1978",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1978",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/components/PromptInput/PromptInputFooterLeftSide.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/PromptInput/PromptInputFooterLeftSide.tsx",
+    "classification": "Legitimate",
+    "change_summary": "Spec id 인용 (1632, 2077) — git 기록 기반 정당 변경",
+    "reference_citation": "Specs: #1632, #2077",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,2077",
+      "import_scan_match": null
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/components/PromptInput/usePromptInputPlaceholder.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/PromptInput/usePromptInputPlaceholder.ts",
+    "classification": "Legitimate",
+    "change_summary": "Spec id 인용 (1632, 2077) — git 기록 기반 정당 변경",
+    "reference_citation": "Specs: #1632, #2077",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,2077",
+      "import_scan_match": null
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/components/RemoteEnvironmentDialog.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/RemoteEnvironmentDialog.tsx",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1978",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1978",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/components/ResumeTask.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/ResumeTask.tsx",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1978",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1978",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/components/StatusLine.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/StatusLine.tsx",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS, FriendliAI) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1978",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1978",
+      "import_scan_match": "kosmos:KOSMOS|FriendliAI"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/components/TeleportProgress.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/TeleportProgress.tsx",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1978",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1978",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/components/agents/generateAgent.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/agents/generateAgent.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS, FriendliAI) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1633, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633,1637",
+      "import_scan_match": "kosmos:KOSMOS|FriendliAI"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/components/mcp/MCPRemoteServerMenu.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/mcp/MCPRemoteServerMenu.tsx",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS, FriendliAI) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "kosmos:KOSMOS|FriendliAI"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/components/messages/AssistantTextMessage.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/messages/AssistantTextMessage.tsx",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1633, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633,1637",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/components/messages/RateLimitMessage.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/messages/RateLimitMessage.tsx",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637, 2112",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637,2112",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/components/tasks/BackgroundTasksDialog.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/tasks/BackgroundTasksDialog.tsx",
+    "classification": "Legitimate",
+    "change_summary": "Spec id 인용 (1632) — git 기록 기반 정당 변경",
+    "reference_citation": "Specs: #1632",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632",
+      "import_scan_match": null
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/components/tasks/RemoteSessionDetailDialog.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/tasks/RemoteSessionDetailDialog.tsx",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1978",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1978",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/constants/figures.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/constants/figures.ts",
+    "classification": "Legitimate",
+    "change_summary": "Spec id 인용 (1632) — git 기록 기반 정당 변경",
+    "reference_citation": "Specs: #1632",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632",
+      "import_scan_match": null
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/constants/messages.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/constants/messages.ts",
+    "classification": "Legitimate",
+    "change_summary": "Spec id 인용 (1632) — git 기록 기반 정당 변경",
+    "reference_citation": "Specs: #1632",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632",
+      "import_scan_match": null
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/constants/prompts.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/constants/prompts.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS, friendli) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1634, 1637, 2077",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1634,1637,2077",
+      "import_scan_match": "kosmos:KOSMOS|friendli"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/constants/xml.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/constants/xml.ts",
+    "classification": "Legitimate",
+    "change_summary": "Spec id 인용 (1632) — git 기록 기반 정당 변경",
+    "reference_citation": "Specs: #1632",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632",
+      "import_scan_match": null
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/cost-tracker.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/cost-tracker.ts",
+    "classification": "Legitimate",
+    "change_summary": "Spec id 인용 (1632, 1633) — git 기록 기반 정당 변경",
+    "reference_citation": "Specs: #1632, #1633",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633",
+      "import_scan_match": null
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/entrypoints/cli.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/entrypoints/cli.tsx",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637, 1978",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637,1978",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/entrypoints/init.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/entrypoints/init.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1633, 1637, 2077",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633,1637,2077",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/entrypoints/sdk/coreSchemas.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/entrypoints/sdk/coreSchemas.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1633",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/hooks/notifs/useMcpConnectivityStatus.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/hooks/notifs/useMcpConnectivityStatus.tsx",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/hooks/notifs/useNpmDeprecationNotification.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/hooks/notifs/useNpmDeprecationNotification.tsx",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 2077",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,2077",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/hooks/notifs/useRateLimitWarningNotification.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/hooks/notifs/useRateLimitWarningNotification.tsx",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS, EXAONE, FriendliAI) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1978",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1978",
+      "import_scan_match": "kosmos:KOSMOS|EXAONE|FriendliAI"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/hooks/toolPermission/permissionLogging.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/hooks/toolPermission/permissionLogging.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/hooks/useApiKeyVerification.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/hooks/useApiKeyVerification.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS, kosmos, EXAONE) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1978",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1978",
+      "import_scan_match": "kosmos:KOSMOS|kosmos|EXAONE"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/hooks/useAssistantHistory.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/hooks/useAssistantHistory.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1978",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1978",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/hooks/useCanUseTool.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/hooks/useCanUseTool.tsx",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1633, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633,1637",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/hooks/useDirectConnect.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/hooks/useDirectConnect.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1978",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1978",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/hooks/useRemoteSession.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/hooks/useRemoteSession.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1978",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1978",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/hooks/useSSHSession.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/hooks/useSSHSession.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1978",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1978",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/hooks/useTerminalSize.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/hooks/useTerminalSize.ts",
+    "classification": "Legitimate",
+    "change_summary": "Spec id 인용 (1632, 1637) — git 기록 기반 정당 변경",
+    "reference_citation": "Specs: #1632, #1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": null
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/hooks/useVirtualScroll.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/hooks/useVirtualScroll.ts",
+    "classification": "Legitimate",
+    "change_summary": "Spec id 인용 (1632, 1637, 287) — git 기록 기반 정당 변경",
+    "reference_citation": "Specs: #1632, #1637, #287",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637,287",
+      "import_scan_match": null
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/interactiveHelpers.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/interactiveHelpers.tsx",
+    "classification": "Legitimate",
+    "change_summary": "Spec id 인용 (1632, 1633) — git 기록 기반 정당 변경",
+    "reference_citation": "Specs: #1632, #1633",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633",
+      "import_scan_match": null
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/keybindings/KeybindingProviderSetup.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/keybindings/KeybindingProviderSetup.tsx",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637, 288",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637,288",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/keybindings/defaultBindings.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/keybindings/defaultBindings.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1635, 1637, 288",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1635,1637,288",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/keybindings/loadUserBindings.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/keybindings/loadUserBindings.ts",
+    "classification": "Legitimate",
+    "change_summary": "Spec id 인용 (1632, 1637, 288) — git 기록 기반 정당 변경",
+    "reference_citation": "Specs: #1632, #1637, #288",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637,288",
+      "import_scan_match": null
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/keybindings/match.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/keybindings/match.ts",
+    "classification": "Legitimate",
+    "change_summary": "Spec id 인용 (1632, 1637, 288) — git 기록 기반 정당 변경",
+    "reference_citation": "Specs: #1632, #1637, #288",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637,288",
+      "import_scan_match": null
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/keybindings/parser.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/keybindings/parser.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637, 288",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637,288",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/keybindings/resolver.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/keybindings/resolver.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (kosmos) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637, 288",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637,288",
+      "import_scan_match": "kosmos:kosmos"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/keybindings/template.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/keybindings/template.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637, 288",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637,288",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/keybindings/useKeybinding.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/keybindings/useKeybinding.ts",
+    "classification": "Legitimate",
+    "change_summary": "Spec id 인용 (1632, 1637, 288) — git 기록 기반 정당 변경",
+    "reference_citation": "Specs: #1632, #1637, #288",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637,288",
+      "import_scan_match": null
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/keybindings/validate.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/keybindings/validate.ts",
+    "classification": "Legitimate",
+    "change_summary": "Spec id 인용 (1632, 1637, 288) — git 기록 기반 정당 변경",
+    "reference_citation": "Specs: #1632, #1637, #288",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637,288",
+      "import_scan_match": null
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/main.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/main.tsx",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS, kosmos) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1635, 1637, 1978, 2077, 2152",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1635,1637,1978,2077,2152",
+      "import_scan_match": "kosmos:KOSMOS|kosmos"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/query.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/query.ts",
+    "classification": "Legitimate",
+    "change_summary": "Spec id 인용 (1632, 1633, 2152) — git 기록 기반 정당 변경",
+    "reference_citation": "Specs: #1632, #1633, #2152",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633,2152",
+      "import_scan_match": null
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/query/deps.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/query/deps.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS, kosmos, EXAONE) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637, 2077",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637,2077",
+      "import_scan_match": "kosmos:KOSMOS|kosmos|EXAONE"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/replLauncher.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/replLauncher.tsx",
+    "classification": "Legitimate",
+    "change_summary": "Spec id 인용 (1632) — git 기록 기반 정당 변경",
+    "reference_citation": "Specs: #1632",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632",
+      "import_scan_match": null
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/screens/REPL.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/screens/REPL.tsx",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS, kosmos, EXAONE) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1978, 1979, 2077, 2152",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1978,1979,2077,2152",
+      "import_scan_match": "kosmos:KOSMOS|kosmos|EXAONE"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/server/directConnectManager.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/server/directConnectManager.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1978",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1978",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/services/PromptSuggestion/promptSuggestion.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/services/PromptSuggestion/promptSuggestion.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/services/analytics/config.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/services/analytics/config.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1633",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/services/analytics/firstPartyEventLogger.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/services/analytics/firstPartyEventLogger.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1633, 1637, 2077",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633,1637,2077",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/services/analytics/growthbook.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/services/analytics/growthbook.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1633",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/services/analytics/index.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/services/analytics/index.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1633, 1978",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633,1978",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/services/analytics/metadata.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/services/analytics/metadata.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1633",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/services/api/adminRequests.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/services/api/adminRequests.ts",
+    "classification": "Cleanup-needed",
+    "change_summary": "Spec 1633 cleanup 디렉토리: tui/src/services/api/",
+    "reference_citation": "Spec 1633 closure pending",
+    "signals": {
+      "directory_match": "cleanup:tui/src/services/api/",
+      "git_history_match": "spec:1632,1633",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/services/api/claude.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/services/api/claude.ts",
+    "classification": "Cleanup-needed",
+    "change_summary": "Anthropic / Spec 033 잔재 토큰 감지: verifyApiKey, queryHaiku, queryWithModel",
+    "reference_citation": "Spec 1633 closure pending",
+    "signals": {
+      "directory_match": "cleanup:tui/src/services/api/",
+      "git_history_match": "spec:1632,1633,1637,2077",
+      "import_scan_match": "residue:verifyApiKey|queryHaiku|queryWithModel"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/services/api/client.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/services/api/client.ts",
+    "classification": "Cleanup-needed",
+    "change_summary": "Anthropic / Spec 033 잔재 토큰 감지: verifyApiKey",
+    "reference_citation": "Spec 1633 closure pending",
+    "signals": {
+      "directory_match": "cleanup:tui/src/services/api/",
+      "git_history_match": "spec:1632,1633,1637,2077",
+      "import_scan_match": "residue:verifyApiKey"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/services/api/errorUtils.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/services/api/errorUtils.ts",
+    "classification": "Cleanup-needed",
+    "change_summary": "Spec 1633 cleanup 디렉토리: tui/src/services/api/",
+    "reference_citation": "Spec 1633 closure pending",
+    "signals": {
+      "directory_match": "cleanup:tui/src/services/api/",
+      "git_history_match": "spec:1632,1633",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/services/api/errors.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/services/api/errors.ts",
+    "classification": "Cleanup-needed",
+    "change_summary": "Spec 1633 cleanup 디렉토리: tui/src/services/api/",
+    "reference_citation": "Spec 1633 closure pending",
+    "signals": {
+      "directory_match": "cleanup:tui/src/services/api/",
+      "git_history_match": "spec:1632,1633",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/services/api/filesApi.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/services/api/filesApi.ts",
+    "classification": "Cleanup-needed",
+    "change_summary": "Spec 1633 cleanup 디렉토리: tui/src/services/api/",
+    "reference_citation": "Spec 1633 closure pending",
+    "signals": {
+      "directory_match": "cleanup:tui/src/services/api/",
+      "git_history_match": "spec:1632,1633",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/services/api/firstTokenDate.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/services/api/firstTokenDate.ts",
+    "classification": "Cleanup-needed",
+    "change_summary": "Spec 1633 cleanup 디렉토리: tui/src/services/api/",
+    "reference_citation": "Spec 1633 closure pending",
+    "signals": {
+      "directory_match": "cleanup:tui/src/services/api/",
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "kosmos:KOSMOS|FriendliAI"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/services/api/grove.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/services/api/grove.ts",
+    "classification": "Cleanup-needed",
+    "change_summary": "Spec 1633 cleanup 디렉토리: tui/src/services/api/",
+    "reference_citation": "Spec 1633 closure pending",
+    "signals": {
+      "directory_match": "cleanup:tui/src/services/api/",
+      "git_history_match": "spec:1632,1633,1978,2077",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/services/api/logging.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/services/api/logging.ts",
+    "classification": "Cleanup-needed",
+    "change_summary": "Spec 1633 cleanup 디렉토리: tui/src/services/api/",
+    "reference_citation": "Spec 1633 closure pending",
+    "signals": {
+      "directory_match": "cleanup:tui/src/services/api/",
+      "git_history_match": "spec:1632,1633,1637",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/services/api/overageCreditGrant.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/services/api/overageCreditGrant.ts",
+    "classification": "Cleanup-needed",
+    "change_summary": "Spec 1633 cleanup 디렉토리: tui/src/services/api/",
+    "reference_citation": "Spec 1633 closure pending",
+    "signals": {
+      "directory_match": "cleanup:tui/src/services/api/",
+      "git_history_match": "spec:1632,1633",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/services/api/promptCacheBreakDetection.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/services/api/promptCacheBreakDetection.ts",
+    "classification": "Cleanup-needed",
+    "change_summary": "Spec 1633 cleanup 디렉토리: tui/src/services/api/",
+    "reference_citation": "Spec 1633 closure pending",
+    "signals": {
+      "directory_match": "cleanup:tui/src/services/api/",
+      "git_history_match": "spec:1632,1633",
+      "import_scan_match": "kosmos:KOSMOS|kosmos|EXAONE"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/services/api/referral.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/services/api/referral.ts",
+    "classification": "Cleanup-needed",
+    "change_summary": "Spec 1633 cleanup 디렉토리: tui/src/services/api/",
+    "reference_citation": "Spec 1633 closure pending",
+    "signals": {
+      "directory_match": "cleanup:tui/src/services/api/",
+      "git_history_match": "spec:1632,1633",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/services/api/sessionIngress.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/services/api/sessionIngress.ts",
+    "classification": "Cleanup-needed",
+    "change_summary": "Spec 1633 cleanup 디렉토리: tui/src/services/api/",
+    "reference_citation": "Spec 1633 closure pending",
+    "signals": {
+      "directory_match": "cleanup:tui/src/services/api/",
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "kosmos:KOSMOS|FriendliAI"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/services/api/ultrareviewQuota.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/services/api/ultrareviewQuota.ts",
+    "classification": "Cleanup-needed",
+    "change_summary": "Spec 1633 cleanup 디렉토리: tui/src/services/api/",
+    "reference_citation": "Spec 1633 closure pending",
+    "signals": {
+      "directory_match": "cleanup:tui/src/services/api/",
+      "git_history_match": "spec:1632,1637,1978",
+      "import_scan_match": "kosmos:KOSMOS|FriendliAI"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/services/api/usage.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/services/api/usage.ts",
+    "classification": "Cleanup-needed",
+    "change_summary": "Spec 1633 cleanup 디렉토리: tui/src/services/api/",
+    "reference_citation": "Spec 1633 closure pending",
+    "signals": {
+      "directory_match": "cleanup:tui/src/services/api/",
+      "git_history_match": "spec:1632,1633",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/services/api/withRetry.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/services/api/withRetry.ts",
+    "classification": "Cleanup-needed",
+    "change_summary": "Spec 1633 cleanup 디렉토리: tui/src/services/api/",
+    "reference_citation": "Spec 1633 closure pending",
+    "signals": {
+      "directory_match": "cleanup:tui/src/services/api/",
+      "git_history_match": "spec:1632,1633,2112",
+      "import_scan_match": "kosmos:KOSMOS|kosmos|FriendliAI"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/services/awaySummary.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/services/awaySummary.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1633, 2077",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633,2077",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/services/claudeAiLimits.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/services/claudeAiLimits.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS, kosmos) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1633, 1637, 2077",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633,1637,2077",
+      "import_scan_match": "kosmos:KOSMOS|kosmos"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/services/compact/autoCompact.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/services/compact/autoCompact.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/services/compact/compact.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/services/compact/compact.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1633, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633,1637",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/services/compact/postCompactCleanup.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/services/compact/postCompactCleanup.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/services/compact/prompt.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/services/compact/prompt.ts",
+    "classification": "Legitimate",
+    "change_summary": "Spec id 인용 (1632, 2077) — git 기록 기반 정당 변경",
+    "reference_citation": "Specs: #1632, #2077",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,2077",
+      "import_scan_match": null
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/services/mcp/auth.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/services/mcp/auth.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/services/mcp/claudeai.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/services/mcp/claudeai.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS, kosmos) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1633, 1637, 2077",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633,1637,2077",
+      "import_scan_match": "kosmos:KOSMOS|kosmos"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/services/mcp/client.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/services/mcp/client.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS, FriendliAI) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1633, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633,1637",
+      "import_scan_match": "kosmos:KOSMOS|FriendliAI"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/services/mcp/config.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/services/mcp/config.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/services/mcp/xaaIdpLogin.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/services/mcp/xaaIdpLogin.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/services/oauth/client.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/services/oauth/client.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1633",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/services/oauth/getOauthProfile.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/services/oauth/getOauthProfile.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1633",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/services/oauth/index.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/services/oauth/index.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1633",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/services/plugins/pluginCliCommands.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/services/plugins/pluginCliCommands.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/services/settingsSync/index.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/services/settingsSync/index.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS, FriendliAI) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637, 2112",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637,2112",
+      "import_scan_match": "kosmos:KOSMOS|FriendliAI"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/services/teamMemorySync/index.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/services/teamMemorySync/index.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS, FriendliAI) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637, 2112",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637,2112",
+      "import_scan_match": "kosmos:KOSMOS|FriendliAI"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/services/tokenEstimation.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/services/tokenEstimation.ts",
+    "classification": "Cleanup-needed",
+    "change_summary": "Anthropic / Spec 033 잔재 토큰 감지: anthropic-sdk",
+    "reference_citation": "Spec 1633 closure pending",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633,1637",
+      "import_scan_match": "residue:anthropic-sdk"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/services/toolUseSummary/toolUseSummaryGenerator.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/services/toolUseSummary/toolUseSummaryGenerator.ts",
+    "classification": "Cleanup-needed",
+    "change_summary": "Anthropic / Spec 033 잔재 토큰 감지: queryHaiku",
+    "reference_citation": "Spec 1633 closure pending",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "residue:queryHaiku"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/services/tools/toolExecution.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/services/tools/toolExecution.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1633, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633,1637",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/services/vcr.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/services/vcr.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1633, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633,1637",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/services/voiceStreamSTT.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/services/voiceStreamSTT.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS, FriendliAI) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "kosmos:KOSMOS|FriendliAI"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/setup.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/setup.ts",
+    "classification": "Legitimate",
+    "change_summary": "Spec id 인용 (1632, 1633) — git 기록 기반 정당 변경",
+    "reference_citation": "Specs: #1632, #1633",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633",
+      "import_scan_match": null
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/skills/bundled/debug.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/skills/bundled/debug.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (kosmos) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1634",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1634",
+      "import_scan_match": "kosmos:kosmos"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/skills/bundled/scheduleRemoteAgents.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/skills/bundled/scheduleRemoteAgents.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637, 1978",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637,1978",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/state/AppState.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/state/AppState.tsx",
+    "classification": "Legitimate",
+    "change_summary": "Spec id 인용 (1632) — git 기록 기반 정당 변경",
+    "reference_citation": "Specs: #1632",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632",
+      "import_scan_match": null
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/tasks/RemoteAgentTask/RemoteAgentTask.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/tasks/RemoteAgentTask/RemoteAgentTask.tsx",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1633, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633,1637",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/tools.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/tools.ts",
+    "classification": "Legitimate",
+    "change_summary": "Spec id 인용 (1632, 1634) — git 기록 기반 정당 변경",
+    "reference_citation": "Specs: #1632, #1634",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1634",
+      "import_scan_match": null
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/tools/AgentTool/AgentTool.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/tools/AgentTool/AgentTool.tsx",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637, 2077",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637,2077",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/tools/AgentTool/builtInAgents.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/tools/AgentTool/builtInAgents.ts",
+    "classification": "Legitimate",
+    "change_summary": "Spec id 인용 (1632, 1634) — git 기록 기반 정당 변경",
+    "reference_citation": "Specs: #1632, #1634",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1634",
+      "import_scan_match": null
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/tools/AgentTool/prompt.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/tools/AgentTool/prompt.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1634",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1634",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/tools/AgentTool/runAgent.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/tools/AgentTool/runAgent.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/tools/BashTool/utils.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/tools/BashTool/utils.ts",
+    "classification": "Legitimate",
+    "change_summary": "Spec id 인용 (1632, 1633) — git 기록 기반 정당 변경",
+    "reference_citation": "Specs: #1632, #1633",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633",
+      "import_scan_match": null
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/tools/BriefTool/upload.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/tools/BriefTool/upload.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS, FriendliAI) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "kosmos:KOSMOS|FriendliAI"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/tools/RemoteTriggerTool/RemoteTriggerTool.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/tools/RemoteTriggerTool/RemoteTriggerTool.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS, FriendliAI) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "kosmos:KOSMOS|FriendliAI"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/tools/SkillTool/SkillTool.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/tools/SkillTool/SkillTool.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1633, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633,1637",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/tools/WebFetchTool/utils.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/tools/WebFetchTool/utils.ts",
+    "classification": "Cleanup-needed",
+    "change_summary": "Anthropic / Spec 033 잔재 토큰 감지: queryHaiku",
+    "reference_citation": "Spec 1633 closure pending",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "residue:queryHaiku"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/tools/WebSearchTool/WebSearchTool.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/tools/WebSearchTool/WebSearchTool.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS, FriendliAI) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1633, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633,1637",
+      "import_scan_match": "kosmos:KOSMOS|FriendliAI"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/types/generated/events_mono/claude_code/v1/claude_code_internal_event.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/types/generated/events_mono/claude_code/v1/claude_code_internal_event.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1633, 1978",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633,1978",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/types/generated/events_mono/growthbook/v1/growthbook_experiment_event.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/types/generated/events_mono/growthbook/v1/growthbook_experiment_event.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1633, 1978",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633,1978",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/types/logs.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/types/logs.ts",
+    "classification": "Legitimate",
+    "change_summary": "Spec id 인용 (1632) — git 기록 기반 정당 변경",
+    "reference_citation": "Specs: #1632",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632",
+      "import_scan_match": null
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/advisor.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/advisor.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS, FriendliAI) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1633, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633,1637",
+      "import_scan_match": "kosmos:KOSMOS|FriendliAI"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/api.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/api.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS, FriendliAI) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1633, 1637, 2112",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633,1637,2112",
+      "import_scan_match": "kosmos:KOSMOS|FriendliAI"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/apiPreconnect.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/apiPreconnect.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS, FriendliAI) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "kosmos:KOSMOS|FriendliAI"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/attachments.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/attachments.ts",
+    "classification": "Legitimate",
+    "change_summary": "Spec id 인용 (1632, 1633) — git 기록 기반 정당 변경",
+    "reference_citation": "Specs: #1632, #1633",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633",
+      "import_scan_match": null
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/auth.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/auth.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS, FriendliAI) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1633, 2077",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633,2077",
+      "import_scan_match": "kosmos:KOSMOS|FriendliAI"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/authPortable.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/authPortable.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS, kosmos) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "kosmos:KOSMOS|kosmos"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/background/remote/preconditions.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/background/remote/preconditions.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1633",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/background/remote/remoteSession.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/background/remote/remoteSession.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1633",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/claudeInChrome/mcpServer.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/claudeInChrome/mcpServer.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1978",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1978",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/computerUse/mcpServer.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/computerUse/mcpServer.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1978",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1978",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/context.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/context.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS, FriendliAI) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "kosmos:KOSMOS|FriendliAI"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/contextAnalysis.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/contextAnalysis.ts",
+    "classification": "Legitimate",
+    "change_summary": "Spec id 인용 (1632, 1633) — git 기록 기반 정당 변경",
+    "reference_citation": "Specs: #1632, #1633",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633",
+      "import_scan_match": null
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/env.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/env.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS, FriendliAI) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "kosmos:KOSMOS|FriendliAI"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/fastMode.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/fastMode.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS, FriendliAI) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "kosmos:KOSMOS|FriendliAI"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/filePersistence/outputsScanner.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/filePersistence/outputsScanner.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1978",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1978",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/forkedAgent.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/forkedAgent.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS, FriendliAI) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "kosmos:KOSMOS|FriendliAI"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/gracefulShutdown.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/gracefulShutdown.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/hooks.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/hooks.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/hooks/apiQueryHookHelper.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/hooks/apiQueryHookHelper.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS, FriendliAI) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "kosmos:KOSMOS|FriendliAI"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/hooks/execPromptHook.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/hooks/execPromptHook.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS, FriendliAI) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "kosmos:KOSMOS|FriendliAI"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/hooks/skillImprovement.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/hooks/skillImprovement.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS, FriendliAI) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "kosmos:KOSMOS|FriendliAI"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/http.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/http.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS, FriendliAI) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "kosmos:KOSMOS|FriendliAI"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/imageResizer.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/imageResizer.ts",
+    "classification": "Legitimate",
+    "change_summary": "Spec id 인용 (1632, 1633) — git 기록 기반 정당 변경",
+    "reference_citation": "Specs: #1632, #1633",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633",
+      "import_scan_match": null
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/managedEnv.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/managedEnv.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/mcp/dateTimeParser.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/mcp/dateTimeParser.ts",
+    "classification": "Cleanup-needed",
+    "change_summary": "Anthropic / Spec 033 잔재 토큰 감지: queryHaiku",
+    "reference_citation": "Spec 1633 closure pending",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "residue:queryHaiku"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/mcpValidation.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/mcpValidation.ts",
+    "classification": "Legitimate",
+    "change_summary": "Spec id 인용 (1632, 1633) — git 기록 기반 정당 변경",
+    "reference_citation": "Specs: #1632, #1633",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633",
+      "import_scan_match": null
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/messages.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/messages.ts",
+    "classification": "Legitimate",
+    "change_summary": "Spec id 인용 (1632, 1633, 1634) — git 기록 기반 정당 변경",
+    "reference_citation": "Specs: #1632, #1633, #1634",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633,1634",
+      "import_scan_match": null
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/messages/mappers.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/messages/mappers.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS, EXAONE, FriendliAI) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1633, 1978",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633,1978",
+      "import_scan_match": "kosmos:KOSMOS|EXAONE|FriendliAI"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/model/agent.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/model/agent.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS, EXAONE, FriendliAI) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 2112",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,2112",
+      "import_scan_match": "kosmos:KOSMOS|EXAONE|FriendliAI"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/model/aliases.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/model/aliases.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS, EXAONE, FriendliAI) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 2112",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,2112",
+      "import_scan_match": "kosmos:KOSMOS|EXAONE|FriendliAI"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/model/bedrock.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/model/bedrock.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS, FriendliAI) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 2112",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,2112",
+      "import_scan_match": "kosmos:KOSMOS|FriendliAI"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/model/check1mAccess.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/model/check1mAccess.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1978",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1978",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/model/configs.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/model/configs.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS, EXAONE) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 2112",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,2112",
+      "import_scan_match": "kosmos:KOSMOS|EXAONE"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/model/deprecation.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/model/deprecation.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS, EXAONE) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 2112",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,2112",
+      "import_scan_match": "kosmos:KOSMOS|EXAONE"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/model/model.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/model/model.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS, kosmos, EXAONE) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1633, 1637, 2112",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633,1637,2112",
+      "import_scan_match": "kosmos:KOSMOS|kosmos|EXAONE"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/model/modelAllowlist.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/model/modelAllowlist.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS, EXAONE) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 2112",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,2112",
+      "import_scan_match": "kosmos:KOSMOS|EXAONE"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/model/modelCapabilities.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/model/modelCapabilities.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS, FriendliAI) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637, 2112",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637,2112",
+      "import_scan_match": "kosmos:KOSMOS|FriendliAI"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/model/modelOptions.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/model/modelOptions.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS, kosmos, EXAONE) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637, 2112",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637,2112",
+      "import_scan_match": "kosmos:KOSMOS|kosmos|EXAONE"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/model/modelStrings.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/model/modelStrings.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS, EXAONE) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 2112",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,2112",
+      "import_scan_match": "kosmos:KOSMOS|EXAONE"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/model/modelSupportOverrides.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/model/modelSupportOverrides.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS, FriendliAI) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 2112",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,2112",
+      "import_scan_match": "kosmos:KOSMOS|FriendliAI"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/model/providers.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/model/providers.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS, FriendliAI, friendli) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 2112",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,2112",
+      "import_scan_match": "kosmos:KOSMOS|FriendliAI|friendli"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/model/validateModel.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/model/validateModel.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS, EXAONE, FriendliAI) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1633, 2112",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633,2112",
+      "import_scan_match": "kosmos:KOSMOS|EXAONE|FriendliAI"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/modifiers.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/modifiers.ts",
+    "classification": "Legitimate",
+    "change_summary": "Spec id 인용 (1632, 2077) — git 기록 기반 정당 변경",
+    "reference_citation": "Specs: #1632, #2077",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,2077",
+      "import_scan_match": null
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/notebook.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/notebook.ts",
+    "classification": "Legitimate",
+    "change_summary": "Spec id 인용 (1632, 1633) — git 기록 기반 정당 변경",
+    "reference_citation": "Specs: #1632, #1633",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633",
+      "import_scan_match": null
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/permissions/permissionSetup.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/permissions/permissionSetup.ts",
+    "classification": "Cleanup-needed",
+    "change_summary": "Spec 1633 cleanup 디렉토리: tui/src/utils/permissions/",
+    "reference_citation": "Spec 1633 closure pending",
+    "signals": {
+      "directory_match": "cleanup:tui/src/utils/permissions/",
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "kosmos:KOSMOS|EXAONE"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/permissions/permissions.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/permissions/permissions.ts",
+    "classification": "Cleanup-needed",
+    "change_summary": "Spec 1633 cleanup 디렉토리: tui/src/utils/permissions/",
+    "reference_citation": "Spec 1633 closure pending",
+    "signals": {
+      "directory_match": "cleanup:tui/src/utils/permissions/",
+      "git_history_match": "spec:1632,1633,1637",
+      "import_scan_match": "kosmos:KOSMOS|FriendliAI"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/permissions/yoloClassifier.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/permissions/yoloClassifier.ts",
+    "classification": "Cleanup-needed",
+    "change_summary": "Spec 1633 cleanup 디렉토리: tui/src/utils/permissions/",
+    "reference_citation": "Spec 1633 closure pending",
+    "signals": {
+      "directory_match": "cleanup:tui/src/utils/permissions/",
+      "git_history_match": "spec:1632,1633,1637",
+      "import_scan_match": "kosmos:KOSMOS|EXAONE"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/plugins/mcpbHandler.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/plugins/mcpbHandler.ts",
+    "classification": "Cleanup-needed",
+    "change_summary": "Anthropic / Spec 033 잔재 토큰 감지: @anthropic-ai/",
+    "reference_citation": "Spec 1633 closure pending",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "residue:@anthropic-ai/"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/plugins/pluginInstallationHelpers.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/plugins/pluginInstallationHelpers.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/plugins/pluginOptionsStorage.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/plugins/pluginOptionsStorage.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/preflightChecks.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/preflightChecks.tsx",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS, FriendliAI) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "kosmos:KOSMOS|FriendliAI"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/processUserInput/processSlashCommand.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/processUserInput/processSlashCommand.tsx",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1633, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633,1637",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/processUserInput/processTextPrompt.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/processUserInput/processTextPrompt.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1633, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633,1637",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/processUserInput/processUserInput.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/processUserInput/processUserInput.ts",
+    "classification": "Legitimate",
+    "change_summary": "Spec id 인용 (1632, 1633) — git 기록 기반 정당 변경",
+    "reference_citation": "Specs: #1632, #1633",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633",
+      "import_scan_match": null
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/sessionTitle.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/sessionTitle.ts",
+    "classification": "Cleanup-needed",
+    "change_summary": "Anthropic / Spec 033 잔재 토큰 감지: queryHaiku",
+    "reference_citation": "Spec 1633 closure pending",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "residue:queryHaiku"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/settings/settings.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/settings/settings.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/settings/validation.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/settings/validation.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/shell/prefix.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/shell/prefix.ts",
+    "classification": "Cleanup-needed",
+    "change_summary": "Anthropic / Spec 033 잔재 토큰 감지: queryHaiku",
+    "reference_citation": "Spec 1633 closure pending",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "residue:queryHaiku"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/sideQuery.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/sideQuery.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS, FriendliAI) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1633, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633,1637",
+      "import_scan_match": "kosmos:KOSMOS|FriendliAI"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/sinks.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/sinks.ts",
+    "classification": "Legitimate",
+    "change_summary": "Spec id 인용 (1632, 1633) — git 기록 기반 정당 변경",
+    "reference_citation": "Specs: #1632, #1633",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633",
+      "import_scan_match": null
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/swarm/inProcessRunner.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/swarm/inProcessRunner.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1633, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633,1637",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/swarm/spawnInProcess.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/swarm/spawnInProcess.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/swarm/teammateModel.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/swarm/teammateModel.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS, EXAONE) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 2112",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,2112",
+      "import_scan_match": "kosmos:KOSMOS|EXAONE"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/systemPrompt.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/systemPrompt.ts",
+    "classification": "Legitimate",
+    "change_summary": "Spec id 인용 (1632, 2077) — git 기록 기반 정당 변경",
+    "reference_citation": "Specs: #1632, #2077",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,2077",
+      "import_scan_match": null
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/toolSearch.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/toolSearch.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1637, 2112",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637,2112",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  },
+  {
+    "kosmos_path": "tui/src/utils/ultraplan/ccrSession.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/ultraplan/ccrSession.ts",
+    "classification": "Legitimate",
+    "change_summary": "KOSMOS-only 토큰 (KOSMOS) 식별 — 정당 변경",
+    "reference_citation": "Spec ids in git log: 1632, 1633, 1978",
+    "signals": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633,1978",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "notes": null
+  }
+]

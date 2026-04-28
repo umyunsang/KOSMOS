@@ -1,0 +1,65 @@
+{
+  "review_date": "2026-04-29",
+  "reviewer": "Lead (Opus, Initiative #2290 Epic α)",
+  "task_id": "T007",
+  "auto_classification_input": "data/modified-218-classification.json",
+  "verdict": "PASS — 자동 분류 결과 신뢰성 확인. 30 Cleanup-needed 모두 알려진 Spec 1633 잔재와 정확히 매칭. 5 Legitimate sample 모두 KOSMOS-only 토큰 (KOSMOS / EXAONE / FriendliAI) 정당화 확인.",
+  "review_summary": {
+    "total_reviewed": 218,
+    "cleanup_full_review": 30,
+    "legitimate_sample_review": 5,
+    "suspicious_count": 0,
+    "reclassifications_during_review": 0
+  },
+  "cleanup_needed_verification": {
+    "verdict": "30/30 confirmed",
+    "category_breakdown": {
+      "services/api/* directory match": 15,
+      "queryHaiku token (claude.ts dispatcher residue)": 8,
+      "@anthropic-ai/ token (Anthropic SDK 잔재)": 2,
+      "verifyApiKey token": 1,
+      "queryWithModel token": 1,
+      "anthropic-sdk token": 1,
+      "utils/permissions/* (Spec 033 잔재)": 3
+    },
+    "rationale": "30 항목 모두 MEMORY.md `project_tui_anthropic_residue` (claude.ts 3419 LOC + 4 callsite alive) 와 `project_frame_schema_dead_arms` 에 기록된 Spec 1633 closure 영역과 1:1 매칭. Epic β #2293 의 cleanup 범위에 그대로 포함."
+  },
+  "legitimate_sample_verification": [
+    {
+      "kosmos_path": "tui/src/QueryEngine.ts",
+      "verified": true,
+      "rationale": "EXAONE / FriendliAI 토큰 = K-EXAONE 단일 provider 정당 변경 (Epic #1978)"
+    },
+    {
+      "kosmos_path": "tui/src/assistant/sessionHistory.ts",
+      "verified": true,
+      "rationale": "FriendliAI 토큰 = Anthropic→FriendliAI swap 정당 변경"
+    },
+    {
+      "kosmos_path": "tui/src/cli/handlers/auth.ts",
+      "verified": true,
+      "rationale": "FriendliAI 토큰 = OAuth/auth 흐름의 FriendliAI 적용"
+    },
+    {
+      "kosmos_path": "tui/src/commands.ts",
+      "verified": true,
+      "rationale": "KOSMOS / FriendliAI 토큰 = 한국어 slash command 등록 + LLM provider swap"
+    },
+    {
+      "kosmos_path": "tui/src/commands/bridge/bridge.tsx",
+      "verified": true,
+      "rationale": "KOSMOS bridge 디렉토리 = stdio JSONL backend bridge UI (Spec 032 / Spec 287)"
+    }
+  ],
+  "suspicious_handling": {
+    "count": 0,
+    "interpretation": "자동 분류 휴리스틱 (디렉토리 + git history + import scan 3-signal) 가 218 modified 파일 전수에 대해 verdict 도출 — Suspicious 0 은 KOSMOS = CC + 2 swaps 명제와 일관 (모든 변경이 명백히 KOSMOS-needed 또는 cleanup 후속).",
+    "follow_up": "후속 audit (Spec 287 후속 또는 표본 100 확장 #2319) 에서 동일 휴리스틱 재실행 시 drift 감지 가능."
+  },
+  "staging_files_reviewed": {
+    "spot-check-reclassify-pending.json": "absent (50/50 hash match)",
+    "import-verify-reclassify-pending.json": "absent (67/67 import-only confirmed)"
+  },
+  "in_place_updates": "본 manual review 는 modified-218-classification.json 에 in-place 변경을 추가하지 않음 — 0 Suspicious + 0 reclassification + 자동 분류 신뢰성 PASS 이므로 JSON 그대로 유지. 본 log 가 review 증거.",
+  "next_action": "T008 진입 — Suspicious 가 0 이므로 suspicious-transfer.json 의 모든 list 가 빈 배열. 단 schema 보존 위해 파일은 생성 (paste-ready 보장)."
+}
