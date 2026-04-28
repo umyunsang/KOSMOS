@@ -71,13 +71,7 @@ export {
   type SessionExitResult,
   type SessionExitBlockedReason,
 } from './actions/sessionExit'
-export {
-  buildPermissionModeCycleHandler,
-  computeTier1NextMode,
-  type PermissionModeCycleDeps,
-  type PermissionModeCycleResult,
-  type ModeChangedSpanArgs,
-} from './actions/permissionModeCycle'
+// KOSMOS Spec 1979 — Spec 033 5-mode permission cycle removed.
 export {
   buildChordEvent,
   lookupChord,

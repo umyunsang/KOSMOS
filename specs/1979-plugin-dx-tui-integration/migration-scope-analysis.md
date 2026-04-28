@@ -278,15 +278,18 @@ Y/N keystrokes.
 
 ## Migration proposal — execution sequence
 
-1. **This spec (1979)** — Class B done.  Three production-mounted modals are now
-   on the CC arrow+Enter pattern.
-2. **Spec 1979 follow-up PR** (recommended within 1-2 sprints) — Class C-1 and
-   C-2.  Migrate `BypassConfirmDialog.tsx` and `DontAskConfirmDialog.tsx` since
-   they use the same template as the already-migrated `BypassReinforcementModal`.
-   Risk: Low.  Effort: ~60 LOC + 6 test cases.
-3. **Separate epic with `[PIPA-review]` label** — Class C-3.  `ConsentPrompt.tsx`
-   migration requires PIPA §15(2) compliance review because the [Y]/[N]
-   accelerator hints appear in audit screenshots.  Don't bundle with C-1/C-2.
+**Superseded by clean-slate decision (2026-04-28 user direction)**:
+KOSMOS = CC + 2 swaps (model: K-EXAONE, tools: citizen-centric primitives).
+Spec 033 5-mode spectrum / PIPA §15(2) ConsentDecision 4-tuple / NIST AAL hint
+/ Layer 1/2/3 reinforcement / dontAsk mode were KOSMOS-original speculation
+not grounded in concrete Korean public-service regulation.  All Class B + C
++ supporting schema / IPC / OTEL / command-router modules deleted in three
+waves (commits `4a37056` and follow-up).
+
+Future work — implement realistic permission UX based on actual regulatory
+research (PIPA §26 trustee, AAL profile, government domain risk tiers) —
+will be a separate epic that builds on CC's canonical `<PermissionRequest>`
+pipeline rather than re-deriving Spec 033's premature abstraction.
 
 ## Out of scope (separate epics)
 

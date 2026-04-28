@@ -33,10 +33,6 @@ import {
   type SessionExitDeps,
 } from './actions/sessionExit'
 import {
-  buildPermissionModeCycleHandler,
-  type PermissionModeCycleDeps,
-} from './actions/permissionModeCycle'
-import {
   createHistoryNavigator,
   type HistoryNavigationEntry,
   type HistoryNavigatorDeps,
@@ -46,7 +42,6 @@ import {
   type HistoryEntry,
   type OverlayOpenRequest,
 } from './actions/historySearch'
-import type { PermissionMode } from '../permissions/types'
 import type {
   AccessibilityAnnouncer,
   AuditWriter,
@@ -88,12 +83,8 @@ export type Tier1HandlerDeps = Readonly<{
   isBufferEmpty: () => boolean
 
   // -------------------------------------------------------------------------
-  // Permission v2 accessors (Spec 033)
+  // KOSMOS Spec 1979 — Spec 033 PermissionMode accessors removed.
   // -------------------------------------------------------------------------
-
-  getPermissionMode: () => PermissionMode
-  setPermissionMode: (mode: PermissionMode) => void
-  hasPendingIrreversibleAction: () => boolean
 
   // -------------------------------------------------------------------------
   // Draft accessors (Chat-context history navigation)
@@ -304,15 +295,7 @@ export function buildTier1Handlers(
   }
   const sessionExit = buildSessionExitHandler(sessionExitDeps)
 
-  // permission-mode-cycle — FR-008 / FR-009 / FR-010 / FR-011
-  const permissionCycleDeps: PermissionModeCycleDeps = {
-    getMode: deps.getPermissionMode,
-    setMode: deps.setPermissionMode,
-    hasPendingIrreversibleAction: deps.hasPendingIrreversibleAction,
-    getSessionId: () => deps.sessionId,
-    announcer: deps.announcer,
-  }
-  const permissionCycle = buildPermissionModeCycleHandler(permissionCycleDeps)
+  // KOSMOS Spec 1979 — Spec 033 permission-mode-cycle removed.
 
   // history-prev / history-next — FR-017 / FR-018 / FR-019
   const historyNavDeps: HistoryNavigatorDeps = {
@@ -336,9 +319,6 @@ export function buildTier1Handlers(
     },
     'session-exit': () => {
       void sessionExit()
-    },
-    'permission-mode-cycle': () => {
-      void permissionCycle()
     },
     'history-search': () => {
       // Capture the draft at dispatch time — `getCurrentDraft()` reads live

@@ -355,7 +355,7 @@ import { HistorySearchDialog } from '../components/history/HistorySearchDialog.j
 import { OnboardingFlow, resetOnboardingState } from '../components/onboarding/OnboardingFlow.js';
 import { emitSurfaceActivation } from '../observability/surface.js';
 import { getOrCreateKosmosBridge } from '../ipc/bridgeSingleton.js';
-import { computeTier1NextMode } from '../keybindings/actions/permissionModeCycle.js';
+// KOSMOS Spec 1979 — Spec 033 mode cycle import removed.
 import { executeHelp } from '../commands/help.js';
 import { executeConfig, applyConfigChanges } from '../commands/config.js';
 import { executePlugins } from '../commands/plugins.js';
