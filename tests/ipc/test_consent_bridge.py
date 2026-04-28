@@ -49,9 +49,7 @@ class _StubEntry:
     name: str
 
 
-def _build_manifest(
-    layer: int = 1, pii: bool = False, trustee: str | None = None
-) -> _StubManifest:
+def _build_manifest(layer: int = 1, pii: bool = False, trustee: str | None = None) -> _StubManifest:
     ack = None
     if pii and trustee is not None:
         ack = _StubAck(

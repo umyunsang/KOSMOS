@@ -64,9 +64,7 @@ class UninstallResult:
     error_message: str | None
 
 
-def _enumerate_plugin_tool_ids(
-    registry: ToolRegistry, plugin_id: str
-) -> list[str]:
+def _enumerate_plugin_tool_ids(registry: ToolRegistry, plugin_id: str) -> list[str]:
     """Return all registered tool_ids matching ``plugin.<plugin_id>.<verb>``."""
     prefix = f"plugin.{plugin_id}."
     return [tid for tid in list(registry._tools) if tid.startswith(prefix)]  # noqa: SLF001
@@ -169,9 +167,7 @@ def uninstall_plugin(
     try:
         _write_consent_receipt(receipt, consent_root=consent_root)
     except OSError as exc:
-        logger.exception(
-            "uninstall_plugin: receipt write failed for %s: %s", plugin_id, exc
-        )
+        logger.exception("uninstall_plugin: receipt write failed for %s: %s", plugin_id, exc)
         return UninstallResult(
             exit_code=_EXIT_IO,
             plugin_id=plugin_id,

@@ -205,9 +205,7 @@ class TestHandleList:
 class TestConcurrentInstallLedger:
     """SC-009 — concurrent _allocate_consent_position assigns monotonic values."""
 
-    def test_concurrent_position_allocation_is_monotonic(
-        self, tmp_path: Any
-    ) -> None:
+    def test_concurrent_position_allocation_is_monotonic(self, tmp_path: Any) -> None:
         from kosmos.plugins.installer import _allocate_consent_position
 
         consent_root = tmp_path / "consent"
@@ -234,9 +232,7 @@ class TestConcurrentInstallLedger:
 class TestOTELPluginIdSpan:
     """FR-010 — plugin install emits an OTEL span carrying kosmos.plugin.id."""
 
-    def test_register_plugin_adapter_emits_kosmos_plugin_id_span(
-        self, tmp_path: Any
-    ) -> None:
+    def test_register_plugin_adapter_emits_kosmos_plugin_id_span(self, tmp_path: Any) -> None:
         # Verify register_plugin_adapter sets the kosmos.plugin.id attribute.
         # This relies on the existing Spec 1636 register_plugin_adapter
         # implementation which already opens the kosmos.plugin.install span.

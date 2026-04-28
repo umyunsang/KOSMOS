@@ -188,9 +188,7 @@ class IPCConsentBridge:
             self._pending_perms[request_id] = future
             try:
                 await self._write_frame(request_frame)
-                response = await asyncio.wait_for(
-                    future, timeout=self._timeout_seconds
-                )
+                response = await asyncio.wait_for(future, timeout=self._timeout_seconds)
             except TimeoutError:
                 logger.warning(
                     "IPCConsentBridge: 60s timeout awaiting permission_response "
@@ -200,9 +198,7 @@ class IPCConsentBridge:
                 )
                 return False
             except Exception as exc:  # noqa: BLE001
-                logger.exception(
-                    "IPCConsentBridge: error awaiting permission_response: %s", exc
-                )
+                logger.exception("IPCConsentBridge: error awaiting permission_response: %s", exc)
                 return False
             finally:
                 self._pending_perms.pop(request_id, None)

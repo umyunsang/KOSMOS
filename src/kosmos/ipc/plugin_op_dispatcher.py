@@ -170,9 +170,7 @@ async def handle_plugin_op_request(
             :func:`kosmos.ipc.stdio` ErrorFrame fanout.
     """
     if frame.op != "request":
-        raise ValueError(
-            f"plugin_op_dispatcher received op={frame.op!r}; expected 'request'"
-        )
+        raise ValueError(f"plugin_op_dispatcher received op={frame.op!r}; expected 'request'")
 
     if frame.request_op == "install":
         await handle_install(
@@ -197,8 +195,7 @@ async def handle_plugin_op_request(
         )
     else:
         raise ValueError(
-            f"unknown plugin_op request_op={frame.request_op!r}; "
-            "expected install|uninstall|list"
+            f"unknown plugin_op request_op={frame.request_op!r}; expected install|uninstall|list"
         )
 
 
@@ -252,12 +249,8 @@ async def handle_install(
     # progress_emitter(phase, message_ko, message_en) between phases.
     # Per FR-002, the dispatcher supplies the canonical text from the
     # phase table — installer code stays free of i18n strings.
-    async def _progress_with_canonical_text(
-        phase: int, _message_ko: str, _message_en: str
-    ) -> None:
-        message_ko, message_en = _INSTALL_PHASE_TEXT.get(
-            phase, (_message_ko, _message_en)
-        )
+    async def _progress_with_canonical_text(phase: int, _message_ko: str, _message_en: str) -> None:
+        message_ko, message_en = _INSTALL_PHASE_TEXT.get(phase, (_message_ko, _message_en))
         await _emit_progress(phase, message_ko, message_en)
 
     # Run the synchronous install_plugin in an executor so its blocking
@@ -358,12 +351,8 @@ async def handle_uninstall(
             )
         )
 
-    async def _progress_with_canonical_text(
-        phase: int, _message_ko: str, _message_en: str
-    ) -> None:
-        message_ko, message_en = _UNINSTALL_PHASE_TEXT.get(
-            phase, (_message_ko, _message_en)
-        )
+    async def _progress_with_canonical_text(phase: int, _message_ko: str, _message_en: str) -> None:
+        message_ko, message_en = _UNINSTALL_PHASE_TEXT.get(phase, (_message_ko, _message_en))
         await _emit_progress(phase, message_ko, message_en)
 
     def _sync_progress(phase: int, message_ko: str, message_en: str) -> None:
@@ -465,9 +454,7 @@ def _build_list_payload(registry: object) -> list[dict[str, Any]]:
                 "permission_layer": manifest_data.get("permission_layer", 1),
                 "processes_pii": bool(manifest_data.get("processes_pii", False)),
                 "trustee_org_name": (
-                    (manifest_data.get("pipa_trustee_acknowledgment") or {}).get(
-                        "trustee_org_name"
-                    )
+                    (manifest_data.get("pipa_trustee_acknowledgment") or {}).get("trustee_org_name")
                 ),
                 "is_active": active,
                 "install_timestamp_iso": manifest_data.get("install_timestamp_iso", ""),

@@ -373,9 +373,7 @@ class ToolRegistry:
 
     def situational_tools(self) -> list[GovAPITool]:
         """Return non-core, active tools."""
-        return [
-            t for tid, t in self._tools.items() if not t.is_core and tid not in self._inactive
-        ]
+        return [t for tid, t in self._tools.items() if not t.is_core and tid not in self._inactive]
 
     def export_core_tools_openai(self) -> list[dict[str, object]]:
         """Export core tools as OpenAI function-calling definitions.
@@ -428,11 +426,7 @@ class ToolRegistry:
         else:
             self._inactive.add(tool_id)
         # Rebuild BM25 corpus to reflect the new active set.
-        corpus = {
-            tid: t.search_hint
-            for tid, t in self._tools.items()
-            if tid not in self._inactive
-        }
+        corpus = {tid: t.search_hint for tid, t in self._tools.items() if tid not in self._inactive}
         self._retriever.rebuild(corpus)
 
     def is_active(self, tool_id: str) -> bool:
