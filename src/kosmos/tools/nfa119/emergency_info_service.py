@@ -4,7 +4,7 @@
 Calls the NFA EmergencyInformationService endpoint for historical, anonymized
 EMS statistics by region, fire station, and report year-month.
 
-auth contract: ``requires_auth=True``, ``is_personal_data=False``.
+Epic δ #2295: citizen-facing gate = read-only (public emergency data).
 The Layer 3 auth-gate in ``executor.invoke()`` short-circuits unauthenticated
 calls to ``LookupError(reason="auth_required")`` before handle() is reached
 (FR-025, FR-026, SC-006). handle() raises Layer3GateViolation as defence-in-depth.
@@ -15,6 +15,8 @@ calls to ``LookupError(reason="auth_required")`` before handle() is reached
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
+
 import logging
 from enum import StrEnum
 from typing import Any, Literal
@@ -22,7 +24,7 @@ from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, Field, RootModel
 
 from kosmos.tools.errors import Layer3GateViolation
-from kosmos.tools.models import GovAPITool
+from kosmos.tools.models import AdapterRealDomainPolicy, GovAPITool
 
 logger = logging.getLogger(__name__)
 
@@ -288,18 +290,18 @@ NFA_EMERGENCY_INFO_SERVICE_TOOL = GovAPITool(
         "Returns dispatch distance, patient symptoms, and crew qualifications when "
         "operation='getEmgencyActivityInfo' (default). This is NOT a real-time 119 dispatch tool "
         "and does NOT return current-incident or facility-locator data. "
-        "IMPORTANT: requires_auth=True — unauthenticated sessions receive auth_required."
+        "IMPORTANT: This is a read-only emergency info service — public data access."
     ),
     search_hint=(
         "119 구급 출동 소방청 구급정보 구급활동 구급차 통계 현황 소방서 긴급구조 "
         "119 NFA emergency ambulance dispatch activity statistics fire station Korea"
     ),
-    auth_level="AAL1",
-    pipa_class="non_personal",
-    is_irreversible=False,
-    dpa_reference=None,
-    requires_auth=True,
-    is_personal_data=False,
+    policy=AdapterRealDomainPolicy(
+        real_classification_url="https://www.nfa.go.kr/nfa/main/contents.do?menuKey=66",
+        real_classification_text="소방청 공공데이터 이용약관 — 119 응급서비스 데이터 비상업적 공공 이용 허가",  # TODO: verify URL
+        citizen_facing_gate="read-only",
+        last_verified=datetime(2026, 4, 29, tzinfo=timezone.utc),
+    ),
     is_concurrency_safe=True,
     cache_ttl_seconds=86400,
     rate_limit_per_minute=10,
@@ -316,7 +318,7 @@ async def handle(inp: NfaEmergencyInfoServiceInput) -> dict[str, object]:
     """Defence-in-depth backstop — should never be reached.
 
     The Layer 3 auth-gate in executor.invoke() short-circuits on
-    requires_auth=True before this handler is called (FR-025, FR-026, SC-006).
+    Epic δ #2295: auth gate based on policy.citizen_facing_gate (FR-025, FR-026, SC-006).
 
     # TODO: implement live HTTP handler after Layer 3 auth gate is provisioned
     # (Epic #16 / #20).

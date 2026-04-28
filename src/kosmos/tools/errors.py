@@ -150,10 +150,7 @@ class EnvelopeNormalizationError(KosmosToolError):
 
 
 class RegistrationError(KosmosToolError):
-    """Adapter registration violated an invariant.
-
-    Example: ``is_personal_data=True`` without ``requires_auth=True`` (FR-038).
-    """
+    """Adapter registration violated an invariant (e.g. duplicate tool_id, FR-038)."""
 
     def __init__(self, tool_id: str, message: str) -> None:
         super().__init__(f"Registration error for tool {tool_id!r}: {message}")

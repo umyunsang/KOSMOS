@@ -15,8 +15,7 @@ SC-002 compliance: domain vocabulary (applicant details, benefit codes,
 household info) lives HERE in ``WelfareApplicationParams``, never on the
 main ``SubmitInput`` / ``SubmitOutput`` surface.
 
-V1 invariant: ``primitive=submit`` ∧ ``pipa_class=personal_standard`` →
-``is_irreversible=True`` (application filing creates a government record).
+Epic δ #2295: ``primitive=submit`` — application filing creates a government record (submit gate).
 """
 
 from __future__ import annotations
@@ -132,8 +131,6 @@ REGISTRATION = AdapterRegistration(
     source_mode=AdapterSourceMode.OOS,
     published_tier_minimum="mydata_individual_aal2",
     nist_aal_hint="AAL2",
-    requires_auth=True,
-    is_personal_data=True,
     is_concurrency_safe=False,
     cache_ttl_seconds=0,
     rate_limit_per_minute=5,
@@ -142,10 +139,6 @@ REGISTRATION = AdapterRegistration(
         "en": ["welfare", "benefit application", "mydata", "social assistance"],
     },
     auth_type="oauth",
-    auth_level="AAL2",
-    pipa_class="personal_standard",
-    is_irreversible=True,  # V1 invariant: submit + personal_* → irreversible
-    dpa_reference="KosmosWelfareApplication-v1",
     nonce=_ADAPTER_NONCE,
 )
 

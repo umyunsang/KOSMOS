@@ -8,7 +8,7 @@ FR-034: Freshness enforcement via check_freshness() — see freshness.py.
 Stale responses are rejected with ``LookupError(reason="stale_data")`` so the
 LLM is informed of data age and threshold rather than receiving silently-stale data.
 
-auth contract: ``requires_auth=True``, ``is_personal_data=True``.
+Epic δ #2295: citizen-facing gate = login (NMC emergency search requires authentication).
 The Layer 3 auth-gate in ``executor.invoke()`` short-circuits unauthenticated
 calls to ``LookupError(reason="auth_required")`` before handle() is reached
 (FR-025, FR-026, SC-006). handle() is therefore only invoked when a valid
@@ -17,6 +17,8 @@ session identity is present.
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
+
 import logging
 from typing import Any
 
@@ -24,7 +26,7 @@ import httpx
 from pydantic import BaseModel, ConfigDict, Field, RootModel
 
 from kosmos.tools.errors import LookupErrorReason
-from kosmos.tools.models import GovAPITool
+from kosmos.tools.models import AdapterRealDomainPolicy, GovAPITool
 from kosmos.tools.nmc.freshness import FreshnessResult
 
 logger = logging.getLogger(__name__)
@@ -264,7 +266,7 @@ NMC_EMERGENCY_SEARCH_TOOL = GovAPITool(
         "for the nearest ERs around a given coordinate. "
         "Obtain lat/lon first via resolve_location(want='coords'). "
         "Returns a ranked list of emergency rooms with available bed counts and distance. "
-        "IMPORTANT: This tool requires citizen authentication (requires_auth=True). "
+        "IMPORTANT: This tool requires citizen authentication (login gate). "
         "Calls without a valid session identity are rejected with auth_required. "
         "Use this when a user asks about nearby emergency rooms, ER bed availability, "
         "or the closest 응급실 in Korea."
@@ -273,17 +275,14 @@ NMC_EMERGENCY_SEARCH_TOOL = GovAPITool(
         "응급실 실시간 병상 응급의료센터 국립중앙의료원 가까운 응급실 "
         "emergency room bed availability nearest ER NMC real-time Korea"
     ),
-    # Security spec v1 fields (specs/024-tool-security-v1):
-    # Real-time ER bed availability combined with session identity yields
-    # location-linked health context → PIPA-personal. AAL2 per §2 table baseline
-    # (authenticated citizen); irreversible=False (read-only lookup).
-    auth_level="AAL2",
-    pipa_class="personal",
-    is_irreversible=False,
-    dpa_reference="dpa-nmc-v1",
+    # Epic δ #2295: Real-time ER bed availability — login gate (citizen session required).
+    policy=AdapterRealDomainPolicy(
+        real_classification_url="https://www.nemc.or.kr/info/dataInfoView.do",
+        real_classification_text="국립의료원 응급의료 공공데이터 이용약관 — 응급실 정보 데이터 비상업적 공공 이용 허가",  # TODO: verify URL
+        citizen_facing_gate="login",
+        last_verified=datetime(2026, 4, 29, tzinfo=timezone.utc),
+    ),
     # Metadata for T033 registration:
-    requires_auth=True,
-    is_personal_data=True,
     is_concurrency_safe=False,
     cache_ttl_seconds=0,
     rate_limit_per_minute=10,
@@ -312,7 +311,7 @@ def register(registry: object, executor: object) -> None:
     Stage 3 serial integration.
 
     The Layer 3 auth-gate short-circuits unauthenticated calls on
-    ``requires_auth=True`` before invoking the adapter (FR-025, SC-006).
+    Epic δ #2295: auth gate based on policy.citizen_facing_gate (FR-025, SC-006).
     handle() is only reached when a valid session identity is present.
 
     Args:

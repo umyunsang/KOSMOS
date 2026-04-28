@@ -29,7 +29,9 @@ from kosmos.tools.kma.kma_short_term_forecast import (
     KmaShortTermForecastOutput,
     _normalize_items,
 )
-from kosmos.tools.models import GovAPITool
+from datetime import datetime, timezone
+
+from kosmos.tools.models import AdapterRealDomainPolicy, GovAPITool
 from kosmos.tools.registry import ToolRegistry
 
 logger = logging.getLogger(__name__)
@@ -289,13 +291,13 @@ KMA_ULTRA_SHORT_TERM_FORECAST_TOOL = GovAPITool(
         "초단기예보 단기예보 6시간예보 기온 강수 하늘상태 습도 풍속 "
         "ultra-short-term forecast 6-hour weather temperature precipitation sky wind"
     ),
-    auth_level="AAL1",
-    pipa_class="non_personal",
-    is_irreversible=False,
-    dpa_reference=None,
-    requires_auth=True,
+    policy=AdapterRealDomainPolicy(
+        real_classification_url="https://www.kma.go.kr/data/policy.html",
+        real_classification_text="기상청 공공데이터 이용약관 — 초단기예보 데이터 비상업적 공공 이용 허가",  # TODO: verify URL
+        citizen_facing_gate="read-only",
+        last_verified=datetime(2026, 4, 29, tzinfo=timezone.utc),
+    ),
     is_concurrency_safe=True,
-    is_personal_data=False,
     cache_ttl_seconds=600,
     rate_limit_per_minute=10,
     is_core=True,

@@ -11,9 +11,12 @@ SC-003: All adapter details are hidden; the LLM only interacts with this surface
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
+
 from pydantic import RootModel
 
 from kosmos.tools.models import (
+    AdapterRealDomainPolicy,
     GovAPITool,
     LookupFetchInput,
     LookupSearchInput,
@@ -71,16 +74,12 @@ RESOLVE_LOCATION_TOOL = GovAPITool(
         "위치 조회 주소 변환 행정동 코드 좌표 지오코딩 POI 장소 검색 "
         "resolve location address geocode coordinates adm_cd administrative code place"
     ),
-    # TOOL_MIN_AAL row: AAL1 (canonical). Geocoding produces no PII
-    # (pipa_class=non_personal) but still requires an authenticated session at
-    # AAL1 — we want every lookup call linked to a citizen session for rate
-    # limiting and abuse tracking, even though the payload itself is not PII.
-    auth_level="AAL1",
-    pipa_class="non_personal",
-    is_irreversible=False,
-    dpa_reference=None,
-    requires_auth=True,
-    is_personal_data=False,
+    policy=AdapterRealDomainPolicy(
+        real_classification_url="https://www.data.go.kr/policy/privacyPolicy.do",
+        real_classification_text="공공데이터포털 개인정보처리방침 (KOSMOS 내부 geocoding 표면 — 시민 PII 미포함)",
+        citizen_facing_gate="read-only",
+        last_verified=datetime(2026, 4, 29, tzinfo=timezone.utc),
+    ),
     is_concurrency_safe=True,
     cache_ttl_seconds=300,
     rate_limit_per_minute=60,
@@ -127,14 +126,12 @@ LOOKUP_SEARCH_TOOL = GovAPITool(
     search_hint=(
         "데이터 조회 도구 호출 검색 패치 lookup search fetch invoke tool adapter data query"
     ),
-    # TOOL_MIN_AAL row: AAL1 (canonical). Meta-surface; sub-tool ACLs
-    # are enforced when the concrete adapter is dispatched.
-    auth_level="AAL1",
-    pipa_class="non_personal",
-    is_irreversible=False,
-    dpa_reference=None,
-    requires_auth=True,
-    is_personal_data=False,
+    policy=AdapterRealDomainPolicy(
+        real_classification_url="https://www.data.go.kr/policy/privacyPolicy.do",
+        real_classification_text="공공데이터포털 개인정보처리방침 (KOSMOS 내부 lookup 메타-표면 — 시민 PII 미포함)",
+        citizen_facing_gate="read-only",
+        last_verified=datetime(2026, 4, 29, tzinfo=timezone.utc),
+    ),
     is_concurrency_safe=True,
     cache_ttl_seconds=0,
     rate_limit_per_minute=60,

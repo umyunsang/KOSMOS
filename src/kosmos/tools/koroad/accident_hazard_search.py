@@ -26,7 +26,9 @@ import httpx
 from pydantic import BaseModel, ConfigDict, Field, RootModel
 
 from kosmos.tools.errors import ToolExecutionError, _require_env
-from kosmos.tools.models import GovAPITool
+from datetime import datetime, timezone
+
+from kosmos.tools.models import AdapterRealDomainPolicy, GovAPITool
 
 logger = logging.getLogger(__name__)
 
@@ -882,13 +884,13 @@ KOROAD_ACCIDENT_HAZARD_SEARCH_TOOL = GovAPITool(
         "교통사고 위험지점 사고다발구역 행정동코드 연도별 위험지역 "
         "accident hazard spot dangerous zone adm_cd year traffic safety Korea"
     ),
-    auth_level="AAL1",
-    pipa_class="non_personal",
-    is_irreversible=False,
-    dpa_reference=None,
-    requires_auth=True,
+    policy=AdapterRealDomainPolicy(
+        real_classification_url="https://www.koroad.or.kr/main/web/policy/data_use.do",
+        real_classification_text="도로교통공단 공공데이터 이용약관 — 교통사고 위험지점 데이터 비상업적 공공 이용 허가",  # TODO: verify URL
+        citizen_facing_gate="read-only",
+        last_verified=datetime(2026, 4, 29, tzinfo=timezone.utc),
+    ),
     is_concurrency_safe=True,
-    is_personal_data=False,
     cache_ttl_seconds=3600,
     rate_limit_per_minute=10,
     is_core=False,

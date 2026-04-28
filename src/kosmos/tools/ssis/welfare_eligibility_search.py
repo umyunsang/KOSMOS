@@ -4,7 +4,7 @@
 Calls the SSIS NationalWelfarelistV001 endpoint to return welfare services
 matching life stage, household type, interest theme, age, or keyword.
 
-auth contract: ``requires_auth=True``, ``is_personal_data=True``.
+Epic δ #2295: citizen-facing gate = login (welfare eligibility requires authentication).
 The Layer 3 auth-gate in ``executor.invoke()`` short-circuits unauthenticated
 calls to ``LookupError(reason="auth_required")`` before handle() is reached
 (FR-025, FR-026, SC-006). handle() raises Layer3GateViolation as defence-in-depth.
@@ -15,13 +15,15 @@ calls to ``LookupError(reason="auth_required")`` before handle() is reached
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
+
 import logging
 from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, RootModel
 
 from kosmos.tools.errors import Layer3GateViolation
-from kosmos.tools.models import GovAPITool
+from kosmos.tools.models import AdapterRealDomainPolicy, GovAPITool
 from kosmos.tools.ssis.codes import (
     CallType,
     IntrsThemaCode,
@@ -77,7 +79,7 @@ class MohwWelfareEligibilitySearchInput(BaseModel):
         description=(
             "Citizen age in years. Used to filter age-eligible services. "
             "Do NOT request this from the citizen unless they have consented — "
-            "this field is part of the is_personal_data=True surface."
+            "this field is part of the login-gated surface (citizen PII)."
         ),
     )
     onap_psblt_yn: Literal["Y", "N"] | None = Field(
@@ -181,19 +183,19 @@ MOHW_WELFARE_ELIGIBILITY_SEARCH_TOOL = GovAPITool(
         "life stage, household type, interest theme, age, or keyword. Returns a ranked "
         "list with serviceId, name, ministry, summary, and bokjiro.go.kr detail link. "
         "Use for 'am I eligible for X?' / '출산 보조금 뭐 있어?' questions. "
-        "IMPORTANT: is_personal_data=True and requires_auth=True. "
+        "IMPORTANT: This is a login-gated service — citizen authentication required. "
         "Unauthenticated sessions receive auth_required."
     ),
     search_hint=(
         "복지서비스 출산 보조금 복지혜택 신청 사회보장정보원 보건복지부 임산부 지원 "
         "welfare benefit eligibility childbirth subsidy MOHW SSIS social security Korea"
     ),
-    auth_level="AAL2",
-    pipa_class="personal",
-    is_irreversible=False,
-    dpa_reference="dpa-ssis-welfare-v1",
-    requires_auth=True,
-    is_personal_data=True,
+    policy=AdapterRealDomainPolicy(
+        real_classification_url="https://www.mohw.go.kr/react/policy/index.jsp?PAR_MENU_ID=06&MENU_ID=06",
+        real_classification_text="보건복지부 공공데이터 이용약관 — 복지서��스 적격 조회 데이터 비상업적 공공 이용 허가",  # TODO: verify URL
+        citizen_facing_gate="login",
+        last_verified=datetime(2026, 4, 29, tzinfo=timezone.utc),
+    ),
     is_concurrency_safe=True,
     cache_ttl_seconds=0,
     rate_limit_per_minute=10,
@@ -211,7 +213,7 @@ async def handle(inp: MohwWelfareEligibilitySearchInput) -> dict[str, object]:
     """Defence-in-depth backstop — should never be reached.
 
     The Layer 3 auth-gate in executor.invoke() short-circuits on
-    requires_auth=True before this handler is called (FR-025, FR-026, SC-006).
+    Epic δ #2295: auth gate based on policy.citizen_facing_gate (FR-025, FR-026, SC-006).
 
     # TODO: implement full XML parsing and response normalization once
     # Layer 3 auth gate is provisioned (Epic #16 / #20).
@@ -245,5 +247,5 @@ def register(registry: object, executor: object) -> None:
     executor.register_adapter("mohw_welfare_eligibility_search", _adapter)
     logger.info(
         "Registered tool: mohw_welfare_eligibility_search "
-        "(auth_required gate — interface-only stub, is_personal_data=True)"
+        "(auth_required gate — interface-only stub, login gate per Epic δ #2295)"
     )

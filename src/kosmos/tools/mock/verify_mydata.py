@@ -28,8 +28,6 @@ ADAPTER_REGISTRATION = AdapterRegistration(
     source_mode=AdapterSourceMode.OOS,
     published_tier_minimum="mydata_individual_aal2",
     nist_aal_hint="AAL2",
-    requires_auth=True,
-    is_personal_data=True,
     is_concurrency_safe=False,
     cache_ttl_seconds=0,
     rate_limit_per_minute=10,
@@ -38,10 +36,6 @@ ADAPTER_REGISTRATION = AdapterRegistration(
         "en": ["mydata", "open banking", "KFTC mydata", "personal credit data"],
     },
     auth_type="oauth",
-    auth_level="AAL2",
-    pipa_class="personal_sensitive",
-    is_irreversible=False,
-    dpa_reference="PIPA §26 — 수탁자 처리 (위탁); 신용정보법 §33의2",
 )
 
 # Recorded fixture — provider_id is an anonymised test code.

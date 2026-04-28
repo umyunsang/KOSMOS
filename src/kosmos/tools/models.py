@@ -9,17 +9,7 @@ from typing import Annotated, Final, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from kosmos.security.audit import TOOL_MIN_AAL, AALLevel
 from kosmos.tools.errors import LookupErrorReason
-
-# DPA reference identifiers MUST satisfy the same shape as the audit layer
-# (kosmos.security.audit._DPA_REFERENCE_PATTERN): letter-led, 6..64 chars,
-# alphanumeric + dash/underscore. Keeping the regex duplicated (rather than
-# importing the private constant) is intentional — it documents the contract
-# at the model boundary where upstream callers first encounter it.
-_DPA_REFERENCE_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9_-]{5,63}$")
-
-PIPAClass = Literal["non_personal", "personal", "sensitive", "identifier"]
 
 # Spec 1634 (P3 Tool System Wiring) — closed ministry / institution enum.
 # Typed replacement for the former free-form ``provider: str`` field. New
@@ -43,21 +33,43 @@ Ministry = Literal[
     "OTHER",  # transitional escape hatch — CI emits warning
 ]
 
-# V6 canonical mapping — single source of truth for the (auth_type, auth_level)
-# consistency invariant owned by FR-039 / FR-040 / FR-042
-# (specs/025-tool-security-v6). Imported by the V6 model validator and the
-# ``ToolRegistry.register`` backstop; the two layers MUST consult this one
-# dictionary to stay drift-free.
-#
-# Read as: ``auth_type`` key ⇒ the frozenset of ``auth_level`` values that are
-# permitted for adapters declaring that ``auth_type``. Any pair outside this
-# mapping is rejected at construction (pydantic) and at registration
-# (registry backstop) per contracts/v6-error-contract.md.
-_AUTH_TYPE_LEVEL_MAPPING: Final[dict[str, frozenset[str]]] = {
-    "public": frozenset({"public", "AAL1"}),
-    "api_key": frozenset({"AAL1", "AAL2", "AAL3"}),
-    "oauth": frozenset({"AAL1", "AAL2", "AAL3"}),
-}
+class AdapterRealDomainPolicy(BaseModel):
+    """KOSMOS adapter single permission representation — cite of agency published policy.
+
+    KOSMOS does NOT invent permission policy (.specify/memory/constitution.md § II).
+    This model is the single source of truth where an adapter (a) cites the
+    agency's published policy URL, (b) declares the citizen-facing gate category,
+    and (c) records the last verification timestamp of the policy citation.
+
+    References:
+    - AGENTS.md § CORE THESIS — KOSMOS = AX-infrastructure callable-channel client
+    - .specify/memory/constitution.md § II Fail-Closed Security (NON-NEGOTIABLE)
+    - .specify/memory/constitution.md § III Pydantic v2 Strict Typing
+    - specs/1979-plugin-dx-tui-integration/domain-harness-design.md § 3.2
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    real_classification_url: str = Field(
+        ...,
+        min_length=1,
+        description="Agency published policy URL (https:// prefix recommended)",
+    )
+    real_classification_text: str = Field(
+        ...,
+        min_length=1,
+        description="Korean citation from agency policy (text shown to citizen)",
+    )
+    citizen_facing_gate: Literal[
+        "read-only", "login", "action", "sign", "submit"
+    ] = Field(
+        ...,
+        description="Citizen-facing gate category — UI uses this value for PermissionRequest UX",
+    )
+    last_verified: datetime = Field(
+        ...,
+        description="Last verification timestamp of the policy URL (ISO 8601, UTC recommended)",
+    )
 
 
 class GovAPITool(BaseModel):
@@ -102,46 +114,22 @@ class GovAPITool(BaseModel):
     search_hint: str
     """Bilingual (Korean + English) discovery keywords for semantic search."""
 
-    # --- Security spec v1 (specs/024-tool-security-v1) — required, no defaults ---
-    auth_level: AALLevel
-    """Minimum NIST SP 800-63-4 AAL required to invoke the tool.
+    # --- Policy citation (Epic δ #2295 — replaces KOSMOS-invented security fields) ---
+    # Spec 2295: AdapterRealDomainPolicy carries the agency's published policy URL
+    # + citizen-facing gate category. KOSMOS does NOT invent permission policy
+    # (Constitution § II). Optional during migration window (FR-028 parity).
+    policy: AdapterRealDomainPolicy | None = None
+    """Agency domain policy citation (Constitution § II cite-only invariant).
 
-    MUST equal this tool's row in ``kosmos.security.audit.TOOL_MIN_AAL``
-    (validator V3 enforces at registration). Drift is a load-time failure.
-    """
-
-    pipa_class: PIPAClass
-    """PIPA classification of input-or-output data.
-
-    ``non_personal``: no PII in request or response.
-    ``personal``: 개인정보 per PIPA §2.1.
-    ``sensitive``: 민감정보 per PIPA §23.
-    ``identifier``: 고유식별정보 per PIPA §24.
-    """
-
-    is_irreversible: bool
-    """True when invocation produces a side effect the citizen cannot undo via
-    a second tool call (e.g., ``pay``, ``submit_application``).
-
-    Drives FR-007 live-introspection requirement.
-    """
-
-    dpa_reference: str | None
-    """Identifier of the DPA template governing the §26 processor chain for
-    this tool's scope.
-
-    MUST be non-null whenever ``pipa_class != "non_personal"`` (validator V2).
+    Carries real_classification_url + real_classification_text +
+    citizen_facing_gate + last_verified. All 18 registered adapters MUST
+    populate this field (Epic δ #2295 acceptance criterion).
+    None is legal only during the pre-2295 migration window.
     """
 
     # --- Fail-closed defaults (Constitution § II) ---
-    requires_auth: bool = True
-    """Whether citizen authentication is required. Defaults to True (fail-closed)."""
-
     is_concurrency_safe: bool = False
     """Safe to call concurrently. Defaults to False (fail-closed)."""
-
-    is_personal_data: bool = True
-    """Whether the response may contain PII. Defaults to True (fail-closed)."""
 
     cache_ttl_seconds: int = 0
     """Response cache lifetime in seconds. Defaults to 0 (no caching, fail-closed)."""
@@ -298,112 +286,6 @@ class GovAPITool(BaseModel):
         if not v.strip():
             raise ValueError("search_hint must not be empty or whitespace-only")
         return v
-
-    # --- Security spec v1 cross-field validators (V1–V6) ---
-    # specs/024-tool-security-v1 § data-model.md §1 (V1–V5).
-    # specs/025-tool-security-v6 § data-model.md §1 (V6).
-
-    @model_validator(mode="after")
-    def _validate_security_invariants(self) -> GovAPITool:  # noqa: C901
-        # C901: The V1–V6 chain is deliberately kept as a single method. Each
-        # block is straight-line and simple; the load-bearing property is the
-        # ORDERING (V1 → V2 → V3 → V4 → V5 → V6), which is spec-fixed so that
-        # the earliest violation wins. Splitting into helpers would hide the
-        # chain and invite ordering drift across future Vn additions.
-        """Enforce V1–V6 from data-model.md §1.
-
-        V1 (FR-004): ``pipa_class != "non_personal"`` → ``auth_level != "public"``.
-        V2 (FR-014 docs gap): ``pipa_class != "non_personal"`` →
-            ``dpa_reference`` is a non-empty string (None AND ``""`` both rejected).
-        V3 (FR-001 / FR-005): ``auth_level`` MUST equal this tool's row in ``TOOL_MIN_AAL``
-            when the tool id is a canonical entry in that table.
-        V4 (FR-004 ext): ``is_irreversible`` → ``auth_level != "public"``.
-        V5 (FR-004 Layer-3 auth-gate consistency):
-            ``auth_level == "public"`` ⇔ ``requires_auth is False``. AAL1+ tools MUST set
-            ``requires_auth=True`` so the existing ``ToolExecutor.invoke`` auth gate
-            cannot be bypassed on a tool declaring a non-public AAL.
-        V6 (FR-039 / FR-040): ``(auth_type, auth_level)`` MUST match the canonical
-            allow-list in ``_AUTH_TYPE_LEVEL_MAPPING``. Closes the Spec-024 V5 gap
-            where ``PermissionPipeline.dispatch()`` tiers on ``auth_type`` rather than
-            ``requires_auth``. FR-048 fail-closed on unknown ``auth_type``.
-        """
-        if self.pipa_class != "non_personal":
-            if self.auth_level == "public":
-                raise ValueError(
-                    f"V1 violation (FR-004): tool {self.id!r} has "
-                    f"pipa_class={self.pipa_class!r} but auth_level='public'; "
-                    "PII-class data MUST require authentication."
-                )
-            if self.dpa_reference is None or not self.dpa_reference.strip():
-                raise ValueError(
-                    f"V2 violation (FR-014): tool {self.id!r} has "
-                    f"pipa_class={self.pipa_class!r} but dpa_reference is "
-                    f"{self.dpa_reference!r}; PIPA §26 위탁 MUST cite a non-empty "
-                    "DPA template identifier."
-                )
-            if self.dpa_reference.strip() != self.dpa_reference:
-                raise ValueError(
-                    f"V2 violation (FR-014): tool {self.id!r} has dpa_reference "
-                    f"{self.dpa_reference!r} with leading/trailing whitespace; "
-                    "DPA identifiers MUST be submitted trimmed."
-                )
-            if not _DPA_REFERENCE_PATTERN.fullmatch(self.dpa_reference):
-                raise ValueError(
-                    f"V2 violation (FR-014): tool {self.id!r} dpa_reference "
-                    f"{self.dpa_reference!r} must match "
-                    r"^[A-Za-z][A-Za-z0-9_-]{5,63}$ "
-                    "(letter-led, 6..64 chars, alphanumeric + '-_'); "
-                    "placeholders like 'TBD' or 'N/A' are rejected."
-                )
-
-        expected_aal = TOOL_MIN_AAL.get(self.id)
-        if expected_aal is not None and self.auth_level != expected_aal:
-            raise ValueError(
-                f"V3 violation (FR-001/FR-005): tool {self.id!r} declares "
-                f"auth_level={self.auth_level!r} but TOOL_MIN_AAL requires "
-                f"{expected_aal!r}; the single-source-of-truth table MUST match."
-            )
-
-        if self.is_irreversible and self.auth_level == "public":
-            raise ValueError(
-                f"V4 violation (FR-004 ext): tool {self.id!r} is_irreversible=True "
-                "cannot run at auth_level='public'; irreversible actions MUST be "
-                "authenticated."
-            )
-
-        if self.auth_level == "public" and self.requires_auth:
-            raise ValueError(
-                f"V5 violation (FR-004): tool {self.id!r} has auth_level='public' "
-                "but requires_auth=True; public tools MUST NOT require authentication "
-                "or the Layer-3 auth gate will deadlock."
-            )
-        if self.auth_level != "public" and not self.requires_auth:
-            raise ValueError(
-                f"V5 violation (FR-004): tool {self.id!r} declares "
-                f"auth_level={self.auth_level!r} but requires_auth=False; AAL1+ "
-                "tools MUST set requires_auth=True so the Layer-3 auth gate cannot "
-                "be bypassed."
-            )
-
-        # V6 (FR-039 / FR-040): auth_type ↔ auth_level consistency invariant.
-        # Rejects any (auth_type, auth_level) pair outside the canonical mapping.
-        # Fail-closed (FR-048): unknown auth_type values also raise.
-        if self.auth_type not in _AUTH_TYPE_LEVEL_MAPPING:
-            raise ValueError(
-                f"V6 violation (FR-048): unknown auth_type={self.auth_type!r}; "
-                "canonical mapping has no entry. Extend _AUTH_TYPE_LEVEL_MAPPING "
-                "in the same PR that adds a new auth_type value."
-            )
-        _v6_allowed = _AUTH_TYPE_LEVEL_MAPPING[self.auth_type]
-        if self.auth_level not in _v6_allowed:
-            raise ValueError(
-                f"V6 violation (FR-039/FR-040): tool {self.id!r} declares "
-                f"auth_type={self.auth_type!r} with auth_level={self.auth_level!r}; "
-                f"auth_type={self.auth_type!r} permits auth_level in "
-                f"{sorted(_v6_allowed)}."
-            )
-
-        return self
 
     # ------------------------------------------------------------------
     # Export helpers
@@ -784,8 +666,6 @@ class AdapterCandidate(BaseModel):
     required_params: list[str]
     search_hint: str
     why_matched: str
-    requires_auth: bool = False
-    is_personal_data: bool = False
 
 
 class LookupSearchResult(BaseModel):

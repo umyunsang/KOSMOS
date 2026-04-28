@@ -135,8 +135,6 @@ def search(
             required_params=required_params,
             search_hint=tool.search_hint,
             why_matched=f"{backend_label} score {score:.4f} on search_hint",
-            requires_auth=tool.requires_auth,
-            is_personal_data=tool.is_personal_data,
         )
         results.append(candidate)
 
@@ -238,15 +236,7 @@ def create_search_meta_tool() -> GovAPITool:
         input_schema=SearchToolsInput,
         output_schema=SearchToolsOutput,
         search_hint="도구 검색 찾기 search tools find discover 도구목록",
-        # Meta-tool; not in TOOL_MIN_AAL. Pure in-process BM25 over public
-        # search_hint corpus → auth_level="public", non-personal.
-        auth_level="public",
-        pipa_class="non_personal",
-        is_irreversible=False,
-        dpa_reference=None,
-        # Override fail-closed defaults for this internal tool.
-        requires_auth=False,
-        is_personal_data=False,
+        # Meta-tool; internal KOSMOS harness surface.
         is_concurrency_safe=True,
         cache_ttl_seconds=0,
         rate_limit_per_minute=60,

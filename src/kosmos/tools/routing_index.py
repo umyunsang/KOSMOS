@@ -4,8 +4,6 @@ Called from kosmos.tools.register_all at process start. Fails closed on:
 - Any registered adapter with primitive=None
 - Any registered adapter missing adapter_mode declaration in mock subtree (CI-only; not runtime)
 - Duplicate tool_id across the registry
-- compute_permission_tier() raising for any adapter
-- Spec 025 v6 invariant violation for any adapter (delegates to GovAPITool validator)
 
 Returns a RoutingIndex that lookup(mode="search") consumes for primitive-
 filtered ranking.
@@ -17,7 +15,6 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict
 
 from kosmos.tools.models import GovAPITool
-from kosmos.tools.permissions import compute_permission_tier
 
 # Primitive literal type — the closed set enforced by invariant 1.
 _PrimitiveT = Literal["lookup", "resolve_location", "submit", "subscribe", "verify"]
@@ -61,14 +58,6 @@ def build_routing_index(adapters: list[GovAPITool]) -> RoutingIndex:
             raise RoutingValidationError(
                 f"{adapter.id}: invariant 4 (unique tool_id) — duplicate registration"
             )
-
-        # Invariant 5: compute_permission_tier total
-        try:
-            compute_permission_tier(adapter.auth_level, adapter.is_irreversible)
-        except ValueError as e:
-            raise RoutingValidationError(
-                f"{adapter.id}: invariant 5 (permission_tier total) — {e}"
-            ) from e
 
         # Warning: ministry="OTHER"
         if hasattr(adapter, "ministry") and adapter.ministry == "OTHER":

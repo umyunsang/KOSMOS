@@ -130,9 +130,10 @@ class ToolExecutor:
         existing callers that pass JSON strings.
 
         Layer 3 short-circuit (FR-025, FR-026):
-            If ``tool.requires_auth`` is True and ``session_identity`` is None,
-            return ``LookupError(reason="auth_required")`` with ZERO upstream
-            calls.  This check is unconditional — no bypass, no test shortcut.
+            If ``tool.policy.citizen_facing_gate`` is not 'read-only' and
+            ``session_identity`` is None, return ``LookupError(reason="auth_required")``
+            with ZERO upstream calls.  This check is unconditional — no bypass, no test shortcut.
+            Fail-closed when policy is None (pre-migration adapter).
 
         Args:
             tool_id: Stable adapter identifier.
@@ -171,7 +172,11 @@ class ToolExecutor:
             )
 
         # --- Layer 3 auth-gate (FR-025, FR-026) — UNCONDITIONAL ----------------
-        if tool.requires_auth and session_identity is None:
+        # Epic δ #2295: auth-gate based on policy.citizen_facing_gate.
+        # read-only = public access; login/action/sign/submit = auth required.
+        # Fail-closed when policy is None (pre-migration adapter).
+        _gate = tool.policy.citizen_facing_gate if tool.policy is not None else "login"
+        if _gate != "read-only" and session_identity is None:
             logger.info(
                 "invoke: auth_required short-circuit for tool %s (zero upstream calls)",
                 tool_id,
@@ -340,7 +345,8 @@ class ToolExecutor:
                 # Warn when the legacy dispatch() path is used for auth-required tools.
                 # dispatch() has no session_identity parameter, so the auth gate in
                 # invoke() can never fire here — flag this for operational visibility.
-                if tool.requires_auth:
+                _dispatch_gate = tool.policy.citizen_facing_gate if tool.policy is not None else "login"
+                if _dispatch_gate != "read-only":
                     logger.debug(
                         "dispatch() called for auth-required tool %r without auth gate",
                         tool_name,
