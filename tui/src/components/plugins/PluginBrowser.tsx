@@ -30,6 +30,14 @@ export type PluginEntry = {
   description_ko: string;
   description_en: string;
   isActive: boolean;
+  // Spec 1979 T024 — additive optional fields, backwards compatible with
+  // existing Spec 1635 T065 callers that only populate the original 6 fields.
+  tier?: 'live' | 'mock';
+  layer?: 1 | 2 | 3;
+  trustee_org_name?: string | null;
+  install_timestamp_iso?: string;
+  search_hint_ko?: string;
+  search_hint_en?: string;
 };
 
 export type PluginBrowserProps = {
