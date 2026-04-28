@@ -17,33 +17,34 @@ records its observed output, and the verdict.
 - **Layer 2 — stdio JSONL probe** (`scripts/smoke-stdio.sh`) drives 5 citizen scenarios through the backend stdio bridge, captures every assistant_chunk / tool_call frame as `smoke-stdio-<slug>.jsonl`, aggregates into `smoke.txt`. Run: `KOSMOS_FRIENDLI_TOKEN=… scripts/smoke-stdio.sh`.
 - **Layer 4 — vhs visual** (`scripts/smoke.tape` → `smoke.gif`) drives the same 5 scenarios through the live TUI for human-eye review. Run: `vhs scripts/smoke.tape`.
 
-**Per-scenario audit** (Layer 2 — `scripts/smoke-stdio.sh` 2026-04-28 run):
+**Per-scenario audit** (Layer 2 — `scripts/smoke-stdio.sh` 2026-04-28, after the primitive-only prompt fix + textual-marker fallback parser landed):
 
-| Scenario | Prompt | Tool intent | Reply excerpt |
-|----------|--------|-------------|---------------|
-| location | 강남역 어디야? | ✓ `<tool_call>{"name":"resolve_location",…}` | (intent only) |
-| weather | 오늘 서울 날씨 알려줘 | ✓ `<tool_call>{"kma_today",…}` | (intent only) |
-| emergency | 근처 응급실 알려줘 | ✓ `<tool_call>{"name_nmc_emergency_search":{"query":"근처 응급실"}}` | (intent only) |
-| koroad | 어린이 보호구역 사고 다발 | ✓ `<tool_call>koroad_accident_hotspot_search …` | (intent only) |
-| greeting | 안녕 | — (no tool needed) | "안녕하세요. 무엇을 도와드릴까요?" |
+| Scenario | Prompt | Structured tool_calls | Real invocations |
+|----------|--------|------------------------|--------------------|
+| location | 강남역 어디야? | 1 | `resolve_location({"query":"강남역"})` |
+| weather | 오늘 서울 날씨 알려줘 | 4 | `lookup(search "서울 날씨") ×3` + `resolve_location({"query":"서울"})` |
+| emergency | 근처 응급실 알려줘 | 2 | `lookup(search "근처 응급실") ×2` |
+| koroad | 어린이 보호구역 사고 다발 | 7 | `lookup(search …)` for "어린이 보호구역", "사고 다발 지역" variants |
+| greeting | 안녕 | 0 | "안녕하세요! 무엇을 도와드릴까요?" |
 
-**Verification**:
+Total 14 structured `ToolCallFrame`s emitted in one session. 4 of 5 scenarios now produce real backend tool dispatch (not just intent emission).
+
+**First-run note (kept for the historical record)**: the very first P5 smoke run — before the prompt was tightened to the 5-primitive surface — surfaced the regression as textual `<tool_call>{...}</tool_call>` markers (4/5 scenarios) instead of structured tool_calls. Two changes turned that around:
+
+1. `prompts/system_v1.md` `<tool_usage>` section rewritten to teach only the two LLM-visible primitives (`resolve_location` and `lookup(search → fetch)`) and explicitly forbid the textual marker shape. K-EXAONE switched to OpenAI-structured emissions immediately.
+2. `src/kosmos/llm/tool_call_parser.py` — defensive fallback that recognises four empirical K-EXAONE textual marker formats (well-formed JSON, XML-attribute pseudo-JSON, single-key `name_X` dict, mixed-XML body) and synthesises `tool_call_buf` entries inside `_handle_chat_request` so degraded paths still dispatch instead of leaking the raw marker to the citizen.
+
+**Verification** (latest run):
 
 ```text
-$ grep -c -E 'tool_use|tool_call|<tool_call>' specs/2152-system-prompt-redesign/smoke.txt
-10
-$ for f in specs/2152-system-prompt-redesign/smoke-stdio-*.jsonl; do
-    echo "$(basename $f): $(grep -c '<tool_call>' $f)"; done
-emergency: 1
-greeting: 0
-koroad: 1
-location: 1
-weather: 1
+$ grep -c '"kind":"tool_call"' specs/2152-system-prompt-redesign/smoke-stdio-*.jsonl
+specs/.../smoke-stdio-emergency.jsonl:2
+specs/.../smoke-stdio-greeting.jsonl:0
+specs/.../smoke-stdio-koroad.jsonl:7
+specs/.../smoke-stdio-location.jsonl:1
+specs/.../smoke-stdio-weather.jsonl:4
+$ # → 4 of 5 scenarios trigger ≥1 structured tool_call (≥ 3 → PASS).
 ```
-
-4 of 5 scenarios surface a tool-call intent (≥ 3 → PASS).
-
-**Known follow-up — function-calling parser**: K-EXAONE on FriendliAI emits the tool-call intent as a textual `<tool_call>{…}</tool_call>` marker rather than the OpenAI structured `tool_calls` field. The KOSMOS backend's agentic loop (Spec 2077 wiring) currently dispatches only the structured form, so the textual intent does not yet round-trip into a real `ToolCallFrame` + adapter execution. That parser bridge is out of scope for Epic #2152 (whose mandate was the prompt structure) and is the natural follow-up Epic. The prompt change shipped here is the prerequisite — without it the model didn't even attempt to call tools.
 
 ---
 
