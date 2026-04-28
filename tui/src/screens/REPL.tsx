@@ -3485,24 +3485,44 @@ export function REPL({
         setInputValue('');
         helpers.setCursorOffset(0);
         helpers.clearBuffer();
-        const pluginsResult = executePlugins();
+        // Spec 1979 T023 — executePlugins now async (IPC round-trip to
+        // backend plugin_op_dispatcher.handle_list). Render the browser
+        // with an empty list immediately so the citizen sees the surface
+        // open, then refresh once the round-trip resolves.
         setToolJSX({
           jsx: React.createElement(PluginBrowser, {
-            plugins: pluginsResult.plugins,
+            plugins: [],
             onToggle: () => {},
             onDetail: () => {},
             onRemove: () => {},
-            // Spec 1979 T028 — `a` keystroke is wired but the marketplace
-            // catalog browser is deferred to #1820. PluginBrowser itself
-            // renders a deferred banner via its keystroke-hint footer so
-            // citizens see the deferral inline. This callback is therefore
-            // a no-op at the REPL level; PluginBrowser reflects the state.
             onMarketplace: () => {},
             onDismiss: () => _kosmosCloseJSX(),
           }),
           shouldHidePromptInput: false,
           isLocalJSXCommand: true,
         });
+        // Fire-and-forget: when the IPC round-trip resolves, swap the
+        // toolJSX with the populated browser. Errors are silently swallowed
+        // here — the browser shows the empty-state hint until next /plugins.
+        executePlugins()
+          .then((result) => {
+            setToolJSX({
+              jsx: React.createElement(PluginBrowser, {
+                plugins: result.plugins,
+                onToggle: () => {},
+                onDetail: () => {},
+                onRemove: () => {},
+                onMarketplace: () => {},
+                onDismiss: () => _kosmosCloseJSX(),
+              }),
+              shouldHidePromptInput: false,
+              isLocalJSXCommand: true,
+            });
+          })
+          .catch(() => {
+            // Round-trip failed — keep the empty-state browser; user sees
+            // "플러그인이 없습니다 · No plugins installed".
+          });
         return;
       }
 
