@@ -2,29 +2,17 @@
 //
 // `/plugin <subcommand>` slash command — KOSMOS citizen plugin lifecycle.
 //
-// Spec 1979 T021 wired this file as the `/plugin` slash command (replacing
-// the CC marketplace residue at `./commands/plugin/index.tsx`). This file
-// MUST conform to the global Command type union (PromptCommand | LocalCommand
-// | LocalJSXCommand) declared in tui/src/types/command.ts — earlier drafts
-// used a `handle()` shape from the permission-router framework which the
-// global slash-command dispatcher does NOT consume; the result was that
-// `/plugin install seoul-subway` typed correctly into the prompt but the
-// command never executed.
+// Spec 1979 architecture: this command is a LocalJSXCommand. The actual
+// citizen-visible work is emitting a `plugin_op_request` IPC frame
+// (consumed by the backend dispatcher in
+// src/kosmos/ipc/plugin_op_dispatcher.py).
 //
-// We use LocalJSXCommand:
-//   - The actual citizen-visible work is emitting a `plugin_op_request`
-//     IPC frame (consumed by the backend dispatcher in
-//     src/kosmos/ipc/plugin_op_dispatcher.py).
-//   - LocalJSX `call(onDone, context, args)` returns a React.ReactNode
-//     that's mounted into toolJSX. We mount a tiny status banner that
-//     immediately calls `onDone(acknowledgement)` so the citizen sees the
-//     "🔄 ${name} 플러그인 설치 시작..." text in their conversation feed.
-//
-// Subcommands per migration tree § B8 + contracts/plugin-install.cli.md:
-//   /plugin install <name> [--version v]
-//   /plugin list
-//   /plugin uninstall <name>
-//   /plugin pipa-text                 — print canonical PIPA §26 text + hash
+// Acknowledgement is rendered immediately via setTimeout(onDone, 0) so the
+// citizen sees the bilingual notification in their conversation transcript.
+// The full lifecycle round-trip (consent modal + progress streaming + final
+// status) requires a TUI-side master frame dispatcher (Spec 1979 Issue 3 —
+// see commit ac17afc); that work is deferred to Epic #1980 (Agent Swarm
+// TUI integration) which has the same dependency.
 
 import * as React from 'react';
 
@@ -138,10 +126,8 @@ const call: LocalJSXCommandModule['call'] = async (onDone, _context, args) => {
     acknowledgement = `알 수 없는 subcommand: ${sub}\n${_USAGE_KO}`;
   }
 
-  // LocalJSX commands return a React node mounted into toolJSX. We use
-  // null + immediately call onDone so the citizen sees the acknowledgement
-  // in their conversation feed (added as a notification by handlePromptSubmit).
-  // `display: 'system'` renders the text as a system-style notification.
+  // setTimeout(0) defers onDone past the synchronous call return so the
+  // local-jsx command lifecycle in processSlashCommand.tsx settles correctly.
   setTimeout(() => onDone(acknowledgement, { display: 'system' }), 0);
   return null;
 };
