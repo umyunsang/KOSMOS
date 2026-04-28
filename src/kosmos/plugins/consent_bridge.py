@@ -103,7 +103,7 @@ class IPCConsentBridge:
         except RuntimeError:
             self._loop = None
 
-    def __call__(
+    def __call__(  # noqa: C901 — branch count reflects PIPA + layer + emit + await fan-out; splitting hurts readability
         self,
         entry: object,
         version: object,
@@ -191,7 +191,7 @@ class IPCConsentBridge:
                 response = await asyncio.wait_for(
                     future, timeout=self._timeout_seconds
                 )
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 logger.warning(
                     "IPCConsentBridge: 60s timeout awaiting permission_response "
                     "for plugin %s (request_id=%s) — denying",
@@ -208,9 +208,7 @@ class IPCConsentBridge:
                 self._pending_perms.pop(request_id, None)
 
             decision = getattr(response, "decision", None)
-            if decision in ("granted", "allow_once", "allow_session"):
-                return True
-            return False
+            return decision in ("granted", "allow_once", "allow_session")
 
         # Bridge sync → async. Schedule the coroutine on the cached loop and
         # block synchronously on the resulting concurrent future until it

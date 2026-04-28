@@ -12,13 +12,11 @@ concurrent install ledger) sub-tests per the spec quality audit.
 
 from __future__ import annotations
 
-import asyncio
 from typing import Any
 
 import pytest
 
 from kosmos.ipc.frame_schema import IPCFrame, PluginOpFrame
-
 
 # ---------------------------------------------------------------------------
 # Test seams
@@ -244,7 +242,6 @@ class TestOTELPluginIdSpan:
         # implementation which already opens the kosmos.plugin.install span.
         # A complete OTEL exporter capture is overkill for this unit test;
         # we use opentelemetry's in-memory test exporter pattern.
-        from opentelemetry import trace
         from opentelemetry.sdk.trace import TracerProvider
         from opentelemetry.sdk.trace.export import SimpleSpanProcessor
         from opentelemetry.sdk.trace.export.in_memory_span_exporter import (
