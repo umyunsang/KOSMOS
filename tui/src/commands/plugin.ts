@@ -1,202 +1,158 @@
 // SPDX-License-Identifier: Apache-2.0
 //
-// `/plugin <subcommand>` slash command.
+// `/plugin <subcommand>` slash command — KOSMOS citizen plugin lifecycle.
+//
+// Spec 1979 T021 wired this file as the `/plugin` slash command (replacing
+// the CC marketplace residue at `./commands/plugin/index.tsx`). This file
+// MUST conform to the global Command type union (PromptCommand | LocalCommand
+// | LocalJSXCommand) declared in tui/src/types/command.ts — earlier drafts
+// used a `handle()` shape from the permission-router framework which the
+// global slash-command dispatcher does NOT consume; the result was that
+// `/plugin install seoul-subway` typed correctly into the prompt but the
+// command never executed.
+//
+// We use LocalJSXCommand:
+//   - The actual citizen-visible work is emitting a `plugin_op_request`
+//     IPC frame (consumed by the backend dispatcher in
+//     src/kosmos/ipc/plugin_op_dispatcher.py).
+//   - LocalJSX `call(onDone, context, args)` returns a React.ReactNode
+//     that's mounted into toolJSX. We mount a tiny status banner that
+//     immediately calls `onDone(acknowledgement)` so the citizen sees the
+//     "🔄 ${name} 플러그인 설치 시작..." text in their conversation feed.
 //
 // Subcommands per migration tree § B8 + contracts/plugin-install.cli.md:
 //   /plugin install <name> [--version v]
 //   /plugin list
 //   /plugin uninstall <name>
 //   /plugin pipa-text                 — print canonical PIPA §26 text + hash
-//
-// Each subcommand emits exactly ONE plugin_op_request frame via the
-// dependency-injected sendPluginOp callback. The backend installer
-// (src/kosmos/plugins/installer.py) is what would consume those frames
-// and reply with plugin_op_progress (phase 1-7) + plugin_op_complete.
-//
-// H7 (review eval): the backend stdio dispatcher that routes incoming
-// plugin_op_request frames to install_plugin() is NOT wired in this
-// epic — install_plugin() is fully implemented (8-phase, 6 integration
-// tests + 4 SC tests), but the IPC bridge that turns a TUI request into
-// a Python install_plugin() call is deferred to a follow-up. Until that
-// lands, the slash command's acknowledgement carries an explicit
-// "(backend not yet wired — use `kosmos plugin install` shell entry-
-// point instead)" suffix so citizens are not surprised when the
-// progress overlay never advances.
 
-import type {
-  CommandDefinition,
-  CommandHandlerArgs,
-  CommandResult,
-} from './types'
-// PIPA canonical hash is the Python source-of-truth (extracted from
-// docs/plugins/security-review.md). The .generated.ts file is rebuilt
-// by `bun run scripts/gen-pipa-hash.ts` so a TS-side drift cannot
-// silently linger after the legal team rotates the canonical text.
-import { CANONICAL_PIPA_ACK_SHA256 } from '../ipc/pipa.generated'
+import * as React from 'react';
+
+import type { Command, LocalJSXCommandModule } from '../types/command.js';
+import { CANONICAL_PIPA_ACK_SHA256 } from '../ipc/pipa.generated.js';
+import { getOrCreateKosmosBridge, getKosmosBridgeSessionId } from '../ipc/bridgeSingleton.js';
 
 const _USAGE_KO =
-  '사용법: /plugin <install|list|uninstall|pipa-text> [...]'
-const _PIPA_HASH = CANONICAL_PIPA_ACK_SHA256
+  '사용법: /plugin <install|list|uninstall|pipa-text> [...]';
 
 function _newCorrelationId(): string {
-  // Use crypto.randomUUID — UUIDv4 is acceptable here since the host
-  // re-stamps with UUIDv7 at the bridge boundary (Spec 032 envelope).
-  return crypto.randomUUID()
+  return crypto.randomUUID();
 }
 
 function _now(): string {
-  return new Date().toISOString()
+  return new Date().toISOString();
 }
 
 function _parseSubcommand(raw: string): { sub: string; rest: string } {
-  const trimmed = raw.trim()
-  if (trimmed.length === 0) return { sub: '', rest: '' }
-  const space = trimmed.indexOf(' ')
-  if (space === -1) return { sub: trimmed, rest: '' }
-  return { sub: trimmed.slice(0, space), rest: trimmed.slice(space + 1).trim() }
+  const trimmed = raw.trim();
+  if (trimmed.length === 0) return { sub: '', rest: '' };
+  const space = trimmed.indexOf(' ');
+  if (space === -1) return { sub: trimmed, rest: '' };
+  return { sub: trimmed.slice(0, space), rest: trimmed.slice(space + 1).trim() };
 }
 
 function _parseInstallArgs(rest: string): {
-  name: string | undefined
-  version: string | undefined
-  dryRun: boolean
+  name: string | undefined;
+  version: string | undefined;
+  dryRun: boolean;
 } {
-  const tokens = rest.split(/\s+/).filter((t) => t.length > 0)
-  let name: string | undefined
-  let version: string | undefined
-  let dryRun = false
+  const tokens = rest.split(/\s+/).filter((t) => t.length > 0);
+  let name: string | undefined;
+  let version: string | undefined;
+  let dryRun = false;
   for (let i = 0; i < tokens.length; i += 1) {
-    const tok = tokens[i]
-    if (!tok) continue
+    const tok = tokens[i];
+    if (!tok) continue;
     if (tok === '--version') {
-      version = tokens[i + 1]
-      i += 1
+      version = tokens[i + 1];
+      i += 1;
     } else if (tok === '--dry-run') {
-      dryRun = true
+      dryRun = true;
     } else if (!name && !tok.startsWith('--')) {
-      name = tok
+      name = tok;
     }
   }
-  return { name, version, dryRun }
+  return { name, version, dryRun };
 }
 
-function _handleInstall(rest: string, args: CommandHandlerArgs): CommandResult {
-  const { name, version, dryRun } = _parseInstallArgs(rest)
-  if (!name) {
-    return {
-      acknowledgement: '플러그인 이름이 필요합니다: /plugin install <name>',
-    }
-  }
-  if (!args.sendPluginOp) {
-    return {
-      acknowledgement: '플러그인 IPC 가 연결되지 않았습니다.',
-    }
-  }
-  args.sendPluginOp({
+function _emitPluginOp(payload: Record<string, unknown>): void {
+  const bridge = getOrCreateKosmosBridge();
+  const sessionId = getKosmosBridgeSessionId();
+  const frame = {
     kind: 'plugin_op',
     version: '1.0',
-    session_id: '',
+    session_id: sessionId,
     correlation_id: _newCorrelationId(),
     ts: _now(),
     role: 'tui',
     op: 'request',
-    request_op: 'install',
-    name,
-    requested_version: version ?? null,
-    dry_run: dryRun,
-  } as never)
-  const dryNote = dryRun ? ' (dry-run)' : ''
-  return {
-    acknowledgement: `🔄 ${name} 플러그인 설치 시작...${dryNote}`,
-  }
+    ...payload,
+  };
+  bridge.send(frame as never);
 }
 
-function _handleList(args: CommandHandlerArgs): CommandResult {
-  if (!args.sendPluginOp) {
-    return {
-      acknowledgement: '플러그인 IPC 가 연결되지 않았습니다.',
-    }
-  }
-  args.sendPluginOp({
-    kind: 'plugin_op',
-    version: '1.0',
-    session_id: '',
-    correlation_id: _newCorrelationId(),
-    ts: _now(),
-    role: 'tui',
-    op: 'request',
-    request_op: 'list',
-  } as never)
-  return {
-    acknowledgement: '📋 설치된 플러그인 목록 조회 중...',
-  }
-}
+// ---------------------------------------------------------------------------
+// LocalJSXCommand `call` implementation
+// ---------------------------------------------------------------------------
 
-function _handleUninstall(rest: string, args: CommandHandlerArgs): CommandResult {
-  const name = rest.trim().split(/\s+/)[0]
-  if (!name) {
-    return {
-      acknowledgement: '플러그인 이름이 필요합니다: /plugin uninstall <name>',
-    }
-  }
-  if (!args.sendPluginOp) {
-    return {
-      acknowledgement: '플러그인 IPC 가 연결되지 않았습니다.',
-    }
-  }
-  args.sendPluginOp({
-    kind: 'plugin_op',
-    version: '1.0',
-    session_id: '',
-    correlation_id: _newCorrelationId(),
-    ts: _now(),
-    role: 'tui',
-    op: 'request',
-    request_op: 'uninstall',
-    name,
-  } as never)
-  return {
-    acknowledgement: `🗑️ ${name} 플러그인 제거 시작...`,
-  }
-}
+const call: LocalJSXCommandModule['call'] = async (onDone, _context, args) => {
+  const { sub, rest } = _parseSubcommand(args);
 
-function _handlePipaText(): CommandResult {
-  // No IPC needed — purely informational.
-  return {
-    acknowledgement: [
+  let acknowledgement: string;
+
+  if (sub === 'install') {
+    const { name, version, dryRun } = _parseInstallArgs(rest);
+    if (!name) {
+      acknowledgement = '플러그인 이름이 필요합니다: /plugin install <name>';
+    } else {
+      _emitPluginOp({
+        request_op: 'install',
+        name,
+        requested_version: version ?? null,
+        dry_run: dryRun,
+      });
+      const dryNote = dryRun ? ' (dry-run)' : '';
+      acknowledgement = `🔄 ${name} 플러그인 설치 시작...${dryNote}`;
+    }
+  } else if (sub === 'list') {
+    _emitPluginOp({ request_op: 'list' });
+    acknowledgement = '📋 설치된 플러그인 목록 조회 중...';
+  } else if (sub === 'uninstall') {
+    const name = rest.trim().split(/\s+/)[0];
+    if (!name) {
+      acknowledgement = '플러그인 이름이 필요합니다: /plugin uninstall <name>';
+    } else {
+      _emitPluginOp({ request_op: 'uninstall', name });
+      acknowledgement = `🗑️ ${name} 플러그인 제거 시작...`;
+    }
+  } else if (sub === 'pipa-text') {
+    acknowledgement = [
       'PIPA §26 trustee acknowledgment canonical SHA-256:',
-      `  ${_PIPA_HASH}`,
+      `  ${CANONICAL_PIPA_ACK_SHA256}`,
       'Source: docs/plugins/security-review.md (마커 사이 텍스트)',
       'manifest.yaml 의 acknowledgment_sha256 필드에 위 값을 그대로 기록하세요.',
-    ].join('\n'),
+    ].join('\n');
+  } else if (sub === '') {
+    acknowledgement = _USAGE_KO;
+  } else {
+    acknowledgement = `알 수 없는 subcommand: ${sub}\n${_USAGE_KO}`;
   }
-}
 
-function handle(args: CommandHandlerArgs): CommandResult {
-  const { sub, rest } = _parseSubcommand(args.args)
-  switch (sub) {
-    case 'install':
-      return _handleInstall(rest, args)
-    case 'list':
-      return _handleList(args)
-    case 'uninstall':
-      return _handleUninstall(rest, args)
-    case 'pipa-text':
-      return _handlePipaText()
-    case '':
-      return { acknowledgement: _USAGE_KO }
-    default:
-      return {
-        acknowledgement: `알 수 없는 subcommand: ${sub}\n${_USAGE_KO}`,
-      }
-  }
-}
+  // LocalJSX commands return a React node mounted into toolJSX. We use
+  // null + immediately call onDone so the citizen sees the acknowledgement
+  // in their conversation feed (added as a notification by handlePromptSubmit).
+  // `display: 'system'` renders the text as a system-style notification.
+  setTimeout(() => onDone(acknowledgement, { display: 'system' }), 0);
+  return null;
+};
 
-const pluginCommand: CommandDefinition = {
+const pluginCommand: Command = {
+  type: 'local-jsx',
   name: 'plugin',
-  description: 'Install / list / uninstall KOSMOS plugins',
+  description: 'KOSMOS 플러그인 설치 / 목록 / 제거 / PIPA 해시 (Install / list / uninstall KOSMOS plugins)',
   argumentHint: '<install|list|uninstall|pipa-text> [name]',
-  handle,
-}
+  immediate: true,
+  load: async () => ({ call }),
+};
 
-export default pluginCommand
+export default pluginCommand;
