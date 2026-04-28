@@ -685,6 +685,14 @@ async def run(  # noqa: C901
             _os_chat_env.environ.get("KOSMOS_REACT_MAX_TURNS", "8"),
         )
     )
+    # Epic #2152 R4 — separator between the cacheable static prefix (the
+    # PromptLoader-resolved citizen system prompt + the augmented
+    # ``## Available tools`` block) and the per-turn dynamic suffix. The
+    # literal mirrors CC ``prompts.ts:572-575`` so the same identifier reads
+    # familiar to anyone with CC source-map context. Downstream tooling
+    # (kosmos.prompt.hash slicing in ``kosmos.llm.client``) splits on this
+    # marker to compute the static-prefix-only hash.
+    _DYNAMIC_BOUNDARY_MARKER = "\nSYSTEM_PROMPT_DYNAMIC_BOUNDARY\n"  # noqa: N806
     # Spec 1978 T053 — eager-import the Mock adapter tree so every adapter
     # self-registers with its primitive dispatcher before the first chat
     # turn arrives. Equivalent to plan.md "Mock adapter activation"; failure
@@ -1194,16 +1202,35 @@ async def run(  # noqa: C901
         # (mirrors ``_cc_reference/api.ts:appendSystemContext``). Returns
         # ``base`` unchanged when ``llm_tools`` is empty (no inventory to
         # publish), so the no-tools path is byte-stable with the old code.
-        base_system = frame.system or ""
+        # Epic #2152 R3 + R4 — when the TUI sends an empty ``frame.system``
+        # (the new default after R5 dev-context excision), fall back to the
+        # PromptLoader-resolved citizen system prompt. Append the boundary
+        # marker so the prefix hash emitted by the LLM client is meaningful.
+        from kosmos.ipc.citizen_request import (  # noqa: PLC0415
+            wrap_citizen_request,
+        )
+
+        base_system = frame.system
+        if not base_system:
+            loaded = await _ensure_system_prompt()
+            base_system = loaded or ""
         augmented_system = build_system_prompt_with_tools(base_system, llm_tools)
+        if augmented_system:
+            augmented_system = augmented_system + _DYNAMIC_BOUNDARY_MARKER
         llm_messages: list[LLMChatMessage] = []
         if augmented_system:
             llm_messages.append(LLMChatMessage(role="system", content=augmented_system))
         for m in frame.messages:
+            # Epic #2152 R3 — wrap citizen utterances in <citizen_request>
+            # XML tags so prompt-injection-shaped pastes cannot escalate into
+            # instructions (contract chat-request-envelope.md I-C3, I-C4, I-C6).
+            content = m.content
+            if m.role == "user" and content:
+                content = wrap_citizen_request(content)
             llm_messages.append(
                 LLMChatMessage(
                     role=m.role,
-                    content=m.content,
+                    content=content,
                     name=m.name,
                     tool_call_id=m.tool_call_id,
                 )

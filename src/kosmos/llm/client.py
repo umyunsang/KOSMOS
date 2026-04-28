@@ -355,10 +355,24 @@ class LLMClient:
         # T032: kosmos.prompt.hash — SHA-256 of the system-prompt bytes actually
         # sent on the wire. KOSMOS extension namespace per Spec 021; consumed by
         # Epic #501. Satisfies FR-C07 / SC-007.
+        #
+        # Epic #2152 R4 — when the system message contains the
+        # ``SYSTEM_PROMPT_DYNAMIC_BOUNDARY`` marker, hash only the bytes UP
+        # TO (and including) the marker so the hash captures the cacheable
+        # static prefix and stays stable across turns even when the dynamic
+        # suffix grows. Falls back to full-content hashing when the marker is
+        # absent (transitional path for callers that have not migrated).
         if messages and messages[0].role == "system" and messages[0].content is not None:
+            _system_text = messages[0].content
+            _marker = "\nSYSTEM_PROMPT_DYNAMIC_BOUNDARY\n"
+            _marker_idx = _system_text.find(_marker)
+            if _marker_idx != -1:
+                _hashed = _system_text[: _marker_idx + len(_marker)]
+            else:
+                _hashed = _system_text
             span.set_attribute(
                 "kosmos.prompt.hash",
-                hashlib.sha256(messages[0].content.encode("utf-8")).hexdigest(),
+                hashlib.sha256(_hashed.encode("utf-8")).hexdigest(),
             )
 
         # Attach span as the active context for child spans (execute_tool, etc.)

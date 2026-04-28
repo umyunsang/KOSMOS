@@ -138,6 +138,13 @@ class FunctionSchema(BaseModel):
     # internal I/O contracts. Using Any is the only correct representation.
     parameters: dict[str, Any]
 
+    # Epic #2152 R6 — KOSMOS-internal metadata carrying the per-tool trigger
+    # phrase that ``build_system_prompt_with_tools`` emits inside the
+    # ``## Available tools`` block. ``exclude=True`` keeps the field out of
+    # the OpenAI/FriendliAI tool-definition payload (the upstream API rejects
+    # unknown fields), while leaving it visible to in-process consumers.
+    trigger_phrase: str | None = Field(default=None, exclude=True)
+
 
 class ToolDefinition(BaseModel):
     """Tool schema sent to the model for function calling."""
