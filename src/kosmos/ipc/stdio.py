@@ -1241,11 +1241,24 @@ async def run(  # noqa: C901
         # ---- CC query-engine agentic loop ---------------------------------
         import json as _json  # noqa: PLC0415
 
+        # Epic #2152 follow-up — citizen-facing stream gate. K-EXAONE may
+        # interleave a textual ``<tool_call>{...}</tool_call>`` marker with
+        # the natural-language reply even when the structured ``tool_calls``
+        # field is also populated, so the marker leaks into the streamed
+        # AssistantChunkFrame content unless filtered. The gate strips those
+        # blocks character-accurately while ``assistant_text_chunks`` still
+        # accumulates the *full raw stream* — the post-stream
+        # ``extract_textual_tool_calls`` fallback (below) needs the markers
+        # to synthesise tool_call_buf entries when the structured form is
+        # absent.
+        from kosmos.llm.tool_call_parser import StreamGate  # noqa: PLC0415
+
         for _turn in range(_AGENTIC_LOOP_MAX_TURNS):
             message_id = str(uuid.uuid4())
             assistant_text_chunks: list[str] = []
             tool_call_buf: dict[int, dict[str, str]] = {}
             stream_error: Exception | None = None
+            stream_gate = StreamGate()
 
             try:
                 async for event in client.stream(  # type: ignore[attr-defined]
@@ -1260,18 +1273,20 @@ async def run(  # noqa: C901
                         delta = getattr(event, "content", "") or ""
                         if delta:
                             assistant_text_chunks.append(delta)
-                            await write_frame(
-                                AssistantChunkFrame(
-                                    session_id=frame.session_id,
-                                    correlation_id=frame.correlation_id,
-                                    role="llm",
-                                    ts=_utcnow(),
-                                    kind="assistant_chunk",
-                                    message_id=message_id,
-                                    delta=delta,
-                                    done=False,
+                            visible = stream_gate.feed(delta)
+                            if visible:
+                                await write_frame(
+                                    AssistantChunkFrame(
+                                        session_id=frame.session_id,
+                                        correlation_id=frame.correlation_id,
+                                        role="llm",
+                                        ts=_utcnow(),
+                                        kind="assistant_chunk",
+                                        message_id=message_id,
+                                        delta=visible,
+                                        done=False,
+                                    )
                                 )
-                            )
                     elif event_type == "thinking_delta":
                         # K-EXAONE chain-of-thought channel — mirrors CC's
                         # Anthropic ``thinking_delta`` content_block_delta
@@ -1323,6 +1338,25 @@ async def run(  # noqa: C901
                         break
             except Exception as exc:  # noqa: BLE001
                 stream_error = exc
+
+            # Drain any pending bytes the stream gate held back at stream end.
+            # ``flush()`` returns the safe trailing window (i.e. bytes that
+            # were too short to disambiguate during streaming but are now
+            # known not to be the start of a ``<tool_call>`` marker).
+            tail = stream_gate.flush()
+            if tail:
+                await write_frame(
+                    AssistantChunkFrame(
+                        session_id=frame.session_id,
+                        correlation_id=frame.correlation_id,
+                        role="llm",
+                        ts=_utcnow(),
+                        kind="assistant_chunk",
+                        message_id=message_id,
+                        delta=tail,
+                        done=False,
+                    )
+                )
 
             if stream_error is not None:
                 # Schema constraint: ErrorFrame.role ∈ {'backend','tui'} —
@@ -1485,11 +1519,26 @@ async def run(  # noqa: C901
             # Append the assistant message that requested tools — the CC
             # query-engine contract requires the function-call envelope to
             # precede the tool messages in the next turn.
-            full_text = "".join(assistant_text_chunks)
+            #
+            # Epic #2152 follow-up — record the *cleaned* text (markers
+            # stripped) into the LLM history so subsequent turns don't see
+            # the textual ``<tool_call>`` blocks and double-emit them. The
+            # post-stream extractor above sets ``cleaned_text`` only when
+            # it ran (i.e. tool_call_buf was empty + marker present); when
+            # both structured tool_calls AND a textual marker were emitted
+            # in the same turn, run the extractor here too so the marker is
+            # stripped from history even though we don't synthesise an
+            # additional tool_call_buf entry.
+            if "<tool_call>" in cleaned_text:
+                from kosmos.llm.tool_call_parser import (  # noqa: PLC0415
+                    extract_textual_tool_calls,
+                )
+
+                _, cleaned_text = extract_textual_tool_calls(cleaned_text)
             llm_messages.append(
                 LLMChatMessage(
                     role="assistant",
-                    content=full_text,
+                    content=cleaned_text,
                     tool_calls=assistant_tool_calls,
                 )
             )

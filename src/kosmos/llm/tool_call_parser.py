@@ -240,6 +240,98 @@ class _BraceScanState:
         return False
 
 
+class StreamGate:
+    """Streaming filter that hides ``<tool_call>...</tool_call>`` blocks from a
+    citizen-facing stream.
+
+    K-EXAONE on FriendliAI sometimes emits BOTH a structured ``tool_calls``
+    field AND a textual ``<tool_call>`` block in the same turn — so even
+    when the orchestrator dispatches the structured form, the textual marker
+    leaks into the streaming `assistant_chunk` content and is shown to the
+    citizen as raw markup.
+
+    Usage::
+
+        gate = StreamGate()
+        for chunk in stream:
+            visible = gate.feed(chunk)
+            if visible:
+                emit(visible)
+        tail = gate.flush()
+        if tail:
+            emit(tail)
+
+    Stripping is character-accurate — partial markers split across chunk
+    boundaries are buffered until a decision can be made. Returns only the
+    bytes that should be visible to the citizen; the raw text (with markers)
+    is still recoverable from the original stream for the
+    ``extract_textual_tool_calls`` post-stream pass.
+    """
+
+    _OPEN = "<tool_call>"
+    _CLOSE = "</tool_call>"
+
+    __slots__ = ("_pending", "_in_block")
+
+    def __init__(self) -> None:
+        self._pending: str = ""
+        self._in_block: bool = False
+
+    def feed(self, chunk: str) -> str:
+        """Return whatever portion of ``chunk`` is safe to emit right now."""
+        if not chunk:
+            return ""
+        self._pending += chunk
+        out: list[str] = []
+        while self._pending:
+            if self._in_block:
+                close_idx = self._pending.find(self._CLOSE)
+                if close_idx == -1:
+                    # Keep the last len(_CLOSE)-1 chars in case the closing
+                    # tag straddles a future chunk; drop everything else.
+                    keep = len(self._CLOSE) - 1
+                    if len(self._pending) > keep:
+                        self._pending = self._pending[-keep:]
+                    return "".join(out)
+                # Closing tag found — drop everything up to and including it.
+                self._pending = self._pending[close_idx + len(self._CLOSE) :]
+                self._in_block = False
+                continue
+
+            open_idx = self._pending.find(self._OPEN)
+            if open_idx != -1:
+                if open_idx > 0:
+                    out.append(self._pending[:open_idx])
+                self._pending = self._pending[open_idx + len(self._OPEN) :]
+                self._in_block = True
+                continue
+
+            # No opening tag yet. Emit everything except the trailing window
+            # that could be the prefix of an opening tag in the next chunk.
+            keep = len(self._OPEN) - 1
+            if len(self._pending) > keep:
+                out.append(self._pending[:-keep])
+                self._pending = self._pending[-keep:]
+            return "".join(out)
+        return "".join(out)
+
+    def flush(self) -> str:
+        """Drain any safely-emittable pending bytes at end of stream.
+
+        If we're inside an unfinished ``<tool_call>`` block at flush time the
+        block is dropped (best-effort match for the post-stream parser to pick
+        up via the full accumulated text). If we're between blocks, the
+        pending lookahead window is emitted as plain text.
+        """
+        if self._in_block:
+            self._pending = ""
+            self._in_block = False
+            return ""
+        out = self._pending
+        self._pending = ""
+        return out
+
+
 def _try_mixed_xml(body: str) -> ParsedToolCall | None:
     """Format 4 — bare tool name on the first line followed by interleaved
     ``<arg_key>k</arg_key><arg_value>v</arg_value>`` pairs."""
