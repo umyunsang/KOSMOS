@@ -192,13 +192,7 @@ def test_stream_gate_strips_marker_split_across_chunks() -> None:
 
 def test_stream_gate_handles_multiple_markers() -> None:
     gate = StreamGate()
-    text = (
-        "A"
-        '<tool_call>{"name":"t1"}</tool_call>'
-        "B"
-        '<tool_call>{"name":"t2"}</tool_call>'
-        "C"
-    )
+    text = 'A<tool_call>{"name":"t1"}</tool_call>B<tool_call>{"name":"t2"}</tool_call>C'
     out = _drive(gate, [text])
     assert out == "ABC"
 

@@ -1392,9 +1392,7 @@ async def run(  # noqa: C901
                     extract_textual_tool_calls,
                 )
 
-                parsed_calls, cleaned_text = extract_textual_tool_calls(
-                    assistant_text_full
-                )
+                parsed_calls, cleaned_text = extract_textual_tool_calls(assistant_text_full)
                 for synth_idx, parsed in enumerate(parsed_calls):
                     tool_call_buf[synth_idx] = {
                         "id": str(uuid.uuid4()),
