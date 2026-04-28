@@ -3481,6 +3481,103 @@ export function REPL({
         return;
       }
 
+      // Spec 1979 — citizen plugin lifecycle (install/uninstall/list/pipa-text).
+      // Routed via the KOSMOS auxiliary dispatch (NOT processSlashCommand) because
+      // local-jsx commands mounted via processSlashCommand don't receive useInput
+      // events (likely a focus/raw-mode issue with shouldHidePromptInput: true).
+      // Mounted via setToolJSX with shouldHidePromptInput: false so PromptInput
+      // stays mounted (keeps stdin raw mode active) and useInput in the
+      // PluginInstallFlow / Select component receives keystrokes.
+      if (_kosmosCmd === 'plugin') {
+        const _pluginRest = _kosmosArgs;
+        const _pluginSpaceIdx = _pluginRest.indexOf(' ');
+        const _pluginSub =
+          _pluginSpaceIdx === -1 ? _pluginRest : _pluginRest.slice(0, _pluginSpaceIdx);
+        const _pluginRestArgs =
+          _pluginSpaceIdx === -1 ? '' : _pluginRest.slice(_pluginSpaceIdx + 1).trim();
+        if (_pluginSub === 'pipa-text' || _pluginSub === '') {
+          setInputValue('');
+          helpers.setCursorOffset(0);
+          helpers.clearBuffer();
+          if (_pluginSub === '') {
+            addNotification({
+              key: 'kosmos-plugin-usage',
+              text: '사용법: /plugin <install|list|uninstall|pipa-text> [...]',
+              priority: 'immediate',
+            });
+          } else {
+            // pipa-text — surface the canonical SHA-256 directly without a flow component.
+            void import('../ipc/pipa.generated.js').then(({ CANONICAL_PIPA_ACK_SHA256 }) => {
+              addNotification({
+                key: 'kosmos-plugin-pipa',
+                text: [
+                  'PIPA §26 trustee acknowledgment canonical SHA-256:',
+                  `  ${CANONICAL_PIPA_ACK_SHA256}`,
+                  'Source: docs/plugins/security-review.md (마커 사이 텍스트)',
+                ].join('\n'),
+                priority: 'immediate',
+              });
+            });
+          }
+          return;
+        }
+        if (_pluginSub === 'install' || _pluginSub === 'uninstall' || _pluginSub === 'list') {
+          setInputValue('');
+          helpers.setCursorOffset(0);
+          helpers.clearBuffer();
+          // Parse install args (--version, --dry-run) inline.
+          let _pluginName: string | undefined;
+          let _pluginVersion: string | undefined;
+          let _pluginDryRun = false;
+          const _pluginTokens = _pluginRestArgs.split(/\s+/).filter((t) => t.length > 0);
+          for (let i = 0; i < _pluginTokens.length; i += 1) {
+            const tok = _pluginTokens[i];
+            if (!tok) continue;
+            if (tok === '--version') {
+              _pluginVersion = _pluginTokens[i + 1];
+              i += 1;
+            } else if (tok === '--dry-run') {
+              _pluginDryRun = true;
+            } else if (!_pluginName && !tok.startsWith('--')) {
+              _pluginName = tok;
+            }
+          }
+          if ((_pluginSub === 'install' || _pluginSub === 'uninstall') && !_pluginName) {
+            addNotification({
+              key: 'kosmos-plugin-no-name',
+              text: `플러그인 이름이 필요합니다: /plugin ${_pluginSub} <name>`,
+              priority: 'immediate',
+            });
+            return;
+          }
+          // Lazy import to avoid pulling React component into the auxiliary dispatch.
+          void import('../components/plugins/PluginInstallFlow.js').then(
+            ({ PluginInstallFlow }) => {
+              setToolJSX({
+                jsx: React.createElement(PluginInstallFlow, {
+                  sub: _pluginSub as 'install' | 'uninstall' | 'list',
+                  name: _pluginName,
+                  requestedVersion: _pluginVersion,
+                  dryRun: _pluginDryRun,
+                  onComplete: (summary?: string) => {
+                    _kosmosCloseJSX(summary);
+                  },
+                }),
+                shouldHidePromptInput: false,
+                isLocalJSXCommand: true,
+              });
+            },
+          );
+          return;
+        }
+        addNotification({
+          key: 'kosmos-plugin-unknown',
+          text: `알 수 없는 subcommand: ${_pluginSub}\n사용법: /plugin <install|list|uninstall|pipa-text> [...]`,
+          priority: 'immediate',
+        });
+        return;
+      }
+
       if (_kosmosCmd === 'plugins') {
         setInputValue('');
         helpers.setCursorOffset(0);

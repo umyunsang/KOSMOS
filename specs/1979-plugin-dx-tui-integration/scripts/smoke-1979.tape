@@ -28,8 +28,8 @@ Type "export KOSMOS_BACKEND_STDERR_FILE=/tmp/kosmos-backend.stderr"
 Enter
 Sleep 500ms
 
-# Launch KOSMOS TUI (mirrors Spec 2112 working pattern: cd tui && bun run tui)
-Type "cd tui && bun run tui"
+# Launch KOSMOS TUI (mirrors Spec 2112 working pattern: cd tui && bun run tui 2>/tmp/tui-bun.stderr)
+Type "cd tui && bun run tui 2>/tmp/tui-bun.stderr"
 Enter
 Sleep 8s
 

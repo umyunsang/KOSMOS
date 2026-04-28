@@ -15,7 +15,7 @@
 // replaced here by CC's Select-based pattern for consistency with the rest
 // of the TUI (PluginBrowser, PermissionGauntletModal in Spec 1978, etc).
 
-import { Box, Text } from 'ink';
+import { Box, Text, useInput } from 'ink';
 import * as React from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
@@ -73,6 +73,13 @@ export function PluginInstallFlow({
   dryRun,
   onComplete,
 }: PluginInstallFlowProps): React.ReactElement {
+  // DEBUG file marker — direct fs write to bypass Ink's stderr handling
+  try {
+    const fs = require('node:fs');
+    fs.appendFileSync('/tmp/plugin-install-flow.log', `render sub=${sub} name=${name} ts=${Date.now()}\n`);
+  } catch {
+    /* best-effort */
+  }
   const theme = useTheme();
   const [state, setState] = useState<FlowState>({ kind: 'idle' });
   const [correlationId] = useState<string>(_newCorrelationId());
@@ -110,6 +117,19 @@ export function PluginInstallFlow({
     ],
     [],
   );
+
+  // DEBUG: log every key received by this component to diagnose focus routing.
+  useInput((input, key) => {
+    try {
+      const fs = require('node:fs');
+      fs.appendFileSync(
+        '/tmp/plugin-install-flow.log',
+        `key state=${state.kind} input=${JSON.stringify(input)} return=${key.return} upArrow=${key.upArrow} downArrow=${key.downArrow} escape=${key.escape}\n`,
+      );
+    } catch {
+      /* best-effort */
+    }
+  });
 
   // Main round-trip effect: emit request + iterate frames until terminal.
   useEffect(() => {
