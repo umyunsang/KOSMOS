@@ -1,203 +1,213 @@
-# 다음 세션 시작 프롬프트 — Initiative #2290 Phase α-η 진입
+# 다음 세션 시작 프롬프트 — Initiative #2290 진입 (Epic 별 spec-driven cycle)
 
-**사용법**: 새 세션 시작 후 아래 코드블록 내용을 복사해서 그대로 붙여넣기.
+**구조** (사용자 정정 2026-04-29):
 
-**컨텍스트**: AGENTS.md § CORE THESIS + canonical sources는 자동 로드됨. 메모리도 자동 로드. 이 프롬프트는 작업 진입에 필요한 specific context + invocation만 담음.
+```
+Initiative #2290 (KOSMOS · AX Infrastructure Callable-Channel Client Reference Implementation)
+├─ Epic α (#2292) — CC parity audit (read-only)                          [size/M]
+├─ Epic β (#2293) — KOSMOS-original UI residue cleanup                    [size/S]
+├─ Epic γ (#2294) — 5-primitive align with CC Tool.ts interface           [size/L]
+├─ Epic δ (#2295) — Backend permissions/ cleanup + AdapterRealDomainPolicy [size/M]
+├─ Epic ε (#2296) — AX-infrastructure mock adapters                       [size/L]
+├─ Epic ζ (#2297) — E2E smoke + policy mapping doc                        [size/M]
+└─ Epic η (#2298) — System prompt rewrite (optional)                      [size/M]
+```
+
+**각 Epic마다 Lead (Opus) 별도 spec-driven cycle**. Agent Teams 병렬은:
+- (a) **Epic 내부**: `/speckit-implement` 단계의 task들에 Sonnet teammates 분배
+- (b) **Epic 간**: 의존성 없는 Epic들끼리 동시 진행 가능 (β + δ 병렬, ζ + η 병렬 등)
 
 ---
 
-## 프롬프트 (복사 후 paste)
+## 의존성 그래프
+
+```
+Epic α (#2292, read-only)
+   ↓
+   ┌── Epic β (#2293) ──┐  ← 병렬 가능 (의존성 0)
+   │                    │
+   └── Epic δ (#2295) ──┘
+                        ↓
+                     Epic γ (#2294)
+                        ↓
+                     Epic ε (#2296)
+                        ↓
+                     Epic ζ (#2297)
+                        ↓
+                     Epic η (#2298)
+```
+
+---
+
+## 실행 sequence (다음 세션 시작 시)
+
+### Option A — 의존성 그래프 따라 직선 진행 (추천)
+
+각 Epic마다 별도 spec-driven cycle:
+
+```
+Step 1: Epic α (#2292)
+  └─ /speckit-specify --feature 2292-cc-parity-audit
+  └─ /speckit-plan
+  └─ /speckit-tasks
+  └─ /speckit-analyze
+  └─ /speckit-taskstoissues
+  └─ /speckit-implement (Agent Teams 병렬: API Tester teammates)
+  └─ PR 머지 → Epic α close
+
+Step 2-3: Epic β + Epic δ 병렬 (의존성 없음)
+  ├─ Epic β (#2293) — Lead solo cycle (Frontend Dev teammate)
+  └─ Epic δ (#2295) — Lead solo cycle (Backend Architect teammate)
+  └─ 두 PR 머지 → Epic β + δ close
+
+Step 4: Epic γ (#2294)  ← β/δ 결과 의존
+  └─ Lead solo cycle + Frontend Dev teammate
+  └─ PR 머지 → Epic γ close
+
+Step 5: Epic ε (#2296)
+  └─ Lead solo cycle + Backend Architect teammate
+  └─ PR 머지 → Epic ε close
+
+Step 6-7: Epic ζ + Epic η 병렬
+  ├─ Epic ζ (#2297) — API Tester + Technical Writer
+  └─ Epic η (#2298) — Technical Writer (optional)
+  └─ PR 머지 → Initiative #2290 종료
+```
+
+### Option B — 한 Epic만 진입 (가장 보수적, 위험 0)
+
+다음 세션에서 Epic α (#2292) 만 진행:
+
+```
+/speckit-specify --feature 2292-cc-parity-audit
+```
+
+후속 Epic들은 α 결과 검토 후 별도 세션에서 진입.
+
+---
+
+## 다음 세션 진입 프롬프트 (paste 용)
+
+다음 세션 시작 후 아래 코드 블록 내용 그대로 paste:
 
 ```text
-/speckit-specify --feature 2290-ax-infrastructure-caller-refactor
+Initiative #2290 (KOSMOS · AX Infrastructure Callable-Channel Client Reference Implementation) 의 첫 Epic 진입.
 
-# 목표
+# Active Epic
+Epic α — #2292 — CC parity audit (read-only, 위험 0, size/M)
 
-Initiative #2290 (KOSMOS · AX Infrastructure Callable-Channel Client Reference Implementation) 의 Epic #2291 (AX Infrastructure Caller Refactor (Phase α-η)) 을 spec-driven으로 정형화. 7 Phase sub-issues #2292-#2298 모두 cover하는 단일 통합 spec.
+# Goal
+1,604 KEEP 파일이 진짜 byte-identical with `.references/claude-code-sourcemap/restored-src/` 인지 spot-check + 212 modified 파일의 KOSMOS-change 정당성 audit. read-only deliverable.
 
 # Authority — 반드시 인용 (per memory `feedback_check_references_first`)
 
-- `AGENTS.md § CORE THESIS` — 3차 thesis final canonical (KOSMOS = AX-infrastructure callable-channel client)
-- `specs/1979-plugin-dx-tui-integration/cc-source-scope-audit.md` — 2,090 KOSMOS files vs 1,884 CC files 분류 + 7-phase plan (이번 spec의 base)
-- `specs/1979-plugin-dx-tui-integration/delegation-flow-design.md § 12` — 정정된 architecture (FINAL CANONICAL)
-- `specs/1979-plugin-dx-tui-integration/domain-harness-design.md` — 16-도메인 매트릭스 + 5점 충실도
-- `specs/1979-plugin-dx-tui-integration/cc-source-migration-plan.md` — CC 원본 file-by-file
+- `AGENTS.md § CORE THESIS` — 3차 thesis canonical (KOSMOS = AX-infrastructure callable-channel client)
+- `specs/1979-plugin-dx-tui-integration/cc-source-scope-audit.md § 1.1, § 1.2` — 2,090 vs 1,884 file 분류 (이 Epic의 base scope)
+- `specs/1979-plugin-dx-tui-integration/delegation-flow-design.md § 12` — final canonical architecture
 - `.references/claude-code-sourcemap/restored-src/` — CC 2.1.88 byte-identical source-of-truth
-- `docs/vision.md` + `docs/requirements/kosmos-migration-tree.md` — L1 pillars + UI L2
 
-# Scope — 7 Phase 통합
+# Deliverable
 
-본 spec은 **Phase α부터 Phase η까지 7개 phase를 단일 spec으로 통합** (각 phase가 user story가 됨). 별도 spec 7개 분리하지 않음 — Epic #2291 single integrated PR이 목표.
+`specs/2292-cc-parity-audit/cc-parity-audit.md` 신설:
+- 1,531 byte-identical 파일 spot-check (random sample 50개 실 검증)
+- 73 SDK-import-only-diff 파일 모두 검증 (간단 grep)
+- 212 modified 파일 each 정당성 분류:
+  - Legitimate (KOSMOS-needed change, 인정)
+  - Cleanup-needed (Spec 1633 잔재 등 정리 후속)
+  - Suspicious (의심 — 추가 audit 필요)
+- 파일별 변경 사유 + reference 인용
+- 종합: 7-Phase plan 기준 다음 Epic 진입 준비 status
 
-각 Phase의 자세한 deliverable + acceptance criteria + risk profile은 GitHub sub-issues #2292-#2298 본문 + `cc-source-scope-audit.md § 3` 참조. 그대로 spec.md User Story로 변환.
+# Risk
+0 — read-only audit. 어떤 파일도 수정 X.
 
-## Phase α (#2292) — CC parity audit (read-only)
-**Goal**: 1,604 KEEP 파일이 진짜 byte-identical인지 spot-check + 212 modified 파일 정당성 audit.
-**Deliverable**: `specs/<spec>/cc-parity-audit.md` — KEEP / MODIFIED / SUSPECT 분류
-**Risk**: 0 (read-only)
-**Acceptance**: audit doc complete; suspicious modifications flagged
+# Acceptance
+- audit doc 사용자 검토 + 사인오프
+- 의심 파일 list 분리 (후속 Epic β에서 처리)
 
-## Phase β (#2293) — KOSMOS-original UI residue cleanup
-**Goal**: Spec 033/1979 잔재 정리 — `tui/src/schemas/ui-l2/permission.ts` 평가, 6 KOSMOS-only Tool 삭제 후보 (Monitor/ReviewArtifact/SuggestBackgroundPR/Tungsten/VerifyPlanExecution/Workflow) 결정, 잔여 utils/permissions/ 정리
-**Risk**: 낮음
-**Acceptance**: bun typecheck 0, bun test no NEW failures, 6 후보 모두 결정
+# Memory guardrails (강제)
 
-## Phase γ (#2294) — 5-primitive를 CC Tool.ts 인터페이스 정확 align
-**Goal**: 4 primitive (Lookup/Submit/Verify/Subscribe) 을 CC `Tool` 인터페이스 (name/description/inputSchema/call/render*) 따라 refactor. Reference: `tui/src/tools/AgentTool/AgentTool.tsx`
-**Deliverable**: `tui/src/tools/{Lookup,Submit,Verify,Subscribe}Primitive/*` 재작성, ToolRegistry boot 검증, BM25 + EXAONE function calling 라운드트립, PTY smoke (시민 "의정부 응급실 알려줘")
-**Risk**: 중간 — registry boot 깨질 수 있음
-**Acceptance**: bun + uv 회귀 0, PTY smoke 통과 (text log)
-
-## Phase δ (#2295) — 백엔드 permissions/ 정리 + AdapterRealDomainPolicy
-**Goal**:
-- `src/kosmos/permissions/` 25 파일 정리: ~20 DELETE (Spec 033 KOSMOS-original — modes.py, models.py, pipeline_v2.py, etc.), ~5 KEEP (Spec 035 영수증 ledger — ledger.py, action_digest.py, hmac_key.py, canonical_json.py, audit_coupling.py, ledger_verify.py, otel_emit.py, otel_integration.py)
-- `AdapterRealDomainPolicy` Pydantic 모델 신설 in `src/kosmos/tools/models.py`
-- 18 어댑터 메타 마이그레이션: 제거 (`auth_level`, `pipa_class`, `is_personal_data`, `dpa_reference`, `is_irreversible`, `requires_auth`) + 추가 (`real_classification_url`, `real_classification_text`, `citizen_facing_gate`, `last_verified`)
-**Risk**: 낮음 (TUI Wave 1-3 패턴 재활용)
-**Acceptance**: uv pytest 회귀 0, 모든 어댑터에 non-empty `real_classification_url`
-
-## Phase ε (#2296) — AX-infrastructure mock 어댑터 신설
-**Goal**: 9 신규 mock + DelegationToken schema (`delegation-flow-design.md § 12.7` 기준)
-- `src/kosmos/primitives/delegation.py` (DelegationToken + DelegationContext)
-- 5 verify modules: `mock_verify_module_simple_auth`, `mock_verify_module_modid`, `mock_verify_module_kec`, `mock_verify_module_geumyung`, `mock_verify_module_any_id_sso` (디지털원패스 후속)
-- 3 submit modules: `mock_submit_module_hometax_taxreturn`, `mock_submit_module_gov24_minwon`, `mock_submit_module_public_mydata_action`
-- 2 lookup modules: `mock_lookup_module_hometax_simplified`, `mock_lookup_module_gov24_certificate`
-- DELETE: `mock_verify_digital_onepass` (서비스 종료 2025-12-30)
-- 모든 15 mock에 6 transparency 필드: `_mode`, `_reference_implementation: "ax-infrastructure-callable-channel"`, `_actual_endpoint_when_live`, `_security_wrapping_pattern`, `_policy_authority: "국가AI전략위원회 행동계획 2026-2028 §공공AX"`, `_international_reference: "Singapore APEX"`
-**Risk**: 낮음 (mock-only, 외부 의존 X)
-**Acceptance**: 9 신규 mock test 통과, ToolRegistry 27 도구 (12 Live + 15 Mock + resolve_location)
-
-## Phase ζ (#2297) — E2E smoke + 정책 매핑 문서
-**Goal**:
-- PTY scenario: 시민 "종합소득세 신고해줘" → verify(modid) → lookup(simplified) → submit(taxreturn) → 접수번호. text-log 캡처 (per memory `feedback_vhs_tui_smoke`)
-- `docs/research/policy-mapping.md` — KOSMOS adapter ↔ Singapore APEX / Estonia X-Road / EU EUDI / Japan マイナポータル mapping table
-- `docs/scenarios/{hometax-tax-filing,gov24-minwon-submit,mobile-id-issuance,kec-yessign-signing,mydata-live}.md` — OPAQUE-forever 도메인 hand-off
-**Risk**: 낮음
-**Acceptance**: E2E text-log 전체 chain, 모든 15 mock 한 번 이상 호출, policy-mapping.md citation URL 4개 reference
-
-## Phase η (#2298) — System prompt rewrite (선택)
-**Goal**: `prompts/system_v1.md` 5-primitive citizen UX + OPAQUE 도메인 hand-off rule + 한국어 시민 친화 톤
-**Risk**: 낮음 (shadow-eval 게이트)
-**Acceptance**: shadow-eval 통과, prompt manifest hash 갱신
-**Status**: optional — Phase α-ζ 결과 보고 결정
-
-# Dependency graph (implement 시 Agent Teams 병렬 활용)
-
-```
-α (CC parity audit, read-only)
-  ↓
-  ┌── β (UI 잔재 정리) ──┐  ◀─ 병렬 가능 ─▶
-  │                      │
-  └── δ (백엔드 정리) ───┘
-                          ↓
-                       γ (5-primitive align)
-                          ↓
-                       ε (AX mock 어댑터)
-                          ↓
-                       ζ (E2E smoke + 정책 매핑)
-                          ↓
-                       η (system prompt, 선택)
-```
-
-# Agent Teams 병렬 전략 (memory `feedback_speckit_autonomous` + AGENTS.md § Agent Teams)
-
-`/speckit-implement` 단계에서 적용 (specify/plan/tasks/analyze/taskstoissues는 Lead solo):
-
-| Phase | 담당 | Model |
-|---|---|---|
-| α audit | API Tester (read-only) | Sonnet |
-| β UI cleanup ‖ δ 백엔드 정리 (병렬) | Frontend Dev (β) + Backend Architect (δ) | Sonnet × 2 |
-| γ 5-primitive align | Frontend Dev | Sonnet |
-| ε AX mock 신설 | Backend Architect (Teammate A) | Sonnet |
-| ζ E2E smoke + 매핑 doc | API Tester + Technical Writer (병렬) | Sonnet × 2 |
-| η system prompt | Technical Writer | Sonnet |
-| 전체 review + spec compliance | Code Reviewer (Lead) | Opus |
-
-병렬 진입 조건: 3+ 독립 작업 + Sonnet model 강제 (`model: "sonnet"`).
+- `feedback_kosmos_is_ax_gateway_client` — 3차 thesis
+- `feedback_tool_wrapping_is_the_work` — 작업 단위 = 도구 래핑
+- `feedback_kosmos_scope_cc_plus_two_swaps` — CC + 2 swaps만
+- `feedback_check_references_first` — 모든 결정에 reference 인용
+- `feedback_speckit_autonomous` — speckit 단계 자율 진행, 단계별 승인 X
+- `feedback_codex_reviewer` — push 후 Codex inline review 처리
 
 # 통합 PR 정책 (memory `feedback_integrated_pr_only` + `feedback_pr_closing_refs`)
 
-- 모든 Phase 결과를 단일 PR로 통합 (개별 phase별 PR 분할 금지)
-- branch: `feat/2290-ax-infrastructure-caller-refactor`
-- PR title: `feat(2290): AX-infrastructure caller refactor — Phase α-η integrated`
-- PR body: `Closes #2291` only (Epic만, Phase sub-issue는 머지 후 close per memory `feedback_pr_closing_refs`)
-- 매 commit Conventional Commits + Co-Authored-By 금지 (memory `feedback_co_author`)
-
-# CI Gate (모든 PR 머지 전 통과 의무)
-
-14 required checks (Lint & Type Check, Python 3.12+3.13, CodeQL SAST, BM25 Eval, Docker Build, License, Secret Detection, Dead Code, Dependency Audit, FR-011 SC-9, Branch naming, Conventional Commits, TUI PTY boot smoke, Auto-merge 정책).
-
-`gh pr checks --watch --interval 10` 으로 모니터링 (memory: AGENTS.md § PR Completion).
-
-# Memory guardrails (모든 phase에서 honor)
-
-- `feedback_kosmos_is_ax_gateway_client` — KOSMOS = AX-infrastructure callable-channel client (3차 final)
-- `feedback_tool_wrapping_is_the_work` — 작업 단위 = 도구 래핑
-- `feedback_kosmos_scope_cc_plus_two_swaps` — CC + 2 swaps만
-- `feedback_harness_not_reimplementation` — KOSMOS는 harness, 재구현 X
-- `feedback_check_references_first` — 모든 결정에 reference 인용
-- `feedback_runtime_verification` — TUI 변경은 PTY 검증 필수
-- `feedback_vhs_tui_smoke` — text log 기본, gif 보조
-- `feedback_no_hardcoding` — LLM 직접 BM25 라우팅, 정적 keyword X
-- `feedback_no_stubs_remove_or_migrate` — KOSMOS 미사용 import + call site 모두 제거
-- `feedback_cc_source_migration_pattern` — task body에 reference baseline 명시
-- `feedback_main_verb_primitive` — 5-primitive (lookup/submit/verify/subscribe + resolve_location) 만 system prompt 노출
-- `feedback_integrated_pr_only` — 단일 통합 PR
-- `feedback_pr_closing_refs` — `Closes #2291` only
-- `feedback_speckit_autonomous` — speckit 단계 승인 대기 X, /speckit-implement에서만 Agent Teams 병렬
-- `feedback_codex_reviewer` — push 후 Codex inline review 처리
-
-# 가드레일 (강제)
-
-- 절대 KOSMOS-invented 권한 메타 필드 (pipa_class / auth_level / permission_tier / is_personal_data / dpa_reference / is_irreversible / requires_auth) 재도입 금지
-- CC `<PermissionRequest>` 파이프라인 byte-identical 보존 (Class A 35+ files)
-- OPAQUE-forever 도메인 (홈택스 신고, 정부24-submit, 모바일ID 발급, KEC/yessign 서명, mydata-live)은 어댑터로 만들지 말 것 — `docs/scenarios/`만
-- 신규 runtime 의존성 0 (AGENTS.md hard rule)
-- `--no-verify` / `--force` push 금지
+- branch: `feat/2292-cc-parity-audit`
+- PR title: `feat(2292): Epic α — CC parity audit deliverable`
+- PR body: `Closes #2292` only
 - Co-Authored-By 추가 금지
+- `--no-verify` / `--force` 금지
 
-# 진입 즉시 다음 단계
+# CI Gate
+14 required checks. `gh pr checks --watch --interval 10` 으로 모니터링.
 
-`/speckit-specify` 결과로 `specs/2290-ax-infrastructure-caller-refactor/spec.md` 생성 → 사용자 검토 → `/speckit-plan` (Phase 0 research + Phase 1 design + contracts) → `/speckit-tasks` (phase별 task 분해) → `/speckit-analyze` (consistency + constitution check) → `/speckit-taskstoissues` (Phase α-η 7 sub-issue 이미 존재하므로 task issues는 그 하위로 추가) → `/speckit-implement` (Agent Teams 병렬 진입).
+# 즉시 진입
+
+`/speckit-specify --feature 2292-cc-parity-audit` 실행 → spec.md 작성 → 사용자 검토 → `/speckit-plan` → `/speckit-tasks` → `/speckit-analyze` → `/speckit-taskstoissues` (Epic α 하위에 task sub-issues) → `/speckit-implement` (API Tester teammate Sonnet 병렬 진입).
 ```
+
+---
+
+## Agent Teams 분담 (Epic별 implement 시)
+
+| Epic | Lead (Opus) | Teammate (Sonnet) | 비고 |
+|---|---|---|---|
+| α #2292 | planning, audit review | API Tester (read-only audit) | 병렬 1팀 |
+| β #2293 | planning, code review | Frontend Developer | 병렬 1팀 |
+| γ #2294 | architecture, code review | Frontend Developer | 병렬 1팀 |
+| δ #2295 | planning, code review | Backend Architect | 병렬 1팀 |
+| ε #2296 | architecture, code review | Backend Architect (+ API Tester for tests) | 병렬 2팀 |
+| ζ #2297 | review, sign-off | API Tester (E2E) + Technical Writer (doc) | 병렬 2팀 |
+| η #2298 | shadow-eval gate | Technical Writer | 병렬 1팀 |
+
+기본 원칙 (AGENTS.md § Agent Teams):
+- 3+ 독립 task → Sonnet teammates 병렬
+- 1-2 task 또는 coupled → Lead solo
+- 모든 teammate `model: "sonnet"` 강제
 
 ---
 
 ## 사용 방법
 
-### Option A — 새 세션에서 그대로 paste
-1. `claude` (또는 `claude code`) 새 세션 시작
-2. 위 코드 블록 내용 전체를 paste
-3. Lead가 `/speckit-specify`부터 자율 진행 (메모리 `feedback_speckit_autonomous` 적용)
-
-### Option B — 짧게 invoke
-다음 세션에서 다음 한 줄로 시작:
+### 다음 세션에서 Option A (가장 단순)
 ```
-specs/1979-plugin-dx-tui-integration/next-session-prompt.md 파일 읽고 그 안의 프롬프트 그대로 실행해
+specs/1979-plugin-dx-tui-integration/next-session-prompt.md 파일 읽고 Epic α 부터 진입해
 ```
-→ Lead가 본 파일 읽고 코드블록 내용대로 진행
+→ Lead가 본 파일의 § "다음 세션 진입 프롬프트" 코드블록을 그대로 실행
 
-## Agent Teams 병렬 진행 timing 정확히
+### 다음 세션에서 Option B (Epic α만 명시)
+새 세션에 paste:
+```
+/speckit-specify --feature 2292-cc-parity-audit
 
-| Speckit 단계 | 누가 | 시간 |
-|---|---|---|
-| `/speckit-specify` | Lead solo (Opus) | spec.md 작성 |
-| `/speckit-plan` | Lead solo | plan.md + research.md + data-model.md + contracts |
-| `/speckit-tasks` | Lead solo | tasks.md (phase별 task 분해) |
-| `/speckit-analyze` | Lead solo | analysis.md (constitution check) |
-| `/speckit-taskstoissues` | Lead solo | GitHub task sub-issues 생성 + GraphQL 링크 |
-| **`/speckit-implement`** | **Lead + Sonnet Teammates 병렬** | **여기서 Agent Teams 활성화** |
+(상기 next-session-prompt.md § "Active Epic" 내용 전체 입력)
+```
 
-## 위 프롬프트가 보장하는 것
+### 후속 Epic들 진입 (α 완료 후)
+α PR 머지 → 다음 세션에서:
+```
+Epic α 완료. β + δ 병렬 진입. 두 separate session 또는 한 세션에서 양 spec 순차.
+```
 
-- 7 Phase 모두 cover (단일 통합 spec)
-- 의존성 그래프에 따른 implement 단계 병렬 분담
-- canonical thesis (3차 final) + memory 14개 가드레일 honor
-- 통합 PR 정책 + CI 14 gates
-- 학부생 권한 한계 인지 (mock-only가 primary path, Live는 졸업 후)
+---
 
-## 다음 결정 필요 (이번 세션 마지막)
+## 그동안의 정정 history (이 파일은 v3)
 
-1. **위 프롬프트 그대로 OK?** — 변경 사항 있으면 알려주세요
-2. **Dependabot 3 PR** (#1592, #1593, #1594) 머지 여부 — 별도 confirm 필요했음
-3. **현재 9 open issues는 다음 세션 진입할 때 그대로** — Initiative #2290 + Epic #2291 + 7 Phase sub-issues
+- v1: Phase α-η 단일 통합 spec (잘못된 설계)
+- v2: 통합 spec + Agent Teams 병렬 (여전히 부정확 — phase ≠ task)
+- **v3 (이 파일)**: Phase = Epic이 정확한 구조. Epic 별 Lead solo speckit cycle. ✅
+
+---
+
+## 이번 세션 마지막 처리 항목
+
+1. ✅ Epic 구조 정정 (#2291 close, #2292-#2298 → Initiative #2290 직접 child)
+2. ✅ Label 변경 (epic + size/X)
+3. ✅ Title 변경 (Phase X → Epic X)
+4. ✅ next-session-prompt.md v3 작성
+
+다음 세션에서 Epic α 진입할 준비 완료.
