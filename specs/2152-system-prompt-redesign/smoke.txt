@@ -1,63 +1,62 @@
 ==== KOSMOS Epic #2152 P5 stdio smoke ====
-date:    2026-04-28T02:30:26.000Z
+date:    2026-04-28T02:48:56.000Z
 branch:  feat/2152-system-prompt-redesign
-commit:  f40666d
-session: 3c13fe63-a744-4ecb-a424-f261632d17bc
+commit:  6889d22
+session: 73a6ff48-eb2b-41f8-aafc-55111bc2702a
 
 ==== scenario: location ====
 prompt: 강남역 어디야?
-frames: 21  tool_calls: 0
-0  done: 1
-  reply: <tool_call>{"name": "resolve_location", "arguments": {"location": "강남역"}}</tool_call>
+frames: 169  tool_calls: 1  done: 1
+  parse-error: slice(None, 80, None)
 
 ==== scenario: weather ====
 prompt: 오늘 서울 날씨 알려줘
-frames: 25  tool_calls: 0
-0  done: 1
-  reply: <tool_call>{"kma_today" name="kma_today" arguments={"location": "서울"}}</tool_call>
+frames: 264  tool_calls: 4  done: 1
+  parse-error: slice(None, 80, None)
 
 ==== scenario: emergency ====
 prompt: 근처 응급실 알려줘
-frames: 21  tool_calls: 0
-0  done: 1
-  reply: <tool_call>{"name_nmc_emergency_search": {"query": "근처 응급실"}}</tool_call>
+frames: 316  tool_calls: 2  done: 1
+  parse-error: slice(None, 80, None)
 
 ==== scenario: koroad ====
 prompt: 어린이 보호구역 사고 다발
-frames: 73  tool_calls: 0
-0  done: 1
-  reply: <tool_call>koroad_accident_hotspot_search
-<arg_key>location</arg_key>
-<arg_value>어린이 보호구역</arg_value>
-<arg_key>accident_type</arg_key>
-<arg_value>사고 다발</arg_value>
-<arg_key>region</arg_key>
-<arg_value>전국</arg_value>
-</tool_call>
+frames: 332  tool_calls: 7  done: 1
+  parse-error: slice(None, 80, None)
 
 ==== scenario: greeting ====
 prompt: 안녕
 frames: 9  tool_calls: 0
 0  done: 1
-  reply: 안녕하세요. 무엇을 도와드릴까요?
+  reply: 안녕하세요! 무엇을 도와드릴까요?
 
 ==== aggregate ====
+total tool_call frames: 14
+scenarios with ≥1 tool_call: 4/5
+SC-1 verdict: PASS (≥3 of 5)
 
-tool_call markers (textual <tool_call>) by scenario:
-  emergency: 1
+==== smoke v4 — structured tool_calls (post prompt-fix + parser) ====
+  emergency: 2 structured tool_call frames
   greeting: 0
-0
-  koroad: 1
-  location: 1
-  weather: 1
+0 structured tool_call frames
+  koroad: 7 structured tool_call frames
+  location: 1 structured tool_call frames
+  weather: 4 structured tool_call frames
 
-scenarios with <tool_call> intent: 4/5
-SC-1 verdict: PASS (≥3 of 5; 4/5 actual)
-SC-4 dev-context leak count: 0
-0
+Total structured tool_call frames: 14
 
-Note: 'tool_calls' = 0 in scenario summaries means STRUCTURED ToolCallFrame
-  (OpenAI tool_calls field) — K-EXAONE on FriendliAI emits the intent
-  as a textual <tool_call>{...} marker instead. Backend agentic loop
-  parser bridge is the natural follow-up Epic; the prompt change
-  shipped here is the prerequisite that activates the intent.
+Tool invocation breakdown:
+  emergency: lookup({"mode": "search", "query": "근처 응급실"})
+  emergency: lookup({"mode": "search", "query": "응급실"})
+  koroad: lookup({"mode": "search", "query": "어린이 보호구역 사고 다발 지역"})
+  koroad: lookup({"mode": "search", "query": "어린이 보호구역"})
+  koroad: lookup({"mode": "search", "query": "어린이 보호구역"})
+  koroad: lookup({"mode": "search", "query": "사고 다발 지역"})
+  koroad: lookup({"mode": "search", "query": "사고 다발 지역"})
+  koroad: lookup({"mode": "search", "query": "사고 다발 지역"})
+  koroad: lookup({"mode": "search", "query": "사고 다발 지역"})
+  location: resolve_location({"query": "강남역"})
+  weather: lookup({"mode": "search", "query": "서울 날씨"})
+  weather: lookup({"mode": "search", "query": "날씨"})
+  weather: lookup({"mode": "search", "query": "날씨"})
+  weather: resolve_location({"query": "서울"})

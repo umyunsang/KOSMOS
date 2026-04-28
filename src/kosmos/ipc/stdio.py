@@ -1343,6 +1343,37 @@ async def run(  # noqa: C901
                 )
                 return
 
+            # Epic #2152 follow-up — K-EXAONE on FriendliAI sometimes emits
+            # its tool-call intent as a textual ``<tool_call>{...}</tool_call>``
+            # marker inside the assistant content rather than the OpenAI
+            # ``tool_calls`` field. Extract any such markers from the
+            # accumulated turn text and synthesise ``tool_call_buf`` entries so
+            # the existing dispatch path picks them up as if the model had used
+            # the structured form. The cleaned text (markers stripped) is what
+            # we record into the assistant history for the next turn.
+            assistant_text_full = "".join(assistant_text_chunks)
+            cleaned_text = assistant_text_full
+            if not tool_call_buf and "<tool_call>" in assistant_text_full:
+                from kosmos.llm.tool_call_parser import (  # noqa: PLC0415
+                    extract_textual_tool_calls,
+                )
+
+                parsed_calls, cleaned_text = extract_textual_tool_calls(
+                    assistant_text_full
+                )
+                for synth_idx, parsed in enumerate(parsed_calls):
+                    tool_call_buf[synth_idx] = {
+                        "id": str(uuid.uuid4()),
+                        "name": parsed.name,
+                        "args": _json.dumps(parsed.arguments, ensure_ascii=False),
+                    }
+                if parsed_calls:
+                    logger.info(
+                        "_handle_chat_request: synthesised %d tool_call(s) from "
+                        "K-EXAONE textual <tool_call> markers (Epic #2152 follow-up)",
+                        len(parsed_calls),
+                    )
+
             # No tool calls this turn → terminal chunk + exit agentic loop.
             if not tool_call_buf:
                 await write_frame(

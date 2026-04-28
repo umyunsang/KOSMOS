@@ -10,5 +10,5 @@ entries:
   path: session_guidance_v1.md
 - prompt_id: system_v1
   version: 1
-  sha256: 5a1dd9869de757d83a6745b6d2564364b59738577e6e4a9e55b50f92d16936df
+  sha256: 753ce060de7ef9e849cf74a4e21daa144eaa2fe9257bade0e837c5c1133a507b
   path: system_v1.md
