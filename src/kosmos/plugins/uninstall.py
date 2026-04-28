@@ -43,8 +43,9 @@ from kosmos.plugins.installer import (
     _write_consent_receipt,
 )
 from kosmos.settings import settings
+from kosmos.tools.errors import ToolNotFoundError
 from kosmos.tools.executor import ToolExecutor
-from kosmos.tools.registry import ToolNotFoundError, ToolRegistry
+from kosmos.tools.registry import ToolRegistry
 
 logger = logging.getLogger(__name__)
 

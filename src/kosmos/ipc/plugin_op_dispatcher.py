@@ -271,18 +271,23 @@ async def handle_install(
         )
         future.result()  # Block the executor thread until the frame is on stdout.
 
+    # _v_plugin_op_shape already enforces frame.name non-empty for install;
+    # narrow the type for mypy so install_plugin's `name: str` matches.
+    plugin_name = frame.name
+    assert plugin_name is not None  # noqa: S101 — enforced by frame validator
+
     try:
         result = await loop.run_in_executor(
             None,
             lambda: install_plugin(
-                frame.name,
+                plugin_name,
                 registry=registry,  # type: ignore[arg-type]
                 executor=executor,  # type: ignore[arg-type]
                 requested_version=frame.requested_version,
                 consent_prompt=consent_bridge,  # type: ignore[arg-type]
                 yes=False,
                 dry_run=bool(frame.dry_run),
-                progress_emitter=_sync_progress,  # type: ignore[call-arg]
+                progress_emitter=_sync_progress,
             ),
         )
     except Exception as exc:  # noqa: BLE001
@@ -362,11 +367,15 @@ async def handle_uninstall(
         )
         future.result()
 
+    # _v_plugin_op_shape already enforces frame.name non-empty for uninstall.
+    plugin_name = frame.name
+    assert plugin_name is not None  # noqa: S101 — enforced by frame validator
+
     try:
         result = await loop.run_in_executor(
             None,
             lambda: uninstall_plugin(
-                frame.name,
+                plugin_name,
                 registry=registry,  # type: ignore[arg-type]
                 executor=executor,  # type: ignore[arg-type]
                 progress_emitter=_sync_progress,

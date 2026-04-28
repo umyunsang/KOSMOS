@@ -82,6 +82,8 @@ class IPCConsentBridge:
     decision branches.
     """
 
+    _loop: asyncio.AbstractEventLoop | None
+
     def __init__(
         self,
         *,

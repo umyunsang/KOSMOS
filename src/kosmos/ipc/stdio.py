@@ -1769,10 +1769,11 @@ async def run(  # noqa: C901
                         pending_perms=_pending_perms,
                         session_id=frame.session_id,
                     )
+                    _registry = _ensure_tool_registry()
                     await handle_plugin_op_request(
                         frame,
-                        registry=_ensure_tool_registry(),
-                        executor=ToolExecutor(),
+                        registry=_registry,
+                        executor=ToolExecutor(registry=_registry),  # type: ignore[arg-type]
                         write_frame=write_frame,
                         consent_bridge=consent_bridge,
                         session_id=frame.session_id,
