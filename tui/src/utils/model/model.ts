@@ -227,6 +227,22 @@ export function parseUserSpecifiedModel(modelInput: ModelName | ModelAlias): Mod
   if (normalised === KOSMOS_K_EXAONE_MODEL.toLowerCase()) {
     return KOSMOS_K_EXAONE_MODEL
   }
+  // Codex P1 (PR #2151): legacy alias values (`sonnet`, `opus`, `haiku`, `best`,
+  // `opusplan`, plus `[1m]` variants) may still flow in from existing configs,
+  // settings.json, or agent definitions. The narrow `isModelAlias` table only
+  // recognises `default` post-Spec 2112, so without remapping these legacy
+  // strings would be returned as literal model IDs and routed to FriendliAI,
+  // which rejects them. Map any token containing one of those legacy family
+  // names to the canonical K-EXAONE model so backward-compatibility holds
+  // until the Spec 2147 cleanup migrates configs forward.
+  if (
+    normalised === 'sonnet' || normalised === 'opus' || normalised === 'haiku' ||
+    normalised === 'best' || normalised === 'opusplan' ||
+    normalised === 'sonnet[1m]' || normalised === 'opus[1m]' ||
+    normalised === 'haiku[1m]'
+  ) {
+    return getDefaultMainLoopModel()
+  }
   // Preserve the original case for custom model names (e.g. Azure Foundry deployment IDs).
   return trimmed
 }
