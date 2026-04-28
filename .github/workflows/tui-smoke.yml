@@ -56,7 +56,7 @@ jobs:
         # `uv run kosmos --ipc stdio` echo backend — not a mock — to verify
         # the stdio JSONL contract end-to-end. Skipping Python here would
         # force those tests into a mocked half-world and mask backend drift.
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
 
