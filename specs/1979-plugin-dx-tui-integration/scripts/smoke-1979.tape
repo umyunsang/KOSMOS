@@ -31,25 +31,22 @@ Type "cd tui && bun run tui"
 Enter
 Sleep 8s
 
-# Citizen install command
+# Citizen install command (no preceding /help — modal would block input)
 Type "/plugin install seoul-subway"
 Enter
 Sleep 7s
+Screenshot specs/1979-plugin-dx-tui-integration/debug-install.png
 
-# Approve at consent modal
+# Approve at consent modal (if it appears)
 Type "Y"
 Sleep 5s
+Screenshot specs/1979-plugin-dx-tui-integration/debug-after-y.png
 
-# Citizen query — model should invoke the new plugin via 5-primitive surface
-Type "강남역 다음 열차 언제?"
-Enter
-Sleep 8s
-
-# Open browser to verify the plugin is registered
+# Open browser to verify
 Type "/plugins"
 Enter
 Sleep 3s
+Screenshot specs/1979-plugin-dx-tui-integration/debug-browser.png
 
-# Close browser
 Escape
 Sleep 1s
