@@ -1,35 +1,18 @@
 /**
- * Session title generation via Haiku.
+ * Session title generation.
  *
- * Standalone module with minimal dependencies so it can be imported from
- * print.ts (SDK control request handler) without pulling in the React/chalk/
- * git dependency chain that teleport.tsx carries.
- *
- * This is the single source of truth for AI-generated session titles across
- * all surfaces. Previously there were separate Haiku title generators:
- * - teleport.tsx generateTitleAndBranch (6-word title + branch for CCR)
- * - rename/generateSessionName.ts (kebab-case name for /rename)
- * Each remains for backwards compat; new callers should use this module.
+ * KOSMOS Epic #2293: Anthropic queryHaiku removed (Spec 1633 + Spec 2293
+ * closure). generateSessionTitle always returns null — the REPL title bar
+ * falls back to the session-ID short form. The extractConversationText
+ * utility is preserved for callers that inspect message history.
  */
 
-import { z } from 'zod/v4'
-import { getIsNonInteractiveSession } from '../bootstrap/state.js'
-import { logEvent } from '../services/analytics/index.js'
-// services/api/claude removed in P1+P2 (Spec 1633); KOSMOS uses FriendliAI/K-EXAONE, Anthropic Haiku not available.
-const queryHaiku = async (_opts: unknown): Promise<never> => {
-  throw new Error('Anthropic API not available in KOSMOS — Spec 1633')
-}
 import type { Message } from '../types/message.js'
-import { logForDebugging } from './debug.js'
-import { safeParseJSON } from './json.js'
-import { lazySchema } from './lazySchema.js'
-import { extractTextContent } from './messages.js'
-import { asSystemPrompt } from './systemPromptType.js'
 
 const MAX_CONVERSATION_TEXT = 1000
 
 /**
- * Flatten a message array into a single text string for Haiku title input.
+ * Flatten a message array into a single text string for session title input.
  * Skips meta/non-human messages. Tail-slices to the last 1000 chars so
  * recent context wins when the conversation is long.
  */
@@ -56,77 +39,15 @@ export function extractConversationText(messages: Message[]): string {
     : text
 }
 
-const SESSION_TITLE_PROMPT = `Generate a concise, sentence-case title (3-7 words) that captures the main topic or goal of this coding session. The title should be clear enough that the user recognizes the session in a list. Use sentence case: capitalize only the first word and proper nouns.
-
-Return JSON with a single "title" field.
-
-Good examples:
-{"title": "Fix login button on mobile"}
-{"title": "Add OAuth authentication"}
-{"title": "Debug failing CI tests"}
-{"title": "Refactor API client error handling"}
-
-Bad (too vague): {"title": "Code changes"}
-Bad (too long): {"title": "Investigate and fix the issue where the login button does not respond on mobile devices"}
-Bad (wrong case): {"title": "Fix Login Button On Mobile"}`
-
-const titleSchema = lazySchema(() => z.object({ title: z.string() }))
-
 /**
- * Generate a sentence-case session title from a description or first message.
- * Returns null on error or if Haiku returns an unparseable response.
- *
- * @param description - The user's first message or a description of the session
- * @param signal - Abort signal for cancellation
+ * Generate a session title from a description.
+ * KOSMOS Epic #2293: Anthropic queryHaiku removed. Returns null unconditionally;
+ * session title display falls back to the session-ID short form.
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function generateSessionTitle(
-  description: string,
-  signal: AbortSignal,
+  _description: string,
+  _signal: AbortSignal,
 ): Promise<string | null> {
-  const trimmed = description.trim()
-  if (!trimmed) return null
-
-  try {
-    const result = await queryHaiku({
-      systemPrompt: asSystemPrompt([SESSION_TITLE_PROMPT]),
-      userPrompt: trimmed,
-      outputFormat: {
-        type: 'json_schema',
-        schema: {
-          type: 'object',
-          properties: {
-            title: { type: 'string' },
-          },
-          required: ['title'],
-          additionalProperties: false,
-        },
-      },
-      signal,
-      options: {
-        querySource: 'generate_session_title',
-        agents: [],
-        // Reflect the actual session mode — this module is called from
-        // both the SDK print path (non-interactive) and the CCR remote
-        // session path via useRemoteSession (interactive).
-        isNonInteractiveSession: getIsNonInteractiveSession(),
-        hasAppendSystemPrompt: false,
-        mcpTools: [],
-      },
-    })
-
-    const text = extractTextContent(result.message.content)
-
-    const parsed = titleSchema().safeParse(safeParseJSON(text))
-    const title = parsed.success ? parsed.data.title.trim() || null : null
-
-    logEvent('tengu_session_title_generated', { success: title !== null })
-
-    return title
-  } catch (error) {
-    logForDebugging(`generateSessionTitle failed: ${error}`, {
-      level: 'error',
-    })
-    logEvent('tengu_session_title_generated', { success: false })
-    return null
-  }
+  return null
 }

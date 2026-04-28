@@ -128,8 +128,10 @@ import type {
   SDKControlMcpSetServersResponse,
   SDKControlReloadPluginsResponse,
 } from 'src/entrypoints/sdk/controlTypes.js'
-import type { PermissionMode } from '@anthropic-ai/claude-agent-sdk'
-import type { PermissionMode as InternalPermissionMode } from 'src/types/permissions.js'
+// KOSMOS Epic #2293: @anthropic-ai/claude-agent-sdk PermissionMode replaced
+// by the KOSMOS-internal equivalent from src/types/permissions.js (structurally
+// compatible; KOSMOS types/permissions.ts defines the same enum values).
+import type { PermissionMode, PermissionMode as InternalPermissionMode } from 'src/types/permissions.js'
 import { cwd } from 'process'
 import { getCwd } from 'src/utils/cwd.js'
 import omit from 'lodash-es/omit.js'

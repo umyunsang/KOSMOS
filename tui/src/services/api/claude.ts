@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: Apache-2.0
 // Research use — adapted from Claude Code 2.1.88 src/services/api/claude.ts
 //
-// KOSMOS Epic #2077 — Full CC API surface restored. The five LLM-calling
-// functions (verifyApiKey, queryModelWithoutStreaming, queryModelWithStreaming,
-// queryHaiku, queryWithModel) and executeNonStreamingRequest are replaced with
-// KOSMOS-native implementations that route through the Spec 1978 stdio IPC
-// bridge (query/deps.ts). All pure utility exports are preserved byte-identical
-// from CC 2.1.88 so the 25+ callers compile without changes.
+// KOSMOS Epic #2077 — Full CC API surface restored. LLM-calling functions
+// (queryModelWithoutStreaming, queryModelWithStreaming, executeNonStreamingRequest)
+// route through the Spec 1978 stdio IPC bridge (query/deps.ts). All pure
+// utility exports are preserved byte-identical from CC 2.1.88 so callers
+// compile without changes.
+// KOSMOS Epic #2293 — verifyApiKey / queryHaiku / queryWithModel removed
+// (Anthropic-1P only; KOSMOS is FriendliAI single-provider).
 //
 // Import pruning: only imports that are actually used by the remaining exported
 // functions are kept. The internal `queryModel` function (Anthropic SDK path)
@@ -392,18 +393,6 @@ export function getAPIMetadata() {
       session_id: getSessionId(),
     }),
   }
-}
-
-// KOSMOS Epic #2077 — verifyApiKey KOSMOS no-op.
-// KOSMOS authenticates via FriendliAI + K-EXAONE through the stdio bridge;
-// there is no Anthropic API key to verify. Returns true unconditionally.
-export async function verifyApiKey(
-  _apiKey: string,
-  _isNonInteractiveSession: boolean,
-): Promise<boolean> {
-  // KOSMOS Epic #2077: no Anthropic API key — always valid (FriendliAI auth is
-  // handled by the Python backend via KOSMOS_FRIENDLI_TOKEN env var).
-  return true
 }
 
 export function userMessageToMessageParam(
@@ -1049,120 +1038,6 @@ export function buildSystemPromptBlocks(
         }),
       }),
   }))
-}
-
-type HaikuOptions = Omit<Options, 'model' | 'getToolPermissionContext'>
-
-// KOSMOS Epic #2077 — queryHaiku via stdio bridge.
-// CC used a small fast model (Haiku). KOSMOS routes through the stdio bridge;
-// the backend always uses K-EXAONE regardless of the model parameter.
-export async function queryHaiku({
-  systemPrompt = asSystemPrompt([]),
-  userPrompt,
-  outputFormat,
-  signal,
-  options,
-}: {
-  systemPrompt: SystemPrompt
-  userPrompt: string
-  outputFormat?: BetaJSONOutputFormat
-  signal: AbortSignal
-  options: HaikuOptions
-}): Promise<AssistantMessage> {
-  // KOSMOS Epic #2077: route through the stdio bridge.
-  const result = await withVCR(
-    [
-      createUserMessage({
-        content: systemPrompt.map(text => ({ type: 'text', text })),
-      }),
-      createUserMessage({
-        content: userPrompt,
-      }),
-    ],
-    async () => {
-      const messages = [
-        createUserMessage({
-          content: userPrompt,
-        }),
-      ]
-
-      const result = await queryModelWithoutStreaming({
-        messages,
-        systemPrompt,
-        thinkingConfig: { type: 'disabled' },
-        tools: [],
-        signal,
-        options: {
-          ...options,
-          model: getSmallFastModel(),
-          enablePromptCaching: options.enablePromptCaching ?? false,
-          outputFormat,
-          async getToolPermissionContext() {
-            return getEmptyToolPermissionContext()
-          },
-        },
-      })
-      return [result]
-    },
-  )
-  // We don't use streaming for Haiku so this is safe
-  return result[0]! as AssistantMessage
-}
-
-type QueryWithModelOptions = Omit<Options, 'getToolPermissionContext'>
-
-/**
- * Query a specific model through the KOSMOS infrastructure.
- * KOSMOS Epic #2077: routes through the stdio bridge; model parameter is
- * informational only — backend always uses K-EXAONE.
- */
-export async function queryWithModel({
-  systemPrompt = asSystemPrompt([]),
-  userPrompt,
-  outputFormat,
-  signal,
-  options,
-}: {
-  systemPrompt: SystemPrompt
-  userPrompt: string
-  outputFormat?: BetaJSONOutputFormat
-  signal: AbortSignal
-  options: QueryWithModelOptions
-}): Promise<AssistantMessage> {
-  const result = await withVCR(
-    [
-      createUserMessage({
-        content: systemPrompt.map(text => ({ type: 'text', text })),
-      }),
-      createUserMessage({
-        content: userPrompt,
-      }),
-    ],
-    async () => {
-      const messages = [
-        createUserMessage({
-          content: userPrompt,
-        }),
-      ]
-
-      const result = await queryModelWithoutStreaming({
-        messages,
-        systemPrompt,
-        thinkingConfig: { type: 'disabled' },
-        tools: [],
-        signal,
-        options: {
-          ...options,
-          outputFormat,
-          async getToolPermissionContext() {
-            return getEmptyToolPermissionContext()
-          },
-        },
-      })
-      return [result]
-    },
-  )
-  return result[0]! as AssistantMessage
 }
 
 // Non-streaming requests have a 10min max per the docs:

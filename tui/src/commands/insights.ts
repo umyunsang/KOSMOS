@@ -14,18 +14,10 @@ import {
 import { tmpdir } from 'os'
 import { extname, join } from 'path'
 import type { Command } from '../commands.js'
-// KOSMOS-1633 P2 / KOSMOS-1978 T008: `queryWithModel` import severed.
-// `/insights` is Anthropic-internal usage analytics. KOSMOS routes telemetry
-// through Spec 021 OTEL → local Langfuse (vision.md § L1-A A7), so the
-// LLM-driven summarisation in this file (lines 883/1026/1577) is short-
-// circuited via the local stub below. Same `{message: {content: [{type,text}]}}`
-// shape as the CC original — downstream parsing yields empty insights output,
-// which is correct: the analytics surface is non-functional in KOSMOS by design.
-async function queryWithModel(_args: unknown): Promise<{
-  message: { content: { type: 'text'; text: string }[] }
-}> {
-  return { message: { content: [{ type: 'text', text: '{}' }] } }
-}
+// KOSMOS Epic #2293: queryWithModel removed (Spec 1633 + Spec 2293 closure).
+// `/insights` is Anthropic-internal usage analytics; non-functional in KOSMOS.
+// All three call sites return the KOSMOS no-op result via KOSMOS_NOOP_LLM_RESULT.
+const KOSMOS_NOOP_LLM_RESULT = { message: { content: [{ type: 'text' as const, text: '{}' }] } }
 import {
   AGENT_TOOL_NAME,
   LEGACY_AGENT_TOOL_NAME,
@@ -45,7 +37,7 @@ import {
 } from '../utils/sessionStorage.js'
 import { jsonParse, jsonStringify } from '../utils/slowOperations.js'
 import { countCharInString } from '../utils/stringUtils.js'
-import { asSystemPrompt } from '../utils/systemPromptType.js'
+// KOSMOS Epic #2293: asSystemPrompt import removed — queryWithModel deleted.
 import { escapeXmlAttr as escapeHtml } from '../utils/xml.js'
 
 // Model for facet extraction and summarization (Opus - best quality)
@@ -891,20 +883,7 @@ TRANSCRIPT CHUNK:
 
 async function summarizeTranscriptChunk(chunk: string): Promise<string> {
   try {
-    const result = await queryWithModel({
-      systemPrompt: asSystemPrompt([]),
-      userPrompt: SUMMARIZE_CHUNK_PROMPT + chunk,
-      signal: new AbortController().signal,
-      options: {
-        model: getAnalysisModel(),
-        querySource: 'insights',
-        agents: [],
-        isNonInteractiveSession: true,
-        hasAppendSystemPrompt: false,
-        mcpTools: [],
-        maxOutputTokensOverride: 500,
-      },
-    })
+    const result = KOSMOS_NOOP_LLM_RESULT
 
     const text = extractTextContent(result.message.content)
     return text || chunk.slice(0, 2000)
@@ -1034,20 +1013,7 @@ RESPOND WITH ONLY A VALID JSON OBJECT matching this schema:
   "brief_summary": "One sentence: what user wanted and whether they got it"
 }`
 
-    const result = await queryWithModel({
-      systemPrompt: asSystemPrompt([]),
-      userPrompt: jsonPrompt,
-      signal: new AbortController().signal,
-      options: {
-        model: getAnalysisModel(),
-        querySource: 'insights',
-        agents: [],
-        isNonInteractiveSession: true,
-        hasAppendSystemPrompt: false,
-        mcpTools: [],
-        maxOutputTokensOverride: 4096,
-      },
-    })
+    const result = KOSMOS_NOOP_LLM_RESULT
 
     const text = extractTextContent(result.message.content)
 
@@ -1585,20 +1551,7 @@ async function generateSectionInsight(
   dataContext: string,
 ): Promise<{ name: string; result: unknown }> {
   try {
-    const result = await queryWithModel({
-      systemPrompt: asSystemPrompt([]),
-      userPrompt: section.prompt + '\n\nDATA:\n' + dataContext,
-      signal: new AbortController().signal,
-      options: {
-        model: getInsightsModel(),
-        querySource: 'insights',
-        agents: [],
-        isNonInteractiveSession: true,
-        hasAppendSystemPrompt: false,
-        mcpTools: [],
-        maxOutputTokensOverride: section.maxTokens,
-      },
-    })
+    const result = KOSMOS_NOOP_LLM_RESULT
 
     const text = extractTextContent(result.message.content)
 
