@@ -1,62 +1,52 @@
 ==== KOSMOS Epic #2152 P5 stdio smoke ====
-date:    2026-04-28T02:48:56.000Z
+date:    2026-04-28T03:00:50.000Z
 branch:  feat/2152-system-prompt-redesign
-commit:  6889d22
-session: 73a6ff48-eb2b-41f8-aafc-55111bc2702a
+commit:  c79e2c9
+session: 7a54be41-d591-4510-96a8-3ae3e2f2e356
 
 ==== scenario: location ====
 prompt: 강남역 어디야?
-frames: 169  tool_calls: 1  done: 1
+frames: 74  tool_calls: 1  done: 1
   parse-error: slice(None, 80, None)
 
 ==== scenario: weather ====
 prompt: 오늘 서울 날씨 알려줘
-frames: 264  tool_calls: 4  done: 1
+frames: 119  tool_calls: 3  done: 1
   parse-error: slice(None, 80, None)
 
 ==== scenario: emergency ====
 prompt: 근처 응급실 알려줘
-frames: 316  tool_calls: 2  done: 1
+frames: 138  tool_calls: 3  done: 1
   parse-error: slice(None, 80, None)
 
 ==== scenario: koroad ====
 prompt: 어린이 보호구역 사고 다발
-frames: 332  tool_calls: 7  done: 1
+frames: 228  tool_calls: 3  done: 1
   parse-error: slice(None, 80, None)
 
 ==== scenario: greeting ====
 prompt: 안녕
-frames: 9  tool_calls: 0
+frames: 7  tool_calls: 0
 0  done: 1
-  reply: 안녕하세요! 무엇을 도와드릴까요?
+  reply: 안녕하세요. 어떻게 도와드릴까요?
 
 ==== aggregate ====
-total tool_call frames: 14
+total tool_call frames: 10
 scenarios with ≥1 tool_call: 4/5
 SC-1 verdict: PASS (≥3 of 5)
 
-==== smoke v4 — structured tool_calls (post prompt-fix + parser) ====
-  emergency: 2 structured tool_call frames
+==== smoke v5 — StreamGate active (post-fix) ====
+Citizen-visible <tool_call> chunks per scenario:
+  emergency: 0 (target: 0)
+  greeting: 0 (target: 0)
+  koroad: 0 (target: 0)
+  location: 0 (target: 0)
+  weather: 0 (target: 0)
+
+Structured tool_call frames:
+  emergency: 3
   greeting: 0
-0 structured tool_call frames
-  koroad: 7 structured tool_call frames
-  location: 1 structured tool_call frames
-  weather: 4 structured tool_call frames
-
-Total structured tool_call frames: 14
-
-Tool invocation breakdown:
-  emergency: lookup({"mode": "search", "query": "근처 응급실"})
-  emergency: lookup({"mode": "search", "query": "응급실"})
-  koroad: lookup({"mode": "search", "query": "어린이 보호구역 사고 다발 지역"})
-  koroad: lookup({"mode": "search", "query": "어린이 보호구역"})
-  koroad: lookup({"mode": "search", "query": "어린이 보호구역"})
-  koroad: lookup({"mode": "search", "query": "사고 다발 지역"})
-  koroad: lookup({"mode": "search", "query": "사고 다발 지역"})
-  koroad: lookup({"mode": "search", "query": "사고 다발 지역"})
-  koroad: lookup({"mode": "search", "query": "사고 다발 지역"})
-  location: resolve_location({"query": "강남역"})
-  weather: lookup({"mode": "search", "query": "서울 날씨"})
-  weather: lookup({"mode": "search", "query": "날씨"})
-  weather: lookup({"mode": "search", "query": "날씨"})
-  weather: resolve_location({"query": "서울"})
+0
+  koroad: 3
+  location: 1
+  weather: 3
