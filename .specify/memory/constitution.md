@@ -24,16 +24,13 @@ Every design decision MUST trace to a concrete reference source. All sources lis
 
 ### II. Fail-Closed Security (NON-NEGOTIABLE)
 
-Every tool adapter and API integration MUST default to the most restrictive setting:
+KOSMOS does not invent permission policy. Every tool adapter MUST cite the agency's own published policy. Fail-closed defaults apply.
 
-- `requires_auth = True` (not False)
-- `is_personal_data = True` (not False)
-- `is_concurrency_safe = False` (not True)
-- `cache_ttl_seconds = 0` (no caching by default)
+- Permission UX uses CC's `<PermissionRequest>` pipeline byte-identical with `.references/claude-code-sourcemap/`.
+- KOSMOS-invented classifications (5-mode spectrum / `pipa_class` / `auth_level` / `permission_tier` / `is_personal_data` / `is_irreversible` / `requires_auth` / `dpa_reference`) were removed in Spec 1979 (3-correction iterations 2026-04-28 / 2026-04-29) and MUST NOT be reintroduced.
+- OPAQUE-forever domains (those without a public LLM-callable channel) are never wrapped as adapters; the harness hands the citizen off via narrative scenario docs.
 
-New adapters created by contributors or agents cannot accidentally expose personal-data APIs as public. The only way to relax a default is an explicit, reviewed override.
-
-Permission pipeline bypass-immune checks MUST NOT be overridable by any mode, including automation, admin, or testing shortcuts. These checks include: querying another citizen's records, accessing medical records without consent, and write actions without required identity verification.
+Adapter metadata schema, transparency fields, and citizen-facing gate enums are spec-driven artifacts under Initiative #2290 — see `specs/1979-plugin-dx-tui-integration/cc-source-scope-audit.md` and `delegation-flow-design.md § 12` for the current canonical shapes.
 
 ### III. Pydantic v2 Strict Typing (NON-NEGOTIABLE)
 

@@ -1,10 +1,16 @@
 # CLAUDE.md
 
-This project's agent instructions live in [`AGENTS.md`](./AGENTS.md). Read that file first.
+This project's agent instructions live in [`AGENTS.md`](./AGENTS.md). Read that file first — particularly `§ CORE THESIS`.
+
+**Active Initiative**: #2290 — see GitHub for the live Epic + Phase sub-issue tree.
 
 **Canonical sources** (cited by every spec and PR):
+- `AGENTS.md` — entry point thesis + hard rules.
 - `docs/vision.md` — six-layer harness design + Claude Code reference thesis.
-- `docs/requirements/kosmos-migration-tree.md` — L1 pillars (A · B · C), UI L2 decisions, brand, and P0–P6 execution-phase sequencing. **Approved 2026-04-24.**
+- `docs/requirements/kosmos-migration-tree.md` — L1 pillars (A · B · C), UI L2, brand, P0–P6.
+- `.references/claude-code-sourcemap/restored-src/` — Claude Code 2.1.88 byte-identical source-of-truth (research-only, never modify).
+
+All non-trivial features go through the spec-driven workflow (`/speckit-*` skills under `.claude/skills/`). Concrete schemas, metadata fields, and execution detail live in `specs/<feature>/`, not in this file.
 
 @AGENTS.md
 @docs/requirements/kosmos-migration-tree.md
