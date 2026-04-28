@@ -34,17 +34,38 @@ Total 14 structured `ToolCallFrame`s emitted in one session. 4 of 5 scenarios no
 1. `prompts/system_v1.md` `<tool_usage>` section rewritten to teach only the two LLM-visible primitives (`resolve_location` and `lookup(search → fetch)`) and explicitly forbid the textual marker shape. K-EXAONE switched to OpenAI-structured emissions immediately.
 2. `src/kosmos/llm/tool_call_parser.py` — defensive fallback that recognises four empirical K-EXAONE textual marker formats (well-formed JSON, XML-attribute pseudo-JSON, single-key `name_X` dict, mixed-XML body) and synthesises `tool_call_buf` entries inside `_handle_chat_request` so degraded paths still dispatch instead of leaking the raw marker to the citizen.
 
-**Verification** (latest run):
+**Verification** (latest run, post-StreamGate fix):
 
 ```text
 $ grep -c '"kind":"tool_call"' specs/2152-system-prompt-redesign/smoke-stdio-*.jsonl
-specs/.../smoke-stdio-emergency.jsonl:2
-specs/.../smoke-stdio-greeting.jsonl:0
-specs/.../smoke-stdio-koroad.jsonl:7
-specs/.../smoke-stdio-location.jsonl:1
-specs/.../smoke-stdio-weather.jsonl:4
+specs/.../smoke-stdio-emergency.jsonl: 3
+specs/.../smoke-stdio-greeting.jsonl:  0
+specs/.../smoke-stdio-koroad.jsonl:    3
+specs/.../smoke-stdio-location.jsonl:  1
+specs/.../smoke-stdio-weather.jsonl:   3
 $ # → 4 of 5 scenarios trigger ≥1 structured tool_call (≥ 3 → PASS).
+$
+$ # Citizen-visible <tool_call> markers in streamed content (target = 0):
+$ for f in specs/2152-system-prompt-redesign/smoke-stdio-*.jsonl; do
+>   python3 -c "import json; print(sum(1 for L in open('$f') if L.startswith('{') and '<tool_call>' in (json.loads(L).get('delta') or '')))"
+> done
+0
+0
+0
+0
+0
+$ # → StreamGate strips every textual marker before it reaches the citizen.
 ```
+
+The third smoke iteration (`commit a81769f`) verifies the full chain:
+
+1. The new prompt teaches K-EXAONE to use only `resolve_location` and `lookup` (the LLM-visible primitives), so the structured `tool_calls` field carries the dispatch.
+2. When K-EXAONE additionally emits a textual `<tool_call>` marker in the same turn (degraded path), the `StreamGate` strips it character-accurately from the streaming `assistant_chunk` content channel.
+3. The citizen sees natural Korean prose only — concrete sample from the live run:
+
+   > "현재 KOSMOS가 다루는 공공 데이터로는 '강남역'의 위치를 정확히 확인할 수 없습니다. 다만 일반적으로 '강남역'은 서울 지하철 2호선과 분당선의 환승역으로, **서울특별시 강남구 역삼동**에 위치해 있습니다. 정확한 위치, 좌표, 도로명 주소는 아래와 같은 공식 채널에서 확인할 수 있습니다: …"
+
+4. The post-stream `extract_textual_tool_calls` parser fallback remains in place for the rare case where K-EXAONE emits ONLY a textual marker (no structured form) — defensive belt-and-braces for future model-version drift.
 
 ---
 
