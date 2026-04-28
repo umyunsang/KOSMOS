@@ -1,0 +1,44 @@
+==== KOSMOS Epic #2152 P5 stdio smoke ====
+date:    2026-04-28T02:30:26.000Z
+branch:  feat/2152-system-prompt-redesign
+commit:  f40666d
+session: 3c13fe63-a744-4ecb-a424-f261632d17bc
+
+==== scenario: location ====
+prompt: 강남역 어디야?
+frames: 21  tool_calls: 0
+0  done: 1
+  reply: <tool_call>{"name": "resolve_location", "arguments": {"location": "강남역"}}</tool_call>
+
+==== scenario: weather ====
+prompt: 오늘 서울 날씨 알려줘
+frames: 25  tool_calls: 0
+0  done: 1
+  reply: <tool_call>{"kma_today" name="kma_today" arguments={"location": "서울"}}</tool_call>
+
+==== scenario: emergency ====
+prompt: 근처 응급실 알려줘
+frames: 21  tool_calls: 0
+0  done: 1
+  reply: <tool_call>{"name_nmc_emergency_search": {"query": "근처 응급실"}}</tool_call>
+
+==== scenario: koroad ====
+prompt: 어린이 보호구역 사고 다발
+frames: 73  tool_calls: 0
+0  done: 1
+  reply: <tool_call>koroad_accident_hotspot_search
+<arg_key>location</arg_key>
+<arg_value>어린이 보호구역</arg_value>
+<arg_key>accident_type</arg_key>
+<arg_value>사고 다발</arg_value>
+<arg_key>region</arg_key>
+<arg_value>전국</arg_value>
+</tool_call>
+
+==== scenario: greeting ====
+prompt: 안녕
+frames: 9  tool_calls: 0
+0  done: 1
+  reply: 안녕하세요. 무엇을 도와드릴까요?
+
+==== aggregate ====

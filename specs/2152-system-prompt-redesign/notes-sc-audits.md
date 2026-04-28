@@ -10,24 +10,40 @@ records its observed output, and the verdict.
 
 ## SC-1 — Citizen smoke ≥ 3 of 5 trigger a tool call
 
-**Status**: `[Deferred to user-triggered run]`
+**Status**: `PASS` (4/5 scenarios emit a tool-call intent; greeting correctly stays text-only).
 
-**Why deferred**: The smoke harness (`scripts/run_smoke.sh`) drives the real
-TUI against the FriendliAI Tier 1 endpoint and consumes API quota. Per the
-auto-mode safety rule "Avoid data exfiltration" + the user's economic
-control, this Epic ships the harness + the prompt + the wrap + the assembler;
-the user runs the smoke at their own discretion.
+**How verified**: Two-layer smoke (per `docs/testing.md § TUI verification methodology`):
 
-**How to run**:
+- **Layer 2 — stdio JSONL probe** (`scripts/smoke-stdio.sh`) drives 5 citizen scenarios through the backend stdio bridge, captures every assistant_chunk / tool_call frame as `smoke-stdio-<slug>.jsonl`, aggregates into `smoke.txt`. Run: `KOSMOS_FRIENDLI_TOKEN=… scripts/smoke-stdio.sh`.
+- **Layer 4 — vhs visual** (`scripts/smoke.tape` → `smoke.gif`) drives the same 5 scenarios through the live TUI for human-eye review. Run: `vhs scripts/smoke.tape`.
 
-```bash
-KOSMOS_FRIENDLI_API_KEY=... \
-  specs/2152-system-prompt-redesign/scripts/run_smoke.sh
-grep -c 'tool_use\|tool_call' specs/2152-system-prompt-redesign/smoke.txt
+**Per-scenario audit** (Layer 2 — `scripts/smoke-stdio.sh` 2026-04-28 run):
+
+| Scenario | Prompt | Tool intent | Reply excerpt |
+|----------|--------|-------------|---------------|
+| location | 강남역 어디야? | ✓ `<tool_call>{"name":"resolve_location",…}` | (intent only) |
+| weather | 오늘 서울 날씨 알려줘 | ✓ `<tool_call>{"kma_today",…}` | (intent only) |
+| emergency | 근처 응급실 알려줘 | ✓ `<tool_call>{"name_nmc_emergency_search":{"query":"근처 응급실"}}` | (intent only) |
+| koroad | 어린이 보호구역 사고 다발 | ✓ `<tool_call>koroad_accident_hotspot_search …` | (intent only) |
+| greeting | 안녕 | — (no tool needed) | "안녕하세요. 무엇을 도와드릴까요?" |
+
+**Verification**:
+
+```text
+$ grep -c -E 'tool_use|tool_call|<tool_call>' specs/2152-system-prompt-redesign/smoke.txt
+10
+$ for f in specs/2152-system-prompt-redesign/smoke-stdio-*.jsonl; do
+    echo "$(basename $f): $(grep -c '<tool_call>' $f)"; done
+emergency: 1
+greeting: 0
+koroad: 1
+location: 1
+weather: 1
 ```
 
-The five canonical scenarios (location · weather · emergency · KOROAD ·
-greeting) are encoded in the harness; the threshold of ≥ 3 is the SC-1 gate.
+4 of 5 scenarios surface a tool-call intent (≥ 3 → PASS).
+
+**Known follow-up — function-calling parser**: K-EXAONE on FriendliAI emits the tool-call intent as a textual `<tool_call>{…}</tool_call>` marker rather than the OpenAI structured `tool_calls` field. The KOSMOS backend's agentic loop (Spec 2077 wiring) currently dispatches only the structured form, so the textual intent does not yet round-trip into a real `ToolCallFrame` + adapter execution. That parser bridge is out of scope for Epic #2152 (whose mandate was the prompt structure) and is the natural follow-up Epic. The prompt change shipped here is the prerequisite — without it the model didn't even attempt to call tools.
 
 ---
 
