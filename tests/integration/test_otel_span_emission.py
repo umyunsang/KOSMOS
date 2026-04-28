@@ -175,17 +175,33 @@ async def test_verify_emits_gen_ai_tool_loop_iteration_span(
             nist_aal_hint="AAL2",
         )
 
+    # Snapshot the previously-registered adapter so we can restore it on
+    # teardown — leaking the async test adapter into the global
+    # _VERIFY_ADAPTERS registry corrupts later unit tests
+    # (test_adapter_returns_auth_context_shape calls the adapter
+    # synchronously and gets a coroutine back). Pre-existing leak documented
+    # in tests/ipc/test_stdio.py:107; closed here.
+    from kosmos.primitives.verify import _VERIFY_ADAPTERS
+
+    _previous_adapter = _VERIFY_ADAPTERS.get(family)
     register_verify_adapter(family, _adapter)
-    result = await verify(family_hint=family)
-    assert isinstance(result, GanpyeonInjeungContext)
+    try:
+        result = await verify(family_hint=family)
+        assert isinstance(result, GanpyeonInjeungContext)
 
-    spans = exporter.get_finished_spans()
-    names = [s.name for s in spans]
-    assert _SPAN_NAME in names, f"verify did not emit {_SPAN_NAME}; got {names}"
+        spans = exporter.get_finished_spans()
+        names = [s.name for s in spans]
+        assert _SPAN_NAME in names, f"verify did not emit {_SPAN_NAME}; got {names}"
 
-    parity_span = next(s for s in spans if s.name == _SPAN_NAME)
-    attrs = dict(parity_span.attributes or {})
-    assert attrs.get("gen_ai.tool.name") == f"verify:{family}"
+        parity_span = next(s for s in spans if s.name == _SPAN_NAME)
+        attrs = dict(parity_span.attributes or {})
+        assert attrs.get("gen_ai.tool.name") == f"verify:{family}"
+    finally:
+        # Restore the original adapter (or remove ours if nothing was there).
+        if _previous_adapter is not None:
+            register_verify_adapter(family, _previous_adapter)
+        else:
+            _VERIFY_ADAPTERS.pop(family, None)
 
 
 # ---------------------------------------------------------------------------
