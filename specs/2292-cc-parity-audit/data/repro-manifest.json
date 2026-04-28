@@ -1,0 +1,87 @@
+{
+  "schema": "data-model.md § ReproducibilityProcedure",
+  "audit_epic": "Epic α #2292 — CC parity audit",
+  "generated_date": "2026-04-29",
+  "steps": [
+    {
+      "step_id": "R1.enumerate",
+      "command": "specs/2292-cc-parity-audit/scripts/enumerate-files.sh",
+      "inputs": [
+        "tui/src/",
+        ".references/claude-code-sourcemap/restored-src/src/"
+      ],
+      "outputs": [
+        "specs/2292-cc-parity-audit/data/enumerated-keep-byte-identical.txt",
+        "specs/2292-cc-parity-audit/data/enumerated-import-candidate.txt",
+        "specs/2292-cc-parity-audit/data/enumerated-modified.txt",
+        "specs/2292-cc-parity-audit/data/enumerated-kosmos-only.txt",
+        "specs/2292-cc-parity-audit/data/enumerated-cc-only.txt"
+      ],
+      "seed": null,
+      "expected_runtime_seconds": 30,
+      "deterministic_via": "find + diff -rq + sha256 + LC_ALL=C sort"
+    },
+    {
+      "step_id": "R2.spot-check",
+      "command": "python3 specs/2292-cc-parity-audit/scripts/spot-check-50.py",
+      "inputs": [
+        "specs/2292-cc-parity-audit/data/enumerated-keep-byte-identical.txt"
+      ],
+      "outputs": [
+        "specs/2292-cc-parity-audit/data/spot-check-results.json",
+        "specs/2292-cc-parity-audit/data/spot-check-reclassify-pending.json (only when mismatch found)"
+      ],
+      "seed": 2292,
+      "expected_runtime_seconds": 5,
+      "deterministic_via": "random.Random(2292).sample (Python Mersenne Twister, stable across 3.x)"
+    },
+    {
+      "step_id": "R3.import-verify",
+      "command": "python3 specs/2292-cc-parity-audit/scripts/verify-import-diff.py",
+      "inputs": [
+        "specs/2292-cc-parity-audit/data/enumerated-import-candidate.txt"
+      ],
+      "outputs": [
+        "specs/2292-cc-parity-audit/data/import-verify-results.json",
+        "specs/2292-cc-parity-audit/data/import-verify-reclassify-pending.json (only when body diff found)"
+      ],
+      "seed": null,
+      "expected_runtime_seconds": 60,
+      "deterministic_via": "diff -u + import-line regex filter"
+    },
+    {
+      "step_id": "R4.classify",
+      "command": "python3 specs/2292-cc-parity-audit/scripts/classify-modified.py",
+      "inputs": [
+        "specs/2292-cc-parity-audit/data/enumerated-modified.txt"
+      ],
+      "outputs": [
+        "specs/2292-cc-parity-audit/data/modified-218-classification.json"
+      ],
+      "seed": null,
+      "expected_runtime_seconds": 60,
+      "deterministic_via": "directory pattern + git log spec id grep + body residue scan (3-signal heuristic per research.md § R-4)"
+    },
+    {
+      "step_id": "R5.compose",
+      "command": "python3 specs/2292-cc-parity-audit/scripts/compose-audit-md.py",
+      "inputs": [
+        "specs/2292-cc-parity-audit/data/enumeration-summary.json",
+        "specs/2292-cc-parity-audit/data/modified-218-classification.json",
+        "specs/2292-cc-parity-audit/data/spot-check-results.json",
+        "specs/2292-cc-parity-audit/data/import-verify-results.json",
+        "specs/2292-cc-parity-audit/data/suspicious-transfer.json",
+        "specs/2292-cc-parity-audit/data/manual-review-log.json"
+      ],
+      "outputs": [
+        "specs/2292-cc-parity-audit/cc-parity-audit.md"
+      ],
+      "seed": null,
+      "expected_runtime_seconds": 5,
+      "deterministic_via": "JSON → markdown (idempotent; same JSON ⟹ identical markdown)"
+    }
+  ],
+  "total_expected_runtime_seconds": 160,
+  "no_external_network": true,
+  "stdlib_only": true
+}

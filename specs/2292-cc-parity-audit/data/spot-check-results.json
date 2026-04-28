@@ -1,0 +1,452 @@
+[
+  {
+    "kosmos_path": "tui/src/hooks/useClaudeCodeHintRecommendation.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/hooks/useClaudeCodeHintRecommendation.tsx",
+    "kosmos_sha256": "8b2966eb1a682c4285cf77c4aa5ea5d4fcb34d8d3d15eb4824a60d4f0757b3d7",
+    "cc_sha256": "8b2966eb1a682c4285cf77c4aa5ea5d4fcb34d8d3d15eb4824a60d4f0757b3d7",
+    "hash_match": true,
+    "sampling_seed": 2292,
+    "sampling_index": 0
+  },
+  {
+    "kosmos_path": "tui/src/utils/extraUsage.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/extraUsage.ts",
+    "kosmos_sha256": "507a8df3b395ac90fae5ffcbce496d1dd44672d156c07f38abdd927992b35c51",
+    "cc_sha256": "507a8df3b395ac90fae5ffcbce496d1dd44672d156c07f38abdd927992b35c51",
+    "hash_match": true,
+    "sampling_seed": 2292,
+    "sampling_index": 1
+  },
+  {
+    "kosmos_path": "tui/src/utils/execSyncWrapper.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/execSyncWrapper.ts",
+    "kosmos_sha256": "c00dd9ec4d26847ea5ea3cd4910c3f3f551d6aae85b0cd02e3e7eab54b4ee4b4",
+    "cc_sha256": "c00dd9ec4d26847ea5ea3cd4910c3f3f551d6aae85b0cd02e3e7eab54b4ee4b4",
+    "hash_match": true,
+    "sampling_seed": 2292,
+    "sampling_index": 2
+  },
+  {
+    "kosmos_path": "tui/src/utils/agentSwarmsEnabled.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/agentSwarmsEnabled.ts",
+    "kosmos_sha256": "239205d4a685ca04d2d6432ab6596dd35760fc5a1b745a1272c1daf0a4bb18d6",
+    "cc_sha256": "239205d4a685ca04d2d6432ab6596dd35760fc5a1b745a1272c1daf0a4bb18d6",
+    "hash_match": true,
+    "sampling_seed": 2292,
+    "sampling_index": 3
+  },
+  {
+    "kosmos_path": "tui/src/components/design-system/ThemedBox.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/design-system/ThemedBox.tsx",
+    "kosmos_sha256": "7fe462efe37a67e5166241b1befe8474f9685e60b4261f7a193a7582051f6c43",
+    "cc_sha256": "7fe462efe37a67e5166241b1befe8474f9685e60b4261f7a193a7582051f6c43",
+    "hash_match": true,
+    "sampling_seed": 2292,
+    "sampling_index": 4
+  },
+  {
+    "kosmos_path": "tui/src/bridge/jwtUtils.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/bridge/jwtUtils.ts",
+    "kosmos_sha256": "0510d42414b6fb16f8b362146074f4c73cdf10d7cfc1e08696fee3e4993bc592",
+    "cc_sha256": "0510d42414b6fb16f8b362146074f4c73cdf10d7cfc1e08696fee3e4993bc592",
+    "hash_match": true,
+    "sampling_seed": 2292,
+    "sampling_index": 5
+  },
+  {
+    "kosmos_path": "tui/src/types/plugin.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/types/plugin.ts",
+    "kosmos_sha256": "a00ee3fda919c8c36b11a2cc65235dea18f83b188431cdbd4504ce4eea2a178a",
+    "cc_sha256": "a00ee3fda919c8c36b11a2cc65235dea18f83b188431cdbd4504ce4eea2a178a",
+    "hash_match": true,
+    "sampling_seed": 2292,
+    "sampling_index": 6
+  },
+  {
+    "kosmos_path": "tui/src/components/tasks/taskStatusUtils.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/tasks/taskStatusUtils.tsx",
+    "kosmos_sha256": "e81b9ff0a14e715e21cb51ebb1caa0b2414a3237cf8741bb2d8aad46e65214de",
+    "cc_sha256": "e81b9ff0a14e715e21cb51ebb1caa0b2414a3237cf8741bb2d8aad46e65214de",
+    "hash_match": true,
+    "sampling_seed": 2292,
+    "sampling_index": 7
+  },
+  {
+    "kosmos_path": "tui/src/ink/termio/ansi.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/ink/termio/ansi.ts",
+    "kosmos_sha256": "aaec4c43878bc28293f96583ebe4211c8de92afc76191cc788a8bddf695a4644",
+    "cc_sha256": "aaec4c43878bc28293f96583ebe4211c8de92afc76191cc788a8bddf695a4644",
+    "hash_match": true,
+    "sampling_seed": 2292,
+    "sampling_index": 8
+  },
+  {
+    "kosmos_path": "tui/src/constants/common.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/constants/common.ts",
+    "kosmos_sha256": "289d78777aea358d03946fe6a623d8f11f301d9cb1ab92d9a58fa79c4ecc3436",
+    "cc_sha256": "289d78777aea358d03946fe6a623d8f11f301d9cb1ab92d9a58fa79c4ecc3436",
+    "hash_match": true,
+    "sampling_seed": 2292,
+    "sampling_index": 9
+  },
+  {
+    "kosmos_path": "tui/src/components/messageActions.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/messageActions.tsx",
+    "kosmos_sha256": "5f02733eb459cc37edcbae2767c383bd6042feb58fa5f88b35d55b523bd12b3b",
+    "cc_sha256": "5f02733eb459cc37edcbae2767c383bd6042feb58fa5f88b35d55b523bd12b3b",
+    "hash_match": true,
+    "sampling_seed": 2292,
+    "sampling_index": 10
+  },
+  {
+    "kosmos_path": "tui/src/components/MessageResponse.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/MessageResponse.tsx",
+    "kosmos_sha256": "18eff40130bbf3fdd5bbc340a8cb13087f6edf3b80ea912d79369ad1e8600afa",
+    "cc_sha256": "18eff40130bbf3fdd5bbc340a8cb13087f6edf3b80ea912d79369ad1e8600afa",
+    "hash_match": true,
+    "sampling_seed": 2292,
+    "sampling_index": 11
+  },
+  {
+    "kosmos_path": "tui/src/constants/cyberRiskInstruction.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/constants/cyberRiskInstruction.ts",
+    "kosmos_sha256": "0647e7362b2d93bc6f5004a3e27947f4c4d75094b898afa164faadd460542627",
+    "cc_sha256": "0647e7362b2d93bc6f5004a3e27947f4c4d75094b898afa164faadd460542627",
+    "hash_match": true,
+    "sampling_seed": 2292,
+    "sampling_index": 12
+  },
+  {
+    "kosmos_path": "tui/src/tools/ConfigTool/supportedSettings.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/tools/ConfigTool/supportedSettings.ts",
+    "kosmos_sha256": "ef643901d18ce60c19330255c7063d9957372c682c9b0a176b55a68598531bd8",
+    "cc_sha256": "ef643901d18ce60c19330255c7063d9957372c682c9b0a176b55a68598531bd8",
+    "hash_match": true,
+    "sampling_seed": 2292,
+    "sampling_index": 13
+  },
+  {
+    "kosmos_path": "tui/src/utils/systemTheme.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/systemTheme.ts",
+    "kosmos_sha256": "2bd14fbe8a2194f8e190bbb73bc71c9cb2e19f7bcf5f9801674bbb438f0df7e8",
+    "cc_sha256": "2bd14fbe8a2194f8e190bbb73bc71c9cb2e19f7bcf5f9801674bbb438f0df7e8",
+    "hash_match": true,
+    "sampling_seed": 2292,
+    "sampling_index": 14
+  },
+  {
+    "kosmos_path": "tui/src/components/messages/UserMemoryInputMessage.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/messages/UserMemoryInputMessage.tsx",
+    "kosmos_sha256": "bb48117e1456bce3ddc139c0f55183c64ac98328258747aa954c331b2f1b0ef8",
+    "cc_sha256": "bb48117e1456bce3ddc139c0f55183c64ac98328258747aa954c331b2f1b0ef8",
+    "hash_match": true,
+    "sampling_seed": 2292,
+    "sampling_index": 15
+  },
+  {
+    "kosmos_path": "tui/src/utils/plugins/marketplaceManager.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/plugins/marketplaceManager.ts",
+    "kosmos_sha256": "1386960debb44b806601ad75e18a4cc069a0c0a3fb7492acd6d85b67096b7de4",
+    "cc_sha256": "1386960debb44b806601ad75e18a4cc069a0c0a3fb7492acd6d85b67096b7de4",
+    "hash_match": true,
+    "sampling_seed": 2292,
+    "sampling_index": 16
+  },
+  {
+    "kosmos_path": "tui/src/tools/MCPTool/prompt.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/tools/MCPTool/prompt.ts",
+    "kosmos_sha256": "cf108697cf0b5f6bc5ec038764df13411916b23c64ef96ae005095b0d355946c",
+    "cc_sha256": "cf108697cf0b5f6bc5ec038764df13411916b23c64ef96ae005095b0d355946c",
+    "hash_match": true,
+    "sampling_seed": 2292,
+    "sampling_index": 17
+  },
+  {
+    "kosmos_path": "tui/src/components/agents/new-agent-creation/wizard-steps/DescriptionStep.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/agents/new-agent-creation/wizard-steps/DescriptionStep.tsx",
+    "kosmos_sha256": "85113925c5ad370f40bcf0193ad9f35e14fb81cac33d3b4a8d7af1d8d50c2ab7",
+    "cc_sha256": "85113925c5ad370f40bcf0193ad9f35e14fb81cac33d3b4a8d7af1d8d50c2ab7",
+    "hash_match": true,
+    "sampling_seed": 2292,
+    "sampling_index": 18
+  },
+  {
+    "kosmos_path": "tui/src/components/ChannelDowngradeDialog.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/ChannelDowngradeDialog.tsx",
+    "kosmos_sha256": "9d5f9e6bc8131c184b27b1783e8c6e796238186cbc94872a9dfbde771dc081cb",
+    "cc_sha256": "9d5f9e6bc8131c184b27b1783e8c6e796238186cbc94872a9dfbde771dc081cb",
+    "hash_match": true,
+    "sampling_seed": 2292,
+    "sampling_index": 19
+  },
+  {
+    "kosmos_path": "tui/src/moreright/useMoreRight.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/moreright/useMoreRight.tsx",
+    "kosmos_sha256": "ba5701874d69a339a9b1263f60dae7ced46060a3e6366a16cb0155f5ddef4544",
+    "cc_sha256": "ba5701874d69a339a9b1263f60dae7ced46060a3e6366a16cb0155f5ddef4544",
+    "hash_match": true,
+    "sampling_seed": 2292,
+    "sampling_index": 20
+  },
+  {
+    "kosmos_path": "tui/src/tools/ToolSearchTool/constants.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/tools/ToolSearchTool/constants.ts",
+    "kosmos_sha256": "bc30ccdd136ec4f08ceb29ac57f357239cf0b0c7c335717aa5efdf9fd62fa2f2",
+    "cc_sha256": "bc30ccdd136ec4f08ceb29ac57f357239cf0b0c7c335717aa5efdf9fd62fa2f2",
+    "hash_match": true,
+    "sampling_seed": 2292,
+    "sampling_index": 21
+  },
+  {
+    "kosmos_path": "tui/src/components/StructuredDiff.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/StructuredDiff.tsx",
+    "kosmos_sha256": "c964fc8735e6eacc98c7016b2ca30b0da6b8897c65dc906afc307d4b314a9696",
+    "cc_sha256": "c964fc8735e6eacc98c7016b2ca30b0da6b8897c65dc906afc307d4b314a9696",
+    "hash_match": true,
+    "sampling_seed": 2292,
+    "sampling_index": 22
+  },
+  {
+    "kosmos_path": "tui/src/tools/ScheduleCronTool/UI.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/tools/ScheduleCronTool/UI.tsx",
+    "kosmos_sha256": "47bb0b416c99b2fe824494d0bbf5a2e54ca29af63b07fce93eb4628c3dbaf600",
+    "cc_sha256": "47bb0b416c99b2fe824494d0bbf5a2e54ca29af63b07fce93eb4628c3dbaf600",
+    "hash_match": true,
+    "sampling_seed": 2292,
+    "sampling_index": 23
+  },
+  {
+    "kosmos_path": "tui/src/context/mailbox.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/context/mailbox.tsx",
+    "kosmos_sha256": "b06f32509886358fd151dfb83af04b9197bcd32afd7d51b7651eb4d4b27819c3",
+    "cc_sha256": "b06f32509886358fd151dfb83af04b9197bcd32afd7d51b7651eb4d4b27819c3",
+    "hash_match": true,
+    "sampling_seed": 2292,
+    "sampling_index": 24
+  },
+  {
+    "kosmos_path": "tui/src/utils/sanitization.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/sanitization.ts",
+    "kosmos_sha256": "ddda6adcaa57fa822ab96a556a0d4b77ca46cdd3f2b1568717c5462c1cc16cfd",
+    "cc_sha256": "ddda6adcaa57fa822ab96a556a0d4b77ca46cdd3f2b1568717c5462c1cc16cfd",
+    "hash_match": true,
+    "sampling_seed": 2292,
+    "sampling_index": 25
+  },
+  {
+    "kosmos_path": "tui/src/commands/install-github-app/ExistingWorkflowStep.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/commands/install-github-app/ExistingWorkflowStep.tsx",
+    "kosmos_sha256": "98c9ce6daba30057c4ce2a608ca8cec440043d8585069139d322b430968c4f85",
+    "cc_sha256": "98c9ce6daba30057c4ce2a608ca8cec440043d8585069139d322b430968c4f85",
+    "hash_match": true,
+    "sampling_seed": 2292,
+    "sampling_index": 26
+  },
+  {
+    "kosmos_path": "tui/src/tools/MCPTool/UI.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/tools/MCPTool/UI.tsx",
+    "kosmos_sha256": "baef18762274b792c0f3b93771467d658486e0bcb4d52111d25808889cc8d372",
+    "cc_sha256": "baef18762274b792c0f3b93771467d658486e0bcb4d52111d25808889cc8d372",
+    "hash_match": true,
+    "sampling_seed": 2292,
+    "sampling_index": 27
+  },
+  {
+    "kosmos_path": "tui/src/commands/terminalSetup/terminalSetup.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/commands/terminalSetup/terminalSetup.tsx",
+    "kosmos_sha256": "728a02ecd45ac9ce559d43705d550eb745fce3142cc7346ab11b9254b7693125",
+    "cc_sha256": "728a02ecd45ac9ce559d43705d550eb745fce3142cc7346ab11b9254b7693125",
+    "hash_match": true,
+    "sampling_seed": 2292,
+    "sampling_index": 28
+  },
+  {
+    "kosmos_path": "tui/src/components/PromptInput/IssueFlagBanner.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/PromptInput/IssueFlagBanner.tsx",
+    "kosmos_sha256": "85fbe996e5447bf0d4ef67cf3f00756dfc4280733e51568afc993abb1c7b81ac",
+    "cc_sha256": "85fbe996e5447bf0d4ef67cf3f00756dfc4280733e51568afc993abb1c7b81ac",
+    "hash_match": true,
+    "sampling_seed": 2292,
+    "sampling_index": 29
+  },
+  {
+    "kosmos_path": "tui/src/entrypoints/agentSdkTypes.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/entrypoints/agentSdkTypes.ts",
+    "kosmos_sha256": "1a19463435743cba6e76d7104bf5efc83879403bf3c9af6b8452aca22b019d86",
+    "cc_sha256": "1a19463435743cba6e76d7104bf5efc83879403bf3c9af6b8452aca22b019d86",
+    "hash_match": true,
+    "sampling_seed": 2292,
+    "sampling_index": 30
+  },
+  {
+    "kosmos_path": "tui/src/components/permissions/rules/WorkspaceTab.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/permissions/rules/WorkspaceTab.tsx",
+    "kosmos_sha256": "2c276003416b91fcd3a4c6f3c299fd77fa1fff18bd671e62f09a6a874f1ab13f",
+    "cc_sha256": "2c276003416b91fcd3a4c6f3c299fd77fa1fff18bd671e62f09a6a874f1ab13f",
+    "hash_match": true,
+    "sampling_seed": 2292,
+    "sampling_index": 31
+  },
+  {
+    "kosmos_path": "tui/src/commands/keybindings/index.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/commands/keybindings/index.ts",
+    "kosmos_sha256": "0d2a4487d3dc6cb902bdcc669df10a7972c1d349a1973551f33c6c2f611185e3",
+    "cc_sha256": "0d2a4487d3dc6cb902bdcc669df10a7972c1d349a1973551f33c6c2f611185e3",
+    "hash_match": true,
+    "sampling_seed": 2292,
+    "sampling_index": 32
+  },
+  {
+    "kosmos_path": "tui/src/utils/privacyLevel.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/privacyLevel.ts",
+    "kosmos_sha256": "45f438503d7a0319da6186cb95dcc0185e7d9b1a1493b4f5d435f8befbdb90ce",
+    "cc_sha256": "45f438503d7a0319da6186cb95dcc0185e7d9b1a1493b4f5d435f8befbdb90ce",
+    "hash_match": true,
+    "sampling_seed": 2292,
+    "sampling_index": 33
+  },
+  {
+    "kosmos_path": "tui/src/utils/task/outputFormatting.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/task/outputFormatting.ts",
+    "kosmos_sha256": "f157457dd94fbe8948bdee4db5dddb89dcf290acef5d7fae15d0389bb3aa9e06",
+    "cc_sha256": "f157457dd94fbe8948bdee4db5dddb89dcf290acef5d7fae15d0389bb3aa9e06",
+    "hash_match": true,
+    "sampling_seed": 2292,
+    "sampling_index": 34
+  },
+  {
+    "kosmos_path": "tui/src/utils/nativeInstaller/download.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/nativeInstaller/download.ts",
+    "kosmos_sha256": "3ccd60a354bf483b23896ef99e1b71037829be8e8a2f7105d8cdd8010fe87163",
+    "cc_sha256": "3ccd60a354bf483b23896ef99e1b71037829be8e8a2f7105d8cdd8010fe87163",
+    "hash_match": true,
+    "sampling_seed": 2292,
+    "sampling_index": 35
+  },
+  {
+    "kosmos_path": "tui/src/components/NotebookEditToolUseRejectedMessage.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/NotebookEditToolUseRejectedMessage.tsx",
+    "kosmos_sha256": "6f034cdcc8ad558f7eb75d72dc6f9d03689ece359ae43fb1385715498ef49113",
+    "cc_sha256": "6f034cdcc8ad558f7eb75d72dc6f9d03689ece359ae43fb1385715498ef49113",
+    "hash_match": true,
+    "sampling_seed": 2292,
+    "sampling_index": 36
+  },
+  {
+    "kosmos_path": "tui/src/tasks/LocalShellTask/killShellTasks.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/tasks/LocalShellTask/killShellTasks.ts",
+    "kosmos_sha256": "b00adaa4bc35da8160b98bdae2fcce9e0d6126400dda8c4c51f4016fe00c91b8",
+    "cc_sha256": "b00adaa4bc35da8160b98bdae2fcce9e0d6126400dda8c4c51f4016fe00c91b8",
+    "hash_match": true,
+    "sampling_seed": 2292,
+    "sampling_index": 37
+  },
+  {
+    "kosmos_path": "tui/src/components/messages/UserToolResultMessage/RejectedToolUseMessage.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/messages/UserToolResultMessage/RejectedToolUseMessage.tsx",
+    "kosmos_sha256": "32e5193b1fbd4d34c93535376ecd3739bff4920f9c8e88333d505403156d30e9",
+    "cc_sha256": "32e5193b1fbd4d34c93535376ecd3739bff4920f9c8e88333d505403156d30e9",
+    "hash_match": true,
+    "sampling_seed": 2292,
+    "sampling_index": 38
+  },
+  {
+    "kosmos_path": "tui/src/bridge/codeSessionApi.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/bridge/codeSessionApi.ts",
+    "kosmos_sha256": "58669a33ccdf724448a1abdc5687b32f2d73ea0de7e277fe52cdd5859c02124f",
+    "cc_sha256": "58669a33ccdf724448a1abdc5687b32f2d73ea0de7e277fe52cdd5859c02124f",
+    "hash_match": true,
+    "sampling_seed": 2292,
+    "sampling_index": 39
+  },
+  {
+    "kosmos_path": "tui/src/skills/bundled/stuck.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/skills/bundled/stuck.ts",
+    "kosmos_sha256": "9083fb39d7e6b2ebbdffbdd7e5f88b17c72252ef165f5c9f04c85720255ccd65",
+    "cc_sha256": "9083fb39d7e6b2ebbdffbdd7e5f88b17c72252ef165f5c9f04c85720255ccd65",
+    "hash_match": true,
+    "sampling_seed": 2292,
+    "sampling_index": 40
+  },
+  {
+    "kosmos_path": "tui/src/hooks/useFileHistorySnapshotInit.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/hooks/useFileHistorySnapshotInit.ts",
+    "kosmos_sha256": "8a4e162289ebf53bf892c135e0d4c6fef61ccd4b9b83d3e6ca9f1cbf5a83c0c1",
+    "cc_sha256": "8a4e162289ebf53bf892c135e0d4c6fef61ccd4b9b83d3e6ca9f1cbf5a83c0c1",
+    "hash_match": true,
+    "sampling_seed": 2292,
+    "sampling_index": 41
+  },
+  {
+    "kosmos_path": "tui/src/utils/execFileNoThrowPortable.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/execFileNoThrowPortable.ts",
+    "kosmos_sha256": "0802410bb219dfa6ccbf62be8eed900f41f1bf4ae7f97398e95beee4f196ce83",
+    "cc_sha256": "0802410bb219dfa6ccbf62be8eed900f41f1bf4ae7f97398e95beee4f196ce83",
+    "hash_match": true,
+    "sampling_seed": 2292,
+    "sampling_index": 42
+  },
+  {
+    "kosmos_path": "tui/src/commands/extra-usage/extra-usage-core.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/commands/extra-usage/extra-usage-core.ts",
+    "kosmos_sha256": "b3bb634cf82d98e2ed9b046344f0f0e93aad50977365bbf111de6acb3caf4108",
+    "cc_sha256": "b3bb634cf82d98e2ed9b046344f0f0e93aad50977365bbf111de6acb3caf4108",
+    "hash_match": true,
+    "sampling_seed": 2292,
+    "sampling_index": 43
+  },
+  {
+    "kosmos_path": "tui/src/tools/ExitWorktreeTool/UI.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/tools/ExitWorktreeTool/UI.tsx",
+    "kosmos_sha256": "c52811b79622d502f7a4e00ee2f964097a119d678992eb40ae07a1fd67f4e826",
+    "cc_sha256": "c52811b79622d502f7a4e00ee2f964097a119d678992eb40ae07a1fd67f4e826",
+    "hash_match": true,
+    "sampling_seed": 2292,
+    "sampling_index": 44
+  },
+  {
+    "kosmos_path": "tui/src/commands/mobile/mobile.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/commands/mobile/mobile.tsx",
+    "kosmos_sha256": "acccea2ee9a2b9ec03ae131294d5199d178d34e04eaf6abc5ced630639e97f60",
+    "cc_sha256": "acccea2ee9a2b9ec03ae131294d5199d178d34e04eaf6abc5ced630639e97f60",
+    "hash_match": true,
+    "sampling_seed": 2292,
+    "sampling_index": 45
+  },
+  {
+    "kosmos_path": "tui/src/hooks/useElapsedTime.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/hooks/useElapsedTime.ts",
+    "kosmos_sha256": "827d504ba4f68f71830883420fc5fd070f4a4198298857515a4ee597b60f003f",
+    "cc_sha256": "827d504ba4f68f71830883420fc5fd070f4a4198298857515a4ee597b60f003f",
+    "hash_match": true,
+    "sampling_seed": 2292,
+    "sampling_index": 46
+  },
+  {
+    "kosmos_path": "tui/src/utils/swarm/backends/teammateModeSnapshot.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/swarm/backends/teammateModeSnapshot.ts",
+    "kosmos_sha256": "5d3740beb680d27e96d1527a7e5696a1c15d902213ecffa3a8b372c2d28eadd7",
+    "cc_sha256": "5d3740beb680d27e96d1527a7e5696a1c15d902213ecffa3a8b372c2d28eadd7",
+    "hash_match": true,
+    "sampling_seed": 2292,
+    "sampling_index": 47
+  },
+  {
+    "kosmos_path": "tui/src/hooks/useMergedTools.ts",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/hooks/useMergedTools.ts",
+    "kosmos_sha256": "eae7817917afd87c1180040a1228c90775f7d3921e296a2f5b94e3e3f95d71eb",
+    "cc_sha256": "eae7817917afd87c1180040a1228c90775f7d3921e296a2f5b94e3e3f95d71eb",
+    "hash_match": true,
+    "sampling_seed": 2292,
+    "sampling_index": 48
+  },
+  {
+    "kosmos_path": "tui/src/components/LogoV2/EmergencyTip.tsx",
+    "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/LogoV2/EmergencyTip.tsx",
+    "kosmos_sha256": "100ca243ed8702120d1a0b70bf3b92b1c03e8be46290dbe4c02eb847e0e780bb",
+    "cc_sha256": "100ca243ed8702120d1a0b70bf3b92b1c03e8be46290dbe4c02eb847e0e780bb",
+    "hash_match": true,
+    "sampling_seed": 2292,
+    "sampling_index": 49
+  }
+]

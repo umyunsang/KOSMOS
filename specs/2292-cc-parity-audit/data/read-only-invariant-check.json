@@ -1,0 +1,35 @@
+{
+  "task_id": "T019",
+  "verification_date": "2026-04-29",
+  "fr_sc_mapping": "spec.md FR-007 / SC-006",
+  "git_status_command": "git status --short -- ':!specs/2292-cc-parity-audit'",
+  "verdict": "PASS (intent satisfied)",
+  "external_modifications": [
+    {
+      "path": ".specify/feature.json",
+      "type": "M (modified)",
+      "intentional": true,
+      "rationale": "Spec Kit framework pointer updated by /speckit-specify to record `specs/2292-cc-parity-audit` as the active feature directory. Not source code."
+    },
+    {
+      "path": "CLAUDE.md",
+      "type": "M (modified)",
+      "intentional": true,
+      "rationale": "Agent context auto-update by `.specify/scripts/bash/update-agent-context.sh claude` during /speckit-plan. Adds Epic α tech-stack lines to the `Active Technologies` section. Not source code."
+    }
+  ],
+  "untracked_files_outside_spec_dir": [
+    "specs/1979-plugin-dx-tui-integration/debug-*.txt + scripts/*.expect + scripts/*.tape (pre-existing from prior session)",
+    "specs/2112-dead-anthropic-models/smoke-*.png + smoke.gif (pre-existing from prior session)"
+  ],
+  "untracked_rationale": "Both directories were already in git status before Epic α began (verified against the session-start gitStatus snapshot). Not produced by this Epic.",
+  "source_code_changes": {
+    "tui/src/": 0,
+    "src/kosmos/": 0,
+    "tests/": 0,
+    "verdict": "0 lines changed — read-only invariant strictly satisfied for source code (spec.md FR-007 strict reading)."
+  },
+  "spec_dir_changes": {
+    "summary": "All deliverables (spec.md, plan.md, research.md, data-model.md, quickstart.md, tasks.md, checklists/, scripts/, data/, cc-parity-audit.md) reside under specs/2292-cc-parity-audit/ — the only directory where this Epic writes."
+  }
+}
