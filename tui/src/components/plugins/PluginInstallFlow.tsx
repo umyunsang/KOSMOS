@@ -2,22 +2,24 @@
 //
 // Spec 1979 — KOSMOS citizen plugin install/uninstall/list flow component.
 //
-// Source pattern: .references/claude-code-sourcemap/restored-src/src/commands/plugin/plugin.tsx
-//   (CC 2.1.88 returns <PluginSettings /> from call(); KOSMOS returns this component instead)
+// Source pattern (per memory feedback_cc_source_migration_pattern):
+//   .references/claude-code-sourcemap/restored-src/src/commands/plugin/plugin.tsx
+//   .references/claude-code-sourcemap/restored-src/src/components/permissions/PermissionPrompt.tsx
 //
-// CC's pattern is the architecturally-correct answer to the "single bridge.frames()
-// consumer" gap: the component's useEffect iterates frames during its lifetime
-// (mount → unmount), no other consumer competes because:
-// - LLM is idle when slash command runs
-// - The component unmounts via onDone after the terminal complete frame
+// CC 2.1.88's permission UX uses:
+//   - <Select options={...} onChange={...} onCancel={...} /> for option selection
+//   - Arrow keys + Enter for navigation (NOT direct Y/N/A keystrokes)
+//   - Esc for cancellation
 //
-// Frame consumption is therefore SCOPED to the install — no master dispatcher
-// refactor needed.
+// KOSMOS-internal Y/N/A direct-keystroke pattern (earlier dev iteration) is
+// replaced here by CC's Select-based pattern for consistency with the rest
+// of the TUI (PluginBrowser, PermissionGauntletModal in Spec 1978, etc).
 
-import { Box, Text, useInput } from 'ink';
+import { Box, Text } from 'ink';
 import * as React from 'react';
-import { useEffect, useState, useCallback } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { Select, type OptionWithDescription } from '../CustomSelect/index.js';
 import { getKosmosBridgeSessionId, getOrCreateKosmosBridge } from '../../ipc/bridgeSingleton.js';
 import { useTheme } from '../../theme/provider.js';
 
@@ -75,29 +77,19 @@ export function PluginInstallFlow({
   const [state, setState] = useState<FlowState>({ kind: 'idle' });
   const [correlationId] = useState<string>(_newCorrelationId());
 
-  // Y / A / N keyboard input — only active when state.kind === 'awaiting_consent'.
-  const handleConsentKey = useCallback(
-    (input: string, key: { escape: boolean }) => {
-      if (state.kind !== 'awaiting_consent') return;
-      const decision =
-        input === 'y' || input === 'Y'
-          ? 'allow_once'
-          : input === 'a' || input === 'A'
-            ? 'allow_session'
-            : input === 'n' || input === 'N' || key.escape
-              ? 'deny'
-              : null;
-      if (!decision) return;
+  // Send a permission_response frame (allow_once / allow_session / deny).
+  const sendPermissionResponse = useCallback(
+    (requestId: string, decision: 'allow_once' | 'allow_session' | 'deny') => {
       const bridge = getOrCreateKosmosBridge();
       const sessionId = getKosmosBridgeSessionId();
       bridge.send({
         kind: 'permission_response',
         version: '1.0',
         session_id: sessionId,
-        correlation_id: state.requestId,
+        correlation_id: requestId,
         ts: _now(),
         role: 'tui',
-        request_id: state.requestId,
+        request_id: requestId,
         decision,
       } as never);
       setState({
@@ -106,9 +98,18 @@ export function PluginInstallFlow({
         messageKo: decision === 'deny' ? '📝 동의 거부 처리 중…' : '📝 동의 처리 중…',
       });
     },
-    [state],
+    [],
   );
-  useInput(handleConsentKey);
+
+  // CC PermissionPrompt pattern: 3 options with arrow+Enter selection.
+  const consentOptions: OptionWithDescription<'allow_once' | 'allow_session' | 'deny'>[] = useMemo(
+    () => [
+      { label: '한 번만 허용 (Allow once)', value: 'allow_once' },
+      { label: '세션 내 자동 허용 (Allow for session)', value: 'allow_session' },
+      { label: '거부 (Deny)', value: 'deny' },
+    ],
+    [],
+  );
 
   // Main round-trip effect: emit request + iterate frames until terminal.
   useEffect(() => {
@@ -256,7 +257,17 @@ export function PluginInstallFlow({
           <Box marginBottom={1}>
             <Text dimColor>{state.descriptionEn}</Text>
           </Box>
-          <Text bold>{'[Y 한번만 / A 세션 자동 / N 거부 · Esc 취소]'}</Text>
+          <Box marginBottom={1}>
+            <Text bold>{'설치를 진행하시겠습니까? (Do you want to proceed?)'}</Text>
+          </Box>
+          <Select
+            options={consentOptions}
+            onChange={(value) => sendPermissionResponse(state.requestId, value)}
+            onCancel={() => sendPermissionResponse(state.requestId, 'deny')}
+          />
+          <Box marginTop={1}>
+            <Text dimColor>{'Esc 취소 (Esc to cancel)'}</Text>
+          </Box>
         </Box>
       ) : null}
 

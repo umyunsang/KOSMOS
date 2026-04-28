@@ -39,10 +39,16 @@ Enter
 Sleep 12s
 Screenshot specs/1979-plugin-dx-tui-integration/debug-install.png
 
-# Approve at consent modal (give ample time for modal to render)
+# Approve at consent modal — diagnostic: Down to test focus, then Up to restore, then Enter
 Sleep 3s
-Type "Y"
-Sleep 10s
+Down
+Sleep 1s
+Screenshot specs/1979-plugin-dx-tui-integration/debug-after-down.png
+Up
+Sleep 1s
+Screenshot specs/1979-plugin-dx-tui-integration/debug-after-up.png
+Enter
+Sleep 8s
 Screenshot specs/1979-plugin-dx-tui-integration/debug-after-y.png
 
 # Open browser to verify
