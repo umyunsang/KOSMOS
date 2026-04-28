@@ -439,9 +439,13 @@ async function* queryLoop(
       messagesForQuery = collapseResult.messages
     }
 
-    const fullSystemPrompt = asSystemPrompt(
-      appendSystemContext(systemPrompt, systemContext),
-    )
+    // Epic #2152 R5 — citizen-domain harness must not leak developer context
+    // (cwd, gitStatus, claudeMd) into the chat-request system prompt. The
+    // ``appendSystemContext`` pipeline is preserved for the AgentTool path
+    // (``tools/AgentTool/runAgent.ts``) but bypassed here. ``systemContext``
+    // is still threaded through ``deps.autocompact`` callers below in case
+    // a future agent-fork path needs it.
+    const fullSystemPrompt = asSystemPrompt(systemPrompt)
 
     queryCheckpoint('query_autocompact_start')
     const { compactionResult, consecutiveFailures } = await deps.autocompact(
@@ -624,7 +628,10 @@ async function* queryLoop(
           let streamingFallbackOccured = false
           queryCheckpoint('query_api_streaming_start')
           for await (const message of deps.callModel({
-            messages: prependUserContext(messagesForQuery, userContext),
+            // Epic #2152 R5 — citizen messages are sent as-is. The
+            // ``prependUserContext`` wrapper (which inserts a CLAUDE.md
+            // <system-reminder> block) is reserved for the AgentTool path.
+            messages: messagesForQuery,
             systemPrompt: fullSystemPrompt,
             thinkingConfig: toolUseContext.options.thinkingConfig,
             tools: toolUseContext.options.tools,
