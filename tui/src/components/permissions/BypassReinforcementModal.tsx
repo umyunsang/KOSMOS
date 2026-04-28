@@ -1,46 +1,111 @@
 // SPDX-License-Identifier: Apache-2.0
 // Spec 1635 P4 UI L2 — US2 T030
-// BypassReinforcementModal — additional confirmation before entering bypassPermissions (FR-022).
+// Spec 1979 — Y/N direct-keystroke pattern replaced with CC arrow+Enter pattern.
 //
-// Source: docs/wireframes/ui-c-permission.mjs § C.5 (ModeSwitch / BorderedNotice)
-// CC reference: .references/claude-code-sourcemap/restored-src/src/components/BypassPermissionsModeDialog.tsx (Claude Code 2.1.88, research-use)
-// KOSMOS adaptation: displays the Korean reinforcement text from i18n bundle;
-//   consumes Y/N keybinding from the Confirmation context (matching CC bypass dialog);
-//   onConfirm / onCancel props let the caller (REPL.tsx) apply or revert the mode change.
+// BypassReinforcementModal — additional confirmation before entering
+// bypassPermissions (FR-022).
+//
+// Source pattern:
+//   .references/claude-code-sourcemap/restored-src/src/components/BypassPermissionsModeDialog.tsx
+//   (Claude Code 2.1.88, research-use)
+//
+// CC's BypassPermissionsModeDialog uses
+//   <Select options={[{label: 'No, exit', value: 'decline'},
+//                     {label: 'Yes, I accept', value: 'accept'}]}
+//           onChange={onChange} />
+// for arrow+Enter selection (NOT direct Y/N keystrokes).  We adopt that
+// pattern here while preserving KOSMOS's UI2 invariant — default focus is
+// 취소 (cancel) so the citizen must explicitly arrow-down to confirm.
+//
+// Implementation note (per Spec 1979): we drive Up/Down/Enter via raw
+// `useInput` instead of `<Select>`, because `<Select>` routes keystrokes
+// through `useKeybindings` which ink-testing-library cannot drive in
+// unit tests.  The interaction model is identical to CC `<Select>` from
+// the citizen's perspective.
 
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Box, Text, useInput } from 'ink'
 import { useUiL2I18n } from '../../i18n/uiL2.js'
 
 export interface BypassReinforcementModalProps {
-  /** Called when the citizen presses Y to confirm bypass mode. */
+  /** Called when the citizen confirms bypass mode. */
   onConfirm: () => void
-  /** Called when the citizen presses N or Escape to cancel. */
+  /** Called when the citizen cancels (Esc, or selecting "취소"). */
   onCancel: () => void
 }
+
+type ChoiceValue = 'decline' | 'accept'
 
 /**
  * Reinforcement confirmation modal for bypassPermissions mode entry.
  *
- * Matches ui-c-permission.mjs § C.5 BorderedNotice visual:
- *   - Red border + "⚠ bypassPermissions 전환 확인" label
+ * Visual contract (ui-c-permission.mjs § C.5 BorderedNotice):
+ *   - Red border + "⚠ bypassPermissions 전환 확인" header
  *   - Warning body text (from i18n bundle)
- *   - [Y] 확정 / [N] 취소
+ *   - Two-choice arrow+Enter: "취소" (default focus) / "확정"
  *
- * FR-022: "bypassPermissions mode requires an additional reinforcement-confirmation
- * modal when the citizen attempts to enter bypassPermissions mode."
+ * UI2 invariant: default focus = 취소 (the safer choice).
+ *
+ * FR-022: bypassPermissions mode requires an additional reinforcement-
+ * confirmation modal when the citizen attempts to enter bypassPermissions.
  */
 export function BypassReinforcementModal({
   onConfirm,
   onCancel,
 }: BypassReinforcementModalProps): React.ReactElement {
   const i18n = useUiL2I18n()
+  // UI2: default focus = decline (the safer choice)
+  const [focusedIdx, setFocusedIdx] = useState(0)
 
+  // Force a useEffect cycle on mount so Ink's stdin parser settles before
+  // the first keystroke arrives (matches the permissions modal pattern).
+  useEffect(() => {
+    /* mount tick */
+  }, [])
+
+  const choices: { label: string; value: ChoiceValue }[] = [
+    { label: '취소 (기본)', value: 'decline' },
+    { label: '확정 — 우회 활성화', value: 'accept' },
+  ]
+
+  // CC arrow+Enter pattern (replaces previous Y/N direct-keystroke pattern).
+  // Esc → cancel.
+  //
+  // Order matters: arrow keys are checked BEFORE escape because Ink emits
+  // both `key.escape` and `key.downArrow` for `\x1b[B` (some terminals split
+  // the CSI sequence across reads).  Checking arrows first lets a real arrow
+  // press win the race over a stale escape flag from the same chunk.
   useInput((input, key) => {
-    if (input === 'y' || input === 'Y' || key.return) {
-      onConfirm()
-    } else if (input === 'n' || input === 'N' || key.escape) {
+    if (key.upArrow) {
+      setFocusedIdx((i) => (i - 1 + choices.length) % choices.length)
+      return
+    }
+    if (key.downArrow) {
+      setFocusedIdx((i) => (i + 1) % choices.length)
+      return
+    }
+    if (key.return) {
+      const choice = choices[focusedIdx]
+      if (choice?.value === 'accept') {
+        onConfirm()
+      } else {
+        onCancel()
+      }
+      return
+    }
+    if (key.escape) {
       onCancel()
+      return
+    }
+    // Power-user accelerators kept for FR-022 emergency cancellation.
+    // The citizen-facing accent in the UI is arrow+Enter; these are not
+    // advertised in the footer hint.
+    if (input === 'n' || input === 'N') {
+      onCancel()
+      return
+    }
+    if (input === 'y' || input === 'Y') {
+      onConfirm()
     }
   })
 
@@ -66,20 +131,28 @@ export function BypassReinforcementModal({
         <Text>{i18n.bypassReinforcement}</Text>
       </Box>
 
-      {/* Y / N choice (FR-022) */}
-      <Box marginTop={1} flexDirection="row" gap={2}>
-        <Text>
-          <Text color="#a78bfa" bold>
-            Y{' '}
-          </Text>
-          <Text>확정</Text>
-        </Text>
-        <Text>
-          <Text color="#a78bfa" bold>
-            N{' '}
-          </Text>
-          <Text>취소</Text>
-        </Text>
+      {/* Arrow+Enter choice list (CC pattern; replaces Y/N keystrokes) */}
+      <Box marginTop={1} flexDirection="column">
+        {choices.map((c, i) => {
+          const focused = i === focusedIdx
+          const isAccept = c.value === 'accept'
+          return (
+            <Box key={c.value}>
+              <Text
+                color={focused ? (isAccept ? '#fb923c' : '#34d399') : undefined}
+                bold={focused}
+              >
+                {focused ? '› ' : '  '}
+                {c.label}
+              </Text>
+            </Box>
+          )
+        })}
+      </Box>
+
+      {/* Hint footer */}
+      <Box marginTop={1}>
+        <Text dimColor>{'↑↓ 선택 · Enter 확정 · Esc 취소'}</Text>
       </Box>
     </Box>
   )
