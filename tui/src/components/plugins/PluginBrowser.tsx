@@ -76,11 +76,29 @@ export type PluginBrowserProps = {
 };
 
 // ---------------------------------------------------------------------------
-// Glyphs (FR-031 + FR-036)
+// Glyphs (FR-031 + FR-036) + Spec 1979 T025 layer color glyph (UI-C.1)
 // ---------------------------------------------------------------------------
 
 const GLYPH_ACTIVE   = '⏺'; // CC thread glyph — active plugin
 const GLYPH_INACTIVE = '○'; // empty circle — inactive plugin
+
+// Spec 1979 T025 — Layer color glyphs per kosmos-migration-tree.md UI-C.1.
+// Layer 1 = green ⓵ (low-risk, public-data lookup)
+// Layer 2 = orange ⓶ (medium-risk, citizen-personal lookup)
+// Layer 3 = red ⓷ (high-risk, irreversible / write actions)
+const LAYER_GLYPH: Record<1 | 2 | 3, string> = {
+  1: '⓵',
+  2: '⓶',
+  3: '⓷',
+};
+
+function _layerColor(layer: 1 | 2 | 3, theme: ReturnType<typeof useTheme>): string {
+  // Theme palette mapping — falls back to plain ANSI codes when the theme
+  // doesn't define explicit layer colors.
+  if (layer === 1) return (theme.success ?? theme.kosmosCore) || 'green';
+  if (layer === 2) return (theme.warning ?? theme.subtle) || 'yellow';
+  return (theme.error ?? theme.subtle) || 'red';
+}
 
 // ---------------------------------------------------------------------------
 // PluginBrowser (T065)
@@ -193,9 +211,20 @@ export function PluginBrowser({
           const glyph = plugin.isActive ? GLYPH_ACTIVE : GLYPH_INACTIVE;
           const glyphColor = plugin.isActive ? theme.kosmosCore : theme.inactive;
 
+          // Spec 1979 T025 — additive optional fields surface as inline columns
+          // when populated (Spec 1635 T065 callers without these fields keep
+          // the original 3-column layout).
+          const tierBadge = plugin.tier
+            ? `[${plugin.tier === 'live' ? 'Live' : 'Mock'}]`
+            : '';
+          const layer = plugin.layer;
+          const layerGlyph = layer ? LAYER_GLYPH[layer] : '';
+          const layerColor = layer ? _layerColor(layer, theme) : theme.subtle;
+          const trustee = plugin.trustee_org_name ?? null;
+
           return (
             <Box key={plugin.id} marginBottom={0}>
-              {/* Status glyph */}
+              {/* Status glyph (⏺/○) */}
               <Box width={3} flexShrink={0}>
                 <Text color={glyphColor}>{glyph}</Text>
               </Box>
@@ -209,12 +238,33 @@ export function PluginBrowser({
                 <Text color={theme.subtle}>{` v${plugin.version}`}</Text>
               </Box>
 
+              {/* T025 — Tier badge ([Live] / [Mock]) */}
+              {tierBadge ? (
+                <Box width={7} flexShrink={0}>
+                  <Text color={theme.subtle}>{tierBadge}</Text>
+                </Box>
+              ) : null}
+
+              {/* T025 — Layer color glyph (⓵/⓶/⓷) */}
+              {layerGlyph ? (
+                <Box width={3} flexShrink={0}>
+                  <Text color={layerColor}>{layerGlyph}</Text>
+                </Box>
+              ) : null}
+
               {/* Description */}
               <Box flexGrow={1}>
                 <Text color={theme.subtle} wrap="truncate-end">
                   {description}
                 </Text>
               </Box>
+
+              {/* T025 — Trustee org (right-aligned, only when PII-handling) */}
+              {trustee ? (
+                <Box flexShrink={0} marginLeft={1}>
+                  <Text color={theme.subtle}>{`(${trustee})`}</Text>
+                </Box>
+              ) : null}
             </Box>
           );
         })
