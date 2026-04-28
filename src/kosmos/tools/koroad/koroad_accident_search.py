@@ -373,6 +373,10 @@ KOROAD_ACCIDENT_SEARCH_TOOL = GovAPITool(
     rate_limit_per_minute=10,
     is_core=True,
     primitive="lookup",
+    trigger_examples=[
+        "교차로 사고 통계",
+        "음주운전 사고 다발",
+    ],
 )
 
 

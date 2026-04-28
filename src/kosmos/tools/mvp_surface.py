@@ -86,6 +86,11 @@ RESOLVE_LOCATION_TOOL = GovAPITool(
     rate_limit_per_minute=60,
     is_core=True,
     primitive="lookup",
+    trigger_examples=[
+        "강남역 어디야?",
+        "서울시청 주소 알려줘",
+        "근처 도서관",
+    ],
 )
 
 
@@ -135,6 +140,10 @@ LOOKUP_SEARCH_TOOL = GovAPITool(
     rate_limit_per_minute=60,
     is_core=True,
     primitive="lookup",
+    trigger_examples=[
+        "어떤 도구가 있어?",
+        "공공 데이터 검색",
+    ],
 )
 
 

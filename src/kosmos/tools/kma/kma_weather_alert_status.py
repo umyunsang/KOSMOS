@@ -323,6 +323,10 @@ KMA_WEATHER_ALERT_STATUS_TOOL = GovAPITool(
     rate_limit_per_minute=10,
     is_core=True,
     primitive="lookup",
+    trigger_examples=[
+        "현재 발효 중인 특보",
+        "서울 폭염주의보 있나",
+    ],
 )
 
 

@@ -305,6 +305,10 @@ NFA_EMERGENCY_INFO_SERVICE_TOOL = GovAPITool(
     rate_limit_per_minute=10,
     is_core=False,
     primitive="lookup",
+    trigger_examples=[
+        "심정지 응급 처치",
+        "AED 위치 알려줘",
+    ],
 )
 
 

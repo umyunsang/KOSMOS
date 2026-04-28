@@ -199,6 +199,11 @@ MOHW_WELFARE_ELIGIBILITY_SEARCH_TOOL = GovAPITool(
     rate_limit_per_minute=10,
     is_core=False,
     primitive="lookup",
+    trigger_examples=[
+        "기초생활수급 신청",
+        "장애인 활동지원",
+        "노인장기요양",
+    ],
 )
 
 

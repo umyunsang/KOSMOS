@@ -30,6 +30,7 @@ def _make_tool(
     name: str,
     description: str,
     parameters: dict | None = None,
+    trigger_phrase: str | None = None,
 ) -> ToolDefinition:
     """Build a ToolDefinition fixture without importing from registry."""
     return ToolDefinition(
@@ -38,6 +39,7 @@ def _make_tool(
             name=name,
             description=description,
             parameters=parameters if parameters is not None else {},
+            trigger_phrase=trigger_phrase,
         ),
     )
 
@@ -208,3 +210,101 @@ def test_no_timestamp_or_env_leakage() -> None:
 
     # No env var names (no os.environ lookups inside the helper)
     assert "KOSMOS_" not in result
+
+
+# ---------------------------------------------------------------------------
+# Epic #2152 R6 — per-tool trigger phrase emission invariants
+# (contracts/system-prompt-builder.md I-B1..I-B6)
+# ---------------------------------------------------------------------------
+
+
+def test_trigger_line_present_per_tool() -> None:
+    """I-B2 — every per-tool block emits exactly one ``**Trigger**: `` line
+    immediately above ``**Parameters**:`` when ``trigger_phrase`` is set."""
+    tool_with_trigger = _make_tool(
+        name="resolve_location",
+        description="Resolve a Korean place name to coordinates.",
+        trigger_phrase=(
+            '한국 지역의 위치, 주소, 역, 관공서 질문에 호출. — '
+            '예: "강남역 어디야?", "서울시청 주소"'
+        ),
+    )
+    result = build_system_prompt_with_tools(BASE_PROMPT, [tool_with_trigger])
+
+    # Trigger line is present, exactly once.
+    trigger_lines = [
+        line for line in result.splitlines() if line.startswith("**Trigger**: ")
+    ]
+    assert len(trigger_lines) == 1, (
+        f"Expected exactly one **Trigger**: line, got {len(trigger_lines)}"
+    )
+
+    # Trigger appears immediately before **Parameters**: with one blank line between.
+    trigger_idx = result.index("**Trigger**:")
+    params_idx = result.index("**Parameters**:")
+    assert trigger_idx < params_idx
+    between = result[trigger_idx:params_idx]
+    assert between.count("\n") == 2, (
+        f"Trigger and Parameters must be separated by exactly one blank line, "
+        f"got {between.count(chr(10))} newlines between them"
+    )
+
+
+def test_trigger_line_no_examples() -> None:
+    """I-B3 — when ``trigger_examples`` are absent, the trigger line carries
+    no ``— 예:`` clause."""
+    tool = _make_tool(
+        name="lookup",
+        description="Look up by tool_id.",
+        trigger_phrase="시민의 메타 조회 호출.",
+    )
+    result = build_system_prompt_with_tools(BASE_PROMPT, [tool])
+    assert "**Trigger**: 시민의 메타 조회 호출.\n" in result
+    assert "— 예:" not in result
+
+
+def test_trigger_line_with_examples_quotes() -> None:
+    """I-B4 — every example utterance appears verbatim wrapped in double quotes."""
+    examples = ["오늘 서울 날씨", "내일 부산 비 와?", "주말 제주 날씨"]
+    tool = _make_tool(
+        name="kma_forecast_fetch",
+        description="KMA forecast.",
+        trigger_phrase=(
+            "한국 지역의 날씨 질문에 호출. — 예: "
+            + ", ".join(f'"{ex}"' for ex in examples)
+        ),
+    )
+    result = build_system_prompt_with_tools(BASE_PROMPT, [tool])
+    for ex in examples:
+        assert f'"{ex}"' in result
+
+
+def test_trigger_line_omitted_when_phrase_none() -> None:
+    """When ``trigger_phrase`` is None, no ``**Trigger**:`` line is emitted —
+    backward-compatible behaviour for tools that have not opted in to R6."""
+    result = build_system_prompt_with_tools(BASE_PROMPT, [LOOKUP_TOOL])
+    assert "**Trigger**:" not in result
+
+
+def test_base_unchanged_prefix_with_trigger() -> None:
+    """I-B6 — the base prompt remains a strict prefix of the augmented output
+    even when trigger phrases are present (augmentation only appends)."""
+    tool = _make_tool(
+        name="kma_forecast_fetch",
+        description="KMA forecast.",
+        trigger_phrase="날씨 질문에 호출.",
+    )
+    result = build_system_prompt_with_tools(BASE_PROMPT, [tool])
+    assert result.startswith(BASE_PROMPT)
+
+
+def test_trigger_line_deterministic() -> None:
+    """I-B5 — two calls with the same trigger_phrase produce byte-identical output."""
+    tool = _make_tool(
+        name="koroad_accident_search",
+        description="KOROAD accident hotspot search.",
+        trigger_phrase='어린이 보호구역 사고 등 도로 안전 질문에 호출. — 예: "사고 다발"',
+    )
+    a = build_system_prompt_with_tools(BASE_PROMPT, [tool])
+    b = build_system_prompt_with_tools(BASE_PROMPT, [tool])
+    assert a == b

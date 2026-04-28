@@ -896,6 +896,10 @@ KOROAD_ACCIDENT_HAZARD_SEARCH_TOOL = GovAPITool(
     primitive="lookup",
     published_tier_minimum=None,
     nist_aal_hint=None,
+    trigger_examples=[
+        "어린이 보호구역 사고 다발",
+        "스쿨존 사고 위험 구역",
+    ],
 )
 
 
