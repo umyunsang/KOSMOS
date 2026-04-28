@@ -179,6 +179,11 @@ class ToolRegistry:
     def __init__(self) -> None:
         self._tools: dict[str, GovAPITool] = {}
         self._rate_limiters: dict[str, RateLimiter] = {}
+        # Spec 1979 R-3+R-4 — in-memory enable/disable shadow set.
+        # Reserved for backend support; not exposed via IPC in Spec 1979
+        # (runtime toggle via plugin_op_request:activate/deactivate is
+        # deferred to a follow-up Epic per Spec 032 envelope-bump scope).
+        self._inactive: set[str] = set()
 
         # Spec 026: dependency-injection seam. The registry no longer
         # depends on a concrete BM25Index; it depends on the Retriever
@@ -352,30 +357,87 @@ class ToolRegistry:
             raise ToolNotFoundError(tool_id) from None
 
     def all_tools(self) -> list[GovAPITool]:
-        """Return all registered tools."""
-        return list(self._tools.values())
+        """Return all active registered tools (filters Spec 1979 _inactive set)."""
+        return [t for tid, t in self._tools.items() if tid not in self._inactive]
 
     def search(self, query: str, max_results: int = 5) -> list[ToolSearchResult]:
         """Search tools by Korean or English keywords in search_hint."""
         return search_tools(self.all_tools(), query, max_results)
 
     def core_tools(self) -> list[GovAPITool]:
-        """Return core tools sorted by id (deterministic for prompt caching)."""
+        """Return core, active tools sorted by id (deterministic for prompt caching)."""
         return sorted(
-            [t for t in self._tools.values() if t.is_core],
+            [t for tid, t in self._tools.items() if t.is_core and tid not in self._inactive],
             key=lambda t: t.id,
         )
 
     def situational_tools(self) -> list[GovAPITool]:
-        """Return non-core tools."""
-        return [t for t in self._tools.values() if not t.is_core]
+        """Return non-core, active tools."""
+        return [
+            t for tid, t in self._tools.items() if not t.is_core and tid not in self._inactive
+        ]
 
     def export_core_tools_openai(self) -> list[dict[str, object]]:
         """Export core tools as OpenAI function-calling definitions.
 
         Output is deterministic (sorted by id) for prompt cache stability.
+        Filters Spec 1979 _inactive set so disabled plugins are not
+        surfaced to the LLM.
         """
         return [t.to_openai_tool() for t in self.core_tools()]
+
+    # ------------------------------------------------------------------
+    # Spec 1979 lifecycle methods (data-model.md § E4)
+    # ------------------------------------------------------------------
+
+    def deregister(self, tool_id: str) -> None:
+        """Remove a tool from the registry entirely.
+
+        Used by :func:`kosmos.plugins.uninstall.uninstall_plugin` to fully
+        remove a plugin's adapter from the in-process registry. Rebuilds
+        the BM25 corpus over the remaining tools.
+
+        Raises:
+            ToolNotFoundError: If ``tool_id`` is not registered.
+        """
+        if tool_id not in self._tools:
+            raise ToolNotFoundError(tool_id)
+        del self._tools[tool_id]
+        self._rate_limiters.pop(tool_id, None)
+        self._inactive.discard(tool_id)
+        # Rebuild BM25 over the surviving tools so the deregistered tool
+        # never surfaces in lookup() results again.
+        corpus = {tid: t.search_hint for tid, t in self._tools.items()}
+        self._retriever.rebuild(corpus)
+        logger.info("Deregistered tool: %s", tool_id)
+
+    def set_active(self, tool_id: str, active: bool) -> None:
+        """Mark a tool active or inactive without removing it from the registry.
+
+        Active tools surface in BM25 + LLM tool inventory; inactive tools
+        stay registered (consent receipt + install root preserved) but are
+        filtered from discovery + dispatch.
+
+        Raises:
+            ToolNotFoundError: If ``tool_id`` is not registered.
+        """
+        if tool_id not in self._tools:
+            raise ToolNotFoundError(tool_id)
+        if active:
+            self._inactive.discard(tool_id)
+        else:
+            self._inactive.add(tool_id)
+        # Rebuild BM25 corpus to reflect the new active set.
+        corpus = {
+            tid: t.search_hint
+            for tid, t in self._tools.items()
+            if tid not in self._inactive
+        }
+        self._retriever.rebuild(corpus)
+
+    def is_active(self, tool_id: str) -> bool:
+        """Return True iff the tool is registered AND not in the inactive set."""
+        return tool_id in self._tools and tool_id not in self._inactive
 
     def get_rate_limiter(self, tool_id: str) -> RateLimiter:
         """Get the rate limiter for a tool.

@@ -386,6 +386,7 @@ def install_plugin(  # noqa: C901, PLR0911, PLR0915 — phased flow.
     consent_prompt: ConsentPrompt = _default_consent_prompt,
     yes: bool = False,
     dry_run: bool = False,
+    progress_emitter: Callable[[int, str, str], None] | None = None,
 ) -> InstallResult:
     """Run the 8-phase plugin install flow.
 
@@ -400,11 +401,33 @@ def install_plugin(  # noqa: C901, PLR0911, PLR0915 — phased flow.
         dry_run: When True, run all phases except phase 6/7 — verify but
             never write to disk under ``KOSMOS_PLUGIN_INSTALL_ROOT`` and
             never append a consent receipt.
+        progress_emitter: Spec 1979 T007 — optional callback invoked at the
+            start of each install phase with ``(phase_num, message_ko,
+            message_en)`` so the IPC dispatcher can emit
+            ``plugin_op_progress`` frames per FR-002. The
+            installer passes empty strings as messages; the dispatcher
+            substitutes canonical text from
+            ``contracts/plugin-install.cli.md``. ``None`` (default)
+            preserves backwards compatibility with existing call sites.
 
     Returns:
         :class:`InstallResult` with the exit code per the contract.
     """
     catalog_url = catalog_url or settings.plugin_catalog_url
+
+    def _emit(phase: int) -> None:
+        """Convenience wrapper — emits a progress tick if callback is wired."""
+        if progress_emitter is not None:
+            try:
+                progress_emitter(phase, "", "")
+            except Exception as exc:  # noqa: BLE001
+                logger.warning(
+                    "progress_emitter raised at phase %d (continuing install): %s",
+                    phase,
+                    exc,
+                )
+
+    _emit(1)
 
     # --- Phase 1: catalog --------------------------------------------------
     # Codex review: `install_plugin` documents a non-throwing contract,
@@ -463,6 +486,7 @@ def install_plugin(  # noqa: C901, PLR0911, PLR0915 — phased flow.
     plugin_id = entry.plugin_id
 
     # --- Phase 2: bundle download ------------------------------------------
+    _emit(2)
     bundle_cache = settings.plugin_bundle_cache
     bundle_cache.mkdir(parents=True, exist_ok=True)
     bundle_path = bundle_cache / f"{plugin_id}-{version.bundle_sha256[:12]}.tar.gz"
@@ -502,6 +526,7 @@ def install_plugin(  # noqa: C901, PLR0911, PLR0915 — phased flow.
         )
 
     # --- Phase 3: SLSA verification ----------------------------------------
+    _emit(3)
     slsa_state: Literal["passed", "failed", "skipped"]
     if settings.plugin_slsa_skip:
         # C6 (review eval): production environments MUST refuse the dev
@@ -562,6 +587,7 @@ def install_plugin(  # noqa: C901, PLR0911, PLR0915 — phased flow.
         slsa_state = "passed"
 
     # --- Phase 4: manifest validation --------------------------------------
+    _emit(4)
     try:
         with tarfile.open(bundle_path, "r:gz") as tf:
             manifest_member = tf.getmember("manifest.yaml")
@@ -643,6 +669,7 @@ def install_plugin(  # noqa: C901, PLR0911, PLR0915 — phased flow.
         )
 
     # --- Phase 5: consent --------------------------------------------------
+    _emit(5)
     if not yes and not dry_run:
         try:
             granted = consent_prompt(entry, version, manifest)
@@ -682,6 +709,7 @@ def install_plugin(  # noqa: C901, PLR0911, PLR0915 — phased flow.
         )
 
     # --- Phase 6: extract bundle + register --------------------------------
+    _emit(6)
     install_root = settings.plugin_install_root
     plugin_dir = install_root / plugin_id
     if plugin_dir.exists():
@@ -719,6 +747,7 @@ def install_plugin(  # noqa: C901, PLR0911, PLR0915 — phased flow.
         )
 
     # --- Phase 7: consent receipt ------------------------------------------
+    _emit(7)
     # H4 (review eval): full UUID4 hex (128-bit, ~10^38 namespace) avoids
     # collision attacks against the ledger; previous 64-bit truncation
     # was feasible to attack on a long-running ledger.

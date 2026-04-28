@@ -1750,6 +1750,47 @@ async def run(  # noqa: C901
                     )
                     await write_frame(err)
 
+            elif frame.kind == "plugin_op":
+                # Spec 1979 — plugin_op IPC dispatcher arm. Routes citizen
+                # /plugin install / uninstall / list slash commands to the
+                # backend installer (Spec 1636) via the IPCConsentBridge
+                # (60s wait_for + Spec 033 PermissionRequestFrame round-trip).
+                try:
+                    from kosmos.ipc.plugin_op_dispatcher import (  # noqa: PLC0415
+                        handle_plugin_op_request,
+                    )
+                    from kosmos.plugins.consent_bridge import (  # noqa: PLC0415
+                        IPCConsentBridge,
+                    )
+                    from kosmos.tools.executor import ToolExecutor  # noqa: PLC0415
+
+                    consent_bridge = IPCConsentBridge(
+                        write_frame=write_frame,
+                        pending_perms=_pending_perms,
+                        session_id=frame.session_id,
+                    )
+                    await handle_plugin_op_request(
+                        frame,
+                        registry=_ensure_tool_registry(),
+                        executor=ToolExecutor(),
+                        write_frame=write_frame,
+                        consent_bridge=consent_bridge,
+                        session_id=frame.session_id,
+                    )
+                except Exception as exc:  # noqa: BLE001
+                    logger.exception("plugin_op handler failed: %s", exc)
+                    err = ErrorFrame(
+                        session_id=frame.session_id,
+                        correlation_id=frame.correlation_id or str(uuid.uuid4()),
+                        role="backend",
+                        ts=_utcnow(),
+                        kind="error",
+                        code="plugin_op_error",
+                        message=f"plugin_op handler failed: {exc}",
+                        details={"request_op": getattr(frame, "request_op", None)},
+                    )
+                    await write_frame(err)
+
         on_frame = _handle_frame
 
     # Spec 1978 T081 / ADR-0004 — root span ``kosmos.session`` covers the
