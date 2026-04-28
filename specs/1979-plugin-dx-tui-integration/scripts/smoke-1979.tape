@@ -24,6 +24,8 @@ Type "export KOSMOS_PLUGIN_SLSA_SKIP=true"
 Enter
 Type "export KOSMOS_ENV=development"
 Enter
+Type "export KOSMOS_BACKEND_STDERR_FILE=/tmp/kosmos-backend.stderr"
+Enter
 Sleep 500ms
 
 # Launch KOSMOS TUI (mirrors Spec 2112 working pattern: cd tui && bun run tui)
@@ -34,12 +36,13 @@ Sleep 8s
 # Citizen install command (no preceding /help — modal would block input)
 Type "/plugin install seoul-subway"
 Enter
-Sleep 7s
+Sleep 12s
 Screenshot specs/1979-plugin-dx-tui-integration/debug-install.png
 
-# Approve at consent modal (if it appears)
+# Approve at consent modal (give ample time for modal to render)
+Sleep 3s
 Type "Y"
-Sleep 5s
+Sleep 10s
 Screenshot specs/1979-plugin-dx-tui-integration/debug-after-y.png
 
 # Open browser to verify
