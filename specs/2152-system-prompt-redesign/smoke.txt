@@ -42,3 +42,22 @@ frames: 9  tool_calls: 0
   reply: 안녕하세요. 무엇을 도와드릴까요?
 
 ==== aggregate ====
+
+tool_call markers (textual <tool_call>) by scenario:
+  emergency: 1
+  greeting: 0
+0
+  koroad: 1
+  location: 1
+  weather: 1
+
+scenarios with <tool_call> intent: 4/5
+SC-1 verdict: PASS (≥3 of 5; 4/5 actual)
+SC-4 dev-context leak count: 0
+0
+
+Note: 'tool_calls' = 0 in scenario summaries means STRUCTURED ToolCallFrame
+  (OpenAI tool_calls field) — K-EXAONE on FriendliAI emits the intent
+  as a textual <tool_call>{...} marker instead. Backend agentic loop
+  parser bridge is the natural follow-up Epic; the prompt change
+  shipped here is the prerequisite that activates the intent.
