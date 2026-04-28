@@ -82,3 +82,4 @@ tui/test-output/
 # Spec 1979 — vhs-rendered citizen scenario binaries (> 1 MB risk per AGENTS.md)
 specs/1979-plugin-dx-tui-integration/smoke-1979.gif
 specs/1979-plugin-dx-tui-integration/smoke-1979.mp4
+specs/1979-plugin-dx-tui-integration/debug-*.png

@@ -28,6 +28,9 @@ class LookupOutput(BaseModel):
 
 TOOL = GovAPITool(
     id="plugin.seoul_subway.lookup",
+    ministry="OTHER",
+    category=["transport"],
+    endpoint="https://test.local/seoul-subway/arrivals",
     name_ko="서울 지하철 도착 정보 조회 (fixture)",
     name_en="Seoul subway arrival lookup (fixture)",
     description_ko="서울 지하철 실시간 도착 정보 (E2E fixture; 외부 API 호출 없음)",
@@ -36,6 +39,7 @@ TOOL = GovAPITool(
     auth_type="public",
     auth_level="public",
     pipa_class="non_personal",
+    dpa_reference=None,
     requires_auth=False,
     is_personal_data=False,
     is_concurrency_safe=True,

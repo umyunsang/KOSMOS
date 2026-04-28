@@ -9,10 +9,10 @@ set timeout 60
 set spec_dir [file dirname [file dirname [info script]]]
 set log_path "$spec_dir/smoke-1979-deny.txt"
 
-spawn script -q $log_path bun run --cwd tui dev
+spawn script -q $log_path bash -c "cd tui && bun run tui"
 
 expect {
-  -re ".*✻.*" {}
+  -re ".*KOSMOS.*" {}
   timeout { exit 1 }
 }
 

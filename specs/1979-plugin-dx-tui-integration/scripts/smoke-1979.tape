@@ -14,32 +14,48 @@ Set Width 1200
 Set Height 700
 Set FontSize 14
 Set FontFamily "JetBrains Mono"
-Set Theme "Tokyo Night Storm"
+Set Theme "TokyoNightStorm"
 
-# Launch KOSMOS TUI (assumes `bun run --cwd tui dev` reachable)
-Type "bun run --cwd tui dev"
+# Inject fixture catalog env vars so the backend can install the seoul-subway
+# fixture without going through the live kosmos-plugin-store catalog.
+Type "export KOSMOS_PLUGIN_CATALOG_URL=file:///Users/um-yunsang/KOSMOS/specs/1979-plugin-dx-tui-integration/scripts/fixtures/catalog.json"
 Enter
-Sleep 3s
+Type "export KOSMOS_PLUGIN_SLSA_SKIP=true"
+Enter
+Type "export KOSMOS_ENV=development"
+Enter
+Type "export KOSMOS_BACKEND_STDERR_FILE=/tmp/kosmos-backend.stderr"
+Enter
+Sleep 500ms
 
-# Citizen install command
+# Launch KOSMOS TUI (mirrors Spec 2112 working pattern: cd tui && bun run tui 2>/tmp/tui-bun.stderr)
+Type "cd tui && bun run tui 2>/tmp/tui-bun.stderr"
+Enter
+Sleep 8s
+
+# Citizen install command (no preceding /help — modal would block input)
 Type "/plugin install seoul-subway"
 Enter
-Sleep 6s
+Sleep 12s
+Screenshot specs/1979-plugin-dx-tui-integration/debug-install.png
 
-# Approve at consent modal
-Type "Y"
-Sleep 4s
-
-# Citizen query — model should invoke the new plugin via 5-primitive surface
-Type "강남역 다음 열차 언제?"
+# Approve at consent modal — diagnostic: Down to test focus, then Up to restore, then Enter
+Sleep 3s
+Down
+Sleep 1s
+Screenshot specs/1979-plugin-dx-tui-integration/debug-after-down.png
+Up
+Sleep 1s
+Screenshot specs/1979-plugin-dx-tui-integration/debug-after-up.png
 Enter
-Sleep 6s
+Sleep 8s
+Screenshot specs/1979-plugin-dx-tui-integration/debug-after-y.png
 
-# Open browser to verify the plugin is registered
+# Open browser to verify
 Type "/plugins"
 Enter
 Sleep 3s
+Screenshot specs/1979-plugin-dx-tui-integration/debug-browser.png
 
-# Close browser
 Escape
 Sleep 1s

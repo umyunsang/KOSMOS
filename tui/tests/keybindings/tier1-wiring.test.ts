@@ -78,7 +78,6 @@ type Probes = {
   interruptAuditCalls: number
   auditFlushCalls: number
   processExitCalls: number[]
-  modeSets: string[]
   draftLog: string[]
   confirmExitCalls: number
   closeBridgeCalls: number
@@ -90,7 +89,6 @@ function makeProbes(overrides: Partial<Tier1HandlerDeps> = {}): Probes {
   let interruptAuditCalls = 0
   let auditFlushCalls = 0
   const processExitCalls: number[] = []
-  const modeSets: string[] = []
   const draftLog: string[] = []
   let confirmExitCalls = 0
   let closeBridgeCalls = 0
@@ -116,9 +114,6 @@ function makeProbes(overrides: Partial<Tier1HandlerDeps> = {}): Probes {
     isAgentLoopActive: () => true, // interrupt path — loop-active wins
     currentToolCallId: () => 'tool-call-1',
     isBufferEmpty: () => true,
-    getPermissionMode: () => 'default',
-    setPermissionMode: (m) => modeSets.push(m),
-    hasPendingIrreversibleAction: () => false,
     readDraft: () => '',
     setDraft: (v) => draftLog.push(v),
     getHistory: () => historyEntries,
@@ -175,7 +170,6 @@ function makeProbes(overrides: Partial<Tier1HandlerDeps> = {}): Probes {
       return auditFlushCalls
     },
     processExitCalls,
-    modeSets,
     draftLog,
     get confirmExitCalls() {
       return confirmExitCalls
@@ -285,22 +279,7 @@ describe('Tier 1 wiring — buildTier1Handlers × KeybindingProviderSetup', () =
     expect(probes.processExitCalls[0]).toBe(0)
   })
 
-  it('dispatches permission-mode-cycle through the real handler (setMode fires)', async () => {
-    const { probes } = await mount()
-
-    const fired = dispatchAction('Global', 'permission-mode-cycle')
-    expect(fired).toBe(true)
-
-    await Promise.resolve()
-    await Promise.resolve()
-
-    // Real controller calls setMode with the Tier-1 next mode; the default
-    // stub only announces.  Any setMode entry proves the real path ran.
-    expect(probes.modeSets.length).toBeGreaterThanOrEqual(1)
-    // plan → default → acceptEdits → bypassPermissions → plan;
-    // starting from `default` the next mode is `acceptEdits`.
-    expect(probes.modeSets[0]).toBe('acceptEdits')
-  })
+  // KOSMOS Spec 1979 — Spec 033 permission-mode-cycle test removed.
 
   it('dispatches history-prev through the real navigator (setDraft fires)', async () => {
     const { probes } = await mount()

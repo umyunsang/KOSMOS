@@ -6,15 +6,57 @@
 
 A conversational multi-agent platform that **migrates the Claude Code harness** (tool loop, permission gauntlet, context assembly, TUI) from the developer domain to the Korean public-service domain. It orchestrates Korean public APIs from `data.go.kr` through a Claude Code-style tool loop, powered by LG AI Research's K-EXAONE. Student portfolio project. Not affiliated with Anthropic, LG AI Research, or the Korean government.
 
-**Canonical sources** (cite both in every spec and PR):
+## **CORE THESIS — the unit of work**
+
+**KOSMOS = CC-original harness + 2 swaps:** (a) LLM = K-EXAONE on FriendliAI; (b) tool surface = client-side caller for Korean **국가AX 인프라**'s LLM-accessible secure-wrapped channels. Everything else is byte-identical with `.references/claude-code-sourcemap/restored-src/`.
+
+**KOSMOS is the client-side reference implementation for the Korean AX-infrastructure callable channels** that 국가인공지능전략위원회 (2025-09-08 출범) + 인공지능 행동계획 2026-2028 (2026-02-24 확정, 99 과제) + 공공AX 분과 + 범정부 AI 공통기반 (2025-11~) policy-stack drives agencies (홈택스, 정부24, 간편인증, 모바일신분증, 공동/금융인증서, …) to expose. Each agency wraps its internal API/SDK behind a security layer (OAuth 2.1 + mTLS + scope-bound token + audit) and exposes an LLM-callable module — KOSMOS calls those modules. Closest international analog: **Singapore APEX** (★★★★★) + Estonia X-Road (★★★★) + EU EUDI Wallet (★★★) + Japan マイナポータル API (★★★).
+
+**The unit of work is wrapping one agency's LLM-callable module as one tool and registering it.** "LLM-callable module" is the security-layer-wrapped channel the agency exposes — currently mocked (Mock reference shape per Singapore APEX + 공공마이데이터 patterns) until the policy-driven gateway formalises. KOSMOS does **not** ask agencies to change anything; agencies change because of policy mandates, and KOSMOS provides the client-side reference impl that demonstrates how the modules are consumed.
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│  Each agency's API endpoint (KOROAD / KMA / HIRA / NMC / NFA /   │
+│  MOHW / MFDS / 정부24 / CBS / data.go.kr / ...)                   │
+│       │                                                           │
+│       ▼                                                           │
+│  Wrapped as a `GovAPITool` Pydantic adapter under                 │
+│  src/kosmos/tools/<ministry>/<endpoint>.py                        │
+│       │                                                           │
+│       ▼                                                           │
+│  Registered into ToolRegistry at boot via `register(reg, exec)`   │
+│       │                                                           │
+│       ▼                                                           │
+│  LLM (K-EXAONE) discovers via BM25 + native function calling      │
+│       │                                                           │
+│       ▼                                                           │
+│  Citizen gets a Korean-language response                          │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+- **Public REST API + we have the data.go.kr key** → wrap as **Live tool** (real HTTP call). Phase 1 12 adapters (KOROAD/KMA/HIRA/NMC/NFA/MOHW catalog) are this class.
+- **국가AX 인프라가 정형화할 보안 wrapping 통로** (홈택스 신고, 정부24 민원 제출, 간편인증, 모바일신분증, 공동/금융인증서) → wrap as **Mock tool that mirrors the AX-infrastructure callable-channel reference shape** (Singapore APEX + 공공마이데이터 patterns). When the policy-driven gateway formalises, swap the adapter to Live with no shape change. **Browser automation is a fallback only**, not the canonical path.
+- **OPAQUE forever** (a domain that the agency commits to never expose to LLM agents) → don't wrap. `docs/scenarios/<domain>.md` for LLM hand-off guidance.
+
+Every mock response carries transparency fields: `_mode: "mock"`, `_reference_implementation: "ax-infrastructure-callable-channel"`, `_actual_endpoint_when_live: "..."`, `_security_wrapping_pattern: "OAuth2.1 + mTLS + scope=..."`, `_policy_authority: "국가AI전략위원회 행동계획 2026-2028 §공공AX"`, `_international_reference: "Singapore APEX"`.
+
+**KOSMOS does not invent permission policy.** Each adapter cites the agency's own published policy via `real_classification_url`. Permission UX uses CC's canonical `<PermissionRequest>` pipeline — no KOSMOS-invented `permission_tier`, `pipa_class`, `auth_level`, `dontAsk` mode, or PIPA §15(2) `ConsentDecision` 4-tuple.
+
+**Authority for this thesis:**
+- `specs/1979-plugin-dx-tui-integration/domain-harness-design.md` — 16-domain research matrix, 5-point mock fidelity grade, citation URLs.
+- `specs/1979-plugin-dx-tui-integration/cc-source-migration-plan.md` — file-by-file migration path from CC original.
+- `specs/1979-plugin-dx-tui-integration/delegation-flow-design.md` — delegation flow research; **§12 (3rd correction final) is the canonical architecture** (§5-§11 are historical misreads superseded). Includes 국가AI전략위원회 + 행동계획 + DPG + 공공AX + Singapore APEX policy/reference matrix.
+
+**Canonical sources** (cite all three in every spec and PR):
 - `docs/vision.md` — thesis + six-layer design. Claude Code is the first reference for any unclear design decision.
 - `docs/requirements/kosmos-migration-tree.md` — L1 pillars A/B/C · UI L2 decisions · brand · P0–P6 phase sequencing. **Approved 2026-04-24.**
+- `.references/claude-code-sourcemap/restored-src/` — Claude Code 2.1.88 source-of-truth for byte-identical components (research-only, never modify).
 
 ## L1 pillars (canonical)
 
-- **L1-A LLM Harness** — Single-fixed provider `FriendliAI Serverless + K-EXAONE` (`LGAI-EXAONE/EXAONE-4.0-32B`). CC agentic loop preserved 1:1. Native EXAONE function calling. `prompts/system_v1.md` + compaction + prompt cache. Sessions in `~/.kosmos/memdir/user/sessions/` JSONL. 4-tier OTEL, zero external egress.
-- **L1-B Tool System** — `Tool.ts` rewritten, registered on both TS and Python. Live / Mock 2-tier with 3-layer permissions + Spec 033. Discovery via BM25 + dense `lookup`. Composite tools removed. Korean-primary 5-tier plugin DX with PIPA trustee responsibility explicit.
-- **L1-C Main-Verb Abstraction** — Four reserved primitives (`lookup · submit · verify · subscribe`) with shared `PrimitiveInput/Output` envelope. System prompt exposes primitive signatures only; BM25 surfaces adapters dynamically. Permissions live at the adapter layer only.
+- **L1-A LLM Harness** — Single-fixed provider `FriendliAI Serverless + K-EXAONE` (`LGAI-EXAONE/EXAONE-4.0-32B`). CC agentic loop preserved 1:1 (byte-identical with CC restored-src). Native EXAONE function calling. `prompts/system_v1.md` + compaction + prompt cache. Sessions in `~/.kosmos/memdir/user/sessions/` JSONL. 4-tier OTEL, zero external egress.
+- **L1-B Tool System** — Each Korean agency API wrapped as one `GovAPITool` adapter, registered into `ToolRegistry` at boot. **Live** when we have the data.go.kr key; **Mock** when we don't (fixture replay, byte/shape-mirror per public spec). **OPAQUE** domains (홈택스 신고, 정부24-submit, 모바일ID 발급, KEC/yessign 서명, mydata-live) are never wrapped — LLM hands off via `docs/scenarios/`. Discovery via BM25 + dense `lookup`. Permission UX uses CC `<PermissionRequest>` with adapter's `real_classification_url` citation; **no KOSMOS-invented permission classification**.
+- **L1-C Main-Verb Abstraction** — Four reserved primitives (`lookup · submit · verify · subscribe`) with shared `PrimitiveInput/Output` envelope. System prompt exposes primitive signatures only; BM25 surfaces adapters dynamically. Each adapter declares its real-domain policy by citation, not invention.
 
 ## Execution phases
 
@@ -95,9 +137,20 @@ gh api repos/umyunsang/KOSMOS/pulls/<N>/comments \
 
 Codex flags issues with severity badges (P1/P2/P3). Fix or defer each with a reply. Codex auto-reviews on every push — no manual trigger needed.
 
-## New tool adapter
+## New tool adapter — the canonical work unit
 
-Pydantic v2 I/O · fail-closed defaults · Korean + English `search_hint` · recorded fixture · happy-path + error-path test · no hardcoded keys. Full checklist: `docs/tool-adapters.md`.
+Wrap one agency API endpoint as one `GovAPITool` adapter. Reference: `src/kosmos/tools/koroad/koroad_accident_search.py`.
+
+**Required**: Pydantic v2 I/O · fail-closed defaults · Korean + English `search_hint` · `llm_description` (Korean primary) · recorded fixture · happy-path + error-path test · no hardcoded keys · **`real_classification_url` citing the agency's own published policy** · `last_verified` ISO date.
+
+**Forbidden in adapter metadata**: `pipa_class`, `auth_level`, `permission_tier`, `is_personal_data`, `dpa_reference`, `is_irreversible` — these were KOSMOS-invented classifications, removed in Spec 1979. Use `real_classification_url` instead.
+
+**Decision tree** for any new agency API:
+1. Is the API public on data.go.kr or the agency's dev portal? → **Live tool**.
+2. Public spec exists but credentials require licence (마이데이터, 모바일ID 등)? → **Mock tool** with shape-mirror per spec PDF.
+3. No public spec for the operation (홈택스 신고, 정부24 민원 제출, KEC/yessign 서명)? → **No tool**. Add `docs/scenarios/<domain>.md` so LLM can hand off the citizen.
+
+Full checklist: `docs/tool-adapters.md`. External plugin contributors: `docs/plugins/quickstart.ko.md` + `docs/plugins/security-review.md` (PIPA §26 trustee acknowledgment SHA-256).
 
 **External plugin contributors** (kosmos-plugin-store/`<repo>`): start at [`docs/plugins/quickstart.ko.md`](./docs/plugins/quickstart.ko.md). 50-item validation workflow (Q1-Q10) enforces all rules; PIPA §26 trustee acknowledgment SHA-256 must match canonical hash in [`docs/plugins/security-review.md`](./docs/plugins/security-review.md) when `processes_pii: true`.
 

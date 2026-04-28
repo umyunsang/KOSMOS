@@ -113,9 +113,9 @@ const KO: UiL2Bundle = {
   errorRetryHint: '다시 시도하시겠습니까? (R)',
 
   permissionLayer: (layer) => `Layer ${layer}`,
-  permissionAllowOnce: '[Y] 이번 한 번만',
-  permissionAllowSession: '[A] 세션 자동',
-  permissionDeny: '[N] 거부',
+  permissionAllowOnce: '이번 한 번만 허용',
+  permissionAllowSession: '세션 동안 자동 허용',
+  permissionDeny: '거부',
   permissionLayer3Reinforcement: '⚠️ 이 작업은 시민님 계정으로 외부 시스템에 영향을 줍니다.',
   receiptIssued: (id) => `발급됨 ${id}`,
   consentRevoked: (id) => `철회 완료 ${id}`,
@@ -198,9 +198,9 @@ const EN: UiL2Bundle = {
   errorRetryHint: 'Retry? (R)',
 
   permissionLayer: (layer) => `Layer ${layer}`,
-  permissionAllowOnce: '[Y] Allow once',
-  permissionAllowSession: '[A] Allow for session',
-  permissionDeny: '[N] Deny',
+  permissionAllowOnce: 'Allow once',
+  permissionAllowSession: 'Allow for the session',
+  permissionDeny: 'Deny',
   permissionLayer3Reinforcement:
     '⚠️ This operation will affect external systems on your behalf.',
   receiptIssued: (id) => `Issued ${id}`,
