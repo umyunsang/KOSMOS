@@ -1,0 +1,6 @@
+# Per AGENTS.md: gif/png are supplementary visual artefacts; the SC-1
+# audit lives in smoke.txt + smoke-stdio-*.jsonl. The .tape script is
+# committed so anyone can reproduce the visual.
+*.gif
+*.mp4
+*.webm
