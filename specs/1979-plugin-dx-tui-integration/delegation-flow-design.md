@@ -3,7 +3,14 @@
 **Status**: 리서치 산출물 + Mock 아키텍처 설계 (정정됨 2026-04-29 오후)
 **Date**: 2026-04-29
 
-> ⚠️ **CRITICAL CORRECTION (사용자 정정 2026-04-29)**: 이 문서의 §5-§9는 **새 protocol을 제안**하는 방향으로 작성되었으나, 사용자의 실제 비전은 **기존 도메인 서비스를 LLM이 대신 navigate**하는 것 — "하네스는 지금 있는 도메인 서비스를 대체하기 위해 만드는 것이 아닌 llm이 그 기관들의 서비스 도메인을 접근 후 사용하도록 기존서비스는 그대로 두고 사용자들은 단순히 llm 대화를 통해서 직접 기관의 홈페이지를 들어가지 않아도 일처리할수있게 하고싶은거야". 정정된 architecture는 §11 참조. §1-§4 (리서치 발견)는 여전히 유효; §5-§9 (mock + 제안 템플릿)는 정정된 vision에 맞게 §11에서 재작성.
+> ⚠️ **TRIPLE CORRECTION HISTORY** — 사용자가 세 번 정정. 최종 canonical은 **§12 (3차 정정 final)** 참조.
+>
+> - **1차 잘못**: KOSMOS-original 권한 시스템 발명 (Spec 033 5-mode 등) → ✅ 삭제 완료 (Wave 1-3)
+> - **2차 잘못 (§5-§9)**: KOSMOS가 protocol pioneer로 기관에 새 protocol 제안 → §11에서 정정
+> - **2차 정정 (§11)도 부정확**: "기관 시스템 변경 X, browser substitute" 가정이 **국가인공지능전략위원회 정책 timing 무시** → §12에서 final 정정
+> - **3차 정정 final (§12)**: KOSMOS = **한국 국가AX 인프라가 만들 LLM-accessible 보안 wrapping 통로의 client-side reference implementation**. 정부 자체 시스템 개편 동력 = 국가AI전략위원회 (2025-09 출범) + 행동계획 2026-2028 (2026-02 확정, 99 과제) + 공공AX 분과 + 범정부 AI 공통기반.
+>
+> §1-§4 (리서치 발견)는 여전히 유효. §5-§11은 historical, §12가 canonical.
 
 **Trigger**: 사용자 비전 (2026-04-29) — 시민이 hometax.go.kr / gov.kr 직접 접속 안 해도 LLM 대화 한 번으로 행정일 처리. 인증 도메인(간편인증/공동인증서/금융인증서/모바일신분증)은 기존 시스템 그대로 trigger; 행정 도메인(홈택스/정부24)도 기존 web/mobile UX 그대로, 단지 LLM이 시민 대신 navigate.
 
@@ -513,7 +520,7 @@ class DelegationContext(BaseModel):
 
 ---
 
-## 11. 정정된 아키텍처 — Browser-Substitute Harness (사용자 정정 2026-04-29 오후)
+## 11. (SUPERSEDED) Browser-Substitute Harness — see §12 for the canonical 3rd correction
 
 ### 11.1 핵심 차이
 
@@ -645,3 +652,165 @@ KOSMOS = **시민의 web browser를 대신 운영하는 LLM agent + 한국어 + 
 - 핵심 — KOSMOS는 protocol pioneer가 아니라 **LLM agent productization** project.
 
 이게 사용자 vision과 정확히 일치 — "기존 시스템 그대로, LLM이 시민 대신 navigate".
+
+---
+
+## 12. (FINAL CANONICAL) AX Infrastructure Caller — 사용자 3차 정정 2026-04-29 저녁
+
+### 12.1 사용자 정정 원문
+
+> "컴퓨터 use나 모바일use가 아니라 기존 도메인에서 사용중인 내부 api들이 있을거야 cli가 있을수도 잇고 sdk일수도 있고 하지만 그건 공개되어있지 않고 권한도 없어 하지만 이번에 국가인공지능전략위원회에서 ax 인프라 발표를 해서 국기기관에서 ax를 위해 대대적인 시스템 개편을 하거야 따라서 공개하지않던 내부 api나 sdk를 전체적으로 공개는 안하지만 일부 보안레이어로 랩핑해서 llm이 접근할 통로를 만들면 ax가 가능하잖아 물론 기존의 인증서비스들도 똑같아 사용하겠지 인증서비스들도 llm이 rest처럼 호출하듯이 모듈을 호출할수있게 시스템개편을 하면 내가 말했던 ax 행정 인프라가 완성되잖아"
+
+### 12.2 정정의 필연성 — §11이 또 부정확했던 이유
+
+§11 ("Browser substitute") 가정 = "기관 시스템은 절대 변하지 않는다 → KOSMOS는 시민의 web browser를 대신 운영". 이건 정책 timing 무시. **국가인공지능전략위원회가 2025-09-08 출범** + **인공지능 행동계획 2026-2028이 2026-02-24 확정 (99 과제, 326 권고)** + **공공AX 분과 + 범정부 AI 공통기반 (2025-11~)** = 한국 정부가 **이미 시스템 개편 중**. 따라서 KOSMOS는 browser-side scraper가 아니라 **국가 AX 인프라가 만들 LLM-accessible 보안 wrapping 통로의 client-side reference implementation**.
+
+### 12.3 정정 매트릭스 — 1차 → 2차 → 3차
+
+| 차원 | 1차 (이전 잘못) | 2차 ("browser substitute") | **3차 (FINAL CANONICAL)** |
+|---|---|---|---|
+| 기관 변경 | KOSMOS가 새 protocol 제안 → 기관에 공문 | 기관 시스템 변경 X | **기관이 자체적으로 시스템 개편 (국가AX 인프라 정책 동력). KOSMOS는 caller** |
+| KOSMOS 역할 | Protocol pioneer | Browser/Mobile use agent | **AX 인프라 client-side reference implementation** |
+| Mock 의미 | 미래 새 protocol mirror | 기존 web/mobile UX mirror | **국가AX 보안 wrapping 통로의 reference shape** |
+| 호출 방식 | Bearer token으로 행정 API 직접 | Playwright/browser-automation | **LLM이 REST처럼 호출 (보안 레이어 뒤의 SDK/모듈)** |
+| 인증 도메인 | OID4VP RP spec 제안 | 기존 시스템 push 알림 trigger | **인증 서비스도 LLM-callable 모듈로 시스템 개편 — KOSMOS는 그것 호출** |
+| 정책 hook | 학부생이 정책 입안자에 제안 | 정책 무관 demo | **국가인공지능전략위원회·DPG·공공AX의 reference impl** |
+
+### 12.4 진짜 KOSMOS architecture (FINAL)
+
+```
+[국가 AX 인프라 (정책)]
+  국가인공지능전략위원회 + DPG + 행안부 + 과기정통부
+  → 각 기관(홈택스/정부24/...)이 내부 API/SDK를
+     보안 레이어 (OAuth2 + mTLS + audit + scope) 뒤에 wrapping
+  → LLM 전용 endpoint 노출 (전체 공개 X, 부분 공개)
+                │
+                │ ※ KOSMOS가 demonstrate하려는 것 = 이 통로의 reference shape
+                ▼
+[시민] ──"종합소득세 신고해줘"──► [KOSMOS LLM]
+                                   │
+                                   │ (1) verify primitive
+                                   ▼
+                          [LLM-callable 인증 모듈]
+                          (간편인증/공동/금융/모바일신분증의 보안 wrapping API)
+                                   │
+                                   │ (2) 시민 모바일 push 또는 인증 ceremony
+                                   │     (시민이 평소 hometax에서 쓰던 방식 동일)
+                                   ▼
+                          [scope-bound delegation token 발급]
+                                   │
+                                   │ (3) submit primitive (with token)
+                                   ▼
+                          [LLM-callable 행정 모듈]
+                          (홈택스 신고 SDK / 정부24 민원 SDK의 보안 wrapping API)
+                                   │
+                                   │ (4) 신고 처리 (기관 내부 API가 보안 레이어 뒤에서 실행)
+                                   ▼
+                          [접수번호 + 영수증 ledger]
+                                   │
+                                   ▼
+                          [LLM이 시민에게 한국어 응답]
+```
+
+**핵심**:
+- KOSMOS는 **5-primitive (lookup/submit/verify/subscribe + resolve_location) → boundaries → 보안 wrapping 통로 → 기관 내부 API**의 client-side caller
+- Mock은 그 통로가 어떻게 보일지의 reference shape (공공마이데이터 표준 + Singapore APEX 패턴 base)
+- **Browser automation 불필요** (정부 gateway spec이 정형화되면 REST/SDK 호출만)
+- 정책 timing — 국가AX 인프라 발표가 KOSMOS-style architecture를 합법화
+
+### 12.5 가장 닮은 international reference
+
+리서치 결과 (Phase A 산출물): **Singapore APEX (Government API Exchange)** = **★★★★★ 가장 닮음**
+
+- Zone-bridging gateway (인트라넷↔인터넷)
+- OAuth 2.1 + mTLS + JWT + Corppass federation
+- "Agency-built API + central platform delivery" 분담
+- KOSMOS의 `permissions live at adapter layer only` (`docs/requirements/kosmos-migration-tree.md § L1-C C5`)와 1:1 mapping
+
+다음 닮은 시스템:
+- **Estonia X-Road** (★★★★) — 각 기관 앞 Security Server, PKI signed assertion + non-repudiation. KOSMOS Spec 024 audit ledger와 정합
+- **EU EUDI Wallet** (★★★) — VC presentation. KOSMOS는 wallet 계층 미보유 (학부생 단계 OOS)
+- **Japan マイナポータル API** (★★★) — Digital Agency 단일 게이트웨이. third-party app 통합 절차가 KOSMOS plugin DX와 유사
+
+### 12.6 한국 현재 상황 — KOSMOS의 정확한 빈자리
+
+리서치 결과:
+
+| 인프라 | 운영 | AI agent 확장성 |
+|---|---|---|
+| **공공데이터포털 data.go.kr** | 행안부 + NIA | ★★★★ — 이미 OpenAPI 키 + REST 게이트웨이 backbone. KOSMOS Phase 1 어댑터 운영 중. **AI agent 전용 확장 (rate limit, scope, agent-id audit) 미정** |
+| **디지털플랫폼정부 (DPG)** | DPG위원회 | ★★★ — 가이드라인 2.0 (2025-04-16) wrapping·격리·개인정보 분리 권고. **단일 통합 게이트웨이 spec 미공개** |
+| **공공마이데이터** | 행안부 + KLID | ★★★ — read 167종 (2025-12 확대). **write extension 미규정** ← KOSMOS submit primitive가 정확히 채울 수 있는 빈자리 |
+| **NIA / KISA / 행정정보 공유센터** | 진흥원 / 보안 / 공동이용 | ★★ — 단일 agent gateway 미공개 |
+| **범정부 AI 공통기반** | 행안부 + 과기정통부 | ★★★★ — 행정망↔민간 AI wrapping 게이트웨이 (2025-11~). **사용자가 말한 "보안 레이어 wrapping" 모델의 정부 측 implementation** |
+
+**KOSMOS의 차별 포인트 (리서치 결론)**: "한국에는 AI agent 단독을 위한 정부 API 게이트웨이가 아직 정형화되지 않음". KOSMOS는 client-side harness로 정확히 그 빈자리를 메움.
+
+### 12.7 정확한 mock 어댑터 디자인 (§5.4 + §11.4 통합 정정)
+
+Mock의 목적 = "**국가AX 인프라가 시스템 개편 후 LLM-callable 보안 wrapping 통로가 어떻게 보일지의 reference shape**".
+
+| 어댑터 카테고리 | 호출 모양 (mirror할 reference) | 예시 |
+|---|---|---|
+| **인증 모듈 LLM 호출** | OAuth 2.1 authorization_code + scope-bound access_token (Singapore APEX 패턴) | `mock_verify_module_simple_auth`, `mock_verify_module_modid` |
+| **행정 모듈 LLM 호출** | scope-bound bearer token + REST POST + 접수번호 응답 | `mock_submit_module_hometax_taxreturn`, `mock_submit_module_gov24_minwon` |
+| **조회 모듈 LLM 호출** | scope-bound bearer token + REST GET + JSON 응답 | `mock_lookup_module_hometax_simplified` |
+| **공공마이데이터 write extension** | 마이데이터 표준동의서 envelope 확장 (action-scope claim) | `mock_submit_public_mydata_action` |
+
+**모든 mock 응답 transparency 필드**:
+```json
+{
+  "_mode": "mock",
+  "_reference_implementation": "ax-infrastructure-callable-channel",
+  "_actual_endpoint_when_live": "https://api.gateway.kosmos.gov.kr/v1/...",
+  "_security_wrapping_pattern": "OAuth2.1 + mTLS + scope=submit:hometax.tax-return",
+  "_policy_authority": "국가AI전략위원회 행동계획 2026-2028 §공공AX",
+  "_international_reference": "Singapore APEX",
+  ...실제 응답 데이터...
+}
+```
+
+### 12.8 KOSMOS positioning — "client-side reference implementation"
+
+리서치 권고 (Phase A R4 결론): KOSMOS는 다음 4개 OSS 가시화 채널로 정책 reference 진입 가능:
+1. DPG 「공공 AI 서비스 실증 사례집」 등재
+2. 공공데이터 활용 경진대회
+3. NIA·KISA 보안가이드 reference 부록
+4. 행동계획 공공AX 분과 시민의견 channel
+
+학부생 단독 정책 인용 사례는 [research-blocked]이지만 Estonia X-Road · EU EUDI ARF 처럼 **표준 spec과 OSS impl이 동반 진화**하는 국제 패턴이 존재. KOSMOS = "client-side reference impl"로 자리잡으면 정부 gateway spec이 정형화될 때 adapter 갈아끼우는 전략이 안전.
+
+### 12.9 학부생 권한 한계 → 3가지 운영 모드
+
+| Mode | 의미 | 위험 |
+|---|---|---|
+| **Mock-only (현재)** | 모든 통로를 reference shape로 mirror. demo + 정책 reference 목적 | 0 — 학부생 권한 충분 |
+| **Mock + Live data.go.kr** | 공개된 data.go.kr 어댑터는 Live, 비공개 통로는 Mock | 낮음 — KOSMOS Phase 1 이미 운영 중 |
+| **Full Live (졸업 후 / partnership)** | 정부 gateway spec 정형화 후 KOSMOS adapter를 live 통로에 연결 | 높음 — 학부생 단계 OOS |
+
+**Verdict**: 학부생 단계는 **Mock-only or Mock + Live data.go.kr**. Full Live는 정부 gateway spec 정형화 + KOSMOS partnership이 전제.
+
+### 12.10 §11 vs §12 — Browser automation은 어디로?
+
+§11에서 제시한 Playwright/browser-automation은 **국가 AX 인프라 spec이 안 나올 경우의 fallback**. §12 canonical path는:
+- **Primary**: LLM이 보안 wrapping된 REST/SDK 통로 호출 (정부 gateway 정형화 후)
+- **Bridge**: 정부 gateway 정형화 전까지 Mock으로 reference shape demo
+- **Fallback**: Mock으로 부족하면 (특정 use case) Playwright로 시민 browser 대신 운영 — 단 이건 secondary, 학부생 단계에서는 옵션
+
+### 12.11 진짜 결론 (3차 정정 final)
+
+**KOSMOS = 한국 국가AX 인프라가 만들 LLM-accessible 보안 wrapping 통로의 client-side reference implementation**.
+
+- 시민 입장: LLM 대화 한 번으로 행정일 처리 (변함없음)
+- 기관 입장: 자체적으로 시스템 개편 (국가AI전략위원회 행동계획 동력) — KOSMOS는 변경 요구 X, 단지 reference shape 제공
+- KOSMOS 입장: 5-primitive client + Mock reference + 정부 gateway spec 정형화 시 즉시 adapter swap
+- Mock 입장: 보안 wrapping 통로의 architectural shape mirror (Singapore APEX + 공공마이데이터 base)
+- 학부생 입장: client-side reference impl + OSS 가시화 + KSC 2026 portfolio
+- 정책 입안자 입장: 행동계획 §공공AX의 살아있는 reference artifact
+
+**1차 → 2차 → 3차 정정의 통합 thesis**:
+- ✅ KOSMOS는 권한 시스템 발명 X (1차)
+- ✅ KOSMOS는 새 protocol 발명 X (2차 정정)
+- ✅ KOSMOS는 **국가AX 인프라가 정형화할 보안 wrapping 통로의 client-side caller** (3차 final)
+
+이게 AGENTS.md § CORE THESIS와 완전히 정합 — **각 기관의 LLM-callable 모듈 1개를 도구 1개로 래핑**. "API"는 좁게는 REST API, **넓게는 보안 wrapping된 SDK/CLI/모듈 호출 표면**.

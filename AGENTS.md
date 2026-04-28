@@ -8,11 +8,11 @@ A conversational multi-agent platform that **migrates the Claude Code harness** 
 
 ## **CORE THESIS — the unit of work**
 
-**KOSMOS = CC-original harness + 2 swaps:** (a) LLM = K-EXAONE on FriendliAI; (b) tool surface = Korean public-service domain access. Everything else is byte-identical with `.references/claude-code-sourcemap/restored-src/`.
+**KOSMOS = CC-original harness + 2 swaps:** (a) LLM = K-EXAONE on FriendliAI; (b) tool surface = client-side caller for Korean **국가AX 인프라**'s LLM-accessible secure-wrapped channels. Everything else is byte-identical with `.references/claude-code-sourcemap/restored-src/`.
 
-**KOSMOS is a browser substitute, not a protocol pioneer.** Anthropic Claude for Computer Use / OpenAI Operator / Google Project Mariner — but for Korean government domains, in Korean, on the citizen's behalf. Existing agency systems (hometax.go.kr, gov.kr, 간편인증, 모바일신분증, 공동/금융인증서) are **never asked to change**. The LLM navigates the same web/mobile UX that a citizen would use today.
+**KOSMOS is the client-side reference implementation for the Korean AX-infrastructure callable channels** that 국가인공지능전략위원회 (2025-09-08 출범) + 인공지능 행동계획 2026-2028 (2026-02-24 확정, 99 과제) + 공공AX 분과 + 범정부 AI 공통기반 (2025-11~) policy-stack drives agencies (홈택스, 정부24, 간편인증, 모바일신분증, 공동/금융인증서, …) to expose. Each agency wraps its internal API/SDK behind a security layer (OAuth 2.1 + mTLS + scope-bound token + audit) and exposes an LLM-callable module — KOSMOS calls those modules. Closest international analog: **Singapore APEX** (★★★★★) + Estonia X-Road (★★★★) + EU EUDI Wallet (★★★) + Japan マイナポータル API (★★★).
 
-**The unit of work is wrapping one agency's domain-access flow as one tool and registering it.** "Domain-access flow" is broad — it can be a REST API call (data.go.kr public datasets), a browser-automation sequence (hometax form fill via Playwright), or a mobile-companion handshake (KOMSCO 모바일신분증 push + biometric).
+**The unit of work is wrapping one agency's LLM-callable module as one tool and registering it.** "LLM-callable module" is the security-layer-wrapped channel the agency exposes — currently mocked (Mock reference shape per Singapore APEX + 공공마이데이터 patterns) until the policy-driven gateway formalises. KOSMOS does **not** ask agencies to change anything; agencies change because of policy mandates, and KOSMOS provides the client-side reference impl that demonstrates how the modules are consumed.
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
@@ -34,17 +34,18 @@ A conversational multi-agent platform that **migrates the Claude Code harness** 
 └──────────────────────────────────────────────────────────────────┘
 ```
 
-- **Public REST API + we have the data.go.kr key** → wrap as **Live tool** (real HTTP call).
-- **REST API exists but we have no credential** (학부생 권한 한계) → wrap as **Mock tool** (fixture replay, byte/shape-mirror per public spec).
-- **No REST API (only web/mobile UX)** — 홈택스 신고, 정부24 민원 제출 등 → wrap as **browser-automation tool** (Playwright-driven) or **Mock tool** that mirrors the *web UX surface* (form fields, session cookies, 접수번호 shape). The citizen still does authentication on their phone (간편인증 push, 모바일신분증 biometric) — KOSMOS just drives the form filling and submission afterwards.
-- **Live navigation requires production credentials we lack** → ship as **Mock** with `_mode: "mock"` + `_existing_system: true` + `_real_navigation_url` transparency fields. Live mode is a Phase 2 (post-graduation / partnership / startup).
+- **Public REST API + we have the data.go.kr key** → wrap as **Live tool** (real HTTP call). Phase 1 12 adapters (KOROAD/KMA/HIRA/NMC/NFA/MOHW catalog) are this class.
+- **국가AX 인프라가 정형화할 보안 wrapping 통로** (홈택스 신고, 정부24 민원 제출, 간편인증, 모바일신분증, 공동/금융인증서) → wrap as **Mock tool that mirrors the AX-infrastructure callable-channel reference shape** (Singapore APEX + 공공마이데이터 patterns). When the policy-driven gateway formalises, swap the adapter to Live with no shape change. **Browser automation is a fallback only**, not the canonical path.
+- **OPAQUE forever** (a domain that the agency commits to never expose to LLM agents) → don't wrap. `docs/scenarios/<domain>.md` for LLM hand-off guidance.
+
+Every mock response carries transparency fields: `_mode: "mock"`, `_reference_implementation: "ax-infrastructure-callable-channel"`, `_actual_endpoint_when_live: "..."`, `_security_wrapping_pattern: "OAuth2.1 + mTLS + scope=..."`, `_policy_authority: "국가AI전략위원회 행동계획 2026-2028 §공공AX"`, `_international_reference: "Singapore APEX"`.
 
 **KOSMOS does not invent permission policy.** Each adapter cites the agency's own published policy via `real_classification_url`. Permission UX uses CC's canonical `<PermissionRequest>` pipeline — no KOSMOS-invented `permission_tier`, `pipa_class`, `auth_level`, `dontAsk` mode, or PIPA §15(2) `ConsentDecision` 4-tuple.
 
 **Authority for this thesis:**
 - `specs/1979-plugin-dx-tui-integration/domain-harness-design.md` — 16-domain research matrix, 5-point mock fidelity grade, citation URLs.
 - `specs/1979-plugin-dx-tui-integration/cc-source-migration-plan.md` — file-by-file migration path from CC original.
-- `specs/1979-plugin-dx-tui-integration/delegation-flow-design.md` — delegation flow research; **§11 carries the corrected browser-substitute architecture** (the canonical interpretation; §5-§9 were a misread that has been superseded).
+- `specs/1979-plugin-dx-tui-integration/delegation-flow-design.md` — delegation flow research; **§12 (3rd correction final) is the canonical architecture** (§5-§11 are historical misreads superseded). Includes 국가AI전략위원회 + 행동계획 + DPG + 공공AX + Singapore APEX policy/reference matrix.
 
 **Canonical sources** (cite all three in every spec and PR):
 - `docs/vision.md` — thesis + six-layer design. Claude Code is the first reference for any unclear design decision.
