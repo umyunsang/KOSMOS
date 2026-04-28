@@ -41,6 +41,11 @@ def sample_tool_factory():
     Callers may override any field by passing keyword arguments.
     Korean values (name_ko, provider, category, search_hint) are domain data
     and are intentionally kept in Korean.
+
+    Note: KOSMOS-invented Spec 033/024/025 fields (auth_level, pipa_class,
+    is_irreversible, dpa_reference, requires_auth, is_personal_data) are
+    removed per Epic δ #2295 (Constitution § II cleanup). Use AdapterRealDomainPolicy
+    for agency-published policy citations instead.
     """
 
     def _factory(
@@ -51,26 +56,13 @@ def sample_tool_factory():
         endpoint: str = "https://apis.data.go.kr/test",
         auth_type: str = "api_key",
         search_hint: str = "날씨 예보 weather forecast 기상청",
-        auth_level: str = "AAL1",
-        pipa_class: str = "non_personal",
-        is_irreversible: bool = False,
-        dpa_reference: str | None = None,
         **overrides,
     ) -> GovAPITool:
-        # V6: auth_type='api_key' requires auth_level in {AAL1, AAL2, AAL3}.
-        # Default changed from 'public' to 'AAL1' (spec-025 V6 invariant).
-        # Spec-024 V5: auth_level=='public' ⇔ requires_auth==False.
-        # Derive requires_auth from auth_level unless caller overrode it.
-        if "requires_auth" not in overrides:
-            overrides["requires_auth"] = auth_level != "public"
-        # FR-038: non_personal pipa_class ⇒ no PII. Align default so public
-        # fixtures don't trip the registry FR-038 guard (is_personal_data
-        # defaults to True at the model level).
-        if "is_personal_data" not in overrides:
-            overrides["is_personal_data"] = pipa_class != "non_personal"
-        # FR-038: is_personal_data implies requires_auth=True.
-        if overrides.get("is_personal_data") and not overrides["requires_auth"]:
-            overrides["requires_auth"] = True
+        # Strip out removed KOSMOS-invented Spec 033/024/025 fields if callers
+        # still pass them (backward-compat shim for test migration window).
+        for _removed in ("auth_level", "pipa_class", "is_irreversible",
+                         "dpa_reference", "requires_auth", "is_personal_data"):
+            overrides.pop(_removed, None)
         return GovAPITool(
             id=id,
             name_ko=name_ko,
@@ -81,10 +73,6 @@ def sample_tool_factory():
             input_schema=MockInput,
             output_schema=MockOutput,
             search_hint=search_hint,
-            auth_level=auth_level,
-            pipa_class=pipa_class,
-            is_irreversible=is_irreversible,
-            dpa_reference=dpa_reference,
             **overrides,
         )
 

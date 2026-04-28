@@ -331,8 +331,7 @@ class TestToolDefinition:
     def test_is_core(self) -> None:
         assert KOROAD_ACCIDENT_SEARCH_TOOL.is_core is True
 
-    def test_is_personal_data(self) -> None:
-        assert KOROAD_ACCIDENT_SEARCH_TOOL.is_personal_data is False
+    # test_is_personal_data removed in Epic δ #2295 (is_personal_data deleted).
 
     def test_input_schema(self) -> None:
         assert KOROAD_ACCIDENT_SEARCH_TOOL.input_schema is KoroadAccidentSearchInput

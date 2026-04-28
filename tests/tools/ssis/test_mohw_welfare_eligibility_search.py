@@ -365,13 +365,10 @@ class TestMohwToolMetadata:
     """Verify MOHW_WELFARE_ELIGIBILITY_SEARCH_TOOL metadata matches spec 029 §4.2."""
 
     def test_tool_constants(self) -> None:
+        # KOSMOS-invented Spec 033/024/025 fields removed in Epic δ #2295:
+        # requires_auth, is_personal_data, auth_level, pipa_class, is_irreversible,
+        # dpa_reference — deleted from GovAPITool (Constitution § II).
         assert MOHW_WELFARE_ELIGIBILITY_SEARCH_TOOL.id == "mohw_welfare_eligibility_search"
-        assert MOHW_WELFARE_ELIGIBILITY_SEARCH_TOOL.requires_auth is True
-        assert MOHW_WELFARE_ELIGIBILITY_SEARCH_TOOL.is_personal_data is True
-        assert MOHW_WELFARE_ELIGIBILITY_SEARCH_TOOL.auth_level == "AAL2"
-        assert MOHW_WELFARE_ELIGIBILITY_SEARCH_TOOL.pipa_class == "personal"
-        assert MOHW_WELFARE_ELIGIBILITY_SEARCH_TOOL.is_irreversible is False
-        assert MOHW_WELFARE_ELIGIBILITY_SEARCH_TOOL.dpa_reference == "dpa-ssis-welfare-v1"
         assert MOHW_WELFARE_ELIGIBILITY_SEARCH_TOOL.cache_ttl_seconds == 0
         assert MOHW_WELFARE_ELIGIBILITY_SEARCH_TOOL.auth_type == "api_key"
         assert MOHW_WELFARE_ELIGIBILITY_SEARCH_TOOL.is_core is False

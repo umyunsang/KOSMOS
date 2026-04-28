@@ -147,56 +147,6 @@ class TestBm25RebuildSlo:
 
 # ---------------------------------------------------------------------------
 # T052-D: FR-038 fail-closed PII invariant
+# REMOVED in Epic δ #2295 — is_personal_data / requires_auth fields deleted
+# from GovAPITool as Spec 033 KOSMOS-invented residue (Constitution § II).
 # ---------------------------------------------------------------------------
-
-
-class TestPiiRegistrationInvariant:
-    """Adapter with is_personal_data=True + requires_auth=False fails at registration."""
-
-    def test_personal_data_without_auth_raises(
-        self,
-        sample_tool_factory,
-    ) -> None:
-        """FR-038: is_personal_data=True requires requires_auth=True at registration.
-
-        V5 (auth_level ⇔ requires_auth) fires earlier for normally-constructed
-        tools, so we construct the inconsistent tool through a valid model
-        first and then force the FR-038 breach by mutating fields via
-        ``model_copy(update=...)`` on a frozen model is not possible; instead
-        we build the violating shape with pydantic's validation disabled.
-        """
-        registry = ToolRegistry()
-        # Build a V5-valid AAL2 PII tool, then downgrade requires_auth to
-        # fabricate the FR-038 violation that the registry must still catch.
-        # GovAPITool is frozen (ConfigDict(frozen=True)), so normal assignment
-        # is blocked — we use object.__setattr__ to bypass the freeze, which is
-        # precisely the "bypassed validation" scenario the registry backstop
-        # exists to defend against.
-        good_base = sample_tool_factory(
-            id="bad_pii_tool",
-            auth_level="AAL2",
-            pipa_class="personal",
-            dpa_reference="dpa-mock-fr038",
-            is_personal_data=True,
-            requires_auth=True,
-        )
-        object.__setattr__(good_base, "requires_auth", False)
-        with pytest.raises(RegistrationError):
-            registry.register(good_base)
-
-    def test_personal_data_with_auth_succeeds(
-        self,
-        sample_tool_factory,
-    ) -> None:
-        """is_personal_data=True + requires_auth=True is valid (e.g., nmc_emergency_search)."""
-        registry = ToolRegistry()
-        good_tool = sample_tool_factory(
-            id="good_pii_tool",
-            auth_level="AAL2",
-            pipa_class="personal",
-            dpa_reference="dpa-mock-fr038",
-            is_personal_data=True,
-            requires_auth=True,
-        )
-        registry.register(good_tool)
-        assert "good_pii_tool" in registry

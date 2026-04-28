@@ -249,12 +249,8 @@ class TestToolDefinition:
     def test_tool_id(self) -> None:
         assert KMA_FORECAST_FETCH_TOOL.id == "kma_forecast_fetch"
 
-    def test_requires_auth_true(self) -> None:
-        # V6: auth_type='api_key' requires AAL1+; requires_auth=True per V5 biconditional.
-        assert KMA_FORECAST_FETCH_TOOL.requires_auth is True
-
-    def test_is_personal_data_false(self) -> None:
-        assert KMA_FORECAST_FETCH_TOOL.is_personal_data is False
+    # test_requires_auth_true / test_is_personal_data_false removed in Epic δ #2295
+    # — requires_auth / is_personal_data deleted from GovAPITool (Constitution § II).
 
     def test_is_concurrency_safe_true(self) -> None:
         assert KMA_FORECAST_FETCH_TOOL.is_concurrency_safe is True

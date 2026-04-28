@@ -47,8 +47,11 @@ def _base_kwargs(**overrides: object) -> dict[str, object]:
     """Minimum valid AdapterRegistration kwargs with both dual-axis fields set.
 
     Mirrors the pattern from tests/unit/registry/test_adapter_primitive_field.py.
-    Uses ``pipa_class="non_personal"`` + ``dpa_reference=None`` to satisfy the
-    V2 invariant (dpa_reference required only when pipa_class != non_personal).
+
+    Note: KOSMOS-invented Spec 033/024/025 fields (auth_level, pipa_class,
+    dpa_reference, requires_auth, is_personal_data, is_concurrency_safe,
+    cache_ttl_seconds, rate_limit_per_minute) removed from AdapterRegistration
+    in Epic δ #2295 (Constitution § II cleanup).
     """
     base: dict[str, object] = {
         "tool_id": "fake_v12_adapter",
@@ -59,18 +62,7 @@ def _base_kwargs(**overrides: object) -> dict[str, object]:
         # Dual-axis fields — both set for the positive-control baseline.
         "published_tier_minimum": "digital_onepass_level2_aal2",
         "nist_aal_hint": "AAL2",
-        # Spec 024 / 025 security fields.
         "auth_type": "api_key",
-        "auth_level": "AAL2",
-        "pipa_class": "non_personal",
-        # V2 invariant: dpa_reference may be None when pipa_class="non_personal".
-        "dpa_reference": None,
-        # Remaining fields with safe defaults.
-        "requires_auth": True,
-        "is_personal_data": False,
-        "is_concurrency_safe": False,
-        "cache_ttl_seconds": 0,
-        "rate_limit_per_minute": 10,
     }
     base.update(overrides)
     return base

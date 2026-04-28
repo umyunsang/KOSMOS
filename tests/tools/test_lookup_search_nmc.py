@@ -91,13 +91,10 @@ class TestNmcDiscoverable:
         candidate = nmc_candidates[0]
         assert isinstance(candidate, AdapterCandidate)
 
-        # The candidate must surface the auth and PII flags from GovAPITool metadata.
-        assert candidate.requires_auth is True, (
-            f"Expected requires_auth=True on candidate, got {candidate.requires_auth!r}"
-        )
-        assert candidate.is_personal_data is True, (
-            f"Expected is_personal_data=True on candidate, got {candidate.is_personal_data!r}"
-        )
+        # Note: requires_auth / is_personal_data removed from GovAPITool and
+        # AdapterCandidate in Epic δ #2295 (Constitution § II cleanup).
+        # Auth semantics now expressed via policy.citizen_facing_gate.
+        assert candidate.tool_id == "nmc_emergency_search"
 
     @pytest.mark.asyncio
     async def test_nmc_candidate_required_params(self, nmc_only_registry: ToolRegistry) -> None:
@@ -131,9 +128,8 @@ class TestNmcDiscoverable:
 
     @pytest.mark.asyncio
     async def test_nmc_tool_metadata_integrity(self) -> None:
-        """NMC_EMERGENCY_SEARCH_TOOL constants match the auth contract specification."""
+        """NMC_EMERGENCY_SEARCH_TOOL constants match the spec contract."""
+        # Note: requires_auth / is_personal_data removed in Epic δ #2295.
         assert NMC_EMERGENCY_SEARCH_TOOL.id == "nmc_emergency_search"
-        assert NMC_EMERGENCY_SEARCH_TOOL.requires_auth is True
-        assert NMC_EMERGENCY_SEARCH_TOOL.is_personal_data is True
         assert NMC_EMERGENCY_SEARCH_TOOL.is_concurrency_safe is False
         assert NMC_EMERGENCY_SEARCH_TOOL.cache_ttl_seconds == 0

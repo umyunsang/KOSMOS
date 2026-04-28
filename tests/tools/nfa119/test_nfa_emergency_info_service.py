@@ -388,13 +388,10 @@ class TestNfaToolMetadata:
     """Verify NFA_EMERGENCY_INFO_SERVICE_TOOL metadata matches spec 029 §4.1."""
 
     def test_tool_constants(self) -> None:
+        # KOSMOS-invented Spec 033/024/025 fields removed in Epic δ #2295:
+        # requires_auth, is_personal_data, auth_level, pipa_class, is_irreversible,
+        # dpa_reference — deleted from GovAPITool (Constitution § II).
         assert NFA_EMERGENCY_INFO_SERVICE_TOOL.id == "nfa_emergency_info_service"
-        assert NFA_EMERGENCY_INFO_SERVICE_TOOL.requires_auth is True
-        assert NFA_EMERGENCY_INFO_SERVICE_TOOL.is_personal_data is False
-        assert NFA_EMERGENCY_INFO_SERVICE_TOOL.auth_level == "AAL1"
-        assert NFA_EMERGENCY_INFO_SERVICE_TOOL.pipa_class == "non_personal"
-        assert NFA_EMERGENCY_INFO_SERVICE_TOOL.is_irreversible is False
-        assert NFA_EMERGENCY_INFO_SERVICE_TOOL.dpa_reference is None
         assert NFA_EMERGENCY_INFO_SERVICE_TOOL.cache_ttl_seconds == 86400
         assert NFA_EMERGENCY_INFO_SERVICE_TOOL.auth_type == "api_key"
         assert NFA_EMERGENCY_INFO_SERVICE_TOOL.is_core is False

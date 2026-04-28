@@ -324,8 +324,7 @@ class TestToolDefinition:
     def test_concurrency_safe(self) -> None:
         assert KMA_WEATHER_ALERT_STATUS_TOOL.is_concurrency_safe is True
 
-    def test_not_personal_data(self) -> None:
-        assert KMA_WEATHER_ALERT_STATUS_TOOL.is_personal_data is False
+    # test_not_personal_data removed in Epic δ #2295 (is_personal_data deleted).
 
 
 # ---------------------------------------------------------------------------

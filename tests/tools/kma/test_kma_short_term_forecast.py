@@ -314,8 +314,7 @@ class TestToolDefinition:
     def test_cache_ttl(self):
         assert KMA_SHORT_TERM_FORECAST_TOOL.cache_ttl_seconds == 1800
 
-    def test_not_personal_data(self):
-        assert KMA_SHORT_TERM_FORECAST_TOOL.is_personal_data is False
+    # test_not_personal_data removed in Epic δ #2295 (is_personal_data deleted).
 
     def test_input_schema(self):
         assert KMA_SHORT_TERM_FORECAST_TOOL.input_schema is KmaShortTermForecastInput
