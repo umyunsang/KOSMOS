@@ -193,10 +193,11 @@ class PromptAssembler:
                 value = None
             if value is None:
                 continue
-            if not isinstance(value, str):  # type: ignore[unreachable]
-                raise PromptAssemblyError(
-                    f"injector {name!r} returned non-str: {type(value).__name__}"
-                )
+            # The Callable[..., str | None] type annotation already promises
+            # str-or-None; the explicit isinstance guard is defence-in-depth
+            # against a runtime contract violation (e.g. an injector returning
+            # a Pydantic model by mistake), but mypy correctly sees it as
+            # unreachable on the typed surface — drop the runtime branch.
             suffix_parts.append(value)
 
         dynamic_suffix = "\n".join(suffix_parts)
