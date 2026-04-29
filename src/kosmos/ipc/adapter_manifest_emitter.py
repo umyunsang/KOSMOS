@@ -181,6 +181,42 @@ def _build_entries(  # noqa: C901, ANN401 — three-source walker, refactor defe
             "manifest_emitter: subscribe adapter %s deferred to ToolRegistry lookup", tool_id
         )
 
+    # --- Source 2c: verify sub-registry --------------------------------------
+    # Codex P1 #2445 fix: verify families register via register_verify_adapter()
+    # which stores only (family, callable) — no AdapterRegistration is captured.
+    # Emit a minimal manifest entry per family so Tier-1 manifest resolution in
+    # tui/src/tools/VerifyPrimitive/VerifyPrimitive.ts does not fail closed with
+    # AdapterNotFound on legitimate verify family IDs. Verify mocks may also
+    # call register_manifest_entry() at module-load to override this default.
+    #
+    # source_mode is "internal" (not "mock") because verify families do not
+    # carry an agency-published HTTPS policy URL at the registry level — their
+    # `_policy_authority` lives in the per-call response transparency fields
+    # (FR-005), which the audit ledger captures post-call. The pre-call permission
+    # UI cite-slot is populated from the response transparency stamp at render
+    # time, not from this manifest entry. (Constitution § II preserved: the
+    # citizen still sees the agency-published citation, just sourced from the
+    # response payload rather than the registry snapshot.)
+    try:
+        from kosmos.primitives.verify import (
+            _VERIFY_ADAPTERS as _verify_adapters,  # noqa: PLC0415, N811
+        )
+    except ImportError:
+        _verify_adapters = {}
+
+    for family in _verify_adapters:
+        # Surface verify families under their family name (matches the
+        # family_hint argument the LLM passes to verify(family_hint=...)).
+        if family in seen:
+            continue
+        seen[family] = AdapterManifestEntry(
+            tool_id=family,
+            name=f"verify:{family}",
+            primitive="verify",
+            policy_authority_url=None,
+            source_mode="internal",
+        )
+
     # --- Source 3: main ToolRegistry -----------------------------------------
     try:
         tools_list = list(getattr(registry, "_tools", {}).values())

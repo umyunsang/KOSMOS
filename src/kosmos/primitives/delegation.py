@@ -278,6 +278,45 @@ def _scope_matches(token_scope: str, required: str) -> bool:
     return required in token_scope.split(",")
 
 
+# Session-scoped revocation store — Codex P1 #2445 fix.
+# Module-global dict keyed by ``session_id`` → set of revoked ``delegation_token``
+# values. Submit / lookup adapters read from this store via ``revoked_for_session``;
+# the ``/consent revoke`` slash command (or any future revocation surface) writes
+# to it via ``revoke_token`` so the ``DelegationValidationOutcome.REVOKED`` branch
+# can actually trigger across calls. Per data-model.md § 9.1, the store is
+# session-lifetime in-memory only — survival across restarts is delegated to the
+# Spec 035 audit ledger (replayed by ``FileLedgerReader`` if needed).
+_REVOKED_TOKENS_BY_SESSION: dict[str, set[str]] = {}
+
+
+def revoke_token(session_id: str, delegation_token: str) -> None:
+    """Mark a delegation token as revoked within a session.
+
+    Subsequent ``validate_delegation`` calls for the same ``session_id`` that
+    reference this token will return ``DelegationValidationOutcome.REVOKED``.
+    The ``/consent revoke <token>`` slash command (Spec 035 follow-up) is the
+    user-facing entry point. For programmatic revocation in tests, call this
+    function directly.
+    """
+    _REVOKED_TOKENS_BY_SESSION.setdefault(session_id, set()).add(delegation_token)
+
+
+def revoked_for_session(session_id: str) -> set[str]:
+    """Return the set of revoked tokens for ``session_id``.
+
+    Returns the live module-level set so callers see writes made by
+    ``revoke_token``. Returns an empty set (not ``None``) when no tokens have
+    been revoked in this session — safe to pass directly into
+    ``validate_delegation(revoked_set=...)``.
+    """
+    return _REVOKED_TOKENS_BY_SESSION.setdefault(session_id, set())
+
+
+def clear_revoked_for_session(session_id: str) -> None:
+    """Clear all revocation entries for ``session_id`` (test helper)."""
+    _REVOKED_TOKENS_BY_SESSION.pop(session_id, None)
+
+
 async def validate_delegation(
     context: DelegationContext,
     *,

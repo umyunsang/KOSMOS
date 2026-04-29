@@ -134,6 +134,7 @@ async def invoke(params: dict[str, Any]) -> SubmitOutput:
 
     # Lazy import to avoid circular dependency; FileLedgerReader is lightweight
     from kosmos.memdir.consent_ledger import FileLedgerReader  # noqa: PLC0415
+    from kosmos.primitives.delegation import revoked_for_session  # noqa: PLC0415
 
     ledger_reader = FileLedgerReader()
 
@@ -141,7 +142,7 @@ async def invoke(params: dict[str, Any]) -> SubmitOutput:
         delegation_ctx,
         required_scope=_REQUIRED_SCOPE,
         current_session_id=typed.session_id,
-        revoked_set=set(),  # session-scoped revocation set — empty for unit tests; injected in integration  # noqa: E501
+        revoked_set=revoked_for_session(typed.session_id),
         ledger_reader=ledger_reader,
     )
 
