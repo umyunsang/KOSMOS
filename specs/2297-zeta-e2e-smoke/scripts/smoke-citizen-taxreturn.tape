@@ -18,9 +18,9 @@ Output specs/2297-zeta-e2e-smoke/smoke-citizen-taxreturn.gif
 
 # I-K1.2 — canonical terminal sizing.
 Set FontSize 14
-Set Width 120
-Set Height 36
-Set Theme "Tokyo Night"
+Set Width 1200
+Set Height 720
+Set Theme "TokyoNight"
 
 # I-K1.3 — spawn the TUI.
 Type "cd ~/KOSMOS-w-2297/tui && KOSMOS_SMOKE_CHECKPOINTS=true bun run tui"

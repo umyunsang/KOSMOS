@@ -16,6 +16,10 @@
 4. **시민 작업 (마이데이터 사업자 앱 내)**: 시민이 사용 중인 마이데이터 사업자 앱 설치/접속 → 본인인증 (PASS / 공동인증서 / 금융인증서 — KOSMOS 의 verify 영수증과 별개) → 마이데이터 사업자 별 동의 절차 → KFTC 통합인증센터 redirect → 데이터 제공기관 (은행/카드/증권 등) 별로 access_token 발급 + 데이터 조회. 실제 거래내역/자산현황 데이터는 사업자 앱 안에서 시민에게 표시.
 5. **시민이 KOSMOS 로 복귀**: 사업자 앱에서 본 데이터를 KOSMOS 에 다시 입력하거나, 사업자 앱이 제공하는 export/공유 기능으로 KOSMOS 에 데이터 일부 가져옴 (사업자별 지원 여부 다름). Consent ledger 에 "Live 데이터는 hand-off, mock demo 만 KOSMOS chain" 의 분리 + 사업자 이름이 기록됨.
 
+## KOSMOS ↔ real system handoff point
+
+시민이 KOSMOS 의 chain 한계를 넘어 실제 시스템으로 이동하는 지점. KOSMOS 는 client-side reference implementation 이며, 아래 URL 은 시민이 실제 작업을 마무리하는 정부 운영 채널입니다.
+
 ## Hand-off URL
 
 - KFTC 마이데이터 종합포털 (시민용 안내): https://www.mydatacenter.or.kr:3441/

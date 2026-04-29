@@ -16,6 +16,10 @@
 4. **시민 작업 — 서명 진행**: 서명 대상이 KOSMOS 가 lookup 한 문서 (예: 홈택스 신고서 PDF) 인 경우, 시민이 그 문서를 가지고 홈택스 또는 정부24 본 사이트로 이동, 거기서 제공하는 공동인증서 서명 plugin (Veraport 또는 Magicline 또는 ANYsign) 를 통해 서명. 서명 대상이 외부 계약서 PDF 인 경우 시민이 KEC 의 yessign 클라이언트 또는 인증서 발급기관별 서명 SW 를 사용해 직접 서명.
 5. **시민이 KOSMOS 로 복귀**: 서명 완료된 PDF / XML 의 hash 또는 접수번호를 KOSMOS 에 입력하면 향후 lookup (예: 서명 검증 결과 조회) 에 사용 가능. Consent ledger 에 "서명은 hand-off, 결과 조회만 KOSMOS chain" 의 분리가 기록됨.
 
+## KOSMOS ↔ real system handoff point
+
+시민이 KOSMOS 의 chain 한계를 넘어 실제 시스템으로 이동하는 지점. KOSMOS 는 client-side reference implementation 이며, 아래 URL 은 시민이 실제 작업을 마무리하는 정부 운영 채널입니다.
+
 ## Hand-off URL
 
 - KEC (Korea Electronic Certification Authority): https://www.kec.co.kr/

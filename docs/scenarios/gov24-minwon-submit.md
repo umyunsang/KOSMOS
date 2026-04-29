@@ -16,6 +16,10 @@
 4. **시민 작업 (정부24 UI 내)**: 정부24 본 사이트로 이동, 간편 인증 또는 공동인증서로 본인인증 (KOSMOS 의 verify 영수증과 별개의 ceremony — 정부24 가 자체 세션을 발급), 민원 폼 작성, 제출. 즉시 발급 가능한 민원은 PDF 다운로드 (예: 등본), 처리 시간이 필요한 민원 (예: 사업자 등록증) 은 이메일/SMS 알림 으로 결과 수령.
 5. **시민이 KOSMOS 로 복귀**: 발급된 민원번호 또는 처리 결과를 KOSMOS 에 입력하면 향후 lookup 에 사용 가능. Consent ledger 에 hand-off 시점 기록.
 
+## KOSMOS ↔ real system handoff point
+
+시민이 KOSMOS 의 chain 한계를 넘어 실제 시스템으로 이동하는 지점. KOSMOS 는 client-side reference implementation 이며, 아래 URL 은 시민이 실제 작업을 마무리하는 정부 운영 채널입니다.
+
 ## Hand-off URL
 
 - 정부24 메인: https://www.gov.kr/

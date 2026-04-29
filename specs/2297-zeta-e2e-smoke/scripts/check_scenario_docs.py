@@ -62,16 +62,13 @@ def check_doc(path: Path) -> list[str]:
     # 2. Why-no-adapter section
     if not WHY_NO_ADAPTER_RE.search(text):
         failures.append(
-            "no 'Why no adapter' section "
-            "(expected '어댑터를 만들지 않는 이유' or similar)"
+            "no 'Why no adapter' section (expected '어댑터를 만들지 않는 이유' or similar)"
         )
 
     # 3. ≥5 numbered narrative steps
     steps = NUMBERED_STEP_RE.findall(text)
     if len(steps) < 5:
-        failures.append(
-            f"only {len(steps)} numbered steps found; need ≥5 per FR-018"
-        )
+        failures.append(f"only {len(steps)} numbered steps found; need ≥5 per FR-018")
 
     # 4. Hand-off URL footer
     if not HANDOFF_HEADING_RE.search(text):
@@ -109,9 +106,7 @@ def main() -> int:
                 sys.stderr.write(f"    - {f}\n")
         return 1
 
-    sys.stdout.write(
-        f"check_scenario_docs PASS — all {len(REQUIRED_DOCS)} docs match FR-018.\n"
-    )
+    sys.stdout.write(f"check_scenario_docs PASS — all {len(REQUIRED_DOCS)} docs match FR-018.\n")
     return 0
 
 

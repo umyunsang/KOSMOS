@@ -16,6 +16,10 @@
 4. **시민 작업 — 발급 ceremony**: 앱 내에서 본인인증 (PASS / 공동인증서 / 금융인증서 중 택1) → 동의 절차 → 단말 보안 영역에 키 페어 생성 → 행안부 서버와 attestation → 모바일 면허증/신분증 데이터를 단말에 sealed-storage 로 저장. 5분~15분 소요.
 5. **시민이 KOSMOS 로 복귀**: 모바일ID 가 발급된 후, 시민은 향후 KOSMOS 의 verify chain 에서 `mock_verify_module_modid` 어댑터로 본인인증을 위임할 수 있음 (KOSMOS 가 발급된 모바일ID 의 IdentityAssertion 을 검증하는 것은 가능). Consent ledger 에 "발급은 hand-off, 검증은 KOSMOS chain 으로 위임" 의 분리가 기록됨.
 
+## KOSMOS ↔ real system handoff point
+
+시민이 KOSMOS 의 chain 한계를 넘어 실제 시스템으로 이동하는 지점. KOSMOS 는 client-side reference implementation 이며, 아래 URL 은 시민이 실제 작업을 마무리하는 정부 운영 채널입니다.
+
 ## Hand-off URL
 
 - 모바일 신분증 공식 안내 (행정안전부): https://www.mobileid.go.kr/

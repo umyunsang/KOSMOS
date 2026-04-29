@@ -134,97 +134,66 @@ export async function dispatchPrimitive<O = unknown>(
   })
 
   // ------------------------------------------------------------------
-  // Step 2: Mint a fresh callId (UUIDv7)
+  // Architecture note (Epic ζ #2297 post-smoke discovery, 2026-04-30):
+  //
+  // The KOSMOS backend's `_handle_chat_request` runs the full agentic
+  // loop server-side — it parses K-EXAONE function_calls, internally
+  // fires `_dispatch_primitive` per call (`src/kosmos/ipc/stdio.py:1496`),
+  // awaits the result via its own `_pending_calls` future-registry, and
+  // injects the result as a `role="tool"` message into the next LLM
+  // turn — all WITHOUT any inbound tool_call from the TUI.
+  //
+  // The TUI's CC SDK Tool.call() pipeline is therefore a DISPLAY-ONLY
+  // path: the `tool_call` and `tool_result` IPC frames flow through
+  // `llmClient.ts` for UX rendering, and the eventual `assistant_chunk`
+  // already encodes the citizen-facing answer.
+  //
+  // Earlier (Epic ζ T007-T013) attempted to wire dispatchPrimitive to
+  // emit a fresh `tool_call` frame and await a matching `tool_result`.
+  // This timed out at 30s because the backend has no inbound-tool_call
+  // handler — it only emits them. A live smoke run on 2026-04-30
+  // confirmed the failure mode (LLM fell back to conversational guidance
+  // citing "응답 시간 초과 오류 지속 발생").
+  //
+  // The correct fix is: Tool.call() returns a synthetic-success ack
+  // immediately so the SDK's tool-use turn closes without injecting
+  // a duplicate role="tool" message into the next chat_request (which
+  // would re-trigger the backend's internal loop and double-execute).
+  // The backend has already done the work; this Tool.call() is just a
+  // sentinel that the SDK saw the tool_use block.
+  //
+  // Spec: contracts/tui-primitive-dispatcher.md will be revised in a
+  // follow-up to reflect this server-side-authoritative architecture.
   // ------------------------------------------------------------------
-  const callId = makeUUIDv7()
 
-  // ------------------------------------------------------------------
-  // Step 3: Derive session / correlation IDs from context
-  // The ToolUseContext carries toolUseId (per-tool-use) which we use
-  // as correlationId; sessionId from ambient context options where
-  // available.
-  // ------------------------------------------------------------------
-  const correlationId: string =
-    (opts.context as Record<string, unknown>)['toolUseId'] as string ?? makeUUIDv7()
-  const sessionId: string =
-    (opts.context.options as Record<string, unknown>)['sessionId'] as string ??
-    'unknown-session'
+  void makeUUIDv7  // imports retained for future re-wiring if needed
+  void makeBaseEnvelope
+  void opts.bridge
+  void opts.registry
 
-  // ------------------------------------------------------------------
-  // Step 4: Construct ToolCallFrame
-  // ------------------------------------------------------------------
-  const baseEnv = makeBaseEnvelope({ sessionId, correlationId })
-  const frame: ToolCallFrame = {
-    ...baseEnv,
-    kind: 'tool_call',
-    role: 'tui',
-    call_id: callId,
-    name: opts.primitive,
-    arguments: opts.args,
-  } as unknown as ToolCallFrame
-
-  // ------------------------------------------------------------------
-  // Step 5: Register pending call + send frame
-  // ------------------------------------------------------------------
-  let resolvedFrame: ToolResultFrame | null = null
-  let timedOut = false
-
-  try {
-    resolvedFrame = await new Promise<ToolResultFrame>((resolve, reject) => {
-      const timeoutHandle = setTimeout(() => {
-        timedOut = true
-        opts.registry.reject(
-          callId,
-          new Error('응답 시간이 초과되었습니다'),
-        )
-      }, timeoutMs)
-
-      opts.registry.register({
-        callId,
-        primitive: opts.primitive,
-        resolve,
-        reject,
-        timeoutHandle,
-      })
-
-      opts.bridge.send(frame)
-    })
-  } catch (err: unknown) {
-    if (timedOut || (err instanceof Error && err.message === '응답 시간이 초과되었습니다')) {
-      span.setAttribute('kosmos.tui.primitive.timeout', true)
-      span.end()
-      return {
-        data: { ok: false, error: '응답 시간이 초과되었습니다' } as unknown as O,
-      }
-    }
-    span.end()
-    const msg = err instanceof Error ? err.message : String(err)
-    return { data: { ok: false, error: msg } as unknown as O }
+  const toolUseId =
+    (opts.context as Record<string, unknown>)['toolUseId'] as string | undefined
+  const ackEnvelope: Record<string, unknown> = {
+    dispatched_via: 'backend-server-side',
+    primitive: opts.primitive,
+    tool_use_id: toolUseId ?? null,
+    note:
+      'KOSMOS backend ran the agentic loop internally and emitted the ' +
+      'authoritative tool_result frame for display. This SDK-level ack ' +
+      'closes the tool-use turn without re-triggering execution.',
   }
 
-  // ------------------------------------------------------------------
-  // Step 6: Handle error or success envelope
-  // ------------------------------------------------------------------
-  const envelope = resolvedFrame.envelope as Record<string, unknown>
-
-  // I-D7: error envelope passthrough
-  if (envelope && envelope['error']) {
-    const errPayload = envelope['error']
-    const errMsg =
-      typeof errPayload === 'string'
-        ? errPayload
-        : typeof errPayload === 'object' && errPayload !== null
-          ? ((errPayload as Record<string, unknown>)['message'] as string | undefined) ??
-            JSON.stringify(errPayload)
-          : String(errPayload)
-
-    _maybeEmitCheckpoint(opts.primitive, resolvedFrame)
-    span.end()
-    return { data: { ok: false, error: errMsg } as unknown as O }
-  }
-
-  // Success path
-  _maybeEmitCheckpoint(opts.primitive, resolvedFrame)
+  span.setAttribute('kosmos.tui.primitive.dispatch_mode', 'server-side-ack')
+  span.setAttribute(
+    'kosmos.tui.primitive.tool_use_id',
+    toolUseId ?? 'missing',
+  )
   span.end()
-  return { data: { ok: true as const, result: envelope } as unknown as O }
+
+  void timeoutMs  // retained for future re-wiring if backend gains inbound handler
+  void _maybeEmitCheckpoint  // retained — checkpoint emission moved to llmClient
+
+  return {
+    data: { ok: true as const, result: ackEnvelope } as unknown as O,
+  }
 }

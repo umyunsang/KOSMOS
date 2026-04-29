@@ -16,6 +16,10 @@
 4. **시민 작업 (홈택스 UI 내)**: 시민이 홈택스 본 사이트로 이동, 단계 2 의 사전 채움 데이터를 확인 + 부족분 직접 입력 + 공인인증서로 전자서명 + 신고서 제출. 홈택스가 발급한 접수번호를 받음.
 5. **시민이 KOSMOS 로 복귀**: 시민이 받은 접수번호를 TUI 에 다시 입력하면 KOSMOS 가 향후 lookup (예: 신고 처리 상태 조회) 에 사용. KOSMOS 자체 audit ledger (`~/.kosmos/memdir/user/consent/<YYYY-MM-DD>.jsonl`) 에 hand-off 시점 + 복귀 접수번호 가 기록되어 시민이 "내가 무엇을 언제 위임했는가" 를 추적 가능.
 
+## KOSMOS ↔ real system handoff point
+
+시민이 KOSMOS 의 chain 한계를 넘어 실제 시스템으로 이동하는 지점. KOSMOS 는 client-side reference implementation 이며, 아래 URL 은 시민이 실제 작업을 마무리하는 정부 운영 채널입니다.
+
 ## Hand-off URL
 
 - 종합소득세 신고 진입점 (메인): https://www.hometax.go.kr/
