@@ -16,14 +16,13 @@ import pytest
 import pytest_asyncio  # noqa: F401 — ensures asyncio mode is active
 
 # Import mock adapters so they self-register; order-independent.
-import kosmos.tools.mock.verify_digital_onepass  # noqa: F401
+# NOTE: verify_digital_onepass DELETED — FR-004 (서비스 종료 2025-12-30, Epic ε #2296 T021).
 import kosmos.tools.mock.verify_ganpyeon_injeung  # noqa: F401
 import kosmos.tools.mock.verify_geumyung_injeungseo  # noqa: F401
 import kosmos.tools.mock.verify_gongdong_injeungseo  # noqa: F401
 import kosmos.tools.mock.verify_mobile_id  # noqa: F401
 import kosmos.tools.mock.verify_mydata  # noqa: F401
 from kosmos.primitives.verify import (
-    DigitalOnepassContext,
     GanpyeonInjeungContext,
     GeumyungInjeungseoContext,
     GongdongInjeungseoContext,
@@ -59,10 +58,16 @@ async def test_dispatch_ganpyeon_injeung() -> None:
     assert result.family == "ganpyeon_injeung"
 
 
-async def test_dispatch_digital_onepass() -> None:
+async def test_dispatch_digital_onepass_deleted() -> None:
+    """digital_onepass adapter was deleted (FR-004, Epic ε #2296 T021).
+
+    The adapter is no longer registered, so family_hint='digital_onepass' must
+    return VerifyMismatchError (fail-closed, no adapter registered).
+    """
     result = await verify("digital_onepass", {})
-    assert isinstance(result, DigitalOnepassContext)
-    assert result.family == "digital_onepass"
+    assert isinstance(result, VerifyMismatchError)
+    assert result.reason == "family_mismatch"
+    assert result.expected_family == "digital_onepass"
 
 
 async def test_dispatch_mobile_id() -> None:

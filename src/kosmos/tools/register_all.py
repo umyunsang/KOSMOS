@@ -48,7 +48,7 @@ logger = logging.getLogger(__name__)
 def register_all_tools(registry: ToolRegistry, executor: ToolExecutor) -> RoutingIndex:
     """Register all available government API tool adapters.
 
-    Registers the following 14 tools in order (post-P3, composite removed):
+    Registers the following 16 tools in order (Epic ε #2296: 2 new lookup mocks added):
       1. resolve_location — MVP LLM core surface: location resolution (is_core=True)
       2. lookup — MVP LLM core surface: adapter discovery + invocation (is_core=True)
       3. koroad_accident_search — KOROAD accident hotspot search (by enum codes)
@@ -63,6 +63,8 @@ def register_all_tools(registry: ToolRegistry, executor: ToolExecutor) -> Routin
      12. hira_hospital_search — HIRA hospital search by coordinates + radius
      13. nfa_emergency_info_service — NFA EMS statistics (Phase 2, Layer 3 gated stub)
      14. mohw_welfare_eligibility_search — SSIS welfare service list (Phase 2, Layer 3 gated stub)
+     15. mock_lookup_module_hometax_simplified — Hometax simplified data (Mock, Epic ε T028)
+     16. mock_lookup_module_gov24_certificate — Gov24 certificate lookup (Mock, Epic ε T029)
 
     After registration, ``build_routing_index()`` validates every adapter against
     the six invariants in ``contracts/routing-consistency.md § 2``. Violations
@@ -98,6 +100,12 @@ def register_all_tools(registry: ToolRegistry, executor: ToolExecutor) -> Routin
     from kosmos.tools.kma.kma_weather_alert_status import register as reg_kma_alert
     from kosmos.tools.koroad.accident_hazard_search import register as reg_koroad_hazard
     from kosmos.tools.koroad.koroad_accident_search import register as reg_koroad
+    from kosmos.tools.mock.lookup_module_gov24_certificate import (
+        register as reg_mock_gov24_cert,
+    )
+    from kosmos.tools.mock.lookup_module_hometax_simplified import (
+        register as reg_mock_hometax_simplified,
+    )
     from kosmos.tools.mvp_surface import register_mvp_surface
     from kosmos.tools.nfa119.emergency_info_service import register as reg_nfa
     from kosmos.tools.nmc.emergency_search import register as reg_nmc
@@ -105,6 +113,7 @@ def register_all_tools(registry: ToolRegistry, executor: ToolExecutor) -> Routin
 
     # Register MVP LLM-visible core surface first (FR-001, SC-003)
     register_mvp_surface(registry)
+    import kosmos.tools.mock  # noqa: F401 — registers all mock surfaces in production
 
     reg_koroad(registry, executor)
     reg_koroad_hazard(registry, executor)
@@ -135,6 +144,11 @@ def register_all_tools(registry: ToolRegistry, executor: ToolExecutor) -> Routin
     # Phase 2 adapters (spec 029 — NFA 119 + MOHW SSIS, Layer 3 gated stubs)
     reg_nfa(registry, executor)  # T014 — NFA EMS statistics (interface-only)
     reg_mohw(registry, executor)  # T022 — MOHW welfare eligibility search (interface-only)
+
+    # Epic ε #2296 T028/T029 — New lookup mock GovAPITools (main ToolRegistry,
+    # not per-primitive sub-registry — lookup adapters use BM25 discovery).
+    reg_mock_hometax_simplified(registry, executor)  # T028 — Hometax simplified data
+    reg_mock_gov24_cert(registry, executor)  # T029 — Gov24 certificate lookup
 
     logger.info("All %d tools registered successfully", len(registry))
 

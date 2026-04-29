@@ -30,7 +30,8 @@ export type IPCFrame =
   | ResumeRejectedFrame
   | HeartbeatFrame
   | NotificationPushFrame
-  | PluginOpFrame;
+  | PluginOpFrame
+  | AdapterManifestSyncFrame;
 /**
  * Opaque session identifier.
  */
@@ -1034,6 +1035,72 @@ export type ExitCode = number | null;
  * Spec 035 consent receipt id when op='complete' AND result='success'.
  */
 export type ReceiptId = string | null;
+/**
+ * Opaque session identifier.
+ */
+export type SessionId21 = string;
+/**
+ * UUIDv7 string for new emissions; ULID accepted for back-compat. Non-empty; emitter SHOULD use UUIDv7. (E5)
+ */
+export type CorrelationId21 = string;
+/**
+ * ISO-8601 UTC timestamp with sub-ms precision.
+ */
+export type Ts21 = string;
+/**
+ * Envelope version. Hard-fail on mismatch (E1, FR-001).
+ */
+export type Version21 = '1.0';
+/**
+ * Origin role. Validated against kind<->role allow-list (E3, FR-004).
+ */
+export type Role22 = 'tui' | 'backend' | 'tool' | 'llm' | 'notification';
+/**
+ * Per-session monotonic sequence number (ge=0). Gap detection uses this.
+ */
+export type FrameSeq21 = number;
+/**
+ * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)
+ */
+export type TransactionId22 = string | null;
+/**
+ * Frame discriminator — 21st arm of IPCFrame.
+ */
+export type Kind22 = 'adapter_manifest_sync';
+/**
+ * Full registry snapshot. Non-empty (I1); no duplicate tool_id (I2).
+ *
+ * @minItems 1
+ */
+export type Entries = [AdapterManifestEntry, ...AdapterManifestEntry[]];
+/**
+ * Globally unique adapter id within the registry, e.g. 'nmc_emergency_search'. Lowercase snake-case; validated by I7.
+ */
+export type ToolId = string;
+/**
+ * Human-readable display name; bilingual permitted.
+ */
+export type Name4 = string;
+/**
+ * Primitive verb the adapter is registered under (I6).
+ */
+export type Primitive = 'lookup' | 'submit' | 'subscribe' | 'verify' | 'resolve_location';
+/**
+ * Agency-published policy URL (HTTPS). None only when source_mode == 'internal' (I4/I5).
+ */
+export type PolicyAuthorityUrl = string | null;
+/**
+ * Tag for the citation-rendering surface.
+ */
+export type SourceMode = 'live' | 'mock' | 'internal';
+/**
+ * Lowercase hex SHA-256 of canonical-JSON-serialised entries sorted by tool_id (I3). Cheap change-detection for hot-reload (future epic).
+ */
+export type ManifestHash = string;
+/**
+ * Python backend PID at boot. Useful for OTEL span cross-correlation.
+ */
+export type EmitterPid = number;
 
 /**
  * TUI -> backend: a citizen's typed input.
@@ -1594,4 +1661,54 @@ export interface PluginOpFrame {
   result?: Result;
   exit_code?: ExitCode;
   receipt_id?: ReceiptId;
+}
+/**
+ * Full registry snapshot emitted by the backend exactly once after boot.
+ *
+ * 21st arm of the ``IPCFrame`` discriminated union (Epic ε #2296).
+ *
+ * Invariants enforced at construction:
+ * - I1: ``entries`` is non-empty.
+ * - I2: No two entries share the same ``tool_id``.
+ * - I3: ``manifest_hash == sha256(canonical_json(sorted(entries, key=tool_id)))``.
+ * - I4/I5/I6/I7: delegated to ``AdapterManifestEntry`` validators.
+ *
+ * On invariant violation the Pydantic validator raises ``ValueError``; the
+ * backend boot should catch this and exit with ``SystemExit(78)`` per
+ * Constitution § II + Spec 1634 boot-validation pattern.
+ */
+export interface AdapterManifestSyncFrame {
+  session_id: SessionId21;
+  correlation_id: CorrelationId21;
+  ts: Ts21;
+  version?: Version21;
+  role: Role22;
+  frame_seq?: FrameSeq21;
+  transaction_id?: TransactionId22;
+  /**
+   * Completion/validation metadata. Populated on terminal frames. (FR-006)
+   */
+  trailer?: FrameTrailer | null;
+  kind?: Kind22;
+  entries: Entries;
+  manifest_hash: ManifestHash;
+  emitter_pid: EmitterPid;
+}
+/**
+ * One adapter record inside an ``AdapterManifestSyncFrame.entries`` array.
+ *
+ * Used by the TS-side cache to resolve ``tool_id`` and populate the citation
+ * slot in permission prompts.
+ *
+ * Validators:
+ * - ``policy_authority_url`` required (HTTPS) when ``source_mode`` is ``"live"``
+ *   or ``"mock"``; ``None`` only allowed when ``source_mode == "internal"`` (I4/I5).
+ * - ``tool_id`` matches ``^[a-z][a-z0-9_]*$`` (I7).
+ */
+export interface AdapterManifestEntry {
+  tool_id: ToolId;
+  name: Name4;
+  primitive: Primitive;
+  policy_authority_url?: PolicyAuthorityUrl;
+  source_mode: SourceMode;
 }

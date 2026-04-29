@@ -12,6 +12,7 @@ Covers:
 
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 from typing import Any
@@ -20,6 +21,20 @@ import pytest
 from pydantic import TypeAdapter, ValidationError
 
 from kosmos.ipc.frame_schema import IPCFrame, ipc_frame_json_schema
+
+
+def _compute_manifest_hash_for_test() -> str:
+    """Pre-compute the manifest_hash for the single-entry test frame."""
+    entry = {
+        "name": "Resolve Location",
+        "policy_authority_url": None,
+        "primitive": "resolve_location",
+        "source_mode": "internal",
+        "tool_id": "resolve_location",
+    }
+    canonical = json.dumps([entry], sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -309,6 +324,33 @@ _MINIMAL_EXAMPLES: dict[str, dict[str, Any]] = {
         "request_op": "install",
         "name": "seoul-subway",
     },
+    # --- Epic ε #2296 adapter manifest sync ---
+    # manifest_hash is the SHA-256 of canonical-JSON of the sorted single entry.
+    "adapter_manifest_sync": {
+        "kind": "adapter_manifest_sync",
+        "version": "1.0",
+        "session_id": _SESSION_ID,
+        "correlation_id": _CORR_ID,
+        "role": "backend",
+        "frame_seq": 19,
+        "ts": _TS,
+        "entries": [
+            {
+                "tool_id": "resolve_location",
+                "name": "Resolve Location",
+                "primitive": "resolve_location",
+                "policy_authority_url": None,
+                "source_mode": "internal",
+            }
+        ],
+        # Pre-computed SHA-256 of canonical JSON of the single entry above.
+        # Recompute via: hashlib.sha256(json.dumps([{"name": "Resolve Location",
+        #   "policy_authority_url": null, "primitive": "resolve_location",
+        #   "source_mode": "internal", "tool_id": "resolve_location"}],
+        #   sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode()).hexdigest()
+        "manifest_hash": _compute_manifest_hash_for_test(),
+        "emitter_pid": 47823,
+    },
 }
 
 _EXPECTED_ARMS = frozenset(_MINIMAL_EXAMPLES.keys())
@@ -356,8 +398,8 @@ def test_arm_kind_field(arm: str) -> None:
 
 
 def test_json_schema_contains_all_discriminators() -> None:
-    """ipc_frame_json_schema() exposes all 21 discriminator values
-    (10 baseline + 9 Spec 032 + 1 Epic #1636 + 1 Spec 1978 = 21)."""
+    """ipc_frame_json_schema() exposes all 22 discriminator values
+    (10 baseline + 9 Spec 032 + 1 Epic #1636 + 1 Spec 1978 + 1 Epic ε #2296 = 22)."""
     schema = ipc_frame_json_schema()
     discriminator = schema.get("discriminator", {})
     mapping = discriminator.get("mapping", {})

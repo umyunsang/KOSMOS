@@ -20,6 +20,7 @@ import logging
 from collections.abc import AsyncIterator
 from dataclasses import dataclass
 from datetime import UTC, datetime
+from typing import Any, Final
 
 from kosmos.primitives.subscribe import (
     MODALITY_RSS,
@@ -29,8 +30,38 @@ from kosmos.primitives.subscribe import (
     SubscriptionHandle,
     register_subscribe_adapter,
 )
+from kosmos.tools.transparency import stamp_mock_response
 
 logger = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+# Transparency constants — Epic ε #2296 retrofit (FR-005 / FR-025)
+# contracts/mock-adapter-response-shape.md § 4 "EXISTING (retrofitted)" row
+# ---------------------------------------------------------------------------
+
+_REFERENCE_IMPL: Final = "ax-infrastructure-callable-channel"
+_ACTUAL_ENDPOINT: Final = "https://api.gateway.kosmos.gov.kr/v1/subscribe/data_go_kr/rss-notices"
+_SECURITY_WRAPPING: Final = "RSS 2.0 over HTTPS + data.go.kr API key"
+_POLICY_AUTHORITY: Final = "https://www.data.go.kr/ugs/selectPublicDataPageList.do"
+_INTERNATIONAL_REF: Final = "(generic RSS feed)"
+
+
+def get_transparency_metadata() -> dict[str, Any]:
+    """Return the six transparency fields for this subscribe adapter.
+
+    Used by the registry-wide transparency scan (FR-006) to verify
+    that subscribe adapters declare their transparency metadata even though
+    they yield events rather than returning a response dict.
+    """
+    return stamp_mock_response(
+        {"tool_id": "mock_rss_public_notices_v1", "adapter_type": "subscribe"},
+        reference_implementation=_REFERENCE_IMPL,
+        actual_endpoint_when_live=_ACTUAL_ENDPOINT,
+        security_wrapping_pattern=_SECURITY_WRAPPING,
+        policy_authority=_POLICY_AUTHORITY,
+        international_reference=_INTERNATIONAL_REF,
+    )
+
 
 # Static RSS 2.0 fixture items (simulating a public notices feed)
 _RSS_FIXTURES = [
@@ -143,4 +174,4 @@ register_subscribe_adapter(
 
 logger.debug("Registered mock RSS public notices adapter: %r", MOCK_RSS_PUBLIC_NOTICES_TOOL.tool_id)
 
-__all__ = ["MOCK_RSS_PUBLIC_NOTICES_TOOL"]
+__all__ = ["MOCK_RSS_PUBLIC_NOTICES_TOOL", "get_transparency_metadata"]

@@ -42,6 +42,7 @@ import sys
 import time
 from typing import Any
 
+from kosmos.ipc.adapter_manifest_emitter import emit_manifest
 from kosmos.tools.executor import ToolExecutor
 from kosmos.tools.register_all import register_all_tools
 from kosmos.tools.registry import ToolRegistry
@@ -249,6 +250,9 @@ async def main() -> None:
         len(registry._tools),
         len(routing_index.by_primitive),
     )
+    # Epic ε #2296 T008 — emit adapter manifest sync frame (FR-015).
+    # First non-handshake frame; TUI ingests it before any LLM turn.
+    emit_manifest(sys.stdout, registry)
     server = MCPServer(registry, routing_index)
     await _run_loop(server)
 

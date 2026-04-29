@@ -1,5 +1,181 @@
 {
   "$defs": {
+    "AdapterManifestEntry": {
+      "additionalProperties": false,
+      "description": "One adapter record inside an ``AdapterManifestSyncFrame.entries`` array.\n\nUsed by the TS-side cache to resolve ``tool_id`` and populate the citation\nslot in permission prompts.\n\nValidators:\n- ``policy_authority_url`` required (HTTPS) when ``source_mode`` is ``\"live\"``\n  or ``\"mock\"``; ``None`` only allowed when ``source_mode == \"internal\"`` (I4/I5).\n- ``tool_id`` matches ``^[a-z][a-z0-9_]*$`` (I7).",
+      "properties": {
+        "tool_id": {
+          "description": "Globally unique adapter id within the registry, e.g. 'nmc_emergency_search'. Lowercase snake-case; validated by I7.",
+          "minLength": 1,
+          "title": "Tool Id",
+          "type": "string"
+        },
+        "name": {
+          "description": "Human-readable display name; bilingual permitted.",
+          "maxLength": 80,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "primitive": {
+          "description": "Primitive verb the adapter is registered under (I6).",
+          "enum": [
+            "lookup",
+            "submit",
+            "subscribe",
+            "verify",
+            "resolve_location"
+          ],
+          "title": "Primitive",
+          "type": "string"
+        },
+        "policy_authority_url": {
+          "anyOf": [
+            {
+              "maxLength": 2048,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Agency-published policy URL (HTTPS). None only when source_mode == 'internal' (I4/I5).",
+          "title": "Policy Authority Url"
+        },
+        "source_mode": {
+          "description": "Tag for the citation-rendering surface.",
+          "enum": [
+            "live",
+            "mock",
+            "internal"
+          ],
+          "title": "Source Mode",
+          "type": "string"
+        }
+      },
+      "required": [
+        "tool_id",
+        "name",
+        "primitive",
+        "source_mode"
+      ],
+      "title": "AdapterManifestEntry",
+      "type": "object"
+    },
+    "AdapterManifestSyncFrame": {
+      "additionalProperties": false,
+      "description": "Full registry snapshot emitted by the backend exactly once after boot.\n\n21st arm of the ``IPCFrame`` discriminated union (Epic ε #2296).\n\nInvariants enforced at construction:\n- I1: ``entries`` is non-empty.\n- I2: No two entries share the same ``tool_id``.\n- I3: ``manifest_hash == sha256(canonical_json(sorted(entries, key=tool_id)))``.\n- I4/I5/I6/I7: delegated to ``AdapterManifestEntry`` validators.\n\nOn invariant violation the Pydantic validator raises ``ValueError``; the\nbackend boot should catch this and exit with ``SystemExit(78)`` per\nConstitution § II + Spec 1634 boot-validation pattern.",
+      "properties": {
+        "session_id": {
+          "description": "Opaque session identifier.",
+          "title": "Session Id",
+          "type": "string"
+        },
+        "correlation_id": {
+          "description": "UUIDv7 string for new emissions; ULID accepted for back-compat. Non-empty; emitter SHOULD use UUIDv7. (E5)",
+          "minLength": 1,
+          "title": "Correlation Id",
+          "type": "string"
+        },
+        "ts": {
+          "description": "ISO-8601 UTC timestamp with sub-ms precision.",
+          "title": "Ts",
+          "type": "string"
+        },
+        "version": {
+          "const": "1.0",
+          "default": "1.0",
+          "description": "Envelope version. Hard-fail on mismatch (E1, FR-001).",
+          "title": "Version",
+          "type": "string"
+        },
+        "role": {
+          "description": "Origin role. Validated against kind<->role allow-list (E3, FR-004).",
+          "enum": [
+            "tui",
+            "backend",
+            "tool",
+            "llm",
+            "notification"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "frame_seq": {
+          "default": 0,
+          "description": "Per-session monotonic sequence number (ge=0). Gap detection uses this.",
+          "minimum": 0,
+          "title": "Frame Seq",
+          "type": "integer"
+        },
+        "transaction_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)",
+          "title": "Transaction Id"
+        },
+        "trailer": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FrameTrailer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Completion/validation metadata. Populated on terminal frames. (FR-006)"
+        },
+        "kind": {
+          "const": "adapter_manifest_sync",
+          "default": "adapter_manifest_sync",
+          "description": "Frame discriminator — 21st arm of IPCFrame.",
+          "title": "Kind",
+          "type": "string"
+        },
+        "entries": {
+          "description": "Full registry snapshot. Non-empty (I1); no duplicate tool_id (I2).",
+          "items": {
+            "$ref": "#/$defs/AdapterManifestEntry"
+          },
+          "minItems": 1,
+          "title": "Entries",
+          "type": "array"
+        },
+        "manifest_hash": {
+          "description": "Lowercase hex SHA-256 of canonical-JSON-serialised entries sorted by tool_id (I3). Cheap change-detection for hot-reload (future epic).",
+          "maxLength": 64,
+          "minLength": 64,
+          "title": "Manifest Hash",
+          "type": "string"
+        },
+        "emitter_pid": {
+          "description": "Python backend PID at boot. Useful for OTEL span cross-correlation.",
+          "exclusiveMinimum": 0,
+          "title": "Emitter Pid",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "session_id",
+        "correlation_id",
+        "ts",
+        "role",
+        "entries",
+        "manifest_hash",
+        "emitter_pid"
+      ],
+      "title": "AdapterManifestSyncFrame",
+      "type": "object"
+    },
     "AssistantChunkFrame": {
       "additionalProperties": false,
       "description": "backend -> TUI: streaming assistant text delta.\n\nMirrors Anthropic's ``content_block_delta`` (CC reference at\n``kosmos/llm/_cc_reference/claude.ts:2053-2169``). The ``delta`` field\ncarries the visible answer text (``text_delta`` in CC nomenclature);\n``thinking`` carries the model's chain-of-thought (``thinking_delta``\non the Anthropic side, K-EXAONE's ``delta.reasoning_content`` on the\nOpenAI-compatible FriendliAI feed). Exactly one of ``delta`` /\n``thinking`` carries content per frame — the empty one is the\nbackward-compatible default. ``done`` terminates the message\nregardless of channel.",
@@ -2705,6 +2881,7 @@
   },
   "discriminator": {
     "mapping": {
+      "adapter_manifest_sync": "#/$defs/AdapterManifestSyncFrame",
       "assistant_chunk": "#/$defs/AssistantChunkFrame",
       "backpressure": "#/$defs/BackpressureSignalFrame",
       "chat_request": "#/$defs/ChatRequestFrame",
@@ -2792,6 +2969,9 @@
     },
     {
       "$ref": "#/$defs/PluginOpFrame"
+    },
+    {
+      "$ref": "#/$defs/AdapterManifestSyncFrame"
     }
   ]
 }

@@ -21,7 +21,7 @@ import logging
 from collections.abc import AsyncIterator
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from typing import Literal, TypedDict
+from typing import Any, Final, Literal, TypedDict
 
 from kosmos.primitives.subscribe import (
     MODALITY_CBS,
@@ -30,8 +30,37 @@ from kosmos.primitives.subscribe import (
     SubscriptionHandle,
     register_subscribe_adapter,
 )
+from kosmos.tools.transparency import stamp_mock_response
 
 logger = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+# Transparency constants — Epic ε #2296 retrofit (FR-005 / FR-025)
+# contracts/mock-adapter-response-shape.md § 4 "EXISTING (retrofitted)" row
+# ---------------------------------------------------------------------------
+
+_REFERENCE_IMPL: Final = "ax-infrastructure-callable-channel"
+_ACTUAL_ENDPOINT: Final = "https://api.gateway.kosmos.gov.kr/v1/subscribe/cbs/disaster"
+_SECURITY_WRAPPING: Final = "3GPP TS 23.041 CBS + 행정안전부 재난문자 게이트웨이"
+_POLICY_AUTHORITY: Final = "https://www.mois.go.kr/frt/bbs/type010/commonSelectBoardArticle.do?bbsId=BBSMSTR_000000000008&nttId=96519"
+_INTERNATIONAL_REF: Final = "EU CB-PWS (Cell Broadcast Public Warning System)"
+
+
+def get_transparency_metadata() -> dict[str, Any]:
+    """Return the six transparency fields for this subscribe adapter.
+
+    Used by the registry-wide transparency scan (FR-006) to verify
+    that subscribe adapters declare their transparency metadata even though
+    they yield events rather than returning a response dict.
+    """
+    return stamp_mock_response(
+        {"tool_id": "mock_cbs_disaster_v1", "adapter_type": "subscribe"},
+        reference_implementation=_REFERENCE_IMPL,
+        actual_endpoint_when_live=_ACTUAL_ENDPOINT,
+        security_wrapping_pattern=_SECURITY_WRAPPING,
+        policy_authority=_POLICY_AUTHORITY,
+        international_reference=_INTERNATIONAL_REF,
+    )
 
 
 class _CbsFixture(TypedDict):
@@ -191,4 +220,4 @@ register_subscribe_adapter(
 
 logger.debug("Registered mock CBS disaster adapter: %r", MOCK_CBS_DISASTER_TOOL.tool_id)
 
-__all__ = ["MOCK_CBS_DISASTER_TOOL"]
+__all__ = ["MOCK_CBS_DISASTER_TOOL", "get_transparency_metadata"]
