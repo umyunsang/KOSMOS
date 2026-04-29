@@ -100,8 +100,8 @@ NO edits to `src/kosmos/**` or `tui/src/**` (FR-019 + AGENTS.md TUI no-change ex
 
 ### Implementation for User Story 3
 
-- [ ] T019 (#2465) [US3] Manual regression check — run any 2 representative lookup-only fixtures (e.g., `weather_basic.json` and `hospital_search.json`) through a local mock LLM harness if available, OR document that the regression check defers to the GitHub Actions shadow-eval workflow. Either way, write the manual-or-deferred note in `specs/2298-system-prompt-rewrite/regression-check.md` along with which 2 fixtures were sampled (or which workflow run will be the source-of-truth).
-- [ ] T020 (#2466) [US3] Inspect existing `specs/2112-dead-anthropic-models/smoke-scenario-{1,4,5}-*.png` keyframes via Lead Opus Read tool to confirm visual continuity — the citizen-greeting flow + lookup-result rendering should match the rewritten prompt's expected output structure (since `<output_style>` is unchanged). Document any visual differences in `regression-check.md`.
+- [X] T019 (#2465) [US3] Manual regression check — run any 2 representative lookup-only fixtures (e.g., `weather_basic.json` and `hospital_search.json`) through a local mock LLM harness if available, OR document that the regression check defers to the GitHub Actions shadow-eval workflow. Either way, write the manual-or-deferred note in `specs/2298-system-prompt-rewrite/regression-check.md` along with which 2 fixtures were sampled (or which workflow run will be the source-of-truth).
+- [X] T020 (#2466) [US3] Inspect existing `specs/2112-dead-anthropic-models/smoke-scenario-{1,4,5}-*.png` keyframes via Lead Opus Read tool to confirm visual continuity — the citizen-greeting flow + lookup-result rendering should match the rewritten prompt's expected output structure (since `<output_style>` is unchanged). Document any visual differences in `regression-check.md`.
 
 **Checkpoint**: All 3 user stories pass independently. SC-006 (lookup-only no-regression) verifiable via shadow-eval CI.
 
