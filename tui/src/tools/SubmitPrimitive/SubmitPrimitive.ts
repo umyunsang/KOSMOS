@@ -5,15 +5,31 @@
 // Primitive wrapper over Spec 031 kosmos.primitives.submit.
 // Permission-gated side-effecting citizen action (application, report, etc.)
 //
-// P3 MVP: returns a structured stub indicating T028 registry closure is pending.
-// Real dispatch is wired in T028 (registry closure) and exercised by T029 (E2E).
+// Epic γ #2294 · T010/T011/T012: real validateInput + renderToolResultMessage.
 //
 // I/O contract: specs/1634-tool-system-wiring/contracts/primitive-envelope.md § 3
 
+import React from 'react'
 import { z } from 'zod/v4'
-import { buildTool, type ToolDef } from '../../Tool.js'
+import { Box, Text } from '../../ink.js'
+import { buildTool, type ToolDef, type ToolUseContext } from '../../Tool.js'
 import { lazySchema } from '../../utils/lazySchema.js'
+import {
+  extractCitation,
+  PrimitiveErrorCode,
+  type AdapterCitation,
+  type AdapterWithPolicy,
+} from '../shared/primitiveCitation.js'
 import { SUBMIT_TOOL_NAME, DESCRIPTION, SUBMIT_TOOL_PROMPT } from './prompt.js'
+
+// ---------------------------------------------------------------------------
+// KOSMOS citation extension — augments context at runtime for permission UI.
+// Does NOT modify Tool.ts or ToolPermissionContext; uses a local cast to attach
+// the citation so FallbackPermissionRequest can surface verbatim agency text.
+// ---------------------------------------------------------------------------
+type ContextWithCitation = ToolUseContext & {
+  kosmosCitations?: AdapterCitation[]
+}
 
 // ---------------------------------------------------------------------------
 // Input schema
@@ -113,20 +129,105 @@ export const SubmitPrimitive = buildTool({
     return null
   },
 
-  // Epic γ #2294 · T005 · 9-member compliance stubs.
-  // Real validateInput + renderToolResultMessage land in T010/T011.
+  // Epic γ #2294 · T010/T011 · real validateInput + renderToolResultMessage.
   isMcp: false,
 
-  async validateInput() {
-    // T005 stub — fail-open. T010 replaces with adapter-resolve + citation
-    // populate + Korean diagnostic per contracts/primitive-shape.md.
-    return { result: true } as const
+  async validateInput(
+    input: { tool_id: string; params: Record<string, unknown> },
+    context: ToolUseContext,
+  ) {
+    // Step 1: Resolve adapter — Submit always has a tool_id (no search mode).
+    const adapter = context.options.tools.find(
+      (t): t is typeof t & AdapterWithPolicy => t.name === input.tool_id,
+    ) as (AdapterWithPolicy & { name: string }) | undefined
+
+    if (!adapter) {
+      return {
+        result: false as const,
+        message: `도구 '${input.tool_id}'을(를) 찾을 수 없습니다.`,
+        errorCode: PrimitiveErrorCode.AdapterNotFound,
+      }
+    }
+
+    // Step 2: Read citation — fail closed if either field is empty.
+    const citation = extractCitation(adapter)
+    if (!citation) {
+      return {
+        result: false as const,
+        message: `도구 '${input.tool_id}'에 정책 인용 정보가 없어 호출할 수 없습니다.`,
+        errorCode: PrimitiveErrorCode.CitationMissing,
+      }
+    }
+
+    // Step 3: Attach citation to context for the permission UI pipeline.
+    ;(context as ContextWithCitation).kosmosCitations = [citation]
+
+    return { result: true as const }
   },
 
-  renderToolResultMessage() {
-    // T005 stub — render nothing. T011 replaces with citizen-facing Korean
-    // rendering per contracts/primitive-shape.md § Submit row.
-    return null
+  renderToolResultMessage(output: Output) {
+    if (output.ok) {
+      // Extract fields from the result object safely.
+      const result = output.result as Record<string, unknown> | undefined
+      const receiptId =
+        typeof result?.transaction_id === 'string'
+          ? result.transaction_id
+          : typeof result?.receipt_id === 'string'
+            ? result.receipt_id
+            : null
+      const ministry =
+        typeof result?.ministry === 'string' ? result.ministry : null
+      const status =
+        typeof result?.status === 'string' ? result.status : null
+      const handoffUrl =
+        typeof result?.agency_handoff_url === 'string'
+          ? result.agency_handoff_url
+          : null
+
+      return (
+        <Box flexDirection="column" paddingY={0}>
+          <Text color="green">
+            {'✓ '}
+            {ministry ? `[${ministry}] ` : ''}
+            제출이 접수되었습니다.
+          </Text>
+          {receiptId && (
+            <Text dimColor>접수 번호: {receiptId}</Text>
+          )}
+          {status && (
+            <Text dimColor>
+              상태:{' '}
+              {status === 'accepted'
+                ? '접수됨'
+                : status === 'pending'
+                  ? '처리 중'
+                  : status === 'rejected'
+                    ? '반려됨'
+                    : status}
+            </Text>
+          )}
+          {handoffUrl && (
+            <Text dimColor>기관 확인: {handoffUrl}</Text>
+          )}
+        </Box>
+      )
+    }
+
+    // Error branch
+    const handoffUrl =
+      typeof (output.error as Record<string, unknown>)?.agency_handoff_url ===
+      'string'
+        ? (output.error as Record<string, unknown>).agency_handoff_url as string
+        : null
+
+    return (
+      <Box flexDirection="column" paddingY={0}>
+        <Text color="red">{'✗ '}{output.error.message}</Text>
+        {handoffUrl && (
+          <Text dimColor>기관 문의: {handoffUrl}</Text>
+        )}
+      </Box>
+    )
   },
 
   /**

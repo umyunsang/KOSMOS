@@ -98,9 +98,9 @@ Sonnet teammate budget per group: ≤ 5 tasks AND ≤ 10 files. Verified per gro
 
 ### Implementation for User Story 2
 
-- [ ] T010 [P] [US2] [sonnet-submit] Replace Phase 2 stub in `tui/src/tools/SubmitPrimitive/SubmitPrimitive.ts` with the real `validateInput` per `contracts/primitive-shape.md` (adapter resolve + citation populate + Korean diagnostic).
-- [ ] T011 [P] [US2] [sonnet-submit] Replace Phase 2 placeholder in `tui/src/tools/SubmitPrimitive/SubmitPrimitive.ts` with real `renderToolResultMessage` per `contracts/primitive-shape.md § Submit row` — submission receipt id + ministry name + Korean status text.
-- [ ] T012 [P] [US2] [sonnet-submit] Tighten `tui/src/tools/SubmitPrimitive/prompt.ts` Korean `description` text (≤ 240 chars) and clean P3 MVP stub note in the file header.
+- [X] T010 [P] [US2] [sonnet-submit] Replace Phase 2 stub in `tui/src/tools/SubmitPrimitive/SubmitPrimitive.ts` with the real `validateInput` per `contracts/primitive-shape.md` (adapter resolve + citation populate + Korean diagnostic).
+- [X] T011 [P] [US2] [sonnet-submit] Replace Phase 2 placeholder in `tui/src/tools/SubmitPrimitive/SubmitPrimitive.ts` with real `renderToolResultMessage` per `contracts/primitive-shape.md § Submit row` — submission receipt id + ministry name + Korean status text.
+- [X] T012 [P] [US2] [sonnet-submit] Tighten `tui/src/tools/SubmitPrimitive/prompt.ts` Korean `description` text (≤ 240 chars) and clean P3 MVP stub note in the file header.
 - [X] T013 [P] [US2] [sonnet-verify] Replace Phase 2 stub in `tui/src/tools/VerifyPrimitive/VerifyPrimitive.ts` with the real `validateInput`.
 - [X] T014 [P] [US2] [sonnet-verify] Replace Phase 2 placeholder in `tui/src/tools/VerifyPrimitive/VerifyPrimitive.ts` with real `renderToolResultMessage` per `contracts/primitive-shape.md § Verify row` — verification status + cited authority.
 - [X] T015 [P] [US2] [sonnet-verify] Tighten `tui/src/tools/VerifyPrimitive/prompt.ts` Korean `description` text (≤ 240 chars).
