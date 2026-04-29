@@ -25,6 +25,9 @@ import {
   isManifestSynced,
   resolveAdapter,
 } from '../../services/api/adapterManifest.js'
+import { dispatchPrimitive } from '../_shared/dispatchPrimitive.js'
+import { getOrCreateKosmosBridge } from '../../ipc/bridgeSingleton.js'
+import { getOrCreatePendingCallRegistry } from '../../ipc/pendingCallSingleton.js'
 
 // ---------------------------------------------------------------------------
 // KOSMOS citation extension — augments context at runtime for permission UI.
@@ -252,19 +255,15 @@ export const SubmitPrimitive = buildTool({
   },
 
   /**
-   * P3 MVP stub — real dispatch wired by T028 registry closure + T029 E2E test.
+   * Dispatch submit call via real IPC bridge (T011 — stub replaced).
    */
-  async call(input, _context) {
-    return {
-      data: {
-        ok: true as const,
-        result: {
-          status: 'stub',
-          note: 'Primitive wrapper stub — real dispatch wired by T028 registry closure + T029 E2E test.',
-          primitive: 'submit',
-          echo: input,
-        },
-      },
-    }
+  async call(input, context) {
+    return dispatchPrimitive<Output>({
+      primitive: 'submit',
+      args: input as Record<string, unknown>,
+      context,
+      registry: getOrCreatePendingCallRegistry(),
+      bridge: getOrCreateKosmosBridge(),
+    })
   },
 } satisfies ToolDef<InputSchema, Output>)

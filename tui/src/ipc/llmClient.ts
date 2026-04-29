@@ -18,7 +18,9 @@ import { trace, SpanStatusCode } from '@opentelemetry/api'
 import type { Span } from '@opentelemetry/api'
 import type { IPCBridge } from './bridge.js'
 import { makeUUIDv7, makeBaseEnvelope } from './envelope.js'
-import type { AssistantChunkFrame, BackpressureSignalFrame, ChatMessage as IPCChatMessage, ChatRequestFrame, ErrorFrame, ToolCallFrame, ToolDefinition as IPCToolDefinition } from './frames.generated.js'
+import type { AssistantChunkFrame, BackpressureSignalFrame, ChatMessage as IPCChatMessage, ChatRequestFrame, ErrorFrame, ToolCallFrame, ToolResultFrame, ToolDefinition as IPCToolDefinition } from './frames.generated.js'
+import type { PendingCallRegistry } from '../tools/_shared/pendingCallRegistry.js'
+import { getOrCreatePendingCallRegistry } from './pendingCallSingleton.js'
 import type {
   KosmosMessageStreamParams,
   KosmosRawMessageStreamEvent,
@@ -55,6 +57,12 @@ export interface LLMClientOptions {
   bridge: IPCBridge
   model?: string
   sessionId: string
+  /**
+   * Session-scoped pending call registry for resolving tool_result frames.
+   * If omitted, the process-wide singleton from pendingCallSingleton.ts is used.
+   * Tests inject a fresh instance for isolation (I-D5).
+   */
+  pendingCallRegistry?: PendingCallRegistry
 }
 
 // ---------------------------------------------------------------------------
@@ -136,11 +144,13 @@ export class LLMClient {
   readonly bridge: IPCBridge
   readonly model: string
   readonly sessionId: string
+  readonly pendingCallRegistry: PendingCallRegistry
 
   constructor(opts: LLMClientOptions) {
     this.bridge = opts.bridge
     this.model = opts.model ?? KOSMOS_DEFAULT_MODEL
     this.sessionId = opts.sessionId
+    this.pendingCallRegistry = opts.pendingCallRegistry ?? getOrCreatePendingCallRegistry()
   }
 
   // -------------------------------------------------------------------------
@@ -432,6 +442,18 @@ export class LLMClient {
             name: toolFrame.name,
             input: toolFrame.arguments as Record<string, unknown>,
           }
+        }
+
+        // ---- ToolResultFrame (I-D5) -------------------------------------
+        else if (frame.kind === 'tool_result') {
+          const trFrame = frame as ToolResultFrame
+          const resolved = this.pendingCallRegistry.resolve(trFrame.call_id, trFrame)
+          if (!resolved) {
+            process.stderr.write(
+              `[KOSMOS LLMClient WARN] tool_result with no pending call_id=${trFrame.call_id}\n`,
+            )
+          }
+          // Do NOT yield a SDK event — the SDK loop continues to await message_stop
         }
 
         // ---- ErrorFrame -------------------------------------------------

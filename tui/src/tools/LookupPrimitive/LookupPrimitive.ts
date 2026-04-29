@@ -26,6 +26,9 @@ import {
   resolveAdapter,
 } from '../../services/api/adapterManifest.js'
 import { LOOKUP_TOOL_NAME, DESCRIPTION, LOOKUP_TOOL_PROMPT } from './prompt.js'
+import { dispatchPrimitive } from '../_shared/dispatchPrimitive.js'
+import { getOrCreateKosmosBridge } from '../../ipc/bridgeSingleton.js'
+import { getOrCreatePendingCallRegistry } from '../../ipc/pendingCallSingleton.js'
 
 // ---------------------------------------------------------------------------
 // KOSMOS citation extension — attaches resolved citation to the context so the
@@ -316,20 +319,16 @@ export const LookupPrimitive = buildTool({
   },
 
   /**
-   * Dispatch stub — real adapter invocation wired by T028 registry closure + T029 E2E test.
+   * Dispatch lookup call via real IPC bridge (T009 — stub replaced).
    * validateInput has already resolved the adapter and populated kosmosCitations on the context.
    */
-  async call(input, _context) {
-    return {
-      data: {
-        ok: true as const,
-        result: {
-          status: 'stub',
-          note: 'Primitive wrapper stub — real dispatch wired by T028 registry closure + T029 E2E test.',
-          primitive: 'lookup',
-          echo: input,
-        },
-      },
-    }
+  async call(input, context) {
+    return dispatchPrimitive<Output>({
+      primitive: 'lookup',
+      args: input as Record<string, unknown>,
+      context,
+      registry: getOrCreatePendingCallRegistry(),
+      bridge: getOrCreateKosmosBridge(),
+    })
   },
 } satisfies ToolDef<InputSchema, Output>)
