@@ -21,6 +21,10 @@ import {
   type AdapterCitation,
   type AdapterWithPolicy,
 } from '../shared/primitiveCitation.js'
+import {
+  isManifestSynced,
+  resolveAdapter,
+} from '../../services/api/adapterManifest.js'
 import { LOOKUP_TOOL_NAME, DESCRIPTION, LOOKUP_TOOL_PROMPT } from './prompt.js'
 
 // ---------------------------------------------------------------------------
@@ -165,32 +169,48 @@ export const LookupPrimitive = buildTool({
       return { result: true }
     }
 
-    // Step 2 — resolve adapter from registry.
-    const adapter = (context.options.tools as unknown as AdapterWithPolicy[]).find(
-      (t) => t.name === input.tool_id,
-    )
-    if (!adapter) {
+    // Epic ε #2296 T011 — two-tier resolution (FR-017 / FR-018 / FR-019 / FR-020).
+
+    // Tier 0 — fail closed if manifest not yet synced (FR-019).
+    if (!isManifestSynced()) {
       return {
         result: false,
-        message: `도구 '${input.tool_id}'을(를) 찾을 수 없습니다.`,
+        message: 'Adapter manifest not yet synced from backend; retry once boot completes.',
         errorCode: PrimitiveErrorCode.AdapterNotFound,
       }
     }
 
-    // Step 3 — extract citation; fail closed on missing fields.
-    const citation = extractCitation(adapter)
-    if (!citation) {
-      return {
-        result: false,
-        message: `도구 '${input.tool_id}'에 정책 인용 정보가 없어 호출할 수 없습니다.`,
-        errorCode: PrimitiveErrorCode.CitationMissing,
-      }
+    // Tier 1 — synced backend manifest (FR-017).
+    const backendEntry = resolveAdapter(input.tool_id!)
+    if (backendEntry) {
+      const citation: AdapterCitation | null = backendEntry.policy_authority_url
+        ? {
+            real_classification_url: backendEntry.policy_authority_url,
+            policy_authority: backendEntry.name,
+          }
+        : null
+      ;(context as ContextWithCitation).kosmosCitations = citation ? [citation] : []
+      return { result: true }
     }
 
-    // Step 4 — attach citation to context for permission UI.
-    ;(context as ContextWithCitation).kosmosCitations = [citation]
+    // Tier 2 — TS-side internal tools fallback (FR-018 / existing path).
+    const internalAdapter = (context.options.tools as unknown as AdapterWithPolicy[]).find(
+      (t) => t.name === input.tool_id,
+    )
+    if (internalAdapter) {
+      const citation = extractCitation(internalAdapter)
+      if (citation) {
+        ;(context as ContextWithCitation).kosmosCitations = [citation]
+      }
+      return { result: true }
+    }
 
-    return { result: true }
+    // Fail closed (FR-020).
+    return {
+      result: false,
+      message: `AdapterNotFound: '${input.tool_id}' is not in the synced backend manifest or the internal tools list.`,
+      errorCode: PrimitiveErrorCode.AdapterNotFound,
+    }
   },
 
   /**

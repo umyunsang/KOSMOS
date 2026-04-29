@@ -41,7 +41,11 @@ import type {
   ResumeRejectedFrame,
   HeartbeatFrame,
   NotificationPushFrame,
+  AdapterManifestSyncFrame,
 } from './frames.generated'
+
+// Re-export AdapterManifestSyncFrame so router code imports from codec.
+export type { AdapterManifestSyncFrame }
 
 // ---------------------------------------------------------------------------
 // Zod schemas (belt-and-braces atop generated TypeScript types)
@@ -270,13 +274,31 @@ const PluginOpFrameSchema = BaseFrame.extend({
   receipt_id: z.string().nullable().optional(),
 })
 
+// Epic ε #2296 — adapter_manifest_sync (22nd arm).
+// Backend-emitted once at boot after register_all_tools() completes.
+// AdapterManifestEntry sub-schema (per data-model.md § 4).
+const AdapterManifestEntrySchema = z.object({
+  tool_id: z.string().min(1),
+  name: z.string().min(1).max(80),
+  primitive: z.enum(['lookup', 'submit', 'subscribe', 'verify', 'resolve_location']),
+  policy_authority_url: z.string().url().nullable().optional(),
+  source_mode: z.enum(['live', 'mock', 'internal']),
+})
+
+const AdapterManifestSyncFrameSchema = BaseFrame.extend({
+  kind: z.literal('adapter_manifest_sync'),
+  entries: z.array(AdapterManifestEntrySchema).min(1),
+  manifest_hash: z.string().length(64),
+  emitter_pid: z.number().int().positive(),
+})
+
 // ---------------------------------------------------------------------------
-// Zod discriminated-union validator — all 21 IPCFrame arms
+// Zod discriminated-union validator — all 22 IPCFrame arms
 // (Spec 287 baseline 10 + Spec 032 9 + Epic #1636 plugin_op + Spec 1978
-// chat_request)
+// chat_request + Epic ε #2296 adapter_manifest_sync)
 // ---------------------------------------------------------------------------
 
-/** Zod discriminated-union validator for all 21 IPCFrame arms. */
+/** Zod discriminated-union validator for all 22 IPCFrame arms. */
 export const IPCFrameSchema = z.discriminatedUnion('kind', [
   // Spec 287 baseline (10)
   UserInputFrameSchema,
@@ -303,6 +325,8 @@ export const IPCFrameSchema = z.discriminatedUnion('kind', [
   PluginOpFrameSchema,
   // Spec 1978 ADR-0001
   ChatRequestFrameSchema,
+  // Epic ε #2296 — adapter manifest sync (22nd arm)
+  AdapterManifestSyncFrameSchema,
 ])
 
 // ---------------------------------------------------------------------------
@@ -365,6 +389,9 @@ export function isHeartbeat(f: IPCFrame): f is HeartbeatFrame {
 }
 export function isNotificationPush(f: IPCFrame): f is NotificationPushFrame {
   return f.kind === 'notification_push'
+}
+export function isAdapterManifestSync(f: IPCFrame): f is AdapterManifestSyncFrame {
+  return f.kind === 'adapter_manifest_sync'
 }
 
 // ---------------------------------------------------------------------------

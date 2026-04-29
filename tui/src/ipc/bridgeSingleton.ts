@@ -11,6 +11,8 @@
 // prompt is actually typed. Subsequent turns reuse the running child.
 
 import { createBridge, type IPCBridge } from './bridge.js'
+import { ingestManifestFrame } from '../services/api/adapterManifest.js'
+import { isAdapterManifestSync } from './codec.js'
 
 let _bridge: IPCBridge | null = null
 let _sessionId: string | null = null
@@ -26,7 +28,17 @@ let _pluginsModifiedThisSession = false
 
 export function getOrCreateKosmosBridge(): IPCBridge {
   if (_bridge !== null) return _bridge
-  _bridge = createBridge({})
+  _bridge = createBridge({
+    // Epic ε #2296 T010 — route adapter_manifest_sync frames to the TS-side
+    // manifest cache on receipt (before any LLM turn, at backend boot time).
+    // FR-015: fires once per backend lifecycle; FR-016: replace-on-frame
+    // semantics are enforced inside ingestManifestFrame().
+    onFrame: (frame, direction) => {
+      if (direction === 'recv' && isAdapterManifestSync(frame)) {
+        ingestManifestFrame(frame)
+      }
+    },
+  })
   return _bridge
 }
 
