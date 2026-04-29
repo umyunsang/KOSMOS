@@ -15,7 +15,8 @@ import { prefetchOfficialMcpUrls } from './services/mcp/officialRegistry.js';
 import type { McpSdkServerConfig, McpServerConfig, ScopedMcpServerConfig } from './services/mcp/types.js';
 import type { ToolInputJSONSchema } from './Tool.js';
 import { createSyntheticOutputTool, isSyntheticOutputToolEnabled } from './tools/SyntheticOutputTool/SyntheticOutputTool.js';
-import { getTools } from './tools.js';
+import { getAllBaseTools, getTools } from './tools.js';
+import { verifyBootRegistry } from './services/toolRegistry/bootGuard.js';
 import { canUserConfigureAdvisor, getInitialAdvisorSetting, isAdvisorEnabled, isValidAdvisorModel, modelSupportsAdvisor } from './utils/advisor.js';
 import { isAgentSwarmsEnabled } from './utils/agentSwarmsEnabled.js';
 import { count, uniq } from './utils/array.js';
@@ -1182,6 +1183,20 @@ async function run(): Promise<CommanderCommand> {
     // The later REPL-path maybeActivateProactive() calls are idempotent.
     maybeActivateProactive(options);
     let tools = getTools(toolPermissionContext);
+
+    // Epic γ #2294 · T019 — boot guard: verify 9-member contract on all primitives.
+    // Runs once per process, synchronous, ≤200ms wall-clock (SC-002).
+    {
+      const guardResult = verifyBootRegistry(getAllBaseTools())
+      if (!guardResult.ok) {
+        console.error(guardResult.diagnostic)
+        process.exit(1)
+      }
+      console.log(
+        `tool_registry: ${guardResult.entries} entries verified ` +
+        `(${guardResult.primitives} primitives) in ${Math.round(guardResult.durationMs)}ms`,
+      )
+    }
 
       let jsonSchema: ToolInputJSONSchema | undefined;
     if (isSyntheticOutputToolEnabled({
