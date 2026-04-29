@@ -100,14 +100,40 @@ _MYDATA_TIERS: frozenset[str] = frozenset({"mydata_individual_aal2"})
 
 
 class _AuthContextBase(BaseModel):
-    """Common fields shared by all six auth-family context variants."""
+    """Common fields shared by all six auth-family context variants.
 
-    model_config = ConfigDict(frozen=True, extra="forbid")
+    Epic ε #2296 (T007): adds six optional transparency fields per
+    data-model.md § 8. Mock adapters populate these via ``stamp_mock_response``.
+    Live adapters leave them ``None`` (the regression test only asserts non-None
+    for ``source_mode == 'mock'`` adapters).
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid", populate_by_name=True)
 
     published_tier: PublishedTier
     nist_aal_hint: NistAalHint
     verified_at: datetime
     external_session_ref: str | None = None
+
+    # --- Six optional transparency fields (data-model.md § 8) ---
+    # Populated by mock adapters via stamp_mock_response().
+    # Live adapters leave all six as None (forward-compatible contract).
+    transparency_mode: str | None = Field(default=None, alias="_mode")
+    transparency_reference_implementation: str | None = Field(
+        default=None, alias="_reference_implementation"
+    )
+    transparency_actual_endpoint_when_live: str | None = Field(
+        default=None, alias="_actual_endpoint_when_live"
+    )
+    transparency_security_wrapping_pattern: str | None = Field(
+        default=None, alias="_security_wrapping_pattern"
+    )
+    transparency_policy_authority: str | None = Field(
+        default=None, alias="_policy_authority"
+    )
+    transparency_international_reference: str | None = Field(
+        default=None, alias="_international_reference"
+    )
 
 
 # ---------------------------------------------------------------------------
