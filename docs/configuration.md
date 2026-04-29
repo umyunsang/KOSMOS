@@ -67,6 +67,7 @@ Column definitions:
 | `KOSMOS_RETRIEVAL_FUSION_K` | No | `60` | Integer >= 1 | `kosmos.tools.retrieval.backend._parse_fusion_config` | Epic #585 |
 | `KOSMOS_RETRIEVAL_MODEL_ID` | No | `intfloat/multilingual-e5-small` | Hugging Face model ID string | `kosmos.tools.retrieval.backend.build_retriever_from_env` | Epic #585 |
 | `KOSMOS_SESSION_DIR` | No | `~/.kosmos/sessions` | Filesystem path (expanduser) | `kosmos.session.store._get_session_dir` | Epic #287 |
+| `KOSMOS_BACKEND_CMD` | No | `uv run python -m kosmos.ipc.mcp_server` | Shell command string spawned by the TUI as the backend process | TUI-side `tui/src/services/api` IPC bridge spawner; `kosmos.ipc.demo.mock_backend` is the canonical Mock-backend value used by Spec 2296 PTY + vhs smoke artefacts | Epic #2296 |
 | `KOSMOS_CLI_HISTORY_SIZE` | No | `1000` | Integer >= 0 | `kosmos.cli.config.CLIConfig.history_size` | This doc |
 | `KOSMOS_CLI_SHOW_USAGE` | No | `true` | `true` \| `false` | `kosmos.cli.config.CLIConfig.show_usage` | This doc |
 | `KOSMOS_CLI_WELCOME_BANNER` | No | `true` | `true` \| `false` | `kosmos.cli.config.CLIConfig.welcome_banner` | This doc |
