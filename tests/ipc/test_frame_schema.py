@@ -35,6 +35,7 @@ def _compute_manifest_hash_for_test() -> str:
     canonical = json.dumps([entry], sort_keys=True, separators=(",", ":"), ensure_ascii=True)
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
+
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------

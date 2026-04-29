@@ -52,21 +52,24 @@ ADAPTER_REGISTRATION = AdapterRegistration(
 )
 
 # Recorded fixture — no real external calls (FR-009).
-_FIXTURE = GongdongInjeungseoContext.model_validate({
-    "family": "gongdong_injeungseo",
-    "published_tier": "gongdong_injeungseo_personal_aal3",
-    "nist_aal_hint": "AAL3",
-    "verified_at": datetime(2026, 4, 19, 9, 0, 0, tzinfo=UTC),
-    "external_session_ref": "mock-gongdong-ref-001",
-    "certificate_issuer": "KICA",
-    # Six transparency fields (T022 retrofit)
-    "_mode": "mock",
-    "_reference_implementation": _REFERENCE_IMPL,
-    "_actual_endpoint_when_live": _ACTUAL_ENDPOINT,
-    "_security_wrapping_pattern": _SECURITY_WRAPPING,
-    "_policy_authority": _POLICY_AUTHORITY,
-    "_international_reference": _INTERNATIONAL_REF,
-}, by_alias=True)
+_FIXTURE = GongdongInjeungseoContext.model_validate(
+    {
+        "family": "gongdong_injeungseo",
+        "published_tier": "gongdong_injeungseo_personal_aal3",
+        "nist_aal_hint": "AAL3",
+        "verified_at": datetime(2026, 4, 19, 9, 0, 0, tzinfo=UTC),
+        "external_session_ref": "mock-gongdong-ref-001",
+        "certificate_issuer": "KICA",
+        # Six transparency fields (T022 retrofit)
+        "_mode": "mock",
+        "_reference_implementation": _REFERENCE_IMPL,
+        "_actual_endpoint_when_live": _ACTUAL_ENDPOINT,
+        "_security_wrapping_pattern": _SECURITY_WRAPPING,
+        "_policy_authority": _POLICY_AUTHORITY,
+        "_international_reference": _INTERNATIONAL_REF,
+    },
+    by_alias=True,
+)
 
 
 def invoke(session_context: dict[str, object]) -> GongdongInjeungseoContext:

@@ -128,9 +128,7 @@ class _AuthContextBase(BaseModel):
     transparency_security_wrapping_pattern: str | None = Field(
         default=None, alias="_security_wrapping_pattern"
     )
-    transparency_policy_authority: str | None = Field(
-        default=None, alias="_policy_authority"
-    )
+    transparency_policy_authority: str | None = Field(default=None, alias="_policy_authority")
     transparency_international_reference: str | None = Field(
         default=None, alias="_international_reference"
     )

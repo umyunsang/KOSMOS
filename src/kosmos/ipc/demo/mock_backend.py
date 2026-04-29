@@ -84,7 +84,9 @@ async def _read_line(stream: asyncio.StreamReader) -> str | None:
 # ---------------------------------------------------------------------------
 
 
-async def _handle(request: dict[str, Any], registry: Any, routing_index: Any) -> dict[str, Any] | None:  # noqa: E501
+async def _handle(
+    request: dict[str, Any], registry: Any, routing_index: Any
+) -> dict[str, Any] | None:  # noqa: E501
     """Route a single JSON-RPC 2.0 request to the appropriate handler.
 
     Returns the response dict, or None for notifications (no response per JSON-RPC 2.0 § 4.1).
@@ -131,9 +133,7 @@ async def _handle(request: dict[str, Any], registry: Any, routing_index: Any) ->
             if not isinstance(name, str):
                 return _error_response(rpc_id, JSONRPC_INVALID_PARAMS, "tool name missing")
             if name not in registry._tools:
-                return _error_response(
-                    rpc_id, JSONRPC_INVALID_PARAMS, f"tool_not_found: {name}"
-                )
+                return _error_response(rpc_id, JSONRPC_INVALID_PARAMS, f"tool_not_found: {name}")
             # Return a stub response for P0 — full dispatch wiring is Epic ε Phase 5 territory.
             return {
                 "jsonrpc": "2.0",

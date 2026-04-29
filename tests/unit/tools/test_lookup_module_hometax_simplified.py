@@ -126,8 +126,7 @@ def test_bm25_discovery_korean_keyword() -> None:
     results = registry.search("홈택스 간소화")
     tool_ids = [r.tool.id for r in results]
     assert "mock_lookup_module_hometax_simplified" in tool_ids, (
-        f"BM25 search for '홈택스 간소화' did not surface the adapter. "
-        f"Got: {tool_ids}"
+        f"BM25 search for '홈택스 간소화' did not surface the adapter. Got: {tool_ids}"
     )
 
 
@@ -143,8 +142,7 @@ def test_bm25_discovery_english_keyword() -> None:
     results = registry.search("hometax simplified")
     tool_ids = [r.tool.id for r in results]
     assert "mock_lookup_module_hometax_simplified" in tool_ids, (
-        f"BM25 search for 'hometax simplified' did not surface the adapter. "
-        f"Got: {tool_ids}"
+        f"BM25 search for 'hometax simplified' did not surface the adapter. Got: {tool_ids}"
     )
 
 
@@ -177,9 +175,7 @@ async def test_handle_with_matching_scope_succeeds() -> None:
 
     # Happy path — transparency fields present, no scope_violation error.
     assert result.get("_mode") == "mock"
-    assert result.get("kind") != "error", (
-        f"Expected success, got error: {result.get('message')}"
-    )
+    assert result.get("kind") != "error", f"Expected success, got error: {result.get('message')}"
     for field in _TRANSPARENCY_FIELDS:
         assert result.get(field), f"Missing field {field!r} after successful delegation"
 
@@ -202,9 +198,7 @@ async def test_handle_with_mismatched_scope_returns_scope_violation() -> None:
 @pytest.mark.asyncio
 async def test_handle_with_multi_scope_containing_required_passes() -> None:
     """Multi-scope token that includes 'lookup:hometax.simplified' passes."""
-    delegation = _make_delegation_context(
-        "lookup:hometax.simplified,submit:hometax.tax-return"
-    )
+    delegation = _make_delegation_context("lookup:hometax.simplified,submit:hometax.tax-return")
     result = await handle(_VALID_INPUT, delegation_context=delegation)
 
     assert result.get("kind") != "error", (

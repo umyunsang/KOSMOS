@@ -30,8 +30,7 @@ def test_any_id_sso_returns_identity_assertion_not_delegation() -> None:
     assert isinstance(result, dict), "Expected dict from any_id_sso invoke()"
     # IdentityAssertion has assertion_jwt, NOT token.
     assert "assertion_jwt" in result, (
-        "IdentityAssertion must carry 'assertion_jwt' field — got keys: "
-        f"{sorted(result.keys())}"
+        f"IdentityAssertion must carry 'assertion_jwt' field — got keys: {sorted(result.keys())}"
     )
     assert "token" not in result, (
         "IdentityAssertion must NOT carry 'token' (which is a DelegationContext field). "

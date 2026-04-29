@@ -21,11 +21,13 @@ def test_kec_invoke_returns_transparency_fields(tmp_path: Path) -> None:
     """invoke() returns a dict with all six transparency fields non-empty."""
     from kosmos.tools.mock.verify_module_kec import invoke
 
-    result = invoke({
-        "scope_list": ["submit:hometax.tax-return"],
-        "session_id": "sess-kec-001",
-        "ledger_root": tmp_path / "ledger",
-    })
+    result = invoke(
+        {
+            "scope_list": ["submit:hometax.tax-return"],
+            "session_id": "sess-kec-001",
+            "ledger_root": tmp_path / "ledger",
+        }
+    )
 
     assert isinstance(result, dict)
     assert result.get("_mode") == "mock"
@@ -46,8 +48,13 @@ def test_kec_international_reference(tmp_path: Path) -> None:
     """_international_reference must be 'Singapore APEX'."""
     from kosmos.tools.mock.verify_module_kec import invoke
 
-    result = invoke({"scope_list": ["verify:kec.identity"], "session_id": "s1",
-                     "ledger_root": tmp_path / "ledger"})
+    result = invoke(
+        {
+            "scope_list": ["verify:kec.identity"],
+            "session_id": "s1",
+            "ledger_root": tmp_path / "ledger",
+        }
+    )
     assert result["_international_reference"] == "Singapore APEX"
 
 
@@ -55,8 +62,13 @@ def test_kec_security_wrapping_pattern(tmp_path: Path) -> None:
     """_security_wrapping_pattern must contain OAuth2.1 and mTLS."""
     from kosmos.tools.mock.verify_module_kec import invoke
 
-    result = invoke({"scope_list": ["verify:kec.identity"], "session_id": "s1",
-                     "ledger_root": tmp_path / "ledger"})
+    result = invoke(
+        {
+            "scope_list": ["verify:kec.identity"],
+            "session_id": "s1",
+            "ledger_root": tmp_path / "ledger",
+        }
+    )
     assert "OAuth2.1" in result["_security_wrapping_pattern"]
     assert "mTLS" in result["_security_wrapping_pattern"]
 
@@ -68,8 +80,13 @@ def test_kec_issuer_did_in_vp_jwt(tmp_path: Path) -> None:
 
     from kosmos.tools.mock.verify_module_kec import invoke
 
-    result = invoke({"scope_list": ["verify:kec.identity"], "session_id": "s1",
-                     "ledger_root": tmp_path / "ledger"})
+    result = invoke(
+        {
+            "scope_list": ["verify:kec.identity"],
+            "session_id": "s1",
+            "ledger_root": tmp_path / "ledger",
+        }
+    )
     vp_jwt = result["token"]["vp_jwt"]
     _header, payload_b64, _sig = vp_jwt.split(".")
     # Pad base64
@@ -83,11 +100,13 @@ def test_kec_ledger_append(tmp_path: Path) -> None:
     from kosmos.tools.mock.verify_module_kec import invoke
 
     ledger_dir = tmp_path / "ledger"
-    invoke({
-        "scope_list": ["verify:kec.identity"],
-        "session_id": "sess-ledger-kec",
-        "ledger_root": ledger_dir,
-    })
+    invoke(
+        {
+            "scope_list": ["verify:kec.identity"],
+            "session_id": "sess-ledger-kec",
+            "ledger_root": ledger_dir,
+        }
+    )
     jsonl_files = list(ledger_dir.glob("*.jsonl"))
     assert len(jsonl_files) == 1
     lines = [json.loads(line) for line in jsonl_files[0].read_text().splitlines() if line.strip()]

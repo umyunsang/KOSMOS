@@ -36,12 +36,16 @@ from kosmos.primitives.delegation import (
 
 def _make_vp_jwt(payload: dict | None = None) -> str:
     """Produce a minimal dot-separated JWS string for testing."""
-    header = base64.urlsafe_b64encode(
-        json.dumps({"alg": "none", "typ": "vp+jwt"}).encode()
-    ).decode().rstrip("=")
-    pay = base64.urlsafe_b64encode(
-        json.dumps(payload or {"sub": "citizen-123"}).encode()
-    ).decode().rstrip("=")
+    header = (
+        base64.urlsafe_b64encode(json.dumps({"alg": "none", "typ": "vp+jwt"}).encode())
+        .decode()
+        .rstrip("=")
+    )
+    pay = (
+        base64.urlsafe_b64encode(json.dumps(payload or {"sub": "citizen-123"}).encode())
+        .decode()
+        .rstrip("=")
+    )
     return f"{header}.{pay}.mock-signature-not-cryptographic"
 
 
@@ -171,9 +175,7 @@ def test_delegation_token_validator_bad_jws_shape() -> None:
         ),
     ],
 )
-def test_scope_matches_table_driven(
-    token_scope: str, required: str, expected: bool
-) -> None:
+def test_scope_matches_table_driven(token_scope: str, required: str, expected: bool) -> None:
     assert _scope_matches(token_scope, required) == expected, (
         f"_scope_matches({token_scope!r}, {required!r}) expected {expected}"
     )

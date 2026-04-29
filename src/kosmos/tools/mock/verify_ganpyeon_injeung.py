@@ -56,21 +56,24 @@ ADAPTER_REGISTRATION = AdapterRegistration(
 )
 
 # Recorded fixture — default provider is 'kakao'.
-_FIXTURE = GanpyeonInjeungContext.model_validate({
-    "family": "ganpyeon_injeung",
-    "published_tier": "ganpyeon_injeung_kakao_aal2",
-    "nist_aal_hint": "AAL2",
-    "verified_at": datetime(2026, 4, 19, 9, 0, 0, tzinfo=UTC),
-    "external_session_ref": "mock-ganpyeon-ref-001",
-    "provider": "kakao",
-    # Six transparency fields (T022 retrofit)
-    "_mode": "mock",
-    "_reference_implementation": _REFERENCE_IMPL,
-    "_actual_endpoint_when_live": _ACTUAL_ENDPOINT,
-    "_security_wrapping_pattern": _SECURITY_WRAPPING,
-    "_policy_authority": _POLICY_AUTHORITY,
-    "_international_reference": _INTERNATIONAL_REF,
-}, by_alias=True)
+_FIXTURE = GanpyeonInjeungContext.model_validate(
+    {
+        "family": "ganpyeon_injeung",
+        "published_tier": "ganpyeon_injeung_kakao_aal2",
+        "nist_aal_hint": "AAL2",
+        "verified_at": datetime(2026, 4, 19, 9, 0, 0, tzinfo=UTC),
+        "external_session_ref": "mock-ganpyeon-ref-001",
+        "provider": "kakao",
+        # Six transparency fields (T022 retrofit)
+        "_mode": "mock",
+        "_reference_implementation": _REFERENCE_IMPL,
+        "_actual_endpoint_when_live": _ACTUAL_ENDPOINT,
+        "_security_wrapping_pattern": _SECURITY_WRAPPING,
+        "_policy_authority": _POLICY_AUTHORITY,
+        "_international_reference": _INTERNATIONAL_REF,
+    },
+    by_alias=True,
+)
 
 
 def invoke(session_context: dict[str, object]) -> GanpyeonInjeungContext:

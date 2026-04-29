@@ -45,9 +45,7 @@ _TRANSPARENCY_FIELDS = (
 # ---------------------------------------------------------------------------
 
 _VP_JWT = (
-    "eyJhbGciOiJub25lIiwidHlwIjoidnArand0In0"
-    ".eyJzdWIiOiJtb2NrIn0"
-    ".mock-signature-not-cryptographic"
+    "eyJhbGciOiJub25lIiwidHlwIjoidnArand0In0.eyJzdWIiOiJtb2NrIn0.mock-signature-not-cryptographic"
 )
 
 
@@ -103,12 +101,15 @@ async def test_happy_path_returns_succeeded() -> None:
     params = _make_params()
 
     # Mock validate_delegation to return OK (bypasses session/ledger checks)
-    with mock.patch(
-        "kosmos.tools.mock.submit_module_hometax_taxreturn.validate_delegation",
-        return_value=DelegationValidationOutcome.OK,
-    ), mock.patch(
-        "kosmos.tools.mock.submit_module_hometax_taxreturn.append_delegation_used"
-    ) as mock_append:
+    with (
+        mock.patch(
+            "kosmos.tools.mock.submit_module_hometax_taxreturn.validate_delegation",
+            return_value=DelegationValidationOutcome.OK,
+        ),
+        mock.patch(
+            "kosmos.tools.mock.submit_module_hometax_taxreturn.append_delegation_used"
+        ) as mock_append,
+    ):
         result = await invoke(params)
 
     assert result.status == SubmitStatus.succeeded
@@ -133,10 +134,13 @@ async def test_transparency_fields_present_on_success() -> None:
 
     params = _make_params()
 
-    with mock.patch(
-        "kosmos.tools.mock.submit_module_hometax_taxreturn.validate_delegation",
-        return_value=DelegationValidationOutcome.OK,
-    ), mock.patch("kosmos.tools.mock.submit_module_hometax_taxreturn.append_delegation_used"):
+    with (
+        mock.patch(
+            "kosmos.tools.mock.submit_module_hometax_taxreturn.validate_delegation",
+            return_value=DelegationValidationOutcome.OK,
+        ),
+        mock.patch("kosmos.tools.mock.submit_module_hometax_taxreturn.append_delegation_used"),
+    ):
         result = await invoke(params)
 
     receipt = result.adapter_receipt
@@ -157,12 +161,15 @@ async def test_scope_violation_returns_rejected() -> None:
 
     params = _make_params(scope="submit:gov24.minwon")  # wrong scope
 
-    with mock.patch(
-        "kosmos.tools.mock.submit_module_hometax_taxreturn.validate_delegation",
-        return_value=DelegationValidationOutcome.SCOPE_VIOLATION,
-    ), mock.patch(
-        "kosmos.tools.mock.submit_module_hometax_taxreturn.append_delegation_used"
-    ) as mock_append:
+    with (
+        mock.patch(
+            "kosmos.tools.mock.submit_module_hometax_taxreturn.validate_delegation",
+            return_value=DelegationValidationOutcome.SCOPE_VIOLATION,
+        ),
+        mock.patch(
+            "kosmos.tools.mock.submit_module_hometax_taxreturn.append_delegation_used"
+        ) as mock_append,
+    ):
         result = await invoke(params)
 
     assert result.status == SubmitStatus.rejected
@@ -187,12 +194,15 @@ async def test_expired_token_returns_rejected() -> None:
 
     params = _make_params()
 
-    with mock.patch(
-        "kosmos.tools.mock.submit_module_hometax_taxreturn.validate_delegation",
-        return_value=DelegationValidationOutcome.EXPIRED,
-    ), mock.patch(
-        "kosmos.tools.mock.submit_module_hometax_taxreturn.append_delegation_used"
-    ) as mock_append:
+    with (
+        mock.patch(
+            "kosmos.tools.mock.submit_module_hometax_taxreturn.validate_delegation",
+            return_value=DelegationValidationOutcome.EXPIRED,
+        ),
+        mock.patch(
+            "kosmos.tools.mock.submit_module_hometax_taxreturn.append_delegation_used"
+        ) as mock_append,
+    ):
         result = await invoke(params)
 
     assert result.status == SubmitStatus.rejected
@@ -207,12 +217,15 @@ async def test_session_violation_returns_rejected() -> None:
 
     params = _make_params(session_id="sess-B")
 
-    with mock.patch(
-        "kosmos.tools.mock.submit_module_hometax_taxreturn.validate_delegation",
-        return_value=DelegationValidationOutcome.SESSION_VIOLATION,
-    ), mock.patch(
-        "kosmos.tools.mock.submit_module_hometax_taxreturn.append_delegation_used"
-    ) as mock_append:
+    with (
+        mock.patch(
+            "kosmos.tools.mock.submit_module_hometax_taxreturn.validate_delegation",
+            return_value=DelegationValidationOutcome.SESSION_VIOLATION,
+        ),
+        mock.patch(
+            "kosmos.tools.mock.submit_module_hometax_taxreturn.append_delegation_used"
+        ) as mock_append,
+    ):
         result = await invoke(params)
 
     assert result.status == SubmitStatus.rejected
@@ -227,12 +240,15 @@ async def test_ledger_event_consumer_tool_id() -> None:
 
     params = _make_params()
 
-    with mock.patch(
-        "kosmos.tools.mock.submit_module_hometax_taxreturn.validate_delegation",
-        return_value=DelegationValidationOutcome.SCOPE_VIOLATION,
-    ), mock.patch(
-        "kosmos.tools.mock.submit_module_hometax_taxreturn.append_delegation_used"
-    ) as mock_append:
+    with (
+        mock.patch(
+            "kosmos.tools.mock.submit_module_hometax_taxreturn.validate_delegation",
+            return_value=DelegationValidationOutcome.SCOPE_VIOLATION,
+        ),
+        mock.patch(
+            "kosmos.tools.mock.submit_module_hometax_taxreturn.append_delegation_used"
+        ) as mock_append,
+    ):
         await invoke(params)
 
     call_event = mock_append.call_args[0][0]
@@ -246,10 +262,13 @@ async def test_receipt_id_starts_with_hometax() -> None:
 
     params = _make_params()
 
-    with mock.patch(
-        "kosmos.tools.mock.submit_module_hometax_taxreturn.validate_delegation",
-        return_value=DelegationValidationOutcome.OK,
-    ), mock.patch("kosmos.tools.mock.submit_module_hometax_taxreturn.append_delegation_used"):
+    with (
+        mock.patch(
+            "kosmos.tools.mock.submit_module_hometax_taxreturn.validate_delegation",
+            return_value=DelegationValidationOutcome.OK,
+        ),
+        mock.patch("kosmos.tools.mock.submit_module_hometax_taxreturn.append_delegation_used"),
+    ):
         result = await invoke(params)
 
     receipt = result.adapter_receipt

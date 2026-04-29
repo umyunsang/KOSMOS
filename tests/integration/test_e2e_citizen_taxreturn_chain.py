@@ -175,9 +175,12 @@ async def _invoke_hometax_submit(
 
     # Patch append_delegation_used where it was bound (top-level import in submit module).
     # Patch FileLedgerReader at source module (lazy import inside invoke()).
-    with patch.object(_submit_mod, "append_delegation_used", side_effect=_patched_append), patch(
-        "kosmos.memdir.consent_ledger.FileLedgerReader",
-        return_value=patched_reader,
+    with (
+        patch.object(_submit_mod, "append_delegation_used", side_effect=_patched_append),
+        patch(
+            "kosmos.memdir.consent_ledger.FileLedgerReader",
+            return_value=patched_reader,
+        ),
     ):
         return await invoke(params)
 
@@ -330,7 +333,8 @@ async def test_submit_succeeds_with_matching_scope(tmp_path: Path) -> None:
     from kosmos.memdir.consent_ledger import DelegationUsedEvent  # noqa: PLC0415
 
     used_events = [
-        e for e in events
+        e
+        for e in events
         if isinstance(e, DelegationUsedEvent)
         and e.consumer_tool_id == "mock_submit_module_hometax_taxreturn"
         and e.outcome == "success"
@@ -398,8 +402,7 @@ async def test_scope_violation_rejected(tmp_path: Path) -> None:
     from kosmos.memdir.consent_ledger import DelegationUsedEvent  # noqa: PLC0415
 
     used_events = [
-        e for e in relevant
-        if isinstance(e, DelegationUsedEvent) and e.outcome == "scope_violation"
+        e for e in relevant if isinstance(e, DelegationUsedEvent) and e.outcome == "scope_violation"
     ]
     assert len(used_events) >= 1, "Expected at least one delegation_used(scope_violation) event"
 

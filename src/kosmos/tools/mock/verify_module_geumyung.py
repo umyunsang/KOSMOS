@@ -31,9 +31,7 @@ from kosmos.tools.transparency import stamp_mock_response
 _REFERENCE_IMPL: Final = "public-mydata-read-v240930"
 _ACTUAL_ENDPOINT: Final = "https://api.gateway.kosmos.gov.kr/v1/verify/geumyung"
 _SECURITY_WRAPPING: Final = "마이데이터 표준동의서 OAuth2 + finAuth"
-_POLICY_AUTHORITY: Final = (
-    "https://www.kftc.or.kr/kftc/main/EgovMenuContent.do?menuId=CNT020400"
-)
+_POLICY_AUTHORITY: Final = "https://www.kftc.or.kr/kftc/main/EgovMenuContent.do?menuId=CNT020400"
 _INTERNATIONAL_REF: Final = "Singapore Myinfo"
 
 _TOOL_ID: Final = "mock_verify_module_geumyung"
@@ -53,25 +51,35 @@ SEARCH_HINT: Final[dict[str, list[str]]] = {
 # JWS helper (Mock — no real cryptography)
 # ---------------------------------------------------------------------------
 
+
 def _mock_vp_jwt(scope: str, issued_at: datetime, expires_at: datetime) -> str:
     """Construct a deterministic Mock JWS triple (header.payload.signature)."""
-    header_b64 = base64.urlsafe_b64encode(
-        json.dumps({"alg": "none", "typ": "vp+jwt"}).encode()
-    ).rstrip(b"=").decode()
-    payload_b64 = base64.urlsafe_b64encode(
-        json.dumps({
-            "iss": _ISSUER_DID,
-            "scope": scope,
-            "iat": int(issued_at.timestamp()),
-            "exp": int(expires_at.timestamp()),
-        }).encode()
-    ).rstrip(b"=").decode()
+    header_b64 = (
+        base64.urlsafe_b64encode(json.dumps({"alg": "none", "typ": "vp+jwt"}).encode())
+        .rstrip(b"=")
+        .decode()
+    )
+    payload_b64 = (
+        base64.urlsafe_b64encode(
+            json.dumps(
+                {
+                    "iss": _ISSUER_DID,
+                    "scope": scope,
+                    "iat": int(issued_at.timestamp()),
+                    "exp": int(expires_at.timestamp()),
+                }
+            ).encode()
+        )
+        .rstrip(b"=")
+        .decode()
+    )
     return f"{header_b64}.{payload_b64}.mock-signature-not-cryptographic"
 
 
 # ---------------------------------------------------------------------------
 # invoke — registered via register_verify_adapter
 # ---------------------------------------------------------------------------
+
 
 def invoke(session_context: dict[str, Any]) -> dict[str, Any]:
     """Issue a DelegationToken for the 금융인증서 AX channel.

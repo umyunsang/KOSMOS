@@ -137,6 +137,7 @@ async def test_submit_emits_gen_ai_tool_loop_iteration_span(
     _previous_submit = _submit_registry.get(tool_id)
     register_submit_adapter(registration, _invoke)
     try:
+
         class _GanpyeonCtx:
             published_tier = "ganpyeon_injeung_kakao_aal2"
 

@@ -21,11 +21,13 @@ def test_modid_invoke_returns_transparency_fields(tmp_path: Path) -> None:
     """invoke() returns a dict with all six transparency fields non-empty."""
     from kosmos.tools.mock.verify_module_modid import invoke
 
-    result = invoke({
-        "scope_list": ["submit:hometax.tax-return"],
-        "session_id": "sess-modid-001",
-        "ledger_root": tmp_path / "ledger",
-    })
+    result = invoke(
+        {
+            "scope_list": ["submit:hometax.tax-return"],
+            "session_id": "sess-modid-001",
+            "ledger_root": tmp_path / "ledger",
+        }
+    )
 
     assert isinstance(result, dict)
     assert result.get("_mode") == "mock"
@@ -46,8 +48,13 @@ def test_modid_international_reference(tmp_path: Path) -> None:
     """_international_reference must be 'EU EUDI Wallet'."""
     from kosmos.tools.mock.verify_module_modid import invoke
 
-    result = invoke({"scope_list": ["verify:modid.identity"], "session_id": "s1",
-                     "ledger_root": tmp_path / "ledger"})
+    result = invoke(
+        {
+            "scope_list": ["verify:modid.identity"],
+            "session_id": "s1",
+            "ledger_root": tmp_path / "ledger",
+        }
+    )
     assert result["_international_reference"] == "EU EUDI Wallet"
 
 
@@ -55,8 +62,13 @@ def test_modid_security_wrapping(tmp_path: Path) -> None:
     """_security_wrapping_pattern must contain OID4VP."""
     from kosmos.tools.mock.verify_module_modid import invoke
 
-    result = invoke({"scope_list": ["verify:modid.identity"], "session_id": "s1",
-                     "ledger_root": tmp_path / "ledger"})
+    result = invoke(
+        {
+            "scope_list": ["verify:modid.identity"],
+            "session_id": "s1",
+            "ledger_root": tmp_path / "ledger",
+        }
+    )
     assert "OID4VP" in result["_security_wrapping_pattern"]
 
 
@@ -64,8 +76,13 @@ def test_modid_citizen_did_is_set(tmp_path: Path) -> None:
     """citizen_did is populated (DID issued during Mobile-ID ceremony)."""
     from kosmos.tools.mock.verify_module_modid import invoke
 
-    result = invoke({"scope_list": ["verify:modid.identity"], "session_id": "s1",
-                     "ledger_root": tmp_path / "ledger"})
+    result = invoke(
+        {
+            "scope_list": ["verify:modid.identity"],
+            "session_id": "s1",
+            "ledger_root": tmp_path / "ledger",
+        }
+    )
     citizen_did = result.get("citizen_did")
     assert citizen_did is not None, "citizen_did should be set for Mobile-ID"
     assert citizen_did.startswith("did:web:mobileid.go.kr")
@@ -75,8 +92,13 @@ def test_modid_delegation_token_prefix(tmp_path: Path) -> None:
     """The delegation_token inside the returned DelegationContext starts with 'del_'."""
     from kosmos.tools.mock.verify_module_modid import invoke
 
-    result = invoke({"scope_list": ["submit:hometax.tax-return"], "session_id": "s1",
-                     "ledger_root": tmp_path / "ledger"})
+    result = invoke(
+        {
+            "scope_list": ["submit:hometax.tax-return"],
+            "session_id": "s1",
+            "ledger_root": tmp_path / "ledger",
+        }
+    )
     assert result["token"]["delegation_token"].startswith("del_")
 
 
@@ -85,11 +107,13 @@ def test_modid_ledger_append(tmp_path: Path) -> None:
     from kosmos.tools.mock.verify_module_modid import invoke
 
     ledger_dir = tmp_path / "ledger"
-    invoke({
-        "scope_list": ["lookup:hometax.simplified,submit:hometax.tax-return"],
-        "session_id": "sess-ledger-modid",
-        "ledger_root": ledger_dir,
-    })
+    invoke(
+        {
+            "scope_list": ["lookup:hometax.simplified,submit:hometax.tax-return"],
+            "session_id": "sess-ledger-modid",
+            "ledger_root": ledger_dir,
+        }
+    )
 
     jsonl_files = list(ledger_dir.glob("*.jsonl"))
     assert len(jsonl_files) == 1

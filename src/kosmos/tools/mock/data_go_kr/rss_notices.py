@@ -62,6 +62,7 @@ def get_transparency_metadata() -> dict[str, Any]:
         international_reference=_INTERNATIONAL_REF,
     )
 
+
 # Static RSS 2.0 fixture items (simulating a public notices feed)
 _RSS_FIXTURES = [
     {

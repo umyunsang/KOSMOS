@@ -117,14 +117,11 @@ class DelegationToken(BaseModel):
     def _validate_token_prefix(cls, v: str) -> str:
         prefix = "del_"
         if not v.startswith(prefix):
-            raise ValueError(
-                f"delegation_token must start with {prefix!r}, got {v[:8]!r}..."
-            )
+            raise ValueError(f"delegation_token must start with {prefix!r}, got {v[:8]!r}...")
         suffix_len = len(v) - len(prefix)
         if suffix_len < 24:
             raise ValueError(
-                f"delegation_token must have >= 24 chars after 'del_' prefix, "
-                f"got {suffix_len}"
+                f"delegation_token must have >= 24 chars after 'del_' prefix, got {suffix_len}"
             )
         return v
 
@@ -313,9 +310,7 @@ async def validate_delegation(
 
     # Check 1 — expiry
     if token.expires_at <= datetime.now(UTC):
-        logger.info(
-            "validate_delegation: token expired at %s", token.expires_at.isoformat()
-        )
+        logger.info("validate_delegation: token expired at %s", token.expires_at.isoformat())
         return DelegationValidationOutcome.EXPIRED
 
     # Check 2 — scope

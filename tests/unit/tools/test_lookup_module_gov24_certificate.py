@@ -94,7 +94,9 @@ async def test_handle_happy_path_carries_six_transparency_fields(
 
     for field in _TRANSPARENCY_FIELDS:
         value = result.get(field)
-        assert value is not None, f"Missing transparency field: {field!r} (cert={inp.certificate_type})"  # noqa: E501
+        assert value is not None, (
+            f"Missing transparency field: {field!r} (cert={inp.certificate_type})"
+        )  # noqa: E501
         assert isinstance(value, str), f"Field {field!r} is not a string"
         assert value.strip(), f"Field {field!r} is empty or whitespace-only"
 
@@ -196,8 +198,7 @@ def test_bm25_discovery_english_keyword() -> None:
     results = registry.search("resident certificate")
     tool_ids = [r.tool.id for r in results]
     assert "mock_lookup_module_gov24_certificate" in tool_ids, (
-        f"BM25 search for 'resident certificate' did not surface the adapter. "
-        f"Got: {tool_ids}"
+        f"BM25 search for 'resident certificate' did not surface the adapter. Got: {tool_ids}"
     )
 
 
@@ -213,9 +214,7 @@ async def test_handle_with_matching_scope_succeeds() -> None:
     result = await handle(_VALID_INPUT_RESIDENT, delegation_context=delegation)
 
     assert result.get("_mode") == "mock"
-    assert result.get("kind") != "error", (
-        f"Expected success, got error: {result.get('message')}"
-    )
+    assert result.get("kind") != "error", f"Expected success, got error: {result.get('message')}"
     for field in _TRANSPARENCY_FIELDS:
         assert result.get(field), f"Missing field {field!r} after successful delegation"
 
@@ -238,9 +237,7 @@ async def test_handle_with_mismatched_scope_returns_scope_violation() -> None:
 @pytest.mark.asyncio
 async def test_handle_with_multi_scope_containing_required_passes() -> None:
     """Multi-scope token that includes 'lookup:gov24.certificate' passes."""
-    delegation = _make_delegation_context(
-        "lookup:gov24.certificate,submit:gov24.minwon"
-    )
+    delegation = _make_delegation_context("lookup:gov24.certificate,submit:gov24.minwon")
     result = await handle(_VALID_INPUT_BUSINESS, delegation_context=delegation)
 
     assert result.get("kind") != "error", (

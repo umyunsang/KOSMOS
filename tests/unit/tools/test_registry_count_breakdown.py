@@ -23,32 +23,36 @@ from __future__ import annotations
 _EXPECTED_MAIN_REGISTRY_COUNT = 16
 
 _EXPECTED_MAIN_REGISTRY_BREAKDOWN = {
-    "live_adapters": 12,   # 12 Live: koroad ×2, kma ×6, hira ×1, nfa ×1, nmc ×1, mohw ×1
-    "mvp_surface": 2,      # lookup + resolve_location (main-verb surface)
-    "lookup_mocks": 2,     # mock_lookup_module_hometax_simplified + mock_lookup_module_gov24_certificate  # noqa: E501
+    "live_adapters": 12,  # 12 Live: koroad ×2, kma ×6, hira ×1, nfa ×1, nmc ×1, mohw ×1
+    "mvp_surface": 2,  # lookup + resolve_location (main-verb surface)
+    "lookup_mocks": 2,  # mock_lookup_module_hometax_simplified + mock_lookup_module_gov24_certificate  # noqa: E501
 }
 
-_EXPECTED_LIVE_TOOL_IDS = frozenset({
-    "koroad_accident_hazard_search",
-    "koroad_accident_search",
-    "kma_current_observation",
-    "kma_forecast_fetch",
-    "kma_pre_warning",
-    "kma_short_term_forecast",
-    "kma_ultra_short_term_forecast",
-    "kma_weather_alert_status",
-    "hira_hospital_search",
-    "nfa_emergency_info_service",
-    "nmc_emergency_search",
-    "mohw_welfare_eligibility_search",
-})
+_EXPECTED_LIVE_TOOL_IDS = frozenset(
+    {
+        "koroad_accident_hazard_search",
+        "koroad_accident_search",
+        "kma_current_observation",
+        "kma_forecast_fetch",
+        "kma_pre_warning",
+        "kma_short_term_forecast",
+        "kma_ultra_short_term_forecast",
+        "kma_weather_alert_status",
+        "hira_hospital_search",
+        "nfa_emergency_info_service",
+        "nmc_emergency_search",
+        "mohw_welfare_eligibility_search",
+    }
+)
 
 _EXPECTED_MVP_SURFACE_IDS = frozenset({"lookup", "resolve_location"})
 
-_EXPECTED_LOOKUP_MOCK_IDS = frozenset({
-    "mock_lookup_module_hometax_simplified",
-    "mock_lookup_module_gov24_certificate",
-})
+_EXPECTED_LOOKUP_MOCK_IDS = frozenset(
+    {
+        "mock_lookup_module_hometax_simplified",
+        "mock_lookup_module_gov24_certificate",
+    }
+)
 
 
 def test_main_registry_total_count() -> None:
@@ -133,20 +137,22 @@ def test_main_registry_lookup_mock_ids_present() -> None:
 
 _EXPECTED_VERIFY_COUNT = 10
 
-_EXPECTED_VERIFY_FAMILIES = frozenset({
-    # 5 existing (retrofitted)
-    "ganpyeon_injeung",
-    "geumyung_injeungseo",
-    "gongdong_injeungseo",
-    "mobile_id",
-    "mydata",
-    # 5 new (Epic ε)
-    "simple_auth_module",
-    "modid",
-    "kec",
-    "geumyung_module",
-    "any_id_sso",
-})
+_EXPECTED_VERIFY_FAMILIES = frozenset(
+    {
+        # 5 existing (retrofitted)
+        "ganpyeon_injeung",
+        "geumyung_injeungseo",
+        "gongdong_injeungseo",
+        "mobile_id",
+        "mydata",
+        # 5 new (Epic ε)
+        "simple_auth_module",
+        "modid",
+        "kec",
+        "geumyung_module",
+        "any_id_sso",
+    }
+)
 
 
 def test_verify_adapter_registry_count() -> None:
@@ -170,8 +176,7 @@ def test_verify_adapter_registry_families() -> None:
     registered = frozenset(_VERIFY_ADAPTERS.keys())
     missing = _EXPECTED_VERIFY_FAMILIES - registered
     assert not missing, (
-        f"Missing verify families in _VERIFY_ADAPTERS: {missing}. "
-        f"Registered: {sorted(registered)}"
+        f"Missing verify families in _VERIFY_ADAPTERS: {missing}. Registered: {sorted(registered)}"
     )
 
     extra = registered - _EXPECTED_VERIFY_FAMILIES
@@ -203,15 +208,17 @@ def test_verify_digital_onepass_not_in_registry() -> None:
 
 _EXPECTED_SUBMIT_COUNT = 5
 
-_EXPECTED_SUBMIT_IDS = frozenset({
-    # 2 existing (retrofitted, pre-delegation)
-    "mock_traffic_fine_pay_v1",
-    "mock_welfare_application_submit_v1",
-    # 3 new delegation-aware (Epic ε)
-    "mock_submit_module_hometax_taxreturn",
-    "mock_submit_module_gov24_minwon",
-    "mock_submit_module_public_mydata_action",
-})
+_EXPECTED_SUBMIT_IDS = frozenset(
+    {
+        # 2 existing (retrofitted, pre-delegation)
+        "mock_traffic_fine_pay_v1",
+        "mock_welfare_application_submit_v1",
+        # 3 new delegation-aware (Epic ε)
+        "mock_submit_module_hometax_taxreturn",
+        "mock_submit_module_gov24_minwon",
+        "mock_submit_module_public_mydata_action",
+    }
+)
 
 
 def test_submit_adapter_registry_count() -> None:
@@ -252,11 +259,13 @@ def test_submit_adapter_registry_ids() -> None:
 
 _EXPECTED_SUBSCRIBE_COUNT = 3
 
-_EXPECTED_SUBSCRIBE_IDS = frozenset({
-    "mock_cbs_disaster_v1",
-    "mock_rest_pull_tick_v1",
-    "mock_rss_public_notices_v1",
-})
+_EXPECTED_SUBSCRIBE_IDS = frozenset(
+    {
+        "mock_cbs_disaster_v1",
+        "mock_rest_pull_tick_v1",
+        "mock_rss_public_notices_v1",
+    }
+)
 
 
 def test_subscribe_adapter_registry_count() -> None:

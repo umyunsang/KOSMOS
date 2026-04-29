@@ -21,11 +21,13 @@ def test_geumyung_invoke_returns_transparency_fields(tmp_path: Path) -> None:
     """invoke() returns a dict with all six transparency fields non-empty."""
     from kosmos.tools.mock.verify_module_geumyung import invoke
 
-    result = invoke({
-        "scope_list": ["submit:hometax.tax-return"],
-        "session_id": "sess-geumyung-001",
-        "ledger_root": tmp_path / "ledger",
-    })
+    result = invoke(
+        {
+            "scope_list": ["submit:hometax.tax-return"],
+            "session_id": "sess-geumyung-001",
+            "ledger_root": tmp_path / "ledger",
+        }
+    )
 
     assert isinstance(result, dict)
     assert result.get("_mode") == "mock"
@@ -46,8 +48,13 @@ def test_geumyung_international_reference(tmp_path: Path) -> None:
     """_international_reference must be 'Singapore Myinfo'."""
     from kosmos.tools.mock.verify_module_geumyung import invoke
 
-    result = invoke({"scope_list": ["verify:geumyung.identity"], "session_id": "s1",
-                     "ledger_root": tmp_path / "ledger"})
+    result = invoke(
+        {
+            "scope_list": ["verify:geumyung.identity"],
+            "session_id": "s1",
+            "ledger_root": tmp_path / "ledger",
+        }
+    )
     assert result["_international_reference"] == "Singapore Myinfo"
 
 
@@ -55,8 +62,13 @@ def test_geumyung_reference_impl(tmp_path: Path) -> None:
     """_reference_implementation must be 'public-mydata-read-v240930'."""
     from kosmos.tools.mock.verify_module_geumyung import invoke
 
-    result = invoke({"scope_list": ["verify:geumyung.identity"], "session_id": "s1",
-                     "ledger_root": tmp_path / "ledger"})
+    result = invoke(
+        {
+            "scope_list": ["verify:geumyung.identity"],
+            "session_id": "s1",
+            "ledger_root": tmp_path / "ledger",
+        }
+    )
     assert result["_reference_implementation"] == "public-mydata-read-v240930"
 
 
@@ -64,11 +76,13 @@ def test_geumyung_delegation_token_format(tmp_path: Path) -> None:
     """The delegation token starts with 'del_' and scope is embedded correctly."""
     from kosmos.tools.mock.verify_module_geumyung import invoke
 
-    result = invoke({
-        "scope_list": ["lookup:hometax.simplified", "submit:hometax.tax-return"],
-        "session_id": "s1",
-        "ledger_root": tmp_path / "ledger",
-    })
+    result = invoke(
+        {
+            "scope_list": ["lookup:hometax.simplified", "submit:hometax.tax-return"],
+            "session_id": "s1",
+            "ledger_root": tmp_path / "ledger",
+        }
+    )
     assert result["token"]["delegation_token"].startswith("del_")
     scope = result["token"]["scope"]
     assert "lookup:hometax.simplified" in scope
@@ -80,11 +94,13 @@ def test_geumyung_ledger_append(tmp_path: Path) -> None:
     from kosmos.tools.mock.verify_module_geumyung import invoke
 
     ledger_dir = tmp_path / "ledger"
-    invoke({
-        "scope_list": ["verify:geumyung.identity"],
-        "session_id": "sess-ledger-geumyung",
-        "ledger_root": ledger_dir,
-    })
+    invoke(
+        {
+            "scope_list": ["verify:geumyung.identity"],
+            "session_id": "sess-ledger-geumyung",
+            "ledger_root": ledger_dir,
+        }
+    )
     jsonl_files = list(ledger_dir.glob("*.jsonl"))
     assert len(jsonl_files) == 1
     lines = [json.loads(line) for line in jsonl_files[0].read_text().splitlines() if line.strip()]

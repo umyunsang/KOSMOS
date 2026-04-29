@@ -68,6 +68,7 @@ def get_transparency_metadata() -> dict[str, Any]:
         international_reference=_INTERNATIONAL_REF,
     )
 
+
 # DECISION: Default polling_interval = 30s.
 # Rationale: data.go.kr free tier allows 1000 calls/day per service key
 # (~12s minimum between calls). 30s provides comfortable headroom without

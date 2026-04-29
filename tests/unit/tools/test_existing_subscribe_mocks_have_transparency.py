@@ -57,10 +57,7 @@ _SUBSCRIBE_ADAPTER_CASES = [
 
 @pytest.mark.parametrize(
     "module_path,adapter_id,expected_intl_ref,expected_ref_impl",
-    [
-        pytest.param(*case, id=case[1])
-        for case in _SUBSCRIBE_ADAPTER_CASES
-    ],
+    [pytest.param(*case, id=case[1]) for case in _SUBSCRIBE_ADAPTER_CASES],
 )
 def test_subscribe_mock_has_transparency_metadata_function(
     module_path: str,
@@ -106,10 +103,7 @@ def test_subscribe_mock_has_transparency_metadata_function(
 
 @pytest.mark.parametrize(
     "module_path,adapter_id,_intl,_ref",
-    [
-        pytest.param(*case, id=case[1])
-        for case in _SUBSCRIBE_ADAPTER_CASES
-    ],
+    [pytest.param(*case, id=case[1]) for case in _SUBSCRIBE_ADAPTER_CASES],
 )
 def test_subscribe_mock_transparency_all_fields_are_url_shaped_where_appropriate(
     module_path: str,
@@ -123,8 +117,7 @@ def test_subscribe_mock_transparency_all_fields_are_url_shaped_where_appropriate
 
     policy_authority = metadata.get("_policy_authority", "")
     assert policy_authority.startswith("https://"), (
-        f"{adapter_id!r}: _policy_authority must start with 'https://', "
-        f"got {policy_authority!r}"
+        f"{adapter_id!r}: _policy_authority must start with 'https://', got {policy_authority!r}"
     )
 
     actual_endpoint = metadata.get("_actual_endpoint_when_live", "")

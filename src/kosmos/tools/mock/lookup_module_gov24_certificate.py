@@ -44,9 +44,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 _REFERENCE_IMPL: Final = "public-mydata-read-v240930"
-_ACTUAL_ENDPOINT: Final = (
-    "https://api.gateway.kosmos.gov.kr/v1/lookup/gov24_certificate"
-)
+_ACTUAL_ENDPOINT: Final = "https://api.gateway.kosmos.gov.kr/v1/lookup/gov24_certificate"
 _SECURITY_WRAPPING: Final = "OAuth2.1 + mTLS + scope-bound bearer"
 _POLICY_AUTHORITY: Final = "https://www.gov.kr/portal/main/nlogin"
 _INTERNATIONAL_REF: Final = "Estonia X-Road"
@@ -162,8 +160,7 @@ def _build_fixture(inp: Gov24CertificateInput) -> dict[str, Any]:
         "purpose": inp.purpose,
         "fetched_at": datetime.now(UTC).isoformat(),
         "disclaimer": (
-            "Mock fixture — data is synthetic. "
-            "Real endpoint requires authenticated Gov24 session."
+            "Mock fixture — data is synthetic. Real endpoint requires authenticated Gov24 session."
         ),
     }
 

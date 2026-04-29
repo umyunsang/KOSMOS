@@ -31,9 +31,7 @@ from kosmos.tools.registry import (
 _REFERENCE_IMPL: Final = "public-mydata-read-v240930"
 _ACTUAL_ENDPOINT: Final = "https://api.gateway.kosmos.gov.kr/v1/verify/mydata"
 _SECURITY_WRAPPING: Final = "마이데이터 표준동의서 OAuth2 + mTLS + finAuth"
-_POLICY_AUTHORITY: Final = (
-    "https://www.kftc.or.kr/kftc/main/EgovMenuContent.do?menuId=CNT020400"
-)
+_POLICY_AUTHORITY: Final = "https://www.kftc.or.kr/kftc/main/EgovMenuContent.do?menuId=CNT020400"
 _INTERNATIONAL_REF: Final = "Singapore Myinfo"
 
 ADAPTER_REGISTRATION = AdapterRegistration(
@@ -55,21 +53,24 @@ ADAPTER_REGISTRATION = AdapterRegistration(
 )
 
 # Recorded fixture — provider_id is an anonymised test code.
-_FIXTURE = MyDataContext.model_validate({
-    "family": "mydata",
-    "published_tier": "mydata_individual_aal2",
-    "nist_aal_hint": "AAL2",
-    "verified_at": datetime(2026, 4, 19, 9, 0, 0, tzinfo=UTC),
-    "external_session_ref": "mock-mydata-ref-001",
-    "provider_id": "TEST_PROVIDER_001",
-    # Six transparency fields (T022 retrofit)
-    "_mode": "mock",
-    "_reference_implementation": _REFERENCE_IMPL,
-    "_actual_endpoint_when_live": _ACTUAL_ENDPOINT,
-    "_security_wrapping_pattern": _SECURITY_WRAPPING,
-    "_policy_authority": _POLICY_AUTHORITY,
-    "_international_reference": _INTERNATIONAL_REF,
-}, by_alias=True)
+_FIXTURE = MyDataContext.model_validate(
+    {
+        "family": "mydata",
+        "published_tier": "mydata_individual_aal2",
+        "nist_aal_hint": "AAL2",
+        "verified_at": datetime(2026, 4, 19, 9, 0, 0, tzinfo=UTC),
+        "external_session_ref": "mock-mydata-ref-001",
+        "provider_id": "TEST_PROVIDER_001",
+        # Six transparency fields (T022 retrofit)
+        "_mode": "mock",
+        "_reference_implementation": _REFERENCE_IMPL,
+        "_actual_endpoint_when_live": _ACTUAL_ENDPOINT,
+        "_security_wrapping_pattern": _SECURITY_WRAPPING,
+        "_policy_authority": _POLICY_AUTHORITY,
+        "_international_reference": _INTERNATIONAL_REF,
+    },
+    by_alias=True,
+)
 
 
 def invoke(session_context: dict[str, object]) -> MyDataContext:

@@ -123,8 +123,7 @@ def test_verify_adapter_carries_six_transparency_fields(family: str) -> None:
     for field in _SIX_FIELDS[1:]:  # skip _mode (already asserted above)
         value = result.get(field)
         assert value is not None and isinstance(value, str) and value.strip(), (
-            f"verify/{family}: transparency field {field!r} is missing or empty. "
-            f"Got: {value!r}"
+            f"verify/{family}: transparency field {field!r} is missing or empty. Got: {value!r}"
         )
 
 
@@ -186,10 +185,9 @@ _NODELEGATION_SUBMIT_CASES: list[tuple[str, dict[str, Any]]] = [
     ),
 ]
 
-_ALL_SUBMIT_IDS = (
-    [case[0] for case in _DELEGATION_SUBMIT_CASES]
-    + [case[0] for case in _NODELEGATION_SUBMIT_CASES]
-)
+_ALL_SUBMIT_IDS = [case[0] for case in _DELEGATION_SUBMIT_CASES] + [
+    case[0] for case in _NODELEGATION_SUBMIT_CASES
+]
 
 
 async def _get_submit_receipt(adapter_id: str) -> dict[str, Any]:
@@ -226,8 +224,7 @@ async def test_submit_adapter_receipt_carries_six_transparency_fields(adapter_id
     for field in _SIX_FIELDS[1:]:
         value = receipt.get(field)
         assert value is not None and isinstance(value, str) and value.strip(), (
-            f"submit/{adapter_id}: transparency field {field!r} is missing or empty. "
-            f"Got: {value!r}"
+            f"submit/{adapter_id}: transparency field {field!r} is missing or empty. Got: {value!r}"
         )
 
 
@@ -338,8 +335,7 @@ async def test_lookup_adapter_response_carries_six_transparency_fields(
     for field in _SIX_FIELDS[1:]:
         value = result.get(field)
         assert value is not None and isinstance(value, str) and value.strip(), (
-            f"lookup/{adapter_id}: transparency field {field!r} is missing or empty. "
-            f"Got: {value!r}"
+            f"lookup/{adapter_id}: transparency field {field!r} is missing or empty. Got: {value!r}"
         )
 
 
@@ -364,10 +360,7 @@ def _all_mock_adapter_ids() -> list[str]:
 def test_canonical_mock_adapter_count_is_20() -> None:
     """Guard: canonical mock adapter list must total exactly 20 entries."""
     ids = _all_mock_adapter_ids()
-    assert len(ids) == 20, (
-        f"Expected 20 canonical Mock adapter IDs, got {len(ids)}. "
-        f"IDs: {ids}"
-    )
+    assert len(ids) == 20, f"Expected 20 canonical Mock adapter IDs, got {len(ids)}. IDs: {ids}"
     assert len(set(ids)) == len(ids), (
         "Duplicate adapter IDs detected in canonical list — each adapter must "
         f"appear exactly once. Duplicates: "

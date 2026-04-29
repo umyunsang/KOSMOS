@@ -58,19 +58,28 @@ SEARCH_HINT: Final[dict[str, list[str]]] = {
 # JWS helper (Mock — no real cryptography)
 # ---------------------------------------------------------------------------
 
+
 def _mock_assertion_jwt(issued_at: datetime, expires_at: datetime) -> str:
     """Construct a deterministic Mock JWS triple for the identity assertion."""
-    header_b64 = base64.urlsafe_b64encode(
-        json.dumps({"alg": "none", "typ": "id_token"}).encode()
-    ).rstrip(b"=").decode()
-    payload_b64 = base64.urlsafe_b64encode(
-        json.dumps({
-            "iss": _ISSUER_DID,
-            "sub": f"mock-citizen-{secrets.token_hex(4)}",
-            "iat": int(issued_at.timestamp()),
-            "exp": int(expires_at.timestamp()),
-        }).encode()
-    ).rstrip(b"=").decode()
+    header_b64 = (
+        base64.urlsafe_b64encode(json.dumps({"alg": "none", "typ": "id_token"}).encode())
+        .rstrip(b"=")
+        .decode()
+    )
+    payload_b64 = (
+        base64.urlsafe_b64encode(
+            json.dumps(
+                {
+                    "iss": _ISSUER_DID,
+                    "sub": f"mock-citizen-{secrets.token_hex(4)}",
+                    "iat": int(issued_at.timestamp()),
+                    "exp": int(expires_at.timestamp()),
+                }
+            ).encode()
+        )
+        .rstrip(b"=")
+        .decode()
+    )
     return f"{header_b64}.{payload_b64}.mock-signature-not-cryptographic"
 
 
@@ -78,6 +87,7 @@ def _mock_assertion_jwt(issued_at: datetime, expires_at: datetime) -> str:
 # invoke — registered via register_verify_adapter
 # Returns IdentityAssertion — NOT DelegationContext (per Decision 4)
 # ---------------------------------------------------------------------------
+
 
 def invoke(session_context: dict[str, Any]) -> dict[str, Any]:
     """Return an IdentityAssertion for the Any-ID SSO channel.

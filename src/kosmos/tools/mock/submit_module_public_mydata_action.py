@@ -49,9 +49,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 _REFERENCE_IMPL: Final = "public-mydata-action-extension"
-_ACTUAL_ENDPOINT: Final = (
-    "https://api.gateway.kosmos.gov.kr/v1/submit/public-mydata/action"
-)
+_ACTUAL_ENDPOINT: Final = "https://api.gateway.kosmos.gov.kr/v1/submit/public-mydata/action"
 _SECURITY_WRAPPING: Final = "마이데이터 표준동의서 OAuth2 + finAuth + mTLS"
 _POLICY_AUTHORITY: Final = "https://www.fsb.or.kr/kor.do"
 _INTERNATIONAL_REF: Final = "Estonia X-Road"

@@ -30,9 +30,7 @@ from kosmos.tools.registry import (
 _REFERENCE_IMPL: Final = "public-mydata-read-v240930"
 _ACTUAL_ENDPOINT: Final = "https://api.gateway.kosmos.gov.kr/v1/verify/geumyung_injeungseo"
 _SECURITY_WRAPPING: Final = "마이데이터 표준동의서 OAuth2 + finAuth + mTLS"
-_POLICY_AUTHORITY: Final = (
-    "https://www.kftc.or.kr/kftc/main/EgovMenuContent.do?menuId=CNT020400"
-)
+_POLICY_AUTHORITY: Final = "https://www.kftc.or.kr/kftc/main/EgovMenuContent.do?menuId=CNT020400"
 _INTERNATIONAL_REF: Final = "Singapore Myinfo"
 
 ADAPTER_REGISTRATION = AdapterRegistration(
@@ -54,21 +52,24 @@ ADAPTER_REGISTRATION = AdapterRegistration(
 )
 
 # Recorded fixture — no real external calls (FR-009).
-_FIXTURE = GeumyungInjeungseoContext.model_validate({
-    "family": "geumyung_injeungseo",
-    "published_tier": "geumyung_injeungseo_personal_aal2",
-    "nist_aal_hint": "AAL2",
-    "verified_at": datetime(2026, 4, 19, 9, 0, 0, tzinfo=UTC),
-    "external_session_ref": "mock-geumyung-ref-001",
-    "bank_cluster": "kftc",
-    # Six transparency fields (T022 retrofit)
-    "_mode": "mock",
-    "_reference_implementation": _REFERENCE_IMPL,
-    "_actual_endpoint_when_live": _ACTUAL_ENDPOINT,
-    "_security_wrapping_pattern": _SECURITY_WRAPPING,
-    "_policy_authority": _POLICY_AUTHORITY,
-    "_international_reference": _INTERNATIONAL_REF,
-}, by_alias=True)
+_FIXTURE = GeumyungInjeungseoContext.model_validate(
+    {
+        "family": "geumyung_injeungseo",
+        "published_tier": "geumyung_injeungseo_personal_aal2",
+        "nist_aal_hint": "AAL2",
+        "verified_at": datetime(2026, 4, 19, 9, 0, 0, tzinfo=UTC),
+        "external_session_ref": "mock-geumyung-ref-001",
+        "bank_cluster": "kftc",
+        # Six transparency fields (T022 retrofit)
+        "_mode": "mock",
+        "_reference_implementation": _REFERENCE_IMPL,
+        "_actual_endpoint_when_live": _ACTUAL_ENDPOINT,
+        "_security_wrapping_pattern": _SECURITY_WRAPPING,
+        "_policy_authority": _POLICY_AUTHORITY,
+        "_international_reference": _INTERNATIONAL_REF,
+    },
+    by_alias=True,
+)
 
 
 def invoke(session_context: dict[str, object]) -> GeumyungInjeungseoContext:

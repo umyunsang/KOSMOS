@@ -54,25 +54,35 @@ SEARCH_HINT: Final[dict[str, list[str]]] = {
 # JWS helper (Mock — no real cryptography)
 # ---------------------------------------------------------------------------
 
+
 def _mock_vp_jwt(scope: str, issued_at: datetime, expires_at: datetime) -> str:
     """Construct a deterministic Mock JWS triple (header.payload.signature)."""
-    header_b64 = base64.urlsafe_b64encode(
-        json.dumps({"alg": "none", "typ": "vp+jwt"}).encode()
-    ).rstrip(b"=").decode()
-    payload_b64 = base64.urlsafe_b64encode(
-        json.dumps({
-            "iss": _ISSUER_DID,
-            "scope": scope,
-            "iat": int(issued_at.timestamp()),
-            "exp": int(expires_at.timestamp()),
-        }).encode()
-    ).rstrip(b"=").decode()
+    header_b64 = (
+        base64.urlsafe_b64encode(json.dumps({"alg": "none", "typ": "vp+jwt"}).encode())
+        .rstrip(b"=")
+        .decode()
+    )
+    payload_b64 = (
+        base64.urlsafe_b64encode(
+            json.dumps(
+                {
+                    "iss": _ISSUER_DID,
+                    "scope": scope,
+                    "iat": int(issued_at.timestamp()),
+                    "exp": int(expires_at.timestamp()),
+                }
+            ).encode()
+        )
+        .rstrip(b"=")
+        .decode()
+    )
     return f"{header_b64}.{payload_b64}.mock-signature-not-cryptographic"
 
 
 # ---------------------------------------------------------------------------
 # invoke — registered via register_verify_adapter
 # ---------------------------------------------------------------------------
+
 
 def invoke(session_context: dict[str, Any]) -> dict[str, Any]:
     """Issue a DelegationToken for the Mobile-ID AX channel.

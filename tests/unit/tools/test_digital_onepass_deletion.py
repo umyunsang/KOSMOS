@@ -45,8 +45,7 @@ def test_bm25_search_for_digital_onepass_korean_returns_zero() -> None:
 
     results = registry.search("디지털원패스")
     matching_ids = [
-        r.tool.id for r in results
-        if "digital_onepass" in r.tool.id or "onepass" in r.tool.id
+        r.tool.id for r in results if "digital_onepass" in r.tool.id or "onepass" in r.tool.id
     ]
 
     assert len(matching_ids) == 0, (
@@ -69,8 +68,7 @@ def test_bm25_search_for_digital_onepass_english_returns_zero() -> None:
 
     results = registry.search("digital_onepass")
     matching_ids = [
-        r.tool.id for r in results
-        if "digital_onepass" in r.tool.id or "onepass" in r.tool.id
+        r.tool.id for r in results if "digital_onepass" in r.tool.id or "onepass" in r.tool.id
     ]
 
     assert len(matching_ids) == 0, (
@@ -125,8 +123,7 @@ def test_verify_digital_onepass_module_raises_module_not_found_error() -> None:
     # Ensure the error is specifically about the missing module (not a transitive dep)
     error_msg = str(exc_info.value)
     assert "verify_digital_onepass" in error_msg or "No module named" in error_msg, (
-        f"Expected ModuleNotFoundError mentioning verify_digital_onepass, "
-        f"got: {error_msg!r}"
+        f"Expected ModuleNotFoundError mentioning verify_digital_onepass, got: {error_msg!r}"
     )
 
 

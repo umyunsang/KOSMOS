@@ -26,11 +26,13 @@ def test_simple_auth_invoke_returns_transparency_fields(tmp_path: Path) -> None:
     """invoke() returns a dict with all six transparency fields non-empty."""
     from kosmos.tools.mock.verify_module_simple_auth import invoke
 
-    result = invoke({
-        "scope_list": ["submit:hometax.tax-return"],
-        "session_id": "test-sess-001",
-        "ledger_root": tmp_path / "ledger",
-    })
+    result = invoke(
+        {
+            "scope_list": ["submit:hometax.tax-return"],
+            "session_id": "test-sess-001",
+            "ledger_root": tmp_path / "ledger",
+        }
+    )
 
     assert isinstance(result, dict), "Expected a dict from invoke()"
     assert result.get("_mode") == "mock", "_mode must be 'mock'"
@@ -51,8 +53,13 @@ def test_simple_auth_international_reference(tmp_path: Path) -> None:
     """_international_reference must be 'Japan マイナポータル API'."""
     from kosmos.tools.mock.verify_module_simple_auth import invoke
 
-    result = invoke({"scope_list": ["verify:simple_auth.identity"], "session_id": "s1",
-                     "ledger_root": tmp_path / "ledger"})
+    result = invoke(
+        {
+            "scope_list": ["verify:simple_auth.identity"],
+            "session_id": "s1",
+            "ledger_root": tmp_path / "ledger",
+        }
+    )
     assert result["_international_reference"] == "Japan マイナポータル API"
 
 
@@ -60,8 +67,13 @@ def test_simple_auth_reference_impl(tmp_path: Path) -> None:
     """_reference_implementation must be 'ax-infrastructure-callable-channel'."""
     from kosmos.tools.mock.verify_module_simple_auth import invoke
 
-    result = invoke({"scope_list": ["verify:simple_auth.identity"], "session_id": "s1",
-                     "ledger_root": tmp_path / "ledger"})
+    result = invoke(
+        {
+            "scope_list": ["verify:simple_auth.identity"],
+            "session_id": "s1",
+            "ledger_root": tmp_path / "ledger",
+        }
+    )
     assert result["_reference_implementation"] == "ax-infrastructure-callable-channel"
 
 
@@ -69,8 +81,13 @@ def test_simple_auth_delegation_context_shape(tmp_path: Path) -> None:
     """invoke() result carries 'token' dict (DelegationContext payload)."""
     from kosmos.tools.mock.verify_module_simple_auth import invoke
 
-    result = invoke({"scope_list": ["submit:hometax.tax-return"], "session_id": "s1",
-                     "ledger_root": tmp_path / "ledger"})
+    result = invoke(
+        {
+            "scope_list": ["submit:hometax.tax-return"],
+            "session_id": "s1",
+            "ledger_root": tmp_path / "ledger",
+        }
+    )
     assert "token" in result, "Expected 'token' nested in DelegationContext payload"
     token = result["token"]
     assert isinstance(token, dict)
@@ -82,11 +99,13 @@ def test_simple_auth_multi_scope(tmp_path: Path) -> None:
     """Comma-joined multi-scope list is embedded in the token scope field."""
     from kosmos.tools.mock.verify_module_simple_auth import invoke
 
-    result = invoke({
-        "scope_list": ["lookup:hometax.simplified", "submit:hometax.tax-return"],
-        "session_id": "s-multi",
-        "ledger_root": tmp_path / "ledger",
-    })
+    result = invoke(
+        {
+            "scope_list": ["lookup:hometax.simplified", "submit:hometax.tax-return"],
+            "session_id": "s-multi",
+            "ledger_root": tmp_path / "ledger",
+        }
+    )
     scope = result["token"]["scope"]
     assert "lookup:hometax.simplified" in scope.split(",")
     assert "submit:hometax.tax-return" in scope.split(",")
@@ -104,11 +123,13 @@ def test_simple_auth_scope_grammar_enforced(tmp_path: Path) -> None:
     from kosmos.tools.mock.verify_module_simple_auth import invoke
 
     with pytest.raises(ValidationError):
-        invoke({
-            "scope_list": ["BAD_SCOPE_NO_COLON"],
-            "session_id": "s-bad",
-            "ledger_root": tmp_path / "ledger",
-        })
+        invoke(
+            {
+                "scope_list": ["BAD_SCOPE_NO_COLON"],
+                "session_id": "s-bad",
+                "ledger_root": tmp_path / "ledger",
+            }
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -121,11 +142,13 @@ def test_simple_auth_ledger_append(tmp_path: Path) -> None:
     from kosmos.tools.mock.verify_module_simple_auth import invoke
 
     ledger_dir = tmp_path / "ledger"
-    invoke({
-        "scope_list": ["submit:hometax.tax-return"],
-        "session_id": "sess-ledger-test",
-        "ledger_root": ledger_dir,
-    })
+    invoke(
+        {
+            "scope_list": ["submit:hometax.tax-return"],
+            "session_id": "sess-ledger-test",
+            "ledger_root": ledger_dir,
+        }
+    )
 
     # Find the jsonl file
     jsonl_files = list(ledger_dir.glob("*.jsonl"))

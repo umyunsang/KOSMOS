@@ -48,10 +48,7 @@ _SUBMIT_ADAPTER_CASES = [
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "adapter_id,params",
-    [
-        pytest.param(case[0], case[1], id=case[0])
-        for case in _SUBMIT_ADAPTER_CASES
-    ],
+    [pytest.param(case[0], case[1], id=case[0]) for case in _SUBMIT_ADAPTER_CASES],
 )
 async def test_existing_submit_mock_has_six_transparency_fields(
     adapter_id: str,
@@ -107,11 +104,13 @@ async def test_welfare_application_transparency_international_reference() -> Non
     from kosmos.primitives.submit import _ADAPTER_REGISTRY
 
     _registration, invoke_fn = _ADAPTER_REGISTRY["mock_welfare_application_submit_v1"]
-    result = await invoke_fn({
-        "applicant_id": "di-test-002",
-        "benefit_code": "장애인지원",
-        "application_type": "renewal",
-        "household_size": 2,
-    })
+    result = await invoke_fn(
+        {
+            "applicant_id": "di-test-002",
+            "benefit_code": "장애인지원",
+            "application_type": "renewal",
+            "household_size": 2,
+        }
+    )
     assert result.adapter_receipt["_international_reference"] == "Estonia X-Road"
     assert result.adapter_receipt["_reference_implementation"] == "public-mydata-action-extension"

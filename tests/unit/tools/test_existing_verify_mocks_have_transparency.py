@@ -42,7 +42,7 @@ def test_existing_verify_mock_has_six_transparency_fields(module_path: str) -> N
     result = mod.invoke({})
 
     # Existing verify mocks return Pydantic context objects; use model_dump to get dict.
-    d = result.model_dump(by_alias=True) if hasattr(result, 'model_dump') else result
+    d = result.model_dump(by_alias=True) if hasattr(result, "model_dump") else result
 
     for field in _SIX_TRANSPARENCY_FIELDS:
         value = d.get(field)
@@ -61,9 +61,7 @@ def test_existing_verify_mock_mode_is_mock(module_path: str) -> None:
     result = mod.invoke({})
     d = result.model_dump(by_alias=True) if hasattr(result, "model_dump") else result
 
-    assert d.get("_mode") == "mock", (
-        f"{module_path}: expected _mode='mock', got {d.get('_mode')!r}"
-    )
+    assert d.get("_mode") == "mock", f"{module_path}: expected _mode='mock', got {d.get('_mode')!r}"
 
 
 @pytest.mark.parametrize("module_path", _EXISTING_VERIFY_MOCKS)

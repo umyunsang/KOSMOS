@@ -109,9 +109,7 @@ def test_build_entries_sort_order() -> None:
     entries = _build_entries(registry)
 
     tool_ids = [e.tool_id for e in entries]
-    assert tool_ids == sorted(tool_ids), (
-        f"Entries not sorted: {tool_ids}"
-    )
+    assert tool_ids == sorted(tool_ids), f"Entries not sorted: {tool_ids}"
 
     _EXTRA_REGISTRY.clear()
 
@@ -133,13 +131,9 @@ def test_hash_matches_canonical_json() -> None:
     emitted_hash: str = parsed["manifest_hash"]
 
     # Recompute independently from the entries in the frame.
-    entries = [
-        AdapterManifestEntry.model_validate(e) for e in parsed["entries"]
-    ]
+    entries = [AdapterManifestEntry.model_validate(e) for e in parsed["entries"]]
     sorted_entries = sorted(entries, key=lambda e: e.tool_id)
-    recomputed_hash = hashlib.sha256(
-        _canonical_json(sorted_entries).encode("utf-8")
-    ).hexdigest()
+    recomputed_hash = hashlib.sha256(_canonical_json(sorted_entries).encode("utf-8")).hexdigest()
 
     assert emitted_hash == recomputed_hash, (
         f"manifest_hash mismatch: {emitted_hash!r} != {recomputed_hash!r}"
@@ -202,9 +196,7 @@ def test_emit_manifest_exits_78_when_no_entries() -> None:
     registry = _empty_registry()
 
     # Patch _build_entries to return empty list simulating total failure.
-    with patch(
-        "kosmos.ipc.adapter_manifest_emitter._build_entries", return_value=[]
-    ):
+    with patch("kosmos.ipc.adapter_manifest_emitter._build_entries", return_value=[]):
         with pytest.raises(SystemExit) as exc_info:
             emit_manifest(buf, registry, pid=1)
         assert exc_info.value.code == 78, (

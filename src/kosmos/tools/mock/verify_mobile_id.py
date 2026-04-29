@@ -57,21 +57,24 @@ ADAPTER_REGISTRATION = AdapterRegistration(
 )
 
 # Recorded fixture — default id_type is 'mdl' (모바일운전면허).
-_FIXTURE = MobileIdContext.model_validate({
-    "family": "mobile_id",
-    "published_tier": "mobile_id_mdl_aal2",
-    "nist_aal_hint": "AAL2",
-    "verified_at": datetime(2026, 4, 19, 9, 0, 0, tzinfo=UTC),
-    "external_session_ref": "mock-mobile-id-ref-001",
-    "id_type": "mdl",
-    # Six transparency fields (T022 retrofit)
-    "_mode": "mock",
-    "_reference_implementation": _REFERENCE_IMPL,
-    "_actual_endpoint_when_live": _ACTUAL_ENDPOINT,
-    "_security_wrapping_pattern": _SECURITY_WRAPPING,
-    "_policy_authority": _POLICY_AUTHORITY,
-    "_international_reference": _INTERNATIONAL_REF,
-}, by_alias=True)
+_FIXTURE = MobileIdContext.model_validate(
+    {
+        "family": "mobile_id",
+        "published_tier": "mobile_id_mdl_aal2",
+        "nist_aal_hint": "AAL2",
+        "verified_at": datetime(2026, 4, 19, 9, 0, 0, tzinfo=UTC),
+        "external_session_ref": "mock-mobile-id-ref-001",
+        "id_type": "mdl",
+        # Six transparency fields (T022 retrofit)
+        "_mode": "mock",
+        "_reference_implementation": _REFERENCE_IMPL,
+        "_actual_endpoint_when_live": _ACTUAL_ENDPOINT,
+        "_security_wrapping_pattern": _SECURITY_WRAPPING,
+        "_policy_authority": _POLICY_AUTHORITY,
+        "_international_reference": _INTERNATIONAL_REF,
+    },
+    by_alias=True,
+)
 
 
 def invoke(session_context: dict[str, object]) -> MobileIdContext:

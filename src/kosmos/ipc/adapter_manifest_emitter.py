@@ -310,9 +310,7 @@ def emit_manifest(
             emitter_pid=emitter_pid,
         )
     except Exception as exc:  # noqa: BLE001
-        logger.critical(
-            "manifest_emitter: failed to build AdapterManifestSyncFrame — %s", exc
-        )
+        logger.critical("manifest_emitter: failed to build AdapterManifestSyncFrame — %s", exc)
         raise SystemExit(78) from exc  # noqa: TRY200
 
     json_line = frame.model_dump_json() + "\n"

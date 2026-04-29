@@ -998,8 +998,7 @@ class AdapterManifestEntry(BaseModel):
         default=None,
         max_length=2048,
         description=(
-            "Agency-published policy URL (HTTPS). "
-            "None only when source_mode == 'internal' (I4/I5)."
+            "Agency-published policy URL (HTTPS). None only when source_mode == 'internal' (I4/I5)."
         ),
     )
     source_mode: Literal["live", "mock", "internal"] = Field(
@@ -1101,9 +1100,7 @@ class AdapterManifestSyncFrame(_BaseFrame):
 
         # I3 — manifest_hash must match SHA-256 over canonical-JSON-sorted entries.
         sorted_entries = sorted(self.entries, key=lambda e: e.tool_id)
-        entries_as_dicts = [
-            e.model_dump(mode="json", by_alias=False) for e in sorted_entries
-        ]
+        entries_as_dicts = [e.model_dump(mode="json", by_alias=False) for e in sorted_entries]
         canonical = _canonical_json(entries_as_dicts)
         expected_hash = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
         if self.manifest_hash != expected_hash:

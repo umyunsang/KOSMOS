@@ -44,9 +44,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 _REFERENCE_IMPL: Final = "public-mydata-read-v240930"
-_ACTUAL_ENDPOINT: Final = (
-    "https://api.gateway.kosmos.gov.kr/v1/lookup/hometax_simplified"
-)
+_ACTUAL_ENDPOINT: Final = "https://api.gateway.kosmos.gov.kr/v1/lookup/hometax_simplified"
 _SECURITY_WRAPPING: Final = "마이데이터 표준동의서 OAuth2 + finAuth"
 _POLICY_AUTHORITY: Final = (
     "https://www.hometax.go.kr/websquare/websquare.html?w2xPath=/ui/pp/index.xml"
@@ -136,8 +134,7 @@ def _build_fixture(inp: HometaxSimplifiedInput) -> dict[str, Any]:
         "fetched_at": datetime.now(UTC).isoformat(),
         "resident_id_prefix": inp.resident_id_prefix,
         "disclaimer": (
-            "Mock fixture — data is synthetic. "
-            "Real endpoint requires authenticated MyData consent."
+            "Mock fixture — data is synthetic. Real endpoint requires authenticated MyData consent."
         ),
     }
 
