@@ -106,8 +106,8 @@ description: "Tasks for Epic ζ #2297 — Zeta E2E Smoke (TUI primitive wiring +
 
 **Independent test criterion**: `bash specs/2297-zeta-e2e-smoke/scripts/probe_policy_links.sh` exits 0 + manual review confirms ≥10 mapping rows.
 
-- [ ] T021 #2502 [P] [US4] Author `docs/research/policy-mapping.md` per `data-model.md § 8` + FR-017 + spec.md US4 acceptance scenarios: bilingual ko-primary / en-fallback title; 1-2 paragraph thesis linking AGENTS.md § CORE THESIS to the four international analogs; single canonical mapping table with 4 foreign-spec columns + ≥10 KOSMOS-adapter rows; citations footnote with stable canonical URLs (each agency's own spec, not third-party blogs); each cited URL returns 2xx/3xx within 5s. Acceptance: `markdownlint docs/research/policy-mapping.md` PASS + table has ≥10 rows.
-- [ ] T022 #2503 [P] [US4] Author `specs/2297-zeta-e2e-smoke/scripts/probe_policy_links.sh` per SC-009: bash script that grep-extracts URLs from `docs/research/policy-mapping.md`, runs `curl -s -o /dev/null -w "%{http_code}\n" -L --max-time 5 <url>` for each, exits 0 iff all return 200/2xx/3xx. Acceptance: `bash specs/2297-zeta-e2e-smoke/scripts/probe_policy_links.sh` exits 0.
+- [X] T021 #2502 [P] [US4] Author `docs/research/policy-mapping.md` per `data-model.md § 8` + FR-017 + spec.md US4 acceptance scenarios: bilingual ko-primary / en-fallback title; 1-2 paragraph thesis linking AGENTS.md § CORE THESIS to the four international analogs; single canonical mapping table with 4 foreign-spec columns + ≥10 KOSMOS-adapter rows; citations footnote with stable canonical URLs (each agency's own spec, not third-party blogs); each cited URL returns 2xx/3xx within 5s. Acceptance: `markdownlint docs/research/policy-mapping.md` PASS + table has ≥10 rows.
+- [X] T022 #2503 [P] [US4] Author `specs/2297-zeta-e2e-smoke/scripts/probe_policy_links.sh` per SC-009: bash script that grep-extracts URLs from `docs/research/policy-mapping.md`, runs `curl -s -o /dev/null -w "%{http_code}\n" -L --max-time 5 <url>` for each, exits 0 iff all return 200/2xx/3xx. Acceptance: `bash specs/2297-zeta-e2e-smoke/scripts/probe_policy_links.sh` exits 0.
 
 ---
 
@@ -117,12 +117,12 @@ description: "Tasks for Epic ζ #2297 — Zeta E2E Smoke (TUI primitive wiring +
 
 **Independent test criterion**: `python specs/2297-zeta-e2e-smoke/scripts/check_scenario_docs.py` exits 0.
 
-- [ ] T023 #2504 [P] [US5] Author `docs/scenarios/hometax-tax-filing.md` per `data-model.md § 9` + FR-018: Korean-primary title; "Why no adapter" thesis (1-2 sentences); numbered citizen narrative ≥5 steps (citizen action → TUI message → hand-off URL → return path → confirmation); footer `## Hand-off URL` listing `https://www.hometax.go.kr/`. Acceptance: file structure validates.
-- [ ] T024 #2505 [P] [US5] Author `docs/scenarios/gov24-minwon-submit.md` per FR-018 (same structure as T023; Hand-off URL = `https://www.gov.kr/`). Acceptance: file structure validates.
-- [ ] T025 #2506 [P] [US5] Author `docs/scenarios/mobile-id-issuance.md` per FR-018 (same structure; Hand-off URL = the official 모바일 신분증 발급 portal — verify exact URL during authoring). Acceptance: file structure validates.
-- [ ] T026 #2507 [P] [US5] Author `docs/scenarios/kec-yessign-signing.md` per FR-018 (same structure; Hand-off URL = KEC / yessign canonical signing portal — verify exact URL during authoring). Acceptance: file structure validates.
-- [ ] T027 #2508 [P] [US5] Author `docs/scenarios/mydata-live.md` per FR-018 (same structure; Hand-off URL = KFTC MyData consent portal). Acceptance: file structure validates.
-- [ ] T028 #2509 [US5] Author `specs/2297-zeta-e2e-smoke/scripts/check_scenario_docs.py` per SC-010: Python stdlib-only script that walks `docs/scenarios/{hometax-tax-filing,gov24-minwon-submit,mobile-id-issuance,kec-yessign-signing,mydata-live}.md`, asserts each has Korean-primary title + "Why no adapter" section + ≥5 numbered narrative steps + `## Hand-off URL` footer. Acceptance: `uv run python specs/2297-zeta-e2e-smoke/scripts/check_scenario_docs.py` exits 0 for all 5 files.
+- [X] T023 #2504 [P] [US5] Author `docs/scenarios/hometax-tax-filing.md` per `data-model.md § 9` + FR-018: Korean-primary title; "Why no adapter" thesis (1-2 sentences); numbered citizen narrative ≥5 steps (citizen action → TUI message → hand-off URL → return path → confirmation); footer `## Hand-off URL` listing `https://www.hometax.go.kr/`. Acceptance: file structure validates.
+- [X] T024 #2505 [P] [US5] Author `docs/scenarios/gov24-minwon-submit.md` per FR-018 (same structure as T023; Hand-off URL = `https://www.gov.kr/`). Acceptance: file structure validates.
+- [X] T025 #2506 [P] [US5] Author `docs/scenarios/mobile-id-issuance.md` per FR-018 (same structure; Hand-off URL = the official 모바일 신분증 발급 portal — verify exact URL during authoring). Acceptance: file structure validates.
+- [X] T026 #2507 [P] [US5] Author `docs/scenarios/kec-yessign-signing.md` per FR-018 (same structure; Hand-off URL = KEC / yessign canonical signing portal — verify exact URL during authoring). Acceptance: file structure validates.
+- [X] T027 #2508 [P] [US5] Author `docs/scenarios/mydata-live.md` per FR-018 (same structure; Hand-off URL = KFTC MyData consent portal). Acceptance: file structure validates.
+- [X] T028 #2509 [US5] Author `specs/2297-zeta-e2e-smoke/scripts/check_scenario_docs.py` per SC-010: Python stdlib-only script that walks `docs/scenarios/{hometax-tax-filing,gov24-minwon-submit,mobile-id-issuance,kec-yessign-signing,mydata-live}.md`, asserts each has Korean-primary title + "Why no adapter" section + ≥5 numbered narrative steps + `## Hand-off URL` footer. Acceptance: `uv run python specs/2297-zeta-e2e-smoke/scripts/check_scenario_docs.py` exits 0 for all 5 files.
 
 ---
 
