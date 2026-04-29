@@ -126,14 +126,14 @@ This section is the canonical reference cited from `AGENTS.md § TUI verificatio
 
 Run **all four layers** for any change that touches the chat-request emit path, the TUI render layer, or the LLM orchestration loop. The cost is a few minutes; the alternative is shipping a regression that pytest cannot see.
 
-| Layer | What it answers | Tool | Output | LLM-grep? |
-|-------|----------------|------|--------|-----------|
-| 1. Unit / fixture tests | "Does each module's contract hold?" | `pytest` / `bun test` | text | ✓ |
-| 2. **stdio JSONL probe** | "Does the backend invoke tools when given a citizen prompt?" | `subprocess.Popen(['uv','run','kosmos','--ipc','stdio'])` + line-based JSONL frames | `*.jsonl` | ✓ |
-| 3. **Text-log smoke** | "Does the full TUI session render the expected text?" | `expect(1)` / `script(1)` / `asciinema rec` | `*.txt` / `*.cast` (JSON-Lines) | ✓ |
-| 4. **vhs `.tape` (visual)** | "Does the rendered UI match what a citizen will actually see?" | `vhs file.tape` | `*.gif` / `*.mp4` / `*.webm` | ✗ (binary) |
+| Layer | What it answers | Tool | Output | LLM-readable? |
+|-------|----------------|------|--------|---------------|
+| 1. Unit / fixture tests | "Does each module's contract hold?" | `pytest` / `bun test` | text | ✓ grep |
+| 2. **stdio JSONL probe** | "Does the backend invoke tools when given a citizen prompt?" | `subprocess.Popen(['uv','run','kosmos','--ipc','stdio'])` + line-based JSONL frames | `*.jsonl` | ✓ grep |
+| 3. **Text-log smoke** | "Does the full TUI session render the expected text?" | `expect(1)` / `script(1)` / `asciinema rec` | `*.txt` / `*.cast` (JSON-Lines) | ✓ grep |
+| 4. **vhs visual + PNG keyframes** | "Does the rendered UI render the expected pixels at each scenario stage?" | `vhs file.tape` with `Output ...gif` + 3+ `Screenshot ...png` directives | `*.gif` (animated) + `*.png` (keyframes) | ✓ multimodal vision (Claude/Codex Read tool on each PNG) |
 
-Layers 1–3 are the **gating** layers — every smoke run must produce text artefacts that LLM reviewers (Codex inline review) and CI greps can audit. Layer 4 is **supplementary** for human-eye review.
+All four layers are **gating** for TUI-changing PRs (2026-04-29 — Layer 4 promoted from supplementary). Layers 1–3 are LLM-grep-friendly text; Layer 4 is LLM-vision-friendly via the keyframe PNGs (the bare `.gif` is for humans + animated proof, but the agent Read tool only renders its first frame, which is typically a blank prompt during boot).
 
 ### Layer 2 — stdio JSONL probe
 
@@ -186,9 +186,21 @@ Captures the full pty session including ANSI escape codes. Three interchangeable
 
 When this layer fails but Layer 2 passes, the regression is in the TUI render path (Ink components, raw-mode keystroke handling, frame transport).
 
-### Layer 4 — vhs `.tape` (human visual)
+### Layer 4 — vhs visual + PNG keyframes
 
-`vhs` records `.gif` / `.mp4` / `.webm` only — not text. Use it for human-eye review of the rendered UI, not for LLM verification:
+`vhs` (Charm, ≥ 0.11) records `.gif` / `.mp4` / `.webm` for animated visual proof AND captures static PNG keyframes at named scenario stages via the `Screenshot` directive. The PNG keyframes are the **LLM-reviewable** artefact: Lead Opus uses the Read tool (Claude / Codex multimodal vision) to inspect each keyframe before push. The bare `.gif` is for humans and animated proof — the agent Read tool only renders its first frame, which during boot is typically a blank prompt.
+
+**Canonical 3-keyframe rule** (extend per scenario complexity):
+
+| Keyframe | Stage | What it proves |
+|---|---|---|
+| `smoke-keyframe-1-boot.png` | After `bun run tui` settles | KOSMOS branding, boot-guard line (`tool_registry: N entries verified ...`), prompt rendered |
+| `smoke-keyframe-2-input.png` | After citizen Korean input + Enter | Input was accepted (text echoed in REPL prompt area, ANSI not garbled) |
+| `smoke-keyframe-3-action.png` | After scenario action settles (permission prompt, tool call, agentic-loop indicator) | The change being landed actually fires — primitive call, permission render, error envelope, etc. |
+
+Add more keyframes when the scenario branches (e.g. permission `y` vs `n`, `/help` overlay, `/agents --detail`). 3 is the floor, not the ceiling.
+
+**Reference tape** (run from worktree root):
 
 ```text
 # specs/<spec>/scripts/smoke.tape
@@ -197,12 +209,25 @@ Set Width 1200
 Set Height 800
 Set FontSize 14
 Set TypingSpeed 50ms
-Type "bun run tui"
+
+# Backend mock so the TUI boots without a live FriendliAI key
+Env KOSMOS_BACKEND_CMD "sleep 60"
+
+Type "cd tui && bun run tui"
 Enter
 Sleep 6s
+Screenshot specs/<spec>/smoke-keyframe-1-boot.png
+
 Type "강남역 어디야?"
 Enter
-Sleep 60s
+Sleep 4s
+Screenshot specs/<spec>/smoke-keyframe-2-input.png
+
+Sleep 6s
+Screenshot specs/<spec>/smoke-keyframe-3-action.png
+
+Ctrl+C
+Sleep 500ms
 Ctrl+C
 ```
 
@@ -210,7 +235,11 @@ Ctrl+C
 vhs specs/<spec>/scripts/smoke.tape
 ```
 
-The gif goes into the spec directory and the PR description references it. The text-log version of the same scenario (Layer 3) lives next to it for LLM grep audit.
+Lead Opus then runs `Read` on each `*.png` and asserts the visible elements match the spec's acceptance criteria. **DO NOT** use ffmpeg post-extraction to pull middle frames — `Screenshot` is more deterministic (frame timing controlled by the tape) and a single tool, no shell-out.
+
+The tape, the gif, and every keyframe go into the spec directory and the PR description references them. The text-log version of the same scenario (Layer 3) lives next to them for LLM grep audit.
+
+**Why this layer is mandatory** (and not, as previously stated, "supplementary"): pure text logs cannot detect ANSI-cell-level rendering regressions (purple-on-purple branding text invisible against the wrong theme; Korean wide-glyph alignment breaking the prompt; the UFO mascot rendering as `?`-blocks). The Epic γ #2294 PR #2394 review surfaced the gap — `feedback_pr_pre_merge_interactive_test` was satisfied by the text log, but no agent had visually confirmed the citizen UI actually composed correctly. Layer 4 with `Screenshot` PNGs closes that loop without sacrificing the LLM-review property.
 
 ### Cross-layer debugging heuristics
 
@@ -218,14 +247,16 @@ The gif goes into the spec directory and the PR description references it. The t
 - **TUI render regression** — Layer 3 (text log) reveals it: missing assistant text, garbled ANSI, frozen cursor.
 - **Latency or streaming regression** — Layer 3 `.cast` timestamps surface chunk delays.
 - **Prompt / context bleed** — Layer 3 grep on the captured transcript: e.g. `grep -E '/Users/|gitStatus|claudeMd' smoke.txt` should return zero for citizen runs.
-- **Visual-only regression (colours, alignment)** — Layer 4 gif, eyeballed.
+- **Visual / pixel-level regression** — Layer 4 `Screenshot` PNGs, agent-vision-reviewed via Read. Catches: theme contrast (purple-on-purple branding), Korean wide-glyph misalignment, mascot rendering as `?`-blocks, banner truncation, REPL prompt jumping.
 
-### Reference implementation
+### Reference implementations
 
-Epic #2152 (`specs/2152-system-prompt-redesign/scripts/`) ships:
+- **Epic γ #2294** (`specs/2294-5-primitive-align/scripts/`) — the canonical Layer 2 + 4 template post-2026-04-29 promotion:
+  - `smoke-emergency-lookup.expect` — Layer 2 (expect-driven, mock-backend, captures the agentic-loop entry path).
+  - `smoke-emergency-lookup.tape` — Layer 4 (vhs visual; emit `smoke-emergency-lookup.gif` + 3 `Screenshot` keyframes).
+- **Epic #2152** (`specs/2152-system-prompt-redesign/scripts/`) — pre-2026-04-29 era; uses Layer 2 + the old "Layer 4 is supplementary" pattern:
+  - `smoke-stdio.py` — Layer 2 (Python-driven stdio JSONL probe; deterministic SC-1 audit).
+  - `smoke-one.sh` / `smoke-five.sh` — Layer 3 (expect-driven citizen scenarios under `script(1)`).
+  - `smoke.tape` — Layer 4 in the old shape (gif only). Future PRs touching this Epic SHOULD migrate it to the keyframe pattern.
 
-- `smoke-stdio.py` — Layer 2 (Python-driven stdio JSONL probe; deterministic SC-1 audit).
-- `smoke-one.sh` / `smoke-five.sh` — Layer 3 (expect-driven citizen scenarios under `script(1)`).
-- `smoke.tape` — Layer 4 (vhs visual recording for the integrated PR description).
-
-Use these as the template for any future TUI-affecting Epic.
+Use the Epic γ #2294 templates as the canonical starting point for any future TUI-affecting Epic.
