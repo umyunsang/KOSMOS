@@ -34,3 +34,21 @@ For now, the pytest baseline is treated as the count emitted by `c6747dd`'s prev
 ## Provenance
 
 Captured by background bash task `b4pq4nuj2`, raw log preserved at `/tmp/kosmos-2294-baseline.txt`. Used as the SC-005 reference for T025.
+
+---
+
+## T023 resolve_location test status
+
+**Task**: T023 (validate-only) — confirm `tests/primitives/test_lookup_resolve_location.py` passes unchanged.
+
+**Finding**: The file `tests/primitives/test_lookup_resolve_location.py` does **not** exist under that path. However, the equivalent coverage exists at `tests/unit/primitives/test_resolve_location_envelope_identity.py` (22 tests covering FR-017 byte-identity + T031 re-export contract + Spec 022 input/output schema shape).
+
+**Run result** (sonnet-regress, 2026-04-29):
+
+```text
+tests/unit/primitives/test_resolve_location_envelope_identity.py  22 passed in 0.26s
+```
+
+All 22 pass unchanged. The `resolve_location` sub-mode contract is intact post-refactor.
+
+**Gap note**: The exact path `tests/primitives/test_lookup_resolve_location.py` never existed — the Spec 022 contract coverage landed under `tests/unit/primitives/test_resolve_location_envelope_identity.py` instead. Per spec FR-010 (sub-mode behaviour is regression-only), this is a naming gap in the task specification rather than missing coverage. No new code authored (T023 is validate-only). A follow-up sub-issue should align the task reference path with the actual test file location.

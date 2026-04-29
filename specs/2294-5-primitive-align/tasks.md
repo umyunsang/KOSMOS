@@ -140,8 +140,8 @@ Sonnet teammate budget per group: ≤ 5 tasks AND ≤ 10 files. Verified per gro
 
 ### Implementation for User Story 4
 
-- [ ] T022 [P] [US4] [sonnet-regress] Author `tui/src/tools/__tests__/span-attribute-parity.test.ts` — mount `LookupPrimitive`, dispatch a synthetic `lookup(mode='fetch', tool_id='nmc_emergency_search', ...)` call, snapshot OTEL span attributes (`kosmos.tool.id`, `kosmos.tool.mode`, `kosmos.adapter.real_classification_url`, plus existing Spec 021 GenAI/Tool/Permission attribute families); baseline = pre-refactor snapshot from `c6747dd` (capture as part of T001 baseline if not already present).
-- [ ] T023 [P] [US4] [sonnet-regress] Validate-only — run existing `uv run pytest tests/primitives/test_lookup_resolve_location.py` and confirm it passes unchanged; if the test does NOT exist or has rotted, file a sub-issue rather than expanding scope (per spec FR-010 the sub-mode behaviour is regression-only — no new code expected).
+- [X] T022 [P] [US4] [sonnet-regress] Author `tui/src/tools/__tests__/span-attribute-parity.test.ts` — mount `LookupPrimitive`, dispatch a synthetic `lookup(mode='fetch', tool_id='nmc_emergency_search', ...)` call, snapshot OTEL span attributes (`kosmos.tool.id`, `kosmos.tool.mode`, `kosmos.adapter.real_classification_url`, plus existing Spec 021 GenAI/Tool/Permission attribute families); baseline = pre-refactor snapshot from `c6747dd` (capture as part of T001 baseline if not already present).
+- [X] T023 [P] [US4] [sonnet-regress] Validate-only — run existing `uv run pytest tests/primitives/test_lookup_resolve_location.py` and confirm it passes unchanged; if the test does NOT exist or has rotted, file a sub-issue rather than expanding scope (per spec FR-010 the sub-mode behaviour is regression-only — no new code expected).
 
 **Checkpoint**: span snapshot matches; resolve_location sub-mode envelope unchanged.
 
