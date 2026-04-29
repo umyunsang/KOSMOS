@@ -259,12 +259,12 @@ def test_ndjson_emit_parse_roundtrip(frame: IPCFrame) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Test 2: Schema has all 20 discriminator values
+# Test 2: Schema has all 22 discriminator values
 # ---------------------------------------------------------------------------
 
 
 def test_schema_has_all_21_kinds() -> None:
-    """ipc_frame_json_schema() must enumerate all 21 kind values."""
+    """ipc_frame_json_schema() must enumerate all 22 kind values (Epic ε #2296 adds adapter_manifest_sync)."""
     schema = ipc_frame_json_schema()
 
     expected_kinds = {
@@ -291,6 +291,8 @@ def test_schema_has_all_21_kinds() -> None:
         "plugin_op",
         # Spec 1978 ADR-0001
         "chat_request",
+        # Epic ε #2296
+        "adapter_manifest_sync",
     }
 
     # Pydantic generates a oneOf + discriminator schema

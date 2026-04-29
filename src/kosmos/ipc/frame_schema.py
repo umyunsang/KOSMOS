@@ -18,14 +18,24 @@ Spec 032 extensions
   ``ResumeRejectedFrame``, ``HeartbeatFrame``, ``NotificationPushFrame``.
 - Cross-field invariants E1-E6 enforced via ``@model_validator(mode="after")``.
 - ``IPCFrame`` discriminated union updated to 19 kinds.
+
+Epic ε #2296 extension
+----------------------
+- ``AdapterManifestEntry`` sub-model (per-adapter registry entry).
+- ``AdapterManifestSyncFrame``: 21st arm of the ``IPCFrame`` discriminated union.
+  Backend emits exactly once after ``register_all_tools()`` completes.
+  Invariants I1-I7 enforced at construction.
 """
 
 from __future__ import annotations
 
+import hashlib
+import json
 import logging
+import re
 from typing import Annotated, Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, NonNegativeInt, model_validator
+from pydantic import BaseModel, ConfigDict, Field, NonNegativeInt, field_validator, model_validator
 
 logger = logging.getLogger(__name__)
 
@@ -66,6 +76,8 @@ _ROLE_KIND_ALLOW_LIST: dict[str, frozenset[str]] = {
     "notification_push": frozenset({"notification"}),
     # Epic #1636 P5 — plugin install/uninstall/list control plane
     "plugin_op": frozenset({"tui", "backend"}),
+    # Epic ε #2296 — adapter manifest sync from backend on boot
+    "adapter_manifest_sync": frozenset({"backend"}),
 }
 
 # Kinds on which trailer.final=true is permitted (invariant E6).
@@ -937,7 +949,175 @@ class PluginOpFrame(_BaseFrame):
 
 
 # ---------------------------------------------------------------------------
-# Discriminated union — 20 kinds (Epic #1636 adds plugin_op)
+# Helper: canonical-JSON serialisation for manifest hash computation (I3)
+# ---------------------------------------------------------------------------
+
+_TOOL_ID_RE: re.Pattern[str] = re.compile(r"^[a-z][a-z0-9_]*$")
+
+
+def _canonical_json(obj: Any) -> str:
+    """Produce a canonical JSON string (sorted keys, compact separators, ASCII-safe)."""
+    return json.dumps(obj, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+
+
+# ---------------------------------------------------------------------------
+# Arm: adapter_manifest_sync  (Epic ε #2296 — 21st arm)
+# ---------------------------------------------------------------------------
+
+
+class AdapterManifestEntry(BaseModel):
+    """One adapter record inside an ``AdapterManifestSyncFrame.entries`` array.
+
+    Used by the TS-side cache to resolve ``tool_id`` and populate the citation
+    slot in permission prompts.
+
+    Validators:
+    - ``policy_authority_url`` required (HTTPS) when ``source_mode`` is ``"live"``
+      or ``"mock"``; ``None`` only allowed when ``source_mode == "internal"`` (I4/I5).
+    - ``tool_id`` matches ``^[a-z][a-z0-9_]*$`` (I7).
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    tool_id: str = Field(
+        min_length=1,
+        description=(
+            "Globally unique adapter id within the registry, e.g. 'nmc_emergency_search'. "
+            "Lowercase snake-case; validated by I7."
+        ),
+    )
+    name: str = Field(
+        min_length=1,
+        max_length=80,
+        description="Human-readable display name; bilingual permitted.",
+    )
+    primitive: Literal["lookup", "submit", "subscribe", "verify", "resolve_location"] = Field(
+        description="Primitive verb the adapter is registered under (I6).",
+    )
+    policy_authority_url: str | None = Field(
+        default=None,
+        max_length=2048,
+        description=(
+            "Agency-published policy URL (HTTPS). "
+            "None only when source_mode == 'internal' (I4/I5)."
+        ),
+    )
+    source_mode: Literal["live", "mock", "internal"] = Field(
+        description="Tag for the citation-rendering surface.",
+    )
+
+    @field_validator("tool_id")
+    @classmethod
+    def _validate_tool_id_snake_case(cls, v: str) -> str:
+        if not _TOOL_ID_RE.match(v):
+            raise ValueError(
+                f"AdapterManifestEntry.tool_id must match ^[a-z][a-z0-9_]*$, got {v!r}"
+            )
+        return v
+
+    @model_validator(mode="after")
+    def _validate_policy_url_vs_source_mode(self) -> AdapterManifestEntry:
+        """I4: live/mock entries must have a non-null HTTPS policy_authority_url.
+        I5: internal entries must have policy_authority_url == None.
+        """
+        if self.source_mode in ("live", "mock"):
+            if not self.policy_authority_url:
+                raise ValueError(
+                    f"AdapterManifestEntry.policy_authority_url is required (non-null, HTTPS) "
+                    f"when source_mode={self.source_mode!r} (I4); got None or empty."
+                )
+            if not self.policy_authority_url.startswith("https://"):
+                raise ValueError(
+                    f"AdapterManifestEntry.policy_authority_url must be an HTTPS URL "
+                    f"when source_mode={self.source_mode!r} (I4); "
+                    f"got {self.policy_authority_url!r}."
+                )
+        elif self.source_mode == "internal":
+            if self.policy_authority_url is not None:
+                raise ValueError(
+                    "AdapterManifestEntry.policy_authority_url must be None "
+                    "when source_mode='internal' (I5); "
+                    f"got {self.policy_authority_url!r}."
+                )
+        return self
+
+
+class AdapterManifestSyncFrame(_BaseFrame):
+    """Full registry snapshot emitted by the backend exactly once after boot.
+
+    21st arm of the ``IPCFrame`` discriminated union (Epic ε #2296).
+
+    Invariants enforced at construction:
+    - I1: ``entries`` is non-empty.
+    - I2: No two entries share the same ``tool_id``.
+    - I3: ``manifest_hash == sha256(canonical_json(sorted(entries, key=tool_id)))``.
+    - I4/I5/I6/I7: delegated to ``AdapterManifestEntry`` validators.
+
+    On invariant violation the Pydantic validator raises ``ValueError``; the
+    backend boot should catch this and exit with ``SystemExit(78)`` per
+    Constitution § II + Spec 1634 boot-validation pattern.
+    """
+
+    kind: Literal["adapter_manifest_sync"] = Field(
+        default="adapter_manifest_sync",
+        description="Frame discriminator — 21st arm of IPCFrame.",
+    )
+    entries: list[AdapterManifestEntry] = Field(
+        min_length=1,
+        description="Full registry snapshot. Non-empty (I1); no duplicate tool_id (I2).",
+    )
+    manifest_hash: str = Field(
+        min_length=64,
+        max_length=64,
+        description=(
+            "Lowercase hex SHA-256 of canonical-JSON-serialised entries sorted by tool_id (I3). "
+            "Cheap change-detection for hot-reload (future epic)."
+        ),
+    )
+    emitter_pid: int = Field(
+        gt=0,
+        description="Python backend PID at boot. Useful for OTEL span cross-correlation.",
+    )
+
+    @model_validator(mode="after")
+    def _validate_entries_invariants(self) -> AdapterManifestSyncFrame:
+        """Enforce I1 (non-empty), I2 (no duplicate tool_id), I3 (hash matches)."""
+        # I1 — already enforced by min_length=1 on the Field; double-check for clarity.
+        if not self.entries:
+            raise ValueError("AdapterManifestSyncFrame.entries must be non-empty (I1).")
+
+        # I2 — duplicate tool_id check.
+        seen: set[str] = set()
+        duplicates: list[str] = []
+        for entry in self.entries:
+            if entry.tool_id in seen:
+                duplicates.append(entry.tool_id)
+            seen.add(entry.tool_id)
+        if duplicates:
+            raise ValueError(
+                f"AdapterManifestSyncFrame.entries contains duplicate tool_id values (I2): "
+                f"{duplicates}"
+            )
+
+        # I3 — manifest_hash must match SHA-256 over canonical-JSON-sorted entries.
+        sorted_entries = sorted(self.entries, key=lambda e: e.tool_id)
+        entries_as_dicts = [
+            e.model_dump(mode="json", by_alias=False) for e in sorted_entries
+        ]
+        canonical = _canonical_json(entries_as_dicts)
+        expected_hash = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+        if self.manifest_hash != expected_hash:
+            raise ValueError(
+                f"AdapterManifestSyncFrame.manifest_hash mismatch (I3): "
+                f"expected {expected_hash!r}, got {self.manifest_hash!r}. "
+                "Recompute with sha256(canonical_json(sorted(entries, key=tool_id)))."
+            )
+
+        return self
+
+
+# ---------------------------------------------------------------------------
+# Discriminated union — 21 kinds (Epic ε #2296 adds adapter_manifest_sync)
 # ---------------------------------------------------------------------------
 
 IPCFrame = Annotated[
@@ -961,7 +1141,8 @@ IPCFrame = Annotated[
     | ResumeRejectedFrame
     | HeartbeatFrame
     | NotificationPushFrame
-    | PluginOpFrame,
+    | PluginOpFrame
+    | AdapterManifestSyncFrame,  # NEW — 21st arm (Epic ε #2296)
     Field(discriminator="kind"),
 ]
 """Discriminated union of all 21 IPC frame arms.
@@ -970,6 +1151,7 @@ Spec 287 baseline: 10 arms (user_input .. error).
 Spec 032 additions: 9 arms (payload_start .. notification_push).
 Epic #1636 P5 addition: plugin_op (1 arm with internal op discriminator).
 Spec 1978 ADR-0001 addition: chat_request (tools-aware chat from TUI).
+Epic ε #2296 addition: adapter_manifest_sync (backend boot manifest).
 
 Usage::
 

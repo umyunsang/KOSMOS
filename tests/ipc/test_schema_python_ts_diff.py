@@ -32,8 +32,8 @@ _WORKTREE_ROOT = pathlib.Path(__file__).parent.parent.parent
 _COMMITTED_SCHEMA_PATH = _WORKTREE_ROOT / "tui" / "src" / "ipc" / "schema" / "frame.schema.json"
 
 # Expected number of frame arms (Spec 287 baseline 10 + Spec 032 additions 9
-# + Epic #1636 P5 plugin_op + Spec 1978 chat_request = 21).
-_EXPECTED_KIND_COUNT = 21
+# + Epic #1636 P5 plugin_op + Spec 1978 chat_request + Epic ε #2296 adapter_manifest_sync = 22).
+_EXPECTED_KIND_COUNT = 22
 
 
 # ---------------------------------------------------------------------------
@@ -114,7 +114,7 @@ class TestSchemaParity:
         )
 
     def test_all_expected_kinds_present_in_python_schema(self) -> None:
-        """All 19 expected kind names appear in the Python-generated schema."""
+        """All 22 expected kind names appear in the Python-generated schema."""
         expected_kinds = {
             # Spec 287 baseline
             "user_input",
@@ -141,6 +141,8 @@ class TestSchemaParity:
             "plugin_op",
             # Spec 1978 ADR-0001 — TUI tools-aware chat request
             "chat_request",
+            # Epic ε #2296 — adapter manifest sync (backend boot)
+            "adapter_manifest_sync",
         }
         live_schema = ipc_frame_json_schema()
         live_kinds = _extract_kinds_from_schema(live_schema)
@@ -150,7 +152,7 @@ class TestSchemaParity:
         assert not extra, f"Unexpected kinds in Python schema: {sorted(extra)}"
 
     def test_all_expected_kinds_present_in_committed_schema(self) -> None:
-        """All 19 expected kind names appear in the committed schema file."""
+        """All 22 expected kind names appear in the committed schema file."""
         expected_kinds = {
             "user_input",
             "assistant_chunk",
@@ -175,6 +177,8 @@ class TestSchemaParity:
             "plugin_op",
             # Spec 1978 ADR-0001 — TUI tools-aware chat request
             "chat_request",
+            # Epic ε #2296 — adapter manifest sync (backend boot)
+            "adapter_manifest_sync",
         }
         committed_schema = json.loads(_COMMITTED_SCHEMA_PATH.read_text(encoding="utf-8"))
         committed_kinds = _extract_kinds_from_schema(committed_schema)
