@@ -1,0 +1,144 @@
+# SPDX-License-Identifier: Apache-2.0
+"""Mock verify adapter — kec (KEC 공동인증서 / Joint Certificate AX-channel).
+
+Epic ε #2296 — FR-001 (new verify mocks), FR-005 (transparency fields).
+
+Source mode: HARNESS_ONLY — mirrors the AX-infrastructure-callable-channel reference
+shape for the Korea Electronic Certificate (공동인증서 / NPKI) identity channel.
+Issues a DelegationToken with OAuth2.1 + mTLS + scope-bound bearer envelope.
+
+Contract: specs/2296-ax-mock-adapters/contracts/delegation-token-envelope.md § 1
+Data model: specs/2296-ax-mock-adapters/data-model.md § 1-2
+"""
+
+from __future__ import annotations
+
+import base64
+import json
+import secrets
+from datetime import UTC, datetime, timedelta
+from typing import Any, Final
+
+from kosmos.memdir.consent_ledger import DelegationIssuedEvent, append_delegation_issued
+from kosmos.primitives.delegation import DelegationContext, DelegationToken
+from kosmos.primitives.verify import register_verify_adapter
+from kosmos.tools.transparency import stamp_mock_response
+
+# ---------------------------------------------------------------------------
+# Per-adapter transparency constants (mock-adapter-response-shape.md § 4)
+# ---------------------------------------------------------------------------
+
+_REFERENCE_IMPL: Final = "ax-infrastructure-callable-channel"
+_ACTUAL_ENDPOINT: Final = "https://api.gateway.kosmos.gov.kr/v1/verify/kec"
+_SECURITY_WRAPPING: Final = "OAuth2.1 + mTLS + scope-bound bearer"
+_POLICY_AUTHORITY: Final = (
+    "https://www.rootca.or.kr/kor/accredited/accredited01.do"
+)
+_INTERNATIONAL_REF: Final = "Singapore APEX"
+
+_TOOL_ID: Final = "mock_verify_module_kec"
+_ISSUER_DID: Final = "did:web:kec.go.kr"
+
+# ---------------------------------------------------------------------------
+# Bilingual search hint
+# ---------------------------------------------------------------------------
+
+SEARCH_HINT: Final[dict[str, list[str]]] = {
+    "ko": ["공동인증서", "공인인증서", "KEC", "NPKI", "KICA", "KOSCOM"],
+    "en": ["joint certificate", "KEC", "NPKI", "public key certificate", "gongdong injeungseo"],
+}
+
+
+# ---------------------------------------------------------------------------
+# JWS helper (Mock — no real cryptography)
+# ---------------------------------------------------------------------------
+
+def _mock_vp_jwt(scope: str, issued_at: datetime, expires_at: datetime) -> str:
+    """Construct a deterministic Mock JWS triple (header.payload.signature)."""
+    header_b64 = base64.urlsafe_b64encode(
+        json.dumps({"alg": "none", "typ": "vp+jwt"}).encode()
+    ).rstrip(b"=").decode()
+    payload_b64 = base64.urlsafe_b64encode(
+        json.dumps({
+            "iss": _ISSUER_DID,
+            "scope": scope,
+            "iat": int(issued_at.timestamp()),
+            "exp": int(expires_at.timestamp()),
+        }).encode()
+    ).rstrip(b"=").decode()
+    return f"{header_b64}.{payload_b64}.mock-signature-not-cryptographic"
+
+
+# ---------------------------------------------------------------------------
+# invoke — registered via register_verify_adapter
+# ---------------------------------------------------------------------------
+
+def invoke(session_context: dict[str, Any]) -> dict[str, Any]:
+    """Issue a DelegationToken for the KEC (공동인증서) AX channel.
+
+    session_context keys consumed:
+    - ``scope_list`` (list[str], required): scopes to embed in the token.
+    - ``session_id`` (str, optional): calling session UUID for ledger.
+    - ``purpose_ko`` (str, optional): Korean purpose statement.
+    - ``purpose_en`` (str, optional): English purpose statement.
+    - ``ledger_root`` (Path, optional): test override for ledger directory.
+    """
+    scope_list: list[str] = session_context.get(  # type: ignore[assignment]
+        "scope_list", ["verify:kec.identity"]
+    )
+    scope_str = ",".join(scope_list)
+    session_id: str = session_context.get("session_id", "mock-session-unknown")  # type: ignore[assignment]
+    purpose_ko: str = session_context.get(  # type: ignore[assignment]
+        "purpose_ko", "공동인증서 신원확인"
+    )
+    purpose_en: str = session_context.get(  # type: ignore[assignment]
+        "purpose_en", "KEC joint-certificate identity verification"
+    )
+
+    now = datetime.now(UTC)
+    expires_at = now + timedelta(hours=24)
+    raw_token = f"del_{secrets.token_urlsafe(24)}"
+
+    token = DelegationToken(
+        vp_jwt=_mock_vp_jwt(scope_str, now, expires_at),
+        delegation_token=raw_token,
+        scope=scope_str,
+        issuer_did=_ISSUER_DID,
+        issued_at=now,
+        expires_at=expires_at,
+        **{"_mode": "mock"},
+    )
+    context = DelegationContext(
+        token=token,
+        citizen_did=None,
+        purpose_ko=purpose_ko,
+        purpose_en=purpose_en,
+    )
+
+    # Append delegation_issued ledger event.
+    ledger_root = session_context.get("ledger_root")  # type: ignore[assignment]
+    ledger_event = DelegationIssuedEvent(
+        ts=now,
+        session_id=session_id,
+        delegation_token=raw_token,
+        scope=scope_str,
+        expires_at=expires_at,
+        issuer_did=_ISSUER_DID,
+        verify_tool_id=_TOOL_ID,
+        **{"_mode": "mock"},
+    )
+    append_delegation_issued(ledger_event, ledger_root=ledger_root)
+
+    # Stamp transparency fields and return.
+    domain_payload = context.model_dump(by_alias=True)
+    return stamp_mock_response(
+        domain_payload,
+        reference_implementation=_REFERENCE_IMPL,
+        actual_endpoint_when_live=_ACTUAL_ENDPOINT,
+        security_wrapping_pattern=_SECURITY_WRAPPING,
+        policy_authority=_POLICY_AUTHORITY,
+        international_reference=_INTERNATIONAL_REF,
+    )
+
+
+register_verify_adapter("kec", invoke)

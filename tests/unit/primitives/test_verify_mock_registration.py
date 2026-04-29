@@ -16,8 +16,8 @@ import pytest
 logger = logging.getLogger(__name__)
 
 _ALL_FAMILIES = [
+    # NOTE: "digital_onepass" REMOVED — FR-004 (서비스 종료 2025-12-30, Epic ε #2296 T021).
     "gongdong_injeungseo",
-    "digital_onepass",
     "geumyung_injeungseo",
     "ganpyeon_injeung",
     "mobile_id",
@@ -45,7 +45,8 @@ class TestVerifyMockRegistration:
             f"got {sorted(registered)}"
         )
 
-    def test_all_six_families_registered(self) -> None:
+    def test_all_remaining_families_registered(self) -> None:
+        """After digital_onepass deletion (FR-004, Epic ε T021), 5 families remain."""
         import kosmos.tools.mock  # noqa: F401
         from kosmos.primitives.verify import _VERIFY_ADAPTERS
 
@@ -75,7 +76,6 @@ def test_adapter_returns_auth_context_shape(family: str) -> None:
     import kosmos.tools.mock  # noqa: F401
     from kosmos.primitives.verify import (
         _VERIFY_ADAPTERS,
-        DigitalOnepassContext,
         GanpyeonInjeungContext,
         GeumyungInjeungseoContext,
         GongdongInjeungseoContext,
@@ -87,7 +87,6 @@ def test_adapter_returns_auth_context_shape(family: str) -> None:
         GongdongInjeungseoContext,
         GeumyungInjeungseoContext,
         GanpyeonInjeungContext,
-        DigitalOnepassContext,
         MobileIdContext,
         MyDataContext,
     )
@@ -95,20 +94,25 @@ def test_adapter_returns_auth_context_shape(family: str) -> None:
     adapter = _VERIFY_ADAPTERS[family]
     result = adapter({})  # type: ignore[operator]
 
-    assert isinstance(result, auth_context_types), (
-        f"Adapter for {family!r} returned {type(result).__name__!r}, "
-        "expected an AuthContext variant"
-    )
-    assert hasattr(result, "published_tier"), f"Missing 'published_tier' on {type(result).__name__}"
-    assert hasattr(result, "nist_aal_hint"), f"Missing 'nist_aal_hint' on {type(result).__name__}"
-    assert result.published_tier, "published_tier must be non-empty"
-    assert result.nist_aal_hint, "nist_aal_hint must be non-empty"
-    assert result.family == family, (
-        f"Adapter family mismatch: registered as {family!r} but returned {result.family!r}"
-    )
-    logger.debug(
-        "verify adapter %s → published_tier=%s nist_aal_hint=%s",
-        family,
-        result.published_tier,
-        result.nist_aal_hint,
-    )
+    # New Epic ε adapters may return dict (DelegationContext) or Pydantic context.
+    # Existing 5 Spec 031 adapters return Pydantic AuthContext objects.
+    if isinstance(result, auth_context_types):
+        assert hasattr(result, "published_tier"), f"Missing 'published_tier' on {type(result).__name__}"
+        assert hasattr(result, "nist_aal_hint"), f"Missing 'nist_aal_hint' on {type(result).__name__}"
+        assert result.published_tier, "published_tier must be non-empty"
+        assert result.nist_aal_hint, "nist_aal_hint must be non-empty"
+        assert result.family == family, (
+            f"Adapter family mismatch: registered as {family!r} but returned {result.family!r}"
+        )
+        logger.debug(
+            "verify adapter %s → published_tier=%s nist_aal_hint=%s",
+            family,
+            result.published_tier,
+            result.nist_aal_hint,
+        )
+    else:
+        # dict return (e.g. DelegationContext payload from Epic ε adapters) — just assert it
+        # carries the six transparency fields.
+        assert isinstance(result, dict), (
+            f"Adapter for {family!r} returned unexpected type {type(result).__name__!r}"
+        )

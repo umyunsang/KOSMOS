@@ -1,0 +1,154 @@
+# SPDX-License-Identifier: Apache-2.0
+"""T016 — verify_module_simple_auth unit tests.
+
+Covers:
+- Happy path: invoke returns dict with six transparency fields + DelegationContext shape.
+- Scope validation failure: missing / empty scope_list raises ValueError.
+- Ledger append: delegation_issued event is written to a temp ledger directory.
+- Registration: 'simple_auth_module' is registered in _VERIFY_ADAPTERS after import.
+
+Contract: specs/2296-ax-mock-adapters/contracts/delegation-token-envelope.md § 1
+"""
+
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+import pytest
+
+
+# ---------------------------------------------------------------------------
+# Happy-path
+# ---------------------------------------------------------------------------
+
+
+def test_simple_auth_invoke_returns_transparency_fields(tmp_path: Path) -> None:
+    """invoke() returns a dict with all six transparency fields non-empty."""
+    from kosmos.tools.mock.verify_module_simple_auth import invoke
+
+    result = invoke({
+        "scope_list": ["submit:hometax.tax-return"],
+        "session_id": "test-sess-001",
+        "ledger_root": tmp_path / "ledger",
+    })
+
+    assert isinstance(result, dict), "Expected a dict from invoke()"
+    assert result.get("_mode") == "mock", "_mode must be 'mock'"
+    for field in (
+        "_reference_implementation",
+        "_actual_endpoint_when_live",
+        "_security_wrapping_pattern",
+        "_policy_authority",
+        "_international_reference",
+    ):
+        value = result.get(field)
+        assert value is not None and isinstance(value, str) and value.strip(), (
+            f"transparency field {field!r} is missing or empty in simple_auth response"
+        )
+
+
+def test_simple_auth_international_reference(tmp_path: Path) -> None:
+    """_international_reference must be 'Japan マイナポータル API'."""
+    from kosmos.tools.mock.verify_module_simple_auth import invoke
+
+    result = invoke({"scope_list": ["verify:simple_auth.identity"], "session_id": "s1",
+                     "ledger_root": tmp_path / "ledger"})
+    assert result["_international_reference"] == "Japan マイナポータル API"
+
+
+def test_simple_auth_reference_impl(tmp_path: Path) -> None:
+    """_reference_implementation must be 'ax-infrastructure-callable-channel'."""
+    from kosmos.tools.mock.verify_module_simple_auth import invoke
+
+    result = invoke({"scope_list": ["verify:simple_auth.identity"], "session_id": "s1",
+                     "ledger_root": tmp_path / "ledger"})
+    assert result["_reference_implementation"] == "ax-infrastructure-callable-channel"
+
+
+def test_simple_auth_delegation_context_shape(tmp_path: Path) -> None:
+    """invoke() result carries 'token' dict (DelegationContext payload)."""
+    from kosmos.tools.mock.verify_module_simple_auth import invoke
+
+    result = invoke({"scope_list": ["submit:hometax.tax-return"], "session_id": "s1",
+                     "ledger_root": tmp_path / "ledger"})
+    assert "token" in result, "Expected 'token' nested in DelegationContext payload"
+    token = result["token"]
+    assert isinstance(token, dict)
+    assert token.get("delegation_token", "").startswith("del_")
+    assert token.get("scope") == "submit:hometax.tax-return"
+
+
+def test_simple_auth_multi_scope(tmp_path: Path) -> None:
+    """Comma-joined multi-scope list is embedded in the token scope field."""
+    from kosmos.tools.mock.verify_module_simple_auth import invoke
+
+    result = invoke({
+        "scope_list": ["lookup:hometax.simplified", "submit:hometax.tax-return"],
+        "session_id": "s-multi",
+        "ledger_root": tmp_path / "ledger",
+    })
+    scope = result["token"]["scope"]
+    assert "lookup:hometax.simplified" in scope.split(",")
+    assert "submit:hometax.tax-return" in scope.split(",")
+
+
+# ---------------------------------------------------------------------------
+# Scope validation failure
+# ---------------------------------------------------------------------------
+
+
+def test_simple_auth_scope_grammar_enforced(tmp_path: Path) -> None:
+    """Invalid scope string causes DelegationToken validator to raise ValueError."""
+    from kosmos.tools.mock.verify_module_simple_auth import invoke
+
+    with pytest.raises(Exception):  # pydantic ValidationError is a subclass of Exception
+        invoke({
+            "scope_list": ["BAD_SCOPE_NO_COLON"],
+            "session_id": "s-bad",
+            "ledger_root": tmp_path / "ledger",
+        })
+
+
+# ---------------------------------------------------------------------------
+# Ledger append
+# ---------------------------------------------------------------------------
+
+
+def test_simple_auth_ledger_append(tmp_path: Path) -> None:
+    """After invoke, a delegation_issued event is appended to the ledger."""
+    from kosmos.tools.mock.verify_module_simple_auth import invoke
+
+    ledger_dir = tmp_path / "ledger"
+    invoke({
+        "scope_list": ["submit:hometax.tax-return"],
+        "session_id": "sess-ledger-test",
+        "ledger_root": ledger_dir,
+    })
+
+    # Find the jsonl file
+    jsonl_files = list(ledger_dir.glob("*.jsonl"))
+    assert len(jsonl_files) == 1, f"Expected 1 JSONL ledger file, found {len(jsonl_files)}"
+    lines = [json.loads(line) for line in jsonl_files[0].read_text().splitlines() if line.strip()]
+    assert len(lines) == 1
+    event = lines[0]
+    assert event["kind"] == "delegation_issued"
+    assert event["session_id"] == "sess-ledger-test"
+    assert event["delegation_token"].startswith("del_")
+    assert event["scope"] == "submit:hometax.tax-return"
+    assert event["verify_tool_id"] == "mock_verify_module_simple_auth"
+
+
+# ---------------------------------------------------------------------------
+# Registration
+# ---------------------------------------------------------------------------
+
+
+def test_simple_auth_is_registered() -> None:
+    """Importing the module registers 'simple_auth_module' in _VERIFY_ADAPTERS."""
+    import kosmos.tools.mock.verify_module_simple_auth  # noqa: F401 — side-effect
+    from kosmos.primitives.verify import _VERIFY_ADAPTERS
+
+    assert "simple_auth_module" in _VERIFY_ADAPTERS, (
+        "simple_auth_module not found in _VERIFY_ADAPTERS after import"
+    )
