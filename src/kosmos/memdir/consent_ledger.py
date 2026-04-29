@@ -244,7 +244,7 @@ def read_delegation_events(
     """
     from pydantic import TypeAdapter
 
-    _event_adapter: TypeAdapter[DelegationLedgerEvent] = TypeAdapter(DelegationLedgerEvent)  # type: ignore[type-arg]
+    _event_adapter: TypeAdapter[DelegationLedgerEvent] = TypeAdapter(DelegationLedgerEvent)
 
     root = ledger_root or _DEFAULT_LEDGER_ROOT
     target_date = date or datetime.now(UTC)

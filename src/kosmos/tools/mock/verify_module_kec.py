@@ -91,15 +91,11 @@ def invoke(session_context: dict[str, Any]) -> dict[str, Any]:
     - ``purpose_en`` (str, optional): English purpose statement.
     - ``ledger_root`` (Path, optional): test override for ledger directory.
     """
-    scope_list: list[str] = session_context.get(  # type: ignore[assignment]
-        "scope_list", ["verify:kec.identity"]
-    )
+    scope_list: list[str] = session_context.get("scope_list", ["verify:kec.identity"])
     scope_str = ",".join(scope_list)
-    session_id: str = session_context.get("session_id", "mock-session-unknown")  # type: ignore[assignment]
-    purpose_ko: str = session_context.get(  # type: ignore[assignment]
-        "purpose_ko", "공동인증서 신원확인"
-    )
-    purpose_en: str = session_context.get(  # type: ignore[assignment]
+    session_id: str = session_context.get("session_id", "mock-session-unknown")
+    purpose_ko: str = session_context.get("purpose_ko", "공동인증서 신원확인")
+    purpose_en: str = session_context.get(
         "purpose_en", "KEC joint-certificate identity verification"
     )
 
@@ -114,7 +110,6 @@ def invoke(session_context: dict[str, Any]) -> dict[str, Any]:
         issuer_did=_ISSUER_DID,
         issued_at=now,
         expires_at=expires_at,
-        **{"_mode": "mock"},
     )
     context = DelegationContext(
         token=token,
@@ -124,7 +119,7 @@ def invoke(session_context: dict[str, Any]) -> dict[str, Any]:
     )
 
     # Append delegation_issued ledger event.
-    ledger_root = session_context.get("ledger_root")  # type: ignore[assignment]
+    ledger_root = session_context.get("ledger_root")
     ledger_event = DelegationIssuedEvent(
         ts=now,
         session_id=session_id,
@@ -133,7 +128,6 @@ def invoke(session_context: dict[str, Any]) -> dict[str, Any]:
         expires_at=expires_at,
         issuer_did=_ISSUER_DID,
         verify_tool_id=_TOOL_ID,
-        **{"_mode": "mock"},
     )
     append_delegation_issued(ledger_event, ledger_root=ledger_root)
 

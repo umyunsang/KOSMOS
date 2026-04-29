@@ -105,7 +105,6 @@ def invoke(session_context: dict[str, Any]) -> dict[str, Any]:
         assertion_jwt=_mock_assertion_jwt(now, expires_at),
         citizen_did=None,
         expires_at=expires_at,
-        **{"_mode": "mock"},
     )
 
     # Stamp transparency fields on top of the identity assertion dict.

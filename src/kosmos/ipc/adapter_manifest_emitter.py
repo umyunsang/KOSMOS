@@ -49,7 +49,7 @@ import json
 import logging
 import os
 from datetime import UTC, datetime
-from typing import IO, Any
+from typing import IO, Any, Literal
 
 from kosmos.ipc.frame_schema import AdapterManifestEntry, AdapterManifestSyncFrame
 
@@ -188,14 +188,15 @@ def _build_entries(  # noqa: C901, ANN401 — three-source walker, refactor defe
         tools_list = []
 
     for tool in tools_list:
-        tool_id = tool.id if hasattr(tool, "id") else getattr(tool, "tool_id", None)
-        if tool_id is None or tool_id in seen:
+        tool_id_opt: str | None = tool.id if hasattr(tool, "id") else getattr(tool, "tool_id", None)
+        if tool_id_opt is None or tool_id_opt in seen:
             continue
+        tool_id = tool_id_opt
         policy_url = None
         if tool.policy is not None:
             policy_url = tool.policy.real_classification_url
 
-        raw_primitive = tool.primitive
+        raw_primitive: Any = tool.primitive
         if raw_primitive is None:
             # Primitive may be None during pre-v1.2 compatibility window;
             # infer from adapter_mode or skip.
@@ -244,7 +245,7 @@ def _add_internal_if_absent(
         logger.warning("manifest_emitter: could not add internal entry %s — %s", tool_id, exc)
 
 
-def _map_source_mode(raw: str) -> str:
+def _map_source_mode(raw: str) -> Literal["live", "mock", "internal"]:
     """Normalise AdapterSourceMode enum value to 'live' | 'mock' | 'internal'."""
     if raw in ("live", "LIVE", "OPENAPI"):
         return "live"
@@ -253,11 +254,21 @@ def _map_source_mode(raw: str) -> str:
     return "mock"  # fail-safe: unknown modes → mock (conservative)
 
 
-def _map_primitive(raw: Any) -> str:  # noqa: ANN401
+def _map_primitive(
+    raw: Any,
+) -> Literal["lookup", "submit", "subscribe", "verify", "resolve_location"]:  # noqa: ANN401, E501
     """Normalise AdapterPrimitive enum value or string to the literal form."""
     s = raw.value if hasattr(raw, "value") else str(raw)
-    if s in ("lookup", "submit", "subscribe", "verify", "resolve_location"):
-        return s
+    if s == "lookup":
+        return "lookup"
+    if s == "submit":
+        return "submit"
+    if s == "subscribe":
+        return "subscribe"
+    if s == "verify":
+        return "verify"
+    if s == "resolve_location":
+        return "resolve_location"
     return "lookup"  # fail-safe
 
 
