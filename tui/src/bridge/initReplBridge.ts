@@ -42,10 +42,8 @@ import {
 } from '../utils/messages.js'
 import type { PermissionMode } from '../utils/permissions/PermissionMode.js'
 import { getCurrentSessionTitle } from '../utils/sessionStorage.js'
-import {
-  extractConversationText,
-  generateSessionTitle,
-} from '../utils/sessionTitle.js'
+// utils/sessionTitle removed — Anthropic queryHaiku-based session title generator (Spec 1633 / Epic #2293).
+// generateSessionTitle: Haiku call replaced by no-op; extractConversationText: inlined below.
 import { generateShortWordSlug } from '../utils/words.js'
 import {
   getBridgeAccessToken,
@@ -325,26 +323,8 @@ export async function initReplBridge(
       getAccessToken: getBridgeAccessToken,
     }).catch(() => {})
   }
-  // Fire-and-forget Haiku generation with post-await guards. Re-checks /rename
-  // (sessionStorage), v1 env-lost (lastBridgeSessionId), and same-session
-  // out-of-order resolution (genSeq — count-1's Haiku resolving after count-3
-  // would clobber the richer title). generateSessionTitle never rejects.
-  const generateAndPatch = (input: string, bridgeSessionId: string): void => {
-    const gen = ++genSeq
-    const atCount = userMessageCount
-    void generateSessionTitle(input, AbortSignal.timeout(15_000)).then(
-      generated => {
-        if (
-          generated &&
-          gen === genSeq &&
-          lastBridgeSessionId === bridgeSessionId &&
-          !getCurrentSessionTitle(getSessionId())
-        ) {
-          patch(generated, bridgeSessionId, atCount)
-        }
-      },
-    )
-  }
+  // generateAndPatch removed — Anthropic queryHaiku-based title upgrader deleted (Spec 1633 / Epic #2293).
+  // KOSMOS title stays as deriveTitle placeholder (first 50 chars of first message).
   const onUserMessage = (text: string, bridgeSessionId: string): boolean => {
     if (hasExplicitTitle || getCurrentSessionTitle(getSessionId())) {
       return true
@@ -364,13 +344,6 @@ export async function initReplBridge(
     if (userMessageCount === 1 && !hasTitle) {
       const placeholder = deriveTitle(text)
       if (placeholder) patch(placeholder, bridgeSessionId, userMessageCount)
-      generateAndPatch(text, bridgeSessionId)
-    } else if (userMessageCount === 3) {
-      const msgs = getMessages?.()
-      const input = msgs
-        ? extractConversationText(getMessagesAfterCompactBoundary(msgs))
-        : text
-      generateAndPatch(input, bridgeSessionId)
     }
     // Also re-latches if v1 env-lost resets the transport's done flag past 3.
     return userMessageCount >= 3

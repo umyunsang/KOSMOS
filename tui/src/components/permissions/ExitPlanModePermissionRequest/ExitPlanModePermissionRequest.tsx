@@ -1,12 +1,12 @@
 import { feature } from 'bun:bundle';
-import type { UUID } from 'crypto';
+// UUID type removed — was only used in autoNameSessionFromPlan (deleted, Spec 1633 / Epic #2293).
 import figures from 'figures';
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useNotifications } from 'src/context/notifications.js';
 import { type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS, logEvent } from 'src/services/analytics/index.js';
 import { useAppState, useAppStateStore, useSetAppState } from 'src/state/AppState.js';
-import { getSdkBetas, getSessionId, isSessionPersistenceDisabled, setHasExitedPlanMode, setNeedsAutoModeExitAttachment, setNeedsPlanModeExitAttachment } from '../../../bootstrap/state.js';
-import { generateSessionName } from '../../../commands/rename/generateSessionName.js';
+import { getSdkBetas, getSessionId, setHasExitedPlanMode, setNeedsAutoModeExitAttachment, setNeedsPlanModeExitAttachment } from '../../../bootstrap/state.js';
+// commands/rename/generateSessionName removed — Anthropic queryHaiku auto-naming is Anthropic-only (Spec 1633 / Epic #2293).
 import { launchUltraplan } from '../../../commands/ultraplan.js';
 import type { KeyboardEvent } from '../../../ink/events/keyboard-event.js';
 import { Box, Text } from '../../../ink.js';
@@ -31,8 +31,8 @@ import { isAutoModeGateEnabled, restoreDangerousPermissions, stripDangerousPermi
 import { getPewterLedgerVariant, isPlanModeInterviewPhaseEnabled } from '../../../utils/planModeV2.js';
 import { getPlan, getPlanFilePath } from '../../../utils/plans.js';
 import { editFileInEditor, editPromptInEditor } from '../../../utils/promptEditor.js';
-import { getCurrentSessionTitle, getTranscriptPath, saveAgentName, saveCustomTitle } from '../../../utils/sessionStorage.js';
-import { getSettings_DEPRECATED } from '../../../utils/settings/settings.js';
+import { getCurrentSessionTitle, getTranscriptPath } from '../../../utils/sessionStorage.js';
+// getSettings_DEPRECATED removed — was only used in autoNameSessionFromPlan (deleted, Spec 1633 / Epic #2293).
 import { type OptionWithDescription, Select } from '../../CustomSelect/index.js';
 import { Markdown } from '../../Markdown.js';
 import { PermissionDialog } from '../PermissionDialog.js';
@@ -80,40 +80,11 @@ export function buildPermissionUpdates(mode: PermissionMode, allowedPrompts?: Al
  * if they haven't already named it via /rename or --name. Fire-and-forget.
  * Mirrors /rename: kebab-case name, updates the prompt-border badge.
  */
-export function autoNameSessionFromPlan(plan: string, setAppState: (updater: (prev: AppState) => AppState) => void, isClearContext: boolean): void {
-  if (isSessionPersistenceDisabled() || getSettings_DEPRECATED()?.cleanupPeriodDays === 0) {
-    return;
-  }
-  // On clear-context, the current session is about to be abandoned — its
-  // title (which may have been set by a PRIOR auto-name) is irrelevant.
-  // Checking it would make the feature self-defeating after first use.
-  if (!isClearContext && getCurrentSessionTitle(getSessionId())) return;
-  void generateSessionName(
-  // generateSessionName tail-slices to the last 1000 chars (correct for
-  // conversations, where recency matters). Plans front-load the goal and
-  // end with testing steps — head-slice so Haiku sees the summary.
-  [createUserMessage({
-    content: plan.slice(0, 1000)
-  })], new AbortController().signal).then(async name => {
-    // On clear-context acceptance, regenerateSessionId() has run by now —
-    // this intentionally names the NEW execution session. Do not "fix" by
-    // capturing sessionId once; that would name the abandoned planning session.
-    if (!name || getCurrentSessionTitle(getSessionId())) return;
-    const sessionId = getSessionId() as UUID;
-    const fullPath = getTranscriptPath();
-    await saveCustomTitle(sessionId, name, fullPath, 'auto');
-    await saveAgentName(sessionId, name, fullPath, 'auto');
-    setAppState(prev => {
-      if (prev.standaloneAgentContext?.name === name) return prev;
-      return {
-        ...prev,
-        standaloneAgentContext: {
-          ...prev.standaloneAgentContext,
-          name
-        }
-      };
-    });
-  }).catch(logError);
+// autoNameSessionFromPlan: Anthropic queryHaiku auto-naming removed (Spec 1633 / Epic #2293).
+// The component still exits plan mode; session auto-naming is a no-op in KOSMOS.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function autoNameSessionFromPlan(_plan: string, _setAppState: (updater: (prev: AppState) => AppState) => void, _isClearContext: boolean): void {
+  // no-op: generateSessionName (Anthropic queryHaiku) removed
 }
 export function ExitPlanModePermissionRequest({
   toolUseConfirm,

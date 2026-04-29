@@ -7,10 +7,10 @@ import type {
 import { z } from 'zod/v4'
 import { jsonStringify } from '../slowOperations.js'
 import { plural } from '../stringUtils.js'
-import {
-  looksLikeISO8601,
-  parseNaturalLanguageDateTime,
-} from './dateTimeParser.js'
+// KOSMOS Spec 1633 / Epic #2293 — utils/mcp/dateTimeParser deleted (Anthropic queryHaiku natural-language parser); inline simple stubs.
+const ISO8601_REGEX = /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:?\d{2})?)?$/
+const looksLikeISO8601 = (value: string): boolean => ISO8601_REGEX.test(value)
+const parseNaturalLanguageDateTime = async (value: string): Promise<string | null> => looksLikeISO8601(value) ? value : null
 
 export type ValidationResult = {
   value?: string | number | boolean

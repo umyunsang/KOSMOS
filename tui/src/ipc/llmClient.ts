@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // KOSMOS-original — Epic #1633 P2 · Anthropic→FriendliAI LLM client.
 //
-// Emulates the `@anthropic-ai/sdk` Messages.create streaming-generator surface
+// Emulates the Anthropic SDK Messages.create streaming-generator surface
 // consumed by QueryEngine.ts and query.ts, but all wire traffic goes over the
 // Spec 032 stdio IPC bridge (TS) → Python backend → FriendliAI Serverless.
 // TS never speaks HTTPS to FriendliAI directly (docs/vision.md § L1-A A1,

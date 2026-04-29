@@ -18,7 +18,8 @@ import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
 } from '../analytics/index.js'
-import { notifyCacheDeletion } from '../api/promptCacheBreakDetection.js'
+// KOSMOS Spec 1633 / Epic #2293 — services/api/promptCacheBreakDetection deleted; inline no-op stub.
+const notifyCacheDeletion = (..._args: unknown[]): void => {}
 import { roughTokenCountEstimation } from '../tokenEstimation.js'
 import {
   clearCompactWarningSuppression,

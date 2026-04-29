@@ -14,8 +14,10 @@ import type {
   SDKStatus,
   SDKUserMessageReplay,
 } from 'src/entrypoints/agentSdkTypes.js'
-// services/api/claude removed in P1+P2 (Spec 1633); KOSMOS uses FriendliAI/K-EXAONE, not Anthropic API.
-import type { NonNullableUsage as _NNU } from 'src/services/api/logging.js'
+// services/api/logging removed (Spec 2293 P1 cleanup); inline stubs below.
+type NonNullableUsage = import('src/entrypoints/sdk/sdkUtilityTypes.js').NonNullableUsage
+import { EMPTY_USAGE } from 'src/services/api/emptyUsage.js'
+type _NNU = NonNullableUsage
 const updateUsage = (current: _NNU, delta: _NNU): _NNU => {
   if (!delta) return current
   const out = { ...current }
@@ -27,8 +29,6 @@ const updateUsage = (current: _NNU, delta: _NNU): _NNU => {
   return out
 }
 const accumulateUsage = (total: _NNU, current: _NNU): _NNU => updateUsage(total, current)
-import type { NonNullableUsage } from 'src/services/api/logging.js'
-import { EMPTY_USAGE } from 'src/services/api/logging.js'
 import stripAnsi from 'strip-ansi'
 import type { Command } from './commands.js'
 import { getSlashCommandToolSkills } from './commands.js'
@@ -45,7 +45,9 @@ import type { CanUseToolFn } from './hooks/useCanUseTool.js'
 import { loadMemoryPrompt } from './memdir/memdir.js'
 import { hasAutoMemPathOverride } from './memdir/paths.js'
 import { query } from './query.js'
-import { categorizeRetryableAPIError } from './services/api/errors.js'
+// services/api/errors removed (Spec 2293 cleanup); stub below.
+const categorizeRetryableAPIError = (err: unknown): string =>
+  err instanceof Error ? err.message : String(err)
 import type { MCPServerConnection } from './services/mcp/types.js'
 import type { AppState } from './state/AppState.js'
 import { type Tools, type ToolUseContext, toolMatchesName } from './Tool.js'

@@ -5,7 +5,7 @@ import backfillSessions from './commands/backfill-sessions/index.js'
 import btw from './commands/btw/index.js'
 import goodClaude from './commands/good-claude/index.js'
 import issue from './commands/issue/index.js'
-import feedback from './commands/feedback/index.js'
+// feedback command removed — claude.ai 1P telemetry submission, Anthropic-only (Spec 1633 / Epic #2293).
 import clear from './commands/clear/index.js'
 import color from './commands/color/index.js'
 import commit from './commands/commit.js'
@@ -124,7 +124,7 @@ import thinkbackPlay from './commands/thinkback-play/index.js'
 import permissions from './commands/permissions/index.js'
 import plan from './commands/plan/index.js'
 import fast from './commands/fast/index.js'
-import passes from './commands/passes/index.js'
+// passes command removed — claude.ai guest passes SaaS dead in KOSMOS
 import privacySettings from './commands/privacy-settings/index.js'
 import hooks from './commands/hooks/index.js'
 import files from './commands/files/index.js'
@@ -189,21 +189,8 @@ import rateLimitOptions from './commands/rate-limit-options/index.js'
 import statusline from './commands/statusline.js'
 import effort from './commands/effort/index.js'
 import stats from './commands/stats/index.js'
-// insights.ts is 113KB (3200 lines, includes diffLines/html rendering). Lazy
-// shim defers the heavy module until /insights is actually invoked.
-const usageReport: Command = {
-  type: 'prompt',
-  name: 'insights',
-  description: 'Generate a report analyzing your Claude Code sessions',
-  contentLength: 0,
-  progressMessage: 'analyzing your sessions',
-  source: 'builtin',
-  async getPromptForCommand(args, context) {
-    const real = (await import('./commands/insights.js')).default
-    if (real.type !== 'prompt') throw new Error('unreachable')
-    return real.getPromptForCommand(args, context)
-  },
-}
+// KOSMOS Spec 1633 / Epic #2293 — commands/insights.ts deleted (claude-code
+// internal /insights command; not a KOSMOS citizen use case).
 import oauthRefresh from './commands/oauth-refresh/index.js'
 import debugToolCall from './commands/debug-tool-call/index.js'
 import { getSettingSourceName } from './utils/settings/constants.js'
@@ -308,7 +295,7 @@ const COMMANDS = memoize((): Command[] => [
   stickers,
   tag,
   theme,
-  feedback,
+  // feedback removed — Anthropic-only (Spec 1633 / Epic #2293)
   review,
   ultrareview,
   rewind,
@@ -319,7 +306,6 @@ const COMMANDS = memoize((): Command[] => [
   extraUsageNonInteractive,
   rateLimitOptions,
   usage,
-  usageReport,
   vim,
   ...(webCmd ? [webCmd] : []),
   ...(forkCmd ? [forkCmd] : []),
@@ -338,7 +324,6 @@ const COMMANDS = memoize((): Command[] => [
   hooks,
   exportCommand,
   sandboxToggle,
-  passes,
   ...(peersCmd ? [peersCmd] : []),
   tasks,
   ...(workflowsCmd ? [workflowsCmd] : []),
@@ -624,7 +609,7 @@ export const REMOTE_SAFE_COMMANDS: Set<Command> = new Set([
   usage, // Show usage info
   copy, // Copy last message
   btw, // Quick note
-  feedback, // Send feedback
+  // feedback removed — Anthropic-only (Spec 1633 / Epic #2293)
   plan, // Plan mode toggle
   keybindings, // Keybinding management
   statusline, // Status line toggle

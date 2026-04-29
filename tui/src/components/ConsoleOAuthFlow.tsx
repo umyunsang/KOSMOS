@@ -7,7 +7,8 @@ import { setClipboard } from '../ink/termio/osc.js';
 import { useTerminalNotification } from '../ink/useTerminalNotification.js';
 import { Box, Link, Text } from '../ink.js';
 import { useKeybinding } from '../keybindings/useKeybinding.js';
-import { getSSLErrorHint } from '../services/api/errorUtils.js';
+// services/api/errorUtils removed (Spec 2293 cleanup); inline stub below.
+const getSSLErrorHint = (_err: unknown): string | null => null;
 import { sendNotification } from '../services/notifier.js';
 import { OAuthService } from '../services/oauth/index.js';
 import { getOauthAccountInfo, validateForceLoginOrg } from '../utils/auth.js';

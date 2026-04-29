@@ -10,15 +10,14 @@ import { logForDebugging } from '../debug.js'
 import { errorMessage, isENOENT } from '../errors.js'
 import { getFsImplementation } from '../fsOperations.js'
 import { jsonParse } from '../slowOperations.js'
-import {
-  isMcpbSource,
-  loadMcpbFile,
-  loadMcpServerUserConfig,
-  type McpbLoadResult,
-  type UserConfigSchema,
-  type UserConfigValues,
-  validateUserConfig,
-} from './mcpbHandler.js'
+// KOSMOS Spec 1633 / Epic #2293 — utils/plugins/mcpbHandler deleted (Anthropic .mcpb plugin bundle handler); inline no-op stubs.
+type McpbLoadResult = { manifest?: unknown; serverConfig?: unknown }
+type UserConfigSchema = unknown
+type UserConfigValues = unknown
+const isMcpbSource = (_source: string): boolean => false
+const loadMcpbFile = async (..._args: unknown[]): Promise<McpbLoadResult | null> => null
+const loadMcpServerUserConfig = async (..._args: unknown[]): Promise<UserConfigValues | null> => null
+const validateUserConfig = (..._args: unknown[]): { ok: true; values: unknown } => ({ ok: true, values: undefined })
 import { getPluginDataDir } from './pluginDirectories.js'
 import {
   getPluginStorageId,

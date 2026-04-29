@@ -127,9 +127,12 @@ import {
 import {
   type NonNullableUsage,
 } from './logging.js'
-import {
-  type RetryContext,
-} from './withRetry.js'
+// KOSMOS Spec 1633 / Epic #2293 — services/api/withRetry deleted; inline RetryContext type.
+type RetryContext = {
+  attempt?: number
+  maxAttempts?: number
+  delayMs?: number
+}
 
 // KOSMOS Epic #2077 — LLM bridge import for the 5 swapped functions.
 // The bridge singleton + queryModelWithStreaming generator live in query/deps.ts.

@@ -21,7 +21,9 @@ import {
 // KOSMOS-original: CC usage accumulation not used with FriendliAI provider.
 const accumulateUsage = (a: unknown, _b: unknown): unknown => a
 const updateUsage = (base: unknown, _delta: unknown): unknown => base
-import { EMPTY_USAGE, type NonNullableUsage } from '../services/api/logging.js'
+// services/api/logging removed (Spec 2293 cleanup); re-export from emptyUsage.
+import { EMPTY_USAGE } from '../services/api/emptyUsage.js'
+type NonNullableUsage = import('src/entrypoints/sdk/sdkUtilityTypes.js').NonNullableUsage
 import type { ToolUseContext } from '../Tool.js'
 import type { AgentDefinition } from '../tools/AgentTool/loadAgentsDir.js'
 import type { AgentId } from '../types/ids.js'

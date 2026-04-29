@@ -15,7 +15,8 @@ import { tokenCountWithEstimation } from '../../utils/tokens.js'
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '../analytics/growthbook.js'
 // KOSMOS: services/api/claude.js deleted by Spec 1633 P1+P2. getMaxOutputTokensForModel → 8192 default.
 const getMaxOutputTokensForModel = (_model: string): number => 8192
-import { notifyCompaction } from '../api/promptCacheBreakDetection.js'
+// KOSMOS Spec 1633 / Epic #2293 — services/api/promptCacheBreakDetection deleted (Anthropic prompt-cache); inline no-op stub.
+const notifyCompaction = (_querySource: string, _agentId?: string): void => {}
 import { setLastSummarizedMessageId } from '../SessionMemory/sessionMemoryUtils.js'
 import {
   type CompactionResult,

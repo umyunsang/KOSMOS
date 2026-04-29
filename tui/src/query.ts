@@ -4,7 +4,10 @@ import type {
   KosmosToolUseBlockParam as ToolUseBlock,
 } from './ipc/llmTypes.js'
 import type { CanUseToolFn } from './hooks/useCanUseTool.js'
-import { FallbackTriggeredError } from './services/api/withRetry.js'
+// services/api/withRetry removed (Spec 2293 cleanup); inline stub below.
+class FallbackTriggeredError extends Error {
+  constructor(message?: string) { super(message); this.name = 'FallbackTriggeredError' }
+}
 import {
   calculateTokenWarningState,
   isAutoCompactEnabled,
@@ -34,10 +37,11 @@ import type {
   TombstoneMessage,
 } from './types/message.js'
 import { logError } from './utils/log.js'
-import {
-  PROMPT_TOO_LONG_ERROR_MESSAGE,
-  isPromptTooLongMessage,
-} from './services/api/errors.js'
+// services/api/errors removed (Spec 2293 cleanup); inline stubs below.
+const PROMPT_TOO_LONG_ERROR_MESSAGE = 'Prompt too long'
+const isPromptTooLongMessage = (msg: unknown): boolean =>
+  typeof (msg as Record<string, unknown>)?.apiError === 'string' &&
+  (msg as Record<string, unknown>).apiError === 'prompt_too_long'
 import { logAntError, logForDebugging } from './utils/debug.js'
 import {
   createUserMessage,
@@ -50,7 +54,8 @@ import {
   createMicrocompactBoundaryMessage,
   stripSignatureBlocks,
 } from './utils/messages.js'
-import { generateToolUseSummary } from './services/toolUseSummary/toolUseSummaryGenerator.js'
+// services/toolUseSummary/toolUseSummaryGenerator removed (Spec 2293 cleanup); stub below.
+const generateToolUseSummary = async (_opts: unknown): Promise<string | null> => null
 import { prependUserContext, appendSystemContext } from './utils/api.js'
 import {
   createAttachmentMessage,

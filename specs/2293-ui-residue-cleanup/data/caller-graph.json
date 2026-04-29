@@ -1,0 +1,1010 @@
+[
+  {
+    "kosmos_path": "tui/src/cli/print.ts",
+    "module_path": "cli/print",
+    "line_count": 5601,
+    "importer_count": 0,
+    "importers": [],
+    "internal_anthropic_tokens": {
+      "queryHaiku": 1,
+      "queryWithModel": 0,
+      "verifyApiKey": 0,
+      "@anthropic-ai/": 1
+    },
+    "dependency_hits": {
+      "sdk-compat": 1,
+      "@aws-sdk/client-bedrock-runtime": 0,
+      "claude.ai": 3,
+      "isClaudeAISubscriber": 0,
+      "getClaudeCodeUserAgent": 0,
+      "growthbook": 2,
+      "from 'bun:bundle'": 1,
+      "feature(": 37
+    },
+    "first_lines": "// biome-ignore-all assist/source/organizeImports: ANT-ONLY import markers must not be reordered\nimport { feature } from 'bun:bundle'\nimport { readFile, stat } from 'fs/promises'\nimport { dirname } from 'path'\nimport {",
+    "epic_alpha_signal": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633,1637,1978,2077",
+      "import_scan_match": "residue:@anthropic-ai/|queryHaiku"
+    },
+    "epic_alpha_summary": "Anthropic / Spec 033 잔재 토큰 감지: @anthropic-ai/, queryHaiku"
+  },
+  {
+    "kosmos_path": "tui/src/commands/insights.ts",
+    "module_path": "commands/insights",
+    "line_count": 3164,
+    "importer_count": 0,
+    "importers": [],
+    "internal_anthropic_tokens": {
+      "queryHaiku": 0,
+      "queryWithModel": 2,
+      "verifyApiKey": 0,
+      "@anthropic-ai/": 0
+    },
+    "dependency_hits": {
+      "sdk-compat": 0,
+      "@aws-sdk/client-bedrock-runtime": 0,
+      "claude.ai": 0,
+      "isClaudeAISubscriber": 0,
+      "getClaudeCodeUserAgent": 0,
+      "growthbook": 0,
+      "from 'bun:bundle'": 0,
+      "feature(": 0
+    },
+    "first_lines": "import { execFileSync } from 'child_process'\nimport { diffLines } from 'diff'\nimport { constants as fsConstants } from 'fs'\nimport {\n  copyFile,",
+    "epic_alpha_signal": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1978",
+      "import_scan_match": "residue:queryWithModel"
+    },
+    "epic_alpha_summary": "Anthropic / Spec 033 잔재 토큰 감지: queryWithModel"
+  },
+  {
+    "kosmos_path": "tui/src/commands/rename/generateSessionName.ts",
+    "module_path": "commands/rename/generateSessionName",
+    "line_count": 62,
+    "importer_count": 1,
+    "importers": [
+      "tui/src/components/permissions/ExitPlanModePermissionRequest/ExitPlanModePermissionRequest.tsx"
+    ],
+    "internal_anthropic_tokens": {
+      "queryHaiku": 2,
+      "queryWithModel": 0,
+      "verifyApiKey": 0,
+      "@anthropic-ai/": 0
+    },
+    "dependency_hits": {
+      "sdk-compat": 0,
+      "@aws-sdk/client-bedrock-runtime": 0,
+      "claude.ai": 0,
+      "isClaudeAISubscriber": 0,
+      "getClaudeCodeUserAgent": 0,
+      "growthbook": 0,
+      "from 'bun:bundle'": 0,
+      "feature(": 0
+    },
+    "first_lines": "// SPDX-License-Identifier: Apache-2.0\n// KOSMOS-1633 P2 / KOSMOS-1978 T007 — `queryHaiku` import severed.\n//\n// Original CC module: .references/claude-code-sourcemap/restored-src/src/commands/rename/generateSessionName.ts\n// CC version: 2.1.88",
+    "epic_alpha_signal": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1978",
+      "import_scan_match": "residue:queryHaiku"
+    },
+    "epic_alpha_summary": "Anthropic / Spec 033 잔재 토큰 감지: queryHaiku"
+  },
+  {
+    "kosmos_path": "tui/src/components/Feedback.tsx",
+    "module_path": "components/Feedback",
+    "line_count": 572,
+    "importer_count": 1,
+    "importers": [
+      "tui/src/commands/feedback/feedback.tsx"
+    ],
+    "internal_anthropic_tokens": {
+      "queryHaiku": 3,
+      "queryWithModel": 0,
+      "verifyApiKey": 0,
+      "@anthropic-ai/": 0
+    },
+    "dependency_hits": {
+      "sdk-compat": 0,
+      "@aws-sdk/client-bedrock-runtime": 0,
+      "claude.ai": 0,
+      "isClaudeAISubscriber": 0,
+      "getClaudeCodeUserAgent": 0,
+      "growthbook": 0,
+      "from 'bun:bundle'": 0,
+      "feature(": 0
+    },
+    "first_lines": "import axios from 'axios';\nimport { readFile, stat } from 'fs/promises';\nimport * as React from 'react';\nimport { useCallback, useEffect, useState } from 'react';\nimport { getLastAPIRequest } from 'src/bootstrap/state.js';",
+    "epic_alpha_signal": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637,1978",
+      "import_scan_match": "residue:queryHaiku"
+    },
+    "epic_alpha_summary": "Anthropic / Spec 033 잔재 토큰 감지: queryHaiku"
+  },
+  {
+    "kosmos_path": "tui/src/services/api/adminRequests.ts",
+    "module_path": "services/api/adminRequests",
+    "line_count": 14,
+    "importer_count": 1,
+    "importers": [
+      "tui/src/commands/extra-usage/extra-usage-core.ts"
+    ],
+    "internal_anthropic_tokens": {
+      "queryHaiku": 0,
+      "queryWithModel": 0,
+      "verifyApiKey": 0,
+      "@anthropic-ai/": 0
+    },
+    "dependency_hits": {
+      "sdk-compat": 0,
+      "@aws-sdk/client-bedrock-runtime": 0,
+      "claude.ai": 0,
+      "isClaudeAISubscriber": 0,
+      "getClaudeCodeUserAgent": 0,
+      "growthbook": 0,
+      "from 'bun:bundle'": 0,
+      "feature(": 0
+    },
+    "first_lines": "// SPDX-License-Identifier: Apache-2.0\n// KOSMOS-original — Epic #1633 stub restoration.\n\nexport async function checkAdminRequestEligibility(): Promise<boolean> {\n  return false",
+    "epic_alpha_signal": {
+      "directory_match": "cleanup:tui/src/services/api/",
+      "git_history_match": "spec:1632,1633",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "epic_alpha_summary": "Spec 1633 cleanup 디렉토리: tui/src/services/api/"
+  },
+  {
+    "kosmos_path": "tui/src/services/api/claude.ts",
+    "module_path": "services/api/claude",
+    "line_count": 1098,
+    "importer_count": 0,
+    "importers": [],
+    "internal_anthropic_tokens": {
+      "queryHaiku": 1,
+      "queryWithModel": 1,
+      "verifyApiKey": 1,
+      "@anthropic-ai/": 0
+    },
+    "dependency_hits": {
+      "sdk-compat": 5,
+      "@aws-sdk/client-bedrock-runtime": 0,
+      "claude.ai": 1,
+      "isClaudeAISubscriber": 2,
+      "getClaudeCodeUserAgent": 0,
+      "growthbook": 2,
+      "from 'bun:bundle'": 1,
+      "feature(": 4
+    },
+    "first_lines": "// SPDX-License-Identifier: Apache-2.0\n// Research use — adapted from Claude Code 2.1.88 src/services/api/claude.ts\n//\n// KOSMOS Epic #2077 — Full CC API surface restored. LLM-calling functions\n// (queryModelWithoutStreaming, queryModelWithStreaming, executeNonStreamingRequest)",
+    "epic_alpha_signal": {
+      "directory_match": "cleanup:tui/src/services/api/",
+      "git_history_match": "spec:1632,1633,1637,2077",
+      "import_scan_match": "residue:verifyApiKey|queryHaiku|queryWithModel"
+    },
+    "epic_alpha_summary": "Anthropic / Spec 033 잔재 토큰 감지: verifyApiKey, queryHaiku, queryWithModel"
+  },
+  {
+    "kosmos_path": "tui/src/services/api/client.ts",
+    "module_path": "services/api/client",
+    "line_count": 40,
+    "importer_count": 0,
+    "importers": [],
+    "internal_anthropic_tokens": {
+      "queryHaiku": 0,
+      "queryWithModel": 0,
+      "verifyApiKey": 1,
+      "@anthropic-ai/": 0
+    },
+    "dependency_hits": {
+      "sdk-compat": 0,
+      "@aws-sdk/client-bedrock-runtime": 0,
+      "claude.ai": 0,
+      "isClaudeAISubscriber": 0,
+      "getClaudeCodeUserAgent": 0,
+      "growthbook": 0,
+      "from 'bun:bundle'": 0,
+      "feature(": 0
+    },
+    "first_lines": "// SPDX-License-Identifier: Apache-2.0\n// KOSMOS-original — Epic #2077 client.ts no-op stub.\n//\n// CC's client.ts constructed the Anthropic SDK client (AnthropicClient,\n// AnthropicBedrock, AnthropicVertex, etc.) and exported getAnthropicClient.",
+    "epic_alpha_signal": {
+      "directory_match": "cleanup:tui/src/services/api/",
+      "git_history_match": "spec:1632,1633,1637,2077",
+      "import_scan_match": "residue:verifyApiKey"
+    },
+    "epic_alpha_summary": "Anthropic / Spec 033 잔재 토큰 감지: verifyApiKey"
+  },
+  {
+    "kosmos_path": "tui/src/services/api/errorUtils.ts",
+    "module_path": "services/api/errorUtils",
+    "line_count": 362,
+    "importer_count": 5,
+    "importers": [
+      "tui/src/cli/handlers/auth.ts",
+      "tui/src/components/ConsoleOAuthFlow.tsx",
+      "tui/src/components/messages/SystemAPIErrorMessage.tsx",
+      "tui/src/utils/preflightChecks.tsx",
+      "tui/src/utils/sideQuestion.ts"
+    ],
+    "internal_anthropic_tokens": {
+      "queryHaiku": 0,
+      "queryWithModel": 0,
+      "verifyApiKey": 0,
+      "@anthropic-ai/": 0
+    },
+    "dependency_hits": {
+      "sdk-compat": 1,
+      "@aws-sdk/client-bedrock-runtime": 0,
+      "claude.ai": 0,
+      "isClaudeAISubscriber": 0,
+      "getClaudeCodeUserAgent": 0,
+      "growthbook": 0,
+      "from 'bun:bundle'": 0,
+      "feature(": 0
+    },
+    "first_lines": "import type { APIError } from 'src/sdk-compat.js'\nimport { classifyAPIError } from './errors.js'\n\n// SSL/TLS error codes from OpenSSL (used by both Node.js and Bun)\n// See: https://www.openssl.org/docs/man3.1/man3/X509_STORE_CTX_get_error.html",
+    "epic_alpha_signal": {
+      "directory_match": "cleanup:tui/src/services/api/",
+      "git_history_match": "spec:1632,1633",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "epic_alpha_summary": "Spec 1633 cleanup 디렉토리: tui/src/services/api/"
+  },
+  {
+    "kosmos_path": "tui/src/services/api/errors.ts",
+    "module_path": "services/api/errors",
+    "line_count": 157,
+    "importer_count": 6,
+    "importers": [
+      "tui/src/QueryEngine.ts",
+      "tui/src/components/Feedback.tsx",
+      "tui/src/components/messages/AssistantTextMessage.tsx",
+      "tui/src/query.ts",
+      "tui/src/utils/messages.ts",
+      "tui/src/utils/permissions/yoloClassifier.ts"
+    ],
+    "internal_anthropic_tokens": {
+      "queryHaiku": 0,
+      "queryWithModel": 0,
+      "verifyApiKey": 0,
+      "@anthropic-ai/": 0
+    },
+    "dependency_hits": {
+      "sdk-compat": 0,
+      "@aws-sdk/client-bedrock-runtime": 0,
+      "claude.ai": 0,
+      "isClaudeAISubscriber": 0,
+      "getClaudeCodeUserAgent": 0,
+      "growthbook": 0,
+      "from 'bun:bundle'": 0,
+      "feature(": 0
+    },
+    "first_lines": "// [P0 reconstructed · Pass 3 · Services API error helpers]\n// Reference: consumer callsites in query.ts (line 43, 804, 1073) +\n//            services/api/claude.ts + services/api/withRetry.ts.\n// Original CC 2.1.88 source for this module was not captured in the\n// sourcemap reconstruction; all exports below are reconstructed from",
+    "epic_alpha_signal": {
+      "directory_match": "cleanup:tui/src/services/api/",
+      "git_history_match": "spec:1632,1633",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "epic_alpha_summary": "Spec 1633 cleanup 디렉토리: tui/src/services/api/"
+  },
+  {
+    "kosmos_path": "tui/src/services/api/filesApi.ts",
+    "module_path": "services/api/filesApi",
+    "line_count": 50,
+    "importer_count": 2,
+    "importers": [
+      "tui/src/main.tsx",
+      "tui/src/utils/filePersistence/filePersistence.ts"
+    ],
+    "internal_anthropic_tokens": {
+      "queryHaiku": 0,
+      "queryWithModel": 0,
+      "verifyApiKey": 0,
+      "@anthropic-ai/": 0
+    },
+    "dependency_hits": {
+      "sdk-compat": 0,
+      "@aws-sdk/client-bedrock-runtime": 0,
+      "claude.ai": 0,
+      "isClaudeAISubscriber": 0,
+      "getClaudeCodeUserAgent": 0,
+      "growthbook": 0,
+      "from 'bun:bundle'": 0,
+      "feature(": 0
+    },
+    "first_lines": "// SPDX-License-Identifier: Apache-2.0\n// KOSMOS-original — Epic #1633 FR-009 stub.\n//\n// The original Anthropic Files API client has been removed. KOSMOS has no\n// Files API surface in P1+P2 scope. If / when file handling is introduced",
+    "epic_alpha_signal": {
+      "directory_match": "cleanup:tui/src/services/api/",
+      "git_history_match": "spec:1632,1633",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "epic_alpha_summary": "Spec 1633 cleanup 디렉토리: tui/src/services/api/"
+  },
+  {
+    "kosmos_path": "tui/src/services/api/firstTokenDate.ts",
+    "module_path": "services/api/firstTokenDate",
+    "line_count": 61,
+    "importer_count": 1,
+    "importers": [
+      "tui/src/cli/handlers/auth.ts"
+    ],
+    "internal_anthropic_tokens": {
+      "queryHaiku": 0,
+      "queryWithModel": 0,
+      "verifyApiKey": 0,
+      "@anthropic-ai/": 0
+    },
+    "dependency_hits": {
+      "sdk-compat": 0,
+      "@aws-sdk/client-bedrock-runtime": 0,
+      "claude.ai": 0,
+      "isClaudeAISubscriber": 0,
+      "getClaudeCodeUserAgent": 2,
+      "growthbook": 0,
+      "from 'bun:bundle'": 0,
+      "feature(": 0
+    },
+    "first_lines": "import axios from 'axios'\n// constants/oauth removed in P1+P2 (Spec 1633); KOSMOS uses FriendliAI, not Anthropic OAuth.\nconst getOauthConfig = (): { authorizationUrl: string; tokenUrl: string; clientId: string; scopes: readonly string[]; BASE_API_URL: string } => ({ authorizationUrl: '', tokenUrl: '', clientId: '', scopes: [] as readonly string[], BASE_API_URL: '' })\nimport { getGlobalConfig, saveGlobalConfig } from '../../utils/config.js'\nimport { getAuthHeaders } from '../../utils/http.js'",
+    "epic_alpha_signal": {
+      "directory_match": "cleanup:tui/src/services/api/",
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "kosmos:KOSMOS|FriendliAI"
+    },
+    "epic_alpha_summary": "Spec 1633 cleanup 디렉토리: tui/src/services/api/"
+  },
+  {
+    "kosmos_path": "tui/src/services/api/grove.ts",
+    "module_path": "services/api/grove",
+    "line_count": 15,
+    "importer_count": 1,
+    "importers": [
+      "tui/src/cli/print.ts"
+    ],
+    "internal_anthropic_tokens": {
+      "queryHaiku": 0,
+      "queryWithModel": 0,
+      "verifyApiKey": 0,
+      "@anthropic-ai/": 0
+    },
+    "dependency_hits": {
+      "sdk-compat": 0,
+      "@aws-sdk/client-bedrock-runtime": 0,
+      "claude.ai": 2,
+      "isClaudeAISubscriber": 0,
+      "getClaudeCodeUserAgent": 0,
+      "growthbook": 0,
+      "from 'bun:bundle'": 0,
+      "feature(": 0
+    },
+    "first_lines": "// SPDX-License-Identifier: Apache-2.0\n// KOSMOS-original — Epic #1633 stub restoration · Epic #2077 surface preservation.\n// Research use — adapted from Claude Code 2.1.88 src/services/api/grove.ts\n// Anthropic's Grove (claude.ai pro-tier billing path) is upstream-only — KOSMOS\n// has no claude.ai backend, so the eligibility check returns false and the",
+    "epic_alpha_signal": {
+      "directory_match": "cleanup:tui/src/services/api/",
+      "git_history_match": "spec:1632,1633,1978,2077",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "epic_alpha_summary": "Spec 1633 cleanup 디렉토리: tui/src/services/api/"
+  },
+  {
+    "kosmos_path": "tui/src/services/api/logging.ts",
+    "module_path": "services/api/logging",
+    "line_count": 788,
+    "importer_count": 4,
+    "importers": [
+      "tui/src/QueryEngine.ts",
+      "tui/src/cli/print.ts",
+      "tui/src/utils/forkedAgent.ts",
+      "tui/src/utils/sideQuestion.ts"
+    ],
+    "internal_anthropic_tokens": {
+      "queryHaiku": 0,
+      "queryWithModel": 0,
+      "verifyApiKey": 0,
+      "@anthropic-ai/": 0
+    },
+    "dependency_hits": {
+      "sdk-compat": 2,
+      "@aws-sdk/client-bedrock-runtime": 0,
+      "claude.ai": 0,
+      "isClaudeAISubscriber": 0,
+      "getClaudeCodeUserAgent": 0,
+      "growthbook": 0,
+      "from 'bun:bundle'": 1,
+      "feature(": 2
+    },
+    "first_lines": "import { feature } from 'bun:bundle'\nimport { APIError } from 'src/sdk-compat.js'\nimport type {\n  BetaStopReason,\n  BetaUsage as Usage,",
+    "epic_alpha_signal": {
+      "directory_match": "cleanup:tui/src/services/api/",
+      "git_history_match": "spec:1632,1633,1637",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "epic_alpha_summary": "Spec 1633 cleanup 디렉토리: tui/src/services/api/"
+  },
+  {
+    "kosmos_path": "tui/src/services/api/overageCreditGrant.ts",
+    "module_path": "services/api/overageCreditGrant",
+    "line_count": 18,
+    "importer_count": 2,
+    "importers": [
+      "tui/src/commands/extra-usage/extra-usage-core.ts",
+      "tui/src/components/LogoV2/OverageCreditUpsell.tsx"
+    ],
+    "internal_anthropic_tokens": {
+      "queryHaiku": 0,
+      "queryWithModel": 0,
+      "verifyApiKey": 0,
+      "@anthropic-ai/": 0
+    },
+    "dependency_hits": {
+      "sdk-compat": 0,
+      "@aws-sdk/client-bedrock-runtime": 0,
+      "claude.ai": 0,
+      "isClaudeAISubscriber": 0,
+      "getClaudeCodeUserAgent": 0,
+      "growthbook": 0,
+      "from 'bun:bundle'": 0,
+      "feature(": 0
+    },
+    "first_lines": "// SPDX-License-Identifier: Apache-2.0\n// KOSMOS-original — Epic #1633 stub restoration.\n\nexport function formatGrantAmount(_cents: number): string {\n  return '$0.00'",
+    "epic_alpha_signal": {
+      "directory_match": "cleanup:tui/src/services/api/",
+      "git_history_match": "spec:1632,1633",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "epic_alpha_summary": "Spec 1633 cleanup 디렉토리: tui/src/services/api/"
+  },
+  {
+    "kosmos_path": "tui/src/services/api/promptCacheBreakDetection.ts",
+    "module_path": "services/api/promptCacheBreakDetection",
+    "line_count": 796,
+    "importer_count": 3,
+    "importers": [
+      "tui/src/commands/clear/caches.ts",
+      "tui/src/commands/compact/compact.ts",
+      "tui/src/tools/AgentTool/runAgent.ts"
+    ],
+    "internal_anthropic_tokens": {
+      "queryHaiku": 0,
+      "queryWithModel": 0,
+      "verifyApiKey": 0,
+      "@anthropic-ai/": 0
+    },
+    "dependency_hits": {
+      "sdk-compat": 2,
+      "@aws-sdk/client-bedrock-runtime": 0,
+      "claude.ai": 0,
+      "isClaudeAISubscriber": 0,
+      "getClaudeCodeUserAgent": 0,
+      "growthbook": 0,
+      "from 'bun:bundle'": 0,
+      "feature(": 0
+    },
+    "first_lines": "import type { BetaToolUnion } from 'src/sdk-compat.js'\nimport type { TextBlockParam } from 'src/sdk-compat.js'\nimport type { KosmosUsage } from '../../ipc/llmTypes.js'\nimport { createPatch } from 'diff'\nimport { mkdir, writeFile } from 'fs/promises'",
+    "epic_alpha_signal": {
+      "directory_match": "cleanup:tui/src/services/api/",
+      "git_history_match": "spec:1632,1633",
+      "import_scan_match": "kosmos:KOSMOS|kosmos|EXAONE"
+    },
+    "epic_alpha_summary": "Spec 1633 cleanup 디렉토리: tui/src/services/api/"
+  },
+  {
+    "kosmos_path": "tui/src/services/api/referral.ts",
+    "module_path": "services/api/referral",
+    "line_count": 26,
+    "importer_count": 5,
+    "importers": [
+      "tui/src/commands/passes/index.ts",
+      "tui/src/commands/passes/passes.tsx",
+      "tui/src/components/LogoV2/GuestPassesUpsell.tsx",
+      "tui/src/components/LogoV2/feedConfigs.tsx",
+      "tui/src/components/Passes/Passes.tsx"
+    ],
+    "internal_anthropic_tokens": {
+      "queryHaiku": 0,
+      "queryWithModel": 0,
+      "verifyApiKey": 0,
+      "@anthropic-ai/": 0
+    },
+    "dependency_hits": {
+      "sdk-compat": 0,
+      "@aws-sdk/client-bedrock-runtime": 0,
+      "claude.ai": 0,
+      "isClaudeAISubscriber": 0,
+      "getClaudeCodeUserAgent": 0,
+      "growthbook": 0,
+      "from 'bun:bundle'": 0,
+      "feature(": 0
+    },
+    "first_lines": "// SPDX-License-Identifier: Apache-2.0\n// KOSMOS-original — Epic #1633 stub restoration.\n\nexport function checkCachedPassesEligibility(): boolean {\n  return false",
+    "epic_alpha_signal": {
+      "directory_match": "cleanup:tui/src/services/api/",
+      "git_history_match": "spec:1632,1633",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "epic_alpha_summary": "Spec 1633 cleanup 디렉토리: tui/src/services/api/"
+  },
+  {
+    "kosmos_path": "tui/src/services/api/sessionIngress.ts",
+    "module_path": "services/api/sessionIngress",
+    "line_count": 516,
+    "importer_count": 2,
+    "importers": [
+      "tui/src/commands/clear/caches.ts",
+      "tui/src/utils/sessionStorage.ts"
+    ],
+    "internal_anthropic_tokens": {
+      "queryHaiku": 0,
+      "queryWithModel": 0,
+      "verifyApiKey": 0,
+      "@anthropic-ai/": 0
+    },
+    "dependency_hits": {
+      "sdk-compat": 0,
+      "@aws-sdk/client-bedrock-runtime": 0,
+      "claude.ai": 0,
+      "isClaudeAISubscriber": 0,
+      "getClaudeCodeUserAgent": 0,
+      "growthbook": 0,
+      "from 'bun:bundle'": 0,
+      "feature(": 0
+    },
+    "first_lines": "import axios, { type AxiosError } from 'axios'\nimport type { UUID } from 'crypto'\n// KOSMOS: constants/oauth.js deleted by Spec 1633 P1+P2. OAuth not used with FriendliAI provider.\nconst getOauthConfig = (): { BASE_API_URL: string } => ({ BASE_API_URL: '' })\nimport type { Entry, TranscriptMessage } from '../../types/logs.js'",
+    "epic_alpha_signal": {
+      "directory_match": "cleanup:tui/src/services/api/",
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "kosmos:KOSMOS|FriendliAI"
+    },
+    "epic_alpha_summary": "Spec 1633 cleanup 디렉토리: tui/src/services/api/"
+  },
+  {
+    "kosmos_path": "tui/src/services/api/ultrareviewQuota.ts",
+    "module_path": "services/api/ultrareviewQuota",
+    "line_count": 43,
+    "importer_count": 1,
+    "importers": [
+      "tui/src/commands/review/reviewRemote.ts"
+    ],
+    "internal_anthropic_tokens": {
+      "queryHaiku": 0,
+      "queryWithModel": 0,
+      "verifyApiKey": 0,
+      "@anthropic-ai/": 0
+    },
+    "dependency_hits": {
+      "sdk-compat": 0,
+      "@aws-sdk/client-bedrock-runtime": 0,
+      "claude.ai": 0,
+      "isClaudeAISubscriber": 2,
+      "getClaudeCodeUserAgent": 0,
+      "growthbook": 0,
+      "from 'bun:bundle'": 0,
+      "feature(": 0
+    },
+    "first_lines": "import axios from 'axios'\n// constants/oauth removed in P1+P2 (Spec 1633); KOSMOS uses FriendliAI, not Anthropic OAuth.\nconst getOauthConfig = (): { authorizationUrl: string; tokenUrl: string; clientId: string; scopes: readonly string[]; BASE_API_URL: string } => ({ authorizationUrl: '', tokenUrl: '', clientId: '', scopes: [] as readonly string[], BASE_API_URL: '' })\nimport { isClaudeAISubscriber } from '../../utils/auth.js'\nimport { logForDebugging } from '../../utils/debug.js'",
+    "epic_alpha_signal": {
+      "directory_match": "cleanup:tui/src/services/api/",
+      "git_history_match": "spec:1632,1637,1978",
+      "import_scan_match": "kosmos:KOSMOS|FriendliAI"
+    },
+    "epic_alpha_summary": "Spec 1633 cleanup 디렉토리: tui/src/services/api/"
+  },
+  {
+    "kosmos_path": "tui/src/services/api/usage.ts",
+    "module_path": "services/api/usage",
+    "line_count": 26,
+    "importer_count": 3,
+    "importers": [
+      "tui/src/commands/extra-usage/extra-usage-core.ts",
+      "tui/src/commands/review/reviewRemote.ts",
+      "tui/src/components/Settings/Usage.tsx"
+    ],
+    "internal_anthropic_tokens": {
+      "queryHaiku": 0,
+      "queryWithModel": 0,
+      "verifyApiKey": 0,
+      "@anthropic-ai/": 0
+    },
+    "dependency_hits": {
+      "sdk-compat": 0,
+      "@aws-sdk/client-bedrock-runtime": 0,
+      "claude.ai": 0,
+      "isClaudeAISubscriber": 0,
+      "getClaudeCodeUserAgent": 0,
+      "growthbook": 0,
+      "from 'bun:bundle'": 0,
+      "feature(": 0
+    },
+    "first_lines": "// SPDX-License-Identifier: Apache-2.0\n// KOSMOS-original — Epic #1633 stub restoration.\n\nexport interface RateLimit {\n  readonly remaining: number",
+    "epic_alpha_signal": {
+      "directory_match": "cleanup:tui/src/services/api/",
+      "git_history_match": "spec:1632,1633",
+      "import_scan_match": "kosmos:KOSMOS"
+    },
+    "epic_alpha_summary": "Spec 1633 cleanup 디렉토리: tui/src/services/api/"
+  },
+  {
+    "kosmos_path": "tui/src/services/api/withRetry.ts",
+    "module_path": "services/api/withRetry",
+    "line_count": 787,
+    "importer_count": 2,
+    "importers": [
+      "tui/src/query.ts",
+      "tui/src/utils/permissions/yoloClassifier.ts"
+    ],
+    "internal_anthropic_tokens": {
+      "queryHaiku": 0,
+      "queryWithModel": 0,
+      "verifyApiKey": 0,
+      "@anthropic-ai/": 0
+    },
+    "dependency_hits": {
+      "sdk-compat": 2,
+      "@aws-sdk/client-bedrock-runtime": 0,
+      "claude.ai": 0,
+      "isClaudeAISubscriber": 2,
+      "getClaudeCodeUserAgent": 0,
+      "growthbook": 1,
+      "from 'bun:bundle'": 1,
+      "feature(": 2
+    },
+    "first_lines": "import { feature } from 'bun:bundle'\nimport type Anthropic from 'src/sdk-compat.js'\nimport {\n  APIConnectionError,\n  APIError,",
+    "epic_alpha_signal": {
+      "directory_match": "cleanup:tui/src/services/api/",
+      "git_history_match": "spec:1632,1633,2112",
+      "import_scan_match": "kosmos:KOSMOS|kosmos|FriendliAI"
+    },
+    "epic_alpha_summary": "Spec 1633 cleanup 디렉토리: tui/src/services/api/"
+  },
+  {
+    "kosmos_path": "tui/src/services/tokenEstimation.ts",
+    "module_path": "services/tokenEstimation",
+    "line_count": 502,
+    "importer_count": 11,
+    "importers": [
+      "tui/src/services/SessionMemory/prompts.ts",
+      "tui/src/skills/loadSkillsDir.ts",
+      "tui/src/tasks/LocalMainSessionTask.ts",
+      "tui/src/tools/FileReadTool/FileReadTool.ts",
+      "tui/src/utils/analyzeContext.ts",
+      "tui/src/utils/api.ts",
+      "tui/src/utils/contextAnalysis.ts",
+      "tui/src/utils/doctorContextWarnings.ts",
+      "tui/src/utils/mcpValidation.ts",
+      "tui/src/utils/statusNoticeHelpers.ts",
+      "tui/src/utils/tokens.ts"
+    ],
+    "internal_anthropic_tokens": {
+      "queryHaiku": 0,
+      "queryWithModel": 0,
+      "verifyApiKey": 0,
+      "@anthropic-ai/": 0
+    },
+    "dependency_hits": {
+      "sdk-compat": 2,
+      "@aws-sdk/client-bedrock-runtime": 3,
+      "claude.ai": 0,
+      "isClaudeAISubscriber": 0,
+      "getClaudeCodeUserAgent": 0,
+      "growthbook": 0,
+      "from 'bun:bundle'": 0,
+      "feature(": 0
+    },
+    "first_lines": "import type { Anthropic } from 'src/sdk-compat.js'\nimport type { BetaMessageParam as MessageParam } from 'src/sdk-compat.js'\n// @aws-sdk/client-bedrock-runtime is imported dynamically in countTokensWithBedrock()\n// to defer ~279KB of AWS SDK code until a Bedrock call is actually made\nimport type { CountTokensCommandInput } from '@aws-sdk/client-bedrock-runtime'",
+    "epic_alpha_signal": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1633,1637",
+      "import_scan_match": "residue:anthropic-sdk"
+    },
+    "epic_alpha_summary": "Anthropic / Spec 033 잔재 토큰 감지: anthropic-sdk"
+  },
+  {
+    "kosmos_path": "tui/src/services/toolUseSummary/toolUseSummaryGenerator.ts",
+    "module_path": "services/toolUseSummary/toolUseSummaryGenerator",
+    "line_count": 93,
+    "importer_count": 1,
+    "importers": [
+      "tui/src/query.ts"
+    ],
+    "internal_anthropic_tokens": {
+      "queryHaiku": 2,
+      "queryWithModel": 0,
+      "verifyApiKey": 0,
+      "@anthropic-ai/": 0
+    },
+    "dependency_hits": {
+      "sdk-compat": 0,
+      "@aws-sdk/client-bedrock-runtime": 0,
+      "claude.ai": 0,
+      "isClaudeAISubscriber": 0,
+      "getClaudeCodeUserAgent": 0,
+      "growthbook": 0,
+      "from 'bun:bundle'": 0,
+      "feature(": 0
+    },
+    "first_lines": "/**\n * Tool Use Summary Generator\n *\n * Generates human-readable summaries of completed tool batches using Haiku.\n * Used by the SDK to provide high-level progress updates to clients.",
+    "epic_alpha_signal": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "residue:queryHaiku"
+    },
+    "epic_alpha_summary": "Anthropic / Spec 033 잔재 토큰 감지: queryHaiku"
+  },
+  {
+    "kosmos_path": "tui/src/tools/WebFetchTool/utils.ts",
+    "module_path": "tools/WebFetchTool/utils",
+    "line_count": 522,
+    "importer_count": 0,
+    "importers": [],
+    "internal_anthropic_tokens": {
+      "queryHaiku": 2,
+      "queryWithModel": 0,
+      "verifyApiKey": 0,
+      "@anthropic-ai/": 0
+    },
+    "dependency_hits": {
+      "sdk-compat": 0,
+      "@aws-sdk/client-bedrock-runtime": 0,
+      "claude.ai": 2,
+      "isClaudeAISubscriber": 0,
+      "getClaudeCodeUserAgent": 0,
+      "growthbook": 0,
+      "from 'bun:bundle'": 0,
+      "feature(": 0
+    },
+    "first_lines": "import axios, { type AxiosResponse } from 'axios'\nimport { LRUCache } from 'lru-cache'\nimport {\n  type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,\n  logEvent,",
+    "epic_alpha_signal": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "residue:queryHaiku"
+    },
+    "epic_alpha_summary": "Anthropic / Spec 033 잔재 토큰 감지: queryHaiku"
+  },
+  {
+    "kosmos_path": "tui/src/utils/mcp/dateTimeParser.ts",
+    "module_path": "utils/mcp/dateTimeParser",
+    "line_count": 38,
+    "importer_count": 0,
+    "importers": [],
+    "internal_anthropic_tokens": {
+      "queryHaiku": 1,
+      "queryWithModel": 0,
+      "verifyApiKey": 0,
+      "@anthropic-ai/": 0
+    },
+    "dependency_hits": {
+      "sdk-compat": 0,
+      "@aws-sdk/client-bedrock-runtime": 0,
+      "claude.ai": 0,
+      "isClaudeAISubscriber": 0,
+      "getClaudeCodeUserAgent": 0,
+      "growthbook": 0,
+      "from 'bun:bundle'": 0,
+      "feature(": 0
+    },
+    "first_lines": "// KOSMOS Epic #2293: queryHaiku removed (Spec 1633 + Spec 2293 closure).\n// KOSMOS DateParser (MVP7) handles datetime parsing via the Python backend.\n// This module is kept for the looksLikeISO8601 utility only; NL parsing\n// always returns a non-destructive error directing the user to ISO 8601 input.\n",
+    "epic_alpha_signal": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "residue:queryHaiku"
+    },
+    "epic_alpha_summary": "Anthropic / Spec 033 잔재 토큰 감지: queryHaiku"
+  },
+  {
+    "kosmos_path": "tui/src/utils/permissions/permissionSetup.ts",
+    "module_path": "utils/permissions/permissionSetup",
+    "line_count": 1533,
+    "importer_count": 11,
+    "importers": [
+      "tui/src/cli/print.ts",
+      "tui/src/commands/plan/plan.tsx",
+      "tui/src/components/PromptInput/PromptInput.tsx",
+      "tui/src/components/Settings/Config.tsx",
+      "tui/src/components/permissions/ExitPlanModePermissionRequest/ExitPlanModePermissionRequest.tsx",
+      "tui/src/hooks/notifs/useAutoModeUnavailableNotification.ts",
+      "tui/src/hooks/useReplBridge.tsx",
+      "tui/src/main.tsx",
+      "tui/src/screens/REPL.tsx",
+      "tui/src/state/AppState.tsx",
+      "tui/src/tools/EnterPlanModeTool/EnterPlanModeTool.ts"
+    ],
+    "internal_anthropic_tokens": {
+      "queryHaiku": 0,
+      "queryWithModel": 0,
+      "verifyApiKey": 0,
+      "@anthropic-ai/": 0
+    },
+    "dependency_hits": {
+      "sdk-compat": 0,
+      "@aws-sdk/client-bedrock-runtime": 0,
+      "claude.ai": 0,
+      "isClaudeAISubscriber": 0,
+      "getClaudeCodeUserAgent": 0,
+      "growthbook": 1,
+      "from 'bun:bundle'": 1,
+      "feature(": 12
+    },
+    "first_lines": "import { feature } from 'bun:bundle'\nimport { relative } from 'path'\nimport {\n  getOriginalCwd,\n  handleAutoModeTransition,",
+    "epic_alpha_signal": {
+      "directory_match": "cleanup:tui/src/utils/permissions/",
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "kosmos:KOSMOS|EXAONE"
+    },
+    "epic_alpha_summary": "Spec 1633 cleanup 디렉토리: tui/src/utils/permissions/"
+  },
+  {
+    "kosmos_path": "tui/src/utils/permissions/permissions.ts",
+    "module_path": "utils/permissions/permissions",
+    "line_count": 1487,
+    "importer_count": 14,
+    "importers": [
+      "tui/src/cli/print.ts",
+      "tui/src/cli/structuredIO.ts",
+      "tui/src/components/permissions/rules/PermissionRuleList.tsx",
+      "tui/src/entrypoints/mcp.ts",
+      "tui/src/hooks/toolPermission/handlers/interactiveHandler.ts",
+      "tui/src/hooks/useCanUseTool.tsx",
+      "tui/src/services/tools/toolHooks.ts",
+      "tui/src/tools.ts",
+      "tui/src/tools/AgentTool/AgentTool.tsx",
+      "tui/src/tools/BashTool/bashCommandHelpers.ts",
+      "tui/src/tools/BashTool/bashPermissions.ts",
+      "tui/src/tools/PowerShellTool/powershellPermissions.ts",
+      "tui/src/tools/SkillTool/SkillTool.ts",
+      "tui/src/tools/WebFetchTool/WebFetchTool.ts"
+    ],
+    "internal_anthropic_tokens": {
+      "queryHaiku": 0,
+      "queryWithModel": 0,
+      "verifyApiKey": 0,
+      "@anthropic-ai/": 0
+    },
+    "dependency_hits": {
+      "sdk-compat": 1,
+      "@aws-sdk/client-bedrock-runtime": 0,
+      "claude.ai": 0,
+      "isClaudeAISubscriber": 0,
+      "getClaudeCodeUserAgent": 0,
+      "growthbook": 1,
+      "from 'bun:bundle'": 1,
+      "feature(": 7
+    },
+    "first_lines": "import { feature } from 'bun:bundle'\nimport { APIUserAbortError } from 'src/sdk-compat.js'\nimport type { CanUseToolFn } from '../../hooks/useCanUseTool.js'\nimport {\n  getToolNameForPermissionCheck,",
+    "epic_alpha_signal": {
+      "directory_match": "cleanup:tui/src/utils/permissions/",
+      "git_history_match": "spec:1632,1633,1637",
+      "import_scan_match": "kosmos:KOSMOS|FriendliAI"
+    },
+    "epic_alpha_summary": "Spec 1633 cleanup 디렉토리: tui/src/utils/permissions/"
+  },
+  {
+    "kosmos_path": "tui/src/utils/permissions/yoloClassifier.ts",
+    "module_path": "utils/permissions/yoloClassifier",
+    "line_count": 1497,
+    "importer_count": 2,
+    "importers": [
+      "tui/src/cli/handlers/autoMode.ts",
+      "tui/src/tools/AgentTool/agentToolUtils.ts"
+    ],
+    "internal_anthropic_tokens": {
+      "queryHaiku": 0,
+      "queryWithModel": 0,
+      "verifyApiKey": 0,
+      "@anthropic-ai/": 0
+    },
+    "dependency_hits": {
+      "sdk-compat": 2,
+      "@aws-sdk/client-bedrock-runtime": 0,
+      "claude.ai": 0,
+      "isClaudeAISubscriber": 0,
+      "getClaudeCodeUserAgent": 0,
+      "growthbook": 1,
+      "from 'bun:bundle'": 1,
+      "feature(": 6
+    },
+    "first_lines": "import { feature } from 'bun:bundle'\nimport type Anthropic from 'src/sdk-compat.js'\nimport type { BetaToolUnion } from 'src/sdk-compat.js'\nimport { mkdir, writeFile } from 'fs/promises'\nimport { dirname, join } from 'path'",
+    "epic_alpha_signal": {
+      "directory_match": "cleanup:tui/src/utils/permissions/",
+      "git_history_match": "spec:1632,1633,1637",
+      "import_scan_match": "kosmos:KOSMOS|EXAONE"
+    },
+    "epic_alpha_summary": "Spec 1633 cleanup 디렉토리: tui/src/utils/permissions/"
+  },
+  {
+    "kosmos_path": "tui/src/utils/plugins/mcpbHandler.ts",
+    "module_path": "utils/plugins/mcpbHandler",
+    "line_count": 975,
+    "importer_count": 2,
+    "importers": [
+      "tui/src/commands/plugin/ManagePlugins.tsx",
+      "tui/src/commands/plugin/PluginOptionsFlow.tsx"
+    ],
+    "internal_anthropic_tokens": {
+      "queryHaiku": 0,
+      "queryWithModel": 0,
+      "verifyApiKey": 0,
+      "@anthropic-ai/": 3
+    },
+    "dependency_hits": {
+      "sdk-compat": 0,
+      "@aws-sdk/client-bedrock-runtime": 0,
+      "claude.ai": 0,
+      "isClaudeAISubscriber": 0,
+      "getClaudeCodeUserAgent": 0,
+      "growthbook": 0,
+      "from 'bun:bundle'": 0,
+      "feature(": 0
+    },
+    "first_lines": "import type {\n  McpbManifest,\n  McpbUserConfigurationOption,\n} from '@anthropic-ai/mcpb'\nimport axios from 'axios'",
+    "epic_alpha_signal": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "residue:@anthropic-ai/"
+    },
+    "epic_alpha_summary": "Anthropic / Spec 033 잔재 토큰 감지: @anthropic-ai/"
+  },
+  {
+    "kosmos_path": "tui/src/utils/sessionTitle.ts",
+    "module_path": "utils/sessionTitle",
+    "line_count": 53,
+    "importer_count": 4,
+    "importers": [
+      "tui/src/bridge/initReplBridge.ts",
+      "tui/src/cli/print.ts",
+      "tui/src/commands/rename/generateSessionName.ts",
+      "tui/src/screens/REPL.tsx"
+    ],
+    "internal_anthropic_tokens": {
+      "queryHaiku": 2,
+      "queryWithModel": 0,
+      "verifyApiKey": 0,
+      "@anthropic-ai/": 0
+    },
+    "dependency_hits": {
+      "sdk-compat": 0,
+      "@aws-sdk/client-bedrock-runtime": 0,
+      "claude.ai": 0,
+      "isClaudeAISubscriber": 0,
+      "getClaudeCodeUserAgent": 0,
+      "growthbook": 0,
+      "from 'bun:bundle'": 0,
+      "feature(": 0
+    },
+    "first_lines": "/**\n * Session title generation.\n *\n * KOSMOS Epic #2293: Anthropic queryHaiku removed (Spec 1633 + Spec 2293\n * closure). generateSessionTitle always returns null — the REPL title bar",
+    "epic_alpha_signal": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "residue:queryHaiku"
+    },
+    "epic_alpha_summary": "Anthropic / Spec 033 잔재 토큰 감지: queryHaiku"
+  },
+  {
+    "kosmos_path": "tui/src/utils/shell/prefix.ts",
+    "module_path": "utils/shell/prefix",
+    "line_count": 237,
+    "importer_count": 0,
+    "importers": [],
+    "internal_anthropic_tokens": {
+      "queryHaiku": 2,
+      "queryWithModel": 0,
+      "verifyApiKey": 0,
+      "@anthropic-ai/": 0
+    },
+    "dependency_hits": {
+      "sdk-compat": 0,
+      "@aws-sdk/client-bedrock-runtime": 0,
+      "claude.ai": 0,
+      "isClaudeAISubscriber": 0,
+      "getClaudeCodeUserAgent": 0,
+      "growthbook": 0,
+      "from 'bun:bundle'": 0,
+      "feature(": 0
+    },
+    "first_lines": "/**\n * Shared command prefix extraction using Haiku LLM\n *\n * This module provides a factory for creating command prefix extractors\n * that can be used by different shell tools. The core logic",
+    "epic_alpha_signal": {
+      "directory_match": null,
+      "git_history_match": "spec:1632,1637",
+      "import_scan_match": "residue:queryHaiku"
+    },
+    "epic_alpha_summary": "Anthropic / Spec 033 잔재 토큰 감지: queryHaiku"
+  }
+]

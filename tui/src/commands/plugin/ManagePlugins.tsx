@@ -33,7 +33,7 @@ import { logError } from '../../utils/log.js';
 import { clearAllCaches } from '../../utils/plugins/cacheUtils.js';
 import { loadInstalledPluginsV2 } from '../../utils/plugins/installedPluginsManager.js';
 import { getMarketplace } from '../../utils/plugins/marketplaceManager.js';
-import { isMcpbSource, loadMcpbFile, type McpbNeedsConfigResult, type UserConfigValues } from '../../utils/plugins/mcpbHandler.js';
+// KOSMOS: utils/plugins/mcpbHandler deleted (Anthropic .mcpb bundle format). .mcpb branch removed below.
 import { getPluginDataDirSize, pluginDataDirPath } from '../../utils/plugins/pluginDirectories.js';
 import { getFlaggedPlugins, markFlaggedPluginsSeen, removeFlaggedPlugin } from '../../utils/plugins/pluginFlagging.js';
 import { type PersistablePluginScope, parsePluginIdentifier } from '../../utils/plugins/pluginIdentifier.js';
@@ -812,49 +812,7 @@ export function ManagePlugins({
   const [isProcessing, setIsProcessing] = useState(false);
   const [processError, setProcessError] = useState<string | null>(null);
 
-  // Configuration state
-  const [configNeeded, setConfigNeeded] = useState<McpbNeedsConfigResult | null>(null);
-  const [_isLoadingConfig, setIsLoadingConfig] = useState(false);
-  const [selectedPluginHasMcpb, setSelectedPluginHasMcpb] = useState(false);
-
-  // Detect if selected plugin has MCPB
-  // Reads raw marketplace.json to work with old cached marketplaces
-  useEffect(() => {
-    if (!selectedPlugin) {
-      setSelectedPluginHasMcpb(false);
-      return;
-    }
-    async function detectMcpb() {
-      // Check plugin manifest first
-      const mcpServersSpec = selectedPlugin!.plugin.manifest.mcpServers;
-      let hasMcpb = false;
-      if (mcpServersSpec) {
-        hasMcpb = typeof mcpServersSpec === 'string' && isMcpbSource(mcpServersSpec) || Array.isArray(mcpServersSpec) && mcpServersSpec.some(s_2 => typeof s_2 === 'string' && isMcpbSource(s_2));
-      }
-
-      // If not in manifest, read raw marketplace.json directly (bypassing schema validation)
-      // This works even with old cached marketplaces from before MCPB support
-      if (!hasMcpb) {
-        try {
-          const marketplaceDir = path.join(selectedPlugin!.plugin.path, '..');
-          const marketplaceJsonPath = path.join(marketplaceDir, '.claude-plugin', 'marketplace.json');
-          const content = await fs.readFile(marketplaceJsonPath, 'utf-8');
-          const marketplace_1 = jsonParse(content);
-          const entry_0 = marketplace_1.plugins?.find((p: {
-            name: string;
-          }) => p.name === selectedPlugin!.plugin.name);
-          if (entry_0?.mcpServers) {
-            const spec = entry_0.mcpServers;
-            hasMcpb = typeof spec === 'string' && isMcpbSource(spec) || Array.isArray(spec) && spec.some((s_3: unknown) => typeof s_3 === 'string' && isMcpbSource(s_3));
-          }
-        } catch (err) {
-          logForDebugging(`Failed to read raw marketplace.json: ${err}`);
-        }
-      }
-      setSelectedPluginHasMcpb(hasMcpb);
-    }
-    void detectMcpb();
-  }, [selectedPlugin]);
+  // KOSMOS: mcpb configuration state removed (.mcpb Anthropic plugin bundle format deleted).
 
   // Load installed plugins grouped by marketplace
   useEffect(() => {
@@ -1335,46 +1293,7 @@ export function ManagePlugins({
           }
         }
       });
-      if (selectedPluginHasMcpb) {
-        menuItems.push({
-          label: 'Configure',
-          action: async () => {
-            setIsLoadingConfig(true);
-            try {
-              const mcpServersSpec_0 = selectedPlugin.plugin.manifest.mcpServers;
-              let mcpbPath: string | null = null;
-              if (typeof mcpServersSpec_0 === 'string' && isMcpbSource(mcpServersSpec_0)) {
-                mcpbPath = mcpServersSpec_0;
-              } else if (Array.isArray(mcpServersSpec_0)) {
-                for (const spec_0 of mcpServersSpec_0) {
-                  if (typeof spec_0 === 'string' && isMcpbSource(spec_0)) {
-                    mcpbPath = spec_0;
-                    break;
-                  }
-                }
-              }
-              if (!mcpbPath) {
-                setProcessError('No MCPB file found in plugin');
-                setIsLoadingConfig(false);
-                return;
-              }
-              const pluginId_6 = `${selectedPlugin.plugin.name}@${selectedPlugin.marketplace}`;
-              const result_1 = await loadMcpbFile(mcpbPath, selectedPlugin.plugin.path, pluginId_6, undefined, undefined, true);
-              if ('status' in result_1 && result_1.status === 'needs-config') {
-                setConfigNeeded(result_1);
-                setViewState('configuring');
-              } else {
-                setProcessError('Failed to load MCPB for configuration');
-              }
-            } catch (err_2) {
-              const errorMsg = errorMessage(err_2);
-              setProcessError(`Failed to load configuration: ${errorMsg}`);
-            } finally {
-              setIsLoadingConfig(false);
-            }
-          }
-        });
-      }
+      // KOSMOS: 'Configure' (.mcpb) menu item removed (mcpbHandler deleted).
       if (selectedPlugin.plugin.manifest.userConfig && Object.keys(selectedPlugin.plugin.manifest.userConfig).length > 0) {
         menuItems.push({
           label: 'Configure options',
@@ -1419,7 +1338,7 @@ export function ManagePlugins({
       }
     });
     return menuItems;
-  }, [viewState, selectedPlugin, selectedPluginHasMcpb, pluginStates]);
+  }, [viewState, selectedPlugin, pluginStates]);
 
   // Plugin-details navigation
   useKeybindings({
@@ -1672,51 +1591,7 @@ export function ManagePlugins({
     }} onCancel={() => setViewState('plugin-details')} />;
   }
 
-  // Configuration view
-  if (viewState === 'configuring' && configNeeded && selectedPlugin) {
-    const pluginId_12 = `${selectedPlugin.plugin.name}@${selectedPlugin.marketplace}`;
-    async function handleSave(config: UserConfigValues) {
-      if (!configNeeded || !selectedPlugin) return;
-      try {
-        // Find MCPB path again
-        const mcpServersSpec_1 = selectedPlugin.plugin.manifest.mcpServers;
-        let mcpbPath_0: string | null = null;
-        if (typeof mcpServersSpec_1 === 'string' && isMcpbSource(mcpServersSpec_1)) {
-          mcpbPath_0 = mcpServersSpec_1;
-        } else if (Array.isArray(mcpServersSpec_1)) {
-          for (const spec_1 of mcpServersSpec_1) {
-            if (typeof spec_1 === 'string' && isMcpbSource(spec_1)) {
-              mcpbPath_0 = spec_1;
-              break;
-            }
-          }
-        }
-        if (!mcpbPath_0) {
-          setProcessError('No MCPB file found');
-          setViewState('plugin-details');
-          return;
-        }
-
-        // Reload with provided config
-        await loadMcpbFile(mcpbPath_0, selectedPlugin.plugin.path, pluginId_12, undefined, config);
-
-        // Success - go back to details
-        setProcessError(null);
-        setConfigNeeded(null);
-        setViewState('plugin-details');
-        setResult('Configuration saved. Run /reload-plugins for changes to take effect.');
-      } catch (err_4) {
-        const errorMsg_0 = errorMessage(err_4);
-        setProcessError(`Failed to save configuration: ${errorMsg_0}`);
-        setViewState('plugin-details');
-      }
-    }
-    function handleCancel() {
-      setConfigNeeded(null);
-      setViewState('plugin-details');
-    }
-    return <PluginOptionsDialog title={`Configure ${configNeeded.manifest.name}`} subtitle={`Plugin: ${selectedPlugin.plugin.name}`} configSchema={configNeeded.configSchema} initialValues={configNeeded.existingConfig} onSave={handleSave} onCancel={handleCancel} />;
-  }
+  // KOSMOS: 'configuring' (.mcpb) viewState branch removed (mcpbHandler deleted).
 
   // Flagged plugin detail view
   if (typeof viewState === 'object' && viewState.type === 'flagged-detail') {

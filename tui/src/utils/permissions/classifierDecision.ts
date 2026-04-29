@@ -19,7 +19,8 @@ import { TEAM_CREATE_TOOL_NAME } from '../../tools/TeamCreateTool/constants.js'
 import { TEAM_DELETE_TOOL_NAME } from '../../tools/TeamDeleteTool/constants.js'
 import { TODO_WRITE_TOOL_NAME } from '../../tools/TodoWriteTool/constants.js'
 import { TOOL_SEARCH_TOOL_NAME } from '../../tools/ToolSearchTool/prompt.js'
-import { YOLO_CLASSIFIER_TOOL_NAME } from './yoloClassifier.js'
+// KOSMOS Spec 1633 / Epic #2293 — utils/permissions/yoloClassifier deleted; inline tool-name constant.
+const YOLO_CLASSIFIER_TOOL_NAME = 'YoloClassifier'
 
 // Ant-only tool names: conditional require so Bun can DCE these in external builds.
 // Gates mirror tools.ts. Keeps the tool name strings out of cli.js.

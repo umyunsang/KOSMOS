@@ -271,3 +271,4 @@ export type RedactedThinkingBlockParam = RedactedThinkingBlock
 export type BetaRedactedThinkingBlock = RedactedThinkingBlock
 export type BetaThinkingBlock = ThinkingBlock
 export type BetaWebSearchTool20250305 = Record<string, unknown>
+

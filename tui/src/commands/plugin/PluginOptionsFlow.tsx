@@ -10,10 +10,13 @@
 import * as React from 'react';
 import type { LoadedPlugin } from '../../types/plugin.js';
 import { errorMessage } from '../../utils/errors.js';
-import { loadMcpServerUserConfig, saveMcpServerUserConfig } from '../../utils/plugins/mcpbHandler.js';
+// KOSMOS: utils/plugins/mcpbHandler deleted (.mcpb Anthropic plugin bundle format). No-op stubs below.
 import { getUnconfiguredChannels, type UnconfiguredChannel } from '../../utils/plugins/mcpPluginIntegration.js';
 import { loadAllPlugins } from '../../utils/plugins/pluginLoader.js';
 import { getUnconfiguredOptions, loadPluginOptions, type PluginOptionSchema, type PluginOptionValues, savePluginOptions } from '../../utils/plugins/pluginOptionsStorage.js';
+// KOSMOS mcpbHandler stubs (Anthropic .mcpb bundle format removed):
+const loadMcpServerUserConfig = (_pluginId: string, _server: string): PluginOptionValues | null => null;
+const saveMcpServerUserConfig = (_pluginId: string, _server: string, _values: PluginOptionValues, _schema: unknown): void => {};
 import { PluginOptionsDialog } from './PluginOptionsDialog.js';
 
 /**
