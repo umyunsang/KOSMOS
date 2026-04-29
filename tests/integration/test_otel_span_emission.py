@@ -132,7 +132,7 @@ async def test_submit_emits_gen_ai_tool_loop_iteration_span(
     # teardown — leaving the fixture adapter in the global registry pollutes
     # later tests' counts (Spec 2296 T035 surfaces this when running the full
     # suite). Mirrors the verify-test pattern below at line 188.
-    from kosmos.primitives.submit import _ADAPTER_REGISTRY as _submit_registry
+    from kosmos.primitives.submit import _ADAPTER_REGISTRY as _submit_registry  # noqa: N811
 
     _previous_submit = _submit_registry.get(tool_id)
     register_submit_adapter(registration, _invoke)
@@ -247,7 +247,7 @@ async def test_subscribe_emits_gen_ai_tool_loop_iteration_span(
     # Snapshot previous _SUBSCRIBE_ADAPTERS entry so we can restore on teardown
     # — leaving the fixture adapter in the global registry pollutes later
     # tests' counts (Spec 2296 T035 surfaces this when running the full suite).
-    from kosmos.primitives.subscribe import _SUBSCRIBE_ADAPTERS as _subscribe_registry
+    from kosmos.primitives.subscribe import _SUBSCRIBE_ADAPTERS as _subscribe_registry  # noqa: N811
 
     _previous_subscribe = _subscribe_registry.get(tool_id)
     register_subscribe_adapter(tool_id, MODALITY_REST_PULL, _adapter)

@@ -264,7 +264,7 @@ def test_ndjson_emit_parse_roundtrip(frame: IPCFrame) -> None:
 
 
 def test_schema_has_all_21_kinds() -> None:
-    """ipc_frame_json_schema() must enumerate all 22 kind values (Epic ε #2296 adds adapter_manifest_sync)."""
+    """ipc_frame_json_schema() must enumerate all 22 kind values (Epic ε #2296 adds adapter_manifest_sync)."""  # noqa: E501
     schema = ipc_frame_json_schema()
 
     expected_kinds = {

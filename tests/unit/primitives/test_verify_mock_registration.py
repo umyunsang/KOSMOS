@@ -97,8 +97,12 @@ def test_adapter_returns_auth_context_shape(family: str) -> None:
     # New Epic ε adapters may return dict (DelegationContext) or Pydantic context.
     # Existing 5 Spec 031 adapters return Pydantic AuthContext objects.
     if isinstance(result, auth_context_types):
-        assert hasattr(result, "published_tier"), f"Missing 'published_tier' on {type(result).__name__}"
-        assert hasattr(result, "nist_aal_hint"), f"Missing 'nist_aal_hint' on {type(result).__name__}"
+        assert hasattr(result, "published_tier"), (
+            f"Missing 'published_tier' on {type(result).__name__}"
+        )
+        assert hasattr(result, "nist_aal_hint"), (
+            f"Missing 'nist_aal_hint' on {type(result).__name__}"
+        )
         assert result.published_tier, "published_tier must be non-empty"
         assert result.nist_aal_hint, "nist_aal_hint must be non-empty"
         assert result.family == family, (
