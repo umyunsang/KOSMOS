@@ -6,15 +6,31 @@
 //   search: BM25+dense hybrid retrieval over registered adapters
 //   fetch:  direct adapter invocation by tool_id
 //
-// P3 MVP: returns a structured stub indicating T028 registry closure is pending.
-// Real dispatch is wired in T028 (registry closure) and exercised by T029 (E2E).
+// Epic γ #2294 · T006/T007: real validateInput + renderToolResultMessage.
 //
 // I/O contract: specs/1634-tool-system-wiring/contracts/primitive-envelope.md § 2
 
+import React from 'react'
 import { z } from 'zod/v4'
-import { buildTool, type ToolDef } from '../../Tool.js'
+import { Box, Text } from '../../ink.js'
+import { buildTool, type ToolDef, type ToolUseContext } from '../../Tool.js'
 import { lazySchema } from '../../utils/lazySchema.js'
+import {
+  extractCitation,
+  PrimitiveErrorCode,
+  type AdapterCitation,
+  type AdapterWithPolicy,
+} from '../shared/primitiveCitation.js'
 import { LOOKUP_TOOL_NAME, DESCRIPTION, LOOKUP_TOOL_PROMPT } from './prompt.js'
+
+// ---------------------------------------------------------------------------
+// KOSMOS citation extension — attaches resolved citation to the context so the
+// permission UI can surface the verbatim agency policy URL. Does NOT modify
+// Tool.ts or ToolPermissionContext (byte-identical CC port).
+// ---------------------------------------------------------------------------
+type ContextWithCitation = ToolUseContext & {
+  kosmosCitations?: AdapterCitation[]
+}
 
 // ---------------------------------------------------------------------------
 // Input schema — discriminated union on "mode"
@@ -126,24 +142,162 @@ export const LookupPrimitive = buildTool({
     return null
   },
 
-  // Epic γ #2294 · T005 · 9-member compliance stubs.
-  // Real validateInput + renderToolResultMessage land in T006/T007.
+  // Epic γ #2294 · 9-member interface compliance.
   isMcp: false,
 
-  async validateInput() {
-    // T005 stub — fail-open. T006 replaces with adapter-resolve + citation
-    // populate + Korean diagnostic per contracts/primitive-shape.md.
-    return { result: true } as const
-  },
+  /**
+   * T006 — real validateInput per contracts/primitive-shape.md § validateInput.
+   *
+   * Steps:
+   *  1. mode='search': skip adapter resolution (BM25 happens later in call()).
+   *  2. mode='fetch': resolve tool_id against the tools registry.
+   *  3. If not found: fail closed with Korean diagnostic.
+   *  4. Read citation from adapter; fail closed if either field empty.
+   *  5. Attach citation to context for permission UI surfacing.
+   *  6. Return { result: true }.
+   */
+  async validateInput(
+    input: z.infer<InputSchema>,
+    context: ToolUseContext,
+  ): Promise<import('../../Tool.js').ValidationResult> {
+    // Step 1 — search mode: no adapter needed; BM25 runs inside call().
+    if (input.mode === 'search') {
+      return { result: true }
+    }
 
-  renderToolResultMessage() {
-    // T005 stub — render nothing. T007 replaces with citizen-facing Korean
-    // rendering per contracts/primitive-shape.md § Lookup row.
-    return null
+    // Step 2 — resolve adapter from registry.
+    const adapter = (context.options.tools as unknown as AdapterWithPolicy[]).find(
+      (t) => t.name === input.tool_id,
+    )
+    if (!adapter) {
+      return {
+        result: false,
+        message: `도구 '${input.tool_id}'을(를) 찾을 수 없습니다.`,
+        errorCode: PrimitiveErrorCode.AdapterNotFound,
+      }
+    }
+
+    // Step 3 — extract citation; fail closed on missing fields.
+    const citation = extractCitation(adapter)
+    if (!citation) {
+      return {
+        result: false,
+        message: `도구 '${input.tool_id}'에 정책 인용 정보가 없어 호출할 수 없습니다.`,
+        errorCode: PrimitiveErrorCode.CitationMissing,
+      }
+    }
+
+    // Step 4 — attach citation to context for permission UI.
+    ;(context as ContextWithCitation).kosmosCitations = [citation]
+
+    return { result: true }
   },
 
   /**
-   * P3 MVP stub — real dispatch wired by T028 registry closure + T029 E2E test.
+   * T007 — citizen-facing Korean rendering per contracts/primitive-shape.md
+   * § renderToolResultMessage Lookup row.
+   *
+   * - mode='fetch', ok=true:  adapter name + result count + first-3 summary.
+   * - mode='search', ok=true: ranked-hit list.
+   * - ok=false:               Korean error message in citizen-friendly tone.
+   */
+  renderToolResultMessage(output: Output): React.ReactNode {
+    if (!output.ok) {
+      // Error path — surface the backend error message in citizen-friendly Korean.
+      return React.createElement(
+        Box,
+        { flexDirection: 'column', marginTop: 1 },
+        React.createElement(
+          Text,
+          { color: 'red' },
+          `오류가 발생했습니다: ${output.error.message}`,
+        ),
+      )
+    }
+
+    // ok === true — inspect the result shape to determine mode.
+    const result = output.result as Record<string, unknown>
+
+    // mode='search' result: { mode: 'search', results: [...] }
+    if (result.mode === 'search') {
+      const hits = Array.isArray(result.results) ? result.results : []
+      if (hits.length === 0) {
+        return React.createElement(
+          Box,
+          { flexDirection: 'column', marginTop: 1 },
+          React.createElement(Text, { dimColor: true }, '검색 결과가 없습니다.'),
+        )
+      }
+      const hitRows = hits.slice(0, 10).map((hit: unknown, i: number) => {
+        const h = hit as Record<string, unknown>
+        const toolId = typeof h.tool_id === 'string' ? h.tool_id : '(알 수 없음)'
+        const score =
+          typeof h.score === 'number' ? ` [${h.score.toFixed(2)}]` : ''
+        const hint =
+          typeof h.search_hint === 'string' ? ` — ${h.search_hint}` : ''
+        return React.createElement(
+          Text,
+          { key: i },
+          `${i + 1}. ${toolId}${score}${hint}`,
+        )
+      })
+      return React.createElement(
+        Box,
+        { flexDirection: 'column', marginTop: 1 },
+        React.createElement(
+          Text,
+          { bold: true },
+          `검색 결과 (${hits.length}건):`,
+        ),
+        ...hitRows,
+      )
+    }
+
+    // mode='fetch' result: { mode: 'fetch', tool_id: string, result: object }
+    const toolId =
+      typeof result.tool_id === 'string' ? result.tool_id : '어댑터'
+    const adapterResult = result.result
+    let countText = ''
+    let summaryRows: React.ReactNode[] = []
+
+    if (Array.isArray(adapterResult)) {
+      countText = `${adapterResult.length}건`
+      summaryRows = adapterResult.slice(0, 3).map((item: unknown, i: number) => {
+        const summary =
+          typeof item === 'object' && item !== null
+            ? JSON.stringify(item).slice(0, 120)
+            : String(item).slice(0, 120)
+        return React.createElement(
+          Text,
+          { key: i, dimColor: true },
+          `  ${i + 1}. ${summary}`,
+        )
+      })
+    } else if (adapterResult !== null && adapterResult !== undefined) {
+      countText = '1건'
+      const summary =
+        typeof adapterResult === 'object'
+          ? JSON.stringify(adapterResult).slice(0, 240)
+          : String(adapterResult).slice(0, 240)
+      summaryRows = [React.createElement(Text, { key: 0, dimColor: true }, `  ${summary}`)]
+    }
+
+    return React.createElement(
+      Box,
+      { flexDirection: 'column', marginTop: 1 },
+      React.createElement(
+        Text,
+        null,
+        React.createElement(Text, { bold: true }, toolId),
+        countText ? ` — ${countText}` : '',
+      ),
+      ...summaryRows,
+    )
+  },
+
+  /**
+   * Dispatch stub — real adapter invocation wired by T028 registry closure + T029 E2E test.
+   * validateInput has already resolved the adapter and populated kosmosCitations on the context.
    */
   async call(input, _context) {
     return {

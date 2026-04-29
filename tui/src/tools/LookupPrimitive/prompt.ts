@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: Apache-2.0
 // KOSMOS-original — Epic #1634 P3 · LookupPrimitive prompt strings.
+// Epic γ #2294 · T008: Korean description tightened to ≤ 240 chars; stub note removed.
 // Contract: specs/1634-tool-system-wiring/contracts/primitive-envelope.md § 2
 
 export const LOOKUP_TOOL_NAME = 'lookup'
 
-/** One-line bilingual description shown to the LLM. */
+/** Citizen-facing Korean description shown to the LLM (≤ 240 chars). */
 export const DESCRIPTION =
-  'Discover and invoke Korean public-service adapters. 한국 공공 API 어댑터 검색 및 호출.'
+  '한국 공공서비스 어댑터를 검색하고 호출합니다. 먼저 search 모드로 적합한 어댑터를 찾은 뒤, fetch 모드로 직접 호출하세요. 응급실·병원·교통·날씨·공공데이터 등을 조회할 수 있습니다.'
 
 /** Extended prompt included in the system-prompt tool-use section. */
 export const LOOKUP_TOOL_PROMPT = `Discover and invoke Korean public-service adapters registered in the KOSMOS tool registry.
