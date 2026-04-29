@@ -90,6 +90,15 @@ PublishedTier = Literal[
     "mobile_id_resident_aal2",
     # mydata — 1 label
     "mydata_individual_aal2",
+    # Spec 2296 Epic ε — AX-infrastructure callable-channel verify modules.
+    # Five new tier values for the mock_verify_module_* family. Each tier
+    # encodes (a) the AX-channel family name and (b) the NIST AAL hint
+    # the channel is expected to attest to once a real backend ships.
+    "simple_auth_module_aal2",  # 간편인증 AX-channel
+    "modid_aal3",  # 모바일ID OID4VP + DID-resolved RP (AAL3 by KOMSCO design)
+    "kec_aal3",  # 공동인증서 AX-channel (AAL3, joint-cert legacy)
+    "geumyung_module_aal3",  # 금융인증서 AX-channel (AAL3, FNS managed)
+    "any_id_sso_aal2",  # Any-ID SSO (identity-only — no delegation grant)
 ]
 
 # T008 — advisory secondary axis; hint for external consumers only.

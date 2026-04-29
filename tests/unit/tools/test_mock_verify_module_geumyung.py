@@ -29,16 +29,16 @@ def test_geumyung_invoke_returns_transparency_fields(tmp_path: Path) -> None:
         }
     )
 
-    assert isinstance(result, dict)
-    assert result.get("_mode") == "mock"
+    assert hasattr(result, "transparency_mode")
+    assert result.transparency_mode == "mock"
     for field in (
-        "_reference_implementation",
-        "_actual_endpoint_when_live",
-        "_security_wrapping_pattern",
-        "_policy_authority",
-        "_international_reference",
+        "transparency_reference_implementation",
+        "transparency_actual_endpoint_when_live",
+        "transparency_security_wrapping_pattern",
+        "transparency_policy_authority",
+        "transparency_international_reference",
     ):
-        value = result.get(field)
+        value = getattr(result, field)
         assert value is not None and isinstance(value, str) and value.strip(), (
             f"transparency field {field!r} missing or empty in geumyung response"
         )
@@ -55,7 +55,7 @@ def test_geumyung_international_reference(tmp_path: Path) -> None:
             "ledger_root": tmp_path / "ledger",
         }
     )
-    assert result["_international_reference"] == "Singapore Myinfo"
+    assert result.transparency_international_reference == "Singapore Myinfo"
 
 
 def test_geumyung_reference_impl(tmp_path: Path) -> None:
@@ -69,7 +69,7 @@ def test_geumyung_reference_impl(tmp_path: Path) -> None:
             "ledger_root": tmp_path / "ledger",
         }
     )
-    assert result["_reference_implementation"] == "public-mydata-read-v240930"
+    assert result.transparency_reference_implementation == "public-mydata-read-v240930"
 
 
 def test_geumyung_delegation_token_format(tmp_path: Path) -> None:
@@ -83,8 +83,8 @@ def test_geumyung_delegation_token_format(tmp_path: Path) -> None:
             "ledger_root": tmp_path / "ledger",
         }
     )
-    assert result["token"]["delegation_token"].startswith("del_")
-    scope = result["token"]["scope"]
+    assert result.delegation_context.token.delegation_token.startswith("del_")
+    scope = result.delegation_context.token.scope
     assert "lookup:hometax.simplified" in scope
     assert "submit:hometax.tax-return" in scope
 

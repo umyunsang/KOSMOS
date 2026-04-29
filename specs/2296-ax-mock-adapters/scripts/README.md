@@ -40,13 +40,16 @@ This directory contains Layer 2 (PTY expect) and Layer 4 (vhs visual) smoke veri
 - Keyframe 2 (input): Citizen query typed in, agentic loop processing
 - Keyframe 3 (action): Post-approval state — 접수번호 surfaced (live LLM) or agentic-loop processing state (mock-only fallback)
 
-**Full chain vs. fallback**:
-- If `KOSMOS_FRIENDLI_TOKEN` is set and the FriendliAI endpoint is reachable: **partial capture** — boot + query submission + LLM "Hatching…" / "Boogieing…" state. The chain stalls before surfacing 접수번호 because the new `mock_verify_module_*` mocks return stamped dicts instead of typed AuthContext variants — Spec 031's `verify(family_hint=...)` dispatcher converts them to `VerifyMismatchError`, so no permission prompt fires. **Tracking issue: #2446** (deferred from Codex P1 review of PR #2445; target Epic ζ #2297). Even with the timeout extended to 120 s (PTY) and 75 s (vhs), the chain never reaches the submit step in this PR.
-- If LLM is unavailable: **boot + query submission** captured (Checkpoints 1-2 pass; Checkpoints 3-5 log `NOTE` instead of `CHECKPOINT`). This is the acceptance fallback documented in `quickstart.md § 6`.
+**Full chain vs. fallback** — two-layer gating:
 
-Reviewers grep the PTY log for `FAIL` markers. `NOTE` markers indicate a fallback path was taken — acceptable when the LLM key is absent in CI **OR** when the verify-dispatch wiring (#2446) is not yet shipped (current state).
+| Gate | Status (post-PR #2445 head) | Resolution |
+|---|---|---|
+| **Layer A — verify-dispatch wiring** | ✅ FIXED in this PR | Codex P1 #2446 fix landed: 5 new `AuthContext` typed variants (`SimpleAuthModuleContext`, `ModidContext`, `KECContext`, `GeumyungModuleContext`, `AnyIdSsoContext`), 5 new `PublishedTier` literals, 5 new mock returns wired through Spec 031 `verify(family_hint=...)` dispatcher. Verified by `tests/integration/test_verify_module_dispatch.py` (6 tests). |
+| **Layer B — LLM behaviour** | ⚠️ deferred to Epic η #2298 | Even with Layer A fixed, the citizen query "내 종합소득세 신고해줘" doesn't make K-EXAONE emit `verify(family_hint='modid')` because the system prompt doesn't teach the new `mock_verify_module_*` family names or the citizen verify→lookup→submit chain pattern. Captured smoke shows LLM enters "Hatching…" / "Boogieing…" indefinitely. Epic η `prompts/system_v1.md` rewrite is the planned fix. |
 
-**End-to-end receipt-rendering coverage**: load-bearing on the 4-test integration suite at `tests/integration/test_e2e_citizen_taxreturn_chain.py` (T032), which directly invokes the verify / lookup / submit mocks via Python imports and asserts the 3-line ledger trail with matching `delegation_token`. This proves the mock chain works; the smoke just can't drive it through the LLM until #2446 lands.
+**Captured artefact under current state**: boot + query submission + LLM thinking-state. The `Y\r` smoke approval lands as raw input text (no permission prompt fires because no tool call dispatched). Reviewers grep for `FAIL` markers (none); `NOTE` markers indicate Layer B is gating, not a code defect.
+
+**End-to-end receipt-rendering coverage**: load-bearing on the 4-test integration suite at `tests/integration/test_e2e_citizen_taxreturn_chain.py` (T032), which directly invokes the verify / lookup / submit mocks via Python imports and asserts the 3-line ledger trail with matching `delegation_token`. This proves the mock chain + dispatcher both work; the LLM-driven TUI smoke just can't surface 접수번호 until Epic η ships the system-prompt update.
 
 ## Offline Scripted-Chain Fallback
 

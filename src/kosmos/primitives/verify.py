@@ -21,6 +21,7 @@ from typing import Annotated, Literal
 from opentelemetry import trace
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from kosmos.primitives.delegation import DelegationContext, IdentityAssertion
 from kosmos.tools.registry import NistAalHint, PublishedTier
 
 logger = logging.getLogger(__name__)
@@ -97,6 +98,15 @@ _MOBILE_ID_TIERS: frozenset[str] = frozenset(
 )
 
 _MYDATA_TIERS: frozenset[str] = frozenset({"mydata_individual_aal2"})
+
+# Spec 2296 Epic ε — AX-infrastructure callable-channel verify modules.
+# One frozenset per family; values mirror the new PublishedTier values added
+# in src/kosmos/tools/registry.py.
+_SIMPLE_AUTH_MODULE_TIERS: frozenset[str] = frozenset({"simple_auth_module_aal2"})
+_MODID_TIERS: frozenset[str] = frozenset({"modid_aal3"})
+_KEC_TIERS: frozenset[str] = frozenset({"kec_aal3"})
+_GEUMYUNG_MODULE_TIERS: frozenset[str] = frozenset({"geumyung_module_aal3"})
+_ANY_ID_SSO_TIERS: frozenset[str] = frozenset({"any_id_sso_aal2"})
 
 
 class _AuthContextBase(BaseModel):
@@ -240,6 +250,101 @@ class MyDataContext(_AuthContextBase):
 
 
 # ---------------------------------------------------------------------------
+# Spec 2296 Epic ε — AX-infrastructure callable-channel verify families.
+# These five contexts wrap a DelegationContext (or IdentityAssertion for
+# any_id_sso) issued by mock_verify_module_* adapters. The wrapped envelope
+# is the OID4VP-style delegation grant the AX gateway is expected to mint
+# once the policy mandate ships. Per data-model.md § 1-3 + Codex P1 #2446.
+# ---------------------------------------------------------------------------
+
+
+class SimpleAuthModuleContext(_AuthContextBase):
+    """간편인증 (Simple Auth) AX-channel verify context wrapping a DelegationContext."""
+
+    family: Literal["simple_auth_module"] = "simple_auth_module"
+    delegation_context: DelegationContext
+
+    @model_validator(mode="after")
+    def _check_published_tier(self) -> SimpleAuthModuleContext:
+        if self.published_tier not in _SIMPLE_AUTH_MODULE_TIERS:
+            raise ValueError(
+                f"SimpleAuthModuleContext.published_tier must be one of "
+                f"{sorted(_SIMPLE_AUTH_MODULE_TIERS)}, got {self.published_tier!r}"
+            )
+        return self
+
+
+class ModidContext(_AuthContextBase):
+    """모바일ID (KOMSCO OID4VP + DID) AX-channel verify context."""
+
+    family: Literal["modid"] = "modid"
+    delegation_context: DelegationContext
+
+    @model_validator(mode="after")
+    def _check_published_tier(self) -> ModidContext:
+        if self.published_tier not in _MODID_TIERS:
+            raise ValueError(
+                f"ModidContext.published_tier must be one of "
+                f"{sorted(_MODID_TIERS)}, got {self.published_tier!r}"
+            )
+        return self
+
+
+class KECContext(_AuthContextBase):
+    """공동인증서 (KEC joint cert) AX-channel verify context."""
+
+    family: Literal["kec"] = "kec"
+    delegation_context: DelegationContext
+
+    @model_validator(mode="after")
+    def _check_published_tier(self) -> KECContext:
+        if self.published_tier not in _KEC_TIERS:
+            raise ValueError(
+                f"KECContext.published_tier must be one of "
+                f"{sorted(_KEC_TIERS)}, got {self.published_tier!r}"
+            )
+        return self
+
+
+class GeumyungModuleContext(_AuthContextBase):
+    """금융인증서 (FNS Financial Cert) AX-channel verify context."""
+
+    family: Literal["geumyung_module"] = "geumyung_module"
+    delegation_context: DelegationContext
+
+    @model_validator(mode="after")
+    def _check_published_tier(self) -> GeumyungModuleContext:
+        if self.published_tier not in _GEUMYUNG_MODULE_TIERS:
+            raise ValueError(
+                f"GeumyungModuleContext.published_tier must be one of "
+                f"{sorted(_GEUMYUNG_MODULE_TIERS)}, got {self.published_tier!r}"
+            )
+        return self
+
+
+class AnyIdSsoContext(_AuthContextBase):
+    """Any-ID SSO (digital_onepass successor) verify context wrapping an IdentityAssertion.
+
+    Per delegation-flow-design.md § 2.2: Any-ID is identity-SSO only — it does NOT
+    issue a delegation grant. Downstream submit/lookup adapters that receive an
+    AnyIdSsoContext (rather than one of the four DelegationContext-wrapping variants
+    above) MUST reject the call with DelegationGrantMissing per spec FR-001.
+    """
+
+    family: Literal["any_id_sso"] = "any_id_sso"
+    identity_assertion: IdentityAssertion
+
+    @model_validator(mode="after")
+    def _check_published_tier(self) -> AnyIdSsoContext:
+        if self.published_tier not in _ANY_ID_SSO_TIERS:
+            raise ValueError(
+                f"AnyIdSsoContext.published_tier must be one of "
+                f"{sorted(_ANY_ID_SSO_TIERS)}, got {self.published_tier!r}"
+            )
+        return self
+
+
+# ---------------------------------------------------------------------------
 # AuthContext discriminated union + VerifyMismatchError + VerifyOutput
 # ---------------------------------------------------------------------------
 
@@ -249,7 +354,13 @@ AuthContext = Annotated[
     | GanpyeonInjeungContext
     | DigitalOnepassContext
     | MobileIdContext
-    | MyDataContext,
+    | MyDataContext
+    # Spec 2296 Epic ε — 5 new AX-channel families.
+    | SimpleAuthModuleContext
+    | ModidContext
+    | KECContext
+    | GeumyungModuleContext
+    | AnyIdSsoContext,
     Field(discriminator="family"),
 ]
 
@@ -372,6 +483,12 @@ async def verify(
                 DigitalOnepassContext,
                 MobileIdContext,
                 MyDataContext,
+                # Spec 2296 Epic ε — 5 new AX-channel families (Codex P1 #2446 fix).
+                SimpleAuthModuleContext,
+                ModidContext,
+                KECContext,
+                GeumyungModuleContext,
+                AnyIdSsoContext,
             ),
         ):
             span.set_attribute("error.type", "unexpected_adapter_return_type")

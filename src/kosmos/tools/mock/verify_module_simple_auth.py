@@ -21,7 +21,7 @@ from typing import Any, Final
 
 from kosmos.memdir.consent_ledger import DelegationIssuedEvent, append_delegation_issued
 from kosmos.primitives.delegation import DelegationContext, DelegationToken
-from kosmos.primitives.verify import register_verify_adapter
+from kosmos.primitives.verify import SimpleAuthModuleContext, register_verify_adapter
 from kosmos.tools.transparency import stamp_mock_response
 
 # ---------------------------------------------------------------------------
@@ -88,7 +88,7 @@ def _mock_vp_jwt(scope: str, issued_at: datetime, expires_at: datetime) -> str:
 # ---------------------------------------------------------------------------
 
 
-def invoke(session_context: dict[str, Any]) -> dict[str, Any]:
+def invoke(session_context: dict[str, Any]) -> SimpleAuthModuleContext:
     """Issue a DelegationToken for the simple-auth AX channel.
 
     session_context keys consumed:
@@ -136,15 +136,29 @@ def invoke(session_context: dict[str, Any]) -> dict[str, Any]:
     )
     append_delegation_issued(ledger_event, ledger_root=ledger_root)
 
-    # Stamp transparency fields and return.
-    domain_payload = context.model_dump(by_alias=True)
-    return stamp_mock_response(
-        domain_payload,
+    # Build the transparency dict via stamp_mock_response on an empty payload —
+    # we need the six stamped fields to populate the typed context (Spec 031
+    # AuthContext envelope wraps the DelegationContext + carries transparency).
+    transparency = stamp_mock_response(
+        {},
         reference_implementation=_REFERENCE_IMPL,
         actual_endpoint_when_live=_ACTUAL_ENDPOINT,
         security_wrapping_pattern=_SECURITY_WRAPPING,
         policy_authority=_POLICY_AUTHORITY,
         international_reference=_INTERNATIONAL_REF,
+    )
+
+    # Return a typed AuthContext variant so verify(family_hint=...) accepts it
+    # (Codex P1 #2446 fix). The wrapped DelegationContext carries the OID4VP
+    # envelope; the six aliased transparency fields surface in model_dump(by_alias).
+    return SimpleAuthModuleContext.model_validate(
+        {
+            "published_tier": "simple_auth_module_aal2",
+            "nist_aal_hint": "AAL2",
+            "verified_at": now,
+            "delegation_context": context,
+            **transparency,
+        }
     )
 
 

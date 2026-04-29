@@ -25,7 +25,7 @@ from datetime import UTC, datetime, timedelta
 from typing import Any, Final
 
 from kosmos.primitives.delegation import IdentityAssertion
-from kosmos.primitives.verify import register_verify_adapter
+from kosmos.primitives.verify import AnyIdSsoContext, register_verify_adapter
 from kosmos.tools.transparency import stamp_mock_response
 
 # ---------------------------------------------------------------------------
@@ -89,7 +89,7 @@ def _mock_assertion_jwt(issued_at: datetime, expires_at: datetime) -> str:
 # ---------------------------------------------------------------------------
 
 
-def invoke(session_context: dict[str, Any]) -> dict[str, Any]:
+def invoke(session_context: dict[str, Any]) -> AnyIdSsoContext:
     """Return an IdentityAssertion for the Any-ID SSO channel.
 
     IMPORTANT: This adapter does NOT issue a DelegationToken. Downstream
@@ -107,15 +107,26 @@ def invoke(session_context: dict[str, Any]) -> dict[str, Any]:
         expires_at=expires_at,
     )
 
-    # Stamp transparency fields on top of the identity assertion dict.
-    domain_payload = assertion.model_dump(by_alias=True)
-    return stamp_mock_response(
-        domain_payload,
+    # Build the transparency dict via stamp_mock_response on an empty payload
+    # to extract the six stamped fields, then populate the typed context
+    # (Codex P1 #2446 fix — verify dispatcher requires AuthContext typed return).
+    transparency = stamp_mock_response(
+        {},
         reference_implementation=_REFERENCE_IMPL,
         actual_endpoint_when_live=_ACTUAL_ENDPOINT,
         security_wrapping_pattern=_SECURITY_WRAPPING,
         policy_authority=_POLICY_AUTHORITY,
         international_reference=_INTERNATIONAL_REF,
+    )
+
+    return AnyIdSsoContext.model_validate(
+        {
+            "published_tier": "any_id_sso_aal2",
+            "nist_aal_hint": "AAL2",
+            "verified_at": now,
+            "identity_assertion": assertion,
+            **transparency,
+        }
     )
 
 

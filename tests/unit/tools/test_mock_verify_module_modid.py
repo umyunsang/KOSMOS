@@ -29,16 +29,16 @@ def test_modid_invoke_returns_transparency_fields(tmp_path: Path) -> None:
         }
     )
 
-    assert isinstance(result, dict)
-    assert result.get("_mode") == "mock"
+    assert hasattr(result, "transparency_mode")
+    assert result.transparency_mode == "mock"
     for field in (
-        "_reference_implementation",
-        "_actual_endpoint_when_live",
-        "_security_wrapping_pattern",
-        "_policy_authority",
-        "_international_reference",
+        "transparency_reference_implementation",
+        "transparency_actual_endpoint_when_live",
+        "transparency_security_wrapping_pattern",
+        "transparency_policy_authority",
+        "transparency_international_reference",
     ):
-        value = result.get(field)
+        value = getattr(result, field)
         assert value is not None and isinstance(value, str) and value.strip(), (
             f"transparency field {field!r} missing or empty in modid response"
         )
@@ -55,7 +55,7 @@ def test_modid_international_reference(tmp_path: Path) -> None:
             "ledger_root": tmp_path / "ledger",
         }
     )
-    assert result["_international_reference"] == "EU EUDI Wallet"
+    assert result.transparency_international_reference == "EU EUDI Wallet"
 
 
 def test_modid_security_wrapping(tmp_path: Path) -> None:
@@ -69,7 +69,7 @@ def test_modid_security_wrapping(tmp_path: Path) -> None:
             "ledger_root": tmp_path / "ledger",
         }
     )
-    assert "OID4VP" in result["_security_wrapping_pattern"]
+    assert "OID4VP" in result.transparency_security_wrapping_pattern
 
 
 def test_modid_citizen_did_is_set(tmp_path: Path) -> None:
@@ -83,7 +83,7 @@ def test_modid_citizen_did_is_set(tmp_path: Path) -> None:
             "ledger_root": tmp_path / "ledger",
         }
     )
-    citizen_did = result.get("citizen_did")
+    citizen_did = result.delegation_context.citizen_did
     assert citizen_did is not None, "citizen_did should be set for Mobile-ID"
     assert citizen_did.startswith("did:web:mobileid.go.kr")
 
@@ -99,7 +99,7 @@ def test_modid_delegation_token_prefix(tmp_path: Path) -> None:
             "ledger_root": tmp_path / "ledger",
         }
     )
-    assert result["token"]["delegation_token"].startswith("del_")
+    assert result.delegation_context.token.delegation_token.startswith("del_")
 
 
 def test_modid_ledger_append(tmp_path: Path) -> None:

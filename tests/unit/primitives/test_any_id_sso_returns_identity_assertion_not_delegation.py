@@ -22,19 +22,25 @@ import pytest
 
 
 def test_any_id_sso_returns_identity_assertion_not_delegation() -> None:
-    """any_id_sso must return IdentityAssertion shape (no 'token', has 'assertion_jwt')."""
+    """any_id_sso must return AnyIdSsoContext wrapping IdentityAssertion (NOT DelegationContext).
+
+    Spec 2296 Codex P1 #2446 fix: invoke() now returns a typed AuthContext variant
+    instead of a stamped dict, so the verify(family_hint='any_id_sso') dispatcher path
+    works. The wrapped envelope is IdentityAssertion (no delegation grant).
+    """
+    from kosmos.primitives.verify import AnyIdSsoContext
     from kosmos.tools.mock.verify_module_any_id_sso import invoke
 
     result = invoke({"session_id": "test-sess-sso"})
 
-    assert isinstance(result, dict), "Expected dict from any_id_sso invoke()"
-    # IdentityAssertion has assertion_jwt, NOT token.
-    assert "assertion_jwt" in result, (
-        f"IdentityAssertion must carry 'assertion_jwt' field — got keys: {sorted(result.keys())}"
+    assert isinstance(result, AnyIdSsoContext), (
+        f"Expected AnyIdSsoContext, got {type(result).__name__}"
     )
-    assert "token" not in result, (
-        "IdentityAssertion must NOT carry 'token' (which is a DelegationContext field). "
-        "any_id_sso is SSO-only — it does not produce a delegation grant."
+    # AnyIdSsoContext carries identity_assertion, NOT delegation_context.
+    assert hasattr(result, "identity_assertion"), "AnyIdSsoContext must carry 'identity_assertion'"
+    assert not hasattr(result, "delegation_context"), (
+        "AnyIdSsoContext must NOT carry 'delegation_context' — any_id_sso is "
+        "SSO-only per delegation-flow-design.md § 2.2."
     )
 
 
@@ -43,7 +49,7 @@ def test_any_id_sso_has_no_scope_field() -> None:
     from kosmos.tools.mock.verify_module_any_id_sso import invoke
 
     result = invoke({"session_id": "test-sess-sso-2"})
-    assert "scope" not in result, (
+    assert not hasattr(result.identity_assertion, "scope"), (
         "IdentityAssertion must NOT carry 'scope' — any_id_sso is identity-only."
     )
 
@@ -53,7 +59,7 @@ def test_any_id_sso_assertion_jwt_jws_shape() -> None:
     from kosmos.tools.mock.verify_module_any_id_sso import invoke
 
     result = invoke({"session_id": "test-sess-jws"})
-    parts = result["assertion_jwt"].split(".")
+    parts = result.identity_assertion.assertion_jwt.split(".")
     assert len(parts) == 3, (
         f"assertion_jwt must be header.payload.signature, got {len(parts)} parts"
     )
@@ -65,31 +71,31 @@ def test_any_id_sso_assertion_jwt_jws_shape() -> None:
 
 
 def test_any_id_sso_returns_transparency_fields() -> None:
-    """invoke() carries all six transparency fields non-empty."""
+    """invoke() carries all six transparency fields non-empty on the typed context."""
     from kosmos.tools.mock.verify_module_any_id_sso import invoke
 
     result = invoke({"session_id": "test-sess-transparency"})
 
-    assert result.get("_mode") == "mock"
+    assert result.transparency_mode == "mock"
     for field in (
-        "_reference_implementation",
-        "_actual_endpoint_when_live",
-        "_security_wrapping_pattern",
-        "_policy_authority",
-        "_international_reference",
+        "transparency_reference_implementation",
+        "transparency_actual_endpoint_when_live",
+        "transparency_security_wrapping_pattern",
+        "transparency_policy_authority",
+        "transparency_international_reference",
     ):
-        value = result.get(field)
+        value = getattr(result, field)
         assert value is not None and isinstance(value, str) and value.strip(), (
             f"any_id_sso missing or empty transparency field {field!r}"
         )
 
 
 def test_any_id_sso_international_reference() -> None:
-    """_international_reference must be 'UK GOV.UK One Login'."""
+    """transparency_international_reference must be 'UK GOV.UK One Login'."""
     from kosmos.tools.mock.verify_module_any_id_sso import invoke
 
     result = invoke({"session_id": "s1"})
-    assert result["_international_reference"] == "UK GOV.UK One Login"
+    assert result.transparency_international_reference == "UK GOV.UK One Login"
 
 
 # ---------------------------------------------------------------------------
@@ -110,18 +116,17 @@ def test_downstream_submit_rejects_identity_assertion(tmp_path) -> None:
     # directly as a "delegation" in a submit call.
     sso_result = any_id_sso_invoke({"session_id": "test-sess-submit-fail"})
 
-    # Verify the assertion: the result does NOT have a 'token' field.
-    # A real submit adapter would call validate_delegation(context, ...) which
-    # expects a DelegationContext. Passing an IdentityAssertion dict to
-    # DelegationContext.model_validate should fail.
+    # The Spec 2296 Codex P1 #2446 fix made the result a typed AnyIdSsoContext
+    # instead of a stamped dict. To assert the fail-closed contract, we serialise
+    # the wrapped IdentityAssertion to dict and try to parse it as DelegationContext;
+    # this MUST fail (no `token` field on IdentityAssertion).
     from pydantic import ValidationError
 
     from kosmos.primitives.delegation import DelegationContext
 
-    # Attempt to parse the IdentityAssertion result as a DelegationContext.
-    # This MUST fail — it does not carry the 'token' field required by DelegationContext.
+    assertion_dump = sso_result.identity_assertion.model_dump(by_alias=True)
     with pytest.raises((ValidationError, KeyError, TypeError)):
-        DelegationContext.model_validate(sso_result)
+        DelegationContext.model_validate(assertion_dump)
 
 
 # ---------------------------------------------------------------------------

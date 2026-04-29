@@ -29,16 +29,16 @@ def test_kec_invoke_returns_transparency_fields(tmp_path: Path) -> None:
         }
     )
 
-    assert isinstance(result, dict)
-    assert result.get("_mode") == "mock"
+    assert hasattr(result, "transparency_mode")
+    assert result.transparency_mode == "mock"
     for field in (
-        "_reference_implementation",
-        "_actual_endpoint_when_live",
-        "_security_wrapping_pattern",
-        "_policy_authority",
-        "_international_reference",
+        "transparency_reference_implementation",
+        "transparency_actual_endpoint_when_live",
+        "transparency_security_wrapping_pattern",
+        "transparency_policy_authority",
+        "transparency_international_reference",
     ):
-        value = result.get(field)
+        value = getattr(result, field)
         assert value is not None and isinstance(value, str) and value.strip(), (
             f"transparency field {field!r} missing or empty in kec response"
         )
@@ -55,7 +55,7 @@ def test_kec_international_reference(tmp_path: Path) -> None:
             "ledger_root": tmp_path / "ledger",
         }
     )
-    assert result["_international_reference"] == "Singapore APEX"
+    assert result.transparency_international_reference == "Singapore APEX"
 
 
 def test_kec_security_wrapping_pattern(tmp_path: Path) -> None:
@@ -69,8 +69,8 @@ def test_kec_security_wrapping_pattern(tmp_path: Path) -> None:
             "ledger_root": tmp_path / "ledger",
         }
     )
-    assert "OAuth2.1" in result["_security_wrapping_pattern"]
-    assert "mTLS" in result["_security_wrapping_pattern"]
+    assert "OAuth2.1" in result.transparency_security_wrapping_pattern
+    assert "mTLS" in result.transparency_security_wrapping_pattern
 
 
 def test_kec_issuer_did_in_vp_jwt(tmp_path: Path) -> None:
@@ -87,7 +87,7 @@ def test_kec_issuer_did_in_vp_jwt(tmp_path: Path) -> None:
             "ledger_root": tmp_path / "ledger",
         }
     )
-    vp_jwt = result["token"]["vp_jwt"]
+    vp_jwt = result.delegation_context.token.vp_jwt
     _header, payload_b64, _sig = vp_jwt.split(".")
     # Pad base64
     padded = payload_b64 + "=" * (-len(payload_b64) % 4)

@@ -218,25 +218,20 @@ async def test_happy_chain_verify_lookup_submit(tmp_path: Path) -> None:
     scope_list = ["lookup:hometax.simplified", "submit:hometax.tax-return"]
     verify_result = _invoke_modid_verify(session_id, scope_list, ledger_root)
 
-    # Verify result should carry all six transparency fields.
-    assert _has_all_transparency_fields(verify_result), (
-        f"verify response missing transparency fields: {verify_result.keys()}"
+    # Spec 2296 Codex P1 #2446 fix — verify mocks now return typed AuthContext
+    # variants instead of stamped dicts. ModidContext wraps the DelegationContext
+    # under the `delegation_context` field; transparency fields surface as
+    # `transparency_*` attributes.
+    from kosmos.primitives.verify import ModidContext  # noqa: PLC0415
+
+    assert isinstance(verify_result, ModidContext), (
+        f"verify result must be a typed ModidContext (Codex P1 #2446); "
+        f"got {type(verify_result).__name__}"
     )
-
-    # Extract the DelegationContext.
-    # verify_module_modid returns a stamped dict with the DelegationContext embedded.
-    # The context is serialised as a nested dict under "token" key (model_dump by_alias=True).
-    # We need to reconstruct it from the stamped payload.
-    from pydantic import TypeAdapter  # noqa: PLC0415
-
-    from kosmos.primitives.delegation import DelegationContext  # noqa: PLC0415
-
-    # The verify result contains a model_dump of DelegationContext (by_alias=True).
-    # We reconstruct the DelegationContext to pass to downstream adapters.
-    ta = TypeAdapter(DelegationContext)
-    # Strip the transparency fields to get the domain payload.
-    domain_fields = {k: v for k, v in verify_result.items() if not k.startswith("_")}
-    delegation_ctx = ta.validate_python(domain_fields)
+    assert verify_result.transparency_mode == "mock", (
+        f"verify result missing transparency_mode='mock'; got {verify_result.transparency_mode!r}"
+    )
+    delegation_ctx = verify_result.delegation_context
 
     # Step 2: lookup
     lookup_result = await _invoke_hometax_lookup(
@@ -307,14 +302,7 @@ async def test_submit_succeeds_with_matching_scope(tmp_path: Path) -> None:
     # Issue a token with the submit scope.
     scope_list = ["submit:hometax.tax-return"]
     verify_result = _invoke_modid_verify(session_id, scope_list, ledger_root)
-
-    from pydantic import TypeAdapter  # noqa: PLC0415
-
-    from kosmos.primitives.delegation import DelegationContext  # noqa: PLC0415
-
-    ta = TypeAdapter(DelegationContext)
-    domain_fields = {k: v for k, v in verify_result.items() if not k.startswith("_")}
-    delegation_ctx = ta.validate_python(domain_fields)
+    delegation_ctx = verify_result.delegation_context
 
     submit_result = await _invoke_hometax_submit(delegation_ctx, session_id, ledger_root)
 
@@ -363,14 +351,7 @@ async def test_scope_violation_rejected(tmp_path: Path) -> None:
     # Issue a token with ONLY the lookup scope (missing submit scope).
     scope_list = ["lookup:hometax.simplified"]
     verify_result = _invoke_modid_verify(session_id, scope_list, ledger_root)
-
-    from pydantic import TypeAdapter  # noqa: PLC0415
-
-    from kosmos.primitives.delegation import DelegationContext  # noqa: PLC0415
-
-    ta = TypeAdapter(DelegationContext)
-    domain_fields = {k: v for k, v in verify_result.items() if not k.startswith("_")}
-    delegation_ctx = ta.validate_python(domain_fields)
+    delegation_ctx = verify_result.delegation_context
 
     submit_result = await _invoke_hometax_submit(delegation_ctx, session_id, ledger_root)
 
@@ -427,19 +408,17 @@ async def test_all_transparency_fields_in_chain(tmp_path: Path) -> None:
 
     # Step 1: verify
     verify_result = _invoke_modid_verify(session_id, scope_list, ledger_root)
-    assert _has_all_transparency_fields(verify_result), (
+    # Spec 2296 Codex P1 #2446 fix — typed AuthContext returns instead of dict.
+    # The 6 transparency fields are now attributes (transparency_*) on the typed
+    # context; we serialize via model_dump(by_alias=True) to apply the same
+    # _has_all_transparency_fields check that we use for downstream dict responses.
+    verify_dump = verify_result.model_dump(by_alias=True)
+    assert _has_all_transparency_fields(verify_dump), (
         f"verify response missing transparency fields.\n"
-        f"Present keys: {sorted(verify_result.keys())}\n"
-        f"Missing: {_TRANSPARENCY_KEYS - set(verify_result.keys())}"
+        f"Present keys: {sorted(verify_dump.keys())}\n"
+        f"Missing: {_TRANSPARENCY_KEYS - set(verify_dump.keys())}"
     )
-
-    from pydantic import TypeAdapter  # noqa: PLC0415
-
-    from kosmos.primitives.delegation import DelegationContext  # noqa: PLC0415
-
-    ta = TypeAdapter(DelegationContext)
-    domain_fields = {k: v for k, v in verify_result.items() if not k.startswith("_")}
-    delegation_ctx = ta.validate_python(domain_fields)
+    delegation_ctx = verify_result.delegation_context
 
     # Step 2: lookup
     lookup_result = await _invoke_hometax_lookup(

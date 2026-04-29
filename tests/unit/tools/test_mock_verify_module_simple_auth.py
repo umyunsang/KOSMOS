@@ -34,16 +34,16 @@ def test_simple_auth_invoke_returns_transparency_fields(tmp_path: Path) -> None:
         }
     )
 
-    assert isinstance(result, dict), "Expected a dict from invoke()"
-    assert result.get("_mode") == "mock", "_mode must be 'mock'"
+    assert hasattr(result, "transparency_mode"), "Expected a dict from invoke()"
+    assert result.transparency_mode == "mock", "_mode must be 'mock'"
     for field in (
-        "_reference_implementation",
-        "_actual_endpoint_when_live",
-        "_security_wrapping_pattern",
-        "_policy_authority",
-        "_international_reference",
+        "transparency_reference_implementation",
+        "transparency_actual_endpoint_when_live",
+        "transparency_security_wrapping_pattern",
+        "transparency_policy_authority",
+        "transparency_international_reference",
     ):
-        value = result.get(field)
+        value = getattr(result, field)
         assert value is not None and isinstance(value, str) and value.strip(), (
             f"transparency field {field!r} is missing or empty in simple_auth response"
         )
@@ -60,7 +60,7 @@ def test_simple_auth_international_reference(tmp_path: Path) -> None:
             "ledger_root": tmp_path / "ledger",
         }
     )
-    assert result["_international_reference"] == "Japan マイナポータル API"
+    assert result.transparency_international_reference == "Japan マイナポータル API"
 
 
 def test_simple_auth_reference_impl(tmp_path: Path) -> None:
@@ -74,7 +74,7 @@ def test_simple_auth_reference_impl(tmp_path: Path) -> None:
             "ledger_root": tmp_path / "ledger",
         }
     )
-    assert result["_reference_implementation"] == "ax-infrastructure-callable-channel"
+    assert result.transparency_reference_implementation == "ax-infrastructure-callable-channel"
 
 
 def test_simple_auth_delegation_context_shape(tmp_path: Path) -> None:
@@ -88,11 +88,12 @@ def test_simple_auth_delegation_context_shape(tmp_path: Path) -> None:
             "ledger_root": tmp_path / "ledger",
         }
     )
-    assert "token" in result, "Expected 'token' nested in DelegationContext payload"
-    token = result["token"]
-    assert isinstance(token, dict)
-    assert token.get("delegation_token", "").startswith("del_")
-    assert token.get("scope") == "submit:hometax.tax-return"
+    assert hasattr(result, "delegation_context"), (
+        "Expected delegation_context on the typed AuthContext result"
+    )
+    token = result.delegation_context.token
+    assert token.delegation_token.startswith("del_")
+    assert token.scope == "submit:hometax.tax-return"
 
 
 def test_simple_auth_multi_scope(tmp_path: Path) -> None:
@@ -106,7 +107,7 @@ def test_simple_auth_multi_scope(tmp_path: Path) -> None:
             "ledger_root": tmp_path / "ledger",
         }
     )
-    scope = result["token"]["scope"]
+    scope = result.delegation_context.token.scope
     assert "lookup:hometax.simplified" in scope.split(",")
     assert "submit:hometax.tax-return" in scope.split(",")
 
