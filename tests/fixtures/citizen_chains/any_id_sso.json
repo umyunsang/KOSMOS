@@ -1,0 +1,20 @@
+{
+  "family_hint": "any_id_sso",
+  "tool_id": "mock_verify_module_any_id_sso",
+  "citizen_prompt": "Any-ID SSO로 신원 확인해줘",
+  "expected_first_tool_call": {
+    "name": "verify",
+    "arguments": {
+      "tool_id": "mock_verify_module_any_id_sso",
+      "params": {
+        "scope_list": [],
+        "purpose_ko": "Any-ID SSO 신원 확인",
+        "purpose_en": "Identity assertion via Any-ID SSO"
+      }
+    }
+  },
+  "expected_chain_completes_with_receipt": false,
+  "expected_mock_invocations": [
+    "mock_verify_module_any_id_sso"
+  ]
+}

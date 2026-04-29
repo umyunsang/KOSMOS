@@ -1,0 +1,20 @@
+{
+  "family_hint": "geumyung_module",
+  "tool_id": "mock_verify_module_geumyung",
+  "citizen_prompt": "금융인증서로 본인 확인해줘",
+  "expected_first_tool_call": {
+    "name": "verify",
+    "arguments": {
+      "tool_id": "mock_verify_module_geumyung",
+      "params": {
+        "scope_list": ["verify:geumyung.identity"],
+        "purpose_ko": "금융인증서 본인확인",
+        "purpose_en": "Identity verification via financial certificate"
+      }
+    }
+  },
+  "expected_chain_completes_with_receipt": true,
+  "expected_mock_invocations": [
+    "mock_verify_module_geumyung"
+  ]
+}

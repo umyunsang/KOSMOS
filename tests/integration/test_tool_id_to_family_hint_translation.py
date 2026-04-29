@@ -71,9 +71,7 @@ def test_citizen_shape_translates_to_correct_family_hint(
     - ``tool_id`` is preserved on the model instance
     - ``params`` is preserved on the model instance
     """
-    instance = _VerifyInputForLLM.model_validate(
-        {"tool_id": tool_id, "params": _SAMPLE_PARAMS}
-    )
+    instance = _VerifyInputForLLM.model_validate({"tool_id": tool_id, "params": _SAMPLE_PARAMS})
 
     assert instance.family_hint == expected_family, (
         f"tool_id={tool_id!r}: expected family_hint={expected_family!r}, "
@@ -90,12 +88,8 @@ def test_citizen_shape_translates_to_correct_family_hint(
         "session_context MUST contain scope_list from params"
     )
     # Original citizen-shape fields MUST be preserved
-    assert instance.tool_id == tool_id, (
-        f"tool_id MUST be preserved; got {instance.tool_id!r}"
-    )
-    assert instance.params == _SAMPLE_PARAMS, (
-        "params MUST be preserved on model instance"
-    )
+    assert instance.tool_id == tool_id, f"tool_id MUST be preserved; got {instance.tool_id!r}"
+    assert instance.params == _SAMPLE_PARAMS, "params MUST be preserved on model instance"
 
 
 # ---------------------------------------------------------------------------
@@ -120,12 +114,8 @@ def test_legacy_shape_passes_through_unchanged() -> None:
 
     assert instance.family_hint == "modid"
     assert instance.session_context["purpose_ko"] == "홈택스 조회"
-    assert instance.tool_id is None, (
-        "tool_id MUST default to None for legacy-shape input"
-    )
-    assert instance.params is None, (
-        "params MUST default to None for legacy-shape input"
-    )
+    assert instance.tool_id is None, "tool_id MUST default to None for legacy-shape input"
+    assert instance.params is None, "params MUST default to None for legacy-shape input"
 
 
 # ---------------------------------------------------------------------------
@@ -141,9 +131,7 @@ def test_unknown_tool_id_raises_value_error() -> None:
     """
     unknown_tool_id = "mock_verify_module_NONEXISTENT"
     with pytest.raises((ValueError, ValidationError)) as exc_info:
-        _VerifyInputForLLM.model_validate(
-            {"tool_id": unknown_tool_id, "params": {}}
-        )
+        _VerifyInputForLLM.model_validate({"tool_id": unknown_tool_id, "params": {}})
 
     # Accept either raw ValueError or Pydantic-wrapped ValidationError
     exc_str = str(exc_info.value)

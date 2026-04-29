@@ -1,0 +1,23 @@
+{
+  "family_hint": "modid",
+  "tool_id": "mock_verify_module_modid",
+  "citizen_prompt": "종합소득세 신고해줘",
+  "expected_first_tool_call": {
+    "name": "verify",
+    "arguments": {
+      "tool_id": "mock_verify_module_modid",
+      "params": {
+        "scope_list": ["lookup:hometax.simplified", "submit:hometax.tax-return"],
+        "purpose_ko": "종합소득세 신고",
+        "purpose_en": "Comprehensive income tax filing"
+      }
+    }
+  },
+  "expected_chain_completes_with_receipt": true,
+  "expected_receipt_id_ci_only": "hometax-2026-04-30-RX-CI001",
+  "expected_mock_invocations": [
+    "mock_verify_module_modid",
+    "mock_lookup_module_hometax_simplified",
+    "mock_submit_module_hometax_taxreturn"
+  ]
+}

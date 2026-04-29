@@ -49,9 +49,7 @@ EXPECTED_MAPPING: dict[str, str] = {
 def test_canonical_map_has_at_least_ten_entries() -> None:
     """The canonical map MUST have ≥10 entries (FR-008b assertion)."""
     mapping = get_canonical_map()
-    assert len(mapping) >= 10, (
-        f"Expected ≥10 entries in canonical map, got {len(mapping)}"
-    )
+    assert len(mapping) >= 10, f"Expected ≥10 entries in canonical map, got {len(mapping)}"
 
 
 def test_all_ten_canonical_tool_ids_present() -> None:
@@ -66,15 +64,12 @@ def test_all_ten_canonical_tool_ids_present() -> None:
     list(EXPECTED_MAPPING.items()),
     ids=list(EXPECTED_MAPPING.keys()),
 )
-def test_family_hint_values_match_canonical(
-    tool_id: str, expected_family: str
-) -> None:
+def test_family_hint_values_match_canonical(tool_id: str, expected_family: str) -> None:
     """Each family_hint value MUST match the canonical expected value."""
     mapping = get_canonical_map()
     actual = mapping[tool_id]
     assert actual == expected_family, (
-        f"tool_id={tool_id!r}: expected family_hint {expected_family!r}, "
-        f"got {actual!r}"
+        f"tool_id={tool_id!r}: expected family_hint {expected_family!r}, got {actual!r}"
     )
 
 
@@ -83,9 +78,7 @@ def test_family_hint_values_match_canonical(
     list(EXPECTED_MAPPING.items()),
     ids=list(EXPECTED_MAPPING.keys()),
 )
-def test_resolve_family_returns_correct_family(
-    tool_id: str, expected_family: str
-) -> None:
+def test_resolve_family_returns_correct_family(tool_id: str, expected_family: str) -> None:
     """``resolve_family`` MUST return the correct family_hint for each key."""
     result = resolve_family(tool_id)
     assert result == expected_family, (
@@ -124,15 +117,11 @@ def test_canonical_family_hint_values_are_all_present() -> None:
     expected_families = set(EXPECTED_MAPPING.values())
     actual_families = set(get_canonical_map().values())
     missing_families = expected_families - actual_families
-    assert not missing_families, (
-        f"Missing family_hint values in canonical map: {missing_families}"
-    )
+    assert not missing_families, f"Missing family_hint values in canonical map: {missing_families}"
 
 
 def test_canonical_map_tool_ids_start_with_mock_verify() -> None:
     """All canonical tool_id keys MUST start with 'mock_verify_'."""
     mapping = get_canonical_map()
     invalid = [tid for tid in mapping if not tid.startswith("mock_verify_")]
-    assert not invalid, (
-        f"tool_ids NOT starting with 'mock_verify_': {invalid}"
-    )
+    assert not invalid, f"tool_ids NOT starting with 'mock_verify_': {invalid}"
