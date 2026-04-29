@@ -304,7 +304,7 @@ import { useTeammateLifecycleNotification } from 'src/hooks/notifs/useTeammateSh
 import { useFastModeNotification } from 'src/hooks/notifs/useFastModeNotification.js';
 import { AutoRunIssueNotification, shouldAutoRunIssue, getAutoRunIssueReasonText, getAutoRunCommand, type AutoRunIssueReason } from '../utils/autoRunIssue.js';
 import type { HookProgress } from '../types/hooks.js';
-import { TungstenLiveMonitor } from '../tools/TungstenTool/TungstenLiveMonitor.js';
+// KOSMOS Spec 1633 / Epic #2293 — TungstenTool deleted (claude-code internal tool).
 // Use function declaration (hoisted, no TDZ) for feature-gated panel module.
 /* eslint-disable @typescript-eslint/no-require-imports */
 function getWebBrowserPanelModule() {
@@ -5076,7 +5076,7 @@ export function REPL({
               {toolJSX && !(toolJSX.isLocalJSXCommand && toolJSX.isImmediate) && !toolJsxCentered && <Box flexDirection="column" width="100%">
                     {toolJSX.jsx}
                   </Box>}
-              {"external" === 'ant' && <TungstenLiveMonitor />}
+              {/* KOSMOS Spec 1633 / Epic #2293 — TungstenLiveMonitor JSX removed (TungstenTool deleted). */}
               {feature('WEB_BROWSER_TOOL') ? (() => { const m = getWebBrowserPanelModule(); return m && <m.WebBrowserPanel /> })() : null}
               <Box flexGrow={1} />
               {showSpinner && <SpinnerWithVerb mode={streamMode} spinnerTip={spinnerTip} responseLengthRef={responseLengthRef} apiMetricsRef={apiMetricsRef} overrideMessage={spinnerMessage} spinnerSuffix={stopHookSpinnerSuffix} verbose={verbose} loadingStartTimeRef={loadingStartTimeRef} totalPausedMsRef={totalPausedMsRef} pauseStartTimeRef={pauseStartTimeRef} overrideColor={spinnerColor} overrideShimmerColor={spinnerShimmerColor} hasActiveTools={inProgressToolUseIDs.size > 0} leaderIsIdle={!isLoading} />}
