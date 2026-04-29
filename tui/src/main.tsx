@@ -1943,9 +1943,17 @@ async function run(): Promise<CommanderCommand> {
         void import('./utils/backgroundHousekeeping.js').then(m => m.startBackgroundHousekeeping());
       }
       // KOSMOS Spec 1633 / Epic #2293 — cli/print.ts deleted (claude-code
-      // headless dispatcher; KOSMOS uses bare-mode REPL). The `runHeadless`
-      // call site is removed; non-bare interactive flow proceeds below.
-      return;
+      // headless dispatcher with verifyApiKey/queryHaiku/queryWithModel).
+      // KOSMOS does not yet provide a `--print` / non-interactive headless
+      // pipeline (out of scope for this Epic; tracked as deferred follow-up).
+      // Emit an explicit error so scripted callers fail fast instead of
+      // exiting silently with no output.
+      console.error(
+        'KOSMOS: --print / non-interactive (headless) mode is not supported. ' +
+        'Use the interactive REPL (run without --print) or wait for a future ' +
+        'KOSMOS headless dispatcher (Spec 1633 follow-up).',
+      )
+      process.exit(2)
     }
 
 

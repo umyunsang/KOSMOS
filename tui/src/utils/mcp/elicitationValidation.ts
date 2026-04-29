@@ -7,10 +7,16 @@ import type {
 import { z } from 'zod/v4'
 import { jsonStringify } from '../slowOperations.js'
 import { plural } from '../stringUtils.js'
-// KOSMOS Spec 1633 / Epic #2293 — utils/mcp/dateTimeParser deleted (Anthropic queryHaiku natural-language parser); inline simple stubs.
+// KOSMOS Spec 1633 / Epic #2293 — utils/mcp/dateTimeParser deleted (Anthropic
+// queryHaiku natural-language parser); inline ISO8601-only stubs preserve the
+// {success, value, error} contract that validateElicitationInputAsync expects.
 const ISO8601_REGEX = /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:?\d{2})?)?$/
 const looksLikeISO8601 = (value: string): boolean => ISO8601_REGEX.test(value)
-const parseNaturalLanguageDateTime = async (value: string): Promise<string | null> => looksLikeISO8601(value) ? value : null
+type DateParseResult = { success: true; value: string } | { success: false; error: string }
+const parseNaturalLanguageDateTime = async (value: string, _formatHint?: string): Promise<DateParseResult> =>
+  looksLikeISO8601(value)
+    ? { success: true, value }
+    : { success: false, error: 'KOSMOS: natural-language datetime parsing not available; please use ISO 8601 format (e.g. 2026-04-29T12:00:00Z)' }
 
 export type ValidationResult = {
   value?: string | number | boolean
