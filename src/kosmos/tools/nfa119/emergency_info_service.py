@@ -299,7 +299,7 @@ NFA_EMERGENCY_INFO_SERVICE_TOOL = GovAPITool(
     policy=AdapterRealDomainPolicy(
         real_classification_url="https://www.nfa.go.kr/nfa/main/contents.do?menuKey=66",
         real_classification_text="소방청 공공데이터 이용약관 — 119 응급서비스 데이터 비상업적 공공 이용 허가",  # TODO: verify URL
-        citizen_facing_gate="login",  # api_key auth_type — requires credential
+        citizen_facing_gate="login",  # api_key auth_type — requires serviceKey credential (AAL2)
         last_verified=datetime(2026, 4, 29, tzinfo=timezone.utc),
     ),
     is_concurrency_safe=True,

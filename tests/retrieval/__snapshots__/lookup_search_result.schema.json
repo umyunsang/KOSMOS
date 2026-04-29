@@ -4,22 +4,12 @@
       "additionalProperties": false,
       "description": "A single search-result entry from lookup(mode='search').",
       "properties": {
-        "is_personal_data": {
-          "default": false,
-          "title": "Is Personal Data",
-          "type": "boolean"
-        },
         "required_params": {
           "items": {
             "type": "string"
           },
           "title": "Required Params",
           "type": "array"
-        },
-        "requires_auth": {
-          "default": false,
-          "title": "Requires Auth",
-          "type": "boolean"
         },
         "score": {
           "minimum": 0,

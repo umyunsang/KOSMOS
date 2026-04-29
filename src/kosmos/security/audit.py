@@ -76,7 +76,7 @@ TOOL_MIN_AAL: Final[dict[str, AALLevel]] = {
     "lookup": "AAL1",
     "resolve_location": "AAL1",
     # Phase 2 API adapters (spec 029):
-    "nfa_emergency_info_service": "AAL1",  # NFA EMS stats — anonymized, serviceKey auth
+    "nfa_emergency_info_service": "AAL2",  # NFA EMS stats — api_key serviceKey auth; citizen_facing_gate=login derives AAL2
     "mohw_welfare_eligibility_search": "AAL2",  # SSIS welfare — personal demographic inputs
 }
 

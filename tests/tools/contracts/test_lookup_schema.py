@@ -68,8 +68,6 @@ class TestLookupSearchResultRoundTrip:
                         "required_params": ["adm_cd", "year"],
                         "search_hint": "교통사고 위험지점 adm_cd year",
                         "why_matched": "BM25 score 0.8456 on search_hint",
-                        "requires_auth": False,
-                        "is_personal_data": False,
                     }
                 ],
                 "total_registry_size": 10,
