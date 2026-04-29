@@ -84,7 +84,7 @@ async def _read_line(stream: asyncio.StreamReader) -> str | None:
 # ---------------------------------------------------------------------------
 
 
-async def _handle(request: dict[str, Any], registry: Any, routing_index: Any) -> dict[str, Any] | None:
+async def _handle(request: dict[str, Any], registry: Any, routing_index: Any) -> dict[str, Any] | None:  # noqa: E501
     """Route a single JSON-RPC 2.0 request to the appropriate handler.
 
     Returns the response dict, or None for notifications (no response per JSON-RPC 2.0 § 4.1).
@@ -246,7 +246,7 @@ async def main() -> None:
             mock_count += 1
 
     logger.info(
-        "mock_backend: All %d tools registered (%d mock surfaces). Emitting AdapterManifestSyncFrame ...",
+        "mock_backend: All %d tools registered (%d mock surfaces). Emitting AdapterManifestSyncFrame ...",  # noqa: E501
         len(registry._tools),
         mock_count,
     )
@@ -261,8 +261,8 @@ async def main() -> None:
         entries = _build_entries(registry)
         _latest_manifest_log["entry_count"] = len(entries)
         _latest_manifest_log["tool_ids"] = [e.tool_id for e in entries]
-    except Exception:  # noqa: BLE001
-        pass
+    except Exception as exc:  # noqa: BLE001 — diagnostic logging only
+        logger.debug("mock_backend: manifest log capture skipped: %s", exc)
 
     logger.info("mock_backend: Listening on stdio.")
 

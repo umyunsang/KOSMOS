@@ -113,7 +113,10 @@ async def _invoke_hometax_lookup(
         # adapter's own scope check).  For the integration test we simulate the
         # delegation_used event for a lookup (mirrors quickstart § 4).
         token = delegation_context.token
-        from kosmos.memdir.consent_ledger import DelegationUsedEvent, append_delegation_used  # noqa: PLC0415
+        from kosmos.memdir.consent_ledger import (  # noqa: PLC0415
+            DelegationUsedEvent,
+            append_delegation_used,
+        )
 
         append_delegation_used(
             DelegationUsedEvent(
@@ -218,12 +221,12 @@ async def test_happy_chain_verify_lookup_submit(tmp_path: Path) -> None:
     )
 
     # Extract the DelegationContext.
-    from kosmos.primitives.delegation import DelegationContext  # noqa: PLC0415
-
     # verify_module_modid returns a stamped dict with the DelegationContext embedded.
     # The context is serialised as a nested dict under "token" key (model_dump by_alias=True).
     # We need to reconstruct it from the stamped payload.
     from pydantic import TypeAdapter  # noqa: PLC0415
+
+    from kosmos.primitives.delegation import DelegationContext  # noqa: PLC0415
 
     # The verify result contains a model_dump of DelegationContext (by_alias=True).
     # We reconstruct the DelegationContext to pass to downstream adapters.
@@ -302,8 +305,9 @@ async def test_submit_succeeds_with_matching_scope(tmp_path: Path) -> None:
     scope_list = ["submit:hometax.tax-return"]
     verify_result = _invoke_modid_verify(session_id, scope_list, ledger_root)
 
-    from kosmos.primitives.delegation import DelegationContext  # noqa: PLC0415
     from pydantic import TypeAdapter  # noqa: PLC0415
+
+    from kosmos.primitives.delegation import DelegationContext  # noqa: PLC0415
 
     ta = TypeAdapter(DelegationContext)
     domain_fields = {k: v for k, v in verify_result.items() if not k.startswith("_")}
@@ -356,8 +360,9 @@ async def test_scope_violation_rejected(tmp_path: Path) -> None:
     scope_list = ["lookup:hometax.simplified"]
     verify_result = _invoke_modid_verify(session_id, scope_list, ledger_root)
 
-    from kosmos.primitives.delegation import DelegationContext  # noqa: PLC0415
     from pydantic import TypeAdapter  # noqa: PLC0415
+
+    from kosmos.primitives.delegation import DelegationContext  # noqa: PLC0415
 
     ta = TypeAdapter(DelegationContext)
     domain_fields = {k: v for k, v in verify_result.items() if not k.startswith("_")}
@@ -425,8 +430,9 @@ async def test_all_transparency_fields_in_chain(tmp_path: Path) -> None:
         f"Missing: {_TRANSPARENCY_KEYS - set(verify_result.keys())}"
     )
 
-    from kosmos.primitives.delegation import DelegationContext  # noqa: PLC0415
     from pydantic import TypeAdapter  # noqa: PLC0415
+
+    from kosmos.primitives.delegation import DelegationContext  # noqa: PLC0415
 
     ta = TypeAdapter(DelegationContext)
     domain_fields = {k: v for k, v in verify_result.items() if not k.startswith("_")}

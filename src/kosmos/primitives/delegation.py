@@ -21,7 +21,7 @@ from __future__ import annotations
 import logging
 import re
 from datetime import UTC, datetime
-from enum import Enum
+from enum import StrEnum
 from typing import TYPE_CHECKING, Literal, Protocol
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
@@ -238,7 +238,7 @@ class IdentityAssertion(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class DelegationValidationOutcome(str, Enum):
+class DelegationValidationOutcome(StrEnum):
     """Possible outcomes from ``validate_delegation``."""
 
     OK = "ok"

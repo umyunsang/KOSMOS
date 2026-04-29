@@ -22,7 +22,6 @@ Data model: specs/2296-ax-mock-adapters/data-model.md § 6
 
 from __future__ import annotations
 
-import json
 import logging
 import os
 from datetime import UTC, datetime

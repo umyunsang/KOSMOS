@@ -15,18 +15,17 @@ import pytest
 
 from kosmos.tools.transparency import stamp_mock_response
 
-
 # ---------------------------------------------------------------------------
 # Happy path
 # ---------------------------------------------------------------------------
 
-_VALID_KWARGS = dict(
-    reference_implementation="ax-infrastructure-callable-channel",
-    actual_endpoint_when_live="https://api.gateway.kosmos.gov.kr/v1/verify/modid",
-    security_wrapping_pattern="OID4VP + DID-resolved RP + DPoP",
-    policy_authority="https://www.mois.go.kr/frt/bbs/type001/commonSelectBoardArticle.do",
-    international_reference="EU EUDI Wallet",
-)
+_VALID_KWARGS = {
+    "reference_implementation": "ax-infrastructure-callable-channel",
+    "actual_endpoint_when_live": "https://api.gateway.kosmos.gov.kr/v1/verify/modid",
+    "security_wrapping_pattern": "OID4VP + DID-resolved RP + DPoP",
+    "policy_authority": "https://www.mois.go.kr/frt/bbs/type001/commonSelectBoardArticle.do",
+    "international_reference": "EU EUDI Wallet",
+}
 
 
 def test_stamp_mock_response_happy_path() -> None:

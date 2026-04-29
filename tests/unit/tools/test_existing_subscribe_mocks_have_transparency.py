@@ -137,11 +137,10 @@ def test_subscribe_mock_transparency_all_fields_are_url_shaped_where_appropriate
 def test_subscribe_adapter_ids_are_registered() -> None:
     """All three subscribe adapters must be registered in the subscribe _ADAPTER_REGISTRY."""
     # Trigger imports to ensure self-registration
+    from kosmos.primitives.subscribe import _SUBSCRIBE_ADAPTERS
     from kosmos.tools.mock.cbs.disaster_feed import MOCK_CBS_DISASTER_TOOL  # noqa: F401
     from kosmos.tools.mock.data_go_kr.rest_pull_tick import MOCK_REST_PULL_TICK_TOOL  # noqa: F401
     from kosmos.tools.mock.data_go_kr.rss_notices import MOCK_RSS_PUBLIC_NOTICES_TOOL  # noqa: F401
-
-    from kosmos.primitives.subscribe import _SUBSCRIBE_ADAPTERS
 
     expected_tool_ids = {
         "mock_cbs_disaster_v1",

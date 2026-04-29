@@ -120,7 +120,8 @@ async def invoke(params: dict[str, Any]) -> SubmitOutput:
       1. Extract DelegationContext from params.
       2. validate_delegation() — checks expiry, scope, session, revocation.
       3. On failure: append delegation_used with rejection outcome; return SubmitOutput(rejected).
-      4. On success: produce synthetic 접수번호; append delegation_used(success); return SubmitOutput(succeeded).
+      4. On success: produce synthetic 접수번호; append
+         delegation_used(success); return SubmitOutput(succeeded).
 
     Args:
         params: Raw params dict from the main submit() envelope.

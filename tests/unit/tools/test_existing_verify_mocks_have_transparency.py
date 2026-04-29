@@ -42,10 +42,7 @@ def test_existing_verify_mock_has_six_transparency_fields(module_path: str) -> N
     result = mod.invoke({})
 
     # Existing verify mocks return Pydantic context objects; use model_dump to get dict.
-    if hasattr(result, "model_dump"):
-        d = result.model_dump(by_alias=True)
-    else:
-        d = result  # dict directly
+    d = result.model_dump(by_alias=True) if hasattr(result, 'model_dump') else result
 
     for field in _SIX_TRANSPARENCY_FIELDS:
         value = d.get(field)

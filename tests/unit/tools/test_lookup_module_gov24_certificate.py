@@ -94,7 +94,7 @@ async def test_handle_happy_path_carries_six_transparency_fields(
 
     for field in _TRANSPARENCY_FIELDS:
         value = result.get(field)
-        assert value is not None, f"Missing transparency field: {field!r} (cert={inp.certificate_type})"
+        assert value is not None, f"Missing transparency field: {field!r} (cert={inp.certificate_type})"  # noqa: E501
         assert isinstance(value, str), f"Field {field!r} is not a string"
         assert value.strip(), f"Field {field!r} is empty or whitespace-only"
 

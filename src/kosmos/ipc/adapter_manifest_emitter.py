@@ -48,7 +48,6 @@ import hashlib
 import json
 import logging
 import os
-import sys
 from datetime import UTC, datetime
 from typing import IO, Any
 
@@ -104,7 +103,11 @@ def _compute_manifest_hash(entries: list[AdapterManifestEntry]) -> str:
     return hashlib.sha256(_canonical_json(entries).encode("utf-8")).hexdigest()
 
 
-def _build_entries(registry: Any, *, warn_on_missing: bool = False) -> list[AdapterManifestEntry]:  # noqa: ANN401
+def _build_entries(  # noqa: C901, ANN401 — three-source walker, refactor deferred
+    registry: Any,
+    *,
+    warn_on_missing: bool = False,
+) -> list[AdapterManifestEntry]:
     """Build the complete sorted list of :class:`AdapterManifestEntry` objects.
 
     Walks three sources in priority order (extra registry → primitive
@@ -126,17 +129,22 @@ def _build_entries(registry: Any, *, warn_on_missing: bool = False) -> list[Adap
 
     # --- Source 2a: submit sub-registry --------------------------------------
     try:
-        from kosmos.primitives.submit import _ADAPTER_REGISTRY as _SUBMIT_REGISTRY  # noqa: PLC0415
+        from kosmos.primitives.submit import (
+            _ADAPTER_REGISTRY as _submit_registry,  # noqa: PLC0415, N811
+        )
     except ImportError:
-        _SUBMIT_REGISTRY = {}
+        _submit_registry = {}
 
-    for tool_id, (reg, _fn) in _SUBMIT_REGISTRY.items():
+    for tool_id, (reg, _fn) in _submit_registry.items():
         if tool_id in seen:
             continue
         policy_url: str | None = None
         if reg.policy is not None:
             policy_url = reg.policy.real_classification_url
-        source_mode_val = _map_source_mode(reg.source_mode.value if hasattr(reg.source_mode, "value") else str(reg.source_mode))
+        source_mode_raw = (
+            reg.source_mode.value if hasattr(reg.source_mode, "value") else str(reg.source_mode)
+        )
+        source_mode_val = _map_source_mode(source_mode_raw)
         if source_mode_val in ("live", "mock") and not policy_url and warn_on_missing:
             logger.warning(
                 "manifest_emitter: submit adapter %s has no policy URL (source_mode=%s)",
@@ -157,11 +165,13 @@ def _build_entries(registry: Any, *, warn_on_missing: bool = False) -> list[Adap
 
     # --- Source 2b: subscribe sub-registry -----------------------------------
     try:
-        from kosmos.primitives.subscribe import _SUBSCRIBE_ADAPTERS  # noqa: PLC0415
+        from kosmos.primitives.subscribe import (
+            _SUBSCRIBE_ADAPTERS as _subscribe_adapters,  # noqa: PLC0415, N811
+        )
     except ImportError:
-        _SUBSCRIBE_ADAPTERS = {}
+        _subscribe_adapters = {}
 
-    for tool_id, (_modality, _adapter_fn) in _SUBSCRIBE_ADAPTERS.items():
+    for tool_id, (_modality, _adapter_fn) in _subscribe_adapters.items():
         if tool_id in seen:
             continue
         # Subscribe adapters typically store GovAPITool in the main registry too;

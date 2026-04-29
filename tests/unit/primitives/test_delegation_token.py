@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import base64
 import json
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
 from unittest.mock import AsyncMock
 
 import pytest
@@ -28,7 +28,6 @@ from kosmos.primitives.delegation import (
     _scope_matches,
     validate_delegation,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers for constructing valid fixtures
@@ -46,14 +45,14 @@ def _make_vp_jwt(payload: dict | None = None) -> str:
     return f"{header}.{pay}.mock-signature-not-cryptographic"
 
 
-_VALID_TOKEN_DATA = dict(
-    vp_jwt=_make_vp_jwt(),
-    delegation_token="del_" + "a" * 24,  # exactly 24 chars after prefix
-    scope="submit:hometax.tax-return",
-    issuer_did="did:web:mobileid.go.kr",
-    issued_at=datetime(2026, 4, 29, 10, 0, 0, tzinfo=UTC),
-    expires_at=datetime(2026, 4, 30, 10, 0, 0, tzinfo=UTC),  # +24h
-)
+_VALID_TOKEN_DATA = {
+    "vp_jwt": _make_vp_jwt(),
+    "delegation_token": "del_" + "a" * 24,  # exactly 24 chars after prefix
+    "scope": "submit:hometax.tax-return",
+    "issuer_did": "did:web:mobileid.go.kr",
+    "issued_at": datetime(2026, 4, 29, 10, 0, 0, tzinfo=UTC),
+    "expires_at": datetime(2026, 4, 30, 10, 0, 0, tzinfo=UTC),  # +24h
+}
 
 
 def _valid_token() -> DelegationToken:

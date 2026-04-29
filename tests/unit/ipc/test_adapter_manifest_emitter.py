@@ -16,7 +16,6 @@ from __future__ import annotations
 import hashlib
 import io
 import json
-import os
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -25,12 +24,10 @@ from kosmos.ipc.adapter_manifest_emitter import (
     _EXTRA_REGISTRY,
     _build_entries,
     _canonical_json,
-    _compute_manifest_hash,
     emit_manifest,
     register_manifest_entry,
 )
 from kosmos.ipc.frame_schema import AdapterManifestEntry, AdapterManifestSyncFrame
-
 
 # ---------------------------------------------------------------------------
 # Helpers

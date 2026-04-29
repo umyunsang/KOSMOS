@@ -27,7 +27,6 @@ from kosmos.memdir.consent_ledger import (
     read_delegation_events,
 )
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
@@ -39,7 +38,7 @@ def ledger_root(tmp_path: Path) -> Path:
     return tmp_path / "consent"
 
 
-def _issued_event(token: str = "del_" + "a" * 24, session: str = "sess-abc") -> DelegationIssuedEvent:
+def _issued_event(token: str = "del_" + "a" * 24, session: str = "sess-abc") -> DelegationIssuedEvent:  # noqa: E501
     return DelegationIssuedEvent(
         ts=datetime(2026, 4, 29, 10, 15, 23, tzinfo=UTC),
         session_id=session,
@@ -62,7 +61,7 @@ def _used_event(token: str = "del_" + "a" * 24, session: str = "sess-abc") -> De
     )
 
 
-def _revoked_event(token: str = "del_" + "a" * 24, session: str = "sess-abc") -> DelegationRevokedEvent:
+def _revoked_event(token: str = "del_" + "a" * 24, session: str = "sess-abc") -> DelegationRevokedEvent:  # noqa: E501
     return DelegationRevokedEvent(
         ts=datetime(2026, 4, 29, 10, 15, 35, tzinfo=UTC),
         session_id=session,

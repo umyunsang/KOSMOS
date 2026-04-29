@@ -23,7 +23,6 @@ import importlib
 
 import pytest
 
-
 # ---------------------------------------------------------------------------
 # (a) BM25 search returns zero matches
 # ---------------------------------------------------------------------------
@@ -36,7 +35,6 @@ def test_bm25_search_for_digital_onepass_korean_returns_zero() -> None:
     must not appear in the BM25 index.
     """
     import kosmos.tools.mock  # noqa: F401 — trigger side-effect registration
-
     from kosmos.tools.executor import ToolExecutor
     from kosmos.tools.register_all import register_all_tools
     from kosmos.tools.registry import ToolRegistry
@@ -61,7 +59,6 @@ def test_bm25_search_for_digital_onepass_korean_returns_zero() -> None:
 def test_bm25_search_for_digital_onepass_english_returns_zero() -> None:
     """BM25 search for 'digital_onepass' returns zero results from the main ToolRegistry."""
     import kosmos.tools.mock  # noqa: F401 — trigger side-effect registration
-
     from kosmos.tools.executor import ToolExecutor
     from kosmos.tools.register_all import register_all_tools
     from kosmos.tools.registry import ToolRegistry
@@ -86,7 +83,6 @@ def test_bm25_search_for_digital_onepass_english_returns_zero() -> None:
 def test_bm25_search_no_digital_onepass_in_all_results() -> None:
     """No BM25 result from any search keyword includes a digital_onepass adapter."""
     import kosmos.tools.mock  # noqa: F401 — trigger side-effect registration
-
     from kosmos.tools.executor import ToolExecutor
     from kosmos.tools.register_all import register_all_tools
     from kosmos.tools.registry import ToolRegistry
@@ -156,7 +152,6 @@ def test_verify_adapter_registry_has_no_digital_onepass_key() -> None:
     After FR-004 deletion, no key containing "digital_onepass" should exist.
     """
     import kosmos.tools.mock  # noqa: F401 — trigger side-effect registration
-
     from kosmos.primitives.verify import _VERIFY_ADAPTERS
 
     for family_key in list(_VERIFY_ADAPTERS.keys()):
@@ -179,7 +174,6 @@ def test_verify_adapter_registry_exact_family_count_after_deletion() -> None:
     AND the presence of the 10 replacement families.
     """
     import kosmos.tools.mock  # noqa: F401 — trigger side-effect registration
-
     from kosmos.primitives.verify import _VERIFY_ADAPTERS
 
     families = list(_VERIFY_ADAPTERS.keys())
@@ -197,7 +191,6 @@ def test_digital_onepass_not_in_any_verify_adapter_id() -> None:
     to guard against a rename-but-not-delete mistake.
     """
     import kosmos.tools.mock  # noqa: F401 — trigger side-effect registration
-
     from kosmos.primitives.verify import _VERIFY_ADAPTERS
 
     for family_key, adapter in _VERIFY_ADAPTERS.items():

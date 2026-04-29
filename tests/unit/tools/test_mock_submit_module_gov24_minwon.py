@@ -101,11 +101,10 @@ async def test_gov24_happy_path_returns_succeeded() -> None:
     with mock.patch(
         "kosmos.tools.mock.submit_module_gov24_minwon.validate_delegation",
         return_value=DelegationValidationOutcome.OK,
-    ):
-        with mock.patch(
-            "kosmos.tools.mock.submit_module_gov24_minwon.append_delegation_used"
-        ) as mock_append:
-            result = await invoke(params)
+    ), mock.patch(
+        "kosmos.tools.mock.submit_module_gov24_minwon.append_delegation_used"
+    ) as mock_append:
+        result = await invoke(params)
 
     assert result.status == SubmitStatus.succeeded
     receipt = result.adapter_receipt
@@ -129,9 +128,8 @@ async def test_gov24_transparency_fields_present() -> None:
     with mock.patch(
         "kosmos.tools.mock.submit_module_gov24_minwon.validate_delegation",
         return_value=DelegationValidationOutcome.OK,
-    ):
-        with mock.patch("kosmos.tools.mock.submit_module_gov24_minwon.append_delegation_used"):
-            result = await invoke(params)
+    ), mock.patch("kosmos.tools.mock.submit_module_gov24_minwon.append_delegation_used"):
+        result = await invoke(params)
 
     receipt = result.adapter_receipt
     for field in _TRANSPARENCY_FIELDS:
@@ -154,11 +152,10 @@ async def test_gov24_scope_violation_returns_rejected() -> None:
     with mock.patch(
         "kosmos.tools.mock.submit_module_gov24_minwon.validate_delegation",
         return_value=DelegationValidationOutcome.SCOPE_VIOLATION,
-    ):
-        with mock.patch(
-            "kosmos.tools.mock.submit_module_gov24_minwon.append_delegation_used"
-        ) as mock_append:
-            result = await invoke(params)
+    ), mock.patch(
+        "kosmos.tools.mock.submit_module_gov24_minwon.append_delegation_used"
+    ) as mock_append:
+        result = await invoke(params)
 
     assert result.status == SubmitStatus.rejected
     call_event = mock_append.call_args[0][0]
@@ -181,11 +178,10 @@ async def test_gov24_expired_token_returns_rejected() -> None:
     with mock.patch(
         "kosmos.tools.mock.submit_module_gov24_minwon.validate_delegation",
         return_value=DelegationValidationOutcome.EXPIRED,
-    ):
-        with mock.patch(
-            "kosmos.tools.mock.submit_module_gov24_minwon.append_delegation_used"
-        ) as mock_append:
-            result = await invoke(params)
+    ), mock.patch(
+        "kosmos.tools.mock.submit_module_gov24_minwon.append_delegation_used"
+    ) as mock_append:
+        result = await invoke(params)
 
     assert result.status == SubmitStatus.rejected
     call_event = mock_append.call_args[0][0]
@@ -202,11 +198,10 @@ async def test_gov24_session_violation_returns_rejected() -> None:
     with mock.patch(
         "kosmos.tools.mock.submit_module_gov24_minwon.validate_delegation",
         return_value=DelegationValidationOutcome.SESSION_VIOLATION,
-    ):
-        with mock.patch(
-            "kosmos.tools.mock.submit_module_gov24_minwon.append_delegation_used"
-        ) as mock_append:
-            result = await invoke(params)
+    ), mock.patch(
+        "kosmos.tools.mock.submit_module_gov24_minwon.append_delegation_used"
+    ) as mock_append:
+        result = await invoke(params)
 
     assert result.status == SubmitStatus.rejected
     call_event = mock_append.call_args[0][0]

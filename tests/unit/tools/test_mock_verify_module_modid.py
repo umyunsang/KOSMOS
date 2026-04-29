@@ -16,8 +16,6 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import pytest
-
 
 def test_modid_invoke_returns_transparency_fields(tmp_path: Path) -> None:
     """invoke() returns a dict with all six transparency fields non-empty."""
@@ -95,7 +93,7 @@ def test_modid_ledger_append(tmp_path: Path) -> None:
 
     jsonl_files = list(ledger_dir.glob("*.jsonl"))
     assert len(jsonl_files) == 1
-    lines = [json.loads(l) for l in jsonl_files[0].read_text().splitlines() if l.strip()]
+    lines = [json.loads(line) for line in jsonl_files[0].read_text().splitlines() if line.strip()]
     assert len(lines) == 1
     event = lines[0]
     assert event["kind"] == "delegation_issued"

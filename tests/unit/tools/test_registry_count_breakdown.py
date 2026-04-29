@@ -16,7 +16,6 @@ do NOT silently adjust the expected values.
 
 from __future__ import annotations
 
-
 # ---------------------------------------------------------------------------
 # Main ToolRegistry count — 16 total
 # ---------------------------------------------------------------------------
@@ -26,7 +25,7 @@ _EXPECTED_MAIN_REGISTRY_COUNT = 16
 _EXPECTED_MAIN_REGISTRY_BREAKDOWN = {
     "live_adapters": 12,   # 12 Live: koroad ×2, kma ×6, hira ×1, nfa ×1, nmc ×1, mohw ×1
     "mvp_surface": 2,      # lookup + resolve_location (main-verb surface)
-    "lookup_mocks": 2,     # mock_lookup_module_hometax_simplified + mock_lookup_module_gov24_certificate
+    "lookup_mocks": 2,     # mock_lookup_module_hometax_simplified + mock_lookup_module_gov24_certificate  # noqa: E501
 }
 
 _EXPECTED_LIVE_TOOL_IDS = frozenset({
@@ -55,7 +54,6 @@ _EXPECTED_LOOKUP_MOCK_IDS = frozenset({
 def test_main_registry_total_count() -> None:
     """Main ToolRegistry must have exactly 16 entries after register_all_tools()."""
     import kosmos.tools.mock  # noqa: F401 — trigger side-effect registration
-
     from kosmos.tools.executor import ToolExecutor
     from kosmos.tools.register_all import register_all_tools
     from kosmos.tools.registry import ToolRegistry
@@ -75,7 +73,6 @@ def test_main_registry_total_count() -> None:
 def test_main_registry_live_tool_ids_present() -> None:
     """All 12 expected Live tool IDs must be registered in the main ToolRegistry."""
     import kosmos.tools.mock  # noqa: F401 — trigger side-effect registration
-
     from kosmos.tools.executor import ToolExecutor
     from kosmos.tools.register_all import register_all_tools
     from kosmos.tools.registry import ToolRegistry
@@ -95,7 +92,6 @@ def test_main_registry_live_tool_ids_present() -> None:
 def test_main_registry_mvp_surface_ids_present() -> None:
     """The 2 MVP-surface tool IDs (lookup, resolve_location) must be registered."""
     import kosmos.tools.mock  # noqa: F401 — trigger side-effect registration
-
     from kosmos.tools.executor import ToolExecutor
     from kosmos.tools.register_all import register_all_tools
     from kosmos.tools.registry import ToolRegistry
@@ -115,7 +111,6 @@ def test_main_registry_mvp_surface_ids_present() -> None:
 def test_main_registry_lookup_mock_ids_present() -> None:
     """The 2 new lookup mock IDs must be registered in the main ToolRegistry."""
     import kosmos.tools.mock  # noqa: F401 — trigger side-effect registration
-
     from kosmos.tools.executor import ToolExecutor
     from kosmos.tools.register_all import register_all_tools
     from kosmos.tools.registry import ToolRegistry
@@ -157,7 +152,6 @@ _EXPECTED_VERIFY_FAMILIES = frozenset({
 def test_verify_adapter_registry_count() -> None:
     """kosmos.primitives.verify._VERIFY_ADAPTERS must have exactly 10 families."""
     import kosmos.tools.mock  # noqa: F401 — trigger side-effect registration
-
     from kosmos.primitives.verify import _VERIFY_ADAPTERS
 
     actual = len(_VERIFY_ADAPTERS)
@@ -171,7 +165,6 @@ def test_verify_adapter_registry_count() -> None:
 def test_verify_adapter_registry_families() -> None:
     """All 10 expected verify family keys must be present in _VERIFY_ADAPTERS."""
     import kosmos.tools.mock  # noqa: F401 — trigger side-effect registration
-
     from kosmos.primitives.verify import _VERIFY_ADAPTERS
 
     registered = frozenset(_VERIFY_ADAPTERS.keys())
@@ -191,7 +184,6 @@ def test_verify_adapter_registry_families() -> None:
 def test_verify_digital_onepass_not_in_registry() -> None:
     """digital_onepass must NOT be in _VERIFY_ADAPTERS (FR-004 deletion guard)."""
     import kosmos.tools.mock  # noqa: F401 — trigger side-effect registration
-
     from kosmos.primitives.verify import _VERIFY_ADAPTERS
 
     for family_key in _VERIFY_ADAPTERS:
@@ -225,7 +217,6 @@ _EXPECTED_SUBMIT_IDS = frozenset({
 def test_submit_adapter_registry_count() -> None:
     """kosmos.primitives.submit._ADAPTER_REGISTRY must have exactly 5 entries."""
     import kosmos.tools.mock  # noqa: F401 — trigger side-effect registration
-
     from kosmos.primitives.submit import _ADAPTER_REGISTRY
 
     actual = len(_ADAPTER_REGISTRY)
@@ -239,7 +230,6 @@ def test_submit_adapter_registry_count() -> None:
 def test_submit_adapter_registry_ids() -> None:
     """All 5 expected submit adapter IDs must be present in _ADAPTER_REGISTRY."""
     import kosmos.tools.mock  # noqa: F401 — trigger side-effect registration
-
     from kosmos.primitives.submit import _ADAPTER_REGISTRY
 
     registered = frozenset(_ADAPTER_REGISTRY.keys())
@@ -272,7 +262,6 @@ _EXPECTED_SUBSCRIBE_IDS = frozenset({
 def test_subscribe_adapter_registry_count() -> None:
     """kosmos.primitives.subscribe._SUBSCRIBE_ADAPTERS must have exactly 3 entries."""
     import kosmos.tools.mock  # noqa: F401 — trigger side-effect registration
-
     from kosmos.primitives.subscribe import _SUBSCRIBE_ADAPTERS
 
     actual = len(_SUBSCRIBE_ADAPTERS)
@@ -286,7 +275,6 @@ def test_subscribe_adapter_registry_count() -> None:
 def test_subscribe_adapter_registry_ids() -> None:
     """All 3 expected subscribe adapter IDs must be present in _SUBSCRIBE_ADAPTERS."""
     import kosmos.tools.mock  # noqa: F401 — trigger side-effect registration
-
     from kosmos.primitives.subscribe import _SUBSCRIBE_ADAPTERS
 
     registered = frozenset(_SUBSCRIBE_ADAPTERS.keys())
@@ -315,10 +303,9 @@ def test_all_four_surface_counts_match_canonical() -> None:
     If it fails, run the individual count tests above to identify which surface drifted.
     """
     import kosmos.tools.mock  # noqa: F401 — trigger side-effect registration
-
-    from kosmos.primitives.submit import _ADAPTER_REGISTRY as submit_reg
-    from kosmos.primitives.subscribe import _SUBSCRIBE_ADAPTERS as subscribe_reg
-    from kosmos.primitives.verify import _VERIFY_ADAPTERS as verify_reg
+    from kosmos.primitives.submit import _ADAPTER_REGISTRY as submit_reg  # noqa: N811
+    from kosmos.primitives.subscribe import _SUBSCRIBE_ADAPTERS as subscribe_reg  # noqa: N811
+    from kosmos.primitives.verify import _VERIFY_ADAPTERS as verify_reg  # noqa: N811
     from kosmos.tools.executor import ToolExecutor
     from kosmos.tools.register_all import register_all_tools
     from kosmos.tools.registry import ToolRegistry

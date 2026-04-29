@@ -55,22 +55,19 @@ import kosmos.tools.mock.submit_module_public_mydata_action  # noqa: F401, E402
 # T043 — US2 verify adapters (Spec 031). Import side-effect registers each family's
 # adapter via register_verify_adapter(); imports are order-independent.
 # NOTE: verify_digital_onepass was REMOVED — FR-004 (서비스 종료 2025-12-30).
-from kosmos.tools.mock import (  # noqa: F401, E402
+# Epic ε #2296 — T016-T020 new verify adapters. Import side-effect registers
+# each adapter's family via register_verify_adapter().
+from kosmos.tools.mock import (  # noqa: F401, E402  # noqa: F401, E402
     verify_ganpyeon_injeung,
     verify_geumyung_injeungseo,
     verify_gongdong_injeungseo,
     verify_mobile_id,
-    verify_mydata,
-)
-
-# Epic ε #2296 — T016-T020 new verify adapters. Import side-effect registers
-# each adapter's family via register_verify_adapter().
-from kosmos.tools.mock import (  # noqa: F401, E402
     verify_module_any_id_sso,
     verify_module_geumyung,
     verify_module_kec,
     verify_module_modid,
     verify_module_simple_auth,
+    verify_mydata,
 )
 
 # T058–T060 — US3 subscribe adapters. Import side-effect registers each

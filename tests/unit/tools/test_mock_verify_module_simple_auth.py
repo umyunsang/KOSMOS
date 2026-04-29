@@ -17,7 +17,6 @@ from pathlib import Path
 
 import pytest
 
-
 # ---------------------------------------------------------------------------
 # Happy-path
 # ---------------------------------------------------------------------------
@@ -100,9 +99,11 @@ def test_simple_auth_multi_scope(tmp_path: Path) -> None:
 
 def test_simple_auth_scope_grammar_enforced(tmp_path: Path) -> None:
     """Invalid scope string causes DelegationToken validator to raise ValueError."""
+    from pydantic import ValidationError
+
     from kosmos.tools.mock.verify_module_simple_auth import invoke
 
-    with pytest.raises(Exception):  # pydantic ValidationError is a subclass of Exception
+    with pytest.raises(ValidationError):
         invoke({
             "scope_list": ["BAD_SCOPE_NO_COLON"],
             "session_id": "s-bad",
