@@ -22,7 +22,7 @@ from __future__ import annotations
 
 import hashlib
 import logging
-from typing import Literal
+from typing import Final, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -33,8 +33,20 @@ from kosmos.primitives.submit import (
     register_submit_adapter,
 )
 from kosmos.tools.registry import AdapterPrimitive, AdapterRegistration, AdapterSourceMode
+from kosmos.tools.transparency import stamp_mock_response
 
 logger = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+# Transparency constants — Epic ε #2296 retrofit (FR-005 / FR-025)
+# contracts/mock-adapter-response-shape.md § 4 "EXISTING (retrofitted)" row
+# ---------------------------------------------------------------------------
+
+_REFERENCE_IMPL: Final = "public-mydata-action-extension"
+_ACTUAL_ENDPOINT: Final = "https://api.gateway.kosmos.gov.kr/v1/submit/welfare/application"
+_SECURITY_WRAPPING: Final = "마이데이터 표준동의서 OAuth2 + finAuth + mTLS"
+_POLICY_AUTHORITY: Final = "https://www.mohw.go.kr/react/policy/index.jsp"
+_INTERNATIONAL_REF: Final = "Estonia X-Road"
 
 # ---------------------------------------------------------------------------
 # T026-A: Adapter-typed input model
@@ -109,13 +121,20 @@ async def invoke(params: dict[str, object]) -> SubmitOutput:
             adapter_nonce=_ADAPTER_NONCE,
         ),
         status=SubmitStatus.succeeded,
-        adapter_receipt={
-            "application_ref": f"MOCK-WA-{receipt_hash}",
-            "benefit_code": typed.benefit_code,
-            "application_type": typed.application_type,
-            "household_size": typed.household_size,
-            "mock": True,
-        },
+        adapter_receipt=stamp_mock_response(
+            {
+                "application_ref": f"MOCK-WA-{receipt_hash}",
+                "benefit_code": typed.benefit_code,
+                "application_type": typed.application_type,
+                "household_size": typed.household_size,
+                "mock": True,
+            },
+            reference_implementation=_REFERENCE_IMPL,
+            actual_endpoint_when_live=_ACTUAL_ENDPOINT,
+            security_wrapping_pattern=_SECURITY_WRAPPING,
+            policy_authority=_POLICY_AUTHORITY,
+            international_reference=_INTERNATIONAL_REF,
+        ),
     )
 
 

@@ -24,7 +24,7 @@ from __future__ import annotations
 
 import hashlib
 import logging
-from typing import Literal
+from typing import Final, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -35,8 +35,20 @@ from kosmos.primitives.submit import (
     register_submit_adapter,
 )
 from kosmos.tools.registry import AdapterPrimitive, AdapterRegistration, AdapterSourceMode
+from kosmos.tools.transparency import stamp_mock_response
 
 logger = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+# Transparency constants — Epic ε #2296 retrofit (FR-005 / FR-025)
+# contracts/mock-adapter-response-shape.md § 4 "EXISTING (retrofitted)" row
+# ---------------------------------------------------------------------------
+
+_REFERENCE_IMPL: Final = "ax-infrastructure-callable-channel"
+_ACTUAL_ENDPOINT: Final = "https://api.gateway.kosmos.gov.kr/v1/submit/traffic/fine-pay"
+_SECURITY_WRAPPING: Final = "OAuth2.1 + mTLS + 경찰청 간편결제 gateway"
+_POLICY_AUTHORITY: Final = "https://www.efine.go.kr/main/main.do"
+_INTERNATIONAL_REF: Final = "UK GOV.UK Pay"
 
 # ---------------------------------------------------------------------------
 # T025-A: Adapter-typed input model
@@ -107,12 +119,19 @@ async def invoke(params: dict[str, object]) -> SubmitOutput:
             adapter_nonce=_ADAPTER_NONCE,
         ),
         status=SubmitStatus.succeeded,
-        adapter_receipt={
-            "receipt_ref": f"MOCK-FP-{receipt_ref}",
-            "fine_reference": typed.fine_reference,
-            "payment_channel": typed.payment_method,
-            "mock": True,
-        },
+        adapter_receipt=stamp_mock_response(
+            {
+                "receipt_ref": f"MOCK-FP-{receipt_ref}",
+                "fine_reference": typed.fine_reference,
+                "payment_channel": typed.payment_method,
+                "mock": True,
+            },
+            reference_implementation=_REFERENCE_IMPL,
+            actual_endpoint_when_live=_ACTUAL_ENDPOINT,
+            security_wrapping_pattern=_SECURITY_WRAPPING,
+            policy_authority=_POLICY_AUTHORITY,
+            international_reference=_INTERNATIONAL_REF,
+        ),
     )
 
 

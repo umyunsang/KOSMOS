@@ -26,6 +26,7 @@ import logging
 from collections.abc import AsyncIterator
 from dataclasses import dataclass
 from datetime import UTC, datetime
+from typing import Any, Final
 
 from kosmos.primitives.subscribe import (
     _MIN_POLLING_INTERVAL_SECONDS,
@@ -35,8 +36,37 @@ from kosmos.primitives.subscribe import (
     SubscriptionHandle,
     register_subscribe_adapter,
 )
+from kosmos.tools.transparency import stamp_mock_response
 
 logger = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+# Transparency constants — Epic ε #2296 retrofit (FR-005 / FR-025)
+# contracts/mock-adapter-response-shape.md § 4 "EXISTING (retrofitted)" row
+# ---------------------------------------------------------------------------
+
+_REFERENCE_IMPL: Final = "ax-infrastructure-callable-channel"
+_ACTUAL_ENDPOINT: Final = "https://api.gateway.kosmos.gov.kr/v1/subscribe/data_go_kr/rest-poll"
+_SECURITY_WRAPPING: Final = "data.go.kr REST API key + 행정안전부 open API gateway"
+_POLICY_AUTHORITY: Final = "https://www.data.go.kr/ugs/selectPublicDataPageList.do"
+_INTERNATIONAL_REF: Final = "(generic REST polling)"
+
+
+def get_transparency_metadata() -> dict[str, Any]:
+    """Return the six transparency fields for this subscribe adapter.
+
+    Used by the registry-wide transparency scan (FR-006) to verify
+    that subscribe adapters declare their transparency metadata even though
+    they yield events rather than returning a response dict.
+    """
+    return stamp_mock_response(
+        {"tool_id": "mock_rest_pull_tick_v1", "adapter_type": "subscribe"},
+        reference_implementation=_REFERENCE_IMPL,
+        actual_endpoint_when_live=_ACTUAL_ENDPOINT,
+        security_wrapping_pattern=_SECURITY_WRAPPING,
+        policy_authority=_POLICY_AUTHORITY,
+        international_reference=_INTERNATIONAL_REF,
+    )
 
 # DECISION: Default polling_interval = 30s.
 # Rationale: data.go.kr free tier allows 1000 calls/day per service key
@@ -145,4 +175,4 @@ register_subscribe_adapter(
 
 logger.debug("Registered mock REST-pull tick adapter: %r", MOCK_REST_PULL_TICK_TOOL.tool_id)
 
-__all__ = ["MOCK_REST_PULL_TICK_TOOL"]
+__all__ = ["MOCK_REST_PULL_TICK_TOOL", "get_transparency_metadata"]
