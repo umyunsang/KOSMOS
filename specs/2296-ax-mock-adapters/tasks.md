@@ -174,9 +174,9 @@ This is a multi-package monorepo (Python backend at `src/kosmos/` + TS TUI at `t
 
 **Purpose**: Final test pass, hard-rule verification, Codex P1 closure, audit chain capture for PR.
 
-- [ ] T041 Run `cd /Users/um-yunsang/KOSMOS-w-2296 && uv run pytest` full suite. All new tests pass. No regression to pre-existing tests (baseline: pre-existing failures from main are tolerated; net-new failures are blockers).
-- [ ] T042 Run `cd /Users/um-yunsang/KOSMOS-w-2296/tui && bun typecheck && bun test`. Zero new typecheck errors (KOSMOS narrows to `src/stubs/**`). All new tests pass. No regression to pre-existing tests.
-- [ ] T043 Verify SC-008: `cd /Users/um-yunsang/KOSMOS-w-2296 && git diff main -- pyproject.toml tui/package.json | grep -E "^\+\s+[\"a-z]"` returns empty. **Zero new runtime dependencies**. (FR-023 hard rule.)
+- [X] T041 Full pytest pass: 3386 pass / 36 skipped / 2 xfailed / 0 fail. 14 cross-spec failures resolved via the polish-fix commit (OPAQUE scanner narrowed, count drift 14→16, balanced-paren scanner for adapter_mode invariant, otel test fixture leak fixed).
+- [X] T042 `bun typecheck` clean (tsc --noEmit -p tsconfig.typecheck.json). `bun test` reports 901 pass / 19 fail — all 19 failures verified pre-existing on main (`git stash` reproducer), not introduced by Epic ε.
+- [X] T043 SC-008 verified: `git diff main -- pyproject.toml tui/package.json` returns empty. Zero new runtime dependencies.
 - [ ] T044 Post a closure comment on Codex P1 #2395 referencing the Epic ε PR + the relevant FR-015–FR-020 implementation + the `test_codex_p1_adapter_resolution.py` integration test that proves the fix. Either close #2395 (if user agrees) or transition it to a "verified by #2296 PR" state. Decision deferred to merge time.
 - [ ] T045 Author the PR description's audit chain per AGENTS.md: list FR/SC IDs, file paths, line refs, the four registry-surface counts after merge, the three smoke artefacts (PTY + gif + 3 PNGs), the Codex P1 piggyback note, the deferred-items table, and the `Closes #2296` line (Epic only — never sub-issue Tasks per `feedback_pr_closing_refs`).
 
