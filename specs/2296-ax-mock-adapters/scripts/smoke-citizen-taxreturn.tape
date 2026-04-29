@@ -51,13 +51,17 @@ Sleep 4s
 Screenshot specs/2296-ax-mock-adapters/smoke-keyframe-2-input.png
 
 # Wait for permission prompt + approval flow + submit result (접수번호)
-# Full chain (verify→lookup→submit) takes up to 30s with a live LLM.
-# With mock backend alone (no LLM), the TUI stays in the processing state —
-# keyframe 3 captures whatever final state is reachable.
-Sleep 16s
+# Full LLM chain (verify→lookup→submit) typically takes 25-60s through
+# K-EXAONE on FriendliAI. Earlier 16s window was too tight; 75s gives
+# 4x headroom and matches the Codex P1 follow-up on PR #2445 — keyframe 3
+# now reliably captures the surfaced 접수번호 instead of the post-Ctrl-C
+# exit state we got on first try.
+Sleep 75s
 
-# Keyframe 3: post-action state — 접수번호 surfaced (live LLM) or
-# agentic-loop processing state (no LLM / mock-only path)
+# Keyframe 3: 접수번호 surfaced (e.g., "hometax-2026-04-30-RX-...").
+# If the LLM is unavailable, captures whatever final state is reachable;
+# integration tests at tests/integration/test_e2e_citizen_taxreturn_chain.py
+# remain the load-bearing receipt-rendering coverage.
 Screenshot specs/2296-ax-mock-adapters/smoke-keyframe-3-action.png
 
 # Clean exit
