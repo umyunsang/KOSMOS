@@ -178,6 +178,68 @@ LOOKUP_SEARCH_TOOL = GovAPITool(
 # Epic η registers them here as core tools to close the gap.
 
 
+class _SubmitInputForLLM(BaseModel):
+    """LLM-visible submit input schema — `{tool_id, params}` envelope.
+
+    Mirrors :class:`kosmos.primitives.submit.SubmitInput` but lives here so the
+    OpenAI tool_calls schema published to FriendliAI for the ``submit`` tool
+    is the submit envelope, NOT the lookup mode-discriminated union. (Codex
+    P1 #2 on PR #2480 caught the original copy-paste bug where SUBMIT_TOOL
+    was declared with ``input_schema=_LookupInput``.)
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    tool_id: str = Field(
+        min_length=1,
+        max_length=128,
+        pattern=r"^[a-z][a-z0-9_]*$",
+        description=(
+            "Registered submit adapter id (e.g. mock_submit_module_hometax_"
+            "taxreturn). MUST match a tool_id from the system prompt's "
+            "<verify_chain_pattern> 기본 매핑 section."
+        ),
+    )
+    params: dict[str, object] = Field(
+        default_factory=dict,
+        description=(
+            "Adapter-defined payload. MUST include 'delegation_context' "
+            "(the value returned by the prior verify call) plus any adapter-"
+            "specific filing fields. Adapter validates against its own "
+            "Pydantic model at invocation time."
+        ),
+    )
+
+
+class _SubscribeInputForLLM(BaseModel):
+    """LLM-visible subscribe input schema — `{tool_id, params, lifetime_seconds}`.
+
+    Mirrors :class:`kosmos.primitives.subscribe.SubscribeInput`. lifetime_seconds
+    enforces the FR-011 365-day ceiling.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    tool_id: str = Field(
+        min_length=1,
+        max_length=128,
+        pattern=r"^[a-z][a-z0-9_]*$",
+        description="Registered subscribe adapter tool_id (CBS / REST-pull / RSS).",
+    )
+    params: dict[str, object] = Field(
+        default_factory=dict,
+        description=(
+            "Modality-specific subscription parameters (region filter for CBS, "
+            "polling_interval for REST-pull, rss_feed_url for RSS)."
+        ),
+    )
+    lifetime_seconds: int = Field(
+        ge=1,
+        le=31_536_000,
+        description="Bounded lifetime; ceiling 365 days (FR-011 of Spec 031).",
+    )
+
+
 class _VerifyInputForLLM(BaseModel):
     """LLM-visible verify input schema with permissive ``family_hint: str``.
 
@@ -277,7 +339,7 @@ SUBMIT_TOOL = GovAPITool(
     endpoint="internal://submit",
     # api_key auth type required for citizen_facing_gate=submit (AAL3) per V6.
     auth_type="api_key",
-    input_schema=_LookupInput,  # opaque envelope wrapper accepting tool_id+params
+    input_schema=_SubmitInputForLLM,
     output_schema=_LookupOutput,
     llm_description=(
         "Submit primitive — invokes a write-transaction adapter (홈택스 신고, "
@@ -325,7 +387,7 @@ SUBSCRIBE_TOOL = GovAPITool(
     category=["구독", "스트리밍", "primitive"],
     endpoint="internal://subscribe",
     auth_type="public",
-    input_schema=_LookupInput,  # opaque envelope wrapper accepting tool_id+params
+    input_schema=_SubscribeInputForLLM,
     output_schema=_LookupOutput,
     llm_description=(
         "Subscribe primitive — bounded-lifetime streaming subscription to a "
