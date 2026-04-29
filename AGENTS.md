@@ -167,8 +167,20 @@ Concrete metadata schema, transparency fields, mock fidelity grades, citation en
 ## Testing
 `uv run pytest` before every commit. Live-API tests marked `@pytest.mark.live`, skipped by default. Full guide: `docs/testing.md`.
 
-## TUI verification (LLM-readable smoke)
-"작동 확인" / "정상 동작" / "검증" requests on TUI changes MUST run interactively under PTY — never code-grep alone (memory `feedback_runtime_verification`). Use a layered approach: (1) **stdio JSONL probe** bypasses the TUI for backend baseline, (2) **expect/script/asciinema** captures the full pty session as a text log LLMs can grep (memory `feedback_vhs_tui_smoke`), (3) **vhs `.tape`** produces the gif/mp4 for human visual review only (binary, not LLM-readable). Mismatches between layers identify which layer regressed. Full methodology + recipes: [`docs/testing.md § TUI verification methodology`](./docs/testing.md#tui-verification-methodology).
+## TUI verification (LLM-readable smoke) — **PR mandatory**
+
+**Hard rule**: Any PR that modifies `tui/src/**` MUST capture an interactive PTY scenario (slash command + input + Ctrl-C exit) and commit the artefacts under `specs/<feature>/` BEFORE pushing. `bun typecheck` (KOSMOS narrows to `src/stubs/**` only) + `bun test` (REPL.tsx dynamic imports unchecked) + boot-only smoke all fail to catch stale-import regressions and dead JSX paths. Skipping interactive verification is the #1 source of post-merge TUI breakage. Memory: `feedback_pr_pre_merge_interactive_test`.
+
+Layered verification chain (all layers required for TUI-changing PRs):
+
+1. **Layer 0 — typecheck + bun test**: necessary but not sufficient.
+2. **Layer 1 — stdio JSONL probe**: bypasses the TUI for backend baseline.
+3. **Layer 2 — interactive PTY scenario** (mandatory): `expect` / `asciinema` / `script` capture the full pty session running real slash commands, real input, and real exit flow. Output goes to `specs/<feature>/smoke-<scenario>-pty.txt` (LLM-grep-friendly text log; memory `feedback_vhs_tui_smoke`). Minimum scenario: spawn `bun run tui` → assert `KOSMOS` branding → send `/help\r` → sleep 6s → send `\003\003` → expect eof. Add scenarios when the change touches registry / permissions / REPL paths.
+4. **Layer 3 — vhs `.tape` (visual companion, optional)**: produces `.gif` for human visual review only (binary, not LLM-readable). Single source-of-truth remains the Layer 2 text log.
+
+Mismatches between layers identify which layer regressed. PR description MUST cite the captured `specs/<feature>/scripts/smoke-*.expect` + `smoke-*-pty.txt`. Full methodology + recipes: [`docs/testing.md § TUI verification methodology`](./docs/testing.md#tui-verification-methodology).
+
+**Bypass**: PRs that do not touch `tui/src/**` (Python backend / spec docs / workflow only) are exempt — declare `TUI no-change` in the PR description.
 
 ## Do not touch
 `.specify/`, `.claude/skills/` (Spec Kit) · `LICENSE` (Apache-2.0, ADR required) · `docs/vision.md` layer names (ADR required) · `.env`, `secrets/` (never commit).
