@@ -27,7 +27,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
-from pydantic import RootModel
+from pydantic import BaseModel, ConfigDict, Field, RootModel
 
 from kosmos.tools.models import (
     AdapterRealDomainPolicy,
@@ -177,8 +177,6 @@ LOOKUP_SEARCH_TOOL = GovAPITool(
 # these tools also appearing in `registry.export_core_tools_openai()`.
 # Epic η registers them here as core tools to close the gap.
 
-from pydantic import BaseModel, ConfigDict, Field as _Field
-
 
 class _VerifyInputForLLM(BaseModel):
     """LLM-visible verify input schema with permissive ``family_hint: str``.
@@ -195,7 +193,7 @@ class _VerifyInputForLLM(BaseModel):
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    family_hint: str = _Field(
+    family_hint: str = Field(
         min_length=1,
         max_length=64,
         description=(
@@ -207,7 +205,7 @@ class _VerifyInputForLLM(BaseModel):
             "VerifyMismatchError for unknown values."
         ),
     )
-    session_context: dict[str, object] = _Field(
+    session_context: dict[str, object] = Field(
         default_factory=dict,
         description=(
             "Adapter-specific session evidence. For Mock-mode chains the LLM "
