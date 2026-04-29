@@ -110,6 +110,22 @@ export const VerifyPrimitive = buildTool({
     return null
   },
 
+  // Epic γ #2294 · T005 · 9-member compliance stubs.
+  // Real validateInput + renderToolResultMessage land in T013/T014.
+  isMcp: false,
+
+  async validateInput() {
+    // T005 stub — fail-open. T013 replaces with adapter-resolve + citation
+    // populate + Korean diagnostic per contracts/primitive-shape.md.
+    return { result: true } as const
+  },
+
+  renderToolResultMessage() {
+    // T005 stub — render nothing. T014 replaces with citizen-facing Korean
+    // rendering per contracts/primitive-shape.md § Verify row.
+    return null
+  },
+
   /**
    * P3 MVP stub — real dispatch wired by T028 registry closure + T029 E2E test.
    */

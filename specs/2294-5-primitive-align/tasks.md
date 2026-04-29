@@ -50,8 +50,8 @@ Sonnet teammate budget per group: ≤ 5 tasks AND ≤ 10 files. Verified per gro
 
 **Purpose**: Confirm the worktree is clean and reference materials are in place. CC source migration pattern (memory `feedback_cc_source_migration_pattern`) — Sonnet teammates copy from `.references/claude-code-sourcemap/` and adapt; do NOT write from scratch.
 
-- [ ] T001 Verify worktree state and dependencies — run `cd tui && bun install && bun typecheck` and `uv sync && uv run pytest -q` from `/Users/um-yunsang/KOSMOS-w-2294`; record baseline pass count for SC-005 comparison in `specs/2294-5-primitive-align/baseline.md` (1 pre-existing TUI snapshot fail + 1 pre-existing pytest fail expected per `c6747dd` baseline).
-- [ ] T002 Read 4 primitive source files (`tui/src/tools/{Lookup,Submit,Verify,Subscribe}Primitive/*.ts`) and the CC reference (`.references/claude-code-sourcemap/restored-src/src/Tool.ts` :436/489/566; `.references/claude-code-sourcemap/restored-src/src/tools/AgentTool/AgentTool.tsx` for the implementation pattern of `validateInput`/`renderToolResultMessage`); produce a 1-page `specs/2294-5-primitive-align/cc-mapping.md` per memory `feedback_cc_source_migration_pattern`.
+- [X] T001 Verify worktree state and dependencies — run `cd tui && bun install && bun typecheck` and `uv sync && uv run pytest -q` from `/Users/um-yunsang/KOSMOS-w-2294`; record baseline pass count for SC-005 comparison in `specs/2294-5-primitive-align/baseline.md` (1 pre-existing TUI snapshot fail + 1 pre-existing pytest fail expected per `c6747dd` baseline).
+- [X] T002 Read 4 primitive source files (`tui/src/tools/{Lookup,Submit,Verify,Subscribe}Primitive/*.ts`) and the CC reference (`.references/claude-code-sourcemap/restored-src/src/Tool.ts` :436/489/566; `.references/claude-code-sourcemap/restored-src/src/tools/AgentTool/AgentTool.tsx` for the implementation pattern of `validateInput`/`renderToolResultMessage`); produce a 1-page `specs/2294-5-primitive-align/cc-mapping.md` per memory `feedback_cc_source_migration_pattern`.
 
 ---
 
@@ -61,9 +61,9 @@ Sonnet teammate budget per group: ≤ 5 tasks AND ≤ 10 files. Verified per gro
 
 **⚠️ CRITICAL**: No user-story work may begin until T005 lands.
 
-- [ ] T003 Create `tui/src/tools/shared/primitiveCitation.ts` exporting `extractCitation(adapterMeta) → {real_classification_url, policy_authority}` plus the shared `PrimitiveErrorCode` const-literal union (`AdapterNotFound | CitationMissing | RestrictedMode`); per data-model.md § E5 + contracts/primitive-shape.md § validateInput contract.
-- [ ] T004 Create `tui/src/services/toolRegistry/bootGuard.ts` implementing `verifyBootRegistry(registry) → BootResult` per `contracts/registry-boot-guard.md` (9-member walk + citation non-empty check + Korean diagnostic + ≤200ms budget); export-only, NOT yet wired into the registry construction site.
-- [ ] T005 Add minimal compliance stubs to all 4 primitives — set `isMcp = false`, add a default `validateInput` that returns `{result: true}`, add a default `renderToolResultMessage(output) → null`-rejecting placeholder text in 4 files: `tui/src/tools/{Lookup,Submit,Verify,Subscribe}Primitive/*.ts`. These stubs make `bun typecheck` pass and let Phase 3 + Phase 4 replace each one independently.
+- [X] T003 Create `tui/src/tools/shared/primitiveCitation.ts` exporting `extractCitation(adapterMeta) → {real_classification_url, policy_authority}` plus the shared `PrimitiveErrorCode` const-literal union (`AdapterNotFound | CitationMissing | RestrictedMode`); per data-model.md § E5 + contracts/primitive-shape.md § validateInput contract.
+- [X] T004 Create `tui/src/services/toolRegistry/bootGuard.ts` implementing `verifyBootRegistry(registry) → BootResult` per `contracts/registry-boot-guard.md` (9-member walk + citation non-empty check + Korean diagnostic + ≤200ms budget); export-only, NOT yet wired into the registry construction site.
+- [X] T005 Add minimal compliance stubs to all 4 primitives — set `isMcp = false`, add a default `validateInput` that returns `{result: true}`, add a default `renderToolResultMessage(output) → null`-rejecting placeholder text in 4 files: `tui/src/tools/{Lookup,Submit,Verify,Subscribe}Primitive/*.ts`. These stubs make `bun typecheck` pass and let Phase 3 + Phase 4 replace each one independently.
 
 **Checkpoint**: `bun typecheck` returns 0 errors; `bun test` shows the same pre-existing snapshot failure but no new failures; the boot guard module exists but is not invoked.
 
