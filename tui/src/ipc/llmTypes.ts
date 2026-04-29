@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0
 // KOSMOS-original — Epic #1633 P2 · Anthropic→FriendliAI type shim.
 //
-// Structural replacements for the `@anthropic-ai/sdk` types that QueryEngine.ts
+// Structural replacements for the Anthropic SDK types that QueryEngine.ts
 // and query.ts import. These types are in-process only; they never reach the
 // wire. The Spec 032 IPC envelope (frames.generated.ts) carries actual frames
 // to / from the Python backend.
 //
-// Responsibility: keep the TS agentic loop compiling after @anthropic-ai/sdk
+// Responsibility: keep the TS agentic loop compiling after the Anthropic SDK
 // is removed, without rewriting the loop's control flow (rewrite-boundary
 // rule, Constitution Principle I).
 

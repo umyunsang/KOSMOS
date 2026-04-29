@@ -13,7 +13,8 @@ import {
   MAX_TRANSCRIPT_READ_BYTES,
 } from '../../utils/sessionStorage.js'
 import { jsonStringify } from '../../utils/slowOperations.js'
-import { redactSensitiveInfo } from '../Feedback.js'
+// KOSMOS Spec 1633 / Epic #2293 — components/Feedback deleted (claude.ai 1P telemetry); inline minimal redact stub.
+const redactSensitiveInfo = (text: string): string => text.replace(/sk-[a-zA-Z0-9_-]+/g, 'sk-REDACTED').replace(/Bearer\s+\S+/gi, 'Bearer REDACTED')
 
 type TranscriptShareResult = {
   success: boolean

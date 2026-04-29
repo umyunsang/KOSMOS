@@ -1,0 +1,193 @@
+bun test v1.3.12 (700fc117)
+[session-exit] audit flush failed: simulated flush failure
+[keybindings] audit write failed: simulated audit failure
+[keybindings] beforeExit failed: simulated bridge close failure
+
+tests/invariants/linecount.test.ts:
+[SC-003] main.tsx lines: 2749 (target ≤ 2500, aspirational 2000)
+[KOSMOS-TUI] Unknown theme "neon-cyberpunk", falling back to default
+[KOSMOS IPC ERROR] Backend crashed on reconnect: exitCode=143
+[KOSMOS IPC ERROR] Backend crashed on reconnect: exitCode=143
+[KOSMOS IPC ERROR] Backend crashed: exitCode=143
+
+tests/ipc/soak.test.ts:
+[soak] frames=419 p99=0.10ms rss_growth=0.0MB
+[KOSMOS IPC ERROR] Backend crashed: exitCode=137
+
+tests/commands/plugin.test.ts:
+53 | // ---------------------------------------------------------------------------
+54 | 
+55 | describe('/plugin install', () => {
+56 |   it('emits plugin_op_request with op=request request_op=install', () => {
+57 |     const { args, pluginFrames } = makeMocks()
+58 |     const result = pluginCommand.handle(args('install seoul-subway'))
+                                      ^
+TypeError: pluginCommand.handle is not a function. (In 'pluginCommand.handle(args("install seoul-subway"))', 'pluginCommand.handle' is undefined)
+      at <anonymous> (/Users/um-yunsang/KOSMOS-w-2293/tui/tests/commands/plugin.test.ts:58:34)
+(fail) /plugin install > emits plugin_op_request with op=request request_op=install [1.00ms]
+66 |     expect(frame.role).toBe('tui')
+67 |   })
+68 | 
+69 |   it('parses --version flag', () => {
+70 |     const { args, pluginFrames } = makeMocks()
+71 |     pluginCommand.handle(args('install seoul-subway --version 1.2.0'))
+                       ^
+TypeError: pluginCommand.handle is not a function. (In 'pluginCommand.handle(args("install seoul-subway --version 1.2.0"))', 'pluginCommand.handle' is undefined)
+      at <anonymous> (/Users/um-yunsang/KOSMOS-w-2293/tui/tests/commands/plugin.test.ts:71:19)
+(fail) /plugin install > parses --version flag [0.03ms]
+74 |     expect(frame.requested_version).toBe('1.2.0')
+75 |   })
+76 | 
+77 |   it('parses --dry-run flag', () => {
+78 |     const { args, pluginFrames } = makeMocks()
+79 |     pluginCommand.handle(args('install seoul-subway --dry-run'))
+                       ^
+TypeError: pluginCommand.handle is not a function. (In 'pluginCommand.handle(args("install seoul-subway --dry-run"))', 'pluginCommand.handle' is undefined)
+      at <anonymous> (/Users/um-yunsang/KOSMOS-w-2293/tui/tests/commands/plugin.test.ts:79:19)
+(fail) /plugin install > parses --dry-run flag [0.02ms]
+82 |     expect(frame.dry_run).toBe(true)
+83 |   })
+84 | 
+85 |   it('returns help text when name is missing', () => {
+86 |     const { args, pluginFrames } = makeMocks()
+87 |     const result = pluginCommand.handle(args('install'))
+                                      ^
+TypeError: pluginCommand.handle is not a function. (In 'pluginCommand.handle(args("install"))', 'pluginCommand.handle' is undefined)
+      at <anonymous> (/Users/um-yunsang/KOSMOS-w-2293/tui/tests/commands/plugin.test.ts:87:34)
+(fail) /plugin install > returns help text when name is missing [0.02ms]
+92 |       throw new Error('expected sync result')
+93 |     }
+94 |   })
+95 | 
+96 |   it('returns IPC-disconnected error when sendPluginOp is missing', () => {
+97 |     const result = pluginCommand.handle(makeArgsWithoutPluginOp('install seoul-subway'))
+                                      ^
+TypeError: pluginCommand.handle is not a function. (In 'pluginCommand.handle(makeArgsWithoutPluginOp("install seoul-subway"))', 'pluginCommand.handle' is undefined)
+      at <anonymous> (/Users/um-yunsang/KOSMOS-w-2293/tui/tests/commands/plugin.test.ts:97:34)
+(fail) /plugin install > returns IPC-disconnected error when sendPluginOp is missing [0.02ms]
+108 | // ---------------------------------------------------------------------------
+109 | 
+110 | describe('/plugin list', () => {
+111 |   it('emits plugin_op_request with request_op=list', () => {
+112 |     const { args, pluginFrames } = makeMocks()
+113 |     pluginCommand.handle(args('list'))
+                        ^
+TypeError: pluginCommand.handle is not a function. (In 'pluginCommand.handle(args("list"))', 'pluginCommand.handle' is undefined)
+      at <anonymous> (/Users/um-yunsang/KOSMOS-w-2293/tui/tests/commands/plugin.test.ts:113:19)
+(fail) /plugin list > emits plugin_op_request with request_op=list [0.02ms]
+123 | // ---------------------------------------------------------------------------
+124 | 
+125 | describe('/plugin uninstall', () => {
+126 |   it('emits plugin_op_request with request_op=uninstall', () => {
+127 |     const { args, pluginFrames } = makeMocks()
+128 |     pluginCommand.handle(args('uninstall seoul-subway'))
+                        ^
+TypeError: pluginCommand.handle is not a function. (In 'pluginCommand.handle(args("uninstall seoul-subway"))', 'pluginCommand.handle' is undefined)
+      at <anonymous> (/Users/um-yunsang/KOSMOS-w-2293/tui/tests/commands/plugin.test.ts:128:19)
+(fail) /plugin uninstall > emits plugin_op_request with request_op=uninstall [0.03ms]
+132 |     expect(frame.name).toBe('seoul-subway')
+133 |   })
+134 | 
+135 |   it('returns help text when name is missing', () => {
+136 |     const { args, pluginFrames } = makeMocks()
+137 |     const result = pluginCommand.handle(args('uninstall'))
+                                       ^
+TypeError: pluginCommand.handle is not a function. (In 'pluginCommand.handle(args("uninstall"))', 'pluginCommand.handle' is undefined)
+      at <anonymous> (/Users/um-yunsang/KOSMOS-w-2293/tui/tests/commands/plugin.test.ts:137:34)
+(fail) /plugin uninstall > returns help text when name is missing [0.02ms]
+149 | // ---------------------------------------------------------------------------
+150 | 
+151 | describe('/plugin pipa-text', () => {
+152 |   it('returns canonical hash without IPC traffic', () => {
+153 |     const { args, pluginFrames } = makeMocks()
+154 |     const result = pluginCommand.handle(args('pipa-text'))
+                                       ^
+TypeError: pluginCommand.handle is not a function. (In 'pluginCommand.handle(args("pipa-text"))', 'pluginCommand.handle' is undefined)
+      at <anonymous> (/Users/um-yunsang/KOSMOS-w-2293/tui/tests/commands/plugin.test.ts:154:34)
+(fail) /plugin pipa-text > returns canonical hash without IPC traffic [0.03ms]
+169 | // ---------------------------------------------------------------------------
+170 | 
+171 | describe('/plugin unknown / empty', () => {
+172 |   it('shows usage when no subcommand', () => {
+173 |     const { args, pluginFrames } = makeMocks()
+174 |     const result = pluginCommand.handle(args(''))
+                                       ^
+TypeError: pluginCommand.handle is not a function. (In 'pluginCommand.handle(args(""))', 'pluginCommand.handle' is undefined)
+      at <anonymous> (/Users/um-yunsang/KOSMOS-w-2293/tui/tests/commands/plugin.test.ts:174:34)
+(fail) /plugin unknown / empty > shows usage when no subcommand [0.04ms]
+180 |     }
+181 |   })
+182 | 
+183 |   it('shows error + usage for unknown subcommand', () => {
+184 |     const { args, pluginFrames } = makeMocks()
+185 |     const result = pluginCommand.handle(args('reinstall foo'))
+                                       ^
+TypeError: pluginCommand.handle is not a function. (In 'pluginCommand.handle(args("reinstall foo"))', 'pluginCommand.handle' is undefined)
+      at <anonymous> (/Users/um-yunsang/KOSMOS-w-2293/tui/tests/commands/plugin.test.ts:185:34)
+(fail) /plugin unknown / empty > shows error + usage for unknown subcommand [0.04ms]
+198 | // ---------------------------------------------------------------------------
+199 | 
+200 | describe('plugin_op frame envelope', () => {
+201 |   it('every emitted frame carries kind / version / role / op', () => {
+202 |     const { args, pluginFrames } = makeMocks()
+203 |     pluginCommand.handle(args('install seoul-subway'))
+                        ^
+TypeError: pluginCommand.handle is not a function. (In 'pluginCommand.handle(args("install seoul-subway"))', 'pluginCommand.handle' is undefined)
+      at <anonymous> (/Users/um-yunsang/KOSMOS-w-2293/tui/tests/commands/plugin.test.ts:203:19)
+(fail) plugin_op frame envelope > every emitted frame carries kind / version / role / op [0.06ms]
+214 |     }
+215 |   })
+216 | 
+217 |   it('does not bleed into the session-event channel', () => {
+218 |     const { args, pluginFrames, sessionFrames } = makeMocks()
+219 |     pluginCommand.handle(args('install seoul-subway'))
+                        ^
+TypeError: pluginCommand.handle is not a function. (In 'pluginCommand.handle(args("install seoul-subway"))', 'pluginCommand.handle' is undefined)
+      at <anonymous> (/Users/um-yunsang/KOSMOS-w-2293/tui/tests/commands/plugin.test.ts:219:19)
+(fail) plugin_op frame envelope > does not bleed into the session-event channel [0.03ms]
+
+tests/commands/registry.test.ts:
+30 |     for (const [, def] of registry) {
+31 |       expect(typeof def.name).toBe('string')
+32 |       expect(def.name.length).toBeGreaterThan(0)
+33 |       expect(typeof def.description).toBe('string')
+34 |       expect(def.description.length).toBeGreaterThan(0)
+35 |       expect(typeof def.handle).toBe('function')
+                                     ^
+error: expect(received).toBe(expected)
+
+Expected: "function"
+Received: "undefined"
+
+      at <anonymous> (/Users/um-yunsang/KOSMOS-w-2293/tui/tests/commands/registry.test.ts:35:33)
+(fail) Default registry shape (FR-036) > every entry conforms to CommandDefinition interface [0.94ms]
+{"span":"kosmos.onboarding.step","step":"splash","kind":"enter","ts":"2026-04-29T00:55:55.942Z"}
+{"span":"kosmos.onboarding.step","step":"pipa-consent","kind":"enter","ts":"2026-04-29T00:55:55.946Z"}
+{"span":"kosmos.onboarding.step","step":"ministry-scope-ack","kind":"enter","ts":"2026-04-29T00:55:55.948Z"}
+{"span":"kosmos.onboarding.step","step":"splash","kind":"enter","ts":"2026-04-29T00:55:55.950Z"}
+{"span":"kosmos.onboarding.step","step":"ministry-scope-ack","kind":"enter","ts":"2026-04-29T00:55:55.951Z"}
+{"span":"kosmos.onboarding.step","step":"splash","kind":"enter","ts":"2026-04-29T00:55:55.953Z"}
+
+tests/store/session-store.test.ts:
+[session-store] SESSION_EVENT load: skipping entry missing required id field {
+  role: "user",
+  chunks: [ "no-id" ],
+  done: true,
+  tool_calls: [],
+  tool_results: [],
+}
+[session-store] SESSION_EVENT load: payload.messages is not an array — ignoring
+objc[19767]: Class GNotificationCenterDelegate is implemented in both /Users/um-yunsang/KOSMOS-w-2293/tui/node_modules/canvas/build/Release/libgio-2.0.0.dylib (0x145cd8648) and /opt/homebrew/Cellar/glib/2.88.0/lib/libgio-2.0.0.dylib (0x1472584c8). This may cause spurious casting failures and mysterious crashes. One of the duplicates must be removed or renamed.
+
+tests/components/messages/PdfInlineViewer.test.tsx:
+Warning: Cannot polyfill `DOMMatrix`, rendering may be broken.
+Warning: Cannot polyfill `Path2D`, rendering may be broken.
+{"span":"kosmos.onboarding.step","step":"splash","kind":"advance","ts":"2026-04-29T00:55:58.952Z"}
+{"span":"kosmos.onboarding.step","step":"done","kind":"enter","ts":"2026-04-29T00:55:58.952Z"}
+
+ 844 pass
+ 4 skip
+ 3 todo
+ 14 fail
+ 45 snapshots, 3413 expect() calls
+Ran 865 tests across 105 files. [16.47s]

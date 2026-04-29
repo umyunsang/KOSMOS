@@ -16,7 +16,8 @@ import {
   saveCustomTitle,
 } from '../../utils/sessionStorage.js'
 import { isTeammate } from '../../utils/teammate.js'
-import { generateSessionName } from './generateSessionName.js'
+// KOSMOS Spec 1633 / Epic #2293 — commands/rename/generateSessionName deleted (Anthropic queryHaiku auto-naming); inline no-op stub.
+const generateSessionName = async (..._args: unknown[]): Promise<string | null> => null
 
 export async function call(
   onDone: LocalJSXCommandOnDone,

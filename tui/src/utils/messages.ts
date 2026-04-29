@@ -29,13 +29,12 @@ import {
   checkStatsigFeatureGate_CACHED_MAY_BE_STALE,
   getFeatureValue_CACHED_MAY_BE_STALE,
 } from '../services/analytics/growthbook.js'
-import {
-  getImageTooLargeErrorMessage,
-  getPdfInvalidErrorMessage,
-  getPdfPasswordProtectedErrorMessage,
-  getPdfTooLargeErrorMessage,
-  getRequestTooLargeErrorMessage,
-} from '../services/api/errors.js'
+// services/api/errors removed (Spec 2293 cleanup); inline stubs below.
+const getImageTooLargeErrorMessage = (): string => 'Image too large'
+const getPdfInvalidErrorMessage = (): string => 'Invalid PDF'
+const getPdfPasswordProtectedErrorMessage = (): string => 'Password-protected PDF'
+const getPdfTooLargeErrorMessage = (): string => 'PDF too large'
+const getRequestTooLargeErrorMessage = (): string => 'Request too large'
 import type { AnyObject, Progress } from '../Tool.js'
 import { isConnectorTextBlock } from '../types/connectorText.js'
 import type {

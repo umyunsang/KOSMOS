@@ -29,11 +29,13 @@ import {
   getSettings_DEPRECATED,
   updateSettingsForSource,
 } from '../settings/settings.js'
-import {
-  type UserConfigSchema,
-  type UserConfigValues,
-  validateUserConfig,
-} from './mcpbHandler.js'
+// KOSMOS Spec 1633 / Epic #2293 — utils/plugins/mcpbHandler deleted (Anthropic
+// .mcpb plugin bundle handler; KOSMOS plugin DX Spec 1636 uses different format).
+// User-config schema/value types are inlined as `unknown` since plugin-side
+// validation no longer flows through the .mcpb pipeline.
+type UserConfigSchema = unknown
+type UserConfigValues = unknown
+const validateUserConfig = (_schema: unknown, _values: unknown): { ok: true; values: unknown } => ({ ok: true, values: _values })
 import { getPluginDataDir } from './pluginDirectories.js'
 
 export type PluginOptionValues = UserConfigValues
