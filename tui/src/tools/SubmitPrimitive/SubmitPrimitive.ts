@@ -166,8 +166,9 @@ export const SubmitPrimitive = buildTool({
   },
 
   renderToolResultMessage(output: Output) {
+    // NOTE: This file is `.ts` (not `.tsx`); Bun runtime cannot parse JSX in
+    // `.ts`. Use `React.createElement` for parity with the other 3 primitives.
     if (output.ok) {
-      // Extract fields from the result object safely.
       const result = output.result as Record<string, unknown> | undefined
       const receiptId =
         typeof result?.transaction_id === 'string'
@@ -184,32 +185,32 @@ export const SubmitPrimitive = buildTool({
           ? result.agency_handoff_url
           : null
 
-      return (
-        <Box flexDirection="column" paddingY={0}>
-          <Text color="green">
-            {'✓ '}
-            {ministry ? `[${ministry}] ` : ''}
-            제출이 접수되었습니다.
-          </Text>
-          {receiptId && (
-            <Text dimColor>접수 번호: {receiptId}</Text>
-          )}
-          {status && (
-            <Text dimColor>
-              상태:{' '}
-              {status === 'accepted'
-                ? '접수됨'
-                : status === 'pending'
-                  ? '처리 중'
-                  : status === 'rejected'
-                    ? '반려됨'
-                    : status}
-            </Text>
-          )}
-          {handoffUrl && (
-            <Text dimColor>기관 확인: {handoffUrl}</Text>
-          )}
-        </Box>
+      const statusLabel =
+        status === 'accepted'
+          ? '접수됨'
+          : status === 'pending'
+            ? '처리 중'
+            : status === 'rejected'
+              ? '반려됨'
+              : status
+
+      return React.createElement(
+        Box,
+        { flexDirection: 'column', paddingY: 0 },
+        React.createElement(
+          Text,
+          { color: 'green' },
+          `✓ ${ministry ? `[${ministry}] ` : ''}제출이 접수되었습니다.`,
+        ),
+        receiptId
+          ? React.createElement(Text, { dimColor: true }, `접수 번호: ${receiptId}`)
+          : null,
+        status
+          ? React.createElement(Text, { dimColor: true }, `상태: ${statusLabel}`)
+          : null,
+        handoffUrl
+          ? React.createElement(Text, { dimColor: true }, `기관 확인: ${handoffUrl}`)
+          : null,
       )
     }
 
@@ -217,16 +218,16 @@ export const SubmitPrimitive = buildTool({
     const handoffUrl =
       typeof (output.error as Record<string, unknown>)?.agency_handoff_url ===
       'string'
-        ? (output.error as Record<string, unknown>).agency_handoff_url as string
+        ? ((output.error as Record<string, unknown>).agency_handoff_url as string)
         : null
 
-    return (
-      <Box flexDirection="column" paddingY={0}>
-        <Text color="red">{'✗ '}{output.error.message}</Text>
-        {handoffUrl && (
-          <Text dimColor>기관 문의: {handoffUrl}</Text>
-        )}
-      </Box>
+    return React.createElement(
+      Box,
+      { flexDirection: 'column', paddingY: 0 },
+      React.createElement(Text, { color: 'red' }, `✗ ${output.error.message}`),
+      handoffUrl
+        ? React.createElement(Text, { dimColor: true }, `기관 문의: ${handoffUrl}`)
+        : null,
     )
   },
 
