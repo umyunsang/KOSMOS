@@ -124,7 +124,7 @@ Sonnet teammate budget per group: ≤ 5 tasks AND ≤ 10 files. Verified per gro
 
 ### Implementation for User Story 3
 
-- [ ] T021 [US3] [sonnet-citation] Author `tui/src/tools/__tests__/permission-citation.test.ts` — fixture-walk every adapter (Live + Mock from the actual Python adapter manifests imported via the existing IPC stub or a static-fixture variant for CI), render the `<FallbackPermissionRequest>` with a synthetic primitive-call context, snapshot-assert that `real_classification_url` and `policy_authority` strings appear verbatim, blocklist-assert no string from `["안전한 권한 등급", "본 시스템은", "KOSMOS는 다음과 같이", ...]` appears anywhere in the rendered prompt body. Blocklist enumerated in the file's top constant.
+- [X] T021 [US3] [sonnet-citation] Author `tui/src/tools/__tests__/permission-citation.test.ts` — fixture-walk every adapter (Live + Mock from the actual Python adapter manifests imported via the existing IPC stub or a static-fixture variant for CI), render the `<FallbackPermissionRequest>` with a synthetic primitive-call context, snapshot-assert that `real_classification_url` and `policy_authority` strings appear verbatim, blocklist-assert no string from `["안전한 권한 등급", "본 시스템은", "KOSMOS는 다음과 같이", ...]` appears anywhere in the rendered prompt body. Blocklist enumerated in the file's top constant.
 
 **Checkpoint**: 100% of adapter-routed permission prompts contain a verbatim citation; 0% contain KOSMOS-invented copy.
 
