@@ -47,10 +47,15 @@ def _make_adapter(
     *,
     tool_id: str = "plugin.demo_plugin.lookup",
     primitive: AdapterPrimitive = AdapterPrimitive.lookup,
-    pipa_class: str = "personal_standard",
+    pipa_class: str = "personal_standard",  # kept for API compat; ignored — derived from policy
 ) -> AdapterRegistration:
-    """Build a baseline AdapterRegistration that satisfies the v1.2 GA backstop."""
+    """Build a baseline AdapterRegistration that satisfies the v1.2 GA backstop.
 
+    Epic δ #2295 Path B: ``auth_level`` and ``pipa_class`` are now computed_fields
+    derived from ``policy.citizen_facing_gate``; they must NOT be passed as
+    constructor arguments (extra="forbid" would raise). The ``pipa_class`` param
+    is kept for call-site compatibility but is silently ignored.
+    """
     return AdapterRegistration(
         tool_id=tool_id,
         primitive=primitive,
@@ -60,8 +65,6 @@ def _make_adapter(
         published_tier_minimum="digital_onepass_level1_aal1",
         nist_aal_hint="AAL1",
         auth_type="api_key",
-        auth_level="AAL1",
-        pipa_class=pipa_class,
     )
 
 

@@ -9,13 +9,16 @@ adapter:
   published_tier_minimum: digital_onepass_level1_aal1
   nist_aal_hint: AAL1
   auth_type: api_key
-  auth_level: AAL1
-  pipa_class: non_personal
-  is_personal_data: false
+  policy:
+    real_classification_url: https://www.data.go.kr/policy
+    real_classification_text: 공공데이터포털 이용약관 제7조 (공공데이터의 제공 및 이용)
+    citizen_facing_gate: read-only
+    last_verified: '2026-04-29T00:00:00Z'
 tier: live
 mock_source_spec: null
 processes_pii: false
 pipa_trustee_acknowledgment: null
+dpa_reference: null
 slsa_provenance_url: https://github.com/kosmos-plugin-store/kosmos-plugin-my_plugin/releases/download/v0.1.0/my_plugin.intoto.jsonl
 otel_attributes:
   kosmos.plugin.id: my_plugin

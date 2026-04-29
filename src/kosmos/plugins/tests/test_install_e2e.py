@@ -58,6 +58,18 @@ _ADAPTER_SOURCE = (
         echo: str = Field(description="Echo of the input.")
 
 
+    # Epic δ #2295 Path B: policy block replaces standalone auth_level /
+    # pipa_class / is_irreversible / dpa_reference / is_personal_data.
+    from datetime import datetime, timezone
+    from kosmos.tools.models import AdapterRealDomainPolicy
+
+    _POLICY = AdapterRealDomainPolicy(
+        real_classification_url="https://www.data.go.kr/policy",
+        real_classification_text="공공데이터포털 이용약관 (조회 전용)",
+        citizen_facing_gate="read-only",
+        last_verified=datetime(2026, 4, 29, tzinfo=timezone.utc),
+    )
+
     TOOL = GovAPITool(
         id="plugin.timing_demo.lookup",
         name_ko="타이밍 데모 플러그인",
@@ -68,11 +80,7 @@ _ADAPTER_SOURCE = (
         input_schema=DemoLookupInput,
         output_schema=DemoLookupOutput,
         search_hint="타이밍 데모 timing 공공 demo",
-        auth_level="AAL1",
-        pipa_class="non_personal",
-        is_irreversible=False,
-        dpa_reference=None,
-        is_personal_data=False,
+        policy=_POLICY,
         primitive="lookup",
         published_tier_minimum="digital_onepass_level1_aal1",
         nist_aal_hint="AAL1",
@@ -88,6 +96,8 @@ _ADAPTER_SOURCE = (
 
 
 def _manifest_dict() -> dict[str, Any]:
+    # Epic δ #2295 Path B: auth_level / pipa_class removed from adapter block;
+    # replaced by policy block. dpa_reference added as top-level manifest field.
     return {
         "plugin_id": "timing_demo",
         "version": "1.0.0",
@@ -100,13 +110,18 @@ def _manifest_dict() -> dict[str, Any]:
             "published_tier_minimum": "digital_onepass_level1_aal1",
             "nist_aal_hint": "AAL1",
             "auth_type": "api_key",
-            "auth_level": "AAL1",
-            "pipa_class": "non_personal",
+            "policy": {
+                "real_classification_url": "https://www.data.go.kr/policy",
+                "real_classification_text": "공공데이터포털 이용약관 (조회 전용)",
+                "citizen_facing_gate": "read-only",
+                "last_verified": "2026-04-29T00:00:00Z",
+            },
         },
         "tier": "live",
         "mock_source_spec": None,
         "processes_pii": False,
         "pipa_trustee_acknowledgment": None,
+        "dpa_reference": None,
         "slsa_provenance_url": (
             "https://github.com/kosmos-plugin-store/kosmos-plugin-timing-demo/"
             "releases/download/v1.0.0/timing.intoto.jsonl"
@@ -327,12 +342,13 @@ class TestSlsaSkipL3Refusal:
     def test_layer_3_with_slsa_skip_returns_exit_3(
         self, tmp_path: Path, isolated_settings: Path, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        # Build a manifest with permission_layer=3 + is_irreversible=True
-        # (Spec 024 V4 requires AAL2 for irreversible).
+        # Build a manifest with permission_layer=3 + irreversible gate.
+        # Epic δ #2295 Path B: is_irreversible is derived from
+        # policy.citizen_facing_gate ("sign" → is_irreversible=True, AAL3).
+        # Spec 024 V4 (irreversible ⇒ AAL≥2) holds by construction.
         manifest = _manifest_dict()
         manifest["permission_layer"] = 3
-        manifest["adapter"]["is_irreversible"] = True
-        manifest["adapter"]["auth_level"] = "AAL2"
+        manifest["adapter"]["policy"]["citizen_facing_gate"] = "sign"
 
         bundle, sha, provenance = _build_bundle_with_manifest(tmp_path, manifest)
         catalog = _write_catalog(
