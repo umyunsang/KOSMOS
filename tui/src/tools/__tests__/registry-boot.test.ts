@@ -76,10 +76,18 @@ describe('verifyBootRegistry — full 4-primitive registry (Case 1)', () => {
 
 describe('verifyBootRegistry — missing renderToolResultMessage (Case 2)', () => {
   test('returns ok === false, offendingTool = lookup, missingMembers contains renderToolResultMessage', () => {
+    // Codex P2 fix moved the "all 4 reserved primitives present" check ahead
+    // of the 9-member walk. The registry must contain all 4 primitive names
+    // for the per-member walk to be reached.
     const brokenLookup = fakePrimitive('lookup', {
       renderToolResultMessage: undefined,
     })
-    const registry: readonly Tool[] = [brokenLookup]
+    const registry: readonly Tool[] = [
+      brokenLookup,
+      fakePrimitive('submit'),
+      fakePrimitive('verify'),
+      fakePrimitive('subscribe'),
+    ]
 
     const result = verifyBootRegistry(registry)
 
@@ -105,7 +113,12 @@ describe('verifyBootRegistry — isMcp undefined (Case 3)', () => {
     const brokenSubmit = fakePrimitive('submit', {
       isMcp: undefined,
     })
-    const registry: readonly Tool[] = [brokenSubmit]
+    const registry: readonly Tool[] = [
+      fakePrimitive('lookup'),
+      brokenSubmit,
+      fakePrimitive('verify'),
+      fakePrimitive('subscribe'),
+    ]
 
     const result = verifyBootRegistry(registry)
 
@@ -113,5 +126,48 @@ describe('verifyBootRegistry — isMcp undefined (Case 3)', () => {
     if (result.ok) return // narrow type
 
     expect(result.missingMembers).toContain('isMcp')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Case 4 (Codex P2): Reserved primitive set incomplete — fail closed.
+// Without this guard, accidentally removing one primitive from registration
+// would still produce ok:true with primitives < 4.
+// ---------------------------------------------------------------------------
+
+describe('verifyBootRegistry — missing reserved primitive (Case 4 / Codex P2)', () => {
+  test('returns ok === false when subscribe is missing from registry', () => {
+    const registry: readonly Tool[] = [
+      fakePrimitive('lookup'),
+      fakePrimitive('submit'),
+      fakePrimitive('verify'),
+      // 'subscribe' deliberately omitted
+    ]
+
+    const result = verifyBootRegistry(registry)
+
+    expect(result.ok).toBe(false)
+    if (result.ok) return // narrow type
+
+    expect(result.offendingTool).toBe('<reserved-primitive-set>')
+    expect(result.missingMembers).toEqual(['subscribe'])
+    expect(result.diagnostic).toContain('subscribe')
+    expect(result.diagnostic).toContain('5-primitive')
+  })
+
+  test('returns ok === false when ALL primitives are missing (empty registry)', () => {
+    const result = verifyBootRegistry([])
+
+    expect(result.ok).toBe(false)
+    if (result.ok) return // narrow type
+
+    expect(result.offendingTool).toBe('<reserved-primitive-set>')
+    // All four reserved names are missing.
+    expect(result.missingMembers).toEqual([
+      'lookup',
+      'submit',
+      'verify',
+      'subscribe',
+    ])
   })
 })

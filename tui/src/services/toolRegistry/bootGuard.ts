@@ -68,6 +68,24 @@ export function verifyBootRegistry(registry: readonly Tool[]): BootResult {
     (PRIMITIVE_NAMES as readonly string[]).includes(t.name),
   )
 
+  // Codex P2 fix — fail closed when any of the 4 reserved primitives is
+  // accidentally unregistered. Without this check, removing a primitive
+  // would still produce ok:true with primitives < 4.
+  if (primitives.length !== PRIMITIVE_NAMES.length) {
+    const present = new Set(primitives.map(t => t.name))
+    const missingNames = PRIMITIVE_NAMES.filter(n => !present.has(n))
+    return {
+      ok: false,
+      offendingTool: '<reserved-primitive-set>',
+      missingMembers: missingNames as unknown as string[],
+      diagnostic:
+        `[KOSMOS][bootGuard] 예약된 5-primitive 중 일부가 ToolRegistry에 등록되지 않았습니다. ` +
+        `누락: ${missingNames.join(', ')}.\n` +
+        `KOSMOS는 4개 primitive(lookup/submit/verify/subscribe) 모두 등록되어야 부팅을 허용합니다.\n` +
+        `참조: specs/2294-5-primitive-align/contracts/registry-boot-guard.md`,
+    }
+  }
+
   for (const tool of primitives) {
     const missing: string[] = []
     for (const member of REQUIRED_MEMBERS) {
