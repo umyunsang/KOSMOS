@@ -1,0 +1,12 @@
+{
+  "fixture_id": "modid_taxreturn_canonical",
+  "citizen_prompt": "내 종합소득세 신고해줘",
+  "expected_first_tool_call": {
+    "name": "verify",
+    "arguments": {
+      "family_hint": "modid"
+    }
+  },
+  "expected_family_hint": "modid",
+  "notes": "US1 canonical chain. Downstream chain: lookup(hometax_simplified) → submit(hometax_taxreturn). scope_list MUST include both lookup:hometax.simplified and submit:hometax.tax-return."
+}
