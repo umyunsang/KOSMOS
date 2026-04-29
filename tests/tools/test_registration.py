@@ -28,7 +28,10 @@ class TestToolRegistration:
         # Spec 2296 SC-003: 12 Live + 2 MVP-surface (resolve_location, lookup)
         # + 2 lookup mocks (mock_lookup_module_hometax_simplified,
         # mock_lookup_module_gov24_certificate) = 16
-        assert len(registry) == 16
+        # Epic η #2298 FR-021: + 3 primitive surfaces (verify, submit,
+        # subscribe) = 19. Required so the LLM can emit the
+        # citizen-OPAQUE chain via OpenAI tool_calls schema.
+        assert len(registry) == 19
 
     def test_tool_ids_present(self) -> None:
         """Each expected tool_id is in the registry.

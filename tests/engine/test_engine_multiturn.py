@@ -356,14 +356,17 @@ async def test_preprocessing_triggered_with_small_context_window(
 ) -> None:
     """Preprocessing pipeline runs when token estimate exceeds threshold.
 
-    A context_window=2000 with threshold=0.5 means preprocessing fires when
-    the history exceeds ~1000 tokens. The system prompt (including the session
-    guidance block) is ~700 tokens, so a few turns of text accumulation push
-    the estimate over the threshold and the pipeline must run.
+    A context_window=4500 with threshold=0.6 means preprocessing fires when
+    the history exceeds ~2700 tokens. The system prompt is ~2500 tokens after
+    Epic η #2298 chain teaching expansion (was ~700 pre-Epic-η), so a few
+    turns of text accumulation push the estimate over the threshold and the
+    pipeline must run. The window MUST exceed the system prompt + room for
+    several turn pairs; 4500 with 0.6 threshold preserves the test invariant
+    while accommodating the larger system prompt.
     """
     config = QueryEngineConfig(
-        context_window=2000,
-        preprocessing_threshold=0.5,
+        context_window=4500,
+        preprocessing_threshold=0.6,
         # Aggressive snip/microcompact settings
         snip_turn_age=1,
         microcompact_turn_age=1,

@@ -17,10 +17,15 @@ do NOT silently adjust the expected values.
 from __future__ import annotations
 
 # ---------------------------------------------------------------------------
-# Main ToolRegistry count — 16 total
+# Main ToolRegistry count — 19 total
 # ---------------------------------------------------------------------------
+# Epic η #2298 — extended from 16 to 19 by adding `verify` / `submit` /
+# `subscribe` to mvp_surface as `is_core=True` GovAPITool entries (FR-021).
+# Without these, the LLM cannot emit the verify→lookup→submit chain because
+# `registry.export_core_tools_openai()` only returned [resolve_location, lookup].
+# The 3 new entries are the canonical primitives, not new agency adapters.
 
-_EXPECTED_MAIN_REGISTRY_COUNT = 16
+_EXPECTED_MAIN_REGISTRY_COUNT = 19
 
 _EXPECTED_MAIN_REGISTRY_BREAKDOWN = {
     "live_adapters": 12,  # 12 Live: koroad ×2, kma ×6, hira ×1, nfa ×1, nmc ×1, mohw ×1
@@ -45,7 +50,9 @@ _EXPECTED_LIVE_TOOL_IDS = frozenset(
     }
 )
 
-_EXPECTED_MVP_SURFACE_IDS = frozenset({"lookup", "resolve_location"})
+_EXPECTED_MVP_SURFACE_IDS = frozenset(
+    {"lookup", "resolve_location", "verify", "submit", "subscribe"}
+)
 
 _EXPECTED_LOOKUP_MOCK_IDS = frozenset(
     {
@@ -330,7 +337,10 @@ def test_all_four_surface_counts_match_canonical() -> None:
         "subscribe_adapters": len(subscribe_reg),
     }
     expected = {
-        "main_registry": 16,
+        # Epic η #2298 FR-021 — main_registry extended from 16 to 19 by adding
+        # verify / submit / subscribe primitive surfaces to mvp_surface so the
+        # LLM sees them in registry.export_core_tools_openai().
+        "main_registry": 19,
         "verify_families": 10,
         "submit_adapters": 5,
         "subscribe_adapters": 3,

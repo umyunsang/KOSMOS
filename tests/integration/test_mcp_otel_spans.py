@@ -85,10 +85,10 @@ class TestMCPToolsListShape:
         )
         assert response is not None
         tools = response["result"]["tools"]
-        # Post-Spec-2296 registered count is 16: 12 Live + 2 MVP-surface (resolve_location,
-        # lookup) + 2 lookup mocks (mock_lookup_module_hometax_simplified,
-        # mock_lookup_module_gov24_certificate) per Spec 2296 SC-003.
-        assert len(tools) == 16, f"Tool list count drift: got {len(tools)}, expected 16"
+        # Post-Spec-2296 registered count was 16. Epic η #2298 FR-021 added 3
+        # primitive surfaces (verify / submit / subscribe) → 19, so the LLM can
+        # emit the citizen-OPAQUE chain via OpenAI tool_calls schema.
+        assert len(tools) == 19, f"Tool list count drift: got {len(tools)}, expected 19"
 
     def test_tools_list_entries_have_required_keys(self, mcp_server: MCPServer) -> None:
         response = asyncio.run(

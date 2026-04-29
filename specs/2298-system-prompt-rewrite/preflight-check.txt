@@ -1,0 +1,19 @@
+=== T001 Pre-flight invariant check (Epic η #2298) ===
+2026년  4월 30일 목요일 04시 23분 13초 KST
+
+--- (a) test_verify_module_dispatch.py ---
+......                                                                   [100%]
+
+--- (b) test_e2e_citizen_taxreturn_chain.py::test_happy_chain_verify_lookup_submit ---
+.                                                                        [100%]
+
+--- (c) 5 Epic ε families exist in PublishedTier ---
+PublishedTier matches: 5 (expected 5)
+
+--- (d) 11-arm AuthContext discriminated union ---
+AuthContext arms: 11 (expected 11) — re-verified via Python regex
+
+--- (e) manifest SHA matches file ---
+file:     753ce060de7ef9e849cf74a4e21daa144eaa2fe9257bade0e837c5c1133a507b
+manifest: 753ce060de7ef9e849cf74a4e21daa144eaa2fe9257bade0e837c5c1133a507b
+MATCH ✓

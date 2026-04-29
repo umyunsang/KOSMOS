@@ -1,19 +1,33 @@
 # SPDX-License-Identifier: Apache-2.0
-"""LLM-visible core tool definitions for the MVP two-tool surface — T028.
+"""LLM-visible core tool definitions for the MVP five-tool surface.
 
-Defines ``GovAPITool`` registrations for ``resolve_location`` and ``lookup``.
-Both tools carry ``is_core=True`` so they appear in the core prompt partition
-and are exported via ``registry.export_core_tools_openai()``.
+Defines ``GovAPITool`` registrations for the 5 callable primitives:
+``resolve_location`` + ``lookup`` + ``verify`` + ``submit`` + ``subscribe``.
+All carry ``is_core=True`` so they appear in the core prompt partition and are
+exported via ``registry.export_core_tools_openai()``.
 
-FR-001: The LLM sees exactly two tools: resolve_location and lookup.
-SC-003: All adapter details are hidden; the LLM only interacts with this surface.
+Original Spec 022 / Spec 1634 (T028) shipped 2 tools (resolve_location + lookup).
+Epic η #2298 (Initiative #2290) extended the LLM-visible surface with the 3
+remaining primitives (verify / submit / subscribe) so the citizen-OPAQUE chain
+(verify → lookup → submit) the system prompt teaches is actually callable.
+
+For ``verify``, the input_schema declares ``family_hint: str`` permissively —
+the system prompt's ``<verify_families>`` table is the source of valid family
+values (10 active families per Epic ε #2296). The dispatcher's
+``_VERIFY_ADAPTERS`` registry validates the value at call time and returns
+``VerifyMismatchError`` if a non-registered family is passed (FR-007 / FR-010
+of Spec 031). This is the same pattern lookup uses — permissive ``tool_id: str``
+where the prompt + BM25 search hint tells the LLM what's valid.
+
+FR-001 (Epic η updated): The LLM sees exactly five tools: resolve_location,
+lookup, verify, submit, subscribe.
 """
 
 from __future__ import annotations
 
 from datetime import UTC, datetime
 
-from pydantic import RootModel
+from pydantic import BaseModel, ConfigDict, Field, RootModel
 
 from kosmos.tools.models import (
     AdapterRealDomainPolicy,
@@ -153,13 +167,278 @@ LOOKUP_SEARCH_TOOL = GovAPITool(
 # ---------------------------------------------------------------------------
 
 
-def register_mvp_surface(registry: object) -> None:
-    """Register the MVP LLM-visible core tools (resolve_location + lookup).
+# ---------------------------------------------------------------------------
+# Epic η #2298 — verify / submit / subscribe primitive surfaces
+# ---------------------------------------------------------------------------
+# These three primitives were previously registered into per-primitive sub-
+# registries only (Spec 031 + Spec 2296) and were NOT visible to the LLM via
+# the OpenAI tool_calls schema. The system prompt teaches the citizen-OPAQUE
+# verify→lookup→submit chain pattern, but the LLM cannot follow it without
+# these tools also appearing in `registry.export_core_tools_openai()`.
+# Epic η registers them here as core tools to close the gap.
 
-    These tools are NOT bound to executor adapters because their invocation
-    is handled directly by the KOSMOS orchestrator loop, not via
-    ToolExecutor.invoke(). Registration here ensures they appear in
-    registry.core_tools() and registry.export_core_tools_openai().
+
+class _SubmitInputForLLM(BaseModel):
+    """LLM-visible submit input schema — `{tool_id, params}` envelope.
+
+    Mirrors :class:`kosmos.primitives.submit.SubmitInput` but lives here so the
+    OpenAI tool_calls schema published to FriendliAI for the ``submit`` tool
+    is the submit envelope, NOT the lookup mode-discriminated union. (Codex
+    P1 #2 on PR #2480 caught the original copy-paste bug where SUBMIT_TOOL
+    was declared with ``input_schema=_LookupInput``.)
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    tool_id: str = Field(
+        min_length=1,
+        max_length=128,
+        pattern=r"^[a-z][a-z0-9_]*$",
+        description=(
+            "Registered submit adapter id (e.g. mock_submit_module_hometax_"
+            "taxreturn). MUST match a tool_id from the system prompt's "
+            "<verify_chain_pattern> 기본 매핑 section."
+        ),
+    )
+    params: dict[str, object] = Field(
+        default_factory=dict,
+        description=(
+            "Adapter-defined payload. MUST include 'delegation_context' "
+            "(the value returned by the prior verify call) plus any adapter-"
+            "specific filing fields. Adapter validates against its own "
+            "Pydantic model at invocation time."
+        ),
+    )
+
+
+class _SubscribeInputForLLM(BaseModel):
+    """LLM-visible subscribe input schema — `{tool_id, params, lifetime_seconds}`.
+
+    Mirrors :class:`kosmos.primitives.subscribe.SubscribeInput`. lifetime_seconds
+    enforces the FR-011 365-day ceiling.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    tool_id: str = Field(
+        min_length=1,
+        max_length=128,
+        pattern=r"^[a-z][a-z0-9_]*$",
+        description="Registered subscribe adapter tool_id (CBS / REST-pull / RSS).",
+    )
+    params: dict[str, object] = Field(
+        default_factory=dict,
+        description=(
+            "Modality-specific subscription parameters (region filter for CBS, "
+            "polling_interval for REST-pull, rss_feed_url for RSS)."
+        ),
+    )
+    lifetime_seconds: int = Field(
+        ge=1,
+        le=31_536_000,
+        description="Bounded lifetime; ceiling 365 days (FR-011 of Spec 031).",
+    )
+
+
+class _VerifyInputForLLM(BaseModel):
+    """LLM-visible verify input schema with permissive ``family_hint: str``.
+
+    The internal :class:`kosmos.primitives.verify.VerifyInput` uses a 6-arm
+    ``FamilyHint`` Literal (deferred to Epic ζ #2297 for full 11-arm expansion).
+    For LLM exposure we use plain ``str`` so the OpenAI schema published to
+    FriendliAI does not lock the LLM out of the 5 Epic ε families
+    (simple_auth_module, modid, kec, geumyung_module, any_id_sso). The system
+    prompt's ``<verify_families>`` table is the source of valid values; the
+    dispatcher's ``_VERIFY_ADAPTERS`` registry rejects unknown families with
+    ``VerifyMismatchError``.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    family_hint: str = Field(
+        min_length=1,
+        max_length=64,
+        description=(
+            "Authentication family identifier. One of the 10 active values "
+            "documented in the system prompt's <verify_families> table: "
+            "gongdong_injeungseo / geumyung_injeungseo / ganpyeon_injeung / "
+            "mobile_id / mydata / simple_auth_module / modid / kec / "
+            "geumyung_module / any_id_sso. The dispatcher returns "
+            "VerifyMismatchError for unknown values."
+        ),
+    )
+    session_context: dict[str, object] = Field(
+        default_factory=dict,
+        description=(
+            "Adapter-specific session evidence. For Mock-mode chains the LLM "
+            "passes scope_list (list[str] of '<verb>:<adapter_family>.<action>' "
+            "scopes), purpose_ko, purpose_en. The verify mock issues a "
+            "DelegationContext (or IdentityAssertion for any_id_sso) bound to "
+            "the citizen session."
+        ),
+    )
+
+
+VERIFY_TOOL = GovAPITool(
+    id="verify",
+    name_ko="인증 및 위임",
+    ministry="KOSMOS",
+    category=["인증", "위임토큰", "primitive"],
+    endpoint="internal://verify",
+    # api_key auth type required for citizen_facing_gate=login (AAL2) per V6
+    # invariant — the delegation ceremony establishes session-bound credentials.
+    auth_type="api_key",
+    input_schema=_VerifyInputForLLM,
+    output_schema=_LookupOutput,  # opaque envelope wrapper (RootModel[object])
+    llm_description=(
+        "Authentication-ceremony primitive that issues a scope-bound "
+        "DelegationContext (or IdentityAssertion for any_id_sso). Call this "
+        "FIRST when the citizen requests any OPAQUE-domain submit-class action "
+        "(홈택스 신고 / 정부24 민원 / 마이데이터 액션). Pass the scope_list "
+        "covering ALL downstream lookup + submit calls in a single verify "
+        "invocation. The returned DelegationContext is then passed as a "
+        "param into the subsequent lookup(mode='fetch', params={'delegation_"
+        "context': ctx}) and submit(delegation_context=ctx) calls.\n\n"
+        "family_hint values + canonical AAL hints are documented in the "
+        "system prompt's <verify_families> table. The LLM defaults to the "
+        "lowest AAL satisfying the citizen's stated purpose.\n\n"
+        "Exception: family_hint='any_id_sso' returns an IdentityAssertion "
+        "with no DelegationToken — do NOT chain a submit after this verify."
+    ),
+    search_hint=(
+        "인증 위임 토큰 verify 모바일ID 공동인증서 금융인증서 간편인증 "
+        "마이데이터 KEC SSO delegation token authentication ceremony"
+    ),
+    policy=AdapterRealDomainPolicy(
+        real_classification_url="https://www.data.go.kr/policy/privacyPolicy.do",
+        real_classification_text=(
+            "공공데이터포털 개인정보처리방침 (KOSMOS 내부 verify primitive — "
+            "각 family adapter 가 기관 자체 정책 citation; KOSMOS 권한 발명 X)"
+        ),
+        citizen_facing_gate="login",
+        last_verified=datetime(2026, 4, 30, tzinfo=UTC),
+    ),
+    is_concurrency_safe=False,  # ceremony establishes session-bound state
+    cache_ttl_seconds=0,
+    rate_limit_per_minute=30,
+    is_core=True,
+    primitive="verify",
+    trigger_examples=[
+        "내 종합소득세 신고해줘",
+        "정부24 민원 하나 신청해줘",
+        "사업자 등록증 발급해줘",
+    ],
+)
+
+
+SUBMIT_TOOL = GovAPITool(
+    id="submit",
+    name_ko="행정 모듈 제출",
+    ministry="KOSMOS",
+    category=["제출", "신고", "primitive"],
+    endpoint="internal://submit",
+    # api_key auth type required for citizen_facing_gate=submit (AAL3) per V6.
+    auth_type="api_key",
+    input_schema=_SubmitInputForLLM,
+    output_schema=_LookupOutput,
+    llm_description=(
+        "Submit primitive — invokes a write-transaction adapter (홈택스 신고, "
+        "정부24 민원, mydata 액션 등). REQUIRES a valid DelegationContext "
+        "from a prior verify call with matching scope. tool_id MUST be one of "
+        "the registered submit adapters (e.g. mock_submit_module_hometax_"
+        "taxreturn). params MUST include 'delegation_context' (the value "
+        "returned by verify) and the adapter-specific payload.\n\n"
+        "On success: returns transaction_id (deterministic URN) + adapter_"
+        "receipt with the agency's 접수번호 (e.g. 'hometax-2026-MM-DD-RX-XXXXX'). "
+        "Cite the receipt in the citizen-facing Korean response.\n\n"
+        "Failure modes: scope_violation / expired / session_violation / "
+        "revoked / DelegationGrantMissing (after any_id_sso verify). Each "
+        "failure surfaces a typed error; do NOT silently retry."
+    ),
+    search_hint=(
+        "제출 신고 민원 홈택스 정부24 마이데이터 submit transaction receipt "
+        "delegation hometax 접수번호 minwon application filing"
+    ),
+    policy=AdapterRealDomainPolicy(
+        real_classification_url="https://www.data.go.kr/policy/privacyPolicy.do",
+        real_classification_text=(
+            "공공데이터포털 개인정보처리방침 (KOSMOS 내부 submit primitive — "
+            "각 adapter 가 기관 자체 정책 citation; KOSMOS 권한 발명 X)"
+        ),
+        citizen_facing_gate="submit",
+        last_verified=datetime(2026, 4, 30, tzinfo=UTC),
+    ),
+    is_concurrency_safe=False,
+    cache_ttl_seconds=0,
+    rate_limit_per_minute=30,
+    is_core=True,
+    primitive="submit",
+    trigger_examples=[
+        "신고 제출",
+        "민원 신청 마무리",
+    ],
+)
+
+
+SUBSCRIBE_TOOL = GovAPITool(
+    id="subscribe",
+    name_ko="실시간 구독",
+    ministry="KOSMOS",
+    category=["구독", "스트리밍", "primitive"],
+    endpoint="internal://subscribe",
+    auth_type="public",
+    input_schema=_SubscribeInputForLLM,
+    output_schema=_LookupOutput,
+    llm_description=(
+        "Subscribe primitive — bounded-lifetime streaming subscription to a "
+        "data source. tool_id is the registered subscribe adapter (CBS broadcast "
+        "/ REST-pull / RSS 2.0 feeds). params include the modality-specific "
+        "configuration (region filter for CBS, polling_interval for REST-pull, "
+        "rss_feed_url for RSS). lifetime_seconds MUST be ≤ 31_536_000 (365 day "
+        "ceiling, FR-011).\n\n"
+        "Returns an event stream until the lifetime expires. Each event carries "
+        "a kind discriminator (cbs_broadcast / rest_pull / rss). Use this for "
+        "citizen-facing alerts (e.g. disaster broadcasts, government RSS notices) "
+        "where the citizen wants ongoing updates rather than a one-shot lookup."
+    ),
+    search_hint=(
+        "구독 실시간 알림 재해 방송 RSS 정부 공지 subscribe stream notification "
+        "CBS broadcast disaster alert feed"
+    ),
+    policy=AdapterRealDomainPolicy(
+        real_classification_url="https://www.data.go.kr/policy/privacyPolicy.do",
+        real_classification_text=(
+            "공공데이터포털 개인정보처리방침 (KOSMOS 내부 subscribe primitive — "
+            "각 source adapter 가 기관 자체 정책 citation)"
+        ),
+        citizen_facing_gate="read-only",
+        last_verified=datetime(2026, 4, 30, tzinfo=UTC),
+    ),
+    is_concurrency_safe=True,
+    cache_ttl_seconds=0,
+    rate_limit_per_minute=10,
+    is_core=True,
+    primitive="subscribe",
+    trigger_examples=[
+        "재해 방송 구독",
+        "정부 공지 알림",
+    ],
+)
+
+
+def register_mvp_surface(registry: object) -> None:
+    """Register the MVP LLM-visible core tools — 5-primitive surface.
+
+    Spec 022 / Spec 1634 shipped resolve_location + lookup. Epic η #2298 added
+    verify, submit, subscribe so the citizen-OPAQUE chain the system prompt
+    teaches is actually callable from the OpenAI tool_calls schema sent to the
+    LLM.
+
+    These tools are NOT bound to executor adapters — their invocation is
+    handled directly by the KOSMOS orchestrator loop (or its primitive sub-
+    dispatcher), not via ``ToolExecutor.invoke()``. Registration here ensures
+    they appear in ``registry.core_tools()`` and
+    ``registry.export_core_tools_openai()``.
 
     Args:
         registry: A ToolRegistry instance.
@@ -170,3 +449,6 @@ def register_mvp_surface(registry: object) -> None:
 
     registry.register(RESOLVE_LOCATION_TOOL)
     registry.register(LOOKUP_SEARCH_TOOL)
+    registry.register(VERIFY_TOOL)
+    registry.register(SUBMIT_TOOL)
+    registry.register(SUBSCRIBE_TOOL)

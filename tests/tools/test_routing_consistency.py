@@ -202,6 +202,13 @@ class TestCheck7ToolListClosure:
             # with the six transparency fields stamped.
             "mock_lookup_module_hometax_simplified",
             "mock_lookup_module_gov24_certificate",
+            # Epic η #2298 FR-021 — primitive surfaces registered via
+            # mvp_surface.py so the LLM sees them in
+            # registry.export_core_tools_openai(). Required for the
+            # citizen-OPAQUE chain (verify→lookup→submit) to be emittable.
+            "verify",
+            "submit",
+            "subscribe",
         }
     )
 
