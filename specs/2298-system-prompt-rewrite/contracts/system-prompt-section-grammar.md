@@ -32,7 +32,7 @@ Validation:
 
 - `grep -cE '^<(role|core_rules|tool_usage|output_style)>$' prompts/system_v1.md` → `4`
 - `grep -cE '^</(role|core_rules|tool_usage|output_style)>$' prompts/system_v1.md` → `4`
-- `python -c "from xml.etree import ElementTree as ET; ET.fromstring('<root>' + open('prompts/system_v1.md').read() + '</root>')"` exits 0
+- Each of the 4 nested tags (`<primitives>` / `<verify_families>` / `<verify_chain_pattern>` / `<scope_grammar>`) MUST have exactly 1 opening and 1 closing form on column-1 — verified by `lint-prompt.sh check 2`. (NOTE: strict XML well-formedness via ElementTree is intentionally NOT used, because the verbatim FR-010 injection-guard sentence contains the literal text `\`<citizen_request>\`` which ET parses as an unclosed tag. The balanced-tag check is the load-bearing structural invariant; XML parsing was over-specification in the original spec draft and would force a verbatim-sentence rewrite that violates FR-010.)
 
 The order is fixed: `<role>` → `<core_rules>` → `<tool_usage>` → `<output_style>`. Reordering is a Spec 2152 violation.
 

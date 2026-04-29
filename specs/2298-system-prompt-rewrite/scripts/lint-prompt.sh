@@ -21,16 +21,25 @@ else
     fail 1 "top-level tag count" "expected 4 open + 4 close, got open=$OPEN_COUNT close=$CLOSE_COUNT"
 fi
 
-# Check 2: XML well-formedness via Python ET
-if python3 -c "
-from xml.etree import ElementTree as ET
-import sys
-content = open(sys.argv[1], encoding='utf-8').read()
-ET.fromstring('<root>' + content + '</root>')
-" "$FILE" 2>/dev/null; then
-    ok 2 "XML well-formedness"
+# Check 2: Nested tag balance inside <tool_usage> (FR-009 nested-tag invariant)
+# NOTE: Strict XML well-formedness via ElementTree is incompatible with FR-010 —
+# the verbatim injection-guard sentence contains the literal text "<citizen_request>"
+# inside Markdown backticks, which ET sees as an unclosed tag. Top-level tag balance
+# is already covered by check 1; this check enforces the 4 nested tags are paired.
+NESTED_OK=1
+NESTED_DETAILS=""
+for TAG in primitives verify_families verify_chain_pattern scope_grammar; do
+    OPEN=$(grep -cF "<${TAG}>" "$FILE" 2>/dev/null || true)
+    CLOSE=$(grep -cF "</${TAG}>" "$FILE" 2>/dev/null || true)
+    if [ "$OPEN" -ne "$CLOSE" ] || [ "$OPEN" -ne 1 ]; then
+        NESTED_OK=0
+        NESTED_DETAILS="${NESTED_DETAILS}<${TAG}>(open=${OPEN},close=${CLOSE}) "
+    fi
+done
+if [ "$NESTED_OK" -eq 1 ]; then
+    ok 2 "nested tag balance (4 tags × 1 open + 1 close)"
 else
-    fail 2 "XML well-formedness" "python3 ElementTree parse error"
+    fail 2 "nested tag balance" "imbalanced: ${NESTED_DETAILS}"
 fi
 
 # Check 3a: Verbatim citizen_request injection-guard sentence

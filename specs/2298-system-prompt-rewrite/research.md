@@ -165,7 +165,7 @@ Per `/speckit-plan` Outline step 2 ("Validate Deferred Items"), every item in sp
 | Zero new dependencies | `git diff main..HEAD -- pyproject.toml tui/package.json` produces no `+` lines | Will be verified in Phase 6 (PR finalization). |
 | XML well-formedness preserved | `python -c "from xml.etree import ElementTree as ET; ET.fromstring('<root>' + open('prompts/system_v1.md').read() + '</root>')"` exits 0 | Current pre-rewrite file passes; rewrite must keep passing. |
 | TUI no-change | `git diff main..HEAD -- tui/src/` produces 0 lines | Will be verified in Phase 6. |
-| Spec 026 boot guard active | `uv run python -c "from kosmos.context.prompt_loader import PromptLoader; PromptLoader.from_manifest('prompts/manifest.yaml')"` exits 0 | Will be verified in Phase 5 (smoke). |
+| Spec 026 boot guard active | `uv run python -c "from pathlib import Path; from kosmos.context.prompt_loader import PromptLoader; PromptLoader(manifest_path=Path('prompts/manifest.yaml'))"` exits 0 | Will be verified in Phase 5 (smoke). |
 
 ---
 

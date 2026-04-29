@@ -139,8 +139,8 @@ test "$(yq '.entries[] | select(.prompt_id == "system_v1") | .sha256' prompts/ma
 Verify boot validation passes:
 
 ```bash
-uv run python -c "from kosmos.context.prompt_loader import PromptLoader; PromptLoader.from_manifest('prompts/manifest.yaml'); print('OK')"
-# Expected: OK (no PromptManifestIntegrityError)
+uv run python -c "from pathlib import Path; from kosmos.context.prompt_loader import PromptLoader; PromptLoader(manifest_path=Path('prompts/manifest.yaml')); print('OK')"
+# Expected: OK (no PromptRegistryError)
 ```
 
 ---
@@ -266,7 +266,7 @@ Rewrites prompts/system_v1.md to teach the LLM the 4 reserved primitives + 10 ac
 - ✅ uv run pytest tests/integration/test_e2e_citizen_taxreturn_chain.py -q
 - ✅ Layer 2 PTY smoke: specs/2298-system-prompt-rewrite/smoke-citizen-taxreturn-pty.txt (CHECKPOINTreceipt token observed × 1)
 - ✅ Layer 4 vhs smoke: specs/2298-system-prompt-rewrite/smoke-citizen-taxreturn-keyframe-{1,2,3}.png + .gif (Lead Opus Read-tool verified)
-- ✅ Spec 026 boot fail-closed: PromptLoader.from_manifest() exits 0
+- ✅ Spec 026 boot fail-closed: PromptLoader(manifest_path=...) exits 0
 - ✅ shadow-eval workflow: pending CI
 
 Closes #2298
@@ -283,7 +283,7 @@ gh pr checks --watch --interval 10
 
 | Pitfall | Symptom | Fix |
 |---|---|---|
-| Forgot to recompute manifest SHA | `PromptManifestIntegrityError: digest mismatch` at boot | Re-run Step 3 |
+| Forgot to recompute manifest SHA | `PromptRegistryError: digest mismatch` at boot | Re-run Step 3 |
 | Authored 11-row family table including `digital_onepass` | `lint-prompt.sh` exits 1 on FR-002 negative invariant | Remove the `digital_onepass` row |
 | `<verify_chain_pattern>` chain example uses non-existing tool_id | LLM emits the wrong tool_id → IPC `unknown_tool_id` error | Use `mock_lookup_module_hometax_simplified` and `mock_submit_module_hometax_taxreturn` exactly (verify via `grep -r mock_lookup_module_hometax_simplified src/kosmos/tools/`) |
 | vhs Sleep too short | Keyframe 3 shows spinner | Extend Sleep at line "Sleep 12s" to 18s |
