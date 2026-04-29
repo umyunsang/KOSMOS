@@ -113,6 +113,7 @@ def register_all_tools(registry: ToolRegistry, executor: ToolExecutor) -> Routin
 
     # Register MVP LLM-visible core surface first (FR-001, SC-003)
     register_mvp_surface(registry)
+    import kosmos.tools.mock  # noqa: F401 — registers all mock surfaces in production
 
     reg_koroad(registry, executor)
     reg_koroad_hazard(registry, executor)
