@@ -41,12 +41,9 @@ def test_fixture_loads_and_satisfies_invariants(fixture_path: Path) -> None:
         assert fixture.expected_family_hint is not None, (
             f"{fixture_path.name}: verify call requires expected_family_hint to be non-None"
         )
-        assert (
-            fixture.expected_family_hint
-            == fixture.expected_first_tool_call.arguments.get("family_hint")
-        ), (
-            f"{fixture_path.name}: expected_family_hint must match arguments['family_hint']"
-        )
+        assert fixture.expected_family_hint == fixture.expected_first_tool_call.arguments.get(
+            "family_hint"
+        ), f"{fixture_path.name}: expected_family_hint must match arguments['family_hint']"
         assert fixture.expected_family_hint in _ACTIVE_FAMILIES, (
             f"{fixture_path.name}: expected_family_hint '{fixture.expected_family_hint}' "
             f"not in _ACTIVE_FAMILIES"
@@ -65,6 +62,5 @@ def test_fixture_count_matches_epic_target() -> None:
     """
     json_files = sorted(p for p in _FIXTURE_DIR.iterdir() if p.is_file() and p.suffix == ".json")
     assert len(json_files) == 5, (
-        f"Expected 5 new fixtures (FR-015), found {len(json_files)}: "
-        f"{[p.name for p in json_files]}"
+        f"Expected 5 new fixtures (FR-015), found {len(json_files)}: {[p.name for p in json_files]}"
     )
