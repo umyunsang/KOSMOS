@@ -153,7 +153,7 @@ Sonnet teammate budget per group: ≤ 5 tasks AND ≤ 10 files. Verified per gro
 
 **Dispatch**: Lead solo. Cannot be a Sonnet teammate (PTY interaction + capture is Lead's responsibility per `feedback_dispatch_unit_is_task_group`).
 
-- [ ] T024 [US1] Run T009's expect script: `expect specs/2294-5-primitive-align/scripts/smoke-emergency-lookup.expect > specs/2294-5-primitive-align/smoke-emergency-lookup-pty.txt`. Verify the captured log contains all 5 ordered grep markers from `quickstart.md § 5`. Commit both the script and the captured log on the same WIP commit. If the smoke fails, do NOT proceed — investigate root cause, fix, re-capture.
+- [X] T024 [US1] Run T009's expect script: `expect specs/2294-5-primitive-align/scripts/smoke-emergency-lookup.expect > specs/2294-5-primitive-align/smoke-emergency-lookup-pty.txt`. Verify the captured log contains all 5 ordered grep markers from `quickstart.md § 5`. Commit both the script and the captured log on the same WIP commit. If the smoke fails, do NOT proceed — investigate root cause, fix, re-capture.
 
 **Checkpoint**: PTY transcript committed; merge gate satisfied.
 
