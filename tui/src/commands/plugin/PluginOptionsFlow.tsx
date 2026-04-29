@@ -10,10 +10,19 @@
 import * as React from 'react';
 import type { LoadedPlugin } from '../../types/plugin.js';
 import { errorMessage } from '../../utils/errors.js';
-import { loadMcpServerUserConfig, saveMcpServerUserConfig } from '../../utils/plugins/mcpbHandler.js';
 import { getUnconfiguredChannels, type UnconfiguredChannel } from '../../utils/plugins/mcpPluginIntegration.js';
 import { loadAllPlugins } from '../../utils/plugins/pluginLoader.js';
 import { getUnconfiguredOptions, loadPluginOptions, type PluginOptionSchema, type PluginOptionValues, savePluginOptions } from '../../utils/plugins/pluginOptionsStorage.js';
+// KOSMOS Spec 1633 / Epic #2293 — utils/plugins/mcpbHandler deleted (Anthropic
+// .mcpb bundle format). Per-channel user-config now persists through the same
+// pluginOptionsStorage path as top-level options, with a `${pluginId}::channel::${server}`
+// composite key so channel values survive across runs and `${user_config.*}`
+// substitutions resolve correctly (Codex P2 / FR-010 follow-up).
+const channelOptionsKey = (pluginId: string, server: string): string => `${pluginId}::channel::${server}`;
+const loadMcpServerUserConfig = (pluginId: string, server: string): PluginOptionValues | null =>
+  loadPluginOptions(channelOptionsKey(pluginId, server));
+const saveMcpServerUserConfig = (pluginId: string, server: string, values: PluginOptionValues, schema: PluginOptionSchema): void =>
+  savePluginOptions(channelOptionsKey(pluginId, server), values, schema);
 import { PluginOptionsDialog } from './PluginOptionsDialog.js';
 
 /**

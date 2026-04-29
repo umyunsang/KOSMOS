@@ -6,8 +6,10 @@
  * while keeping the side question response separate from main conversation.
  */
 
-import { formatAPIError } from '../services/api/errorUtils.js'
-import type { NonNullableUsage } from '../services/api/logging.js'
+// services/api/errorUtils + logging removed (Spec 2293 cleanup); inline stubs below.
+const formatAPIError = (err: unknown): string =>
+  err instanceof Error ? err.message : String(err)
+type NonNullableUsage = import('src/entrypoints/sdk/sdkUtilityTypes.js').NonNullableUsage
 import type { Message, SystemAPIErrorMessage } from '../types/message.js'
 import { type CacheSafeParams, runForkedAgent } from './forkedAgent.js'
 import { createUserMessage, extractTextContent } from './messages.js'

@@ -79,9 +79,52 @@ Small fixes (typos, one-line bugs, docs-only) skip the cycle.
 
 ## Agent Teams
 
-- Lead (Opus): planning, spec authoring, code review, synthesis.
-- Teammates (Sonnet): implementation, tests, refactoring — spawned at `/speckit-implement`.
-- 3+ independent tasks → parallel Agent Teams. 1-2 tasks → Lead solo.
+The unit hierarchy is two-layer parallelism:
+
+```
+Initiative
+├─ Epic α  →  Lead Opus α  +  Sonnet team α (sonnet-A1, A2, A3, ...)
+├─ Epic β  →  Lead Opus β  +  Sonnet team β (sonnet-B1, B2, B3, ...)
+├─ Epic δ  →  Lead Opus δ  +  Sonnet team δ (sonnet-D1, D2, D3, ...)
+└─ ...
+```
+
+### Layer 1 — Epic-level parallelism (Lead Opus per Epic)
+
+Each Epic is owned by exactly **one Lead (Opus)** for its full lifecycle: spec authoring, planning, dispatch-tree design, code review of teammate output, commit / push / PR / CI monitoring / Codex P1 handling, merge.
+
+Multiple Epics with no dependency may run in parallel — that means **multiple Lead Opus agents** running concurrently in **separate sessions or worktrees**, NOT one Lead serializing through several Epics. "1 Lead Opus = N Epics" is forbidden — it exhausts the Lead's context just like the teammate-level mistake (verified by Initiative #2290 Epic β/δ failures, 2026-04-29, where one Lead drove both Epics' spec cycles back-to-back).
+
+### Layer 2 — Task-level parallelism inside an Epic (Sonnet teammates)
+
+Inside each Epic, Lead spawns **Sonnet teammates** at `/speckit-implement`. Teammate responsibility is **implementation only**: code edits + tests + WIP commit + tasks.md `[X]` marking. Sonnet does NOT do `git push` / `gh pr create` / `gh pr checks --watch` / Codex reply — those stay with Lead (sequential, after all teammates complete).
+
+3+ independent tasks → parallel Sonnet teammates. 1-2 tasks → Lead solo.
+
+### Dispatch unit (NON-NEGOTIABLE)
+
+**The dispatch unit per Sonnet teammate is a task or task-group from `tasks.md`, NEVER an entire Epic.** A single Sonnet teammate gets ≤ 5 tasks AND ≤ 10 file changes. Anything larger MUST be subdivided. "1 Epic = 1 Sonnet teammate" is forbidden for the same context-exhaustion reason as the Lead rule above.
+
+Lead reads `tasks.md` `[P]` markers — every `[P]` task or `[P]` task-group is an immediate parallel-dispatch candidate. User Story phases (US1 / US2 / US3) are independent by spec-kit definition → **separate** Sonnet teammates.
+
+Sonnet teammate prompt MUST be ≤ 30 lines. Long instructions must reference `specs/<feature>/quickstart.md` or `research.md` rather than inlining.
+
+### Dispatch tree (Lead draws explicitly before any Agent call)
+
+For each `/speckit-implement`, Lead writes a dispatch tree mapping Task IDs → Sonnet teammates. Example:
+
+```text
+Phase 1 Setup (T001-T002): Lead solo
+Phase 2 Foundational (T003-T005): sonnet-foundational
+Phase 3 US1 (T006-T009): sonnet-us1            ┐
+Phase 4 US2 (T010-T012): sonnet-us2            ├─ parallel
+Phase 5 US3 (T013-T015): sonnet-us3            ┘
+Phase 6 Polish (T016-T020): Lead solo
+```
+
+The tree is committed to `specs/<feature>/dispatch-tree.md` so any handoff session can reproduce both layers of parallelism.
+
+### Role mapping
 
 | Role | Agent | Model |
 |------|-------|-------|
@@ -124,8 +167,20 @@ Concrete metadata schema, transparency fields, mock fidelity grades, citation en
 ## Testing
 `uv run pytest` before every commit. Live-API tests marked `@pytest.mark.live`, skipped by default. Full guide: `docs/testing.md`.
 
-## TUI verification (LLM-readable smoke)
-"작동 확인" / "정상 동작" / "검증" requests on TUI changes MUST run interactively under PTY — never code-grep alone (memory `feedback_runtime_verification`). Use a layered approach: (1) **stdio JSONL probe** bypasses the TUI for backend baseline, (2) **expect/script/asciinema** captures the full pty session as a text log LLMs can grep (memory `feedback_vhs_tui_smoke`), (3) **vhs `.tape`** produces the gif/mp4 for human visual review only (binary, not LLM-readable). Mismatches between layers identify which layer regressed. Full methodology + recipes: [`docs/testing.md § TUI verification methodology`](./docs/testing.md#tui-verification-methodology).
+## TUI verification (LLM-readable smoke) — **PR mandatory**
+
+**Hard rule**: Any PR that modifies `tui/src/**` MUST capture an interactive PTY scenario (slash command + input + Ctrl-C exit) and commit the artefacts under `specs/<feature>/` BEFORE pushing. `bun typecheck` (KOSMOS narrows to `src/stubs/**` only) + `bun test` (REPL.tsx dynamic imports unchecked) + boot-only smoke all fail to catch stale-import regressions and dead JSX paths. Skipping interactive verification is the #1 source of post-merge TUI breakage. Memory: `feedback_pr_pre_merge_interactive_test`.
+
+Layered verification chain (all layers required for TUI-changing PRs):
+
+1. **Layer 0 — typecheck + bun test**: necessary but not sufficient.
+2. **Layer 1 — stdio JSONL probe**: bypasses the TUI for backend baseline.
+3. **Layer 2 — interactive PTY scenario** (mandatory): `expect` / `asciinema` / `script` capture the full pty session running real slash commands, real input, and real exit flow. Output goes to `specs/<feature>/smoke-<scenario>-pty.txt` (LLM-grep-friendly text log; memory `feedback_vhs_tui_smoke`). Minimum scenario: spawn `bun run tui` → assert `KOSMOS` branding → send `/help\r` → sleep 6s → send `\003\003` → expect eof. Add scenarios when the change touches registry / permissions / REPL paths.
+4. **Layer 3 — vhs `.tape` (visual companion, optional)**: produces `.gif` for human visual review only (binary, not LLM-readable). Single source-of-truth remains the Layer 2 text log.
+
+Mismatches between layers identify which layer regressed. PR description MUST cite the captured `specs/<feature>/scripts/smoke-*.expect` + `smoke-*-pty.txt`. Full methodology + recipes: [`docs/testing.md § TUI verification methodology`](./docs/testing.md#tui-verification-methodology).
+
+**Bypass**: PRs that do not touch `tui/src/**` (Python backend / spec docs / workflow only) are exempt — declare `TUI no-change` in the PR description.
 
 ## Do not touch
 `.specify/`, `.claude/skills/` (Spec Kit) · `LICENSE` (Apache-2.0, ADR required) · `docs/vision.md` layer names (ADR required) · `.env`, `secrets/` (never commit).

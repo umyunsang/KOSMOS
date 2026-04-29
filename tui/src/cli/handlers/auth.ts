@@ -7,8 +7,9 @@ import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
 } from '../../services/analytics/index.js'
-import { getSSLErrorHint } from '../../services/api/errorUtils.js'
-import { fetchAndStoreClaudeCodeFirstTokenDate } from '../../services/api/firstTokenDate.js'
+// services/api/errorUtils + firstTokenDate removed (Spec 2293 cleanup); inline stubs below.
+const getSSLErrorHint = (_err: unknown): string | null => null
+const fetchAndStoreClaudeCodeFirstTokenDate = async (): Promise<void> => { /* no-op in KOSMOS — FriendliAI auth, no Anthropic first-token-date */ }
 import {
   createAndStoreApiKey,
   fetchAndStoreUserRoles,

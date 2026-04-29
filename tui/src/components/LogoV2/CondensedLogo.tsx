@@ -1,6 +1,5 @@
 import { c as _c } from "react/compiler-runtime";
 import * as React from 'react';
-import { type ReactNode, useEffect } from 'react';
 import { useMainLoopModel } from '../../hooks/useMainLoopModel.js';
 import { useTerminalSize } from '../../hooks/useTerminalSize.js';
 import { stringWidth } from '../../ink/stringWidth.js';
@@ -14,10 +13,9 @@ import { renderModelSetting } from '../../utils/model/model.js';
 import { OffscreenFreeze } from '../OffscreenFreeze.js';
 import { AnimatedClawd } from './AnimatedClawd.js';
 import { Clawd } from './Clawd.js';
-import { GuestPassesUpsell, incrementGuestPassesSeenCount, useShowGuestPassesUpsell } from './GuestPassesUpsell.js';
-import { incrementOverageCreditUpsellSeenCount, OverageCreditUpsell, useShowOverageCreditUpsell } from './OverageCreditUpsell.js';
+// GuestPassesUpsell + OverageCreditUpsell removed — claude.ai SaaS billing dead in KOSMOS
 export function CondensedLogo() {
-  const $ = _c(29);
+  const $ = _c(17);
   const {
     columns
   } = useTerminalSize();
@@ -32,43 +30,6 @@ export function CondensedLogo() {
     agentName: agentNameFromSettings
   } = getLogoDisplayData();
   const agentName = agent ?? agentNameFromSettings;
-  const showGuestPassesUpsell = useShowGuestPassesUpsell();
-  const showOverageCreditUpsell = useShowOverageCreditUpsell();
-  let t0;
-  let t1;
-  if ($[0] !== showGuestPassesUpsell) {
-    t0 = () => {
-      if (showGuestPassesUpsell) {
-        incrementGuestPassesSeenCount();
-      }
-    };
-    t1 = [showGuestPassesUpsell];
-    $[0] = showGuestPassesUpsell;
-    $[1] = t0;
-    $[2] = t1;
-  } else {
-    t0 = $[1];
-    t1 = $[2];
-  }
-  useEffect(t0, t1);
-  let t2;
-  let t3;
-  if ($[3] !== showGuestPassesUpsell || $[4] !== showOverageCreditUpsell) {
-    t2 = () => {
-      if (showOverageCreditUpsell && !showGuestPassesUpsell) {
-        incrementOverageCreditUpsellSeenCount();
-      }
-    };
-    t3 = [showOverageCreditUpsell, showGuestPassesUpsell];
-    $[3] = showGuestPassesUpsell;
-    $[4] = showOverageCreditUpsell;
-    $[5] = t2;
-    $[6] = t3;
-  } else {
-    t2 = $[5];
-    t3 = $[6];
-  }
-  useEffect(t2, t3);
   const textWidth = Math.max(columns - 15, 20);
   const truncatedVersion = truncate(version, Math.max(textWidth - 13, 6));
   const effortSuffix = getEffortSuffix(model, effortValue);
@@ -80,75 +41,55 @@ export function CondensedLogo() {
   const cwdAvailableWidth = agentName ? textWidth - 1 - stringWidth(agentName) - 3 : textWidth;
   const truncatedCwd = truncatePath(cwd, Math.max(cwdAvailableWidth, 10));
   let t4;
-  if ($[7] === Symbol.for("react.memo_cache_sentinel")) {
+  if ($[0] === Symbol.for("react.memo_cache_sentinel")) {
     t4 = isFullscreenEnvEnabled() ? <AnimatedClawd /> : <Clawd />;
-    $[7] = t4;
+    $[0] = t4;
   } else {
-    t4 = $[7];
+    t4 = $[0];
   }
   let t5;
-  if ($[8] === Symbol.for("react.memo_cache_sentinel")) {
+  if ($[1] === Symbol.for("react.memo_cache_sentinel")) {
     t5 = <Text bold={true}>KOSMOS</Text>;
-    $[8] = t5;
+    $[1] = t5;
   } else {
-    t5 = $[8];
+    t5 = $[1];
   }
   let t6;
-  if ($[9] !== truncatedVersion) {
+  if ($[2] !== truncatedVersion) {
     t6 = <Text>{t5}{" "}<Text dimColor={true}>v{truncatedVersion}</Text></Text>;
-    $[9] = truncatedVersion;
-    $[10] = t6;
+    $[2] = truncatedVersion;
+    $[3] = t6;
   } else {
-    t6 = $[10];
+    t6 = $[3];
   }
   let t7;
-  if ($[11] !== shouldSplit || $[12] !== truncatedBilling || $[13] !== truncatedModel) {
+  if ($[4] !== shouldSplit || $[5] !== truncatedBilling || $[6] !== truncatedModel) {
     t7 = shouldSplit ? <><Text dimColor={true}>{truncatedModel}</Text><Text dimColor={true}>{truncatedBilling}</Text></> : <Text dimColor={true}>{truncatedModel} · {truncatedBilling}</Text>;
-    $[11] = shouldSplit;
-    $[12] = truncatedBilling;
-    $[13] = truncatedModel;
-    $[14] = t7;
+    $[4] = shouldSplit;
+    $[5] = truncatedBilling;
+    $[6] = truncatedModel;
+    $[7] = t7;
   } else {
-    t7 = $[14];
+    t7 = $[7];
   }
   const t8 = agentName ? `@${agentName} · ${truncatedCwd}` : truncatedCwd;
   let t9;
-  if ($[15] !== t8) {
+  if ($[8] !== t8) {
     t9 = <Text dimColor={true}>{t8}</Text>;
-    $[15] = t8;
-    $[16] = t9;
+    $[8] = t8;
+    $[9] = t9;
   } else {
-    t9 = $[16];
-  }
-  let t10;
-  if ($[17] !== showGuestPassesUpsell) {
-    t10 = showGuestPassesUpsell && <GuestPassesUpsell />;
-    $[17] = showGuestPassesUpsell;
-    $[18] = t10;
-  } else {
-    t10 = $[18];
-  }
-  let t11;
-  if ($[19] !== showGuestPassesUpsell || $[20] !== showOverageCreditUpsell || $[21] !== textWidth) {
-    t11 = !showGuestPassesUpsell && showOverageCreditUpsell && <OverageCreditUpsell maxWidth={textWidth} twoLine={true} />;
-    $[19] = showGuestPassesUpsell;
-    $[20] = showOverageCreditUpsell;
-    $[21] = textWidth;
-    $[22] = t11;
-  } else {
-    t11 = $[22];
+    t9 = $[9];
   }
   let t12;
-  if ($[23] !== t10 || $[24] !== t11 || $[25] !== t6 || $[26] !== t7 || $[27] !== t9) {
-    t12 = <OffscreenFreeze><Box flexDirection="row" gap={2} alignItems="center">{t4}<Box flexDirection="column">{t6}{t7}{t9}{t10}{t11}</Box></Box></OffscreenFreeze>;
-    $[23] = t10;
-    $[24] = t11;
-    $[25] = t6;
-    $[26] = t7;
-    $[27] = t9;
-    $[28] = t12;
+  if ($[10] !== t6 || $[11] !== t7 || $[12] !== t9) {
+    t12 = <OffscreenFreeze><Box flexDirection="row" gap={2} alignItems="center">{t4}<Box flexDirection="column">{t6}{t7}{t9}</Box></Box></OffscreenFreeze>;
+    $[10] = t6;
+    $[11] = t7;
+    $[12] = t9;
+    $[13] = t12;
   } else {
-    t12 = $[28];
+    t12 = $[13];
   }
   return t12;
 }

@@ -10,7 +10,7 @@ import { init } from './entrypoints/init.js';
 import { addToHistory } from './history.js';
 import type { Root } from './ink.js';
 import { launchRepl } from './replLauncher.js';
-import { type DownloadResult, downloadSessionFiles, type FilesApiConfig, parseFileSpecs } from './services/api/filesApi.js';
+// KOSMOS: services/api/filesApi deleted (Anthropic session API). File download via --file flag is unsupported.
 import { prefetchOfficialMcpUrls } from './services/mcp/officialRegistry.js';
 import type { McpSdkServerConfig, McpServerConfig, ScopedMcpServerConfig } from './services/mcp/types.js';
 import type { ToolInputJSONSchema } from './Tool.js';
@@ -27,7 +27,7 @@ import { applyConfigEnvironmentVariables } from './utils/managedEnv.js';
 import { createSystemMessage, createUserMessage } from './utils/messages.js';
 import { getPlatform } from './utils/platform.js';
 import { getBaseRenderOptions } from './utils/renderOptions.js';
-import { getSessionIngressAuthToken } from './utils/sessionIngressAuth.js';
+// KOSMOS: services/api/sessionIngress deleted. sessionIngressAuth stub kept for build compatibility.
 import { settingsChangeDetector } from './utils/settings/changeDetector.js';
 import { skillChangeDetector } from './utils/skills/skillChangeDetector.js';
 import { jsonParse, writeFileSync_DEPRECATED } from './utils/slowOperations.js';
@@ -626,8 +626,7 @@ async function run(): Promise<CommanderCommand> {
       seedEarlyInput(options.prefill);
     }
 
-    // Promise for file downloads - started early, awaited before REPL renders
-    let fileDownloadPromise: Promise<DownloadResult[]> | undefined;
+    // KOSMOS: filesApi deleted — file download via --file flag is unsupported.
     const agentsJson = options.agents;
     const agentCli = options.agent;
 
@@ -807,34 +806,7 @@ async function run(): Promise<CommanderCommand> {
       }
     }
 
-    // Download file resources if specified via --file flag
-    const fileSpecs = (options as {
-      file?: string[];
-    }).file;
-    if (fileSpecs && fileSpecs.length > 0) {
-      // Get session ingress token (provided by EnvManager via CLAUDE_CODE_SESSION_ACCESS_TOKEN)
-      const sessionToken = getSessionIngressAuthToken();
-      if (!sessionToken) {
-        process.stderr.write(chalk.red('Error: Session token required for file downloads. CLAUDE_CODE_SESSION_ACCESS_TOKEN must be set.\n'));
-        process.exit(1);
-      }
-
-      // Resolve session ID: prefer remote session ID, fall back to internal session ID
-      const fileSessionId = process.env.CLAUDE_CODE_REMOTE_SESSION_ID || getSessionId();
-      const files = parseFileSpecs(fileSpecs);
-      if (files.length > 0) {
-        // Use ANTHROPIC_BASE_URL if set (by EnvManager), otherwise use OAuth config
-        // This ensures consistency with session ingress API in all environments
-        const config: FilesApiConfig = {
-          baseUrl: process.env.ANTHROPIC_BASE_URL || 'https://api.anthropic.com',
-          oauthToken: sessionToken,
-          sessionId: fileSessionId
-        };
-
-        // Start download without blocking startup - await before REPL renders
-        fileDownloadPromise = downloadSessionFiles(files, config);
-      }
-    }
+    // KOSMOS: --file flag / session file download removed (Anthropic Files API dead code).
 
     // Get isNonInteractiveSession from state (was set before init())
     const isNonInteractiveSession = getIsNonInteractiveSession();
@@ -1970,41 +1942,18 @@ async function run(): Promise<CommanderCommand> {
         startDeferredPrefetches();
         void import('./utils/backgroundHousekeeping.js').then(m => m.startBackgroundHousekeeping());
       }
-          const {
-        runHeadless
-      } = await import('src/cli/print.js');
-          void runHeadless(inputPrompt, () => headlessStore.getState(), headlessStore.setState, commandsHeadless, tools, sdkMcpConfigs, agentDefinitions.activeAgents, {
-        continue: options.continue,
-        resume: options.resume,
-        verbose: verbose,
-        outputFormat: outputFormat,
-        jsonSchema,
-        permissionPromptToolName: options.permissionPromptTool,
-        allowedTools,
-        thinkingConfig,
-        maxTurns: options.maxTurns,
-        maxBudgetUsd: options.maxBudgetUsd,
-        taskBudget: options.taskBudget ? {
-          total: options.taskBudget
-        } : undefined,
-        systemPrompt,
-        appendSystemPrompt,
-        userSpecifiedModel: effectiveModel,
-        fallbackModel: userSpecifiedFallbackModel,
-        teleport,
-        sdkUrl,
-        replayUserMessages: effectiveReplayUserMessages,
-        includePartialMessages: effectiveIncludePartialMessages,
-        forkSession: options.forkSession || false,
-        resumeSessionAt: options.resumeSessionAt || undefined,
-        rewindFiles: options.rewindFiles,
-        enableAuthStatus: options.enableAuthStatus,
-        agent: agentCli,
-        workload: options.workload,
-        setupTrigger: setupTrigger ?? undefined,
-        sessionStartHooksPromise
-      });
-      return;
+      // KOSMOS Spec 1633 / Epic #2293 — cli/print.ts deleted (claude-code
+      // headless dispatcher with verifyApiKey/queryHaiku/queryWithModel).
+      // KOSMOS does not yet provide a `--print` / non-interactive headless
+      // pipeline (out of scope for this Epic; tracked as deferred follow-up).
+      // Emit an explicit error so scripted callers fail fast instead of
+      // exiting silently with no output.
+      console.error(
+        'KOSMOS: --print / non-interactive (headless) mode is not supported. ' +
+        'Use the interactive REPL (run without --print) or wait for a future ' +
+        'KOSMOS headless dispatcher (Spec 1633 follow-up).',
+      )
+      process.exit(2)
     }
 
 
@@ -2328,18 +2277,7 @@ async function run(): Promise<CommanderCommand> {
         }
       }
 
-      // Await file downloads before rendering REPL (files must be available)
-      if (fileDownloadPromise) {
-        try {
-          const results = await fileDownloadPromise;
-          const failedCount = count(results, r => !r.success);
-          if (failedCount > 0) {
-            process.stderr.write(chalk.yellow(`Warning: ${failedCount}/${results.length} file(s) failed to download.\n`));
-          }
-        } catch (error) {
-          return await exitWithError(root, `Error downloading files: ${errorMessage(error)}`);
-        }
-      }
+      // KOSMOS: fileDownloadPromise block removed (filesApi dead code).
 
       // If we have a processed resume or teleport messages, render the REPL
       const resumeData = processedResume ?? (Array.isArray(messages) ? {

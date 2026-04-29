@@ -7,7 +7,8 @@ import { Spinner } from '../components/Spinner.js';
 const getOauthConfig = (): { authorizationUrl: string; tokenUrl: string; clientId: string; scopes: readonly string[]; BASE_API_URL: string } => ({ authorizationUrl: '', tokenUrl: '', clientId: '', scopes: [] as readonly string[], BASE_API_URL: '' })
 import { useTimeout } from '../hooks/useTimeout.js';
 import { Box, Text } from '../ink.js';
-import { getSSLErrorHint } from '../services/api/errorUtils.js';
+// services/api/errorUtils removed (Spec 2293 cleanup); inline stub below.
+const getSSLErrorHint = (_err: unknown): string | null => null;
 import { getUserAgent } from './http.js';
 import { logError } from './log.js';
 export interface PreflightCheckResult {

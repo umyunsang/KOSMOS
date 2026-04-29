@@ -100,10 +100,49 @@ import {
   recordSuccess,
   shouldFallbackToPrompting,
 } from './denialTracking.js'
-import {
-  classifyYoloAction,
-  formatActionForClassifier,
-} from './yoloClassifier.js'
+// KOSMOS Spec 1633 / Epic #2293 — utils/permissions/yoloClassifier deleted
+// (Anthropic + growthbook-driven auto-mode classifier; KOSMOS routes auto-mode
+// through cli/handlers/autoMode no-op stub). The classifier API surface is
+// retained as inline stubs so the existing call sites compile; auto-mode
+// always returns `unavailable=true`, falling back to the standard prompt path.
+const formatActionForClassifier = (_toolName: string, _input: unknown): string => ''
+type YoloClassifierResult = {
+  unavailable: boolean
+  shouldBlock: boolean
+  errorDumpPath?: string
+  usage?: {
+    inputTokens?: number
+    outputTokens?: number
+    cacheReadInputTokens?: number
+    cacheCreationInputTokens?: number
+  }
+  model?: string
+  durationMs?: number
+  promptLengths?: {
+    systemPrompt?: number
+    toolCalls?: number
+    userPrompts?: number
+  }
+  stage?: string
+  stage1Usage?: { inputTokens?: number; outputTokens?: number; cacheReadInputTokens?: number; cacheCreationInputTokens?: number }
+  stage1DurationMs?: number
+  stage1RequestId?: string
+  stage1MsgId?: string
+  stage2Usage?: { inputTokens?: number; outputTokens?: number; cacheReadInputTokens?: number; cacheCreationInputTokens?: number }
+  stage2DurationMs?: number
+  stage2RequestId?: string
+  stage2MsgId?: string
+}
+const classifyYoloAction = async (
+  _messages: unknown,
+  _action: string,
+  _tools: unknown,
+  _permissionContext: unknown,
+  _signal: AbortSignal,
+): Promise<YoloClassifierResult> => ({
+  unavailable: true,
+  shouldBlock: false,
+})
 
 const CLASSIFIER_FAIL_CLOSED_REFRESH_MS = 30 * 60 * 1000 // 30 minutes
 

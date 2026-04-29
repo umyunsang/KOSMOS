@@ -39,7 +39,8 @@ import { sleep } from '../../utils/sleep.js'
 import { getClaudeCodeUserAgent } from '../../utils/userAgent.js'
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '../analytics/growthbook.js'
 import { logEvent } from '../analytics/index.js'
-import { getRetryDelay } from '../api/withRetry.js'
+// KOSMOS Spec 1633 / Epic #2293 — services/api/withRetry deleted; inline stub returns 1s baseline.
+const getRetryDelay = (_attempt: number): number => 1000
 import {
   type SettingsSyncFetchResult,
   type SettingsSyncUploadResult,

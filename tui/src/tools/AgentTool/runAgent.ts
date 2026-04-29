@@ -15,7 +15,8 @@ import type { CanUseToolFn } from '../../hooks/useCanUseTool.js'
 import { query } from '../../query.js'
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '../../services/analytics/growthbook.js'
 import { getDumpPromptsPath } from '../../services/api/dumpPrompts.js'
-import { cleanupAgentTracking } from '../../services/api/promptCacheBreakDetection.js'
+// KOSMOS: services/api/promptCacheBreakDetection deleted. No-op stub.
+const cleanupAgentTracking = (_agentId: unknown): void => {}
 import {
   connectToServer,
   fetchToolsForClient,

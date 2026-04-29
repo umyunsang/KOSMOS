@@ -1,19 +1,21 @@
-import type { McpbManifest } from '@anthropic-ai/mcpb'
+import type { McpbManifest } from 'src/mcpb-compat.js'
+import { loadMcpb } from 'src/mcpb-compat.js'
 import { errorMessage } from '../errors.js'
 import { jsonParse } from '../slowOperations.js'
 
 /**
  * Parses and validates a DXT manifest from a JSON object.
  *
- * Lazy-imports @anthropic-ai/mcpb: that package uses zod v3 which eagerly
- * creates 24 .bind(this) closures per schema instance (~300 instances between
- * schemas.js and schemas-loose.js). Deferring the import keeps ~700KB of bound
- * closures out of the startup heap for sessions that never touch .dxt/.mcpb.
+ * Lazy-loads mcpb via sdk-compat.loadMcpb(): that package uses zod v3 which
+ * eagerly creates 24 .bind(this) closures per schema instance (~300 instances
+ * between schemas.js and schemas-loose.js). Deferring the import keeps ~700KB
+ * of bound closures out of the startup heap for sessions that never touch
+ * .dxt/.mcpb. Import is routed through sdk-compat.ts (Epic #2293 FR-010).
  */
 export async function validateManifest(
   manifestJson: unknown,
 ): Promise<McpbManifest> {
-  const { McpbManifestSchema } = await import('@anthropic-ai/mcpb')
+  const { McpbManifestSchema } = await loadMcpb()
   const parseResult = McpbManifestSchema.safeParse(manifestJson)
 
   if (!parseResult.success) {

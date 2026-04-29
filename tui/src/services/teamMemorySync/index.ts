@@ -55,7 +55,8 @@ import { jsonStringify } from '../../utils/slowOperations.js'
 import { getClaudeCodeUserAgent } from '../../utils/userAgent.js'
 import { logEvent } from '../analytics/index.js'
 import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '../analytics/metadata.js'
-import { getRetryDelay } from '../api/withRetry.js'
+// KOSMOS Spec 1633 / Epic #2293 — services/api/withRetry deleted; inline stub returns 1s baseline.
+const getRetryDelay = (_attempt: number): number => 1000
 import { scanForSecrets } from './secretScanner.js'
 import {
   type SkippedSecretFile,

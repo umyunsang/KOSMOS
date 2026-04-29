@@ -1,0 +1,219 @@
+[
+  {
+    "kosmos_path": "tui/src/cli/print.ts",
+    "disposition": "DELETE",
+    "rationale": "Claude Code CLI print entrypoint (5601 line, 37 feature(), 2 claude.ai); KOSMOS main entrypoint is main.tsx + Ink. 0 importer suggests dead but size + dynamic registration warrants typecheck verification post-deletion.",
+    "caller_cleanup_required": false,
+    "risk": "MEDIUM"
+  },
+  {
+    "kosmos_path": "tui/src/commands/insights.ts",
+    "disposition": "DELETE",
+    "rationale": "claude-code internal /insights slash command (3164 line, 2 queryHaiku/Model). No KOSMOS citizen use case. 0 importer; dynamic command registry possible — verify with typecheck.",
+    "caller_cleanup_required": false,
+    "risk": "MEDIUM"
+  },
+  {
+    "kosmos_path": "tui/src/commands/rename/generateSessionName.ts",
+    "disposition": "DELETE",
+    "rationale": "Anthropic queryHaiku-driven session auto-naming (62 line, 1 importer). KOSMOS has no equivalent yet (potential future K-EXAONE migration; out of Epic β scope per research.md R-2). Caller block cleanup required.",
+    "caller_cleanup_required": true,
+    "risk": "LOW"
+  },
+  {
+    "kosmos_path": "tui/src/components/Feedback.tsx",
+    "disposition": "DELETE",
+    "rationale": "claude.ai 1P feedback telemetry (572 line, 3 token, 1 importer). Spec 1633 closure target — claude.ai SaaS feature dead in KOSMOS. Caller cleanup required.",
+    "caller_cleanup_required": true,
+    "risk": "LOW"
+  },
+  {
+    "kosmos_path": "tui/src/services/api/adminRequests.ts",
+    "disposition": "DELETE",
+    "rationale": "claude.ai admin endpoints (14 line, 1 importer). Spec 1633 closure target. Caller cleanup required.",
+    "caller_cleanup_required": true,
+    "risk": "LOW"
+  },
+  {
+    "kosmos_path": "tui/src/services/api/claude.ts",
+    "disposition": "DELETE",
+    "rationale": "Core Anthropic dispatcher (1098 line, 5 sdk-compat, 4 feature(), 2 claude.ai, 2 growthbook). 0 importer (sonnet 1차의 modify 결정 폐기). Spec 1633 closure mandate.",
+    "caller_cleanup_required": false,
+    "risk": "LOW"
+  },
+  {
+    "kosmos_path": "tui/src/services/api/client.ts",
+    "disposition": "DELETE",
+    "rationale": "Anthropic HTTP client (40 line, 1 token, 0 importer). Spec 1633 closure mandate.",
+    "caller_cleanup_required": false,
+    "risk": "LOW"
+  },
+  {
+    "kosmos_path": "tui/src/services/api/errorUtils.ts",
+    "disposition": "DELETE",
+    "rationale": "sdk-compat APIError classifier (362 line, 1 sdk-compat, 5 importer). Anthropic error type handling — KOSMOS uses local error types. Caller cleanup required (5 importers must drop classifyAPIError).",
+    "caller_cleanup_required": true,
+    "risk": "MEDIUM"
+  },
+  {
+    "kosmos_path": "tui/src/services/api/errors.ts",
+    "disposition": "DELETE",
+    "rationale": "Anthropic error types/handling (157 line, 6 importer). Spec 1633 closure target. Caller cleanup required across 6 importers.",
+    "caller_cleanup_required": true,
+    "risk": "MEDIUM"
+  },
+  {
+    "kosmos_path": "tui/src/services/api/filesApi.ts",
+    "disposition": "DELETE",
+    "rationale": "claude.ai Files API (50 line, 2 importer). KOSMOS does not use Anthropic Files. Caller cleanup required.",
+    "caller_cleanup_required": true,
+    "risk": "LOW"
+  },
+  {
+    "kosmos_path": "tui/src/services/api/firstTokenDate.ts",
+    "disposition": "DELETE",
+    "rationale": "claude.ai user-agent metric (61 line, 2 ClaudeCode UA, 1 importer). claude.ai SaaS analytics. Caller cleanup required.",
+    "caller_cleanup_required": true,
+    "risk": "LOW"
+  },
+  {
+    "kosmos_path": "tui/src/services/api/grove.ts",
+    "disposition": "DELETE",
+    "rationale": "Anthropic internal Grove service (15 line, 1 importer). claude.ai-only.",
+    "caller_cleanup_required": true,
+    "risk": "LOW"
+  },
+  {
+    "kosmos_path": "tui/src/services/api/logging.ts",
+    "disposition": "DELETE",
+    "rationale": "Anthropic logging (788 line, 2 sdk-compat, 2 feature(), 4 importer). KOSMOS uses OTEL/local stdlib logging. Caller cleanup required.",
+    "caller_cleanup_required": true,
+    "risk": "MEDIUM"
+  },
+  {
+    "kosmos_path": "tui/src/services/api/overageCreditGrant.ts",
+    "disposition": "DELETE",
+    "rationale": "claude.ai billing/credits (18 line, 2 importer). Spec 1633 closure target.",
+    "caller_cleanup_required": true,
+    "risk": "LOW"
+  },
+  {
+    "kosmos_path": "tui/src/services/api/promptCacheBreakDetection.ts",
+    "disposition": "DELETE",
+    "rationale": "Anthropic prompt cache break detection (796 line, 2 sdk-compat, 3 importer). Even though KosmosUsage import exists, the cache-break logic is Anthropic-specific. Caller cleanup required.",
+    "caller_cleanup_required": true,
+    "risk": "MEDIUM"
+  },
+  {
+    "kosmos_path": "tui/src/services/api/referral.ts",
+    "disposition": "DELETE",
+    "rationale": "claude.ai referral program (26 line, 5 importer). claude.ai SaaS feature.",
+    "caller_cleanup_required": true,
+    "risk": "LOW"
+  },
+  {
+    "kosmos_path": "tui/src/services/api/sessionIngress.ts",
+    "disposition": "DELETE",
+    "rationale": "claude.ai session backend ingress (516 line, 2 importer). KOSMOS sessions live in ~/.kosmos/memdir/user/sessions/ JSONL only. Caller cleanup required.",
+    "caller_cleanup_required": true,
+    "risk": "MEDIUM"
+  },
+  {
+    "kosmos_path": "tui/src/services/api/ultrareviewQuota.ts",
+    "disposition": "DELETE",
+    "rationale": "claude.ai subscriber quota (43 line, 2 isClaudeAISubscriber, 1 importer). Spec 1633 closure target.",
+    "caller_cleanup_required": true,
+    "risk": "LOW"
+  },
+  {
+    "kosmos_path": "tui/src/services/api/usage.ts",
+    "disposition": "DELETE",
+    "rationale": "claude.ai usage analytics (26 line, 3 importer). Spec 1633 closure target.",
+    "caller_cleanup_required": true,
+    "risk": "LOW"
+  },
+  {
+    "kosmos_path": "tui/src/services/api/withRetry.ts",
+    "disposition": "DELETE",
+    "rationale": "sdk-compat-based Anthropic retry (787 line, 2 sdk-compat, 1 growthbook, 2 feature(), 2 importer). KOSMOS has its own retry logic (Spec 019 hardening). Caller cleanup required.",
+    "caller_cleanup_required": true,
+    "risk": "MEDIUM"
+  },
+  {
+    "kosmos_path": "tui/src/services/tokenEstimation.ts",
+    "disposition": "DELETE",
+    "rationale": "sdk-compat Anthropic + AWS Bedrock client-bedrock-runtime token estimation (502 line, 11 importer). KOSMOS = FriendliAI single provider; no Bedrock. Caller cleanup across 11 importers — high blast radius but mandate clear.",
+    "caller_cleanup_required": true,
+    "risk": "HIGH"
+  },
+  {
+    "kosmos_path": "tui/src/services/toolUseSummary/toolUseSummaryGenerator.ts",
+    "disposition": "DELETE",
+    "rationale": "Anthropic queryHaiku tool-use summary (93 line, 2 token, 1 importer). KOSMOS adapter outputs do not need claude-summary; future K-EXAONE summary deferred.",
+    "caller_cleanup_required": true,
+    "risk": "LOW"
+  },
+  {
+    "kosmos_path": "tui/src/tools/WebFetchTool/utils.ts",
+    "disposition": "DELETE",
+    "rationale": "Anthropic queryHaiku-based WebFetch summary util (522 line, 2 token, 0 importer). WebFetch tool itself stays (MVP7); only this utils file is dead.",
+    "caller_cleanup_required": false,
+    "risk": "MEDIUM"
+  },
+  {
+    "kosmos_path": "tui/src/utils/mcp/dateTimeParser.ts",
+    "disposition": "DELETE",
+    "rationale": "Anthropic queryHaiku MCP datetime parser (38 line, 1 token, 0 importer). KOSMOS DateParser MVP7 supersedes.",
+    "caller_cleanup_required": false,
+    "risk": "LOW"
+  },
+  {
+    "kosmos_path": "tui/src/utils/permissions/permissionSetup.ts",
+    "disposition": "KEEP",
+    "rationale": "KOSMOS-needed CC permissions setup infrastructure (1533 line, 11 importer including main.tsx, REPL, Config, plan.tsx). Anthropic-token = 0; only feature() = 12 occurrences (Spec 1633 cleanup is to remove feature() calls, NOT delete the file). spec.md FR-003 'Spec 033 잔재 3 file deletion' was inaccurate — caller graph proves KOSMOS-needed.",
+    "caller_cleanup_required": false,
+    "risk": "N/A"
+  },
+  {
+    "kosmos_path": "tui/src/utils/permissions/permissions.ts",
+    "disposition": "KEEP",
+    "rationale": "KOSMOS-needed CC permissions core (1487 line, 14 importer including tools.ts registry, AgentTool, BashTool, REPL). Only sdk-compat APIUserAbortError import + 7 feature() removable. spec.md FR-003 inaccurate.",
+    "caller_cleanup_required": false,
+    "risk": "N/A"
+  },
+  {
+    "kosmos_path": "tui/src/utils/permissions/yoloClassifier.ts",
+    "disposition": "DELETE",
+    "rationale": "Anthropic sdk-compat + growthbook A/B testing (1497 line, 2 sdk-compat, 1 growthbook, 6 feature(), 2 importer). KOSMOS does not use growthbook. Caller cleanup required (AgentTool/agentToolUtils + cli/handlers/autoMode).",
+    "caller_cleanup_required": true,
+    "risk": "MEDIUM"
+  },
+  {
+    "kosmos_path": "tui/src/utils/plugins/mcpbHandler.ts",
+    "disposition": "DELETE",
+    "rationale": "@anthropic-ai/ MCP bundle handler (975 line, 3 token, 2 importer). KOSMOS plugin DX (Spec 1636) uses different package format. Caller cleanup required.",
+    "caller_cleanup_required": true,
+    "risk": "MEDIUM"
+  },
+  {
+    "kosmos_path": "tui/src/utils/sessionTitle.ts",
+    "disposition": "DELETE",
+    "rationale": "Anthropic queryHaiku session title generator (53 line, 2 token, 4 importer). Caller cleanup required.",
+    "caller_cleanup_required": true,
+    "risk": "LOW"
+  },
+  {
+    "kosmos_path": "tui/src/utils/shell/prefix.ts",
+    "disposition": "DELETE",
+    "rationale": "Anthropic queryHaiku shell prompt prefix (237 line, 2 token, 0 importer). KOSMOS has no shell prefix automation.",
+    "caller_cleanup_required": false,
+    "risk": "LOW"
+  },
+  {
+    "kosmos_path": "tui/src/schemas/ui-l2/permission.ts",
+    "disposition": "KEEP",
+    "rationale": "Spec 035 UI L2 permission receipt schema (5 importer: PermissionReceiptContext, ExportPdfDialog, export/consent commands, i18n/uiL2). Constitution II concern is about KOSMOS-invented fail-closed permission tier (already removed Spec 1979); this file's PermissionLayerT/PermissionDecisionT are UI L2 receipt-rendering enums tied to Spec 035 receipt UX, not Spec 033 5-mode spectrum. NOT in 30-Cleanup-needed list anyway. spec.md FR-004 to be amended to drop this file from deletion.",
+    "caller_cleanup_required": false,
+    "risk": "N/A"
+  }
+]

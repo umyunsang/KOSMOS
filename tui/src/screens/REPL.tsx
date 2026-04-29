@@ -148,7 +148,7 @@ import { hasConsoleBillingAccess } from '../utils/billing.js';
 import { logEvent, type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from 'src/services/analytics/index.js';
 import { getFeatureValue_CACHED_MAY_BE_STALE } from 'src/services/analytics/growthbook.js';
 import { textForResubmit, handleMessageFromStream, type StreamingToolUse, type StreamingThinking, isCompactBoundaryMessage, getMessagesAfterCompactBoundary, getContentText, createUserMessage, createAssistantMessage, createTurnDurationMessage, createAgentsKilledMessage, createApiMetricsMessage, createSystemMessage, createCommandInputMessage, formatCommandInputTags } from '../utils/messages.js';
-import { generateSessionTitle } from '../utils/sessionTitle.js';
+// utils/sessionTitle removed — Anthropic queryHaiku session title generator deleted (Spec 1633 / Epic #2293).;
 import { BASH_INPUT_TAG, COMMAND_MESSAGE_TAG, COMMAND_NAME_TAG, LOCAL_COMMAND_STDOUT_TAG } from '../constants/xml.js';
 import { escapeXml } from '../utils/xml.js';
 import type { ThinkingConfig } from '../utils/thinking.js';
@@ -304,7 +304,7 @@ import { useTeammateLifecycleNotification } from 'src/hooks/notifs/useTeammateSh
 import { useFastModeNotification } from 'src/hooks/notifs/useFastModeNotification.js';
 import { AutoRunIssueNotification, shouldAutoRunIssue, getAutoRunIssueReasonText, getAutoRunCommand, type AutoRunIssueReason } from '../utils/autoRunIssue.js';
 import type { HookProgress } from '../types/hooks.js';
-import { TungstenLiveMonitor } from '../tools/TungstenTool/TungstenLiveMonitor.js';
+// KOSMOS Spec 1633 / Epic #2293 — TungstenTool deleted (claude-code internal tool).
 // Use function declaration (hoisted, no TDZ) for feature-gated panel module.
 /* eslint-disable @typescript-eslint/no-require-imports */
 function getWebBrowserPanelModule() {
@@ -2862,22 +2862,8 @@ export function REPL({
     // useDeferredHookMessages) and attachment messages (appended by
     // processTextPrompt) — both pushed length past 1 on turn one, so the
     // title silently fell through to the "Claude Code" default.
-    if (!titleDisabled && !sessionTitle && !agentTitle && !haikuTitleAttemptedRef.current) {
-      const firstUserMessage = newMessages.find(m => m.type === 'user' && !m.isMeta);
-      const text = firstUserMessage?.type === 'user' ? getContentText(firstUserMessage.message.content) : null;
-      // Skip synthetic breadcrumbs — slash-command output, prompt-skill
-      // expansions (/commit → <command-message>), local-command headers
-      // (/help → <command-name>), and bash-mode (!cmd → <bash-input>).
-      // None of these are the user's topic; wait for real prose.
-      if (text && !text.startsWith(`<${LOCAL_COMMAND_STDOUT_TAG}>`) && !text.startsWith(`<${COMMAND_MESSAGE_TAG}>`) && !text.startsWith(`<${COMMAND_NAME_TAG}>`) && !text.startsWith(`<${BASH_INPUT_TAG}>`)) {
-        haikuTitleAttemptedRef.current = true;
-        void generateSessionTitle(text, new AbortController().signal).then(title => {
-          if (title) setHaikuTitle(title);else haikuTitleAttemptedRef.current = false;
-        }, () => {
-          haikuTitleAttemptedRef.current = false;
-        });
-      }
-    }
+    // generateSessionTitle (Anthropic queryHaiku-based) removed — Spec 1633 / Epic #2293.
+    // KOSMOS does not auto-derive a terminal title from LLM; haikuTitleAttemptedRef stays false.
 
     // Apply slash-command-scoped allowedTools (from skill frontmatter) to the
     // store once per turn. This also covers the reset: the next non-skill turn
@@ -5090,7 +5076,7 @@ export function REPL({
               {toolJSX && !(toolJSX.isLocalJSXCommand && toolJSX.isImmediate) && !toolJsxCentered && <Box flexDirection="column" width="100%">
                     {toolJSX.jsx}
                   </Box>}
-              {"external" === 'ant' && <TungstenLiveMonitor />}
+              {/* KOSMOS Spec 1633 / Epic #2293 — TungstenLiveMonitor JSX removed (TungstenTool deleted). */}
               {feature('WEB_BROWSER_TOOL') ? (() => { const m = getWebBrowserPanelModule(); return m && <m.WebBrowserPanel /> })() : null}
               <Box flexGrow={1} />
               {showSpinner && <SpinnerWithVerb mode={streamMode} spinnerTip={spinnerTip} responseLengthRef={responseLengthRef} apiMetricsRef={apiMetricsRef} overrideMessage={spinnerMessage} spinnerSuffix={stopHookSpinnerSuffix} verbose={verbose} loadingStartTimeRef={loadingStartTimeRef} totalPausedMsRef={totalPausedMsRef} pauseStartTimeRef={pauseStartTimeRef} overrideColor={spinnerColor} overrideShimmerColor={spinnerShimmerColor} hasActiveTools={inProgressToolUseIDs.size > 0} leaderIsIdle={!isLoading} />}
