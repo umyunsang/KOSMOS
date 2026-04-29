@@ -42,6 +42,9 @@ from kosmos.tools.registry import (
 def _adapter(
     *, tool_id: str, primitive: AdapterPrimitive = AdapterPrimitive.lookup
 ) -> AdapterRegistration:
+    # Epic δ #2295 Path B: auth_level + pipa_class are now computed_fields
+    # derived from policy.citizen_facing_gate — do NOT pass them as constructor
+    # arguments (extra="forbid" raises). Policy is optional (None = KOSMOS-internal).
     return AdapterRegistration(
         tool_id=tool_id,
         primitive=primitive,
@@ -51,8 +54,6 @@ def _adapter(
         published_tier_minimum="digital_onepass_level1_aal1",
         nist_aal_hint="AAL1",
         auth_type="api_key",
-        auth_level="AAL1",
-        pipa_class="non_personal",
     )
 
 
@@ -115,8 +116,6 @@ class TestQ8Namespace:
             published_tier_minimum="digital_onepass_level1_aal1",
             nist_aal_hint="AAL1",
             auth_type="api_key",
-            auth_level="AAL1",
-            pipa_class="non_personal",
         )
         with pytest.raises(ValidationError) as exc:
             PluginManifest(**_manifest_kwargs(adapter=bare_adapter))
@@ -157,8 +156,6 @@ class TestQ8NoRootOverride:
                 published_tier_minimum="digital_onepass_level1_aal1",
                 nist_aal_hint="AAL1",
                 auth_type="api_key",
-                auth_level="AAL1",
-                pipa_class="non_personal",
             )
 
     def test_resolve_location_rejected_at_adapter_regex(self) -> None:
@@ -177,8 +174,6 @@ class TestQ8NoRootOverride:
                 published_tier_minimum="digital_onepass_level1_aal1",
                 nist_aal_hint="AAL1",
                 auth_type="api_key",
-                auth_level="AAL1",
-                pipa_class="non_personal",
             )
         assert "tool_id" in str(exc.value).lower()
 

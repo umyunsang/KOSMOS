@@ -433,29 +433,10 @@ def test_v11_hash_only_acknowledge_key_loss(tmp_path: Path) -> None:
     assert report.passed is True
 
 
-# ---------------------------------------------------------------------------
-# V12 — --hash-only without --acknowledge-key-loss → exit 64 (usage error)
-# ---------------------------------------------------------------------------
-
-
-def test_v12_usage_error_hash_only_no_ack(tmp_path: Path) -> None:
-    """V12: --hash-only without --acknowledge-key-loss via CLI handler. Expected exit 64."""
-    import argparse
-
-    from kosmos.permissions.cli import _cmd_verify
-
-    # Build a mock Namespace that simulates --hash-only without --acknowledge-key-loss.
-    args = argparse.Namespace(
-        hash_only=True,
-        acknowledge_key_loss=False,
-        json_output=False,
-        ledger=None,
-        key=None,
-    )
-
-    exit_code = _cmd_verify(args)
-    assert exit_code == 64
-
+# Note: V12 CLI test removed in Epic δ #2295 — kosmos.permissions.cli deleted as
+# Spec 033 KOSMOS-invented residue. The CLI gate logic is not part of Spec 035
+# receipt set.
+# References: specs/2295-backend-permissions-cleanup/spec.md § FR-001
 
 # ---------------------------------------------------------------------------
 # Additional: single-record ledger (V01 variant with 1 record)

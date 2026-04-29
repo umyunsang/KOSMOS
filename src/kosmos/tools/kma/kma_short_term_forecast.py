@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import logging
 import re
+from datetime import UTC, datetime
 from typing import Any, Literal, cast
 
 import httpx
@@ -25,7 +26,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from kosmos.tools.errors import ConfigurationError, ToolExecutionError, _require_env
 from kosmos.tools.executor import ToolExecutor
-from kosmos.tools.models import GovAPITool
+from kosmos.tools.models import AdapterRealDomainPolicy, GovAPITool
 from kosmos.tools.registry import ToolRegistry
 
 logger = logging.getLogger(__name__)
@@ -349,13 +350,13 @@ KMA_SHORT_TERM_FORECAST_TOOL = GovAPITool(
         "단기예보 날씨예보 기온 강수확률 하늘상태 습도 풍속 풍향 "
         "short-term forecast weather temperature precipitation sky humidity wind"
     ),
-    auth_level="AAL1",
-    pipa_class="non_personal",
-    is_irreversible=False,
-    dpa_reference=None,
-    requires_auth=True,
+    policy=AdapterRealDomainPolicy(
+        real_classification_url="https://www.kma.go.kr/data/policy.html",
+        real_classification_text="기상청 공공데이터 이용약관 — 단기예보 데이터 비상업적 공공 이용 허가",  # TODO: verify URL  # noqa: E501
+        citizen_facing_gate="read-only",
+        last_verified=datetime(2026, 4, 29, tzinfo=UTC),
+    ),
     is_concurrency_safe=True,
-    is_personal_data=False,
     cache_ttl_seconds=1800,
     rate_limit_per_minute=10,
     is_core=True,

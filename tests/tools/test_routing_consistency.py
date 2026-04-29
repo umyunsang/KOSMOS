@@ -144,46 +144,10 @@ class TestInvariant4UniqueToolId:
 
 
 # ---------------------------------------------------------------------------
-# Invariant 5 — compute_permission_tier totality
-# Raises ValueError on unknown auth_level.
+# Invariant 5 (compute_permission_tier) + Invariant 6 (auth_type/auth_level)
+# REMOVED in Epic δ #2295 — auth_level / is_irreversible / _AUTH_TYPE_LEVEL_MAPPING
+# deleted from GovAPITool as Spec 033 KOSMOS-invented residue (Constitution § II).
 # ---------------------------------------------------------------------------
-
-
-class TestInvariant5PermissionTierTotal:
-    def test_every_adapter_yields_valid_tier(self, live_registry):
-        """compute_permission_tier() succeeds for every registered adapter."""
-        from kosmos.tools.permissions import compute_permission_tier
-
-        registry, _ = live_registry
-        for tool_id, tool in registry._tools.items():
-            tier = compute_permission_tier(tool.auth_level, tool.is_irreversible)
-            assert tier in (1, 2, 3), f"{tool_id}: permission_tier={tier} not in {{1,2,3}}"
-
-
-# ---------------------------------------------------------------------------
-# Invariant 6 — Spec 025 v6 (auth_type, auth_level) preserved
-# Already enforced by GovAPITool validator at construction; verify
-# no adapter in the live registry has an invalid pair.
-# ---------------------------------------------------------------------------
-
-
-class TestInvariant6AuthTypeAuthLevelConsistency:
-    def test_all_adapters_have_consistent_auth_pair(self, live_registry):
-        """Every registered adapter's (auth_type, auth_level) pair is in the
-        canonical V6 allow-list.
-        """
-        from kosmos.tools.models import _AUTH_TYPE_LEVEL_MAPPING
-
-        registry, _ = live_registry
-        for tool_id, tool in registry._tools.items():
-            assert tool.auth_type in _AUTH_TYPE_LEVEL_MAPPING, (
-                f"{tool_id}: V6 violation — unknown auth_type={tool.auth_type!r}"
-            )
-            allowed = _AUTH_TYPE_LEVEL_MAPPING[tool.auth_type]
-            assert tool.auth_level in allowed, (
-                f"{tool_id}: V6 violation — auth_type={tool.auth_type!r} with "
-                f"auth_level={tool.auth_level!r}; permitted: {sorted(allowed)}"
-            )
 
 
 # ---------------------------------------------------------------------------

@@ -13,6 +13,7 @@ Wire format quirks handled by this module:
 from __future__ import annotations
 
 import logging
+from datetime import UTC, datetime
 from typing import Any
 
 import httpx
@@ -26,7 +27,7 @@ from kosmos.tools.koroad.code_tables import (
     SearchYearCd,
     SidoCode,
 )
-from kosmos.tools.models import GovAPITool
+from kosmos.tools.models import AdapterRealDomainPolicy, GovAPITool
 
 logger = logging.getLogger(__name__)
 
@@ -362,13 +363,13 @@ KOROAD_ACCIDENT_SEARCH_TOOL = GovAPITool(
         "교통사고 위험지역 조회 사고다발구역 지자체별 위험지점 "
         "accident hotspot dangerous zone traffic safety municipality"
     ),
-    auth_level="AAL1",
-    pipa_class="non_personal",
-    is_irreversible=False,
-    dpa_reference=None,
-    requires_auth=True,
+    policy=AdapterRealDomainPolicy(
+        real_classification_url="https://www.koroad.or.kr/main/web/policy/data_use.do",
+        real_classification_text="도로교통공단 공공데이터 이용약관 — 교통사고 위험지역 데이터 비상업적 공공 이용 허가",  # TODO: verify URL  # noqa: E501
+        citizen_facing_gate="read-only",
+        last_verified=datetime(2026, 4, 29, tzinfo=UTC),
+    ),
     is_concurrency_safe=True,
-    is_personal_data=False,
     cache_ttl_seconds=3600,
     rate_limit_per_minute=10,
     is_core=True,

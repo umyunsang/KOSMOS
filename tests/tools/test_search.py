@@ -172,7 +172,6 @@ def test_create_search_meta_tool():
     assert meta_tool.is_core is True
     assert meta_tool.input_schema is SearchToolsInput
     assert meta_tool.output_schema is SearchToolsOutput
-    # Internal tool must not require auth and must be concurrency-safe.
-    assert meta_tool.requires_auth is False
+    # Internal tool must be concurrency-safe.
+    # Note: requires_auth / is_personal_data removed in Epic δ #2295 (Spec 033 residue).
     assert meta_tool.is_concurrency_safe is True
-    assert meta_tool.is_personal_data is False

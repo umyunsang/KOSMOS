@@ -1,8 +1,12 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Shared fixtures for permission pipeline tests.
+"""Shared fixtures for KOSMOS permission receipt ledger tests (Spec 035).
 
-Includes both v1 gauntlet fixtures (unchanged) and Spec 033 v2 fixtures
-(additive, T002 — new tmp-path fixtures for rule store, ledger, and HMAC key).
+Spec 033 KOSMOS-invented residue fixtures removed in Epic δ #2295.
+Only Spec 035 receipt-ledger tmp-path fixtures are retained here.
+
+References:
+- specs/2295-backend-permissions-cleanup/spec.md § FR-001, FR-002
+- .specify/memory/constitution.md § II Fail-Closed Security (NON-NEGOTIABLE)
 """
 
 from __future__ import annotations
@@ -12,67 +16,14 @@ from pathlib import Path
 
 import pytest
 
-from kosmos.permissions.models import AccessTier, PermissionCheckRequest, SessionContext
-
 # ---------------------------------------------------------------------------
-# v1 gauntlet fixtures (unchanged)
-# ---------------------------------------------------------------------------
-
-
-@pytest.fixture()
-def make_session_context():
-    """Factory fixture for creating SessionContext instances."""
-
-    def _make(
-        *,
-        session_id: str = "test-session-001",
-        citizen_id: str | None = None,
-        auth_level: int = 0,
-        consented_providers: list[str] | None = None,
-    ) -> SessionContext:
-        return SessionContext(
-            session_id=session_id,
-            citizen_id=citizen_id,
-            auth_level=auth_level,
-            consented_providers=consented_providers or [],
-        )
-
-    return _make
-
-
-@pytest.fixture()
-def make_permission_request(make_session_context):
-    """Factory fixture for creating PermissionCheckRequest instances."""
-
-    def _make(
-        *,
-        tool_id: str = "test_tool",
-        access_tier: AccessTier = AccessTier.public,
-        arguments_json: str = "{}",
-        session_context: SessionContext | None = None,
-        is_personal_data: bool = False,
-        is_bypass_mode: bool = False,
-    ) -> PermissionCheckRequest:
-        return PermissionCheckRequest(
-            tool_id=tool_id,
-            access_tier=access_tier,
-            arguments_json=arguments_json,
-            session_context=session_context or make_session_context(),
-            is_personal_data=is_personal_data,
-            is_bypass_mode=is_bypass_mode,
-        )
-
-    return _make
-
-
-# ---------------------------------------------------------------------------
-# Spec 033 v2 fixtures (T002 — additive)
+# Spec 035 receipt ledger tmp-path fixtures
 # ---------------------------------------------------------------------------
 
 
 @pytest.fixture()
 def tmp_permission_dir(tmp_path: Path) -> Path:
-    """Return a temporary directory tree for all v2 permission files.
+    """Return a temporary directory tree for Spec 035 receipt ledger files.
 
     Layout::
 
@@ -93,9 +44,6 @@ def tmp_permission_dir(tmp_path: Path) -> Path:
 def tmp_rule_store(tmp_permission_dir: Path) -> Path:
     """Return path to an empty rule store JSON file under ``tmp_permission_dir``."""
     rule_store = tmp_permission_dir / "permissions.json"
-    # Write an empty but valid schema-versioned rule store.
-    # Shape must match `RuleStore._parse_root()` — top-level `schema_version`
-    # plus optional `generated_at` plus `rules`.
     empty_store = '{"schema_version": "1.0.0", "rules": []}\n'
     rule_store.write_text(empty_store)
     return rule_store
@@ -118,7 +66,6 @@ def tmp_hmac_key(tmp_permission_dir: Path) -> Path:
     by Invariant C3 from data-model.md § 2.2.
     """
     key_path = tmp_permission_dir / "keys" / "ledger.key"
-    # Write 32 bytes of deterministic test key material.
     fd = os.open(str(key_path), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o400)
     try:
         os.write(fd, b"\x00" * 32)

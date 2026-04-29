@@ -227,8 +227,21 @@ def register_plugin_adapter(
     # tampered manifest cannot reach the registry. We re-validate the
     # whole instance — this catches drift on any of the five validators
     # without enumerating them here.
+    #
+    # Epic δ #2295 Path B: AdapterRegistration now exposes ``auth_level``,
+    # ``pipa_class``, and ``is_irreversible`` as ``computed_field`` properties
+    # derived from ``policy.citizen_facing_gate``. They are included in
+    # ``model_dump()`` output but are NOT stored fields — passing them back to
+    # the constructor would be rejected by ``extra="forbid"``. Exclude them from
+    # the adapter sub-dict before re-validating so the backstop keeps working.
+    adapter_computed: frozenset[str] = frozenset({"auth_level", "pipa_class", "is_irreversible"})
     try:
-        PluginManifest.model_validate(manifest.model_dump())
+        raw_dump = manifest.model_dump()
+        if "adapter" in raw_dump and isinstance(raw_dump["adapter"], dict):
+            raw_dump["adapter"] = {
+                k: v for k, v in raw_dump["adapter"].items() if k not in adapter_computed
+            }
+        PluginManifest.model_validate(raw_dump)
     except Exception as exc:  # noqa: BLE001 — Pydantic ValidationError fan-out.
         raise PluginRegistrationError(
             "PluginManifest invariant violation at register_plugin_adapter "

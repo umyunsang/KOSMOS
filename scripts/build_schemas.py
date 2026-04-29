@@ -151,7 +151,7 @@ def _collect_primitive_adapters() -> list[tuple[str, type, type]]:
     # 1. Submit adapters — _ADAPTER_REGISTRY: dict[tool_id, (reg, fn)]
     # ------------------------------------------------------------------
     submit_mod = importlib.import_module("kosmos.primitives.submit")
-    submit_output_cls = getattr(submit_mod, "SubmitOutput")
+    submit_output_cls = submit_mod.SubmitOutput
     submit_registry: dict[str, tuple] = getattr(submit_mod, "_ADAPTER_REGISTRY", {})
 
     for tool_id, (reg, _fn) in submit_registry.items():
@@ -175,8 +175,8 @@ def _collect_primitive_adapters() -> list[tuple[str, type, type]]:
     #    All six share VerifyInput / VerifyOutput.
     # ------------------------------------------------------------------
     verify_mod = importlib.import_module("kosmos.primitives.verify")
-    verify_input_cls = getattr(verify_mod, "VerifyInput")
-    verify_output_cls = getattr(verify_mod, "VerifyOutput")
+    verify_input_cls = verify_mod.VerifyInput
+    verify_output_cls = verify_mod.VerifyOutput
     verify_registry: dict[str, object] = getattr(verify_mod, "_VERIFY_ADAPTERS", {})
 
     # Canonical mapping: family key → mock module path
@@ -208,8 +208,8 @@ def _collect_primitive_adapters() -> list[tuple[str, type, type]]:
     #    All three share SubscribeInput / SubscriptionHandle.
     # ------------------------------------------------------------------
     subscribe_mod = importlib.import_module("kosmos.primitives.subscribe")
-    subscribe_input_cls = getattr(subscribe_mod, "SubscribeInput")
-    subscribe_output_cls = getattr(subscribe_mod, "SubscriptionHandle")
+    subscribe_input_cls = subscribe_mod.SubscribeInput
+    subscribe_output_cls = subscribe_mod.SubscriptionHandle
     subscribe_registry: dict[str, tuple] = getattr(subscribe_mod, "_SUBSCRIBE_ADAPTERS", {})
 
     for tool_id in subscribe_registry:

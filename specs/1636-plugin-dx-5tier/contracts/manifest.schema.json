@@ -12,6 +12,50 @@
       "title": "AdapterPrimitive",
       "type": "string"
     },
+    "AdapterRealDomainPolicy": {
+      "additionalProperties": false,
+      "description": "KOSMOS adapter single permission representation — cite of agency published policy.\n\nKOSMOS does NOT invent permission policy (.specify/memory/constitution.md § II).\nThis model is the single source of truth where an adapter (a) cites the\nagency's published policy URL, (b) declares the citizen-facing gate category,\nand (c) records the last verification timestamp of the policy citation.\n\nReferences:\n- AGENTS.md § CORE THESIS — KOSMOS = AX-infrastructure callable-channel client\n- .specify/memory/constitution.md § II Fail-Closed Security (NON-NEGOTIABLE)\n- .specify/memory/constitution.md § III Pydantic v2 Strict Typing\n- specs/1979-plugin-dx-tui-integration/domain-harness-design.md § 3.2",
+      "properties": {
+        "real_classification_url": {
+          "description": "Agency published policy URL (https:// prefix recommended)",
+          "minLength": 1,
+          "title": "Real Classification Url",
+          "type": "string"
+        },
+        "real_classification_text": {
+          "description": "Korean citation from agency policy (text shown to citizen)",
+          "minLength": 1,
+          "title": "Real Classification Text",
+          "type": "string"
+        },
+        "citizen_facing_gate": {
+          "description": "Citizen-facing gate category — UI uses this value for PermissionRequest UX",
+          "enum": [
+            "read-only",
+            "login",
+            "action",
+            "sign",
+            "submit"
+          ],
+          "title": "Citizen Facing Gate",
+          "type": "string"
+        },
+        "last_verified": {
+          "description": "Last verification timestamp of the policy URL (ISO 8601, UTC recommended)",
+          "format": "date-time",
+          "title": "Last Verified",
+          "type": "string"
+        }
+      },
+      "required": [
+        "real_classification_url",
+        "real_classification_text",
+        "citizen_facing_gate",
+        "last_verified"
+      ],
+      "title": "AdapterRealDomainPolicy",
+      "type": "object"
+    },
     "AdapterRegistration": {
       "additionalProperties": false,
       "description": "T009 — registry metadata for Spec 031 five-primitive adapters.\n\nMirrors data-model.md § 4 verbatim. Spec 024 V1–V4 (applied via pydantic\n``@model_validator`` on :class:`GovAPITool`) and Spec 025 V6 + the Spec 031\nv1.2 dual-axis invariant (applied via ``@model_validator`` on this class at\nconstruction time; see :mod:`kosmos.security.v12_dual_axis`) remain the\nauthoritative enforcement points; :meth:`ToolRegistry.register` only\nadditionally validates :class:`GovAPITool` instances passed to it.\n``published_tier_minimum`` / ``nist_aal_hint`` are optional during the\npre-v1.2 compatibility window (FR-028) and become mandatory when the\n:mod:`kosmos.security.v12_dual_axis` backstop flips ``V12_GA_ACTIVE = True``.",
@@ -86,16 +130,6 @@
           "default": null,
           "title": "Nist Aal Hint"
         },
-        "requires_auth": {
-          "default": true,
-          "title": "Requires Auth",
-          "type": "boolean"
-        },
-        "is_personal_data": {
-          "default": true,
-          "title": "Is Personal Data",
-          "type": "boolean"
-        },
         "is_concurrency_safe": {
           "default": false,
           "title": "Is Concurrency Safe",
@@ -136,42 +170,16 @@
           "title": "Auth Type",
           "type": "string"
         },
-        "auth_level": {
-          "enum": [
-            "public",
-            "AAL1",
-            "AAL2",
-            "AAL3"
-          ],
-          "title": "Auth Level",
-          "type": "string"
-        },
-        "pipa_class": {
-          "enum": [
-            "non_personal",
-            "personal_standard",
-            "personal_sensitive",
-            "personal_unique_id"
-          ],
-          "title": "Pipa Class",
-          "type": "string"
-        },
-        "is_irreversible": {
-          "default": false,
-          "title": "Is Irreversible",
-          "type": "boolean"
-        },
-        "dpa_reference": {
+        "policy": {
           "anyOf": [
             {
-              "type": "string"
+              "$ref": "#/$defs/AdapterRealDomainPolicy"
             },
             {
               "type": "null"
             }
           ],
-          "default": null,
-          "title": "Dpa Reference"
+          "default": null
         },
         "nonce": {
           "anyOf": [
@@ -193,9 +201,7 @@
         "module_path",
         "input_model_ref",
         "source_mode",
-        "auth_type",
-        "auth_level",
-        "pipa_class"
+        "auth_type"
       ],
       "title": "AdapterRegistration",
       "type": "object"
@@ -354,6 +360,19 @@
       ],
       "title": "Permission Layer",
       "type": "integer"
+    },
+    "dpa_reference": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "PIPA §26 data processing trustee reference URL or citation. Required (non-null) when adapter.policy derives pipa_class != 'non_personal' (Spec 024 V2 invariant). Distinct from pipa_trustee_acknowledgment — this is the agency-published policy URL the adapter cites for the data processing trustee relationship.",
+      "title": "Dpa Reference"
     }
   },
   "required": [

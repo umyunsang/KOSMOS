@@ -164,18 +164,32 @@ class TestLookupFetchUnknownTool:
 class TestLookupFetchAuthGate:
     @pytest.mark.asyncio
     async def test_auth_required_tool_returns_error_without_identity(self, registry_and_executor):
-        """A tool with requires_auth=True + no session identity → LookupError(auth_required)."""
+        """A tool with citizen_facing_gate != 'read-only' + no session identity →
+        LookupError(auth_required).
+
+        Epic δ #2295: auth gate now uses policy.citizen_facing_gate instead of
+        the removed requires_auth field.
+        koroad_accident_hazard_search has citizen_facing_gate="read-only"
+        (api_key but treated as data credential, no citizen identity required).
+        Use nmc_emergency_search which has citizen_facing_gate="login".
+        """
         registry, executor = registry_and_executor
-        # kma_weather_alert_status uses requires_auth default (True per fail-closed)
-        # Let's verify by checking the tool in registry
-        alert_tool = registry.lookup("kma_weather_alert_status")
-        if not alert_tool.requires_auth:
-            pytest.skip("kma_weather_alert_status has requires_auth=False, skip auth gate test")
+        # nmc_emergency_search has citizen_facing_gate="login" — requires identity
+        try:
+            nmc_tool = registry.lookup("nmc_emergency_search")
+        except Exception:  # noqa: BLE001
+            pytest.skip("nmc_emergency_search not registered in this registry fixture")
+
+        if nmc_tool.policy is None or nmc_tool.policy.citizen_facing_gate == "read-only":
+            pytest.skip("nmc_emergency_search has read-only gate, skip auth gate test")
 
         inp = LookupFetchInput(
             mode="fetch",
-            tool_id="kma_weather_alert_status",
-            params={},
+            tool_id="nmc_emergency_search",
+            params={
+                "city": "서울",
+                "district": "강남구",
+            },
         )
         result = await lookup(inp, executor=executor)
         assert isinstance(result, LookupError)

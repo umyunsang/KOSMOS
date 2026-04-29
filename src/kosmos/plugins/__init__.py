@@ -25,11 +25,16 @@ from kosmos.plugins.exceptions import (
     ManifestValidationError,
     PluginRegistrationError,
 )
-from kosmos.plugins.manifest_schema import PIPATrusteeAcknowledgment, PluginManifest
+from kosmos.plugins.manifest_schema import (
+    AdapterRealDomainPolicy,
+    PIPATrusteeAcknowledgment,
+    PluginManifest,
+)
 
 __all__ = [
     "CANONICAL_ACKNOWLEDGMENT_SHA256",
     "CANONICAL_ACKNOWLEDGMENT_TEXT",
+    "AdapterRealDomainPolicy",
     "AcknowledgmentMismatchError",
     "ManifestValidationError",
     "PIPATrusteeAcknowledgment",

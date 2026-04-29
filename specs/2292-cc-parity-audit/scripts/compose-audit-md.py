@@ -154,12 +154,12 @@ Import-only diff verification: **{import_only_confirmed}/{len(imports)} confirme
         ["#", "kosmos_path", "classification", "change_summary", "reference"],
     )
     modified_section += "\n\n</details>\n\n"
-    modified_section += f"**Raw data**: [`data/modified-218-classification.json`](data/modified-218-classification.json) — full schema (signals + cc_source_path 등) 포함.\n"
+    modified_section += "**Raw data**: [`data/modified-218-classification.json`](data/modified-218-classification.json) — full schema (signals + cc_source_path 등) 포함.\n"
 
     # ---- Suspicious Transfer ----
     transfer_section = "## 3. Suspicious Transfer List (T008 · spec.md FR-005 / SC-004)\n\n"
     cleanup_count = suspicious["cleanup_needed_transfer_summary"]["count"]
-    transfer_section += f"Suspicious 분류 0 건 — audit 결과 모든 modified 파일에 명확한 KOSMOS 정당화 또는 알려진 Spec 1633 잔재. 후속 Epic 진입을 위한 transfer 는 다음과 같다:\n\n"
+    transfer_section += "Suspicious 분류 0 건 — audit 결과 모든 modified 파일에 명확한 KOSMOS 정당화 또는 알려진 Spec 1633 잔재. 후속 Epic 진입을 위한 transfer 는 다음과 같다:\n\n"
     transfer_section += "**Suspicious transfer (Epic β/δ)**\n\n"
     transfer_section += "| Destination Epic | Count |\n|---|---|\n"
     transfer_section += "| Epic β #2293 (Suspicious) | 0 |\n"
@@ -170,11 +170,11 @@ Import-only diff verification: **{import_only_confirmed}/{len(imports)} confirme
     for k, v in suspicious["cleanup_needed_transfer_summary"]["category_breakdown"].items():
         transfer_section += f"| {k} | {v} |\n"
     transfer_section += "\n"
-    transfer_section += f"**Raw data**: [`data/suspicious-transfer.json`](data/suspicious-transfer.json) — paste-ready format.\n"
+    transfer_section += "**Raw data**: [`data/suspicious-transfer.json`](data/suspicious-transfer.json) — paste-ready format.\n"
 
     # ---- Spot-Check 50 ----
     spot_section = "## 4. Spot-Check (50) (T012 · spec.md FR-002 / FR-006 / SC-002 / SC-005)\n\n"
-    spot_section += f"Population: 1,531 byte-identical files. Sample: 50 files via Python `random.Random(2292).sample(...)` (Mersenne Twister, stable across Python 3.x).\n\n"
+    spot_section += "Population: 1,531 byte-identical files. Sample: 50 files via Python `random.Random(2292).sample(...)` (Mersenne Twister, stable across Python 3.x).\n\n"
     spot_section += f"**Result**: **{spot_match}/{len(spot)} sha256 match**. Wilson score 95% lower bound ≈ 92.9% parity confidence; 첫 mismatch 발견 시 본 표 + staging 파일이 자동으로 reclassify entry 를 생성.\n\n"
     spot_section += "<details>\n<summary>전체 표 펼치기 (50 rows)</summary>\n\n"
     spot_rows = []
@@ -195,7 +195,7 @@ Import-only diff verification: **{import_only_confirmed}/{len(imports)} confirme
     import_section = "## 5. Import-only Diff (67) (T015 · spec.md FR-003 / SC-003)\n\n"
     import_section += f"Candidate population: {len(imports)} files (cc-source-scope-audit baseline 73 → 67 actual; drift -6 explained in § 1).\n\n"
     import_section += f"**Result**: **{import_only_confirmed}/{len(imports)} confirmed import-only diff**, {import_reclassified} reclassified to modified.\n\n"
-    import_section += "<details>\n<summary>전체 표 펼치기 ({} rows)</summary>\n\n".format(len(imports))
+    import_section += f"<details>\n<summary>전체 표 펼치기 ({len(imports)} rows)</summary>\n\n"
     imp_rows = []
     for e in imports:
         verdict = "import-only confirmed" if not e["body_diff_present"] else "re-classified to Modified"

@@ -17,8 +17,7 @@ SC-005 compliance: ``published_tier_minimum="ganpyeon_injeung_kakao_aal2"`` gate
 access to AAL2+ callers. Tier gate enforcement is the dispatcher's responsibility
 (``kosmos.primitives.submit.submit()``); this module only declares the requirement.
 
-V1 invariant (data-model.md § 4): ``primitive=submit`` ∧
-``pipa_class=personal_standard`` → ``is_irreversible=True`` (payment is irreversible).
+Epic δ #2295: ``primitive=submit`` — payment is irreversible (submit gate).
 """
 
 from __future__ import annotations
@@ -129,8 +128,6 @@ REGISTRATION = AdapterRegistration(
     source_mode=AdapterSourceMode.OOS,
     published_tier_minimum="ganpyeon_injeung_kakao_aal2",
     nist_aal_hint="AAL2",
-    requires_auth=True,
-    is_personal_data=True,
     is_concurrency_safe=False,
     cache_ttl_seconds=0,
     rate_limit_per_minute=10,
@@ -139,10 +136,6 @@ REGISTRATION = AdapterRegistration(
         "en": ["traffic fine", "payment", "fine settlement"],
     },
     auth_type="oauth",
-    auth_level="AAL2",
-    pipa_class="personal_standard",
-    is_irreversible=True,  # V1 invariant: submit + personal_* → irreversible
-    dpa_reference="KosmosTrafficFinePay-v1",
     nonce=_ADAPTER_NONCE,
 )
 

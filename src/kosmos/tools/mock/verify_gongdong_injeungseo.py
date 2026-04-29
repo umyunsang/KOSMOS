@@ -27,8 +27,6 @@ ADAPTER_REGISTRATION = AdapterRegistration(
     source_mode=AdapterSourceMode.OOS,
     published_tier_minimum="gongdong_injeungseo_personal_aal3",
     nist_aal_hint="AAL3",
-    requires_auth=True,
-    is_personal_data=True,
     is_concurrency_safe=False,
     cache_ttl_seconds=0,
     rate_limit_per_minute=10,
@@ -37,10 +35,6 @@ ADAPTER_REGISTRATION = AdapterRegistration(
         "en": ["joint certificate", "NPKI", "gongdong injeungseo"],
     },
     auth_type="oauth",
-    auth_level="AAL3",
-    pipa_class="personal_unique_id",
-    is_irreversible=False,
-    dpa_reference="PIPA §26 — 수탁자 처리 (위탁)",
 )
 
 # Recorded fixture — no real external calls (FR-009).

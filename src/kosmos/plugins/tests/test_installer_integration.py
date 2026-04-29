@@ -71,6 +71,18 @@ _ADAPTER_SOURCE = (
         echo: str
 
 
+    # Epic δ #2295 Path B: auth_level / pipa_class / is_irreversible /
+    # dpa_reference / is_personal_data removed — replaced by policy block.
+    from datetime import datetime, timezone
+    from kosmos.tools.models import AdapterRealDomainPolicy
+
+    _POLICY = AdapterRealDomainPolicy(
+        real_classification_url="https://www.data.go.kr/policy",
+        real_classification_text="공공데이터포털 이용약관 (조회 전용)",
+        citizen_facing_gate="read-only",
+        last_verified=datetime(2026, 4, 29, tzinfo=timezone.utc),
+    )
+
     TOOL = GovAPITool(
         id="plugin.demo_plugin.lookup",
         name_ko="데모 플러그인",
@@ -81,11 +93,7 @@ _ADAPTER_SOURCE = (
         input_schema=DemoLookupInput,
         output_schema=DemoLookupOutput,
         search_hint="데모 demo plugin",
-        auth_level="AAL1",
-        pipa_class="non_personal",
-        is_irreversible=False,
-        dpa_reference=None,
-        is_personal_data=False,
+        policy=_POLICY,
         primitive="lookup",
         published_tier_minimum="digital_onepass_level1_aal1",
         nist_aal_hint="AAL1",
@@ -101,6 +109,9 @@ _ADAPTER_SOURCE = (
 
 
 def _manifest_dict(*, plugin_id: str = "demo_plugin", tier: str = "live") -> dict[str, Any]:
+    # Epic δ #2295 Path B: auth_level / pipa_class removed from adapter block;
+    # replaced by policy block with citizen_facing_gate. dpa_reference added
+    # as top-level manifest field.
     return {
         "plugin_id": plugin_id,
         "version": "1.0.0",
@@ -113,13 +124,18 @@ def _manifest_dict(*, plugin_id: str = "demo_plugin", tier: str = "live") -> dic
             "published_tier_minimum": "digital_onepass_level1_aal1",
             "nist_aal_hint": "AAL1",
             "auth_type": "api_key",
-            "auth_level": "AAL1",
-            "pipa_class": "non_personal",
+            "policy": {
+                "real_classification_url": "https://www.data.go.kr/policy",
+                "real_classification_text": "공공데이터포털 이용약관 (조회 전용)",
+                "citizen_facing_gate": "read-only",
+                "last_verified": "2026-04-29T00:00:00Z",
+            },
         },
         "tier": tier,
         "mock_source_spec": ("https://example.com/spec" if tier == "mock" else None),
         "processes_pii": False,
         "pipa_trustee_acknowledgment": None,
+        "dpa_reference": None,
         "slsa_provenance_url": (
             "https://github.com/kosmos-plugin-store/kosmos-plugin-demo/"
             "releases/download/v1.0.0/demo.intoto.jsonl"

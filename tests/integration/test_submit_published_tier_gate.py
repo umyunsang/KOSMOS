@@ -23,9 +23,12 @@ References:
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
+
 import pytest
 from pydantic import BaseModel, ConfigDict
 
+from kosmos.tools.models import AdapterRealDomainPolicy
 from kosmos.tools.registry import AdapterPrimitive, AdapterRegistration, AdapterSourceMode
 
 # ---------------------------------------------------------------------------
@@ -61,8 +64,6 @@ def tier_gated_registration() -> AdapterRegistration:
         source_mode=AdapterSourceMode.HARNESS_ONLY,
         published_tier_minimum="ganpyeon_injeung_kakao_aal2",
         nist_aal_hint="AAL2",
-        requires_auth=True,
-        is_personal_data=True,
         is_concurrency_safe=False,
         cache_ttl_seconds=0,
         rate_limit_per_minute=10,
@@ -71,9 +72,12 @@ def tier_gated_registration() -> AdapterRegistration:
             "en": ["tier gate test"],
         },
         auth_type="oauth",
-        auth_level="AAL2",
-        pipa_class="personal_standard",
-        is_irreversible=True,
+        policy=AdapterRealDomainPolicy(
+            real_classification_url="https://example.gov.kr/policy/submit",
+            real_classification_text="테스트 등록 submit 정책",
+            citizen_facing_gate="submit",
+            last_verified=datetime(2026, 4, 29, tzinfo=UTC),
+        ),
     )
 
 
@@ -181,16 +185,17 @@ async def test_submit_no_tier_minimum_always_passes(
         source_mode=AdapterSourceMode.HARNESS_ONLY,
         published_tier_minimum=None,
         nist_aal_hint=None,
-        requires_auth=True,
-        is_personal_data=True,
         is_concurrency_safe=False,
         cache_ttl_seconds=0,
         rate_limit_per_minute=10,
         search_hint={},
         auth_type="oauth",
-        auth_level="AAL2",
-        pipa_class="personal_standard",
-        is_irreversible=True,
+        policy=AdapterRealDomainPolicy(
+            real_classification_url="https://example.gov.kr/policy/submit",
+            real_classification_text="테스트 no-tier submit 정책",
+            citizen_facing_gate="submit",
+            last_verified=datetime(2026, 4, 29, tzinfo=UTC),
+        ),
     )
     result = check_tier_gate(registration=reg_no_tier, auth_context=None)
     assert result is None, "No tier minimum → gate always passes"

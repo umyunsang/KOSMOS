@@ -25,20 +25,14 @@ _MINIMAL_KWARGS = {
     "ministry": "OTHER",
     "category": ["test"],
     "endpoint": "https://apis.data.go.kr/test",
-    # V6: auth_type='public' is consistent with auth_level='public'.
-    # (api_key requires AAL1+; use 'public' for a no-auth test stub.)
     "auth_type": "public",
     "input_schema": _MinimalInput,
     "output_schema": _MinimalOutput,
     "search_hint": "test 테스트 sample",
-    "auth_level": "public",
-    "pipa_class": "non_personal",
-    "is_irreversible": False,
-    "dpa_reference": None,
-    # Spec-024 V5 biconditional: auth_level='public' ⇔ requires_auth==False.
-    "requires_auth": False,
-    # FR-038: pipa_class='non_personal' ⇒ no PII → is_personal_data=False.
-    "is_personal_data": False,
+    # Note: KOSMOS-invented Spec 033/024/025 fields removed in Epic δ #2295.
+    # auth_level / pipa_class / is_irreversible / dpa_reference /
+    # requires_auth / is_personal_data are deleted from GovAPITool.
+    # Use AdapterRealDomainPolicy for agency-published policy citations.
 }
 
 
@@ -48,48 +42,30 @@ def _make(**overrides) -> GovAPITool:
 
 
 # ===========================================================================
-# GovAPITool — fail-closed defaults
+# GovAPITool — fail-closed defaults (Epic δ #2295 — Spec 033 residue removed)
 # ===========================================================================
 
 
 class TestFailClosedDefaults:
     def test_fail_closed_defaults(self, sample_tool_factory):
-        """All boolean security fields must default to the restrictive value.
+        """Remaining fail-closed defaults on non-removed fields."""
+        tool = sample_tool_factory()
 
-        Under Spec-024 V5 the factory's public defaults are auto-aligned to
-        requires_auth=False / is_personal_data=False (public tools cannot
-        require auth). To exercise the *model-level* fail-closed defaults we
-        request an AAL1 PII-class tool so the True/True model defaults apply.
-        """
-        tool = sample_tool_factory(
-            auth_level="AAL1",
-            pipa_class="personal",
-            dpa_reference="dpa-mock-fail-closed",
-        )
-
-        assert tool.requires_auth is True
-        assert tool.is_personal_data is True
         assert tool.is_concurrency_safe is False
         assert tool.cache_ttl_seconds == 0
         assert tool.rate_limit_per_minute == 10
         assert tool.is_core is False
 
     def test_explicit_overrides(self, sample_tool_factory):
-        """Caller-supplied values must override every security default."""
-        # V6: auth_type='public' permits auth_level='public' + requires_auth=False.
+        """Caller-supplied values override remaining defaults."""
         tool = sample_tool_factory(
             auth_type="public",
-            auth_level="public",
-            requires_auth=False,
-            is_personal_data=False,
             is_concurrency_safe=True,
             cache_ttl_seconds=300,
             rate_limit_per_minute=60,
             is_core=True,
         )
 
-        assert tool.requires_auth is False
-        assert tool.is_personal_data is False
         assert tool.is_concurrency_safe is True
         assert tool.cache_ttl_seconds == 300
         assert tool.rate_limit_per_minute == 60

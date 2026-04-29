@@ -47,6 +47,7 @@ from typing import Final, Literal
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from kosmos.plugins import canonical_acknowledgment
+from kosmos.tools.models import AdapterRealDomainPolicy  # noqa: F401 — re-exported via __all__
 from kosmos.tools.registry import AdapterRegistration
 
 # H5 (review eval): tool_id MUST be ASCII to prevent Unicode confusable
@@ -208,6 +209,16 @@ class PluginManifest(BaseModel):
             "point — this field drives the TUI consent overlay copy."
         ),
     )
+    dpa_reference: str | None = Field(
+        default=None,
+        description=(
+            "PIPA §26 data processing trustee reference URL or citation. "
+            "Required (non-null) when adapter.policy derives pipa_class != 'non_personal' "
+            "(Spec 024 V2 invariant). Distinct from pipa_trustee_acknowledgment — "
+            "this is the agency-published policy URL the adapter cites for the "
+            "data processing trustee relationship."
+        ),
+    )
 
     @field_validator("otel_attributes")
     @classmethod
@@ -293,6 +304,7 @@ class PluginManifest(BaseModel):
 
 
 __all__ = [
+    "AdapterRealDomainPolicy",
     "PIPATrusteeAcknowledgment",
     "PluginManifest",
 ]

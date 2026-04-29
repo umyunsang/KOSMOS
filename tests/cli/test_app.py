@@ -125,16 +125,13 @@ class TestRunReplSuccess:
 
 
 class TestRuntimeWiring:
-    """Verify the CLI wires PermissionPipeline + RecoveryExecutor into QueryEngine.
+    """Verify the CLI wires RecoveryExecutor into QueryEngine.
 
-    Regression: earlier revisions constructed PermissionPipeline but never
-    passed it to QueryEngine, so the 7-step gauntlet was silently bypassed.
-    Similarly RecoveryExecutor must be shared between ToolExecutor and the
-    pipeline so circuit breakers + caches survive the request.
+    Epic δ #2295: PermissionPipeline removed. RecoveryExecutor sharing
+    with ToolExecutor is still validated.
     """
 
-    def test_permission_pipeline_and_recovery_executor_wired_to_query_engine(self) -> None:
-        from kosmos.permissions.pipeline import PermissionPipeline
+    def test_recovery_executor_wired_to_query_engine(self) -> None:
         from kosmos.recovery.executor import RecoveryExecutor
         from kosmos.tools.executor import ToolExecutor
 
@@ -160,45 +157,7 @@ class TestRuntimeWiring:
             result = runner.invoke(_app, [])
 
         assert result.exit_code == 0
-        assert isinstance(captured["permission_pipeline"], PermissionPipeline)
         assert captured["permission_session"] is not None
         assert isinstance(captured["tool_executor"], ToolExecutor)
-        # ToolExecutor must own the shared RecoveryExecutor; the pipeline sees
-        # the same executor so circuit breakers survive across the request.
         tool_exec = captured["tool_executor"]
         assert isinstance(tool_exec._recovery_executor, RecoveryExecutor)
-
-    def test_recovery_executor_and_pipeline_share_metrics_and_event_logger(self) -> None:
-        """The shared observability instances must reach recovery + pipeline."""
-        from kosmos.observability import MetricsCollector, ObservabilityEventLogger
-
-        captured: dict[str, object] = {}
-
-        class _FakeEngine:
-            def __init__(self, **kwargs: object) -> None:
-                captured.update(kwargs)
-
-        mock_repl_instance = MagicMock()
-
-        async def mock_run() -> None:
-            return None
-
-        mock_repl_instance.run = mock_run
-
-        with (
-            patch("kosmos.llm.client.LLMClient"),
-            patch("kosmos.engine.engine.QueryEngine", _FakeEngine),
-            patch("kosmos.cli.app.EventRenderer"),
-            patch("kosmos.cli.app.REPLLoop", return_value=mock_repl_instance),
-        ):
-            runner.invoke(_app, [])
-
-        pipeline = captured["permission_pipeline"]
-        tool_exec = captured["tool_executor"]
-        # The pipeline and the tool executor's recovery layer must share
-        # the *same* metrics + event logger instances.
-        assert isinstance(pipeline._metrics, MetricsCollector)  # type: ignore[attr-defined]
-        assert isinstance(pipeline._event_logger, ObservabilityEventLogger)  # type: ignore[attr-defined]
-        recovery = tool_exec._recovery_executor
-        assert recovery._metrics is pipeline._metrics  # type: ignore[attr-defined]
-        assert recovery._event_logger is pipeline._event_logger  # type: ignore[attr-defined]

@@ -11,26 +11,33 @@ full V1-V6 backstop when registered via the normal path.
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
+
 import pytest
 from pydantic import ValidationError
 
 from kosmos.tools.errors import RegistrationError
-from kosmos.tools.models import GovAPITool
+from kosmos.tools.models import AdapterRealDomainPolicy, GovAPITool
 from kosmos.tools.registry import ToolRegistry
 from tests.engine.conftest import MockInput, MockOutput
 
 # ---------------------------------------------------------------------------
 # Helper: clone of koroad adapter with deliberate V6 violation
+# After Epic δ #2295 Path B, V6 is enforced via policy.citizen_facing_gate.
+# A V6 violation is triggered by auth_type="public" + policy.citizen_facing_gate
+# that derives AAL3 (sign or submit), since public only allows public/AAL1.
 # ---------------------------------------------------------------------------
 
 
 def _make_broken_tool(
     *,
     auth_type: str,
-    auth_level: str,
-    requires_auth: bool = True,
+    citizen_facing_gate: str = "sign",
 ) -> GovAPITool:
-    """Build a GovAPITool with deliberate auth_type ↔ auth_level mismatch."""
+    """Build a GovAPITool with deliberate auth_type ↔ derived_auth_level V6 violation.
+
+    auth_type='public' with citizen_facing_gate='sign' (derives AAL3) triggers V6.
+    """
     return GovAPITool(
         id="broken_koroad_clone",
         name_ko="깨진 테스트 도구",
@@ -41,16 +48,16 @@ def _make_broken_tool(
         input_schema=MockInput,
         output_schema=MockOutput,
         search_hint="broken clone for V6 violation test",
-        auth_level=auth_level,  # type: ignore[arg-type]
-        pipa_class="non_personal",
-        is_irreversible=False,
-        dpa_reference=None,
         is_core=False,
-        requires_auth=requires_auth,
-        is_personal_data=False,
         is_concurrency_safe=True,
         cache_ttl_seconds=0,
         rate_limit_per_minute=60,
+        policy=AdapterRealDomainPolicy(
+            real_classification_url="https://test.example.com/policy",
+            real_classification_text="테스트 V6 위반 정책",
+            citizen_facing_gate=citizen_facing_gate,  # type: ignore[arg-type]
+            last_verified=datetime(2026, 4, 29, tzinfo=UTC),
+        ),
     )
 
 
@@ -60,17 +67,18 @@ def _make_broken_tool(
 
 
 def test_v6_violation_raises_on_construction() -> None:
-    """FR-009 V6: auth_type='public' + auth_level='AAL2' is disallowed.
+    """FR-009 V6: auth_type=public + policy.citizen_facing_gate=sign (derives AAL3) is disallowed.
 
-    The V6 @model_validator catches this at construction time (not just
-    at ToolRegistry.register()), so the mismatch raises immediately.
+    After Epic δ #2295 Path B, V6 is enforced via policy.citizen_facing_gate derivation.
+    auth_type='public' only permits public/AAL1; 'sign' derives AAL3 → V6 violation.
+    The V6 @model_validator catches this at construction time.
     """
     with pytest.raises(ValidationError) as exc_info:
-        _make_broken_tool(auth_type="public", auth_level="AAL2")
+        _make_broken_tool(auth_type="public", citizen_facing_gate="sign")
 
     errors = exc_info.value.errors()
-    assert any("auth" in str(e).lower() for e in errors), (
-        f"Expected auth-related ValidationError, got: {errors}"
+    assert any("v6" in str(e).lower() or "auth" in str(e).lower() for e in errors), (
+        f"Expected V6 auth-related ValidationError, got: {errors}"
     )
 
 
@@ -92,6 +100,8 @@ def test_v6_violation_also_blocked_by_registry() -> None:
     # Construct via model_construct to bypass pydantic validators (simulates
     # a supply-chain attack that bypasses construction-time checks).
     # The registry backstop must catch this.
+    # After Epic δ #2295 Path B: policy.citizen_facing_gate='sign' derives AAL3,
+    # which conflicts with auth_type='public' (only permits public/AAL1).
     try:
         broken = GovAPITool.model_construct(
             id="bypass_attempt",
@@ -103,16 +113,16 @@ def test_v6_violation_also_blocked_by_registry() -> None:
             input_schema=MockInput,
             output_schema=MockOutput,
             search_hint="bypass test",
-            auth_level="AAL2",  # violates V6
-            pipa_class="non_personal",
-            is_irreversible=False,
-            dpa_reference=None,
             is_core=False,
-            requires_auth=True,
-            is_personal_data=False,
             is_concurrency_safe=True,
             cache_ttl_seconds=0,
             rate_limit_per_minute=60,
+            policy=AdapterRealDomainPolicy(
+                real_classification_url="https://test.example.com/policy",
+                real_classification_text="바이패스 V6 위반 정책",
+                citizen_facing_gate="sign",  # derives AAL3 — violates V6 with public auth_type
+                last_verified=datetime(2026, 4, 29, tzinfo=UTC),
+            ),
         )
         # If model_construct succeeded, the registry backstop must reject it
         with pytest.raises((ValidationError, ValueError, RegistrationError)) as exc_info:

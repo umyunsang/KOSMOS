@@ -88,6 +88,18 @@ def _validate_pipa(pii: bool, ack: PIPATrusteeArgs | None) -> str | None:
 
 
 def _manifest_dict(opts: InitOptions) -> dict[str, object]:
+    # Epic δ #2295 Path B: standalone auth_level / pipa_class / is_personal_data removed.
+    # The adapter now carries a policy block with citizen_facing_gate; auth_level and
+    # pipa_class are derived at runtime from policy.citizen_facing_gate via
+    # kosmos.tools.policy_derivation. Layer 1 (green) maps to "read-only" gate → AAL1.
+    # Layer 2 (orange) maps to "login" gate → AAL2. Layer 3 (red) maps to "sign" gate → AAL3.
+    layer_to_gate = {1: "read-only", 2: "login", 3: "sign"}
+    layer_to_gate_text = {
+        1: "공공데이터포털 이용약관 제7조 (공공데이터의 제공 및 이용)",
+        2: "본인확인 서비스 이용약관 (로그인 필요)",
+        3: "전자서명법 제5조 (서명 및 제출 행위)",
+    }
+    citizen_gate = layer_to_gate[opts.layer]
     return {
         "plugin_id": opts.name,
         "version": "0.1.0",
@@ -100,9 +112,12 @@ def _manifest_dict(opts: InitOptions) -> dict[str, object]:
             "published_tier_minimum": "digital_onepass_level1_aal1",
             "nist_aal_hint": "AAL1",
             "auth_type": "api_key",
-            "auth_level": "AAL1",
-            "pipa_class": "personal_standard" if opts.pii else "non_personal",
-            "is_personal_data": opts.pii,
+            "policy": {
+                "real_classification_url": "https://www.data.go.kr/policy",
+                "real_classification_text": layer_to_gate_text[opts.layer],
+                "citizen_facing_gate": citizen_gate,
+                "last_verified": "2026-04-29T00:00:00Z",
+            },
         },
         "tier": opts.tier,
         "mock_source_spec": (
@@ -122,6 +137,7 @@ def _manifest_dict(opts: InitOptions) -> dict[str, object]:
             if opts.pipa is not None
             else None
         ),
+        "dpa_reference": None,
         "slsa_provenance_url": (
             f"https://github.com/kosmos-plugin-store/kosmos-plugin-{opts.name}/"
             f"releases/download/v0.1.0/{opts.name}.intoto.jsonl"
@@ -227,6 +243,20 @@ def _build_tool() -> Any:
     """
     from kosmos.tools.models import GovAPITool
 
+    # Epic δ #2295 Path B: policy block replaces standalone auth_level /
+    # pipa_class / is_irreversible / dpa_reference / is_personal_data fields.
+    # auth_level and pipa_class are derived at runtime from
+    # policy.citizen_facing_gate via kosmos.tools.policy_derivation.
+    from datetime import datetime, timezone
+
+    from kosmos.tools.models import AdapterRealDomainPolicy
+
+    policy = AdapterRealDomainPolicy(
+        real_classification_url="https://www.data.go.kr/policy",
+        real_classification_text="공공데이터포털 이용약관 제7조 (공공데이터의 제공 및 이용)",
+        citizen_facing_gate="read-only",
+        last_verified=datetime(2026, 4, 29, tzinfo=timezone.utc),
+    )
     return GovAPITool(
         id="plugin.{name}.lookup",
         name_ko="{name} 조회",
@@ -237,11 +267,7 @@ def _build_tool() -> Any:
         input_schema=LookupInput,
         output_schema=LookupOutput,
         search_hint="{name} 조회 lookup",
-        auth_level="AAL1",
-        pipa_class="non_personal",
-        is_irreversible=False,
-        dpa_reference=None,
-        is_personal_data=False,
+        policy=policy,
         primitive="lookup",
         published_tier_minimum="digital_onepass_level1_aal1",
         nist_aal_hint="AAL1",
@@ -304,8 +330,18 @@ _FIXTURE_PATH = (
 
 def _build_tool() -> Any:
     """Construct the GovAPITool registry entry on first access (PEP 562)."""
-    from kosmos.tools.models import GovAPITool
+    # Epic δ #2295 Path B: policy block replaces standalone auth_level /
+    # pipa_class / is_irreversible / dpa_reference / is_personal_data fields.
+    from datetime import datetime, timezone
 
+    from kosmos.tools.models import AdapterRealDomainPolicy, GovAPITool
+
+    policy = AdapterRealDomainPolicy(
+        real_classification_url="https://www.data.go.kr/policy",
+        real_classification_text="공공데이터포털 이용약관 제7조 (공공데이터의 제공 및 이용)",
+        citizen_facing_gate="read-only",
+        last_verified=datetime(2026, 4, 29, tzinfo=timezone.utc),
+    )
     return GovAPITool(
         id="plugin.{name}.lookup",
         name_ko="{name} 조회",
@@ -316,11 +352,7 @@ def _build_tool() -> Any:
         input_schema=LookupInput,
         output_schema=LookupOutput,
         search_hint="{name} 조회 lookup",
-        auth_level="AAL1",
-        pipa_class="non_personal",
-        is_irreversible=False,
-        dpa_reference=None,
-        is_personal_data=False,
+        policy=policy,
         primitive="lookup",
         published_tier_minimum="digital_onepass_level1_aal1",
         nist_aal_hint="AAL1",

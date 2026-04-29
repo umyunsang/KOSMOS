@@ -28,6 +28,9 @@ def _base_kwargs(**overrides: object) -> dict[str, object]:
     V12_GA_ACTIVE=True (Spec 031 T079 GA cut). Tests that need to exercise
     the pre-v1.2 compatibility window (None allowed) must ``monkeypatch`` the
     toggle off explicitly.
+
+    Note: KOSMOS-invented Spec 033/024/025 fields (auth_level, pipa_class,
+    dpa_reference) removed from AdapterRegistration in Epic δ #2295.
     """
     base: dict[str, object] = {
         "tool_id": "fake_adapter",
@@ -38,9 +41,6 @@ def _base_kwargs(**overrides: object) -> dict[str, object]:
         "published_tier_minimum": "digital_onepass_level2_aal2",
         "nist_aal_hint": "AAL2",
         "auth_type": "api_key",
-        "auth_level": "AAL2",
-        "pipa_class": "personal_standard",
-        "dpa_reference": "dpa-test-fake-v1",
     }
     base.update(overrides)
     return base

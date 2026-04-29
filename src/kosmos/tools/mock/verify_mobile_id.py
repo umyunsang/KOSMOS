@@ -29,8 +29,6 @@ ADAPTER_REGISTRATION = AdapterRegistration(
     source_mode=AdapterSourceMode.OOS,
     published_tier_minimum="mobile_id_mdl_aal2",
     nist_aal_hint="AAL2",
-    requires_auth=True,
-    is_personal_data=True,
     is_concurrency_safe=False,
     cache_ttl_seconds=0,
     rate_limit_per_minute=10,
@@ -39,10 +37,6 @@ ADAPTER_REGISTRATION = AdapterRegistration(
         "en": ["mobile id", "mobile driver license", "mdl", "mobile resident card"],
     },
     auth_type="oauth",
-    auth_level="AAL2",
-    pipa_class="personal_unique_id",
-    is_irreversible=False,
-    dpa_reference="PIPA §26 — 수탁자 처리 (위탁)",
 )
 
 # Recorded fixture — default id_type is 'mdl' (모바일운전면허).

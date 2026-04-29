@@ -37,7 +37,11 @@ dependencies = [
 
 [project.scripts]
 kosmos = "kosmos.cli.app:main"
-kosmos-permissions = "kosmos.permissions.cli:main"
+# kosmos-permissions = "kosmos.permissions.cli:main" — removed Epic δ #2295 (Codex P1).
+# The KOSMOS-invented Spec 033 permission CLI (mode/rules/killswitch ops) is
+# deleted alongside its module. Spec 035 receipt-ledger verification has its
+# own console-script-free workflow via `python -m kosmos.permissions.ledger_verify`
+# or programmatic `kosmos.permissions.ledger_verify.verify_ledger(...)` callers.
 kosmos-plugin-init = "kosmos.plugins.cli_init:main"
 kosmos-plugin-validate = "kosmos.plugins.checks.framework:_cli_main"
 

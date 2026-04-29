@@ -20,6 +20,7 @@ End-to-end assertions:
 from __future__ import annotations
 
 import json
+from datetime import UTC, datetime
 from typing import Any
 
 import pytest
@@ -29,7 +30,7 @@ from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanE
 from pydantic import BaseModel
 
 from kosmos.tools.executor import ToolExecutor
-from kosmos.tools.models import GovAPITool
+from kosmos.tools.models import AdapterRealDomainPolicy, GovAPITool
 from kosmos.tools.models import LookupError as LookupErrorModel
 from kosmos.tools.registry import ToolRegistry
 
@@ -82,17 +83,17 @@ def _make_tool(*, tool_id: str = "safety_wiring_probe") -> GovAPITool:
         category=["테스트"],
         endpoint="https://example.invalid/noop",
         auth_type="public",
-        auth_level="public",
-        requires_auth=False,
-        pipa_class="non_personal",
-        is_personal_data=False,
-        is_irreversible=False,
-        dpa_reference=None,
         is_concurrency_safe=True,
         rate_limit_per_minute=1000,
         input_schema=_ProbeInput,
         output_schema=_ProbeOutput,
         search_hint="safety wiring probe",
+        policy=AdapterRealDomainPolicy(
+            real_classification_url="https://example.invalid/policy",
+            real_classification_text="안전 wiring 테스트 정책 (read-only 공공 데이터)",
+            citizen_facing_gate="read-only",
+            last_verified=datetime(2026, 4, 29, tzinfo=UTC),
+        ),
     )
 
 

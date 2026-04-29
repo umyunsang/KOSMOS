@@ -25,6 +25,8 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import SimpleSpanProcessor
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
 
+from kosmos.tools.models import AdapterRealDomainPolicy
+
 # ``kosmos.primitives.__init__`` re-exports the primitive *functions* under the
 # same names as the submodules, which shadows them in the package namespace.
 # Resolve the modules via importlib to get the real module objects.
@@ -106,17 +108,17 @@ async def test_submit_emits_gen_ai_tool_loop_iteration_span(
         source_mode=AdapterSourceMode.HARNESS_ONLY,
         published_tier_minimum="ganpyeon_injeung_kakao_aal2",
         nist_aal_hint="AAL2",
-        requires_auth=True,
-        is_personal_data=False,
         is_concurrency_safe=False,
         cache_ttl_seconds=0,
         rate_limit_per_minute=10,
         search_hint={"ko": ["otel"], "en": ["otel"]},
         auth_type="oauth",
-        auth_level="AAL2",
-        pipa_class="non_personal",
-        dpa_reference=None,
-        is_irreversible=False,
+        policy=AdapterRealDomainPolicy(
+            real_classification_url="https://example.gov.kr/policy/submit",
+            real_classification_text="OTEL 테스트 submit 정책",
+            citizen_facing_gate="submit",
+            last_verified=datetime(2026, 4, 29, tzinfo=UTC),
+        ),
     )
 
     async def _invoke(_params: dict[str, object]) -> SubmitOutput:
