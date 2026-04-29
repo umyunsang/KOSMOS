@@ -27,7 +27,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
-from pydantic import BaseModel, ConfigDict, Field, RootModel
+from pydantic import BaseModel, ConfigDict, Field, RootModel, model_validator
 
 from kosmos.tools.models import (
     AdapterRealDomainPolicy,
@@ -241,42 +241,150 @@ class _SubscribeInputForLLM(BaseModel):
 
 
 class _VerifyInputForLLM(BaseModel):
-    """LLM-visible verify input schema with permissive ``family_hint: str``.
+    """LLM-visible verify input schema — accepts both citizen-shape and legacy-shape.
 
-    The internal :class:`kosmos.primitives.verify.VerifyInput` uses a 6-arm
-    ``FamilyHint`` Literal (deferred to Epic ζ #2297 for full 11-arm expansion).
-    For LLM exposure we use plain ``str`` so the OpenAI schema published to
-    FriendliAI does not lock the LLM out of the 5 Epic ε families
-    (simple_auth_module, modid, kec, geumyung_module, any_id_sso). The system
-    prompt's ``<verify_families>`` table is the source of valid values; the
-    dispatcher's ``_VERIFY_ADAPTERS`` registry rejects unknown families with
-    ``VerifyMismatchError``.
+    **Citizen-facing shape** (emitted by K-EXAONE per ``prompts/system_v1.md``
+    v2 ``<verify_chain_pattern>``):
+
+    .. code-block:: json
+
+        {
+          "tool_id": "mock_verify_module_modid",
+          "params": {
+            "scope_list": ["lookup:hometax.simplified", "submit:hometax.tax-return"],
+            "purpose_ko": "종합소득세 신고",
+            "purpose_en": "Comprehensive income tax filing"
+          }
+        }
+
+    **Legacy shape** (used by direct dispatcher callers — backward compat):
+
+    .. code-block:: json
+
+        {"family_hint": "modid", "session_context": {...}}
+
+    The ``@model_validator(mode="before")`` pre-validator translates the
+    citizen shape to the legacy shape before field validation.  Direct-dispatcher
+    callers that already supply ``family_hint`` pass through unchanged
+    (idempotent guard).
+
+    For the LLM the OpenAI-compat schema published to FriendliAI lists
+    ``tool_id`` + ``params`` as the primary citizen-facing fields.
+    ``family_hint`` / ``session_context`` are retained (with ``(legacy)``
+    description tags) for backward compatibility with existing integration tests.
+
+    Fix: resolves the schema↔prompt contradiction that caused K-EXAONE to fall
+    back to a conversational "no tool" response instead of emitting verify().
+    (Epic ζ #2297, FR-008 / FR-008a / FR-008b).
+
+    References
+    ----------
+    - ``specs/2297-zeta-e2e-smoke/contracts/verify-input-shape.md`` — I-V1 … I-V8
+    - ``specs/2297-zeta-e2e-smoke/data-model.md § 1``
+    - ``specs/2297-zeta-e2e-smoke/research.md § Decision 1 + Decision 2``
     """
 
+    # Pydantic v2 ConfigDict — frozen for immutability; extra="allow" is
+    # intentionally NOT set so unexpected fields fail loudly.
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    family_hint: str = Field(
-        min_length=1,
-        max_length=64,
+    # ------------------------------------------------------------------
+    # Citizen-facing canonical fields (LLM-emitted shape)
+    # ------------------------------------------------------------------
+
+    tool_id: str | None = Field(
+        default=None,
         description=(
-            "Authentication family identifier. One of the 10 active values "
-            "documented in the system prompt's <verify_families> table: "
+            "Verify adapter tool_id. MUST match a row in the system prompt's "
+            "<verify_families> table "
+            "(e.g. 'mock_verify_module_modid'). "
+            "Pre-validator translates this to family_hint."
+        ),
+    )
+    params: dict[str, object] | None = Field(
+        default=None,
+        description=(
+            "Adapter-specific input. Must include scope_list (list[str] of "
+            "'<verb>:<adapter_family>.<action>' scopes), purpose_ko, "
+            "purpose_en. Pre-validator packs this into session_context."
+        ),
+    )
+
+    # ------------------------------------------------------------------
+    # Legacy fields (preserved for backward compatibility)
+    # ------------------------------------------------------------------
+
+    family_hint: str = Field(
+        default="",
+        description=(
+            "(legacy) Authentication family identifier. One of the 10 active "
+            "values documented in the system prompt's <verify_families> table: "
             "gongdong_injeungseo / geumyung_injeungseo / ganpyeon_injeung / "
             "mobile_id / mydata / simple_auth_module / modid / kec / "
-            "geumyung_module / any_id_sso. The dispatcher returns "
-            "VerifyMismatchError for unknown values."
+            "geumyung_module / any_id_sso. "
+            "Set automatically from tool_id by the pre-validator when "
+            "citizen-shape input is supplied."
         ),
     )
     session_context: dict[str, object] = Field(
         default_factory=dict,
         description=(
-            "Adapter-specific session evidence. For Mock-mode chains the LLM "
-            "passes scope_list (list[str] of '<verb>:<adapter_family>.<action>' "
-            "scopes), purpose_ko, purpose_en. The verify mock issues a "
-            "DelegationContext (or IdentityAssertion for any_id_sso) bound to "
-            "the citizen session."
+            "(legacy) Adapter-specific session evidence. For Mock-mode chains "
+            "the LLM passes scope_list (list[str] of "
+            "'<verb>:<adapter_family>.<action>' scopes), purpose_ko, "
+            "purpose_en. Set automatically from params by the pre-validator "
+            "when citizen-shape input is supplied."
         ),
     )
+
+    # ------------------------------------------------------------------
+    # Pre-validator (FR-008a / I-V1 … I-V8)
+    # ------------------------------------------------------------------
+
+    @model_validator(mode="before")
+    @classmethod
+    def translate_tool_id_shape(cls, data: dict[str, object]) -> dict[str, object]:
+        """Translate citizen-shape ``{tool_id, params}`` → legacy-shape.
+
+        Idempotent — if *data* already has ``family_hint`` set (non-empty),
+        the citizen-shape fields are ignored (I-V2 / I-V5).
+
+        Raises ``ValueError`` for an unknown ``tool_id`` (I-V3 / FR-010).
+        """
+        if not isinstance(data, dict):
+            return data
+
+        # Idempotency guard: already in legacy shape (I-V2 / I-V5)
+        if data.get("family_hint"):
+            return data
+
+        # Citizen shape: translate tool_id → family_hint (I-V1)
+        tool_id = data.get("tool_id")
+        if tool_id:
+            from kosmos.tools.verify_canonical_map import (  # noqa: PLC0415
+                resolve_family,
+            )
+
+            family = resolve_family(str(tool_id))
+            if family is None:
+                raise ValueError(f"unknown verify tool_id: {tool_id!r}")
+
+            # Build a fresh dict — never mutate caller's original (I-V8)
+            data = dict(data)
+            data["family_hint"] = family
+
+            # Pack params → session_context (merge; citizen params win on conflict)
+            params = data.get("params")
+            existing_ctx: dict[str, object] = {}
+            raw_ctx = data.get("session_context")
+            if isinstance(raw_ctx, dict):
+                existing_ctx = {str(k): v for k, v in raw_ctx.items()}
+            if isinstance(params, dict):
+                data["session_context"] = {**existing_ctx, **params}
+            elif params is None:
+                data.setdefault("session_context", existing_ctx)
+
+        return data
 
 
 VERIFY_TOOL = GovAPITool(
