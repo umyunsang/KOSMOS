@@ -15,9 +15,8 @@ calls to ``LookupError(reason="auth_required")`` before handle() is reached
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
-
 import logging
+from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Any, Literal
 
@@ -298,9 +297,9 @@ NFA_EMERGENCY_INFO_SERVICE_TOOL = GovAPITool(
     ),
     policy=AdapterRealDomainPolicy(
         real_classification_url="https://www.nfa.go.kr/nfa/main/contents.do?menuKey=66",
-        real_classification_text="소방청 공공데이터 이용약관 — 119 응급서비스 데이터 비상업적 공공 이용 허가",  # TODO: verify URL
+        real_classification_text="소방청 공공데이터 이용약관 — 119 응급서비스 데이터 비상업적 공공 이용 허가",  # TODO: verify URL  # noqa: E501
         citizen_facing_gate="login",  # api_key auth_type — requires serviceKey credential (AAL2)
-        last_verified=datetime(2026, 4, 29, tzinfo=timezone.utc),
+        last_verified=datetime(2026, 4, 29, tzinfo=UTC),
     ),
     is_concurrency_safe=True,
     cache_ttl_seconds=86400,

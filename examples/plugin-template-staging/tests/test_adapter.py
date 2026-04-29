@@ -9,7 +9,6 @@ ones once the adapter calls the upstream public API.
 from __future__ import annotations
 
 import pytest
-
 from plugin_my_plugin.adapter import adapter
 from plugin_my_plugin.schema import LookupInput, LookupOutput
 

@@ -15,9 +15,8 @@ calls to ``LookupError(reason="auth_required")`` before handle() is reached
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
-
 import logging
+from datetime import UTC, datetime
 from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, RootModel
@@ -192,9 +191,9 @@ MOHW_WELFARE_ELIGIBILITY_SEARCH_TOOL = GovAPITool(
     ),
     policy=AdapterRealDomainPolicy(
         real_classification_url="https://www.mohw.go.kr/react/policy/index.jsp?PAR_MENU_ID=06&MENU_ID=06",
-        real_classification_text="보건복지부 공공데이터 이용약관 — 복지서��스 적격 조회 데이터 비상업적 공공 이용 허가",  # TODO: verify URL
+        real_classification_text="보건복지부 공공데이터 이용약관 — 복지서��스 적격 조회 데이터 비상업적 공공 이용 허가",  # TODO: verify URL  # noqa: E501
         citizen_facing_gate="login",
-        last_verified=datetime(2026, 4, 29, tzinfo=timezone.utc),
+        last_verified=datetime(2026, 4, 29, tzinfo=UTC),
     ),
     is_concurrency_safe=True,
     cache_ttl_seconds=0,

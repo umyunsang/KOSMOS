@@ -24,7 +24,6 @@ from kosmos.llm.usage import UsageTracker
 from kosmos.tools.executor import ToolExecutor
 from kosmos.tools.registry import ToolRegistry
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------

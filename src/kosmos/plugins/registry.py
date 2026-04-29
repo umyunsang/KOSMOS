@@ -234,14 +234,12 @@ def register_plugin_adapter(
     # ``model_dump()`` output but are NOT stored fields — passing them back to
     # the constructor would be rejected by ``extra="forbid"``. Exclude them from
     # the adapter sub-dict before re-validating so the backstop keeps working.
-    _ADAPTER_COMPUTED: frozenset[str] = frozenset({"auth_level", "pipa_class", "is_irreversible"})
+    adapter_computed: frozenset[str] = frozenset({"auth_level", "pipa_class", "is_irreversible"})
     try:
         raw_dump = manifest.model_dump()
         if "adapter" in raw_dump and isinstance(raw_dump["adapter"], dict):
             raw_dump["adapter"] = {
-                k: v
-                for k, v in raw_dump["adapter"].items()
-                if k not in _ADAPTER_COMPUTED
+                k: v for k, v in raw_dump["adapter"].items() if k not in adapter_computed
             }
         PluginManifest.model_validate(raw_dump)
     except Exception as exc:  # noqa: BLE001 — Pydantic ValidationError fan-out.

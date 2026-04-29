@@ -11,7 +11,7 @@ SC-003: All adapter details are hidden; the LLM only interacts with this surface
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from pydantic import RootModel
 
@@ -76,9 +76,11 @@ RESOLVE_LOCATION_TOOL = GovAPITool(
     ),
     policy=AdapterRealDomainPolicy(
         real_classification_url="https://www.data.go.kr/policy/privacyPolicy.do",
-        real_classification_text="공공데이터포털 개인정보처리방침 (KOSMOS 내부 geocoding 표면 — 시민 PII 미포함)",
+        real_classification_text=(
+            "공공데이터포털 개인정보처리방침 (KOSMOS 내부 geocoding 표면 — 시민 PII 미포함)"
+        ),
         citizen_facing_gate="read-only",
-        last_verified=datetime(2026, 4, 29, tzinfo=timezone.utc),
+        last_verified=datetime(2026, 4, 29, tzinfo=UTC),
     ),
     is_concurrency_safe=True,
     cache_ttl_seconds=300,
@@ -128,9 +130,11 @@ LOOKUP_SEARCH_TOOL = GovAPITool(
     ),
     policy=AdapterRealDomainPolicy(
         real_classification_url="https://www.data.go.kr/policy/privacyPolicy.do",
-        real_classification_text="공공데이터포털 개인정보처리방침 (KOSMOS 내부 lookup 메타-표면 — 시민 PII 미포함)",
+        real_classification_text=(
+            "공공데이터포털 개인정보처리방침 (KOSMOS 내부 lookup 메타-표면 — 시민 PII 미포함)"
+        ),
         citizen_facing_gate="read-only",
-        last_verified=datetime(2026, 4, 29, tzinfo=timezone.utc),
+        last_verified=datetime(2026, 4, 29, tzinfo=UTC),
     ),
     is_concurrency_safe=True,
     cache_ttl_seconds=0,

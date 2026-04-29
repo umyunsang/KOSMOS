@@ -17,9 +17,8 @@ session identity is present.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
-
 import logging
+from datetime import UTC, datetime
 from typing import Any
 
 import httpx
@@ -278,9 +277,9 @@ NMC_EMERGENCY_SEARCH_TOOL = GovAPITool(
     # Epic δ #2295: Real-time ER bed availability — login gate (citizen session required).
     policy=AdapterRealDomainPolicy(
         real_classification_url="https://www.nemc.or.kr/info/dataInfoView.do",
-        real_classification_text="국립의료원 응급의료 공공데이터 이용약관 — 응급실 정보 데이터 비상업적 공공 이용 허가",  # TODO: verify URL
+        real_classification_text="국립의료원 응급의료 공공데이터 이용약관 — 응급실 정보 데이터 비상업적 공공 이용 허가",  # TODO: verify URL  # noqa: E501
         citizen_facing_gate="login",
-        last_verified=datetime(2026, 4, 29, tzinfo=timezone.utc),
+        last_verified=datetime(2026, 4, 29, tzinfo=UTC),
     ),
     # Metadata for T033 registration:
     is_concurrency_safe=False,

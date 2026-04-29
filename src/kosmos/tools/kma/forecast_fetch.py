@@ -26,7 +26,7 @@ Registration:
 from __future__ import annotations
 
 import logging
-from datetime import UTC, datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 import httpx
@@ -34,7 +34,12 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from kosmos.tools.errors import LookupErrorReason, _require_env
 from kosmos.tools.kma.projection import KMADomainError, latlon_to_lcc
-from kosmos.tools.models import AdapterRealDomainPolicy, GovAPITool, LookupError, LookupTimeseries  # noqa: A004
+from kosmos.tools.models import (  # noqa: A004
+    AdapterRealDomainPolicy,
+    GovAPITool,
+    LookupError,  # noqa: A004 — domain-specific Pydantic model, intentional shadow
+    LookupTimeseries,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -359,9 +364,9 @@ KMA_FORECAST_FETCH_TOOL = GovAPITool(
     search_hint="단기예보 날씨 기온 강수 short-term weather forecast temperature precipitation",
     policy=AdapterRealDomainPolicy(
         real_classification_url="https://www.kma.go.kr/data/policy.html",
-        real_classification_text="기상청 공공데이터 이용약관 — 기상예보 데이터 비상업적 공공 이용 허가",  # TODO: verify URL
+        real_classification_text="기상청 공공데이터 이용약관 — 기상예보 데이터 비상업적 공공 이용 허가",  # TODO: verify URL  # noqa: E501
         citizen_facing_gate="read-only",
-        last_verified=datetime(2026, 4, 29, tzinfo=timezone.utc),
+        last_verified=datetime(2026, 4, 29, tzinfo=UTC),
     ),
     is_concurrency_safe=True,
     cache_ttl_seconds=0,

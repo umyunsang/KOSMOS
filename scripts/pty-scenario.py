@@ -310,7 +310,7 @@ def cmd_greeting(_args: argparse.Namespace) -> HarnessResult:
         log.debug("boot done in %dms", result.boot_ms)
 
         # Phase 2: send Korean greeting.
-        _send(fd, "안녕하세요\r".encode("utf-8"), f"{scenario}-input")
+        _send(fd, "안녕하세요\r".encode(), f"{scenario}-input")
         send_ts = time.time()
 
         # Phase 3: wait for first assistant_chunk frame.
@@ -373,7 +373,7 @@ def cmd_lookup_emergency_room(_args: argparse.Namespace) -> HarnessResult:
         log.debug("boot done in %dms", result.boot_ms)
 
         # Phase 2: first message.
-        _send(fd, "응급실 알려줘\r".encode("utf-8"), f"{scenario}-turn1")
+        _send(fd, "응급실 알려줘\r".encode(), f"{scenario}-turn1")
         turn1_deadline = time.time() + DEFAULT_TURN_TIMEOUT_MS / 1000
 
         def _has_any_tool_call(frames: list[dict]) -> bool:
@@ -382,7 +382,7 @@ def cmd_lookup_emergency_room(_args: argparse.Namespace) -> HarnessResult:
         _drain_until(fd, result.captured_stdout, turn1_deadline, _has_any_tool_call, f"{scenario}-tc1")
 
         # Phase 3: second message with location qualifier.
-        _send(fd, "강남구 응급실\r".encode("utf-8"), f"{scenario}-turn2")
+        _send(fd, "강남구 응급실\r".encode(), f"{scenario}-turn2")
         turn2_deadline = time.time() + DEFAULT_TURN_TIMEOUT_MS / 1000
         _drain_until(fd, result.captured_stdout, turn2_deadline, _has_any_tool_call, f"{scenario}-tc2")
 
@@ -467,7 +467,7 @@ def cmd_submit_fine_pay(args: argparse.Namespace) -> HarnessResult:
         log.debug("boot done in %dms", result.boot_ms)
 
         # Phase 2: send citizen prompt that triggers submit primitive.
-        _send(fd, "교통 범칙금 납부할게\r".encode("utf-8"), f"{scenario}-input")
+        _send(fd, "교통 범칙금 납부할게\r".encode(), f"{scenario}-input")
         send_ts = time.time()
 
         # Phase 3: wait for permission_request frame.
@@ -569,7 +569,7 @@ def cmd_verify_gongdong(_args: argparse.Namespace) -> HarnessResult:
         log.debug("boot done in %dms", result.boot_ms)
 
         # Phase 2: send citizen verify prompt.
-        _send(fd, "공동인증서로 본인인증 부탁해\r".encode("utf-8"), f"{scenario}-input")
+        _send(fd, "공동인증서로 본인인증 부탁해\r".encode(), f"{scenario}-input")
         send_ts = time.time()
 
         # Phase 3: wait for tool_call{name:"verify"}.

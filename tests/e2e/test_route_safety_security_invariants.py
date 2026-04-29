@@ -67,7 +67,7 @@ def _make_broken_tool(
 
 
 def test_v6_violation_raises_on_construction() -> None:
-    """FR-009 V6: auth_type='public' + policy.citizen_facing_gate='sign' (derives AAL3) is disallowed.
+    """FR-009 V6: auth_type=public + policy.citizen_facing_gate=sign (derives AAL3) is disallowed.
 
     After Epic δ #2295 Path B, V6 is enforced via policy.citizen_facing_gate derivation.
     auth_type='public' only permits public/AAL1; 'sign' derives AAL3 → V6 violation.

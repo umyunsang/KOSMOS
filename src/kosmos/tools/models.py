@@ -53,6 +53,7 @@ Ministry = Literal[
     "OTHER",  # transitional escape hatch — CI emits warning
 ]
 
+
 class AdapterRealDomainPolicy(BaseModel):
     """KOSMOS adapter single permission representation — cite of agency published policy.
 
@@ -80,9 +81,7 @@ class AdapterRealDomainPolicy(BaseModel):
         min_length=1,
         description="Korean citation from agency policy (text shown to citizen)",
     )
-    citizen_facing_gate: Literal[
-        "read-only", "login", "action", "sign", "submit"
-    ] = Field(
+    citizen_facing_gate: Literal["read-only", "login", "action", "sign", "submit"] = Field(
         ...,
         description="Citizen-facing gate category — UI uses this value for PermissionRequest UX",
     )

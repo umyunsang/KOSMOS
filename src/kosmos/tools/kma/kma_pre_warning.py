@@ -17,6 +17,7 @@ Wire format quirks handled by this module:
 from __future__ import annotations
 
 import logging
+from datetime import UTC, datetime
 from typing import Any, Literal
 
 import httpx
@@ -24,8 +25,6 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from kosmos.tools.errors import ToolExecutionError, _require_env
 from kosmos.tools.executor import ToolExecutor
-from datetime import datetime, timezone
-
 from kosmos.tools.models import AdapterRealDomainPolicy, GovAPITool
 from kosmos.tools.registry import ToolRegistry
 
@@ -266,9 +265,9 @@ KMA_PRE_WARNING_TOOL = GovAPITool(
     ),
     policy=AdapterRealDomainPolicy(
         real_classification_url="https://www.kma.go.kr/data/policy.html",
-        real_classification_text="기상청 공공데이터 이용약관 — 기상특보 데이터 비상업적 공공 이용 허가",  # TODO: verify URL
+        real_classification_text="기상청 공공데이터 이용약관 — 기상특보 데이터 비상업적 공공 이용 허가",  # TODO: verify URL  # noqa: E501
         citizen_facing_gate="read-only",
-        last_verified=datetime(2026, 4, 29, tzinfo=timezone.utc),
+        last_verified=datetime(2026, 4, 29, tzinfo=UTC),
     ),
     is_concurrency_safe=True,
     cache_ttl_seconds=300,

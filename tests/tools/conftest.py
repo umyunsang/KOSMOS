@@ -60,8 +60,14 @@ def sample_tool_factory():
     ) -> GovAPITool:
         # Strip out removed KOSMOS-invented Spec 033/024/025 fields if callers
         # still pass them (backward-compat shim for test migration window).
-        for _removed in ("auth_level", "pipa_class", "is_irreversible",
-                         "dpa_reference", "requires_auth", "is_personal_data"):
+        for _removed in (
+            "auth_level",
+            "pipa_class",
+            "is_irreversible",
+            "dpa_reference",
+            "requires_auth",
+            "is_personal_data",
+        ):
             overrides.pop(_removed, None)
         return GovAPITool(
             id=id,

@@ -63,7 +63,7 @@ def file_token_matches(kosmos_path: str) -> dict[str, int]:
     """Count occurrences of each Anthropic token in the file content."""
     fpath = REPO_ROOT / kosmos_path
     if not fpath.exists():
-        return {tok: 0 for tok in ANTHROPIC_TOKENS}
+        return dict.fromkeys(ANTHROPIC_TOKENS, 0)
     text = fpath.read_text(encoding="utf-8", errors="replace")
     return {tok: text.count(tok) for tok in ANTHROPIC_TOKENS}
 

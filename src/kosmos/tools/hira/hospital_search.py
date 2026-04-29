@@ -18,9 +18,8 @@ FR-037: Adapter is an async coroutine.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
-
 import logging
+from datetime import UTC, datetime
 from typing import Any
 
 import httpx
@@ -250,9 +249,9 @@ HIRA_HOSPITAL_SEARCH_TOOL = GovAPITool(
     ),
     policy=AdapterRealDomainPolicy(
         real_classification_url="https://www.hira.or.kr/bbs/informationNotice.do?pgmid=HIRAA030011000000",
-        real_classification_text="건강보험심사평가원 공공데이터 이용약관 — 병원 정보 데이터 비상업적 공공 이용 허가",  # TODO: verify URL
+        real_classification_text="건강보험심사평가원 공공데이터 이용약관 — 병원 정보 데이터 비상업적 공공 이용 허가",  # TODO: verify URL  # noqa: E501
         citizen_facing_gate="read-only",
-        last_verified=datetime(2026, 4, 29, tzinfo=timezone.utc),
+        last_verified=datetime(2026, 4, 29, tzinfo=UTC),
     ),
     is_concurrency_safe=True,
     cache_ttl_seconds=0,

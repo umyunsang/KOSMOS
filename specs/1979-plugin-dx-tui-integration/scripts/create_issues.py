@@ -518,7 +518,7 @@ def main() -> None:
     print("\nPhase 4: Creating 4 deferred placeholder issues + linking as sub-issues...", file=sys.stderr)
     deferred_results: list[tuple[Deferred, int, str]] = []
     for d in DEFERRED:
-        print(f"  Creating placeholder...", file=sys.stderr, end=" ", flush=True)
+        print("  Creating placeholder...", file=sys.stderr, end=" ", flush=True)
         num = create_issue(d.title, d.body, ["deferred", "deferred-from-1979", "needs-spec"])
         node_id = get_issue_node_id(num)
         link_subissue(epic_id, node_id)

@@ -345,7 +345,9 @@ class ToolExecutor:
                 # Warn when the legacy dispatch() path is used for auth-required tools.
                 # dispatch() has no session_identity parameter, so the auth gate in
                 # invoke() can never fire here — flag this for operational visibility.
-                _dispatch_gate = tool.policy.citizen_facing_gate if tool.policy is not None else "login"
+                _dispatch_gate = (
+                    tool.policy.citizen_facing_gate if tool.policy is not None else "login"
+                )
                 if _dispatch_gate != "read-only":
                     logger.debug(
                         "dispatch() called for auth-required tool %r without auth gate",

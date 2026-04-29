@@ -17,9 +17,6 @@ from __future__ import annotations
 
 import time
 
-import pytest
-
-from kosmos.tools.errors import RegistrationError
 from kosmos.tools.executor import ToolExecutor
 from kosmos.tools.hira.hospital_search import register as register_hira
 from kosmos.tools.lookup import lookup

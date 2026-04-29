@@ -93,13 +93,13 @@ def _manifest_dict(opts: InitOptions) -> dict[str, object]:
     # pipa_class are derived at runtime from policy.citizen_facing_gate via
     # kosmos.tools.policy_derivation. Layer 1 (green) maps to "read-only" gate → AAL1.
     # Layer 2 (orange) maps to "login" gate → AAL2. Layer 3 (red) maps to "sign" gate → AAL3.
-    _LAYER_TO_GATE = {1: "read-only", 2: "login", 3: "sign"}
-    _LAYER_TO_GATE_TEXT = {
+    layer_to_gate = {1: "read-only", 2: "login", 3: "sign"}
+    layer_to_gate_text = {
         1: "공공데이터포털 이용약관 제7조 (공공데이터의 제공 및 이용)",
         2: "본인확인 서비스 이용약관 (로그인 필요)",
         3: "전자서명법 제5조 (서명 및 제출 행위)",
     }
-    citizen_gate = _LAYER_TO_GATE[opts.layer]
+    citizen_gate = layer_to_gate[opts.layer]
     return {
         "plugin_id": opts.name,
         "version": "0.1.0",
@@ -114,7 +114,7 @@ def _manifest_dict(opts: InitOptions) -> dict[str, object]:
             "auth_type": "api_key",
             "policy": {
                 "real_classification_url": "https://www.data.go.kr/policy",
-                "real_classification_text": _LAYER_TO_GATE_TEXT[opts.layer],
+                "real_classification_text": layer_to_gate_text[opts.layer],
                 "citizen_facing_gate": citizen_gate,
                 "last_verified": "2026-04-29T00:00:00Z",
             },

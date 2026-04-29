@@ -10,7 +10,7 @@ Authority:
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 from pydantic import ValidationError
@@ -24,7 +24,7 @@ def test_model_frozen() -> None:
         real_classification_url="https://www.koroad.or.kr/main/web/policy/data_use.do",
         real_classification_text="도로교통공단 데이터 활용 정책",
         citizen_facing_gate="read-only",
-        last_verified=datetime(2026, 4, 29, tzinfo=timezone.utc),
+        last_verified=datetime(2026, 4, 29, tzinfo=UTC),
     )
     with pytest.raises(ValidationError):
         policy.real_classification_url = "https://other.example.com"  # type: ignore[misc]
@@ -37,7 +37,7 @@ def test_extra_forbid() -> None:
             real_classification_url="https://www.kma.go.kr/data/policy.html",
             real_classification_text="기상청 정책",
             citizen_facing_gate="read-only",
-            last_verified=datetime(2026, 4, 29, tzinfo=timezone.utc),
+            last_verified=datetime(2026, 4, 29, tzinfo=UTC),
             unknown_field="should fail",  # type: ignore[call-arg]
         )
 
@@ -49,7 +49,7 @@ def test_url_non_empty() -> None:
             real_classification_url="",
             real_classification_text="텍스트",
             citizen_facing_gate="read-only",
-            last_verified=datetime(2026, 4, 29, tzinfo=timezone.utc),
+            last_verified=datetime(2026, 4, 29, tzinfo=UTC),
         )
 
 
@@ -61,14 +61,14 @@ def test_gate_literal() -> None:
             real_classification_url="https://example.gov.kr/policy",
             real_classification_text="텍스트",
             citizen_facing_gate=gate,  # type: ignore[arg-type]
-            last_verified=datetime(2026, 4, 29, tzinfo=timezone.utc),
+            last_verified=datetime(2026, 4, 29, tzinfo=UTC),
         )
     with pytest.raises(ValidationError):
         AdapterRealDomainPolicy(
             real_classification_url="https://example.gov.kr/policy",
             real_classification_text="텍스트",
             citizen_facing_gate="invalid_value",  # type: ignore[arg-type]
-            last_verified=datetime(2026, 4, 29, tzinfo=timezone.utc),
+            last_verified=datetime(2026, 4, 29, tzinfo=UTC),
         )
 
 
@@ -88,8 +88,9 @@ def test_18_adapters_have_policy() -> None:
 
     try:
         from kosmos.tools.register_all import register_all_tools
+
         register_all_tools(registry, executor)
-    except Exception:
+    except Exception:  # noqa: BLE001, S110 — tolerate boot failure; the assertion below covers it
         pass
 
     valid_gates = {"read-only", "login", "action", "sign", "submit"}
@@ -102,11 +103,11 @@ def test_18_adapters_have_policy() -> None:
     # extension). Decision: Epic δ #2295 sonnet-H, 2026-04-29.
     assert len(tools) >= 14, f"expected ≥14 adapters, got {len(tools)}"
     for tool in tools:
-        # Skip non-GovAPITool entries (e.g., meta-tools like search_tools, lookup, resolve_location).
+        # Skip non-GovAPITool entries (meta-tools: search_tools, lookup, resolve_location).
         if not hasattr(tool, "policy"):
             continue
         if tool.policy is None:
-            # Allow None only for harness-internal synthetic surfaces (resolve_location, lookup, search_tools).
+            # Allow None only for KOSMOS-internal synthetic surfaces.
             assert tool.ministry == "KOSMOS", (
                 f"adapter {tool.id!r} has policy=None and ministry={tool.ministry!r} "
                 "(non-KOSMOS adapter must have policy set per Epic δ #2295 FR-004)"
