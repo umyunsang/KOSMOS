@@ -11,6 +11,26 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 
 from kosmos.tools.errors import LookupErrorReason
 
+# Spec 025 v6 — canonical (auth_type, auth_level) consistency mapping.
+# Read as: ``auth_type`` key ⇒ frozenset of ``auth_level`` values permitted
+# for adapters declaring that ``auth_type``. Owned by FR-039..FR-042
+# (specs/025-tool-security-v6). Imported by Spec 1636 plugin Q3 invariant
+# checker (``src/kosmos/plugins/checks/q3_security.py``) which enforces V6
+# at plugin install time. The matrix itself is **infrastructure-level
+# consistency** (auth_type drives the upstream API auth mechanism, auth_level
+# is the citizen authentication strength) and is NOT KOSMOS-invented permission
+# policy — agencies declare both fields per their published policy and this
+# mapping enforces that an adapter does not lie (e.g. claiming auth_type=public
+# while declaring auth_level=AAL3 is impossible by design).
+#
+# Per Epic δ #2295 spec.md FR-006 EXCLUDE clause, this constant is one of the
+# legitimate KOSMOS-needed uses of the auth_level token outside adapter metadata.
+_AUTH_TYPE_LEVEL_MAPPING: Final[dict[str, frozenset[str]]] = {
+    "public": frozenset({"public", "AAL1"}),
+    "api_key": frozenset({"AAL1", "AAL2", "AAL3"}),
+    "oauth": frozenset({"AAL1", "AAL2", "AAL3"}),
+}
+
 # Spec 1634 (P3 Tool System Wiring) — closed ministry / institution enum.
 # Typed replacement for the former free-form ``provider: str`` field. New
 # institutions are added by enum extension (small dedicated PR, ADR not
@@ -286,6 +306,67 @@ class GovAPITool(BaseModel):
         if not v.strip():
             raise ValueError("search_hint must not be empty or whitespace-only")
         return v
+
+    # ------------------------------------------------------------------
+    # Epic δ #2295 Path B — Spec 024/025 V1–V6 invariant chain rewritten on
+    # derived ``policy.citizen_facing_gate``. Runs only when ``policy`` is set
+    # (KOSMOS-internal surfaces with policy=None skip the chain).
+    # ------------------------------------------------------------------
+
+    @model_validator(mode="after")
+    def _validate_policy_security_invariants(self) -> GovAPITool:
+        """Enforce V3 + V6 derived from policy.citizen_facing_gate.
+
+        Pre-2295 KOSMOS-invented chain (V1: pipa_class⇒auth_level, V2: dpa_reference,
+        V4: irreversible⇒auth_level, V5: requires_auth) was tied to per-adapter
+        KOSMOS-invented fields. After Path B, those fields are derived from
+        ``self.policy.citizen_facing_gate`` via ``policy_derivation`` and the
+        relations V1/V2/V4/V5 hold by construction (the canonical mapping
+        guarantees PII-class gates derive AAL≥AAL2; sign/submit derive
+        is_irreversible=True with AAL3; etc.).
+
+        What remains as a runtime check:
+        - **V3**: when ``self.id`` is in ``TOOL_MIN_AAL``, the derived AAL must
+          equal that row.
+        - **V6**: ``(auth_type, derived_auth_level)`` must lie in
+          ``_AUTH_TYPE_LEVEL_MAPPING``.
+
+        Skipped entirely when ``policy is None`` (KOSMOS-internal).
+        """
+        if self.policy is None:
+            return self
+        # Late import to avoid a circular dependency at module load
+        # (audit imports from tools indirectly via security/__init__.py).
+        from kosmos.security.audit import TOOL_MIN_AAL
+        from kosmos.tools.policy_derivation import derive_min_auth_level
+
+        derived_aal = derive_min_auth_level(self.policy.citizen_facing_gate)
+
+        # V3 — single-source-of-truth TOOL_MIN_AAL drift detector.
+        expected_aal = TOOL_MIN_AAL.get(self.id)
+        if expected_aal is not None and derived_aal != expected_aal:
+            raise ValueError(
+                f"V3 violation (FR-001/FR-005): tool {self.id!r} cites policy "
+                f"with citizen_facing_gate={self.policy.citizen_facing_gate!r} "
+                f"(derived auth_level={derived_aal!r}) but TOOL_MIN_AAL "
+                f"requires {expected_aal!r}."
+            )
+
+        # V6 — (auth_type, derived_auth_level) ∈ canonical mapping.
+        if self.auth_type not in _AUTH_TYPE_LEVEL_MAPPING:
+            raise ValueError(
+                f"V6 violation (FR-048): tool {self.id!r} declares unknown "
+                f"auth_type={self.auth_type!r}."
+            )
+        allowed = _AUTH_TYPE_LEVEL_MAPPING[self.auth_type]
+        if derived_aal not in allowed:
+            raise ValueError(
+                f"V6 violation (FR-042): tool {self.id!r} cites policy with "
+                f"citizen_facing_gate={self.policy.citizen_facing_gate!r} "
+                f"(derived auth_level={derived_aal!r}), but declared "
+                f"auth_type={self.auth_type!r} permits only {sorted(allowed)}."
+            )
+        return self
 
     # ------------------------------------------------------------------
     # Export helpers

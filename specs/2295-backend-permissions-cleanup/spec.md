@@ -90,7 +90,18 @@ KOSMOS-invented 권한 분류를 대체할 단일 표준 모델 `AdapterRealDoma
     - `ConsentDecision`, `ConsentLedgerRecord`, `LedgerVerifyReport`, `ToolPermissionContext`, `AdapterPermissionMetadata` — Spec 035 ledger / ledger_verify / audit_coupling / otel_integration 의 schema dependency. **historical-record schema** (영수증은 결정 시점의 사실 박제, 권한 정책 invention 아님). FR-006 명시 제외 영역 적용.
     - 삭제 대상 (KOSMOS-invented orchestration): `AccessTier`, `PermissionDecision`, `PermissionCheckRequest`, `PermissionStepResult`, `AuditLogEntry`, `PermissionRule`.
     - `PermissionMode` Literal — `modes.py` 가 삭제되므로 **inline 으로 `models.py` 에 통합** (Spec 035 receipt schema 가 `mode` 필드로 참조).
-- **FR-003**: `AdapterRealDomainPolicy` Pydantic v2 모델이 `src/kosmos/tools/models.py` 에 추가되어야 한다. 필드: `real_classification_url: str`, `real_classification_text: str`, `citizen_facing_gate: Literal["read-only","login","action","sign","submit"]`, `last_verified: datetime`. `model_config = ConfigDict(frozen=True, extra="forbid")`. 모든 str 필드는 non-empty 검증.
+- **FR-003**: `AdapterRealDomainPolicy` Pydantic v2 모델이 `src/kosmos/tools/models.py` 에 추가되어야 한다. 필드 (4개, frozen=True, extra="forbid"):
+  - `real_classification_url: str` (min_length=1) — 기관 published 정책 URL
+  - `real_classification_text: str` (min_length=1) — 한국어 cite 발췌
+  - `citizen_facing_gate: Literal["read-only","login","action","sign","submit"]` — 시민-facing gate 분류
+  - `last_verified: datetime` — 정책 URL 검증 시점
+
+- **FR-003a** (NEW · Path B 2026-04-29): Spec 024/025/1636 V1-V6 invariant 인프라가 `policy.citizen_facing_gate` 기반으로 재작성되어야 한다. 새 모듈 `src/kosmos/tools/policy_derivation.py` 가 canonical mapping 제공:
+  - `derive_min_auth_level(gate) → AALLevel` — read-only/login → AAL1/AAL2 등
+  - `derive_is_irreversible(gate) → bool` — sign/submit ⇒ True
+  - Spec 024 `audit.py` / Spec 025 `tools/permissions.py` / Spec 1636 `plugins/checks/q3_security.py` 가 이 derivation 모듈을 consume.
+  - `GovAPITool` 의 V1-V6 model_validator 는 `self.policy` 가 set 일 때만 실행 (KOSMOS internal tool: `ministry='KOSMOS'` ⇒ policy=None 허용).
+  - Plugin 측 `PluginManifest` schema 도 `policy: AdapterRealDomainPolicy` 만 보유 — `auth_level` / `pipa_class` / `is_irreversible` standalone 필드 제거.
 - **FR-004**: 18 어댑터 (KOROAD ×2 + KMA ×6 + HIRA ×1 + NMC ×1 + NFA119 ×1 + MOHW ×1 + 6 mocks: barocert / cbs / data_go_kr / mydata / npki_crypto / omnione) 의 metadata 가 모두 `policy: AdapterRealDomainPolicy` 필드를 가져야 한다.
 - **FR-005**: 모든 18 어댑터의 `policy.real_classification_url` 이 non-empty + URL 형식 (https:// 시작) 이어야 한다. 불확실 URL 은 `# TODO: verify URL` 마커 + Deferred Items 추적.
 - **FR-006** (NARROWED 2026-04-29): KOSMOS 가 발명한 권한 분류 토큰이 **어댑터 metadata 영역**에서 0 회 잔존해야 한다. Grep gate 명시:

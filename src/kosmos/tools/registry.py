@@ -7,7 +7,7 @@ import logging
 from enum import StrEnum
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, computed_field, model_validator
 
 from kosmos.tools.bm25_index import BM25Index
 from kosmos.tools.errors import (
@@ -15,7 +15,14 @@ from kosmos.tools.errors import (
     RegistrationError,
     ToolNotFoundError,
 )
-from kosmos.tools.models import GovAPITool, ToolSearchResult
+from kosmos.tools.models import AdapterRealDomainPolicy, GovAPITool, ToolSearchResult
+from kosmos.tools.policy_derivation import (
+    AALLevel,
+    PIPAClass,
+    derive_is_irreversible,
+    derive_min_auth_level,
+    derive_pipa_class_default,
+)
 from kosmos.tools.rate_limiter import RateLimiter
 from kosmos.tools.retrieval.backend import Retriever, build_retriever_from_env
 from kosmos.tools.retrieval.bm25_backend import BM25Backend
@@ -137,6 +144,13 @@ class AdapterRegistration(BaseModel):
     # Spec 024 security extensions — auth_type preserved for routing
     auth_type: Literal["public", "api_key", "oauth"]
 
+    # Epic δ #2295 Path B — AdapterRealDomainPolicy nested cite. Pre-2295 adapters
+    # may register without a policy (None allowed during migration); the V6
+    # backstop in ``ToolRegistry.register`` skips invariant enforcement when
+    # policy is None. New registrations SHOULD populate this field; KOSMOS-internal
+    # synthetic surfaces (resolve_location / lookup / search_tools) carry None.
+    policy: AdapterRealDomainPolicy | None = None
+
     # Spec 031 T023 — optional per-adapter nonce used to namespace the
     # deterministic ``transaction_id`` emitted by the ``submit`` dispatcher
     # (see :func:`kosmos.primitives.submit.derive_transaction_id`). Adapters
@@ -159,6 +173,45 @@ class AdapterRegistration(BaseModel):
 
         _enforce_v12(self)
         return self
+
+    # Epic δ #2295 Path B — backward-compat computed properties derived from
+    # ``policy.citizen_facing_gate``. External readers (``ipc/tx_cache``,
+    # ``ipc/demo/register_irreversible_fixture``) continue to consume
+    # ``registration.is_irreversible`` / ``.auth_level`` / ``.pipa_class``
+    # without code changes; the values are now derived from the cited agency
+    # policy via ``policy_derivation`` instead of stored as KOSMOS-invented
+    # fields. Returns conservative defaults when policy is None.
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def is_irreversible(self) -> bool:
+        """Derived from ``policy.citizen_facing_gate`` (sign/submit ⇒ True)."""
+        if self.policy is None:
+            return False
+        return derive_is_irreversible(self.policy.citizen_facing_gate)
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def auth_level(self) -> AALLevel:
+        """Derived minimum NIST AAL required for this adapter's gate.
+
+        Returns ``"AAL1"`` (the safest default for read-only) when policy is
+        None — KOSMOS-internal synthetic surfaces (resolve_location, lookup).
+        """
+        if self.policy is None:
+            return "AAL1"
+        return derive_min_auth_level(self.policy.citizen_facing_gate)
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def pipa_class(self) -> PIPAClass:
+        """Derived default PIPA classification for this adapter's gate.
+
+        Returns ``"non_personal"`` when policy is None.
+        """
+        if self.policy is None:
+            return "non_personal"
+        return derive_pipa_class_default(self.policy.citizen_facing_gate)
 
 
 class ToolRegistry:
@@ -210,6 +263,44 @@ class ToolRegistry:
                 tool.id,
                 existing_module=type(existing).__module__,
             )
+
+        # Epic δ #2295 Path B — V6 invariant rewritten on derived auth_level.
+        # When ``tool.policy`` is set, derive the AAL via policy_derivation and
+        # verify it is permitted under the canonical (auth_type → auth_level)
+        # mapping (``_AUTH_TYPE_LEVEL_MAPPING``). KOSMOS-internal synthetic
+        # surfaces (policy=None) skip this check.
+        if tool.policy is not None:
+            from kosmos.tools.models import _AUTH_TYPE_LEVEL_MAPPING
+
+            derived_aal = derive_min_auth_level(tool.policy.citizen_facing_gate)
+            if tool.auth_type not in _AUTH_TYPE_LEVEL_MAPPING:
+                logger.error(
+                    "V6 violation at registry.register: tool_id=%s auth_type=%s (unknown)",
+                    tool.id,
+                    tool.auth_type,
+                )
+                raise RegistrationError(
+                    tool.id,
+                    f"V6 violation (FR-048): unknown auth_type={tool.auth_type!r}.",
+                )
+            allowed = _AUTH_TYPE_LEVEL_MAPPING[tool.auth_type]
+            if derived_aal not in allowed:
+                logger.error(
+                    "V6 violation at registry.register: tool_id=%s auth_type=%s "
+                    "derived_auth_level=%s (from gate=%s) allowed=%s",
+                    tool.id,
+                    tool.auth_type,
+                    derived_aal,
+                    tool.policy.citizen_facing_gate,
+                    sorted(allowed),
+                )
+                raise RegistrationError(
+                    tool.id,
+                    f"V6 violation (FR-042): tool {tool.id!r} cites policy with "
+                    f"citizen_facing_gate={tool.policy.citizen_facing_gate!r} "
+                    f"(derived auth_level={derived_aal!r}), but declared "
+                    f"auth_type={tool.auth_type!r} permits only {sorted(allowed)}.",
+                )
 
         self._tools[tool.id] = tool
         self._rate_limiters[tool.id] = RateLimiter(
