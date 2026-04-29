@@ -5,15 +5,31 @@
 // Primitive wrapper over Spec 031 kosmos.primitives.submit.
 // Permission-gated side-effecting citizen action (application, report, etc.)
 //
-// P3 MVP: returns a structured stub indicating T028 registry closure is pending.
-// Real dispatch is wired in T028 (registry closure) and exercised by T029 (E2E).
+// Epic γ #2294 · T010/T011/T012: real validateInput + renderToolResultMessage.
 //
 // I/O contract: specs/1634-tool-system-wiring/contracts/primitive-envelope.md § 3
 
+import React from 'react'
 import { z } from 'zod/v4'
-import { buildTool, type ToolDef } from '../../Tool.js'
+import { Box, Text } from '../../ink.js'
+import { buildTool, type ToolDef, type ToolUseContext } from '../../Tool.js'
 import { lazySchema } from '../../utils/lazySchema.js'
+import {
+  extractCitation,
+  PrimitiveErrorCode,
+  type AdapterCitation,
+  type AdapterWithPolicy,
+} from '../shared/primitiveCitation.js'
 import { SUBMIT_TOOL_NAME, DESCRIPTION, SUBMIT_TOOL_PROMPT } from './prompt.js'
+
+// ---------------------------------------------------------------------------
+// KOSMOS citation extension — augments context at runtime for permission UI.
+// Does NOT modify Tool.ts or ToolPermissionContext; uses a local cast to attach
+// the citation so FallbackPermissionRequest can surface verbatim agency text.
+// ---------------------------------------------------------------------------
+type ContextWithCitation = ToolUseContext & {
+  kosmosCitations?: AdapterCitation[]
+}
 
 // ---------------------------------------------------------------------------
 // Input schema
@@ -111,6 +127,108 @@ export const SubmitPrimitive = buildTool({
 
   renderToolUseMessage() {
     return null
+  },
+
+  // Epic γ #2294 · T010/T011 · real validateInput + renderToolResultMessage.
+  isMcp: false,
+
+  async validateInput(
+    input: { tool_id: string; params: Record<string, unknown> },
+    context: ToolUseContext,
+  ) {
+    // Step 1: Resolve adapter — Submit always has a tool_id (no search mode).
+    const adapter = context.options.tools.find(
+      (t): t is typeof t & AdapterWithPolicy => t.name === input.tool_id,
+    ) as (AdapterWithPolicy & { name: string }) | undefined
+
+    if (!adapter) {
+      return {
+        result: false as const,
+        message: `도구 '${input.tool_id}'을(를) 찾을 수 없습니다.`,
+        errorCode: PrimitiveErrorCode.AdapterNotFound,
+      }
+    }
+
+    // Step 2: Read citation — fail closed if either field is empty.
+    const citation = extractCitation(adapter)
+    if (!citation) {
+      return {
+        result: false as const,
+        message: `도구 '${input.tool_id}'에 정책 인용 정보가 없어 호출할 수 없습니다.`,
+        errorCode: PrimitiveErrorCode.CitationMissing,
+      }
+    }
+
+    // Step 3: Attach citation to context for the permission UI pipeline.
+    ;(context as ContextWithCitation).kosmosCitations = [citation]
+
+    return { result: true as const }
+  },
+
+  renderToolResultMessage(output: Output) {
+    // NOTE: This file is `.ts` (not `.tsx`); Bun runtime cannot parse JSX in
+    // `.ts`. Use `React.createElement` for parity with the other 3 primitives.
+    if (output.ok) {
+      const result = output.result as Record<string, unknown> | undefined
+      const receiptId =
+        typeof result?.transaction_id === 'string'
+          ? result.transaction_id
+          : typeof result?.receipt_id === 'string'
+            ? result.receipt_id
+            : null
+      const ministry =
+        typeof result?.ministry === 'string' ? result.ministry : null
+      const status =
+        typeof result?.status === 'string' ? result.status : null
+      const handoffUrl =
+        typeof result?.agency_handoff_url === 'string'
+          ? result.agency_handoff_url
+          : null
+
+      const statusLabel =
+        status === 'accepted'
+          ? '접수됨'
+          : status === 'pending'
+            ? '처리 중'
+            : status === 'rejected'
+              ? '반려됨'
+              : status
+
+      return React.createElement(
+        Box,
+        { flexDirection: 'column', paddingY: 0 },
+        React.createElement(
+          Text,
+          { color: 'green' },
+          `✓ ${ministry ? `[${ministry}] ` : ''}제출이 접수되었습니다.`,
+        ),
+        receiptId
+          ? React.createElement(Text, { dimColor: true }, `접수 번호: ${receiptId}`)
+          : null,
+        status
+          ? React.createElement(Text, { dimColor: true }, `상태: ${statusLabel}`)
+          : null,
+        handoffUrl
+          ? React.createElement(Text, { dimColor: true }, `기관 확인: ${handoffUrl}`)
+          : null,
+      )
+    }
+
+    // Error branch
+    const handoffUrl =
+      typeof (output.error as Record<string, unknown>)?.agency_handoff_url ===
+      'string'
+        ? ((output.error as Record<string, unknown>).agency_handoff_url as string)
+        : null
+
+    return React.createElement(
+      Box,
+      { flexDirection: 'column', paddingY: 0 },
+      React.createElement(Text, { color: 'red' }, `✗ ${output.error.message}`),
+      handoffUrl
+        ? React.createElement(Text, { dimColor: true }, `기관 문의: ${handoffUrl}`)
+        : null,
+    )
   },
 
   /**
