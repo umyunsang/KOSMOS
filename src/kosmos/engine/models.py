@@ -22,7 +22,6 @@ from pydantic import BaseModel, ConfigDict
 
 if TYPE_CHECKING:
     from kosmos.permissions.models import SessionContext
-    from kosmos.permissions.pipeline import PermissionPipeline
 
 from kosmos.engine.config import QueryEngineConfig
 from kosmos.llm.client import LLMClient
@@ -104,13 +103,6 @@ class QueryContext(BaseModel):
 
     iteration: int = 0
     """Zero-based iteration counter within the current turn."""
-
-    permission_pipeline: PermissionPipeline | None = None
-    """Optional permission pipeline for 7-step gauntlet checks on tool calls.
-
-    Only routed through the pipeline when both this field and ``session_context``
-    are non-None (see ``dispatch_tool_calls`` in query.py).
-    """
 
     session_context: SessionContext | None = None
     """Optional session context supplied to the permission pipeline per tool call.
@@ -198,11 +190,9 @@ class SessionBudget(BaseModel):
 # no-ops (Pydantic skips a rebuild if the model is already complete).
 # ---------------------------------------------------------------------------
 from kosmos.permissions.models import SessionContext  # noqa: E402
-from kosmos.permissions.pipeline import PermissionPipeline  # noqa: E402
 
 QueryContext.model_rebuild(
     _types_namespace={
-        "PermissionPipeline": PermissionPipeline,
         "SessionContext": SessionContext,
     }
 )

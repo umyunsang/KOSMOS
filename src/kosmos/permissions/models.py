@@ -1,54 +1,26 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Pydantic v2 data models for the KOSMOS Permission Pipeline (Layer 3).
+"""Spec 035 receipt set + harness session schema.
 
-All models are frozen (immutable). No ``Any`` types. The pipeline is stateless;
-sessions are owned by the query engine and passed in via ``SessionContext``.
+KOSMOS-invented permission orchestration classes removed in Epic δ #2295.
 
-Spec 033 (Permission v2) models are appended at the bottom of this file.
-All v2 models coexist with v1 models without name collisions.
+Retained classes:
+- SessionContext        — session state for query engine
+- ConsentDecision       — PIPA §15(2) 4-tuple + citizen grant/deny
+- ConsentLedgerRecord   — append-only WORM ledger record (Spec 033 FR-D02)
+- LedgerVerifyReport    — output of ``kosmos permissions verify``
+- ToolPermissionContext — per-invocation context for v2 permission pipeline
+- AdapterPermissionMetadata — read-only projection from GovAPITool
 """
 
 from __future__ import annotations
 
 from datetime import datetime
-from enum import StrEnum
 from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, StrictStr, constr, field_validator
 
-from kosmos.permissions.modes import PermissionMode
-
-
-class AccessTier(StrEnum):
-    """Permission tier mapped from ``GovAPITool.auth_type``.
-
-    Determines the minimum credential requirements at step 1.
-    """
-
-    public = "public"
-    """No auth required; allow unconditionally at step 1."""
-
-    api_key = "api_key"
-    """``KOSMOS_DATA_GO_KR_API_KEY`` must be set and non-empty."""
-
-    authenticated = "authenticated"
-    """Citizen identity verification required; denied in v1."""
-
-    restricted = "restricted"
-    """Special approval gate; denied in v1."""
-
-
-class PermissionDecision(StrEnum):
-    """Verdict returned by each pipeline step."""
-
-    allow = "allow"
-    """Proceed to next step or execute."""
-
-    deny = "deny"
-    """Halt; return error result to query engine."""
-
-    escalate = "escalate"
-    """Treated as ``deny`` in v1; reserved for v2 human-in-the-loop."""
+# PermissionMode inlined here because modes.py was deleted in Epic δ #2295.
+PermissionMode = Literal["default", "plan", "acceptEdits", "bypassPermissions", "dontAsk"]
 
 
 class SessionContext(BaseModel):
@@ -78,129 +50,6 @@ class SessionContext(BaseModel):
         if isinstance(v, list):
             return tuple(v)
         return v  # type: ignore[return-value]
-
-
-class PermissionCheckRequest(BaseModel):
-    """Single input passed to every step function.
-
-    Constructed once at ``PermissionPipeline.run()`` entry and never mutated.
-    ``arguments_json`` is never parsed by the pipeline itself and is never
-    written to logs, error messages, or ``AuditLogEntry``.
-    """
-
-    model_config = ConfigDict(frozen=True)
-
-    tool_id: str
-    """Stable tool identifier (e.g. ``koroad_accident_search``)."""
-
-    access_tier: AccessTier
-    """Mapped from ``GovAPITool.auth_type`` at pipeline entry."""
-
-    arguments_json: str
-    """Raw JSON string of tool arguments (not parsed by pipeline)."""
-
-    session_context: SessionContext
-    """Session state from query engine."""
-
-    is_personal_data: bool
-    """From ``GovAPITool.is_personal_data``; drives bypass-immune checks."""
-
-    is_bypass_mode: bool = False
-    """If ``True``, bypass-immune rules still apply; warning is emitted."""
-
-
-class PermissionStepResult(BaseModel):
-    """Result returned by every step function (active or stub)."""
-
-    model_config = ConfigDict(frozen=True)
-
-    decision: PermissionDecision
-    """The step's verdict."""
-
-    step: int
-    """Step number (1-7) for audit trail clarity."""
-
-    reason: str | None = None
-    """Machine-readable deny reason; ``None`` on allow."""
-
-
-class AuditLogEntry(BaseModel):
-    """Structured audit log entry written after every invocation.
-
-    Intentionally absent: ``arguments_json``, ``citizen_id``, and any field
-    that could contain PII, preventing personal data from appearing in log
-    aggregators (ELK, CloudWatch, Loki).
-    """
-
-    model_config = ConfigDict(frozen=True)
-
-    timestamp: datetime
-    """UTC timestamp at log time."""
-
-    tool_id: str
-    """Tool identifier."""
-
-    access_tier: AccessTier
-    """Tier at time of call."""
-
-    decision: PermissionDecision
-    """Final pipeline decision."""
-
-    step_that_decided: int
-    """Which step produced the final decision."""
-
-    outcome: Literal["success", "failure", "denied"]
-    """Execution outcome."""
-
-    error_type: str | None = None
-    """Error type string from ``ToolResult`` on failure."""
-
-    deny_reason: str | None = None
-    """Machine-readable deny reason on denied outcome."""
-
-    session_id: str
-    """From ``session_context.session_id``."""
-
-
-# ---------------------------------------------------------------------------
-# Spec 033 — Permission v2 models (additive; v1 models above are untouched)
-# ---------------------------------------------------------------------------
-# All v2 models are Pydantic v2 frozen BaseModel with:
-#   ConfigDict(frozen=True, extra="forbid", strict=True)
-# No Any. No Optional widening. Concrete Literal/StrictStr/constr only.
-# Reference: specs/033-permission-v2-spectrum/data-model.md § 1
-# ---------------------------------------------------------------------------
-
-
-class PermissionRule(BaseModel):
-    """Persistent tri-state rule for a single adapter (Spec 033 FR-C01).
-
-    Reference: specs/033-permission-v2-spectrum/data-model.md § 1.2
-    Invariant R1: ``deny`` wins over any ``allow`` rule.
-    Invariant R2: ``session`` > ``project`` > ``user`` (narrower wins).
-    Invariant R3: ``ask`` == "no persistent decision".
-    Invariant R4: ``tool_id`` is the canonical adapter id, NOT a wildcard.
-    """
-
-    model_config = ConfigDict(frozen=True, extra="forbid", strict=True)
-
-    tool_id: Annotated[str, constr(pattern=r"^[a-z0-9_.]+$", min_length=1, max_length=128)]
-    """Canonical adapter identifier (e.g. ``hira_hospital_search``)."""
-
-    decision: Literal["allow", "ask", "deny"]
-    """Tri-state rule verdict."""
-
-    scope: Literal["session", "project", "user"]
-    """Resolution scope.  ``user`` rules are persisted to disk."""
-
-    created_at: datetime
-    """UTC tz-aware timestamp of rule creation."""
-
-    created_by_mode: PermissionMode
-    """The permission mode active when the citizen created this rule."""
-
-    expires_at: datetime | None = None
-    """Expiry timestamp (UTC tz-aware).  ``None`` means never expires."""
 
 
 class AdapterPermissionMetadata(BaseModel):

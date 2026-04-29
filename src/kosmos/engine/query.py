@@ -39,7 +39,6 @@ from kosmos.tools.registry import ToolRegistry
 
 if TYPE_CHECKING:
     from kosmos.permissions.models import SessionContext
-    from kosmos.permissions.pipeline import PermissionPipeline
 
 logger = logging.getLogger(__name__)
 
@@ -91,7 +90,6 @@ async def dispatch_tool_calls(  # noqa: C901
     tool_registry: ToolRegistry,
     tool_executor: ToolExecutor,
     *,
-    permission_pipeline: PermissionPipeline | None = None,
     session_context: SessionContext | None = None,
 ) -> list[ToolResult]:
     """Dispatch multiple tool calls with concurrency optimization.
@@ -103,17 +101,11 @@ async def dispatch_tool_calls(  # noqa: C901
     4. Execute non-safe tools sequentially.
     5. Return results in the same order as the input ``tool_calls``.
 
-    When both ``permission_pipeline`` and ``session_context`` are provided,
-    each tool call is routed through the permission pipeline instead of the
-    executor directly.  If either is absent the executor is called directly
-    (backward-compatible default).
-
     Args:
         tool_calls: List of ToolCall objects from the LLM response.
         tool_registry: Registry for looking up tool concurrency flags.
         tool_executor: Executor for dispatching individual calls.
-        permission_pipeline: Optional 7-step permission gauntlet pipeline.
-        session_context: Optional session context forwarded to the pipeline.
+        session_context: Optional session context (used for OTEL correlation).
 
     Returns:
         List of ToolResult objects, one per input tool_call, in order.
@@ -137,29 +129,14 @@ async def dispatch_tool_calls(  # noqa: C901
     group_safe: bool | None = None
 
     async def _dispatch_one(tc: ToolCall) -> ToolResult:
-        """Dispatch a single tool call, routing through the permission pipeline if available."""
-        if permission_pipeline is not None and session_context is not None:
-            return await permission_pipeline.run(
-                tool_id=tc.function.name,
-                arguments_json=tc.function.arguments,
-                session_context=session_context,
-            )
+        """Dispatch a single tool call via the executor."""
         return await tool_executor.dispatch(tc.function.name, tc.function.arguments)
 
     async def _flush_group(items: list[tuple[int, ToolCall]], safe: bool) -> None:
-        """Execute a group of tool calls, concurrently if safe.
-
-        When a permission pipeline is active, the sandbox step mutates
-        os.environ across awaits.  Running tools concurrently via TaskGroup
-        in that case allows coroutines to observe a partially-filtered
-        environment.  Dispatch sequentially when both ``permission_pipeline``
-        and ``session_context`` are non-None, regardless of the tool's
-        concurrency-safe flag.
-        """
+        """Execute a group of tool calls, concurrently if safe."""
         if not items:
             return
-        pipeline_active = permission_pipeline is not None and session_context is not None
-        if safe and len(items) > 1 and not pipeline_active:
+        if safe and len(items) > 1:
             async with asyncio.TaskGroup() as tg:
                 tasks = [(idx, tg.create_task(_dispatch_one(tc))) for idx, tc in items]
             for idx, task in tasks:
@@ -403,7 +380,6 @@ async def _query_inner(ctx: QueryContext) -> AsyncIterator[QueryEvent]:  # noqa:
             assembled_calls,
             ctx.tool_registry,
             ctx.tool_executor,
-            permission_pipeline=ctx.permission_pipeline,
             session_context=ctx.session_context,
         )
 

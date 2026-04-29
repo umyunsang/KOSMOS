@@ -164,12 +164,10 @@ def _run_repl(resume_session_id: str | None = None) -> None:
 
         MetricsCollector ──┐
         EventLogger ───────┼──> RecoveryExecutor ──> ToolExecutor ──> QueryEngine
-                           │                                    │
-                           └──> PermissionPipeline ─────────────┘
+                           └──> SessionContext ──────────────────────────────────┘
 
     The REPL later calls ``engine.set_permission_session`` so that the
-    permission session_id tracks the real REPL session rather than a
-    placeholder.
+    session_id tracks the real REPL session rather than a placeholder.
 
     All initialisation errors are caught and printed as user-friendly messages.
 
@@ -184,7 +182,6 @@ def _run_repl(resume_session_id: str | None = None) -> None:
     from kosmos.llm.errors import ConfigurationError  # noqa: PLC0415
     from kosmos.observability import MetricsCollector, ObservabilityEventLogger  # noqa: PLC0415
     from kosmos.permissions.models import SessionContext  # noqa: PLC0415
-    from kosmos.permissions.pipeline import PermissionPipeline  # noqa: PLC0415
     from kosmos.recovery.executor import RecoveryExecutor  # noqa: PLC0415
     from kosmos.tools.executor import ToolExecutor  # noqa: PLC0415
     from kosmos.tools.register_all import register_all_tools  # noqa: PLC0415
@@ -232,27 +229,18 @@ def _run_repl(resume_session_id: str | None = None) -> None:
     )
     register_all_tools(registry, executor)
 
-    # --- Initialise permission pipeline (shares metrics + event logger) ---
-    permission_pipeline = PermissionPipeline(
-        executor=executor,
-        registry=registry,
-        metrics=metrics,
-        event_logger=event_logger,
-    )
-
     # --- Bootstrap a SessionContext; REPL updates it with the real session id ---
     initial_session = SessionContext(session_id=str(uuid.uuid4()))
 
     # --- Initialise context builder ---
     context_builder = ContextBuilder(registry=registry)
 
-    # --- Initialise query engine with pipeline + session injected ---
+    # --- Initialise query engine with session context injected ---
     engine = QueryEngine(
         llm_client=llm_client,
         tool_registry=registry,
         tool_executor=executor,
         context_builder=context_builder,
-        permission_pipeline=permission_pipeline,
         permission_session=initial_session,
     )
 

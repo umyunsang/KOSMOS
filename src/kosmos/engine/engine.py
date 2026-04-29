@@ -24,7 +24,6 @@ from kosmos.tools.registry import ToolRegistry
 
 if TYPE_CHECKING:
     from kosmos.permissions.models import SessionContext
-    from kosmos.permissions.pipeline import PermissionPipeline
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +52,6 @@ class QueryEngine:
         tool_executor: ToolExecutor,
         config: QueryEngineConfig | None = None,
         context_builder: ContextBuilder | None = None,
-        permission_pipeline: PermissionPipeline | None = None,
         permission_session: SessionContext | None = None,
     ) -> None:
         self._llm_client = llm_client
@@ -61,7 +59,6 @@ class QueryEngine:
         self._tool_executor = tool_executor
         self._config = config or QueryEngineConfig()
         self._context_builder = context_builder or ContextBuilder(registry=tool_registry)
-        self._permission_pipeline = permission_pipeline
         self._permission_session = permission_session
 
         system_msg = self._context_builder.build_system_message()
@@ -171,7 +168,6 @@ class QueryEngine:
             tool_executor=self._tool_executor,
             tool_registry=self._tool_registry,
             config=self._config,
-            permission_pipeline=self._permission_pipeline,
             session_context=self._permission_session,
         )
 
@@ -233,11 +229,6 @@ class QueryEngine:
     def permission_session(self) -> SessionContext | None:
         """Return the currently installed permission :class:`SessionContext`."""
         return self._permission_session
-
-    @property
-    def permission_pipeline(self) -> PermissionPipeline | None:
-        """Return the installed :class:`PermissionPipeline`, if any."""
-        return self._permission_pipeline
 
     # ------------------------------------------------------------------
     # Properties
