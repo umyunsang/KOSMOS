@@ -128,26 +128,38 @@ async def test_submit_emits_gen_ai_tool_loop_iteration_span(
             adapter_receipt={"ok": True},
         )
 
+    # Snapshot previous _ADAPTER_REGISTRY entry (if any) so we can restore on
+    # teardown — leaving the fixture adapter in the global registry pollutes
+    # later tests' counts (Spec 2296 T035 surfaces this when running the full
+    # suite). Mirrors the verify-test pattern below at line 188.
+    from kosmos.primitives.submit import _ADAPTER_REGISTRY as _submit_registry
+
+    _previous_submit = _submit_registry.get(tool_id)
     register_submit_adapter(registration, _invoke)
+    try:
+        class _GanpyeonCtx:
+            published_tier = "ganpyeon_injeung_kakao_aal2"
 
-    class _GanpyeonCtx:
-        published_tier = "ganpyeon_injeung_kakao_aal2"
+        result = await submit(
+            tool_id=tool_id,
+            params={},
+            auth_context=_GanpyeonCtx(),
+            session_id="otel-test",
+        )
 
-    result = await submit(
-        tool_id=tool_id,
-        params={},
-        auth_context=_GanpyeonCtx(),
-        session_id="otel-test",
-    )
+        assert isinstance(result, SubmitOutput)
+        spans = exporter.get_finished_spans()
+        names = [s.name for s in spans]
+        assert _SPAN_NAME in names, f"submit did not emit {_SPAN_NAME}; got {names}"
 
-    assert isinstance(result, SubmitOutput)
-    spans = exporter.get_finished_spans()
-    names = [s.name for s in spans]
-    assert _SPAN_NAME in names, f"submit did not emit {_SPAN_NAME}; got {names}"
-
-    parity_span = next(s for s in spans if s.name == _SPAN_NAME)
-    attrs = dict(parity_span.attributes or {})
-    assert attrs.get("gen_ai.tool.name") == tool_id
+        parity_span = next(s for s in spans if s.name == _SPAN_NAME)
+        attrs = dict(parity_span.attributes or {})
+        assert attrs.get("gen_ai.tool.name") == tool_id
+    finally:
+        if _previous_submit is None:
+            _submit_registry.pop(tool_id, None)
+        else:
+            _submit_registry[tool_id] = _previous_submit
 
 
 # ---------------------------------------------------------------------------
@@ -232,6 +244,12 @@ async def test_subscribe_emits_gen_ai_tool_loop_iteration_span(
             payload={"ok": True},
         )
 
+    # Snapshot previous _SUBSCRIBE_ADAPTERS entry so we can restore on teardown
+    # — leaving the fixture adapter in the global registry pollutes later
+    # tests' counts (Spec 2296 T035 surfaces this when running the full suite).
+    from kosmos.primitives.subscribe import _SUBSCRIBE_ADAPTERS as _subscribe_registry
+
+    _previous_subscribe = _subscribe_registry.get(tool_id)
     register_subscribe_adapter(tool_id, MODALITY_REST_PULL, _adapter)
 
     inp = SubscribeInput(tool_id=tool_id, params={}, lifetime_seconds=2)
@@ -245,6 +263,11 @@ async def test_subscribe_emits_gen_ai_tool_loop_iteration_span(
         with pytest.raises(StopAsyncIteration):
             while True:
                 await asyncio.wait_for(iterator.__anext__(), timeout=3.0)
+        # Restore the global registry to its pre-test state.
+        if _previous_subscribe is None:
+            _subscribe_registry.pop(tool_id, None)
+        else:
+            _subscribe_registry[tool_id] = _previous_subscribe
 
     spans = exporter.get_finished_spans()
     names = [s.name for s in spans]

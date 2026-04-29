@@ -1,16 +1,25 @@
 """
 tests/test_no_opaque_mock_adapter.py
 
-Spec 031 US5 — T062: Enforce that no adapter under src/kosmos/tools/mock/
-imports or references any OPAQUE system identifier.
+Spec 031 US5 — T062 (narrowed by Spec 2296 research): Enforce that no adapter
+under src/kosmos/tools/mock/ imports or references the remaining truly-OPAQUE
+system identifiers.
 
-OPAQUE systems (must stay in docs/scenarios/, never in src/kosmos/tools/mock/):
-  - gov24          (Government 24 submission)
-  - kec            (Korea Electronic Certification Authority XML signature)
-  - npki_portal_session  (NPKI portal session handshake)
+OPAQUE-forever systems (must stay in docs/scenarios/, never in src/kosmos/tools/mock/):
+  - npki_portal_session  (NPKI portal session handshake — no LLM-callable
+    channel exists or is policy-mandated; per delegation-flow-design.md § 2.5,
+    yessign/NPKI is document-bound, not scope-bound)
 
-The check scans all .py files under src/kosmos/tools/mock/ for any of these
-strings as identifiers, import targets, or string literals.
+Scope reframing (Spec 2296 / Initiative #2290):
+  - gov24, kec (and hometax, modid, simple_auth, geumyung, public_mydata) are
+    NO LONGER OPAQUE under the canonical 3rd-correction framing in
+    delegation-flow-design.md § 12. KOSMOS = client-side reference
+    implementation for Korea's national AX infrastructure; these channels
+    are explicitly mocked under mock_*_module_* names with the six
+    transparency fields stamped per spec FR-005.
+
+The check scans all .py files under src/kosmos/tools/mock/ for the remaining
+OPAQUE identifier as a string-literal or import target.
 """
 
 from __future__ import annotations
@@ -25,8 +34,6 @@ MOCK_ADAPTER_DIR = REPO_ROOT / "src" / "kosmos" / "tools" / "mock"
 
 # These strings must not appear in any mock adapter file.
 OPAQUE_IDENTIFIERS = [
-    "gov24",
-    "kec",
     "npki_portal_session",
 ]
 

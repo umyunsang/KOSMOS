@@ -108,10 +108,23 @@ class TestInvariant3MockAdapterMode:
             if "GovAPITool(" not in source:
                 continue
             # For every GovAPITool constructor in this file, adapter_mode="mock" MUST appear.
-            # Regex: match GovAPITool(...) block and check for the mode declaration.
-            constructor_matches = re.findall(r"GovAPITool\s*\([^)]+\)", source, re.DOTALL)
-            for match in constructor_matches:
-                if 'adapter_mode="mock"' not in match and "adapter_mode='mock'" not in match:
+            # Use a balanced-paren scanner — the mock lookup adapters introduced by
+            # Spec 2296 contain nested AdapterRealDomainPolicy(...) calls, so a simple
+            # `\([^)]+\)` regex truncates the constructor at the first inner ')'.
+            for ctor_start in [m.end() for m in re.finditer(r"GovAPITool\s*\(", source)]:
+                depth = 1
+                idx = ctor_start
+                while idx < len(source) and depth > 0:
+                    if source[idx] == "(":
+                        depth += 1
+                    elif source[idx] == ")":
+                        depth -= 1
+                    idx += 1
+                ctor_block = source[ctor_start - 1 : idx]
+                if (
+                    'adapter_mode="mock"' not in ctor_block
+                    and "adapter_mode='mock'" not in ctor_block
+                ):
                     violations.append(
                         f"{py_file.relative_to(REPO_ROOT)}: GovAPITool constructed without "
                         f"adapter_mode='mock' — invariant 3 (mock subtree adapter_mode declared)"
@@ -159,8 +172,8 @@ class TestInvariant4UniqueToolId:
 
 
 class TestCheck7ToolListClosure:
-    """The Python-side registered tool set matches the 14-adapter registry
-    (post-composite-removal per data-model.md § 1.4 / Epic #1634 FR-027).
+    """The Python-side registered tool set matches the 16-adapter registry
+    (Spec 2296 SC-003: 12 Live + 2 MVP-surface + 2 lookup mocks).
 
     Divergence from this set indicates either an unauthorized addition or
     an inadvertent removal — both are CI failures.
@@ -182,6 +195,13 @@ class TestCheck7ToolListClosure:
             "hira_hospital_search",
             "nfa_emergency_info_service",
             "mohw_welfare_eligibility_search",
+            # Spec 2296 — Epic ε AX-infrastructure callable-channel reference
+            # mock adapters for the read surfaces of OPAQUE administrative
+            # domains. Per Constitution § II + delegation-flow-design.md § 12,
+            # these are explicitly mocked under `mock_lookup_module_*` names
+            # with the six transparency fields stamped.
+            "mock_lookup_module_hometax_simplified",
+            "mock_lookup_module_gov24_certificate",
         }
     )
 

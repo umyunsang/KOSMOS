@@ -85,8 +85,10 @@ class TestMCPToolsListShape:
         )
         assert response is not None
         tools = response["result"]["tools"]
-        # Post-P3 registered count is 14 (15 original − 1 composite road_risk_score).
-        assert len(tools) == 14, f"Tool list count drift: got {len(tools)}, expected 14"
+        # Post-Spec-2296 registered count is 16: 12 Live + 2 MVP-surface (resolve_location,
+        # lookup) + 2 lookup mocks (mock_lookup_module_hometax_simplified,
+        # mock_lookup_module_gov24_certificate) per Spec 2296 SC-003.
+        assert len(tools) == 16, f"Tool list count drift: got {len(tools)}, expected 16"
 
     def test_tools_list_entries_have_required_keys(self, mcp_server: MCPServer) -> None:
         response = asyncio.run(
