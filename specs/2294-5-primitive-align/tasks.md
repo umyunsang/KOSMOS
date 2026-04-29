@@ -163,9 +163,9 @@ Sonnet teammate budget per group: ≤ 5 tasks AND ≤ 10 files. Verified per gro
 
 **Purpose**: Final acceptance verification + diff-budget audit + cross-link tidy-up. Lead solo — these are not parallelizable into Sonnet dispatch.
 
-- [ ] T025 [P] Run final acceptance battery from `quickstart.md` — `bun typecheck` (0 errors), `bun test` + `uv run pytest -q` (no NEW failures vs T001 baseline), `bun run probe:tool-registry` (≤ 200 ms), `permission-citation.test.ts` (PASS), `span-attribute-parity.test.ts` (PASS); record results in `specs/2294-5-primitive-align/acceptance-report.md`.
-- [ ] T026 [P] Diff-budget audit per SC-006: `git diff --stat main..HEAD -- tui/src/tools/{Lookup,Submit,Verify,Subscribe}Primitive tui/src/tools/shared/primitiveCitation.ts tui/src/services/toolRegistry/bootGuard.ts tui/src/tools/__tests__` — total inserted+deleted ≤ 1500 net LOC; record in acceptance-report.md.
-- [ ] T027 Cross-link finalisation — verify `specs/2294-5-primitive-align/spec.md`, `plan.md`, `tasks.md`, `research.md`, `data-model.md`, `contracts/`, `quickstart.md` all reference each other consistently and the deferred-items table maps to live issue numbers (after `/speckit-taskstoissues` resolves the 2 `NEEDS TRACKING` markers).
+- [X] T025 [P] Run final acceptance battery from `quickstart.md` — `bun typecheck` (0 errors), `bun test` + `uv run pytest -q` (no NEW failures vs T001 baseline), `bun run probe:tool-registry` (≤ 200 ms), `permission-citation.test.ts` (PASS), `span-attribute-parity.test.ts` (PASS); record results in `specs/2294-5-primitive-align/acceptance-report.md`.
+- [X] T026 [P] Diff-budget audit per SC-006: `git diff --stat main..HEAD -- tui/src/tools/{Lookup,Submit,Verify,Subscribe}Primitive tui/src/tools/shared/primitiveCitation.ts tui/src/services/toolRegistry/bootGuard.ts tui/src/tools/__tests__` — total inserted+deleted ≤ 1500 net LOC; record in acceptance-report.md.
+- [X] T027 Cross-link finalisation — verify `specs/2294-5-primitive-align/spec.md`, `plan.md`, `tasks.md`, `research.md`, `data-model.md`, `contracts/`, `quickstart.md` all reference each other consistently and the deferred-items table maps to live issue numbers (after `/speckit-taskstoissues` resolves the 2 `NEEDS TRACKING` markers).
 
 ---
 
