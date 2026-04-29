@@ -104,9 +104,9 @@ Sonnet teammate budget per group: ≤ 5 tasks AND ≤ 10 files. Verified per gro
 - [X] T013 [P] [US2] [sonnet-verify] Replace Phase 2 stub in `tui/src/tools/VerifyPrimitive/VerifyPrimitive.ts` with the real `validateInput`.
 - [X] T014 [P] [US2] [sonnet-verify] Replace Phase 2 placeholder in `tui/src/tools/VerifyPrimitive/VerifyPrimitive.ts` with real `renderToolResultMessage` per `contracts/primitive-shape.md § Verify row` — verification status + cited authority.
 - [X] T015 [P] [US2] [sonnet-verify] Tighten `tui/src/tools/VerifyPrimitive/prompt.ts` Korean `description` text (≤ 240 chars).
-- [ ] T016 [P] [US2] [sonnet-subscribe] Replace Phase 2 stub in `tui/src/tools/SubscribePrimitive/SubscribePrimitive.ts` with the real `validateInput`.
-- [ ] T017 [P] [US2] [sonnet-subscribe] Replace Phase 2 placeholder in `tui/src/tools/SubscribePrimitive/SubscribePrimitive.ts` with real `renderToolResultMessage` per `contracts/primitive-shape.md § Subscribe row` — handle id + cancel CTA + Korean explanation.
-- [ ] T018 [P] [US2] [sonnet-subscribe] Tighten `tui/src/tools/SubscribePrimitive/prompt.ts` Korean `description` text (≤ 240 chars).
+- [X] T016 [P] [US2] [sonnet-subscribe] Replace Phase 2 stub in `tui/src/tools/SubscribePrimitive/SubscribePrimitive.ts` with the real `validateInput`.
+- [X] T017 [P] [US2] [sonnet-subscribe] Replace Phase 2 placeholder in `tui/src/tools/SubscribePrimitive/SubscribePrimitive.ts` with real `renderToolResultMessage` per `contracts/primitive-shape.md § Subscribe row` — handle id + cancel CTA + Korean explanation.
+- [X] T018 [P] [US2] [sonnet-subscribe] Tighten `tui/src/tools/SubscribePrimitive/prompt.ts` Korean `description` text (≤ 240 chars).
 - [ ] T019 [US2] [sonnet-bootguard] Wire `verifyBootRegistry` into the existing ToolRegistry construction site (locate via grep for `register(` in `tui/src/services/toolRegistry/`); on failure call `console.error(diagnostic)` + `process.exit(1)`; on success log the single `tool_registry: ...` line; add a `bun run probe:tool-registry` script to `tui/package.json` that boots, prints the line, and exits 0/1.
 - [ ] T020 [US2] [sonnet-bootguard] Author `tui/src/tools/__tests__/registry-boot.test.ts` covering all 4 cases from `contracts/registry-boot-guard.md § Test plan` — real boot, missing-renderToolResultMessage, missing-citation, isMcp-undefined; assert ≤ 200 ms wall-clock budget on the real-boot case.
 

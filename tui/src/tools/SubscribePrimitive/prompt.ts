@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: Apache-2.0
 // KOSMOS-original — Epic #1634 P3 · SubscribePrimitive prompt strings.
+// Epic γ #2294 · T018: Korean description tightened to ≤ 240 chars.
 // Contract: specs/1634-tool-system-wiring/contracts/primitive-envelope.md § 5
 
 export const SUBSCRIBE_TOOL_NAME = 'subscribe'
 
-/** One-line bilingual description shown to the LLM. */
+/** One-line citizen-facing Korean description shown to the LLM (≤ 240 chars). */
 export const DESCRIPTION =
-  'Subscribe to a streaming adapter with session-lifetime handle. 세션 기반 스트리밍 구독.'
+  '등록된 스트리밍 어댑터를 구독하고 세션 기반 핸들을 받습니다. 재난 알림·실시간 대기질 등 push 스트림을 tool_id로 지정하세요. 반환된 handle_id로 구독을 참조하며, 실제 스트림은 대화창 ⎿ 접두어로 전달됩니다.'
 
 /** Extended prompt included in the system-prompt tool-use section. */
 export const SUBSCRIBE_TOOL_PROMPT = `Subscribe to a streaming KOSMOS adapter and receive a session-lifetime handle.
