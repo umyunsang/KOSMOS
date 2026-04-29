@@ -84,33 +84,38 @@ else
     ok 5 "digital_onepass absence (FR-002)"
 fi
 
-# Check 6: 10 active family literals each appear at least once
-FAMILIES=(
-    "gongdong_injeungseo"
-    "geumyung_injeungseo"
-    "ganpyeon_injeung"
-    "mobile_id"
-    "mydata"
-    "simple_auth_module"
-    "modid"
-    "kec"
-    "geumyung_module"
-    "any_id_sso"
+# Check 6: 10 active verify mock tool_id literals each appear at least once
+# Updated mid-Epic-η: the prompt now teaches tool_id (not family_hint) because
+# the TUI VerifyPrimitive's input schema is verify(tool_id, params), aligned
+# with submit/lookup/subscribe. The 10 active mock adapter tool_ids:
+TOOL_IDS=(
+    "mock_verify_gongdong_injeungseo"
+    "mock_verify_geumyung_injeungseo"
+    "mock_verify_ganpyeon_injeung"
+    "mock_verify_mobile_id"
+    "mock_verify_mydata"
+    "mock_verify_module_simple_auth"
+    "mock_verify_module_modid"
+    "mock_verify_module_kec"
+    "mock_verify_module_geumyung"
+    "mock_verify_module_any_id_sso"
 )
-for FAMILY in "${FAMILIES[@]}"; do
-    if grep -qF "$FAMILY" "$FILE" 2>/dev/null; then
-        ok 6 "family literal '$FAMILY' present"
+for TID in "${TOOL_IDS[@]}"; do
+    if grep -qF "$TID" "$FILE" 2>/dev/null; then
+        ok 6 "verify tool_id '$TID' present"
     else
-        fail 6 "family literal presence" "'$FAMILY' not found in file"
+        fail 6 "verify tool_id presence" "'$TID' not found in file"
     fi
 done
 
-# Check 7: File size ≤ 8192 bytes
+# Check 7: File size ≤ 9216 bytes (relaxed from 8192 mid-Epic-η when chain teaching
+# expanded to include 10 verify mock tool_ids — still well under K-EXAONE's
+# token-based prompt-cache window).
 FILE_SIZE=$(wc -c < "$FILE")
-if [ "$FILE_SIZE" -le 8192 ]; then
-    ok 7 "file size ≤ 8192 bytes (size=${FILE_SIZE})"
+if [ "$FILE_SIZE" -le 9216 ]; then
+    ok 7 "file size ≤ 9216 bytes (size=${FILE_SIZE})"
 else
-    fail 7 "file size ≤ 8192 bytes" "file is ${FILE_SIZE} bytes — exceeds prompt-cache budget"
+    fail 7 "file size ≤ 9216 bytes" "file is ${FILE_SIZE} bytes — exceeds prompt-cache budget"
 fi
 
 echo ""

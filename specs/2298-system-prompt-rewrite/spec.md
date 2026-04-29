@@ -5,7 +5,15 @@
 **Status**: Draft
 **Input**: User description: "System prompt teaching the LLM about 4 primitives + 11 verify families + citizen verify→lookup→submit chain pattern + delegation token vocabulary. The infinite-spinner gate."
 
-**Tracking**: Initiative #2290 · Epic η #2298 (originally `optional`, promoted to `load-bearing` after Epic ε #2296 vhs smoke produced infinite spinner — see `specs/2296-ax-mock-adapters/next-session-prompt-v9-handoff.md`). Prerequisite for Epic ζ #2297.
+**Tracking**: Initiative #2290 · Epic η #2298 (originally `optional`, promoted to `load-bearing` after Epic ε #2296 vhs smoke produced infinite spinner — see `specs/2296-ax-mock-adapters/next-session-prompt-v9-handoff.md`). **Prerequisite for Epic ζ #2297** — Epic η ships the system prompt rewrite + LLM-visible 5-tool surface; the actual end-to-end chain demonstration moves to ζ Phase 0 (TUI primitive `call()` wiring + E2E smoke), per gap discovered during T011 (see `## Mid-Epic findings` below).
+
+## Mid-Epic findings (2026-04-30)
+
+T011 live smoke (3 attempts) revealed two scope-expanding findings:
+
+1. **mvp_surface.py 5-tool registration** (Lead bonus, scope expansion): originally only `resolve_location` + `lookup` were registered as `is_core=True`. Without `verify`/`submit`/`subscribe` also being core, the LLM never sees them in `registry.export_core_tools_openai()` regardless of how the system prompt teaches the chain. Fix: extended `src/kosmos/tools/mvp_surface.py` with `VERIFY_TOOL` / `SUBMIT_TOOL` / `SUBSCRIBE_TOOL` GovAPITool definitions. `register_mvp_surface()` now registers all 5. AuthType / citizen_facing_gate aligned per Spec 025 V6 invariant. **This is now part of Epic η scope** (FR-021–FR-023 added).
+
+2. **TUI primitive `call()` STUB blocker** (deferred to Epic ζ): even after the system prompt teaches the chain AND the 5-tool surface is published, T011 attempt 3 still produced 0 receipt because `tui/src/tools/{Lookup,Verify,Submit,Subscribe}Primitive/*.ts:248-263` `call()` functions are stubs returning `{status: 'stub'}` regardless of input. Original wiring was Epic 1634 P3 (CLOSED with stubs in place); Epic γ #2294 aligned the Tool.ts 9-member interface but did not implement the call() body. **This work belongs in Epic ζ #2297 Phase 0** (issue body updated 2026-04-30).
 
 **Canonical references** (cited in this spec — every reference must be reread by `/speckit-plan` Phase 0):
 
@@ -116,6 +124,9 @@ The rewrite must not regress any currently shipping citizen-lookup scenario. The
 - **FR-018**: The Epic MUST NOT introduce any new runtime dependency in either `pyproject.toml` (Python) or `tui/package.json` (TypeScript). AGENTS.md hard rule.
 - **FR-019**: The Epic MUST NOT modify `tui/src/**`. AGENTS.md TUI no-change exemption applies for non-Layer-4 verification, but Layer 4 visual smoke remains required because the citizen-facing response surface (where the receipt is rendered) is itself a TUI-rendered screen.
 - **FR-020**: The Epic MUST cite all canonical references listed in this spec's header in its PR body (the PR description's "References" section).
+- **FR-021** *(added mid-Epic)*: `src/kosmos/tools/mvp_surface.py` MUST register `VERIFY_TOOL` + `SUBMIT_TOOL` + `SUBSCRIBE_TOOL` as `is_core=True` GovAPITool entries. `register_mvp_surface()` MUST register all 5 (resolve_location + lookup + verify + submit + subscribe) so `registry.export_core_tools_openai()` exposes them in the OpenAI tool_calls schema sent to FriendliAI.
+- **FR-022** *(added mid-Epic)*: The system prompt's verify chain pattern MUST teach `verify(tool_id, params)` (NOT `verify(family_hint, session_context)`) — aligned with the TUI VerifyPrimitive's actual input schema. `<verify_families>` table cites `tool_id` values (10 active mock adapter ids) instead of `family_hint` literals. The lint script's check 6 was updated accordingly to match `mock_verify_*` tool_ids.
+- **FR-023** *(added mid-Epic)*: Lint script's file-size ceiling relaxed from 8192 to 9216 bytes — chain-teaching expanded the prompt by ~120 lines to include 10 tool_id references + worked example + TRIGGER patterns + canonical mappings. Token-based prompt-cache window in K-EXAONE far exceeds 9 KB so this remains within budget.
 
 ### Key Entities
 
@@ -141,6 +152,14 @@ The rewrite must not regress any currently shipping citizen-lookup scenario. The
 - **SC-007**: Zero new dependencies in `pyproject.toml` or `tui/package.json` — verified by `git diff main..HEAD -- pyproject.toml tui/package.json` showing no `+` lines under `[project.dependencies]` / `[project.optional-dependencies]` / `dependencies` / `devDependencies`.
 - **SC-008**: The `prompts/manifest.yaml` SHA-256 entry for `system_v1` matches `shasum -a 256 prompts/system_v1.md` byte-for-byte after the rewrite. Verified by a one-liner CI assertion.
 - **SC-009**: The PR for this Epic merges with all of: Codex review clean (no P1 unresolved), Copilot Gate `completed`, the `shadow-eval` check `success`, and the `prompt-manifest-integrity` boot check `success`.
+- **SC-010** *(added mid-Epic)*: `register_mvp_surface()` produces exactly 5 core tools verified via `len(registry.core_tools()) == 5` AND `len(registry.export_core_tools_openai()) == 5` after `register_all_tools()`. The 5 tool ids are `{resolve_location, lookup, verify, submit, subscribe}`.
+
+### Mid-Epic-deferred Success Criteria (moved to Epic ζ #2297)
+
+- **~~SC-001~~** (moved to ζ): Layer 4 vhs keyframe 3 PNG showing `접수번호: hometax-2026-MM-DD-RX-XXXXX` — gated by Epic ζ Phase 0 wiring completion.
+- **~~SC-002~~** (moved to ζ): PTY log `CHECKPOINTreceipt token observed` × 1 — same gate.
+
+Epic η T011 attempt 3 PTY log (`smoke-citizen-taxreturn-pty.txt`, committed as evidence) confirms the failure mode is the TUI primitive stub, not the system prompt.
 
 ## Assumptions
 

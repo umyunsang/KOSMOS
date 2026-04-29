@@ -6,9 +6,9 @@ Set Width 1200
 Set Height 700
 Set TypingSpeed 50ms
 
-Type "bun run tui"
+Type "cd /Users/um-yunsang/KOSMOS-w-2298/tui && bun run tui"
 Enter
-Sleep 4s
+Sleep 6s
 
 # Keyframe 1 — boot+branding
 Screenshot specs/2298-system-prompt-rewrite/smoke-citizen-taxreturn-keyframe-1.png

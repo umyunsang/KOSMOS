@@ -12,8 +12,8 @@ set timeout 60
 # Tee everything to the log file (§ 1.2 step 8)
 log_file -a "specs/2298-system-prompt-rewrite/smoke-citizen-taxreturn-pty.txt"
 
-# --- Step 1: spawn TUI from worktree root ---
-spawn bash -c "cd /Users/um-yunsang/KOSMOS-w-2298 && bun run tui"
+# --- Step 1: spawn TUI from tui/ subtree (where the `tui` bun script lives) ---
+spawn bash -c "cd /Users/um-yunsang/KOSMOS-w-2298/tui && bun run tui"
 
 # --- Step 2: assert KOSMOS boot banner ---
 expect {
