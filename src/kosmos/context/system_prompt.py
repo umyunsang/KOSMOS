@@ -114,15 +114,11 @@ class SystemPromptAssembler:
 
     def _platform_identity_section(self, config: SystemPromptConfig) -> str:
         """Section 1: Platform identity (delegated to system_v1.md paragraph 0)."""
-        return self._format_if_templated(
-            self._system_paragraphs[_PARA_PLATFORM_IDENTITY], config
-        )
+        return self._format_if_templated(self._system_paragraphs[_PARA_PLATFORM_IDENTITY], config)
 
     def _language_policy_section(self, config: SystemPromptConfig) -> str:
         """Section 2: Language policy (delegated to system_v1.md paragraph 1)."""
-        return self._format_if_templated(
-            self._system_paragraphs[_PARA_LANGUAGE_POLICY], config
-        )
+        return self._format_if_templated(self._system_paragraphs[_PARA_LANGUAGE_POLICY], config)
 
     @staticmethod
     def _format_if_templated(paragraph: str, config: SystemPromptConfig) -> str:
