@@ -192,6 +192,19 @@ export const SubmitPrimitive = buildTool({
   renderToolResultMessage(output: Output) {
     // NOTE: This file is `.ts` (not `.tsx`); Bun runtime cannot parse JSX in
     // `.ts`. Use `React.createElement` for parity with the other 3 primitives.
+    //
+    // KOSMOS hotfix #2519 — hide dispatchPrimitive server-side-ack stub
+    // (see LookupPrimitive comment for full context). Without this guard
+    // the stub renders as a green "✓ 제출이 접수되었습니다." with no receipt.
+    if (
+      output.ok &&
+      typeof output.result === 'object' &&
+      output.result !== null &&
+      (output.result as Record<string, unknown>).dispatched_via ===
+        'backend-server-side'
+    ) {
+      return null
+    }
     if (output.ok) {
       const result = output.result as Record<string, unknown> | undefined
       const receiptId =

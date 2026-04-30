@@ -67,7 +67,34 @@ async function* queryModelWithStreaming(params: {
     chatMessages.push({ role: 'user', content: '' })
   }
 
-  const systemText = extractText(systemPrompt)
+  // KOSMOS hotfix #2519 (post-vhs verification, 2026-04-30 — dev-mode answer):
+  //
+  // The TUI's CC-original `getSystemPrompt()` (tui/src/constants/prompts.ts:428)
+  // builds an English developer-facing prompt — the "Doing tasks" section
+  // alone tells the model "primarily perform software engineering tasks
+  // (solving bugs, adding new functionality, refactoring code, …)" plus
+  // hundreds of lines of dev-only directives (tone, scratchpad, hooks,
+  // git workflow, etc.). Forwarding that text via ChatRequestFrame.system
+  // is what made K-EXAONE answer "안녕! 저는 K-EXAONE 모델입니다 …
+  // 소프트웨어 엔지니어링 작업을 지원하며" to a citizen on KOSMOS — it
+  // was honestly following the dev-prompt KOSMOS handed it.
+  //
+  // Earlier (commit 6ab1e4d, "option A simple") only the explicit textsmoke
+  // leaks were rewritten to KOSMOS-canonical strings (model-family table,
+  // claude.ai availability, Fast-mode descriptor); the bulk of the dev-mode
+  // body remained intact, so the citizen still saw a developer assistant.
+  //
+  // Until a follow-up Spec replaces the entire client-side prompt builder
+  // with a citizen-facing KOSMOS prompt (option A "full"), the pragmatic
+  // fix is: send no `system` field, and let the backend's PromptLoader
+  // resolve `prompts/system_v1.md` (the canonical Korean citizen system
+  // prompt) via its existing fallback (src/kosmos/ipc/stdio.py:1213-1216
+  // — `if not base_system: loaded = await _ensure_system_prompt()`).
+  //
+  // The TS-side `systemPrompt` value remains computed for any local
+  // consumers (e.g. CC compaction surfaces) but is no longer transmitted.
+  const _systemTextDiscarded = extractText(systemPrompt)
+  void _systemTextDiscarded
   const bridge = getOrCreateKosmosBridge()
   const sessionId = getKosmosBridgeSessionId()
 
@@ -84,7 +111,7 @@ async function* queryModelWithStreaming(params: {
     role: 'tui',
     kind: 'chat_request',
     messages: chatMessages as ChatRequestFrame['messages'],
-    ...(systemText ? { system: systemText } : {}),
+    // Intentionally omit `system` — see hotfix #2519 comment above.
     tools: tools as ChatRequestFrame['tools'],
   }
 

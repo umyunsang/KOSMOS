@@ -235,11 +235,35 @@ export const LookupPrimitive = buildTool({
    * - ok=false:               Korean error message in citizen-friendly tone.
    */
   renderToolResultMessage(output: Output): React.ReactNode {
-    // KOSMOS hotfix #2519 — wrap all branches in <MessageResponse> so the
-    // CC-original "  ⎿  " tree-branch glyph (components/MessageResponse.tsx:22)
-    // prefixes every tool-result line. Without this wrap the result Box renders
-    // as a raw column under the assistant block, breaking the
-    // citizen-facing visual hierarchy.
+    // KOSMOS hotfix #2519 (post-vhs verification, 2026-04-30):
+    //
+    // dispatchPrimitive (tui/src/tools/_shared/dispatchPrimitive.ts) returns
+    // an immediate server-side-ack stub:
+    //   { dispatched_via: 'backend-server-side', primitive: 'lookup',
+    //     tool_use_id: '…', note: '…' }
+    // because the KOSMOS backend runs the agentic loop server-side and emits
+    // the authoritative ToolResultFrame separately (llmClient.ts:480 — that
+    // frame is intentionally NOT yielded as an SDK event yet).
+    //
+    // Rendering the stub envelope through the LookupSearchResult shape
+    // produced "(어댑터 미상)" because none of the expected fields exist on
+    // the stub. Until a follow-up Epic wires backend ToolResultFrame contents
+    // into the SDK pipeline, return null on stub detection so the
+    // UserToolSuccessMessage hides the result box entirely (CC pattern at
+    // tui/src/components/messages/UserToolResultMessage/UserToolSuccessMessage
+    // .tsx:76 — `if (renderedMessage === null) return null`).
+    if (
+      output.ok &&
+      typeof output.result === 'object' &&
+      output.result !== null &&
+      (output.result as Record<string, unknown>).dispatched_via ===
+        'backend-server-side'
+    ) {
+      return null
+    }
+
+    // Wrap remaining branches in <MessageResponse> so the CC-original "  ⎿  "
+    // tree-branch glyph prefixes each tool-result row.
     if (!output.ok) {
       return React.createElement(
         MessageResponse,

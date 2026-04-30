@@ -187,6 +187,18 @@ export const VerifyPrimitive = buildTool({
   },
 
   renderToolResultMessage(output: Output) {
+    // KOSMOS hotfix #2519 — hide dispatchPrimitive server-side-ack stub
+    // (see LookupPrimitive comment for full context). Without this guard the
+    // stub envelope renders as "검증 결과: 결과 수신됨" with no real verify data.
+    if (
+      output.ok &&
+      typeof output.result === 'object' &&
+      output.result !== null &&
+      (output.result as Record<string, unknown>).dispatched_via ===
+        'backend-server-side'
+    ) {
+      return null
+    }
     if (output.ok === true) {
       // Extract verification status from the result payload.
       const result = output.result as Record<string, unknown> | null | undefined
