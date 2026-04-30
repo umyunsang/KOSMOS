@@ -128,26 +128,54 @@ def search(
             logger.warning("search: tool %r in retriever but not in registry", tool_id)
             continue
 
-        required_params = _required_params(tool)
+        input_schema_json, required_params = _input_schema_export(tool)
+        output_schema_json = _output_schema_export(tool)
         candidate = AdapterCandidate(
             tool_id=tool_id,
             score=max(0.0, float(score)),
             required_params=required_params,
             search_hint=tool.search_hint,
             why_matched=f"{backend_label} score {score:.4f} on search_hint",
+            input_schema_json=input_schema_json,
+            output_schema_json=output_schema_json,
+            llm_description=tool.llm_description,
+            primitive=tool.primitive,
+            real_classification_url=(
+                tool.policy.real_classification_url if tool.policy is not None else None
+            ),
         )
         results.append(candidate)
 
     return results
 
 
-def _required_params(tool: GovAPITool) -> list[str]:
-    """Extract required parameter names from a tool's input_schema."""
+def _input_schema_export(tool: GovAPITool) -> tuple[dict[str, object], list[str]]:
+    """Export the tool's input_schema as a JSON Schema dict + required-fields list.
+
+    Epic ζ #2297 path B — exposes full per-field description / type / pattern /
+    examples / ge-le constraints so the LLM can fill params per domain.
+    Returns ``({}, [])`` on schema export failure (pure best-effort path).
+    """
     try:
         schema = tool.input_schema.model_json_schema()
-        return list(schema.get("required", []))
     except Exception:  # pragma: no cover
-        return []
+        return ({}, [])
+    required = list(schema.get("required", []))
+    return (schema, required)
+
+
+def _output_schema_export(tool: GovAPITool) -> dict[str, object]:
+    """Export the tool's output_schema as a JSON Schema dict (best-effort)."""
+    try:
+        return tool.output_schema.model_json_schema()
+    except Exception:  # pragma: no cover
+        return {}
+
+
+def _required_params(tool: GovAPITool) -> list[str]:
+    """Backward-compatible thin wrapper. Prefer ``_input_schema_export`` when both
+    the schema dict and the required list are needed."""
+    return _input_schema_export(tool)[1]
 
 
 # ---------------------------------------------------------------------------

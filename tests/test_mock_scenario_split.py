@@ -23,7 +23,7 @@ SCENARIOS_DIR = REPO_ROOT / "docs" / "scenarios"
 
 EXPECTED_MOCK_NAMES = {"data_go_kr", "omnione", "barocert", "mydata", "npki_crypto", "cbs"}
 EXPECTED_MOCK_COUNT = 6
-EXPECTED_SCENARIO_COUNT = 3
+EXPECTED_SCENARIO_COUNT = 8  # Spec 031 baseline 3 + Epic ζ #2297 5 OPAQUE Korean-AX scenarios = 8.
 HANDOFF_HEADING = "## KOSMOS ↔ real system handoff point"
 
 

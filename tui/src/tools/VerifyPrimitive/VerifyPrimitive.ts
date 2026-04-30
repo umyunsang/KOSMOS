@@ -25,6 +25,9 @@ import {
   isManifestSynced,
   resolveAdapter,
 } from '../../services/api/adapterManifest.js'
+import { dispatchPrimitive } from '../_shared/dispatchPrimitive.js'
+import { getOrCreateKosmosBridge } from '../../ipc/bridgeSingleton.js'
+import { getOrCreatePendingCallRegistry } from '../../ipc/pendingCallSingleton.js'
 
 // ---------------------------------------------------------------------------
 // KOSMOS citation extension — augments context at runtime for permission UI.
@@ -245,19 +248,18 @@ export const VerifyPrimitive = buildTool({
   },
 
   /**
-   * P3 MVP stub — real dispatch wired by T028 registry closure + T029 E2E test.
+   * Dispatch verify call via real IPC bridge (T010 — stub replaced).
+   *
+   * I-D8 / FR-009: args forwarded verbatim — NO tool_id→family_hint translation
+   * at TUI side. The backend's _VerifyInputForLLM pre-validator owns translation.
    */
-  async call(input, _context) {
-    return {
-      data: {
-        ok: true as const,
-        result: {
-          status: 'stub',
-          note: 'Primitive wrapper stub — real dispatch wired by T028 registry closure + T029 E2E test.',
-          primitive: 'verify',
-          echo: input,
-        },
-      },
-    }
+  async call(input, context) {
+    return dispatchPrimitive<Output>({
+      primitive: 'verify',
+      args: input as Record<string, unknown>,  // forwarded verbatim (I-D8)
+      context,
+      registry: getOrCreatePendingCallRegistry(),
+      bridge: getOrCreateKosmosBridge(),
+    })
   },
 } satisfies ToolDef<InputSchema, Output>)

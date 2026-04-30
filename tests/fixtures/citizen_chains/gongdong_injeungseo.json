@@ -1,0 +1,20 @@
+{
+  "family_hint": "gongdong_injeungseo",
+  "tool_id": "mock_verify_gongdong_injeungseo",
+  "citizen_prompt": "공동인증서로 본인 확인해줘",
+  "expected_first_tool_call": {
+    "name": "verify",
+    "arguments": {
+      "tool_id": "mock_verify_gongdong_injeungseo",
+      "params": {
+        "scope_list": ["verify:gongdong.identity"],
+        "purpose_ko": "공동인증서 본인확인",
+        "purpose_en": "Identity verification via joint certificate"
+      }
+    }
+  },
+  "expected_chain_completes_with_receipt": true,
+  "expected_mock_invocations": [
+    "mock_verify_gongdong_injeungseo"
+  ]
+}

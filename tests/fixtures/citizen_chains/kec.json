@@ -1,0 +1,21 @@
+{
+  "family_hint": "kec",
+  "tool_id": "mock_verify_module_kec",
+  "citizen_prompt": "사업자 등록증 발급해줘",
+  "expected_first_tool_call": {
+    "name": "verify",
+    "arguments": {
+      "tool_id": "mock_verify_module_kec",
+      "params": {
+        "scope_list": ["verify:kec.identity"],
+        "purpose_ko": "사업자 등록증 발급 본인확인",
+        "purpose_en": "Identity verification for business registration certificate"
+      }
+    }
+  },
+  "expected_chain_completes_with_receipt": true,
+  "expected_mock_invocations": [
+    "mock_verify_module_kec",
+    "mock_lookup_module_gov24_certificate"
+  ]
+}

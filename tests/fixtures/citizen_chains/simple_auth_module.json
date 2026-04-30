@@ -1,0 +1,20 @@
+{
+  "family_hint": "simple_auth_module",
+  "tool_id": "mock_verify_module_simple_auth",
+  "citizen_prompt": "카카오 간편인증으로 로그인해줘",
+  "expected_first_tool_call": {
+    "name": "verify",
+    "arguments": {
+      "tool_id": "mock_verify_module_simple_auth",
+      "params": {
+        "scope_list": ["verify:simple_auth.identity"],
+        "purpose_ko": "간편인증 본인확인",
+        "purpose_en": "Identity verification via simplified authentication"
+      }
+    }
+  },
+  "expected_chain_completes_with_receipt": true,
+  "expected_mock_invocations": [
+    "mock_verify_module_simple_auth"
+  ]
+}

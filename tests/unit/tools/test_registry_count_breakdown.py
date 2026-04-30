@@ -25,7 +25,20 @@ from __future__ import annotations
 # `registry.export_core_tools_openai()` only returned [resolve_location, lookup].
 # The 3 new entries are the canonical primitives, not new agency adapters.
 
-_EXPECTED_MAIN_REGISTRY_COUNT = 19
+# Epic ζ #2297 path B (live smoke 2026-04-30 follow-up) — extended from 19 to 37
+# by adding 18 non-core mock adapters via discovery_bridge:
+#   - 10 verify family wrappers (mock_verify_module_{modid,kec,geumyung,
+#     simple_auth,any_id_sso} + mock_verify_{gongdong,geumyung,ganpyeon,
+#     mobile_id,mydata}_*)
+#   - 5 submit wrappers (mock_submit_module_{hometax_taxreturn,gov24_minwon,
+#     public_mydata_action} + mock_traffic_fine_pay_v1 + mock_welfare_application_submit_v1)
+#   - 3 subscribe wrappers (mock_cbs_disaster_v1 + mock_rest_pull_tick_v1 +
+#     mock_rss_public_notices_v1)
+# These wrappers are registered with is_core=False so the LLM's primary tool list
+# stays at 5 primitives + lookup-class Live; they participate in lookup(mode="search")
+# BM25 corpus so verify/submit/subscribe candidates surface for citizen queries
+# (the gap that blocked η T011 + ζ T018 live smoke runs).
+_EXPECTED_MAIN_REGISTRY_COUNT = 37
 
 _EXPECTED_MAIN_REGISTRY_BREAKDOWN = {
     "live_adapters": 12,  # 12 Live: koroad ×2, kma ×6, hira ×1, nfa ×1, nmc ×1, mohw ×1
@@ -340,7 +353,12 @@ def test_all_four_surface_counts_match_canonical() -> None:
         # Epic η #2298 FR-021 — main_registry extended from 16 to 19 by adding
         # verify / submit / subscribe primitive surfaces to mvp_surface so the
         # LLM sees them in registry.export_core_tools_openai().
-        "main_registry": 19,
+        # Epic ζ #2297 path B (live smoke 2026-04-30) — main_registry extended
+        # from 19 to 37 by discovery_bridge bridging 18 non-core mock adapters
+        # (10 verify + 5 submit + 3 subscribe family wrappers) into the BM25
+        # corpus so lookup(mode="search") surfaces them. is_core=False so the
+        # primary LLM tool list stays at 5 primitives + lookup-class Live.
+        "main_registry": 37,
         "verify_families": 10,
         "submit_adapters": 5,
         "subscribe_adapters": 3,

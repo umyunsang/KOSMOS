@@ -18,7 +18,9 @@ import { trace, SpanStatusCode } from '@opentelemetry/api'
 import type { Span } from '@opentelemetry/api'
 import type { IPCBridge } from './bridge.js'
 import { makeUUIDv7, makeBaseEnvelope } from './envelope.js'
-import type { AssistantChunkFrame, BackpressureSignalFrame, ChatMessage as IPCChatMessage, ChatRequestFrame, ErrorFrame, ToolCallFrame, ToolDefinition as IPCToolDefinition } from './frames.generated.js'
+import type { AssistantChunkFrame, BackpressureSignalFrame, ChatMessage as IPCChatMessage, ChatRequestFrame, ErrorFrame, ToolCallFrame, ToolResultFrame, ToolDefinition as IPCToolDefinition } from './frames.generated.js'
+import type { PendingCallRegistry } from '../tools/_shared/pendingCallRegistry.js'
+import { getOrCreatePendingCallRegistry } from './pendingCallSingleton.js'
 import type {
   KosmosMessageStreamParams,
   KosmosRawMessageStreamEvent,
@@ -55,6 +57,12 @@ export interface LLMClientOptions {
   bridge: IPCBridge
   model?: string
   sessionId: string
+  /**
+   * Session-scoped pending call registry for resolving tool_result frames.
+   * If omitted, the process-wide singleton from pendingCallSingleton.ts is used.
+   * Tests inject a fresh instance for isolation (I-D5).
+   */
+  pendingCallRegistry?: PendingCallRegistry
 }
 
 // ---------------------------------------------------------------------------
@@ -136,11 +144,15 @@ export class LLMClient {
   readonly bridge: IPCBridge
   readonly model: string
   readonly sessionId: string
+  readonly pendingCallRegistry: PendingCallRegistry
+  /** Per-instance flag — emit FR-013 checkpoint marker exactly once per session. */
+  checkpointEmitted: boolean = false
 
   constructor(opts: LLMClientOptions) {
     this.bridge = opts.bridge
     this.model = opts.model ?? KOSMOS_DEFAULT_MODEL
     this.sessionId = opts.sessionId
+    this.pendingCallRegistry = opts.pendingCallRegistry ?? getOrCreatePendingCallRegistry()
   }
 
   // -------------------------------------------------------------------------
@@ -432,6 +444,40 @@ export class LLMClient {
             name: toolFrame.name,
             input: toolFrame.arguments as Record<string, unknown>,
           }
+        }
+
+        // ---- ToolResultFrame (I-D5 + Epic ζ smoke checkpoint, FR-013) ----
+        else if (frame.kind === 'tool_result') {
+          const trFrame = frame as ToolResultFrame
+          // Best-effort registry resolution (only fires if dispatcher
+          // pre-registered, which the post-2026-04-30 server-side-ack
+          // architecture no longer does — see dispatchPrimitive.ts header).
+          this.pendingCallRegistry.resolve(trFrame.call_id, trFrame)
+
+          // Emit the canonical FR-013 / I-P2 checkpoint marker exactly once
+          // when a submit primitive's tool_result envelope contains a
+          // hometax receipt id matching the regex. This is the convergence
+          // marker the PTY smoke harness (T015 .expect script) greps for.
+          if (process.env['KOSMOS_SMOKE_CHECKPOINTS'] === 'true') {
+            try {
+              const env = trFrame.envelope as Record<string, unknown>
+              const envKind = typeof env?.['kind'] === 'string' ? env['kind'] : ''
+              if (envKind === 'submit') {
+                const RX = /hometax-\d{4}-\d{2}-\d{2}-RX-[A-Z0-9]{5}/
+                const haystack =
+                  (typeof trFrame.transaction_id === 'string' ? trFrame.transaction_id : '') +
+                  ' ' +
+                  JSON.stringify(env)
+                if (RX.test(haystack) && !this.checkpointEmitted) {
+                  this.checkpointEmitted = true
+                  process.stderr.write('CHECKPOINTreceipt token observed\n')
+                }
+              }
+            } catch {
+              // Ignore serialization errors; checkpoint is best-effort.
+            }
+          }
+          // Do NOT yield a SDK event — the SDK loop continues to await message_stop
         }
 
         // ---- ErrorFrame -------------------------------------------------

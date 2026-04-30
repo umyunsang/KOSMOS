@@ -737,7 +737,16 @@ class LookupMeta(BaseModel):
 
 
 class AdapterCandidate(BaseModel):
-    """A single search-result entry from lookup(mode='search')."""
+    """A single search-result entry from lookup(mode='search').
+
+    Epic ζ #2297 path B (live smoke 2026-04-30 follow-up) — extended with
+    full per-domain REST schema metadata so the LLM can read each adapter's
+    parameter descriptions, types, patterns, and constraints WITHOUT a
+    second round-trip. Each domain API has different parameter names and
+    structures (KOROAD adm_cd+year vs KMA base_date+base_time vs hometax
+    delegation_context+payload); the LLM uses ``input_schema_json`` to
+    judge what to fill per domain.
+    """
 
     model_config = ConfigDict(extra="forbid")
 
@@ -746,6 +755,46 @@ class AdapterCandidate(BaseModel):
     required_params: list[str]
     search_hint: str
     why_matched: str
+
+    # Epic ζ #2297 path B — full schema export for LLM-side per-domain reasoning
+    input_schema_json: dict[str, object] = Field(
+        default_factory=dict,
+        description=(
+            "Full Pydantic JSON Schema (Draft 2020-12) of the adapter's "
+            "input_schema, including per-field description / type / pattern / "
+            "examples / ge-le constraints. The LLM reads this to fill params "
+            "according to the domain API's REST shape."
+        ),
+    )
+    output_schema_json: dict[str, object] = Field(
+        default_factory=dict,
+        description=(
+            "Full Pydantic JSON Schema of the adapter's output_schema. "
+            "Helpful for the LLM to anticipate the shape of the result."
+        ),
+    )
+    llm_description: str | None = Field(
+        default=None,
+        description=(
+            "Adapter usage prose (rich than search_hint). "
+            "Includes ordering rules, prerequisites, scope_list semantics, "
+            "and worked examples when applicable."
+        ),
+    )
+    primitive: str | None = Field(
+        default=None,
+        description=(
+            "The primitive root this adapter binds to "
+            "(lookup / verify / submit / subscribe / resolve_location)."
+        ),
+    )
+    real_classification_url: str | None = Field(
+        default=None,
+        description=(
+            "Agency-published policy URL the adapter cites "
+            "(KOSMOS does not invent permission classifications)."
+        ),
+    )
 
 
 class LookupSearchResult(BaseModel):

@@ -1,0 +1,20 @@
+{
+  "family_hint": "ganpyeon_injeung",
+  "tool_id": "mock_verify_ganpyeon_injeung",
+  "citizen_prompt": "카카오/네이버 간편인증으로 본인확인해줘",
+  "expected_first_tool_call": {
+    "name": "verify",
+    "arguments": {
+      "tool_id": "mock_verify_ganpyeon_injeung",
+      "params": {
+        "scope_list": ["verify:ganpyeon.identity"],
+        "purpose_ko": "간편인증 본인확인",
+        "purpose_en": "Identity verification via simplified authentication (Kakao/Naver/Toss)"
+      }
+    }
+  },
+  "expected_chain_completes_with_receipt": true,
+  "expected_mock_invocations": [
+    "mock_verify_ganpyeon_injeung"
+  ]
+}

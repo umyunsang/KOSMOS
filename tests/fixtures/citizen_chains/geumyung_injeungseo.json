@@ -1,0 +1,20 @@
+{
+  "family_hint": "geumyung_injeungseo",
+  "tool_id": "mock_verify_geumyung_injeungseo",
+  "citizen_prompt": "금융인증서(KFTC)로 본인 인증해줘",
+  "expected_first_tool_call": {
+    "name": "verify",
+    "arguments": {
+      "tool_id": "mock_verify_geumyung_injeungseo",
+      "params": {
+        "scope_list": ["verify:geumyung_injeungseo.identity"],
+        "purpose_ko": "금융인증서 KFTC 본인인증",
+        "purpose_en": "Identity verification via KFTC financial certificate"
+      }
+    }
+  },
+  "expected_chain_completes_with_receipt": true,
+  "expected_mock_invocations": [
+    "mock_verify_geumyung_injeungseo"
+  ]
+}
