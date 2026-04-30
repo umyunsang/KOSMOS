@@ -27,12 +27,12 @@ Total: 56 tasks (well under 90-cap per AGENTS.md sub-issue policy). No consolida
 
 **Purpose**: Scaffold audit + replay infrastructure that all user stories consume.
 
-- [ ] T001 Capture baseline SHA-256 of `.references/claude-code-sourcemap/restored-src/src/services/api/claude.ts` and `.references/claude-code-sourcemap/restored-src/src/QueryEngine.ts`; record in `specs/2521-llm-swap-cc-rebuild/parity-matrix.md` File-level rows. Cites FR-002.
-- [ ] T002 [P] Capture current KOSMOS file SHA-256 baselines (`tui/src/services/api/claude.ts`, `tui/src/ipc/llmClient.ts`, `src/kosmos/llm/client.py`, `src/kosmos/ipc/stdio.py`) into `specs/2521-llm-swap-cc-rebuild/parity-matrix.md` File-level rows under "current state SHA". Cites FR-001.
-- [ ] T003 Scaffold `scripts/llm_swap_parity_audit.sh` with arg parsing (`--json`, `--strict`, `--verbose`), POSIX shell shebang, dependency probes (`sha256sum` ↔ `shasum -a 256`, `git`, `awk`, `grep`). Output stub Markdown matching `contracts/parity-audit-cli.md`. Cites FR-004.
-- [ ] T004 [P] Scaffold `tui/tests/ipc/thinking-delta-render.test.tsx` with `ink-testing-library` import + mount harness (no assertions yet). Cites FR-001 + plan § Phase 1 R-5.
-- [ ] T005 [P] Scaffold `tests/llm/test_reasoning_content_forwarding.py` with `pytest-asyncio` fixture + httpx mock skeleton (no assertions yet). Cites FR-007.
-- [ ] T006 [P] Scaffold `tests/integration/test_thinking_channel_e2e.py` with simulated FriendliAI SSE replay harness skeleton. Cites FR-008.
+- [X] T001 Capture baseline SHA-256 of `.references/claude-code-sourcemap/restored-src/src/services/api/claude.ts` and `.references/claude-code-sourcemap/restored-src/src/QueryEngine.ts`; record in `specs/2521-llm-swap-cc-rebuild/parity-matrix.md` File-level rows. Cites FR-002.
+- [X] T002 [P] Capture current KOSMOS file SHA-256 baselines (`tui/src/services/api/claude.ts`, `tui/src/ipc/llmClient.ts`, `src/kosmos/llm/client.py`, `src/kosmos/ipc/stdio.py`) into `specs/2521-llm-swap-cc-rebuild/parity-matrix.md` File-level rows under "current state SHA". Cites FR-001.
+- [X] T003 Scaffold `scripts/llm_swap_parity_audit.sh` with arg parsing (`--json`, `--strict`, `--verbose`), POSIX shell shebang, dependency probes (`sha256sum` ↔ `shasum -a 256`, `git`, `awk`, `grep`). Output stub Markdown matching `contracts/parity-audit-cli.md`. Cites FR-004.
+- [X] T004 [P] Scaffold `tui/tests/ipc/thinking-delta-render.test.tsx` with `ink-testing-library` import + mount harness (no assertions yet). Cites FR-001 + plan § Phase 1 R-5.
+- [X] T005 [P] Scaffold `tests/llm/test_reasoning_content_forwarding.py` with `pytest-asyncio` fixture + httpx mock skeleton (no assertions yet). Cites FR-007.
+- [X] T006 [P] Scaffold `tests/integration/test_thinking_channel_e2e.py` with simulated FriendliAI SSE replay harness skeleton. Cites FR-008.
 
 ---
 
@@ -42,9 +42,9 @@ Total: 56 tasks (well under 90-cap per AGENTS.md sub-issue policy). No consolida
 
 ⚠️ CRITICAL: No user story work can begin until this phase is complete.
 
-- [ ] T007 Document the four 2026-05-01 fixes in `specs/2521-llm-swap-cc-rebuild/parity-matrix.md` Swap commit log section: (a) `_ensure_tool_registry` lazy-init in `src/kosmos/ipc/stdio.py`; (b) `<turn_order>` section in `prompts/system_v1.md` + manifest SHA-256 update; (c) `enable_thinking=true` default in `src/kosmos/llm/client.py:858`; (d) partial `chunk.thinking` plumbing in `tui/src/ipc/llmClient.ts` + `tui/src/ipc/llmTypes.ts`. Each entry classified per the four SWAP categories. Cites FR-003 + FR-010 + FR-011.
-- [ ] T008 Enumerate the CC stream-event channels at `.references/claude-code-sourcemap/restored-src/src/services/api/claude.ts:1980-2295` into `specs/2521-llm-swap-cc-rebuild/parity-matrix.md` Stream-event channel rows. Each row has CC line, event kind/subtype, intended KOSMOS handler (TBD). Cites FR-002 + plan § Phase 0 R-2.
-- [ ] T009 Update `specs/2521-llm-swap-cc-rebuild/parity-matrix.md` Procedure-B per-handler rows with current handler positions in `tui/src/ipc/llmClient.ts`, `src/kosmos/llm/client.py`, `src/kosmos/ipc/stdio.py`. Cites FR-005.
+- [X] T007 Document the four 2026-05-01 fixes in `specs/2521-llm-swap-cc-rebuild/parity-matrix.md` Swap commit log section: (a) `_ensure_tool_registry` lazy-init in `src/kosmos/ipc/stdio.py`; (b) `<turn_order>` section in `prompts/system_v1.md` + manifest SHA-256 update; (c) `enable_thinking=true` default in `src/kosmos/llm/client.py:858`; (d) partial `chunk.thinking` plumbing in `tui/src/ipc/llmClient.ts` + `tui/src/ipc/llmTypes.ts`. Each entry classified per the four SWAP categories. Cites FR-003 + FR-010 + FR-011.
+- [X] T008 Enumerate the CC stream-event channels at `.references/claude-code-sourcemap/restored-src/src/services/api/claude.ts:1980-2295` into `specs/2521-llm-swap-cc-rebuild/parity-matrix.md` Stream-event channel rows. Each row has CC line, event kind/subtype, intended KOSMOS handler (TBD). Cites FR-002 + plan § Phase 0 R-2.
+- [X] T009 Update `specs/2521-llm-swap-cc-rebuild/parity-matrix.md` Procedure-B per-handler rows with current handler positions in `tui/src/ipc/llmClient.ts`, `src/kosmos/llm/client.py`, `src/kosmos/ipc/stdio.py`. Cites FR-005.
 
 **Checkpoint**: Phase 1 + 2 complete; parity-matrix has full skeleton + retro-labeled 2026-05-01 fixes. User story implementation can begin.
 
@@ -76,29 +76,29 @@ Total: 56 tasks (well under 90-cap per AGENTS.md sub-issue policy). No consolida
 
 ### Procedure-B — `tui/src/ipc/llmClient.ts` (citation-required)
 
-- [ ] T015 [P] [US1] Verify the 2026-05-01 partial `chunk.thinking` plumbing in `tui/src/ipc/llmClient.ts` is preserved across T010-T013 (claude.ts byte-copy + swaps). If T010 reintroduced an old llmClient.ts dependency, repair via `SWAP/llm-provider` follow-up commit. Cites FR-002.
-- [ ] T016 [P] [US1] Add `CC reference: services/api/claude.ts:<line-range>` citation comments to every handler in `tui/src/ipc/llmClient.ts`: AssistantChunkFrame branch (text + thinking), ToolCallFrame branch (input_json_delta), ToolResultFrame branch, ErrorFrame branch, BackpressureSignalFrame branch, message_start/stop emission. Each handler must cite the closest CC analog line range. Cites FR-005 + SC-004.
-- [ ] T017 [P] [US1] Add `// SKIPPED — KOSMOS-N/A: <reason>` comments in `tui/src/ipc/llmClient.ts` for each CC-stream-event channel KOSMOS does not handle: `signature_delta` (K-EXAONE doesn't emit), `citations_delta` (KOSMOS uses tool_result envelopes), `connector_text_delta` (Anthropic-only), `server_tool_use` (KOSMOS uses IPC primitive bridge). One SKIPPED comment per channel. Cites FR-002.
+- [X] T015 [P] [US1] Verify the 2026-05-01 partial `chunk.thinking` plumbing in `tui/src/ipc/llmClient.ts` is preserved across T010-T013 (claude.ts byte-copy + swaps). If T010 reintroduced an old llmClient.ts dependency, repair via `SWAP/llm-provider` follow-up commit. Cites FR-002.
+- [X] T016 [P] [US1] Add `CC reference: services/api/claude.ts:<line-range>` citation comments to every handler in `tui/src/ipc/llmClient.ts`: AssistantChunkFrame branch (text + thinking), ToolCallFrame branch (input_json_delta), ToolResultFrame branch, ErrorFrame branch, BackpressureSignalFrame branch, message_start/stop emission. Each handler must cite the closest CC analog line range. Cites FR-005 + SC-004.
+- [X] T017 [P] [US1] Add `// SKIPPED — KOSMOS-N/A: <reason>` comments in `tui/src/ipc/llmClient.ts` for each CC-stream-event channel KOSMOS does not handle: `signature_delta` (K-EXAONE doesn't emit), `citations_delta` (KOSMOS uses tool_result envelopes), `connector_text_delta` (Anthropic-only), `server_tool_use` (KOSMOS uses IPC primitive bridge). One SKIPPED comment per channel. Cites FR-002.
 
 ### Procedure-B — `src/kosmos/llm/client.py` (citation-required)
 
-- [ ] T018 [P] [US1] Add `CC reference: services/api/claude.ts:1980-2295` citation block to `_stream_response` docstring in `src/kosmos/llm/client.py`. Document the FriendliAI OpenAI-compat → AssistantChunkFrame mapping. Cite reasoning_content branch (line 788) explicitly to `services/api/claude.ts:2148`. Cites FR-005 + FR-007.
-- [ ] T019 [US1] Implement `tests/llm/test_reasoning_content_forwarding.py` (scaffolded T005): mock FriendliAI SSE with `delta.reasoning_content` payload; assert `_stream_response` yields `StreamEvent(type="thinking_delta", thinking=<text>)`. Cites FR-007 + SC-007.
+- [X] T018 [P] [US1] Add `CC reference: services/api/claude.ts:1980-2295` citation block to `_stream_response` docstring in `src/kosmos/llm/client.py`. Document the FriendliAI OpenAI-compat → AssistantChunkFrame mapping. Cite reasoning_content branch (line 788) explicitly to `services/api/claude.ts:2148`. Cites FR-005 + FR-007.
+- [X] T019 [US1] Implement `tests/llm/test_reasoning_content_forwarding.py` (scaffolded T005): mock FriendliAI SSE with `delta.reasoning_content` payload; assert `_stream_response` yields `StreamEvent(type="thinking_delta", thinking=<text>)`. Cites FR-007 + SC-007.
 
 ### Procedure-B — `src/kosmos/ipc/stdio.py` (citation-required)
 
-- [ ] T020 [P] [US1] Add `CC reference: QueryEngine.ts (whole) + query.ts:120-410` citation block to `_handle_chat_request` in `src/kosmos/ipc/stdio.py`. Document the per-turn agentic-loop pattern: fresh `message_id`, structured `tool_calls` dispatch, `role="tool"` injection, max_turns termination. Cites FR-005 + FR-008.
-- [ ] T021 [P] [US1] Add `CC reference: services/tools/toolOrchestration.ts:19-72 (runTools)` citation to `_dispatch_primitive` in `src/kosmos/ipc/stdio.py`. Note the partition policy divergence (KOSMOS = all-parallel via `asyncio.gather`; CC = partitioned by `concurrencySafe`). Cites FR-005 + Deferred Item "partitioning".
-- [ ] T022 [P] [US1] Add `CC reference: (no direct CC analog — KOSMOS-only IPC adaptation)` annotation to `_ensure_tool_registry` in `src/kosmos/ipc/stdio.py`. Document the `SWAP/llm-provider` justification: CC assumes registry populated at SDK construction; KOSMOS populates lazily on first IPC dispatch via `register_all_tools`. Cites FR-005.
+- [X] T020 [P] [US1] Add `CC reference: QueryEngine.ts (whole) + query.ts:120-410` citation block to `_handle_chat_request` in `src/kosmos/ipc/stdio.py`. Document the per-turn agentic-loop pattern: fresh `message_id`, structured `tool_calls` dispatch, `role="tool"` injection, max_turns termination. Cites FR-005 + FR-008.
+- [X] T021 [P] [US1] Add `CC reference: services/tools/toolOrchestration.ts:19-72 (runTools)` citation to `_dispatch_primitive` in `src/kosmos/ipc/stdio.py`. Note the partition policy divergence (KOSMOS = all-parallel via `asyncio.gather`; CC = partitioned by `concurrencySafe`). Cites FR-005 + Deferred Item "partitioning".
+- [X] T022 [P] [US1] Add `CC reference: (no direct CC analog — KOSMOS-only IPC adaptation)` annotation to `_ensure_tool_registry` in `src/kosmos/ipc/stdio.py`. Document the `SWAP/llm-provider` justification: CC assumes registry populated at SDK construction; KOSMOS populates lazily on first IPC dispatch via `register_all_tools`. Cites FR-005.
 
 ### End-to-end thinking channel test
 
-- [ ] T023 [US1] Implement `tests/integration/test_thinking_channel_e2e.py` (scaffolded T006): drive a full chain — synthetic FriendliAI SSE → `LLMClient._stream_response` → `AssistantChunkFrame.thinking` → IPC bridge → `tui/src/ipc/llmClient.ts` `content_block_delta { type: 'thinking_delta' }` → assistant message `content[]` contains `{ type: 'thinking', thinking: <concatenated text> }`. Cites FR-008 + SC-007.
+- [X] T023 [US1] Implement `tests/integration/test_thinking_channel_e2e.py` (scaffolded T006): drive a full chain — synthetic FriendliAI SSE → `LLMClient._stream_response` → `AssistantChunkFrame.thinking` → IPC bridge → `tui/src/ipc/llmClient.ts` `content_block_delta { type: 'thinking_delta' }` → assistant message `content[]` contains `{ type: 'thinking', thinking: <concatenated text> }`. Cites FR-008 + SC-007.
 
 ### Layer 1b Ink-testing-library + Layer 4 vhs verification
 
-- [ ] T024 [US1] Implement `tui/tests/ipc/thinking-delta-render.test.tsx` (scaffolded T004): mount `Message` with thinking content block; assert `frames.at(-1)` contains `∴ Thinking` glyph (collapsed mode) AND `Box paddingLeft={2}` Markdown rendering (verbose mode). Cites FR-001 + SC-001.
-- [ ] T025 [US1] Run Layer 4 vhs scenario: `vhs specs/2521-llm-swap-cc-rebuild/scripts/smoke-thinking-render.tape` (the .tape file authored in this task). Capture 3 PNG keyframes (boot / thinking-visible / final-result). Lead Opus visually verifies via Read tool. Cites SC-001.
+- [X] T024 [US1] Implement `tui/tests/ipc/thinking-delta-render.test.tsx` (scaffolded T004): mount `Message` with thinking content block; assert `frames.at(-1)` contains `∴ Thinking` glyph (collapsed mode) AND `Box paddingLeft={2}` Markdown rendering (verbose mode). Cites FR-001 + SC-001.
+- [X] T025 [US1] Run Layer 4 vhs scenario: `vhs specs/2521-llm-swap-cc-rebuild/scripts/smoke-thinking-render.tape` (the .tape file authored in this task). Capture 3 PNG keyframes (boot / thinking-visible / final-result). Lead Opus visually verifies via Read tool. Cites SC-001.
 
 **Checkpoint US1**: Citizen-visible thinking rendering deliverable complete. MVP ready to ship if scope tightens.
 
