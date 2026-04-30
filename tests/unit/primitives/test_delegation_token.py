@@ -54,8 +54,10 @@ _VALID_TOKEN_DATA = {
     "delegation_token": "del_" + "a" * 24,  # exactly 24 chars after prefix
     "scope": "submit:hometax.tax-return",
     "issuer_did": "did:web:mobileid.go.kr",
-    "issued_at": datetime(2026, 4, 29, 10, 0, 0, tzinfo=UTC),
-    "expires_at": datetime(2026, 4, 30, 10, 0, 0, tzinfo=UTC),  # +24h
+    # Anchor far enough in the future that natural calendar drift between
+    # spec authoring and CI runs cannot expire the token (5 years buffer).
+    "issued_at": datetime(2031, 1, 1, 10, 0, 0, tzinfo=UTC),
+    "expires_at": datetime(2031, 1, 2, 10, 0, 0, tzinfo=UTC),  # +24h
 }
 
 

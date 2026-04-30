@@ -49,11 +49,14 @@ def _prefix_without_guidance(config: SystemPromptConfig) -> str:
     assembler = SystemPromptAssembler()
     # Access the section builders directly to get the prefix sections.
     # Section 3a (trust hierarchy) is unconditional per Epic #466 FR-018.
+    # Section 3b (turn-order) added by Spec 2521 — also unconditional, sits
+    # between trust-hierarchy and the optional personal-data section.
     sections = [
         assembler._platform_identity_section(config),
         assembler._language_policy_section(config),
         assembler._tool_use_policy_section(),
         assembler._trust_hierarchy_section(),
+        assembler._turn_order_section(),
     ]
     if config.personal_data_warning:
         sections.append(assembler._personal_data_reminder_section())
