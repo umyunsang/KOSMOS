@@ -195,9 +195,25 @@ def test_delegation_used_event_with_receipt_id(ledger_root: Path) -> None:
 
 @pytest.mark.asyncio
 async def test_file_ledger_reader_finds_session(ledger_root: Path) -> None:
-    """FileLedgerReader.find_issuance_session returns the correct session_id."""
+    """FileLedgerReader.find_issuance_session returns the correct session_id.
+
+    Note: ``find_issuance_session`` scans **today's** ledger file only (per
+    ``src/kosmos/memdir/consent_ledger.py:288`` docstring — full multi-day
+    scan is deferred per data-model.md § 9.1 footnote). The fixture event's
+    ``ts`` MUST therefore be today's date or the read will return None when
+    the calendar rolls over (Epic ζ #2297 2026-04-30 CI fix).
+    """
     token = "del_" + "d" * 24
-    event = _issued_event(token=token, session="sess-xyz")
+    today = datetime.now(UTC)
+    event = DelegationIssuedEvent(
+        ts=today,
+        session_id="sess-xyz",
+        delegation_token=token,
+        scope="lookup:hometax.simplified,submit:hometax.tax-return",
+        expires_at=today.replace(year=today.year + 1),
+        issuer_did="did:web:mobileid.go.kr",
+        verify_tool_id="mock_verify_module_modid",
+    )
     append_delegation_issued(event, ledger_root=ledger_root)
 
     reader = FileLedgerReader(ledger_root=ledger_root)
