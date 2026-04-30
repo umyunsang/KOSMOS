@@ -490,12 +490,20 @@ export class LLMClient {
         // initial content_block_start payload.
         else if (frame.kind === 'tool_call') {
           const toolFrame = frame as ToolCallFrame
-          // tool_call frames may arrive interleaved with text streaming in
-          // a multi-turn or parallel-tool scenario. Emit as a content block
-          // at a dedicated tool index (blockIndex + N); the text block's
-          // index (blockIndex) stays untouched so the terminal
-          // content_block_stop for text still targets the right block.
-          const toolBlockIndex = acc.blockIndex + (++acc.toolBlockCounter)
+          // tool_call frames may arrive interleaved with text streaming AND
+          // thinking streaming in a multi-turn / parallel-tool / K-EXAONE
+          // reasoning scenario. Allocate the tool block at the next free
+          // contentBlocks slot rather than `blockIndex + toolBlockCounter`
+          // — the latter collides with the thinking block, which lives at
+          // `contentBlocks.length` at first thinking_delta (typically 1
+          // after the text block, the same slot the first tool would have
+          // claimed via `0 + 1`). Codex P1 review on PR #2577 (2026-04-30):
+          // collision corrupts the reasoning trace by overwriting it with
+          // tool_use, breaking the dim-italic ∴ Thinking glyph for any
+          // turn that emits both reasoning and a tool call. The
+          // toolBlockCounter is preserved as a per-turn stat counter only.
+          const toolBlockIndex = acc.contentBlocks.length
+          acc.toolBlockCounter += 1
           yield {
             type: 'content_block_start',
             index: toolBlockIndex,
