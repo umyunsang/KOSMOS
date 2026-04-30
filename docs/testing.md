@@ -120,7 +120,7 @@ CI sets `OTEL_SDK_DISABLED=true` at the job level (`jobs.test.env`) so no OTLP e
 
 Pytest covers the Python backend; the TUI (Ink + Bun) and the stdio IPC bridge sit *outside* that perimeter. "작동 확인" / "검증" / "smoke" requests MUST exercise the actual interactive path — code grep alone is not verification (memory `feedback_runtime_verification`).
 
-This section is the canonical reference cited from `AGENTS.md § TUI verification`. It distils the upstream community guidance (Charm `vhs`, `asciinema`, POSIX `expect(1)` / `script(1)`, Microsoft `node-pty`) into a four-layer ladder where each layer answers a different question and isolates a different failure mode.
+This section is the canonical reference cited from `AGENTS.md § TUI verification`. It distils the upstream community guidance (Charm `vhs` 0.11.0, `asciinema` 3.x with `asciicast` v3 format, POSIX `expect(1)` / `script(1)`, `ink-testing-library` v4, Microsoft `node-pty`) into a four-layer ladder where each layer answers a different question and isolates a different failure mode.
 
 ### The four-layer ladder
 
@@ -128,12 +128,39 @@ Run **all four layers** for any change that touches the chat-request emit path, 
 
 | Layer | What it answers | Tool | Output | LLM-readable? |
 |-------|----------------|------|--------|---------------|
-| 1. Unit / fixture tests | "Does each module's contract hold?" | `pytest` / `bun test` | text | ✓ grep |
-| 2. **stdio JSONL probe** | "Does the backend invoke tools when given a citizen prompt?" | `subprocess.Popen(['uv','run','kosmos','--ipc','stdio'])` + line-based JSONL frames | `*.jsonl` | ✓ grep |
-| 3. **Text-log smoke** | "Does the full TUI session render the expected text?" | `expect(1)` / `script(1)` / `asciinema rec` | `*.txt` / `*.cast` (JSON-Lines) | ✓ grep |
-| 4. **vhs visual + PNG keyframes** | "Does the rendered UI render the expected pixels at each scenario stage?" | `vhs file.tape` with `Output ...gif` + 3+ `Screenshot ...png` directives | `*.gif` (animated) + `*.png` (keyframes) | ✓ multimodal vision (Claude/Codex Read tool on each PNG) |
+| 1a. Python unit / fixture | "Does each backend module's contract hold?" | `pytest` + `pytest-asyncio` + `respx` | text | ✓ grep |
+| 1b. **TUI Ink snapshot** | "Does each Ink component render the expected `frames` array on prop / state transitions?" — fastest TUI-side regression net (no terminal spawn, ms-fast) | `bun test` with `ink-testing-library` v4 — `render()` → `lastFrame()` / `frames[]` | text snapshots | ✓ grep |
+| 2. **stdio JSONL probe** | "Does the backend invoke tools when given a citizen prompt?" — bypasses the TUI render entirely | `subprocess.Popen(['uv','run','kosmos','--ipc','stdio'])` + line-based JSONL frames | `*.jsonl` | ✓ grep |
+| 3. **Text-log smoke** | "Does the full TUI session render the expected text?" | `expect(1)` / `script(1)` / `asciinema rec` (asciicast v3) | `*.txt` / `*.cast` (JSON-Lines) | ✓ grep |
+| 4. **vhs visual + PNG keyframes** | "Does the rendered UI render the expected pixels at each scenario stage?" | `vhs file.tape` (Charm vhs ≥ 0.11.0) with `Output ...gif` + 3+ `Screenshot ...png` directives | `*.gif` (animated) + `*.png` (keyframes) | ✓ multimodal vision (Claude / Codex Read tool on each PNG) |
 
-All four layers are **gating** for TUI-changing PRs (2026-04-29 — Layer 4 promoted from supplementary). Layers 1–3 are LLM-grep-friendly text; Layer 4 is LLM-vision-friendly via the keyframe PNGs (the bare `.gif` is for humans + animated proof, but the agent Read tool only renders its first frame, which is typically a blank prompt during boot).
+All four layers are **gating** for TUI-changing PRs (2026-04-29 — Layer 4 promoted from supplementary; 2026-05-01 — Layer 1b split out so the rule names `ink-testing-library` explicitly, since it was already in `tui/package.json` but undocumented in the ladder). Layers 1–3 are LLM-grep-friendly text; Layer 4 is LLM-vision-friendly via the keyframe PNGs (the bare `.gif` is for humans + animated proof, but the agent Read tool only renders its first frame, which is typically a blank prompt during boot).
+
+### Layer 1b — Ink snapshot tests with `ink-testing-library`
+
+Use `ink-testing-library` v4 (`tui/package.json` `^4.0.0`) for **component-level** assertions on Ink output. It is the cheapest layer that exercises the React reconciler and the Ink ANSI writer, and it does NOT require a real terminal — the harness drives `stdin.write()` / `rerender()` and exposes `frames[]` (every render) and `lastFrame()` (the most recent ANSI string).
+
+```typescript
+import { render } from 'ink-testing-library'
+
+const { stdout, rerender, stdin, unmount } = render(<MyTUI />)
+expect(stdout.lastFrame()).toContain('KOSMOS')
+stdin.write('/help\r')
+expect(stdout.frames.at(-1)).toMatch(/Help/)
+unmount()
+```
+
+When to reach for this layer:
+- Permission modal layout regressions (which line emits, which color, which Ink Box border style) — these are invisible to PTY text logs because ANSI escapes get stripped or normalised.
+- Slash-command autocomplete `frames[]` progression on every keystroke.
+- Theme contrast / wide-glyph alignment that is _too cheap_ to justify spinning up vhs.
+
+When NOT to reach for it:
+- Anything involving the real backend stdio bridge (Layer 2 owns that).
+- Pixel-level regressions across themes / fonts (Layer 4 owns that — Ink does not render to a real terminal cell grid).
+- Multi-turn agentic loops with tool calls (Layer 3 PTY captures the full interleave deterministically).
+
+Existing references: `tui/tests/ink/renderer-double-buffer.test.tsx`, `tui/tests/keybindings/tier1-wiring.test.ts`.
 
 ### Layer 2 — stdio JSONL probe
 
@@ -237,6 +264,11 @@ vhs specs/<spec>/scripts/smoke.tape
 
 Lead Opus then runs `Read` on each `*.png` and asserts the visible elements match the spec's acceptance criteria. **DO NOT** use ffmpeg post-extraction to pull middle frames — `Screenshot` is more deterministic (frame timing controlled by the tape) and a single tool, no shell-out.
 
+**vhs 0.11.0 (March 2026) capabilities** to use when the scenario needs them — none of these supersede the canonical 3-keyframe rule, they extend it:
+
+- `ScrollUp <n>` / `ScrollDown <n>` — exercise the REPL's scrollback (e.g. assert that compaction-marker glyphs survive scrollback, or that long tool_result envelopes do not get truncated visually).
+- `Ctrl+Left` / `Ctrl+Up` / `Ctrl+Right` / `Ctrl+Down` chord support — required for KOSMOS keybinding tier-1 smoke (Spec 287 / 1979 keybinding wiring) where word-jump and history-navigation chords need a tape capture.
+
 The tape, the gif, and every keyframe go into the spec directory and the PR description references them. The text-log version of the same scenario (Layer 3) lives next to them for LLM grep audit.
 
 **Why this layer is mandatory** (and not, as previously stated, "supplementary"): pure text logs cannot detect ANSI-cell-level rendering regressions (purple-on-purple branding text invisible against the wrong theme; Korean wide-glyph alignment breaking the prompt; the UFO mascot rendering as `?`-blocks). The Epic γ #2294 PR #2394 review surfaced the gap — `feedback_pr_pre_merge_interactive_test` was satisfied by the text log, but no agent had visually confirmed the citizen UI actually composed correctly. Layer 4 with `Screenshot` PNGs closes that loop without sacrificing the LLM-review property.
@@ -248,6 +280,12 @@ The tape, the gif, and every keyframe go into the spec directory and the PR desc
 - **Latency or streaming regression** — Layer 3 `.cast` timestamps surface chunk delays.
 - **Prompt / context bleed** — Layer 3 grep on the captured transcript: e.g. `grep -E '/Users/|gitStatus|claudeMd' smoke.txt` should return zero for citizen runs.
 - **Visual / pixel-level regression** — Layer 4 `Screenshot` PNGs, agent-vision-reviewed via Read. Catches: theme contrast (purple-on-purple branding), Korean wide-glyph misalignment, mascot rendering as `?`-blocks, banner truncation, REPL prompt jumping.
+
+### Forward-looking — agent-driven autonomous smoke (not yet gating)
+
+Terminal-Bench / Terminus 2 (Harbor framework, 2026) and Krafton's Terminus-KIRA define an emerging pattern: the LLM agent itself drives the terminal via tmux ("send command → read buffer → think → repeat"), and the smoke artefact is the agent's tmux pane buffer. KOSMOS does not adopt this today — our backend ships as a single Bun.spawn child of the TUI, not a tmux-multiplexed environment, and our scenarios are deterministic enough that scripted `expect(1)` is preferable to autonomous LLM driving. We track this approach as a candidate for **multi-agent visual smoke** (the day a Lead Opus needs to watch four parallel Sonnet teammates each running their own TUI scenario), but it is not part of the gating ladder.
+
+If you choose to pilot it on a future Epic, capture the pane buffer to a `*.tmux-buffer.txt` file alongside the existing Layer 3 / Layer 4 artefacts so the LLM-grep + LLM-vision invariants are preserved.
 
 ### Reference implementations
 
