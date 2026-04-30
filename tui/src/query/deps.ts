@@ -67,25 +67,7 @@ async function* queryModelWithStreaming(params: {
     chatMessages.push({ role: 'user', content: '' })
   }
 
-  // KOSMOS hotfix #2519 (2026-04-30 user report — Claude model family leak):
-  //
-  // CC original `getSystemPrompt()` (tui/src/constants/prompts.ts:428) builds
-  // a Claude-Code-flavoured English system prompt that names "Claude 4.5/4.6
-  // model family", `claude-opus-4-6`/`claude-sonnet-4-6`/`claude-haiku-4-5`,
-  // `/fast` mode semantics, working-directory + git env info — all of which
-  // are designed for the Anthropic developer-facing harness, not a Korean
-  // citizen-facing public-service assistant. Forwarding that text via
-  // ChatRequestFrame.system overrides the backend's PromptLoader fallback
-  // (src/kosmos/ipc/stdio.py:1213-1216) so KOSMOS' canonical
-  // `prompts/system_v1.md` never reaches K-EXAONE — the model then echoes
-  // the CC env block to citizen meta questions ("너 어떤 모델이야?").
-  //
-  // Always send an empty `system` so the backend's PromptLoader-resolved
-  // KOSMOS citizen prompt is what K-EXAONE actually sees. The TS-side
-  // `systemPrompt` value is still computed for any local consumers (e.g.
-  // CC compaction surfaces) but is no longer transmitted.
-  const _systemTextDiscarded = extractText(systemPrompt)
-  void _systemTextDiscarded
+  const systemText = extractText(systemPrompt)
   const bridge = getOrCreateKosmosBridge()
   const sessionId = getKosmosBridgeSessionId()
 
@@ -102,7 +84,7 @@ async function* queryModelWithStreaming(params: {
     role: 'tui',
     kind: 'chat_request',
     messages: chatMessages as ChatRequestFrame['messages'],
-    // Intentionally omit `system` — see hotfix #2519 comment above.
+    ...(systemText ? { system: systemText } : {}),
     tools: tools as ChatRequestFrame['tools'],
   }
 
