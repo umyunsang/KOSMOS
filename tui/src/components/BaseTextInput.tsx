@@ -57,9 +57,40 @@ export function BaseTextInput(t0) {
   } = usePasteHandler({
     onPaste: props.onPaste,
     onInput: (input, key) => {
-      if (isPasting && key.return) {
-        return;
-      }
+      // KOSMOS hotfix #2519 (2026-04-30 user report — 부산 동아대 캡스톤 데모):
+      //
+      // CC original guard `if (isPasting && key.return) return` swallows the
+      // user's intentional Enter when isPasting is held — fine for ASCII-only
+      // sessions where bracketed-paste markers reliably bracket real pastes,
+      // BROKEN for Korean IME composition. Hangul Jamo composition flushes a
+      // multi-byte sequence that Ink's keypress parser sometimes misidentifies
+      // as a paste (timer-based fallback when bracketed-paste markers are not
+      // present, e.g. inside some terminal emulators), setting isPasting=true.
+      // The following user Enter then disappears, leaving the prompt frozen
+      // with text in the buffer.
+      //
+      // CC reference (.references/claude-code-sourcemap/restored-src/) carries
+      // the same buggy guard — it was authored against an English-only test
+      // matrix. Independent reference (.references/gemini-cli/packages/cli/
+      // src/ui/contexts/KeypressContext.tsx) confirms the correct pattern:
+      // bracketed-paste START/END markers (`[200~` / `[201~`) bracket real
+      // pastes deterministically; timer-based detection at the input layer
+      // is unreliable for non-Latin input. Gemini CLI does NOT swallow Enter
+      // mid-paste — instead `bufferFastReturn()` (line 230) converts a fast
+      // Enter that follows insertable keys into a newline (shift+return) for
+      // legacy non-bracketed terminals, and `bufferPasteEvents()` (line 300)
+      // accumulates content between paste-start and paste-end where Enter is
+      // already handled as paste content, not as a submission signal.
+      //
+      // Fix: forward Enter to onInput unconditionally. Real bracketed pastes
+      // already have their Enter content bundled into the paste payload by
+      // the upstream keypress parser; user-intent Enters arrive as separate
+      // events after paste-end and reach onSubmit through the standard guard
+      // chain in PromptInput.tsx (footerSelection / suggestions / empty-input
+      // checks remain intact). Korean IME composition Enters now submit
+      // correctly. The `isPasting` state remains exposed via the
+      // onIsPastingChange prop for any UI that wants to render a paste hint
+      // — only the swallow behaviour is removed.
       onInput(input, key);
     },
     onImagePaste: props.onImagePaste
