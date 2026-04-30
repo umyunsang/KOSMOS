@@ -209,6 +209,32 @@ class TestCheck7ToolListClosure:
             "verify",
             "submit",
             "subscribe",
+            # Epic ζ #2297 path B (live smoke 2026-04-30) — 18 non-core mock
+            # adapter wrappers bridged into the BM25 corpus by discovery_bridge
+            # so lookup(mode="search") surfaces verify/submit/subscribe
+            # candidates alongside lookup-class adapters. is_core=False; not
+            # in the primary LLM tool list.
+            # 10 verify family wrappers
+            "mock_verify_module_modid",
+            "mock_verify_module_kec",
+            "mock_verify_module_geumyung",
+            "mock_verify_module_simple_auth",
+            "mock_verify_module_any_id_sso",
+            "mock_verify_gongdong_injeungseo",
+            "mock_verify_geumyung_injeungseo",
+            "mock_verify_ganpyeon_injeung",
+            "mock_verify_mobile_id",
+            "mock_verify_mydata",
+            # 5 submit wrappers
+            "mock_submit_module_hometax_taxreturn",
+            "mock_submit_module_gov24_minwon",
+            "mock_submit_module_public_mydata_action",
+            "mock_traffic_fine_pay_v1",
+            "mock_welfare_application_submit_v1",
+            # 3 subscribe wrappers
+            "mock_cbs_disaster_v1",
+            "mock_rest_pull_tick_v1",
+            "mock_rss_public_notices_v1",
         }
     )
 

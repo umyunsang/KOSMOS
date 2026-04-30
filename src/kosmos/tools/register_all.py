@@ -150,6 +150,19 @@ def register_all_tools(registry: ToolRegistry, executor: ToolExecutor) -> Routin
     reg_mock_hometax_simplified(registry, executor)  # T028 — Hometax simplified data
     reg_mock_gov24_cert(registry, executor)  # T029 — Gov24 certificate lookup
 
+    # Epic ζ #2297 path B (live smoke 2026-04-30 follow-up) — bridge per-primitive
+    # registries (verify/submit/subscribe) into the main ToolRegistry's BM25 corpus
+    # so `lookup(mode="search", query="…")` can surface verify/submit/subscribe
+    # candidates alongside lookup-class adapters. Without this bridge the citizen
+    # tax-return chain never starts because BM25 returns empty for "종합소득세 신고".
+    from kosmos.tools.discovery_bridge import bridge_per_primitive_registries
+
+    bridge_count = bridge_per_primitive_registries(registry)
+    logger.info(
+        "discovery_bridge: bridged %d non-core mock adapters into BM25 corpus",
+        bridge_count,
+    )
+
     logger.info("All %d tools registered successfully", len(registry))
 
     # Epic #1634 P3 / T011 — fail-closed routing validation.

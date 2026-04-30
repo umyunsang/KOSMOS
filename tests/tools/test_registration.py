@@ -31,7 +31,12 @@ class TestToolRegistration:
         # Epic η #2298 FR-021: + 3 primitive surfaces (verify, submit,
         # subscribe) = 19. Required so the LLM can emit the
         # citizen-OPAQUE chain via OpenAI tool_calls schema.
-        assert len(registry) == 19
+        # Epic ζ #2297 path B (live smoke 2026-04-30): + 18 non-core mock
+        # adapter wrappers (10 verify + 5 submit + 3 subscribe via
+        # discovery_bridge) = 37. is_core=False so the LLM's primary tool
+        # list stays at 5 primitives + lookup-class; these participate in
+        # lookup(mode="search") BM25 corpus only.
+        assert len(registry) == 37
 
     def test_tool_ids_present(self) -> None:
         """Each expected tool_id is in the registry.
