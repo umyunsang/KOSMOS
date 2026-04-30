@@ -235,11 +235,18 @@ export const LookupPrimitive = buildTool({
    * - ok=false:               Korean error message in citizen-friendly tone.
    */
   renderToolResultMessage(output: Output): React.ReactNode {
-    // KOSMOS hotfix #2519 — wrap all branches in <MessageResponse> so the
-    // CC-original "  ⎿  " tree-branch glyph (components/MessageResponse.tsx:22)
-    // prefixes every tool-result line. Without this wrap the result Box renders
-    // as a raw column under the assistant block, breaking the
-    // citizen-facing visual hierarchy.
+    // KOSMOS hotfix #2519:
+    //   (a) Wrap every branch in <MessageResponse> so the CC-original
+    //       "  ⎿  " gutter glyph (components/MessageResponse.tsx:22) prefixes
+    //       each result row.
+    //   (b) Unwrap the backend payload shape correctly. The dispatcher in
+    //       src/kosmos/ipc/stdio.py:1027-1036 emits an outer envelope:
+    //         { kind: "lookup", result: <LookupSearchResult|LookupFetchResult> }
+    //       LookupSearchResult (models.py:820) carries `kind: "search"` +
+    //       `candidates: AdapterCandidate[]` (NOT `mode`/`results`). Reading
+    //       `output.result.mode` on the outer envelope therefore always
+    //       missed, fell through to the fetch fallback, and printed
+    //       "(어댑터 미상)" because outer.tool_id was undefined.
     if (!output.ok) {
       return React.createElement(
         MessageResponse,
@@ -252,15 +259,27 @@ export const LookupPrimitive = buildTool({
       )
     }
 
-    const result = output.result as Record<string, unknown>
+    // Unwrap outer envelope: { kind: "lookup", result: <inner> }.
+    // Tolerate older payloads that hand back the inner record directly.
+    const outer = output.result as Record<string, unknown>
+    const inner = (
+      outer && typeof outer === 'object' && 'result' in outer
+        ? (outer.result as Record<string, unknown>)
+        : outer
+    ) as Record<string, unknown>
 
-    if (result.mode === 'search') {
-      const hits = Array.isArray(result.results) ? result.results : []
+    // search mode: backend = LookupSearchResult{kind:"search", candidates:[...]}.
+    if (inner?.kind === 'search') {
+      const hits = Array.isArray(inner.candidates) ? inner.candidates : []
       if (hits.length === 0) {
         return React.createElement(
           MessageResponse,
           { height: 1 },
-          React.createElement(Text, { dimColor: true }, '검색 결과가 없습니다.'),
+          React.createElement(
+            Text,
+            { color: 'red' },
+            '검색 결과가 없습니다 — 다른 도구(resolve_location 등)를 시도하거나 시민에게 직접 안내하세요.',
+          ),
         )
       }
       const hitRows = hits.slice(0, 10).map((hit: unknown, i: number) => {
@@ -292,10 +311,16 @@ export const LookupPrimitive = buildTool({
       )
     }
 
-    // mode='fetch' result: { mode: 'fetch', tool_id: string, result: object }
+    // fetch mode: backend = LookupRecord/LookupCollection/LookupTimeseries/
+    // LookupError, all carrying `kind`. Render adapter tool_id (if present
+    // on the outer envelope from older payloads) + the inner result blob.
     const toolId =
-      typeof result.tool_id === 'string' ? result.tool_id : '(어댑터 미상)'
-    const adapterResult = result.result
+      typeof outer.tool_id === 'string'
+        ? outer.tool_id
+        : typeof inner?.kind === 'string'
+          ? inner.kind
+          : '(어댑터 미상)'
+    const adapterResult = (inner?.records ?? inner?.record ?? inner) as unknown
     let countText = ''
     let summaryRows: React.ReactNode[] = []
 
