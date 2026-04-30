@@ -844,18 +844,36 @@ class LLMClient:
         uses the caller's values — defaults are set at the call site.
 
         K-EXAONE specific: ``chat_template_kwargs.enable_thinking`` controls
-        the model's reasoning mode (default ON for K-EXAONE per HuggingFace
-        model card). KOSMOS defaults this to ``False`` for citizen-facing
-        latency (sub-10s vs 1-3min reasoning trace) but keeps the toggle
-        env-var driven via ``KOSMOS_K_EXAONE_THINKING`` for slash-command
-        ``/effort high`` integration in a follow-up. When tools are present
-        we still default to non-reasoning — the agentic loop itself handles
-        multi-step reasoning across turns; per-turn deep thinking compounds
-        with loop-level thinking and exceeds the 5-min ``KOSMOS_STREAM_TIMEOUT_MS``.
+        the model's reasoning mode. KOSMOS now defaults this to ``True`` —
+        aligning with the K-EXAONE-236B-A23B model-card recommendation and
+        the τ²-Bench evaluation conditions (Retail 78.6 / Airline 60.4 /
+        Telecom 73.5 are all measured with thinking ON).
+
+        Empirical channel verification (probe_friendli_channels.py, 2026-05-01):
+            enable_thinking=False → 0 bytes content, 0 bytes reasoning, clean
+                                     tool_calls only — but the agentic loop
+                                     loses the model's CoT signal entirely.
+            enable_thinking=True  → ~0 bytes content (just newlines), full
+                                     reasoning routed to ``reasoning_content``
+                                     (separated channel), clean tool_calls.
+
+        With thinking ON the reasoning trace flows out on
+        ``delta.reasoning_content`` (K-EXAONE separates this from
+        ``delta.content`` natively — see :meth:`_stream_response`'s
+        ``reasoning_content`` branch). The TUI then paints it in the dim-italic
+        ``∴ Thinking`` channel via ``AssistantThinkingMessage``, NOT in the
+        ``●`` content bullet. Net effect: clean CC-style separation between
+        reasoning and final answer, without sacrificing the thinking signal
+        the agentic loop relies on for multi-step tool chaining.
+
+        Override via ``KOSMOS_K_EXAONE_THINKING=false`` for the latency-
+        sensitive non-reasoning path (sub-10s first token vs 1-3 min
+        reasoning trace). Slash-command ``/effort low`` integration is the
+        followup home for that toggle.
         """
         import os  # noqa: PLC0415 — local import keeps top-level imports thin
 
-        enable_thinking = os.environ.get("KOSMOS_K_EXAONE_THINKING", "false").lower() in (
+        enable_thinking = os.environ.get("KOSMOS_K_EXAONE_THINKING", "true").lower() in (
             "true",
             "1",
             "yes",
