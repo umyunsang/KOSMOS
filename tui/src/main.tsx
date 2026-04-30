@@ -2752,20 +2752,15 @@ function extractTeammateOptions(options: unknown): TeammateOptions {
 // appeared at file end: `main().catch(err => { process.stderr.write(err); process.exit(1); })`.
 // Without this, `bun run src/main.tsx` loads the module and exits immediately
 // without reaching the splash render path.
-main().catch((err) => {
-  // KOSMOS Epic #2077 verification — write rich debug info to a known file
-  // so VHS / PTY captures show why main() rejected. The original
-  // process.stderr.write was sometimes swallowed when stderr was redirected.
-  try {
-    require('fs').writeSync(
-      2,
-      `[KOSMOS/CC] fatal: typeof=${typeof err} isError=${err instanceof Error} ` +
-        `stack=${err instanceof Error ? err.stack : '(none)'} message=${err instanceof Error ? err.message : '(none)'} ` +
-        `string=${String(err)} json=${(() => { try { return JSON.stringify(err); } catch { return '(unserializable)'; } })()}\n`,
-    );
-  } catch {
-    /* stderr torn down */
-  }
-  process.stderr.write(`[KOSMOS/CC] fatal: ${err instanceof Error ? err.stack || err.message : String(err)}\n`);
-  process.exit(1);
-});
+// Epic ζ #2297 — REMOVED top-level `main().catch(...)` invocation that caused
+// `main()` to execute TWICE: once at module-import side-effect time (this
+// block) and once via the explicit `await cliMain()` at
+// `src/entrypoints/cli.tsx:338`. The double-execution surfaced as duplicate
+// `tool_registry: 14 entries verified` log lines + duplicated welcome banner
+// rendering visible in the user's interactive PTY session (2026-04-30 user
+// report). cli.tsx is the canonical CLI entry per `package.json#scripts.tui`
+// and ALWAYS imports main.js + awaits it; the bottom-of-file invocation has
+// been redundant since that import-then-await pattern was finalised. The
+// rich debug-on-rejection wrapper that lived here has been moved to cli.tsx
+// where the single canonical await happens, preserving the
+// "[KOSMOS/CC] fatal: ..." failure-mode telemetry.
