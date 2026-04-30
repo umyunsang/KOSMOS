@@ -57,7 +57,7 @@ export function BaseTextInput(t0) {
   } = usePasteHandler({
     onPaste: props.onPaste,
     onInput: (input, key) => {
-      // KOSMOS hotfix #2519 (2026-04-30 user report — 부산 동아대 캡스톤 데모):
+      // KOSMOS hotfix #2519 (2026-04-30 user report — Korean IME Enter swallow):
       //
       // CC original guard `if (isPasting && key.return) return` swallows the
       // user's intentional Enter when isPasting is held — fine for ASCII-only
