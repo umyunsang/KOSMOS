@@ -46,33 +46,50 @@ class KmaShortTermForecastInput(BaseModel):
 
     model_config = ConfigDict(frozen=True)
 
-    base_date: str
-    """Forecast base date in YYYYMMDD format."""
-
-    base_time: str
-    """Forecast base time in HHMM format.
-
-    Valid values: 0200, 0500, 0800, 1100, 1400, 1700, 2000, 2300.
-    The API publishes data ~10 minutes after each base time.
-    """
-
-    nx: int = Field(..., ge=1, le=149)
-    """KMA grid X coordinate (1–149)."""
-
-    ny: int = Field(..., ge=1, le=253)
-    """KMA grid Y coordinate (1–253)."""
-
-    num_of_rows: int = Field(default=290, ge=1)
-    """Number of rows to return per page.
-
-    A full short-term forecast dataset contains ~290 rows per grid point.
-    """
-
-    page_no: int = Field(default=1, ge=1)
-    """Page number (1-based)."""
-
-    data_type: Literal["JSON", "XML"] = "JSON"
-    """Response format; JSON is strongly preferred."""
+    base_date: str = Field(
+        ...,
+        description=("예보 발표 날짜 (YYYYMMDD). 보통 오늘. Example: 20260430."),
+    )
+    base_time: str = Field(
+        ...,
+        description=(
+            "예보 발표 시각 (HHMM, 24-hour, no separator). "
+            "유효 값 8개: 0200 / 0500 / 0800 / 1100 / 1400 / 1700 / 2000 / 2300. "
+            "각 발표 시각의 약 +10분 후 데이터 안정. 현재 시각의 직전 발표 시각 사용."
+        ),
+    )
+    nx: int = Field(
+        ...,
+        ge=1,
+        le=149,
+        description=(
+            "KMA 격자 X 좌표 (1-149). resolve_location(query='<지역>') 으로 받아 "
+            "그대로 전달. 예: 서울 종로구=60, 부산 사하구=96."
+        ),
+    )
+    ny: int = Field(
+        ...,
+        ge=1,
+        le=253,
+        description=(
+            "KMA 격자 Y 좌표 (1-253). nx 와 함께 resolve_location 으로 받음. "
+            "예: 서울 종로구=127, 부산 사하구=73."
+        ),
+    )
+    num_of_rows: int = Field(
+        default=290,
+        ge=1,
+        description=("결과 행 수 (default 290 = 1 격자 단기예보 full dataset). 보통 기본값 사용."),
+    )
+    page_no: int = Field(
+        default=1,
+        ge=1,
+        description="페이지 번호 (1-based, default 1). 보통 기본값.",
+    )
+    data_type: Literal["JSON", "XML"] = Field(
+        default="JSON",
+        description="응답 형식. JSON 권장 (default).",
+    )
 
     @field_validator("base_date")
     @classmethod
@@ -346,6 +363,15 @@ KMA_SHORT_TERM_FORECAST_TOOL = GovAPITool(
     auth_type="api_key",
     input_schema=KmaShortTermForecastInput,
     output_schema=KmaShortTermForecastOutput,
+    llm_description=(
+        "기상청 단기예보 — 향후 약 3일 (오늘 / 내일 / 모레) 시간대별 기온 / 강수확률 / "
+        "하늘 상태 / 습도 / 풍속 / 풍향 예보. 시민이 '내일 날씨' / '주말 비 올까' / "
+        "'다음주 기온' 같은 미래 예보를 묻는 경우 호출.\n\n"
+        "**ORDERING RULE**: 시민 발화에 위치명이 있으면 "
+        "**먼저 resolve_location(query='<지역명>')** 호출 → nx/ny 받아서 이 도구에 전달. "
+        "base_date / base_time 은 KMA 발표 시각 기준 "
+        "(02/05/08/11/14/17/20/23시 발표) — 보통 직전 발표 시각 사용."
+    ),
     search_hint=(
         "단기예보 날씨예보 기온 강수확률 하늘상태 습도 풍속 풍향 "
         "short-term forecast weather temperature precipitation sky humidity wind"

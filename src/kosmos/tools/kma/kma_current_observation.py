@@ -41,26 +41,56 @@ class KmaCurrentObservationInput(BaseModel):
 
     model_config = ConfigDict(frozen=True)
 
-    base_date: str
-    """Observation base date in YYYYMMDD format."""
+    base_date: str = Field(
+        ...,
+        description=(
+            "관측 기준 날짜 (YYYYMMDD format, no separator). "
+            "오늘 날짜 사용. Example: 20260430. "
+            "시스템 프롬프트의 '오늘 날짜' context 를 그대로 사용."
+        ),
+    )
+    base_time: str = Field(
+        ...,
+        description=(
+            "관측 기준 시각 (HHMM format, 24-hour, no separator). "
+            "직전 정시로 내림 (예: 14:35 → 1400). 매 시각 40분 이후만 데이터 안정. "
+            "Example: 1400 (오후 2시 관측), 0900 (오전 9시 관측)."
+        ),
+    )
 
-    base_time: str
-    """Observation base time in HHMM format; rounded down to the nearest hour."""
-
-    nx: int = Field(..., ge=1, le=149)
-    """KMA grid X coordinate (1–149)."""
-
-    ny: int = Field(..., ge=1, le=253)
-    """KMA grid Y coordinate (1–253)."""
-
-    num_of_rows: int = Field(default=10, ge=1)
-    """Number of rows to return per page."""
-
-    page_no: int = Field(default=1, ge=1)
-    """Page number (1-based)."""
-
-    data_type: Literal["JSON", "XML"] = "JSON"
-    """Response format; JSON is strongly preferred."""
+    nx: int = Field(
+        ...,
+        ge=1,
+        le=149,
+        description=(
+            "KMA grid X coordinate (1-149). 시도/시군구 명칭이 아닌 KMA 격자 좌표. "
+            "Obtain via resolve_location(query='<지역명>') which returns nx/ny "
+            "verbatim. Example: 서울 종로구 = 60, 부산 사하구 = 96."
+        ),
+    )
+    ny: int = Field(
+        ...,
+        ge=1,
+        le=253,
+        description=(
+            "KMA grid Y coordinate (1-253). nx와 함께 resolve_location 으로 받음. "
+            "Example: 서울 종로구 = 127, 부산 사하구 = 73."
+        ),
+    )
+    num_of_rows: int = Field(
+        default=10,
+        ge=1,
+        description="결과 행 수 (default 10). 보통 기본값 사용.",
+    )
+    page_no: int = Field(
+        default=1,
+        ge=1,
+        description="페이지 번호 (1-based, default 1). 보통 기본값 사용.",
+    )
+    data_type: Literal["JSON", "XML"] = Field(
+        default="JSON",
+        description="응답 형식. JSON 권장 (default).",
+    )
 
     @field_validator("base_date")
     @classmethod
@@ -372,6 +402,19 @@ KMA_CURRENT_OBSERVATION_TOOL = GovAPITool(
     auth_type="api_key",
     input_schema=KmaCurrentObservationInput,
     output_schema=KmaCurrentObservationOutput,
+    llm_description=(
+        "기상청 초단기실황 — 현재 시각 기준 실제 관측 데이터 (기온 / 강수 / 습도 / "
+        "풍속 / 풍향). 시민이 '오늘 날씨' / '지금 비 와' / '현재 기온' 같은 즉시 "
+        "현재 상태를 묻는 경우 첫 호출. 'sky' 같은 미래 예보 키워드는 "
+        "kma_short_term_forecast 사용.\n\n"
+        "**ORDERING RULE**: 시민 발화에 위치명이 있으면 "
+        "**먼저 resolve_location(query='<지역명>')** 호출 → nx/ny 받아서 이 도구에 그대로 "
+        "전달. nx/ny 를 LLM 추측 금지 (좌표 매핑은 행정동 코드 기반이며 시도/구군 변환 "
+        "비공개 quirks 포함).\n\n"
+        "**TIMING**: base_date 는 오늘 (YYYYMMDD), base_time 은 직전 정시 (HHMM). "
+        "매 정시의 :40 이후만 안정적인 데이터. 14:25 호출 시 base_time='1300' 사용 "
+        "(직전 정시 데이터)."
+    ),
     search_hint=(
         "현재 날씨 기온 강수 습도 풍속 초단기실황 관측 "
         "current weather temperature precipitation humidity wind observation"

@@ -134,66 +134,128 @@ export async function dispatchPrimitive<O = unknown>(
   })
 
   // ------------------------------------------------------------------
-  // Architecture note (Epic ζ #2297 post-smoke discovery, 2026-04-30):
+  // Architecture (CC-original byte-identical migration, 2026-04-30):
   //
-  // The KOSMOS backend's `_handle_chat_request` runs the full agentic
-  // loop server-side — it parses K-EXAONE function_calls, internally
-  // fires `_dispatch_primitive` per call (`src/kosmos/ipc/stdio.py:1496`),
-  // awaits the result via its own `_pending_calls` future-registry, and
-  // injects the result as a `role="tool"` message into the next LLM
-  // turn — all WITHOUT any inbound tool_call from the TUI.
+  // The backend's `_handle_chat_request` parses K-EXAONE function_calls,
+  // emits a ToolCallFrame (with call_id == K-EXAONE tool_use_id) AND
+  // fires `_dispatch_primitive` server-side as a parallel asyncio.Task.
+  // When the primitive completes, the backend emits a ToolResultFrame
+  // carrying the same call_id and the authoritative result envelope.
   //
-  // The TUI's CC SDK Tool.call() pipeline is therefore a DISPLAY-ONLY
-  // path: the `tool_call` and `tool_result` IPC frames flow through
-  // `llmClient.ts` for UX rendering, and the eventual `assistant_chunk`
-  // already encodes the citizen-facing answer.
+  // The frontend matches the backend's ToolResultFrame to the SDK's
+  // Tool.call() invocation by call_id == toolUseId via PendingCallRegistry:
+  //   1. dispatchPrimitive registers the toolUseId here (race-safe — if
+  //      the backend's frame already arrived, register fires synchronously).
+  //   2. llmClient.ts:455 routes inbound tool_result frames into
+  //      registry.resolve(call_id, frame).
+  //   3. The Promise below resolves with the matched ToolResultEnvelope.
   //
-  // Earlier (Epic ζ T007-T013) attempted to wire dispatchPrimitive to
-  // emit a fresh `tool_call` frame and await a matching `tool_result`.
-  // This timed out at 30s because the backend has no inbound-tool_call
-  // handler — it only emits them. A live smoke run on 2026-04-30
-  // confirmed the failure mode (LLM fell back to conversational guidance
-  // citing "응답 시간 초과 오류 지속 발생").
+  // The ToolResultEnvelope is then unwrapped into the SDK's ToolResult
+  // shape so the primitive's `renderToolResultMessage` sees the actual
+  // primitive output (LookupSearchResult / KMA forecast / receipt /
+  // SubscriptionHandle) rather than a sentinel. CC pattern: the SDK
+  // tool-use turn closes WITH the real result, exactly as it does for
+  // CC's Anthropic-API-direct path.
   //
-  // The correct fix is: Tool.call() returns a synthetic-success ack
-  // immediately so the SDK's tool-use turn closes without injecting
-  // a duplicate role="tool" message into the next chat_request (which
-  // would re-trigger the backend's internal loop and double-execute).
-  // The backend has already done the work; this Tool.call() is just a
-  // sentinel that the SDK saw the tool_use block.
-  //
-  // Spec: contracts/tui-primitive-dispatcher.md will be revised in a
-  // follow-up to reflect this server-side-authoritative architecture.
+  // Note: the SDK loop also adds the result to its turn-local message
+  // history, but `tui/src/query/deps.ts:48-65` filters tool messages out
+  // of the next ChatRequestFrame.messages (`only user/assistant turns
+  // with extractable text are forwarded`), so there is no double-execute
+  // risk — the backend retains its own role="tool" history server-side.
   // ------------------------------------------------------------------
 
-  void makeUUIDv7  // imports retained for future re-wiring if needed
+  void makeUUIDv7  // import retained for future inbound-tool_call wiring
   void makeBaseEnvelope
   void opts.bridge
-  void opts.registry
 
   const toolUseId =
     (opts.context as Record<string, unknown>)['toolUseId'] as string | undefined
-  const ackEnvelope: Record<string, unknown> = {
-    dispatched_via: 'backend-server-side',
-    primitive: opts.primitive,
-    tool_use_id: toolUseId ?? null,
-    note:
-      'KOSMOS backend ran the agentic loop internally and emitted the ' +
-      'authoritative tool_result frame for display. This SDK-level ack ' +
-      'closes the tool-use turn without re-triggering execution.',
+  if (!toolUseId) {
+    span.setAttribute('kosmos.tui.primitive.error', 'missing_tool_use_id')
+    span.end()
+    return {
+      data: {
+        ok: false as const,
+        error: {
+          kind: 'dispatch_error',
+          message:
+            'dispatchPrimitive: toolUseId missing on context — cannot match backend tool_result.',
+        },
+      } as unknown as O,
+    }
   }
 
-  span.setAttribute('kosmos.tui.primitive.dispatch_mode', 'server-side-ack')
+  span.setAttribute('kosmos.tui.primitive.dispatch_mode', 'register-and-await')
+  span.setAttribute('kosmos.tui.primitive.tool_use_id', toolUseId)
+
+  // Register-and-await. The backend has already started _dispatch_primitive
+  // as a parallel task; we wait for the matching ToolResultFrame to arrive
+  // via llmClient.ts → pendingCallRegistry.resolve().
+  let resultFrame: ToolResultFrame
+  try {
+    resultFrame = await new Promise<ToolResultFrame>((resolve, reject) => {
+      const timeoutHandle = setTimeout(() => {
+        opts.registry.reject(
+          toolUseId,
+          new Error(
+            `${opts.primitive} 요청 시간 초과 (${timeoutMs}ms) — 백엔드 처리가 지연되고 있습니다.`,
+          ),
+        )
+      }, timeoutMs)
+
+      opts.registry.register({
+        callId: toolUseId,
+        primitive: opts.primitive,
+        resolve,
+        reject,
+        timeoutHandle,
+      })
+    })
+  } catch (err) {
+    span.setAttribute('kosmos.tui.primitive.timeout', true)
+    span.end()
+    return {
+      data: {
+        ok: false as const,
+        error: {
+          kind: 'timeout',
+          message: err instanceof Error ? err.message : String(err),
+        },
+      } as unknown as O,
+    }
+  }
+
+  // Convergence-marker emission (FR-013 / I-P2 PTY smoke contract).
+  _maybeEmitCheckpoint(opts.primitive, resultFrame)
+
+  // Unwrap envelope → SDK ToolResult.
+  // backend envelope shape (src/kosmos/ipc/stdio.py:1115):
+  //   { kind: '<primitive>', result: <serialized primitive output>, ... }
+  // or on failure:
+  //   { kind: '<primitive>', error: '...', tool_id: '...' }
+  const env = resultFrame.envelope as Record<string, unknown>
   span.setAttribute(
-    'kosmos.tui.primitive.tool_use_id',
-    toolUseId ?? 'missing',
+    'kosmos.tui.primitive.envelope_kind',
+    typeof env?.kind === 'string' ? (env.kind as string) : 'unknown',
   )
   span.end()
 
-  void timeoutMs  // retained for future re-wiring if backend gains inbound handler
-  void _maybeEmitCheckpoint  // retained — checkpoint emission moved to llmClient
+  if (typeof env?.error === 'string' && env.error.length > 0) {
+    return {
+      data: {
+        ok: false as const,
+        error: {
+          kind: 'dispatch_error',
+          message: env.error,
+        },
+      } as unknown as O,
+    }
+  }
 
+  // Forward the inner `result` if present, else the entire envelope.
+  // Each primitive's renderToolResultMessage knows its own result shape.
+  const inner = 'result' in env ? env.result : env
   return {
-    data: { ok: true as const, result: ackEnvelope } as unknown as O,
+    data: { ok: true as const, result: inner } as unknown as O,
   }
 }

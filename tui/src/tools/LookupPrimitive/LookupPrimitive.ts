@@ -13,6 +13,7 @@
 import React from 'react'
 import { z } from 'zod/v4'
 import { Box, Text } from '../../ink.js'
+import { MessageResponse } from '../../components/MessageResponse.js'
 import { buildTool, type ToolDef, type ToolUseContext } from '../../Tool.js'
 import { lazySchema } from '../../utils/lazySchema.js'
 import {
@@ -145,8 +146,17 @@ export const LookupPrimitive = buildTool({
     }
   },
 
-  renderToolUseMessage() {
-    return null
+  // KOSMOS hotfix #2518 follow-up — CC pattern (tools/BashTool/UI.tsx:renderToolUseMessage)
+  // 따라 args preview 반환. null 반환은 AssistantToolUseMessage가 tool block을 통째로
+  // 숨겨서 시민이 어떤 tool이 dispatch 됐는지 못 봄. CC byte-identical pattern.
+  renderToolUseMessage(input: { mode?: string; query?: string; tool_id?: string }) {
+    if (input.mode === 'search') {
+      return `search: ${input.query ?? ''}`
+    }
+    if (input.mode === 'fetch') {
+      return `fetch: ${input.tool_id ?? ''}`
+    }
+    return input.tool_id ?? input.query ?? ''
   },
 
   // Epic γ #2294 · 9-member interface compliance.
@@ -225,11 +235,19 @@ export const LookupPrimitive = buildTool({
    * - ok=false:               Korean error message in citizen-friendly tone.
    */
   renderToolResultMessage(output: Output): React.ReactNode {
+    // KOSMOS hotfix #2519 (CC-original migration, 2026-04-30):
+    //
+    // After the dispatchPrimitive register-and-await rewrite, output.result
+    // is the actual primitive output (the inner of the backend envelope:
+    // src/kosmos/tools/lookup.py LookupSearchResult / LookupRecord /
+    // LookupCollection / LookupTimeseries / LookupError) — discriminated by
+    // its own `kind` field. The CC pattern wraps each branch in
+    // <MessageResponse> so the "  ⎿  " gutter glyph prefixes every row
+    // (tui/src/components/MessageResponse.tsx:22).
     if (!output.ok) {
-      // Error path — surface the backend error message in citizen-friendly Korean.
       return React.createElement(
-        Box,
-        { flexDirection: 'column', marginTop: 1 },
+        MessageResponse,
+        null,
         React.createElement(
           Text,
           { color: 'red' },
@@ -238,17 +256,21 @@ export const LookupPrimitive = buildTool({
       )
     }
 
-    // ok === true — inspect the result shape to determine mode.
     const result = output.result as Record<string, unknown>
 
-    // mode='search' result: { mode: 'search', results: [...] }
-    if (result.mode === 'search') {
-      const hits = Array.isArray(result.results) ? result.results : []
+    // search mode (LookupSearchResult, models.py:820):
+    //   { kind: "search", candidates: [AdapterCandidate], total_registry_size, effective_top_k, reason }
+    if (result?.kind === 'search') {
+      const hits = Array.isArray(result.candidates) ? result.candidates : []
       if (hits.length === 0) {
         return React.createElement(
-          Box,
-          { flexDirection: 'column', marginTop: 1 },
-          React.createElement(Text, { dimColor: true }, '검색 결과가 없습니다.'),
+          MessageResponse,
+          { height: 1 },
+          React.createElement(
+            Text,
+            { color: 'red' },
+            '검색 결과가 없습니다 — 다른 도구(resolve_location 등)를 시도하거나 시민에게 직접 안내하세요.',
+          ),
         )
       }
       const hitRows = hits.slice(0, 10).map((hit: unknown, i: number) => {
@@ -265,21 +287,50 @@ export const LookupPrimitive = buildTool({
         )
       })
       return React.createElement(
-        Box,
-        { flexDirection: 'column', marginTop: 1 },
+        MessageResponse,
+        null,
         React.createElement(
-          Text,
-          { bold: true },
-          `검색 결과 (${hits.length}건):`,
+          Box,
+          { flexDirection: 'column' },
+          React.createElement(
+            Text,
+            { bold: true },
+            `검색 결과 (${hits.length}건):`,
+          ),
+          ...hitRows,
         ),
-        ...hitRows,
       )
     }
 
-    // mode='fetch' result: { mode: 'fetch', tool_id: string, result: object }
+    // fetch error (LookupError, models.py — kind="error"):
+    //   { kind: "error", reason, message, retryable, ... }
+    if (result?.kind === 'error') {
+      return React.createElement(
+        MessageResponse,
+        null,
+        React.createElement(
+          Text,
+          { color: 'red' },
+          `검색 오류: ${typeof result.message === 'string' ? result.message : String(result.reason ?? 'unknown')}`,
+        ),
+      )
+    }
+
+    // fetch result (LookupRecord / LookupCollection / LookupTimeseries):
+    //   record:    { kind: "record",     tool_id, fields }
+    //   collection:{ kind: "collection", tool_id, items }
+    //   timeseries:{ kind: "timeseries", tool_id, points }
     const toolId =
-      typeof result.tool_id === 'string' ? result.tool_id : '어댑터'
-    const adapterResult = result.result
+      typeof result?.tool_id === 'string'
+        ? result.tool_id
+        : typeof result?.kind === 'string'
+          ? result.kind
+          : '(어댑터 미상)'
+    const adapterResult =
+      (result?.fields as unknown) ??
+      (result?.items as unknown) ??
+      (result?.points as unknown) ??
+      result
     let countText = ''
     let summaryRows: React.ReactNode[] = []
 
@@ -306,15 +357,19 @@ export const LookupPrimitive = buildTool({
     }
 
     return React.createElement(
-      Box,
-      { flexDirection: 'column', marginTop: 1 },
+      MessageResponse,
+      null,
       React.createElement(
-        Text,
-        null,
-        React.createElement(Text, { bold: true }, toolId),
-        countText ? ` — ${countText}` : '',
+        Box,
+        { flexDirection: 'column' },
+        React.createElement(
+          Text,
+          null,
+          React.createElement(Text, { bold: true }, toolId),
+          countText ? ` — ${countText}` : '',
+        ),
+        ...summaryRows,
       ),
-      ...summaryRows,
     )
   },
 

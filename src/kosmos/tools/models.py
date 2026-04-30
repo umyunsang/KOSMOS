@@ -548,9 +548,15 @@ class ResolveLocationInput(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    query: str = Field(min_length=1, max_length=200)
-    """Free-text place query, Korean or English (e.g., '서울 강남구')."""
-
+    query: str = Field(
+        min_length=1,
+        max_length=200,
+        description=(
+            "자유 텍스트 위치 쿼리 (한국어 또는 영어). 시민 발화에서 그대로 추출. "
+            "Examples: '서울 강남구', '동아대 하단캠퍼스', '강남역', '부산 사하구', "
+            "'서울대병원'. POI / 행정동 / 도로명주소 / 지번주소 모두 허용."
+        ),
+    )
     want: Literal[
         "coords",
         "adm_cd",
@@ -559,12 +565,26 @@ class ResolveLocationInput(BaseModel):
         "jibun_address",
         "poi",
         "all",
-    ] = "coords_and_admcd"
-    """Which identifier(s) to resolve. Default 'coords_and_admcd' returns a
-    ResolveBundle with both lat/lon and 10-digit 법정동 code."""
-
-    near: tuple[float, float] | None = None
-    """[lat, lon] tiebreaker when the query is ambiguous. Optional."""
+    ] = Field(
+        default="coords_and_admcd",
+        description=(
+            "원하는 식별자 종류. 후속 도구가 요구하는 형태에 맞춤:\n"
+            "- 'coords' : (lat, lon) 좌표 — 일반 위치 표시.\n"
+            "- 'adm_cd' : 10자리 법정동 코드 — KOROAD accident_hazard_search 등.\n"
+            "- 'coords_and_admcd' (default) : 좌표 + adm_cd 둘 다 — 가장 안전.\n"
+            "- 'road_address' / 'jibun_address' : 사람용 주소 텍스트.\n"
+            "- 'poi' : 관심 지점 정보 (이름 / 카테고리).\n"
+            "- 'all' : 모든 위 정보. 후속 도구에 nx/ny 가 필요하면 'coords' 충분 — "
+            "KMA 도구는 nx/ny 를 좌표 → grid 변환해서 별도 받음."
+        ),
+    )
+    near: tuple[float, float] | None = Field(
+        default=None,
+        description=(
+            "[lat, lon] tiebreaker — query 가 모호해서 동명이 여러 개 있을 때 "
+            "현재 위치 좌표로 가장 가까운 결과 선택. 일반적으로 None (default)."
+        ),
+    )
 
 
 # ---------------------------------------------------------------------------
