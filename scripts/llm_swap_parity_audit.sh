@@ -694,31 +694,39 @@ if [[ $JSON_OUTPUT -eq 1 ]]; then
 
   # Build unjustified_hunks JSON array
   unjust_arr=""
-  for h in "${UNJUSTIFIED_HUNKS[@]:-}"; do
-    [[ -n "$unjust_arr" ]] && unjust_arr+=","
-    unjust_arr+="\"$(json_escape "$h")\""
-  done
+  if [[ "${#UNJUSTIFIED_HUNKS[@]}" -gt 0 ]]; then
+    for h in "${UNJUSTIFIED_HUNKS[@]}"; do
+      [[ -n "$unjust_arr" ]] && unjust_arr+=","
+      unjust_arr+="\"$(json_escape "$h")\""
+    done
+  fi
 
   # Build missing_citations JSON array
   cite_arr=""
-  for c in "${MISSING_CITATIONS[@]:-}"; do
-    [[ -n "$cite_arr" ]] && cite_arr+=","
-    cite_arr+="\"$(json_escape "$c")\""
-  done
+  if [[ "${#MISSING_CITATIONS[@]}" -gt 0 ]]; then
+    for c in "${MISSING_CITATIONS[@]}"; do
+      [[ -n "$cite_arr" ]] && cite_arr+=","
+      cite_arr+="\"$(json_escape "$c")\""
+    done
+  fi
 
   # Build stream_channel_coverage JSON array
   chan_arr=""
-  for ch in "${STREAM_CHANNEL_JSON[@]:-}"; do
-    [[ -n "$chan_arr" ]] && chan_arr+=","
-    chan_arr+="$ch"
-  done
+  if [[ "${#STREAM_CHANNEL_JSON[@]}" -gt 0 ]]; then
+    for ch in "${STREAM_CHANNEL_JSON[@]}"; do
+      [[ -n "$chan_arr" ]] && chan_arr+=","
+      chan_arr+="$ch"
+    done
+  fi
 
   # Build errors array
   err_arr=""
-  for e in "${ERRORS[@]:-}"; do
-    [[ -n "$err_arr" ]] && err_arr+=","
-    err_arr+="\"$(json_escape "$e")\""
-  done
+  if [[ "${#ERRORS[@]}" -gt 0 ]]; then
+    for e in "${ERRORS[@]}"; do
+      [[ -n "$err_arr" ]] && err_arr+=","
+      err_arr+="\"$(json_escape "$e")\""
+    done
+  fi
 
   if [[ $OVERALL_EXIT -eq 0 ]]; then
     verdict="clean"
