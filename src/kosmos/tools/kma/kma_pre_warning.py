@@ -42,22 +42,25 @@ class KmaPreWarningInput(BaseModel):
 
     model_config = ConfigDict(frozen=True)
 
-    num_of_rows: int = Field(default=100, ge=1)
-    """Number of rows per page (numOfRows wire parameter)."""
-
-    page_no: int = Field(default=1, ge=1)
-    """Page number, 1-indexed (pageNo wire parameter)."""
-
-    stn_id: str | None = None
-    """Station/region ID filter (optional).
-
-    Filters results to a specific KMA station. See the KMA station code table
-    for valid values (e.g., '108' for Seoul, '159' for Busan).
-    If omitted, results from all stations are returned.
-    """
-
-    data_type: Literal["JSON", "XML"] = "JSON"
-    """Response format (dataType wire parameter)."""
+    num_of_rows: int = Field(
+        default=100, ge=1,
+        description="결과 행 수 (default 100, 보통 기본값).",
+    )
+    page_no: int = Field(
+        default=1, ge=1,
+        description="페이지 번호 (1-based, default 1).",
+    )
+    stn_id: str | None = Field(
+        default=None,
+        description=(
+            "관측소 ID (optional, KMA station code). 없으면 전국 결과. "
+            "예: 서울=108, 부산=159, 대구=143, 인천=112. 시민 발화에 명확한 시도/광역시가 "
+            "있을 때만 명시. 모호하거나 전국 단위면 null."
+        ),
+    )
+    data_type: Literal["JSON", "XML"] = Field(
+        default="JSON", description="응답 형식 (JSON 권장).",
+    )
 
 
 class PreWarningItem(BaseModel):
@@ -253,6 +256,13 @@ async def _call(
 KMA_PRE_WARNING_TOOL = GovAPITool(
     id="kma_pre_warning",
     name_ko="기상예비특보목록 조회",
+    llm_description=(
+        "기상청 기상예비특보 — 향후 발효 가능성 있는 호우 / 폭염 / 한파 / 태풍 / 강풍 / "
+        "대설 / 황사 / 건조 / 풍랑 등의 사전 경보 목록. 시민이 '경보 있어' / '특보' / "
+        "'호우 주의보 떠 있나' 같은 미래 위험 정보를 묻는 경우. **현재 발효 중**인 특보는 "
+        "kma_weather_alert_status 사용. stn_id 는 시민 발화에 명확한 시도/광역시 명시 시 "
+        "(서울=108, 부산=159 등) 사용; 모호하면 null 로 전국 결과."
+    ),
     ministry="KMA",
     category=["기상", "예비특보", "특보"],
     endpoint=_BASE_URL,

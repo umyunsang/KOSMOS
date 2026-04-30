@@ -145,8 +145,17 @@ export const LookupPrimitive = buildTool({
     }
   },
 
-  renderToolUseMessage() {
-    return null
+  // KOSMOS hotfix #2518 follow-up — CC pattern (tools/BashTool/UI.tsx:renderToolUseMessage)
+  // 따라 args preview 반환. null 반환은 AssistantToolUseMessage가 tool block을 통째로
+  // 숨겨서 시민이 어떤 tool이 dispatch 됐는지 못 봄. CC byte-identical pattern.
+  renderToolUseMessage(input: { mode?: string; query?: string; tool_id?: string }) {
+    if (input.mode === 'search') {
+      return `search: ${input.query ?? ''}`
+    }
+    if (input.mode === 'fetch') {
+      return `fetch: ${input.tool_id ?? ''}`
+    }
+    return input.tool_id ?? input.query ?? ''
   },
 
   // Epic γ #2294 · 9-member interface compliance.

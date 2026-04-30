@@ -1217,6 +1217,26 @@ async def run(  # noqa: C901
         augmented_system = build_system_prompt_with_tools(base_system, llm_tools)
         if augmented_system:
             augmented_system = augmented_system + _DYNAMIC_BOUNDARY_MARKER
+            # KOSMOS hotfix #2520 (2026-04-30 user report — 날짜 hallucination):
+            # CC 원본 (.references/claude-code-sourcemap/restored-src/src/constants/
+            # prompts.ts:452) 은 system prompt 첫 paragraph 에 동적으로
+            # `Date: ${getSessionStartDate()}` 를 inject. KOSMOS 는 prompts/
+            # system_v1.md (static markdown) 만 사용해서 LLM 이 자기 추측으로 날짜
+            # 답변 → "현재 날짜인 2026년 3월 5일 기준으로 부산 사하구의 날씨 정보"
+            # 같은 hallucination. _DYNAMIC_BOUNDARY_MARKER 뒤는 prompt-cache의
+            # dynamic-context section 이므로 여기에 today 주입해도 cache prefix
+            # invariant 유지. ISO 8601 date format (YYYY-MM-DD) 으로 표기.
+            from datetime import UTC, datetime  # noqa: PLC0415
+
+            today_iso = datetime.now(UTC).strftime("%Y-%m-%d")
+            augmented_system = (
+                augmented_system
+                + f"\n\n## Current session context\n\n오늘 날짜: {today_iso} (UTC).\n"
+                "이 날짜를 기준으로 시간 표현을 해석합니다. "
+                "날짜 / 시간 정보를 추측 또는 fabricate 하지 말고, "
+                "필요하면 도구 (예: kma_short_term_forecast) 를 호출해서 "
+                "실제 데이터를 받아 응답에 인용합니다.\n"
+            )
         llm_messages: list[LLMChatMessage] = []
         if augmented_system:
             llm_messages.append(LLMChatMessage(role="system", content=augmented_system))

@@ -102,8 +102,14 @@ class KoroadAccidentSearchInput(BaseModel):
 
     model_config = ConfigDict(frozen=True)
 
-    search_year_cd: SearchYearCd
-    """Dataset year/category code (searchYearCd wire parameter)."""
+    search_year_cd: SearchYearCd = Field(
+        ...,
+        description=(
+            "사고 통계 연도 / 카테고리 코드 (KOROAD searchYearCd wire param). "
+            "보통 직전 연도 사용 (당해 데이터는 매년 6월 이후 publish). "
+            "valid 값은 SearchYearCd enum 참조."
+        ),
+    )
 
     si_do: SidoCode = Field(
         description=(
@@ -132,11 +138,13 @@ class KoroadAccidentSearchInput(BaseModel):
     )
     """District code (guGun wire parameter). See Field description for sourcing rules."""
 
-    num_of_rows: int = Field(default=10, ge=1, le=100)
-    """Number of rows per page (numOfRows wire parameter)."""
-
-    page_no: int = Field(default=1, ge=1)
-    """Page number, 1-indexed (pageNo wire parameter)."""
+    num_of_rows: int = Field(
+        default=10, ge=1, le=100,
+        description="결과 행 수 (default 10, max 100). 보통 기본값.",
+    )
+    page_no: int = Field(
+        default=1, ge=1, description="페이지 번호 (1-based, default 1).",
+    )
 
     @model_validator(mode="after")
     def _validate_legacy_sido(self) -> KoroadAccidentSearchInput:

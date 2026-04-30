@@ -132,8 +132,8 @@ export const SubmitPrimitive = buildTool({
     }
   },
 
-  renderToolUseMessage() {
-    return null
+  renderToolUseMessage(input: { tool_id?: string }) {
+    return input.tool_id ?? ''
   },
 
   // Epic γ #2294 · T010/T011 · real validateInput + renderToolResultMessage.

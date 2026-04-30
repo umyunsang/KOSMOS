@@ -61,14 +61,16 @@ class KmaWeatherAlertStatusInput(BaseModel):
 
     model_config = ConfigDict(frozen=True)
 
-    num_of_rows: int = Field(default=2000, ge=1)
-    """Number of rows per page (numOfRows wire parameter). 2000 returns all alerts in one page."""
-
-    page_no: int = Field(default=1, ge=1)
-    """Page number, 1-indexed (pageNo wire parameter)."""
-
-    data_type: Literal["JSON", "XML"] = "JSON"
-    """Response format (dataType wire parameter)."""
+    num_of_rows: int = Field(
+        default=2000, ge=1,
+        description="결과 행 수 (default 2000, 한 페이지에 전국 모든 특보 포함).",
+    )
+    page_no: int = Field(
+        default=1, ge=1, description="페이지 번호 (1-based, default 1).",
+    )
+    data_type: Literal["JSON", "XML"] = Field(
+        default="JSON", description="응답 형식 (JSON 권장).",
+    )
 
 
 class WeatherWarning(BaseModel):
@@ -303,6 +305,12 @@ async def _call(
 KMA_WEATHER_ALERT_STATUS_TOOL = GovAPITool(
     id="kma_weather_alert_status",
     name_ko="기상특보 현황 조회",
+    llm_description=(
+        "기상청 기상특보 현황 — **현재 발효 중**인 호우경보 / 폭염주의보 / 한파특보 / "
+        "태풍주의보 등 전국 활성 특보 목록. 시민이 '지금 경보 발효 중' / '호우 경보 떠 있어' / "
+        "'태풍 어디까지 와' 같은 즉시 위험 정보를 묻는 경우. **사전 경보** (앞으로 발효 예정) 는 "
+        "kma_pre_warning 사용. parameters 모두 default 사용 — 매개변수 추측 불필요."
+    ),
     ministry="KMA",
     category=["기상", "특보", "경보"],
     endpoint=_BASE_URL,

@@ -47,33 +47,34 @@ class KmaUltraShortTermForecastInput(BaseModel):
 
     model_config = ConfigDict(frozen=True)
 
-    base_date: str
-    """Forecast base date in YYYYMMDD format."""
-
-    base_time: str
-    """Forecast base time in HH30 format (e.g., 0630, 1130).
-
-    The ultra-short-term forecast is published at every half-hour mark (HH:30).
-    Any HHMM value where MM != 30 will be rejected.
-    """
-
-    nx: int = Field(..., ge=1, le=149)
-    """KMA grid X coordinate (1–149)."""
-
-    ny: int = Field(..., ge=1, le=253)
-    """KMA grid Y coordinate (1–253)."""
-
-    num_of_rows: int = Field(default=60, ge=1)
-    """Number of rows to return per page.
-
-    An ultra-short-term forecast covers 6 hours × ~10 categories = ~60 rows.
-    """
-
-    page_no: int = Field(default=1, ge=1)
-    """Page number (1-based)."""
-
-    data_type: Literal["JSON", "XML"] = "JSON"
-    """Response format; JSON is strongly preferred."""
+    base_date: str = Field(
+        ..., description="발표 날짜 (YYYYMMDD). 보통 오늘. Example: 20260430."
+    )
+    base_time: str = Field(
+        ...,
+        description=(
+            "발표 시각 (HH30 format). 매 시각의 30분 발표만 유효. "
+            "Example: 0630 / 1130 / 1430. MM != 30 인 값은 reject."
+        ),
+    )
+    nx: int = Field(
+        ..., ge=1, le=149,
+        description="KMA 격자 X (1-149). resolve_location 으로 받아 그대로 전달.",
+    )
+    ny: int = Field(
+        ..., ge=1, le=253,
+        description="KMA 격자 Y (1-253). nx 와 함께 resolve_location 으로 받음.",
+    )
+    num_of_rows: int = Field(
+        default=60, ge=1,
+        description="결과 행 수 (default 60 = 6시간 × ~10 카테고리). 보통 기본값.",
+    )
+    page_no: int = Field(
+        default=1, ge=1, description="페이지 번호 (1-based, default 1).",
+    )
+    data_type: Literal["JSON", "XML"] = Field(
+        default="JSON", description="응답 형식 (JSON 권장).",
+    )
 
     @field_validator("base_date")
     @classmethod
@@ -280,6 +281,12 @@ async def _call(
 KMA_ULTRA_SHORT_TERM_FORECAST_TOOL = GovAPITool(
     id="kma_ultra_short_term_forecast",
     name_ko="초단기예보 조회",
+    llm_description=(
+        "기상청 초단기예보 — 향후 6시간 시간대별 기온 / 강수 / 하늘 / 풍속 예보. "
+        "시민이 '한 두 시간 후 비 와' / '오후에 흐려질까' 같은 즉시 직후 예보 묻는 경우. "
+        "더 멀리 (1-3일) 는 kma_short_term_forecast 사용. **resolve_location 먼저** 호출해 nx/ny 받음. "
+        "base_time 은 매 정시 30분 발표 (HH30 format) — 매 정시 30분의 ~+10분 후 데이터 안정."
+    ),
     ministry="KMA",
     category=["기상", "예보", "초단기예보"],
     endpoint=_BASE_URL,

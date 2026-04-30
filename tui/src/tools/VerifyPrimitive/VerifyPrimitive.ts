@@ -129,8 +129,8 @@ export const VerifyPrimitive = buildTool({
     }
   },
 
-  renderToolUseMessage() {
-    return null
+  renderToolUseMessage(input: { tool_id?: string; family_hint?: string }) {
+    return input.tool_id ?? input.family_hint ?? ''
   },
 
   // Epic γ #2294 · T013/T014 · real validateInput + renderToolResultMessage.

@@ -135,8 +135,8 @@ export const SubscribePrimitive = buildTool({
     }
   },
 
-  renderToolUseMessage() {
-    return null
+  renderToolUseMessage(input: { tool_id?: string }) {
+    return input.tool_id ?? ''
   },
 
   // Epic γ #2294 · T016/T017 · real validateInput + renderToolResultMessage.
