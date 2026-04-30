@@ -188,9 +188,7 @@ async def test_thinking_channel_e2e_plumbing(
     # ---- Stage 3: assert AssistantChunkFrame with thinking field emitted ----
     frames = fake_stdout.buffer.as_frames()
     thinking_chunks = [
-        f
-        for f in frames
-        if f.get("kind") == "assistant_chunk" and f.get("thinking")
+        f for f in frames if f.get("kind") == "assistant_chunk" and f.get("thinking")
     ]
     assert thinking_chunks, (
         f"expected at least one AssistantChunkFrame with thinking field; "
@@ -203,10 +201,6 @@ async def test_thinking_channel_e2e_plumbing(
     )
 
     # Sanity: visible content channel separate from thinking
-    content_chunks = [
-        f for f in frames if f.get("kind") == "assistant_chunk" and f.get("delta")
-    ]
+    content_chunks = [f for f in frames if f.get("kind") == "assistant_chunk" and f.get("delta")]
     visible = "".join(f.get("delta", "") for f in content_chunks)
-    assert "사용자가" not in visible, (
-        f"thinking content leaked into delta channel: {visible!r}"
-    )
+    assert "사용자가" not in visible, f"thinking content leaked into delta channel: {visible!r}"

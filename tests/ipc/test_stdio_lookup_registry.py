@@ -203,9 +203,7 @@ async def _run_lookup_search(
     try:
         await asyncio.wait_for(ipc_run(session_id=session_id), timeout=_RUNNER_TIMEOUT)
     except (TimeoutError, Exception) as exc:  # noqa: BLE001
-        _logging.getLogger(__name__).debug(
-            "_run_lookup_search: IPC loop exited early: %s", exc
-        )
+        _logging.getLogger(__name__).debug("_run_lookup_search: IPC loop exited early: %s", exc)
     finally:
         if not r_file.closed:
             r_file.close()
@@ -233,9 +231,7 @@ async def test_dispatch_primitive_lookup_uses_populated_registry(
     assert frames, "No IPC frames emitted"
 
     tool_results = [f for f in frames if f.get("kind") == "tool_result"]
-    lookup_results = [
-        f for f in tool_results if f.get("envelope", {}).get("kind") == "lookup"
-    ]
+    lookup_results = [f for f in tool_results if f.get("envelope", {}).get("kind") == "lookup"]
     assert lookup_results, (
         f"expected at least one lookup tool_result frame; got kinds="
         f"{[f.get('envelope', {}).get('kind') for f in tool_results]}"
@@ -245,8 +241,7 @@ async def test_dispatch_primitive_lookup_uses_populated_registry(
     inner = envelope.get("result")
     assert isinstance(inner, dict), f"envelope.result must be a dict, got {type(inner)}"
     assert inner.get("kind") == "search", (
-        f"expected result.kind='search', got {inner.get('kind')!r}; "
-        f"full inner={inner!r}"
+        f"expected result.kind='search', got {inner.get('kind')!r}; full inner={inner!r}"
     )
     assert inner.get("reason") == "ok", (
         f"REGRESSION: dispatcher returned reason={inner.get('reason')!r}. "
@@ -263,6 +258,5 @@ async def test_dispatch_primitive_lookup_uses_populated_registry(
 
     candidate_ids = [c.get("tool_id") for c in candidates]
     assert any("kma" in (cid or "") for cid in candidate_ids), (
-        f"expected at least one KMA adapter for weather query, got "
-        f"candidate_ids={candidate_ids}"
+        f"expected at least one KMA adapter for weather query, got candidate_ids={candidate_ids}"
     )
