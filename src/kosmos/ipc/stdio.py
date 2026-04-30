@@ -546,6 +546,14 @@ async def run(  # noqa: C901
     _tool_executor_ref: list[object] = []
 
     def _ensure_tool_registry() -> object:
+        # CC reference: (no direct CC analog — KOSMOS-only IPC adaptation).
+        # CC's QueryEngine.ts assumes ToolRegistry populated at SDK construction
+        # time (Anthropic SDK ``new Anthropic({...}).messages.stream(...)`` has
+        # the registry baked in). KOSMOS's stdio JSONL backend is invoked once
+        # per process, ahead of any chat_request, so registration must be lazy
+        # to avoid bootstrapping cost when the user runs ``kosmos --list-sessions``
+        # or other non-LLM commands. Justified as SWAP/llm-provider per
+        # parity-matrix.md § 2026-05-01.
         if not _tool_registry_ref:
             from kosmos.tools.executor import ToolExecutor  # noqa: PLC0415
             from kosmos.tools.register_all import register_all_tools  # noqa: PLC0415
@@ -975,6 +983,13 @@ async def run(  # noqa: C901
     ) -> None:
         """Dispatch a single primitive call internally and resolve its pending Future.
 
+        CC reference: ``services/tools/toolOrchestration.ts:19-72`` (CC's ``runTools``
+        async generator). Note partition policy divergence: KOSMOS dispatches all
+        primitive calls in parallel via ``asyncio.gather`` since the citizen-facing
+        primitives (lookup/resolve_location/verify) are read-only-equivalent. CC
+        partitions by ``isConcurrencySafe`` (read-only batches parallel,
+        write-side serial). Tracking the partition adoption as Deferred Item #2574.
+
         Called immediately after a tool_call frame is emitted and the Future
         is registered in _pending_calls. Routes by fname, awaits the primitive,
         wraps the result in a ToolResultFrame, emits it to the TUI, then
@@ -1172,6 +1187,14 @@ async def run(  # noqa: C901
 
     async def _handle_chat_request(frame: IPCFrame) -> None:  # noqa: C901, PLR0915
         """Spec 1978 ADR-0001 — tools-aware chat handler.
+
+        CC reference: ``QueryEngine.ts`` (whole, 1295 lines) + ``query.ts:120-410``
+        (yieldMissingToolResultBlocks pattern). Behavior-mirror: KOSMOS preserves
+        CC's per-turn message_id, structured tool_calls dispatch, role="tool"
+        injection between turns, max_turns termination semantics. The only
+        divergence is the I/O surface — CC reads from Anthropic SDK stream,
+        KOSMOS reads from FriendliAI OpenAI-compat SSE via LLMClient and emits
+        IPCFrames over stdio JSONL (Spec 287 / Spec 032 IPC contract).
 
         Implements the CC (Claude Code 2.1.88) query-engine agentic loop —
         native function calling + token streaming + parallel tool dispatch

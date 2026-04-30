@@ -784,12 +784,13 @@ class LLMClient:
         delta = choice.get("delta", {})
 
         if "content" in delta and delta["content"] is not None:
+            # CC reference: services/api/claude.ts:2113 (text_delta content_block_delta).
             yield StreamEvent(type="content_delta", content=delta["content"])
         elif "reasoning_content" in delta and delta["reasoning_content"] is not None:
-            # K-EXAONE emits chain-of-thought on a separate ``delta`` channel.
-            # CC mirrors this with Anthropic's ``thinking_delta`` content_block
-            # delta event (``_cc_reference/claude.ts:2148-2161``); forwarding
-            # the same shape on KOSMOS lets the TUI's
+            # CC reference: services/api/claude.ts:2148-2161 (thinking_delta
+            # content_block_delta) — K-EXAONE emits chain-of-thought on a
+            # separate ``delta.reasoning_content`` channel. Forwarding the
+            # same StreamEvent shape on KOSMOS lets the TUI's
             # ``AssistantThinkingMessage`` component render the reasoning
             # inline instead of swallowing it. Log only the chunk length —
             # never the raw content (CoT may contain user PII or sensitive
@@ -802,6 +803,13 @@ class LLMClient:
             yield StreamEvent(type="thinking_delta", thinking=reasoning_text)
 
         if "tool_calls" in delta and delta["tool_calls"]:
+            # CC reference: services/api/claude.ts:1997 (tool_use content_block_start)
+            # + services/api/claude.ts:2087 (input_json_delta content_block_delta).
+            # FriendliAI's OpenAI-compatible streaming buffers tool_call argument
+            # JSON across multiple deltas (matching OpenAI's incremental parser).
+            # KOSMOS mirrors CC's pattern by emitting one StreamEvent per delta;
+            # the IPC bridge (stdio.py) accumulates them into the final
+            # ToolCallFrame.
             for tc_delta in delta["tool_calls"]:
                 func = tc_delta.get("function", {})
                 # Log only tool metadata (index/id/name + arg length).
