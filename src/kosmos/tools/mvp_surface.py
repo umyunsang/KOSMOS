@@ -386,6 +386,26 @@ class _VerifyInputForLLM(BaseModel):
 
         return data
 
+    @model_validator(mode="after")
+    def _enforce_selector_present(self) -> _VerifyInputForLLM:
+        """Codex P1 fail-closed gate (Epic ζ #2297 PR #2517 review).
+
+        After the pre-validator runs, at least ONE of {``tool_id``,
+        non-empty ``family_hint``} MUST be present. The default ``family_hint=""``
+        + optional ``tool_id`` combination would otherwise let the LLM emit
+        ``verify({})`` and pass schema validation, after which the dispatcher
+        would silently call ``verify(family_hint="")`` and return a
+        no-adapter error. Reject empty-everything at the schema boundary so
+        the LLM gets a typed validation failure on the same turn.
+        """
+        if not self.tool_id and not self.family_hint:
+            raise ValueError(
+                "verify requires at least one selector — either citizen-shape "
+                "'tool_id' (e.g. 'mock_verify_module_modid') OR legacy-shape "
+                "non-empty 'family_hint'. Both were empty."
+            )
+        return self
+
 
 VERIFY_TOOL = GovAPITool(
     id="verify",
