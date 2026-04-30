@@ -315,6 +315,28 @@ export class LLMClient {
 
       // ----------------------------------------------------------------
       // Step 5: consume inbound frames filtered on correlation_id.
+      //
+      // CC reference: services/api/claude.ts:1980-2295 — CC's streaming-event
+      // taxonomy (message_start, content_block_start, content_block_delta,
+      // content_block_stop, message_delta, message_stop). KOSMOS's IPC bridge
+      // converts AssistantChunkFrame / ToolCallFrame / ToolResultFrame back
+      // into the same event shapes so the rest of the SDK (assembly, history,
+      // rendering) stays byte-equivalent with CC.
+      //
+      // Channel coverage per Spec 2521 parity-matrix.md (verified 2026-05-01):
+      //   ✓ implemented: text_delta (claude.ts:2113), thinking_delta (2148),
+      //     input_json_delta (2087), tool_use start (1997), text start (2019),
+      //     thinking start (2030), content_block_stop (2171), message_start (1980),
+      //     message_delta (2213), message_stop (2295)
+      //   // SKIPPED — KOSMOS-N/A: signature_delta (2127) — K-EXAONE/FriendliAI
+      //     does not emit thinking signatures (verified by probe_friendli_channels.py
+      //     2026-05-01)
+      //   // SKIPPED — KOSMOS-N/A: citations_delta (2084) — KOSMOS adapters
+      //     return citations in tool_result envelopes, not stream events
+      //   // SKIPPED — KOSMOS-N/A: connector_text_delta (2068) — Anthropic-only
+      //     connector blocks; KOSMOS does not use connectors
+      //   // SKIPPED — KOSMOS-N/A: server_tool_use start (2003) — KOSMOS uses IPC
+      //     primitive bridge for all tool dispatch; no server-side tools
       // ----------------------------------------------------------------
       let streamDone = false
 
@@ -323,11 +345,16 @@ export class LLMClient {
         if (frame.correlation_id !== correlationId) continue
 
         // ---- AssistantChunkFrame ----------------------------------------
+        // CC reference: services/api/claude.ts:1980-2169 (the message_start +
+        // content_block_start + content_block_delta + content_block_stop
+        // emission for text + thinking content blocks).
         if (frame.kind === 'assistant_chunk') {
           const chunk = frame as AssistantChunkFrame
 
           if (!chunk.done) {
             // First chunk: emit message_start + content_block_start.
+            // CC reference: services/api/claude.ts:1980 (message_start),
+            //               services/api/claude.ts:2019 (text content_block_start).
             if (!acc.seenFirstChunk) {
               acc.seenFirstChunk = true
               acc.messageId = chunk.message_id
@@ -435,14 +462,18 @@ export class LLMClient {
             const usage = _extractUsage(chunk)
             acc.usage = usage
 
+            // CC reference: services/api/claude.ts:2171 (content_block_stop).
             yield { type: 'content_block_stop', index: acc.blockIndex } satisfies KosmosRawMessageStreamEvent
 
+            // CC reference: services/api/claude.ts:2213 (message_delta with
+            // stop_reason + usage).
             yield {
               type: 'message_delta',
               delta: { stop_reason: acc.stopReason },
               usage,
             } satisfies KosmosRawMessageStreamEvent
 
+            // CC reference: services/api/claude.ts:2295 (message_stop).
             yield { type: 'message_stop' } satisfies KosmosRawMessageStreamEvent
 
             streamDone = true
@@ -451,6 +482,12 @@ export class LLMClient {
         }
 
         // ---- ToolCallFrame ----------------------------------------------
+        // CC reference: services/api/claude.ts:1997 (content_block_start with
+        // tool_use type) + services/api/claude.ts:2087 (input_json_delta for
+        // streaming arguments). KOSMOS pre-buffers arguments at the backend
+        // (stdio.py tool_call_buf) and emits the complete tool_use block in a
+        // single ToolCallFrame, so input_json_delta is collapsed into the
+        // initial content_block_start payload.
         else if (frame.kind === 'tool_call') {
           const toolFrame = frame as ToolCallFrame
           // tool_call frames may arrive interleaved with text streaming in
