@@ -90,6 +90,13 @@ interface _TurnAccumulator {
    *  `blockIndex` — otherwise the terminal `content_block_stop` for text
    *  fires on the wrong index (Codex review P1 on PR #1706). */
   toolBlockCounter: number
+  /** Index of the thinking block, if any. K-EXAONE's reasoning_content
+   *  channel is forwarded by the backend as `AssistantChunkFrame.thinking`;
+   *  llmClient mirrors CC's claude.ts:2148-2165 by routing those chunks to
+   *  a dedicated thinking content block (`type: 'thinking'`). The block
+   *  is opened lazily on the first thinking delta and closed at the same
+   *  time as the text block (done frame). Undefined until first delta. */
+  thinkingBlockIndex: number | undefined
   seenFirstChunk: boolean
 }
 
@@ -101,6 +108,7 @@ function _defaultAccumulator(): _TurnAccumulator {
     stopReason: 'end_turn',
     blockIndex: 0,
     toolBlockCounter: 0,
+    thinkingBlockIndex: undefined,
     seenFirstChunk: false,
   }
 }
@@ -307,6 +315,28 @@ export class LLMClient {
 
       // ----------------------------------------------------------------
       // Step 5: consume inbound frames filtered on correlation_id.
+      //
+      // CC reference: services/api/claude.ts:1980-2295 — CC's streaming-event
+      // taxonomy (message_start, content_block_start, content_block_delta,
+      // content_block_stop, message_delta, message_stop). KOSMOS's IPC bridge
+      // converts AssistantChunkFrame / ToolCallFrame / ToolResultFrame back
+      // into the same event shapes so the rest of the SDK (assembly, history,
+      // rendering) stays byte-equivalent with CC.
+      //
+      // Channel coverage per Spec 2521 parity-matrix.md (verified 2026-05-01):
+      //   ✓ implemented: text_delta (claude.ts:2113), thinking_delta (2148),
+      //     input_json_delta (2087), tool_use start (1997), text start (2019),
+      //     thinking start (2030), content_block_stop (2171), message_start (1980),
+      //     message_delta (2213), message_stop (2295)
+      //   // SKIPPED — KOSMOS-N/A: signature_delta (2127) — K-EXAONE/FriendliAI
+      //     does not emit thinking signatures (verified by probe_friendli_channels.py
+      //     2026-05-01)
+      //   // SKIPPED — KOSMOS-N/A: citations_delta (2084) — KOSMOS adapters
+      //     return citations in tool_result envelopes, not stream events
+      //   // SKIPPED — KOSMOS-N/A: connector_text_delta (2068) — Anthropic-only
+      //     connector blocks; KOSMOS does not use connectors
+      //   // SKIPPED — KOSMOS-N/A: server_tool_use start (2003) — KOSMOS uses IPC
+      //     primitive bridge for all tool dispatch; no server-side tools
       // ----------------------------------------------------------------
       let streamDone = false
 
@@ -315,11 +345,16 @@ export class LLMClient {
         if (frame.correlation_id !== correlationId) continue
 
         // ---- AssistantChunkFrame ----------------------------------------
+        // CC reference: services/api/claude.ts:1980-2169 (the message_start +
+        // content_block_start + content_block_delta + content_block_stop
+        // emission for text + thinking content blocks).
         if (frame.kind === 'assistant_chunk') {
           const chunk = frame as AssistantChunkFrame
 
           if (!chunk.done) {
             // First chunk: emit message_start + content_block_start.
+            // CC reference: services/api/claude.ts:1980 (message_start),
+            //               services/api/claude.ts:2019 (text content_block_start).
             if (!acc.seenFirstChunk) {
               acc.seenFirstChunk = true
               acc.messageId = chunk.message_id
@@ -340,6 +375,35 @@ export class LLMClient {
               } satisfies KosmosRawMessageStreamEvent
 
               acc.blockIndex = 0
+              acc.contentBlocks[0] = { type: 'text', text: '' }
+            }
+
+            // Thinking delta — K-EXAONE's reasoning_content channel arrives
+            // here. CC's claude.ts:2148-2165 routes thinking_delta to its own
+            // content block; we mirror that so Message.tsx can pick up
+            // `type: 'thinking'` blocks and route them to the
+            // AssistantThinkingMessage component (∴ Thinking dim italic).
+            if (chunk.thinking && chunk.thinking.length > 0) {
+              if (acc.thinkingBlockIndex === undefined) {
+                const thinkingIdx = acc.contentBlocks.length
+                acc.thinkingBlockIndex = thinkingIdx
+                yield {
+                  type: 'content_block_start',
+                  index: thinkingIdx,
+                  content_block: { type: 'thinking', thinking: '' },
+                } satisfies KosmosRawMessageStreamEvent
+                acc.contentBlocks[thinkingIdx] = { type: 'thinking', thinking: '' }
+              }
+              const thinkingIdx = acc.thinkingBlockIndex
+              yield {
+                type: 'content_block_delta',
+                index: thinkingIdx,
+                delta: { type: 'thinking_delta', thinking: chunk.thinking },
+              } satisfies KosmosRawMessageStreamEvent
+              const existing = acc.contentBlocks[thinkingIdx]
+              if (existing && existing.type === 'thinking') {
+                existing.thinking += chunk.thinking
+              }
             }
 
             // Emit text delta (even if delta is empty — forward compat).
@@ -398,14 +462,18 @@ export class LLMClient {
             const usage = _extractUsage(chunk)
             acc.usage = usage
 
+            // CC reference: services/api/claude.ts:2171 (content_block_stop).
             yield { type: 'content_block_stop', index: acc.blockIndex } satisfies KosmosRawMessageStreamEvent
 
+            // CC reference: services/api/claude.ts:2213 (message_delta with
+            // stop_reason + usage).
             yield {
               type: 'message_delta',
               delta: { stop_reason: acc.stopReason },
               usage,
             } satisfies KosmosRawMessageStreamEvent
 
+            // CC reference: services/api/claude.ts:2295 (message_stop).
             yield { type: 'message_stop' } satisfies KosmosRawMessageStreamEvent
 
             streamDone = true
@@ -414,14 +482,28 @@ export class LLMClient {
         }
 
         // ---- ToolCallFrame ----------------------------------------------
+        // CC reference: services/api/claude.ts:1997 (content_block_start with
+        // tool_use type) + services/api/claude.ts:2087 (input_json_delta for
+        // streaming arguments). KOSMOS pre-buffers arguments at the backend
+        // (stdio.py tool_call_buf) and emits the complete tool_use block in a
+        // single ToolCallFrame, so input_json_delta is collapsed into the
+        // initial content_block_start payload.
         else if (frame.kind === 'tool_call') {
           const toolFrame = frame as ToolCallFrame
-          // tool_call frames may arrive interleaved with text streaming in
-          // a multi-turn or parallel-tool scenario. Emit as a content block
-          // at a dedicated tool index (blockIndex + N); the text block's
-          // index (blockIndex) stays untouched so the terminal
-          // content_block_stop for text still targets the right block.
-          const toolBlockIndex = acc.blockIndex + (++acc.toolBlockCounter)
+          // tool_call frames may arrive interleaved with text streaming AND
+          // thinking streaming in a multi-turn / parallel-tool / K-EXAONE
+          // reasoning scenario. Allocate the tool block at the next free
+          // contentBlocks slot rather than `blockIndex + toolBlockCounter`
+          // — the latter collides with the thinking block, which lives at
+          // `contentBlocks.length` at first thinking_delta (typically 1
+          // after the text block, the same slot the first tool would have
+          // claimed via `0 + 1`). Codex P1 review on PR #2577 (2026-04-30):
+          // collision corrupts the reasoning trace by overwriting it with
+          // tool_use, breaking the dim-italic ∴ Thinking glyph for any
+          // turn that emits both reasoning and a tool call. The
+          // toolBlockCounter is preserved as a per-turn stat counter only.
+          const toolBlockIndex = acc.contentBlocks.length
+          acc.toolBlockCounter += 1
           yield {
             type: 'content_block_start',
             index: toolBlockIndex,

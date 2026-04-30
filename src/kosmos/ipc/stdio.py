@@ -524,21 +524,61 @@ async def run(  # noqa: C901
     # Keyed by session_id → set of tool_ids approved for the session lifetime.
     _session_grants: dict[str, set[str]] = {}
 
-    # Epic #2077 T010 — single ToolRegistry instance reused across every
-    # chat_request. The registry rebuilds its in-memory adapter index at
-    # backend boot via ``register_all`` side-effects (Spec 1634); rebuilding
-    # it per turn would re-execute every adapter ``__init_subclass__`` hook
+    # Epic #2077 T010 — single ToolRegistry + ToolExecutor instance pair
+    # reused across every chat_request. Adapter registration happens lazily
+    # on first access by invoking ``register_all_tools(registry, executor)``
+    # exactly once (Spec 1634); per-turn reconstruction would force every
+    # adapter ``register()`` call to re-execute and would also rebuild BM25
     # for no observable gain. The list-of-one indirection mirrors the
     # ``_llm_client_ref`` pattern above so the closure-bound name binding
     # survives reassignment under typing strictness.
+    #
+    # Bug fix (2026-05-01, citizen "부산 날씨" report):  the previous
+    # implementation created an empty ``ToolRegistry()`` here AND another
+    # empty pair inside ``_dispatch_primitive`` for every lookup call, so
+    # ``lookup(mode="search", ...)`` always returned ``reason="empty_registry"``
+    # and ``mode="fetch"`` always failed with ``unknown_tool``. The comment
+    # claimed registration happened "via register_all side-effects" but no
+    # such side-effects exist — registration is a function call, not a
+    # module-level statement. This pair is now the single source of truth
+    # for *all* dispatcher paths (search/fetch/export_core_tools_openai).
     _tool_registry_ref: list[object] = []
+    _tool_executor_ref: list[object] = []
 
     def _ensure_tool_registry() -> object:
+        # CC reference: (no direct CC analog — KOSMOS-only IPC adaptation).
+        # CC's QueryEngine.ts assumes ToolRegistry populated at SDK construction
+        # time (Anthropic SDK ``new Anthropic({...}).messages.stream(...)`` has
+        # the registry baked in). KOSMOS's stdio JSONL backend is invoked once
+        # per process, ahead of any chat_request, so registration must be lazy
+        # to avoid bootstrapping cost when the user runs ``kosmos --list-sessions``
+        # or other non-LLM commands. Justified as SWAP/llm-provider per
+        # parity-matrix.md § 2026-05-01.
         if not _tool_registry_ref:
+            from kosmos.tools.executor import ToolExecutor  # noqa: PLC0415
+            from kosmos.tools.register_all import register_all_tools  # noqa: PLC0415
             from kosmos.tools.registry import ToolRegistry  # noqa: PLC0415
 
-            _tool_registry_ref.append(ToolRegistry())
+            registry = ToolRegistry()
+            executor = ToolExecutor(registry=registry)
+            register_all_tools(registry, executor)
+            # Cache only after full success — a partial registration leaves
+            # the registry in a mixed state, so let the exception propagate
+            # and a subsequent call retry from scratch.
+            _tool_registry_ref.append(registry)
+            _tool_executor_ref.append(executor)
         return _tool_registry_ref[0]
+
+    def _ensure_tool_executor() -> object:
+        """Return the ToolExecutor paired with the singleton ToolRegistry.
+
+        Triggers lazy registration if neither has been built yet so callers
+        that need only the executor stay correct without taking a registry
+        reference first.
+        """
+        if not _tool_executor_ref:
+            _ensure_tool_registry()  # populates both refs in one shot
+        return _tool_executor_ref[0]
 
     async def _ensure_llm_client() -> object:
         if not _llm_client_ref:
@@ -943,6 +983,13 @@ async def run(  # noqa: C901
     ) -> None:
         """Dispatch a single primitive call internally and resolve its pending Future.
 
+        CC reference: ``services/tools/toolOrchestration.ts:19-72`` (CC's ``runTools``
+        async generator). Note partition policy divergence: KOSMOS dispatches all
+        primitive calls in parallel via ``asyncio.gather`` since the citizen-facing
+        primitives (lookup/resolve_location/verify) are read-only-equivalent. CC
+        partitions by ``isConcurrencySafe`` (read-only batches parallel,
+        write-side serial). Tracking the partition adoption as Deferred Item #2574.
+
         Called immediately after a tool_call frame is emitted and the Future
         is registered in _pending_calls. Routes by fname, awaits the primitive,
         wraps the result in a ToolResultFrame, emits it to the TUI, then
@@ -999,17 +1046,21 @@ async def run(  # noqa: C901
                     }
 
                 elif fname == "lookup":
-                    from kosmos.tools.executor import ToolExecutor  # noqa: PLC0415
                     from kosmos.tools.lookup import lookup  # noqa: PLC0415
                     from kosmos.tools.models import (  # noqa: PLC0415
                         LookupFetchInput,
                         LookupSearchInput,
                     )
-                    from kosmos.tools.registry import ToolRegistry  # noqa: PLC0415
 
                     mode = str(args_obj.get("mode", "search"))
-                    registry = ToolRegistry()
-                    executor = ToolExecutor(registry=registry)
+                    # Use the session-scoped singleton populated by
+                    # register_all_tools (Spec 1634). Constructing a fresh
+                    # empty ToolRegistry / ToolExecutor here would trigger
+                    # reason="empty_registry" for every search and
+                    # "unknown_tool" for every fetch — the very bug fixed
+                    # on 2026-05-01.
+                    registry = _ensure_tool_registry()
+                    executor = _ensure_tool_executor()
                     inp_lk: LookupSearchInput | LookupFetchInput
                     if mode == "search":
                         inp_lk = LookupSearchInput(
@@ -1136,6 +1187,14 @@ async def run(  # noqa: C901
 
     async def _handle_chat_request(frame: IPCFrame) -> None:  # noqa: C901, PLR0915
         """Spec 1978 ADR-0001 — tools-aware chat handler.
+
+        CC reference: ``QueryEngine.ts`` (whole, 1295 lines) + ``query.ts:120-410``
+        (yieldMissingToolResultBlocks pattern). Behavior-mirror: KOSMOS preserves
+        CC's per-turn message_id, structured tool_calls dispatch, role="tool"
+        injection between turns, max_turns termination semantics. The only
+        divergence is the I/O surface — CC reads from Anthropic SDK stream,
+        KOSMOS reads from FriendliAI OpenAI-compat SSE via LLMClient and emits
+        IPCFrames over stdio JSONL (Spec 287 / Spec 032 IPC contract).
 
         Implements the CC (Claude Code 2.1.88) query-engine agentic loop —
         native function calling + token streaming + parallel tool dispatch

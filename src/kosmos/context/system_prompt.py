@@ -8,12 +8,14 @@ for equal config inputs, ensuring FriendliAI prompt-cache stability (NFR-003).
 Mandatory sections in fixed order:
   1. Platform identity (FR-009)         ┐
   2. Language policy (FR-009)           │  loaded from prompts/system_v1.md
-  3. Tool-use policy (FR-009)           │  via PromptLoader (paragraphs 1–3;
+  3. Tool-use policy (FR-009)           │  via PromptLoader (paragraphs 0-4;
   3a. Trust hierarchy (Epic #466,       │  paragraph 4 is conditional)
-      FR-016/FR-017/FR-018 — unconditional, inserted between sections 3 and 4
+      FR-016/FR-017/FR-018 — unconditional, inserted between sections 3 and 3b
       so sections 1–3a form a stable cache prefix).
+  3b. Turn-order block (Spec 2521 FR-010 — "Lead with the action, no preamble";
+      loaded from prompts/system_v1.md paragraph 3 (``<turn_order>``)).
   4. Personal-data reminder (FR-009, conditional on config.personal_data_warning;
-     loaded from prompts/system_v1.md paragraph 4)
+     loaded from prompts/system_v1.md paragraph 4 (``<output_style>``)).
   5. Session guidance block (geocoding-first rule + no-memory-fill rule) — always appended last
      so the cache prefix for sections 1–4 is never disturbed (Entity 5, data-model.md).
      Loaded from prompts/session_guidance_v1.md via PromptLoader (FR-X03 correction applied).
@@ -30,6 +32,18 @@ logger = logging.getLogger(__name__)
 
 # Section separator — two newlines produce paragraph breaks in the LLM view.
 _SECTION_SEP = "\n\n"
+
+# Named indices into the `\n\n`-split system_v1.md paragraphs so the section
+# routing is explicit instead of magic-number indexed.
+# Spec 2521 inserted the <turn_order> block at index 3 between <tool_usage>
+# and <output_style>; the assembler emits it as a dedicated section so the
+# trust-hierarchy + personal-data ordering invariants (FR-016/FR-017/FR-018)
+# remain intact.
+_PARA_PLATFORM_IDENTITY = 0  # <role>
+_PARA_LANGUAGE_POLICY = 1  # <core_rules>
+_PARA_TOOL_USE = 2  # <tool_usage>
+_PARA_TURN_ORDER = 3  # <turn_order> (Spec 2521)
+_PARA_PERSONAL_DATA = 4  # <output_style>
 
 
 class SystemPromptAssembler:
@@ -77,6 +91,7 @@ class SystemPromptAssembler:
             self._language_policy_section(config),
             self._tool_use_policy_section(),
             self._trust_hierarchy_section(),
+            self._turn_order_section(),
         ]
         if config.personal_data_warning:
             sections.append(self._personal_data_reminder_section())
@@ -99,11 +114,11 @@ class SystemPromptAssembler:
 
     def _platform_identity_section(self, config: SystemPromptConfig) -> str:
         """Section 1: Platform identity (delegated to system_v1.md paragraph 0)."""
-        return self._format_if_templated(self._system_paragraphs[0], config)
+        return self._format_if_templated(self._system_paragraphs[_PARA_PLATFORM_IDENTITY], config)
 
     def _language_policy_section(self, config: SystemPromptConfig) -> str:
         """Section 2: Language policy (delegated to system_v1.md paragraph 1)."""
-        return self._format_if_templated(self._system_paragraphs[1], config)
+        return self._format_if_templated(self._system_paragraphs[_PARA_LANGUAGE_POLICY], config)
 
     @staticmethod
     def _format_if_templated(paragraph: str, config: SystemPromptConfig) -> str:
@@ -116,7 +131,16 @@ class SystemPromptAssembler:
 
     def _tool_use_policy_section(self) -> str:
         """Section 3: Tool-use policy (delegated to system_v1.md paragraph 2)."""
-        return self._system_paragraphs[2]
+        return self._system_paragraphs[_PARA_TOOL_USE]
+
+    def _turn_order_section(self) -> str:
+        """Section 3b: Turn-order block (Spec 2521, FR-010 / parity-matrix § C.4).
+
+        Mirrors CC `prompts.ts:420` "Lead with the action, no preamble" guidance,
+        translated for the citizen-facing harness. Loaded from
+        ``prompts/system_v1.md`` paragraph 3 (``<turn_order>``).
+        """
+        return self._system_paragraphs[_PARA_TURN_ORDER]
 
     def _trust_hierarchy_section(self) -> str:
         """Section 3a: Trust hierarchy (Epic #466 Layer D, FR-016–FR-018).
@@ -132,8 +156,13 @@ class SystemPromptAssembler:
         )
 
     def _personal_data_reminder_section(self) -> str:
-        """Section 4: Personal-data handling reminder (delegated to system_v1.md paragraph 3)."""
-        return self._system_paragraphs[3]
+        """Section 4: Personal-data handling reminder.
+
+        Delegated to ``system_v1.md`` paragraph 4 (``<output_style>``).
+        Spec 2521 inserted ``<turn_order>`` at paragraph 3, shifting this from
+        the historical paragraph-3 slot.
+        """
+        return self._system_paragraphs[_PARA_PERSONAL_DATA]
 
     def _session_guidance_section(self) -> str:
         """Section 5: Session guidance block (delegated to session_guidance_v1.md)."""
