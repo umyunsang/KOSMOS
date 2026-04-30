@@ -32,7 +32,8 @@ from __future__ import annotations
 #     mobile_id,mydata}_*)
 #   - 5 submit wrappers (mock_submit_module_{hometax_taxreturn,gov24_minwon,
 #     public_mydata_action} + mock_traffic_fine_pay_v1 + mock_welfare_application_submit_v1)
-#   - 3 subscribe wrappers (mock_cbs_disaster_v1 + mock_rest_pull_tick_v1 + mock_rss_public_notices_v1)
+#   - 3 subscribe wrappers (mock_cbs_disaster_v1 + mock_rest_pull_tick_v1 +
+#     mock_rss_public_notices_v1)
 # These wrappers are registered with is_core=False so the LLM's primary tool list
 # stays at 5 primitives + lookup-class Live; they participate in lookup(mode="search")
 # BM25 corpus so verify/submit/subscribe candidates surface for citizen queries
