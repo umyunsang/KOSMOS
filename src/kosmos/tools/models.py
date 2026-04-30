@@ -549,7 +549,8 @@ class ResolveLocationInput(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     query: str = Field(
-        min_length=1, max_length=200,
+        min_length=1,
+        max_length=200,
         description=(
             "자유 텍스트 위치 쿼리 (한국어 또는 영어). 시민 발화에서 그대로 추출. "
             "Examples: '서울 강남구', '동아대 하단캠퍼스', '강남역', '부산 사하구', "

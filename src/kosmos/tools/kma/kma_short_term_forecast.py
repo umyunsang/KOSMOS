@@ -48,9 +48,7 @@ class KmaShortTermForecastInput(BaseModel):
 
     base_date: str = Field(
         ...,
-        description=(
-            "예보 발표 날짜 (YYYYMMDD). 보통 오늘. Example: 20260430."
-        ),
+        description=("예보 발표 날짜 (YYYYMMDD). 보통 오늘. Example: 20260430."),
     )
     base_time: str = Field(
         ...,
@@ -81,9 +79,7 @@ class KmaShortTermForecastInput(BaseModel):
     num_of_rows: int = Field(
         default=290,
         ge=1,
-        description=(
-            "결과 행 수 (default 290 = 1 격자 단기예보 full dataset). 보통 기본값 사용."
-        ),
+        description=("결과 행 수 (default 290 = 1 격자 단기예보 full dataset). 보통 기본값 사용."),
     )
     page_no: int = Field(
         default=1,
@@ -371,8 +367,9 @@ KMA_SHORT_TERM_FORECAST_TOOL = GovAPITool(
         "기상청 단기예보 — 향후 약 3일 (오늘 / 내일 / 모레) 시간대별 기온 / 강수확률 / "
         "하늘 상태 / 습도 / 풍속 / 풍향 예보. 시민이 '내일 날씨' / '주말 비 올까' / "
         "'다음주 기온' 같은 미래 예보를 묻는 경우 호출.\n\n"
-        "**ORDERING RULE**: 시민 발화에 위치명이 있으면 **먼저 resolve_location(query='<지역명>')** "
-        "호출 → nx/ny 받아서 이 도구에 전달. base_date / base_time 은 KMA 발표 시각 기준 "
+        "**ORDERING RULE**: 시민 발화에 위치명이 있으면 "
+        "**먼저 resolve_location(query='<지역명>')** 호출 → nx/ny 받아서 이 도구에 전달. "
+        "base_date / base_time 은 KMA 발표 시각 기준 "
         "(02/05/08/11/14/17/20/23시 발표) — 보통 직전 발표 시각 사용."
     ),
     search_hint=(

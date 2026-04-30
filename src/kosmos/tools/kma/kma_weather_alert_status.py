@@ -62,14 +62,18 @@ class KmaWeatherAlertStatusInput(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     num_of_rows: int = Field(
-        default=2000, ge=1,
+        default=2000,
+        ge=1,
         description="결과 행 수 (default 2000, 한 페이지에 전국 모든 특보 포함).",
     )
     page_no: int = Field(
-        default=1, ge=1, description="페이지 번호 (1-based, default 1).",
+        default=1,
+        ge=1,
+        description="페이지 번호 (1-based, default 1).",
     )
     data_type: Literal["JSON", "XML"] = Field(
-        default="JSON", description="응답 형식 (JSON 권장).",
+        default="JSON",
+        description="응답 형식 (JSON 권장).",
     )
 
 

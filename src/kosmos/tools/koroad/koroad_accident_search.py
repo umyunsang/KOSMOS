@@ -139,11 +139,15 @@ class KoroadAccidentSearchInput(BaseModel):
     """District code (guGun wire parameter). See Field description for sourcing rules."""
 
     num_of_rows: int = Field(
-        default=10, ge=1, le=100,
+        default=10,
+        ge=1,
+        le=100,
         description="결과 행 수 (default 10, max 100). 보통 기본값.",
     )
     page_no: int = Field(
-        default=1, ge=1, description="페이지 번호 (1-based, default 1).",
+        default=1,
+        ge=1,
+        description="페이지 번호 (1-based, default 1).",
     )
 
     @model_validator(mode="after")

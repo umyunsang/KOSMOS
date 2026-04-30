@@ -405,12 +405,15 @@ KMA_CURRENT_OBSERVATION_TOOL = GovAPITool(
     llm_description=(
         "기상청 초단기실황 — 현재 시각 기준 실제 관측 데이터 (기온 / 강수 / 습도 / "
         "풍속 / 풍향). 시민이 '오늘 날씨' / '지금 비 와' / '현재 기온' 같은 즉시 "
-        "현재 상태를 묻는 경우 첫 호출. 'sky' 같은 미래 예보 키워드는 kma_short_term_forecast 사용.\n\n"
-        "**ORDERING RULE**: 시민 발화에 위치명이 있으면 **먼저 resolve_location(query='<지역명>')** "
-        "호출 → nx/ny 받아서 이 도구에 그대로 전달. nx/ny 를 LLM 추측 금지 (좌표 매핑은 "
-        "행정동 코드 기반이며 시도/구군 변환 비공개 quirks 포함).\n\n"
+        "현재 상태를 묻는 경우 첫 호출. 'sky' 같은 미래 예보 키워드는 "
+        "kma_short_term_forecast 사용.\n\n"
+        "**ORDERING RULE**: 시민 발화에 위치명이 있으면 "
+        "**먼저 resolve_location(query='<지역명>')** 호출 → nx/ny 받아서 이 도구에 그대로 "
+        "전달. nx/ny 를 LLM 추측 금지 (좌표 매핑은 행정동 코드 기반이며 시도/구군 변환 "
+        "비공개 quirks 포함).\n\n"
         "**TIMING**: base_date 는 오늘 (YYYYMMDD), base_time 은 직전 정시 (HHMM). "
-        "매 정시의 :40 이후만 안정적인 데이터. 14:25 호출 시 base_time='1300' 사용 (직전 정시 데이터)."
+        "매 정시의 :40 이후만 안정적인 데이터. 14:25 호출 시 base_time='1300' 사용 "
+        "(직전 정시 데이터)."
     ),
     search_hint=(
         "현재 날씨 기온 강수 습도 풍속 초단기실황 관측 "

@@ -43,11 +43,13 @@ class KmaPreWarningInput(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     num_of_rows: int = Field(
-        default=100, ge=1,
+        default=100,
+        ge=1,
         description="결과 행 수 (default 100, 보통 기본값).",
     )
     page_no: int = Field(
-        default=1, ge=1,
+        default=1,
+        ge=1,
         description="페이지 번호 (1-based, default 1).",
     )
     stn_id: str | None = Field(
@@ -59,7 +61,8 @@ class KmaPreWarningInput(BaseModel):
         ),
     )
     data_type: Literal["JSON", "XML"] = Field(
-        default="JSON", description="응답 형식 (JSON 권장).",
+        default="JSON",
+        description="응답 형식 (JSON 권장).",
     )
 
 
