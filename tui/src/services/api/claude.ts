@@ -16,9 +16,14 @@ import type {
   BetaToolUnion,
   BetaUsage,
   BetaMessageParam as MessageParam,
-} from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
-import type { TextBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'
-import type { Stream } from '@anthropic-ai/sdk/streaming.mjs'
+  // SWAP/llm-provider(2521): @anthropic-ai/sdk → KOSMOS sdk-compat aliases
+  // (BetaContentBlock = KosmosContentBlockParam, etc.). The SDK is no longer
+  // in the runtime graph; sdk-compat.ts maps every Beta* / Text / Stream /
+  // ClientOptions name onto the KOSMOS-native llmTypes.ts catalog so this
+  // file compiles without editing every Beta* type position downstream.
+} from '../../sdk-compat.js'
+import type { TextBlockParam } from '../../sdk-compat.js'
+import type { Stream } from '../../sdk-compat.js'
 import { randomUUID } from 'crypto'
 import {
   getAPIProvider,
@@ -107,12 +112,15 @@ const autoModeStateModule = feature('TRANSCRIPT_CLASSIFIER')
   : null
 
 import { feature } from 'bun:bundle'
-import type { ClientOptions } from '@anthropic-ai/sdk'
+// SWAP/llm-provider(2521): @anthropic-ai/sdk + /error → KOSMOS sdk-compat
+// aliases (ClientOptions, APIError, APIConnectionTimeoutError, APIUserAbortError
+// all re-exported by sdk-compat.ts as structural stubs).
+import type { ClientOptions } from '../../sdk-compat.js'
 import {
   APIConnectionTimeoutError,
   APIError,
   APIUserAbortError,
-} from '@anthropic-ai/sdk/error'
+} from '../../sdk-compat.js'
 import {
   getAfkModeHeaderLatched,
   getCacheEditingHeaderLatched,
