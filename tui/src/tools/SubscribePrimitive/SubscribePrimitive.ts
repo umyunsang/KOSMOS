@@ -12,6 +12,7 @@
 import React from 'react'
 import { z } from 'zod/v4'
 import { Box, Text } from '../../ink.js'
+import { MessageResponse } from '../../components/MessageResponse.js'
 import { buildTool, type ToolDef, type ToolUseContext } from '../../Tool.js'
 import { lazySchema } from '../../utils/lazySchema.js'
 import {
@@ -210,22 +211,29 @@ export const SubscribePrimitive = buildTool({
         ? `유지 시간: ${String(lifetime)}`
         : undefined
 
+      // KOSMOS hotfix #2519 — wrap in <MessageResponse> for the CC ⎿ prefix.
+      // Drop the explicit "⎿ 실시간 스트림은…" line since MessageResponse now
+      // owns the leading "  ⎿  " glyph; restating it produced a doubled tree.
       return React.createElement(
-        Box,
-        { flexDirection: 'column', paddingY: 0 },
+        MessageResponse,
+        null,
         React.createElement(
-          Text,
-          null,
-          React.createElement(Text, { bold: true }, '구독 완료: '),
-          React.createElement(Text, null, `${handleLabel} ${kindLabel}`.trim()),
-        ),
-        lifetimeLabel
-          ? React.createElement(Text, { dimColor: true }, lifetimeLabel)
-          : null,
-        React.createElement(
-          Text,
-          { dimColor: true },
-          '⎿ 실시간 스트림은 대화창에서 ⎿ 접두어로 전달됩니다. 구독을 취소하려면 구독 핸들 ID를 사용하세요.',
+          Box,
+          { flexDirection: 'column' },
+          React.createElement(
+            Text,
+            null,
+            React.createElement(Text, { bold: true }, '구독 완료: '),
+            React.createElement(Text, null, `${handleLabel} ${kindLabel}`.trim()),
+          ),
+          lifetimeLabel
+            ? React.createElement(Text, { dimColor: true }, lifetimeLabel)
+            : null,
+          React.createElement(
+            Text,
+            { dimColor: true },
+            '실시간 스트림은 대화창에서 별도 ⎿ 인용으로 전달됩니다.',
+          ),
         ),
       )
     }
@@ -233,8 +241,8 @@ export const SubscribePrimitive = buildTool({
     // output.ok === false: render error message in Korean.
     const errorMsg = output.error?.message ?? '구독 요청이 실패하였습니다.'
     return React.createElement(
-      Box,
-      { flexDirection: 'column', paddingY: 0 },
+      MessageResponse,
+      { height: 1 },
       React.createElement(
         Text,
         { color: 'red' as never },

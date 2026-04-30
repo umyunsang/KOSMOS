@@ -12,6 +12,7 @@
 import React from 'react'
 import { z } from 'zod/v4'
 import { Box, Text } from '../../ink.js'
+import { MessageResponse } from '../../components/MessageResponse.js'
 import { buildTool, type ToolDef, type ToolUseContext } from '../../Tool.js'
 import { lazySchema } from '../../utils/lazySchema.js'
 import {
@@ -217,23 +218,28 @@ export const SubmitPrimitive = buildTool({
               ? '반려됨'
               : status
 
+      // KOSMOS hotfix #2519 — wrap in <MessageResponse> for the CC ⎿ prefix.
       return React.createElement(
-        Box,
-        { flexDirection: 'column', paddingY: 0 },
+        MessageResponse,
+        null,
         React.createElement(
-          Text,
-          { color: 'green' },
-          `✓ ${ministry ? `[${ministry}] ` : ''}제출이 접수되었습니다.`,
+          Box,
+          { flexDirection: 'column' },
+          React.createElement(
+            Text,
+            { color: 'green' },
+            `✓ ${ministry ? `[${ministry}] ` : ''}제출이 접수되었습니다.`,
+          ),
+          receiptId
+            ? React.createElement(Text, { dimColor: true }, `접수 번호: ${receiptId}`)
+            : null,
+          status
+            ? React.createElement(Text, { dimColor: true }, `상태: ${statusLabel}`)
+            : null,
+          handoffUrl
+            ? React.createElement(Text, { dimColor: true }, `기관 확인: ${handoffUrl}`)
+            : null,
         ),
-        receiptId
-          ? React.createElement(Text, { dimColor: true }, `접수 번호: ${receiptId}`)
-          : null,
-        status
-          ? React.createElement(Text, { dimColor: true }, `상태: ${statusLabel}`)
-          : null,
-        handoffUrl
-          ? React.createElement(Text, { dimColor: true }, `기관 확인: ${handoffUrl}`)
-          : null,
       )
     }
 
@@ -245,12 +251,16 @@ export const SubmitPrimitive = buildTool({
         : null
 
     return React.createElement(
-      Box,
-      { flexDirection: 'column', paddingY: 0 },
-      React.createElement(Text, { color: 'red' }, `✗ ${output.error.message}`),
-      handoffUrl
-        ? React.createElement(Text, { dimColor: true }, `기관 문의: ${handoffUrl}`)
-        : null,
+      MessageResponse,
+      null,
+      React.createElement(
+        Box,
+        { flexDirection: 'column' },
+        React.createElement(Text, { color: 'red' }, `✗ ${output.error.message}`),
+        handoffUrl
+          ? React.createElement(Text, { dimColor: true }, `기관 문의: ${handoffUrl}`)
+          : null,
+      ),
     )
   },
 

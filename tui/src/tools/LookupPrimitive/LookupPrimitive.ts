@@ -13,6 +13,7 @@
 import React from 'react'
 import { z } from 'zod/v4'
 import { Box, Text } from '../../ink.js'
+import { MessageResponse } from '../../components/MessageResponse.js'
 import { buildTool, type ToolDef, type ToolUseContext } from '../../Tool.js'
 import { lazySchema } from '../../utils/lazySchema.js'
 import {
@@ -234,11 +235,15 @@ export const LookupPrimitive = buildTool({
    * - ok=false:               Korean error message in citizen-friendly tone.
    */
   renderToolResultMessage(output: Output): React.ReactNode {
+    // KOSMOS hotfix #2519 — wrap all branches in <MessageResponse> so the
+    // CC-original "  ⎿  " tree-branch glyph (components/MessageResponse.tsx:22)
+    // prefixes every tool-result line. Without this wrap the result Box renders
+    // as a raw column under the assistant block, breaking the
+    // citizen-facing visual hierarchy.
     if (!output.ok) {
-      // Error path — surface the backend error message in citizen-friendly Korean.
       return React.createElement(
-        Box,
-        { flexDirection: 'column', marginTop: 1 },
+        MessageResponse,
+        null,
         React.createElement(
           Text,
           { color: 'red' },
@@ -247,16 +252,14 @@ export const LookupPrimitive = buildTool({
       )
     }
 
-    // ok === true — inspect the result shape to determine mode.
     const result = output.result as Record<string, unknown>
 
-    // mode='search' result: { mode: 'search', results: [...] }
     if (result.mode === 'search') {
       const hits = Array.isArray(result.results) ? result.results : []
       if (hits.length === 0) {
         return React.createElement(
-          Box,
-          { flexDirection: 'column', marginTop: 1 },
+          MessageResponse,
+          { height: 1 },
           React.createElement(Text, { dimColor: true }, '검색 결과가 없습니다.'),
         )
       }
@@ -274,20 +277,24 @@ export const LookupPrimitive = buildTool({
         )
       })
       return React.createElement(
-        Box,
-        { flexDirection: 'column', marginTop: 1 },
+        MessageResponse,
+        null,
         React.createElement(
-          Text,
-          { bold: true },
-          `검색 결과 (${hits.length}건):`,
+          Box,
+          { flexDirection: 'column' },
+          React.createElement(
+            Text,
+            { bold: true },
+            `검색 결과 (${hits.length}건):`,
+          ),
+          ...hitRows,
         ),
-        ...hitRows,
       )
     }
 
     // mode='fetch' result: { mode: 'fetch', tool_id: string, result: object }
     const toolId =
-      typeof result.tool_id === 'string' ? result.tool_id : '어댑터'
+      typeof result.tool_id === 'string' ? result.tool_id : '(어댑터 미상)'
     const adapterResult = result.result
     let countText = ''
     let summaryRows: React.ReactNode[] = []
@@ -315,15 +322,19 @@ export const LookupPrimitive = buildTool({
     }
 
     return React.createElement(
-      Box,
-      { flexDirection: 'column', marginTop: 1 },
+      MessageResponse,
+      null,
       React.createElement(
-        Text,
-        null,
-        React.createElement(Text, { bold: true }, toolId),
-        countText ? ` — ${countText}` : '',
+        Box,
+        { flexDirection: 'column' },
+        React.createElement(
+          Text,
+          null,
+          React.createElement(Text, { bold: true }, toolId),
+          countText ? ` — ${countText}` : '',
+        ),
+        ...summaryRows,
       ),
-      ...summaryRows,
     )
   },
 
