@@ -45,9 +45,20 @@ export interface PendingCall {
  */
 export class PendingCallRegistry {
   private _pending = new Map<string, PendingCall>()
+  // KOSMOS hotfix #2519 — race-safe buffering for ToolResultFrame frames
+  // that arrive BEFORE the matching dispatchPrimitive call has registered
+  // (the backend's _dispatch_primitive runs as a parallel asyncio.Task and
+  // can complete in <1s for cached / mock adapters, often beating the
+  // SDK's tool_use block parse → Tool.call() invocation timeline).
+  private _buffered = new Map<string, ToolResultFrame>()
 
   /**
    * Register a new pending call.
+   *
+   * If a matching tool_result frame has already arrived (buffered), the
+   * caller's `resolve` is fired synchronously and the entry is NOT added
+   * to `_pending` — keeping invariant size() == in-flight calls.
+   *
    * @throws {Error} if callId is already registered (duplicate detection).
    */
   register(call: Omit<PendingCall, 'startMs'>): void {
@@ -55,6 +66,15 @@ export class PendingCallRegistry {
       throw new Error(
         `PendingCallRegistry: duplicate callId="${call.callId}" — assert-once semantics violated`,
       )
+    }
+    // Race-safe path: if the result frame already arrived, drain the buffer
+    // and resolve immediately without ever putting the entry on _pending.
+    const buffered = this._buffered.get(call.callId)
+    if (buffered) {
+      this._buffered.delete(call.callId)
+      clearTimeout(call.timeoutHandle)
+      call.resolve(buffered)
+      return
     }
     const entry: PendingCall = { ...call, startMs: Date.now() }
     this._pending.set(call.callId, entry)
@@ -64,12 +84,20 @@ export class PendingCallRegistry {
    * Resolve a pending call with the matching tool_result frame.
    * Clears the timeout handle and invokes the call's resolve callback.
    *
+   * If no pending call exists yet (race: backend was faster than the SDK
+   * tool_use parse), the frame is buffered until `register()` arrives.
+   *
    * @returns true if a matching pending call was found and resolved;
-   *          false if the callId is unknown (idempotent — logs at caller site).
+   *          false if the callId was unknown (frame buffered for later
+   *          register).
    */
   resolve(callId: string, frame: ToolResultFrame): boolean {
     const call = this._pending.get(callId)
-    if (!call) return false
+    if (!call) {
+      // Buffer the frame; the matching register() will pick it up.
+      this._buffered.set(callId, frame)
+      return false
+    }
     clearTimeout(call.timeoutHandle)
     this._pending.delete(callId)
     call.resolve(frame)

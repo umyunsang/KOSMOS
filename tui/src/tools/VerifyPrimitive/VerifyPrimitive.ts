@@ -12,6 +12,7 @@
 import React from 'react'
 import { z } from 'zod/v4'
 import { Box, Text } from '../../ink.js'
+import { MessageResponse } from '../../components/MessageResponse.js'
 import { buildTool, type ToolDef, type ToolUseContext } from '../../Tool.js'
 import { lazySchema } from '../../utils/lazySchema.js'
 import {
@@ -129,8 +130,8 @@ export const VerifyPrimitive = buildTool({
     }
   },
 
-  renderToolUseMessage() {
-    return null
+  renderToolUseMessage(input: { tool_id?: string; family_hint?: string }) {
+    return input.tool_id ?? input.family_hint ?? ''
   },
 
   // Epic γ #2294 · T013/T014 · real validateInput + renderToolResultMessage.
@@ -186,6 +187,9 @@ export const VerifyPrimitive = buildTool({
   },
 
   renderToolResultMessage(output: Output) {
+    // KOSMOS hotfix #2519 — after dispatchPrimitive register-and-await
+    // rewrite, output.result is the actual verify primitive output
+    // unwrapped from ToolResultEnvelope.result.
     if (output.ok === true) {
       // Extract verification status from the result payload.
       const result = output.result as Record<string, unknown> | null | undefined
@@ -215,30 +219,35 @@ export const VerifyPrimitive = buildTool({
         ? `출처: ${String(rawAuthority)}`
         : undefined
 
+      // KOSMOS hotfix #2519 — wrap in <MessageResponse> for the CC ⎿ prefix.
       return React.createElement(
-        Box,
-        { flexDirection: 'column', paddingY: 0 },
+        MessageResponse,
+        null,
         React.createElement(
-          Text,
-          null,
-          React.createElement(Text, { bold: true }, '검증 결과: '),
-          React.createElement(Text, { color: statusColor as never }, statusLabel),
+          Box,
+          { flexDirection: 'column' },
+          React.createElement(
+            Text,
+            null,
+            React.createElement(Text, { bold: true }, '검증 결과: '),
+            React.createElement(Text, { color: statusColor as never }, statusLabel),
+          ),
+          authorityText
+            ? React.createElement(
+                Text,
+                { dimColor: true },
+                authorityText,
+              )
+            : null,
         ),
-        authorityText
-          ? React.createElement(
-              Text,
-              { dimColor: true },
-              authorityText,
-            )
-          : null,
       )
     }
 
     // output.ok === false: render rejection reason in Korean.
     const errorMsg = output.error?.message ?? '검증 요청이 거부되었습니다.'
     return React.createElement(
-      Box,
-      { flexDirection: 'column', paddingY: 0 },
+      MessageResponse,
+      { height: 1 },
       React.createElement(
         Text,
         { color: 'red' as never },
