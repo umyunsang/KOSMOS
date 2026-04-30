@@ -363,6 +363,29 @@ async function* queryModelWithStreaming(params: {
           resultCallId,
         )
       }
+
+      // KOSMOS hotfix #2519 (CC-original migration, 2026-04-30) — forward
+      // the tool_result frame to the dispatch registry so the matching
+      // dispatchPrimitive register-and-await Promise resolves. Without this
+      // the SDK's Tool.call() (LookupPrimitive.call → dispatchPrimitive)
+      // would block until the 30-second timeout, K-EXAONE would never see
+      // a result, and the citizen-facing tool_result row would render as
+      // an error envelope ("dispatch_error: …timeout…") instead of the
+      // real LookupSearchResult / KMA forecast / receipt body.
+      if (resultCallId) {
+        // Lazy-require to avoid a top-level import cycle through Tool.ts.
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { getOrCreatePendingCallRegistry } = await import(
+          '../ipc/pendingCallSingleton.js'
+        )
+        getOrCreatePendingCallRegistry().resolve(
+          resultCallId,
+          fa as unknown as Parameters<
+            ReturnType<typeof getOrCreatePendingCallRegistry>['resolve']
+          >[1],
+        )
+      }
+
       const env = fa.envelope ?? {}
       const isError = env.kind === 'error'
       yield createUserMessage({

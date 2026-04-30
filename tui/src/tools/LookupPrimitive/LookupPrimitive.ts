@@ -235,35 +235,15 @@ export const LookupPrimitive = buildTool({
    * - ok=false:               Korean error message in citizen-friendly tone.
    */
   renderToolResultMessage(output: Output): React.ReactNode {
-    // KOSMOS hotfix #2519 (post-vhs verification, 2026-04-30):
+    // KOSMOS hotfix #2519 (CC-original migration, 2026-04-30):
     //
-    // dispatchPrimitive (tui/src/tools/_shared/dispatchPrimitive.ts) returns
-    // an immediate server-side-ack stub:
-    //   { dispatched_via: 'backend-server-side', primitive: 'lookup',
-    //     tool_use_id: '…', note: '…' }
-    // because the KOSMOS backend runs the agentic loop server-side and emits
-    // the authoritative ToolResultFrame separately (llmClient.ts:480 — that
-    // frame is intentionally NOT yielded as an SDK event yet).
-    //
-    // Rendering the stub envelope through the LookupSearchResult shape
-    // produced "(어댑터 미상)" because none of the expected fields exist on
-    // the stub. Until a follow-up Epic wires backend ToolResultFrame contents
-    // into the SDK pipeline, return null on stub detection so the
-    // UserToolSuccessMessage hides the result box entirely (CC pattern at
-    // tui/src/components/messages/UserToolResultMessage/UserToolSuccessMessage
-    // .tsx:76 — `if (renderedMessage === null) return null`).
-    if (
-      output.ok &&
-      typeof output.result === 'object' &&
-      output.result !== null &&
-      (output.result as Record<string, unknown>).dispatched_via ===
-        'backend-server-side'
-    ) {
-      return null
-    }
-
-    // Wrap remaining branches in <MessageResponse> so the CC-original "  ⎿  "
-    // tree-branch glyph prefixes each tool-result row.
+    // After the dispatchPrimitive register-and-await rewrite, output.result
+    // is the actual primitive output (the inner of the backend envelope:
+    // src/kosmos/tools/lookup.py LookupSearchResult / LookupRecord /
+    // LookupCollection / LookupTimeseries / LookupError) — discriminated by
+    // its own `kind` field. The CC pattern wraps each branch in
+    // <MessageResponse> so the "  ⎿  " gutter glyph prefixes every row
+    // (tui/src/components/MessageResponse.tsx:22).
     if (!output.ok) {
       return React.createElement(
         MessageResponse,
@@ -278,13 +258,19 @@ export const LookupPrimitive = buildTool({
 
     const result = output.result as Record<string, unknown>
 
-    if (result.mode === 'search') {
-      const hits = Array.isArray(result.results) ? result.results : []
+    // search mode (LookupSearchResult, models.py:820):
+    //   { kind: "search", candidates: [AdapterCandidate], total_registry_size, effective_top_k, reason }
+    if (result?.kind === 'search') {
+      const hits = Array.isArray(result.candidates) ? result.candidates : []
       if (hits.length === 0) {
         return React.createElement(
           MessageResponse,
           { height: 1 },
-          React.createElement(Text, { dimColor: true }, '검색 결과가 없습니다.'),
+          React.createElement(
+            Text,
+            { color: 'red' },
+            '검색 결과가 없습니다 — 다른 도구(resolve_location 등)를 시도하거나 시민에게 직접 안내하세요.',
+          ),
         )
       }
       const hitRows = hits.slice(0, 10).map((hit: unknown, i: number) => {
@@ -316,10 +302,35 @@ export const LookupPrimitive = buildTool({
       )
     }
 
-    // mode='fetch' result: { mode: 'fetch', tool_id: string, result: object }
+    // fetch error (LookupError, models.py — kind="error"):
+    //   { kind: "error", reason, message, retryable, ... }
+    if (result?.kind === 'error') {
+      return React.createElement(
+        MessageResponse,
+        null,
+        React.createElement(
+          Text,
+          { color: 'red' },
+          `검색 오류: ${typeof result.message === 'string' ? result.message : String(result.reason ?? 'unknown')}`,
+        ),
+      )
+    }
+
+    // fetch result (LookupRecord / LookupCollection / LookupTimeseries):
+    //   record:    { kind: "record",     tool_id, fields }
+    //   collection:{ kind: "collection", tool_id, items }
+    //   timeseries:{ kind: "timeseries", tool_id, points }
     const toolId =
-      typeof result.tool_id === 'string' ? result.tool_id : '(어댑터 미상)'
-    const adapterResult = result.result
+      typeof result?.tool_id === 'string'
+        ? result.tool_id
+        : typeof result?.kind === 'string'
+          ? result.kind
+          : '(어댑터 미상)'
+    const adapterResult =
+      (result?.fields as unknown) ??
+      (result?.items as unknown) ??
+      (result?.points as unknown) ??
+      result
     let countText = ''
     let summaryRows: React.ReactNode[] = []
 

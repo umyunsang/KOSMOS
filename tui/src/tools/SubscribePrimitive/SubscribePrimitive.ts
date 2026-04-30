@@ -193,18 +193,9 @@ export const SubscribePrimitive = buildTool({
   },
 
   renderToolResultMessage(output: Output) {
-    // KOSMOS hotfix #2519 — hide dispatchPrimitive server-side-ack stub
-    // (see LookupPrimitive comment for full context). Without this guard
-    // the stub renders as "구독 완료: 핸들 ID 없음" with no real handle.
-    if (
-      output.ok &&
-      typeof output.result === 'object' &&
-      output.result !== null &&
-      (output.result as Record<string, unknown>).dispatched_via ===
-        'backend-server-side'
-    ) {
-      return null
-    }
+    // KOSMOS hotfix #2519 — after dispatchPrimitive register-and-await
+    // rewrite, output.result is the actual subscribe primitive output
+    // (handle_id / lifetime / kind) unwrapped from ToolResultEnvelope.result.
     if (output.ok === true) {
       // Extract handle metadata from the result payload.
       const result = output.result as Record<string, unknown> | null | undefined
