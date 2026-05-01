@@ -377,6 +377,21 @@ Each maps to a memory entry the agent has been corrected on. Catching yourself d
 6. **Trusting one's own expect run** — same machine, warm cache; a flash humans see on cold start may not reproduce. **Countermeasure**: vary `KOSMOS_*` startup env between runs, diff frame sets.
 7. **Fix-the-symptom spiral** — three+ failed fixes without questioning architecture. (`superpowers:systematic-debugging` Phase 4.5). **Countermeasure**: STOP at fix #3, capture frames, post timeline.txt to user before attempting fix #4.
 
+### Architectural limit — paragraph-batch streaming on K-EXAONE + Bun + Ink
+
+Spec 2521 (2026-05-01) — verified via four mitigation attempts that Layer 5 frame-by-frame capture cannot dilate further:
+
+1. **Backend SSE chunk pacing** (`kosmos.llm.client._pace_text_chunk`, `KOSMOS_LLM_STREAM_PACE_MS`): K-EXAONE on FriendliAI Serverless emits SSE deltas at ~60-1000 chars per `data:` line. Splitting them server-side into 8-char sub-chunks with 80 ms inter-chunk sleep extends the *gap between paragraphs*, but Ink's React reconciler folds the rapid setStates back into a single commit at paint time. Result: visible cadence between paragraphs, no in-paragraph reveal. Confirmed by frame_0903 of `post-d11c835-raw.cast` (76-char paragraph painting in one PTY write across frames 0903→0927).
+2. **Frontend deps.ts char-by-char yield**: `_typewriter()` async generator entered 221 times per turn (`KOSMOS_TYPEWRITER_TRACE=1`) yet PTY emits a single 605-byte ANSI write at t=26.327 — same fold.
+3. **Frontend wrapper component (`KosmosTypewriterStreamingMarkdown`)** with `useState(displayedLen)` + mount-time `setInterval` reveal: trace shows displayedLen advancing 1→2→3→… while target grows to ≥130, but PTY again emits a 657-byte write containing 11 cursor-moves + 2 line-clears — a single Ink redraw fold.
+4. **Source**: Ink's reconciler debounces stdout writes (yoga layout + ANSI diff) below the React commit cadence; Bun's stdout pipe additionally buffers writes to a TTY. Neither mechanism is reachable from outside the byte-copied Ink/Markdown layer.
+
+**Honest UX claim**: KOSMOS gets the citizen visible streaming **between paragraphs** (~80–200 ms cadence with backend pacing default OFF; ~600–800 ms with pace > 0), but **paragraph-internal char-by-char reveal is not currently achievable** without modifying byte-copied `Markdown.tsx` or replacing Ink's reconciler — both outside the "CC + 2 swaps" thesis. Frame_NNNN.txt review confirms the limit is architectural, not a rendering bug.
+
+**Mitigations the citizen can opt into**:
+- `KOSMOS_LLM_STREAM_PACE_MS=80` — backend pacing on, paragraph-cadence streaming.
+- Future work (post-2521): replace `StreamingMarkdown` with a Markdown-aware typewriter renderer in a dedicated KOSMOS-original component the byte-copied `Messages.tsx` swaps to, plus an Ink stdout-flush hook. Documented as deferred in spec 2521 plan.md.
+
 ### Cross-layer debugging heuristics
 
 - **Tool-calling regression** — Layer 2 (stdio) is the gate. If `tool_call` count is 0, the prompt or registry is the bug.

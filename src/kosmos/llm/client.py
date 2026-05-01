@@ -48,34 +48,32 @@ from kosmos.observability.semconv import (
     GEN_AI_USAGE_OUTPUT_TOKENS,
 )
 
-# Spec 2521 (2026-05-01) — visible-streaming pacing knobs.
+# Spec 2521 (2026-05-01) — backend-side stream pacing knobs (now OFF
+# by default; see history below).
 #
-# K-EXAONE on FriendliAI Serverless emits SSE chunks at *paragraph*
-# granularity (~500-1000 chars per `data:` line) rather than the
-# token-level granularity Anthropic returns to Claude Code. The result is
-# the entire reasoning paragraph (or answer paragraph) painting in one
-# Ink reconcile, which the user surfaced via Layer 5 frame capture as
-# "한꺼번에 프린팅" — visually unfollowable.
+# Initial implementation paced sub-chunks server-side. Layer 5 frame
+# capture (post-d11c835-raw.cast frame_0903) confirmed that even with
+# the most aggressive backend defaults (CHUNK=8 / PACE=80 ms) Ink's
+# React reconciler folds rapid setStates into a single commit, so the
+# whole paragraph still paints in one cell-grid transition. The fix
+# moved to the frontend (tui/src/query/deps.ts ``_typewriter``) which
+# can sleep *between* setState dispatches and force one Ink reconcile
+# per codepoint.
 #
-# We split each large delta into sub-chunks and yield them with a small
-# inter-chunk sleep so the TUI repaints incrementally. Defaults below
-# target ~300 chars/sec (chunk=12, pace=40 ms), which sits inside the
-# 80-150 cps natural Korean reading band that the citizen perceives as
-# "the model is composing live" rather than "this is a typewriter
-# animation". The pacing is env-controlled:
+# Backend pacing therefore now defaults to OFF — leaving it on at the
+# same time as the frontend typewriter would just stack two paces
+# (e.g. 80 ms backend + 30 ms frontend = ~110 ms per byte), making
+# the citizen wait for K-EXAONE answers without adding any visible
+# streaming benefit. The knobs survive for headless / no-Ink callers
+# that still want server-side cadence:
 #
 #   KOSMOS_LLM_STREAM_CHUNK_MAX_CHARS  default 12
-#   KOSMOS_LLM_STREAM_PACE_MS          default 40   (set 0 to disable)
-#
-# Disabling pacing recovers raw provider cadence (paragraph batch).
-# Ink's React reconciler batches setState calls within ~16 ms windows,
-# so PACE_MS values below ~20 collapse to effective zero — keep above
-# that floor for visible cadence.
+#   KOSMOS_LLM_STREAM_PACE_MS          default 0   (disabled)
 _LLM_STREAM_CHUNK_MAX_CHARS = max(
     1, int(os.environ.get("KOSMOS_LLM_STREAM_CHUNK_MAX_CHARS", "12"))
 )
 _LLM_STREAM_PACE_S = max(
-    0.0, float(os.environ.get("KOSMOS_LLM_STREAM_PACE_MS", "40")) / 1000.0
+    0.0, float(os.environ.get("KOSMOS_LLM_STREAM_PACE_MS", "0")) / 1000.0
 )
 
 
@@ -791,10 +789,10 @@ class LLMClient:
             "thinking": lambda s: StreamEvent(type="thinking_delta", thinking=s),
         }
         make_event = kind_to_event[kind]
-        if _LLM_STREAM_PACE_S <= 0 or len(text) <= _LLM_STREAM_CHUNK_MAX_CHARS:
+        n = len(text)
+        if _LLM_STREAM_PACE_S <= 0 or n <= _LLM_STREAM_CHUNK_MAX_CHARS:
             yield make_event(text)
             return
-        n = len(text)
         step = _LLM_STREAM_CHUNK_MAX_CHARS
         for i in range(0, n, step):
             yield make_event(text[i : i + step])

@@ -7,6 +7,23 @@ import type { ChatMessage, ChatRequestFrame, IPCFrame } from '../ipc/frames.gene
 import { getToolDefinitionsForFrame } from './toolSerialization.js'
 import { createAssistantMessage, createSystemMessage, createUserMessage, SYNTHETIC_MODEL } from '../utils/messages.js'
 
+// SWAP/llm-provider(2521) — frontend deps.ts typewriter REVERTED.
+//
+// Layer 5 frame capture against /tmp/tdb-typewriter (codepoint-by-
+// codepoint yield + 30 ms setTimeout) showed _typewriter() entered
+// 221 times per turn but the rendered cell-grid still painted the
+// 605-byte answer paragraph as a single PTY write at t=26.327 — Ink's
+// React reconciler fold all 200 setState dispatches into one commit.
+// Pacing at this layer therefore only adds wait latency; it cannot
+// dilate the paragraph's paint moment.
+//
+// The follow-up fix that DOES work (byte-copy file modification of
+// AssistantTextMessage / Markdown to add a useState/useInterval
+// reveal) is staged separately; until that lands we leave the
+// stream_event hot-path untouched so disabled-pacing == zero
+// latency cost.
+
+
 /**
  * KOSMOS-1633 P3 wire-up — replaces the Anthropic-SDK queryModelWithStreaming.
  *
