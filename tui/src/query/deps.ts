@@ -137,6 +137,15 @@ async function* queryModelWithStreaming(params: {
   // React state, atomically cleared at line 2984 when the final message
   // arrives).
   let accumulated = ''
+  // Spec 2521 — accumulate K-EXAONE reasoning_content into a thinking
+  // content block so the terminal AssistantMessage carries the canonical
+  // CC shape `[{type:'thinking',...}, {type:'text',...}, {type:'tool_use',...}]`.
+  // Without this the live streamingThinking buffer paints reasoning at the
+  // BOTTOM of the transcript while tool_use blocks land in the message
+  // ABOVE — visually reversing the ReAct order. CC reference:
+  // services/api/claude.ts:1995 (content_block_start thinking) +
+  // messages.ts:normalizeContentFromAPI (final block array assembly).
+  let accumulatedThinking = ''
   let messageStartEmitted = false
   let frameCount = 0
   // Epic #2077 T012 — turn-scoped CC content-block index. Index 0 is the
@@ -230,8 +239,11 @@ async function* queryModelWithStreaming(params: {
       // delta.reasoning_content here. Mirror Anthropic's thinking_delta
       // (kosmos/llm/_cc_reference/claude.ts:2148-2161). handleMessageFromStream
       // (utils/messages.ts:3080) routes thinking_delta through onUpdateLength
-      // so AssistantThinkingMessage paints the reasoning inline.
+      // so AssistantThinkingMessage paints the reasoning inline. We also
+      // accumulate the full thinking text so the terminal AssistantMessage
+      // can carry it as a content block (Spec 2521 ReAct transcript order).
       if (thinkingText.length > 0) {
+        accumulatedThinking += thinkingText
         yield {
           type: 'stream_event' as const,
           event: {
@@ -272,15 +284,32 @@ async function* queryModelWithStreaming(params: {
         // before yielding); empty text + no tool blocks falls through to the
         // string path and createAssistantMessage substitutes NO_CONTENT_MESSAGE.
         const trimmedText = accumulated.trimStart()
+        // Spec 2521 — assemble the terminal AssistantMessage content array
+        // in CC ReAct order: thinking → text → tool_use. K-EXAONE streams
+        // these channels sequentially (probe verified: 1438 chunks, 0 with
+        // both reasoning + tool_calls in same chunk). Persisting the
+        // thinking block on the transcript preserves the citizen-visible
+        // reasoning trail after the live streamingThinking buffer clears.
+        // CC reference: services/api/claude.ts:1995 + messages.ts:normalizeContentFromAPI.
+        type _AssistantBlock =
+          | { type: 'thinking'; thinking: string }
+          | { type: 'text'; text: string }
+          | { type: 'tool_use'; id: string; name: string; input: unknown }
+        const blocks: _AssistantBlock[] = []
+        if (accumulatedThinking.length > 0) {
+          blocks.push({ type: 'thinking', thinking: accumulatedThinking })
+        }
+        if (trimmedText.length > 0) {
+          blocks.push({ type: 'text', text: trimmedText })
+        }
+        for (const tu of pendingContentBlocks) {
+          blocks.push(tu)
+        }
         const finalContent =
-          pendingContentBlocks.length > 0
-            ? trimmedText.length > 0
-              ? ([{ type: 'text' as const, text: trimmedText }, ...pendingContentBlocks] as Parameters<
-                  typeof createAssistantMessage
-                >[0]['content'])
-              : (pendingContentBlocks as unknown as Parameters<
-                  typeof createAssistantMessage
-                >[0]['content'])
+          blocks.length > 0
+            ? (blocks as unknown as Parameters<
+                typeof createAssistantMessage
+              >[0]['content'])
             : trimmedText
         const finalMsg = createAssistantMessage({ content: finalContent }) as {
           uuid: string
