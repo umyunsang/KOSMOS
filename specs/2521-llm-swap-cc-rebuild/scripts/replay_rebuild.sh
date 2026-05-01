@@ -128,12 +128,24 @@ CC_FILE_ABS="${CC_SOURCE_ABS}/${PROC_A_CC}"
 collect_swap_commits() {
   # Find commits whose subject starts with 'byte-copy(2521):' or 'swap/*...(2521):'
   # These are the commits that must be replayed in order.
-  # We look on main..HEAD for current branch, or main..REBUILD_BRANCH if on main.
+  #
+  # When `COMMIT_SHA` is provided (positional arg, see usage block at the
+  # top of this file), bound the range to `main..<COMMIT_SHA>` so a
+  # historical replay reconstructs the state AT that commit — not the
+  # tip of the rebuild branch with newer swap commits silently mixed in.
+  # Codex P2 review on PR #2578:152 surfaced this gap.
   local BASE_REF
   local CURRENT_BRANCH
   CURRENT_BRANCH="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "HEAD")"
 
-  if [[ "$CURRENT_BRANCH" == "main" || "$CURRENT_BRANCH" == "HEAD" ]]; then
+  if [[ -n "$COMMIT_SHA" ]]; then
+    if git rev-parse --verify --quiet "${COMMIT_SHA}^{commit}" >/dev/null 2>&1; then
+      BASE_REF="main..${COMMIT_SHA}"
+    else
+      echo "ERROR: commit-sha '$COMMIT_SHA' is not a valid revision in this repo." >&2
+      return 1
+    fi
+  elif [[ "$CURRENT_BRANCH" == "main" || "$CURRENT_BRANCH" == "HEAD" ]]; then
     # Try to find the rebuild branch
     if git show-ref --verify --quiet "refs/heads/${REBUILD_BRANCH}" 2>/dev/null; then
       BASE_REF="main..${REBUILD_BRANCH}"
