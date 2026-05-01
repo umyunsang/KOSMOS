@@ -75,9 +75,9 @@ const LogoHeader = React.memo(function LogoHeader(t0) {
   return t2;
 });
 
-import { isProactiveActive } from '../utils/proactiveModule.js'
 // Dead code elimination: conditional import for proactive mode
 /* eslint-disable @typescript-eslint/no-require-imports */
+const proactiveModule = feature('PROACTIVE') || feature('KAIROS') ? require('../proactive/index.js') : null;
 const BRIEF_TOOL_NAME: string | null = feature('KAIROS') || feature('KAIROS_BRIEF') ? (require('../tools/BriefTool/prompt.js') as typeof import('../tools/BriefTool/prompt.js')).BRIEF_TOOL_NAME : null;
 const SEND_USER_FILE_TOOL_NAME: string | null = feature('KAIROS') ? (require('../tools/SendUserFileTool/prompt.js') as typeof import('../tools/SendUserFileTool/prompt.js')).SEND_USER_FILE_TOOL_NAME : null;
 
@@ -600,7 +600,7 @@ const MessagesImpl = ({
     progress
   } = useTerminalNotification();
   const prevProgressState = useRef<string | null>(null);
-  const progressEnabled = getGlobalConfig().terminalProgressBarEnabled && !getIsRemoteMode() && !isProactiveActive();
+  const progressEnabled = getGlobalConfig().terminalProgressBarEnabled && !getIsRemoteMode() && !(proactiveModule?.isProactiveActive() ?? false);
   useEffect(() => {
     const state = progressEnabled ? hasToolsInProgress ? 'indeterminate' : 'completed' : null;
     if (prevProgressState.current === state) return;
@@ -696,23 +696,6 @@ const MessagesImpl = ({
           each row - React Compiler pins props in the fiber's memoCache, so
           passing the array would accumulate every historical version
           (~1-2MB over a 7-turn session). */}
-      {/* Spec 2521 — streamingThinking mounted ABOVE the transcript message
-          list (which contains streamingToolUses) so the ReAct order paints
-          correctly: reasoning (∴ Thinking) appears above ● tool_use during
-          live streaming. K-EXAONE streams reasoning_content first, then
-          tool_calls (probe-verified: 1438 chunks, 0 with both channels in
-          one chunk) — but the previous mount order placed tool_use inside
-          the transcript and thinking after it, visually inverting K-EXAONE's
-          actual stream order. CC reference: services/api/claude.ts:2030
-          (content_block_start thinking) — block index 0 always claimed by
-          thinking when present. */}
-      {streamingThinking && streamingThinking.isStreaming && !isBriefOnly && <Box marginTop={1}>
-          <AssistantThinkingMessage param={{
-        type: 'thinking',
-        thinking: streamingThinking.thinking
-      }} addMargin={false} isTranscriptMode={true} verbose={verbose} hideInTranscript={false} />
-        </Box>}
-
       {virtualScrollRuntimeGate ? <InVirtualListContext.Provider value={true}>
           <VirtualMessageList messages={renderableMessages} scrollRef={scrollRef} columns={columns} itemKey={messageKey} renderItem={renderMessageRow} onItemClick={onItemClick} isItemClickable={isItemClickable} isItemExpanded={isItemExpanded} trackStickyPrompt={trackStickyPrompt} selectedIndex={selectedIdx >= 0 ? selectedIdx : undefined} cursorNavRef={cursorNavRef} setCursor={setCursor} jumpRef={jumpRef} onSearchMatchesChange={onSearchMatchesChange} scanElement={scanElement} setPositions={setPositions} extractSearchText={extractSearchText} />
         </InVirtualListContext.Provider> : renderableMessages.flatMap(renderMessageRow)}
@@ -728,11 +711,7 @@ const MessagesImpl = ({
           </Box>
         </Box>}
 
-      {/* Post-streaming fade-out: keep ∴ Thinking visible for 30s after the
-          stream ends so the citizen has time to read the reasoning before
-          the assistant message commits and the thinking content block lands
-          inside the transcript message list. */}
-      {isStreamingThinkingVisible && streamingThinking && !streamingThinking.isStreaming && !isBriefOnly && <Box marginTop={1}>
+      {isStreamingThinkingVisible && streamingThinking && !isBriefOnly && <Box marginTop={1}>
           <AssistantThinkingMessage param={{
         type: 'thinking',
         thinking: streamingThinking.thinking

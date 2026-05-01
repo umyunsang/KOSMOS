@@ -14,3 +14,21 @@ export function getAssistantMessageFromError(_err: unknown): unknown {
 export function getErrorMessageIfRefusal(_err: unknown): string | null {
   return null
 }
+
+// SWAP/anti-anthropic-1p(2521): byte-copied messages.ts imports this.
+export function getImageTooLargeErrorMessage(..._args: unknown[]): string {
+  return 'Image too large to process'
+}
+
+export function getPdfInvalidErrorMessage(..._args: unknown[]): string {
+  return 'PDF invalid or unreadable'
+}
+export function getPdfPasswordProtectedErrorMessage(..._args: unknown[]): string {
+  return 'PDF is password-protected'
+}
+export function getPdfTooLargeErrorMessage(..._args: unknown[]): string {
+  return 'PDF too large to process'
+}
+export function getRequestTooLargeErrorMessage(..._args: unknown[]): string {
+  return 'Request too large'
+}

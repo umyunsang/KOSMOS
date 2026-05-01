@@ -1,5 +1,5 @@
 import { feature } from 'bun:bundle'
-import type { BetaUsage as Usage } from 'src/sdk-compat.js'
+import type { BetaUsage as Usage } from '../sdk-compat.js'
 import type {
   ContentBlock,
   ContentBlockParam,
@@ -11,7 +11,7 @@ import type {
   ToolResultBlockParam,
   ToolUseBlock,
   ToolUseBlockParam,
-} from 'src/sdk-compat.js'
+} from '../sdk-compat.js'
 import { randomUUID, type UUID } from 'crypto'
 import isObject from 'lodash-es/isObject.js'
 import last from 'lodash-es/last.js'
@@ -29,12 +29,13 @@ import {
   checkStatsigFeatureGate_CACHED_MAY_BE_STALE,
   getFeatureValue_CACHED_MAY_BE_STALE,
 } from '../services/analytics/growthbook.js'
-// services/api/errors removed (Spec 2293 cleanup); inline stubs below.
-const getImageTooLargeErrorMessage = (): string => 'Image too large'
-const getPdfInvalidErrorMessage = (): string => 'Invalid PDF'
-const getPdfPasswordProtectedErrorMessage = (): string => 'Password-protected PDF'
-const getPdfTooLargeErrorMessage = (): string => 'PDF too large'
-const getRequestTooLargeErrorMessage = (): string => 'Request too large'
+import {
+  getImageTooLargeErrorMessage,
+  getPdfInvalidErrorMessage,
+  getPdfPasswordProtectedErrorMessage,
+  getPdfTooLargeErrorMessage,
+  getRequestTooLargeErrorMessage,
+} from '../services/api/errors.js'
 import type { AnyObject, Progress } from '../Tool.js'
 import { isConnectorTextBlock } from '../types/connectorText.js'
 import type {
@@ -90,26 +91,21 @@ type HookAttachmentWithName = Exclude<
   HookPermissionDecisionAttachment
 >
 
-import type { APIError } from 'src/sdk-compat.js'
+import type { APIError } from '../sdk-compat.js'
 import type {
   BetaContentBlock,
   BetaMessage,
   BetaRedactedThinkingBlock,
   BetaThinkingBlock,
   BetaToolUseBlock,
-} from 'src/sdk-compat.js'
+} from '../sdk-compat.js'
 import type {
   HookEvent,
   SDKAssistantMessageError,
 } from 'src/entrypoints/agentSdkTypes.js'
-// Epic #1634 P3 T027: explore/plan/guide/verify built-in CC agents removed.
-// AgentTool is retained as the Task primitive backing (FR-017); the 4 built-in
-// agents were specific to Claude Code's code-exploration workflow and are not
-// citizen-facing. Placeholder constants preserve the existing template-string
-// sites without resurrecting the deleted agents.
-const EXPLORE_AGENT = { agentType: 'explorer' } as const
-const PLAN_AGENT = { agentType: 'planner' } as const
-const areExplorePlanAgentsEnabled = (): boolean => false
+import { EXPLORE_AGENT } from 'src/tools/AgentTool/built-in/exploreAgent.js'
+import { PLAN_AGENT } from 'src/tools/AgentTool/built-in/planAgent.js'
+import { areExplorePlanAgentsEnabled } from 'src/tools/AgentTool/builtInAgents.js'
 import { AGENT_TOOL_NAME } from 'src/tools/AgentTool/constants.js'
 import { ASK_USER_QUESTION_TOOL_NAME } from 'src/tools/AskUserQuestionTool/prompt.js'
 import { BashTool } from 'src/tools/BashTool/BashTool.js'
@@ -3078,25 +3074,6 @@ export function handleMessageFromStream(
         }
         case 'thinking_delta':
           onUpdateLength(message.event.delta.thinking)
-          // Spec 2521 SWAP/llm-provider: surface K-EXAONE reasoning live.
-          // CC reference: services/api/claude.ts:2148-2161 (Anthropic
-          // thinking_delta — CC keeps streaming thinking off the citizen-
-          // visible channel and only shows it after message completion via
-          // line 2968-2978 below). KOSMOS divergence justification: K-EXAONE
-          // on FriendliAI emits a substantive reasoning trace (~1KB-50KB
-          // per turn) that takes 30-180 seconds; without live surfacing the
-          // citizen sees only "+ Ideating…" with no insight into what the
-          // agent is reasoning about. Spec 2521 SC-001 requires ≥1 visible
-          // ∴ Thinking line "between the user prompt and the first tool call"
-          // → must update streamingThinking incrementally during streaming.
-          onStreamingThinking?.(current => {
-            const previousText = current?.thinking ?? ''
-            return {
-              thinking: previousText + message.event.delta.thinking,
-              isStreaming: true,
-              streamingEndedAt: undefined,
-            }
-          })
           return
         case 'signature_delta':
           // Signatures are cryptographic authentication strings, not model
