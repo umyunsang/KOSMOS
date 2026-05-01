@@ -101,7 +101,10 @@ jobs:
           # eyeball the SBOM diff in the PR description; the sentinel is
           # the deliberate-regen acknowledgement the gate's error message
           # has always asked for.
-          if git log origin/main..HEAD --format=%B 2>/dev/null | grep -qF "[sbom-lock-change-ok]"; then
+          # Shallow checkout fetch-depth=1 makes `origin/main..HEAD`
+          # empty. Scan the last 50 reachable commits — the sentinel
+          # MUST be on the PR head or close to it, well within range.
+          if git log -50 HEAD --format=%B 2>/dev/null | grep -qF "[sbom-lock-change-ok]"; then
             BYPASS=1
           else
             BYPASS=0
@@ -137,7 +140,10 @@ jobs:
             ' "$1"
           }
           # Same FR-019 escape hatch as SPDX (see above).
-          if git log origin/main..HEAD --format=%B 2>/dev/null | grep -qF "[sbom-lock-change-ok]"; then
+          # Shallow checkout fetch-depth=1 makes `origin/main..HEAD`
+          # empty. Scan the last 50 reachable commits — the sentinel
+          # MUST be on the PR head or close to it, well within range.
+          if git log -50 HEAD --format=%B 2>/dev/null | grep -qF "[sbom-lock-change-ok]"; then
             BYPASS=1
           else
             BYPASS=0
