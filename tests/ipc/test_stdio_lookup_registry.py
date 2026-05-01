@@ -251,6 +251,5 @@ async def test_dispatch_primitive_lookup_rejects_legacy_search_mode(
         f"full inner={inner!r}"
     )
     assert inner.get("reason") == "invalid_params", (
-        f"Spec 2521: rejection reason must be 'invalid_params', "
-        f"got {inner.get('reason')!r}."
+        f"Spec 2521: rejection reason must be 'invalid_params', got {inner.get('reason')!r}."
     )

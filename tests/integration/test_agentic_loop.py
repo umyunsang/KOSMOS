@@ -678,9 +678,7 @@ class _ThreeToolsInOneTurnLLMClient(_BaseFakeLLMClient):
         if turn == 1:
             # Emit three parallel tool_call_deltas with indices 0, 1, 2.
             queries = ["응급실 강남", "응급실 서초", "응급실 송파"]
-            for idx, (call_id, query) in enumerate(
-                zip(type(self)._call_ids, queries, strict=True)
-            ):
+            for idx, (call_id, query) in enumerate(zip(type(self)._call_ids, queries, strict=True)):
                 yield StreamEvent(
                     type="tool_call_delta",
                     tool_call_index=idx,
@@ -738,9 +736,7 @@ async def test_multi_tool_turn_is_coerced_to_one_visible_dispatch(
         f"call-t17-{uuid.uuid4().hex[:12]}",
         f"call-t17-{uuid.uuid4().hex[:12]}",
     ]
-    _ThreeToolsInOneTurnLLMClient._followup_call_id = (
-        f"call-t17-followup-{uuid.uuid4().hex[:12]}"
-    )
+    _ThreeToolsInOneTurnLLMClient._followup_call_id = f"call-t17-followup-{uuid.uuid4().hex[:12]}"
 
     frame = _make_chat_request(
         prompt="강남, 서초, 송파 응급실 각각 알려주세요",
@@ -828,9 +824,7 @@ async def test_multi_tool_turn_is_coerced_to_one_visible_dispatch(
         "No assistant_chunk frames emitted after sequential tool_results. "
         "The agentic loop must emit a final answer."
     )
-    all_delta_text = "".join(
-        str(f.get("delta", "")) for f in assistant_chunks if f.get("delta")
-    )
+    all_delta_text = "".join(str(f.get("delta", "")) for f in assistant_chunks if f.get("delta"))
     assert "순차 조회" in all_delta_text or "응급실" in all_delta_text, (
         f"Final answer text not found in assistant_chunk deltas. "
         f"Concatenated deltas: {all_delta_text!r}"

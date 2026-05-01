@@ -464,7 +464,5 @@ def register(registry: ToolRegistry, executor: ToolExecutor) -> None:
         raw = await _call(inp)
         return {"kind": "record", "item": raw}
 
-    executor.register_adapter(
-        "kma_current_observation", cast(AdapterFn, _kma_observation_adapter)
-    )
+    executor.register_adapter("kma_current_observation", cast(AdapterFn, _kma_observation_adapter))
     logger.info("Registered tool: kma_current_observation")

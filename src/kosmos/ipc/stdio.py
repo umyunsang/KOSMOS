@@ -584,6 +584,7 @@ async def run(  # noqa: C901
                 from kosmos.ipc.adapter_manifest_emitter import (  # noqa: PLC0415
                     emit_manifest,
                 )
+
                 emit_manifest(_sys.stdout, registry)
                 logger.info("Emitted AdapterManifestSyncFrame to TUI")
             except Exception as _exc:
@@ -833,9 +834,7 @@ async def run(  # noqa: C901
             # names + types + required flags + (truncated) descriptions.
             # Field desc limit raised 80→120 so nx/ny examples fit untruncated.
             schema = c.input_schema_json or {}
-            properties = (
-                schema.get("properties") if isinstance(schema, dict) else None
-            )
+            properties = schema.get("properties") if isinstance(schema, dict) else None
             required: set[str] = set()
             raw_required = schema.get("required") if isinstance(schema, dict) else None
             if isinstance(raw_required, list):
@@ -862,11 +861,7 @@ async def run(  # noqa: C901
                     pat = fmeta.get("pattern")
                     pat_part = f" pattern={pat!r}" if isinstance(pat, str) else ""
                     enum = fmeta.get("enum")
-                    enum_part = (
-                        f" enum={enum}"
-                        if isinstance(enum, list) and len(enum) <= 8
-                        else ""
-                    )
+                    enum_part = f" enum={enum}" if isinstance(enum, list) and len(enum) <= 8 else ""
                     flag = "필수" if fname in required else "선택"
                     lines.append(
                         f"    · {fname} ({ftype}, {flag}{pat_part}{enum_part})"
@@ -874,12 +869,12 @@ async def run(  # noqa: C901
                     )
         lines.append("")
         lines.append(
-            "규칙: 위 목록의 tool_id 만 lookup({\"tool_id\":\"...\", \"params\":{...}})"
+            '규칙: 위 목록의 tool_id 만 lookup({"tool_id":"...", "params":{...}})'
             " 으로 호출하세요. 동일 tool_id 를 한 turn 안에서 반복 호출하지 마세요."
         )
         lines.append(
-            "params 는 위에 표시된 정확한 필드명만 사용하세요 — 일반적인 \"location\"/"
-            "\"date\" 같은 추측 키는 모든 어댑터에서 invalid_params 로 거부됩니다."
+            'params 는 위에 표시된 정확한 필드명만 사용하세요 — 일반적인 "location"/'
+            '"date" 같은 추측 키는 모든 어댑터에서 invalid_params 로 거부됩니다.'
         )
         lines.append(
             "BM25 도구 발견은 백엔드 internal 기능 — lookup(mode='search') 같은 호출은"
@@ -887,6 +882,7 @@ async def run(  # noqa: C901
         )
         lines.append("</available_adapters>")
         return "\n".join(lines)
+
     # Spec 1978 T053 — eager-import the Mock adapter tree so every adapter
     # self-registers with its primitive dispatcher before the first chat
     # turn arrives. Equivalent to plan.md "Mock adapter activation"; failure
@@ -1351,9 +1347,7 @@ async def run(  # noqa: C901
             if outbound_traces:
                 # Pydantic model_dump → JSON-serialisable dict; envelope
                 # accepts the extra field via ``extra="allow"``.
-                result_payload["outbound_traces"] = [
-                    t.model_dump() for t in outbound_traces
-                ]
+                result_payload["outbound_traces"] = [t.model_dump() for t in outbound_traces]
 
             # Build ToolResultEnvelope + ToolResultFrame.
             # ToolResultEnvelope uses extra="allow" so extra payload fields are kept.

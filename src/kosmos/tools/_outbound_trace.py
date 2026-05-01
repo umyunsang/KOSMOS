@@ -39,9 +39,7 @@ logger = logging.getLogger(__name__)
 _MAX_BODY_BYTES = 8 * 1024
 
 # Headers and query-param keys that must never leave the backend process.
-_REDACT_HEADERS = frozenset(
-    {"authorization", "x-api-key", "x-secret-key", "cookie", "set-cookie"}
-)
+_REDACT_HEADERS = frozenset({"authorization", "x-api-key", "x-secret-key", "cookie", "set-cookie"})
 _REDACT_QUERY_PARAMS = frozenset({"servicekey", "service_key", "apikey", "api_key"})
 
 # ---------------------------------------------------------------------------
@@ -73,12 +71,8 @@ class OutboundCallTrace(BaseModel):
         default=None,
         description="Response body as text. Truncated above 8 KiB.",
     )
-    elapsed_ms: int = Field(
-        description="Wall-clock duration of the request, milliseconds."
-    )
-    timestamp_iso: str = Field(
-        description="UTC start timestamp in ISO-8601 format."
-    )
+    elapsed_ms: int = Field(description="Wall-clock duration of the request, milliseconds.")
+    timestamp_iso: str = Field(description="UTC start timestamp in ISO-8601 format.")
 
 
 # ContextVar holds the per-call trace list. ``None`` means "capture disabled"
@@ -195,9 +189,7 @@ def _emit_trace(request: httpx.Request, response: httpx.Response) -> None:
         return
 
     t_start = request.extensions.get("_kosmos_t_start")
-    elapsed_ms = (
-        int((time.perf_counter() - t_start) * 1000) if isinstance(t_start, float) else 0
-    )
+    elapsed_ms = int((time.perf_counter() - t_start) * 1000) if isinstance(t_start, float) else 0
 
     request_body_bytes: bytes | None = None
     try:

@@ -80,9 +80,7 @@ from kosmos.observability.semconv import (
 _LLM_STREAM_CHUNK_MAX_CHARS = max(
     1, int(os.environ.get("KOSMOS_LLM_STREAM_CHUNK_MAX_CHARS", "999"))
 )
-_LLM_STREAM_PACE_S = max(
-    0.0, float(os.environ.get("KOSMOS_LLM_STREAM_PACE_MS", "0")) / 1000.0
-)
+_LLM_STREAM_PACE_S = max(0.0, float(os.environ.get("KOSMOS_LLM_STREAM_PACE_MS", "0")) / 1000.0)
 
 
 if TYPE_CHECKING:
@@ -783,9 +781,7 @@ class LLMClient:
             or error_type in {"rate_limit", "rate_limited"}
         )
 
-    async def _pace_text_chunk(
-        self, text: str, kind: str
-    ) -> AsyncIterator[StreamEvent]:
+    async def _pace_text_chunk(self, text: str, kind: str) -> AsyncIterator[StreamEvent]:
         """Split a paragraph-granular delta into character-paced sub-events.
 
         Spec 2521 (2026-05-01) — see the ``_LLM_STREAM_*`` module-level
@@ -989,9 +985,7 @@ class LLMClient:
         if stop is not None:
             payload["stop"] = stop
         if tools is not None:
-            tool_payloads = [
-                t.model_dump() if isinstance(t, ToolDefinition) else t for t in tools
-            ]
+            tool_payloads = [t.model_dump() if isinstance(t, ToolDefinition) else t for t in tools]
             payload["tools"] = tool_payloads
             if tool_payloads:
                 # KOSMOS citizen flows require one observed tool result before
