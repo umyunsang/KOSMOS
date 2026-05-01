@@ -16,7 +16,7 @@
 #   E. answer     — 한국어 답변 streaming (강수/날씨/기온/하늘)
 #   F. quit       — /quit acknowledged
 
-set timeout 60
+set timeout 180
 log_user 1
 
 set REPO_ROOT [exec git -C [file dirname [file normalize [info script]]] rev-parse --show-toplevel]

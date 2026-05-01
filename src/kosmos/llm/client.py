@@ -7,6 +7,7 @@ import asyncio
 import hashlib
 import json
 import logging
+import os
 import random
 import time
 from collections.abc import AsyncIterator
@@ -46,6 +47,30 @@ from kosmos.observability.semconv import (
     GEN_AI_USAGE_INPUT_TOKENS,
     GEN_AI_USAGE_OUTPUT_TOKENS,
 )
+
+# Spec 2521 (2026-05-01) — visible-streaming pacing knobs.
+#
+# K-EXAONE on FriendliAI Serverless emits SSE chunks at *paragraph*
+# granularity (~500-1000 chars per `data:` line) rather than the
+# token-level granularity Anthropic returns to Claude Code. The result is
+# the entire reasoning paragraph (or answer paragraph) painting in one
+# Ink reconcile, which the user surfaced via Layer 5 frame capture as
+# "한꺼번에 프린팅" — visually unfollowable.
+#
+# We split each large delta into sub-chunks and yield them with a small
+# inter-chunk sleep so the TUI repaints incrementally. The pacing is
+# fully env-controlled so anyone running locally can disable it
+# (`KOSMOS_LLM_STREAM_PACE_MS=0`) for raw model output. Default values
+# (sub-chunk = 24 chars, pace = 25 ms) yield ~960 chars/sec which is
+# slightly faster than typical Korean reading speed and mirrors the
+# token cadence Anthropic Claude streams at.
+_LLM_STREAM_CHUNK_MAX_CHARS = max(
+    1, int(os.environ.get("KOSMOS_LLM_STREAM_CHUNK_MAX_CHARS", "24"))
+)
+_LLM_STREAM_PACE_S = max(
+    0.0, float(os.environ.get("KOSMOS_LLM_STREAM_PACE_MS", "25")) / 1000.0
+)
+
 
 if TYPE_CHECKING:
     from kosmos.observability.event_logger import ObservabilityEventLogger
@@ -745,6 +770,30 @@ class LLMClient:
             or error_type in {"rate_limit", "rate_limited"}
         )
 
+    async def _pace_text_chunk(
+        self, text: str, kind: str
+    ) -> AsyncIterator[StreamEvent]:
+        """Split a paragraph-granular delta into character-paced sub-events.
+
+        Spec 2521 (2026-05-01) — see the ``_LLM_STREAM_*`` module-level
+        constants for the rationale + tunables. Disabled when the pace
+        is set to zero.
+        """
+        kind_to_event = {
+            "content": lambda s: StreamEvent(type="content_delta", content=s),
+            "thinking": lambda s: StreamEvent(type="thinking_delta", thinking=s),
+        }
+        make_event = kind_to_event[kind]
+        if _LLM_STREAM_PACE_S <= 0 or len(text) <= _LLM_STREAM_CHUNK_MAX_CHARS:
+            yield make_event(text)
+            return
+        n = len(text)
+        step = _LLM_STREAM_CHUNK_MAX_CHARS
+        for i in range(0, n, step):
+            yield make_event(text[i : i + step])
+            if i + step < n:
+                await asyncio.sleep(_LLM_STREAM_PACE_S)
+
     async def _parse_sse_line(self, line: str) -> AsyncIterator[StreamEvent]:
         """Parse a single SSE line and yield corresponding StreamEvent(s)."""
         if not line or not line.startswith("data: "):
@@ -785,7 +834,9 @@ class LLMClient:
 
         if "content" in delta and delta["content"] is not None:
             # CC reference: services/api/claude.ts:2113 (text_delta content_block_delta).
-            yield StreamEvent(type="content_delta", content=delta["content"])
+            content = delta["content"]
+            async for sub in self._pace_text_chunk(content, "content"):
+                yield sub
         elif "reasoning_content" in delta and delta["reasoning_content"] is not None:
             # CC reference: services/api/claude.ts:2148-2161 (thinking_delta
             # content_block_delta) — K-EXAONE emits chain-of-thought on a
@@ -800,7 +851,8 @@ class LLMClient:
                 "Forwarding reasoning_content as thinking_delta (len=%d)",
                 len(reasoning_text),
             )
-            yield StreamEvent(type="thinking_delta", thinking=reasoning_text)
+            async for sub in self._pace_text_chunk(reasoning_text, "thinking"):
+                yield sub
 
         if "tool_calls" in delta and delta["tool_calls"]:
             # CC reference: services/api/claude.ts:1997 (tool_use content_block_start)
