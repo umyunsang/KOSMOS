@@ -47,13 +47,26 @@ export function AssistantThinkingMessage(t0) {
     // \ub0a0\uc528\ub97c \ubb3b\uace0 \uc788\uc2b5\ub2c8\ub2e4\u2026" before the lookup tool_calls appear. Cache
     // can't memoize per-thinking content here so we recompute per render
     // (cheap \u2014 a single split + slice).
-    // Flatten newlines to spaces so the preview shows the first 80 chars
-    // of reasoning regardless of how the model paragraph-breaks. K-EXAONE
-    // sometimes emits the first reasoning line as "사용자가\n부산..." which
-    // would clip the preview to a single word; the flattened form gives
-    // the citizen a meaningful sentence.
+    // Build the collapsed-mode summary — Ctrl+O still reveals the full
+    // body. We keep growing the preview sentence-by-sentence until it
+    // reaches a comfortable single-line length (~80 chars), then ellipsis-
+    // truncate. K-EXAONE often emits very short opening sentences
+    // ("사용자가." → 4 chars) that aren't meaningful on their own; the
+    // 80-char floor ensures the citizen sees a useful summary even when
+    // the model's first sentence is a single word. Whitespace collapses
+    // to single spaces so word-per-line emissions don't clip the preview.
     const _flat = thinking.replace(/\s+/g, ' ').trim();
-    const _previewClipped = _flat.length > 80 ? _flat.slice(0, 77) + '...' : _flat;
+    let _previewBase = '';
+    const _sentenceRe = /[^.。?!]+[.。?!]?\s*/g;
+    let _match: RegExpExecArray | null;
+    while ((_match = _sentenceRe.exec(_flat)) !== null) {
+      _previewBase += _match[0];
+      if (_previewBase.length >= 60) break;
+    }
+    if (!_previewBase) _previewBase = _flat;
+    _previewBase = _previewBase.trim();
+    const _previewClipped =
+      _previewBase.length > 80 ? _previewBase.slice(0, 77) + '...' : _previewBase;
     const _hasPreview = _previewClipped.length > 0;
     const t4 = addMargin ? 1 : 0;
     const t5 = _hasPreview
