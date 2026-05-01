@@ -461,7 +461,9 @@ def register(registry: ToolRegistry, executor: ToolExecutor) -> None:
     # processing failed" — LLM never sees real weather data, retries lookup
     # in confusion (probe-traced 2026-05-01).
     async def _kma_observation_adapter(inp: BaseModel) -> dict[str, Any]:
-        raw = await _call(inp)
+        # AdapterFn is BaseModel; dispatcher narrows by tool_id, so runtime
+        # type is always KmaCurrentObservationInput. cast for mypy strict.
+        raw = await _call(cast("KmaCurrentObservationInput", inp))
         return {"kind": "record", "item": raw}
 
     executor.register_adapter("kma_current_observation", cast(AdapterFn, _kma_observation_adapter))

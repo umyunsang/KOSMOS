@@ -788,9 +788,17 @@ class LLMClient:
         constants for the rationale + tunables. Disabled when the pace
         is set to zero.
         """
-        kind_to_event = {
-            "content": lambda s: StreamEvent(type="content_delta", content=s),
-            "thinking": lambda s: StreamEvent(type="thinking_delta", thinking=s),
+        from collections.abc import Callable as _Callable  # noqa: PLC0415
+
+        def _content_event(s: str) -> StreamEvent:
+            return StreamEvent(type="content_delta", content=s)
+
+        def _thinking_event(s: str) -> StreamEvent:
+            return StreamEvent(type="thinking_delta", thinking=s)
+
+        kind_to_event: dict[str, _Callable[[str], StreamEvent]] = {
+            "content": _content_event,
+            "thinking": _thinking_event,
         }
         make_event = kind_to_event[kind]
         n = len(text)

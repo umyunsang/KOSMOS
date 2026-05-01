@@ -782,9 +782,10 @@ async def run(  # noqa: C901
         if not q:
             return ""
         try:
+            from kosmos.tools.registry import ToolRegistry  # noqa: PLC0415
             from kosmos.tools.search import search  # noqa: PLC0415
 
-            registry = _ensure_tool_registry()
+            registry = cast("ToolRegistry", _ensure_tool_registry())
             candidates = search(
                 query=q,
                 bm25_index=registry.bm25_index,
@@ -1217,10 +1218,10 @@ async def run(  # noqa: C901
                     # rejected with a typed LookupError so the agentic
                     # loop continues without painting an "internal
                     # function as tool" UI block.
+                    from kosmos.tools.errors import LookupErrorReason  # noqa: PLC0415
                     from kosmos.tools.lookup import lookup  # noqa: PLC0415
                     from kosmos.tools.models import (  # noqa: PLC0415
                         LookupError,  # noqa: A004 — Pydantic model named LookupError; intentional shadow with module-level alias not feasible in narrow import scope
-                        LookupErrorReason,
                         LookupFetchInput,
                     )
 
