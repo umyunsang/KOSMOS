@@ -343,9 +343,31 @@ tracer.startSpan('kosmos.tui.frame_commit', {
 
 ### Phase 3 — TUI capture replacement (1 Epic, ~2일)
 
-- [ ] `scripts/tui-tmux-capture.sh` + helpers 추가
-- [ ] Spec 1979/2297/2521 smokes 각각 tmux 버전으로 마이그레이션
+- [x] `scripts/tui-tmux-capture.sh` + helpers 추가 (commit `182f4b7`)
+- [x] Spec 2519 / 2297 / 2112 smokes tmux 버전으로 마이그레이션 (2026-05-02)
+- [ ] Spec 1979 smoke tmux 버전 마이그레이션 (future work — see table below)
 - [ ] `scripts/tui-text-debug.sh` 는 deprecate (offline replay 만 지원)
+
+#### Phase 3 포팅 상태 (2026-05-02 기준)
+
+| Spec | Legacy file | tmux scenario | Proof run | Notes |
+|---|---|---|---|---|
+| **2519** (Korean IME Enter) | `scripts/smoke-2519-final.expect` | `scenarios/smoke-tmux.sh` ✅ | `proof-runs/tmux-migration/` 8 snaps | Boot match: 1s; turn1 response: 0s (warm). Critical discovery: must wait for turn1 completion before sending turn2 (K-EXAONE queues input while reasoning). One predicate NOT convertible: `expect eof` after spawn exit — tmux session is persistent; replaced with `send_ctrlc_pane`. |
+| **2297** (Citizen tax-return) | `scripts/smoke-citizen-taxreturn.expect` | `scenarios/smoke-citizen-taxreturn-tmux.sh` ✅ | `proof-runs/tmux-migration/` 7 snaps | Boot match: 0s (warm). Receipt-id regex (`접수번호: hometax-…`) non-fatal — requires Phase 2 aimock fixture; OPAQUE domain returns clarifying question live. `CHECKPOINTreceipt` non-fatal (TUI T014 pending). |
+| **2112** (Boot / Anthropic dead models) | `smoke.expect` | `scenarios/smoke-tmux.sh` ✅ | `proof-runs/tmux-migration/` 14 snaps | Boot match: 0-1s; /help: 0s (local render). Discovery: `expect ">"` is too permissive — replaced with `tool_registry: N entries verified`. Help overlay must be dismissed (`send_keys_pane Escape`) before next scenario sends input. |
+| 1979 | `scripts/debug-direct.expect` `scripts/debug-enter.expect` `scripts/debug-help.expect` `scripts/debug-install.expect` | — | — | Future work |
+| 2521 | (none shipped yet) | — | — | Future work |
+| 1635 | multiple `.tape` files | — | — | Future work |
+| 287 | multiple `.tape` files | — | — | Future work |
+
+**Remaining legacy files: 42** (the 3 ported scenarios account for 7 source files across the two spec dirs). Future work covers the 1979 plugin DX scripts (4 `.expect`), 1635 UI L2 tapes, 287 TUI bootstrap tapes, and any new specs added before Phase 3 closes.
+
+#### Key predicates that CANNOT be expressed as `wait_for_pane` regex
+
+1. **`expect eof`** (used in all three original scripts for process exit) — tmux sessions persist after the spawned process exits; `wait_for_pane` sees the frozen last-frame. Replaced with `send_ctrlc_pane` + `sleep 1` + final snapshot.
+2. **Negative assertions** (`"dispatched_via" must NOT appear`) — `wait_for_pane` is a positive predicate only. Handled inline via `tmux capture-pane | grep -qF "..."` check with `snapshot_pane` on failure.
+3. **`set timeout N` global fallback** (Tcl expect) — per-step deadlines in `wait_for_pane` are the equivalent; no global timeout needed.
+4. **`log_file` PTY capture** (expect writes every byte to a log file) — tmux captures are pane-state snapshots, not full byte streams. For offline replay, the legacy `.expect` + pyte chain (`scripts/cast_to_frames.py`) remains the canonical method (those files are NOT deleted).
 
 ### Phase 4 — Snapshot streaming (1 Epic, ~3일)
 
