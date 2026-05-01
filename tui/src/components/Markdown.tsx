@@ -5,7 +5,7 @@ import { Ansi, Box, useTheme } from '../ink.js';
 import type { CliHighlight } from '../utils/cliHighlight.js';
 import { hashContent } from '../utils/hash.js';
 import { configureMarked, formatToken } from '../utils/markdown.js';
-import { stripPromptXMLTags } from '../utils/messages.js';
+import { stripPromptXMLTags } from '../utils/messageText.js';
 import { MarkdownTable } from './MarkdownTable.js';
 type Props = {
   children: string;

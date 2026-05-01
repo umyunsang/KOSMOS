@@ -2553,28 +2553,13 @@ export function normalizeContentFromAPI(
   })
 }
 
-// Spec debug-infra-rebuild (2026-05-02): re-ordered so
-// stripPromptXMLTags + STRIPPED_TAGS_RE are declared BEFORE
-// isEmptyMessageText. JS function declarations are hoisted so the
-// previous forward-reference layout was correct semantically, but
-// Bun's module loader on Linux CI surfaces a SyntaxError that drops
-// the `isEmptyMessageText` export from `tui/src/utils/messages.ts`
-// — `tests/ipc/thinking-delta-render.test.tsx` then crashes with
-// `Export named 'isEmptyMessageText' not found`. macOS Bun and TS
-// type-check both accept the forward-ref form. Re-ordering avoids
-// the loader edge-case without behaviour change.
-const STRIPPED_TAGS_RE =
-  /<(commit_analysis|context|function_analysis|pr_analysis)>.*?<\/\1>\n?/gs
-
-export function stripPromptXMLTags(content: string): string {
-  return content.replace(STRIPPED_TAGS_RE, '').trim()
-}
-
-export function isEmptyMessageText(text: string): boolean {
-  return (
-    stripPromptXMLTags(text).trim() === '' || text.trim() === NO_CONTENT_MESSAGE
-  )
-}
+// Spec debug-infra-rebuild (2026-05-02): the canonical implementations of
+// these two helpers now live in `./messageText.ts` so small importers
+// (e.g. AssistantThinkingMessage → thinking-delta-render.test) don't pay
+// the parse cost — and the Bun-Linux SyntaxError — of evaluating this
+// 5,000+-line module just to read two pure functions. Re-exported here
+// so existing call sites continue to compile.
+export { isEmptyMessageText, stripPromptXMLTags } from './messageText.js'
 
 export function getToolUseID(message: NormalizedMessage): string | null {
   switch (message.type) {
