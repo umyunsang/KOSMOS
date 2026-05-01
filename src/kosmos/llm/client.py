@@ -966,7 +966,7 @@ class LLMClient:
         """
         import os  # noqa: PLC0415 — local import keeps top-level imports thin
 
-        enable_thinking = os.environ.get("KOSMOS_K_EXAONE_THINKING", "false").lower() in (
+        enable_thinking = os.environ.get("KOSMOS_K_EXAONE_THINKING", "true").lower() in (
             "true",
             "1",
             "yes",

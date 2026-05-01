@@ -38,23 +38,28 @@ export function AssistantThinkingMessage(t0) {
   }
   const shouldShowFullThinking = isTranscriptMode || verbose;
   if (!shouldShowFullThinking) {
+    // SWAP/llm-provider(2521) \u2014 show the first non-empty reasoning line
+    // (truncated to ~80 chars) inline next to the \u2234 Thinking glyph so the
+    // citizen sees *what* the model is reasoning about, not just *that* it
+    // is reasoning. K-EXAONE on FriendliAI emits the entire chain-of-
+    // thought on the reasoning_content channel; without this preview the
+    // user has to press ctrl+o just to see "\uc0ac\uc6a9\uc790\uac00 \ubd80\uc0b0 \uc0ac\ud558\uad6c\uc758 \ud604\uc7ac
+    // \ub0a0\uc528\ub97c \ubb3b\uace0 \uc788\uc2b5\ub2c8\ub2e4\u2026" before the lookup tool_calls appear. Cache
+    // can't memoize per-thinking content here so we recompute per render
+    // (cheap \u2014 a single split + slice).
+    // Flatten newlines to spaces so the preview shows the first 80 chars
+    // of reasoning regardless of how the model paragraph-breaks. K-EXAONE
+    // sometimes emits the first reasoning line as "사용자가\n부산..." which
+    // would clip the preview to a single word; the flattened form gives
+    // the citizen a meaningful sentence.
+    const _flat = thinking.replace(/\s+/g, ' ').trim();
+    const _previewClipped = _flat.length > 80 ? _flat.slice(0, 77) + '...' : _flat;
+    const _hasPreview = _previewClipped.length > 0;
     const t4 = addMargin ? 1 : 0;
-    let t5;
-    if ($[0] === Symbol.for("react.memo_cache_sentinel")) {
-      t5 = <Text dimColor={true} italic={true}>{"\u2234 Thinking"} <CtrlOToExpand /></Text>;
-      $[0] = t5;
-    } else {
-      t5 = $[0];
-    }
-    let t6;
-    if ($[1] !== t4) {
-      t6 = <Box marginTop={t4}>{t5}</Box>;
-      $[1] = t4;
-      $[2] = t6;
-    } else {
-      t6 = $[2];
-    }
-    return t6;
+    const t5 = _hasPreview
+      ? <Text dimColor={true} italic={true}>{"\u2234 Thinking \u2014 "}{_previewClipped} <CtrlOToExpand /></Text>
+      : <Text dimColor={true} italic={true}>{"\u2234 Thinking"} <CtrlOToExpand /></Text>;
+    return <Box marginTop={t4}>{t5}</Box>;
   }
   const t4 = addMargin ? 1 : 0;
   let t5;
