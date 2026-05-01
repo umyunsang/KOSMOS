@@ -700,7 +700,14 @@ const MessagesImpl = ({
           <VirtualMessageList messages={renderableMessages} scrollRef={scrollRef} columns={columns} itemKey={messageKey} renderItem={renderMessageRow} onItemClick={onItemClick} isItemClickable={isItemClickable} isItemExpanded={isItemExpanded} trackStickyPrompt={trackStickyPrompt} selectedIndex={selectedIdx >= 0 ? selectedIdx : undefined} cursorNavRef={cursorNavRef} setCursor={setCursor} jumpRef={jumpRef} onSearchMatchesChange={onSearchMatchesChange} scanElement={scanElement} setPositions={setPositions} extractSearchText={extractSearchText} />
         </InVirtualListContext.Provider> : renderableMessages.flatMap(renderMessageRow)}
 
-      {streamingText && !isBriefOnly && <Box alignItems="flex-start" flexDirection="row" marginTop={1} width="100%">
+      {/* SWAP/llm-provider(2521): trim guard. K-EXAONE often emits a newline
+          or whitespace-only first chunk before the actual answer text — the
+          original CC predicate `streamingText &&` was truthy for "\n" too,
+          painting a bare ● bullet with no content for one frame (caught by
+          frame-by-frame review at frame 40 of smoke-small.gif). Empty/
+          whitespace streamingText hides the entire row until visible chars
+          arrive. */}
+      {streamingText && streamingText.trim().length > 0 && !isBriefOnly && <Box alignItems="flex-start" flexDirection="row" marginTop={1} width="100%">
           <Box flexDirection="row">
             <Box minWidth={2}>
               <Text color="text">{BLACK_CIRCLE}</Text>
