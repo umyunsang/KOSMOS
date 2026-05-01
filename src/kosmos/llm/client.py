@@ -930,36 +930,43 @@ class LLMClient:
         uses the caller's values — defaults are set at the call site.
 
         K-EXAONE specific: ``chat_template_kwargs.enable_thinking`` controls
-        the model's reasoning mode. KOSMOS now defaults this to ``True`` —
-        aligning with the K-EXAONE-236B-A23B model-card recommendation and
-        the τ²-Bench evaluation conditions (Retail 78.6 / Airline 60.4 /
-        Telecom 73.5 are all measured with thinking ON).
+        the model's reasoning mode. **KOSMOS now defaults this to ``False``**
+        (Spec 2521 FriendliAI-cadence migration, 2026-05-01) so the citizen
+        gets a sub-10 s first-token answer on the visible content channel
+        instead of 1-3 minutes of reasoning trace before the bullet appears.
 
-        Empirical channel verification (probe_friendli_channels.py, 2026-05-01):
-            enable_thinking=False → 0 bytes content, 0 bytes reasoning, clean
-                                     tool_calls only — but the agentic loop
-                                     loses the model's CoT signal entirely.
+        Empirical channel behaviour (probe_friendli_channels.py, 2026-05-01):
+            enable_thinking=False → answer streams out on ``delta.content`` at
+                                     paragraph granularity (one SSE chunk
+                                     ≈ one paragraph; verified via
+                                     ``/tmp/tdb-thinking-off/raw.cast`` —
+                                     117-byte and 617-byte chunks separated
+                                     by ~5 s).
             enable_thinking=True  → ~0 bytes content (just newlines), full
                                      reasoning routed to ``reasoning_content``
                                      (separated channel), clean tool_calls.
+                                     First-paragraph latency: 60-180 s.
 
-        With thinking ON the reasoning trace flows out on
-        ``delta.reasoning_content`` (K-EXAONE separates this from
-        ``delta.content`` natively — see :meth:`_stream_response`'s
-        ``reasoning_content`` branch). The TUI then paints it in the dim-italic
-        ``∴ Thinking`` channel via ``AssistantThinkingMessage``, NOT in the
-        ``●`` content bullet. Net effect: clean CC-style separation between
-        reasoning and final answer, without sacrificing the thinking signal
-        the agentic loop relies on for multi-step tool chaining.
+        Why default flipped (Spec 2521 user directive):
+            Layer 5 frame-by-frame review proved no frontend / pacing layer
+            could dilate K-EXAONE's paragraph-granularity SSE chunks into
+            Anthropic-style per-token deltas. The CC-token-streaming UX
+            cannot be back-ported, so KOSMOS migrates to the FriendliAI
+            cadence as the design baseline: paragraph-shaped reveal with
+            inter-paragraph spinner cycling. ``enable_thinking=False``
+            puts the answer on the visible channel where that cadence is
+            citizen-readable; ``True`` buries it on ``reasoning_content``
+            with a 1-3 min wait.
 
-        Override via ``KOSMOS_K_EXAONE_THINKING=false`` for the latency-
-        sensitive non-reasoning path (sub-10s first token vs 1-3 min
-        reasoning trace). Slash-command ``/effort low`` integration is the
-        followup home for that toggle.
+        Override via ``KOSMOS_K_EXAONE_THINKING=true`` to re-enable the
+        model-card-recommended reasoning mode for benchmark / evaluation
+        runs (τ²-Bench Retail 78.6 / Airline 60.4 / Telecom 73.5 are all
+        measured with thinking ON). The ``/effort high`` slash command
+        is the planned UX shortcut.
         """
         import os  # noqa: PLC0415 — local import keeps top-level imports thin
 
-        enable_thinking = os.environ.get("KOSMOS_K_EXAONE_THINKING", "true").lower() in (
+        enable_thinking = os.environ.get("KOSMOS_K_EXAONE_THINKING", "false").lower() in (
             "true",
             "1",
             "yes",
