@@ -452,5 +452,18 @@ def register(registry: ToolRegistry, executor: ToolExecutor) -> None:
     from kosmos.tools.executor import AdapterFn
 
     registry.register(KMA_CURRENT_OBSERVATION_TOOL)
-    executor.register_adapter("kma_current_observation", cast(AdapterFn, _call))
+
+    # SWAP/llm-provider(2521): wrap the flat KmaCurrentObservationOutput dict
+    # into a LookupRecord envelope so envelope.normalize()'s 5-variant
+    # LookupOutput validator (kind=record/collection/timeseries/error/search)
+    # accepts it. Citizen-visible symptom without this wrap: "Response
+    # processing failed" — LLM never sees real weather data, retries lookup
+    # in confusion (probe-traced 2026-05-01).
+    async def _kma_observation_adapter(inp: BaseModel) -> dict[str, Any]:
+        raw = await _call(inp)
+        return {"kind": "record", "item": raw}
+
+    executor.register_adapter(
+        "kma_current_observation", cast(AdapterFn, _kma_observation_adapter)
+    )
     logger.info("Registered tool: kma_current_observation")

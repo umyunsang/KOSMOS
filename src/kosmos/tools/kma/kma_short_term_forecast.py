@@ -409,5 +409,12 @@ def register(registry: ToolRegistry, executor: ToolExecutor) -> None:
     from kosmos.tools.executor import AdapterFn
 
     registry.register(KMA_SHORT_TERM_FORECAST_TOOL)
-    executor.register_adapter("kma_short_term_forecast", cast(AdapterFn, _call))
+
+    # SWAP/llm-provider(2521): wrap forecast output as LookupRecord so
+    # envelope.normalize() accepts it (5-variant LookupOutput discriminator).
+    async def _kma_stf_adapter(inp: BaseModel) -> dict[str, object]:
+        raw = await _call(inp)
+        return {"kind": "record", "item": raw}
+
+    executor.register_adapter("kma_short_term_forecast", cast(AdapterFn, _kma_stf_adapter))
     logger.info("Registered tool: kma_short_term_forecast")
