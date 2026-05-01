@@ -9,6 +9,8 @@
 
 ## 1. 증상
 
+### 회귀 #1 — 멀티 툴 레이아웃 (Codex 가 해결)
+
 ```
 ❯ 부산 사하구 날씨 지금 날씨 알려줘
 
@@ -34,6 +36,33 @@
 | A | 5개 도구 호출 사이 1-line 빈 줄 | "uiux 측면에서 계속 이상한 흐름으로 배치" |
 | B | `∴ Thinking` 이 도구 *아래* 위치 | "왜 도구호출부터 하는거지?" |
 | C | 결과 (`⎿ ...`) 가 어떤 도구에도 안 보임 | (스트리밍 중 정상이지만 시각적으로 답답) |
+
+### 회귀 #2 — Adapter param schema invisibility (parallel_tool_calls=False 후 재발견)
+
+L1 fix (`parallel_tool_calls=False`) 적용 후 K-EXAONE 가 turn 당 1 tool 만 emit 하지만, *그 1 tool 도 invalid_params* 로 모두 거부되는 새 회귀 노출:
+
+```
+● lookup(kma_forecast_fetch)
+  ⎿  검색 오류: Invalid parameters for tool.
+● lookup(kma_current_observation)
+  ⎿  검색 오류: Invalid parameters for tool.
+● lookup(kma_short_term_forecast)
+  ⎿  검색 오류: Invalid parameters for tool.
+```
+
+원인: `_build_available_adapters_suffix` 가 의도적으로 schema 정보를 token budget 핑계로 안 줬음 (`stdio.py:797` 주석에 명시 — "the LLM can still infer params from search_hint"). K-EXAONE 가 `search_hint` (bilingual keyword 리스트) 만 보고 schema 추측 못 해서 `{"location": "부산", "date": "2026-05-01"}` 같은 직관 호출 → 모든 어댑터 pydantic validation 실패.
+
+해결: `AdapterCandidate.input_schema_json` (Spec 2297 path B 가 이미 추가했던 full Pydantic JSON Schema) 의 properties 를 한 줄씩 dump:
+
+```
+- kma_forecast_fetch [2.81] — 단기예보 날씨 ...
+    · lat (number, 필수) — WGS-84 latitude of the target location, ...
+    · lon (number, 필수) — WGS-84 longitude of the target location, ...
+    · base_date (string, 필수 pattern='^\d{8}$') — Forecast base date in YYYYMMDD format, ...
+    · base_time (string, 필수) — Forecast base time in HHMM format. Must be one of: 0200, 0500, ...
+```
+
+Suffix 길이가 ~400 → ~2200 chars 로 늘지만 N 번 invalid_params retry 비용보다 훨씬 저렴.
 
 ## 2. Lead Opus 가 시도한 fix (실패)
 
@@ -265,6 +294,26 @@ function isSameAssistantToolStack(prev, current, streamingToolUseIDs) {
 
 이 같은 두 신호 패턴은 다른 sibling-detection 케이스 (e.g. parallel verify, batch submit) 에도 적용 가능.
 
+### H7. Token budget 우선 최적화는 LLM accuracy 를 망가뜨릴 수 있음
+
+회귀 #2 의 root cause: `_build_available_adapters_suffix` 가 input_schema 를 *prompt-cache friendly 하게 만들기 위해* 일부러 안 노출 → "the LLM can still infer params from search_hint" 라고 주석 박아둠 → 모든 도구가 invalid_params.
+
+**경험칙**: LLM 이 *정확한 호출* 을 하는 데 필요한 정보는 token budget 보다 우선. 한 번의 invalid retry 가 schema dump (수백 token) 보다 훨씬 비싸다 — N retries × full system prompt + multi-turn assistant context = 수천 token 낭비 + 사용자 대기시간 증가.
+
+**적용 룰**:
+
+1. **Schema / 시그니처 / contract 정보는 압축하지 말고 정확히 노출**. 80자 description 은 노이즈가 아니라 LLM 이 schema 를 이해하는 데 필요한 신호. 80자 cap 은 합리적; 0자 (description 안 보임) 는 retry loop 보장.
+
+2. **"LLM 이 search_hint 로 추측 가능" 같은 가정은 fragile**. 같은 모델이라도 provider / temperature / context 길이 / 최근 학습 데이터에 따라 추측 정확도 다름. K-EXAONE on FriendliAI 가 `location: "부산"` 으로 추측한 것처럼 — Anthropic Claude 라면 정답이었을 수 있는 케이스도 fail.
+
+3. **Token budget worry 의 진짜 답은 prompt cache + dynamic suffix**. KOSMOS 가 이미 `prompts/system_v1.md` 의 static prefix 를 cache 하고 dynamic suffix 만 매 turn 새로 생성 — suffix 길이 늘어도 재계산 비용은 BM25 lookup + render 만. cache 효과는 prefix 가 보존되므로 그대로.
+
+4. **회귀 발견 시점**: invalid_params 가 *모든* 도구에서 일관되게 나오면 schema 정보가 LLM 에 안 도달한 것. 도구 1개에서만 fail 이면 그 도구의 schema 버그. 일관된 fail 패턴이 진단 신호.
+
+5. **반대 케이스 — 진짜 token bloat 위험**: response body / 큰 enum (>20) / nested object 의 모든 필드 dump 는 LLM 이 안 보고 token 만 먹음. Top-level required + optional 만 + 80자 description 이 sweet spot. KOSMOS 의 fix 가 정확히 이 균형.
+
+**비유**: schema 노출은 docs/manual 같음. 짧게 만들려고 함수 시그니처 빼버리면 사용자 (LLM) 가 함수 호출 못함. token 아끼려다 retry × N 번에 결국 더 비싸짐.
+
 ## 6. KOSMOS 프로젝트 특이사항
 
 ### LLM provider swap 의 hidden cost
@@ -302,12 +351,19 @@ K-EXAONE 의 reasoning_content + parallel_tool_calls 가 둘 다 visible 됐을 
 
 미래 PR 가 같은 회귀 일으키지 않도록:
 
+**Layout (회귀 #1)**:
 - [ ] `bun test tests/components/multiToolStacking.test.ts` 통과 (Codex 가 추가)
 - [ ] `src/kosmos/llm/client.py` 의 `parallel_tool_calls = False` 보존 (LLM swap 시 재확인)
 - [ ] `src/kosmos/ipc/stdio.py` 의 multi-tool drop guard 보존
 - [ ] `tui/src/utils/multiToolLayout.ts` 의 `isSameAssistantToolStack` 보존
 - [ ] Layer 5 PTY 캡처에서 multi-tool 시나리오 (`부산 사하구 날씨`) 5 줄 stack 빈 줄 0
 - [ ] Streaming 중에도 `∴ Thinking` preview 가 last user 와 first tool_use 사이에 위치
+
+**Schema visibility (회귀 #2)**:
+- [ ] `src/kosmos/ipc/stdio.py:_build_available_adapters_suffix` 가 input_schema_json 의 properties 를 per-field signature 로 dump (`· name (type, 필수|선택 pattern=... enum=...) — desc`)
+- [ ] Live 검증: `uv run python -c "..."` 로 BM25 후보 top-3 의 schema signature 가 `lat`/`lon`/`base_date pattern='^\d{8}$'` 등 정확한 필드 노출 확인
+- [ ] LLM swap 시 dynamic suffix 길이 증가가 prompt cache 깨지 않는지 확인 (static prefix 분리 보존)
+- [ ] 어떤 LLM provider 에서도 모든 도구가 invalid_params 를 일관되게 emit 하지 않는지 모니터링 — 그렇다면 schema 정보가 LLM 에 안 도달한 것
 
 ## 8. 참조
 
