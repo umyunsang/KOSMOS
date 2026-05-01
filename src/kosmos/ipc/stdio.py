@@ -816,8 +816,21 @@ async def run(  # noqa: C901
             if len(hint) > 90:
                 hint = hint[:87] + "..."
             lines.append(f"- {c.tool_id} [{c.score:.2f}] — {hint or '(설명 없음)'}")
+            # Render the adapter's llm_description (usage prose, ORDERING RULE,
+            # prerequisites, worked examples) so the LLM sees the complete
+            # "먼저 resolve_location 호출" ordering rule.
+            # Bug: without this, the per-field description for nx is truncated
+            # and K-EXAONE skips resolve_location, producing invalid_params.
+            if c.llm_description:
+                desc_text = c.llm_description.strip().replace("\n", " ")
+                # Emit at most 300 chars — enough for the ORDERING RULE and
+                # worked example without blowing the per-turn token budget.
+                if len(desc_text) > 300:
+                    desc_text = desc_text[:297] + "..."
+                lines.append(f"  설명: {desc_text}")
             # Render input schema signature so the LLM sees exact field
             # names + types + required flags + (truncated) descriptions.
+            # Field desc limit raised 80→120 so nx/ny examples fit untruncated.
             schema = c.input_schema_json or {}
             properties = (
                 schema.get("properties") if isinstance(schema, dict) else None
@@ -826,6 +839,15 @@ async def run(  # noqa: C901
             raw_required = schema.get("required") if isinstance(schema, dict) else None
             if isinstance(raw_required, list):
                 required = {str(item) for item in raw_required if isinstance(item, str)}
+            # If this adapter requires KMA grid coords, emit an explicit
+            # ordering directive so K-EXAONE knows it must call
+            # resolve_location BEFORE this lookup (the key ordering rule).
+            needs_kma_grid = "nx" in required and "ny" in required
+            if needs_kma_grid:
+                lines.append(
+                    "  [ORDERING] nx/ny 는 KMA 격자 좌표 — 이 도구 호출 전에 반드시"
+                    " resolve_location(query='<지역명>') 을 먼저 호출해 nx/ny 를 받아야 합니다."
+                )
             if isinstance(properties, dict) and properties:
                 for fname, fmeta in properties.items():
                     if not isinstance(fmeta, dict):
@@ -834,8 +856,8 @@ async def run(  # noqa: C901
                     if isinstance(ftype, list):
                         ftype = "|".join(str(t) for t in ftype)
                     fdesc = str(fmeta.get("description", "")).strip().replace("\n", " ")
-                    if len(fdesc) > 80:
-                        fdesc = fdesc[:77] + "..."
+                    if len(fdesc) > 120:
+                        fdesc = fdesc[:117] + "..."
                     pat = fmeta.get("pattern")
                     pat_part = f" pattern={pat!r}" if isinstance(pat, str) else ""
                     enum = fmeta.get("enum")
