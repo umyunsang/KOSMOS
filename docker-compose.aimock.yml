@@ -19,6 +19,11 @@
 # Image: ghcr.io/copilotkit/aimock:latest (Apache-2.0, CopilotKit)
 
 services:
+  # ---------------------------------------------------------------------------
+  # Default: ghcr.io/copilotkit/aimock (CopilotKit's official image).
+  # Uses AIMOCK_CONFIG to load fixtures. Will be the canonical service once
+  # Docker Desktop is available or the image is confirmed pullable.
+  # ---------------------------------------------------------------------------
   aimock:
     image: ghcr.io/copilotkit/aimock:latest
     restart: unless-stopped
@@ -40,3 +45,31 @@ services:
       timeout: 3s
       retries: 10
       start_period: 10s
+    # profiles: ["docker"] — uncomment to gate this service on Docker availability
+
+  # ---------------------------------------------------------------------------
+  # Fallback: aimock-bun — hand-rolled Bun HTTP server (scripts/aimock-bun.ts).
+  # Used when Docker is unavailable (e.g., Docker.app not installed, CI runners
+  # without Docker daemon). Reads the same tests/fixtures/llm/*.json files.
+  #
+  # Tradeoffs vs ghcr.io/copilotkit/aimock:
+  #   + No Docker required — runs with `bun scripts/aimock-bun.ts`
+  #   + Zero image pull (native Bun, already required for TUI)
+  #   + Health endpoint at /health and /v1/health
+  #   - Not an official CopilotKit build; fixture format may drift
+  #   - Uses a broader userMessageContains match (e.g., "부산" vs "부산 날씨")
+  #
+  # Usage (no Docker):
+  #   bun scripts/aimock-bun.ts --port 4010
+  #   KOSMOS_FRIENDLI_BASE_URL=http://localhost:4010/v1 \
+  #   KOSMOS_FRIENDLI_TOKEN=aimock-test \
+  #   bun run tui
+  #
+  # This service is defined here for documentation purposes; it cannot be
+  # started by docker compose (no image — it runs as a host process). It
+  # is kept in this file so fallback instructions are co-located with the
+  # primary service definition.
+  # ---------------------------------------------------------------------------
+  # aimock-bun:
+  #   (no image — run as host process: bun scripts/aimock-bun.ts --port 4011)
+  #   # Use KOSMOS_AIMOCK_PORT=4011 if running alongside the Docker service.
