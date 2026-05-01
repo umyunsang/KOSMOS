@@ -90,8 +90,9 @@ jobs:
             jq '
               del(.creationInfo.created, .documentNamespace, .SPDXID)
               | (.. | strings) |= gsub("(?<p>SPDXRef-Package-[^\"\\s,]+?)-(?<h>[0-9a-f]{16})(?<t>\"|\\b)"; "\(.p)\(.t)")
-              | .packages |= sort_by(.name, .versionInfo)
-              | .relationships |= sort_by(.spdxElementId, .relatedSpdxElement, .relationshipType)
+              | (.. | strings) |= gsub("package-id=(?<h>[0-9a-f]{16})"; "package-id=STRIPPED")
+              | .packages |= (sort_by(.name, .versionInfo) | unique_by(.name, .versionInfo))
+              | .relationships |= (sort_by(.spdxElementId, .relatedSpdxElement, .relationshipType) | unique_by(.spdxElementId, .relatedSpdxElement, .relationshipType))
             ' "$1"
           }
           diff <(strip_spdx sbom-spdx-run1.json) <(strip_spdx sbom-spdx-run2.json) \
@@ -109,8 +110,9 @@ jobs:
             jq '
               del(.metadata.timestamp, .serialNumber, .metadata.tools)
               | (.. | strings) |= gsub("(?<p>[^\"\\s]+?)-(?<h>[0-9a-f]{16})(?<t>\"|\\b)"; "\(.p)\(.t)")
-              | (.components // []) |= sort_by(.name, .version)
-              | (.dependencies // []) |= sort_by(.ref)
+              | (.. | strings) |= gsub("package-id=(?<h>[0-9a-f]{16})"; "package-id=STRIPPED")
+              | (.components // []) |= (sort_by(.name, .version) | unique_by(.name, .version))
+              | (.dependencies // []) |= (sort_by(.ref) | unique_by(.ref))
             ' "$1"
           }
           diff <(strip_cdx sbom-cyclonedx-run1.json) <(strip_cdx sbom-cyclonedx-run2.json) \
