@@ -356,8 +356,10 @@ async function* queryModelWithStreaming(params: {
       if (fa.call_id) {
         seenToolUseIds.add(fa.call_id)
       }
+
       pendingContentBlocks.push(toolUseBlock)
       blockIndex += 1
+
       yield {
         type: 'stream_event' as const,
         event: {

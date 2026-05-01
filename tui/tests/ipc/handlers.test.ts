@@ -195,7 +195,7 @@ describe('stream-event projection I1', () => {
       makeFrame('tool_call', corrId, {
         call_id: 'cid-001',
         name: 'lookup',
-        arguments: { mode: 'search', query: 'test' },
+        arguments: { mode: 'fetch', tool_id: 'kma_forecast_fetch', query: 'test' },
       }),
       makeFrame('assistant_chunk', corrId, {
         message_id: 'mid-001',
@@ -241,7 +241,7 @@ describe('stream-event projection I2', () => {
   test('content_block_start carries id, name, input from frame fields', async () => {
     const callId = 'call-abc-123'
     const toolName = 'lookup'
-    const toolArgs = { mode: 'search', query: 'hospital near me' }
+    const toolArgs = { mode: 'fetch', tool_id: 'hira_hospital_search' }
 
     const results = await run((corrId) => [
       makeFrame('tool_call', corrId, {
@@ -392,7 +392,7 @@ describe('stream-event projection I5', () => {
       makeFrame('tool_call', corrId, {
         call_id: 'tc-1',
         name: 'lookup',
-        arguments: { mode: 'search', query: 'q1' },
+        arguments: { mode: 'fetch', tool_id: 'kma_forecast_fetch', query: 'q1' },
       }),
       makeFrame('tool_call', corrId, {
         call_id: 'tc-2',
@@ -454,7 +454,7 @@ describe('stream-event projection I6', () => {
       makeFrame('tool_call', corrId, {
         call_id: 'A',
         name: 'lookup',
-        arguments: { mode: 'search', query: 'test' },
+        arguments: { mode: 'fetch', tool_id: 'kma_forecast_fetch', query: 'test' },
       }),
       makeFrame('tool_call', corrId, {
         call_id: 'B',

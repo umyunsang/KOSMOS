@@ -41,36 +41,27 @@ type ContextWithCitation = ToolUseContext & {
 }
 
 // ---------------------------------------------------------------------------
-// Input schema — discriminated union on "mode"
+// Input schema — Spec 2521 (2026-05-01) fetch-only.
+//
+// BM25 adapter discovery is a backend-internal mechanism (auto-injected
+// into the system prompt's <available_adapters> dynamic suffix). The LLM
+// MUST NOT see ``search`` as a callable mode — it picks a tool_id from
+// the suffix and calls lookup with ``{tool_id, params}`` only.
 // ---------------------------------------------------------------------------
 
-const searchModeSchema = z.object({
-  mode: z.literal('search'),
-  query: z.string().min(1).describe('Citizen prompt fragment in Korean or English'),
-  primitive_filter: z
-    .enum(['lookup', 'submit', 'verify', 'subscribe'])
-    .nullable()
-    .optional()
-    .describe('Restrict results to a single primitive type; null or omit for all'),
-  top_k: z
-    .number()
-    .int()
-    .min(1)
-    .max(50)
-    .optional()
-    .describe('Maximum number of results to return (default 5)'),
-})
-
-const fetchModeSchema = z.object({
-  mode: z.literal('fetch'),
-  tool_id: z.string().min(1).describe('Registered adapter identifier, e.g. "hira_hospital_search"'),
-  params: z
-    .record(z.string(), z.unknown())
-    .describe('Adapter-defined Pydantic-validated parameter body'),
-})
-
 const inputSchema = lazySchema(() =>
-  z.discriminatedUnion('mode', [searchModeSchema, fetchModeSchema]),
+  z.object({
+    tool_id: z
+      .string()
+      .min(1)
+      .describe(
+        'Registered adapter identifier, picked from <available_adapters>. ' +
+          'e.g. "kma_forecast_fetch", "hira_hospital_search".',
+      ),
+    params: z
+      .record(z.string(), z.unknown())
+      .describe('Adapter-defined Pydantic-validated parameter body'),
+  }),
 )
 type InputSchema = ReturnType<typeof inputSchema>
 
@@ -149,13 +140,9 @@ export const LookupPrimitive = buildTool({
   // KOSMOS hotfix #2518 follow-up — CC pattern (tools/BashTool/UI.tsx:renderToolUseMessage)
   // 따라 args preview 반환. null 반환은 AssistantToolUseMessage가 tool block을 통째로
   // 숨겨서 시민이 어떤 tool이 dispatch 됐는지 못 봄. CC byte-identical pattern.
-  renderToolUseMessage(input: { mode?: string; query?: string; tool_id?: string }) {
-    if (input.mode === 'search') {
-      return `search: ${input.query ?? ''}`
-    }
-    if (input.mode === 'fetch') {
-      return `fetch: ${input.tool_id ?? ''}`
-    }
+  // Spec 2521 (2026-05-01) — fetch-only surface; legacy mode='search'
+  // payloads from older sessions surface as the bare tool_id.
+  renderToolUseMessage(input: { tool_id?: string; mode?: string; query?: string }) {
     return input.tool_id ?? input.query ?? ''
   },
 
@@ -165,23 +152,16 @@ export const LookupPrimitive = buildTool({
   /**
    * T006 — real validateInput per contracts/primitive-shape.md § validateInput.
    *
-   * Steps:
-   *  1. mode='search': skip adapter resolution (BM25 happens later in call()).
-   *  2. mode='fetch': resolve tool_id against the tools registry.
-   *  3. If not found: fail closed with Korean diagnostic.
-   *  4. Read citation from adapter; fail closed if either field empty.
-   *  5. Attach citation to context for permission UI surfacing.
-   *  6. Return { result: true }.
+   * Steps (Spec 2521 fetch-only):
+   *  1. resolve tool_id against the synced backend manifest.
+   *  2. If not found: fail closed with Korean diagnostic.
+   *  3. Read citation from adapter; attach to context for permission UI.
+   *  4. Return { result: true }.
    */
   async validateInput(
     input: z.infer<InputSchema>,
     context: ToolUseContext,
   ): Promise<import('../../Tool.js').ValidationResult> {
-    // Step 1 — search mode: no adapter needed; BM25 runs inside call().
-    if (input.mode === 'search') {
-      return { result: true }
-    }
-
     // Epic ε #2296 T011 — two-tier resolution (FR-017 / FR-018 / FR-019 / FR-020).
 
     // Tier 0 — fail closed if manifest not yet synced (FR-019).
@@ -194,7 +174,7 @@ export const LookupPrimitive = buildTool({
     }
 
     // Tier 1 — synced backend manifest (FR-017).
-    const backendEntry = resolveAdapter(input.tool_id!)
+    const backendEntry = resolveAdapter(input.tool_id)
     if (backendEntry) {
       const citation: AdapterCitation | null = backendEntry.policy_authority_url
         ? {
