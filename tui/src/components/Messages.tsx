@@ -44,6 +44,7 @@ import { OffscreenFreeze } from './OffscreenFreeze.js';
 import type { ToolUseConfirm } from './permissions/PermissionRequest.js';
 import { StatusNotices } from './StatusNotices.js';
 import type { JumpHandle } from './VirtualMessageList.js';
+import { useFrameCommitTracker } from '../utils/frameCommitOtel.js'; // [Phase4] frame_commit OTEL
 
 // Memoed logo header: this box is the FIRST sibling before all MessageRows
 // in main-screen mode. If it becomes dirty on every Messages re-render,
@@ -376,6 +377,7 @@ const MessagesImpl = ({
   const {
     columns
   } = useTerminalSize();
+  useFrameCommitTracker(conversationId); // [Phase4] kosmos.tui.frame_commit OTEL event per Ink reconcile
   const toggleShowAllShortcut = useShortcutDisplay('transcript:toggleShowAll', 'Transcript', 'Ctrl+E');
   const normalizedMessages = useMemo(() => normalizeMessages(messages).filter(isNotEmptyMessage), [messages]);
 

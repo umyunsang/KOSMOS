@@ -345,7 +345,7 @@ tracer.startSpan('kosmos.tui.frame_commit', {
 
 - [x] `scripts/tui-tmux-capture.sh` + helpers 추가 (commit `182f4b7`)
 - [x] Spec 2519 / 2297 / 2112 smokes tmux 버전으로 마이그레이션 (2026-05-02)
-- [ ] Spec 1979 smoke tmux 버전 마이그레이션 (future work — see table below)
+- [x] Spec 1979 smoke tmux 버전 마이그레이션 (2026-05-02 — 4 sub-scenarios, see table below)
 - [ ] `scripts/tui-text-debug.sh` 는 deprecate (offline replay 만 지원)
 
 #### Phase 3 포팅 상태 (2026-05-02 기준)
@@ -355,7 +355,7 @@ tracer.startSpan('kosmos.tui.frame_commit', {
 | **2519** (Korean IME Enter) | `scripts/smoke-2519-final.expect` | `scenarios/smoke-tmux.sh` ✅ | `proof-runs/tmux-migration/` 8 snaps | Boot match: 1s; turn1 response: 0s (warm). Critical discovery: must wait for turn1 completion before sending turn2 (K-EXAONE queues input while reasoning). One predicate NOT convertible: `expect eof` after spawn exit — tmux session is persistent; replaced with `send_ctrlc_pane`. |
 | **2297** (Citizen tax-return) | `scripts/smoke-citizen-taxreturn.expect` | `scenarios/smoke-citizen-taxreturn-tmux.sh` ✅ | `proof-runs/tmux-migration/` 7 snaps | Boot match: 0s (warm). Receipt-id regex (`접수번호: hometax-…`) non-fatal — requires Phase 2 aimock fixture; OPAQUE domain returns clarifying question live. `CHECKPOINTreceipt` non-fatal (TUI T014 pending). |
 | **2112** (Boot / Anthropic dead models) | `smoke.expect` | `scenarios/smoke-tmux.sh` ✅ | `proof-runs/tmux-migration/` 14 snaps | Boot match: 0-1s; /help: 0s (local render). Discovery: `expect ">"` is too permissive — replaced with `tool_registry: N entries verified`. Help overlay must be dismissed (`send_keys_pane Escape`) before next scenario sends input. |
-| 1979 | `scripts/debug-direct.expect` `scripts/debug-enter.expect` `scripts/debug-help.expect` `scripts/debug-install.expect` | — | — | Future work |
+| **1979** (Plugin DX TUI integration) | `debug-direct.expect` `debug-enter.expect` `debug-help.expect` `debug-install.expect` | `scenarios/debug-direct-tmux.sh` ✅ `scenarios/debug-enter-tmux.sh` ✅ `scenarios/debug-help-tmux.sh` ✅ `scenarios/debug-install-tmux.sh` ✅ | `proof-runs/tmux-migration/debug-direct/` 4 snaps `debug-enter/` 5 snaps `debug-help/` 5 snaps `debug-install/` 7 snaps | Boot match 0-1s (warm). debug-help: /help overlay confirmed rendered (14-entry help text captured, local render 0s). debug-direct: activity-based settle replaced `sleep 12`. debug-install: PR banner (`PR #2578`) detected in status bar — confirms the diagnostic check works; consent modal absent (plugin not in catalog — expected). debug-enter: CR+LF → `send_text_pane` + `send_enter_pane` + Tab → `send_keys_pane Tab` pattern confirmed correct. One migration friction: `log_file` byte-stream capture in .expect is NOT replicated — snapshots are pane-state only; legacy .expect files retained for offline pyte replay. |
 | 2521 | (none shipped yet) | — | — | Future work |
 | 1635 | multiple `.tape` files | — | — | Future work |
 | 287 | multiple `.tape` files | — | — | Future work |
@@ -371,9 +371,9 @@ tracer.startSpan('kosmos.tui.frame_commit', {
 
 ### Phase 4 — Snapshot streaming (1 Epic, ~3일)
 
-- [ ] Ink-side `frames` 배열을 hash sequence 로 assert 하는 helper
-- [ ] Spec 1635 / 287 의 핵심 component test 마이그레이션
-- [ ] `kosmos.tui.frame_commit` OTEL event 추가
+- [x] Ink-side `frames` 배열을 hash sequence 로 assert 하는 helper (`tui/src/test-utils/frameStreamSnapshot.ts` — `assertFrameSequence` + `takeStreamSnapshot`)
+- [ ] Spec 1635 / 287 의 핵심 component test 마이그레이션 (future work)
+- [x] `kosmos.tui.frame_commit` OTEL event 추가 (`tui/src/utils/frameCommitOtel.ts` — `useFrameCommitTracker` hook wired into `MessagesImpl`)
 
 ### Phase 5 — OTEL chunk events (Optional, 1 Epic)
 
