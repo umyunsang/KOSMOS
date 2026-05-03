@@ -840,15 +840,18 @@ async def run(  # noqa: C901
             raw_required = schema.get("required") if isinstance(schema, dict) else None
             if isinstance(raw_required, list):
                 required = {str(item) for item in raw_required if isinstance(item, str)}
-            # If this adapter requires KMA grid coords, emit an explicit
-            # ordering directive so K-EXAONE knows it must call
-            # resolve_location BEFORE this lookup (the key ordering rule).
-            needs_kma_grid = "nx" in required and "ny" in required
-            if needs_kma_grid:
-                lines.append(
-                    "  [ORDERING] nx/ny 는 KMA 격자 좌표 — 이 도구 호출 전에 반드시"
-                    " resolve_location(query='<지역명>') 을 먼저 호출해 nx/ny 를 받아야 합니다."
-                )
+            # Spec 2522 T010 — ORDERING directive removed.
+            # The Spec 2521 ORDERING block ("nx/ny 는 KMA 격자 좌표 — 반드시
+            # resolve_location 을 먼저 호출") forced a cross-domain chain that
+            # contradicts both the user directive ("chain X / KOSMOS does not
+            # force cross-domain chain") and v4 description 5-section
+            # self_contained_decl ("이 도구 단독 호출로 완결. resolve_location 등
+            # cross-domain chain 불필요"). With both signals present K-EXAONE
+            # ignored both and hallucinated nx/ny → Spec 2521 regression.
+            # Each adapter's description (섹션 4 domain_quirk + 섹션 5
+            # self_contained_decl + 섹션 3 short_reference 17 광역시도 표) is now
+            # self-sufficient. The model decides chain vs single-tool autonomously.
+            # Reference: research-stdio-ordering.md, frames-busan-weather/ T042 evidence.
             if isinstance(properties, dict) and properties:
                 for fname, fmeta in properties.items():
                     if not isinstance(fmeta, dict):
