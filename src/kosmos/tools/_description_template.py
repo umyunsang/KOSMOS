@@ -2,7 +2,7 @@
 """Tool description 5-section string template helper for v4 GovAPITool.llm_description.
 
 Implements the DescriptionSection 5-section skeleton from data-model.md.
-Token budget: ≤ 500 tokens per tool, ≤ 100 tokens per section.
+Token budget: ≤ 500 tokens per tool, ≤ 100 tokens per section (except short_reference ≤ 200).
 
 Token counting: stdlib-only approximation.
   - ASCII word ≈ 1 token per word
@@ -20,6 +20,18 @@ _log = logging.getLogger(__name__)
 # Token budget constants (data-model.md Constraints)
 _MAX_TOKENS_PER_TOOL: int = 500
 _MAX_TOKENS_PER_SECTION: int = 100
+# Section 3 (short_reference) has a wider budget per data-model.md DescriptionSection spec:
+# "17 광역시도 short reference 인라인 (≤200 tokens)"
+_MAX_TOKENS_SHORT_REFERENCE: int = 200
+
+# Per-section limits (keyed by section name)
+_SECTION_LIMITS: dict[str, int] = {
+    "purpose": _MAX_TOKENS_PER_SECTION,
+    "input_quirk": _MAX_TOKENS_PER_SECTION,
+    "short_reference": _MAX_TOKENS_SHORT_REFERENCE,
+    "domain_quirk": _MAX_TOKENS_PER_SECTION,
+    "self_contained_decl": _MAX_TOKENS_PER_SECTION,
+}
 
 
 def _estimate_tokens(text: str) -> int:
@@ -37,12 +49,17 @@ def _estimate_tokens(text: str) -> int:
 
 
 def _validate_section(name: str, text: str) -> None:
-    """Raise ValueError if a single section exceeds the per-section token budget."""
+    """Raise ValueError if a single section exceeds its per-section token budget.
+
+    Section 3 (short_reference) has a wider budget of 200 tokens per data-model.md.
+    All other sections are capped at 100 tokens.
+    """
+    limit = _SECTION_LIMITS.get(name, _MAX_TOKENS_PER_SECTION)
     count = _estimate_tokens(text)
-    if count > _MAX_TOKENS_PER_SECTION:
+    if count > limit:
         raise ValueError(
-            f"Description section '{name}' exceeds {_MAX_TOKENS_PER_SECTION}-token budget "
-            f"(estimated {count} tokens). Shorten to ≤ {_MAX_TOKENS_PER_SECTION} tokens."
+            f"Description section '{name}' exceeds {limit}-token budget "
+            f"(estimated {count} tokens). Shorten to ≤ {limit} tokens."
         )
 
 

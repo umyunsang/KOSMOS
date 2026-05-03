@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: Apache-2.0
-"""KMA weather pre-warning list adapter (기상예비특보목록 조회).
+"""KMA weather warning list adapter (기상특보목록 조회).
 
-Wraps the ``getWthrPwnList`` endpoint from the Korea Meteorological Administration
+Wraps the ``getWthrWrnList`` endpoint from the Korea Meteorological Administration
 (기상청) via the shared data.go.kr service key.
-Returns a list of pre-warning (예비특보) announcements that precede formal
-weather warnings, providing early notification of developing weather events.
+Returns a list of active weather warning (특보) announcements including
+호우 / 폭염 / 한파 / 태풍 / 강풍 / 대설 / 황사 / 건조 / 풍랑.
 
 Wire format quirks handled by this module:
   - Single-item response returns ``item`` as a dict (not array) — normalized to list.
@@ -23,15 +23,17 @@ from typing import Any, Literal
 import httpx
 from pydantic import BaseModel, ConfigDict, Field
 
+from kosmos.tools._description_template import build_description_v4
 from kosmos.tools._outbound_trace import traced_async_client
 from kosmos.tools.errors import ToolExecutionError, _require_env
 from kosmos.tools.executor import ToolExecutor
+from kosmos.tools.kma._short_references import KMA_STATION_SHORT_REFERENCE
 from kosmos.tools.models import AdapterRealDomainPolicy, GovAPITool
 from kosmos.tools.registry import ToolRegistry
 
 logger = logging.getLogger(__name__)
 
-_BASE_URL = "https://apis.data.go.kr/1360000/WthrWrnInfoService/getWthrPwnList"
+_BASE_URL = "https://apis.data.go.kr/1360000/WthrWrnInfoService/getWthrWrnList"
 
 # ---------------------------------------------------------------------------
 # Input / Output models
@@ -193,7 +195,7 @@ async def _call(
 ) -> dict[str, Any]:
     """Async adapter for kma_pre_warning.
 
-    Fetches pre-warning announcement list data from the KMA getWthrPwnList endpoint.
+    Fetches weather warning list data from the KMA getWthrWrnList endpoint.
     Handles JSON vs. XML content-type guard, error code mapping, and response parsing.
 
     Args:
@@ -259,13 +261,29 @@ async def _call(
 
 KMA_PRE_WARNING_TOOL = GovAPITool(
     id="kma_pre_warning",
-    name_ko="기상예비특보목록 조회",
-    llm_description=(
-        "기상청 기상예비특보 — 향후 발효 가능성 있는 호우 / 폭염 / 한파 / 태풍 / 강풍 / "
-        "대설 / 황사 / 건조 / 풍랑 등의 사전 경보 목록. 시민이 '경보 있어' / '특보' / "
-        "'호우 주의보 떠 있나' 같은 미래 위험 정보를 묻는 경우. **현재 발효 중**인 특보는 "
-        "kma_weather_alert_status 사용. stn_id 는 시민 발화에 명확한 시도/광역시 명시 시 "
-        "(서울=108, 부산=159 등) 사용; 모호하면 null 로 전국 결과."
+    name_ko="기상특보목록 조회",
+    llm_description=build_description_v4(
+        purpose=(
+            "기상청 특보목록 (getWthrWrnList) — 현재 발효 중인 기상특보 목록 조회. "
+            "호우 / 폭염 / 한파 / 태풍 / 강풍 / 대설 / 황사 / 건조 / 풍랑 특보 포함. "
+            "시민이 '경보 있어' / '특보 확인' / '호우 주의보 떠 있나' 묻는 경우 호출."
+        ),
+        input_quirk=(
+            "stn_id (optional): 기상청 관측소 코드. "
+            "시민 발화에 명확한 시도/광역시가 있을 때만 사용; 모호하면 null (전국 결과). "
+            "num_of_rows default=100, page_no default=1. dataType=JSON 권장."
+        ),
+        short_reference=KMA_STATION_SHORT_REFERENCE,
+        domain_quirk=(
+            "resultCode '00'=정상, '03'=특보없음 (에러 아님, 빈 목록 반환). "
+            "HTTP 200 이어도 resultCode 확인 필수. "
+            "tmFc 는 integer (yyyyMMddHHmi), tmSeq 는 당월 순번."
+        ),
+        self_contained_decl=(
+            "이 도구 단독 호출로 완결. cross-domain chain 불필요. "
+            "특보 상세 내용이 필요하면 LLM 이 자율적으로 "
+            "turn 2 = kma_weather_alert_status (stn_id 전달) 선택 가능."
+        ),
     ),
     ministry="KMA",
     category=["기상", "예비특보", "특보"],
