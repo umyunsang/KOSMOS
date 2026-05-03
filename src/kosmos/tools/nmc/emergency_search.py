@@ -113,6 +113,26 @@ class _NmcEmergencySearchOutput(RootModel[dict[str, Any]]):
 # ---------------------------------------------------------------------------
 
 
+def _normalize_items(raw_items: object) -> list[dict[str, Any]]:
+    """Flatten data.go.kr B552657's `body.items.item` into a list of dicts.
+
+    The wire format wraps results as `body.items.item` where `item` is either
+    a single dict (1 result) or a list of dicts (≥2 results) — the
+    XML-shaped JSON quirk. The legacy odcloud-style flat list shape is also
+    tolerated for backward compatibility with any cached responses.
+    """
+    if isinstance(raw_items, dict):
+        item_field = raw_items.get("item", [])
+        if isinstance(item_field, dict):
+            return [item_field]
+        if isinstance(item_field, list):
+            return item_field
+        return []
+    if isinstance(raw_items, list):
+        return raw_items
+    return []
+
+
 def _evaluate_freshness(items: list[dict[str, Any]]) -> FreshnessResult:
     """Return the worst-case freshness across all items (fail-closed).
 
@@ -239,23 +259,7 @@ async def handle(inp: NmcEmergencySearchInput) -> dict[str, Any]:
         }
 
     body = data.get("response", {}).get("body", {})
-    # data.go.kr B552657 wraps results as `body.items.item` where `item` is
-    # either a single dict (1 result) or a list of dicts (≥2 results) — the
-    # XML-shaped JSON quirk. Normalise to a list either way; tolerate the
-    # legacy odcloud-style flat list shape too.
-    raw_items = body.get("items", [])
-    if isinstance(raw_items, dict):
-        item_field = raw_items.get("item", [])
-        if isinstance(item_field, dict):
-            items = [item_field]
-        elif isinstance(item_field, list):
-            items = item_field
-        else:
-            items = []
-    elif isinstance(raw_items, list):
-        items = raw_items
-    else:
-        items = []
+    items = _normalize_items(body.get("items", []))
     upstream_total = body.get("totalCount")
 
     if not items:
