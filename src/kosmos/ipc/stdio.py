@@ -852,6 +852,29 @@ async def run(  # noqa: C901
             # self_contained_decl + 섹션 3 short_reference 17 광역시도 표) is now
             # self-sufficient. The model decides chain vs single-tool autonomously.
             # Reference: research-stdio-ordering.md, frames-busan-weather/ T042 evidence.
+            # Spec 2522 T047 fix — resolve $ref to $defs and inline enum values.
+            # KOROAD KoroadAccidentSearchInput.search_year_cd uses
+            # `$ref: #/$defs/SearchYearCd` (20 values). The previous renderer
+            # only inlined `properties.<f>.enum` and gave up on $ref, leaving
+            # K-EXAONE to guess plain '2024' (invalid). Spec 2522 frames-gangnam-
+            # accident-fix2 evidence: invalid_params persisted after T042 fix.
+            # Fix: resolve $ref against schema['$defs'] + raise threshold 8→25.
+            defs = schema.get("$defs") if isinstance(schema, dict) else None
+
+            def _resolve_enum(meta: dict, defs: dict | None) -> list | None:
+                # direct enum
+                e = meta.get("enum")
+                if isinstance(e, list):
+                    return e
+                # $ref → $defs/<name>
+                ref = meta.get("$ref")
+                if isinstance(ref, str) and ref.startswith("#/$defs/") and isinstance(defs, dict):
+                    name = ref.removeprefix("#/$defs/")
+                    target = defs.get(name)
+                    if isinstance(target, dict) and isinstance(target.get("enum"), list):
+                        return target["enum"]
+                return None
+
             if isinstance(properties, dict) and properties:
                 for fname, fmeta in properties.items():
                     if not isinstance(fmeta, dict):
@@ -864,8 +887,12 @@ async def run(  # noqa: C901
                         fdesc = fdesc[:117] + "..."
                     pat = fmeta.get("pattern")
                     pat_part = f" pattern={pat!r}" if isinstance(pat, str) else ""
-                    enum = fmeta.get("enum")
-                    enum_part = f" enum={enum}" if isinstance(enum, list) and len(enum) <= 8 else ""
+                    enum = _resolve_enum(fmeta, defs)
+                    # Threshold raised 8→25 so KOROAD SearchYearCd/SidoCode/
+                    # GugunCode 등 도메인 enum (15-30 values) inline 노출.
+                    enum_part = (
+                        f" enum={enum}" if isinstance(enum, list) and len(enum) <= 25 else ""
+                    )
                     flag = "필수" if fname in required else "선택"
                     lines.append(
                         f"    · {fname} ({ftype}, {flag}{pat_part}{enum_part})"
