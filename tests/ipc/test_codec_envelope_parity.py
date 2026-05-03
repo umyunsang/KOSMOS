@@ -282,10 +282,18 @@ _PYDANTIC_TO_CODEC_FIELD_MAP: dict[str, str] = {
 # Pydantic type_kind → set of acceptable codec.ts type_kinds.
 # (Pydantic Literal["1.0"] === codec z.literal('1.0'); Pydantic
 # Literal-of-roles is enum on codec side.)
+#
+# Codex P2 (PR #2728): "int" must NOT accept bare "number" — Pydantic
+# integer fields reject floats; if codec.ts dropped `.int()` (turning
+# z.number().int().min(0) into z.number().min(0)), the TUI side would
+# silently accept floats while the backend rejects, opening a wire-
+# compatibility hole exactly of the kind this gate exists to prevent.
 _TYPE_KIND_EQUIV: dict[str, frozenset[str]] = {
     "literal": frozenset({"literal", "enum"}),
     "string": frozenset({"string"}),
-    "int": frozenset({"int", "number"}),
+    # Strict: Pydantic int (incl. NonNegativeInt) requires codec
+    # ``z.number().int()`` — bare ``z.number()`` is rejected.
+    "int": frozenset({"int"}),
     "object": frozenset({"object"}),
     "unknown": frozenset(),
 }
@@ -402,3 +410,38 @@ def test_drift_fixture_file_exists_and_is_test_only() -> None:
     assert "DO NOT IMPORT" in text or "DO NOT import" in text, (
         "Drift fixture must carry a 'DO NOT IMPORT' header to prevent runtime use."
     )
+
+
+# ---------------------------------------------------------------------------
+# Codex P2 (PR #2728) regression — synthetic codec text with bare
+# z.number() (missing `.int()`) must trigger AssertionError on frame_seq.
+# Proves the strict "int" mapping (no longer accepting bare "number")
+# closes the wire-compatibility hole Codex identified.
+# ---------------------------------------------------------------------------
+
+
+def test_int_field_rejects_bare_number_codec(tmp_path: pathlib.Path) -> None:
+    """`z.number()` without `.int()` must be rejected for an int Pydantic field.
+
+    Without this guard, dropping `.int()` from codec.ts would let the
+    TUI side accept floats for `frame_seq` while the Python backend
+    rejects, violating the parity gate's contract.
+    """
+    synthetic_codec = """\
+import { z } from 'zod'
+const BaseFrame = z.object({
+  version: z.literal('1.0'),
+  session_id: z.string(),
+  correlation_id: z.string().min(1),
+  role: z.enum(['tui', 'backend', 'tool', 'llm', 'notification']),
+  frame_seq: z.number().min(0),
+  transaction_id: z.string().min(1).nullable().optional(),
+  ts: z.string(),
+  trailer: z.object({ final: z.boolean() }).nullable().optional(),
+})
+"""
+    fixture = tmp_path / "codec_bare_number.ts"
+    fixture.write_text(synthetic_codec, encoding="utf-8")
+
+    with pytest.raises(AssertionError, match=r"frame_seq"):
+        run_codec_envelope_parity_check(fixture)
