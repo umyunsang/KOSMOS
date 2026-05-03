@@ -80,6 +80,17 @@ _TUI_DEPS_SNAPSHOT: Final[frozenset[str]] = frozenset(
         "@opentelemetry/sdk-logs",
         "@opentelemetry/sdk-metrics",
         "@opentelemetry/sdk-trace-base",
+        # Spec 2637 (Epic A) — instrumentation.ts byte-copy PORT (CC 825 LOC)
+        # dynamic-imports OTLP/gRPC exporters. plan.md Technical Context +
+        # research.md D1 cite. AGENTS.md hard rule "spec-driven PR" satisfied.
+        "@opentelemetry/semantic-conventions",
+        "@opentelemetry/exporter-trace-otlp-http",
+        "@opentelemetry/exporter-trace-otlp-grpc",
+        "@opentelemetry/exporter-logs-otlp-http",
+        "@opentelemetry/exporter-logs-otlp-grpc",
+        "@opentelemetry/exporter-metrics-otlp-http",
+        "@opentelemetry/exporter-metrics-otlp-grpc",
+        "@grpc/grpc-js",
         "ajv",
         "asciichart",
         "auto-bind",
