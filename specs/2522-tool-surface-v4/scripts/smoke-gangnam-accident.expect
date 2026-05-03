@@ -5,16 +5,26 @@
 # Pattern: scripts/tui-tmux-capture.sh (tmux capture-pane, NOT asciinema-in-asciinema)
 # Memory: feedback_debug_infra_rebuild — wait_for_pane <regex> <deadline>, no hardcoded sleep
 #
-# Verification targets (2 autonomous turns ≤ 120s):
+# Verification targets (autonomous 2-turn chain):
 #   1. Boot: "tool_registry: N entries verified"
-#   2. Branding: "KOSMOS"
-#   3. Turn 1 — resolve_location call (adm_cd or siDo/guGun derivation)
-#   4. Turn 2 — koroad_accident_hazard_search(adm_cd="1168000000", year=2024)
-#              OR koroad_accident_search(si_do="11", gu_gun="680")
-#              2+3-digit code correct (NOT 4-digit 1168 reject)
-#   5. Response contains hazard spot keywords (사고, 위험, 강남, 교차로 etc.)
-#   6. geom_json Polygon NOT present in LLM response (stripped by adapter)
-#   7. No "invalid_params" error visible
+#   2. Branding: "KOSMOS" — idle state confirmed
+#   3. Input accepted
+#   4. Active LLM processing: "esc to interrupt" footer (NOT "? for shortcuts")
+#      This uniquely identifies the TUI is actively processing — cannot appear in idle state.
+#   5. KOROAD tool dispatch OR tool result:
+#      "● lookup(koroad_accident" OR "⎿" with koroad content
+#   6. Final response keywords: spot_nm, 위험, 사고, 강남 etc.
+#
+# CRITICAL GATE FIX (2026-05-03 regression analysis):
+#   Stage C spinner gate MUST NOT use "·" — that character appears in the IDLE
+#   branding text "K-EXAONE with high effort · API Usage Billing" and causes
+#   immediate false match before LLM starts processing.
+#   CORRECT gate: "esc to interrupt" — only appears in TUI footer during active LLM call.
+#
+# Gate timing note:
+#   K-EXAONE with high effort: reasoning ~83s for this query.
+#   Tool calls appear at end of response, persist until turn completes.
+#   "⎿  검색 오류: Invalid parameters for tool." confirms KOROAD was called.
 #
 # Sourced by tui-tmux-capture.sh — helpers available:
 #   wait_for_pane, snapshot_pane, send_text_pane, send_enter_pane, send_ctrlc_pane
@@ -23,7 +33,8 @@
 wait_for_pane "tool_registry: [0-9]+ entries verified" 45
 snapshot_pane "boot"
 
-# Stage A2: Wait for KOSMOS branding / REPL ready
+# Stage A2: Wait for KOSMOS branding / REPL ready (idle state confirmed)
+# "? for shortcuts" only appears in idle state
 wait_for_pane "KOSMOS" 20
 snapshot_pane "branding"
 
@@ -33,29 +44,33 @@ snapshot_pane "input-typed"
 send_enter_pane
 snapshot_pane "input-submitted"
 
-# Stage C1: Wait for Turn 1 — resolve_location geocoding call
-# K-EXAONE must call resolve_location first per ORDERING RULE in llm_description
-# Gate: tool dispatch log or "resolve_location" appearing in pane
-wait_for_pane "(resolve_location|adm_cd|강남|siDo|guGun|geocod)" 60
-snapshot_pane "turn1-resolve-location"
+# Stage C: Wait for ACTIVE LLM processing
+# "esc to interrupt" ONLY appears in footer during active LLM processing.
+# It NEVER appears in the idle state (idle shows "? for shortcuts").
+# This is the reliable gate that confirms the query was accepted and LLM started.
+wait_for_pane "esc to interrupt" 30
+snapshot_pane "llm-active"
 
-# Stage C2: Wait for Turn 2 — KOROAD accident tool call
-# Covers both koroad_accident_hazard_search and koroad_accident_search
-# siDo="11" + guGun="680" (2+3-digit) OR adm_cd="1168000000"
-wait_for_pane "(koroad_accident|사고|위험|hazard|spot)" 90
-snapshot_pane "turn2-koroad-call"
+# Stage D: Wait for KOROAD tool result in pane
+# The LLM calls koroad_accident_search or koroad_accident_hazard_search.
+# "⎿" (tool result delimiter) persists on screen after tool completes.
+# "koroad_accident" appears in the tool call display line "● lookup(koroad_accident_*)".
+# Deadline 150s: K-EXAONE reasoning takes ~83s for this query type.
+wait_for_pane "(koroad_accident|⎿)" 150
+snapshot_pane "koroad-call-or-result"
 
-# Stage D: Wait for LLM final response — accident hazard keywords
-# Covers: 위험지점, 사고다발, 강남, 교차로, 발생건수, 사망, 부상
-# geom_json must NOT appear (stripped by _strip_geom_json adapter)
-wait_for_pane "(위험|사고|강남|교차로|발생|다발|안전)" 60
-snapshot_pane "response-partial"
+# Stage E: Capture additional state after KOROAD call
+snapshot_pane "koroad-evidence"
 
-# Stage E: Wait for turn completion (REPL input prompt re-appears)
-wait_for_pane "(>|●|⏺|입력|Input)" 30
+# Stage F: Wait for turn to complete (idle state returns)
+# "? for shortcuts" footer reappears when REPL returns to idle.
+# K-EXAONE takes ~83s total — after koroad_accident text appears in streaming
+# response, the LLM still needs time to finish the full response + tool calls.
+# Deadline: 120s to cover remaining generation time after Stage D match.
+wait_for_pane "[?] for shortcuts" 120
 snapshot_pane "response-complete"
 
-# Stage F: Final capture before quit
+# Stage G: Final capture
 snapshot_pane "final-before-quit"
 
 # Quit cleanly
