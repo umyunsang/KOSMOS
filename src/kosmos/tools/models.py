@@ -574,8 +574,8 @@ class ResolveLocationInput(BaseModel):
             "- 'coords_and_admcd' (default) : 좌표 + adm_cd 둘 다 — 가장 안전.\n"
             "- 'road_address' / 'jibun_address' : 사람용 주소 텍스트.\n"
             "- 'poi' : 관심 지점 정보 (이름 / 카테고리).\n"
-            "- 'all' : 모든 위 정보. 후속 도구에 nx/ny 가 필요하면 'coords' 충분 — "
-            "KMA 도구는 nx/ny 를 좌표 → grid 변환해서 별도 받음."
+            "- 'all' : 모든 위 정보. 후속 도구별 input schema 는 각 도구의 description 참조. "
+            "각 도구는 self-contained — KOSMOS 가 cross-domain chain 강제하지 않음."
         ),
     )
     near: tuple[float, float] | None = Field(
