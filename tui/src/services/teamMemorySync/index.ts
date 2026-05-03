@@ -1,28 +1,72 @@
-/**
- * Team Memory Sync Service
- *
- * Syncs team memory files between the local filesystem and the server API.
- * Team memory is scoped per-repo (identified by git remote hash) and shared
- * across all authenticated org members.
- *
- * API contract (anthropic/anthropic#250711 + #283027):
- *   GET  /api/claude_code/team_memory?repo={owner/repo}            → TeamMemoryData (includes entryChecksums)
- *   GET  /api/claude_code/team_memory?repo={owner/repo}&view=hashes → metadata + entryChecksums only (no entry bodies)
- *   PUT  /api/claude_code/team_memory?repo={owner/repo}            → upload entries (upsert semantics)
- *   404 = no data exists yet
- *
- * Sync semantics:
- *   - Pull overwrites local files with server content (server wins per-key).
- *   - Push uploads only keys whose content hash differs from serverChecksums
- *     (delta upload). Server uses upsert: keys not in the PUT are preserved.
- *   - File deletions do NOT propagate: deleting a local file won't remove it
- *     from the server, and the next pull will restore it locally.
- *
- * State management:
- *   All mutable state (ETag tracking, watcher suppression) lives in a
- *   SyncState object created by the caller and threaded through every call.
- *   This avoids module-level mutable state and gives tests natural isolation.
- */
+// SPDX-License-Identifier: Apache-2.0
+// Spec 2641 — byte-copy(2641) baseline restored from
+//   .references/claude-code-sourcemap/restored-src/src/services/teamMemorySync/index.ts
+//   (CC 2.1.88, SHA-256 8d808458dafa4968a4660b7e7ba69b2393a134098078cad0842eab500219b3a0).
+// Three labeled swaps layer atop the byte-copy:
+//   • swap/llm-provider(2641)      — `constants/oauth` import replaced with
+//     KOSMOS-1633 inline stubs (CLAUDE_AI_INFERENCE_SCOPE/CLAUDE_AI_PROFILE_SCOPE/
+//     OAUTH_BETA_HEADER/getOauthConfig). KOSMOS uses FriendliAI; no Anthropic
+//     OAuth tokens exist.
+//   • swap/anti-anthropic-1p(2641) — every public entry-point throws via the
+//     dead-call gate below unless KOSMOS_ENABLE_DEAD_TEAM_MEM_SYNC is set
+//     (defense-in-depth atop `feature('TEAMMEM')=false` at
+//     tui/src/setup.ts:358 + tui/src/stubs/bun-bundle.ts which already
+//     prevents `startTeamMemoryWatcher` from running). Even if a future
+//     change re-enables the feature flag, axios will not reach claude.ai
+//     unless the env override is intentionally set (Spec 2641 audit replay).
+//   • swap/identifier-rename(2641) — none required (file already uses
+//     KOSMOS-neutral naming where applicable; CC team-memory contract names
+//     remain for byte-copy fidelity).
+// This file has zero live callers in tui/src after Spec 2641 (verified by
+// callgraph audit: only sibling `teamMemSecretGuard` + `secretScanner` are
+// imported elsewhere; `watcher.ts` is gated by `feature('TEAMMEM')=false`).
+// It is retained as the authoritative CC team-memory-sync reference for
+// future audit replays.
+//
+// === ORIGINAL CC JSDOC (preserved for byte-copy fidelity) ===
+// Team Memory Sync Service
+//
+// Syncs team memory files between the local filesystem and the server API.
+// Team memory is scoped per-repo (identified by git remote hash) and shared
+// across all authenticated org members.
+//
+// API contract (anthropic/anthropic#250711 + #283027):
+//   GET  /api/claude_code/team_memory?repo={owner/repo}            → TeamMemoryData (includes entryChecksums)
+//   GET  /api/claude_code/team_memory?repo={owner/repo}&view=hashes → metadata + entryChecksums only (no entry bodies)
+//   PUT  /api/claude_code/team_memory?repo={owner/repo}            → upload entries (upsert semantics)
+//   404 = no data exists yet
+//
+// Sync semantics:
+//   - Pull overwrites local files with server content (server wins per-key).
+//   - Push uploads only keys whose content hash differs from serverChecksums
+//     (delta upload). Server uses upsert: keys not in the PUT are preserved.
+//   - File deletions do NOT propagate: deleting a local file won't remove it
+//     from the server, and the next pull will restore it locally.
+//
+// State management:
+//   All mutable state (ETag tracking, watcher suppression) lives in a
+//   SyncState object created by the caller and threaded through every call.
+//   This avoids module-level mutable state and gives tests natural isolation.
+
+// SWAP/anti-anthropic-1p(2641): dead-call gate. Throws unless the strict
+// override value `'1'` is set. Codex P2 (PR #2688): rejecting permissive
+// truthy checks (`Boolean(...)`) prevents accidental reactivation when CI
+// or shell environments template booleans as `KOSMOS_ENABLE_DEAD_*=0` or
+// `=false`. Only the literal string `'1'` opens the gate.
+function isDeadCallOverrideExplicit(envValue: string | undefined): boolean {
+  return envValue === '1'
+}
+
+function assertNotDeadCall(entryName: string): void {
+  if (!isDeadCallOverrideExplicit(process.env.KOSMOS_ENABLE_DEAD_TEAM_MEM_SYNC)) {
+    throw new Error(
+      `[KOSMOS] services/teamMemorySync.${entryName}: dead in KOSMOS — ` +
+        'claude.ai team memory is not part of the L1-A K-EXAONE harness. ' +
+        "Set KOSMOS_ENABLE_DEAD_TEAM_MEM_SYNC='1' (literal) only when " +
+        'intentionally exercising the byte-copy reference (Spec 2641).',
+    )
+  }
+}
 
 import axios from 'axios'
 import { createHash } from 'crypto'
@@ -760,6 +804,7 @@ async function writeRemoteEntriesToLocal(
  * Check if team memory sync is available (requires first-party OAuth).
  */
 export function isTeamMemorySyncAvailable(): boolean {
+  assertNotDeadCall('isTeamMemorySyncAvailable')
   return isUsingOAuth()
 }
 
@@ -778,6 +823,7 @@ export async function pullTeamMemory(
   notModified?: boolean
   error?: string
 }> {
+  assertNotDeadCall('pullTeamMemory')
   const skipEtagCache = options?.skipEtagCache ?? false
   const startTime = Date.now()
 
@@ -889,6 +935,7 @@ export async function pullTeamMemory(
 export async function pushTeamMemory(
   state: SyncState,
 ): Promise<TeamMemorySyncPushResult> {
+  assertNotDeadCall('pushTeamMemory')
   const startTime = Date.now()
   let conflictRetries = 0
 
@@ -1156,6 +1203,7 @@ export async function syncTeamMemory(state: SyncState): Promise<{
   filesPushed: number
   error?: string
 }> {
+  assertNotDeadCall('syncTeamMemory')
   // 1. Pull remote → local (skip ETag cache for full sync)
   const pullResult = await pullTeamMemory(state, { skipEtagCache: true })
   if (!pullResult.success) {

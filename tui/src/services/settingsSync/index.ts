@@ -1,13 +1,39 @@
-/**
- * Settings Sync Service
- *
- * Syncs user settings and memory files across Claude Code environments.
- *
- * - Interactive CLI: Uploads local settings to remote (incremental, only changed entries)
- * - CCR: Downloads remote settings to local before plugin installation
- *
- * Backend API: anthropic/anthropic#218817
- */
+// SPDX-License-Identifier: Apache-2.0
+// Spec 2641 — byte-copy(2641) baseline restored from
+//   .references/claude-code-sourcemap/restored-src/src/services/settingsSync/index.ts
+//   (CC 2.1.88, SHA-256 5ff457384f2fa4e8ead029bb8d3a8504ce0e822181b6ab57ba4430b816663f93).
+// Three labeled swaps layer atop the byte-copy:
+//   • swap/llm-provider(2641)      — `constants/oauth` import replaced with
+//     KOSMOS-1633 inline stubs (CLAUDE_AI_INFERENCE_SCOPE/OAUTH_BETA_HEADER/
+//     getOauthConfig). KOSMOS uses FriendliAI; no Anthropic OAuth tokens
+//     exist.
+//   • swap/anti-anthropic-1p(2641) — every entry-point that would issue an
+//     axios call to claude.ai's `/api/claude_code/user_settings` endpoint
+//     short-circuits via the dead-call gate below. Unlike teamMemorySync
+//     (which has zero callers), settingsSync IS still imported by
+//     `tui/src/cli/print.ts` (3 sites: lines ~519, ~1718, ~3078) and
+//     `tui/src/commands/reload-plugins/reload-plugins.ts:28` — so the gate
+//     uses *silent early-return* rather than `throw`, preserving the
+//     critical boot path's fail-open behaviour. The pre-existing
+//     `feature('DOWNLOAD_USER_SETTINGS')`/`feature('UPLOAD_USER_SETTINGS')`
+//     flags (always `false` per `tui/src/stubs/bun-bundle.ts`) form the
+//     1st gate; the env-override gate added here is the 2nd defense layer.
+//   • swap/identifier-rename(2641) — none required (file uses
+//     KOSMOS-neutral naming where applicable; CC settings-sync contract
+//     names remain for byte-copy fidelity).
+// Two callers (`cli/print.ts` + `commands/reload-plugins/`) survive but
+// receive early-`false`/early-`void` from the dead-call gate; this file's
+// surface is preserved for CC parity (Spec 2641).
+//
+// === ORIGINAL CC JSDOC (preserved for byte-copy fidelity) ===
+// Settings Sync Service
+//
+// Syncs user settings and memory files across Claude Code environments.
+//
+// - Interactive CLI: Uploads local settings to remote (incremental, only changed entries)
+// - CCR: Downloads remote settings to local before plugin installation
+//
+// Backend API: anthropic/anthropic#218817
 
 import { feature } from 'bun:bundle'
 import axios from 'axios'
@@ -52,12 +78,31 @@ const SETTINGS_SYNC_TIMEOUT_MS = 10000 // 10 seconds
 const DEFAULT_MAX_RETRIES = 3
 const MAX_FILE_SIZE_BYTES = 500 * 1024 // 500 KB per file (matches backend limit)
 
+// SWAP/anti-anthropic-1p(2641): dead-call gate. Returns true only when the
+// env override is the strict literal string `'1'` (caller proceeds with
+// original CC behaviour); returns false otherwise (caller short-circuits
+// silently). Used by all 4 entry-points below.
+//
+// Codex P2 (PR #2688): rejecting permissive truthy checks (`Boolean(...)`)
+// prevents accidental reactivation when CI or shell environments template
+// booleans as `KOSMOS_ENABLE_DEAD_SETTINGS_SYNC=0` or `=false`. Only the
+// literal string `'1'` opens the gate.
+function isDeadCallGateOpen(): boolean {
+  return process.env.KOSMOS_ENABLE_DEAD_SETTINGS_SYNC === '1'
+}
+
 /**
  * Upload local settings to remote (interactive CLI only).
  * Called from main.tsx preAction.
  * Runs in background - caller should not await unless needed.
  */
 export async function uploadUserSettingsInBackground(): Promise<void> {
+  if (!isDeadCallGateOpen()) {
+    // Spec 2641 dead-call gate: claude.ai settings sync is not part of the
+    // L1-A K-EXAONE harness. Surface preserved for CC parity; runtime is
+    // no-op. Set KOSMOS_ENABLE_DEAD_SETTINGS_SYNC=1 only for audit replay.
+    return
+  }
   try {
     if (
       !feature('UPLOAD_USER_SETTINGS') ||
@@ -127,6 +172,12 @@ export function _resetDownloadPromiseForTesting(): void {
  * Returns true if settings were applied, false otherwise.
  */
 export function downloadUserSettings(): Promise<boolean> {
+  if (!isDeadCallGateOpen()) {
+    // Spec 2641 dead-call gate: silent early-return so cli/print.ts boot
+    // path receives `false` (the same answer it currently gets when
+    // `feature('DOWNLOAD_USER_SETTINGS')` is `false`). No axios traffic.
+    return Promise.resolve(false)
+  }
   if (downloadPromise) {
     return downloadPromise
   }
@@ -150,6 +201,11 @@ export function downloadUserSettings(): Promise<boolean> {
  * settingsSync → changeDetector cycle edge.
  */
 export function redownloadUserSettings(): Promise<boolean> {
+  if (!isDeadCallGateOpen()) {
+    // Spec 2641 dead-call gate: silent early-return. /reload-plugins user
+    // command receives `false` and continues with local-only state.
+    return Promise.resolve(false)
+  }
   downloadPromise = doDownloadUserSettings(0)
   return downloadPromise
 }
@@ -157,6 +213,13 @@ export function redownloadUserSettings(): Promise<boolean> {
 async function doDownloadUserSettings(
   maxRetries = DEFAULT_MAX_RETRIES,
 ): Promise<boolean> {
+  if (!isDeadCallGateOpen()) {
+    // Spec 2641 dead-call gate: defense-in-depth. The two public callers
+    // (downloadUserSettings/redownloadUserSettings) already short-circuit,
+    // but if a future refactor invokes this private helper directly the
+    // gate still blocks any axios traffic.
+    return false
+  }
   if (feature('DOWNLOAD_USER_SETTINGS')) {
     try {
       if (
