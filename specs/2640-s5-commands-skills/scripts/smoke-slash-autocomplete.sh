@@ -18,40 +18,49 @@
 set -euo pipefail
 
 # Stage 1 — boot
+# Wait for KOSMOS branding regex (Codex P2 — replace fixed sleeps with readiness
+# waits per `feedback_debug_infra_rebuild` memory and Spec debug-infra-rebuild).
 wait_for_pane "KOSMOS|tool_registry" 30
 snapshot_pane "boot-branding"
 
 # Stage 2 — slash trigger
 send_text_pane "/"
-sleep 1
+# Wait for the dropdown to render at least one common command name (proves
+# `getCommands()` resolved + the autocomplete view has reconciled). `/onboarding`,
+# `/lang`, and `/agents` are KOSMOS-original commands that are always registered
+# and visible in the dropdown when no prefix filter is active.
+wait_for_pane "/(onboarding|lang|agents|update-config|init|add-dir)" 10
 snapshot_pane "slash-dropdown"
 
 # Stage 3 — filter "ant" (should now match nothing — /ant-trace removed)
 send_text_pane "ant"
-sleep 1
+# Wait for the dropdown to settle on the prefix update — match the prompt buffer
+# echo (`/ant`) which only appears after Ink reconciles the input change.
+wait_for_pane "/ant" 10
 snapshot_pane "filter-ant"
 
 # Reset filter
 send_keys_pane BSpace BSpace BSpace
-sleep 0.5
+wait_for_pane "❯ /\$|❯ / *\$" 5 || true
 
 # Stage 4 — filter "tele" (should match nothing — /teleport removed)
 send_text_pane "tele"
-sleep 1
+wait_for_pane "/tele" 10
 snapshot_pane "filter-tele"
 
 # Reset
 send_keys_pane BSpace BSpace BSpace BSpace
-sleep 0.5
+wait_for_pane "❯ /\$|❯ / *\$" 5 || true
 
 # Stage 5 — filter "summ" (should match nothing — /summary removed)
 send_text_pane "summ"
-sleep 1
+wait_for_pane "/summ" 10
 snapshot_pane "filter-summ"
 
 # Stage 6 — clean exit
 send_ctrlc_pane
-sleep 0.3
 send_ctrlc_pane
-sleep 0.5
+# Wait for the TUI to actually exit (pane shows shell prompt or empty) before
+# the final snapshot. Bounded with a soft timeout so a hung exit still captures.
+wait_for_pane "\\\$ |^\$" 5 || true
 snapshot_pane "post-exit"
