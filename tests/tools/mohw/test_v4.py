@@ -16,16 +16,15 @@ import pytest
 import respx
 
 from kosmos.tools.mohw.welfare_eligibility_search import (
+    _MOHW_DESCRIPTION,
     MOHW_WELFARE_ELIGIBILITY_SEARCH_TOOL,
     MohwWelfareEligibilitySearchInput,
     MohwWelfareEligibilitySearchOutput,
     SsisWelfareServiceItem,
-    _MOHW_DESCRIPTION,
     _build_params,
     _parse_xml_response,
     handle,
 )
-from kosmos.tools.ssis.codes import LifeArrayCode, OrderBy
 
 # ---------------------------------------------------------------------------
 # Minimal fixtures
@@ -190,7 +189,14 @@ class TestBuildParamsSnakeToCamel:
         """Optional camelCase keys absent when pydantic fields are None."""
         inp = MohwWelfareEligibilitySearchInput.model_validate({})
         params = _build_params(inp, _FAKE_API_KEY)
-        for absent in ("lifeArray", "searchWrd", "trgterIndvdlArray", "intrsThemaArray", "age", "onapPsbltYn"):
+        for absent in (
+            "lifeArray",
+            "searchWrd",
+            "trgterIndvdlArray",
+            "intrsThemaArray",
+            "age",
+            "onapPsbltYn",
+        ):
             assert absent not in params, f"{absent!r} should not appear when value is None"
 
 
@@ -211,8 +217,7 @@ class TestCallTpAutoInjection:
             inp = MohwWelfareEligibilitySearchInput.model_validate(raw)
             params = _build_params(inp, _FAKE_API_KEY)
             assert params["callTp"] == "L", (
-                f"callTp should always be 'L' (life_array={life_code!r}), "
-                f"got {params['callTp']!r}"
+                f"callTp should always be 'L' (life_array={life_code!r}), got {params['callTp']!r}"
             )
 
     def test_srch_key_code_always_003(self) -> None:
@@ -305,6 +310,7 @@ class TestHandleMocked:
 
         def _capture(request, **kwargs):
             from urllib.parse import parse_qs, urlparse
+
             qs = parse_qs(urlparse(str(request.url)).query)
             captured_params.update({k: v[0] for k, v in qs.items()})
             return respx.MockResponse(status_code=200, content=_MINIMAL_XML)
@@ -312,7 +318,7 @@ class TestHandleMocked:
         respx.get(url__regex=r".*B554287.*").mock(side_effect=_capture)
 
         inp = MohwWelfareEligibilitySearchInput.model_validate({"life_array": "007"})
-        result = await handle(inp)
+        await handle(inp)
 
         assert captured_params.get("callTp") == "L", (
             f"callTp not in request params: {captured_params}"
@@ -427,7 +433,7 @@ class TestMohwV4Description:
         """build_description_v4 joins 5 sections with double newline → 4 separators."""
         sections = _MOHW_DESCRIPTION.split("\n\n")
         assert len(sections) >= 4, (
-            f"Expected ≥ 4 double-newline separators (5 sections), got {len(sections)-1}"
+            f"Expected ≥ 4 double-newline separators (5 sections), got {len(sections) - 1}"
         )
 
     def test_tool_llm_description_matches_built_description(self) -> None:
@@ -436,7 +442,9 @@ class TestMohwV4Description:
 
     def test_output_schema_is_real_model(self) -> None:
         """output_schema is MohwWelfareEligibilitySearchOutput (not a RootModel stub)."""
-        assert MOHW_WELFARE_ELIGIBILITY_SEARCH_TOOL.output_schema is MohwWelfareEligibilitySearchOutput
+        assert (
+            MOHW_WELFARE_ELIGIBILITY_SEARCH_TOOL.output_schema is MohwWelfareEligibilitySearchOutput
+        )
 
     def test_citizen_facing_gate_is_read_only(self) -> None:
         """US4 real impl: citizen_facing_gate must be 'read-only' (no auth gate)."""

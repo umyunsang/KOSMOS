@@ -33,7 +33,7 @@ def _estimate_tokens(text: str) -> int:
       Non-Korean text split on whitespace → 1 token per word
     """
     korean_chars = [c for c in text if "가" <= c <= "힣"]
-    non_korean = "".join(c if "가" > c or c > "힣" else " " for c in text)
+    non_korean = "".join(c if c < "가" or c > "힣" else " " for c in text)
     non_korean_words = [w for w in non_korean.split() if w.strip()]
     return len(korean_chars) + len(non_korean_words)
 
@@ -210,14 +210,27 @@ class TestGridShortReferenceInline:
 
         ref = kma_grid_short_reference()
         expected_regions = [
-            "서울", "부산", "대구", "인천", "광주", "대전", "울산",
-            "세종", "경기", "강원", "충북", "충남", "전북", "전남",
-            "경북", "경남", "제주",
+            "서울",
+            "부산",
+            "대구",
+            "인천",
+            "광주",
+            "대전",
+            "울산",
+            "세종",
+            "경기",
+            "강원",
+            "충북",
+            "충남",
+            "전북",
+            "전남",
+            "경북",
+            "경남",
+            "제주",
         ]
         for region in expected_regions:
             assert region in ref, (
-                f"kma_grid_short_reference() missing region '{region}'. "
-                f"Output: {ref[:100]!r}"
+                f"kma_grid_short_reference() missing region '{region}'. Output: {ref[:100]!r}"
             )
 
     def test_grid_tools_embed_seoul_nx_ny(self, kma_tools) -> None:
@@ -291,8 +304,7 @@ class TestDescriptionSection5ChainGuidance:
         )
         # Must state chain is not forced
         assert "강제 X" in section5 or "강제하지 않" in section5 or "chain 강제 X" in section5, (
-            f"kma_weather_alert_status: Section 5 must state chain is not forced. "
-            f"Got: {section5!r}"
+            f"kma_weather_alert_status: Section 5 must state chain is not forced. Got: {section5!r}"
         )
 
 

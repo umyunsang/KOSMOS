@@ -36,7 +36,6 @@ from kosmos.tools.koroad.koroad_accident_search import (
     _call,
 )
 
-
 # ---------------------------------------------------------------------------
 # T037-A  koroad_accident_search — live happy path siDo=11 / guGun=680
 # ---------------------------------------------------------------------------
@@ -134,8 +133,16 @@ class TestStripGeomJson:
             "geom_json": "large_polygon_string_x500",
         }
         result = _strip_geom_json(item)
-        for key in ("spot_nm", "spot_cd", "sido_sgg_nm", "occrrnc_cnt",
-                    "caslt_cnt", "dth_dnv_cnt", "la_crd", "lo_crd"):
+        for key in (
+            "spot_nm",
+            "spot_cd",
+            "sido_sgg_nm",
+            "occrrnc_cnt",
+            "caslt_cnt",
+            "dth_dnv_cnt",
+            "la_crd",
+            "lo_crd",
+        ):
             assert key in result, f"Expected key {key!r} in stripped result"
         assert "geom_json" not in result
 

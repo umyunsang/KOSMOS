@@ -254,9 +254,7 @@ class TestNfaLayer3Gate:
     """
 
     @pytest.mark.asyncio
-    async def test_handle_raises_config_error_without_api_key(
-        self, monkeypatch
-    ) -> None:
+    async def test_handle_raises_config_error_without_api_key(self, monkeypatch) -> None:
         """handle() raises ConfigurationError if KOSMOS_DATA_GO_KR_API_KEY is not set."""
         from kosmos.tools.errors import ConfigurationError
 

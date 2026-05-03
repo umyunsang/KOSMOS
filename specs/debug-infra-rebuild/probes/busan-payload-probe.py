@@ -134,10 +134,6 @@ full_system = (
     + "\n"
 )
 
-print(f"System prompt length: {len(full_system)} chars", file=sys.stderr)
-print("--- SUFFIX RENDERED ---", file=sys.stderr)
-print(available_adapters_suffix, file=sys.stderr)
-print("--- END SUFFIX ---", file=sys.stderr)
 
 # ---------------------------------------------------------------------------
 # The lookup primitive tool definition (exact shape KOSMOS registers)
@@ -200,7 +196,6 @@ resolve_location_tool = {
 
 TOKEN = os.environ.get("KOSMOS_FRIENDLI_TOKEN", "")
 if not TOKEN:
-    print("ERROR: KOSMOS_FRIENDLI_TOKEN not set", file=sys.stderr)
     sys.exit(1)
 
 BASE_URL = os.environ.get(
@@ -223,8 +218,6 @@ payload = {
     "chat_template_kwargs": {"enable_thinking": True},
 }
 
-print(f"Calling {MODEL} with user: {USER_QUERY!r}", file=sys.stderr)
-print(f"System prompt total length: {len(full_system)}", file=sys.stderr)
 
 t0 = time.perf_counter()
 ttft: float | None = None
@@ -232,56 +225,54 @@ content_buf: list[str] = []
 reasoning_buf: list[str] = []
 tool_calls_raw: dict[int, dict] = {}  # index → accumulated delta
 
-with httpx.Client(timeout=180.0) as cli:
-    with cli.stream(
-        "POST",
-        f"{BASE_URL}/chat/completions",
-        headers={
-            "Authorization": f"Bearer {TOKEN}",
-            "Accept": "text/event-stream",
-        },
-        json=payload,
-    ) as resp:
-        if resp.status_code != 200:
-            body = resp.read().decode("utf-8", "replace")
-            print(f"HTTP {resp.status_code}: {body}", file=sys.stderr)
-            sys.exit(1)
+with httpx.Client(timeout=180.0) as cli, cli.stream(
+    "POST",
+    f"{BASE_URL}/chat/completions",
+    headers={
+        "Authorization": f"Bearer {TOKEN}",
+        "Accept": "text/event-stream",
+    },
+    json=payload,
+) as resp:
+    if resp.status_code != 200:
+        body = resp.read().decode("utf-8", "replace")
+        sys.exit(1)
 
-        for line in resp.iter_lines():
-            if not line or not line.startswith("data:"):
-                continue
-            raw = line[5:].strip()
-            if raw == "[DONE]":
-                break
-            try:
-                obj = json.loads(raw)
-            except json.JSONDecodeError:
-                continue
-            if ttft is None:
-                ttft = time.perf_counter() - t0
-            choices = obj.get("choices") or []
-            if not choices:
-                continue
-            delta = choices[0].get("delta") or {}
-            # Content / reasoning
-            if delta.get("content"):
-                content_buf.append(delta["content"])
-            if delta.get("reasoning_content"):
-                reasoning_buf.append(delta["reasoning_content"])
-            # Tool calls
-            for tc in delta.get("tool_calls") or []:
-                idx = tc.get("index", 0)
-                if idx not in tool_calls_raw:
-                    tool_calls_raw[idx] = {
-                        "id": tc.get("id", ""),
-                        "type": tc.get("type", "function"),
-                        "function": {"name": "", "arguments": ""},
-                    }
-                fn = tc.get("function") or {}
-                if fn.get("name"):
-                    tool_calls_raw[idx]["function"]["name"] += fn["name"]
-                if fn.get("arguments"):
-                    tool_calls_raw[idx]["function"]["arguments"] += fn["arguments"]
+    for line in resp.iter_lines():
+        if not line or not line.startswith("data:"):
+            continue
+        raw = line[5:].strip()
+        if raw == "[DONE]":
+            break
+        try:
+            obj = json.loads(raw)
+        except json.JSONDecodeError:
+            continue
+        if ttft is None:
+            ttft = time.perf_counter() - t0
+        choices = obj.get("choices") or []
+        if not choices:
+            continue
+        delta = choices[0].get("delta") or {}
+        # Content / reasoning
+        if delta.get("content"):
+            content_buf.append(delta["content"])
+        if delta.get("reasoning_content"):
+            reasoning_buf.append(delta["reasoning_content"])
+        # Tool calls
+        for tc in delta.get("tool_calls") or []:
+            idx = tc.get("index", 0)
+            if idx not in tool_calls_raw:
+                tool_calls_raw[idx] = {
+                    "id": tc.get("id", ""),
+                    "type": tc.get("type", "function"),
+                    "function": {"name": "", "arguments": ""},
+                }
+            fn = tc.get("function") or {}
+            if fn.get("name"):
+                tool_calls_raw[idx]["function"]["name"] += fn["name"]
+            if fn.get("arguments"):
+                tool_calls_raw[idx]["function"]["arguments"] += fn["arguments"]
 
 total_time = time.perf_counter() - t0
 
@@ -335,19 +326,14 @@ result = {
 }
 
 # Print summary to stderr
-print(f"\nTTFT: {result['ttft_s']}s  Total: {result['total_time_s']}s", file=sys.stderr)
-print(f"Tool calls: {result['tool_calls_count']}", file=sys.stderr)
 for tc in parsed_tool_calls:
-    print(f"  [{tc['index']}] {tc['name']}({json.dumps(tc['arguments'], ensure_ascii=False)})", file=sys.stderr)
+    pass
 
-print(f"\nDiagnosis:", file=sys.stderr)
-for k, v in result["diagnosis"].items():
-    print(f"  {k}: {v}", file=sys.stderr)
+for _k, _v in result["diagnosis"].items():
+    pass
 
 # Write output JSON
 OUT = Path(__file__).parent / "busan-payload-probe.output.json"
 OUT.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
-print(f"\nOutput written to: {OUT}", file=sys.stderr)
 
 # Also print JSON to stdout for piping
-print(json.dumps(result, ensure_ascii=False, indent=2))

@@ -106,10 +106,10 @@ def register_all_tools(registry: ToolRegistry, executor: ToolExecutor) -> Routin
     from kosmos.tools.mock.lookup_module_hometax_simplified import (
         register as reg_mock_hometax_simplified,
     )
+    from kosmos.tools.mohw.welfare_eligibility_search import register as reg_mohw
     from kosmos.tools.mvp_surface import register_mvp_surface
     from kosmos.tools.nfa119.emergency_info_service import register as reg_nfa
     from kosmos.tools.nmc.emergency_search import register as reg_nmc
-    from kosmos.tools.mohw.welfare_eligibility_search import register as reg_mohw
 
     # Register MVP LLM-visible core surface first (FR-001, SC-003)
     register_mvp_surface(registry)

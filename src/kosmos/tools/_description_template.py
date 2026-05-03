@@ -43,7 +43,7 @@ def _estimate_tokens(text: str) -> int:
     This is conservative but consistent with tiktoken BPE behaviour on Korean.
     """
     korean_chars = [c for c in text if "가" <= c <= "힣"]
-    non_korean = "".join(c if "가" > c or c > "힣" else " " for c in text)
+    non_korean = "".join(c if c < "가" or c > "힣" else " " for c in text)
     non_korean_words = [w for w in non_korean.split() if w.strip()]
     return len(korean_chars) + len(non_korean_words)
 

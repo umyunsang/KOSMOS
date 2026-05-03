@@ -240,7 +240,9 @@ class TestMohwExecutorAuthGate:
     """
 
     @pytest.mark.asyncio
-    @pytest.mark.skip(reason="Spec 2522 US4: citizen_facing_gate changed to 'read-only'; auth_required gate no longer applies. See tests/tools/mohw/test_v4.py.")
+    @pytest.mark.skip(
+        reason="Spec 2522 US4: citizen_facing_gate changed to 'read-only'; auth_required gate no longer applies. See tests/tools/mohw/test_v4.py."
+    )
     @respx.mock
     async def test_executor_returns_auth_required(self, mohw_reg_exec) -> None:
         """[SKIPPED — Spec 2522 US4 supersedes] lookup(mode='fetch') with session_identity=None returns LookupError(auth_required)."""
@@ -296,7 +298,9 @@ class TestMohwScenario3Contract:
     """
 
     @pytest.mark.asyncio
-    @pytest.mark.skip(reason="Spec 2522 US4: citizen_facing_gate='read-only'; auth_required scenario no longer valid. Epic #19 must update E2E contract.")
+    @pytest.mark.skip(
+        reason="Spec 2522 US4: citizen_facing_gate='read-only'; auth_required scenario no longer valid. Epic #19 must update E2E contract."
+    )
     @respx.mock
     async def test_executor_auth_required_matches_scenario3_contract(self, mohw_reg_exec) -> None:
         """[SKIPPED — Spec 2522 US4 supersedes] LookupError shape for unauthenticated MOHW fetch."""

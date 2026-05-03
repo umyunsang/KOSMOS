@@ -541,16 +541,13 @@ async def resolve_location_v4(
             kind="error",
             reason="upstream_unavailable",
             message=(
-                f"Kakao response missing or invalid b_code for query {query!r}. "
-                f"Got: {b_code_raw!r}"
+                f"Kakao response missing or invalid b_code for query {query!r}. Got: {b_code_raw!r}"
             ),
         )
 
     # address_name: prefer doc.address_name (populated for REGION/ROAD types)
     address_name: str = (
-        doc.address_name
-        or (addr_block.address_name if addr_block else None)
-        or query
+        doc.address_name or (addr_block.address_name if addr_block else None) or query
     )
     if not address_name:
         address_name = query

@@ -20,7 +20,7 @@ from datetime import UTC, datetime
 from typing import Any, Literal
 
 import httpx
-from pydantic import BaseModel, ConfigDict, Field, RootModel
+from pydantic import BaseModel, ConfigDict, Field
 
 from kosmos.tools._description_template import build_description_v4
 from kosmos.tools._outbound_trace import traced_async_client
@@ -39,8 +39,7 @@ from kosmos.tools.ssis.codes import (
 logger = logging.getLogger(__name__)
 
 _BASE_URL = (
-    "https://apis.data.go.kr/B554287/NationalWelfareInformationsV001"
-    "/NationalWelfarelistV001"
+    "https://apis.data.go.kr/B554287/NationalWelfareInformationsV001/NationalWelfarelistV001"
 )
 
 # ---------------------------------------------------------------------------
@@ -78,9 +77,7 @@ class MohwWelfareEligibilitySearchInput(BaseModel):
     intrs_thema_array: IntrsThemaCode | None = Field(
         default=None,
         description=(
-            "Interest-theme filter. "
-            "Authoritative 임신·출산 code: '080'. "
-            "'010' = 신체건강."
+            "Interest-theme filter. Authoritative 임신·출산 code: '080'. '010' = 신체건강."
         ),
     )
     age: int | None = Field(
@@ -386,10 +383,7 @@ _MOHW_DESCRIPTION = build_description_v4(
         "intrs_thema_array→intrsThemaArray, num_of_rows→numOfRows, page_no→pageNo. "
         "callTp=L and srchKeyCode=003 are auto-injected; do not set them."
     ),
-    short_reference=(
-        "[LIFE_ARRAY codes] "
-        + MOHW_LIFE_STAGE_SHORT_REFERENCE
-    ),
+    short_reference=("[LIFE_ARRAY codes] " + MOHW_LIFE_STAGE_SHORT_REFERENCE),
     domain_quirk=(
         "Response is UTF-8 XML only (no JSON option). "
         "resultCode='0' = SUCCESS (SSIS v2.0 convention). "
@@ -425,12 +419,10 @@ MOHW_WELFARE_ELIGIBILITY_SEARCH_TOOL = GovAPITool(
     ),
     policy=AdapterRealDomainPolicy(
         real_classification_url=(
-            "https://www.mohw.go.kr/react/policy/index.jsp"
-            "?PAR_MENU_ID=06&MENU_ID=06"
+            "https://www.mohw.go.kr/react/policy/index.jsp?PAR_MENU_ID=06&MENU_ID=06"
         ),
         real_classification_text=(
-            "보건복지부 공공데이터 이용약관 — "
-            "복지서비스 적격 조회 데이터 비상업적 공공 이용 허가"
+            "보건복지부 공공데이터 이용약관 — 복지서비스 적격 조회 데이터 비상업적 공공 이용 허가"
         ),
         citizen_facing_gate="read-only",
         last_verified=datetime(2026, 5, 2, tzinfo=UTC),

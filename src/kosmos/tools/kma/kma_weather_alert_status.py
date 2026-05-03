@@ -101,7 +101,7 @@ class KmaWeatherAlertStatusInput(BaseModel):
     )
 
     @model_validator(mode="after")
-    def _require_stn_id_or_tmFc(self) -> "KmaWeatherAlertStatusInput":
+    def _require_stn_id_or_tmFc(self) -> KmaWeatherAlertStatusInput:
         """Validate that at least one of stn_id or tmFc is provided.
 
         KMA getWthrWrnMsg returns resultCode=11 (NO_MANDATORY_REQUEST_PARAMETERS_ERROR)

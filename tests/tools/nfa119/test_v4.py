@@ -18,7 +18,6 @@ from unittest.mock import AsyncMock, MagicMock
 
 import httpx
 import pytest
-from pydantic import ValidationError
 
 from kosmos.tools.errors import ConfigurationError, ToolExecutionError
 from kosmos.tools.nfa119.emergency_info_service import (
@@ -32,7 +31,6 @@ from kosmos.tools.nfa119.emergency_info_service import (
     NfaTransferItem,
     NfaVehicleDispatchItem,
     NfaVehicleInfoItem,
-    _BASE_URL,
     _build_params,
     _parse_response,
     handle,
@@ -481,7 +479,6 @@ class TestHandleErrors:
     async def test_xml_content_type_raises_tool_error(self, monkeypatch) -> None:
         """handle() raises ToolExecutionError when NFA returns XML content-type."""
         monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", "testkey123")
-        xml_response = b"<?xml version='1.0'?><response/>"
 
         mock_response = MagicMock(spec=httpx.Response)
         mock_response.status_code = 200

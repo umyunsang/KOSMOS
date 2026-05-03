@@ -90,9 +90,7 @@ async def test_scenario_busan() -> None:
     assert len(result.address_name) >= 1
 
     # Known-value assertions from evidence
-    assert result.b_code == "2600000000", (
-        f"부산 b_code should be 2600000000, got {result.b_code!r}"
-    )
+    assert result.b_code == "2600000000", f"부산 b_code should be 2600000000, got {result.b_code!r}"
     assert result.lat == pytest.approx(35.180, abs=0.01)
     assert result.lon == pytest.approx(129.075, abs=0.01)
     assert result.source == "kakao"
@@ -146,9 +144,7 @@ async def test_scenario_nonexistent_address() -> None:
     assert isinstance(result, ResolveError), (
         f"Expected ResolveError for non-existent address, got {type(result).__name__}: {result}"
     )
-    assert result.reason == "not_found", (
-        f"Expected reason='not_found', got {result.reason!r}"
-    )
+    assert result.reason == "not_found", f"Expected reason='not_found', got {result.reason!r}"
     assert "존재하지않는주소" in result.message
 
 

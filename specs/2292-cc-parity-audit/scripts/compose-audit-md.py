@@ -278,8 +278,6 @@ Import-only diff verification: **{import_only_confirmed}/{len(imports)} confirme
         ]
     )
     OUT_MD.write_text(body + closing, encoding="utf-8")
-    print(f"[R5] wrote {OUT_MD.relative_to(REPO_ROOT)}")
-    print(f"[R5] modified rows = {len(modified)}; spot = {len(spot)}; import = {len(imports)}")
     return 0
 
 

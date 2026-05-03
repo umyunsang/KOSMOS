@@ -214,7 +214,7 @@ class TestSpec023FreshnessGateParity:
         result = check_freshness("2026-04-16 13:39:00", threshold_minutes=30)
 
         assert result.is_fresh is False, (
-            f"31-min-old hvidate with threshold=30 must be stale, got is_fresh=True"
+            "31-min-old hvidate with threshold=30 must be stale, got is_fresh=True"
         )
         assert abs(result.data_age_minutes - 31.0) < 0.1
 
@@ -293,9 +293,7 @@ class TestSpec023FreshnessGateParity:
             f"Stale fixture (70 min old, threshold=30) must return LookupError, "
             f"got {type(result).__name__}: {result!r}"
         )
-        assert result.reason == "stale_data", (
-            f"Expected reason='stale_data', got {result.reason!r}"
-        )
+        assert result.reason == "stale_data", f"Expected reason='stale_data', got {result.reason!r}"
         assert "min old" in result.message, f"stale message must include age: {result.message!r}"
         assert "threshold" in result.message, (
             f"stale message must include threshold: {result.message!r}"
@@ -361,9 +359,7 @@ class TestNmcUrlEncodingRegression:
     @pytest.mark.asyncio
     @respx.mock
     @patch("kosmos.settings.settings")
-    async def test_korean_string_interpolation_would_trigger_400(
-        self, mock_settings: Any
-    ) -> None:
+    async def test_korean_string_interpolation_would_trigger_400(self, mock_settings: Any) -> None:
         """Demonstrate HTTP 400 when Korean strings are interpolated into URL directly.
 
         This test simulates the failure mode that was fixed in T022:
@@ -378,9 +374,9 @@ class TestNmcUrlEncodingRegression:
 
         # Simulate a URL with raw Korean characters (as string interpolation would produce)
         raw_korean_url = (
-            f"https://apis.data.go.kr/B552657/ErmctInfoInqireService"
-            f"/getEmrrmRltmUsefulSckbdInfoInqire"
-            f"?serviceKey=test-key&STAGE1=서울특별시&_type=json"
+            "https://apis.data.go.kr/B552657/ErmctInfoInqireService"
+            "/getEmrrmRltmUsefulSckbdInfoInqire"
+            "?serviceKey=test-key&STAGE1=서울특별시&_type=json"
         )
 
         # Mock: any request to a URL containing unencoded Korean (3-byte UTF-8 sequences)
@@ -449,18 +445,18 @@ class TestNmcUrlEncodingRegression:
 
         # Verify all expected params are present in the request URL
         request_url = str(called_request.url)
-        assert "serviceKey=" in request_url or "serviceKey" in str(
-            called_request.url.params
-        ), "serviceKey must be in request"
-        assert "wgs84Lat" in request_url or "wgs84Lat" in str(
-            called_request.url.params
-        ), "wgs84Lat must be in request"
-        assert "wgs84Lon" in request_url or "wgs84Lon" in str(
-            called_request.url.params
-        ), "wgs84Lon must be in request"
-        assert "perPage" in request_url or "perPage" in str(
-            called_request.url.params
-        ), "perPage must be in request"
+        assert "serviceKey=" in request_url or "serviceKey" in str(called_request.url.params), (
+            "serviceKey must be in request"
+        )
+        assert "wgs84Lat" in request_url or "wgs84Lat" in str(called_request.url.params), (
+            "wgs84Lat must be in request"
+        )
+        assert "wgs84Lon" in request_url or "wgs84Lon" in str(called_request.url.params), (
+            "wgs84Lon must be in request"
+        )
+        assert "perPage" in request_url or "perPage" in str(called_request.url.params), (
+            "perPage must be in request"
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -490,9 +486,7 @@ class TestNmcDescriptionV4:
         from kosmos.tools.nmc.emergency_search import NMC_EMERGENCY_SEARCH_TOOL
 
         token_count = _estimate_tokens(NMC_EMERGENCY_SEARCH_TOOL.llm_description)
-        assert token_count <= 500, (
-            f"NMC description exceeds 500-token budget: {token_count} tokens"
-        )
+        assert token_count <= 500, f"NMC description exceeds 500-token budget: {token_count} tokens"
 
     def test_description_contains_url_encoding_quirk(self) -> None:
         """NMC description must mention URL encoding quirk in input_quirk section.

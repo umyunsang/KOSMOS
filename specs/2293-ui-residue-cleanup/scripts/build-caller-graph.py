@@ -13,7 +13,6 @@ from __future__ import annotations
 import json
 import re
 import subprocess
-import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[3]  # KOSMOS-w-2293
@@ -86,7 +85,6 @@ def file_dependency_signals(kosmos_path: str) -> dict:
 def main() -> int:
     classification = json.loads(EPIC_ALPHA_JSON.read_text())
     cleanup = [f for f in classification if f.get("classification") == "Cleanup-needed"]
-    print(f"Cleanup-needed: {len(cleanup)}", file=sys.stderr)
 
     rows: list[dict] = []
     for entry in cleanup:
@@ -110,13 +108,10 @@ def main() -> int:
 
     OUTPUT_JSON.parent.mkdir(parents=True, exist_ok=True)
     OUTPUT_JSON.write_text(json.dumps(rows, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    print(f"Wrote {OUTPUT_JSON.relative_to(REPO_ROOT)} ({len(rows)} rows)", file=sys.stderr)
 
     # Print summary table to stdout
-    print(f"{'#':>2} {'importers':>9}  {'token-hits':>10}  kosmos_path")
-    for i, r in enumerate(rows, 1):
-        token_hits = sum(r["internal_anthropic_tokens"].values())
-        print(f"{i:>2} {r['importer_count']:>9}  {token_hits:>10}  {r['kosmos_path']}")
+    for _i, r in enumerate(rows, 1):
+        sum(r["internal_anthropic_tokens"].values())
 
     return 0
 

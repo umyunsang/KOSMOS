@@ -719,10 +719,7 @@ class ResolveLocationOutput(BaseModel):
         ),
     )
     confidence: Literal["high", "medium", "low"] = Field(
-        description=(
-            "'high' if Kakao meta.total_count == 1, "
-            "'medium' if ≤ 3, 'low' otherwise."
-        ),
+        description=("'high' if Kakao meta.total_count == 1, 'medium' if ≤ 3, 'low' otherwise."),
     )
     source: Literal["kakao", "juso", "sgis"] = Field(
         description="Backend that produced this result. Always 'kakao' for the v4 path.",

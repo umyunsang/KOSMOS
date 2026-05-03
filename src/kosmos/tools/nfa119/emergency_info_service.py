@@ -30,7 +30,12 @@ from enum import StrEnum
 from typing import Any, Literal
 
 import httpx
-from pydantic import BaseModel, ConfigDict, Field, RootModel  # noqa: F401 (RootModel kept for compat)
+from pydantic import (  # noqa: F401 (RootModel kept for compat)
+    BaseModel,
+    ConfigDict,
+    Field,
+    RootModel,
+)
 
 from kosmos.tools._description_template import build_description_v4
 from kosmos.tools._outbound_trace import traced_async_client
@@ -552,9 +557,7 @@ NFA_EMERGENCY_INFO_SERVICE_TOOL = GovAPITool(
             "operation(기본=getEmgencyActivityInfo). "
             "소방서명 확실히 알 때만 호출 — 추측 금지."
         ),
-        short_reference=(
-            f"[시도본부 17개] {NFA_HQ_SHORT_REFERENCE}"
-        ),
+        short_reference=(f"[시도본부 17개] {NFA_HQ_SHORT_REFERENCE}"),
         domain_quirk=(
             "wire URL = base/operation(suffix필수). "
             "activity는 gutYm, 나머지는 stmtYm. "

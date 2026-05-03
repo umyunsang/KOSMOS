@@ -131,15 +131,10 @@ def main() -> int:
 
     total = len(corpus)
     fp = len(blocks)
-    rate = fp / total * 100.0
-    print(f"SC-004 measurement — corpus size: {total}")
-    print(f"Blocked (false positives): {fp}")
-    print(f"Allowed: {total - fp}")
-    print(f"False-positive rate: {rate:.4f}%")
+    fp / total * 100.0
     if blocks:
-        print("\nFirst 5 false positives:")
-        for idx, snippet, signals in blocks[:5]:
-            print(f"  [{idx}] {snippet!r} — {signals}")
+        for idx, _snippet, _signals in blocks[:5]:
+            pass
     return 0 if fp == 0 else 1
 
 

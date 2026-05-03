@@ -19,9 +19,9 @@ import httpx
 import pytest
 
 from kosmos.tools.hira.hospital_search import (
+    _HIRA_DESCRIPTION,
     HIRA_HOSPITAL_SEARCH_TOOL,
     HiraHospitalSearchInput,
-    _HIRA_DESCRIPTION,
     handle,
 )
 

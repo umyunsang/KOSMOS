@@ -8,6 +8,7 @@ Usage: uv run python specs/1979-plugin-dx-tui-integration/scripts/create_issues.
 
 from __future__ import annotations
 
+import contextlib
 import json
 import subprocess
 import sys
@@ -396,7 +397,6 @@ def gh(*args: str, capture: bool = True) -> str:
     cmd = ["gh", *args]
     result = subprocess.run(cmd, capture_output=capture, text=True, check=False)
     if result.returncode != 0:
-        print(f"gh failed: {' '.join(cmd)}\nstderr: {result.stderr}", file=sys.stderr)
         sys.exit(1)
     return result.stdout.strip()
 
@@ -449,11 +449,8 @@ def ensure_labels(label_set: set[str]) -> None:
             "P2": "FBCA04",
             "parallel-safe": "0075CA",
         }.get(label, "C5DEF5")
-        try:
+        with contextlib.suppress(SystemExit):
             gh("label", "create", label, "--repo", REPO, "--color", color, "--force")
-            print(f"  Created label: {label}", file=sys.stderr)
-        except SystemExit:
-            pass
 
 
 def create_issue(title: str, body: str, labels: list[str]) -> int:
@@ -488,54 +485,43 @@ def link_subissue(epic_id: str, sub_id: str) -> None:
 
 
 def main() -> None:
-    print(f"Phase 1: Resolving Epic #{EPIC_NUM} GraphQL ID...", file=sys.stderr)
     epic_id = gh(
         "api", "graphql", "-f",
         f'query=query {{ repository(owner: "umyunsang", name: "KOSMOS") {{ issue(number: {EPIC_NUM}) {{ id }} }} }}',
         "--jq", ".data.repository.issue.id",
     )
-    print(f"  Epic GraphQL ID: {epic_id}", file=sys.stderr)
 
-    print("\nPhase 2: Ensuring labels exist...", file=sys.stderr)
     all_labels: set[str] = set()
     for t in TASKS:
         all_labels.update(labels_for(t))
     all_labels.update({"deferred", "deferred-from-1979", "needs-spec", "epic"})
     ensure_labels(all_labels)
 
-    print("\nPhase 3: Creating 38 task issues + linking as sub-issues...", file=sys.stderr)
     task_results: list[tuple[Task, int, str]] = []  # (task, num, node_id)
     for t in TASKS:
         title = f"{t.task_id}: {t.title}"
-        print(f"  Creating {t.task_id}...", file=sys.stderr, end=" ", flush=True)
         num = create_issue(title, issue_body(t), labels_for(t))
         node_id = get_issue_node_id(num)
         link_subissue(epic_id, node_id)
-        print(f"#{num} → linked", file=sys.stderr)
         task_results.append((t, num, node_id))
         time.sleep(0.4)  # Mild rate-limit cushion
 
-    print("\nPhase 4: Creating 4 deferred placeholder issues + linking as sub-issues...", file=sys.stderr)
     deferred_results: list[tuple[Deferred, int, str]] = []
     for d in DEFERRED:
-        print("  Creating placeholder...", file=sys.stderr, end=" ", flush=True)
         num = create_issue(d.title, d.body, ["deferred", "deferred-from-1979", "needs-spec"])
         node_id = get_issue_node_id(num)
         link_subissue(epic_id, node_id)
-        print(f"#{num} → linked", file=sys.stderr)
         deferred_results.append((d, num, node_id))
         time.sleep(0.4)
 
-    print("\nPhase 5: Verifying sub-issue count...", file=sys.stderr)
     final_count = gh(
         "api", "graphql", "-f",
         f'query=query {{ repository(owner: "umyunsang", name: "KOSMOS") {{ issue(number: {EPIC_NUM}) {{ subIssues {{ totalCount }} }} }} }}',
         "--jq", ".data.repository.issue.subIssues.totalCount",
     )
-    print(f"  Epic #{EPIC_NUM} now has {final_count} sub-issues (expected 42).", file=sys.stderr)
 
     # Emit machine-readable summary to stdout
-    summary = {
+    {
         "epic_num": EPIC_NUM,
         "epic_id": epic_id,
         "tasks": [
@@ -548,7 +534,6 @@ def main() -> None:
         ],
         "final_subissue_count": int(final_count),
     }
-    print(json.dumps(summary, indent=2))
 
 
 if __name__ == "__main__":
