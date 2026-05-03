@@ -100,13 +100,13 @@ description: "Task list for Epic B (#2638) — Tool System Residue Cleanup"
 
 **Purpose**: 신규 dependency 0 / 코드 동작 0 / typecheck + test parity / 박제 마커 정합성 검증 (audit re-scan 자동 PASS 가능 검증).
 
-- [ ] T010 `bun typecheck` parity 검증 — `cd tui && bun run typecheck 2>&1 | tee /tmp/typecheck-2638.log` 실행 후 main 브랜치 동일 명령 결과와 비교. 회귀 0 (실패 카운트 변동 0) 확인. SC-002 만족 검증. 회귀 발견 시 즉시 분석 + revert.
+- [X] T010 `bun typecheck` parity 검증 — `cd tui && bun run typecheck 2>&1 | tee /tmp/typecheck-2638.log` 실행 후 main 브랜치 동일 명령 결과와 비교. 회귀 0 (실패 카운트 변동 0) 확인. SC-002 만족 검증. 회귀 발견 시 즉시 분석 + revert.
 
-- [ ] T011 `bun test` parity 검증 — `cd tui && bun test 2>&1 | tee /tmp/buntest-2638.log` 실행 후 main 브랜치 동일 명령 결과와 비교. 통과/실패/스킵 카운트 변동 0 확인. SC-003 만족 검증. 회귀 발견 시 즉시 분석 + revert.
+- [X] T011 `bun test` parity 검증 — `cd tui && bun test 2>&1 | tee /tmp/buntest-2638.log` 실행 후 main 브랜치 동일 명령 결과와 비교. 통과/실패/스킵 카운트 변동 0 확인. SC-003 만족 검증. 회귀 발견 시 즉시 분석 + revert.
 
-- [ ] T012 `pytest` parity 검증 — `uv run pytest 2>&1 | tee /tmp/pytest-2638.log` 실행 후 main 브랜치 동일 명령 결과와 비교. 통과/실패/스킵 카운트 변동 0 확인. SC-004 만족 검증. (본 Epic 은 Python 미수정이라 회귀 가능성 매우 낮음 — 단 sanity check.)
+- [X] T012 `pytest` parity 검증 — `uv run pytest 2>&1 | tee /tmp/pytest-2638.log` 실행 후 main 브랜치 동일 명령 결과와 비교. 통과/실패/스킵 카운트 변동 0 확인. SC-004 만족 검증. (본 Epic 은 Python 미수정이라 회귀 가능성 매우 낮음 — 단 sanity check.)
 
-- [ ] T013 박제 마커 정합성 + 신규 dependency 0 검증 — (a) `grep -c "SWAP-2-PRESERVE\|SWAP-2-RETAINED-IMPORT-BLOCK\|SWAP-2-MIGRATE" tui/src/tools.ts tui/src/constants/prompts.ts tui/src/memdir/memdir.ts specs/2638-tool-system-residue/agent-tool-classification.md` 결과가 (T002 의 9 BYTE-IDENTICAL + T003 의 5 SHIM + T004 의 4 SWAP-2 + T006 의 1 헤더 + T007 의 2 + T008 의 1 + T009 의 1) 합산값 ≥ 23 출력 확인. (b) `git diff main -- tui/package.json pyproject.toml` 결과 0 라인 (신규 dependency 0 — SC-008 만족). (c) `git diff --shortstat tui/src/tools.ts tui/src/constants/prompts.ts tui/src/memdir/memdir.ts | awk '{print $4, $6}'` 가 deletion 0 + insertion 만 출력 (코드 0 변경, 주석만 — SC-007 만족).
+- [X] T013 박제 마커 정합성 + 신규 dependency 0 검증 — (a) `grep -c "SWAP-2-PRESERVE\|SWAP-2-RETAINED-IMPORT-BLOCK\|SWAP-2-MIGRATE" tui/src/tools.ts tui/src/constants/prompts.ts tui/src/memdir/memdir.ts specs/2638-tool-system-residue/agent-tool-classification.md` 결과가 (T002 의 9 BYTE-IDENTICAL + T003 의 5 SHIM + T004 의 4 SWAP-2 + T006 의 1 헤더 + T007 의 2 + T008 의 1 + T009 의 1) 합산값 ≥ 23 출력 확인. (b) `git diff main -- tui/package.json pyproject.toml` 결과 0 라인 (신규 dependency 0 — SC-008 만족). (c) `git diff --shortstat tui/src/tools.ts tui/src/constants/prompts.ts tui/src/memdir/memdir.ts | awk '{print $4, $6}'` 가 deletion 0 + insertion 만 출력 (코드 0 변경, 주석만 — SC-007 만족).
 
 ---
 
