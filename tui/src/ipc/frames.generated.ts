@@ -57,7 +57,7 @@ export type Role = 'tui' | 'backend' | 'tool' | 'llm' | 'notification';
  */
 export type FrameSeq = number;
 /**
- * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)
+ * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026) Non-empty when present (parity with codec.ts ``z.string().min(1).nullable().optional()`` — Spec 2642 § US3).
  */
 export type TransactionId = string | null;
 /**
@@ -65,7 +65,7 @@ export type TransactionId = string | null;
  */
 export type Final = boolean;
 /**
- * Mirror of envelope transaction_id for trailer-only consumers.
+ * Mirror of envelope transaction_id for trailer-only consumers. Non-empty when present (parity with codec.ts trailer schema — Spec 2642 § US3).
  */
 export type TransactionId1 = string | null;
 /**
@@ -105,7 +105,7 @@ export type Role1 = 'tui' | 'backend' | 'tool' | 'llm' | 'notification';
  */
 export type FrameSeq1 = number;
 /**
- * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)
+ * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026) Non-empty when present (parity with codec.ts ``z.string().min(1).nullable().optional()`` — Spec 2642 § US3).
  */
 export type TransactionId2 = string | null;
 /**
@@ -191,7 +191,7 @@ export type Role3 = 'tui' | 'backend' | 'tool' | 'llm' | 'notification';
  */
 export type FrameSeq2 = number;
 /**
- * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)
+ * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026) Non-empty when present (parity with codec.ts ``z.string().min(1).nullable().optional()`` — Spec 2642 § US3).
  */
 export type TransactionId3 = string | null;
 /**
@@ -239,7 +239,7 @@ export type Role4 = 'tui' | 'backend' | 'tool' | 'llm' | 'notification';
  */
 export type FrameSeq3 = number;
 /**
- * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)
+ * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026) Non-empty when present (parity with codec.ts ``z.string().min(1).nullable().optional()`` — Spec 2642 § US3).
  */
 export type TransactionId4 = string | null;
 /**
@@ -279,7 +279,7 @@ export type Role5 = 'tui' | 'backend' | 'tool' | 'llm' | 'notification';
  */
 export type FrameSeq4 = number;
 /**
- * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)
+ * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026) Non-empty when present (parity with codec.ts ``z.string().min(1).nullable().optional()`` — Spec 2642 § US3).
  */
 export type TransactionId5 = string | null;
 /**
@@ -319,7 +319,7 @@ export type Role6 = 'tui' | 'backend' | 'tool' | 'llm' | 'notification';
  */
 export type FrameSeq5 = number;
 /**
- * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)
+ * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026) Non-empty when present (parity with codec.ts ``z.string().min(1).nullable().optional()`` — Spec 2642 § US3).
  */
 export type TransactionId6 = string | null;
 /**
@@ -355,7 +355,7 @@ export type Role7 = 'tui' | 'backend' | 'tool' | 'llm' | 'notification';
  */
 export type FrameSeq6 = number;
 /**
- * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)
+ * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026) Non-empty when present (parity with codec.ts ``z.string().min(1).nullable().optional()`` — Spec 2642 § US3).
  */
 export type TransactionId7 = string | null;
 /**
@@ -403,7 +403,7 @@ export type Role8 = 'tui' | 'backend' | 'tool' | 'llm' | 'notification';
  */
 export type FrameSeq7 = number;
 /**
- * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)
+ * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026) Non-empty when present (parity with codec.ts ``z.string().min(1).nullable().optional()`` — Spec 2642 § US3).
  */
 export type TransactionId8 = string | null;
 /**
@@ -459,7 +459,7 @@ export type Role9 = 'tui' | 'backend' | 'tool' | 'llm' | 'notification';
  */
 export type FrameSeq8 = number;
 /**
- * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)
+ * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026) Non-empty when present (parity with codec.ts ``z.string().min(1).nullable().optional()`` — Spec 2642 § US3).
  */
 export type TransactionId9 = string | null;
 /**
@@ -499,7 +499,7 @@ export type Role10 = 'tui' | 'backend' | 'tool' | 'llm' | 'notification';
  */
 export type FrameSeq9 = number;
 /**
- * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)
+ * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026) Non-empty when present (parity with codec.ts ``z.string().min(1).nullable().optional()`` — Spec 2642 § US3).
  */
 export type TransactionId10 = string | null;
 /**
@@ -535,7 +535,7 @@ export type Role11 = 'tui' | 'backend' | 'tool' | 'llm' | 'notification';
  */
 export type FrameSeq10 = number;
 /**
- * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)
+ * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026) Non-empty when present (parity with codec.ts ``z.string().min(1).nullable().optional()`` — Spec 2642 § US3).
  */
 export type TransactionId11 = string | null;
 /**
@@ -575,7 +575,7 @@ export type Role12 = 'tui' | 'backend' | 'tool' | 'llm' | 'notification';
  */
 export type FrameSeq11 = number;
 /**
- * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)
+ * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026) Non-empty when present (parity with codec.ts ``z.string().min(1).nullable().optional()`` — Spec 2642 § US3).
  */
 export type TransactionId12 = string | null;
 /**
@@ -615,7 +615,7 @@ export type Role13 = 'tui' | 'backend' | 'tool' | 'llm' | 'notification';
  */
 export type FrameSeq12 = number;
 /**
- * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)
+ * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026) Non-empty when present (parity with codec.ts ``z.string().min(1).nullable().optional()`` — Spec 2642 § US3).
  */
 export type TransactionId13 = string | null;
 /**
@@ -655,7 +655,7 @@ export type Role14 = 'tui' | 'backend' | 'tool' | 'llm' | 'notification';
  */
 export type FrameSeq13 = number;
 /**
- * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)
+ * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026) Non-empty when present (parity with codec.ts ``z.string().min(1).nullable().optional()`` — Spec 2642 § US3).
  */
 export type TransactionId14 = string | null;
 /**
@@ -695,7 +695,7 @@ export type Role15 = 'tui' | 'backend' | 'tool' | 'llm' | 'notification';
  */
 export type FrameSeq14 = number;
 /**
- * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)
+ * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026) Non-empty when present (parity with codec.ts ``z.string().min(1).nullable().optional()`` — Spec 2642 § US3).
  */
 export type TransactionId15 = string | null;
 /**
@@ -755,7 +755,7 @@ export type Role16 = 'tui' | 'backend' | 'tool' | 'llm' | 'notification';
  */
 export type FrameSeq15 = number;
 /**
- * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)
+ * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026) Non-empty when present (parity with codec.ts ``z.string().min(1).nullable().optional()`` — Spec 2642 § US3).
  */
 export type TransactionId16 = string | null;
 /**
@@ -799,7 +799,7 @@ export type Role17 = 'tui' | 'backend' | 'tool' | 'llm' | 'notification';
  */
 export type FrameSeq16 = number;
 /**
- * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)
+ * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026) Non-empty when present (parity with codec.ts ``z.string().min(1).nullable().optional()`` — Spec 2642 § US3).
  */
 export type TransactionId17 = string | null;
 /**
@@ -847,7 +847,7 @@ export type Role18 = 'tui' | 'backend' | 'tool' | 'llm' | 'notification';
  */
 export type FrameSeq17 = number;
 /**
- * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)
+ * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026) Non-empty when present (parity with codec.ts ``z.string().min(1).nullable().optional()`` — Spec 2642 § US3).
  */
 export type TransactionId18 = string | null;
 /**
@@ -892,7 +892,7 @@ export type Role19 = 'tui' | 'backend' | 'tool' | 'llm' | 'notification';
  */
 export type FrameSeq18 = number;
 /**
- * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)
+ * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026) Non-empty when present (parity with codec.ts ``z.string().min(1).nullable().optional()`` — Spec 2642 § US3).
  */
 export type TransactionId19 = string | null;
 /**
@@ -932,7 +932,7 @@ export type Role20 = 'tui' | 'backend' | 'tool' | 'llm' | 'notification';
  */
 export type FrameSeq19 = number;
 /**
- * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)
+ * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026) Non-empty when present (parity with codec.ts ``z.string().min(1).nullable().optional()`` — Spec 2642 § US3).
  */
 export type TransactionId20 = string | null;
 /**
@@ -984,7 +984,7 @@ export type Role21 = 'tui' | 'backend' | 'tool' | 'llm' | 'notification';
  */
 export type FrameSeq20 = number;
 /**
- * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)
+ * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026) Non-empty when present (parity with codec.ts ``z.string().min(1).nullable().optional()`` — Spec 2642 § US3).
  */
 export type TransactionId21 = string | null;
 /**
@@ -1060,7 +1060,7 @@ export type Role22 = 'tui' | 'backend' | 'tool' | 'llm' | 'notification';
  */
 export type FrameSeq21 = number;
 /**
- * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026)
+ * UUIDv7. Populated for idempotent state-change frames (irreversible tools). None for streaming chunks. (FR-026) Non-empty when present (parity with codec.ts ``z.string().min(1).nullable().optional()`` — Spec 2642 § US3).
  */
 export type TransactionId22 = string | null;
 /**
@@ -1594,6 +1594,17 @@ export interface HeartbeatFrame {
  *
  * Carried over the same stdio channel to keep a single correlation plane.
  * role allow-list: notification.
+ *
+ * CC parity: NO equivalent — Claude Code's notification surface is
+ * terminal OSC sequences (iTerm2, Kitty, Ghostty, bell) emitted
+ * in-process from ``ink/useTerminalNotification.ts``. There is no
+ * push-based IPC notification arm in CC. KOSMOS adds this arm as a
+ * swap-2 addition for Korean civic push channels (KMA disaster CBS,
+ * RSS newsroom subscribe, hospital-alert subscribe) carried over the
+ * same stdio plane to keep a single correlation plane. Spec 2642
+ * Epic F · S7 audit recorded this finding (specs/cc-migration-audit/
+ * scope-S7-ipc-bridge.md § 5 Finding 3 — resolved as orthogonal
+ * KOSMOS swap-2 add-on, not a CC-divergence regression).
  */
 export interface NotificationPushFrame {
   session_id: SessionId19;

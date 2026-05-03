@@ -145,3 +145,25 @@ def ipc_env_overrides(monkeypatch: pytest.MonkeyPatch) -> Generator[None, None, 
     for k, v in overrides.items():
         monkeypatch.setenv(k, v)
     yield
+
+
+# ---------------------------------------------------------------------------
+# Spec 2642 / Epic F · S7 / US3 — drift-fixture default-OFF guard
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture(autouse=True)
+def _kosmos_ipc_parity_drift_fixture_default_off(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Force ``KOSMOS_IPC_PARITY_DRIFT_FIXTURE`` unset by default.
+
+    The parity-test in ``test_codec_envelope_parity.py`` flips this env
+    var ON via ``monkeypatch.setenv`` only inside the dedicated
+    negative-fixture test. If a developer's shell ambient-sets it to
+    ``1`` (or a stray CI environment leaks it in), the parity check
+    would silently consume the negative fixture and pass spuriously.
+    This guard removes the var at every test entry; the negative test
+    re-sets it intentionally with monkeypatch.
+    """
+    monkeypatch.delenv("KOSMOS_IPC_PARITY_DRIFT_FIXTURE", raising=False)

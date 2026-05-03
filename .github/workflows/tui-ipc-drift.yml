@@ -10,8 +10,12 @@ on:
       - "src/kosmos/ipc/**"
       - "specs/287-tui-ink-react-bun/contracts/**"
       - "tui/src/ipc/frames.generated.ts"
+      - "tui/src/ipc/codec.ts"
+      - "tui/src/ipc/schema/frame.schema.json"
       - "tui/scripts/gen-ipc-types.ts"
       - "tui/package.json"
+      - "tests/ipc/test_codec_envelope_parity.py"
+      - "tests/ipc/test_schema_python_ts_diff.py"
   push:
     branches:
       - main
@@ -19,8 +23,12 @@ on:
       - "src/kosmos/ipc/**"
       - "specs/287-tui-ink-react-bun/contracts/**"
       - "tui/src/ipc/frames.generated.ts"
+      - "tui/src/ipc/codec.ts"
+      - "tui/src/ipc/schema/frame.schema.json"
       - "tui/scripts/gen-ipc-types.ts"
       - "tui/package.json"
+      - "tests/ipc/test_codec_envelope_parity.py"
+      - "tests/ipc/test_schema_python_ts_diff.py"
 
 jobs:
   ipc-drift-check:
@@ -62,4 +70,20 @@ jobs:
         run: bun run scripts/gen-ipc-types.ts --check
         env:
           # Ensure Python can import kosmos.ipc
+          PYTHONPATH: ${{ github.workspace }}/src
+
+      # Spec 2642 / Epic F · S7 / US3 — codec.ts ↔ Pydantic envelope drift gate.
+      # Catches hand-written zod field-level drift that the JSON-Schema parity
+      # check above does NOT cover (codec.ts is hand-authored, not generated).
+      - name: Run codec.ts ↔ Pydantic envelope parity check
+        run: uv run pytest tests/ipc/test_codec_envelope_parity.py -v
+        env:
+          PYTHONPATH: ${{ github.workspace }}/src
+
+      # Existing JSON-Schema parity gate (also covered by general pytest, but
+      # explicit inclusion here ensures the gate runs on TS-only PRs that
+      # touch codec.ts but not Python.
+      - name: Run frame.schema.json ↔ Pydantic parity check
+        run: uv run pytest tests/ipc/test_schema_python_ts_diff.py -v
+        env:
           PYTHONPATH: ${{ github.workspace }}/src
