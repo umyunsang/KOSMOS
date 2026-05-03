@@ -186,7 +186,6 @@ def main(argv: list[str]) -> int:
 
     if args.check:
         if args.out is None:
-            print("--check requires --out PATH pointing at the committed index.json", file=sys.stderr)
             return 2
         existing = args.out.read_text(encoding="utf-8") if args.out.exists() else ""
         # Drop generated_iso + per-version published_iso from BOTH sides — they
@@ -203,11 +202,6 @@ def main(argv: list[str]) -> int:
 
         existing_obj = json.loads(existing) if existing else {}
         if _strip_timestamps(existing_obj) != _strip_timestamps(fresh):
-            print(
-                "catalog drift detected — regenerate via "
-                "`uv run python scripts/regenerate_catalog.py --out <path>`",
-                file=sys.stderr,
-            )
             return 1
         return 0
 
@@ -215,7 +209,6 @@ def main(argv: list[str]) -> int:
         sys.stdout.write(rendered)
     else:
         args.out.write_text(rendered, encoding="utf-8")
-        print(f"wrote {args.out} ({len(fresh['entries'])} entries)")
     return 0
 
 

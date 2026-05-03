@@ -261,8 +261,7 @@ def main(argv: list[str] | None = None) -> int:  # noqa: C901
     script_path = Path(__file__).resolve()
     try:
         repo_root = _find_repo_root(script_path.parent)
-    except FileNotFoundError as exc:
-        print(f"ERROR: {exc}", file=sys.stderr)
+    except FileNotFoundError:
         return 2
 
     # Insert repo root into sys.path so the kosmos package is importable
@@ -278,8 +277,7 @@ def main(argv: list[str] | None = None) -> int:  # noqa: C901
         from kosmos.tools.executor import ToolExecutor  # type: ignore[import]
         from kosmos.tools.register_all import register_all_tools  # type: ignore[import]
         from kosmos.tools.registry import ToolRegistry  # type: ignore[import]
-    except Exception as exc:  # pragma: no cover
-        print(f"ERROR: registry import failed: {exc}", file=sys.stderr)
+    except Exception:  # pragma: no cover
         logger.exception("Registry import failed")
         return 2
 
@@ -287,12 +285,10 @@ def main(argv: list[str] | None = None) -> int:  # noqa: C901
         registry = ToolRegistry()
         executor = ToolExecutor(registry)
         register_all_tools(registry, executor)
-    except SystemExit as exc:
+    except SystemExit:
         # register_all_tools raises SystemExit(78) on routing validation failure.
-        print(f"ERROR: registry population aborted (exit {exc.code})", file=sys.stderr)
         return 2
-    except Exception as exc:
-        print(f"ERROR: registry population failed: {exc}", file=sys.stderr)
+    except Exception:
         logger.exception("Registry population failed")
         return 2
 
@@ -307,8 +303,7 @@ def main(argv: list[str] | None = None) -> int:  # noqa: C901
     if not args.check:
         try:
             output_dir.mkdir(parents=True, exist_ok=True)
-        except OSError as exc:
-            print(f"ERROR: cannot create output dir {output_dir}: {exc}", file=sys.stderr)
+        except OSError:
             return 3
 
     # ------------------------------------------------------------------
@@ -318,8 +313,7 @@ def main(argv: list[str] | None = None) -> int:  # noqa: C901
     # Trigger mock adapter self-registration side effects (submit/verify/subscribe).
     try:
         import kosmos.tools.mock  # noqa: F401, PLC0415
-    except Exception as exc:  # pragma: no cover
-        print(f"ERROR: mock registry import failed: {exc}", file=sys.stderr)
+    except Exception:  # pragma: no cover
         logger.exception("Mock registry import failed")
         return 2
 
@@ -332,8 +326,7 @@ def main(argv: list[str] | None = None) -> int:  # noqa: C901
     # Collect primitive adapter entries.
     try:
         primitive_entries = _collect_primitive_adapters()
-    except Exception as exc:
-        print(f"ERROR: primitive registry collection failed: {exc}", file=sys.stderr)
+    except Exception:
         logger.exception("Primitive registry collection failed")
         return 2
 
@@ -365,11 +358,7 @@ def main(argv: list[str] | None = None) -> int:  # noqa: C901
         # Generate schema payload.
         try:
             payload = _build_schema_payload(tool_id, input_model, output_model)
-        except Exception as exc:
-            print(
-                f"ERROR: schema generation failed for {tool_id!r}: {exc}",
-                file=sys.stderr,
-            )
+        except Exception:
             logger.exception("Schema generation failed for tool_id=%s", tool_id)
             schema_errors.append(tool_id)
             continue
@@ -383,54 +372,43 @@ def main(argv: list[str] | None = None) -> int:  # noqa: C901
                 existing = out_file.read_text(encoding="utf-8")
                 if existing == rendered:
                     if not args.quiet:
-                        print(f"  ok        {tool_id}.json")
+                        pass
                     unchanged.append(tool_id)
                 else:
                     if not args.quiet:
-                        print(f"  DRIFT     {tool_id}.json")
+                        pass
                     drifted.append(tool_id)
             else:
                 if not args.quiet:
-                    print(f"  MISSING   {tool_id}.json")
+                    pass
                 drifted.append(tool_id)
         else:
             # Write only if content changed (preserve mtime when unchanged).
             if out_file.exists() and out_file.read_text(encoding="utf-8") == rendered:
                 if not args.quiet:
-                    print(f"  unchanged {tool_id}.json")
+                    pass
                 unchanged.append(tool_id)
             else:
                 try:
                     out_file.write_text(rendered, encoding="utf-8")
-                except OSError as exc:
-                    print(
-                        f"ERROR: write failed for {out_file}: {exc}",
-                        file=sys.stderr,
-                    )
+                except OSError:
                     return 3
                 if not args.quiet:
-                    print(f"  wrote     {tool_id}.json")
+                    pass
                 wrote.append(tool_id)
 
     # ------------------------------------------------------------------
     # 5. Print summary and return exit code.
     # ------------------------------------------------------------------
     if schema_errors:
-        print(
-            f"SCHEMA ERROR: generation failed for: {', '.join(schema_errors)}",
-            file=sys.stderr,
-        )
         return 4
 
     if args.check:
         if drifted:
-            print(f"DRIFT: {', '.join(drifted)}")
             return 1
         else:
-            print(f"OK ({len(unchanged)} schemas match on-disk)")
             return 0
     else:
-        print(f"wrote {len(wrote)}, unchanged {len(unchanged)}")
         return 0
 
 

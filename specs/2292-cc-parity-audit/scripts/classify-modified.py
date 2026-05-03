@@ -109,7 +109,7 @@ def run(cmd: list[str], cwd: Path | None = None) -> str:
 def collect_signals(kosmos_path: str) -> dict:
     """Compute the 3 signals for one file."""
     abs_path = REPO_ROOT / kosmos_path
-    cc_path = REPO_ROOT / CC_SRC_REL / kosmos_path[len("tui/src/"):]
+    REPO_ROOT / CC_SRC_REL / kosmos_path[len("tui/src/"):]
     sig = {
         "directory_match": None,
         "git_history_match": None,
@@ -215,7 +215,6 @@ def classify(sig: dict) -> tuple[str, str, str]:
 
 def main() -> int:
     if not ENUM_MODIFIED.exists():
-        print(f"ERROR: {ENUM_MODIFIED} missing — run T003/T004 first", file=sys.stderr)
         return 1
 
     paths = [
@@ -259,11 +258,8 @@ def main() -> int:
     for e in entries:
         counts[e["classification"]] += 1
     total = sum(counts.values())
-    print(f"[R4] classified {total} files:")
-    for k, v in counts.items():
-        pct = (v * 100 / total) if total else 0
-        print(f"  {k:<16} {v:>4} ({pct:5.1f}%)")
-    print(f"[R4] wrote {OUT_JSON.relative_to(REPO_ROOT)}")
+    for _k, v in counts.items():
+        (v * 100 / total) if total else 0
     return 0
 
 

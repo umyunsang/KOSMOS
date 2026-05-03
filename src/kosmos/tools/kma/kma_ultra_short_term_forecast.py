@@ -23,9 +23,11 @@ from typing import Any, Literal, cast
 import httpx
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from kosmos.tools._description_template import build_description_v4
 from kosmos.tools._outbound_trace import traced_async_client
 from kosmos.tools.errors import ConfigurationError, ToolExecutionError, _require_env
 from kosmos.tools.executor import ToolExecutor
+from kosmos.tools.kma.grid_coords import kma_grid_short_reference
 from kosmos.tools.kma.kma_short_term_forecast import (
     ForecastItem,
     KmaShortTermForecastOutput,
@@ -288,12 +290,30 @@ async def _call(
 KMA_ULTRA_SHORT_TERM_FORECAST_TOOL = GovAPITool(
     id="kma_ultra_short_term_forecast",
     name_ko="초단기예보 조회",
-    llm_description=(
-        "기상청 초단기예보 — 향후 6시간 시간대별 기온 / 강수 / 하늘 / 풍속 예보. "
-        "시민이 '한 두 시간 후 비 와' / '오후에 흐려질까' 같은 즉시 직후 예보 묻는 경우. "
-        "더 멀리 (1-3일) 는 kma_short_term_forecast 사용. **resolve_location 먼저** 호출해 "
-        "nx/ny 받음. base_time 은 매 정시 30분 발표 (HH30 format) — 매 정시 30분의 ~+10분 "
-        "후 데이터 안정."
+    llm_description=build_description_v4(
+        purpose=(
+            "기상청 초단기예보 (getUltraSrtFcst) — 향후 6시간 시간대별 "
+            "기온 T1H / 강수 RN1 / 하늘 SKY / 풍속 WSD 예보. "
+            "시민이 '한 두 시간 후 비 와' / '지금 직후 날씨' 묻는 경우. "
+            "3일 예보는 kma_short_term_forecast 사용."
+        ),
+        input_quirk=(
+            "nx (1-149), ny (1-253) Lambert 5 km 격자. "
+            "base_date=YYYYMMDD (오늘). "
+            "base_time=HH30 format (매 시각 30분 발표만 유효). "
+            "예: 0630, 1130, 1430. MM != 30 인 값은 validator reject."
+        ),
+        short_reference=kma_grid_short_reference(),
+        domain_quirk=(
+            "매 정시 HH:30 발표 후 ~+10분 데이터 안정. "
+            "resultCode string '00'=정상. "
+            "HTTP 200 이어도 resultCode != '00' 이면 에러. dataType=JSON 권장."
+        ),
+        self_contained_decl=(
+            "이 도구 단독 호출로 완결. resolve_location 등 cross-domain chain 불필요. "
+            "시민이 nx/ny 모르면 LLM 이 자율적으로 "
+            "turn 1 = resolve_location(query='<지역명>'), turn 2 = 이 도구."
+        ),
     ),
     ministry="KMA",
     category=["기상", "예보", "초단기예보"],

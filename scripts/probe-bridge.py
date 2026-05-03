@@ -165,28 +165,25 @@ def _read_frames(proc: subprocess.Popen, timeout_s: float) -> list[dict]:
 
 def _pretty_print_frame(frame: dict, elapsed_ms: int) -> None:
     kind = frame.get("kind", "?")
-    cid = frame.get("correlation_id", "")[:16]
+    frame.get("correlation_id", "")[:16]
     tid = frame.get("transaction_id") or ""
 
     # Kind-specific summary fields.
-    extras = ""
     if kind == "assistant_chunk":
-        delta = frame.get("delta", "")[:60]
-        done = frame.get("done", False)
-        extras = f" delta={delta!r} done={done}"
+        frame.get("delta", "")[:60]
+        frame.get("done", False)
     elif kind == "tool_call":
-        extras = f" name={frame.get('name')} call_id={frame.get('call_id', '')[:12]}"
+        f" name={frame.get('name')} call_id={frame.get('call_id', '')[:12]}"
     elif kind == "tool_result":
-        extras = f" call_id={frame.get('call_id', '')[:12]}"
+        f" call_id={frame.get('call_id', '')[:12]}"
     elif kind == "error":
-        extras = f" code={frame.get('code')} msg={frame.get('message', '')[:60]!r}"
+        f" code={frame.get('code')} msg={frame.get('message', '')[:60]!r}"
     elif kind == "session_event":
-        extras = f" event={frame.get('event')}"
+        f" event={frame.get('event')}"
     elif kind == "heartbeat":
-        extras = f" direction={frame.get('direction')}"
+        f" direction={frame.get('direction')}"
 
-    tid_part = f" txn={tid[:12]}" if tid else ""
-    print(f"[+{elapsed_ms:>6}ms] {kind:<22} cid={cid}{tid_part}{extras}")
+    f" txn={tid[:12]}" if tid else ""
 
 
 # ---------------------------------------------------------------------------
@@ -264,11 +261,6 @@ def main(argv: list[str] | None = None) -> int:
     frame = _make_chat_request(args.message, session_id=args.session_id)
     frame_json = json.dumps(frame, ensure_ascii=False) + "\n"
 
-    print(f"[probe] spawning backend in {WORKTREE_ROOT}")
-    print(f"[probe] sending ChatRequestFrame  message={args.message!r}")
-    print(f"[probe] correlation_id={frame['correlation_id']}")
-    print(f"[probe] waiting up to {args.timeout}s for frames…")
-    print()
 
     start_ts = time.time()
     try:
@@ -295,27 +287,23 @@ def main(argv: list[str] | None = None) -> int:
             except Exception:  # noqa: BLE001
                 pass
 
-    total_ms = int((time.time() - start_ts) * 1000)
+    int((time.time() - start_ts) * 1000)
 
     if not frames:
-        print(f"[probe] NO frames received in {total_ms}ms — backend may need FRIENDLI_API_KEY or is not wired.")
         return 1
 
     for f in frames:
         elapsed_ms = int((time.time() - start_ts) * 1000)
         _pretty_print_frame(f, elapsed_ms)
 
-    print()
-    print(f"[probe] {len(frames)} frame(s) received in {total_ms}ms")
 
     if args.validate:
         errors = _try_validate_frames(frames)
         if errors:
-            print("[probe] Pydantic validation errors:")
-            for e in errors:
-                print(f"  {e}")
+            for _e in errors:
+                pass
         else:
-            print(f"[probe] all {len(frames)} frames passed Pydantic validation")
+            pass
 
     return 0
 

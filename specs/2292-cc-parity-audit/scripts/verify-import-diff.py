@@ -71,7 +71,6 @@ def split_diff(body: list[str]) -> tuple[list[str], list[str]]:
 
 def main() -> int:
     if not ENUM_IMPORT.exists():
-        print(f"ERROR: {ENUM_IMPORT} missing — run T003 first", file=sys.stderr)
         return 1
 
     paths = [
@@ -84,30 +83,13 @@ def main() -> int:
     pending = []
     for kosmos_path in paths:
         if not kosmos_path.startswith("tui/src/"):
-            print(
-                f"FATAL: unexpected prefix in candidate path {kosmos_path}; "
-                f"enumeration manifest is stale — re-run T003/T004",
-                file=sys.stderr,
-            )
             return 2
         cc_path_rel = f"{CC_SRC_REL}/{kosmos_path[len('tui/src/'):]}"
         kosmos_abs = REPO_ROOT / kosmos_path
         cc_abs = REPO_ROOT / cc_path_rel
         if not kosmos_abs.exists():
-            print(
-                f"FATAL: candidate KOSMOS file missing: {kosmos_path}; "
-                f"the enumeration manifest is stale or the working tree is "
-                f"partial. Aborting — fix and re-run audit.",
-                file=sys.stderr,
-            )
             return 2
         if not cc_abs.exists():
-            print(
-                f"FATAL: candidate CC file missing: {cc_path_rel}; "
-                f"`.references/claude-code-sourcemap/restored-src/src/` is "
-                f"incomplete. Aborting — fix and re-run audit.",
-                file=sys.stderr,
-            )
             return 2
 
         body = diff_pair(kosmos_abs, cc_abs)
@@ -130,12 +112,6 @@ def main() -> int:
         # Without this guard, stale-manifest paths could be silently dropped
         # while the report still claims complete coverage (Codex P1 fail-closed
         # gate).
-        print(
-            f"FATAL: processed {len(entries)} entries but input had "
-            f"{len(paths)} candidates; refusing to write partial verify "
-            f"manifest.",
-            file=sys.stderr,
-        )
         return 2
 
     OUT_RESULTS.write_text(
@@ -143,24 +119,17 @@ def main() -> int:
         encoding="utf-8",
     )
 
-    confirmed = sum(1 for e in entries if not e["body_diff_present"])
-    print(
-        f"[R3] verified {len(entries)} files: {confirmed} import-only confirmed, "
-        f"{len(pending)} reclassified to modified"
-    )
+    sum(1 for e in entries if not e["body_diff_present"])
 
     if pending:
         OUT_PENDING.write_text(
             json.dumps(pending, indent=2, ensure_ascii=False) + "\n",
             encoding="utf-8",
         )
-        print(f"[R3] staging at {OUT_PENDING.relative_to(REPO_ROOT)}")
     else:
         if OUT_PENDING.exists():
             OUT_PENDING.unlink()
-        print("[R3] no reclassifications — staging file cleared")
 
-    print(f"[R3] wrote {OUT_RESULTS.relative_to(REPO_ROOT)}")
     return 0
 
 

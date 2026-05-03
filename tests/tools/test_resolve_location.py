@@ -114,7 +114,9 @@ class TestResolveAdmCd:
         assert result.code == "1168000000"
 
     @pytest.mark.asyncio
-    async def test_falls_back_to_sgis_when_juso_fails(self):
+    async def test_falls_back_to_sgis_when_juso_and_kakao_fail(self):
+        # Spec 2522 T047 — chain 재정렬 (juso → kakao_b_code → sgis).
+        # SGIS 까지 fallback 도달하려면 _juso_adm_cd + _kakao_adm_cd 모두 None.
         sgis_adm = AdmCodeResult(
             kind="adm_cd", code="1168000000", name="강남구", level="sigungu", source="sgis"
         )
@@ -122,6 +124,10 @@ class TestResolveAdmCd:
         with (
             patch(
                 "kosmos.tools.resolve_location._juso_adm_cd",
+                new=AsyncMock(return_value=None),
+            ),
+            patch(
+                "kosmos.tools.resolve_location._kakao_adm_cd",
                 new=AsyncMock(return_value=None),
             ),
             patch(
@@ -142,6 +148,7 @@ class TestResolveAdmCd:
         inp = ResolveLocationInput(query="알수없는장소", want="adm_cd")
         with (
             patch("kosmos.tools.resolve_location._juso_adm_cd", new=AsyncMock(return_value=None)),
+            patch("kosmos.tools.resolve_location._kakao_adm_cd", new=AsyncMock(return_value=None)),
             patch("kosmos.tools.resolve_location._kakao_coords", new=AsyncMock(return_value=None)),
             patch("kosmos.tools.resolve_location._sgis_adm_cd", new=AsyncMock(return_value=None)),
         ):

@@ -1,0 +1,31 @@
+{
+  "fixtures": [
+    {
+      "match": {
+        "userMessageContains": "강남소방서"
+      },
+      "response": {
+        "toolCalls": [
+          {
+            "name": "lookup",
+            "arguments": {
+              "mode": "fetch",
+              "tool_id": "nfa_emergency_info_service",
+              "params": {
+                "operation": "getEmgencyActivityInfo",
+                "sido_hq_ogid_nm": "서울특별시소방재난본부",
+                "rsac_gut_fstt_ogid_nm": "강남소방서",
+                "stmt_ym": "202501"
+              }
+            }
+          }
+        ]
+      },
+      "streaming": {
+        "ttft": 300,
+        "tps": 40,
+        "jitter": 50
+      }
+    }
+  ]
+}

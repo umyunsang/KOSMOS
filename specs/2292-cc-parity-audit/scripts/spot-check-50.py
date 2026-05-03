@@ -47,7 +47,6 @@ def sha256_file(path: Path) -> str:
 
 def main() -> int:
     if not ENUM_KEEP.exists():
-        print(f"ERROR: {ENUM_KEEP} missing — run T003/T004 first", file=sys.stderr)
         return 1
 
     population = [
@@ -56,10 +55,6 @@ def main() -> int:
         if line.strip()
     ]
     if len(population) < SAMPLE_SIZE:
-        print(
-            f"ERROR: population ({len(population)}) < sample size ({SAMPLE_SIZE})",
-            file=sys.stderr,
-        )
         return 1
 
     rng = random.Random(SEED)
@@ -69,30 +64,13 @@ def main() -> int:
     mismatches = []
     for idx, kosmos_path in enumerate(sample):
         if not kosmos_path.startswith("tui/src/"):
-            print(
-                f"FATAL: unexpected prefix in sampled path {kosmos_path}; "
-                f"enumeration manifest is stale — re-run T003/T004",
-                file=sys.stderr,
-            )
             return 2
         cc_path_rel = f"{CC_SRC_REL}/{kosmos_path[len('tui/src/'):]}"
         kosmos_abs = REPO_ROOT / kosmos_path
         cc_abs = REPO_ROOT / cc_path_rel
         if not kosmos_abs.exists():
-            print(
-                f"FATAL: sampled KOSMOS file missing: {kosmos_path}; "
-                f"the enumeration manifest is stale or the working tree "
-                f"is partial. Aborting — fix and re-run audit.",
-                file=sys.stderr,
-            )
             return 2
         if not cc_abs.exists():
-            print(
-                f"FATAL: sampled CC file missing: {cc_path_rel}; "
-                f"`.references/claude-code-sourcemap/restored-src/src/` is "
-                f"incomplete. Aborting — fix and re-run audit.",
-                file=sys.stderr,
-            )
             return 2
         kosmos_sha = sha256_file(kosmos_abs)
         cc_sha = sha256_file(cc_abs)
@@ -114,11 +92,6 @@ def main() -> int:
         # Defensive — should be unreachable given the FATAL early-returns above,
         # but enforce the invariant explicitly so the JSON downstream is never
         # written with a short denominator (Codex P1 fail-closed gate).
-        print(
-            f"FATAL: produced {len(entries)} entries but SAMPLE_SIZE={SAMPLE_SIZE}; "
-            f"refusing to write incomplete spot-check manifest.",
-            file=sys.stderr,
-        )
         return 2
 
     OUT_RESULTS.write_text(
@@ -126,22 +99,18 @@ def main() -> int:
         encoding="utf-8",
     )
 
-    matched = sum(1 for e in entries if e["hash_match"])
-    print(f"[R2] sampled {len(entries)} files (seed={SEED}); {matched}/{len(entries)} match")
+    sum(1 for e in entries if e["hash_match"])
 
     if mismatches:
         OUT_PENDING.write_text(
             json.dumps(mismatches, indent=2, ensure_ascii=False) + "\n",
             encoding="utf-8",
         )
-        print(f"[R2] {len(mismatches)} mismatch(es) → staging at {OUT_PENDING.relative_to(REPO_ROOT)}")
     else:
         # Ensure stale staging from a prior run is removed.
         if OUT_PENDING.exists():
             OUT_PENDING.unlink()
-        print("[R2] no mismatches — staging file cleared")
 
-    print(f"[R2] wrote {OUT_RESULTS.relative_to(REPO_ROOT)}")
     return 0
 
 

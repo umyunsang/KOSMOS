@@ -726,6 +726,34 @@ def _get_search_year_cd(year: int) -> str:
 
 
 # ---------------------------------------------------------------------------
+# geom_json strip helper (T036)
+# ---------------------------------------------------------------------------
+
+
+def _strip_geom_json(item: dict[str, Any]) -> dict[str, Any]:
+    """Return a copy of *item* with the ``geom_json`` field removed.
+
+    The KOROAD ``getRestFrequentzoneLg`` response embeds a GeoJSON Polygon
+    string (~500 characters per record) in every item.  This field is not
+    actionable by the LLM (it can't render or reason over raw Polygon WKT)
+    and inflates the context window unnecessarily.
+
+    This helper is applied to every item before building the output dict so
+    that only human-readable fields (coordinates, counts, names) reach the LLM.
+
+    Args:
+        item: A single raw item dict from the KOROAD wire response.
+
+    Returns:
+        A shallow copy of *item* without the ``geom_json`` key.  All other
+        fields are preserved unchanged.
+    """
+    stripped = dict(item)
+    stripped.pop("geom_json", None)
+    return stripped
+
+
+# ---------------------------------------------------------------------------
 # Async adapter handler
 # ---------------------------------------------------------------------------
 
@@ -830,7 +858,6 @@ async def handle(
         {
             "spot_nm": item.get("spot_nm", ""),
             "tot_dth_cnt": item.get("dth_dnv_cnt", 0),
-            "geom_json": item.get("geom_json"),
             "spot_cd": item.get("spot_cd", ""),
             "sido_sgg_nm": item.get("sido_sgg_nm", ""),
             "occrrnc_cnt": item.get("occrrnc_cnt", 0),
@@ -838,7 +865,7 @@ async def handle(
             "la_crd": item.get("la_crd"),
             "lo_crd": item.get("lo_crd"),
         }
-        for item in item_list
+        for item in (_strip_geom_json(raw_item) for raw_item in item_list)
     ]
 
     return {
@@ -873,12 +900,28 @@ KOROAD_ACCIDENT_HAZARD_SEARCH_TOOL = GovAPITool(
     input_schema=AccidentHazardSearchInput,
     output_schema=_AccidentHazardSearchOutput,
     llm_description=(
-        "Query the KOROAD accident hazard spot dataset by 10-digit 행정동 code and year. "
-        "Obtain adm_cd first via resolve_location(want='adm_cd'). "
-        "Returns a ranked list of accident-prone locations (spots) with coordinates, "
-        "occurrence counts, and casualty counts for the specified municipality and year. "
-        "Use this when a user asks about traffic danger zones, accident hotspots, or road "
-        "safety at a specific location in Korea."
+        # Section 1 — what this tool does
+        "Query the KOROAD accident hazard spot dataset by 10-digit 행정동 administrative code "
+        "and calendar year. Returns a ranked list of accident-prone locations (spots) with "
+        "coordinates, occurrence counts, and casualty counts for the specified municipality "
+        "and year. "
+        # Section 2 — mandatory prerequisite
+        "ORDERING RULE: call resolve_location(want='adm_cd') FIRST to obtain the 10-digit "
+        "adm_cd before invoking this tool — never guess or construct adm_cd from memory. "
+        # Section 3 — wire format notes
+        "[WIRE FORMAT] Input accepts a 10-digit adm_cd (e.g. '1168000000' for 강남구) and "
+        "an integer year. The adapter internally maps year → searchYearCd and adm_cd → "
+        "2-digit siDo + 3-digit guGun codes (including 2023+ 강원/전북 quirks). "
+        "geom_json fields (~500 char Polygon strings) are stripped from all output items "
+        "to reduce context window usage. "
+        # Section 4 — when to use this tool vs koroad_accident_search
+        "Prefer this tool over koroad_accident_search when the caller already has a "
+        "10-digit adm_cd from resolve_location — it accepts the adm_cd directly and "
+        "handles all siDo/guGun mapping internally. "
+        # Section 5 — trigger examples
+        "Use this when a user asks about traffic danger zones, accident hotspots, "
+        "어린이 보호구역 사고 다발, 스쿨존 사고 위험 구역, or road safety at a specific "
+        "location in Korea."
     ),
     search_hint=(
         "교통사고 위험지점 사고다발구역 행정동코드 연도별 위험지역 "

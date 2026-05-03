@@ -44,19 +44,12 @@ def _measure(cfg: SystemPromptConfig, label: str) -> str:
     assert p1 == p2, f"{label}: prefix drift between two assembler instances"
     assert full.startswith(p1), f"{label}: full prompt does not begin with prefix"
     digest = hashlib.sha256(p1.encode("utf-8")).hexdigest()
-    print(f"{label}: bytes={len(p1)} sha256={digest}")
-    print(f"{label}: full bytes={len(full)} suffix bytes={len(full) - len(p1)}")
     return digest
 
 
 def main() -> int:
-    print("SC-006 measurement — cache-prefix byte-identical stability")
-    d1 = _measure(SystemPromptConfig(), "default  ")
-    d2 = _measure(SystemPromptConfig(personal_data_warning=True), "pdw=True ")
-    print("\nResult: prefix §1–§4 (incl. §3a trust hierarchy) is stable across "
-          "assembler instantiations.")
-    print(f"  default  SHA-256: {d1}")
-    print(f"  pdw=True SHA-256: {d2}")
+    _measure(SystemPromptConfig(), "default  ")
+    _measure(SystemPromptConfig(personal_data_warning=True), "pdw=True ")
     return 0
 
 

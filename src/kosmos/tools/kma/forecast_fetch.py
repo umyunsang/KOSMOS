@@ -32,6 +32,7 @@ from typing import Any
 import httpx
 from pydantic import BaseModel, ConfigDict, Field
 
+from kosmos.tools._description_template import build_description_v4
 from kosmos.tools._outbound_trace import traced_async_client
 from kosmos.tools.errors import LookupErrorReason, _require_env
 from kosmos.tools.kma.projection import KMADomainError, latlon_to_lcc
@@ -360,13 +361,33 @@ KMA_FORECAST_FETCH_TOOL = GovAPITool(
     auth_type="api_key",
     input_schema=KmaForecastFetchInput,
     output_schema=_ForecastFetchOutput,
-    llm_description=(
-        "Fetch a KMA short-term weather forecast (단기예보, ~3 days) for a location "
-        "given as WGS-84 coordinates (lat, lon). "
-        "Always call resolve_location(want='coords') first to obtain lat/lon. "
-        "Returns hourly time-series with temperature, precipitation probability, "
-        "precipitation amount, and sky condition. "
-        "base_time must be one of: 0200, 0500, 0800, 1100, 1400, 1700, 2000, 2300 (KST)."
+    llm_description=build_description_v4(
+        purpose=(
+            "기상청 단기예보 (getVilageFcst) — WGS-84 좌표 (lat, lon) 입력으로 "
+            "향후 약 3일 시간대별 기온 / 강수확률 / 강수량 / 하늘 상태 시계열 반환. "
+            "어댑터 내부에서 lat/lon → nx/ny Lambert 격자 변환 자동 처리."
+        ),
+        input_quirk=(
+            "lat (WGS-84 위도, 한국 33-38), lon (WGS-84 경도, 한국 126-130). "
+            "base_date=YYYYMMDD, "
+            "base_time 유효값 8개: 0200/0500/0800/1100/1400/1700/2000/2300 (KST). "
+            "nx/ny 를 직접 입력하지 않음 — 어댑터가 내부에서 투영 변환."
+        ),
+        short_reference=(
+            "한국 대도시 위도/경도 참고: 서울=(37.57,126.98) 부산=(35.18,129.08) "
+            "대구=(35.87,128.60) 인천=(37.46,126.70) 광주=(35.16,126.85) "
+            "대전=(36.35,127.38) 울산=(35.54,129.31) 제주=(33.51,126.53)."
+        ),
+        domain_quirk=(
+            "lat/lon 이 한국 KMA 도메인 밖이면 KMADomainError 반환. "
+            "base_time 유효하지 않으면 invalid_params LookupError. "
+            "응답은 LookupTimeseries (hourly points) 형식."
+        ),
+        self_contained_decl=(
+            "이 도구 단독 호출로 완결. "
+            "lat/lon 은 resolve_location(want='coords') 로 받거나 LLM 이 추정 가능. "
+            "nx/ny 변환은 어댑터 내부 자동 처리 — LLM 이 직접 계산 불필요."
+        ),
     ),
     search_hint="단기예보 날씨 기온 강수 short-term weather forecast temperature precipitation",
     policy=AdapterRealDomainPolicy(

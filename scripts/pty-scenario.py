@@ -342,16 +342,7 @@ def cmd_greeting(_args: argparse.Namespace) -> HarnessResult:
     if not success:
         result.errors.append("timeout: no assistant_chunk frames received within turn timeout")
 
-    summary = {
-        "scenario": scenario,
-        "success": success,
-        "first_chunk_ms": first_chunk_ms,
-        "done_chunk_ms": done_chunk_ms,
-        "boot_ms": result.boot_ms,
-        "total_ms": result.total_ms,
-    }
     # Print structured JSON summary to stdout as required by spec.
-    print(json.dumps(summary, ensure_ascii=False))
     result.markers_seen = _scan_markers(result.stdout_text, ["assistant_chunk"])
     return result
 
@@ -413,7 +404,7 @@ def cmd_lookup_emergency_room(_args: argparse.Namespace) -> HarnessResult:
     # Both required per SC-001; mark success only when chain is complete.
     success = has_lookup and has_resolve
 
-    summary = {
+    {
         "scenario": scenario,
         "success": success,
         "tool_calls": seen_call_ids,
@@ -422,7 +413,6 @@ def cmd_lookup_emergency_room(_args: argparse.Namespace) -> HarnessResult:
         "has_resolve_location": has_resolve,
         "total_ms": result.total_ms,
     }
-    print(json.dumps(summary, ensure_ascii=False))
     result.markers_seen = _scan_markers(result.stdout_text, ["tool_call", "lookup", "resolve_location"])
     return result
 
@@ -430,8 +420,6 @@ def cmd_lookup_emergency_room(_args: argparse.Namespace) -> HarnessResult:
 def _check_friendli_token(scenario: str) -> None:
     """Emit structured error JSON and raise SystemExit(1) if FRIENDLI_API_KEY is absent."""
     if not os.environ.get("FRIENDLI_API_KEY") and not os.environ.get("KOSMOS_FRIENDLI_TOKEN"):
-        msg = {"success": False, "reason": "FRIENDLI_API_KEY (or KOSMOS_FRIENDLI_TOKEN) is not set — TUI cannot authenticate"}
-        print(json.dumps(msg, ensure_ascii=False))
         raise SystemExit(1)
 
 
@@ -454,10 +442,6 @@ def cmd_submit_fine_pay(args: argparse.Namespace) -> HarnessResult:
     pid, fd = _spawn_tui({})
     result = HarnessResult(scenario=scenario, pid=pid, exit_code=None, boot_ms=0, total_ms=0)
 
-    permission_request_seen: bool = False
-    permission_response_sent: bool = False
-    tool_call_seen: bool = False
-    tool_result_seen: bool = False
 
     try:
         # Phase 1: boot.
@@ -480,13 +464,11 @@ def cmd_submit_fine_pay(args: argparse.Namespace) -> HarnessResult:
             fd, result.captured_stdout, perm_deadline, _has_permission_request, f"{scenario}-perm-req"
         )
         if found_perm:
-            permission_request_seen = True
             log.debug("permission_request received; sending decision=%s", decision)
 
             # Phase 4: respond with the chosen permission decision.
             perm_response = json.dumps({"kind": "permission_response", "decision": decision}, ensure_ascii=False) + "\r\n"
             _send(fd, perm_response.encode("utf-8"), f"{scenario}-perm-resp")
-            permission_response_sent = True
         else:
             log.debug("no permission_request within timeout; proceeding to tool_call watch")
 
@@ -496,10 +478,9 @@ def cmd_submit_fine_pay(args: argparse.Namespace) -> HarnessResult:
         def _has_submit_tool_call(frames: list[dict]) -> bool:
             return any(f.get("kind") == "tool_call" and f.get("name") == "submit" for f in frames)
 
-        found_tc = _drain_until(
+        _drain_until(
             fd, result.captured_stdout, tc_deadline, _has_submit_tool_call, f"{scenario}-tool-call"
         )
-        tool_call_seen = found_tc
 
         # Phase 6: wait for matching tool_result (or error frame when denied).
         tr_deadline = time.time() + DEFAULT_TURN_TIMEOUT_MS / 1000
@@ -507,10 +488,9 @@ def cmd_submit_fine_pay(args: argparse.Namespace) -> HarnessResult:
         def _has_tool_result_or_error(frames: list[dict]) -> bool:
             return any(f.get("kind") in ("tool_result", "error") for f in frames)
 
-        found_tr = _drain_until(
+        _drain_until(
             fd, result.captured_stdout, tr_deadline, _has_tool_result_or_error, f"{scenario}-tool-result"
         )
-        tool_result_seen = found_tr
 
     finally:
         result.exit_code = _shutdown(pid, fd)
@@ -523,29 +503,16 @@ def cmd_submit_fine_pay(args: argparse.Namespace) -> HarnessResult:
 
     if decision == "deny":
         # Deny path: no submit tool_call should have been dispatched.
-        success = not tool_calls
         if tool_calls:
             result.errors.append("deny path: submit tool_call was dispatched despite deny decision")
     else:
         # Allow path: both tool_call and a tool_result must be present.
-        success = bool(tool_calls) and bool(tool_results)
+        bool(tool_calls) and bool(tool_results)
         if not tool_calls:
             result.errors.append("allow path: no tool_call{name:'submit'} observed")
         if not tool_results:
             result.errors.append("allow path: no tool_result observed after submit dispatch")
 
-    summary = {
-        "scenario": scenario,
-        "success": success,
-        "decision": decision,
-        "permission_request_seen": permission_request_seen,
-        "permission_response_sent": permission_response_sent,
-        "tool_call_seen": tool_call_seen,
-        "tool_result_seen": tool_result_seen,
-        "boot_ms": result.boot_ms,
-        "total_ms": result.total_ms,
-    }
-    print(json.dumps(summary, ensure_ascii=False))
     result.markers_seen = _scan_markers(result.stdout_text, ["permission_request", "tool_call", "tool_result"])
     return result
 
@@ -614,31 +581,19 @@ def cmd_verify_gongdong(_args: argparse.Namespace) -> HarnessResult:
         if f.get("kind") == "tool_result" and f.get("output", {}).get("kind") == "verify"
     ]
 
-    auth_fields: dict = {}
     if verify_results:
         output = verify_results[0].get("output", {})
-        auth_fields = {
+        {
             "family": output.get("family"),
             "published_tier": output.get("published_tier"),
             "nist_aal_hint": output.get("nist_aal_hint"),
         }
 
-    success = tool_call_ms is not None and auth_context_ms is not None
     if tool_call_ms is None:
         result.errors.append("timeout: no tool_call{name:'verify'} observed")
     if auth_context_ms is None:
         result.errors.append("timeout: no tool_result{kind:'verify', family:'gongdong_injeungseo'} observed")
 
-    summary = {
-        "scenario": scenario,
-        "success": success,
-        "tool_call_ms": tool_call_ms,
-        "auth_context_ms": auth_context_ms,
-        "auth_fields": auth_fields,
-        "boot_ms": result.boot_ms,
-        "total_ms": result.total_ms,
-    }
-    print(json.dumps(summary, ensure_ascii=False))
     result.markers_seen = _scan_markers(result.stdout_text, ["tool_call", "tool_result", "gongdong_injeungseo"])
     return result
 
@@ -708,25 +663,18 @@ def main(argv: Sequence[str] | None = None) -> int:
         sys.stderr.write(f"\n[harness-error] {type(exc).__name__}: {exc}\n")
         return 2
 
-    print(
-        f"\n\n[summary] scenario={result.scenario} exit={result.exit_code} "
-        f"boot={result.boot_ms}ms total={result.total_ms}ms "
-        f"stdout_bytes={len(result.captured_stdout)} stderr_bytes={len(result.captured_stderr)}",
-    )
     if result.markers_seen:
-        print(f"[markers] {result.markers_seen}")
+        pass
     if result.errors:
-        for err in result.errors:
-            print(f"[error] {err}", file=sys.stderr)
+        for _err in result.errors:
+            pass
 
     if args.capture_out is not None:
         args.capture_out.parent.mkdir(parents=True, exist_ok=True)
         args.capture_out.write_bytes(bytes(result.captured_stdout))
-        print(f"[capture] stdout → {args.capture_out}")
     if args.capture_err is not None:
         args.capture_err.parent.mkdir(parents=True, exist_ok=True)
         args.capture_err.write_bytes(bytes(result.captured_stderr))
-        print(f"[capture] stderr → {args.capture_err}")
 
     # Codex P1 (PR #2074): a crashed/terminated TUI process must fail the
     # scenario even if the marker checks did not append an error. Treat

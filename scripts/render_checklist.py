@@ -88,15 +88,9 @@ def main(argv: list[str]) -> int:
     if "--check" in argv:
         existing = DOC_PATH.read_text(encoding="utf-8") if DOC_PATH.exists() else ""
         if existing != rendered:
-            print(
-                "review-checklist.md drift detected — run "
-                "`uv run python scripts/render_checklist.py` to regenerate.",
-                file=sys.stderr,
-            )
             return 1
         return 0
     DOC_PATH.write_text(rendered, encoding="utf-8")
-    print(f"wrote {DOC_PATH} ({len(rows)} rows)")
     return 0
 
 

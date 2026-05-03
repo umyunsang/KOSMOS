@@ -3,24 +3,59 @@ tool_id: resolve_location
 primitive: lookup
 tier: live
 permission_tier: 1
+output_standard: v4
 ---
 
 # resolve_location
 
+> **v4 change (Spec 2522 US7)**: A new standardised flat output model `ResolveLocationOutput` is now the canonical shape returned by `resolve_location_v4()`. See [v4 output standard](#v4-output-standard-resolvelocationoutput) below. The legacy 6-variant discriminated union (`ResolveLocationOutputUnion`) is preserved for backward compatibility.
+
 ## Overview
 
-Converts a free-text Korean place reference (address, neighborhood, administrative region, or landmark) into structured location identifiers — coordinates, 10-digit 행정동 code, road/jibun address, or a point of interest — by dispatching across three geocoding backends in a deterministic chain.
+Converts a free-text Korean place reference (address, neighborhood, administrative region, or landmark) into structured location identifiers — coordinates, 10-digit 행정동 code, road/jibun address, or a point of interest — by dispatching across geocoding backends.
+
+**Kakao Local API is sufficient as the sole backend** for the v4 standard output (4-field guarantee). JUSO and SGIS are optional fallbacks; if their environment keys are not set, those backends are silently skipped. All 4 evidence scenarios confirmed with Kakao-only (see `/tmp/kosmos-evidence/geocoding-evidence.md`).
 
 | Field | Value |
 |---|---|
 | Classification | Live · Permission tier 1 |
-| Source | KOSMOS harness-internal meta-tool (ministry: `KOSMOS`); dispatches to three external geocoding backends |
+| Source | KOSMOS harness-internal meta-tool (ministry: `KOSMOS`); dispatches to geocoding backends |
 | Primitive | `lookup` (meta-tool, always `want` = target variant) |
 | Module | `src/kosmos/tools/resolve_location.py` + `src/kosmos/tools/geocoding/{kakao_client.py,juso.py,sgis.py,region_mapping.py}` |
 
-## Envelope
+## v4 Output Standard — `ResolveLocationOutput`
 
-**Input model**: `ResolveLocationInput` defined at `src/kosmos/tools/models.py:536–558`.
+**Spec 2522 US7 (T039).** `resolve_location_v4(query)` returns a flat Pydantic model with 4 guaranteed fields when Kakao returns at least one document:
+
+**Model**: `ResolveLocationOutput` — `src/kosmos/tools/models.py` (T039 section).
+
+| Field | Type | Constraint | Description |
+|---|---|---|---|
+| `lat` | `float` | `ge=-90, le=90` | WGS-84 latitude. Extracted from Kakao `documents[0].y`. |
+| `lon` | `float` | `ge=-180, le=180` | WGS-84 longitude. Extracted from Kakao `documents[0].x`. |
+| `b_code` | `str` | `pattern=^[0-9]{10}$` | 10-digit 법정동 코드 — from Kakao `documents[0].address.b_code`. |
+| `address_name` | `str` | `min_length=1` | Human-readable address — from Kakao `documents[0].address_name`. |
+| `confidence` | `Literal["high", "medium", "low"]` | derived | `"high"` if `meta.total_count == 1`, `"medium"` if `≤ 3`, `"low"` otherwise. |
+| `source` | `Literal["kakao", "juso", "sgis"]` | — | Always `"kakao"` on the v4 path. |
+
+**Model config**: `frozen=True, extra="forbid"` — immutable, no extra fields.
+
+**On failure**: returns `ResolveError` with `reason="not_found"` (0 Kakao documents) or `reason="upstream_unavailable"` (missing/invalid b_code or network error).
+
+### v4 Evidence (Kakao-only, 4 scenarios)
+
+| Query | lat | lon | b_code | address_name |
+|---|---|---|---|---|
+| `서울 강남구` | 37.517 | 127.047 | `1168000000` | 서울 강남구 |
+| `부산` | 35.180 | 129.075 | `2600000000` | 부산 |
+| `제주특별자치도` | 33.489 | 126.498 | `5000000000` | 제주특별자치도 |
+| `존재하지않는주소` | — | — | — | `ResolveError(reason="not_found")` |
+
+JUSO (`KOSMOS_JUSO_CONFM_KEY`) and SGIS (`KOSMOS_SGIS_KEY`) were not set during evidence capture; Kakao alone is sufficient for all 4 fields.
+
+## Envelope (Legacy — v1–v3)
+
+**Input model**: `ResolveLocationInput` defined at `src/kosmos/tools/models.py`.
 
 | Field | Type | Required | Description |
 |---|---|---|---|
@@ -28,7 +63,7 @@ Converts a free-text Korean place reference (address, neighborhood, administrati
 | `want` | `Literal["coords", "adm_cd", "coords_and_admcd", "road_address", "jibun_address", "poi", "all"]` | no | Which identifier to resolve. Default `"coords_and_admcd"` returns a `ResolveBundle` |
 | `near` | `tuple[float, float] | None` | no | Optional `[lat, lon]` tiebreaker for ambiguous queries |
 
-**Output model**: `ResolveLocationOutput` — a 6-variant discriminated union on `kind` defined at `src/kosmos/tools/models.py:569–655`.
+**Output model (legacy)**: `ResolveLocationOutputUnion` — a 6-variant discriminated union on `kind`.
 
 | Variant (`kind`) | Type | Description |
 |---|---|---|

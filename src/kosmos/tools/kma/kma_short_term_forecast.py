@@ -24,9 +24,11 @@ from typing import Any, Literal, cast
 import httpx
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from kosmos.tools._description_template import build_description_v4
 from kosmos.tools._outbound_trace import traced_async_client
 from kosmos.tools.errors import ConfigurationError, ToolExecutionError, _require_env
 from kosmos.tools.executor import ToolExecutor
+from kosmos.tools.kma.grid_coords import kma_grid_short_reference
 from kosmos.tools.models import AdapterRealDomainPolicy, GovAPITool
 from kosmos.tools.registry import ToolRegistry
 
@@ -364,14 +366,29 @@ KMA_SHORT_TERM_FORECAST_TOOL = GovAPITool(
     auth_type="api_key",
     input_schema=KmaShortTermForecastInput,
     output_schema=KmaShortTermForecastOutput,
-    llm_description=(
-        "기상청 단기예보 — 향후 약 3일 (오늘 / 내일 / 모레) 시간대별 기온 / 강수확률 / "
-        "하늘 상태 / 습도 / 풍속 / 풍향 예보. 시민이 '내일 날씨' / '주말 비 올까' / "
-        "'다음주 기온' 같은 미래 예보를 묻는 경우 호출.\n\n"
-        "**ORDERING RULE**: 시민 발화에 위치명이 있으면 "
-        "**먼저 resolve_location(query='<지역명>')** 호출 → nx/ny 받아서 이 도구에 전달. "
-        "base_date / base_time 은 KMA 발표 시각 기준 "
-        "(02/05/08/11/14/17/20/23시 발표) — 보통 직전 발표 시각 사용."
+    llm_description=build_description_v4(
+        purpose=(
+            "기상청 단기예보 (getVilageFcst) — 향후 약 3일 시간대별 "
+            "기온 TMP / 강수확률 POP / 하늘 SKY / 습도 REH / 풍속 WSD / 강수 PCP 예보. "
+            "시민이 '내일 날씨' / '주말 비 올까' / '이번 주 기온' 묻는 경우 호출."
+        ),
+        input_quirk=(
+            "nx (1-149), ny (1-253) Lambert 5 km 격자. "
+            "base_date=YYYYMMDD (오늘), "
+            "base_time 유효값 8개: 0200/0500/0800/1100/1400/1700/2000/2300 (KST). "
+            "각 발표 후 ~10분 데이터 안정. 현재 시각의 직전 발표 시각 사용."
+        ),
+        short_reference=kma_grid_short_reference(),
+        domain_quirk=(
+            "PCP / SNO 값 string ('강수없음', '1.0mm', '30.0~50.0mm'). "
+            "resultCode string '00'=정상, '03'=데이터없음. "
+            "HTTP 200 이어도 resultCode != '00' 이면 에러."
+        ),
+        self_contained_decl=(
+            "이 도구 단독 호출로 완결. resolve_location 등 cross-domain chain 불필요. "
+            "시민이 nx/ny 모르면 LLM 이 자율적으로 "
+            "turn 1 = resolve_location(query='<지역명>'), turn 2 = 이 도구."
+        ),
     ),
     search_hint=(
         "단기예보 날씨예보 기온 강수확률 하늘상태 습도 풍속 풍향 "

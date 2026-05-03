@@ -840,15 +840,73 @@ async def run(  # noqa: C901
             raw_required = schema.get("required") if isinstance(schema, dict) else None
             if isinstance(raw_required, list):
                 required = {str(item) for item in raw_required if isinstance(item, str)}
-            # If this adapter requires KMA grid coords, emit an explicit
-            # ordering directive so K-EXAONE knows it must call
-            # resolve_location BEFORE this lookup (the key ordering rule).
-            needs_kma_grid = "nx" in required and "ny" in required
-            if needs_kma_grid:
-                lines.append(
-                    "  [ORDERING] nx/ny 는 KMA 격자 좌표 — 이 도구 호출 전에 반드시"
-                    " resolve_location(query='<지역명>') 을 먼저 호출해 nx/ny 를 받아야 합니다."
-                )
+            # Spec 2522 T010 — ORDERING directive removed.
+            # The Spec 2521 ORDERING block ("nx/ny 는 KMA 격자 좌표 — 반드시
+            # resolve_location 을 먼저 호출") forced a cross-domain chain that
+            # contradicts both the user directive ("chain X / KOSMOS does not
+            # force cross-domain chain") and v4 description 5-section
+            # self_contained_decl ("이 도구 단독 호출로 완결. resolve_location 등
+            # cross-domain chain 불필요"). With both signals present K-EXAONE
+            # ignored both and hallucinated nx/ny → Spec 2521 regression.
+            # Each adapter's description (섹션 4 domain_quirk + 섹션 5
+            # self_contained_decl + 섹션 3 short_reference 17 광역시도 표) is now
+            # self-sufficient. The model decides chain vs single-tool autonomously.
+            # Reference: research-stdio-ordering.md, frames-busan-weather/ T042 evidence.
+            # Spec 2522 T047 fix — resolve $ref to $defs and inline enum values.
+            # KOROAD KoroadAccidentSearchInput.search_year_cd uses
+            # `$ref: #/$defs/SearchYearCd` (20 values). The previous renderer
+            # only inlined `properties.<f>.enum` and gave up on $ref, leaving
+            # K-EXAONE to guess plain '2024' (invalid). Spec 2522 frames-gangnam-
+            # accident-fix2 evidence: invalid_params persisted after T042 fix.
+            # Fix: resolve $ref against schema['$defs'] + raise threshold 8→25.
+            defs_raw = schema.get("$defs") if isinstance(schema, dict) else None
+            defs: dict[str, Any] | None = defs_raw if isinstance(defs_raw, dict) else None
+
+            def _resolve_enum(
+                meta: dict[str, Any], defs: dict[str, Any] | None
+            ) -> list[Any] | None:
+                # direct enum
+                e = meta.get("enum")
+                if isinstance(e, list):
+                    return e
+                # $ref → $defs/<name>
+                ref = meta.get("$ref")
+                if isinstance(ref, str) and ref.startswith("#/$defs/") and isinstance(defs, dict):
+                    name = ref.removeprefix("#/$defs/")
+                    target = defs.get(name)
+                    if isinstance(target, dict):
+                        target_enum = target.get("enum")
+                        if isinstance(target_enum, list):
+                            return target_enum
+                return None
+
+            def _resolve_enum_with_names(
+                meta: dict[str, Any], defs: dict[str, Any] | None
+            ) -> list[tuple[Any, str]] | None:
+                """Spec 2522 — agency 자체 코드체계 (KOROAD GugunCode SEOUL_GANGNAM=680
+                등) 의 IntEnum name 을 의미 매핑으로 노출. pydantic JSON schema 의
+                $defs 안 IntEnum 의 'enum' (값) + 'x-enum-varnames' (name) 또는
+                'description' (docstring) 을 묶어서 LLM 에 보여줌.
+                """
+                ref = meta.get("$ref")
+                if not (isinstance(ref, str) and ref.startswith("#/$defs/")):
+                    return None
+                if not isinstance(defs, dict):
+                    return None
+                name = ref.removeprefix("#/$defs/")
+                target = defs.get(name)
+                if not isinstance(target, dict):
+                    return None
+                values = target.get("enum")
+                if not isinstance(values, list):
+                    return None
+                # IntEnum name 추출 — pydantic v2 가 'x-enum-varnames' 또는
+                # 'enumNames' 로 export 하지 않음. 대신 module-level dict 조회.
+                varnames = target.get("x-enum-varnames")
+                if isinstance(varnames, list) and len(varnames) == len(values):
+                    return list(zip(values, varnames, strict=False))
+                return None
+
             if isinstance(properties, dict) and properties:
                 for fname, fmeta in properties.items():
                     if not isinstance(fmeta, dict):
@@ -857,12 +915,22 @@ async def run(  # noqa: C901
                     if isinstance(ftype, list):
                         ftype = "|".join(str(t) for t in ftype)
                     fdesc = str(fmeta.get("description", "")).strip().replace("\n", " ")
-                    if len(fdesc) > 120:
-                        fdesc = fdesc[:117] + "..."
+                    # Spec 2522 — agency 자체 코드체계 (KOROAD 68 시군구 매핑 ≈ 1600
+                    # chars + 기존 description ≈ 600 chars = ~2200 chars / KMA 156
+                    # station 등) 인라인 허용. 일반 도구는 100자 미만이라 영향 X.
+                    if len(fdesc) > 5000:
+                        fdesc = fdesc[:4997] + "..."
                     pat = fmeta.get("pattern")
                     pat_part = f" pattern={pat!r}" if isinstance(pat, str) else ""
-                    enum = fmeta.get("enum")
-                    enum_part = f" enum={enum}" if isinstance(enum, list) and len(enum) <= 8 else ""
+                    enum = _resolve_enum(fmeta, defs)
+                    # Spec 2522 T047 — threshold 25→200 — KOROAD GugunCode (115) /
+                    # SearchYearCd (20) / SidoCode (17) 등 모두 노출. 의미 매핑은
+                    # field description 에 따로 인라인 (Pydantic IntEnum 의 name
+                    # 은 JSON schema 표준 export 안 됨).
+                    if isinstance(enum, list) and len(enum) <= 200:
+                        enum_part = f" enum={enum}"
+                    else:
+                        enum_part = ""
                     flag = "필수" if fname in required else "선택"
                     lines.append(
                         f"    · {fname} ({ftype}, {flag}{pat_part}{enum_part})"

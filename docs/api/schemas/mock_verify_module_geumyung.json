@@ -1,0 +1,38 @@
+{
+  "$defs": {
+    "_OpaqueOutput": {
+      "additionalProperties": true,
+      "description": "Generic envelope wrapper for bridge-registered tools' outputs.",
+      "title": "_OpaqueOutput",
+      "type": "object"
+    }
+  },
+  "$id": "https://kosmos.example/api/schemas/mock_verify_module_geumyung.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": true,
+  "description": "LLM-facing verify params — citizen-shape `{scope_list, purpose_ko, purpose_en}`.",
+  "properties": {
+    "purpose_en": {
+      "default": "",
+      "description": "English-language one-line purpose statement (for audit logs).",
+      "title": "Purpose En",
+      "type": "string"
+    },
+    "purpose_ko": {
+      "default": "",
+      "description": "Korean-language one-line purpose statement shown to the citizen during the consent prompt. Example: '종합소득세 신고'.",
+      "title": "Purpose Ko",
+      "type": "string"
+    },
+    "scope_list": {
+      "description": "List of '<verb>:<adapter_family>.<action>' scope strings the downstream lookup/submit calls will need. The verify ceremony issues a DelegationToken bound to exactly this scope set.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Scope List",
+      "type": "array"
+    }
+  },
+  "title": "mock_verify_module_geumyung",
+  "type": "object"
+}

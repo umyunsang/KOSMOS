@@ -22,9 +22,11 @@ from typing import Any, Literal, cast
 import httpx
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from kosmos.tools._description_template import build_description_v4
 from kosmos.tools._outbound_trace import traced_async_client
 from kosmos.tools.errors import ConfigurationError, ToolExecutionError, _require_env
 from kosmos.tools.executor import ToolExecutor
+from kosmos.tools.kma.grid_coords import kma_grid_short_reference
 from kosmos.tools.models import AdapterRealDomainPolicy, GovAPITool
 from kosmos.tools.registry import ToolRegistry
 
@@ -403,18 +405,27 @@ KMA_CURRENT_OBSERVATION_TOOL = GovAPITool(
     auth_type="api_key",
     input_schema=KmaCurrentObservationInput,
     output_schema=KmaCurrentObservationOutput,
-    llm_description=(
-        "기상청 초단기실황 — 현재 시각 기준 실제 관측 데이터 (기온 / 강수 / 습도 / "
-        "풍속 / 풍향). 시민이 '오늘 날씨' / '지금 비 와' / '현재 기온' 같은 즉시 "
-        "현재 상태를 묻는 경우 첫 호출. 'sky' 같은 미래 예보 키워드는 "
-        "kma_short_term_forecast 사용.\n\n"
-        "**ORDERING RULE**: 시민 발화에 위치명이 있으면 "
-        "**먼저 resolve_location(query='<지역명>')** 호출 → nx/ny 받아서 이 도구에 그대로 "
-        "전달. nx/ny 를 LLM 추측 금지 (좌표 매핑은 행정동 코드 기반이며 시도/구군 변환 "
-        "비공개 quirks 포함).\n\n"
-        "**TIMING**: base_date 는 오늘 (YYYYMMDD), base_time 은 직전 정시 (HHMM). "
-        "매 정시의 :40 이후만 안정적인 데이터. 14:25 호출 시 base_time='1300' 사용 "
-        "(직전 정시 데이터)."
+    llm_description=build_description_v4(
+        purpose=(
+            "기상청 초단기실황 (getUltraSrtNcst) — 현재 시각 기준 실제 관측값 "
+            "(기온 T1H / 강수 RN1 / 습도 REH / 풍속 WSD / 풍향 VEC / 강수형태 PTY). "
+            "시민이 '지금 기온' / '현재 비 와' / '오늘 날씨 어때' 묻는 경우 첫 호출."
+        ),
+        input_quirk=(
+            "nx (1-149), ny (1-253) 는 Lambert Conformal Conic 5 km 격자. "
+            "base_date=YYYYMMDD (오늘), base_time=HHMM (직전 정시, 반드시 MM=00). "
+            "data_type=JSON 권장. resultCode 는 string '00' = 정상."
+        ),
+        short_reference=kma_grid_short_reference(),
+        domain_quirk=(
+            "매 정시 :40 이후만 안정. 14:25 호출 → base_time='1300'. "
+            "RN1='-' 는 강수 없음(0.0). HTTP 200 이어도 resultCode != '00' 이면 에러."
+        ),
+        self_contained_decl=(
+            "이 도구 단독 호출로 완결. resolve_location 등 cross-domain chain 불필요. "
+            "시민이 정확한 nx/ny 모르면 LLM 이 자율적으로 "
+            "turn 1 = resolve_location(query='<지역명>'), turn 2 = 이 도구."
+        ),
     ),
     search_hint=(
         "현재 날씨 기온 강수 습도 풍속 초단기실황 관측 "

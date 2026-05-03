@@ -25,6 +25,7 @@ from typing import Any
 import httpx
 from pydantic import BaseModel, ConfigDict, Field, RootModel
 
+from kosmos.tools._description_template import build_description_v4
 from kosmos.tools._outbound_trace import traced_async_client
 from kosmos.tools.errors import ToolExecutionError, _require_env
 from kosmos.tools.models import AdapterRealDomainPolicy, GovAPITool
@@ -123,7 +124,7 @@ async def handle(
         "radius": inp.radius,
         "pageNo": inp.pageNo,
         "numOfRows": inp.numOfRows,
-        "type": "json",
+        "_type": "json",
     }
 
     logger.debug(
@@ -150,7 +151,7 @@ async def handle(
                 "hira_hospital_search",
                 f"HIRA API returned XML instead of JSON "
                 f"(Content-Type: {content_type!r}). "
-                "Append '&type=json' to the request or check the serviceKey.",
+                "Ensure '_type=json' (underscore prefix) is in the request params.",
             )
 
         raw: dict[str, Any] = response.json()
@@ -225,6 +226,37 @@ class _HiraHospitalSearchOutput(RootModel[dict[str, Any]]):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
 
+_HIRA_DESCRIPTION = build_description_v4(
+    purpose=(
+        "Search HIRA (건강보험심사평가원) hospital registry for medical facilities "
+        "within a WGS84 coordinate radius. Returns hospital name, address, phone, "
+        "institution type, and distance. Use for: nearby hospitals, clinics, healthcare."
+    ),
+    input_quirk=(
+        "xPos = longitude (lon, 124–132 WGS84 decimal degrees) — agency naming convention. "
+        "yPos = latitude (lat, 33–39 WGS84 decimal degrees) — agency naming convention. "
+        "Always obtain xPos/yPos from resolve_location(want='coords') before calling. "
+        "radius default 2000 m (max 10000 m). Increase if results are empty."
+    ),
+    short_reference=(
+        "No 17-region table needed — HIRA accepts lat/lon directly (no grid conversion). "
+        "Unlike KMA, no nx/ny grid step is required. "
+        "Response fields: yadmNm (name), addr, telno, clCdNm (type), ykiho (ID), distance."
+    ),
+    domain_quirk=(
+        "JSON format requires '_type=json' (underscore prefix). "
+        "'type=json' and 'dataType=JSON' are silently ignored — API returns XML. "
+        "Response 'distance' is a high-precision decimal string, not a float. "
+        "Response coord fields are uppercase: XPos/YPos (capital X and Y)."
+    ),
+    self_contained_decl=(
+        "Self-contained: call resolve_location(want='coords') first, then this tool. "
+        "No follow-up tool required for basic hospital listing. "
+        "Use ykiho for HIRA detail queries. "
+        "Do not guess coordinates — always resolve from user-supplied location text."
+    ),
+)
+
 HIRA_HOSPITAL_SEARCH_TOOL = GovAPITool(
     id="hira_hospital_search",
     name_ko="병원 기본정보 조회 (좌표+반경)",
@@ -234,16 +266,7 @@ HIRA_HOSPITAL_SEARCH_TOOL = GovAPITool(
     auth_type="api_key",
     input_schema=HiraHospitalSearchInput,
     output_schema=_HiraHospitalSearchOutput,
-    llm_description=(
-        "Search HIRA's hospital registry by WGS84 coordinate and radius. "
-        "Obtain coordinates first via resolve_location(want='coords'). "
-        "Returns a ranked list of hospitals within the specified radius, "
-        "including hospital name (yadmNm), address (addr), phone (telno), "
-        "institution type (clCdNm), and coordinates (xPos, yPos). "
-        "Use the returned ykiho identifier for follow-up detail queries. "
-        "Use this when a user asks about nearby hospitals, clinics, "
-        "medical facilities, or healthcare providers in a Korean area."
-    ),
+    llm_description=_HIRA_DESCRIPTION,
     search_hint=(
         "병원 검색 진료과목 의료기관 정보 근처 병원 내과 외과 소아과 "
         "hospital search medical specialty clinic nearby HIRA healthcare Korea"

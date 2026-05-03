@@ -16,6 +16,7 @@ FR-036: ``ResolveBundle`` carries per-backend provenance.
 from __future__ import annotations
 
 import logging
+from typing import Literal
 
 import httpx
 
@@ -27,6 +28,7 @@ from kosmos.tools.models import (
     ResolveBundle,
     ResolveError,
     ResolveLocationInput,
+    ResolveLocationOutput,
 )
 
 logger = logging.getLogger(__name__)
@@ -127,6 +129,56 @@ async def _kakao_coords(
         )
     except Exception as exc:
         logger.debug("kakao coords failed for %r: %s", query, exc)
+        return None
+
+
+async def _kakao_adm_cd(
+    query: str,
+    *,
+    client: httpx.AsyncClient | None = None,
+) -> AdmCodeResult | None:
+    """Spec 2522 T047 fix — Kakao b_code fallback for adm_cd path.
+
+    JUSO/SGIS API 키가 없는 환경에서 adm_cd 를 못 받아 KOROAD chain 이
+    fail 하던 회귀 (frames-gangnam-accident-fix3 evidence). Kakao Local API
+    의 ``address.b_code`` (10-digit 법정동) 을 AdmCodeResult 로 매핑.
+    Kakao 키만 있으면 광역시도 / 시군구 / 동 단위 모두 정상 동작.
+    """
+    try:
+        from kosmos.tools.geocoding.kakao_client import search_address  # noqa: PLC0415
+
+        result = await search_address(query, client=client)
+        if not result.documents:
+            return None
+        doc = result.documents[0]
+        b_code = (doc.address.b_code or "").strip() if doc.address else ""
+        if not b_code or len(b_code) != 10:
+            return None
+        # 행정 단위 추정: 시도 (XX0000000) / 시군구 (XXYY00000) / 동
+        level: Literal["sido", "sigungu", "eupmyeondong"]
+        if b_code[2:].rstrip("0") == "":
+            level = "sido"
+        elif b_code[5:].rstrip("0") == "":
+            level = "sigungu"
+        else:
+            level = "eupmyeondong"
+        # doc.address 는 위에서 falsy guard 통과한 상태 — mypy narrowing 위해 assert
+        assert doc.address is not None  # noqa: S101 — type narrowing for mypy
+        name = (doc.address.address_name or query).strip()
+        return AdmCodeResult(
+            kind="adm_cd",
+            code=b_code,
+            name=name,
+            level=level,
+            source="kakao",
+        )
+    except (httpx.HTTPError, httpx.HTTPStatusError, ValueError) as exc:
+        logger.debug("kakao adm_cd fallback failed for %r: %s", query, exc)
+        return None
+    except Exception as exc:  # noqa: BLE001 — Codex P1: KOSMOS_KAKAO_API_KEY 부재
+        # 시 search_address() 가 ConfigurationError raise. JUSO/SGIS 도 없는
+        # 환경에서 hard adapter fail 대신 graceful ResolveError 로 fallback.
+        logger.debug("kakao adm_cd fallback config/unexpected error for %r: %s", query, exc)
         return None
 
 
@@ -246,12 +298,20 @@ async def resolve_location(  # noqa: C901
 
     # --- adm_cd path ---
     if want == "adm_cd":
-        # Chain: juso (has admCd directly) → sgis (coord2region) → kakao+sgis
+        # Spec 2522 T047 — chain reordered.
+        # JUSO (KOSMOS_JUSO_CONFM_KEY) → Kakao b_code fallback (always available
+        # via KOSMOS_KAKAO_API_KEY) → SGIS (KOSMOS_SGIS_KEY).
+        # Kakao 의 address.b_code 가 10-digit 법정동 코드 (geocoding-evidence.md
+        # 검증) 이므로 JUSO/SGIS 키 없어도 시도/시군구/동 단위 모두 동작.
         adm = await _juso_adm_cd(query, client=client)
         if adm:
             return adm
 
-        # Try kakao for coords then sgis for adm_cd
+        adm = await _kakao_adm_cd(query, client=client)
+        if adm:
+            return adm
+
+        # Last fallback: SGIS via kakao coords
         coords = await _kakao_coords(query, client=client)
         adm = await _sgis_adm_cd(query, coords=coords, client=client)
         if adm:
@@ -411,4 +471,110 @@ async def resolve_location(  # noqa: C901
         kind="error",
         reason="invalid_query",
         message=f"Unsupported want={want!r}.",
+    )
+
+
+async def resolve_location_v4(
+    query: str,
+    *,
+    client: httpx.AsyncClient | None = None,
+) -> ResolveLocationOutput | ResolveError:
+    """Resolve a place query to the standardised v4 flat output — Spec 2522 US7 (T039).
+
+    Guarantees all 4 required fields (lat, lon, b_code, address_name) via the
+    Kakao Local API. JUSO / SGIS are NOT called — Kakao ``b_code`` field
+    (행정동 코드) is populated directly from the Kakao response document.
+
+    Returns:
+        ``ResolveLocationOutput`` on success (source always "kakao").
+        ``ResolveError`` with reason ``"not_found"`` when Kakao returns 0 results.
+        ``ResolveError`` with reason ``"invalid_query"`` for an empty query.
+
+    Evidence:
+        /tmp/kosmos-evidence/geocoding-evidence.md — 4 scenarios (서울 강남구,
+        부산, 제주특별자치도, 존재하지않는주소), Kakao-only, all fields present.
+    """
+    query = query.strip()
+    if not query:
+        return ResolveError(
+            kind="error",
+            reason="empty_query",
+            message="Query must not be empty.",
+        )
+
+    logger.debug("resolve_location_v4: query=%r", query)
+
+    try:
+        from kosmos.tools.geocoding.kakao_client import search_address  # noqa: PLC0415
+
+        result = await search_address(query, client=client)
+    except Exception as exc:
+        logger.debug("resolve_location_v4: kakao search failed for %r: %s", query, exc)
+        return ResolveError(
+            kind="error",
+            reason="upstream_unavailable",
+            message=f"Kakao geocoding backend unavailable: {exc}",
+        )
+
+    if not result.documents:
+        return ResolveError(
+            kind="error",
+            reason="not_found",
+            message=f"Could not resolve location for query {query!r}.",
+        )
+
+    doc = result.documents[0]
+
+    # Extract lat / lon (Kakao uses x=lon, y=lat as strings)
+    try:
+        lat = float(doc.y)
+        lon = float(doc.x)
+    except (ValueError, TypeError):
+        return ResolveError(
+            kind="error",
+            reason="upstream_unavailable",
+            message="Kakao returned non-numeric coordinates.",
+        )
+
+    # Extract b_code — present in doc.address block; fall back to doc itself
+    addr_block = doc.address
+    b_code_raw: str | None = None
+    if addr_block is not None:
+        b_code_raw = getattr(addr_block, "b_code", None)
+    if not b_code_raw:
+        # Kakao sometimes puts b_code on the document root for REGION-type results
+        b_code_raw = getattr(doc, "b_code", None)
+
+    if not b_code_raw or len(b_code_raw) != 10 or not b_code_raw.isdigit():
+        return ResolveError(
+            kind="error",
+            reason="upstream_unavailable",
+            message=(
+                f"Kakao response missing or invalid b_code for query {query!r}. Got: {b_code_raw!r}"
+            ),
+        )
+
+    # address_name: prefer doc.address_name (populated for REGION/ROAD types)
+    address_name: str = (
+        doc.address_name or (addr_block.address_name if addr_block else None) or query
+    )
+    if not address_name:
+        address_name = query
+
+    # Confidence derived from total_count
+    total = result.meta.total_count
+    if total == 1:
+        confidence: str = "high"
+    elif total <= 3:
+        confidence = "medium"
+    else:
+        confidence = "low"
+
+    return ResolveLocationOutput(
+        lat=lat,
+        lon=lon,
+        b_code=b_code_raw,
+        address_name=address_name,
+        confidence=confidence,  # type: ignore[arg-type]
+        source="kakao",
     )

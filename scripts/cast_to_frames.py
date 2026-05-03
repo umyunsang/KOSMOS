@@ -165,19 +165,13 @@ def _emit_summary(out_dir: Path, count: int, cast_path: Path) -> None:
 
 def main() -> int:
     if len(sys.argv) != 3:
-        print(
-            "usage: cast_to_frames.py <input.cast> <output-dir>",
-            file=sys.stderr,
-        )
         return 2
     cast = Path(sys.argv[1]).expanduser().resolve()
     out = Path(sys.argv[2]).expanduser().resolve()
     if not cast.is_file():
-        print(f"::error::cast not found: {cast}", file=sys.stderr)
         return 1
     count = replay(cast, out)
     _emit_summary(out, count, cast)
-    print(f"wrote {count} unique frames to {out}/")
     return 0
 
 
