@@ -160,13 +160,14 @@ def _strip_comments(text: str) -> str:
     return _COMMENT_RE.sub("", text)
 
 
-def _split_top_level_field_lines(body: str) -> list[tuple[str, str]]:
-    """Return list of (field_name, zod_chain) at the top level of BaseFrame.
+_FIELD_LINE_RE = re.compile(
+    r"^(?P<name>[A-Za-z_][A-Za-z0-9_]*)\s*:\s*(?P<chain>.+)$",
+    re.DOTALL,
+)
 
-    Naive but adequate for the BaseFrame shape: count `(` / `)` and `{` / `}`
-    to find statement boundaries; split on commas at nesting depth 0.
-    """
-    text = _strip_comments(body)
+
+def _split_into_top_level_statements(text: str) -> list[str]:
+    """Split text on top-level commas (depth 0), respecting () and {} nesting."""
     statements: list[str] = []
     depth_paren = 0
     depth_brace = 0
@@ -180,22 +181,33 @@ def _split_top_level_field_lines(body: str) -> list[tuple[str, str]]:
             depth_brace += 1
         elif ch == "}":
             depth_brace -= 1
-        if ch == "," and depth_paren == 0 and depth_brace == 0:
+        at_top_level_comma = (
+            ch == "," and depth_paren == 0 and depth_brace == 0
+        )
+        if at_top_level_comma:
             statements.append("".join(current).strip())
             current = []
         else:
             current.append(ch)
-    if current:
-        tail = "".join(current).strip()
-        if tail:
-            statements.append(tail)
+    tail = "".join(current).strip()
+    if tail:
+        statements.append(tail)
+    return statements
 
+
+def _split_top_level_field_lines(body: str) -> list[tuple[str, str]]:
+    """Return list of (field_name, zod_chain) at the top level of BaseFrame.
+
+    Strips comments, splits on top-level commas, then matches each
+    statement against ``<name>: <chain>``.
+    """
+    text = _strip_comments(body)
     fields: list[tuple[str, str]] = []
-    for stmt in statements:
+    for stmt in _split_into_top_level_statements(text):
         if not stmt:
             continue
-        m = re.match(r"^(?P<name>[A-Za-z_][A-Za-z0-9_]*)\s*:\s*(?P<chain>.+)$", stmt, re.DOTALL)
-        if not m:
+        m = _FIELD_LINE_RE.match(stmt)
+        if m is None:
             continue
         fields.append((m.group("name"), m.group("chain").strip()))
     return fields
