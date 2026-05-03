@@ -64,8 +64,7 @@ import type { PromptRequest, PromptResponse } from '../types/hooks.js';
 import PromptInput from '../components/PromptInput/PromptInput.js';
 import { PromptInputQueuedCommands } from '../components/PromptInput/PromptInputQueuedCommands.js';
 import { useRemoteSession } from '../hooks/useRemoteSession.js';
-import { useDirectConnect } from '../hooks/useDirectConnect.js';
-import type { DirectConnectConfig } from '../server/directConnectManager.js';
+// KOSMOS-2642 / Epic F · S7 — directConnect/server/ DROPPED (claude.ai sync swap-out, Spec 2642 § US1).
 import { useSSHSession } from '../hooks/useSSHSession.js';
 import { useAssistantHistory } from '../hooks/useAssistantHistory.js';
 import type { SSHSession } from '../ssh/createSSHSession.js';
@@ -651,8 +650,8 @@ export type Props = {
   taskListId?: string;
   // Remote session config for --remote mode (uses CCR as execution engine)
   remoteSessionConfig?: RemoteSessionConfig;
-  // Direct connect config for `claude connect` mode (connects to a claude server)
-  directConnectConfig?: DirectConnectConfig;
+  // KOSMOS-2642 / Epic F · S7 — directConnectConfig prop DROPPED
+  // (claude.ai sync swap-out, Spec 2642 § US1 / FR-002).
   // SSH session for `claude ssh` mode (local REPL, remote tools over ssh)
   sshSession?: SSHSession;
   // Thinking configuration to use when thinking is enabled
@@ -682,7 +681,6 @@ export function REPL({
   disableSlashCommands = false,
   taskListId,
   remoteSessionConfig,
-  directConnectConfig,
   sshSession,
   thinkingConfig
 }: Props): React.ReactNode {
@@ -1041,8 +1039,8 @@ export function REPL({
   const isQueryActive = React.useSyncExternalStore(queryGuard.subscribe, queryGuard.getSnapshot);
 
   // Separate loading flag for operations outside the local query guard:
-  // remote sessions (useRemoteSession / useDirectConnect) and foregrounded
-  // background tasks (useSessionBackgrounding). These don't route through
+  // remote sessions (useRemoteSession; useDirectConnect DROPPED Spec 2642 § US1)
+  // and foregrounded background tasks (useSessionBackgrounding). These don't route through
   // onQuery / queryGuard, so they need their own spinner-visibility state.
   // Initialize true if remote mode with initial prompt (CCR processing it).
   const [isExternalLoading, setIsExternalLoadingRaw] = React.useState(remoteSessionConfig?.hasInitialPrompt ?? false);
@@ -1544,18 +1542,11 @@ export function REPL({
     setInProgressToolUseIDs
   });
 
-  // Direct connect hook - manages WebSocket to a claude server for `claude connect` mode
-  const directConnect = useDirectConnect({
-    config: directConnectConfig,
-    setMessages,
-    setIsLoading: setIsExternalLoading,
-    setToolUseConfirmQueue,
-    tools: combinedInitialTools
-  });
+  // KOSMOS-2642 / Epic F · S7 — useDirectConnect / `claude connect` DROPPED
+  // (claude.ai sync swap-out, Spec 2642 § US1 / FR-002).
 
   // SSH session hook - manages ssh child process for `claude ssh` mode.
-  // Same callback shape as useDirectConnect; only the transport under the
-  // hood differs (ChildProcess stdin/stdout vs WebSocket).
+  // (CC parity preserved; only useDirectConnect dropped above.)
   const sshRemote = useSSHSession({
     session: sshSession,
     setMessages,
@@ -1565,7 +1556,7 @@ export function REPL({
   });
 
   // Use whichever remote mode is active
-  const activeRemote = sshRemote.isRemoteMode ? sshRemote : directConnect.isRemoteMode ? directConnect : remoteSession;
+  const activeRemote = sshRemote.isRemoteMode ? sshRemote : remoteSession;
   const [pastedContents, setPastedContents] = useState<Record<number, PastedContent>>({});
   const [submitCount, setSubmitCount] = useState(0);
   // Ref instead of state to avoid triggering React re-renders on every

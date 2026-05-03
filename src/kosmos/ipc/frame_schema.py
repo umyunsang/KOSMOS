@@ -107,7 +107,11 @@ class FrameTrailer(BaseModel):
     final: bool = Field(description="True when this frame terminates a logical payload/stream.")
     transaction_id: str | None = Field(
         default=None,
-        description="Mirror of envelope transaction_id for trailer-only consumers.",
+        min_length=1,
+        description=(
+            "Mirror of envelope transaction_id for trailer-only consumers. "
+            "Non-empty when present (parity with codec.ts trailer schema — Spec 2642 § US3)."
+        ),
     )
     checksum_sha256: str | None = Field(
         default=None,
@@ -162,9 +166,11 @@ class _BaseFrame(BaseModel):
     )
     transaction_id: str | None = Field(
         default=None,
+        min_length=1,
         description=(
             "UUIDv7. Populated for idempotent state-change frames (irreversible tools). "
-            "None for streaming chunks. (FR-026)"
+            "None for streaming chunks. (FR-026) Non-empty when present (parity with "
+            "codec.ts ``z.string().min(1).nullable().optional()`` — Spec 2642 § US3)."
         ),
     )
     trailer: FrameTrailer | None = Field(
@@ -770,6 +776,17 @@ class NotificationPushFrame(_BaseFrame):
 
     Carried over the same stdio channel to keep a single correlation plane.
     role allow-list: notification.
+
+    CC parity: NO equivalent — Claude Code's notification surface is
+    terminal OSC sequences (iTerm2, Kitty, Ghostty, bell) emitted
+    in-process from ``ink/useTerminalNotification.ts``. There is no
+    push-based IPC notification arm in CC. KOSMOS adds this arm as a
+    swap-2 addition for Korean civic push channels (KMA disaster CBS,
+    RSS newsroom subscribe, hospital-alert subscribe) carried over the
+    same stdio plane to keep a single correlation plane. Spec 2642
+    Epic F · S7 audit recorded this finding (specs/cc-migration-audit/
+    scope-S7-ipc-bridge.md § 5 Finding 3 — resolved as orthogonal
+    KOSMOS swap-2 add-on, not a CC-divergence regression).
     """
 
     kind: Literal["notification_push"] = Field(
