@@ -129,6 +129,12 @@ class KakaoAddressResult(BaseModel):
     sub_address_no: str = ""
     """Sub address number."""
 
+    b_code: str = ""
+    """10-digit 법정동 코드 (행정동 code). Spec 2522 US7 T039."""
+
+    h_code: str = ""
+    """10-digit 행정동 코드. Parallel code used for administrative hierarchy lookups."""
+
     x: str = ""
     """Longitude as string."""
 

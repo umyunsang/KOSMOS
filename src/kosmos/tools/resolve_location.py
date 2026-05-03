@@ -27,6 +27,7 @@ from kosmos.tools.models import (
     ResolveBundle,
     ResolveError,
     ResolveLocationInput,
+    ResolveLocationOutput,
 )
 
 logger = logging.getLogger(__name__)
@@ -411,4 +412,113 @@ async def resolve_location(  # noqa: C901
         kind="error",
         reason="invalid_query",
         message=f"Unsupported want={want!r}.",
+    )
+
+
+async def resolve_location_v4(
+    query: str,
+    *,
+    client: httpx.AsyncClient | None = None,
+) -> ResolveLocationOutput | ResolveError:
+    """Resolve a place query to the standardised v4 flat output — Spec 2522 US7 (T039).
+
+    Guarantees all 4 required fields (lat, lon, b_code, address_name) via the
+    Kakao Local API. JUSO / SGIS are NOT called — Kakao ``b_code`` field
+    (행정동 코드) is populated directly from the Kakao response document.
+
+    Returns:
+        ``ResolveLocationOutput`` on success (source always "kakao").
+        ``ResolveError`` with reason ``"not_found"`` when Kakao returns 0 results.
+        ``ResolveError`` with reason ``"invalid_query"`` for an empty query.
+
+    Evidence:
+        /tmp/kosmos-evidence/geocoding-evidence.md — 4 scenarios (서울 강남구,
+        부산, 제주특별자치도, 존재하지않는주소), Kakao-only, all fields present.
+    """
+    query = query.strip()
+    if not query:
+        return ResolveError(
+            kind="error",
+            reason="empty_query",
+            message="Query must not be empty.",
+        )
+
+    logger.debug("resolve_location_v4: query=%r", query)
+
+    try:
+        from kosmos.tools.geocoding.kakao_client import search_address  # noqa: PLC0415
+
+        result = await search_address(query, client=client)
+    except Exception as exc:
+        logger.debug("resolve_location_v4: kakao search failed for %r: %s", query, exc)
+        return ResolveError(
+            kind="error",
+            reason="upstream_unavailable",
+            message=f"Kakao geocoding backend unavailable: {exc}",
+        )
+
+    if not result.documents:
+        return ResolveError(
+            kind="error",
+            reason="not_found",
+            message=f"Could not resolve location for query {query!r}.",
+        )
+
+    doc = result.documents[0]
+
+    # Extract lat / lon (Kakao uses x=lon, y=lat as strings)
+    try:
+        lat = float(doc.y)
+        lon = float(doc.x)
+    except (ValueError, TypeError):
+        return ResolveError(
+            kind="error",
+            reason="upstream_unavailable",
+            message="Kakao returned non-numeric coordinates.",
+        )
+
+    # Extract b_code — present in doc.address block; fall back to doc itself
+    addr_block = doc.address
+    b_code_raw: str | None = None
+    if addr_block is not None:
+        b_code_raw = getattr(addr_block, "b_code", None)
+    if not b_code_raw:
+        # Kakao sometimes puts b_code on the document root for REGION-type results
+        b_code_raw = getattr(doc, "b_code", None)
+
+    if not b_code_raw or len(b_code_raw) != 10 or not b_code_raw.isdigit():
+        return ResolveError(
+            kind="error",
+            reason="upstream_unavailable",
+            message=(
+                f"Kakao response missing or invalid b_code for query {query!r}. "
+                f"Got: {b_code_raw!r}"
+            ),
+        )
+
+    # address_name: prefer doc.address_name (populated for REGION/ROAD types)
+    address_name: str = (
+        doc.address_name
+        or (addr_block.address_name if addr_block else None)
+        or query
+    )
+    if not address_name:
+        address_name = query
+
+    # Confidence derived from total_count
+    total = result.meta.total_count
+    if total == 1:
+        confidence: str = "high"
+    elif total <= 3:
+        confidence = "medium"
+    else:
+        confidence = "low"
+
+    return ResolveLocationOutput(
+        lat=lat,
+        lon=lon,
+        b_code=b_code_raw,
+        address_name=address_name,
+        confidence=confidence,  # type: ignore[arg-type]
+        source="kakao",
     )

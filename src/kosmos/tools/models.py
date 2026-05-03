@@ -674,11 +674,59 @@ class ResolveError(BaseModel):
     )
 
 
-ResolveLocationOutput = Annotated[
+ResolveLocationOutputUnion = Annotated[
     CoordResult | AdmCodeResult | AddressResult | POIResult | ResolveBundle | ResolveError,
     Field(discriminator="kind"),
 ]
 """Discriminated union on `kind`. Binding variant names from docs/design/mvp-tools.md §4."""
+
+
+# ---------------------------------------------------------------------------
+# T039 — ResolveLocationOutput v4 flat model (Spec 2522 US7)
+# ---------------------------------------------------------------------------
+# Standardises the 4 mandatory output fields guaranteed by the Kakao backend.
+# JUSO / SGIS fallbacks are optional; when not configured they are skipped
+# (see resolve_location.py § _juso_adm_cd / _sgis_adm_cd).
+# Evidence: /tmp/kosmos-evidence/geocoding-evidence.md (4 scenarios, Kakao only).
+# ---------------------------------------------------------------------------
+
+
+class ResolveLocationOutput(BaseModel):
+    """Flat v4 output for resolve_location — Kakao-guaranteed 4-field standard.
+
+    All four fields are always present when Kakao returns a document.
+    ``confidence`` and ``source`` are derived from the Kakao response meta.
+
+    Spec 2522 US7 — T039.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    lat: float = Field(ge=-90, le=90, description="WGS-84 latitude.")
+    lon: float = Field(ge=-180, le=180, description="WGS-84 longitude.")
+    b_code: str = Field(
+        pattern=r"^[0-9]{10}$",
+        description=(
+            "10-digit 행정동 법정 코드 (bjdong_code). "
+            "Extracted directly from the Kakao Local API 'b_code' field."
+        ),
+    )
+    address_name: str = Field(
+        min_length=1,
+        description=(
+            "Human-readable address name returned by Kakao "
+            "(documents[0].address.address_name or documents[0].address_name)."
+        ),
+    )
+    confidence: Literal["high", "medium", "low"] = Field(
+        description=(
+            "'high' if Kakao meta.total_count == 1, "
+            "'medium' if ≤ 3, 'low' otherwise."
+        ),
+    )
+    source: Literal["kakao", "juso", "sgis"] = Field(
+        description="Backend that produced this result. Always 'kakao' for the v4 path.",
+    )
 
 
 # ---------------------------------------------------------------------------

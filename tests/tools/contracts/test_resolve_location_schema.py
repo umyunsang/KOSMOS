@@ -22,10 +22,10 @@ from kosmos.tools.models import (
     POIResult,
     ResolveBundle,
     ResolveError,
-    ResolveLocationOutput,  # type: ignore[attr-defined]
+    ResolveLocationOutputUnion,  # type: ignore[attr-defined]
 )
 
-_ADAPTER: TypeAdapter[object] = TypeAdapter(ResolveLocationOutput)  # type: ignore[arg-type]
+_ADAPTER: TypeAdapter[object] = TypeAdapter(ResolveLocationOutputUnion)  # type: ignore[arg-type]
 
 
 # ---------------------------------------------------------------------------
