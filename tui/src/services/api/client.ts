@@ -1,49 +1,29 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS-original — Epic #2077 client.ts no-op stub.
+// Spec 2641 — api/client.ts duplicate-`getAnthropicClient` fix.
 //
-// CC's client.ts constructed the Anthropic SDK client (AnthropicClient,
-// AnthropicBedrock, AnthropicVertex, etc.) and exported getAnthropicClient.
-// KOSMOS routes all LLM traffic through the Spec 1978 stdio IPC bridge —
-// there is no Anthropic client to construct. This stub re-exports the
-// CLIENT_REQUEST_ID_HEADER constant and a no-op getAnthropicClient so that
-// claude.ts (which imports './client.js') continues to compile.
+// Background: tui/src/services/api/claude.ts is a byte-copy of CC 2.1.88's
+// streaming handler (Spec 2521) which imports `getAnthropicClient` from this
+// module. KOSMOS routes all LLM traffic through the Spec 1978 stdio IPC
+// bridge — no Anthropic SDK client is ever instantiated. Two prior stubs
+// landed in this file (Spec 2077 async-throw + Spec 2521 sync-null) and
+// coexisted as a duplicate symbol declaration. CC migration audit
+// (specs/cc-migration-audit/scope-S6-services.md § swap-1 표 row 11) flagged
+// this as a P1 risk.
 //
-// The real import of getAnthropicClient in claude.ts (executeNonStreamingRequest
-// and verifyApiKey) is dead code in KOSMOS — those functions are overridden to
-// route through the bridge. The import only needs to typecheck.
+// This file now exports a single `getAnthropicClient` per CC's contract
+// shape (sync, returns null) plus the `CLIENT_REQUEST_ID_HEADER` constant.
+// claude.ts is a zero-callers byte-copy after Spec 2293, so the stub return
+// value is never dereferenced at runtime.
+//
+// SWAP/anti-anthropic-1p(2521): byte-copied tui/src/services/api/claude.ts
+// imports `getAnthropicClient`. KOSMOS routes LLM calls via the Spec 1978
+// stdio IPC bridge and never instantiates an Anthropic client directly. The
+// stub returns null so the byte-copy's import resolves at link time; the
+// zero-callers status (verified by callgraph audit Spec 2293) guarantees
+// this null is never dereferenced.
 
 export const CLIENT_REQUEST_ID_HEADER = 'x-client-request-id'
 
-// KOSMOS Epic #2077 — no-op client factory.
-// Returns a minimal object that satisfies the `Anthropic`-shaped type used
-// by the single caller in claude.ts (executeNonStreamingRequest, which is
-// itself a KOSMOS no-op wrapper). This never executes in production.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function getAnthropicClient(_opts: Record<string, unknown>): Promise<any> {
-  // KOSMOS: no Anthropic client needed — LLM traffic goes through stdio bridge.
-  return {
-    beta: {
-      messages: {
-        create: async () => {
-          throw new Error(
-            '[KOSMOS] getAnthropicClient: called in KOSMOS — all LLM calls must go through the stdio bridge (Epic #2077)',
-          )
-        },
-        stream: () => {
-          throw new Error(
-            '[KOSMOS] getAnthropicClient: streaming called in KOSMOS — all LLM calls must go through the stdio bridge (Epic #2077)',
-          )
-        },
-      },
-    },
-  }
-}
-
-// SWAP/anti-anthropic-1p(2521): byte-copied tui/src/services/api/claude.ts
-// imports `getAnthropicClient`. KOSMOS routes LLM calls via stdio IPC bridge
-// (Spec 1978) and never instantiates an Anthropic client directly. Stub
-// returns null so the byte-copy's import resolves at link time; the zero-
-// callers status guarantees this null is never dereferenced.
 export function getAnthropicClient(..._args: unknown[]): null {
   return null
 }
