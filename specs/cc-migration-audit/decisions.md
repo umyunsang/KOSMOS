@@ -11,9 +11,9 @@
 - **D3 5파일 SWAP 주석 백필** → **수용**. AssistantTextMessage / ExitPlanMode / replLauncher / interactiveHelpers / REPL 에 in-file `// SWAP:` 주석 추가. **CLOSED 2026-05-03 (Epic #2639)** — 5파일 모두 head 에 5-line 표준 `// SWAP:` 블록 박제 (cause + CC reference + LOC + spec citation + justification).
 
 ## S5 Commands/Skills
-- **claude-api/ 29파일 SDK docs** → **제거**. Anthropic SDK 사용 안 함, K-EXAONE docs 는 별도 Epic 으로 신설 시 진행.
-- **P0 auto-stub 21 commands** → **즉시 삭제** (Epic D 단일 cleanup 으로 묶음).
-- **CC sourcemap gap 3파일** (extra-usage-core / generateSessionName / reviewRemote) → **caller-graph 재검증 후 PORT 또는 DROP** (Epic D 에서 처리).
+- **claude-api/ 29파일 SDK docs** → **제거 완료** (Epic #2640). 51 doc 파일 + 3 verify 파일 + 4 dispatcher 파일 삭제, `bundled/index.ts` 등록 정리.
+- **P0 auto-stub 20 commands** → **삭제 완료** (Epic #2640). 19 디렉토리 git rm + `commands.ts` import / INTERNAL_ONLY_COMMANDS array 정리. `commands/onboarding/index.ts` (Spec 1635 후속) + `commands/install-github-app/types.ts` / `commands/plugin/types.ts` / `commands/plugin/unifiedTypes.ts` (type dependency, Epic B 후속) 는 scope-out 박제.
+- **CC sourcemap gap 3파일** (extra-usage-core / generateSessionName / reviewRemote) → **DROP 확정** (Epic #2640). caller-graph 박제 검증 완료 — `specs/2640-s5-commands-skills/spec.md § Gap-3 Caller-Graph 박제`. 모든 KOSMOS caller (5개) 가 Spec 1633 / Epic #2293 시점의 KOSMOS-2293 박제 헤더 + inline no-op stub 으로 처리됨.
 
 ## S6 Services
 - **api/client.ts 중복 `getAnthropicClient` 정의** → **즉시 fix** (Epic E P1).
