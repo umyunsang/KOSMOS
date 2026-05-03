@@ -1,3 +1,8 @@
+// SWAP: dead-code-cleanup (Spec 1633 + Epic #2293) + LLM provider (sdk-compat)
+// CC reference: .references/claude-code-sourcemap/restored-src/src/components/permissions/ExitPlanModePermissionRequest/ExitPlanModePermissionRequest.tsx
+// Divergence LOC: ~51 (autoNameSessionFromPlan no-op; UUID/generateSessionName/getSettings_DEPRECATED removed; sdk-compat)
+// Spec citation: #1633 (queryHaiku auto-naming removal), #2293 (utils/auth removal), Epic #2639 (audit § 5.5)
+// Justification: queryHaiku auto-naming requires Anthropic SDK; KOSMOS exits plan mode without auto-naming, plan acceptance + permission propagation preserved 1:1.
 import { feature } from 'bun:bundle';
 // UUID type removed — was only used in autoNameSessionFromPlan (deleted, Spec 1633 / Epic #2293).
 import figures from 'figures';

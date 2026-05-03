@@ -1,3 +1,8 @@
+// SWAP: swap-1 LLM provider + swap-2 tool surface + dead-code-cleanup
+// CC reference: .references/claude-code-sourcemap/restored-src/src/screens/REPL.tsx
+// Divergence LOC: ~678 (LLM provider plumbing, IPC envelope routing, permission gauntlet, K-EXAONE multi-tool layout, services/api removal)
+// Spec citation: #2521 (LLM swap), #032 (IPC stdio hardening), #2293 (services/api removal), #1978 (Enter-swallow diagnostics), Epic #2639 (audit § 5.7)
+// Justification: Largest TUI file (920 KB) where both KOSMOS swaps converge (IPC routing + FriendliAI K-EXAONE streaming + permission propagation); inline site comments mark each edit.
 import { c as _c } from "react/compiler-runtime";
 // biome-ignore-all assist/source/organizeImports: ANT-ONLY import markers must not be reordered
 import { feature } from 'bun:bundle';
