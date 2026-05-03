@@ -426,3 +426,157 @@ class TestNfaToolMetadata:
         assert item.gutYm == "202112"
         assert item.ruptSptmCdNm == "기침"
         assert item.ptntAge == "60~69세"
+
+
+# ---------------------------------------------------------------------------
+# T046 — Variant C flat response shape (live API observed 2026-05-03)
+# ---------------------------------------------------------------------------
+
+
+class TestNfaVariantCFlatResponse:
+    """Regression tests for the NFA flat JSON response shape (no 'response' wrapper).
+
+    Live API observed shape (2026-05-03 PTY smoke T046):
+        {"header": {"resultCode": "00", "resultMsg": "NORMAL SERVICE"},
+         "numOfRows": N, "pageNo": N, "totalCount": N,
+         "body": {"items": [...]}}
+
+    Previously _parse_response() assumed payload["response"] (Variant A/B) →
+    KeyError → ToolExecutionError("Unexpected response shape from NFA API: 'response'").
+    Fixed by detecting "response" key absence and routing to Variant C parser.
+    """
+
+    def test_parse_items_variant_c_flat_with_data(self) -> None:
+        """_parse_items handles flat NFA shape with item records."""
+        from kosmos.tools.nfa119.emergency_info_service import _parse_items
+
+        flat_payload = {
+            "header": {"resultCode": "00", "resultMsg": "NORMAL SERVICE"},
+            "headerList": None,
+            "numOfRows": 5,
+            "pageNo": 1,
+            "totalCount": 1,
+            "body": {
+                "items": [
+                    {
+                        "sidoHqOgidNm": "서울특별시소방재난본부",
+                        "rsacGutFsttOgidNm": "강남소방서",
+                        "gutYm": "202501",
+                        "gutHh": "14",
+                        "ruptSptmCdNm": "기타통증",
+                        "ptntAge": "50~59세",
+                    }
+                ]
+            },
+        }
+        items = _parse_items(flat_payload)
+        assert len(items) == 1
+        assert items[0]["sidoHqOgidNm"] == "서울특별시소방재난본부"
+        assert items[0]["rsacGutFsttOgidNm"] == "강남소방서"
+        assert items[0]["gutYm"] == "202501"
+
+    def test_parse_items_variant_c_empty_items(self) -> None:
+        """_parse_items handles flat NFA shape with totalCount=0."""
+        from kosmos.tools.nfa119.emergency_info_service import _parse_items
+
+        flat_payload = {
+            "header": {"resultCode": "00", "resultMsg": "NORMAL SERVICE"},
+            "headerList": None,
+            "numOfRows": 5,
+            "pageNo": 1,
+            "totalCount": 0,
+            "body": {"items": []},
+        }
+        items = _parse_items(flat_payload)
+        assert items == []
+
+    def test_parse_response_variant_c_flat_empty(self) -> None:
+        """_parse_response handles flat NFA shape: resultCode 00, empty items."""
+        from kosmos.tools.nfa119.emergency_info_service import _parse_response
+
+        flat_payload = {
+            "header": {"resultCode": "00", "resultMsg": "NORMAL SERVICE"},
+            "headerList": None,
+            "numOfRows": 5,
+            "pageNo": 1,
+            "totalCount": 0,
+            "body": {"items": []},
+        }
+        output = _parse_response(flat_payload, "getEmgencyActivityInfo")
+        assert output.result_code == "00"
+        assert output.result_msg == "NORMAL SERVICE"
+        assert output.page_no == 1
+        assert output.num_of_rows == 5
+        assert output.total_count == 0
+        assert output.items == []
+
+    def test_parse_response_variant_c_flat_with_item(self) -> None:
+        """_parse_response handles flat NFA shape with one activity record."""
+        from kosmos.tools.nfa119.emergency_info_service import (
+            NfaActivityItem,
+            _parse_response,
+        )
+
+        flat_payload = {
+            "header": {"resultCode": "00", "resultMsg": "NORMAL SERVICE"},
+            "headerList": None,
+            "numOfRows": 5,
+            "pageNo": 1,
+            "totalCount": 1,
+            "body": {
+                "items": [
+                    {
+                        "sidoHqOgidNm": "서울특별시소방재난본부",
+                        "rsacGutFsttOgidNm": "강남소방서",
+                        "gutYm": "202501",
+                        "gutHh": "09",
+                        "sptMvmnDtc": "1200",
+                        "ptntAge": "30~39세",
+                        "ptntSdtSeCdNm": "남",
+                        "ruptSptmCdNm": "골절",
+                    }
+                ]
+            },
+        }
+        output = _parse_response(flat_payload, "getEmgencyActivityInfo")
+        assert output.result_code == "00"
+        assert output.total_count == 1
+        assert len(output.items) == 1
+        item = output.items[0]
+        assert isinstance(item, NfaActivityItem)
+        assert item.sidoHqOgidNm == "서울특별시소방재난본부"
+        assert item.rsacGutFsttOgidNm == "강남소방서"
+        assert item.gutYm == "202501"
+
+    def test_parse_response_variant_a_wrapped_still_works(self) -> None:
+        """Variant A (response-wrapped) still parses correctly after Variant C fix."""
+        from kosmos.tools.nfa119.emergency_info_service import (
+            NfaActivityItem,
+            _parse_response,
+        )
+
+        wrapped_payload = {
+            "response": {
+                "header": {"resultCode": "00", "resultMsg": "NORMAL SERVICE"},
+                "body": {
+                    "pageNo": 1,
+                    "numOfRows": 10,
+                    "totalCount": 1,
+                    "items": [
+                        {
+                            "sidoHqOgidNm": "충청남도소방본부",
+                            "rsacGutFsttOgidNm": "천안동남소방서",
+                            "gutYm": "202112",
+                            "ruptSptmCdNm": "기침",
+                        }
+                    ],
+                },
+            }
+        }
+        output = _parse_response(wrapped_payload, "getEmgencyActivityInfo")
+        assert output.result_code == "00"
+        assert output.total_count == 1
+        assert len(output.items) == 1
+        item = output.items[0]
+        assert isinstance(item, NfaActivityItem)
+        assert item.rsacGutFsttOgidNm == "천안동남소방서"

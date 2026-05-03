@@ -13,7 +13,13 @@ Key wire param rules (NIA-IFT guide v1.0):
   - getEmgVehicleInfo: no ym param (vehicle registry snapshot, not time-series)
   - resultType=json (capital T, lowercase value)
   - pageNo / numOfRows (camelCase)
-  - response path: response.body.items.item (list or single dict when totalCount=1)
+
+Response shape (live API observed 2026-05-03, Variant C — flat, no "response" wrapper):
+  {"header": {"resultCode": "00", "resultMsg": "NORMAL SERVICE"},
+   "numOfRows": N, "pageNo": N, "totalCount": N,
+   "body": {"items": [...]}}
+  This differs from other data.go.kr APIs that wrap in "response.body".
+  _parse_response() and _parse_items() detect and handle both shapes.
 """
 
 from __future__ import annotations
@@ -310,12 +316,33 @@ def _build_params(inp: NfaEmergencyInfoServiceInput, api_key: str) -> dict[str, 
 def _parse_items(payload: dict[str, Any]) -> list[dict[str, Any]]:
     """Extract item list from data.go.kr response envelope.
 
-    Supports two JSON shapes produced by data.go.kr:
-    Shape A (observed): ``response.body.items`` is a direct list.
+    Supports three JSON shapes produced by data.go.kr:
+    Shape A (wrapped): ``response.body.items`` is a direct list.
     Shape B (XML-to-JSON): ``response.body.items.item`` is a list or single dict.
+    Shape C (NFA flat): top-level ``body.items`` list (no ``response`` wrapper).
 
     Also normalises the single-item-as-dict quirk in shape B.
     """
+    # Shape C — NFA flat (live API observed 2026-05-03):
+    # {"header": {...}, "numOfRows": N, "pageNo": N, "totalCount": N,
+    #  "body": {"items": [...]}}
+    if "response" not in payload and "body" in payload:
+        body_c = payload.get("body") or {}
+        items_c = body_c.get("items") if isinstance(body_c, dict) else None
+        if items_c is None:
+            return []
+        if isinstance(items_c, list):
+            return items_c
+        if isinstance(items_c, dict):
+            raw = items_c.get("item")
+            if raw is None:
+                return []
+            if isinstance(raw, dict):
+                return [raw]
+            if isinstance(raw, list):
+                return raw
+        return []
+
     try:
         response_body = payload["response"]
         body = response_body.get("body", {}) or {}
@@ -345,23 +372,35 @@ def _parse_response(
 ) -> NfaEmergencyInfoServiceOutput:
     """Parse raw JSON response dict into NfaEmergencyInfoServiceOutput.
 
-    Supports two JSON layout variants from data.go.kr:
-    - Variant A (observed): pageNo/numOfRows/totalCount inside ``response.body``
+    Supports three JSON layout variants from data.go.kr:
+    - Variant A (wrapped): pageNo/numOfRows/totalCount inside ``response.body``
     - Variant B (alternate): pageNo/numOfRows/totalCount at ``response`` level
+    - Variant C (NFA flat, live API observed 2026-05-03):
+        top-level ``header`` + ``pageNo``/``numOfRows``/``totalCount`` + ``body.items``
+        (no ``response`` wrapper; confirmed via live curl: resultType=json returns this shape)
 
     Raises:
         ToolExecutionError: On resultCode != "00" or missing header.
     """
     try:
-        resp = payload["response"]
-        header = resp["header"]
-        result_code: str = str(header["resultCode"])
-        result_msg: str = str(header.get("resultMsg", ""))
-        # Variant A: pagination fields inside body
-        body = resp.get("body", {}) or {}
-        page_no: int = int(body.get("pageNo") or resp.get("pageNo") or 1)
-        num_of_rows: int = int(body.get("numOfRows") or resp.get("numOfRows") or 10)
-        total_count: int = int(body.get("totalCount") or resp.get("totalCount") or 0)
+        # Variant C — NFA flat (no "response" wrapper)
+        if "response" not in payload and "header" in payload:
+            header = payload["header"]
+            result_code: str = str(header["resultCode"])
+            result_msg: str = str(header.get("resultMsg", ""))
+            page_no: int = int(payload.get("pageNo") or 1)
+            num_of_rows: int = int(payload.get("numOfRows") or 10)
+            total_count: int = int(payload.get("totalCount") or 0)
+        else:
+            resp = payload["response"]
+            header = resp["header"]
+            result_code = str(header["resultCode"])
+            result_msg = str(header.get("resultMsg", ""))
+            # Variant A: pagination fields inside body
+            body = resp.get("body", {}) or {}
+            page_no = int(body.get("pageNo") or resp.get("pageNo") or 1)
+            num_of_rows = int(body.get("numOfRows") or resp.get("numOfRows") or 10)
+            total_count = int(body.get("totalCount") or resp.get("totalCount") or 0)
     except (KeyError, TypeError, ValueError) as exc:
         raise ToolExecutionError(
             tool_id="nfa_emergency_info_service",
