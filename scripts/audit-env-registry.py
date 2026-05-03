@@ -9,6 +9,7 @@ FR: FR-020, FR-022, FR-023 | NFR-006 (10 s wall-clock budget)
 from __future__ import annotations
 
 import argparse
+import json
 import re
 import sys
 import time
@@ -592,6 +593,10 @@ def main(argv: list[str] | None = None) -> int:
     if args.repo_root is not None:
         repo_root = Path(args.repo_root).resolve()
         if not repo_root.is_dir():
+            print(
+                f"audit-env-registry: error: --repo-root is not a directory: {repo_root}",
+                file=sys.stderr,
+            )
             return 2
     else:
         repo_root = _discover_repo_root(Path.cwd())
@@ -603,9 +608,13 @@ def main(argv: list[str] | None = None) -> int:
 
     exit_code, report = audit(repo_root, registry_path)
 
+    print(json.dumps(report, indent=2, ensure_ascii=False))
 
     if exit_code == 2:
-        pass
+        print(
+            f"audit-env-registry: error: {report.get('error', 'parse error')}",
+            file=sys.stderr,
+        )
 
     return exit_code
 

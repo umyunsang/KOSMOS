@@ -112,13 +112,16 @@ class TestAdmCodeResultRoundTrip:
             _ADAPTER.validate_json(raw)
 
     def test_invalid_source_raises(self):
+        # Spec 2522 T047 — "kakao" 가 AdmCodeResult.source 에 추가 (Kakao
+        # b_code fallback). 이전에는 ["sgis", "juso"] 만 valid 였으나 v4 에서
+        # ["sgis", "juso", "kakao"] 로 확장. invalid 검증은 명백한 미허용 값으로.
         raw = json.dumps(
             {
                 "kind": "adm_cd",
                 "code": "1168000000",
                 "name": "강남구",
                 "level": "sigungu",
-                "source": "kakao",  # not allowed for adm_cd
+                "source": "vworld",  # not in allow-list
             }
         )
         with pytest.raises(ValidationError):

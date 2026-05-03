@@ -115,6 +115,12 @@ class TestResolveAdmCdParity:
                 "kosmos.tools.resolve_location._juso_adm_cd",
                 new=AsyncMock(return_value=None),
             ),
+            # Spec 2522 T047 — chain 재정렬 (juso → kakao_b_code → sgis).
+            # SGIS 까지 fallback 도달하려면 _kakao_adm_cd 도 None 으로 mock.
+            patch(
+                "kosmos.tools.resolve_location._kakao_adm_cd",
+                new=AsyncMock(return_value=None),
+            ),
             patch(
                 "kosmos.tools.resolve_location._kakao_coords",
                 new=AsyncMock(return_value=mock_coords),
