@@ -1,0 +1,43 @@
+{
+  "_comment": "Spec 2522 T048 Scenario A — lat/lon given directly in user message. LLM calls hira_hospital_search directly (no resolve_location). Verifies KOSMOS does NOT force cross-domain chain when coords are already available.",
+  "fixtures": [
+    {
+      "match": {
+        "userMessageContains": "lat 37.5 lon 127.0 병원"
+      },
+      "response": {
+        "toolCalls": [
+          {
+            "name": "lookup",
+            "arguments": {
+              "tool_id": "hira_hospital_search",
+              "params": {
+                "xPos": 127.0,
+                "yPos": 37.5,
+                "radius": 2000
+              }
+            }
+          }
+        ]
+      },
+      "streaming": {
+        "ttft": 200,
+        "tps": 50,
+        "jitter": 50
+      }
+    },
+    {
+      "match": {
+        "userMessageContains": "hira_hospital_search"
+      },
+      "response": {
+        "content": "위도 37.5 / 경도 127.0 반경 2km 내 병원을 검색했습니다. HIRA 조회 결과가 반환되었습니다."
+      },
+      "streaming": {
+        "ttft": 150,
+        "tps": 60,
+        "jitter": 30
+      }
+    }
+  ]
+}

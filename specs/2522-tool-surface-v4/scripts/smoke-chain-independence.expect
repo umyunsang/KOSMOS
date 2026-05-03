@@ -11,20 +11,25 @@
 #     1. Boot: "tool_registry: N entries verified"
 #     2. Branding: "KOSMOS"
 #     3. Input accepted
-#     4. LLM calls hira_hospital_search DIRECTLY (single turn, ≤60s)
-#     5. No resolve_location call in turn 1 — KOSMOS does NOT force cross-domain chain
-#     6. Result visible: "병원" keyword in response
+#     4. LLM calls hira_hospital_search DIRECTLY (single turn, ≤120s)
+#        Gate pattern: "● lookup(hira" — TUI dispatch bullet from actual tool call
+#     5. No resolve_location call before hira — KOSMOS does NOT force cross-domain chain
+#     6. shortcuts footer reappears (turn complete)
 #
 #   Scenario B: "강남구 병원"
-#     1. Same boot/branding checks
+#     1. Same boot/branding checks (reused from A, TUI still running)
 #     2. LLM autonomously calls resolve_location (turn 1)
-#     3. LLM autonomously calls hira_hospital_search (turn 2, ≤120s total)
+#        Gate pattern: "● resolve_location" — TUI dispatch bullet
+#     3. LLM autonomously calls hira_hospital_search (turn 2)
+#        Gate pattern: "● lookup(hira" — TUI dispatch bullet
 #     4. KOSMOS did NOT hardcode this chain — LLM decided from tool descriptions
-#     5. Result visible: "강남구" or "병원" keyword in response
+#     5. shortcuts footer reappears (turn complete)
 #
-# Fixtures loaded (aimock-bun alphabetical order):
-#   chain-independence-a.json — matches "lat 37.5 lon 127.0 병원"
-#   chain-independence-b.json — matches "강남구 병원" (two-turn: resolve_location → HIRA)
+# Pattern design notes:
+#   - "● lookup(hira" matches the TUI dispatch line, NOT the user query text
+#   - "● resolve_location" matches the TUI dispatch line, NOT user query text
+#   - K-EXAONE high-effort reasoning: 30-90s per turn → use 120s deadlines
+#   - shortcuts footer: "? for shortcuts" reappears only when REPL is ready
 #
 # Sourced by tui-tmux-capture.sh — helpers available:
 #   wait_for_pane, snapshot_pane, send_text_pane, send_enter_pane, send_ctrlc_pane
@@ -32,15 +37,13 @@
 # ---------------------------------------------------------------------------
 # SCENARIO A: lat/lon 직접 제공 — single-turn, no resolve_location
 # ---------------------------------------------------------------------------
-# NOTE: tui-tmux-capture.sh already spawned "bun run tui" in the tmux session
-# before sourcing this script. The TUI backend connects to aimock on port 4010.
 
 # Stage A1: Wait for backend boot
 wait_for_pane "tool_registry: [0-9]+ entries verified" 45
 snapshot_pane "A-boot"
 
 # Stage A2: Wait for KOSMOS branding / REPL ready
-wait_for_pane "KOSMOS" 20
+wait_for_pane "shortcuts" 20
 snapshot_pane "A-branding"
 
 # Stage A3: Submit scenario A query — lat/lon given directly in message
@@ -49,18 +52,22 @@ snapshot_pane "A-input-typed"
 send_enter_pane
 snapshot_pane "A-input-submitted"
 
-# Stage A4: Wait for HIRA single-turn response (≤60s)
-# Gate: "lookup" dispatch OR "hira" OR "병원" in response
-# Also acceptable: the result body keyword ("반환" / "검색")
-wait_for_pane "(hira|병원|반환|검색|lookup|HIRA)" 60
+# Stage A4: Wait for HIRA dispatch bullet from TUI (≤120s)
+# K-EXAONE high-effort reasoning: 30-90s. Pattern matches TUI bullet "● lookup(hira".
+# Does NOT match user query text (which contains neither "●" nor "lookup").
+wait_for_pane "(● lookup.hira|hira_hospital_search|● resolve_location)" 120
+snapshot_pane "A-tool-dispatched"
+
+# Stage A5: Wait for tool result (⎿) or response completion
+# After hira returns, LLM streams final text. Gate: shortcuts footer or ⎿ result.
+wait_for_pane "(shortcuts|⎿)" 60
 snapshot_pane "A-response-partial"
 
-# Stage A5: Wait for turn completion — footer "? for shortcuts" reappears
-# (same pattern as smoke-busan-weather.expect — the ❯ prompt is U+276F, not ">")
-wait_for_pane "shortcuts" 30
+# Stage A6: Final capture — if still thinking, wait for shortcuts footer (turn done)
+wait_for_pane "shortcuts" 60
 snapshot_pane "A-response-complete"
 
-# Stage A6: Final capture — documents that resolve_location was NOT called
+# Stage A7: Final capture — documents that resolve_location was NOT the first call
 snapshot_pane "A-final"
 
 # ---------------------------------------------------------------------------
@@ -73,18 +80,22 @@ snapshot_pane "B-input-typed"
 send_enter_pane
 snapshot_pane "B-input-submitted"
 
-# Stage B2: Wait for resolve_location turn (turn 1)
-# LLM should autonomously call resolve_location before HIRA
-wait_for_pane "(resolve_location|강남구|lookup)" 60
+# Stage B2: Wait for resolve_location dispatch bullet (turn 1)
+# LLM must call resolve_location before HIRA when only an address is given.
+# Gate pattern: "● resolve_location" — TUI tool dispatch bullet.
+# K-EXAONE reasoning: 30-90s → 120s deadline.
+wait_for_pane "● resolve_location" 120
 snapshot_pane "B-resolve-dispatched"
 
-# Stage B3: Wait for HIRA turn (turn 2) — autonomous chain
-# After resolve_location returns coords, LLM calls hira_hospital_search
-wait_for_pane "(hira|병원|반환|검색|HIRA)" 120
+# Stage B3: Wait for HIRA dispatch bullet (turn 2 — autonomous chain)
+# After resolve_location returns coords, LLM calls hira_hospital_search.
+# Extra time budget: resolve_location network call + turn-2 reasoning.
+wait_for_pane "(● lookup.hira|hira_hospital_search)" 120
 snapshot_pane "B-hira-dispatched"
 
 # Stage B4: Wait for final text response (turn complete)
-wait_for_pane "(>|●|⏺|입력|Input)" 30
+# Gate: shortcuts footer reappears.
+wait_for_pane "shortcuts" 60
 snapshot_pane "B-response-complete"
 
 # Stage B5: Final capture

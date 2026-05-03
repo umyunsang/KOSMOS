@@ -1,0 +1,64 @@
+{
+  "_comment": "Spec 2522 T048 Scenario B — address-only query '강남구 병원'. LLM must autonomously call resolve_location first (turn 1), then hira_hospital_search (turn 2). Verifies LLM-driven chain without KOSMOS hardcoding.",
+  "fixtures": [
+    {
+      "match": {
+        "userMessageContains": "강남구 병원"
+      },
+      "response": {
+        "toolCalls": [
+          {
+            "name": "resolve_location",
+            "arguments": {
+              "query": "강남구",
+              "want": "coords"
+            }
+          }
+        ]
+      },
+      "streaming": {
+        "ttft": 200,
+        "tps": 50,
+        "jitter": 50
+      }
+    },
+    {
+      "match": {
+        "userMessageContains": "resolve_location"
+      },
+      "response": {
+        "toolCalls": [
+          {
+            "name": "lookup",
+            "arguments": {
+              "tool_id": "hira_hospital_search",
+              "params": {
+                "xPos": 127.047,
+                "yPos": 37.517,
+                "radius": 2000
+              }
+            }
+          }
+        ]
+      },
+      "streaming": {
+        "ttft": 180,
+        "tps": 50,
+        "jitter": 50
+      }
+    },
+    {
+      "match": {
+        "userMessageContains": "hira_hospital_search"
+      },
+      "response": {
+        "content": "강남구 반경 2km 내 병원을 검색했습니다. HIRA 조회 결과가 반환되었습니다."
+      },
+      "streaming": {
+        "ttft": 150,
+        "tps": 60,
+        "jitter": 30
+      }
+    }
+  ]
+}
