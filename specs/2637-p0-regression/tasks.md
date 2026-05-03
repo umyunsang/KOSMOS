@@ -31,7 +31,7 @@ description: "Task list for Epic A — P0 회귀 즉시 복구 (#2637)"
 
 **Purpose**: baseline 측정 + dependency 추가 (tasks 의 prerequisite).
 
-- [ ] T001 Baseline 측정 + 8개 OTel dependency 추가
+- [X] T001 Baseline 측정 + 8개 OTel dependency 추가
   - **FR**: FR-005 (instrumentation.ts PORT prerequisite)
   - **Quickstart**: 사전 조건 + T004 Step 1
   - **Files changed (1)**: `tui/package.json` + `tui/bun.lock` (생성)
@@ -68,7 +68,7 @@ description: "Task list for Epic A — P0 회귀 즉시 복구 (#2637)"
 
 ### Implementation for User Story 1
 
-- [ ] T002 [US1] events_mono types byte-copy PORT (3 files, R-1a/b/c)
+- [X] T002 [US1] events_mono types byte-copy PORT (3 files, R-1a/b/c)
   - **FR**: FR-001
   - **Quickstart**: T001
   - **Files changed (3)**:
@@ -79,7 +79,7 @@ description: "Task list for Epic A — P0 회귀 즉시 복구 (#2637)"
   - **Depends on**: T001
   - **Commit**: `feat(2637): byte-copy events_mono types from CC 2.1.88 (R-1a/b/c)`
 
-- [ ] T003 [US1] utils/telemetry/instrumentation.ts byte-copy PORT + cascade stub modules (R-5)
+- [X] T003 [US1] utils/telemetry/instrumentation.ts byte-copy PORT + cascade stub modules (R-5)
   - **FR**: FR-005
   - **Quickstart**: T004 Step 2-4
   - **Files changed (~6)**:
@@ -98,7 +98,7 @@ description: "Task list for Epic A — P0 회귀 즉시 복구 (#2637)"
   - **Depends on**: T001 (deps), T002 (events_mono — auth.ts 가 telemetry 의존 가능성)
   - **Commit**: `feat(2637): port instrumentation.ts (825 LOC) + cascade stubs (R-5)`
 
-- [ ] T004 [US1] toolExecution.ts 9 stub wire (KOSMOS Spec 021 OTEL helper, R-6)
+- [X] T004 [US1] toolExecution.ts 9 stub wire (KOSMOS Spec 021 OTEL helper, R-6)
   - **FR**: FR-006
   - **Quickstart**: T005
   - **Files changed (2)**:
@@ -126,7 +126,7 @@ description: "Task list for Epic A — P0 회귀 즉시 복구 (#2637)"
 
 ### Implementation for User Story 2
 
-- [ ] T005 [US2] Proxy stub 4 files byte-copy PORT (R-2a/b/c/d)
+- [X] T005 [US2] Proxy stub 4 files byte-copy PORT (R-2a/b/c/d)
   - **FR**: FR-002
   - **Quickstart**: T002
   - **Files changed (4)**:
@@ -138,7 +138,7 @@ description: "Task list for Epic A — P0 회귀 즉시 복구 (#2637)"
   - **Depends on**: T001 (baseline)
   - **Commit**: `feat(2637): byte-copy constants/{messages,xml,figures} + types/logs from CC 2.1.88 (R-2a/b/c/d)`
 
-- [ ] T006 [US2] constants/oauth.ts PORT + swap-1 식별자 교체 (R-4)
+- [X] T006 [US2] constants/oauth.ts PORT + swap-1 식별자 교체 (R-4)
   - **FR**: FR-004
   - **Quickstart**: T003
   - **Files changed (1)**: `tui/src/constants/oauth.ts` (신설 234 LOC byte-copy + swap-1 식별자 교체 + 헤더 주석)
@@ -163,7 +163,7 @@ description: "Task list for Epic A — P0 회귀 즉시 복구 (#2637)"
 
 ### Implementation for User Story 3
 
-- [ ] T007 [US3] cli/print.ts byte-copy PORT + cascade stub + main.tsx 차단 제거 (R-3 + R-3-cascade + FR-016)
+- [X] T007 [US3] cli/print.ts byte-copy PORT + cascade stub + main.tsx 차단 제거 (R-3 + R-3-cascade + FR-016)
   - **FR**: FR-003 + FR-016
   - **Quickstart**: T006
   - **Files changed (3)**:
@@ -195,7 +195,7 @@ description: "Task list for Epic A — P0 회귀 즉시 복구 (#2637)"
 
 ### Implementation for User Story 4
 
-- [ ] T008 [US4] Stage-1 NO-OP 3 헤더 박제 + decisions.md 업데이트 (R-7a/b/c + FR-007 + FR-015)
+- [X] T008 [US4] Stage-1 NO-OP 3 헤더 박제 + decisions.md 업데이트 (R-7a/b/c + FR-007 + FR-015)
   - **FR**: FR-007 + FR-015
   - **Quickstart**: T007 Step 1-4
   - **Files changed (4)**:
@@ -224,7 +224,7 @@ description: "Task list for Epic A — P0 회귀 즉시 복구 (#2637)"
 
 **Purpose**: 통합 검증 + 최종 audit closure.
 
-- [ ] T009 통합 검증 + audit closure
+- [X] T009 통합 검증 + audit closure
   - **FR**: FR-008 + FR-009 + FR-010 + FR-011 + FR-012 + FR-013 + FR-014 + SC-001..SC-010
   - **Quickstart**: T007 Step 5-6 + 빠른 검증
   - **Files changed (0)**: 검증 전용 (commit 없음, 별도 verification log 만 PR 본문에 첨부)
