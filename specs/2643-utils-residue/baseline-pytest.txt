@@ -1,0 +1,4 @@
+Baseline pytest snapshot — Epic G #2643, branch feat/2643-s9-utils-residue, commit 9d559b9
+Date: 2026-05-03
+
+3642 passed, 62 skipped, 3 xfailed in 86.65s (0:01:26)

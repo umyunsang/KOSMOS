@@ -1,0 +1,2 @@
+/Users/um-yunsang/KOSMOS-w-2643/specs/cc-migration-audit/decisions.md
+/Users/um-yunsang/KOSMOS-w-2643/specs/cc-migration-audit/scope-S9-utils.md
