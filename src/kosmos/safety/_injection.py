@@ -181,9 +181,7 @@ def run_detector(text: str) -> InjectionSignalSet:
     # Use float-tolerant comparison so a single-category structural hit
     # (0.6 × 1/3 = 0.19999…) still trips the 0.20 threshold; see _BLOCK_EPS.
     decision: str = (
-        "block"
-        if structural > 0 and combined >= _BLOCK_THRESHOLD - _BLOCK_EPS
-        else "allow"
+        "block" if structural > 0 and combined >= _BLOCK_THRESHOLD - _BLOCK_EPS else "allow"
     )
 
     return InjectionSignalSet(
