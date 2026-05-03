@@ -90,6 +90,11 @@ _TUI_DEPS_SNAPSHOT: Final[frozenset[str]] = frozenset(
         "@opentelemetry/exporter-logs-otlp-grpc",
         "@opentelemetry/exporter-metrics-otlp-http",
         "@opentelemetry/exporter-metrics-otlp-grpc",
+        # Codex P1 review fix on PR #2660 — http/protobuf branch (instrumentation.ts L185)
+        # dynamic-imports the *-otlp-proto variants. Added in same spec-driven PR.
+        "@opentelemetry/exporter-trace-otlp-proto",
+        "@opentelemetry/exporter-logs-otlp-proto",
+        "@opentelemetry/exporter-metrics-otlp-proto",
         "@grpc/grpc-js",
         "ajv",
         "asciichart",
