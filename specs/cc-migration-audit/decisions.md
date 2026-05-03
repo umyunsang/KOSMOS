@@ -37,7 +37,7 @@
 - **utils/sessionTitle.ts PORT** → **수용** (K-EXAONE 으로 마이그레이션, 자동 제목 기능).
 - **utils/mcp/dateTimeParser.ts PORT** → **수용** (MCP 한국어 시각 파싱 필수).
 - **utils/permissions/permissions.ts inline-stub** → **Path B (모듈 분리)**. CC 구조 보존 원칙.
-- **Stage-1 NO-OP stub** (protectedNamespace.ts / systemThemeWatcher.ts / ultraplan/prompt.txt) → **byte-copy 채우기** (Epic A 에 포함).
+- **Stage-1 NO-OP stub** (protectedNamespace.ts / systemThemeWatcher.ts / ultraplan/prompt.txt) → **CC source 부재 확정** — CC restored-src 에 동일 파일명 없음. KOSMOS-only stub 박제 처리 (Epic A #2637 완료). TUI Fidelity Meta-Epic deferred (#TBD-protectedNamespace, #TBD-systemThemeWatcher, #TBD-ultraplan). SWAP/no-cc-source(2637) 헤더 각 파일에 박제.
 
 ---
 
