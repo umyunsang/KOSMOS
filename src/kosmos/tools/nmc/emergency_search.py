@@ -37,8 +37,18 @@ from kosmos.tools.nmc.freshness import FreshnessResult
 
 logger = logging.getLogger(__name__)
 
-# NMC real-time bed availability endpoint (not called from CI — auth required).
-_BASE_URL = "https://api.odcloud.kr/api/nmc/v1/realtime-beds"
+# NMC emergency room locator endpoint (data.go.kr B552657 service).
+# Discovered via integration-verification probe on 2026-05-04 — the previously
+# documented `api1.odcloud.kr/api/nmc/v1/realtime-beds` host does not resolve;
+# the real endpoint is `apis.data.go.kr/B552657/ErmctInfoInqireService/...`
+# (note: `ErmctInfoInqireService`, NOT `ErmctInsttInfoInqireService` as
+# spelled in some early drafts of docs/api/nmc/emergency_search.md).
+# Returns nearest emergency rooms by WGS-84 coordinate (lat/lon) — same
+# semantic surface the LLM consumes, but real-time bed counts (hvec/hvgc/...)
+# require the sibling `getEmrrmRltmUsefulSckbdInfoInqire` endpoint which is
+# region-name parameterised (STAGE1/STAGE2) instead of coordinate-driven and
+# is left for a follow-up adapter once region resolution lands.
+_BASE_URL = "https://apis.data.go.kr/B552657/ErmctInfoInqireService/getEgytLcinfoInqire"
 
 # ---------------------------------------------------------------------------
 # Input schema (T032 — lat/lon/limit, Pydantic v2 strict)
@@ -176,12 +186,16 @@ async def handle(inp: NmcEmergencySearchInput) -> dict[str, Any]:
             "retryable": False,
         }
 
+    # data.go.kr B552657 wire-format params (different from the
+    # odcloud.kr stub's page/perPage/wgs84{Lat,Lon} naming):
+    #   pageNo + numOfRows + WGS84_LAT + WGS84_LON + _type=json
     params: dict[str, str | int | float] = {
         "serviceKey": settings.data_go_kr_api_key,
-        "page": 1,
-        "perPage": inp.limit,
-        "wgs84Lat": inp.lat,
-        "wgs84Lon": inp.lon,
+        "pageNo": 1,
+        "numOfRows": inp.limit,
+        "WGS84_LAT": inp.lat,
+        "WGS84_LON": inp.lon,
+        "_type": "json",
     }
 
     async with traced_async_client(timeout=10.0) as client:
@@ -225,7 +239,23 @@ async def handle(inp: NmcEmergencySearchInput) -> dict[str, Any]:
         }
 
     body = data.get("response", {}).get("body", {})
-    items = body.get("items", [])
+    # data.go.kr B552657 wraps results as `body.items.item` where `item` is
+    # either a single dict (1 result) or a list of dicts (≥2 results) — the
+    # XML-shaped JSON quirk. Normalise to a list either way; tolerate the
+    # legacy odcloud-style flat list shape too.
+    raw_items = body.get("items", [])
+    if isinstance(raw_items, dict):
+        item_field = raw_items.get("item", [])
+        if isinstance(item_field, dict):
+            items = [item_field]
+        elif isinstance(item_field, list):
+            items = item_field
+        else:
+            items = []
+    elif isinstance(raw_items, list):
+        items = raw_items
+    else:
+        items = []
     upstream_total = body.get("totalCount")
 
     if not items:
@@ -234,6 +264,27 @@ async def handle(inp: NmcEmergencySearchInput) -> dict[str, Any]:
             "items": [],
             "total_count": 0,
             "meta": {"freshness_status": "fresh"},
+        }
+
+    # Endpoint-aware freshness check.
+    # `getEgytLcinfoInqire` (the location endpoint we now use) returns ER
+    # static metadata (dutyName / dutyAddr / dutyTel1 / latitude / longitude)
+    # but does NOT include `hvidate` or real-time bed counts (`hvec` / `hvgc`
+    # / `hvicc`) — those live in the sibling `getEmrrmRltmUsefulSckbdInfoInqire`
+    # endpoint (region-name parameterised). Without endpoint-aware logic,
+    # _evaluate_freshness sees every item as `hvidate`-missing and fails
+    # closed with stale_data, which made the citizen experience surface
+    # `Tool execution failed` in integration-verification frame 11. When
+    # ALL items lack hvidate, treat the response as static-location data and
+    # tag freshness_status="not_applicable" instead of treating it as stale.
+    has_any_hvidate = any(item.get("hvidate") for item in items if isinstance(item, dict))
+
+    if not has_any_hvidate:
+        return {
+            "kind": "collection",
+            "items": items,
+            "total_count": upstream_total if upstream_total is not None else len(items),
+            "meta": {"freshness_status": "not_applicable"},
         }
 
     freshness = _evaluate_freshness(items)

@@ -3639,6 +3639,13 @@ export function REPL({
         const { getUiL2I18n } = await import('../i18n/uiL2.js');
         const langResult = parseLangCommand(_kosmosArgs);
         if (langResult.ok) {
+          // Force any currently-mounted i18n consumer (e.g. HelpV2Grouped) to
+          // unmount so the next /help invocation re-evaluates useUiL2I18n() and
+          // renders the new locale. Without this, process.env mutation alone
+          // does not trigger a React re-render and the citizen sees the old
+          // locale's labels until they manually dismiss + re-open the overlay
+          // (integration-verification frame 05-lang-consent-agents § snap-006).
+          setToolJSX({ jsx: null, shouldHidePromptInput: false, clearLocalJSX: true });
           // Use the new locale's bundle so the toast itself reflects the change.
           const newI18n = getUiL2I18n(langResult.locale);
           addNotification({ key: 'kosmos-lang', text: newI18n.langChanged(langResult.locale), priority: 'immediate' });
