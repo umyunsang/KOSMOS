@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""NMC emergency room search adapter — T032.
+"""NMC emergency room search adapter — T032/T022.
 
 Calls the NMC real-time bed availability endpoint and enforces data freshness
 via ``check_freshness()`` before returning results to the caller.
@@ -13,6 +13,12 @@ The Layer 3 auth-gate in ``executor.invoke()`` short-circuits unauthenticated
 calls to ``LookupError(reason="auth_required")`` before handle() is reached
 (FR-025, FR-026, SC-006). handle() is therefore only invoked when a valid
 session identity is present.
+
+T022 (Spec 2522 v4): URL encoding safety — Korean query params (e.g. STAGE1/STAGE2
+region names) must NEVER be string-interpolated into a URL directly, as non-ASCII
+characters in query strings cause HTTP 400 from the NMC/data.go.kr upstream.
+This adapter uses ``httpx params={}`` dict exclusively so that httpx performs
+automatic percent-encoding for all parameter values.
 """
 
 from __future__ import annotations
@@ -23,6 +29,7 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, RootModel
 
+from kosmos.tools._description_template import build_description_v4
 from kosmos.tools._outbound_trace import traced_async_client
 from kosmos.tools.errors import LookupErrorReason
 from kosmos.tools.models import AdapterRealDomainPolicy, GovAPITool
@@ -260,15 +267,34 @@ NMC_EMERGENCY_SEARCH_TOOL = GovAPITool(
     auth_type="api_key",
     input_schema=NmcEmergencySearchInput,
     output_schema=_NmcEmergencySearchOutput,
-    llm_description=(
-        "Query the NMC (National Medical Center) real-time emergency room bed availability "
-        "for the nearest ERs around a given coordinate. "
-        "Obtain lat/lon first via resolve_location(want='coords'). "
-        "Returns a ranked list of emergency rooms with available bed counts and distance. "
-        "IMPORTANT: This tool requires citizen authentication (login gate). "
-        "Calls without a valid session identity are rejected with auth_required. "
-        "Use this when a user asks about nearby emergency rooms, ER bed availability, "
-        "or the closest 응급실 in Korea."
+    llm_description=build_description_v4(
+        purpose=(
+            "NMC (국립중앙의료원) 응급실 실시간 병상 조회 — 좌표 기준 가장 가까운 응급실의 "
+            "현재 가용 병상 수 (hvec=일반, hvgc=신생아중환자, hvicc=중환자) 반환. "
+            "시민이 '근처 응급실', '가용 병상', '응급의료센터' 묻는 경우 호출."
+        ),
+        input_quirk=(
+            "lat (-90~90), lon (-180~180): WGS-84 소수점 좌표. resolve_location(want='coords') 선행 호출로 획득. "
+            "limit (1~100): 반환할 응급실 최대 수. "
+            "URL encoding 주의: httpx params={} dict 사용 — 한국어 query param (STAGE1/STAGE2 등) 을 "
+            "URL 직접 interpolation 하면 HTTP 400. 이 adapter 는 params dict 자동 인코딩."
+        ),
+        short_reference=(
+            "주요 응급의료센터 위치: 서울(37.5665, 126.9780) 부산(35.1796, 129.0756) "
+            "대구(35.8714, 128.6014) 인천(37.4563, 126.7052) 광주(35.1595, 126.8526) "
+            "대전(36.3504, 127.3845) 울산(35.5384, 129.3114) 세종(36.4800, 127.2890). "
+            "hvidate 필드 포맷: YYYY-MM-DD HH:MM:SS (KST). freshness threshold = KOSMOS_NMC_FRESHNESS_MINUTES."
+        ),
+        domain_quirk=(
+            "freshness SLO: hvidate 가 threshold 초과 시 stale_data 에러 반환 (fail-closed). "
+            "hvidate 누락·미래 값도 stale 처리. "
+            "auth gate: 비인증 호출은 auth_required 에러 (Layer 3 단락, handle() 미호출). "
+            "resultCode '00' = 정상; 그 외는 upstream_unavailable."
+        ),
+        self_contained_decl=(
+            "이 도구 단독 호출로 완결. resolve_location 으로 lat/lon 획득 후 이 도구 호출 권장. "
+            "KOSMOS 가 cross-domain chain 강제하지 않음 — LLM 자율 2턴 (turn1=resolve, turn2=이 도구)."
+        ),
     ),
     search_hint=(
         "응급실 실시간 병상 응급의료센터 국립중앙의료원 가까운 응급실 "

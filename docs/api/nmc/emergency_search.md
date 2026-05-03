@@ -3,13 +3,15 @@ tool_id: nmc_emergency_search
 primitive: lookup
 tier: live
 permission_tier: 3
+spec_version: v4
+last_updated: 2026-05-02
 ---
 
 # nmc_emergency_search
 
 ## Overview
 
-Queries the National Medical Center (국립중앙의료원) real-time emergency room bed availability for the nearest ERs around a given coordinate, returning a ranked list of emergency rooms with available bed counts and freshness-validated data.
+Queries the National Medical Center (국립중앙의료원) real-time emergency room bed availability for the nearest ERs around a given WGS-84 coordinate. Returns a freshness-validated ranked list of emergency rooms with available bed counts.
 
 | Field | Value |
 |---|---|
@@ -17,10 +19,19 @@ Queries the National Medical Center (국립중앙의료원) real-time emergency 
 | Source | National Medical Center (NMC) / api1.odcloud.kr |
 | Primitive | `lookup` |
 | Module | `src/kosmos/tools/nmc/emergency_search.py` |
+| Spec version | v4 (Spec 2522 — URL encoding safety + 5-section description) |
+
+### v4 Changes (Spec 2522 T022)
+
+1. **URL encoding safety**: The adapter enforces `httpx params={}` dict for all query parameters. Raw Korean string interpolation into URLs is prohibited — non-ASCII characters in query strings cause HTTP 400 from the NMC/data.go.kr upstream (evidence: `/tmp/kosmos-evidence/medical-evidence.md § Test 1`). The `params={}` dict approach delegates percent-encoding to httpx automatically, preventing this class of regression.
+
+2. **5-section description**: `llm_description` is now built via `build_description_v4()` (`src/kosmos/tools/_description_template.py`) with five sections: purpose · input_quirk · short_reference · domain_quirk · self_contained_decl. Token budget: 324/500 tokens (≤100 per section, ≤500 combined).
+
+3. **input_quirk section now mentions Korean URL encoding quirk** — if STAGE1/STAGE2 administrative division names (한국어 문자열) are ever used as query params in future endpoint migration, string interpolation must not be used.
 
 ## Envelope
 
-**Input model**: `NmcEmergencySearchInput` defined at `src/kosmos/tools/nmc/emergency_search.py:40–76`.
+**Input model**: `NmcEmergencySearchInput` defined at `src/kosmos/tools/nmc/emergency_search.py:41–77`.
 
 | Field | Type | Required | Description |
 |---|---|---|---|
@@ -28,12 +39,12 @@ Queries the National Medical Center (국립중앙의료원) real-time emergency 
 | `lon` | `float` (-180 to 180) | yes | Longitude of the search origin in decimal degrees (WGS-84). Obtain from `resolve_location(want='coords')`. Example: `126.9780` for central Seoul. |
 | `limit` | `int` (1–100) | yes | Maximum number of nearest emergency rooms to return. All three fields are required with no defaults — the LLM must supply explicit values. |
 
-**Output model (authenticated, fresh data)**: `LookupCollection` dict returned by `handle()` at `src/kosmos/tools/nmc/emergency_search.py:147–246`.
+**Output model (authenticated, fresh data)**: `LookupCollection` dict returned by `handle()`.
 
 | Field | Type | Required | Description |
 |---|---|---|---|
 | `kind` | `str` ("collection") | yes | Envelope type discriminator. |
-| `items` | `list[dict]` | yes | Emergency room records from NMC, including bed counts and `hvidate` freshness timestamp. |
+| `items` | `list[dict]` | yes | Emergency room records from NMC, including bed counts and `hvidate` freshness timestamp. Key fields: `dutyName` (ER name), `hvec` (general beds), `hvgc` (neonatal ICU), `hvicc` (ICU), `hvidate` (data timestamp KST). |
 | `total_count` | `int` | yes | Total matching ER records from NMC. |
 | `meta` | `dict` | yes | Freshness metadata. `{"freshness_status": "fresh"}` when data is within threshold. |
 
@@ -43,33 +54,51 @@ Queries the National Medical Center (국립중앙의료원) real-time emergency 
 |---|---|---|---|
 | `kind` | `str` ("error") | yes | Envelope type discriminator. |
 | `reason` | `str` ("stale_data") | yes | `LookupErrorReason.stale_data`. |
-| `message` | `str` | yes | Human-readable staleness description including data age and threshold. |
+| `message` | `str` | yes | Human-readable staleness description including data age and threshold in minutes. |
 | `retryable` | `bool` (False) | yes | Stale data is not retryable — data must be refreshed upstream. |
+
+**Output model (unauthenticated — fail-closed)**:
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `kind` | `str` ("error") | yes | Envelope type discriminator. |
+| `reason` | `str` ("auth_required") | yes | Layer 3 auth-gate short-circuit result. |
+| `message` | `str` | yes | Auth gate rejection message. |
+| `retryable` | `bool` (False) | yes | Not retryable without authentication. |
 
 ## Search hints
 
-- 한국어: `응급실`, `실시간 병상`, `응급의료센터`, `국립중앙의료원`, `가까운 응급실`, `응급실 현황`
+- 한국어: `응급실`, `실시간 병상`, `응급의료센터`, `국립중앙의료원`, `가까운 응급실`, `응급실 현황`, `가용 병상`
 - English: `emergency room`, `ER bed availability`, `nearest emergency room`, `NMC`, `real-time Korea emergency`, `응급실 찾기`
 
 ## Endpoint
 
-- **data.go.kr endpoint**: NMC real-time beds via `api1.odcloud.kr/api/nmc/v1/realtime-beds`
-- **Source URL**: https://api1.odcloud.kr/api/nmc/v1/realtime-beds
+- **Source URL**: `https://api1.odcloud.kr/api/nmc/v1/realtime-beds`
 - **Authentication**: API key via `KOSMOS_DATA_GO_KR_API_KEY` (per Constitution IV)
+- **Query params** (httpx `params={}` dict — automatic percent-encoding):
+  - `serviceKey`: API key string
+  - `page`: pagination page number (default 1)
+  - `perPage`: result limit (from `inp.limit`)
+  - `wgs84Lat`: latitude as float
+  - `wgs84Lon`: longitude as float
+
+### URL encoding safety (v4)
+
+Korean string query params (e.g. `STAGE1=서울특별시`) MUST NOT be string-interpolated into URLs directly. Non-ASCII characters in raw URL query strings cause HTTP 400 from the NMC/data.go.kr upstream (documented in evidence file, `medical-evidence.md § NMC Test 1`). This adapter uses `httpx params={}` dict which delegates URL encoding to httpx automatically. Future callers adding Korean-string params must follow this same pattern.
 
 ## Freshness sub-tool
 
-The freshness validation is implemented in `src/kosmos/tools/nmc/freshness.py` (lines 1–91). It is an internal quality-control module — not a citizen-facing tool — and is invoked automatically by `handle()` before any response is returned.
+The freshness validation is implemented in `src/kosmos/tools/nmc/freshness.py`. It is an internal quality-control module invoked automatically by `handle()` before any response is returned.
 
-**`check_freshness(hvidate_str, threshold_minutes=None)`** (lines 26–90):
+**`check_freshness(hvidate_str, threshold_minutes=None)`**:
 - Accepts the NMC `hvidate` field value (format: `YYYY-MM-DD HH:MM:SS` KST).
 - Reads `settings.nmc_freshness_minutes` when `threshold_minutes` is `None`.
-- Returns a frozen `FreshnessResult` dataclass (defined at lines 17–24) with four fields: `is_fresh`, `data_age_minutes`, `threshold_minutes`, `hvidate_raw`.
-- **Fail-closed design**: missing, empty, unparseable, or future-dated `hvidate` values all return `is_fresh=False` unconditionally. This ensures that any ambiguity about data age is treated as stale rather than passed to the citizen.
+- Returns a frozen `FreshnessResult` dataclass with four fields: `is_fresh`, `data_age_minutes`, `threshold_minutes`, `hvidate_raw`.
+- **Fail-closed design**: missing, empty, unparseable, or future-dated `hvidate` values all return `is_fresh=False` unconditionally.
 
-**`_evaluate_freshness(items)`** (emergency_search.py lines 98–120): computes the worst-case freshness across all returned ER items. If any single item is missing `hvidate` or is stale, the entire batch is rejected. This prevents a partially-fresh mixed response from reaching the citizen.
+**`_evaluate_freshness(items)`** (`emergency_search.py`): computes the worst-case freshness across all returned ER items. If any single item is missing `hvidate` or is stale, the entire batch is rejected.
 
-The freshness threshold is configurable via `KOSMOS_NMC_FRESHNESS_MINUTES` (default from `settings.nmc_freshness_minutes`). The threshold is visible in every stale-data error message so the LLM can relay the exact age and threshold to the citizen.
+The freshness threshold is configurable via `KOSMOS_NMC_FRESHNESS_MINUTES` (default 30 minutes). The threshold is visible in every stale-data error message so the LLM can relay the exact age and threshold to the citizen.
 
 ## Permission tier rationale
 
@@ -103,7 +132,8 @@ This adapter is classified as Permission tier 3 because real-time emergency room
         "dutyName": "서울특별시 중앙응급의료센터",
         "hvidate": "2026-04-26 09:45:00",
         "hvgc": 4,
-        "hvec": 2
+        "hvec": 2,
+        "hvicc": 1
       }
     ],
     "total_count": 1,
@@ -148,16 +178,17 @@ When the caller has no valid session identity, the Layer 3 auth-gate rejects the
 
 ```text
 Citizen: 지금 근처 응급실 병상 현황을 알려주세요.
-KOSMOS: 현재 위치(서울 중심부) 기준 가장 가까운 응급실 정보를 조회했습니다. '서울특별시 중앙응급의료센터'에 일반 병상 4개, 중환자 병상 2개가 가용 중입니다. 데이터는 09시 45분 기준으로 신선합니다. (주의: 이 기능은 본인 인증이 필요합니다.)
+KOSMOS: 현재 위치(서울 중심부) 기준 가장 가까운 응급실 정보를 조회했습니다. '서울특별시 중앙응급의료센터'에 일반 병상 2개, 중환자 병상 1개, 신생아 중환자 병상 4개가 가용 중입니다. 데이터는 09시 45분 기준으로 신선합니다. (주의: 이 기능은 본인 인증이 필요합니다.)
 ```
 
 ## Constraints
 
 - **Rate limit**: `rate_limit_per_minute=10`; NMC API quota applies per service key.
-- **Freshness window**: `cache_ttl_seconds=0` — no client-side caching. Freshness threshold is controlled by `KOSMOS_NMC_FRESHNESS_MINUTES` (see Freshness sub-tool section above). Stale responses are rejected rather than degraded.
-- **Fixture coverage gaps**: Live NMC auth is provisioned at the API level; the handler is implemented. CI tests do not call the live endpoint (AGENTS.md hard rule: never call live `data.go.kr` APIs from CI). Fixture shapes for ER-specific fields (e.g., `hvgc`, `hvec`, `hvidate`) are derived from NMC published schema; exact field names depend on the NMC wire format version.
-- **Error envelope examples**:
-  - Unauthenticated call (Layer 3 gate): `{"kind": "error", "reason": "auth_required", "message": "...", "retryable": false}`.
+- **Freshness window**: `cache_ttl_seconds=0` — no client-side caching. Freshness threshold is controlled by `KOSMOS_NMC_FRESHNESS_MINUTES` (default 30 minutes). Stale responses are rejected rather than degraded.
+- **URL encoding** (v4): All query parameters are passed via `httpx params={}` dict — never string-interpolated into URLs. This prevents HTTP 400 from non-ASCII characters in query strings (documented in `medical-evidence.md § NMC Test 1`).
+- **Fixture coverage gaps**: Live NMC auth is provisioned at the API level; the handler is implemented. CI tests do not call the live endpoint (AGENTS.md hard rule: never call live `data.go.kr` APIs from CI). Fixture shapes for ER-specific fields (`hvgc`, `hvec`, `hvidate`) are derived from NMC published schema.
+- **Error envelope summary**:
+  - Unauthenticated call (Layer 3 gate): `{"kind": "error", "reason": "auth_required", ..., "retryable": false}`.
   - Stale data (freshness SLO): `{"kind": "error", "reason": "stale_data", "message": "NMC data is stale: N min old (threshold: M min)", "retryable": false}`.
   - Missing API key: `{"kind": "error", "reason": "upstream_unavailable", "message": "KOSMOS_DATA_GO_KR_API_KEY is not configured", "retryable": false}`.
   - Non-JSON upstream response: `{"kind": "error", "reason": "upstream_unavailable", "message": "NMC API returned non-JSON content-type: ...", "retryable": true}`.
