@@ -36,6 +36,21 @@ SLICE_DIRS = ["components", "screens", "outputStyles", "moreright"]
 SLICE_TOP = ["dialogLaunchers.tsx", "interactiveHelpers.tsx", "replLauncher.tsx"]
 SUFFIXES = (".ts", ".tsx")
 
+# Files in the CC baseline that are intentionally NOT ported to KOSMOS
+# (1P-Anthropic business surfaces — see tui/src/components/.never-port.md).
+# These paths are accepted as "missing in KOSMOS" without triggering the
+# deletion-detection failure; everything else missing is treated as a
+# regression (e.g. accidental `git rm`).
+NEVER_PORT = frozenset({
+    "components/Feedback.tsx",
+    "components/grove/Grove.tsx",
+    "components/LogoV2/GuestPassesUpsell.tsx",
+    "components/LogoV2/OverageCreditUpsell.tsx",
+    "components/Passes/Passes.tsx",
+    "components/Settings/Usage.tsx",
+    "components/TeleportResumeWrapper.tsx",
+})
+
 
 def parse_baseline(path: Path) -> dict[str, str]:
     """Parse `<sha>  <relative-path>` lines into {rel: sha}."""
@@ -143,9 +158,33 @@ def main() -> int:
         "byte_identical": 0,
         "whitelisted": 0,
         "kosmos_only": 0,
+        "missing_never_port": 0,
         "failed": 0,
     }
     failures: list[tuple[str, str]] = []
+
+    # FR-003 + Codex P1 (PR #2723) — deletion guard.
+    # Walk the BASELINE side first to catch CC-tracked files that have been
+    # removed from KOSMOS without an explicit NEVER-PORT carve-out. This is
+    # the inverse of the divergence walk below: if we only walked KOSMOS
+    # files, a `git rm tui/src/components/App.tsx` would silently pass.
+    kosmos_rels = {p.relative_to(slice_root).as_posix() for p in slice_files}
+    for cc_rel in baseline:
+        if cc_rel in kosmos_rels:
+            continue
+        if cc_rel in NEVER_PORT:
+            stats["missing_never_port"] += 1
+            continue
+        repo_rel = f"tui/src/{cc_rel}"
+        failures.append((
+            repo_rel,
+            f"CC-baselined file is missing from tui/src (deletion or rename "
+            f"detected). Either restore the file (it must remain byte-identical "
+            f"with CC, or carry a whitelist entry), or add the path to the "
+            f"NEVER_PORT set in scripts/cc_byte_identical_guard.py with a "
+            f"CORE THESIS justification.",
+        ))
+        stats["failed"] += 1
 
     for kosmos_path in slice_files:
         stats["total"] += 1
@@ -214,6 +253,7 @@ def main() -> int:
             f"{stats['byte_identical']} byte-identical · "
             f"{stats['whitelisted']} whitelisted · "
             f"{stats['kosmos_only']} KOSMOS-only · "
+            f"{stats['missing_never_port']} NEVER-PORT (CC-only, intentional) · "
             f"{stats['failed']} failed"
         )
     return 0
