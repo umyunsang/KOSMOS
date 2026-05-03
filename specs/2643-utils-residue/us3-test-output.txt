@@ -1,0 +1,10 @@
+Warning: Cannot polyfill `Path2D`, rendering may be broken.
+{"span":"kosmos.onboarding.step","step":"splash","kind":"advance","ts":"2026-05-03T08:14:10.845Z"}
+{"span":"kosmos.onboarding.step","step":"done","kind":"enter","ts":"2026-05-03T08:14:10.849Z"}
+
+ 966 pass
+ 11 skip
+ 3 todo
+ 0 fail
+ 45 snapshots, 3788 expect() calls
+Ran 980 tests across 121 files. [16.50s]

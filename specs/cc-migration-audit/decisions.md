@@ -33,7 +33,7 @@
 
 ## S9 Utils
 - **utils/telemetry/instrumentation.ts PORT** → **즉시 P0** (Spec 021/028 OTEL 초기화 회복).
-- **utils/secureStorage/ DROP 확정** (.env 단일 의존). 향후 다중 부처 키 보관 필요 시 별도 Epic.
+- **utils/secureStorage/ DROP 확정** (.env 단일 의존). 향후 다중 부처 키 보관 필요 시 별도 Epic. (see [ADR-009](../../docs/adr/ADR-009-secureStorage-drop.md))
 - **utils/sessionTitle.ts PORT** → **수용** (K-EXAONE 으로 마이그레이션, 자동 제목 기능).
 - **utils/mcp/dateTimeParser.ts PORT** → **수용** (MCP 한국어 시각 파싱 필수).
 - **utils/permissions/permissions.ts inline-stub** → **Path B (모듈 분리)**. CC 구조 보존 원칙.

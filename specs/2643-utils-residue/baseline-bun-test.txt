@@ -1,0 +1,9 @@
+Baseline bun test snapshot — Epic G #2643, branch feat/2643-s9-utils-residue, commit 9d559b9
+Date: 2026-05-03
+
+957 pass
+11 skip
+3 todo
+1 fail (PdfInlineViewer Kitty detection — pre-existing, see Spec 2112 / Spec 1635 commit messages)
+45 snapshots, 3776 expect() calls
+Ran 972 tests across 119 files. [25.11s]

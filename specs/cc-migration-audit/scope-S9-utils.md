@@ -59,7 +59,7 @@ KOSMOS에 파일이 없음 → 런타임 부팅에서 throw 가능. CC `instrume
 
 ### P0-2~6 — `utils/secureStorage/*` (전체 6 파일, 629 LOC)
 
-`index.ts` (17), `macOsKeychainStorage.ts` (231), `keychainPrefetch.ts` (116), `macOsKeychainHelpers.ts` (111), `fallbackStorage.ts` (70), `plainTextStorage.ts` (84). KOSMOS에 디렉토리 자체가 없음. KOSMOS는 `.env` API key 보관만 사용하지만 — 향후 user-tier credential storage (data.go.kr API 키 다중 보관) 가 필요하면 P3 요청. **현재 결정**: KOSMOS auth = `.env` only 라면 정당한 DROP. 사용자 결정 필요.
+`index.ts` (17), `macOsKeychainStorage.ts` (231), `keychainPrefetch.ts` (116), `macOsKeychainHelpers.ts` (111), `fallbackStorage.ts` (70), `plainTextStorage.ts` (84). KOSMOS에 디렉토리 자체가 없음. KOSMOS는 `.env` API key 보관만 사용하지만 — 향후 user-tier credential storage (data.go.kr API 키 다중 보관) 가 필요하면 P3 요청. **현재 결정**: KOSMOS auth = `.env` only 라면 정당한 DROP. → resolved by [ADR-009](../../docs/adr/ADR-009-secureStorage-drop.md) (Epic G #2643)
 
 ### P0-7 — `utils/sessionTitle.ts` (129 LOC)
 
@@ -126,7 +126,7 @@ Top-level 298개 중 byte-identical 약 256개 (86%) — `abortController · act
 ## 사용자 결정 필요
 
 - **D1**: `utils/telemetry/instrumentation.ts` PORT 여부 (Spec 021/028 OTEL 초기화 위치 vs `init.ts` 의 dynamic import 의도).
-- **D2**: `utils/secureStorage/*` 6파일을 의도적 DROP 으로 확정 vs 향후 부처별 API key 다중 보관 PORT.
+- **D2**: `utils/secureStorage/*` 6파일을 의도적 DROP 으로 확정 vs 향후 부처별 API key 다중 보관 PORT. → resolved by [ADR-009](../../docs/adr/ADR-009-secureStorage-drop.md) (Epic G #2643)
 - **D3**: `utils/sessionTitle.ts` Haiku→K-EXAONE 마이그레이션 PORT 진행 여부.
 - **D4**: `utils/mcp/dateTimeParser.ts` PORT (한국어 시각 파싱 보강) vs DROP.
 - **D5**: `permissions.ts` inline-stub Path B 리팩터 (별도 stub 모듈 분리).

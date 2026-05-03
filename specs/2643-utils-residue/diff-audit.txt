@@ -1,0 +1,35 @@
+T056 — Diff Audit (Spec 2643 Epic G)
+
+# 1. sessionTitle.ts vs CC
+14a15,17
+> // SWAP/llm-swap(2643): queryHaiku target = K-EXAONE via FriendliAI (Spec 2521 byte-copy bridge).
+> // Spec 2643 Epic G US1 — byte-copy from .references/claude-code-sourcemap/restored-src/src/utils/sessionTitle.ts
+> // Spec source: specs/2643-utils-residue/contracts/sessionTitle.contract.md
+
+# Diff line count:
+       3
+
+# 2. dateTimeParser.ts vs CC
+0a1,3
+> // SWAP/llm-swap(2643): queryHaiku target = K-EXAONE via FriendliAI (Spec 2521 byte-copy bridge).
+> // Spec 2643 Epic G US2 — byte-copy from .references/claude-code-sourcemap/restored-src/src/utils/mcp/dateTimeParser.ts
+> // Spec source: specs/2643-utils-residue/contracts/dateTimeParser.contract.md
+
+# Diff line count:
+       3
+
+# 3. permissions.ts vs CC
+2c2
+< import { APIUserAbortError } from '@anthropic-ai/sdk'
+---
+> import { APIUserAbortError } from 'src/sdk-compat.js'
+91c91,92
+< import { calculateCostFromTokens } from '../modelCost.js'
+---
+> // KOSMOS-original: model cost calculation not used — FriendliAI pricing N/A.
+> const calculateCostFromTokens = (_model?: string, _usage?: unknown): undefined => undefined
+101a103
+> // SWAP/path-b(2643): yoloClassifier extracted to sibling module — Spec 2643 Epic G US3.
+
+# Diff line count:
+       6
