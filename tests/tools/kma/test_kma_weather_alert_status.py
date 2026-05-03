@@ -93,28 +93,47 @@ class TestWeatherWarningModel:
 
 class TestKmaWeatherAlertStatusInput:
     def test_defaults(self) -> None:
-        """Default values are num_of_rows=2000, page_no=1, data_type='JSON'."""
-        inp = KmaWeatherAlertStatusInput()
-        assert inp.num_of_rows == 2000
+        """Default values are num_of_rows=100, page_no=1, data_type='JSON'.
+        stn_id must be provided (required by model_validator).
+        """
+        inp = KmaWeatherAlertStatusInput(stn_id="108")
+        assert inp.num_of_rows == 100
         assert inp.page_no == 1
         assert inp.data_type == "JSON"
 
     def test_custom_values(self) -> None:
-        """Custom values are accepted."""
-        inp = KmaWeatherAlertStatusInput(num_of_rows=100, page_no=2, data_type="JSON")
+        """Custom values are accepted when stn_id is provided."""
+        inp = KmaWeatherAlertStatusInput(stn_id="108", num_of_rows=100, page_no=2, data_type="JSON")
         assert inp.num_of_rows == 100
         assert inp.page_no == 2
         assert inp.data_type == "JSON"
 
+    def test_both_none_raises(self) -> None:
+        """Both stn_id=None and tmFc=None must raise ValidationError (model_validator)."""
+        with pytest.raises(ValidationError):
+            KmaWeatherAlertStatusInput()
+
+    def test_stn_id_only_valid(self) -> None:
+        """stn_id alone is sufficient."""
+        inp = KmaWeatherAlertStatusInput(stn_id="159")
+        assert inp.stn_id == "159"
+        assert inp.tmFc is None
+
+    def test_tmFc_only_valid(self) -> None:
+        """tmFc alone is sufficient."""
+        inp = KmaWeatherAlertStatusInput(tmFc="202605031100")
+        assert inp.tmFc == "202605031100"
+        assert inp.stn_id is None
+
     def test_num_of_rows_ge1(self) -> None:
         """num_of_rows must be >= 1."""
         with pytest.raises(ValidationError):
-            KmaWeatherAlertStatusInput(num_of_rows=0)
+            KmaWeatherAlertStatusInput(stn_id="108", num_of_rows=0)
 
     def test_page_no_ge1(self) -> None:
         """page_no must be >= 1."""
         with pytest.raises(ValidationError):
-            KmaWeatherAlertStatusInput(page_no=0)
+            KmaWeatherAlertStatusInput(stn_id="108", page_no=0)
 
 
 # ---------------------------------------------------------------------------
@@ -253,7 +272,7 @@ class TestCall:
         mock_client = AsyncMock(spec=httpx.AsyncClient)
         mock_client.get.return_value = mock_response
 
-        inp = KmaWeatherAlertStatusInput()
+        inp = KmaWeatherAlertStatusInput(stn_id="108")
         result = await _call(inp, client=mock_client)
 
         assert result["total_count"] == 2
@@ -261,21 +280,22 @@ class TestCall:
         mock_client.get.assert_called_once()
         call_kwargs = mock_client.get.call_args
         assert (
-            call_kwargs[0][0] == "https://apis.data.go.kr/1360000/WthrWrnInfoService/getWthrWrnList"
+            call_kwargs[0][0] == "https://apis.data.go.kr/1360000/WthrWrnInfoService/getWthrWrnMsg"
         )
         params = call_kwargs[1]["params"]
         assert params["serviceKey"] == "test-key"
-        assert params["numOfRows"] == 2000
+        assert params["numOfRows"] == 100
         assert params["pageNo"] == 1
         assert params["dataType"] == "JSON"
         assert params["_type"] == "json"
+        assert params["stnId"] == "108"
 
     @pytest.mark.asyncio
     async def test_missing_api_key(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Missing env var must raise ConfigurationError before any HTTP call."""
         monkeypatch.delenv("KOSMOS_DATA_GO_KR_API_KEY", raising=False)
 
-        inp = KmaWeatherAlertStatusInput()
+        inp = KmaWeatherAlertStatusInput(stn_id="108")
         with pytest.raises(ConfigurationError) as exc_info:
             await _call(inp)
         assert "KOSMOS_DATA_GO_KR_API_KEY" in str(exc_info.value)
@@ -293,7 +313,7 @@ class TestCall:
         mock_client = AsyncMock(spec=httpx.AsyncClient)
         mock_client.get.return_value = mock_response
 
-        inp = KmaWeatherAlertStatusInput()
+        inp = KmaWeatherAlertStatusInput(stn_id="108")
         with pytest.raises(ToolExecutionError) as exc_info:
             await _call(inp, client=mock_client)
         assert "XML" in str(exc_info.value)
