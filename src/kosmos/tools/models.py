@@ -613,7 +613,7 @@ class AdmCodeResult(BaseModel):
     code: str = Field(pattern=r"^[0-9]{10}$")
     name: str
     level: Literal["sido", "sigungu", "eupmyeondong"]
-    source: Literal["sgis", "juso"]
+    source: Literal["sgis", "juso", "kakao"]
 
 
 class AddressResult(BaseModel):
