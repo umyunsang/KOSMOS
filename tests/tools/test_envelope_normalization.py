@@ -14,7 +14,6 @@ from __future__ import annotations
 
 import uuid
 from datetime import UTC, datetime
-from zoneinfo import ZoneInfo
 
 import pytest
 from pydantic import BaseModel
@@ -91,6 +90,7 @@ class TestNormalizeHappyPath:
         # Pydantic v2 deserializes ZoneInfo into a fixed-offset TzInfo; assert
         # by UTC offset (9h) rather than identity.
         from datetime import timedelta
+
         assert result.meta.fetched_at.utcoffset() == timedelta(hours=9)
 
     def test_record_dict_injects_meta(self):

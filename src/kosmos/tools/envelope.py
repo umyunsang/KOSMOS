@@ -17,15 +17,8 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime
-from zoneinfo import ZoneInfo
-
-# KOSMOS canonical timezone for citizen-facing metadata.
-# Backend stores UTC-naive datetime would surprise citizens reading
-# `meta.fetched_at` ("어제 호출했다고? 방금 했는데" — UTC vs KST 9 h gap).
-# All envelope timestamps now anchor to Asia/Seoul; OTEL spans + audit
-# ledger keep their own UTC convention via separate code paths.
-_SEOUL_TZ = ZoneInfo("Asia/Seoul")
 from typing import TYPE_CHECKING
+from zoneinfo import ZoneInfo
 
 from pydantic import TypeAdapter, ValidationError
 
@@ -42,6 +35,13 @@ if TYPE_CHECKING:
     from kosmos.tools.models import GovAPITool
 
 logger = logging.getLogger(__name__)
+
+# KOSMOS canonical timezone for citizen-facing metadata.
+# Backend stores UTC-naive datetime would surprise citizens reading
+# `meta.fetched_at` ("어제 호출했다고? 방금 했는데" — UTC vs KST 9 h gap).
+# All envelope timestamps now anchor to Asia/Seoul; OTEL spans + audit
+# ledger keep their own UTC convention via separate code paths.
+_SEOUL_TZ = ZoneInfo("Asia/Seoul")
 
 # TypeAdapter for validating arbitrary dicts against LookupOutput.
 _LOOKUP_OUTPUT_ADAPTER: TypeAdapter[object] = TypeAdapter(LookupOutput)

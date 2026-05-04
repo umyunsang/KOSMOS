@@ -13,13 +13,12 @@ from __future__ import annotations
 import asyncio
 import logging
 from datetime import UTC, datetime
+from typing import TYPE_CHECKING
+from uuid import UUID, uuid4
+
 # KOSMOS canonical citizen-facing timezone (Asia/Seoul). Internal
 # OTEL/audit/IPC paths keep UTC; only envelope-visible timestamps switch.
 from zoneinfo import ZoneInfo
-_SEOUL_TZ = ZoneInfo("Asia/Seoul")
-
-from typing import TYPE_CHECKING
-from uuid import UUID, uuid4
 
 from opentelemetry import trace
 
@@ -49,6 +48,8 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 _tracer = trace.get_tracer(__name__)
+
+_SEOUL_TZ = ZoneInfo("Asia/Seoul")
 
 # The two facade tool IDs that workers are allowed to see
 _ALLOWED_TOOLS: frozenset[str] = frozenset({"lookup", "resolve_location"})

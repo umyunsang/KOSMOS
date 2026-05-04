@@ -30,11 +30,6 @@ from datetime import UTC, datetime
 from typing import Any
 from zoneinfo import ZoneInfo
 
-# KOSMOS canonical citizen-facing timezone for `meta.fetched_at`.
-# Internal elapsed-time math (`t_start`) keeps UTC; only the citizen-visible
-# stamp switches. See `src/kosmos/tools/envelope.py` for the canonical rule.
-_SEOUL_TZ = ZoneInfo("Asia/Seoul")
-
 import httpx
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -48,6 +43,11 @@ from kosmos.tools.models import (  # noqa: A004
     LookupError,  # noqa: A004 — domain-specific Pydantic model, intentional shadow
     LookupTimeseries,
 )
+
+# KOSMOS canonical citizen-facing timezone for `meta.fetched_at`.
+# Internal elapsed-time math (`t_start`) keeps UTC; only the citizen-visible
+# stamp switches. See `src/kosmos/tools/envelope.py` for the canonical rule.
+_SEOUL_TZ = ZoneInfo("Asia/Seoul")
 
 logger = logging.getLogger(__name__)
 

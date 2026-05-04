@@ -22,13 +22,9 @@ from __future__ import annotations
 
 import logging
 import secrets
-from datetime import UTC, datetime
-# KOSMOS canonical citizen-facing timezone (Asia/Seoul). Internal
-# OTEL/audit/IPC paths keep UTC; only envelope-visible timestamps switch.
-from zoneinfo import ZoneInfo
-_SEOUL_TZ = ZoneInfo("Asia/Seoul")
-
+from datetime import datetime
 from typing import Any, Final
+from zoneinfo import ZoneInfo
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -48,6 +44,10 @@ from kosmos.tools.registry import AdapterPrimitive, AdapterRegistration, Adapter
 from kosmos.tools.transparency import stamp_mock_response
 
 logger = logging.getLogger(__name__)
+
+# KOSMOS canonical citizen-facing timezone (Asia/Seoul). Internal
+# OTEL/audit/IPC paths keep UTC; only envelope-visible timestamps switch.
+_SEOUL_TZ = ZoneInfo("Asia/Seoul")
 
 # ---------------------------------------------------------------------------
 # Transparency constants (FR-005 / FR-025)
