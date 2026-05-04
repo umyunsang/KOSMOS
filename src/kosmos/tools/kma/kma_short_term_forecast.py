@@ -385,9 +385,9 @@ KMA_SHORT_TERM_FORECAST_TOOL = GovAPITool(
             "HTTP 200 이어도 resultCode != '00' 이면 에러."
         ),
         self_contained_decl=(
-            "이 도구 단독 호출로 완결. resolve_location 등 cross-domain chain 불필요. "
-            "시민이 nx/ny 모르면 LLM 이 자율적으로 "
-            "turn 1 = resolve_location(query='<지역명>'), turn 2 = 이 도구."
+            "REQUIRED: nx/ny 입력 필수. 지역명 ('동아대학교', '부산 사하구 다대1동') 은 "
+            "resolve_location 으로 nx/ny 받은 후 본 도구 호출. "
+            "ORDERING: turn1=resolve_location(query), turn2=이 도구. 좌표 추측 금지."
         ),
     ),
     search_hint=(

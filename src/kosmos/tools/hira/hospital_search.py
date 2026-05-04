@@ -256,10 +256,9 @@ _HIRA_DESCRIPTION = build_description_v4(
         "Response coord fields are uppercase: XPos/YPos (capital X and Y)."
     ),
     self_contained_decl=(
-        "Self-contained: call resolve_location(want='coords') first, then this tool. "
-        "No follow-up tool required for basic hospital listing. "
-        "Use ykiho for HIRA detail queries. "
-        "Do not guess coordinates — always resolve from user-supplied location text."
+        "REQUIRED: xPos/yPos input. Citizen location names ('동아대학교', '강남역') need "
+        "resolve_location(want='coords') first to obtain lat/lon. ORDERING: "
+        "turn1=resolve_location, turn2=this tool(xPos=lon, yPos=lat). Never guess coords."
     ),
 )
 

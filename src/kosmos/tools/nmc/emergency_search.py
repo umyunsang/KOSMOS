@@ -347,8 +347,9 @@ NMC_EMERGENCY_SEARCH_TOOL = GovAPITool(
             "resultCode '00' = 정상; 그 외는 upstream_unavailable."
         ),
         self_contained_decl=(
-            "이 도구 단독 호출로 완결. resolve_location 으로 lat/lon 획득 후 이 도구 호출 권장. "
-            "KOSMOS 가 cross-domain chain 강제하지 않음 — LLM 자율 2턴 (turn1=resolve, turn2=이 도구)."
+            "REQUIRED: lat/lon 입력 필수. 지역명 ('동아대학교', '강남역') 은 "
+            "resolve_location(want='coords') 으로 lat/lon 받은 후 본 도구 호출. "
+            "ORDERING: turn1=resolve_location, turn2=이 도구. 좌표 추측 금지."
         ),
     ),
     search_hint=(

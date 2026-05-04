@@ -393,9 +393,9 @@ KMA_FORECAST_FETCH_TOOL = GovAPITool(
             "응답은 LookupTimeseries (hourly points) 형식."
         ),
         self_contained_decl=(
-            "이 도구 단독 호출로 완결. "
-            "lat/lon 은 resolve_location(want='coords') 로 받거나 LLM 이 추정 가능. "
-            "nx/ny 변환은 어댑터 내부 자동 처리 — LLM 이 직접 계산 불필요."
+            "REQUIRED: lat/lon 입력 필수. 지역명은 resolve_location(want='coords') 로 "
+            "lat/lon 받은 후 본 도구 호출. ORDERING: turn1=resolve_location, turn2=이 도구. "
+            "좌표 추측 금지. nx/ny 변환은 어댑터 내부 자동 처리."
         ),
     ),
     search_hint="단기예보 날씨 기온 강수 short-term weather forecast temperature precipitation",
