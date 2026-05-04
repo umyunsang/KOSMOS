@@ -217,10 +217,47 @@ class ToolExecutor:
                 exc.error_count(),
                 ", ".join(field_paths),
             )
+            # Build a chain-recovery message that names the missing fields and,
+            # when the missing fields look like coordinates / admin codes /
+            # grid points, points the LLM at resolve_location explicitly.
+            # Generic "Invalid parameters" silently failed K-EXAONE — the
+            # model interpreted it as "tool unavailable" and either
+            # hallucinated coordinates or refused to use the tool. Naming
+            # the missing fields + the recovery action keeps the agentic
+            # loop on a deterministic chain instead of guessing.
+            coord_fields = {
+                "xPos",
+                "yPos",
+                "lat",
+                "lon",
+                "latitude",
+                "longitude",
+                "nx",
+                "ny",
+                "x",
+                "y",
+            }
+            admcd_fields = {"adm_cd", "siGunGuCd", "siGunGu_cd", "sgg_cd", "h_code", "b_code"}
+            need_resolve = any(
+                fp.split(".")[-1] in coord_fields or fp.split(".")[-1] in admcd_fields
+                for fp in field_paths
+            )
+            recovery_hint = ""
+            if need_resolve:
+                recovery_hint = (
+                    " RESOLVE_LOCATION FIRST: call resolve_location(query='<지역명>',"
+                    " want='coords') to obtain the missing coordinates / admin code,"
+                    " then re-invoke this tool with the returned values."
+                    " Do NOT guess coordinates from prior knowledge."
+                )
+            field_summary = ", ".join(field_paths) if field_paths else "(no field info)"
             return make_error_envelope(
                 tool_id=tool_id,
                 reason=LookupErrorReason.invalid_params,
-                message="Invalid parameters for tool.",
+                message=(
+                    f"Invalid parameters for tool {tool_id!r}. "
+                    f"Missing or invalid fields: {field_summary}.{recovery_hint}"
+                ),
                 request_id=request_id,
                 elapsed_ms=_elapsed(),
                 retryable=False,
