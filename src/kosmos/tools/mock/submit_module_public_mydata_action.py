@@ -22,7 +22,7 @@ from __future__ import annotations
 
 import logging
 import secrets
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any, Final, Literal
 from zoneinfo import ZoneInfo
 
@@ -159,7 +159,7 @@ async def invoke(params: dict[str, Any]) -> SubmitOutput:
         append_delegation_used(
             DelegationUsedEvent(
                 kind="delegation_used",
-                ts=datetime.now(_SEOUL_TZ),
+                ts=datetime.now(UTC),
                 session_id=typed.session_id,
                 delegation_token=token_value,
                 consumer_tool_id="mock_submit_module_public_mydata_action",
@@ -200,7 +200,7 @@ async def invoke(params: dict[str, Any]) -> SubmitOutput:
     append_delegation_used(
         DelegationUsedEvent(
             kind="delegation_used",
-            ts=datetime.now(_SEOUL_TZ),
+            ts=datetime.now(UTC),
             session_id=typed.session_id,
             delegation_token=token_value,
             consumer_tool_id="mock_submit_module_public_mydata_action",
