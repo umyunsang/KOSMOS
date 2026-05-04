@@ -295,6 +295,8 @@ def _check_chain_prerequisite(
     #    one turn earlier and saves the round-trip.
     has_coord = any(k in params for k in _COORD_INPUT_FIELDS)
     has_admcd = any(k in params for k in _ADMCD_INPUT_FIELDS)
+    schema_coord_fields: set[str] = set()
+    schema_admcd_fields: set[str] = set()
     if not (has_coord or has_admcd):
         # Inspect the adapter's declared input schema to find out whether
         # this is a coord/admcd tool that simply has not been parameterised
@@ -306,10 +308,9 @@ def _check_chain_prerequisite(
             tool = registry.lookup(tool_id)
             schema = tool.input_schema.model_json_schema()
             props = schema.get("properties", {})
-            schema_has_coord_or_admcd = any(
-                k in props for k in (_COORD_INPUT_FIELDS | _ADMCD_INPUT_FIELDS)
-            )
-            if not schema_has_coord_or_admcd:
+            schema_coord_fields = set(props) & _COORD_INPUT_FIELDS
+            schema_admcd_fields = set(props) & _ADMCD_INPUT_FIELDS
+            if not (schema_coord_fields or schema_admcd_fields):
                 return None
         except Exception:  # noqa: BLE001
             # Unknown tool / registry not booted — let the dispatcher
@@ -350,17 +351,26 @@ def _check_chain_prerequisite(
             # Textual <tool_call> marker fallback for K-EXAONE inline form.
             return None
 
-    missing_fields = sorted(
-        (set(params.keys()) & (_COORD_INPUT_FIELDS | _ADMCD_INPUT_FIELDS))
-    )
-    field_kind = "coordinates" if has_coord else "administrative code"
+    # Field naming: prefer the actually-supplied params (the LLM tipped its
+    # hand on which fields it tried to fill), otherwise fall back to the
+    # schema-introspected field set so the recovery message names something
+    # the LLM can actually produce.
+    missing_coord = (set(params.keys()) & _COORD_INPUT_FIELDS) or schema_coord_fields
+    missing_admcd = (set(params.keys()) & _ADMCD_INPUT_FIELDS) or schema_admcd_fields
+    missing_fields = sorted(missing_coord | missing_admcd)
+    if has_coord or schema_coord_fields:
+        field_kind = "coordinates"
+    elif has_admcd or schema_admcd_fields:
+        field_kind = "administrative code"
+    else:
+        field_kind = "location parameters"
     return (
         f"Chain prerequisite missing: this tool requires {field_kind} "
-        f"({', '.join(missing_fields)}) that MUST come from a prior "
-        f"resolve_location call in the same conversation. The current call "
-        f"supplied them directly, but no resolve_location turn precedes it — "
-        f"that means the values were guessed from prior knowledge instead of "
-        f"being resolved against Kakao Local API. "
+        f"({', '.join(missing_fields) if missing_fields else 'see input schema'}) "
+        f"that MUST come from a prior resolve_location call in the same "
+        f"conversation. No resolve_location turn precedes the current call — "
+        f"that means the values would be guessed from prior knowledge instead "
+        f"of being resolved against Kakao Local API. "
         f"RECOVERY: in the next turn call resolve_location(query='<지역명>', "
         f"want='coords') to obtain the canonical lat/lon for the citizen's "
         f"location, then re-invoke this tool with the returned values. Do NOT "
@@ -1764,6 +1774,19 @@ async def run(  # noqa: C901
         # absent.
         from kosmos.llm.tool_call_parser import StreamGate  # noqa: PLC0415
 
+        # Neurosymbolic constraint flag — set when the chain-prerequisite
+        # gate rejected a coord-input tool call earlier in the loop. The
+        # next LLM turn forces tool_choice=resolve_location, removing the
+        # bypass path the LLM used in donga-univ-poi-bug captures
+        # (the LLM read the chain hint and then refused the tool anyway,
+        # answering "I don't have a location resolver" — a documented
+        # failure mode in the 2026 hallucination literature: business
+        # rules in prompts are interpreted as suggestions, not constraints,
+        # so the constraint must move to the API layer where the model
+        # cannot bypass it). Once a turn fires resolve_location the flag
+        # clears so the agentic loop returns to free tool_choice.
+        force_resolve_location_next_turn = False
+
         for _turn in range(_AGENTIC_LOOP_MAX_TURNS):
             message_id = str(uuid.uuid4())
             assistant_text_chunks: list[str] = []
@@ -1785,6 +1808,22 @@ async def run(  # noqa: C901
             stream_error: Exception | None = None
             stream_gate = StreamGate()
 
+            # Materialise the tool_choice for this turn from the gate flag.
+            # When forced, OpenAI/FriendliAI accept the explicit-function
+            # form (verified live against FriendliAI Serverless 2026-05-04);
+            # K-EXAONE on FriendliAI honours it as a hard constraint at the
+            # decoding boundary rather than a system-prompt hint.
+            stream_tool_choice: str | dict[str, object] | None = None
+            if force_resolve_location_next_turn:
+                stream_tool_choice = {
+                    "type": "function",
+                    "function": {"name": "resolve_location"},
+                }
+                logger.warning(
+                    "_handle_chat_request: forcing tool_choice=resolve_location for "
+                    "turn %d (chain gate previously rejected a coord-input call)",
+                    _turn,
+                )
             try:
                 async for event in client.stream(  # type: ignore[attr-defined]
                     messages=llm_messages,
@@ -1792,6 +1831,7 @@ async def run(  # noqa: C901
                     temperature=frame.temperature,
                     top_p=frame.top_p,
                     max_tokens=frame.max_tokens,
+                    tool_choice=stream_tool_choice,
                 ):
                     event_type = getattr(event, "type", None)
                     if event_type == "content_delta":
@@ -2107,6 +2147,12 @@ async def run(  # noqa: C901
                         fname,
                         call_id[:12],
                     )
+                    # Neurosymbolic constraint — the next LLM turn must
+                    # call resolve_location before any other tool. Set the
+                    # flag here so the next loop iteration's tool_choice
+                    # forces the model down the chain. See the flag
+                    # comment at the loop start for the full rationale.
+                    force_resolve_location_next_turn = True
                     continue
 
                 _pending_calls[call_id] = loop.create_future()
@@ -2149,8 +2195,26 @@ async def run(  # noqa: C901
                     name=f"primitive-{fname}-{call_id[:8]}",
                 )
 
+                # Neurosymbolic constraint — clear the force flag once a
+                # resolve_location turn has actually been dispatched. Any
+                # subsequent turn returns to free tool_choice so the LLM
+                # can route to the actual coord-input adapter (KMA/HIRA/
+                # NMC) with the resolved coordinates.
+                if fname == "resolve_location":
+                    force_resolve_location_next_turn = False
+
             # If every tool call was rejected (whitelist), terminate.
+            # Exception: when the chain gate fired (force flag set) we
+            # MUST continue to the next iteration so the forced
+            # tool_choice=resolve_location actually gets a chance to run.
+            # Returning here would leave the citizen with the chain-error
+            # tool_result frame as the only visible output.
             if not issued_calls:
+                if force_resolve_location_next_turn:
+                    # Synthetic tool_result already injected into
+                    # llm_messages; the next loop iteration will fire the
+                    # LLM again with tool_choice forced to resolve_location.
+                    continue
                 await write_frame(
                     AssistantChunkFrame(
                         session_id=frame.session_id,
