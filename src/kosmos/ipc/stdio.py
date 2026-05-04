@@ -218,6 +218,156 @@ async def _reader_loop(
 # ---------------------------------------------------------------------------
 
 
+# Coordinate / admin-code field names that signal a downstream tool needs
+# resolve_location to have run first (Epic #2766 chain prerequisite gate).
+# The literal field set is intentionally broader than what any single
+# adapter accepts so the gate catches every variant the LLM might pick.
+_COORD_INPUT_FIELDS: frozenset[str] = frozenset({
+    "xPos",
+    "yPos",
+    "lat",
+    "lon",
+    "latitude",
+    "longitude",
+    "nx",
+    "ny",
+    "x",
+    "y",
+})
+_ADMCD_INPUT_FIELDS: frozenset[str] = frozenset({
+    "adm_cd",
+    "siGunGuCd",
+    "sgg_cd",
+    "h_code",
+    "b_code",
+})
+
+
+def _check_chain_prerequisite(
+    fname: str,
+    args_obj: dict[str, object],
+    llm_messages: list[Any],
+    registry: Any = None,
+) -> str | None:
+    """Return chain-recovery error message when a prerequisite is missing.
+
+    CC reference: ``Tool.validateInput?(input, context)`` in
+    ``.references/claude-code-sourcemap/restored-src/src/Tool.ts:489``.
+    The CC hook is tool-scoped; KOSMOS centralises the equivalent
+    pre-dispatch check here because every coord-input adapter has the
+    identical prerequisite (resolve_location must have been called in
+    a prior turn of the same conversation). Adapter-scoped overrides can
+    be added later by extending this function to dispatch on tool_id.
+
+    Returns ``None`` when the call is allowed; returns a descriptive
+    error message when the call should be rejected. The caller emits
+    that message verbatim to the LLM via a tool_result envelope so the
+    next agentic-loop turn can recover.
+    """
+    # Only the `lookup` primitive carries adapter calls (mode='fetch'
+    # routes to a registered GovAPITool). All other primitives are
+    # either coord-free (verify) or carry their own param schema
+    # (submit, subscribe, resolve_location).
+    if fname != "lookup":
+        return None
+    if not isinstance(args_obj, dict):
+        return None
+    # Accept both shapes the LLM emits: full {mode:'fetch', tool_id, params}
+    # AND the abbreviated {tool_id, params} where mode is implicit. K-EXAONE
+    # frequently omits mode when tool_id is set; treating those as fetch
+    # closes the bypass that lets a tool_id=hira_* call slip past the gate
+    # just because mode was unset.
+    mode = args_obj.get("mode")
+    tool_id = args_obj.get("tool_id")
+    if mode not in (None, "fetch"):
+        return None
+    if not isinstance(tool_id, str) or not tool_id:
+        return None
+    params = args_obj.get("params") if isinstance(args_obj.get("params"), dict) else {}
+
+    # Two ways to recognise a coord-input adapter call:
+    # 1. The supplied params already carry coordinate/admcd fields — the
+    #    LLM filled them in (possibly from prior knowledge). This is the
+    #    primary failure mode the gate exists to catch.
+    # 2. The supplied params are empty / coord-free, but the tool_id's
+    #    registered input_schema declares coord/admcd fields. The LLM is
+    #    about to hit invalid_params; getting here gives the chain hint
+    #    one turn earlier and saves the round-trip.
+    has_coord = any(k in params for k in _COORD_INPUT_FIELDS)
+    has_admcd = any(k in params for k in _ADMCD_INPUT_FIELDS)
+    if not (has_coord or has_admcd):
+        # Inspect the adapter's declared input schema to find out whether
+        # this is a coord/admcd tool that simply has not been parameterised
+        # yet. Best-effort — adapter lookup failures fall through as
+        # "unknown shape, allow".
+        if registry is None:
+            return None
+        try:
+            tool = registry.lookup(tool_id)
+            schema = tool.input_schema.model_json_schema()
+            props = schema.get("properties", {})
+            schema_has_coord_or_admcd = any(
+                k in props for k in (_COORD_INPUT_FIELDS | _ADMCD_INPUT_FIELDS)
+            )
+            if not schema_has_coord_or_admcd:
+                return None
+        except Exception:  # noqa: BLE001
+            # Unknown tool / registry not booted — let the dispatcher
+            # produce its own unknown_tool error instead of guessing.
+            return None
+
+    # Walk prior turns for a resolve_location invocation. Both function-
+    # call envelopes (assistant.tool_calls[*].function.name) and the
+    # textual <tool_call> markers (assistant.content) count — K-EXAONE
+    # uses both. We accept either as evidence the citizen's location
+    # was canonicalised through the registered resolver.
+    for m in llm_messages:
+        # LLMChatMessage instance OR dict — handle both.
+        role = getattr(m, "role", None) or (
+            m.get("role") if isinstance(m, dict) else None
+        )
+        if role != "assistant":
+            continue
+        tool_calls = getattr(m, "tool_calls", None) or (
+            m.get("tool_calls") if isinstance(m, dict) else None
+        )
+        if tool_calls:
+            for tc in tool_calls:
+                call_fn = (
+                    getattr(getattr(tc, "function", None), "name", None)
+                    or (
+                        tc.get("function", {}).get("name")
+                        if isinstance(tc, dict)
+                        else None
+                    )
+                )
+                if call_fn == "resolve_location":
+                    return None
+        content = getattr(m, "content", None) or (
+            m.get("content") if isinstance(m, dict) else None
+        )
+        if isinstance(content, str) and "resolve_location" in content:
+            # Textual <tool_call> marker fallback for K-EXAONE inline form.
+            return None
+
+    missing_fields = sorted(
+        (set(params.keys()) & (_COORD_INPUT_FIELDS | _ADMCD_INPUT_FIELDS))
+    )
+    field_kind = "coordinates" if has_coord else "administrative code"
+    return (
+        f"Chain prerequisite missing: this tool requires {field_kind} "
+        f"({', '.join(missing_fields)}) that MUST come from a prior "
+        f"resolve_location call in the same conversation. The current call "
+        f"supplied them directly, but no resolve_location turn precedes it — "
+        f"that means the values were guessed from prior knowledge instead of "
+        f"being resolved against Kakao Local API. "
+        f"RECOVERY: in the next turn call resolve_location(query='<지역명>', "
+        f"want='coords') to obtain the canonical lat/lon for the citizen's "
+        f"location, then re-invoke this tool with the returned values. Do NOT "
+        f"guess coordinates."
+    )
+
+
 def _utcnow() -> str:
     """Return current UTC time as RFC 3339 string."""
     from datetime import datetime
@@ -1849,6 +1999,113 @@ async def run(  # noqa: C901
                             message=f"Model requested unknown tool {fname!r}",
                             details={"call_id": call_id},
                         )
+                    )
+                    continue
+
+                # Chain prerequisite gate — donga-univ-poi-bug Epic #2766.
+                # CC mirror: ``Tool.validateInput?(input, context)`` from
+                # ``.references/claude-code-sourcemap/restored-src/src/Tool.ts:489``
+                # — tool-scoped prerequisite hook that inspects the
+                # surrounding ToolUseContext and may reject with a
+                # message the LLM sees in the tool_result. KOSMOS port:
+                # we run the check here, before issuing the ToolCallFrame
+                # and before the dispatch task starts, so a rejected call
+                # never burns an outbound HTTP request and the LLM gets
+                # a deterministic chain-recovery instruction in the same
+                # turn it tried to skip the prerequisite.
+                #
+                # Concretely: when fname == "lookup" + the chosen tool_id
+                # is a coordinate/admcd-input adapter (kma_*, hira_*, nmc_*,
+                # koroad_*) AND the citizen-supplied params already carry
+                # the coordinates AND no prior turn in llm_messages
+                # invoked resolve_location, that means the LLM guessed
+                # the coordinates from prior knowledge instead of routing
+                # through the canonical resolver. Three live captures
+                # under specs/integration-verification/donga-univ-poi-bug/
+                # showed this exact pattern producing wrong-region
+                # hospital lists. Rejecting here forces the next turn
+                # through resolve_location.
+                chain_error_msg = _check_chain_prerequisite(
+                    fname, args_obj, llm_messages, registry=_ensure_tool_registry()
+                )
+                if chain_error_msg is not None:
+                    from kosmos.ipc.frame_schema import (  # noqa: PLC0415
+                        ToolResultEnvelope,
+                        ToolResultFrame,
+                    )
+                    # Emit a ToolCallFrame first so the TUI registers the
+                    # call_id in seenToolUseIds (deps.ts L420). Without it
+                    # the subsequent ToolResultFrame surfaces as a
+                    # `tool_result_orphan` system error in the transcript.
+                    await write_frame(
+                        ToolCallFrame(
+                            session_id=frame.session_id,
+                            correlation_id=frame.correlation_id,
+                            role="backend",
+                            ts=_utcnow(),
+                            kind="tool_call",
+                            call_id=call_id,
+                            name=fname,  # type: ignore[arg-type]
+                            arguments=args_obj,
+                        )
+                    )
+                    err_envelope = ToolResultEnvelope(
+                        kind=cast("Any", fname),
+                        result={
+                            "kind": "error",
+                            "reason": "chain_prerequisite_missing",
+                            "message": chain_error_msg,
+                            "retryable": False,
+                        },
+                    )
+                    await write_frame(
+                        ToolResultFrame(
+                            session_id=frame.session_id,
+                            correlation_id=frame.correlation_id,
+                            role="backend",
+                            ts=_utcnow(),
+                            kind="tool_result",
+                            call_id=call_id,
+                            envelope=err_envelope,
+                        )
+                    )
+                    # Inject a synthetic tool message into history so the
+                    # next LLM turn sees the chain hint and follows it.
+                    llm_messages.append(
+                        LLMChatMessage(
+                            role="assistant",
+                            content="",
+                            tool_calls=[
+                                LLMToolCall(
+                                    id=call_id,
+                                    type="function",
+                                    function=LLMFunctionCall(
+                                        name=fname,
+                                        arguments=_json.dumps(args_obj),
+                                    ),
+                                )
+                            ],
+                        )
+                    )
+                    llm_messages.append(
+                        LLMChatMessage(
+                            role="tool",
+                            content=_json.dumps(
+                                {
+                                    "kind": "error",
+                                    "reason": "chain_prerequisite_missing",
+                                    "message": chain_error_msg,
+                                },
+                                ensure_ascii=False,
+                            ),
+                            name=fname,
+                            tool_call_id=call_id,
+                        )
+                    )
+                    logger.warning(
+                        "_handle_chat_request: rejected %s call_id=%s — chain prerequisite missing",
+                        fname,
+                        call_id[:12],
                     )
                     continue
 
