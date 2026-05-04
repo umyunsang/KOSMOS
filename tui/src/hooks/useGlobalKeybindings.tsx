@@ -6,9 +6,7 @@
  */
 import { feature } from 'bun:bundle';
 import { useCallback } from 'react';
-import { useInput } from '../ink.js';
 import instances from '../ink/instances.js';
-import { useOptionalKeybindingContext } from '../keybindings/KeybindingContext.js';
 import { useKeybinding } from '../keybindings/useKeybinding.js';
 import type { Screen } from '../screens/REPL.js';
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '../services/analytics/growthbook.js';
@@ -247,38 +245,12 @@ export function GlobalKeybindingHandlers({
     isActive: isInTranscript && !searchBarOpen
   });
 
-  // Epic #2766 issue D — Ctrl+O fallback. The chord registry path
-  // (`useKeybinding('app:toggleTranscript', ...)`) above relies on
-  // KeybindingProvider mounting BEFORE PromptInput's useTextInput, on
-  // PromptInput's useKeybindings registering Chat context, and on
-  // ChordInterceptor not consuming the keystroke. Any of those breaking
-  // (overlay open, IME composition state stale, keybinding context
-  // race) silently drops Ctrl+O. This raw useInput is the safety net:
-  // it fires AFTER all chord-aware listeners (registered via
-  // useEffect's append order, this hook is mounted first in REPL.tsx
-  // tree), so when the chord path consumed and stopImmediatePropagation'd,
-  // this never runs. When the chord path missed, the citizen still gets
-  // their expand. Mirrors the PR #2754 Insight #4 fallback pattern.
-  //
-  // Codex P2 (PR #2767) — respect user remap. The fallback fires ONLY
-  // when the user's effective binding for `app:toggleTranscript` is
-  // STILL `ctrl+o`. If the user disabled the action (effective_chord =
-  // null, getDisplayText returns undefined) or remapped it to another
-  // chord, the fallback stays silent so the action remains
-  // configurable per loadUserBindings.ts:325-353,387-389.
-  const keybindingCtxForFallback = useOptionalKeybindingContext();
-  useInput((input, key) => {
-    if (!(key.ctrl && input === 'o')) return;
-    if (!keybindingCtxForFallback) return;
-    const effectiveChord = keybindingCtxForFallback.getDisplayText(
-      'app:toggleTranscript',
-      'Global',
-    );
-    // Only fire when the user has not overridden ctrl+o away from this
-    // action. `effectiveChord === undefined` means the user disabled it.
-    if (effectiveChord !== 'ctrl+o') return;
-    handleToggleTranscript();
-  });
+  // No useInput fallback — Epic #2766 follow-up promoted
+  // `app:toggleTranscript` into TIER_ONE_ACTIONS + DEFAULT_BINDINGS so
+  // the chord registry path above resolves Ctrl+O directly. Adding a
+  // raw useInput here would race with the chord path (both fire on
+  // every keystroke) and obscure the chord registry's correctness as
+  // the single source of truth.
 
   return null;
 }

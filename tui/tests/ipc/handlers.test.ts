@@ -547,19 +547,25 @@ describe('stream-event projection I6', () => {
     const terminal = assistantMessages[assistantMessages.length - 1]!
     const content = terminal.message.content
 
-    // text block + 2 tool_use blocks = 3 elements total
+    // 2 tool_use blocks + text block = 3 elements total
+    // Epic #2766 follow-up — render-order fix v2 (deps.ts root-cause):
+    // tool_use blocks render BEFORE the text block so the citizen sees the
+    // tool calls (chronologically first) before the synthesis. CC's order
+    // looked like [text, tool_use[]] only because each CC turn carries at
+    // most one block-type; KOSMOS' multi-turn-into-one-message assembly
+    // makes the relative order load-bearing.
     expect(content).toHaveLength(3)
 
-    expect(content[0]!.type).toBe('text')
-    // Leading whitespace is trimmed by deps.ts (accumulated.trimStart())
-    expect(content[0]!.text).toBe('hello')
+    expect(content[0]!.type).toBe('tool_use')
+    expect(content[0]!.id).toBe('A')
+    expect(content[0]!.name).toBe('lookup')
 
     expect(content[1]!.type).toBe('tool_use')
-    expect(content[1]!.id).toBe('A')
-    expect(content[1]!.name).toBe('lookup')
+    expect(content[1]!.id).toBe('B')
+    expect(content[1]!.name).toBe('submit')
 
-    expect(content[2]!.type).toBe('tool_use')
-    expect(content[2]!.id).toBe('B')
-    expect(content[2]!.name).toBe('submit')
+    expect(content[2]!.type).toBe('text')
+    // Leading whitespace is trimmed by deps.ts (accumulated.trimStart())
+    expect(content[2]!.text).toBe('hello')
   })
 })

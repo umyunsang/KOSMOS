@@ -52,6 +52,46 @@ Stack changes require an ADR under `docs/adr/`.
 - Never commit a file larger than 1 MB without asking.
 - Never introduce Go or Rust. TypeScript is allowed only for the TUI layer (Ink + Bun).
 
+## Engineering principles — root-cause first, fallbacks last
+
+KOSMOS is a foundation project (`속이 꽉찬 기초와 토대가 튼튼한 프로젝트`), not a demo. Every workaround carries debugging cost on every future inspection — too many fallbacks make the architecture and the real-usage flow indistinguishable, and the next bug becomes harder to trace. The principles below override the convenience of band-aids.
+
+### 1. Root-cause over symptom
+
+When a UX bug surfaces (Ctrl+O dead, render order wrong, schema invalid), capture the failing path with instrumentation, then trace upward to the architectural decision that allowed it. The fix lives at the decision, not the symptom.
+
+- Don't add a `useInput` fallback when the chord registry is broken — fix the registry (promote the action to `TIER_ONE_ACTIONS` + `DEFAULT_BINDINGS`).
+- Don't add `try/except` swallowing when an upstream contract is wrong — fix the contract.
+- Don't paper over a stale import with a stub — port the real module or delete the call site (memory: `feedback_no_stubs_remove_or_migrate`).
+- Three failed symptom-fixes in a row → STOP, capture frames, post the timeline, choose root-cause path (anti-pattern #7 below).
+
+### 2. Reference before invention
+
+When the right design is unclear, the answer almost always exists in:
+
+- `.references/claude-code-sourcemap/restored-src/` (CC 2.1.88, byte-identical research source)
+- `docs/vision.md § Reference materials` (cross-domain pattern catalog)
+- The `docs/api/` adapter catalog and the seven-section template
+- The agency's own published policy URL (citation; KOSMOS does not invent permission classes)
+
+If a primary source isn't already cataloged, escalate to a deep-research pass (web search + docs digest) and add the new source to `docs/vision.md § Reference materials` in the same PR. Don't ship a guess (memory: `feedback_check_references_first`).
+
+### 3. Foundations over surface gloss
+
+KOSMOS' worth is the depth of the swap (CC harness + 2 swaps, byte-identical otherwise), not how the splash screen looks. A surface that renders correctly while the underlying registry / loop / IPC contract is silently broken is a regression. The 5-layer TUI verification chain below + the integration-verification capture artefacts under `specs/integration-verification/` exist to enforce this. `bun typecheck` (KOSMOS narrows to `src/stubs/**` only) + `bun test` + boot-only smoke regularly pass while the chord registry is dead — only Layers 3-5 expose those failures.
+
+### 4. Fallbacks are minority — and audited
+
+A fallback is acceptable ONLY when ALL three hold:
+
+1. The root cause is documented (with `file:line`) AND a follow-up Epic exists.
+2. The fallback's failure mode is logged (so an inspector can trace it).
+3. The fallback is removed in the same PR as the root-cause fix (no two-PR drift).
+
+Canonical example of a fallback that violated this rule and was retired:
+
+- The Ctrl+O `useInput` fallback in `tui/src/hooks/useGlobalKeybindings.tsx` (introduced PR #2754 / strengthened PR #2767) was kept alive while the actual root cause — `app:toggleTranscript` missing from `TIER_ONE_ACTIONS` + `DEFAULT_BINDINGS` — was deferred. The Epic #2766 follow-up promoted the action (`tui/src/keybindings/types.ts:84` + `tui/src/keybindings/defaultBindings.ts:81`) AND removed the fallback in the same PR. Same pattern applies to every other CC-namespaced action whose callsite is alive but whose chord is dead.
+
 ## Issue hierarchy
 
 `Initiative` → `Epic` → `Task` (Sub-Issues API, not body mentions). Initiatives/Epics: manual. Tasks: ONLY from `/speckit-taskstoissues`. Labels: `initiative`, `epic`, `agent-ready`, `needs-spec`, `parallel-safe`, `blocked`, `size/{S,M,L}`, plus layer labels.
@@ -220,7 +260,7 @@ These four insights are mandatory reading for anyone authoring or fixing TUI ver
 
 3. **`setToolJSX({isLocalJSXCommand: true})` deactivates EVERY `useInput` hook in the parent prompt subtree.**  `PromptInput.tsx:244` sets `isModalOverlayActive = useIsModalOverlayActive() || isLocalJSXCommandActive` and gates ~10 `useInput` / `useKeybinding` hooks on `!isModalOverlayActive`.  Setting `isLocalJSXCommand: true` therefore breaks the input plane for every overlay child whose dismiss key races with the parent's tear-down.  When mounting a KOSMOS overlay (e.g. HelpV2Grouped) that needs its own keystrokes, pass `isLocalJSXCommand: false` so PromptInput stays active and the child's `useInput` actually receives stdin events.  This is the literal one-line fix that unblocked the integration-verification frame-33 round-trip — change `true` → `false`.
 
-4. **`useKeybinding(action, handler)` only fires if the chord registry has a default chord for that action.**  KOSMOS' `defaultBindings.ts` covers Tier 1 actions only.  Brand-new actions (e.g. `help:dismiss` outside Tier 1) register a handler but no chord — Esc never resolves to the action and the handler silently never fires.  Until the action is added to `defaultBindings.ts`, every `useKeybinding`-based dismiss MUST be paired with a direct `useInput((_, key) => key.escape && handler())` fallback in the same component (defense-in-depth).
+4. **`useKeybinding(action, handler)` only fires if the action is in `TIER_ONE_ACTIONS` AND has an entry in `DEFAULT_BINDINGS`.**  KOSMOS Spec 288 originally limited Tier 1 to seven Korean-named actions; CC-namespaced actions (`app:toggleTranscript`, `app:toggleTodos`, etc.) used by the ported components were dead until promoted. **Root-cause fix**: promote the action — see `tui/src/keybindings/types.ts:84` (`TIER_ONE_ACTIONS`) and `tui/src/keybindings/defaultBindings.ts:81` (`DEFAULT_BINDINGS`). **Anti-pattern**: adding a `useInput` fallback. The fallback hides the dead chord (chord interceptor consumes nothing → fallback fires; chord interceptor finds the chord → fallback also fires → race), races with the registry, and obscures the real defect. The earlier "defense-in-depth" guidance for this case has been retired — Epic #2766 follow-up (2026-05-04) promoted `app:toggleTranscript` to Tier 1 and removed the fallback, proving the root-cause path is the correct one. The same pattern applies to every other CC-namespaced action whose callsite is alive but whose chord is silently undefined.
 
 These four insights are referenced by `specs/integration-verification/RUNTIME-BUGS.md`.
 

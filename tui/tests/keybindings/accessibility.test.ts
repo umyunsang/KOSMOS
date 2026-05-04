@@ -123,6 +123,15 @@ const ACTION_INVOKERS: { [K in TierOneAction]: ActionInvoker } = {
     announcer.announce('권한 모드를 default로 변경했습니다.', {
       priority: 'polite',
     }),
+  // Epic #2766 follow-up — `app:toggleTranscript` promoted into Tier 1 so
+  // the chord registry resolves Ctrl+O. The screen-reader announcement
+  // mirrors what GlobalKeybindingHandlers' handler will emit when the
+  // accessibility plumbing for transcript toggles is fully wired (separate
+  // Epic). Stub message kept Korean-primary for FR-030 latency assertions.
+  'app:toggleTranscript': (announcer) =>
+    announcer.announce('대화 기록을 전체 전사 화면으로 전환했습니다.', {
+      priority: 'polite',
+    }),
 }
 
 // ---------------------------------------------------------------------------
