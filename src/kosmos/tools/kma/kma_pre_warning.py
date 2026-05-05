@@ -325,5 +325,24 @@ def register(registry: ToolRegistry, executor: ToolExecutor) -> None:
     from kosmos.tools.executor import AdapterFn
 
     registry.register(KMA_PRE_WARNING_TOOL)
-    executor.register_adapter("kma_pre_warning", cast(AdapterFn, _call))
+
+    # Audit G4 / F-beta-01 fix — wrap raw KmaPreWarningOutput in a
+    # ``LookupCollection``-shaped envelope so ``envelope.normalize()``
+    # accepts it (5-variant LookupOutput discriminator). The previous
+    # registration handed ``_call`` directly to ``register_adapter``,
+    # which returned ``{total_count, items}`` — no ``kind`` field, so
+    # the discriminator extraction failed and surfaced as
+    # ``Unable to extract tag using discr`` in β6 capture (2026-05-05).
+    # Sibling pattern: ``kma_short_term_forecast.py:432-440``.
+    async def _kma_pre_warning_adapter(inp: BaseModel) -> dict[str, object]:
+        raw = await _call(cast("KmaPreWarningInput", inp))
+        # Pre-warning is a list of announcements; ``collection`` is the
+        # canonical 5-variant variant for "list of records".
+        return {
+            "kind": "collection",
+            "items": list(raw.get("items", [])),
+            "total_count": int(raw.get("total_count", 0)),
+        }
+
+    executor.register_adapter("kma_pre_warning", cast(AdapterFn, _kma_pre_warning_adapter))
     logger.info("Registered tool: kma_pre_warning")

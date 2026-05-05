@@ -157,6 +157,11 @@ async def write_frame(
             span.set_attribute("kosmos.frame.kind", frame.kind)
             span.set_attribute("kosmos.frame.direction", "outbound")
             span.set_attribute("kosmos.ipc.latency_ms", latency_ms)
+            # Audit G4 — explicit arm-name + correlation_id span attribute so
+            # cross-team triage (e.g. F-ε-02 silent plugin_op chase) can grep
+            # OTLP for which arm + correlation went out the wire.
+            if frame.correlation_id:
+                span.set_attribute("kosmos.frame.correlation_id", frame.correlation_id)
             attach_envelope_span_attributes(frame, tx_cache_state=tx_cache_state)
         except Exception as exc:  # noqa: BLE001
             span.record_exception(exc)
@@ -1200,11 +1205,23 @@ async def run(  # noqa: C901
             f"백엔드 BM25 후보 (top {len(candidates)}, 점수 내림차순):",
             "",
         ]
+        # Audit G4 / F-beta-02 fix — emit per-candidate ``[primitive=...]``
+        # label so the LLM cannot silently route a subscribe/verify/submit-
+        # only adapter through ``lookup``. β6 capture (2026-05-05): K-EXAONE
+        # called ``lookup(mock_cbs_disaster_v1)`` because that tool_id appeared
+        # in the BM25 candidate list (it IS registered, primitive='subscribe')
+        # but the suffix did not state which primitive each tool binds to.
+        # The ``primitive`` field on AdapterCandidate is populated by
+        # ``search.py:142`` already; surfacing it costs zero retrieval work.
+        # See ``research/g4-backend.md § 2``.
         for c in candidates:
             hint = (c.search_hint or "").strip()
             if len(hint) > 90:
                 hint = hint[:87] + "..."
-            lines.append(f"- {c.tool_id} [{c.score:.2f}] — {hint or '(설명 없음)'}")
+            prim_label = f" [primitive={c.primitive}]" if c.primitive else ""
+            lines.append(
+                f"- {c.tool_id} [{c.score:.2f}]{prim_label} — {hint or '(설명 없음)'}"
+            )
             # Render the adapter's llm_description (usage prose, ORDERING RULE,
             # prerequisites, worked examples) so the LLM sees the complete
             # "먼저 resolve_location 호출" ordering rule.
@@ -1334,6 +1351,20 @@ async def run(  # noqa: C901
         lines.append(
             "BM25 도구 발견은 백엔드 internal 기능 — lookup(mode='search') 같은 호출은"
             " 무효화됩니다 (Spec 2521)."
+        )
+        # Audit G4 / F-beta-02 — primitive routing strict allow-list.
+        lines.append(
+            "각 후보의 [primitive=...] 라벨을 확인하세요. lookup 후보가 아닌 도구를"
+            " lookup 으로 호출하면 unknown_tool 오류가 납니다 — subscribe 도구는"
+            " subscribe 호출, verify 도구는 verify 호출, submit 도구는 submit 호출"
+            " 만 허용됩니다."
+        )
+        # Audit G4 / F-beta-03 — NO DATA / dedup companion guidance.
+        lines.append(
+            "동일 tool_id 를 같은 params 로 두 번째 호출하지 마세요. 도구 결과가"
+            " NO DATA / empty / kind='error' 면 데이터 없음을 의미하며, 재호출해도"
+            " 결과는 동일합니다. 다른 params 또는 다른 도구로 시도하거나, 시민에게"
+            " '해당 조건의 데이터를 찾지 못했습니다' 라고 즉시 답변하세요."
         )
         lines.append("</available_adapters>")
         return "\n".join(lines)
@@ -2384,6 +2415,68 @@ async def run(  # noqa: C901
         # clears so the agentic loop returns to free tool_choice.
         force_resolve_location_next_turn = False
 
+        # Audit G4 / F-beta-03 dedup guard.
+        #
+        # Track (tool_id, params_hash) → outcome across the agentic loop. When
+        # the LLM re-issues the same call after a prior NO_DATA / empty / error
+        # outcome we short-circuit with a synthetic tool_result that explains
+        # the redundancy in the LLM's own context. β7 evidence (2026-05-05)
+        # showed `mohw_welfare_eligibility_search` called 5x with identical
+        # params after each returned NO_DATA, hanging the turn at
+        # `Ruminating…`. This is a KOSMOS-specific addition (CC's query engine
+        # has no content-hash dedup); it sits at the dispatch layer below the
+        # IPC envelope so wire-level CC parity is preserved.
+        # See research/g4-backend.md § 4.
+        _seen_calls: dict[str, str] = {}  # hash → outcome ('no_data' | 'error' | 'ok')
+
+        def _hash_call(tool_id: str, params: dict[str, object]) -> str:
+            import hashlib as _hashlib  # noqa: PLC0415
+            import json as _json_dedup  # noqa: PLC0415
+
+            try:
+                canonical = _json_dedup.dumps(params, sort_keys=True, ensure_ascii=False)
+            except (TypeError, ValueError):
+                canonical = repr(params)
+            return _hashlib.sha256(f"{tool_id}|{canonical}".encode()).hexdigest()[:16]
+
+        def _classify_envelope_outcome(env: dict[str, object]) -> str:
+            """Classify a tool result envelope outcome for the dedup guard.
+
+            Returns one of 'no_data' | 'error' | 'ok'.
+            """
+            kind = env.get("kind")
+            if kind == "error":
+                return "error"
+            if kind == "collection":
+                items = env.get("items")
+                if isinstance(items, list) and len(items) == 0:
+                    return "no_data"
+                total = env.get("total_count")
+                if isinstance(total, int) and total == 0:
+                    return "no_data"
+                return "ok"
+            if kind == "search":
+                cands = env.get("candidates")
+                if isinstance(cands, list) and len(cands) == 0:
+                    return "no_data"
+                return "ok"
+            if kind == "record":
+                inner = env.get("item") or env.get("result") or {}
+                if isinstance(inner, dict):
+                    if inner.get("found") is False:
+                        return "no_data"
+                    matched = inner.get("matched")
+                    if isinstance(matched, list) and len(matched) == 0:
+                        return "no_data"
+                    return "ok"
+                return "ok"
+            if kind == "timeseries":
+                points = env.get("points")
+                if isinstance(points, list) and len(points) == 0:
+                    return "no_data"
+                return "ok"
+            return "ok"
+
         for _turn in range(_AGENTIC_LOOP_MAX_TURNS):
             message_id = str(uuid.uuid4())
             assistant_text_chunks: list[str] = []
@@ -2709,6 +2802,9 @@ async def run(  # noqa: C901
             # ---- T027/T029 — emit tool_call frames + register Futures -----
             loop = asyncio.get_event_loop()
             issued_calls: list[tuple[str, str]] = []  # (call_id, name)
+            # Audit G4 / F-beta-03 — call_id → dedup_key mirror so the result
+            # loop can update _seen_calls with the actual outcome.
+            issued_dedup_keys: dict[str, str] = {}
             assistant_tool_calls: list[LLMToolCall] = []
             tool_call_indices = sorted(tool_call_buf.keys())
             if len(tool_call_indices) > 1:
@@ -2868,6 +2964,105 @@ async def run(  # noqa: C901
                     force_resolve_location_next_turn = True
                     continue
 
+                # Audit G4 / F-beta-03 — dedup guard. If the same
+                # (tool_id, params) was already attempted this chat turn AND
+                # the prior outcome was NO_DATA / error, short-circuit with a
+                # synthetic tool_result + explicit instruction. K-EXAONE on
+                # FriendliAI repeated `mohw_welfare_eligibility_search` 5x
+                # with identical params in β7 (2026-05-05); each produced
+                # NO_DATA but the model did not recognise the redundancy.
+                _dedup_inner_id = args_obj.get("tool_id") if fname == "lookup" else fname
+                _dedup_key = _hash_call(str(_dedup_inner_id), args_obj)
+                _prior_outcome = _seen_calls.get(_dedup_key)
+                if _prior_outcome in ("no_data", "error"):
+                    from kosmos.ipc.frame_schema import (  # noqa: PLC0415
+                        ToolResultEnvelope,
+                        ToolResultFrame,
+                    )
+
+                    repeat_msg_ko = (
+                        "이 (tool_id, params) 조합은 이번 turn 에서 이미 호출되었고 "
+                        f"결과가 '{_prior_outcome}' 였습니다. 동일 호출은 동일 결과를 "
+                        "반환하므로 재시도하지 마세요. 다른 params 또는 다른 도구로 "
+                        "전환하거나, 시민에게 데이터 없음을 안내하세요."
+                    )
+                    await write_frame(
+                        ToolCallFrame(
+                            session_id=frame.session_id,
+                            correlation_id=frame.correlation_id,
+                            role="backend",
+                            ts=_utcnow(),
+                            kind="tool_call",
+                            call_id=call_id,
+                            name=fname,  # type: ignore[arg-type]
+                            arguments=args_obj,
+                        )
+                    )
+                    dedup_envelope = ToolResultEnvelope(
+                        kind=cast("Any", fname),
+                        result={
+                            "kind": "error",
+                            "reason": "repeat_call_blocked",
+                            "message": repeat_msg_ko,
+                            "retryable": False,
+                        },
+                    )
+                    await write_frame(
+                        ToolResultFrame(
+                            session_id=frame.session_id,
+                            correlation_id=frame.correlation_id,
+                            role="backend",
+                            ts=_utcnow(),
+                            kind="tool_result",
+                            call_id=call_id,
+                            envelope=dedup_envelope,
+                        )
+                    )
+                    llm_messages.append(
+                        LLMChatMessage(
+                            role="assistant",
+                            content="",
+                            tool_calls=[
+                                LLMToolCall(
+                                    id=call_id,
+                                    type="function",
+                                    function=LLMFunctionCall(
+                                        name=fname,
+                                        arguments=_json.dumps(args_obj),
+                                    ),
+                                )
+                            ],
+                        )
+                    )
+                    llm_messages.append(
+                        LLMChatMessage(
+                            role="tool",
+                            content=_json.dumps(
+                                {
+                                    "kind": "error",
+                                    "reason": "repeat_call_blocked",
+                                    "message": repeat_msg_ko,
+                                },
+                                ensure_ascii=False,
+                            ),
+                            name=fname,
+                            tool_call_id=call_id,
+                        )
+                    )
+                    logger.warning(
+                        "_handle_chat_request: dedup blocked %s call_id=%s "
+                        "(prior outcome=%s, key=%s)",
+                        fname,
+                        call_id[:12],
+                        _prior_outcome,
+                        _dedup_key,
+                    )
+                    continue
+                # Reserve the dedup slot now so other calls in the same turn
+                # can detect duplicates within the SAME tool_call_buf.
+                _seen_calls.setdefault(_dedup_key, "ok")
+                issued_dedup_keys[call_id] = _dedup_key
+
                 _pending_calls[call_id] = loop.create_future()
                 issued_calls.append((call_id, fname))
                 assistant_tool_calls.append(
@@ -3003,15 +3198,29 @@ async def run(  # noqa: C901
             for (cid, fname), result in zip(issued_calls, results, strict=False):
                 if isinstance(result, BaseException):
                     payload = _json.dumps({"error": "tool_dispatch_failed", "detail": str(result)})
+                    # Audit G4 / F-beta-03 — record outcome for dedup guard.
+                    _dk = issued_dedup_keys.get(cid)
+                    if _dk:
+                        _seen_calls[_dk] = "error"
                 else:
                     # ToolResultFrame.envelope is a Pydantic model.
                     envelope = getattr(result, "envelope", None)
                     if envelope is not None and hasattr(envelope, "model_dump"):
+                        env_dump = envelope.model_dump()
                         payload = _json.dumps(
-                            envelope.model_dump(),
+                            env_dump,
                             ensure_ascii=False,
                             default=str,
                         )
+                        # Audit G4 / F-beta-03 — classify outcome for the dedup
+                        # guard. NO_DATA / empty / kind=error all map to
+                        # 'no_data' or 'error' so the next identical
+                        # (tool_id, params) call short-circuits.
+                        _dk = issued_dedup_keys.get(cid)
+                        if _dk:
+                            _outcome = _classify_envelope_outcome(env_dump)
+                            if _outcome != "ok":
+                                _seen_calls[_dk] = _outcome
                     else:
                         payload = _json.dumps({"result": str(result)}, ensure_ascii=False)
                 llm_messages.append(

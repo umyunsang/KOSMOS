@@ -34,6 +34,7 @@ import type { IPCFrame } from '../../ipc/frames.generated.js'
 import type { Tool } from '../../Tool.js'
 import { createAssistantMessage } from '../../utils/messages.js'
 import { getOrCreateKosmosBridge } from '../../ipc/bridgeSingleton.js'
+import { resolvePermissionDecision } from '../../store/pendingPermissionSlot.js'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -167,6 +168,21 @@ export function pushIpcPermissionRequest(frame: PermissionRequestFrame): void {
       _pendingPermissionDecisions.get(frame.request_id) ?? 'allow_once'
     _pendingPermissionDecisions.delete(frame.request_id)
     _sendPermissionResponse(frame, decision)
+    // Wave-2 G3 fix (F-gamma-01) — resolve the pendingPermissionSlot Promise
+    // that `tui/src/query/deps.ts:590` is awaiting. Without this call the IPC
+    // frame loop in `queryModelWithStreaming` blocks for the full 300-second
+    // permission TTL, so the buffered tool_result frame is never consumed
+    // and the citizen sees a frozen spinner instead of the mock fixture body
+    // + the 🧪 모의 disclaimer banner. The bridge pipeline (the
+    // `_sendPermissionResponse` above) was already sending the wire response
+    // correctly; the slot pipeline was just orphaned because no production
+    // code ever called `resolvePermissionDecision`. Both `allow_once` and
+    // `allow_session` collapse to `'granted'` for the slot's binary semantics
+    // (deps.ts only inspects the 3-value `'granted' | 'denied' | 'timeout'`
+    // projection); the canonical 5-value wire decision was already sent above
+    // and is what the backend's `_check_permission_gate` uses to populate the
+    // consent ledger.
+    resolvePermissionDecision(frame.request_id, 'granted')
     setter!((prev) => prev.filter((item) => item.toolUseID !== toolUseID))
   }
 
@@ -178,6 +194,8 @@ export function pushIpcPermissionRequest(frame: PermissionRequestFrame): void {
   function onReject(): void {
     _pendingPermissionDecisions.delete(frame.request_id)
     _sendPermissionResponse(frame, 'deny')
+    // Wave-2 G3 fix (F-gamma-01) — same rationale as onAllow.
+    resolvePermissionDecision(frame.request_id, 'denied')
     setter!((prev) => prev.filter((item) => item.toolUseID !== toolUseID))
   }
 
@@ -208,6 +226,9 @@ export function pushIpcPermissionRequest(frame: PermissionRequestFrame): void {
       // Citizen aborted (Ctrl-C): treat as deny for fail-closed.
       _pendingPermissionDecisions.delete(frame.request_id)
       _sendPermissionResponse(frame, 'deny')
+      // Wave-2 G3 fix (F-gamma-01) — same as onReject. Without this the IPC
+      // frame loop holds the spinner for 300 s after Ctrl-C.
+      resolvePermissionDecision(frame.request_id, 'denied')
     },
     onAllow,
     onReject,
