@@ -1239,9 +1239,7 @@ async def run(  # noqa: C901
             if len(hint) > 90:
                 hint = hint[:87] + "..."
             prim_label = f" [primitive={c.primitive}]" if c.primitive else ""
-            lines.append(
-                f"- {c.tool_id} [{c.score:.2f}]{prim_label} — {hint or '(설명 없음)'}"
-            )
+            lines.append(f"- {c.tool_id} [{c.score:.2f}]{prim_label} — {hint or '(설명 없음)'}")
             # Render the adapter's llm_description (usage prose, ORDERING RULE,
             # prerequisites, worked examples) so the LLM sees the complete
             # "먼저 resolve_location 호출" ordering rule.
@@ -1530,8 +1528,7 @@ async def run(  # noqa: C901
             "submit": "정부 API에 데이터를 제출합니다. 이 작업은 되돌릴 수 없습니다.",
             "subscribe": "공공 데이터 스트림을 구독합니다.",
             "lookup": (
-                "민감 정보 도구를 호출합니다. "
-                "어댑터 정책상 시민 동의가 필요한 데이터입니다."
+                "민감 정보 도구를 호출합니다. 어댑터 정책상 시민 동의가 필요한 데이터입니다."
             ),
         }
         _PRIM_EN: dict[str, str] = {  # noqa: N806
@@ -2510,7 +2507,7 @@ async def run(  # noqa: C901
             import hashlib as _hashlib  # noqa: PLC0415
             import json as _json_dedup  # noqa: PLC0415
 
-            _PAGINATION_KEYS: frozenset[str] = frozenset(
+            _pagination_keys: frozenset[str] = frozenset(
                 {"page_no", "num_of_rows", "order_by", "pageNo", "numOfRows", "pageSize"}
             )
 
@@ -2521,9 +2518,7 @@ async def run(  # noqa: C901
                     return int(v)  # 1.0 → 1
                 return v
 
-            normalized = {
-                k: _norm_val(v) for k, v in params.items() if k not in _PAGINATION_KEYS
-            }
+            normalized = {k: _norm_val(v) for k, v in params.items() if k not in _pagination_keys}
             try:
                 canonical = _json_dedup.dumps(
                     normalized, sort_keys=True, separators=(",", ":"), ensure_ascii=False
@@ -2538,7 +2533,7 @@ async def run(  # noqa: C901
             )
             return _hashlib.sha256(f"{tool_id}|{canonical}".encode()).hexdigest()[:16]
 
-        def _classify_envelope_outcome(env: dict[str, object]) -> str:
+        def _classify_envelope_outcome(env: dict[str, object]) -> str:  # noqa: C901
             """Classify a tool result envelope outcome for the dedup guard.
 
             Returns one of 'no_data' | 'error' | 'ok'.
@@ -3099,14 +3094,16 @@ async def run(  # noqa: C901
                             arguments=args_obj,
                         )
                     )
-                    dedup_envelope = ToolResultEnvelope(
-                        kind=cast("Any", fname),
-                        result={
-                            "kind": "error",
-                            "reason": "repeat_call_blocked",
-                            "message": repeat_msg_ko,
-                            "retryable": False,
-                        },
+                    dedup_envelope = ToolResultEnvelope.model_validate(
+                        {
+                            "kind": cast("Any", fname),
+                            "result": {
+                                "kind": "error",
+                                "reason": "repeat_call_blocked",
+                                "message": repeat_msg_ko,
+                                "retryable": False,
+                            },
+                        }
                     )
                     await write_frame(
                         ToolResultFrame(
@@ -3548,7 +3545,7 @@ async def run(  # noqa: C901
                             ),
                             timeout=90.0,
                         )
-                    except asyncio.TimeoutError:
+                    except TimeoutError:
                         timeout_err = ErrorFrame(
                             session_id=frame.session_id,
                             correlation_id=frame.correlation_id or str(uuid.uuid4()),

@@ -30,9 +30,7 @@ import pytest
 from kosmos.primitives import GATED_PRIMITIVES
 
 
-def _make_registry_mock(
-    *, tool_id: str, citizen_facing_gate: str | None
-) -> MagicMock:
+def _make_registry_mock(*, tool_id: str, citizen_facing_gate: str | None) -> MagicMock:
     """Build a fake ToolRegistry whose ``.lookup(<tool_id>)`` returns a
     fake tool with the given ``policy.citizen_facing_gate``.
 
@@ -41,9 +39,7 @@ def _make_registry_mock(
     """
 
     fake_policy = (
-        None
-        if citizen_facing_gate is None
-        else MagicMock(citizen_facing_gate=citizen_facing_gate)
+        None if citizen_facing_gate is None else MagicMock(citizen_facing_gate=citizen_facing_gate)
     )
     fake_tool = MagicMock(policy=fake_policy)
     registry = MagicMock()
@@ -51,9 +47,7 @@ def _make_registry_mock(
     return registry
 
 
-def _classify(
-    *, fname: str, args_obj: dict[str, object], registry: MagicMock | None
-) -> str:
+def _classify(*, fname: str, args_obj: dict[str, object], registry: MagicMock | None) -> str:
     """Replica of the gate's first decision branch (post-fix), returning
     one of ``"auto_allow"`` / ``"needs_modal"``.
 
@@ -79,9 +73,7 @@ def _classify(
 
 def test_lookup_readonly_adapter_auto_allows() -> None:
     """KMA forecast (read-only adapter) → auto_allow, no modal."""
-    registry = _make_registry_mock(
-        tool_id="kma_forecast_fetch", citizen_facing_gate="read-only"
-    )
+    registry = _make_registry_mock(tool_id="kma_forecast_fetch", citizen_facing_gate="read-only")
     decision = _classify(
         fname="lookup",
         args_obj={"tool_id": "kma_forecast_fetch", "params": {"nx": 60, "ny": 127}},
@@ -97,9 +89,7 @@ def test_lookup_readonly_adapter_auto_allows() -> None:
 def test_lookup_non_readonly_adapter_requires_modal(gate_label: str) -> None:
     """NMC (login), KEC submit (sign/submit), action-class adapters all
     enter the modal flow when reached via the lookup primitive."""
-    registry = _make_registry_mock(
-        tool_id="nmc_emergency_search", citizen_facing_gate=gate_label
-    )
+    registry = _make_registry_mock(tool_id="nmc_emergency_search", citizen_facing_gate=gate_label)
     decision = _classify(
         fname="lookup",
         args_obj={
@@ -138,9 +128,7 @@ def test_lookup_with_no_registry_fails_closed() -> None:
 def test_lookup_with_none_policy_fails_closed() -> None:
     """Pre-Spec-2295 adapter without ``policy`` object → derived gate
     defaults to ``"login"`` (Spec δ #2295 Path B). Modal required."""
-    registry = _make_registry_mock(
-        tool_id="legacy_unmigrated", citizen_facing_gate=None
-    )
+    registry = _make_registry_mock(tool_id="legacy_unmigrated", citizen_facing_gate=None)
     decision = _classify(
         fname="lookup",
         args_obj={"tool_id": "legacy_unmigrated", "params": {}},

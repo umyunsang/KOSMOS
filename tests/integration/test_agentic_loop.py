@@ -778,8 +778,6 @@ async def test_multi_tool_turn_is_coerced_to_one_visible_dispatch(
                     required_params=["query"],
                     search_hint=f"{district} 구급출동",
                     why_matched=f"query matches {district} fire/emergency dispatch context",
-                    requires_auth=False,
-                    is_personal_data=False,
                 )
             ],
             total_registry_size=5,
@@ -788,6 +786,30 @@ async def test_multi_tool_turn_is_coerced_to_one_visible_dispatch(
         )
 
     monkeypatch.setattr(lookup_mod, "lookup", _multi_lookup)
+    import kosmos.tools.registry as registry_mod
+
+    class _ReadOnlyPolicy:
+        citizen_facing_gate = "read-only"
+        real_classification_url = None
+
+    class _Schema:
+        @staticmethod
+        def model_json_schema() -> dict[str, object]:
+            return {}
+
+    class _ReadOnlyAdapter:
+        policy = _ReadOnlyPolicy()
+        search_hint = "강남 구급출동"
+        llm_description = "Read-only emergency dispatch fixture."
+        primitive = "lookup"
+        input_schema = _Schema()
+        output_schema = _Schema()
+
+    monkeypatch.setattr(
+        registry_mod.ToolRegistry,
+        "lookup",
+        lambda self, tool_id: _ReadOnlyAdapter(),
+    )
 
     buf, _ = await _run_with_frame(
         frame,

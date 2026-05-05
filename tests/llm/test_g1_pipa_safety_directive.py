@@ -77,9 +77,9 @@ def test_pipa_safety_routes_to_verify_modal(system_prompt_text: str) -> None:
     close_idx = system_prompt_text.index("</pipa_safety>")
     body = system_prompt_text[open_idx:close_idx]
     assert "verify" in body
-    assert (
-        "modal" in body or "secure-input" in body or "secure modal" in body
-    ), "Directive must call out the secure modal path explicitly"
+    assert "modal" in body or "secure-input" in body or "secure modal" in body, (
+        "Directive must call out the secure modal path explicitly"
+    )
 
 
 def test_pipa_safety_forbids_chat_input_phrasing(system_prompt_text: str) -> None:
@@ -92,9 +92,7 @@ def test_pipa_safety_forbids_chat_input_phrasing(system_prompt_text: str) -> Non
     # γ9 audit reproduction string:
     # "주민등록번호 앞 6자리 알려주세요"
     assert "주민등록번호" in body
-    assert "채팅" in body, (
-        "Directive must name 채팅(chat) as the forbidden channel"
-    )
+    assert "채팅" in body, "Directive must name 채팅(chat) as the forbidden channel"
 
 
 def test_verify_primitive_description_warns_about_chat_channel(

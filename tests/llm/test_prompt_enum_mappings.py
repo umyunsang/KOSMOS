@@ -50,12 +50,9 @@ def test_pty_full_enum_mapping_present(system_prompt_text: str) -> None:
     }
     for code, label in expectations.items():
         assert code in text, (
-            f"system_v1.md PTY mapping missing code '{code}' "
-            "(see KMA getUltraSrtNcst spec)"
+            f"system_v1.md PTY mapping missing code '{code}' (see KMA getUltraSrtNcst spec)"
         )
-        assert label in text, (
-            f"system_v1.md PTY mapping missing Korean label '{label}' for {code}"
-        )
+        assert label in text, f"system_v1.md PTY mapping missing Korean label '{label}' for {code}"
 
 
 def test_sky_code_mapping_present(system_prompt_text: str) -> None:

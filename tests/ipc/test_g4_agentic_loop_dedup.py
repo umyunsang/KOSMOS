@@ -27,8 +27,7 @@ def test_g4_dedup_module_code_is_present() -> None:
     stdio_src = pathlib.Path(__file__).resolve().parents[2] / "src" / "kosmos" / "ipc" / "stdio.py"
     text = stdio_src.read_text(encoding="utf-8")
     assert "_seen_calls" in text, (
-        "stdio.py agentic loop must declare _seen_calls dedup tracker "
-        "(Audit G4 / F-beta-03)."
+        "stdio.py agentic loop must declare _seen_calls dedup tracker (Audit G4 / F-beta-03)."
     )
     assert "repeat_call_blocked" in text, (
         "stdio.py must emit repeat_call_blocked synthetic envelope on dedup hit."
@@ -40,6 +39,7 @@ def test_g4_dedup_module_code_is_present() -> None:
 
 def test_g4_classify_envelope_outcome_collection_empty() -> None:
     """Empty collection envelopes classify as 'no_data'."""
+
     # Classifier is defined inside _handle_chat_request closure. Re-implement
     # the same classification rules here as a contract guard. Any future
     # refactor that breaks this contract will fail this test.
@@ -79,7 +79,7 @@ def _make_hash_call():
     import hashlib
     import json as _json
 
-    _PAGINATION_KEYS: frozenset[str] = frozenset(
+    pagination_keys: frozenset[str] = frozenset(
         {"page_no", "num_of_rows", "order_by", "pageNo", "numOfRows", "pageSize"}
     )
 
@@ -91,9 +91,14 @@ def _make_hash_call():
         return v
 
     def _hash_call(tool_id: str, params: dict) -> str:
-        normalized = {k: _norm_val(v) for k, v in params.items() if k not in _PAGINATION_KEYS}
+        normalized = {k: _norm_val(v) for k, v in params.items() if k not in pagination_keys}
         try:
-            canonical = _json.dumps(normalized, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+            canonical = _json.dumps(
+                normalized,
+                sort_keys=True,
+                separators=(",", ":"),
+                ensure_ascii=False,
+            )
         except (TypeError, ValueError):
             canonical = repr(normalized)
         return hashlib.sha256(f"{tool_id}|{canonical}".encode()).hexdigest()[:16]
@@ -121,8 +126,12 @@ def test_g11a_hash_normalizes_string_whitespace() -> None:
     base = _hash_call("mohw_welfare_eligibility_search", {"search_wrd": "소상공인 지원"})
     double_space = _hash_call("mohw_welfare_eligibility_search", {"search_wrd": "소상공인  지원"})
     leading_space = _hash_call("mohw_welfare_eligibility_search", {"search_wrd": " 소상공인 지원"})
-    assert base == double_space, "Double-space in string value MUST hash same (whitespace normalization)"
-    assert base == leading_space, "Leading space in string value MUST hash same (whitespace normalization)"
+    assert base == double_space, (
+        "Double-space in string value MUST hash same (whitespace normalization)"
+    )
+    assert base == leading_space, (
+        "Leading space in string value MUST hash same (whitespace normalization)"
+    )
 
 
 def test_g11a_hash_normalizes_float_integers() -> None:
@@ -159,8 +168,8 @@ def test_g11a_hash_source_contains_normalization() -> None:
     """Wave-4 G11a — source-level guard: stdio.py _hash_call must carry normalization code."""
     stdio_src = pathlib.Path(__file__).resolve().parents[2] / "src" / "kosmos" / "ipc" / "stdio.py"
     text = stdio_src.read_text(encoding="utf-8")
-    assert "_PAGINATION_KEYS" in text, (
-        "stdio.py _hash_call must define _PAGINATION_KEYS frozenset (Wave-4 G11a normalization)."
+    assert "_pagination_keys" in text, (
+        "stdio.py _hash_call must define _pagination_keys frozenset (Wave-4 G11a normalization)."
     )
     assert "_norm_val" in text, (
         "stdio.py _hash_call must define _norm_val helper (Wave-4 G11a normalization)."
@@ -172,9 +181,7 @@ def test_g11a_hash_source_contains_normalization() -> None:
 
 def test_g4_system_prompt_dedup_directive() -> None:
     """The system prompt must include the NO DATA / 동일 호출 재시도 금지 directive."""
-    prompt_path = (
-        pathlib.Path(__file__).resolve().parents[2] / "prompts" / "system_v1.md"
-    )
+    prompt_path = pathlib.Path(__file__).resolve().parents[2] / "prompts" / "system_v1.md"
     text = prompt_path.read_text(encoding="utf-8")
     assert "NO DATA" in text or "동일 호출 재시도 금지" in text or "repeat_call_blocked" in text, (
         "system_v1.md must carry the dedup directive (Audit G4 / F-beta-03)."
