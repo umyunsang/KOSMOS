@@ -392,6 +392,28 @@ async function* queryModelWithStreaming(params: {
         if (accumulatedThinking.length > 0) {
           blocks.push({ type: 'thinking', thinking: accumulatedThinking })
         }
+        // Epic #2766 follow-up — render-order fix v2 (root-cause).
+        //
+        // PR #2767 buffered content_delta in the BACKEND so tool-call turns
+        // emit no prose; only the no-tool turn flushes its merged prose. The
+        // backend behaviour is correct (verified by [XTRACE] capture
+        // 2026-05-04 — turns 0-3 clear ~50-char preambles, turn 4 emits the
+        // 1041-char final answer). The bug surfaces here, in the assembly:
+        // KOSMOS' multi-turn agentic loop accumulates ALL tool_use blocks
+        // from turns 0..N-1 and the SOLE text block from turn N into one
+        // AssistantMessage (backend never sends `done=true` between turns,
+        // and deps.ts' generator only yields a final message on `done`).
+        // The previous order [thinking, text, tool_use[]] put turn N's
+        // final answer ABOVE turns 0..N-1's tool calls — citizen sees the
+        // hallucinated-looking summary first, then the calls that actually
+        // produced the data. Correct semantic order is
+        // [thinking → tool_use[] → text]: the tool calls happened first
+        // (chronologically and causally), the text is the synthesis. CC's
+        // restored-src order coincidentally matches because CC turns each
+        // contain at most one tool_use OR text block, never both — there
+        // the relative order between text and tool_use never matters in
+        // practice. KOSMOS' multi-turn-into-one-message assembly makes the
+        // ordering load-bearing.
         for (const tu of pendingContentBlocks) {
           blocks.push(tu)
         }
@@ -641,10 +663,13 @@ async function* queryModelWithStreaming(params: {
   // promotion as the done=true path so any tool_use blocks captured before
   // the abrupt close still appear in the persisted transcript.
   const trimmedTailText = accumulated.trimStart()
+  // Epic #2766 follow-up — render-order fix v2 (root-cause). Mirror the
+  // done=true assembly above: tool_use blocks first (they happened first),
+  // then any trailing text. See comment block above for reasoning.
   const finalTailContent =
     pendingContentBlocks.length > 0
       ? trimmedTailText.length > 0
-        ? ([{ type: 'text' as const, text: trimmedTailText }, ...pendingContentBlocks] as Parameters<
+        ? ([...pendingContentBlocks, { type: 'text' as const, text: trimmedTailText }] as Parameters<
             typeof createAssistantMessage
           >[0]['content'])
         : (pendingContentBlocks as unknown as Parameters<typeof createAssistantMessage>[0]['content'])

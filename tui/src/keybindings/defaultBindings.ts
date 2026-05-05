@@ -78,6 +78,17 @@ export const DEFAULT_BINDINGS: ReadonlyArray<KeybindingEntry> = Object.freeze([
   entry('permission-mode-cycle', MODE_CYCLE_KEY, 'Global',
     '권한 모드를 순환합니다 (default → acceptEdits → bypassPermissions → plan).',
     { remappable: true, reserved: false }),
+  // Epic #2766 follow-up — CC-namespaced action promoted to Tier 1 so the
+  // chord registry resolves Ctrl+O. Without this entry, KeybindingProvider
+  // ships only the seven Korean-named bindings and `getDisplayText('app:
+  // toggleTranscript', 'Global')` returns undefined — every CtrlOToExpand
+  // hint shows "(undefined to expand)" and every Ctrl+O press dies in the
+  // resolver. CC-byte-identical chord (ctrl+o); CC-byte-identical action
+  // id (`.references/claude-code-sourcemap/restored-src/src/keybindings/
+  // defaultBindings.ts:44`).
+  entry('app:toggleTranscript', 'ctrl+o', 'Global',
+    '대화 기록을 전체 전사 화면으로 전환합니다 (다시 누르면 입력창으로 복귀).',
+    { remappable: true, reserved: false }),
 ])
 
 // ---------------------------------------------------------------------------
