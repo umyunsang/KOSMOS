@@ -81,7 +81,26 @@ export const KEYBINDING_CONTEXT_DESCRIPTIONS: Record<
 // Tier 1 action enum — exactly seven actions
 // -----------------------------------------------------------------------------
 
+// Tier 1 = the actions whose chords are loaded into the runtime
+// `KeybindingProvider`. Spec 288 originally limited Tier 1 to seven
+// Korean-named actions; KOSMOS code paths (CtrlOToExpand, REPL, Messages, …)
+// however call `useKeybinding(...)` and `getDisplayText(...)` with the
+// CC-namespaced action ids that are byte-identical with the restored CC
+// reference. Without those ids in Tier 1, the chord-aware path fails for
+// every Ctrl+O / Ctrl+T / etc. press — see Epic #2766 follow-up
+// (root-cause capture under `specs/integration-verification/`).
+//
+// Adding the CC ids here is the minimum viable fix: it does NOT replace
+// the Korean action names (those remain reserved + first-class), it
+// merely lets the existing CC-port surface area resolve through the same
+// chord registry without needing a per-callsite useInput fallback.
+//
+// Reference: `.references/claude-code-sourcemap/restored-src/src/keybindings/schema.ts`
+// (full action namespace) — only the actively wired-up actions are added
+// here; the remainder will follow when their callsites are ported (Epic
+// pending: full CC keybinding parity).
 export const TIER_ONE_ACTIONS = [
+  // KOSMOS-coined Tier 1 actions
   'agent-interrupt',
   'session-exit',
   'draft-cancel',
@@ -89,6 +108,9 @@ export const TIER_ONE_ACTIONS = [
   'history-prev',
   'history-next',
   'permission-mode-cycle',
+  // CC-namespaced actions actively wired by REPL.tsx / CtrlOToExpand /
+  // GlobalKeybindingHandlers and required for citizen-facing UX.
+  'app:toggleTranscript',
 ] as const
 export type TierOneAction = (typeof TIER_ONE_ACTIONS)[number]
 

@@ -253,28 +253,32 @@ async def _reader_loop(
 # resolve_location to have run first (Epic #2766 chain prerequisite gate).
 # The literal field set is intentionally broader than what any single
 # adapter accepts so the gate catches every variant the LLM might pick.
-_COORD_INPUT_FIELDS: frozenset[str] = frozenset({
-    "xPos",
-    "yPos",
-    "lat",
-    "lon",
-    "latitude",
-    "longitude",
-    "nx",
-    "ny",
-    "x",
-    "y",
-})
-_ADMCD_INPUT_FIELDS: frozenset[str] = frozenset({
-    "adm_cd",
-    "siGunGuCd",
-    "sgg_cd",
-    "h_code",
-    "b_code",
-})
+_COORD_INPUT_FIELDS: frozenset[str] = frozenset(
+    {
+        "xPos",
+        "yPos",
+        "lat",
+        "lon",
+        "latitude",
+        "longitude",
+        "nx",
+        "ny",
+        "x",
+        "y",
+    }
+)
+_ADMCD_INPUT_FIELDS: frozenset[str] = frozenset(
+    {
+        "adm_cd",
+        "siGunGuCd",
+        "sgg_cd",
+        "h_code",
+        "b_code",
+    }
+)
 
 
-def _check_chain_prerequisite(
+def _check_chain_prerequisite(  # noqa: C901
     fname: str,
     args_obj: dict[str, object],
     llm_messages: list[Any],
@@ -314,7 +318,8 @@ def _check_chain_prerequisite(
         return None
     if not isinstance(tool_id, str) or not tool_id:
         return None
-    params = args_obj.get("params") if isinstance(args_obj.get("params"), dict) else {}
+    params_obj = args_obj.get("params")
+    params: dict[str, object] = params_obj if isinstance(params_obj, dict) else {}
 
     # Two ways to recognise a coord-input adapter call:
     # 1. The supplied params already carry coordinate/admcd fields — the
@@ -355,9 +360,7 @@ def _check_chain_prerequisite(
     # was canonicalised through the registered resolver.
     for m in llm_messages:
         # LLMChatMessage instance OR dict — handle both.
-        role = getattr(m, "role", None) or (
-            m.get("role") if isinstance(m, dict) else None
-        )
+        role = getattr(m, "role", None) or (m.get("role") if isinstance(m, dict) else None)
         if role != "assistant":
             continue
         tool_calls = getattr(m, "tool_calls", None) or (
@@ -365,19 +368,12 @@ def _check_chain_prerequisite(
         )
         if tool_calls:
             for tc in tool_calls:
-                call_fn = (
-                    getattr(getattr(tc, "function", None), "name", None)
-                    or (
-                        tc.get("function", {}).get("name")
-                        if isinstance(tc, dict)
-                        else None
-                    )
+                call_fn = getattr(getattr(tc, "function", None), "name", None) or (
+                    tc.get("function", {}).get("name") if isinstance(tc, dict) else None
                 )
                 if call_fn == "resolve_location":
                     return None
-        content = getattr(m, "content", None) or (
-            m.get("content") if isinstance(m, dict) else None
-        )
+        content = getattr(m, "content", None) or (m.get("content") if isinstance(m, dict) else None)
         if isinstance(content, str) and "resolve_location" in content:
             # Textual <tool_call> marker fallback for K-EXAONE inline form.
             return None
@@ -419,22 +415,67 @@ def _check_chain_prerequisite(
 # 4.7°C drift / 61%p humidity drift between LLM-claimed values and the raw
 # KMA observation).  This list is the policy hint — adapter_id is decided
 # by BM25 from the available_adapters suffix.
-_FOLLOWUP_REQUIRED_KEYWORDS_KO: frozenset[str] = frozenset({
-    "날씨", "기온", "온도", "습도", "강수", "비", "눈", "바람", "풍속",
-    "예보", "특보", "폭염", "한파", "황사", "미세먼지",
-    "병원", "응급실", "응급의료", "의료기관", "약국",
-    "사고", "교통사고", "위험", "스쿨존", "어린이보호구역",
-    "구급", "119", "소방서", "재해",
-    "복지", "급여", "보조금", "지원금",
-})
-_FOLLOWUP_REQUIRED_KEYWORDS_EN: frozenset[str] = frozenset({
-    "weather", "temperature", "humidity", "rainfall", "wind",
-    "forecast", "warning",
-    "hospital", "er", "emergency", "pharmacy",
-    "accident", "traffic", "hazard",
-    "ambulance", "fire", "disaster",
-    "welfare", "benefit", "subsidy",
-})
+_FOLLOWUP_REQUIRED_KEYWORDS_KO: frozenset[str] = frozenset(
+    {
+        "날씨",
+        "기온",
+        "온도",
+        "습도",
+        "강수",
+        "비",
+        "눈",
+        "바람",
+        "풍속",
+        "예보",
+        "특보",
+        "폭염",
+        "한파",
+        "황사",
+        "미세먼지",
+        "병원",
+        "응급실",
+        "응급의료",
+        "의료기관",
+        "약국",
+        "사고",
+        "교통사고",
+        "위험",
+        "스쿨존",
+        "어린이보호구역",
+        "구급",
+        "119",
+        "소방서",
+        "재해",
+        "복지",
+        "급여",
+        "보조금",
+        "지원금",
+    }
+)
+_FOLLOWUP_REQUIRED_KEYWORDS_EN: frozenset[str] = frozenset(
+    {
+        "weather",
+        "temperature",
+        "humidity",
+        "rainfall",
+        "wind",
+        "forecast",
+        "warning",
+        "hospital",
+        "er",
+        "emergency",
+        "pharmacy",
+        "accident",
+        "traffic",
+        "hazard",
+        "ambulance",
+        "fire",
+        "disaster",
+        "welfare",
+        "benefit",
+        "subsidy",
+    }
+)
 
 
 def _query_implies_followup_lookup(user_query: str) -> bool:
@@ -456,13 +497,10 @@ def _query_implies_followup_lookup(user_query: str) -> bool:
     for kw in _FOLLOWUP_REQUIRED_KEYWORDS_KO:
         if kw in user_query:  # Korean — case is irrelevant
             return True
-    for kw in _FOLLOWUP_REQUIRED_KEYWORDS_EN:
-        if kw in q:
-            return True
-    return False
+    return any(kw in q for kw in _FOLLOWUP_REQUIRED_KEYWORDS_EN)
 
 
-def _check_resolve_terminated_without_followup(
+def _check_resolve_terminated_without_followup(  # noqa: C901
     llm_messages: list[Any],
     user_query: str,
 ) -> str | None:
@@ -495,14 +533,10 @@ def _check_resolve_terminated_without_followup(
     saw_resolve_result = False
     saw_followup_lookup = False
     for m in llm_messages:
-        role = getattr(m, "role", None) or (
-            m.get("role") if isinstance(m, dict) else None
-        )
+        role = getattr(m, "role", None) or (m.get("role") if isinstance(m, dict) else None)
         # Detect resolve_location tool result message
         if role == "tool":
-            name = getattr(m, "name", None) or (
-                m.get("name") if isinstance(m, dict) else None
-            )
+            name = getattr(m, "name", None) or (m.get("name") if isinstance(m, dict) else None)
             if name == "resolve_location":
                 saw_resolve_result = True
             continue
@@ -514,24 +548,14 @@ def _check_resolve_terminated_without_followup(
         if not tool_calls:
             continue
         for tc in tool_calls:
-            call_fn = (
-                getattr(getattr(tc, "function", None), "name", None)
-                or (
-                    tc.get("function", {}).get("name")
-                    if isinstance(tc, dict)
-                    else None
-                )
+            call_fn = getattr(getattr(tc, "function", None), "name", None) or (
+                tc.get("function", {}).get("name") if isinstance(tc, dict) else None
             )
             if call_fn != "lookup":
                 continue
             # Inspect arguments to confirm fetch-mode against an adapter.
-            raw_args = (
-                getattr(getattr(tc, "function", None), "arguments", None)
-                or (
-                    tc.get("function", {}).get("arguments")
-                    if isinstance(tc, dict)
-                    else None
-                )
+            raw_args = getattr(getattr(tc, "function", None), "arguments", None) or (
+                tc.get("function", {}).get("arguments") if isinstance(tc, dict) else None
             )
             if isinstance(raw_args, str):
                 try:
@@ -783,9 +807,7 @@ async def run(  # noqa: C901
                 _fh = logging.FileHandler(_log_path, mode="a", encoding="utf-8")
                 _fh.setLevel(logging.INFO)
                 _fh.setFormatter(
-                    logging.Formatter(
-                        "%(asctime)s %(levelname)s %(name)s %(message)s"
-                    )
+                    logging.Formatter("%(asctime)s %(levelname)s %(name)s %(message)s")
                 )
                 _root.addHandler(_fh)
                 _root.setLevel(min(_root.level or logging.INFO, logging.INFO))
@@ -794,9 +816,7 @@ async def run(  # noqa: C901
                     _log_path,
                 )
         except Exception:  # noqa: BLE001 — telemetry must never raise
-            sys.stderr.write(
-                f"[KOSMOS BACKEND] failed to attach log file {_log_path}\n"
-            )
+            sys.stderr.write(f"[KOSMOS BACKEND] failed to attach log file {_log_path}\n")
 
     logger.info("IPC stdio loop starting — session_id=%s", sid)
 
@@ -1400,7 +1420,7 @@ async def run(  # noqa: C901
         GATED_PRIMITIVES as _PERMISSION_GATED_PRIMITIVES,  # noqa: PLC0415, N811
     )
 
-    async def _check_permission_gate(
+    async def _check_permission_gate(  # noqa: C901
         call_id: str,
         fname: str,
         args_obj: dict[str, object],
@@ -1622,11 +1642,7 @@ async def run(  # noqa: C901
                         settings as _kosmos_settings_deny,
                     )
 
-                    _deny_args = {
-                        k: v
-                        for k, v in args_obj.items()
-                        if k != "delegation_context"
-                    }
+                    _deny_args = {k: v for k, v in args_obj.items() if k != "delegation_context"}
                     _deny_digest = compute_action_digest(
                         str(args_obj.get("tool_id", fname)),
                         _deny_args,
@@ -1645,9 +1661,7 @@ async def run(  # noqa: C901
                         key_registry_path=_kosmos_settings_deny.permission_key_registry_path,
                     )
                 except Exception as exc:  # noqa: BLE001
-                    logger.warning(
-                        "permission: ledger.append(deny) failed: %s", exc
-                    )
+                    logger.warning("permission: ledger.append(deny) failed: %s", exc)
                 # Emit synthetic denied tool_result.
                 denied_env2 = ToolResultEnvelope(
                     kind=cast("Any", fname),
@@ -1686,12 +1700,8 @@ async def run(  # noqa: C901
             # 1406 uses `f"{fname}:{tool_id}"`; the prior storage stored
             # only `tool_id` → cache miss on every "allow_session" call.
             if is_allow_session:
-                tool_key_for_cache = (
-                    f"{fname}:{args_obj.get('tool_id', fname)}"
-                )
-                _session_grants.setdefault(session_id, set()).add(
-                    tool_key_for_cache
-                )
+                tool_key_for_cache = f"{fname}:{args_obj.get('tool_id', fname)}"
+                _session_grants.setdefault(session_id, set()).add(tool_key_for_cache)
             try:
                 import json as _json_receipt  # noqa: PLC0415
                 from pathlib import Path as _Path  # noqa: PLC0415
@@ -1735,11 +1745,7 @@ async def run(  # noqa: C901
                 )
                 from kosmos.settings import settings as _kosmos_settings  # noqa: PLC0415
 
-                _ledger_args = {
-                    k: v
-                    for k, v in args_obj.items()
-                    if k != "delegation_context"
-                }
+                _ledger_args = {k: v for k, v in args_obj.items() if k != "delegation_context"}
                 _digest = compute_action_digest(
                     str(args_obj.get("tool_id", fname)),
                     _ledger_args,
@@ -1776,11 +1782,13 @@ async def run(  # noqa: C901
             # echo, not a new request; the TUI ignores it safely if it
             # doesn't recognise the receipt_id field (backward-compat via
             # Optional default=None in frame_schema.py).
-            from kosmos.ipc.frame_schema import PermissionResponseFrame as _PRF  # noqa: PLC0415
+            from kosmos.ipc.frame_schema import (  # noqa: PLC0415
+                PermissionResponseFrame as _PermissionResponseFrame,
+            )
 
             try:
                 await write_frame(
-                    _PRF(
+                    _PermissionResponseFrame(
                         session_id=session_id,
                         correlation_id=correlation_id,
                         role="backend",
@@ -1799,9 +1807,7 @@ async def run(  # noqa: C901
                         tool_id=_resolved_tool_id,
                     )
                 )
-                logger.debug(
-                    "permission: emitted receipt echo (receipt_id=%s)", receipt_id
-                )
+                logger.debug("permission: emitted receipt echo (receipt_id=%s)", receipt_id)
             except Exception as exc:  # noqa: BLE001
                 logger.warning("permission: failed to emit receipt echo: %s", exc)
 
@@ -1921,9 +1927,8 @@ async def run(  # noqa: C901
                     # ``family_hint`` (primitive's internal arg name) for
                     # legacy / tools-bridge compatibility.
                     tool_id = str(args_obj.get("tool_id") or "")
-                    family_hint = (
-                        resolve_family(tool_id)
-                        or str(args_obj.get("family_hint") or args_obj.get("family") or "")
+                    family_hint = resolve_family(tool_id) or str(
+                        args_obj.get("family_hint") or args_obj.get("family") or ""
                     )
                     session_ctx = cast("dict[str, object]", args_obj.get("session_context") or {})
                     raw = await verify(family_hint=family_hint, session_context=session_ctx)
@@ -2208,10 +2213,8 @@ async def run(  # noqa: C901
         try:
             _current_span = trace.get_current_span()
             if _current_span is not None:
-                _current_span.set_attribute(
-                    "kosmos.chat.turn_index", _diag_turn_idx
-                )
-        except Exception:  # noqa: BLE001 — telemetry must never raise
+                _current_span.set_attribute("kosmos.chat.turn_index", _diag_turn_idx)
+        except Exception:  # noqa: BLE001, S110 — telemetry must never raise
             pass
         if _diag_chat_request_enabled():
             try:
@@ -2260,19 +2263,21 @@ async def run(  # noqa: C901
         # the LLM-callable surface. Adapters (every other ministry) flow
         # through the `<available_adapters>` system-prompt suffix that
         # `_build_available_adapters_suffix` emits below.
-        registry = _ensure_tool_registry()
+        registry = cast("Any", _ensure_tool_registry())
         from kosmos.primitives import PRIMITIVE_REGISTRY  # noqa: PLC0415
 
         backend_tools_raw = [
             t.to_openai_tool()
-            for t in registry.core_tools()  # type: ignore[attr-defined]
+            for t in registry.core_tools()
             if t.ministry == "KOSMOS" and t.id in PRIMITIVE_REGISTRY
         ]
-        backend_tool_names = {
-            r.get("function", {}).get("name")  # type: ignore[union-attr]
-            for r in backend_tools_raw
-            if isinstance(r, dict)
-        }
+        backend_tool_names: set[object] = set()
+        for raw_tool in backend_tools_raw:
+            if not isinstance(raw_tool, dict):
+                continue
+            function = raw_tool.get("function")
+            if isinstance(function, dict):
+                backend_tool_names.add(function.get("name"))
         llm_tools: list[LLMToolDefinition] = [
             LLMToolDefinition.model_validate(raw) for raw in backend_tools_raw
         ]
@@ -2358,8 +2363,7 @@ async def run(  # noqa: C901
                 _kma_base_time = f"{_prev:02d}00"
                 _kma_hint_note = "오늘"
             augmented_system = (
-                augmented_system
-                + f"\n\n## Current session context\n\n"
+                augmented_system + f"\n\n## Current session context\n\n"
                 f"오늘 날짜 (KST): {today_kst_iso}.\n"
                 f"현재 시각 (KST): {now_kst_hm} ({now_kst_hhmm}).\n"
                 "이 날짜/시각을 기준으로 시간 표현을 해석합니다. "
@@ -2666,8 +2670,7 @@ async def run(  # noqa: C901
                                 if _running_len >= 1024:
                                     _preview = "".join(_diag_reasoning_buf)[:1024]
                                     logger.info(
-                                        "[REASONING_PREVIEW] turn=%d "
-                                        "first1024=%s",
+                                        "[REASONING_PREVIEW] turn=%d first1024=%s",
                                         _diag_turn_idx,
                                         _preview,
                                     )
@@ -2977,6 +2980,7 @@ async def run(  # noqa: C901
                         ToolResultEnvelope,
                         ToolResultFrame,
                     )
+
                     # Emit a ToolCallFrame first so the TUI registers the
                     # call_id in seenToolUseIds (deps.ts L420). Without it
                     # the subsequent ToolResultFrame surfaces as a
@@ -2993,14 +2997,16 @@ async def run(  # noqa: C901
                             arguments=args_obj,
                         )
                     )
-                    err_envelope = ToolResultEnvelope(
-                        kind=cast("Any", fname),
-                        result={
-                            "kind": "error",
-                            "reason": "chain_prerequisite_missing",
-                            "message": chain_error_msg,
-                            "retryable": False,
-                        },
+                    err_envelope = ToolResultEnvelope.model_validate(
+                        {
+                            "kind": cast("Any", fname),
+                            "result": {
+                                "kind": "error",
+                                "reason": "chain_prerequisite_missing",
+                                "message": chain_error_msg,
+                                "retryable": False,
+                            },
+                        }
                     )
                     await write_frame(
                         ToolResultFrame(
@@ -3488,9 +3494,11 @@ async def run(  # noqa: C901
                     await _handle_consent_revoke_request(frame)
                 except Exception as exc:  # noqa: BLE001
                     logger.exception("consent_revoke_request handler failed: %s", exc)
-                    from kosmos.ipc.frame_schema import ConsentRevokeResponseFrame as _CRRFE  # noqa: PLC0415
+                    from kosmos.ipc.frame_schema import (
+                        ConsentRevokeResponseFrame as _ConsentRevokeResponseFrame,  # noqa: PLC0415
+                    )
 
-                    err_resp = _CRRFE(
+                    err_resp = _ConsentRevokeResponseFrame(
                         session_id=frame.session_id,
                         correlation_id=frame.correlation_id or str(uuid.uuid4()),
                         role="backend",
@@ -3671,7 +3679,7 @@ async def run(  # noqa: C901
                             data = _json_revoke.loads(raw)
                             if data.get("session_id") == session_id and not data.get("revoked_at"):
                                 target_paths.append(p)
-                        except Exception:  # noqa: BLE001
+                        except Exception:  # noqa: BLE001, S112
                             continue
                 else:
                     # scope == "once" — single receipt.
@@ -3699,7 +3707,10 @@ async def run(  # noqa: C901
                         data = _json_revoke.loads(raw)
                         if data.get("revoked_at") and scope != "session-all":
                             # Single-receipt revoke on already-revoked receipt.
-                            revoke_span.set_attribute("kosmos.consent.revoke_error", "already_revoked")
+                            revoke_span.set_attribute(
+                                "kosmos.consent.revoke_error",
+                                "already_revoked",
+                            )
                             revoke_span.set_status(Status(StatusCode.ERROR, "already_revoked"))
                             await _emit_response(ok=False, error="already_revoked")
                             return
@@ -3730,9 +3741,7 @@ async def run(  # noqa: C901
                         # this call computes prev_hash from the prior record,
                         # SHA-256 record_hash over canonical JCS, and seals
                         # with HMAC-SHA-256 under the key_id from registry.json.
-                        target_receipt_id = str(
-                            data.get("receipt_id", target_path.stem)
-                        )
+                        target_receipt_id = str(data.get("receipt_id", target_path.stem))
                         target_tool_id = str(data.get("tool_id", "unknown"))
                         withdraw_args: dict[str, object] = {
                             "scope_receipt_id": target_receipt_id,
@@ -3769,9 +3778,7 @@ async def run(  # noqa: C901
                         record_hash = withdraw_record.record_hash
                         last_record_hash = record_hash
 
-                        revoke_span.set_attribute(
-                            "kosmos.consent.record_hash", record_hash
-                        )
+                        revoke_span.set_attribute("kosmos.consent.record_hash", record_hash)
                         logger.debug(
                             "consent_revoke: revoked %s sealed_hash=%s seq=%d",
                             target_path.name,

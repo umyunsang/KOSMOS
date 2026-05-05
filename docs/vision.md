@@ -396,7 +396,7 @@ First-launch presents a dedicated onboarding sequence derived from Claude Code's
 
 Claude Code defines 65 bindings across 20 contexts (`src/keybindings/defaultBindings.ts`). KOSMOS currently implements 5 (Enter, y/Y, n/N/Esc, Backspace/Delete, IME passthrough for modifiers). The tiered migration scope is:
 
-- **Tier 1 (pre-citizen-launch blocker)**: `ctrl+c` (interrupt active agent), `ctrl+d` (clean exit), `escape` in InputBar (cancel draft, gated on `!ime.isComposing`), `ctrl+r` (history search), `up`/`down` in InputBar (history prev/next, gated on empty buffer).
+- **Tier 1 (pre-citizen-launch blocker)**: `ctrl+c` (interrupt active agent), `ctrl+d` (clean exit), `escape` in InputBar (cancel draft, gated on `!ime.isComposing`), `ctrl+r` (history search), `up`/`down` in InputBar (history prev/next, gated on empty buffer), `shift+tab` (cycle PermissionMode), `ctrl+o` (toggle transcript view — promoted from Tier 2 in Epic #2766 follow-up after the chord-registry-vs-fallback root-cause fix; see `tui/src/keybindings/types.ts:84` + `tui/src/keybindings/defaultBindings.ts:81`).
 - **Tier 2 (post-launch hardening)**: `pageup`/`pagedown`, `ctrl+l` (redraw), `shift+tab` (cycle PermissionMode — binds to the Layer 3 spectrum), `ctrl+_` (undo), `ctrl+shift+c` (copy selection).
 - **Tier 3 (deferred until dependent specs)**: `ctrl+x ctrl+k` (killAll — requires multi-worker), `ctrl+e` (external editor), `meta+p` (modelPicker — KOSMOS uses K-EXAONE only), `ctrl+s` (stash), `ctrl+v` (image paste).
 
@@ -462,6 +462,15 @@ Total target: ~30,000 lines for the platform core, plus adapter modules.
 - KOSMOS is not a general-purpose coding agent. It does not edit files or run shell commands in a developer workspace.
 - KOSMOS is not a government-endorsed service. It consumes public data but makes no claim of official authority.
 - KOSMOS is not a chat wrapper around a single API. A chat wrapper would not need six architectural layers.
+
+## Engineering values
+
+KOSMOS is a foundation project (`속이 꽉찬 기초와 토대가 튼튼한 프로젝트`), not a demo. The values below gate every PR. They are deliberately phrased as principles, not metrics, because the failure modes they prevent (band-aid debt, hallucinated invention, surface-only polish) cannot be unit-tested. `AGENTS.md § Engineering principles` carries the operational rules.
+
+1. **Root-cause over symptom.** Fix the architectural decision that allowed the bug, not the visible failure. Don't add `useInput` fallbacks for broken chord registries; don't `try/except`-swallow wrong contracts; don't stub over stale imports. Three failed symptom-fixes in a row → STOP and choose the root-cause path.
+2. **Reference before invention.** The CC restored-src + the catalog in `Reference materials` answer most design questions. When they don't, escalate to a deep-research pass and add the new source to the catalog in the same PR. Never ship a guess (`feedback_check_references_first`).
+3. **Foundations over surface gloss.** KOSMOS' worth is the depth of the swap (CC harness + 2 swaps, byte-identical otherwise), not how the splash screen looks. The 5-layer TUI verification chain (`docs/testing.md § TUI verification methodology`) and the integration-verification capture artefacts under `specs/integration-verification/` exist because surface tests pass while underlying registries silently break.
+4. **Fallbacks are audited and time-bound.** Any fallback merged to `main` MUST cite its root cause (`file:line`) and the follow-up Epic that retires it. The Ctrl+O `useInput` fallback (PRs #2754 / #2767, retired in Epic #2766 follow-up by promoting `app:toggleTranscript` to Tier 1) is the canonical example of the band-aid → root-cause migration this rule enforces.
 
 ## How this document evolves
 
