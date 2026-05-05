@@ -8,41 +8,31 @@ snapshot_pane 01-boot
 
 # Type the citizen weather query
 send_text_pane "부산 사하구 다대1동 날씨 알려줘"
-sleep 1
+wait_for_pane "부산 사하구 다대1동 날씨 알려줘" 5
 snapshot_pane 02-typed
 send_enter_pane
 
-# K-EXAONE reasoning + KMA tool calls. Allow up to 90s for the full agentic
-# loop (multiple turns) to settle. Watch for either: success record line OR
-# error envelope OR thinking-only stalled state.
-sleep 5
-snapshot_pane 03-after-5s
-sleep 10
-snapshot_pane 04-after-15s
-sleep 15
-snapshot_pane 05-after-30s
-sleep 20
-snapshot_pane 06-after-50s
+# K-EXAONE reasoning + KMA tool calls can take 30-90s. Capture only after
+# observable pane states appear; a timeout is a real smoke failure.
+wait_for_pane "lookup\\(|Thinking|검색|오류|Tool execution|error" 45
+snapshot_pane 03-first-tool-output
+wait_for_pane "record|검색 오류|Tool execution|error" 90
+snapshot_pane 04-tool-result
+wait_for_pane "오늘 날씨 예보|오늘 사하구" 90
+snapshot_pane 05-final-answer
 
-# Wait for the lookup record line (or error) before pressing Ctrl+O
-wait_for_pane "record|검색|오류|Tool execution|error" 90 || true
-snapshot_pane 07-pre-ctrlo
-
-# Press Ctrl+O — chord registry path + raw useInput fallback should both fire
+# Press Ctrl+O — chord registry path should reveal detailed transcript mode.
 send_keys_pane "C-o"
-sleep 1
-snapshot_pane 08-after-ctrlo
-sleep 2
-snapshot_pane 09-after-ctrlo-2s
+wait_for_pane "Showing detailed transcript" 10
+snapshot_pane 06-after-ctrlo
 
 # Press Ctrl+O again — toggle back
 send_keys_pane "C-o"
-sleep 1
-snapshot_pane 10-after-ctrlo-toggle
+wait_for_pane "❯|/effort|high" 10
+snapshot_pane 07-after-ctrlo-toggle
 
 # Clean exit
 send_ctrlc_pane
-sleep 1
+wait_for_pane "Ctrl-C again|exit" 5
+snapshot_pane 08-exit-armed
 send_ctrlc_pane
-sleep 1
-snapshot_pane 11-final
