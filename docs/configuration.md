@@ -69,8 +69,11 @@ Column definitions:
 | `KOSMOS_RETRIEVAL_FUSION` | No | `rrf` | `rrf` | `kosmos.tools.retrieval.backend._parse_fusion_config` | Epic #585 |
 | `KOSMOS_RETRIEVAL_FUSION_K` | No | `60` | Integer >= 1 | `kosmos.tools.retrieval.backend._parse_fusion_config` | Epic #585 |
 | `KOSMOS_RETRIEVAL_MODEL_ID` | No | `intfloat/multilingual-e5-small` | Hugging Face model ID string | `kosmos.tools.retrieval.backend.build_retriever_from_env` | Epic #585 |
+| `KOSMOS_MEMDIR_USER` | No | `~/.kosmos/memdir/user` | Filesystem path (expanduser) | `kosmos.session.store._get_session_dir`; TUI memdir/session helpers | Spec 027 |
 | `KOSMOS_SESSION_DIR` | No | `~/.kosmos/sessions` | Filesystem path (expanduser) | `kosmos.session.store._get_session_dir` | Epic #287 |
 | `KOSMOS_BACKEND_CMD` | No | `uv run python -m kosmos.ipc.mcp_server` | Shell command string spawned by the TUI as the backend process | TUI-side `tui/src/services/api` IPC bridge spawner; `kosmos.ipc.demo.mock_backend` is the canonical Mock-backend value used by Spec 2296 PTY + vhs smoke artefacts | Epic #2296 |
+| `KOSMOS_BACKEND_LOG_FILE` | No | — | Filesystem path | `kosmos.ipc.stdio.run` diagnostic FileHandler | Spec multi-turn contamination |
+| `KOSMOS_CHAT_REQUEST_DUMP` | No | `false` | `1` enables diagnostic dumps; unset disables | `kosmos.ipc.stdio._diag_chat_request_enabled` | Spec multi-turn contamination |
 | `KOSMOS_CLI_HISTORY_SIZE` | No | `1000` | Integer >= 0 | `kosmos.cli.config.CLIConfig.history_size` | This doc |
 | `KOSMOS_CLI_SHOW_USAGE` | No | `true` | `true` \| `false` | `kosmos.cli.config.CLIConfig.show_usage` | This doc |
 | `KOSMOS_CLI_WELCOME_BANNER` | No | `true` | `true` \| `false` | `kosmos.cli.config.CLIConfig.welcome_banner` | This doc |
@@ -119,6 +122,7 @@ Column definitions:
 | `KOSMOS_PERMISSION_TIMEOUT_SEC` | No | `30` | Integer [1, 300] (seconds) | `kosmos.settings.KosmosSettings.permission_timeout_sec` | [Spec 033 Permission v2 (Epic #1297)](#permission-v2-epic-1297) |
 | `KOSMOS_PERMISSION_TTL_SESSION_SEC` | No | `3600` | Integer [60, 86400] (seconds) | `kosmos.settings.KosmosSettings.permission_ttl_session_sec` | [Spec 033 Permission v2 (Epic #1297)](#permission-v2-epic-1297) |
 | `KOSMOS_PERMISSION_KEY_PATH` | No | `~/.kosmos/keys/ledger.key` | Absolute filesystem path | `kosmos.settings.KosmosSettings.permission_key_path` | [Spec 033 Permission v2 (Epic #1297)](#permission-v2-epic-1297) |
+| `KOSMOS_PERMISSION_KEY_REGISTRY_PATH` | No | `~/.kosmos/keys/registry.json` | Absolute filesystem path | `kosmos.settings.KosmosSettings.permission_key_registry_path` | [Spec 033 Permission v2 (Epic #1297)](#permission-v2-epic-1297) |
 | `KOSMOS_PERMISSION_LEDGER_PATH` | No | `~/.kosmos/consent_ledger.jsonl` | Absolute filesystem path | `kosmos.settings.KosmosSettings.permission_ledger_path` | [Spec 033 Permission v2 (Epic #1297)](#permission-v2-epic-1297) |
 | `KOSMOS_PERMISSION_RULE_STORE_PATH` | No | `~/.kosmos/permissions.json` | Absolute filesystem path | `kosmos.settings.KosmosSettings.permission_rule_store_path` | [Spec 033 Permission v2 (Epic #1297)](#permission-v2-epic-1297) |
 | `KOSMOS_PERMISSION_MODE` | OTel span attr | n/a | String span attribute key | `kosmos.permissions.otel_integration.KOSMOS_PERMISSION_MODE` | [Spec 033 Permission v2 (Epic #1297)](#permission-v2-epic-1297) |
