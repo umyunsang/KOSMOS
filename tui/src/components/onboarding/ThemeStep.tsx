@@ -11,7 +11,9 @@
 // IME gate: useKoreanIME per vision.md § Keyboard-shortcut migration
 
 import React, { useEffect, useState } from 'react'
-import { Box, Text, useInput } from 'ink'
+import { Box, Text, useInput as useNpmInput } from 'ink'
+// G8 fix (PR #2773 § G8) — see PreflightStep.tsx for the rationale.
+import { useInput as useRepoInput } from '../../ink.js'
 import { useTheme } from '../../theme/provider.js'
 import { useKoreanIME } from '../../hooks/useKoreanIME.js'
 import { UFO_PALETTE, type UfoMascotPoseT } from '../../schemas/ui-l2/ufo.js'
@@ -175,7 +177,8 @@ export function ThemeStep({
     emitSurfaceActivation('onboarding', { 'onboarding.step': 'theme' })
   }, [])
 
-  useInput((input, key) => {
+  // G8 dual-path — see PreflightStep.tsx import-site comment.
+  const handleKey = (input: string, key: { ctrl?: boolean; escape?: boolean; return?: boolean; upArrow?: boolean; downArrow?: boolean }): void => {
     if (isComposing) return
     if (key.ctrl && (input === 'c' || input === 'd')) {
       onExit()
@@ -199,7 +202,9 @@ export function ThemeStep({
         onAdvance(opt.value)
       }
     }
-  })
+  }
+  useRepoInput(handleKey)
+  useNpmInput(handleKey)
 
   return (
     <Box flexDirection="column" paddingX={1}>

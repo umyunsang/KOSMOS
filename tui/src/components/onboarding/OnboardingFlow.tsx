@@ -18,7 +18,12 @@
 // IME gate: each step component owns its own useKoreanIME gate.
 
 import React, { useCallback, useEffect, useState } from 'react'
-import { Box, Text, useApp } from 'ink'
+import { Box, Text } from 'ink'
+// G8 fix — see PreflightStep.tsx header. `useApp` from npm `ink` returns the
+// AppContext default (no-op `exit()`) because the npm-ink App is never
+// mounted in this tree (repo Ink renders the root via `createRoot` from
+// `tui/src/ink.ts`). Use the repo shim so `exit()` actually unmounts.
+import { useApp } from '../../ink.js'
 import { useTheme } from '../../theme/provider.js'
 import {
   ONBOARDING_STEP_ORDER,

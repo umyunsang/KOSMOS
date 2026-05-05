@@ -10,7 +10,9 @@
 // IME gate: useKoreanIME per vision.md § Keyboard-shortcut migration
 
 import React, { useCallback, useEffect, useState } from 'react'
-import { Box, Text, useInput } from 'ink'
+import { Box, Text, useInput as useNpmInput } from 'ink'
+// G8 fix (PR #2773 § G8) — see PreflightStep.tsx for the rationale.
+import { useInput as useRepoInput } from '../../ink.js'
 import { useTheme } from '../../theme/provider.js'
 import { useKoreanIME } from '../../hooks/useKoreanIME.js'
 import {
@@ -123,7 +125,8 @@ export function TerminalSetupStep({
     onAdvance(pref)
   }, [pref, writePreference, onAdvance, isEn])
 
-  useInput((input, key) => {
+  // G8 dual-path — see PreflightStep.tsx import-site comment.
+  const handleTerminalKey = (input: string, key: { ctrl?: boolean; escape?: boolean; return?: boolean; upArrow?: boolean; downArrow?: boolean }): void => {
     if (isComposing || saving) return
     if (key.ctrl && (input === 'c' || input === 'd')) {
       onExit()
@@ -151,7 +154,9 @@ export function TerminalSetupStep({
     if (key.return) {
       void handleAdvance()
     }
-  })
+  }
+  useRepoInput(handleTerminalKey)
+  useNpmInput(handleTerminalKey)
 
   return (
     <Box flexDirection="column" paddingX={1}>

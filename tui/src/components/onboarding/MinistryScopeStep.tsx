@@ -8,7 +8,9 @@
 // side-effect), Escape to exit.  All keyboard handlers IME-gated.
 
 import React, { useCallback, useMemo, useState } from 'react'
-import { Box, Text, useInput } from 'ink'
+import { Box, Text, useInput as useNpmInput } from 'ink'
+// G8 fix (PR #2773 § G8) — see PreflightStep.tsx for the rationale.
+import { useInput as useRepoInput } from '../../ink.js'
 import { useTheme } from '../../theme/provider'
 import type { ThemeToken } from '../../theme/tokens'
 import { useKoreanIME } from '../../hooks/useKoreanIME'
@@ -137,7 +139,8 @@ export function MinistryScopeStep({
     }
   }, [optIns, sessionId, writeRecord, onAdvance])
 
-  useInput((input, key) => {
+  // G8 dual-path — see PreflightStep.tsx import-site comment.
+  const handleScopeKey = (input: string, key: { ctrl?: boolean; escape?: boolean; return?: boolean; upArrow?: boolean; downArrow?: boolean }): void => {
     if (isComposing || submitting) return
     if (key.ctrl && (input === 'c' || input === 'd')) {
       onExit()
@@ -165,7 +168,9 @@ export function MinistryScopeStep({
     if (key.return) {
       void submit()
     }
-  })
+  }
+  useRepoInput(handleScopeKey)
+  useNpmInput(handleScopeKey)
 
   return (
     <Box flexDirection="column" paddingX={1}>

@@ -23,16 +23,28 @@ export const ONBOARDING_STEP_ORDER: readonly OnboardingStepNameT[] = [
   'terminal-setup',
 ] as const;
 
+// G8 fix (PR #2773 — realuse-audit-2026-05-05 § F-W3-alpha-side) —
+// `z.string().datetime()` (no opts) accepts ONLY `Z`-suffix +
+// millisecond-or-shorter precision (e.g. `2026-05-03T22:06:41.838Z`).
+// Python `datetime.now(UTC).isoformat()` and other writers emit
+// `+00:00`/`-09:00` timezone offsets and microsecond precision
+// (`2026-05-03T22:06:41.838123+00:00`). `safeParse()` then fails →
+// `freshOnboardingState()` falls through → onboarding loops on every boot.
+// `{ offset: true }` accepts both forms (`Z` AND `+00:00`) AND any precision
+// up to 9 fractional digits, eliminating the loop while preserving strict
+// ISO-8601 validation.
+const ISO_DATETIME = z.string().datetime({ offset: true });
+
 export const OnboardingStep = z.object({
   name: OnboardingStepName,
-  completed_at: z.string().datetime().nullable(),
+  completed_at: ISO_DATETIME.nullable(),
   values: z.record(z.string(), z.unknown()),
 });
 export type OnboardingStepT = z.infer<typeof OnboardingStep>;
 
 export const OnboardingState = z.object({
   schema_version: z.literal(1),
-  started_at: z.string().datetime(),
+  started_at: ISO_DATETIME,
   language: z.enum(['ko', 'en']).default('ko'),
   steps: z.array(OnboardingStep).length(5),
   current_step_index: z.number().int().min(0).max(5),

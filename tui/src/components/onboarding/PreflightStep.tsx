@@ -10,7 +10,21 @@
 // IME gate: useKoreanIME per vision.md § Keyboard-shortcut migration
 
 import React, { useEffect, useMemo } from 'react'
-import { Box, Text, useInput } from 'ink'
+import { Box, Text, useInput as useNpmInput } from 'ink'
+// G8 fix (PR #2773 — realuse-audit-2026-05-05 § G8) — defense-in-depth dual
+// `useInput` (mirrors HelpV2Grouped.tsx pattern, AGENTS.md infra-insight #4).
+// The npm `'ink'` (`@jrichman/ink@6.6.9`) `useInput` reads from npm-ink's
+// `StdinContext`; the repo Ink shim (`tui/src/ink.ts`) `useInput` reads from
+// the repo's `StdinContext`. At runtime the App is rendered by the repo's
+// `createRoot` (`interactiveHelpers.showSetupDialog`) — only the repo-ink
+// hook fires (the npm-ink hook subscribes to npm-ink's default-empty
+// EventEmitter and never receives stdin events). In `ink-testing-library`
+// tests the App is rendered by npm-ink — only the npm-ink hook fires. Both
+// hooks point to the same `onAdvance/onExit` callbacks so exactly one fires
+// per environment. Closes F-alpha-02 + F-delta-01 (runtime preflight Enter
+// no-op was the repo-ink path being absent — npm-ink hook silently dead at
+// runtime).
+import { useInput as useRepoInput } from '../../ink.js'
 import { useTheme } from '../../theme/provider.js'
 import { useKoreanIME } from '../../hooks/useKoreanIME.js'
 import { getUiL2I18n } from '../../i18n/uiL2.js'
@@ -176,7 +190,9 @@ export function PreflightStep({
     emitSurfaceActivation('onboarding', { 'onboarding.step': 'preflight' })
   }, [])
 
-  useInput((input, key) => {
+  // G8 dual-path handler — fires under whichever Ink (repo OR npm) is wired
+  // to the live stdin EventEmitter (see import-site comment).
+  const handleKey = (input: string, key: { ctrl?: boolean; escape?: boolean; return?: boolean }): void => {
     if (isComposing) return
     if (key.ctrl && (input === 'c' || input === 'd')) {
       onExit()
@@ -189,7 +205,9 @@ export function PreflightStep({
     if (key.return) {
       onAdvance()
     }
-  })
+  }
+  useRepoInput(handleKey)
+  useNpmInput(handleKey)
 
   return (
     <Box flexDirection="column" paddingX={1}>

@@ -14,7 +14,9 @@
 // IME gate: useKoreanIME per vision.md § Keyboard-shortcut migration
 
 import React, { useCallback, useEffect, useState } from 'react'
-import { Box, Text, useInput } from 'ink'
+import { Box, Text, useInput as useNpmInput } from 'ink'
+// G8 fix (PR #2773 § G8) — see PreflightStep.tsx for the rationale.
+import { useInput as useRepoInput } from '../../ink.js'
 import { useTheme } from '../../theme/provider.js'
 import { useKoreanIME } from '../../hooks/useKoreanIME.js'
 import { getUiL2I18n } from '../../i18n/uiL2.js'
@@ -126,7 +128,8 @@ export function PipaConsentStep({
     }
   }, [sessionId, writeRecord, onAdvance, isEn])
 
-  useInput((input, key) => {
+  // G8 dual-path — see PreflightStep.tsx import-site comment.
+  const handleConsentKey = (input: string, key: { ctrl?: boolean; escape?: boolean; return?: boolean }): void => {
     if (isComposing || submitting) return
     if (key.ctrl && (input === 'c' || input === 'd')) {
       onExit()
@@ -143,7 +146,9 @@ export function PipaConsentStep({
     if (input === 'n' || input === 'N') {
       onExit()
     }
-  })
+  }
+  useRepoInput(handleConsentKey)
+  useNpmInput(handleConsentKey)
 
   return (
     <Box flexDirection="column" paddingX={1}>
@@ -285,13 +290,16 @@ export function PIPAConsentStep({
     }
   }, [sessionId, aalGate, writeRecord, onAdvance])
 
-  useInput((input, key) => {
+  // G8 dual-path — see PreflightStep.tsx import-site comment.
+  const handleAal2Key = (input: string, key: { ctrl?: boolean; escape?: boolean; return?: boolean }): void => {
     if (submitting) return
     if (key.ctrl && (input === 'c' || input === 'd')) { onExit(); return }
     if (key.escape) { onExit(); return }
     if (key.return || input === 'y' || input === 'Y') { void submit(); return }
     if (input === 'n' || input === 'N') onExit()
-  })
+  }
+  useRepoInput(handleAal2Key)
+  useNpmInput(handleAal2Key)
 
   return (
     <Box flexDirection="column" paddingX={1}>
