@@ -414,17 +414,25 @@ KMA_CURRENT_OBSERVATION_TOOL = GovAPITool(
         input_quirk=(
             "nx (1-149), ny (1-253) 는 Lambert Conformal Conic 5 km 격자. "
             "base_date=YYYYMMDD (오늘), base_time=HHMM (직전 정시, 반드시 MM=00). "
+            "base_time 은 시스템 프롬프트의 '현재 KST 시각' 의 직전 정시 사용. "
+            "추측 금지 — 16:30 이면 1600, 11:50 이면 1100. "
             "data_type=JSON 권장. resultCode 는 string '00' = 정상."
         ),
         short_reference=kma_grid_short_reference(),
         domain_quirk=(
             "매 정시 :40 이후만 안정. 14:25 호출 → base_time='1300'. "
-            "RN1='-' 는 강수 없음(0.0). HTTP 200 이어도 resultCode != '00' 이면 에러."
+            "RN1='-' 는 강수 없음(0.0). HTTP 200 이어도 resultCode != '00' 이면 에러. "
+            "VEC(풍향, 도): 0=북, 90=동, 180=남, 270=서. 16방위 매핑 — "
+            "N(348.75-11.25), NNE(11.25-33.75), NE(33.75-56.25), ENE(56.25-78.75), "
+            "E(78.75-101.25), ESE(101.25-123.75), SE(123.75-146.25), SSE(146.25-168.75), "
+            "S(168.75-191.25), SSW(191.25-213.75), SW(213.75-236.25), WSW(236.25-258.75), "
+            "W(258.75-281.25), WNW(281.25-303.75), NW(303.75-326.25), NNW(326.25-348.75). "
+            "vec=271 → W(서풍), vec=315 → NW(북서풍). 추측 금지."
         ),
         self_contained_decl=(
-            "이 도구 단독 호출로 완결. resolve_location 등 cross-domain chain 불필요. "
-            "시민이 정확한 nx/ny 모르면 LLM 이 자율적으로 "
-            "turn 1 = resolve_location(query='<지역명>'), turn 2 = 이 도구."
+            "REQUIRED: nx/ny 입력 필수. 지역명 ('동아대학교', '부산 사하구 다대1동') 은 "
+            "resolve_location 으로 nx/ny 받은 후 본 도구 호출. "
+            "ORDERING: turn1=resolve_location(query), turn2=이 도구. 좌표 추측 금지."
         ),
     ),
     search_hint=(
