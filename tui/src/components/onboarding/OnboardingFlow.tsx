@@ -112,9 +112,7 @@ export function OnboardingFlow({
   }, [onLoadState])
 
   // Auto-complete escape hatch — opt-in via KOSMOS_ONBOARDING_AUTO_COMPLETE=1.
-  // Persists a fully-marked OnboardingState (current_step_index=5, all steps
-  // completed_at populated) and immediately invokes onComplete(), bypassing
-  // any keystroke-driven step advance. Use cases:
+  // Use cases:
   //   - tmux/expect-driven smoke scenarios where stdin handling under
   //     `showDialog` proves brittle (integration-verification frame
   //     04-onboarding-complete left the citizen stuck on Step 1 because
@@ -122,25 +120,85 @@ export function OnboardingFlow({
   //     wrapper — dispatch root cause TBD; this hatch unblocks the rest of
   //     the suite without weakening interactive UX guarantees).
   //   - dev iteration: skip the 5-screen tour after wiping state.json.
+  //
+  // F-alpha-15 fix (Wave-2 G1, PIPA §22 fail-closed): the `pipa-consent`
+  // step represents a PIPA §22 정보주체 동의 — it is legally invalid when
+  // fabricated by the harness. The escape hatch therefore advances the
+  // citizen *up to* the pipa-consent step but stops there unless a SECOND
+  // env signal `KOSMOS_PIPA_CONSENT=opt-in-explicit` is also set (test
+  // fixtures that need a fully-completed state must opt in deliberately;
+  // production environments — including any harness wrapper that leaks
+  // `KOSMOS_ONBOARDING_AUTO_COMPLETE=1` — never fabricate the PIPA step).
+  // Other PIPA-relevant steps (`ministry-scope`, `terminal-setup`) follow
+  // the same gate so the harness cannot bypass downstream consent surfaces
+  // either.
   // The flag is read fresh at mount; toggling it does not retro-revert a
   // partially completed state.
   useEffect(() => {
     if (state === null) return
     if (process.env['KOSMOS_ONBOARDING_AUTO_COMPLETE'] !== '1') return
     if (isOnboardingComplete(state)) return
+    const pipaExplicit =
+      process.env['KOSMOS_PIPA_CONSENT'] === 'opt-in-explicit'
     const now = new Date().toISOString()
-    const completedSteps = state.steps.map((s) => ({
-      ...s,
-      completed_at: s.completed_at ?? now,
-    }))
+    // Steps that carry PIPA §22 consent (or PIPA-derivative scoping) are
+    // gated by `pipaExplicit`. Without the explicit env signal, the auto-
+    // complete hatch fills only the non-consent UX steps and freezes
+    // current_step_index at the first PIPA-bearing step so the citizen
+    // must transit the modal manually.
+    const PIPA_GATED_STEPS = new Set([
+      'pipa-consent',
+      'ministry-scope',
+      'terminal-setup',
+    ])
+    const completedSteps = state.steps.map((s) => {
+      if (PIPA_GATED_STEPS.has(s.name) && !pipaExplicit) {
+        return s
+      }
+      return {
+        ...s,
+        completed_at: s.completed_at ?? now,
+      }
+    })
+    const firstPendingIdx = completedSteps.findIndex(
+      (s) => s.completed_at === null,
+    )
+    const newIndex = firstPendingIdx === -1 ? 5 : firstPendingIdx
+    // Idempotency guard: when the auto-advance has already settled the
+    // non-PIPA prefix, the next render's `state` still satisfies the
+    // top-level `isOnboardingComplete` check (false, because we are
+    // frozen at the PIPA step) but every per-step `completed_at` is
+    // already populated for the non-PIPA prefix and `current_step_index`
+    // already equals `firstPendingIdx`. Skip to avoid the `setState`
+    // → effect-rerun → setState loop that React detects as
+    // `Maximum update depth exceeded`.
+    const allTargetStepsAlreadyComplete = completedSteps.every(
+      (s, i) => s.completed_at === state.steps[i]?.completed_at,
+    )
+    if (
+      allTargetStepsAlreadyComplete &&
+      newIndex === state.current_step_index
+    ) {
+      return
+    }
     const completedState: OnboardingStateT = {
       ...state,
       steps: completedSteps,
-      current_step_index: 5,
+      current_step_index: newIndex,
     }
     setState(completedState)
     const saver = onSaveState ?? saveOnboardingState
-    void saver(completedState).finally(() => onComplete())
+    if (pipaExplicit && newIndex === 5) {
+      // Full auto-complete only when the citizen / test harness explicitly
+      // opted in to PIPA consent fabrication.
+      void saver(completedState).finally(() => onComplete())
+    } else {
+      // Partial advance: persist the non-PIPA progress so the citizen
+      // resumes at the PIPA modal on next launch, but do NOT call
+      // onComplete — the OnboardingFlow stays mounted and the PIPA
+      // modal keystrokes drive the rest.
+      void saver(completedState)
+    }
   }, [state, onComplete, onSaveState])
 
   // Compute the active step index
