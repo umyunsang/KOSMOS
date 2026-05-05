@@ -290,10 +290,27 @@ class ToolExecutor:
                 exc_info=True,
             )
             reason, retryable = _classify_adapter_exception(exc)
+            # Anthropic tool-use guidance (https://platform.claude.com/docs/en/
+            # agents-and-tools/tool-use/handle-tool-calls#handling-errors-with-is_error):
+            # "Write instructive error messages. Instead of generic errors like
+            #  'failed', include what went wrong and what Claude should try
+            #  next." The previous "Tool execution failed." string was a
+            # documented citizen-mis-info trigger (2026-05-04) — K-EXAONE
+            # treated the opaque message as "tool unavailable" and fabricated
+            # a fire-station statistic from prior knowledge. Surface the
+            # concrete exception class + message so the LLM has enough context
+            # to either retry, switch tools, or refuse with a citation.
+            _exc_summary = f"{type(exc).__name__}: {str(exc)[:240]}"
             return make_error_envelope(
                 tool_id=tool_id,
                 reason=reason,
-                message="Tool execution failed.",
+                message=(
+                    f"Adapter '{tool_id}' raised an exception during upstream call. "
+                    f"Detail: {_exc_summary}. "
+                    "Do NOT fabricate a response from prior knowledge — tell the citizen "
+                    "the lookup failed, cite the official agency channel, and offer to "
+                    "retry or try a different tool."
+                ),
                 request_id=request_id,
                 elapsed_ms=_elapsed(),
                 retryable=retryable,
@@ -346,10 +363,24 @@ class ToolExecutor:
             )
         except EnvelopeNormalizationError as exc:
             logger.error("invoke: envelope normalisation failed for %s: %s", tool_id, exc)
+            # Anthropic tool-use guidance — instructive error messages (see
+            # adapter-exception block above for the full citation). The old
+            # "Response processing failed." string was the second documented
+            # citizen-mis-info trigger (2026-05-04 MOHW welfare fabrication
+            # of 12 services + bokjiro.go.kr URLs), because K-EXAONE could
+            # not distinguish "envelope mismatch" from "no data available"
+            # and defaulted to the catalog it had seen during training.
+            _exc_detail = str(exc)[:240]
             return make_error_envelope(
                 tool_id=tool_id,
                 reason=LookupErrorReason.upstream_unavailable,
-                message="Response processing failed.",
+                message=(
+                    f"Adapter '{tool_id}' returned a response that did not match the "
+                    f"expected envelope schema. Detail: {_exc_detail}. "
+                    "Do NOT fabricate a response from prior knowledge — tell the citizen "
+                    "the data could not be parsed, cite the official agency channel, and "
+                    "offer to retry or try a different tool."
+                ),
                 request_id=request_id,
                 elapsed_ms=_elapsed(),
                 retryable=False,

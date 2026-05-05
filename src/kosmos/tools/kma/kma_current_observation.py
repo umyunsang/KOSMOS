@@ -414,6 +414,8 @@ KMA_CURRENT_OBSERVATION_TOOL = GovAPITool(
         input_quirk=(
             "nx (1-149), ny (1-253) 는 Lambert Conformal Conic 5 km 격자. "
             "base_date=YYYYMMDD (오늘), base_time=HHMM (직전 정시, 반드시 MM=00). "
+            "base_time 은 시스템 프롬프트의 '현재 KST 시각' 의 직전 정시 사용. "
+            "추측 금지 — 16:30 이면 1600, 11:50 이면 1100. "
             "data_type=JSON 권장. resultCode 는 string '00' = 정상."
         ),
         short_reference=kma_grid_short_reference(),

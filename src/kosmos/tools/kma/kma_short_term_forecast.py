@@ -374,9 +374,10 @@ KMA_SHORT_TERM_FORECAST_TOOL = GovAPITool(
         ),
         input_quirk=(
             "nx (1-149), ny (1-253) Lambert 5 km 격자. "
-            "base_date=YYYYMMDD (오늘), "
+            "base_date=YYYYMMDD (오늘). "
             "base_time 유효값 8개: 0200/0500/0800/1100/1400/1700/2000/2300 (KST). "
-            "각 발표 후 ~10분 데이터 안정. 현재 시각의 직전 발표 시각 사용."
+            "발표 후 ~10분 데이터 안정. 시스템 프롬프트 '현재 KST 시각' 의 "
+            "직전 정시 사용. base_time 추측 금지."
         ),
         short_reference=kma_grid_short_reference(),
         domain_quirk=(
