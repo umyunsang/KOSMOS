@@ -248,7 +248,11 @@ type _PluginCommand = Command & {
 
 const pluginCommand: _PluginCommand = {
   type: 'local-jsx',
-  name: 'plugin',
+  // Wave-5 (F-delta-08): renamed 'plugin' → 'plugins' to match catalog SSOT
+  // (`/plugins`). KOSMOS_CITIZEN_COMMAND_NAMES Set is derived from the
+  // catalog, so command-name singular/plural mismatch (G12 root cause)
+  // would silently exclude this command from prefix-filter dropdown.
+  name: 'plugins',
   description: 'KOSMOS 플러그인 설치 / 목록 / 제거 / PIPA 해시 (Install / list / uninstall KOSMOS plugins)',
   argumentHint: '<install|list|uninstall|pipa-text> [name]',
   immediate: true,
