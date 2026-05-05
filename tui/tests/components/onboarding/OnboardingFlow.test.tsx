@@ -143,6 +143,112 @@ describe('OnboardingFlow — advance from preflight saves state', () => {
   })
 })
 
+describe('OnboardingFlow — F-alpha-15 G1 PIPA fail-closed escape hatch', () => {
+  // Wave-2 G1 fix: KOSMOS_ONBOARDING_AUTO_COMPLETE=1 alone must NOT fabricate
+  // the pipa-consent / ministry-scope / terminal-setup steps. PIPA §22
+  // requires explicit citizen action; the harness signal alone is not a
+  // valid consent surrogate. KOSMOS_PIPA_CONSENT=opt-in-explicit gates the
+  // PIPA step fabrication so test fixtures can opt in deliberately.
+
+  it('without KOSMOS_PIPA_CONSENT=opt-in-explicit, freezes at pipa-consent step (PIPA §22)', async () => {
+    const previousAutoComplete = process.env['KOSMOS_ONBOARDING_AUTO_COMPLETE']
+    const previousPipaConsent = process.env['KOSMOS_PIPA_CONSENT']
+    process.env['KOSMOS_ONBOARDING_AUTO_COMPLETE'] = '1'
+    delete process.env['KOSMOS_PIPA_CONSENT']
+    try {
+      const state = freshOnboardingState()
+      const saver = mockSaver()
+      const onComplete = mock(() => {})
+
+      render(
+        <ThemeProvider>
+          <OnboardingFlow
+            onComplete={onComplete}
+            sessionId={SESSION}
+            locale="ko"
+            onLoadState={mockLoader(state)}
+            onSaveState={saver}
+          />
+        </ThemeProvider>,
+      )
+
+      await new Promise((r) => setTimeout(r, 150))
+
+      expect(saver).toHaveBeenCalled()
+      const persistedState = saver.mock.calls[0]?.[0] as
+        | OnboardingStateT
+        | undefined
+      expect(persistedState).toBeDefined()
+      // current_step_index lands on the first PIPA-bearing step (index 2 = 'pipa-consent').
+      expect(persistedState?.current_step_index).toBe(2)
+      expect(persistedState?.steps[0]?.completed_at).not.toBeNull()
+      expect(persistedState?.steps[1]?.completed_at).not.toBeNull()
+      expect(persistedState?.steps[2]?.completed_at).toBeNull() // pipa-consent
+      expect(persistedState?.steps[3]?.completed_at).toBeNull() // ministry-scope
+      expect(persistedState?.steps[4]?.completed_at).toBeNull() // terminal-setup
+
+      // onComplete must NOT have fired — the PIPA step blocks until the
+      // citizen explicitly transits the consent modal.
+      expect(onComplete).not.toHaveBeenCalled()
+    } finally {
+      if (previousAutoComplete === undefined) {
+        delete process.env['KOSMOS_ONBOARDING_AUTO_COMPLETE']
+      } else {
+        process.env['KOSMOS_ONBOARDING_AUTO_COMPLETE'] = previousAutoComplete
+      }
+      if (previousPipaConsent === undefined) {
+        delete process.env['KOSMOS_PIPA_CONSENT']
+      } else {
+        process.env['KOSMOS_PIPA_CONSENT'] = previousPipaConsent
+      }
+    }
+  })
+
+  it('with both env signals set, fully completes onboarding (test fixture path)', async () => {
+    const previousAutoComplete = process.env['KOSMOS_ONBOARDING_AUTO_COMPLETE']
+    const previousPipaConsent = process.env['KOSMOS_PIPA_CONSENT']
+    process.env['KOSMOS_ONBOARDING_AUTO_COMPLETE'] = '1'
+    process.env['KOSMOS_PIPA_CONSENT'] = 'opt-in-explicit'
+    try {
+      const state = freshOnboardingState()
+      const saver = mockSaver()
+      const onComplete = mock(() => {})
+
+      render(
+        <ThemeProvider>
+          <OnboardingFlow
+            onComplete={onComplete}
+            sessionId={SESSION}
+            locale="ko"
+            onLoadState={mockLoader(state)}
+            onSaveState={saver}
+          />
+        </ThemeProvider>,
+      )
+
+      await new Promise((r) => setTimeout(r, 150))
+
+      const persistedState = saver.mock.calls[0]?.[0] as
+        | OnboardingStateT
+        | undefined
+      expect(persistedState?.current_step_index).toBe(5)
+      expect(isOnboardingComplete(persistedState!)).toBe(true)
+      expect(onComplete).toHaveBeenCalled()
+    } finally {
+      if (previousAutoComplete === undefined) {
+        delete process.env['KOSMOS_ONBOARDING_AUTO_COMPLETE']
+      } else {
+        process.env['KOSMOS_ONBOARDING_AUTO_COMPLETE'] = previousAutoComplete
+      }
+      if (previousPipaConsent === undefined) {
+        delete process.env['KOSMOS_PIPA_CONSENT']
+      } else {
+        process.env['KOSMOS_PIPA_CONSENT'] = previousPipaConsent
+      }
+    }
+  })
+})
+
 describe('resetOnboardingState', () => {
   it('resets current_step_index to 0 but preserves completed_at audit trail', async () => {
     const state: OnboardingStateT = {

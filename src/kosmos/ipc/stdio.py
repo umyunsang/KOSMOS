@@ -1425,12 +1425,60 @@ async def run(  # noqa: C901
             ToolResultFrame,
         )
 
+        # F-beta-04 fix (Wave-2 G1, PIPA §22): when the LLM dispatches via
+        # `lookup(mode='fetch', tool_id=<adapter>, params=...)`, the gate must
+        # consult the *adapter's* `policy.citizen_facing_gate` because the
+        # adapter — not the primitive — owns the citizen-consent contract
+        # (AGENTS.md L1-B B4: "KOSMOS does not invent permission policy —
+        # adapters cite the agency's own published policy"). Adapters whose
+        # gate is anything other than ``"read-only"`` (login / action / sign /
+        # submit) require a Spec 035 modal turn before dispatch, even though
+        # the carrying primitive is `lookup`. The auto-allow short-circuit
+        # below is preserved only for `read-only` lookup adapters and for
+        # `resolve_location` (a coord-only public utility).
         if fname not in _PERMISSION_GATED_PRIMITIVES:
-            with _tracer.start_as_current_span("kosmos.permission") as span:
-                span.set_attribute("kosmos.permission.mode", "auto_allow")
-                span.set_attribute("kosmos.permission.decision", "allow_once")
-                span.set_attribute("kosmos.tool.dispatched", fname)
-            return True
+            _lookup_needs_modal = False
+            if fname == "lookup":
+                _inner_tool_id = args_obj.get("tool_id")
+                if isinstance(_inner_tool_id, str) and _inner_tool_id:
+                    try:
+                        _registry_for_gate = _ensure_tool_registry()
+                        _adapter_tool = _registry_for_gate.lookup(  # type: ignore[attr-defined]
+                            _inner_tool_id
+                        )
+                        _adapter_gate = (
+                            _adapter_tool.policy.citizen_facing_gate
+                            if _adapter_tool.policy is not None
+                            else "login"
+                        )
+                        if _adapter_gate != "read-only":
+                            _lookup_needs_modal = True
+                            logger.info(
+                                "permission: lookup adapter %s requires modal "
+                                "(citizen_facing_gate=%s)",
+                                _inner_tool_id,
+                                _adapter_gate,
+                            )
+                    except Exception as exc:  # noqa: BLE001
+                        # Fail-closed: when the registry cannot resolve the
+                        # adapter (boot race / unknown id), require modal
+                        # rather than risk an unconsented L3 dispatch. The
+                        # downstream invoke() will produce a precise
+                        # unknown_tool envelope after consent if the citizen
+                        # grants — but we never auto-pass an unknown id.
+                        _lookup_needs_modal = True
+                        logger.warning(
+                            "permission: lookup adapter resolution failed "
+                            "for %s (%s); failing closed to modal",
+                            _inner_tool_id,
+                            type(exc).__name__,
+                        )
+            if not _lookup_needs_modal:
+                with _tracer.start_as_current_span("kosmos.permission") as span:
+                    span.set_attribute("kosmos.permission.mode", "auto_allow")
+                    span.set_attribute("kosmos.permission.decision", "allow_once")
+                    span.set_attribute("kosmos.tool.dispatched", fname)
+                return True
 
         # Check session grant cache first (allow_session shortcut — T048).
         session_grant_set = _session_grants.get(session_id, set())
@@ -1446,20 +1494,34 @@ async def run(  # noqa: C901
         # Determine risk level and description from primitive type.
         # verify is LIGHT_GATE (low risk, identity delegation read-only).
         # submit/subscribe are HEAVY_GATE (medium/high risk, side-effecting).
+        # `lookup` enters this branch only when the inner adapter has a
+        # non-`read-only` policy.citizen_facing_gate (F-beta-04 fix above) —
+        # NMC emergency search, HIRA L3 variants, login-gated KMA endpoints,
+        # etc. Treat as medium risk: the citizen is reading sensitive but
+        # not write-side data.
         _PRIM_RISK: dict[str, str] = {  # noqa: N806
             "verify": "low",
             "submit": "high",
             "subscribe": "medium",
+            "lookup": "medium",
         }
         _PRIM_KO: dict[str, str] = {  # noqa: N806
             "verify": "신원 확인을 위해 인증 위임을 요청합니다.",
             "submit": "정부 API에 데이터를 제출합니다. 이 작업은 되돌릴 수 없습니다.",
             "subscribe": "공공 데이터 스트림을 구독합니다.",
+            "lookup": (
+                "민감 정보 도구를 호출합니다. "
+                "어댑터 정책상 시민 동의가 필요한 데이터입니다."
+            ),
         }
         _PRIM_EN: dict[str, str] = {  # noqa: N806
             "verify": "Request identity delegation for verification.",
             "submit": "Submit data to a government API. This action is irreversible.",
             "subscribe": "Subscribe to a public data stream.",
+            "lookup": (
+                "Invoke a sensitive lookup tool whose adapter policy "
+                "requires explicit citizen consent."
+            ),
         }
 
         request_id = str(uuid.uuid4())
