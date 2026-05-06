@@ -37,8 +37,7 @@ def test_collect_tool_calls_falls_back_to_sampled_scrollback(tmp_path: Path) -> 
         encoding="utf-8",
     )
     (root / "snap-005-MOB-001-permission-1-before-allow-scrollback.txt").write_text(
-        "⏺ auth(mock_verify_ganpyeon_injeung)\n"
-        "⏺ auth(mock_verify_ganpyeon_injeung)\n",
+        "⏺ auth(mock_verify_ganpyeon_injeung)\n⏺ auth(mock_verify_ganpyeon_injeung)\n",
         encoding="utf-8",
     )
 

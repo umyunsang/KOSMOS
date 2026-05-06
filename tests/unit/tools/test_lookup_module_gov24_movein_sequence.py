@@ -156,7 +156,4 @@ def test_tool_definition_declares_ganpyeon_delegation_source() -> None:
         == "mock_verify_ganpyeon_injeung"
     )
     assert MOCK_LOOKUP_MODULE_GOV24_MOVEIN_SEQUENCE_TOOL.policy is not None
-    assert (
-        MOCK_LOOKUP_MODULE_GOV24_MOVEIN_SEQUENCE_TOOL.policy.citizen_facing_gate
-        == "login"
-    )
+    assert MOCK_LOOKUP_MODULE_GOV24_MOVEIN_SEQUENCE_TOOL.policy.citizen_facing_gate == "login"

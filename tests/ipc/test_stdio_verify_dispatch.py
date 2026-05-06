@@ -496,8 +496,7 @@ async def test_dispatch_verify_enriches_empty_citizen_params(
     assert token.get("scope") == "verify:modid.identity"
     assert delegation.get("purpose_ko") == "verify modid without scopes"
     assert (
-        delegation.get("purpose_en")
-        == "Citizen-requested delegated government service workflow."
+        delegation.get("purpose_en") == "Citizen-requested delegated government service workflow."
     )
 
 
@@ -740,8 +739,7 @@ def test_initial_verify_policy_uses_gated_shortlist_not_only_top_candidate() -> 
 
     registry = _registry_with_all_tools()
     query = (
-        "이번 달 재산세랑 자동차세, 과태료 밀린 거 있는지 확인하고 "
-        "납부 가능한 건 한 번에 처리해줘."
+        "이번 달 재산세랑 자동차세, 과태료 밀린 거 있는지 확인하고 납부 가능한 건 한 번에 처리해줘."
     )
     candidates = search(
         query=query,
@@ -819,8 +817,7 @@ def test_delegation_plan_prefers_submit_source_over_login_lookup_source() -> Non
 
     registry = _registry_with_all_tools()
     query = (
-        "가족관계증명서랑 주민등록등본이 필요한데 법원 제출용으로 "
-        "발급하고 제출 가능한지 확인해줘."
+        "가족관계증명서랑 주민등록등본이 필요한데 법원 제출용으로 발급하고 제출 가능한지 확인해줘."
     )
     candidates = search(
         query=query,
@@ -957,11 +954,14 @@ def test_mydata_verified_chain_forces_welfare_submit_without_delegation_context(
 
     assert followup is not None
     assert followup[0] == "submit"
-    assert _build_forced_submit_args(
-        query,
-        messages,
-        registry,
-    )["tool_id"] == "mock_welfare_application_submit_v1"
+    assert (
+        _build_forced_submit_args(
+            query,
+            messages,
+            registry,
+        )["tool_id"]
+        == "mock_welfare_application_submit_v1"
+    )
 
 
 def test_pending_submit_blocks_early_subscribe() -> None:
@@ -1057,8 +1057,7 @@ def test_submit_args_reject_ungranted_scope_even_when_tier_matches() -> None:
                                 "token": {
                                     "delegation_token": "del-hometax",
                                     "scope": (
-                                        "lookup:hometax.simplified,"
-                                        "submit:hometax.tax-return"
+                                        "lookup:hometax.simplified,submit:hometax.tax-return"
                                     ),
                                 }
                             },
@@ -1560,9 +1559,7 @@ def test_hometax_refund_query_forces_refund_account_second_submit() -> None:
                 receipt_status="신고완료",
                 receipt_extra={
                     "action_type": "file_return",
-                    "preflight_validation": {
-                        "payment": "separate_submit_required_before_payment"
-                    },
+                    "preflight_validation": {"payment": "separate_submit_required_before_payment"},
                 },
             ),
             "tool_call_id": submit_call_id,
@@ -1707,9 +1704,7 @@ def test_subscribe_top_privileged_chain_subscribes_before_lookup_after_location(
 
 
 def test_normalise_resolve_location_admcd_to_bundle_request() -> None:
-    args = _normalise_resolve_location_args(
-        {"query": "부산 사하구 다대1동", "want": "adm_cd"}
-    )
+    args = _normalise_resolve_location_args({"query": "부산 사하구 다대1동", "want": "adm_cd"})
 
     assert args["want"] == "coords_and_admcd"
 
@@ -2686,10 +2681,7 @@ def test_mobility_chain_forces_lookup_immediately_after_verify() -> None:
     call again. The harness-owned post-tool gate must force the registry-selected
     lookup as soon as DelegationContext exists.
     """
-    user_query = (
-        "운전면허 갱신해야 하는지 확인하고 적성검사 예약, 과태료, "
-        "자동차세까지 같이 봐줘."
-    )
+    user_query = "운전면허 갱신해야 하는지 확인하고 적성검사 예약, 과태료, 자동차세까지 같이 봐줘."
     registry = _registry_with_all_tools()
     messages = [_verified_tool_message()]
 
@@ -3009,9 +3001,5 @@ async def test_dispatch_verify_unknown_tool_id_fails_fast(
     assert isinstance(envelope, dict)
     assert envelope.get("kind") == "verify"
     result = envelope.get("result", {})
-    message = (
-        result.get("message")
-        if isinstance(result, dict)
-        else envelope.get("error")
-    )
+    message = result.get("message") if isinstance(result, dict) else envelope.get("error")
     assert "unknown verify tool_id" in str(message)

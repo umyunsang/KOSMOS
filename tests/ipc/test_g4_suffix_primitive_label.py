@@ -52,9 +52,7 @@ async def test_suffix_emits_primitive_label_for_subscribe_tool() -> None:
     # The suffix render must contain selection-card metadata next to the id.
     # We exercise the same code-path as `_build_available_adapters_suffix`
     # by building the prefix string with the same simple template.
-    primitive_label = (
-        f" [primitive={cbs_match.primitive}]" if cbs_match.primitive else ""
-    )
+    primitive_label = f" [primitive={cbs_match.primitive}]" if cbs_match.primitive else ""
     mode_label = f" [mode={cbs_match.adapter_mode}]" if cbs_match.adapter_mode else ""
     policy_label = (
         f" [policy_url={cbs_match.real_classification_url}]"

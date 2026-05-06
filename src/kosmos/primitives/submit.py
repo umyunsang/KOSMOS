@@ -497,8 +497,7 @@ async def submit(
 
         singleton_key = (session_id, tool_id)
         singleton_guard_active = (
-            session_id not in {"", "unknown"}
-            and tool_id in _SESSION_SINGLETON_SUBMIT_TOOL_IDS
+            session_id not in {"", "unknown"} and tool_id in _SESSION_SINGLETON_SUBMIT_TOOL_IDS
         )
         if singleton_guard_active and singleton_key in _SUCCESSFUL_SESSION_SINGLETON_SUBMITS:
             logger.warning(

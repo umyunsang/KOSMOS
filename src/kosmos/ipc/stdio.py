@@ -66,9 +66,7 @@ _CORE_PRIMITIVE_TOOL_IDS: set[str] = {
     "submit",
     "subscribe",
 }
-_DELEGATION_SCOPE_RE = re.compile(
-    r"^(lookup|submit|verify|subscribe):[a-z0-9_]+\.[a-z0-9_-]+$"
-)
+_DELEGATION_SCOPE_RE = re.compile(r"^(lookup|submit|verify|subscribe):[a-z0-9_]+\.[a-z0-9_-]+$")
 _KMA_FORECAST_BASE_TIMES: Final[tuple[str, ...]] = (
     "0200",
     "0500",
@@ -613,12 +611,9 @@ def _tool_payload_succeeded(payload: dict[str, object], primitive_name: str) -> 
     result = _tool_payload_result(payload)
     if result is None:
         if primitive_name == "subscribe" and payload.get("kind") == "subscribe":
-            return (
-                payload.get("status") == "opened"
-                and (
-                    isinstance(payload.get("subscription_id"), str)
-                    or isinstance(payload.get("handle_id"), str)
-                )
+            return payload.get("status") == "opened" and (
+                isinstance(payload.get("subscription_id"), str)
+                or isinstance(payload.get("handle_id"), str)
             )
         return False
     if result.get("kind") == "error":
@@ -987,9 +982,7 @@ def _schema_enum_values(meta: object, schema: dict[str, object] | None) -> list[
     direct = meta.get("enum")
     if isinstance(direct, list):
         return list(direct)
-    for item in (
-        meta.get("anyOf", []) if isinstance(meta.get("anyOf"), list) else []
-    ):
+    for item in meta.get("anyOf", []) if isinstance(meta.get("anyOf"), list) else []:
         if isinstance(item, dict):
             values = _schema_enum_values(item, schema)
             if values:
@@ -1204,9 +1197,7 @@ def _fill_optional_location_anchor(
 
 
 def _latest_kma_forecast_base(now: datetime | None = None) -> tuple[str, str]:
-    kst_now = (now or datetime.now(tz=ZoneInfo("Asia/Seoul"))).astimezone(
-        ZoneInfo("Asia/Seoul")
-    )
+    kst_now = (now or datetime.now(tz=ZoneInfo("Asia/Seoul"))).astimezone(ZoneInfo("Asia/Seoul"))
     publication_anchor = kst_now - timedelta(minutes=10)
     anchor_hhmm = publication_anchor.strftime("%H%M")
     for base_time in reversed(_KMA_FORECAST_BASE_TIMES):
@@ -1538,26 +1529,20 @@ def _build_forced_lookup_args(
 ) -> dict[str, object] | None:
     candidates = _search_relevant_candidates(user_query, registry)
     candidate = None
-    if (
-        _gov24_movein_sequence_completed(llm_messages)
-        and not _conversation_has_successful_tool_id(
-            llm_messages,
-            "lookup",
-            "mock_lookup_module_national_ax_bundle",
-        )
+    if _gov24_movein_sequence_completed(llm_messages) and not _conversation_has_successful_tool_id(
+        llm_messages,
+        "lookup",
+        "mock_lookup_module_national_ax_bundle",
     ):
         candidate = _candidate_by_tool_id(
             candidates,
             "mock_lookup_module_national_ax_bundle",
             "lookup",
         )
-    if (
-        candidate is None
-        and _gov24_bundle_lookup_should_follow_direct_submit(
-            user_query,
-            llm_messages,
-            registry,
-        )
+    if candidate is None and _gov24_bundle_lookup_should_follow_direct_submit(
+        user_query,
+        llm_messages,
+        registry,
     ):
         candidate = _candidate_by_tool_id(
             candidates,
@@ -1617,11 +1602,7 @@ def _successful_submit_action_types_for_tool(
         if not isinstance(action_type, str) or not action_type:
             result = _tool_payload_result(payload)
             receipt = result.get("adapter_receipt") if result is not None else None
-            action_type = (
-                receipt.get("action_type")
-                if isinstance(receipt, dict)
-                else None
-            )
+            action_type = receipt.get("action_type") if isinstance(receipt, dict) else None
         if isinstance(action_type, str) and action_type:
             completed.add(action_type)
     return completed
@@ -2104,7 +2085,9 @@ def _retrieval_policy_requires_initial_verify(candidates: list[Any]) -> bool:
         return False
     strong_gate_floor = max(1.0, float(getattr(positive_candidates[0], "score", 0) or 0) * 0.25)
     gated_candidates = [
-        candidate for candidate in positive_candidates if _candidate_is_policy_gated(candidate)
+        candidate
+        for candidate in positive_candidates
+        if _candidate_is_policy_gated(candidate)
         and float(getattr(candidate, "score", 0) or 0) >= strong_gate_floor
     ]
     if not gated_candidates:
@@ -2115,11 +2098,7 @@ def _retrieval_policy_requires_initial_verify(candidates: list[Any]) -> bool:
         float(getattr(candidate, "score", 0) or 0) for candidate in gated_candidates
     )
     top_tool_id = getattr(top_candidate, "tool_id", None) or getattr(top_candidate, "id", None)
-    if (
-        top_tool_id == "resolve_location"
-        and top_score > 0
-        and top_score >= best_gated_score
-    ):
+    if top_tool_id == "resolve_location" and top_score > 0 and top_score >= best_gated_score:
         return False
     return not (
         top_score > 0
@@ -2385,18 +2364,16 @@ def _enrich_verify_args_from_policy(
     params_obj = args_obj.get("params")
     params: dict[str, object] = dict(params_obj) if isinstance(params_obj, dict) else {}
     scope_list = params.get("scope_list")
-    existing_scopes = [
-        scope.strip()
-        for scope in scope_list
-        if _is_valid_delegation_scope(scope)
-    ] if isinstance(scope_list, list) else []
+    existing_scopes = (
+        [scope.strip() for scope in scope_list if _is_valid_delegation_scope(scope)]
+        if isinstance(scope_list, list)
+        else []
+    )
     discarded_scopes = (
         [
             scope
             for scope in scope_list
-            if isinstance(scope, str)
-            and scope.strip()
-            and not _is_valid_delegation_scope(scope)
+            if isinstance(scope, str) and scope.strip() and not _is_valid_delegation_scope(scope)
         ]
         if isinstance(scope_list, list)
         else []
@@ -2576,11 +2553,7 @@ def _successful_gov24_minwon_types(llm_messages: list[Any]) -> set[str]:
         if not isinstance(minwon_type, str) or not minwon_type:
             result = _tool_payload_result(payload)
             receipt = result.get("adapter_receipt") if result is not None else None
-            minwon_type = (
-                receipt.get("minwon_type")
-                if isinstance(receipt, dict)
-                else None
-            )
+            minwon_type = receipt.get("minwon_type") if isinstance(receipt, dict) else None
         if isinstance(minwon_type, str) and minwon_type:
             completed.add(minwon_type)
     return completed
@@ -3010,14 +2983,12 @@ def _check_submit_prerequisite(
 
     positive_candidates = _relevant_positive_candidates(candidates)
     needs_location = any(
-        candidate.tool_id == "resolve_location"
-        for candidate in positive_candidates
+        candidate.tool_id == "resolve_location" for candidate in positive_candidates
     )
     lookup_ids = [
         candidate.tool_id
         for candidate in positive_candidates
-        if candidate.primitive == "lookup"
-        and candidate.tool_id != "resolve_location"
+        if candidate.primitive == "lookup" and candidate.tool_id != "resolve_location"
     ]
 
     if needs_location and not _conversation_has_successful_primitive(
@@ -3156,9 +3127,8 @@ def _check_tool_call_after_completed_submit_subscribe(
             llm_messages,
             registry,
         )
-        if (
-            pending_submit_args is not None
-            and not _submit_args_already_succeeded(pending_submit_args, llm_messages)
+        if pending_submit_args is not None and not _submit_args_already_succeeded(
+            pending_submit_args, llm_messages
         ):
             return None
     return (
@@ -3191,9 +3161,8 @@ def _check_tool_call_after_completed_submit(
         llm_messages,
         registry,
     )
-    if (
-        pending_submit_args is not None
-        and not _submit_args_already_succeeded(pending_submit_args, llm_messages)
+    if pending_submit_args is not None and not _submit_args_already_succeeded(
+        pending_submit_args, llm_messages
     ):
         return None
     candidates = _search_relevant_candidates(user_query, registry)
@@ -3285,9 +3254,7 @@ _FINAL_EXTERNAL_HANDOFF_AFTER_TOOL_RE = re.compile(
     r"(직접|확인|진행|처리|납부|예약))",
     re.IGNORECASE,
 )
-_FINAL_DISMISSES_SUBSCRIBE_RE = re.compile(
-    r"(구독|알림).{0,40}(무관|불필요|종료해야|취소해야)"
-)
+_FINAL_DISMISSES_SUBSCRIBE_RE = re.compile(r"(구독|알림).{0,40}(무관|불필요|종료해야|취소해야)")
 _FINAL_UNSUPPORTED_PROCEDURAL_AFTER_SUBMIT_RE = re.compile(
     r"("
     r"필요\s*서류|담당\s*기관|지원\s*금액|처리\s*기간|"
@@ -3330,9 +3297,7 @@ def _tool_payload_has_domain_source(llm_messages: list[Any], *needles: str) -> b
         role = getattr(m, "role", None) or (m.get("role") if isinstance(m, dict) else None)
         if role != "tool":
             continue
-        content = getattr(m, "content", None) or (
-            m.get("content") if isinstance(m, dict) else None
-        )
+        content = getattr(m, "content", None) or (m.get("content") if isinstance(m, dict) else None)
         if isinstance(content, str):
             haystack_parts.append(content.lower())
     haystack = "\n".join(haystack_parts)
@@ -3357,9 +3322,7 @@ def _tool_payload_has_structured_key(llm_messages: list[Any], *keys: str) -> boo
         role = getattr(m, "role", None) or (m.get("role") if isinstance(m, dict) else None)
         if role != "tool":
             continue
-        content = getattr(m, "content", None) or (
-            m.get("content") if isinstance(m, dict) else None
-        )
+        content = getattr(m, "content", None) or (m.get("content") if isinstance(m, dict) else None)
         if not isinstance(content, str):
             continue
         payload = _result_payload_from_tool_content(content)
@@ -3403,9 +3366,8 @@ def _post_tool_final_answer_violations(text: str, llm_messages: list[Any]) -> li
             "redirecting the citizen to direct external-site handling after "
             "submit/subscribe receipts already succeeded"
         )
-    if (
-        _FINAL_DISMISSES_SUBSCRIBE_RE.search(text)
-        and _conversation_has_successful_primitive(llm_messages, "subscribe")
+    if _FINAL_DISMISSES_SUBSCRIBE_RE.search(text) and _conversation_has_successful_primitive(
+        llm_messages, "subscribe"
     ):
         violations.append(
             "describing a successful registry-selected subscribe handle as "
@@ -3476,9 +3438,9 @@ def _check_final_answer_grounding(text: str, llm_messages: list[Any]) -> str | N
         "medical_guideline",
     ):
         violations.append("medical triage thresholds or treatment advice")
-    if _FINAL_ALREADY_RESOLVED_ADDRESS_RE.search(
-        text
-    ) and _conversation_has_successful_primitive(llm_messages, "resolve_location"):
+    if _FINAL_ALREADY_RESOLVED_ADDRESS_RE.search(text) and _conversation_has_successful_primitive(
+        llm_messages, "resolve_location"
+    ):
         violations.append("asking again for an address that was already resolved by tools")
     violations.extend(_post_tool_final_answer_violations(text, llm_messages))
     if not violations:
@@ -4515,14 +4477,10 @@ async def run(  # noqa: C901
             prim_label = f" [primitive={c.primitive}]" if c.primitive else ""
             mode_label = f" [mode={c.adapter_mode}]" if c.adapter_mode else ""
             gate_label = (
-                f" [citizen_facing_gate={c.citizen_facing_gate}]"
-                if c.citizen_facing_gate
-                else ""
+                f" [citizen_facing_gate={c.citizen_facing_gate}]" if c.citizen_facing_gate else ""
             )
             policy_label = (
-                f" [policy_url={c.real_classification_url}]"
-                if c.real_classification_url
-                else ""
+                f" [policy_url={c.real_classification_url}]" if c.real_classification_url else ""
             )
             delegation_label = (
                 f" [delegation_source={c.delegation_source_tool_id}]"
@@ -4974,9 +4932,10 @@ async def run(  # noqa: C901
                         )
                         if _adapter_gate != "read-only":
                             _lookup_params = args_obj.get("params")
-                            _has_delegation_context = isinstance(
-                                _lookup_params, dict
-                            ) and "delegation_context" in _lookup_params
+                            _has_delegation_context = (
+                                isinstance(_lookup_params, dict)
+                                and "delegation_context" in _lookup_params
+                            )
                             if _has_delegation_context:
                                 logger.info(
                                     "permission: lookup adapter %s uses prior "
@@ -5532,8 +5491,7 @@ async def run(  # noqa: C901
                             or not isinstance(scope_list, list)
                             or not scope_list
                             or not all(
-                                isinstance(scope, str) and scope.strip()
-                                for scope in scope_list
+                                isinstance(scope, str) and scope.strip() for scope in scope_list
                             )
                         ):
                             dispatch_error = (
@@ -6032,9 +5990,7 @@ async def run(  # noqa: C901
                         augmented_system = augmented_system + "\n\n" + suffix_block + "\n"
                     policy_plan_block = _build_policy_plan_suffix(latest_user_utt)
                     if policy_plan_block:
-                        augmented_system = (
-                            augmented_system + "\n\n" + policy_plan_block + "\n"
-                        )
+                        augmented_system = augmented_system + "\n\n" + policy_plan_block + "\n"
             except Exception:  # noqa: BLE001 — fail-open per FR-002
                 logger.exception(
                     "available_adapters auto-inject failed — continuing without suffix"
@@ -6286,12 +6242,11 @@ async def run(  # noqa: C901
             # K-EXAONE on FriendliAI honours it as a hard constraint at the
             # decoding boundary rather than a system-prompt hint.
             stream_tool_choice: str | dict[str, object] | None = None
-            if (
-                _retrieval_prefers_initial_resolve_location(latest_user_utt)
-                and not _conversation_has_successful_primitive(
-                    llm_messages,
-                    "resolve_location",
-                )
+            if _retrieval_prefers_initial_resolve_location(
+                latest_user_utt
+            ) and not _conversation_has_successful_primitive(
+                llm_messages,
+                "resolve_location",
             ):
                 stream_tool_choice = {
                     "type": "function",
@@ -6387,6 +6342,7 @@ async def run(  # noqa: C901
                     force_followup_primitive_next_turn = None
                     forced_tool_name = None
             try:
+
                 async def _empty_forced_stream() -> Any:
                     if False:
                         yield None
@@ -7168,10 +7124,9 @@ async def run(  # noqa: C901
                         if latest_auth_context is not None:
                             _session_auth_contexts[frame.session_id] = latest_auth_context
                         gov24_next_submit = _next_gov24_movein_submit_args(llm_messages)
-                        if (
-                            gov24_next_submit is not None
-                            and args_obj.get("tool_id") == gov24_next_submit.get("tool_id")
-                        ):
+                        if gov24_next_submit is not None and args_obj.get(
+                            "tool_id"
+                        ) == gov24_next_submit.get("tool_id"):
                             next_params = gov24_next_submit.get("params")
                             if isinstance(next_params, dict):
                                 for key, value in next_params.items():
@@ -7200,13 +7155,10 @@ async def run(  # noqa: C901
                             registry=_ensure_tool_registry(),
                         )
 
-                    if (
-                        fname == "submit"
-                        and not _submit_args_compatible_with_latest_auth(
-                            args_obj,
-                            llm_messages,
-                            _ensure_tool_registry(),
-                        )
+                    if fname == "submit" and not _submit_args_compatible_with_latest_auth(
+                        args_obj,
+                        llm_messages,
+                        _ensure_tool_registry(),
                     ):
                         pending_compatible_submit = _build_forced_submit_args(
                             latest_user_utt,
@@ -8075,9 +8027,7 @@ async def run(  # noqa: C901
                 # with identical params in β7 (2026-05-05); each produced
                 # NO_DATA but the model did not recognise the redundancy.
                 _dedup_inner_id = (
-                    args_obj.get("tool_id")
-                    if fname in {"lookup", "submit", "subscribe"}
-                    else fname
+                    args_obj.get("tool_id") if fname in {"lookup", "submit", "subscribe"} else fname
                 )
                 _dedup_key = _hash_call(str(_dedup_inner_id), args_obj)
                 _prior_outcome = _seen_calls.get(_dedup_key)

@@ -72,9 +72,7 @@ async def test_dispatch_ganpyeon_injeung_issues_delegation_context() -> None:
 
     assert isinstance(result, GanpyeonInjeungContext)
     assert result.delegation_context is not None
-    assert result.delegation_context.token.scope == (
-        "lookup:gov24.movein,submit:gov24.minwon"
-    )
+    assert result.delegation_context.token.scope == ("lookup:gov24.movein,submit:gov24.minwon")
 
 
 async def test_dispatch_ganpyeon_injeung_writes_delegation_issued_event(

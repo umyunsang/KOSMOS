@@ -53,6 +53,7 @@ def _registry() -> ToolRegistry:
     register_all_tools(registry, executor)
     return registry
 
+
 # ---------------------------------------------------------------------------
 # _query_implies_followup_lookup
 # ---------------------------------------------------------------------------
@@ -142,8 +143,7 @@ def test_chain_complete_passes_through() -> None:
         _msg_tool_result("lookup", {"t1h": 20.7, "reh": 23}),
     ]
     assert (
-        _check_resolve_terminated_without_followup(msgs, "부산 날씨", registry=_registry())
-        is None
+        _check_resolve_terminated_without_followup(msgs, "부산 날씨", registry=_registry()) is None
     )
 
 
@@ -253,8 +253,7 @@ def test_lookup_without_fetch_mode_still_counts() -> None:
         ),
     ]
     assert (
-        _check_resolve_terminated_without_followup(msgs, "부산 날씨", registry=_registry())
-        is None
+        _check_resolve_terminated_without_followup(msgs, "부산 날씨", registry=_registry()) is None
     )
 
 

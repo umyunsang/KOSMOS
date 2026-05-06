@@ -344,10 +344,7 @@ async def _call(
         output = _parse_response(raw)
         return {
             "kind": "collection",
-            "items": [
-                warning.model_dump(mode="json")
-                for warning in output.warnings
-            ],
+            "items": [warning.model_dump(mode="json") for warning in output.warnings],
             "total_count": output.total_count,
         }
 

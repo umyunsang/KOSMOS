@@ -272,8 +272,7 @@ async def handle(
     # Scope may be comma-joined multi-scope; match exact entry.
     if _REQUIRED_SCOPE not in token_scope.split(","):
         logger.warning(
-            "mock_lookup_module_gov24_certificate: scope violation "
-            "(token_scope=%r required=%r)",
+            "mock_lookup_module_gov24_certificate: scope violation (token_scope=%r required=%r)",
             token_scope,
             _REQUIRED_SCOPE,
         )
@@ -289,8 +288,7 @@ async def handle(
             "kind": "error",
             "reason": "auth_required",
             "message": (
-                f"Delegation token scope {token_scope!r} does not "
-                f"grant {_REQUIRED_SCOPE!r}."
+                f"Delegation token scope {token_scope!r} does not grant {_REQUIRED_SCOPE!r}."
             ),
             "retryable": False,
         }

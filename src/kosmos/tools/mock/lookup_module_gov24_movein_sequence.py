@@ -248,10 +248,7 @@ _UPDATE_ROWS: dict[LinkedMoveInUpdate, dict[str, Any]] = {
 def _requested_update_rows(
     requested_updates: list[LinkedMoveInUpdate],
 ) -> list[dict[str, Any]]:
-    return [
-        {"update_id": update_id, **_UPDATE_ROWS[update_id]}
-        for update_id in requested_updates
-    ]
+    return [{"update_id": update_id, **_UPDATE_ROWS[update_id]} for update_id in requested_updates]
 
 
 def _build_fixture(inp: Gov24MoveInSequenceInput) -> dict[str, Any]:
@@ -277,8 +274,7 @@ def _build_fixture(inp: Gov24MoveInSequenceInput) -> dict[str, Any]:
                 "tool_id": "mock_submit_module_gov24_minwon",
                 "minwon_type": "주소변경",
                 "why": (
-                    "자동차, 건강보험, 학교배정, 우편물 전송 등 "
-                    "허용된 연계 주소 변경을 처리합니다."
+                    "자동차, 건강보험, 학교배정, 우편물 전송 등 허용된 연계 주소 변경을 처리합니다."
                 ),
                 "blocking": False,
             },
@@ -344,8 +340,7 @@ async def handle(
             "kind": "error",
             "reason": "auth_required",
             "message": (
-                f"Delegation token scope {token_scope!r} does not grant "
-                f"{_REQUIRED_SCOPE!r}."
+                f"Delegation token scope {token_scope!r} does not grant {_REQUIRED_SCOPE!r}."
             ),
             "retryable": False,
         }

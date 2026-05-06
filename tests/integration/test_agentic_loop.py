@@ -291,10 +291,7 @@ async def _run_with_frame(  # noqa: C901 — test harness deliberately covers ma
         deadline = asyncio.get_running_loop().time() + _RUNNER_TIMEOUT
         while asyncio.get_running_loop().time() < deadline:
             frames = fake_stdout.buffer.as_frames()
-            if any(
-                f.get("kind") == "assistant_chunk" and f.get("done") is True
-                for f in frames
-            ):
+            if any(f.get("kind") == "assistant_chunk" and f.get("done") is True for f in frames):
                 break
             await asyncio.sleep(0.01)
         os.write(w_fd, (exit_frame.model_dump_json() + "\n").encode("utf-8"))
@@ -528,13 +525,13 @@ class _FiveTurnToolCallLLMClient(_BaseFakeLLMClient):
                 tool_call_id=f"call-turn{turn}-{uuid.uuid4().hex[:8]}",
                 function_name="lookup",
                 function_args_delta=json.dumps(
-                        {
-                            "mode": "fetch",
-                            "tool_id": "kma_weather_alert_status",
-                            "params": {"stn_id": f"10{turn}"},
-                        },
-                        ensure_ascii=False,
-                    ),
+                    {
+                        "mode": "fetch",
+                        "tool_id": "kma_weather_alert_status",
+                        "params": {"stn_id": f"10{turn}"},
+                    },
+                    ensure_ascii=False,
+                ),
             )
             yield StreamEvent(type="done")
         else:

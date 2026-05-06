@@ -540,4 +540,6 @@ def register(registry: object, executor: object) -> None:
 
     registry.register(NMC_EMERGENCY_SEARCH_TOOL)
     executor.register_adapter("nmc_emergency_search", _adapter)
-    logger.info("Registered tool: nmc_emergency_search (read-only public lookup — freshness SLO active)")
+    logger.info(
+        "Registered tool: nmc_emergency_search (read-only public lookup — freshness SLO active)"
+    )

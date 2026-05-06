@@ -154,9 +154,7 @@ async def test_transparency_fields_present_on_success() -> None:
     assert receipt["_mode"] == "mock"
     assert receipt["_international_reference"] == "UK HMRC Making Tax Digital"
     assert receipt["_reference_implementation"] == "ax-infrastructure-callable-channel"
-    assert receipt["_mock_fidelity_grade"] == (
-        "C-official-portal-flow-private-submit-api-inferred"
-    )
+    assert receipt["_mock_fidelity_grade"] == ("C-official-portal-flow-private-submit-api-inferred")
     assert receipt["_mock_evidence"]["credential_status"] == "student_no_live_authority"
 
 

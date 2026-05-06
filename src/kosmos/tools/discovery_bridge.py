@@ -307,9 +307,7 @@ def _submit_to_govapitool(
     """Build a GovAPITool wrapper from a submit AdapterRegistration."""
     sh_ko = " ".join(registration.search_hint.get("ko", []))
     sh_en = " ".join(registration.search_hint.get("en", []))
-    delegation_source = _delegation_source_from_published_tier(
-        registration.published_tier_minimum
-    )
+    delegation_source = _delegation_source_from_published_tier(registration.published_tier_minimum)
     required_scope = _required_scope_from_registration(registration)
     verify_instruction = (
         f" Use verify(tool_id='{delegation_source}', params={{'scope_list': "

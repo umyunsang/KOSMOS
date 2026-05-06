@@ -901,15 +901,13 @@ class AdapterCandidate(BaseModel):
             "The LLM uses this as transparency metadata, not as a routing key."
         ),
     )
-    citizen_facing_gate: Literal["read-only", "login", "action", "sign", "submit"] | None = (
-        Field(
-            default=None,
-            description=(
-                "AdapterRealDomainPolicy.citizen_facing_gate from the registered tool. "
-                "The LLM uses this to decide whether a prior verify DelegationContext "
-                "is required before invocation."
-            ),
-        )
+    citizen_facing_gate: Literal["read-only", "login", "action", "sign", "submit"] | None = Field(
+        default=None,
+        description=(
+            "AdapterRealDomainPolicy.citizen_facing_gate from the registered tool. "
+            "The LLM uses this to decide whether a prior verify DelegationContext "
+            "is required before invocation."
+        ),
     )
     delegation_source_tool_id: str | None = Field(
         default=None,

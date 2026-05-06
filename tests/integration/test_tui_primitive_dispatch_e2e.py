@@ -367,10 +367,7 @@ async def _run_chain(
         deadline = asyncio.get_running_loop().time() + _RUNNER_TIMEOUT
         while asyncio.get_running_loop().time() < deadline:
             frames = fake_stdout.buffer.as_frames()
-            if any(
-                f.get("kind") == "assistant_chunk" and f.get("done") is True
-                for f in frames
-            ):
+            if any(f.get("kind") == "assistant_chunk" and f.get("done") is True for f in frames):
                 break
             await asyncio.sleep(0.01)
         os.write(w_fd, (exit_frame.model_dump_json() + "\n").encode())
