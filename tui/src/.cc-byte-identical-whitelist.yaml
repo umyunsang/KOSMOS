@@ -42,6 +42,7 @@ causes:
   W11: "Sandbox-runtime install hint stripped"
   W12: "OTEL frame_commit instrumentation hook"
   W13: "Dead-code cleanup (Spec 1633/1978/2293 — Anthropic services/api/auth/secureStorage/teleport stubbed at call site)"
+  W14: "Real-use TUI audit correction (accessibility/legibility, no contract change)"
 
 # Each entry must specify: path (repo-root relative), cause (one or comma-separated),
 # spec_ref (issue # or docs path). Optional: notes, expected_sha256 (locks
@@ -187,6 +188,14 @@ entries:
     notes: "'npm install -g @anthropic-ai/sandbox-runtime' install hint removed."
 
   # ── W13: dead-code cleanup (Spec 1633 / 1978 / 2293) ──
+  - path: tui/src/components/PromptInput/PromptInputFooterSuggestions.tsx
+    cause: W14
+    spec_ref: "specs/realuse-audit-2026-05-05/fixes/g7-autocomplete.md"
+    notes: "Selected-row caret glyph for slash autocomplete legibility; preserves CC layout budget."
+  - path: tui/src/components/agents/ToolSelector.tsx
+    cause: W13,W8
+    spec_ref: "#1633 (TungstenTool removal), specs/cc-migration-audit/scope-S3-components-screens.md § 5.3"
+    notes: "Claude Code-internal TungstenTool bucket removed; sourceMappingURL stripped."
   - path: tui/src/components/messages/AssistantTextMessage.tsx
     cause: W13,W1
     spec_ref: "#1633 (services/api/errors removal), #2293 (secureStorage removal)"
