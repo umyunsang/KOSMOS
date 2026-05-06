@@ -6138,6 +6138,19 @@ async def run(  # noqa: C901
             )
             return _hashlib.sha256(f"{tool_id}|{canonical}".encode()).hexdigest()[:16]
 
+        def _dedup_params_for_call(
+            fname: str,
+            args_obj: dict[str, object],
+        ) -> dict[str, object]:
+            """Return the semantic payload used for repeat-call hashing."""
+            if fname in {"lookup", "submit", "subscribe"}:
+                params_obj = args_obj.get("params")
+                params = dict(params_obj) if isinstance(params_obj, dict) else {}
+                if fname == "subscribe" and "lifetime_seconds" in args_obj:
+                    params["lifetime_seconds"] = args_obj["lifetime_seconds"]
+                return params
+            return args_obj
+
         _issued_submit_signatures: set[str] = set()
         _issued_singleton_submit_tool_ids: set[str] = set()
         _SINGLETON_SUBMIT_TOOL_IDS = frozenset({"mock_traffic_fine_pay_v1"})  # noqa: N806
@@ -6176,24 +6189,28 @@ async def run(  # noqa: C901
 
             Returns one of 'no_data' | 'error' | 'ok'.
             """
-            kind = env.get("kind")
+            if env.get("error") is not None:
+                return "error"
+            result_obj = env.get("result")
+            payload = cast("dict[str, object]", result_obj) if isinstance(result_obj, dict) else env
+            kind = payload.get("kind")
             if kind == "error":
                 return "error"
             if kind == "collection":
-                items = env.get("items")
+                items = payload.get("items")
                 if isinstance(items, list) and len(items) == 0:
                     return "no_data"
-                total = env.get("total_count")
+                total = payload.get("total_count")
                 if isinstance(total, int) and total == 0:
                     return "no_data"
                 return "ok"
             if kind == "search":
-                cands = env.get("candidates")
+                cands = payload.get("candidates")
                 if isinstance(cands, list) and len(cands) == 0:
                     return "no_data"
                 return "ok"
             if kind == "record":
-                inner = env.get("item") or env.get("result") or {}
+                inner = payload.get("item") or payload.get("result") or {}
                 if isinstance(inner, dict):
                     if inner.get("found") is False:
                         return "no_data"
@@ -6203,7 +6220,7 @@ async def run(  # noqa: C901
                     return "ok"
                 return "ok"
             if kind == "timeseries":
-                points = env.get("points")
+                points = payload.get("points")
                 if isinstance(points, list) and len(points) == 0:
                     return "no_data"
                 return "ok"
@@ -8035,7 +8052,10 @@ async def run(  # noqa: C901
                 _dedup_inner_id = (
                     args_obj.get("tool_id") if fname in {"lookup", "submit", "subscribe"} else fname
                 )
-                _dedup_key = _hash_call(str(_dedup_inner_id), args_obj)
+                _dedup_key = _hash_call(
+                    str(_dedup_inner_id),
+                    _dedup_params_for_call(fname, args_obj),
+                )
                 _prior_outcome = _seen_calls.get(_dedup_key)
                 _repeat_successful_submit_scheduled = False
                 if fname == "submit":

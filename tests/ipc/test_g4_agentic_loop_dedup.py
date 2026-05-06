@@ -37,26 +37,30 @@ def test_g4_dedup_module_code_is_present() -> None:
     )
 
 
-def test_g4_classify_envelope_outcome_collection_empty() -> None:
-    """Empty collection envelopes classify as 'no_data'."""
+def test_g4_classify_envelope_outcome_collection_empty() -> None:  # noqa: C901
+    """Empty lookup result envelopes classify as 'no_data'."""
 
     # Classifier is defined inside _handle_chat_request closure. Re-implement
     # the same classification rules here as a contract guard. Any future
     # refactor that breaks this contract will fail this test.
     def _classify(env: dict) -> str:
-        kind = env.get("kind")
+        if env.get("error") is not None:
+            return "error"
+        result_obj = env.get("result")
+        payload = result_obj if isinstance(result_obj, dict) else env
+        kind = payload.get("kind")
         if kind == "error":
             return "error"
         if kind == "collection":
-            items = env.get("items")
+            items = payload.get("items")
             if isinstance(items, list) and len(items) == 0:
                 return "no_data"
-            total = env.get("total_count")
+            total = payload.get("total_count")
             if isinstance(total, int) and total == 0:
                 return "no_data"
             return "ok"
         if kind == "record":
-            inner = env.get("item") or env.get("result") or {}
+            inner = payload.get("item") or payload.get("result") or {}
             if isinstance(inner, dict):
                 if inner.get("found") is False:
                     return "no_data"
@@ -67,7 +71,18 @@ def test_g4_classify_envelope_outcome_collection_empty() -> None:
         return "ok"
 
     assert _classify({"kind": "collection", "items": [], "total_count": 0}) == "no_data"
+    assert (
+        _classify(
+            {
+                "kind": "lookup",
+                "result": {"kind": "collection", "items": [], "total_count": 0},
+            }
+        )
+        == "no_data"
+    )
     assert _classify({"kind": "collection", "items": [{"x": 1}], "total_count": 1}) == "ok"
+    assert _classify({"kind": "lookup", "result": {"kind": "error", "reason": "x"}}) == "error"
+    assert _classify({"kind": "lookup", "error": "adapter failed"}) == "error"
     assert _classify({"kind": "error", "reason": "x", "message": "y"}) == "error"
     assert _classify({"kind": "record", "item": {"found": False}}) == "no_data"
     assert _classify({"kind": "record", "item": {"matched": []}}) == "no_data"
@@ -88,6 +103,12 @@ def _make_hash_call():
             return " ".join(v.split())
         if isinstance(v, float) and v == int(v):
             return int(v)
+        if isinstance(v, dict):
+            return {
+                str(k): _norm_val(value) for k, value in v.items() if str(k) not in pagination_keys
+            }
+        if isinstance(v, list):
+            return [_norm_val(item) for item in v]
         return v
 
     def _hash_call(tool_id: str, params: dict) -> str:
@@ -164,6 +185,20 @@ def test_g11a_hash_ignores_pagination_keys() -> None:
     assert base == page3_diff_rows, "page_no/num_of_rows/order_by all stripped before hash"
 
 
+def test_g11a_hash_normalizes_nested_adapter_params() -> None:
+    """Wave-5: wrapper args must not be hashed as if they were adapter params."""
+    _hash_call = _make_hash_call()
+    flat = _hash_call("mohw_welfare_eligibility_search", {"search_wrd": "소상공인 지원"})
+    nested_page = _hash_call(
+        "mohw_welfare_eligibility_search",
+        {"params": {"search_wrd": " 소상공인  지원", "page_no": 3}},
+    )
+    assert flat != nested_page, (
+        "_hash_call itself preserves shape; stdio.py must pass adapter params, "
+        "not the primitive wrapper args, for lookup/submit/subscribe dedup."
+    )
+
+
 def test_g11a_hash_source_contains_normalization() -> None:
     """Wave-4 G11a — source-level guard: stdio.py _hash_call must carry normalization code."""
     stdio_src = pathlib.Path(__file__).resolve().parents[2] / "src" / "kosmos" / "ipc" / "stdio.py"
@@ -176,6 +211,12 @@ def test_g11a_hash_source_contains_normalization() -> None:
     )
     assert 'separators=(",", ":")' in text or "separators=(',', ':')" in text, (
         "stdio.py _hash_call must use compact JSON separators for canonical form."
+    )
+    assert "_dedup_params_for_call" in text, (
+        "stdio.py must derive dedup hashes from adapter params, not primitive wrapper args."
+    )
+    assert "_dedup_params_for_call(fname, args_obj)" in text, (
+        "stdio.py dedup call site must hash semantic adapter params for lookup/submit/subscribe."
     )
 
 
