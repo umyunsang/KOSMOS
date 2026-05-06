@@ -359,13 +359,28 @@ async def test_subscribe_cbs_disaster_invoked() -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_sc004_all_mocks_invoked() -> None:
+@pytest.mark.asyncio
+async def test_sc004_all_mocks_invoked(tmp_path: Path) -> None:
     """SC-004: assert all mock adapters appear in the invoked sets.
 
-    This test MUST run last (alphabetically after test_verify_* / test_lookup_*
-    / test_submit_* / test_subscribe_* — pytest default ordering by declaration
-    and parametrize order guarantees the fixtures run first in this module).
+    The CI suite runs with pytest-xdist. Module-level sets are process-local,
+    so this aggregate assertion invokes the inventory again inside the current
+    worker instead of relying on state produced by tests scheduled elsewhere.
     """
+    _VERIFY_INVOKED.clear()
+    _LOOKUP_INVOKED.clear()
+    _SUBMIT_INVOKED.clear()
+    _SUBSCRIBE_INVOKED.clear()
+
+    for fixture_name in _ALL_FIXTURE_NAMES:
+        await test_verify_family_invoked(fixture_name)
+    await test_lookup_hometax_simplified_invoked(tmp_path)
+    await test_lookup_gov24_certificate_invoked()
+    await test_lookup_gov24_movein_sequence_invoked()
+    await test_submit_hometax_taxreturn_invoked(tmp_path / "hometax")
+    await test_submit_gov24_minwon_invoked(tmp_path / "gov24")
+    await test_subscribe_cbs_disaster_invoked()
+
     expected_verify = {
         "modid",
         "kec",
