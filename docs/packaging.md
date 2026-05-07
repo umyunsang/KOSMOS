@@ -132,7 +132,7 @@ brew test umyunsang/kosax/kosax
 ```
 
 KOSAX currently depends on the `oven-sh/bun` tap because Bun is not available
-as a Homebrew core formula on this local Homebrew 5.1.9 installation.
+as a Homebrew core formula on the current local Homebrew installation.
 
 ## Rollback And Unpublish Policy
 

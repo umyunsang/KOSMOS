@@ -114,7 +114,7 @@ Formula strategy:
 - Source URL: `https://registry.npmjs.org/@umyunsang/kosax/-/kosax-<version>.tgz`
 - SHA-256: computed from the npm registry tarball after publish.
 - Runtime dependencies: `uv` and Bun.
-- Bun dependency: `oven-sh/bun/bun`, because local Homebrew 5.1.9 has no core
+- Bun dependency: `oven-sh/bun/bun`, because the current local Homebrew has no core
   `bun` formula.
 - Install layout: tarball contents under `libexec`, symlink
   `libexec/bin/kosax` into `bin/kosax`.
