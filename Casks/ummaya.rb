@@ -13,6 +13,9 @@ cask "ummaya" do
   depends_on formula: "uv"
 
   postflight do |c|
+    system_command "#{HOMEBREW_PREFIX}/opt/bun/bin/bun",
+                   args: ["install", "--production", "--no-save", "--cwd", "#{c.staged_path}/package"]
+
     wrapper = HOMEBREW_PREFIX/"bin/ummaya"
     wrapper.write <<~SH
       #!/bin/bash

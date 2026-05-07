@@ -27,12 +27,12 @@ class Ummaya < Formula
   sha256 "${sha256}"
   license "Apache-2.0"
 
-  depends_on "node" => :build
   depends_on "oven-sh/bun/bun"
   depends_on "uv"
 
   def install
     libexec.install Dir["*"]
+    system Formula["bun"].opt_bin/"bun", "install", "--production", "--no-save", "--cwd", libexec
     (bin/"ummaya").write <<~SH
       #!/bin/bash
       export PATH="#{Formula["bun"].opt_bin}:#{Formula["uv"].opt_bin}:$PATH"
