@@ -35,13 +35,13 @@ import {
 //
 // `DEFAULT_MEMDIR_ROOT` was a module-load constant, so `writeConsentRecord`
 // and `writeScopeRecord` always wrote to `~/.kosmos/memdir/user/` even when
-// `KOSMOS_MEMDIR_USER` was set.
+// `KOSMOS_MEMDIR_USER` was set (as `uiL2Memdir.ts:25` already handles).
 //
 // `getDefaultUserTierRoot()` returns the USER-tier directory (the directory
 // that contains `consent/`, `ministry-scope/`, etc.) using the same priority
-// order as `ExportPDFTool.ts`:
+// order as `uiL2Memdir.ts:25` and `ExportPDFTool.ts:89`:
 //
-//   1. KOSMOS_MEMDIR_USER  — direct user-tier root override
+//   1. KOSMOS_MEMDIR_USER  — direct user-tier root override (mirrors uiL2Memdir)
 //   2. KOSMOS_MEMDIR_ROOT  — full memdir root override → appends `/user`
 //   3. ~/.kosmos/memdir/user — production default
 //

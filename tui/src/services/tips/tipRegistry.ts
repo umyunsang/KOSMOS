@@ -1,4 +1,5 @@
 import chalk from 'chalk'
+import { KOSMOS_CONTINUE_COMMAND, KOSMOS_CLI_COMMAND } from '../../constants/cli.js'
 import { logForDebugging } from 'src/utils/debug.js'
 import { fileHistoryEnabled } from 'src/utils/fileHistory.js'
 import {
@@ -368,7 +369,7 @@ const externalTips: Tip[] = [
   {
     id: 'continue',
     content: async () =>
-      'Run claude --continue or claude --resume to resume a conversation',
+      `Run ${KOSMOS_CONTINUE_COMMAND} or ${KOSMOS_CLI_COMMAND} --resume to resume a conversation`,
     cooldownSessions: 10,
     isRelevant: async () => true,
   },

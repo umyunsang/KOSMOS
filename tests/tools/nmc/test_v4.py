@@ -24,6 +24,7 @@ Fixed reference time: 2026-04-16 14:10:00 KST (same as test_freshness_validation
 
 from __future__ import annotations
 
+import inspect
 import json
 from datetime import datetime
 from pathlib import Path
@@ -36,7 +37,12 @@ import respx
 
 from kosmos.tools.executor import ToolExecutor
 from kosmos.tools.models import LookupCollection, LookupError  # noqa: A004
-from kosmos.tools.nmc.emergency_search import NmcEmergencySearchInput, handle, register
+from kosmos.tools.nmc.emergency_search import (
+    NmcEmergencySearchInput,
+    _build_request,
+    handle,
+    register,
+)
 from kosmos.tools.nmc.freshness import check_freshness
 from kosmos.tools.registry import ToolRegistry
 
@@ -100,7 +106,7 @@ class TestNmcLive:
         expect LookupCollection. If stale, LookupError(reason='stale_data') is also
         valid — the freshness gate is working correctly either way.
         """
-        inp = NmcEmergencySearchInput(lat=_SEOUL_LAT, lon=_SEOUL_LON, limit=3)
+        inp = NmcEmergencySearchInput(mode="coordinate", lat=_SEOUL_LAT, lon=_SEOUL_LON, limit=3)
         result = await handle(inp)
 
         assert isinstance(result, dict), f"handle() must return dict, got {type(result)}"
@@ -113,15 +119,15 @@ class TestNmcLive:
             assert isinstance(result.get("items"), list), "collection must have items list"
             assert isinstance(result.get("total_count"), int), "collection must have total_count"
             meta = result.get("meta", {})
-            assert meta.get("freshness_status") in ("fresh", "not_applicable"), (
-                "collection must expose a freshness_status compatible with the endpoint, "
-                f"got {meta!r}"
+            assert meta.get("freshness_status") == "fresh", (
+                f"fresh collection must have freshness_status='fresh', got {meta!r}"
             )
         elif result["kind"] == "error":
-            # Stale/upstream path — all valid reasons from handle()
+            # Stale/auth/upstream path — all valid reasons from handle()
             reason = result.get("reason")
             assert reason in (
                 "stale_data",
+                "auth_required",
                 "upstream_unavailable",
             ), f"unexpected error reason: {reason!r}"
 
@@ -134,7 +140,7 @@ class TestNmcLive:
         freshness threshold, the adapter must return LookupCollection (kind='collection').
         When hvidate exceeds threshold, it must return LookupError(reason='stale_data').
         """
-        inp = NmcEmergencySearchInput(lat=_SEOUL_LAT, lon=_SEOUL_LON, limit=5)
+        inp = NmcEmergencySearchInput(mode="coordinate", lat=_SEOUL_LAT, lon=_SEOUL_LON, limit=5)
         result = await handle(inp)
 
         assert isinstance(result, dict)
@@ -155,7 +161,7 @@ class TestNmcLive:
                         )
         elif kind == "error":
             reason = result.get("reason")
-            assert reason in ("stale_data", "upstream_unavailable"), (
+            assert reason in ("stale_data", "auth_required", "upstream_unavailable"), (
                 f"Unexpected error reason: {reason!r}"
             )
 
@@ -252,7 +258,7 @@ class TestSpec023FreshnessGateParity:
 
         result = await executor.invoke(
             "nmc_emergency_search",
-            {"lat": _SEOUL_LAT, "lon": _SEOUL_LON, "limit": 5},
+            {"mode": "coordinate", "lat": _SEOUL_LAT, "lon": _SEOUL_LON, "limit": 5},
             request_id="test-v4-fresh",
             session_identity=object(),
         )
@@ -284,7 +290,7 @@ class TestSpec023FreshnessGateParity:
 
         result = await executor.invoke(
             "nmc_emergency_search",
-            {"lat": _SEOUL_LAT, "lon": _SEOUL_LON, "limit": 5},
+            {"mode": "coordinate", "lat": _SEOUL_LAT, "lon": _SEOUL_LON, "limit": 5},
             request_id="test-v4-stale",
             session_identity=object(),
         )
@@ -335,7 +341,7 @@ class TestNmcUrlEncodingRegression:
         payload = json.loads(_FRESH_FIXTURE.read_text(encoding="utf-8"))
         route = respx.get(url__regex=_NMC_URL_PATTERN).respond(200, json=payload)
 
-        inp = NmcEmergencySearchInput(lat=_SEOUL_LAT, lon=_SEOUL_LON, limit=3)
+        inp = NmcEmergencySearchInput(mode="coordinate", lat=_SEOUL_LAT, lon=_SEOUL_LON, limit=3)
 
         with patch("kosmos.tools.nmc.freshness.datetime") as mock_dt:
             _mock_dt(mock_dt)
@@ -401,17 +407,15 @@ class TestNmcUrlEncodingRegression:
 
         # The key assertion: our adapter does NOT use string interpolation.
         # Verify by inspecting the source that params dict is used.
-        import inspect
-
-        from kosmos.tools.nmc.emergency_search import handle as nmc_handle
-
-        source = inspect.getsource(nmc_handle)
+        source = inspect.getsource(handle)
+        request_source = inspect.getsource(_build_request)
 
         # The adapter must use params={...} dict assignment, not f-string URL building
-        assert "params:" in source or "params =" in source, (
+        assert "params:" in request_source or "params =" in request_source, (
             "handle() must use params={} dict for httpx request"
         )
-        assert "WGS84_LAT" in source or "lat" in source, (
+        assert "params=params" in source, "handle() must pass params dict to httpx"
+        assert "WGS84_LAT" in request_source or "lat" in request_source, (
             "handle() must pass lat coordinate as a params dict value, not URL interpolation"
         )
 
@@ -435,7 +439,7 @@ class TestNmcUrlEncodingRegression:
         payload = json.loads(_FRESH_FIXTURE.read_text(encoding="utf-8"))
         route = respx.get(url__regex=_NMC_URL_PATTERN).respond(200, json=payload)
 
-        inp = NmcEmergencySearchInput(lat=_SEOUL_LAT, lon=_SEOUL_LON, limit=5)
+        inp = NmcEmergencySearchInput(mode="coordinate", lat=_SEOUL_LAT, lon=_SEOUL_LON, limit=5)
 
         with patch("kosmos.tools.nmc.freshness.datetime") as mock_dt:
             _mock_dt(mock_dt)
@@ -458,6 +462,71 @@ class TestNmcUrlEncodingRegression:
         assert "numOfRows" in request_url or "numOfRows" in str(called_request.url.params), (
             "numOfRows must be in request (data.go.kr B552657 wire param)"
         )
+
+    @pytest.mark.asyncio
+    @respx.mock
+    @patch("kosmos.settings.settings")
+    async def test_region_mode_uses_official_q0_q1_list_operation(
+        self, mock_settings: Any
+    ) -> None:
+        """Region mode maps directly to NMC getEgytListInfoInqire Q0/Q1.
+
+        This is the official operation verified by curl for the Hadan/Saha-gu
+        scenario. It is not a retry/fallback from the coordinate operation.
+        """
+        mock_settings.data_go_kr_api_key = "test-api-key-123"
+        mock_settings.nmc_freshness_minutes = 30
+
+        payload = {
+            "response": {
+                "header": {"resultCode": "00", "resultMsg": "NORMAL SERVICE."},
+                "body": {
+                    "totalCount": 1,
+                    "items": {
+                        "item": {
+                            "dutyAddr": "부산광역시 사하구 낙동대로 408 (당리동)",
+                            "dutyEmcls": "G009",
+                            "dutyEmclsName": "응급실운영신고기관",
+                            "dutyName": "큐병원",
+                            "dutyTel1": "051-207-4343",
+                            "dutyTel3": "051-207-4044",
+                            "hpid": "A1200089",
+                            "phpid": "A1200089",
+                            "rnum": 1,
+                            "wgs84Lat": 35.10658381193713,
+                            "wgs84Lon": 128.96489218029475,
+                        }
+                    },
+                },
+            }
+        }
+        route = respx.get(url__regex=r".*getEgytListInfoInqire.*").respond(200, json=payload)
+
+        result = await handle(
+            NmcEmergencySearchInput(
+                mode="region",
+                q0="부산광역시",
+                q1="사하구",
+                origin_lat=35.1062385683347,
+                origin_lon=128.966786546793,
+                limit=5,
+            )
+        )
+
+        assert route.call_count == 1
+        request_url = str(route.calls[0].request.url)
+        assert "Q0=" in request_url
+        assert "Q1=" in request_url
+        assert "QZ=" not in request_url
+        assert result["kind"] == "collection"
+        assert result["total_count"] == 1
+        item = result["items"][0]
+        assert item["dutyName"] == "큐병원"
+        assert item["er_direct_phone"] == "051-207-4044"
+        assert item["er_classification"] == "응급실운영신고기관"
+        assert item["latitude"] == pytest.approx(35.10658381193713)
+        assert item["longitude"] == pytest.approx(128.96489218029475)
+        assert item["distance"] == pytest.approx(0.176, abs=0.01)
 
 
 # ---------------------------------------------------------------------------

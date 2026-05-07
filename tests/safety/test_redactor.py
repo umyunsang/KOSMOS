@@ -109,6 +109,26 @@ def test_redactor_fixture(fixture: dict) -> None:
         )
 
 
+def test_phone_redactor_does_not_match_decimal_coordinates() -> None:
+    """Coordinate decimals must not be partially masked as Korean phones."""
+    text = '{"lo_crd":"127.019851372856","la_crd":"37.516259723692"}'
+
+    result = run_redactor(text)
+
+    assert result.redacted_text == text
+    assert [m for m in result.matches if m.category == "phone_kr"] == []
+
+
+def test_passport_redactor_does_not_match_welfare_service_ids() -> None:
+    """MOHW welfare IDs must not be partially masked as Korean passport numbers."""
+    text = '{"servId":"WLF00001068","servDtlLink":"...?wlfareInfoId=WLF00001068"}'
+
+    result = run_redactor(text)
+
+    assert result.redacted_text == text
+    assert [m for m in result.matches if m.category == "passport_kr"] == []
+
+
 # ---------------------------------------------------------------------------
 # T020 — SC-003 latency gate: p95 ≤ 50 ms over 100 KB payload
 # ---------------------------------------------------------------------------

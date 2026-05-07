@@ -12,9 +12,9 @@
 //   src/kosmos/tools/policy_derivation.py:57
 //   src/kosmos/cli/cli_init.py:95
 //   src/kosmos/ipc/stdio.py:1378
-//   previous TUI permission receipt UI (removed; CC PermissionRequest is canonical)
+//   tui/src/schemas/ui-l2/permission.ts:43 (LAYER_VISUAL reused, not duplicated)
 
-export type PermissionLayerT = 1 | 2 | 3
+import type { PermissionLayerT } from '../../schemas/ui-l2/permission.js'
 
 /**
  * KOSMOS primitive verb identifiers. Aligns with L1-C C1 four reserved

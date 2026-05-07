@@ -3,7 +3,7 @@
 //
 // KOSMOS does not invent permission language. Every primitive call routed to
 // an adapter MUST surface the agency's published policy URL + authority
-// verbatim. This helper centralises the extraction so the 4 primitives stay
+// verbatim. This helper centralises the extraction so adapter-backed primitives stay
 // uniform and the boot guard (T004) can verify presence in one place.
 
 /**
@@ -15,7 +15,6 @@ export const PrimitiveErrorCode = {
   AdapterNotFound: 1001,
   CitationMissing: 1002,
   RestrictedMode: 1003,
-  InvalidParams: 1004,
 } as const
 
 export type PrimitiveErrorCode =

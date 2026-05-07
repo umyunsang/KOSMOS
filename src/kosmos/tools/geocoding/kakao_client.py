@@ -1,9 +1,10 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Kakao Local API HTTP client for address + POI geocoding.
+"""Kakao Local API HTTP client for address, POI, and region geocoding.
 
-Wraps two of Kakao Local API's six endpoints:
+Wraps three of Kakao Local API's six endpoints:
   - ``GET /v2/local/search/address.json`` — structured address (도로명/지번)
   - ``GET /v2/local/search/keyword.json`` — POI / landmark / business name
+  - ``GET /v2/local/geo/coord2regioncode.json`` — legal/admin region by coordinate
 
 The two endpoints cover Kakao's two location-semantic dimensions; they are
 NOT a primary/fallback pair. The address endpoint returns empty for POI
@@ -46,6 +47,7 @@ logger = logging.getLogger(__name__)
 
 _ADDRESS_BASE_URL = "https://dapi.kakao.com/v2/local/search/address.json"
 _KEYWORD_BASE_URL = "https://dapi.kakao.com/v2/local/search/keyword.json"
+_COORD2REGION_BASE_URL = "https://dapi.kakao.com/v2/local/geo/coord2regioncode.json"
 # Retained for backwards compatibility with callers that imported the
 # original module-level constant; aliases the address endpoint.
 _BASE_URL = _ADDRESS_BASE_URL
@@ -261,7 +263,6 @@ async def search_address(
         if own_client and client is not None:
             await client.aclose()
 
-
 # ---------------------------------------------------------------------------
 # Pydantic v2 models — keyword (POI) endpoint
 # ---------------------------------------------------------------------------
@@ -330,6 +331,48 @@ class KakaoKeywordSearchResult(BaseModel):
     documents: list[KakaoPlaceDocument]
 
 
+class KakaoRegionDocument(BaseModel):
+    """A single region document returned by Kakao coord2regioncode."""
+
+    model_config = ConfigDict(frozen=True)
+
+    region_type: str
+    """Region type: ``B`` legal-status region, ``H`` administrative region."""
+
+    address_name: str
+    """Full region address string."""
+
+    region_1depth_name: str
+    """Province/city name, e.g. ``부산광역시``."""
+
+    region_2depth_name: str
+    """District/county name, e.g. ``사하구``."""
+
+    region_3depth_name: str = ""
+    """Town/dong name."""
+
+    region_4depth_name: str = ""
+    """Additional subregion name, usually empty."""
+
+    code: str
+    """10-digit legal/admin region code."""
+
+    x: float
+    """Representative longitude."""
+
+    y: float
+    """Representative latitude."""
+
+
+class KakaoCoord2RegionResult(BaseModel):
+    """Top-level response envelope from Kakao coord2regioncode."""
+
+    model_config = ConfigDict(frozen=True)
+
+    meta: KakaoSearchMeta
+    documents: list[KakaoRegionDocument]
+
+
 async def search_keyword(
     query: str,
     *,
@@ -375,6 +418,59 @@ async def search_keyword(
         payload: dict[str, Any] = response.json()
         result = KakaoKeywordSearchResult(**payload)
         logger.debug("Kakao keyword search returned %d document(s)", result.meta.total_count)
+        return result
+    except ConfigurationError:
+        raise
+    finally:
+        if own_client and client is not None:
+            await client.aclose()
+
+
+async def coord_to_region_code(
+    *,
+    lon: float,
+    lat: float,
+    client: httpx.AsyncClient | None = None,
+) -> KakaoCoord2RegionResult:
+    """Convert WGS-84 coordinates to legal/admin region rows.
+
+    Official Kakao Local API docs define ``x`` as longitude and ``y`` as
+    latitude for ``coord2regioncode``. KOSMOS uses this as canonical
+    location metadata, not as an adapter fallback.
+    """
+    api_key = _require_env("KOSMOS_KAKAO_API_KEY")
+
+    headers = {
+        "Authorization": f"KakaoAK {api_key}",
+        "Accept": "application/json",
+    }
+    request_params: dict[str, str | float] = {
+        "x": lon,
+        "y": lat,
+        "input_coord": "WGS84",
+        "output_coord": "WGS84",
+    }
+
+    logger.debug("Kakao coord2regioncode: lon=%f lat=%f", lon, lat)
+
+    own_client = client is None
+    if own_client:
+        client = traced_async_client(timeout=_DEFAULT_TIMEOUT)
+
+    try:
+        assert client is not None
+        response = await client.get(
+            _COORD2REGION_BASE_URL,
+            headers=headers,
+            params=request_params,
+        )
+        response.raise_for_status()
+        payload: dict[str, Any] = response.json()
+        result = KakaoCoord2RegionResult(**payload)
+        logger.debug(
+            "Kakao coord2regioncode returned %d document(s)",
+            result.meta.total_count,
+        )
         return result
     except ConfigurationError:
         raise

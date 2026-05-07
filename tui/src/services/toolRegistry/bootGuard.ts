@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Epic γ #2294 · T004 · ToolRegistry boot guard.
 //
-// Walks every registered KOSMOS primitive (the 5 reserved TUI-side verbs:
+// Walks every registered KOSMOS primitive (the 5 reserved verbs:
 // lookup / resolve_location / submit / verify / subscribe) at process boot and asserts that
 // each one exposes the full `Tool<>` 9-member surface from
 // `tui/src/Tool.ts` (byte-identical to CC `Tool.ts`). Fails closed with a

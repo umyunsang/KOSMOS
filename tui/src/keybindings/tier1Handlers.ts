@@ -47,7 +47,7 @@ import type {
   AuditWriter,
   CancellationSignal,
 } from './types'
-import { dispatchAction, type ActionHandlers } from './useKeybinding'
+import type { ActionHandlers } from './useKeybinding'
 
 // ---------------------------------------------------------------------------
 // Public dep surface — what `tui.tsx` threads into the factory.
@@ -117,7 +117,7 @@ export type Tier1HandlerDeps = Readonly<{
   getCurrentDraft: () => string
 
   /**
-   * App-level setter that mounts / unmounts a history search overlay.  The
+   * App-level setter that mounts / unmounts `<HistorySearchOverlay>`.  The
    * handler hands it the open-request envelope returned by
    * `openHistorySearchOverlay(...)`; passing `null` closes the overlay.  The
    * return value of the pure action is purely declarative — without this
@@ -314,32 +314,6 @@ export function buildTier1Handlers(
   // ------------------------------------------------------------------------
 
   const globalHandlers: ActionHandlers = {
-    // Wave-2 G3 fix (F-gamma-06) — `permission-mode-cycle` is the Tier-1
-    // action keyed to Shift+Tab in `defaultBindings.ts:78` (Global context).
-    // The original Spec 033 handler was removed in Spec 1979 (see comment
-    // below). The defaultBindings ALSO has a legacy Chat-context binding
-    // `[MODE_CYCLE_KEY]: 'chat:cycleMode'` (line 147) whose handler lives in
-    // `PromptInput.tsx:1419` (handleCycleMode). Resolution order:
-    //   resolveKeyWithChordState walks active contexts; PromptInput's
-    //   useKeybindings({ context: 'Chat', isActive: !isModalOverlayActive })
-    //   only registers the Chat-side handler when no overlay is active. When
-    //   a modal IS active (e.g. PermissionRequest mounted), the Chat handler
-    //   is unregistered and the resolver falls back to the Global Tier-1
-    //   binding `permission-mode-cycle` — but with no handler, the chord
-    //   silently no-ops. Citizens reported "Shift+Tab does nothing" because
-    //   their gauntlet-grant flow ALWAYS has a modal active when they try to
-    //   pre-set bypassPermissions.
-    //
-    // The minimal fix: register a Tier-1 handler that delegates to the
-    // Chat-context `chat:cycleMode` action via `dispatchAction`. This
-    // preserves the handler architecture (no fork between Global and Chat)
-    // and makes Shift+Tab functional regardless of overlay state. If the
-    // Chat handler is unregistered (no PromptInput mounted, e.g. teleport
-    // overlay only), `dispatchAction` returns false and the Tier-1 chord
-    // remains a benign no-op rather than crashing.
-    'permission-mode-cycle': () => {
-      dispatchAction('Chat', 'chat:cycleMode')
-    },
     'agent-interrupt': () => {
       void agentInterrupt.handle()
     },
@@ -359,7 +333,7 @@ export function buildTier1Handlers(
         consent: { memdir_user_granted: deps.memdirUserGranted },
         announcer: deps.announcer,
       })
-      // Hand the envelope to the app-level state so a history search overlay
+      // Hand the envelope to the app-level state so <HistorySearchOverlay>
       // actually mounts.  Previously we dropped the return value — the
       // action announced itself (FR-030) but the citizen saw nothing
       // (Codex P1 at line 295 of the pre-fix file).

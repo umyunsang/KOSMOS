@@ -28,7 +28,7 @@ from pathlib import Path
 try:
     import yaml
 except ImportError as exc:  # pragma: no cover
-    print(f"::error::PyYAML required (pip install pyyaml). {exc}", file=sys.stderr)
+    sys.stderr.write(f"::error::PyYAML required (pip install pyyaml). {exc}\n")
     sys.exit(2)
 
 
@@ -62,7 +62,7 @@ def parse_baseline(path: Path) -> dict[str, str]:
         # shasum -a 256 format: "<hex_sha>  <path>" (two-space separator).
         parts = line.split(maxsplit=1)
         if len(parts) != 2:
-            print(f"::warning::malformed baseline line: {line!r}", file=sys.stderr)
+            sys.stderr.write(f"::warning::malformed baseline line: {line!r}\n")
             continue
         sha, rel = parts[0], parts[1].lstrip()
         table[rel] = sha
@@ -112,7 +112,7 @@ def enumerate_slice(slice_root: Path) -> list[Path]:
     return sorted(files)
 
 
-def main() -> int:
+def main() -> int:  # noqa: C901
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--baseline", required=True, type=Path,
                         help="Path to fixtures/cc-baseline-shas.txt")
@@ -125,13 +125,13 @@ def main() -> int:
     args = parser.parse_args()
 
     if not args.baseline.is_file():
-        print(f"::error::baseline file not found: {args.baseline}", file=sys.stderr)
+        sys.stderr.write(f"::error::baseline file not found: {args.baseline}\n")
         return 2
     if not args.whitelist.is_file():
-        print(f"::error::whitelist file not found: {args.whitelist}", file=sys.stderr)
+        sys.stderr.write(f"::error::whitelist file not found: {args.whitelist}\n")
         return 2
     if not args.slice_root.is_dir():
-        print(f"::error::slice root not found: {args.slice_root}", file=sys.stderr)
+        sys.stderr.write(f"::error::slice root not found: {args.slice_root}\n")
         return 2
 
     baseline = parse_baseline(args.baseline)
@@ -148,10 +148,7 @@ def main() -> int:
     repo_root = slice_root
     while repo_root.name and repo_root.name != "tui" and repo_root.parent != repo_root:
         repo_root = repo_root.parent
-    if repo_root.name == "tui":
-        repo_root = repo_root.parent
-    else:
-        repo_root = slice_root.parent.parent
+    repo_root = repo_root.parent if repo_root.name == "tui" else slice_root.parent.parent
 
     stats = {
         "total": 0,
@@ -178,11 +175,11 @@ def main() -> int:
         repo_rel = f"tui/src/{cc_rel}"
         failures.append((
             repo_rel,
-            f"CC-baselined file is missing from tui/src (deletion or rename "
-            f"detected). Either restore the file (it must remain byte-identical "
-            f"with CC, or carry a whitelist entry), or add the path to the "
-            f"NEVER_PORT set in scripts/cc_byte_identical_guard.py with a "
-            f"CORE THESIS justification.",
+            "CC-baselined file is missing from tui/src (deletion or rename "
+            "detected). Either restore the file (it must remain byte-identical "
+            "with CC, or carry a whitelist entry), or add the path to the "
+            "NEVER_PORT set in scripts/cc_byte_identical_guard.py with a "
+            "CORE THESIS justification.",
         ))
         stats["failed"] += 1
 
@@ -237,29 +234,28 @@ def main() -> int:
 
     for repo_rel, msg in failures:
         # GitHub Actions error annotation.
-        print(f"::error file={repo_rel}::{msg}")
+        sys.stdout.write(f"::error file={repo_rel}::{msg}\n")
 
     if stats["failed"]:
         # `failed` aggregates two failure modes: (a) divergent KOSMOS file
         # without a whitelist entry, and (b) CC-baselined file missing from
         # tui/src without a NEVER_PORT carve-out (deletion guard). Worded
         # to cover both per Copilot review on PR #2723.
-        print(
+        sys.stderr.write(
             f"::error::cc-byte-identical-guard FAILED · {stats['failed']} "
             f"unjustified divergence(s) (missing-from-kosmos OR sha-mismatch-without-whitelist). "
-            f"Total scanned: {stats['total']}.",
-            file=sys.stderr,
+            f"Total scanned: {stats['total']}.\n"
         )
         return 1
 
     if not args.quiet:
-        print(
+        sys.stdout.write(
             f"PASS · scanned {stats['total']} files · "
             f"{stats['byte_identical']} byte-identical · "
             f"{stats['whitelisted']} whitelisted · "
             f"{stats['kosmos_only']} KOSMOS-only · "
             f"{stats['missing_never_port']} NEVER-PORT (CC-only, intentional) · "
-            f"{stats['failed']} failed"
+            f"{stats['failed']} failed\n"
         )
     return 0
 

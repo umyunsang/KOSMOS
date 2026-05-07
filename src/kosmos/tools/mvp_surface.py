@@ -111,12 +111,6 @@ RESOLVE_LOCATION_TOOL = GovAPITool(
     llm_description=(
         "Convert a free-text Korean place name, address, or landmark into structured "
         "location identifiers (coordinates, 10-digit 행정동 code, road address, POI).\n\n"
-        "Use ONLY for physical places: districts, neighborhoods, addresses, stations, "
-        "landmarks, hospitals, schools, or walk-in government offices. Do NOT call "
-        "this tool for online public-service channel names such as 홈택스/Hometax, "
-        "정부24/Government24, 위택스/Wetax, 워크넷/WorkNet, mobile ID, certificates, "
-        "or authentication providers unless the citizen explicitly asks where a "
-        "physical office or branch is located.\n\n"
         "ALWAYS call this tool first before calling lookup(mode='fetch') on any "
         "location-dependent adapter such as koroad_accident_hazard_search.\n\n"
         "QUERY DISCIPLINE — pass ONLY a place/location noun. Do NOT splice the "
@@ -250,8 +244,8 @@ class _SubmitInputForLLM(BaseModel):
         pattern=r"^[a-z][a-z0-9_]*$",
         description=(
             "Registered submit adapter id (e.g. mock_submit_module_hometax_"
-            "taxreturn). MUST match a submit candidate from the backend-"
-            "injected <available_adapters> block."
+            "taxreturn). MUST match a tool_id from the system prompt's "
+            "<verify_chain_pattern> 기본 매핑 section."
         ),
     )
     params: dict[str, object] = Field(
@@ -294,71 +288,11 @@ class _SubscribeInputForLLM(BaseModel):
     )
 
 
-def _verify_llm_parameters_schema() -> dict[str, object]:
-    """Return the strict citizen-facing schema exposed to the LLM.
-
-    ``_VerifyInputForLLM`` still accepts the legacy ``family_hint`` shape for
-    direct dispatcher callers, but OpenAI-compatible tool calling should make
-    invalid citizen states unrepresentable: a selected verify adapter must
-    carry a non-empty scope list and bilingual purpose strings.
-    """
-    from kosmos.tools.verify_canonical_map import get_canonical_map  # noqa: PLC0415
-
-    return {
-        "type": "object",
-        "additionalProperties": False,
-        "required": ["tool_id", "params"],
-        "properties": {
-            "tool_id": {
-                "type": "string",
-                "enum": sorted(get_canonical_map()),
-                "description": (
-                    "Verify adapter tool_id selected from <verify_families> "
-                    "or from an adapter's delegation_source_tool_id."
-                ),
-            },
-            "params": {
-                "type": "object",
-                "additionalProperties": False,
-                "required": ["scope_list", "purpose_ko", "purpose_en"],
-                "properties": {
-                    "scope_list": {
-                        "type": "array",
-                        "minItems": 1,
-                        "items": {
-                            "type": "string",
-                            "pattern": (
-                                r"^(lookup|resolve_location|verify|submit|subscribe):"
-                                r"[a-z0-9_.-]+$"
-                            ),
-                        },
-                        "description": (
-                            "All downstream primitive scopes this ceremony must "
-                            "cover, e.g. lookup:hometax.simplified and "
-                            "submit:hometax.tax-return."
-                        ),
-                    },
-                    "purpose_ko": {
-                        "type": "string",
-                        "minLength": 1,
-                        "description": "Citizen-visible Korean purpose for the consent ledger.",
-                    },
-                    "purpose_en": {
-                        "type": "string",
-                        "minLength": 1,
-                        "description": "English audit-purpose mirror for the consent ledger.",
-                    },
-                },
-            },
-        },
-    }
-
-
 class _VerifyInputForLLM(BaseModel):
     """LLM-visible verify input schema — accepts both citizen-shape and legacy-shape.
 
-    **Citizen-facing shape** (emitted by K-EXAONE from the backend-injected
-    policy metadata / ``delegation_source`` contract):
+    **Citizen-facing shape** (emitted by K-EXAONE per ``prompts/system_v1.md``
+    v2 ``<verify_chain_pattern>``):
 
     .. code-block:: json
 
@@ -420,7 +354,9 @@ class _VerifyInputForLLM(BaseModel):
         description=(
             "Adapter-specific input. Must include scope_list (list[str] of "
             "'<verb>:<adapter_family>.<action>' scopes), purpose_ko, "
-            "purpose_en. Pre-validator packs this into session_context."
+            "purpose_en. Optional session_id belongs directly in params "
+            "(params['session_id']), not nested under params['session_context']. "
+            "Pre-validator packs this into session_context."
         ),
     )
 
@@ -447,7 +383,8 @@ class _VerifyInputForLLM(BaseModel):
             "the LLM passes scope_list (list[str] of "
             "'<verb>:<adapter_family>.<action>' scopes), purpose_ko, "
             "purpose_en. Set automatically from params by the pre-validator "
-            "when citizen-shape input is supplied."
+            "when citizen-shape input is supplied. This is a top-level legacy "
+            "field; citizen-shape callers must not nest it under params."
         ),
     )
 
@@ -494,7 +431,12 @@ class _VerifyInputForLLM(BaseModel):
             if isinstance(raw_ctx, dict):
                 existing_ctx = {str(k): v for k, v in raw_ctx.items()}
             if isinstance(params, dict):
-                data["session_context"] = {**existing_ctx, **params}
+                nested_ctx: dict[str, object] = {}
+                raw_nested_ctx = params.get("session_context")
+                if isinstance(raw_nested_ctx, dict):
+                    nested_ctx = {str(k): v for k, v in raw_nested_ctx.items()}
+                flat_params = {str(k): v for k, v in params.items() if k != "session_context"}
+                data["session_context"] = {**existing_ctx, **nested_ctx, **flat_params}
             elif params is None:
                 data.setdefault("session_context", existing_ctx)
 
@@ -531,8 +473,6 @@ VERIFY_TOOL = GovAPITool(
     # invariant — the delegation ceremony establishes session-bound credentials.
     auth_type="api_key",
     input_schema=_VerifyInputForLLM,
-    llm_parameters_schema=_verify_llm_parameters_schema(),
-    openai_strict=True,
     output_schema=_LookupOutput,  # opaque envelope wrapper (RootModel[object])
     llm_description=(
         "Authentication-ceremony primitive that issues a scope-bound "

@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // KOSMOS-original — Spec 2521 / 2026-05-01.
 //
-// Verbose render helpers for the 4 primitives (LookupPrimitive,
-// SubmitPrimitive, VerifyPrimitive, SubscribePrimitive). Mirrors the
+// Verbose render helpers for the KOSMOS primitives. Mirrors the
 // CC pattern used by BashTool / WebFetchTool: when ``verbose`` is set
 // (Ctrl+O expand or transcript mode), surface the full request/response
 // JSON to the citizen rather than the condensed summary.
@@ -19,6 +18,8 @@
 import React from 'react'
 import { Box, Text } from '../../ink.js'
 import { MessageResponse } from '../../components/MessageResponse.js'
+
+const TRACE_URL_HEADER_LIMIT = 96
 
 /**
  * Format the full primitive input as a multi-line JSON string.
@@ -39,7 +40,7 @@ export function renderVerboseInputJson(input: unknown): string {
  * Render the full primitive output envelope as a JSON code block under
  * the standard ⎿ MessageResponse gutter glyph.
  *
- * Used by the 4 primitives' ``renderToolResultMessage`` when
+ * Used by primitives' ``renderToolResultMessage`` when
  * ``options.verbose`` (or transcript mode) is set.
  *
  * If the output (or its ``result``) carries an ``outbound_traces`` array
@@ -67,11 +68,12 @@ export function renderVerboseOutputJson(
   ]
 
   traces.forEach((trace, idx) => {
+    const traceUrl = formatTraceUrlForHeader(trace.url)
     children.push(
       React.createElement(
         Text,
         { bold: true, color: 'cyan', key: `trace-${idx}-h` },
-        `\n외부 API 요청 #${idx + 1} — ${trace.method} ${trace.url}` +
+        `\n외부 API 요청 #${idx + 1} — ${trace.method ?? 'HTTP'} ${traceUrl}` +
           (typeof trace.response_status === 'number'
             ? ` → ${trace.response_status}`
             : '') +
@@ -115,6 +117,29 @@ export function renderVerboseOutputJson(
     null,
     React.createElement(Box, { flexDirection: 'column' }, ...children),
   )
+}
+
+export function formatTraceUrlForHeader(url: unknown): string {
+  if (typeof url !== 'string' || !url) return ''
+
+  let display = url
+  try {
+    const parsed = new URL(url)
+    const queryKeys = Array.from(parsed.searchParams.keys())
+    const pathParts = parsed.pathname.split('/').filter(Boolean)
+    const pathSummary =
+      pathParts.length > 0 ? `/${pathParts[pathParts.length - 1]}` : parsed.pathname
+    display = `${parsed.origin}${pathSummary}`
+    if (queryKeys.length > 0) {
+      const shownKeys = queryKeys.slice(0, 3).join('&')
+      display += `?${shownKeys}${queryKeys.length > 3 ? '&...' : ''}`
+    }
+  } catch {
+    display = url
+  }
+
+  if (display.length <= TRACE_URL_HEADER_LIMIT) return display
+  return `${display.slice(0, TRACE_URL_HEADER_LIMIT - 3)}...`
 }
 
 type OutboundTrace = {

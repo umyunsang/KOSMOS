@@ -65,7 +65,7 @@ def _snap_text(screen: pyte.Screen) -> str:
         return ""
 
 
-def replay(cast_path: Path, out_dir: Path) -> int:
+def replay(cast_path: Path, out_dir: Path) -> int:  # noqa: C901
     """Replay cast and dump per-frame text to out_dir. Return frame count."""
     out_dir.mkdir(parents=True, exist_ok=True)
     for stale in out_dir.glob("frame_*.txt"):
@@ -88,7 +88,7 @@ def replay(cast_path: Path, out_dir: Path) -> int:
 
     # Capture the empty pre-replay frame so the agent can diff against it.
     snap = _snap_text(screen)
-    sha = hashlib.sha1(snap.encode("utf-8")).hexdigest()[:12]
+    sha = hashlib.sha1(snap.encode("utf-8"), usedforsecurity=False).hexdigest()[:12]
     fpath = out_dir / f"frame_{idx:04d}_t0.000_{sha}.txt"
     fpath.write_text(snap)
     with timeline.open("a") as fh:
@@ -136,7 +136,7 @@ def replay(cast_path: Path, out_dir: Path) -> int:
         else:
             continue
         snap = _snap_text(screen)
-        sha = hashlib.sha1(snap.encode("utf-8")).hexdigest()[:12]
+        sha = hashlib.sha1(snap.encode("utf-8"), usedforsecurity=False).hexdigest()[:12]
         if sha == prev_hash:
             continue
         fpath = out_dir / f"frame_{idx:04d}_t{abs_t:.3f}_{sha}.txt"

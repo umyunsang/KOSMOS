@@ -111,8 +111,10 @@ def _resolve_model_ref(ref: str) -> type | None:
     """Resolve an ``input_model_ref`` string to its Pydantic model class.
 
     Two formats are supported:
-    - ``module.path:ClassName``  (colon separator — e.g. ``kosmos.primitives.verify:VerifyInput``)
-    - ``module.path.ClassName``  (dot separator — e.g. ``kosmos.tools.mock.data_go_kr.fines_pay.FinesPayParams``)
+    - ``module.path:ClassName``  (colon separator, e.g.
+      ``kosmos.primitives.verify:VerifyInput``)
+    - ``module.path.ClassName``  (dot separator, e.g.
+      ``kosmos.tools.mock.data_go_kr.fines_pay.FinesPayParams``)
 
     Returns the class object, or ``None`` if the module/attribute cannot be found.
     """
@@ -160,9 +162,12 @@ def _collect_primitive_adapters() -> list[tuple[str, type, type]]:
             logger.warning("submit adapter %r has no input_model_ref — skipping", tool_id)
             continue
         input_cls = _resolve_model_ref(input_ref)
-        if input_cls is None or not (isinstance(input_cls, type) and issubclass(input_cls, BaseModel)):
+        if input_cls is None or not (
+            isinstance(input_cls, type) and issubclass(input_cls, BaseModel)
+        ):
             logger.warning(
-                "submit adapter %r: input_model_ref=%r did not resolve to a BaseModel subclass — skipping",
+                "submit adapter %r: input_model_ref=%r did not resolve to a "
+                "BaseModel subclass — skipping",
                 tool_id,
                 input_ref,
             )
@@ -180,7 +185,7 @@ def _collect_primitive_adapters() -> list[tuple[str, type, type]]:
     verify_registry: dict[str, object] = getattr(verify_mod, "_VERIFY_ADAPTERS", {})
 
     # Canonical mapping: family key → mock module path
-    _VERIFY_FAMILY_MODULE: dict[str, str] = {
+    verify_family_module: dict[str, str] = {
         "digital_onepass": "kosmos.tools.mock.verify_digital_onepass",
         "ganpyeon_injeung": "kosmos.tools.mock.verify_ganpyeon_injeung",
         "geumyung_injeungseo": "kosmos.tools.mock.verify_geumyung_injeungseo",
@@ -192,7 +197,7 @@ def _collect_primitive_adapters() -> list[tuple[str, type, type]]:
     for family in verify_registry:
         # Prefer tool_id from the ADAPTER_REGISTRATION on the mock module.
         tool_id = family  # fallback
-        mod_path = _VERIFY_FAMILY_MODULE.get(family)
+        mod_path = verify_family_module.get(family)
         if mod_path:
             try:
                 vmod = importlib.import_module(mod_path)

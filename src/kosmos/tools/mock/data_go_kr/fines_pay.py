@@ -70,11 +70,17 @@ class FinesPayParams(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     fine_reference: str = Field(
+        default="MOCK-FINE-2026-001",
         min_length=1,
         max_length=32,
-        description="Unique identifier for the traffic fine (e.g. 이의신청번호 or 고지서번호).",
+        description=(
+            "Unique identifier for the traffic fine (e.g. 이의신청번호 or 고지서번호). "
+            "Mock default is used only when the citizen asks for the fixture "
+            "flow without providing a real notice number."
+        ),
     )
     payment_method: Literal["virtual_account", "card", "bank_transfer"] = Field(
+        default="virtual_account",
         description="Payment channel for the fine settlement.",
     )
 
@@ -153,25 +159,8 @@ REGISTRATION = AdapterRegistration(
     cache_ttl_seconds=0,
     rate_limit_per_minute=10,
     search_hint={
-        "ko": [
-            "과태료",
-            "교통범칙금",
-            "납부",
-            "벌금",
-            "운전면허",
-            "면허갱신",
-            "적성검사",
-            "자동차세",
-            "차량세금",
-        ],
-        "en": [
-            "traffic fine",
-            "payment",
-            "fine settlement",
-            "driver license renewal",
-            "aptitude test reservation",
-            "vehicle tax",
-        ],
+        "ko": ["과태료", "교통범칙금", "납부", "벌금"],
+        "en": ["traffic fine", "payment", "fine settlement"],
     },
     auth_type="oauth",
     nonce=_ADAPTER_NONCE,

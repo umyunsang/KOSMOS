@@ -28,6 +28,8 @@ Queries the KOROAD accident hazard spot dataset for a Korean municipality by 10-
 |---|---|---|---|
 | `adm_cd` | `str` | yes | 10-digit 행정동 administrative code. Must match pattern `^[0-9]{10}$`. Obtain via `resolve_location(want='adm_cd')`. Example: `'1168000000'` for 서울특별시 강남구. |
 | `year` | `int` | yes | Calendar year for the accident dataset (2019–2100). The adapter maps the year to the correct KOROAD `searchYearCd` internally, including 2023+ code changes for 강원/전북. Example: `2024`. |
+| `num_of_rows` | `int` (1–100, default 10) | no | Rows per page. Maps to official `numOfRows`. Verified by direct curl on 2026-05-06. |
+| `page_no` | `int` (≥1, default 1) | no | 1-indexed page number. Maps to official `pageNo`. Verified by direct curl on 2026-05-06. |
 
 **Output**: LookupCollection-shaped dict returned by `handle()`.
 
@@ -62,12 +64,14 @@ This adapter is classified as Permission tier 1 (green) per Spec 033 (`specs/033
   "tool_id": "koroad_accident_hazard_search",
   "params": {
     "adm_cd": "1168000000",
-    "year": 2024
+    "year": 2024,
+    "num_of_rows": 20,
+    "page_no": 1
   }
 }
 ```
 
-The adapter internally maps `adm_cd="1168000000"` → `siDo=11` (2-digit, 서울), `guGun=680` (3-digit, 강남구) and `year=2024` → `searchYearCd="2025119"` before calling the KOROAD API.
+The adapter internally maps `adm_cd="1168000000"` → `siDo=11` (2-digit, 서울), `guGun=680` (3-digit, 강남구) and `year=2024` → `searchYearCd="2025119"` before calling the KOROAD API. It passes `num_of_rows` / `page_no` as the official `numOfRows` / `pageNo` wire parameters.
 
 ### Output envelope (success)
 

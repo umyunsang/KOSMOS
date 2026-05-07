@@ -154,9 +154,9 @@ def _stringify_body(raw: bytes | None) -> str | None:
         return (
             f"...(truncated {len(raw)} bytes, sha256={digest}, "
             f"showing first {_MAX_BODY_BYTES} bytes)\n"
-            + raw[:_MAX_BODY_BYTES].decode("utf-8", errors="replace")
+            + raw[:_MAX_BODY_BYTES].decode("utf-8", errors="ignore")
         )
-    text = raw.decode("utf-8", errors="replace")
+    text = raw.decode("utf-8", errors="ignore")
     # Best-effort JSON pretty print.
     stripped = text.strip()
     if stripped.startswith(("{", "[")):

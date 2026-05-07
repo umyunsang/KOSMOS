@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS — ResolveLocationPrimitive.
+// KOSMOS-original — ResolveLocationPrimitive.
 //
-// LLM-visible tool name: "resolve_location".
-// CC Tool-surface migration for the citizen-facing geocoding primitive.
+// LLM-visible tool name: "resolve_location"
+// Primitive wrapper over Spec 031 kosmos.tools.resolve_location.
 
 import React from 'react'
 import { z } from 'zod/v4'
@@ -30,6 +30,7 @@ const WANT_VALUES = [
   'road_address',
   'jibun_address',
   'poi',
+  'region',
   'all',
 ] as const
 
@@ -39,11 +40,11 @@ const inputSchema = lazySchema(() =>
       .string()
       .min(1)
       .max(200)
-      .describe('Physical place query extracted from the citizen message.'),
+      .describe('Free-text Korean or English place query from the citizen request.'),
     want: z
       .enum(WANT_VALUES)
-      .optional()
-      .describe('Identifier shape needed by the follow-up adapter.'),
+      .default('coords_and_admcd')
+      .describe('Identifier shape required by the downstream public-service adapter.'),
     near: z
       .tuple([z.number(), z.number()])
       .optional()
@@ -56,14 +57,14 @@ const outputSchema = lazySchema(() =>
   z.discriminatedUnion('ok', [
     z.object({
       ok: z.literal(true),
-      result: z.unknown(),
+      result: z.unknown().describe('ResolveLocationOutput result.'),
       outbound_traces: z.array(z.unknown()).optional(),
     }),
     z.object({
       ok: z.literal(false),
       error: z.object({
-        kind: z.string(),
-        message: z.string(),
+        kind: z.string().describe('Error classification.'),
+        message: z.string().describe('Human-readable error description.'),
       }),
       result: z.unknown().optional(),
       outbound_traces: z.array(z.unknown()).optional(),
@@ -74,166 +75,79 @@ type OutputSchema = ReturnType<typeof outputSchema>
 
 export type Output = z.infer<OutputSchema>
 
-function asRecord(value: unknown): Record<string, unknown> | null {
-  return value && typeof value === 'object'
-    ? (value as Record<string, unknown>)
-    : null
+function stringField(obj: Record<string, unknown>, key: string): string | null {
+  const value = obj[key]
+  return typeof value === 'string' && value.length > 0 ? value : null
 }
 
-function formatNumber(value: unknown): string | null {
-  return typeof value === 'number' && Number.isFinite(value)
-    ? value.toFixed(6).replace(/0+$/, '').replace(/\.$/, '')
-    : null
+function numberField(obj: Record<string, unknown>, key: string): number | null {
+  const value = obj[key]
+  return typeof value === 'number' && Number.isFinite(value) ? value : null
 }
 
-function renderBundleRows(result: Record<string, unknown>): React.ReactNode[] {
+function summarizeLocationResult(result: unknown): React.ReactNode[] {
+  if (result === null || typeof result !== 'object') {
+    return [React.createElement(Text, { key: 'raw', dimColor: true }, String(result))]
+  }
+
+  const obj = result as Record<string, unknown>
   const rows: React.ReactNode[] = []
-  const coords = asRecord(result.coords)
-  const admCd = asRecord(result.adm_cd)
-  const address = asRecord(result.address)
-  const poi = asRecord(result.poi)
+  const kind = stringField(obj, 'kind')
 
-  if (coords) {
-    const lat = formatNumber(coords.lat)
-    const lon = formatNumber(coords.lon)
-    rows.push(
-      React.createElement(
-        Text,
-        { key: 'coords', dimColor: true },
-        `좌표: ${lat ?? '?'} / ${lon ?? '?'}${coords.source ? ` (${String(coords.source)})` : ''}`,
-      ),
-    )
-  }
-  if (admCd) {
-    const code = typeof admCd.code === 'string' ? admCd.code : ''
-    const name = typeof admCd.name === 'string' ? admCd.name : ''
-    rows.push(
-      React.createElement(
-        Text,
-        { key: 'adm_cd', dimColor: true },
-        `행정코드: ${code}${name ? ` — ${name}` : ''}`,
-      ),
-    )
-  }
-  if (address) {
-    const road =
-      typeof address.road_address === 'string' ? address.road_address : null
-    const jibun =
-      typeof address.jibun_address === 'string' ? address.jibun_address : null
-    rows.push(
-      React.createElement(
-        Text,
-        { key: 'address', dimColor: true },
-        `주소: ${road ?? jibun ?? '(주소 없음)'}`,
-      ),
-    )
-  }
-  if (poi) {
-    const name = typeof poi.name === 'string' ? poi.name : '(POI)'
-    const category = typeof poi.category === 'string' ? poi.category : null
-    rows.push(
-      React.createElement(
-        Text,
-        { key: 'poi', dimColor: true },
-        `장소: ${name}${category ? ` — ${category}` : ''}`,
-      ),
-    )
-  }
-  return rows
-}
-
-function renderSingleResult(result: Record<string, unknown>): React.ReactNode[] {
-  const kind = typeof result.kind === 'string' ? result.kind : 'result'
-  if (kind === 'coords') {
-    const lat = formatNumber(result.lat)
-    const lon = formatNumber(result.lon)
-    return [
-      React.createElement(
-        Text,
-        { key: 'coords', dimColor: true },
-        `좌표: ${lat ?? '?'} / ${lon ?? '?'}${result.source ? ` (${String(result.source)})` : ''}`,
-      ),
-    ]
-  }
-  if (kind === 'adm_cd') {
-    return [
-      React.createElement(
-        Text,
-        { key: 'adm_cd', dimColor: true },
-        `행정코드: ${String(result.code ?? '')}${result.name ? ` — ${String(result.name)}` : ''}`,
-      ),
-    ]
-  }
-  if (kind === 'address') {
-    const road =
-      typeof result.road_address === 'string' ? result.road_address : null
-    const jibun =
-      typeof result.jibun_address === 'string' ? result.jibun_address : null
-    return [
-      React.createElement(
-        Text,
-        { key: 'address', dimColor: true },
-        `주소: ${road ?? jibun ?? '(주소 없음)'}`,
-      ),
-    ]
-  }
-  if (kind === 'poi') {
-    const lat = formatNumber(result.lat)
-    const lon = formatNumber(result.lon)
-    return [
-      React.createElement(
-        Text,
-        { key: 'poi', dimColor: true },
-        `장소: ${String(result.name ?? '(POI)')}${result.category ? ` — ${String(result.category)}` : ''}`,
-      ),
-      React.createElement(
-        Text,
-        { key: 'poi-coords', dimColor: true },
-        `좌표: ${lat ?? '?'} / ${lon ?? '?'}`,
-      ),
-    ]
-  }
-  if ('lat' in result && 'lon' in result) {
-    const lat = formatNumber(result.lat)
-    const lon = formatNumber(result.lon)
-    return [
-      React.createElement(
-        Text,
-        { key: 'flat-coords', dimColor: true },
-        `좌표: ${lat ?? '?'} / ${lon ?? '?'}`,
-      ),
-      result.b_code
-        ? React.createElement(
+  if (kind === 'bundle') {
+    for (const key of ['coords', 'adm_cd', 'address', 'poi', 'region']) {
+      const value = obj[key]
+      if (value && typeof value === 'object') {
+        rows.push(
+          React.createElement(
             Text,
-            { key: 'flat-b-code', dimColor: true },
-            `행정코드: ${String(result.b_code)}`,
-          )
-        : null,
-      result.address_name
-        ? React.createElement(
-            Text,
-            { key: 'flat-address', dimColor: true },
-            `주소: ${String(result.address_name)}`,
-          )
-        : null,
-    ].filter(Boolean) as React.ReactNode[]
+            { key },
+            `${key}: ${JSON.stringify(value).slice(0, 160)}`,
+          ),
+        )
+      }
+    }
+    return rows.length > 0
+      ? rows
+      : [React.createElement(Text, { key: 'empty', dimColor: true }, '해석 결과 없음')]
   }
 
-  return [
-    React.createElement(
-      Text,
-      { key: 'raw', dimColor: true },
-      JSON.stringify(result),
-    ),
-  ]
+  const lat = numberField(obj, 'lat')
+  const lon = numberField(obj, 'lon')
+  if (lat !== null && lon !== null) {
+    rows.push(React.createElement(Text, { key: 'coords' }, `좌표: ${lat}, ${lon}`))
+  }
+
+  const code = stringField(obj, 'code') ?? stringField(obj, 'b_code') ?? stringField(obj, 'region_code')
+  if (code) {
+    rows.push(React.createElement(Text, { key: 'code' }, `행정/법정 코드: ${code}`))
+  }
+
+  const name =
+    stringField(obj, 'address_name') ??
+    stringField(obj, 'name') ??
+    stringField(obj, 'road_address') ??
+    stringField(obj, 'jibun_address')
+  if (name) {
+    rows.push(React.createElement(Text, { key: 'name' }, `위치명: ${name}`))
+  }
+
+  const source = stringField(obj, 'source')
+  if (source) {
+    rows.push(React.createElement(Text, { key: 'source', dimColor: true }, `source: ${source}`))
+  }
+
+  return rows.length > 0
+    ? rows
+    : [React.createElement(Text, { key: 'json', dimColor: true }, JSON.stringify(result).slice(0, 240))]
 }
 
 export const ResolveLocationPrimitive = buildTool({
   name: RESOLVE_LOCATION_TOOL_NAME,
 
-  searchHint: '위치 주소 좌표 행정동 resolve geocode location adm_cd POI',
+  searchHint: '위치 주소 좌표 행정동 법정동 resolve_location geocode location',
 
-  maxResultSizeChars: 50_000,
+  maxResultSizeChars: 40_000,
 
   get inputSchema(): InputSchema {
     return inputSchema()
@@ -255,10 +169,6 @@ export const ResolveLocationPrimitive = buildTool({
     return true
   },
 
-  userFacingName() {
-    return 'locate'
-  },
-
   async description() {
     return DESCRIPTION
   },
@@ -267,43 +177,16 @@ export const ResolveLocationPrimitive = buildTool({
     return RESOLVE_LOCATION_TOOL_PROMPT
   },
 
-  mapToolResultToToolResultBlockParam(output, toolUseID) {
-    const llmContent =
-      typeof output === 'object' && output !== null
-        ? Object.fromEntries(
-            Object.entries(output as Record<string, unknown>).filter(
-              ([k]) => k !== 'outbound_traces',
-            ),
-          )
-        : output
-    return {
-      tool_use_id: toolUseID,
-      type: 'tool_result' as const,
-      content: JSON.stringify(llmContent),
-    }
-  },
-
-  renderToolUseMessage(
-    input: { query?: string; want?: string; near?: unknown },
-    options: { verbose: boolean },
-  ) {
+  renderToolUseMessage(input: { query?: string; want?: string }, options: { verbose: boolean }) {
     if (options.verbose) {
       return renderVerboseInputJson(input)
     }
-    const want = input.want ? ` → ${input.want}` : ''
-    return `${input.query ?? ''}${want}`
+    return input.query ?? ''
   },
 
   isMcp: false,
 
-  async validateInput(input) {
-    if (!input.query.trim()) {
-      return {
-        result: false as const,
-        message: 'resolve_location query must not be empty.',
-        errorCode: 1001,
-      }
-    }
+  async validateInput() {
     return { result: true as const }
   },
 
@@ -311,7 +194,7 @@ export const ResolveLocationPrimitive = buildTool({
     output: Output,
     _progress: unknown,
     options: { verbose: boolean; isTranscriptMode?: boolean } = { verbose: false },
-  ) {
+  ): React.ReactNode {
     if (options.verbose || options.isTranscriptMode) {
       return renderVerboseOutputJson(output)
     }
@@ -319,40 +202,10 @@ export const ResolveLocationPrimitive = buildTool({
     if (!output.ok) {
       return React.createElement(
         MessageResponse,
-        { height: 1 },
-        React.createElement(
-          Text,
-          { color: 'red' },
-          `위치 해석 실패: ${output.error.message}`,
-        ),
+        null,
+        React.createElement(Text, { color: 'red' }, `위치 해석 오류: ${output.error.message}`),
       )
     }
-
-    const result = asRecord(output.result)
-    if (!result) {
-      return React.createElement(
-        MessageResponse,
-        { height: 1 },
-        React.createElement(Text, { dimColor: true }, '위치 해석 결과 없음'),
-      )
-    }
-
-    if (result.kind === 'error') {
-      return React.createElement(
-        MessageResponse,
-        { height: 1 },
-        React.createElement(
-          Text,
-          { color: 'red' },
-          `위치 해석 실패: ${String(result.message ?? result.reason ?? 'unknown')}`,
-        ),
-      )
-    }
-
-    const rows =
-      result.kind === 'bundle'
-        ? renderBundleRows(result)
-        : renderSingleResult(result)
 
     return React.createElement(
       MessageResponse,
@@ -361,7 +214,7 @@ export const ResolveLocationPrimitive = buildTool({
         Box,
         { flexDirection: 'column' },
         React.createElement(Text, { bold: true }, '위치 해석 결과'),
-        ...rows,
+        ...summarizeLocationResult(output.result),
       ),
     )
   },

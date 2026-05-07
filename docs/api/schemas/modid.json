@@ -141,6 +141,12 @@
           "title": "Published Tier",
           "type": "string"
         },
+        "status": {
+          "const": "verified",
+          "default": "verified",
+          "title": "Status",
+          "type": "string"
+        },
         "verified_at": {
           "format": "date-time",
           "title": "Verified At",
@@ -301,6 +307,12 @@
           "title": "Published Tier",
           "type": "string"
         },
+        "status": {
+          "const": "verified",
+          "default": "verified",
+          "title": "Status",
+          "type": "string"
+        },
         "verified_at": {
           "format": "date-time",
           "title": "Verified At",
@@ -454,6 +466,12 @@
           "title": "Published Tier",
           "type": "string"
         },
+        "status": {
+          "const": "verified",
+          "default": "verified",
+          "title": "Status",
+          "type": "string"
+        },
         "verified_at": {
           "format": "date-time",
           "title": "Verified At",
@@ -605,6 +623,12 @@
             "any_id_sso_aal2"
           ],
           "title": "Published Tier",
+          "type": "string"
+        },
+        "status": {
+          "const": "verified",
+          "default": "verified",
+          "title": "Status",
           "type": "string"
         },
         "verified_at": {
@@ -763,6 +787,12 @@
           "title": "Published Tier",
           "type": "string"
         },
+        "status": {
+          "const": "verified",
+          "default": "verified",
+          "title": "Status",
+          "type": "string"
+        },
         "verified_at": {
           "format": "date-time",
           "title": "Verified At",
@@ -916,6 +946,12 @@
           "title": "Published Tier",
           "type": "string"
         },
+        "status": {
+          "const": "verified",
+          "default": "verified",
+          "title": "Status",
+          "type": "string"
+        },
         "verified_at": {
           "format": "date-time",
           "title": "Verified At",
@@ -957,6 +993,12 @@
           "const": "family_mismatch",
           "default": "family_mismatch",
           "title": "Reason",
+          "type": "string"
+        },
+        "status": {
+          "const": "failed",
+          "default": "failed",
+          "title": "Status",
           "type": "string"
         }
       },

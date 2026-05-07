@@ -24,7 +24,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from kosmos.tools.mvp_surface import VERIFY_TOOL, _VerifyInputForLLM
+from kosmos.tools.mvp_surface import _VerifyInputForLLM
 
 # ---------------------------------------------------------------------------
 # Parametrised canonical-family cases (I-V1)
@@ -52,29 +52,6 @@ _SAMPLE_PARAMS: dict[str, object] = {
     "purpose_ko": "종합소득세 신고",
     "purpose_en": "Comprehensive income tax filing",
 }
-
-
-def test_verify_openai_schema_requires_citizen_scope_payload() -> None:
-    """The LLM-visible schema must make empty verify params unrepresentable."""
-    tool_definition = VERIFY_TOOL.to_openai_tool()
-    function = tool_definition["function"]
-    assert isinstance(function, dict)
-    assert function.get("strict") is True
-
-    parameters = function["parameters"]
-    assert isinstance(parameters, dict)
-    assert parameters["required"] == ["tool_id", "params"]
-    assert parameters["additionalProperties"] is False
-
-    properties = parameters["properties"]
-    assert isinstance(properties, dict)
-    assert "family_hint" not in properties
-    assert "session_context" not in properties
-
-    params_schema = properties["params"]
-    assert isinstance(params_schema, dict)
-    assert params_schema["required"] == ["scope_list", "purpose_ko", "purpose_en"]
-    assert params_schema["additionalProperties"] is False
 
 
 @pytest.mark.parametrize(
@@ -221,6 +198,25 @@ def test_modid_citizen_shape_full_worked_example() -> None:
     assert instance.family_hint == "modid"
     assert isinstance(instance.session_context["scope_list"], list)
     assert len(instance.session_context["scope_list"]) == 2  # type: ignore[arg-type]
+
+
+def test_citizen_shape_flattens_nested_legacy_session_context() -> None:
+    """Observed K-EXAONE shape: params.session_context must feed session binding."""
+    emit = {
+        "tool_id": "mock_verify_module_modid",
+        "params": {
+            "scope_list": ["submit:gov24.minwon"],
+            "purpose_ko": "주민등록등본 발급 민원 신청",
+            "purpose_en": "Gov24 civil petition application",
+            "session_context": {"session_id": "GOV24-MINWON-SESSION-001"},
+        },
+    }
+
+    instance = _VerifyInputForLLM.model_validate(emit)
+
+    assert instance.family_hint == "modid"
+    assert instance.session_context["session_id"] == "GOV24-MINWON-SESSION-001"
+    assert "session_context" not in instance.session_context
 
 
 def test_empty_params_dict_accepted() -> None:

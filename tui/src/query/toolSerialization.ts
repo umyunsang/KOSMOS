@@ -53,7 +53,6 @@ function isPublishedToLLM(tool: Tool): boolean {
  * - `function.description` = description() + "\n\n" + prompt().slice(0, 200)
  *                            (either part omitted when absent/empty)
  * - `function.parameters`  = z.toJSONSchema(tool.inputSchema) — Draft 2020-12
- * - `function.strict`      = true when Tool.strict is true
  */
 export async function toolToFunctionSchema(tool: Tool): Promise<ToolDefinition> {
   // KOSMOS primitives implement description() and prompt() as zero-arg constants.
@@ -91,7 +90,6 @@ export async function toolToFunctionSchema(tool: Tool): Promise<ToolDefinition> 
       name: tool.name,
       description,
       parameters,
-      ...(tool.strict === true ? { strict: true } : {}),
     },
   }
 }
@@ -101,7 +99,7 @@ export async function toolToFunctionSchema(tool: Tool): Promise<ToolDefinition> 
  * sorted alphabetically by `function.name`.
  *
  * Called once per `chat_request` turn in `tui/src/query/deps.ts`.
- * Budget: ≤ 50 ms (12 schemas; Zod conversion is fast and tool descriptions
+ * Budget: ≤ 50 ms (5 published primitive schemas; Zod conversion is fast and tool descriptions
  * are constant-string returns — no I/O).
  */
 export async function getToolDefinitionsForFrame(): Promise<ToolDefinition[]> {

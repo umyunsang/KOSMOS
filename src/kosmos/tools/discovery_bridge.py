@@ -19,7 +19,6 @@ The wrapped tools surface (per :class:`AdapterCandidate`):
 - search_hint (bilingual ko/en) — BM25 indexable keyword phrase
 - llm_description — adapter usage prose
 - policy URL — agency-cited classification URL
-- adapter_mode — mock/live transparency surfaced in AdapterCandidate
 
 Called once from :func:`kosmos.tools.register_all.register_all_tools`
 immediately after ``import kosmos.tools.mock`` so all per-primitive registries
@@ -138,8 +137,28 @@ _VERIFY_FAMILIES: list[dict[str, Any]] = [
         "tool_id": "mock_verify_module_simple_auth",
         "family": "simple_auth_module",
         "name_ko": "간편인증 모듈 (AX-channel)",
-        "search_hint_ko": ["간편인증", "PASS", "카카오인증", "네이버인증", "토스인증"],
-        "search_hint_en": ["simple auth", "PASS", "Kakao", "Naver", "Toss"],
+        "search_hint_ko": [
+            "간편인증",
+            "PASS",
+            "카카오인증",
+            "네이버인증",
+            "토스인증",
+            "정부24",
+            "민원",
+            "주민등록등본",
+            "발급",
+        ],
+        "search_hint_en": [
+            "simple auth",
+            "PASS",
+            "Kakao",
+            "Naver",
+            "Toss",
+            "gov24",
+            "civil petition",
+            "resident registration certificate",
+            "issuance",
+        ],
         "endpoint": "https://api.gateway.kosmos.gov.kr/v1/verify/simple",
         "policy_authority": "https://www.kftc.or.kr/",
     },
@@ -147,13 +166,14 @@ _VERIFY_FAMILIES: list[dict[str, Any]] = [
         "tool_id": "mock_verify_module_any_id_sso",
         "family": "any_id_sso",
         "name_ko": "Any-ID SSO",
-        "search_hint_ko": [
-            "SSO",
-            "통합로그인",
-            "신원확인",
-            "IdentityAssertion",
+        "search_hint_ko": ["통합SSO", "통합로그인", "Any-ID", "단일인증", "공공통합인증"],
+        "search_hint_en": [
+            "any id sso",
+            "unified login",
+            "single sign on",
+            "public SSO",
+            "government sso",
         ],
-        "search_hint_en": ["SSO", "single sign-on", "identity assertion", "GOV.UK One Login"],
         "endpoint": "https://api.gateway.kosmos.gov.kr/v1/verify/sso",
         "policy_authority": "https://www.gov.kr/",
     },
@@ -180,18 +200,21 @@ _VERIFY_FAMILIES: list[dict[str, Any]] = [
         "family": "ganpyeon_injeung",
         "name_ko": "간편인증 (PASS·카카오·네이버)",
         "search_hint_ko": [
+            "간편인증 로그인 행정서비스 이용 권한 확인 본인확인 verify:ganpyeon.identity",
             "간편인증",
             "PASS",
             "카카오",
             "네이버",
             "토스",
-            "대리확인",
-            "대신확인",
-            "보호자확인",
         ],
         "search_hint_en": ["simple auth", "PASS", "Kakao Pay", "Naver", "Toss"],
         "endpoint": "https://api.gateway.kosmos.gov.kr/v1/verify/ganpyeon",
         "policy_authority": "https://www.kftc.or.kr/",
+        "scope_rules": (
+            "Scope rule: simple-auth login uses exactly scope_list "
+            "['verify:ganpyeon.identity']; do not use Any-ID SSO, "
+            "admin_service scopes, or submit scopes for identity-only 간편인증."
+        ),
     },
     {
         "tool_id": "mock_verify_mobile_id",
@@ -201,15 +224,66 @@ _VERIFY_FAMILIES: list[dict[str, Any]] = [
         "search_hint_en": ["mobile ID", "mobile DL", "mDL", "ISO/IEC 18013-5"],
         "endpoint": "https://api.gateway.kosmos.gov.kr/v1/verify/mobile-id",
         "policy_authority": "https://www.mobileid.go.kr/",
+        "scope_rules": (
+            "Scope rule: mobile ID identity verification uses exactly scope_list "
+            "['verify:mobile_id.identity']; do not invent lookup:identity.info "
+            "or lookup:identity.verify scopes."
+        ),
     },
     {
         "tool_id": "mock_verify_mydata",
         "family": "mydata",
         "name_ko": "마이데이터 (KFTC)",
-        "search_hint_ko": ["마이데이터", "거래내역", "신용카드", "은행거래", "자산조회"],
-        "search_hint_en": ["mydata", "transaction history", "open banking", "credit info"],
+        "search_hint_ko": [
+            "복지신청 scope_list submit:mydata.welfare_application 전용",
+            "공공마이데이터 제공동의 scope_list submit:public_mydata.action 전용",
+            "lookup:mohw.welfare_eligibility_search 제외",
+            "submit:mock.welfare_application_submit_v1 금지",
+            "마이데이터",
+            "공공 마이데이터",
+            "마이데이터 동의",
+            "제공 동의",
+            "동의 상태",
+            "데이터이동권",
+            "마이데이터 액션",
+            "거래내역",
+            "신용카드",
+            "은행거래",
+            "자산조회",
+            "복지",
+            "복지신청",
+            "복지급여신청",
+            "사회보장",
+            "한부모가족",
+            "한부모",
+            "아동양육비",
+        ],
+        "search_hint_en": [
+            "mydata",
+            "public mydata",
+            "mydata consent",
+            "consent status",
+            "data portability",
+            "mydata action",
+            "transaction history",
+            "open banking",
+            "credit info",
+            "welfare",
+            "welfare application",
+            "benefit application",
+            "social assistance",
+        ],
         "endpoint": "https://api.gateway.kosmos.gov.kr/v1/verify/mydata",
         "policy_authority": "https://www.mydatacenter.or.kr:3441/",
+        "scope_rules": (
+            "Scope rule: for '마이데이터 제공 동의' or '동의 상태 확인하고 ... 제공 동의', "
+            "use exactly scope_list ['submit:public_mydata.action']; pure MyData "
+            "authentication uses ['verify:mydata.consent']; welfare application verify uses "
+            "exactly ['submit:mydata.welfare_application'] because MOHW eligibility lookup "
+            "is public and already ran before verify; never include "
+            "lookup:mohw.welfare_eligibility_search, submit:mock.welfare_application_submit_v1, "
+            "or lookup:mydata.public.consent; never invent lookup:mydata.public.consent."
+        ),
     },
 ]
 
@@ -223,6 +297,8 @@ def _build_verify_search_hint(entry: dict[str, Any]) -> str:
 
 def _verify_to_govapitool(entry: dict[str, Any]) -> GovAPITool:
     """Build a GovAPITool wrapper for one verify family mock adapter."""
+    scope_rules = str(entry.get("scope_rules", "")).strip()
+    scope_clause = f"{scope_rules}\n\n" if scope_rules else ""
     return GovAPITool(
         id=entry["tool_id"],
         name_ko=entry["name_ko"],
@@ -233,6 +309,10 @@ def _verify_to_govapitool(entry: dict[str, Any]) -> GovAPITool:
         input_schema=_VerifyParamsShell,
         output_schema=_OpaqueOutput,
         llm_description=(
+            "Use only through the core verify primitive: "
+            f"verify(tool_id='{entry['tool_id']}', params={{...}}). "
+            "Do not call this adapter through lookup.\n\n"
+            f"{scope_clause}"
             f"Verify ceremony for {entry['name_ko']}. Issues a DelegationToken bound to "
             "the citizen's session and the requested scope_list. Returns the DelegationContext "
             "that downstream lookup/submit calls pass via params['delegation_context'].\n\n"
@@ -257,7 +337,6 @@ def _verify_to_govapitool(entry: dict[str, Any]) -> GovAPITool:
         rate_limit_per_minute=30,
         is_core=False,  # Discoverable via lookup search; NOT in primary LLM tool list
         primitive="verify",
-        adapter_mode="mock",
     )
 
 
@@ -266,56 +345,12 @@ def _verify_to_govapitool(entry: dict[str, Any]) -> GovAPITool:
 # ---------------------------------------------------------------------------
 
 
-def _delegation_source_from_published_tier(tier: object) -> str | None:
-    """Derive the compatible verify adapter from declared auth-tier metadata.
-
-    This keeps the routing hint metadata-driven: submit registrations already
-    declare the minimum published tier they accept, and the bridge projects
-    that into the discoverable GovAPITool so the LLM can pick one verify module
-    instead of cycling over unrelated auth families.
-    """
-    value = str(tier or "")
-    if value.startswith(("mobile_id_", "modid_")):
-        return "mock_verify_module_modid"
-    if value.startswith("ganpyeon_injeung_"):
-        return "mock_verify_ganpyeon_injeung"
-    if value.startswith("simple_auth_module_"):
-        return "mock_verify_module_simple_auth"
-    if value.startswith(("kec_", "gongdong_injeungseo_")):
-        return "mock_verify_module_kec"
-    if value.startswith(("geumyung_module_", "geumyung_injeungseo_")):
-        return "mock_verify_module_geumyung"
-    if value.startswith("mydata_"):
-        return "mock_verify_mydata"
-    return None
-
-
-def _required_scope_from_registration(registration: Any) -> str | None:
-    """Read an adapter-declared required delegation scope, when present."""
-    try:
-        module = importlib.import_module(str(registration.module_path))
-    except Exception:  # noqa: BLE001
-        logger.debug("submit bridge: failed to import %s", registration.module_path)
-        return None
-    scope = getattr(module, "_REQUIRED_SCOPE", None)
-    return scope if isinstance(scope, str) and scope else None
-
-
 def _submit_to_govapitool(
     tool_id: str, registration: Any, input_model: type[BaseModel]
 ) -> GovAPITool:
     """Build a GovAPITool wrapper from a submit AdapterRegistration."""
     sh_ko = " ".join(registration.search_hint.get("ko", []))
     sh_en = " ".join(registration.search_hint.get("en", []))
-    delegation_source = _delegation_source_from_published_tier(registration.published_tier_minimum)
-    required_scope = _required_scope_from_registration(registration)
-    verify_instruction = (
-        f" Use verify(tool_id='{delegation_source}', params={{'scope_list': "
-        f"['{required_scope}'], 'purpose_ko': '<citizen purpose>', "
-        f"'purpose_en': '<English purpose>'}}) first."
-        if delegation_source and required_scope
-        else ""
-    )
     return GovAPITool(
         id=tool_id,
         name_ko=tool_id.replace("mock_submit_module_", "").replace("_", " "),
@@ -327,30 +362,20 @@ def _submit_to_govapitool(
         output_schema=_OpaqueOutput,
         llm_description=(
             f"Submit primitive — {tool_id}. REQUIRES a DelegationContext from a prior "
-            "verify call with matching scope. Pass the verify result's "
-            "'delegation_context' in params; the backend also mirrors the latest "
-            "DelegationContext when the model omits it. Never ask the citizen for "
-            "raw session_id or identity numbers in chat. Fill only adapter-specific "
-            "payload fields declared in this tool's input_schema; optional Mock "
-            "fields may be omitted. For tax payment without explicit payment "
-            "confirmation, use an action_type that creates a reminder rather than "
-            "executing payment. On success: returns transaction_id (deterministic "
-            "URN) + adapter_receipt with the agency's 접수번호."
-            f"{verify_instruction}\n\n"
+            "verify call with matching scope. params MUST include 'delegation_context' "
+            "(returned by verify) plus the adapter-specific payload defined in this "
+            "tool's input_schema. On success: returns transaction_id (deterministic URN) "
+            "+ adapter_receipt with the agency's 접수번호.\n\n"
             "Failure modes: scope_violation / expired / session_violation / revoked / "
             "DelegationGrantMissing. Each failure surfaces a typed error; do NOT silently retry."
         ),
-        search_hint=f"{sh_ko} {sh_en}",
+        search_hint=f"{sh_ko} {sh_en} submit 제출 신고 민원",
         policy=registration.policy,
         is_concurrency_safe=registration.is_concurrency_safe,
         cache_ttl_seconds=registration.cache_ttl_seconds,
         rate_limit_per_minute=registration.rate_limit_per_minute,
         is_core=False,  # Discoverable via lookup search; NOT in primary LLM tool list
         primitive="submit",
-        published_tier_minimum=registration.published_tier_minimum,
-        nist_aal_hint=registration.nist_aal_hint,
-        adapter_mode="mock",
-        delegation_source_tool_id=delegation_source,
     )
 
 
@@ -386,7 +411,6 @@ def _subscribe_to_govapitool(tool_id: str, search_hint_str: str) -> GovAPITool:
         rate_limit_per_minute=30,
         is_core=False,
         primitive="subscribe",
-        adapter_mode="mock",
     )
 
 
@@ -394,21 +418,13 @@ def _subscribe_to_govapitool(tool_id: str, search_hint_str: str) -> GovAPITool:
 _SUBSCRIBE_HINTS: dict[str, str] = {
     "mock_cbs_disaster_v1": (
         "재난방송 CBS 긴급재난문자 cell broadcast disaster alert "
-        "폭염 미세먼지 정전 단수 재난 알림 부모님 지역 위험 확인 "
-        "emergency flood heatwave fine dust outage water shutdown safety "
-        "case status relief temporary housing inspection road risk weather "
-        "3GPP TS 23.041 subscribe 구독 알림 추적 상태 기한"
+        "emergency 3GPP TS 23.041 subscribe 구독"
     ),
     "mock_rest_pull_tick_v1": (
-        "REST-pull 폴링 polling 데이터고닷케이알 data.go.kr periodic subscribe 구독 "
-        "민원 처리상태 신청 결과 납부기한 갱신기한 예약기한 제출기한 "
-        "복지 심사 장학금 서류 고용센터 이민 체류기간 응급실 야간진료 병원 보험 "
-        "deadline status tracker"
+        "REST-pull 폴링 polling 데이터고닷케이알 data.go.kr periodic subscribe 구독"
     ),
     "mock_rss_public_notices_v1": (
-        "RSS 공공 공지 정부 announcement notice government subscribe 구독 "
-        "정부24 홈택스 위택스 워크넷 장학금 고용 복지 세금 민원 공지 "
-        "due date reminder alert follow-up milestone deadline notice"
+        "RSS 공공 공지 정부 announcement notice government subscribe 구독"
     ),
 }
 

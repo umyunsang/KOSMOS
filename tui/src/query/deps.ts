@@ -24,25 +24,76 @@ import { buildChatMessagesFromTranscript } from './chatMessagesBuilder.js'
 // stream_event hot-path untouched so disabled-pacing == zero
 // latency cost.
 
+function asRecord(value: unknown): Record<string, unknown> | undefined {
+  return value !== null && typeof value === 'object'
+    ? (value as Record<string, unknown>)
+    : undefined
+}
+
+function getOutboundTraces(envelope: Record<string, unknown>): unknown[] | undefined {
+  if (Array.isArray(envelope['outbound_traces'])) {
+    return envelope['outbound_traces']
+  }
+
+  const result = asRecord(envelope['result'])
+  if (result && Array.isArray(result['outbound_traces'])) {
+    return result['outbound_traces']
+  }
+
+  return undefined
+}
+
+function getEnvelopeError(envelope: Record<string, unknown>):
+  | { kind: string; message: string }
+  | undefined {
+  if (typeof envelope['error'] === 'string') {
+    return {
+      kind: typeof envelope.kind === 'string' ? envelope.kind : 'dispatch_error',
+      message: envelope['error'],
+    }
+  }
+
+  if (envelope.kind === 'error' && typeof envelope['message'] === 'string') {
+    return {
+      kind: typeof envelope['reason'] === 'string' ? envelope['reason'] : 'tool_error',
+      message: envelope['message'],
+    }
+  }
+
+  const result = asRecord(envelope['result'])
+  if (!result) {
+    return undefined
+  }
+
+  if (typeof result['error'] === 'string') {
+    return {
+      kind: typeof result.kind === 'string' ? result.kind : 'tool_error',
+      message: result['error'],
+    }
+  }
+
+  if (result.kind === 'error' && typeof result['message'] === 'string') {
+    return {
+      kind: typeof result['reason'] === 'string' ? result['reason'] : 'tool_error',
+      message: result['message'],
+    }
+  }
+
+  return undefined
+}
+
 function buildToolUseResultFromEnvelope(
   envelope: { kind?: string; [k: string]: unknown },
 ): Record<string, unknown> {
-  const outboundTraces = Array.isArray(envelope['outbound_traces'])
-    ? envelope['outbound_traces']
-    : undefined
-  const errorMessage =
-    typeof envelope['error'] === 'string'
-      ? envelope['error']
-      : envelope.kind === 'error' && typeof envelope['message'] === 'string'
-        ? envelope['message']
-        : undefined
+  const outboundTraces = getOutboundTraces(envelope)
+  const envelopeError = getEnvelopeError(envelope)
 
-  if (errorMessage && errorMessage.length > 0) {
+  if (envelopeError && envelopeError.message.length > 0) {
     const errorResult: Record<string, unknown> = {
       ok: false,
       error: {
-        kind: typeof envelope.kind === 'string' ? envelope.kind : 'dispatch_error',
-        message: errorMessage,
+        kind: envelopeError.kind,
+        message: envelopeError.message,
       },
     }
     if (outboundTraces && outboundTraces.length > 0) {
@@ -68,8 +119,8 @@ function stripUiOnlyToolResultFields(toolUseResult: Record<string, unknown>): st
   return JSON.stringify(llmFacing)
 }
 
-function isErrorResultEnvelope(envelope: { kind?: string; [k: string]: unknown }): boolean {
-  return envelope.kind === 'error' || typeof envelope['error'] === 'string'
+function isErrorEnvelope(envelope: { kind?: string; [k: string]: unknown }): boolean {
+  return getEnvelopeError(envelope) !== undefined
 }
 
 
@@ -534,7 +585,7 @@ async function* queryModelWithStreaming(params: {
 
       const env = fa.envelope ?? {}
       const toolUseResult = buildToolUseResultFromEnvelope(env)
-      const isError = isErrorResultEnvelope(env)
+      const isError = isErrorEnvelope(env)
       yield createUserMessage({
         content: [
           {
@@ -548,15 +599,12 @@ async function* queryModelWithStreaming(params: {
         sourceToolAssistantUUID: messageUuid as UUID,
       })
     } else if (fa.kind === 'permission_request') {
-      // Epic #2077 T020 (Step 7) — CC permission prompt wire. Routes the
-      // backend permission_request frame through sessionStore's pending
-      // permission slot (T018 / contracts/pending-permission-slot.md). The
-      // store mirrors the request for observers, while ipcPermissionBridge
-      // mounts CC's PermissionRequest prompt and awaits the citizen decision, then
-      // resolves the Promise here. We then send the permission_response
-      // frame upstream with the resolved decision (granted / denied /
-      // timeout). 'timeout' is treated by the backend as 'denied' for
-      // fail-closed (Constitution §II + FR-017).
+      // Epic FU-4 — CC permission gauntlet wire. Route the backend
+      // permission_request frame into toolUseConfirmQueue and then keep
+      // consuming IPC frames. The synthesized ToolUseConfirm owns sending the
+      // matching permission_response; awaiting the legacy pendingPermissionSlot
+      // here would block the frame consumer while the backend waits for that
+      // response, recreating the same stdio deadlock at the TUI layer.
       const fp = f as {
         request_id?: string
         primitive_kind?: 'lookup' | 'resolve_location' | 'verify' | 'submit' | 'subscribe'
@@ -565,16 +613,14 @@ async function* queryModelWithStreaming(params: {
         risk_level?: 'low' | 'medium' | 'high'
         receipt_id?: string
         worker_id?: string
-        tool_id?: string | null
-        arguments?: Record<string, unknown> | null
         session_id?: string
         correlation_id?: string
       }
-      // Lazy import to avoid pulling the React store into modules that don't
-      // need it; deps.ts is the only IPC↔store seam for this surface.
-      const { setPendingPermission } = await import('../store/pendingPermissionSlot.js')
-      const { dispatchSessionAction } = await import('../store/session-store.js')
-      const requestFrame = {
+      // Bridge the frame into toolUseConfirmQueue so the CC 4-arm
+      // permissionComponentForTool switch auto-mounts the correct adapter
+      // (VerifyPermissionRequestAdapter etc.).
+      const { pushIpcPermissionRequest } = await import('../utils/permissions/ipcPermissionBridge.js')
+      pushIpcPermissionRequest({
         request_id: fp.request_id ?? '',
         primitive_kind: fp.primitive_kind ?? 'submit',
         description_ko: fp.description_ko ?? '',
@@ -589,64 +635,7 @@ async function* queryModelWithStreaming(params: {
         role: 'backend',
         frame_seq: 0,
         kind: 'permission_request',
-        tool_id: fp.tool_id ?? fp.worker_id ?? '',
-        arguments: fp.arguments ?? null,
-      } as import('../ipc/frames.generated.js').PermissionRequestFrame
-      // Mirror the request into the reducer's pending_permission field so
-      // any remaining subscribers of `s.pending_permission` still receive
-      // the notification. The pendingPermissionSlot owns the Promise + FIFO
-      // queue lifecycle; the reducer field is a render-only mirror.
-      const reducerRequest = {
-        request_id: fp.request_id ?? '',
-        correlation_id: correlationId,
-        worker_id: '',
-        primitive_kind: fp.primitive_kind ?? 'submit',
-        description_ko: fp.description_ko ?? '',
-        description_en: fp.description_en ?? '',
-        risk_level: fp.risk_level ?? ('medium' as const),
-      }
-      dispatchSessionAction({ type: 'PERMISSION_REQUEST', request: reducerRequest })
-      // Arm the slot Promise before mounting CC's PermissionRequest. This
-      // matches CC's canUseTool ownership order: the pending permission result
-      // exists before the UI can call onAllow/onReject. The previous KOSMOS
-      // order pushed the modal first; a fast Enter could call
-      // resolvePermissionDecision before setPendingPermission had installed
-      // the active slot, leaving deps.ts blocked until permission_timeout.
-      const permissionPromise = setPendingPermission({
-        request_id: fp.request_id ?? '',
-        primitive_kind: fp.primitive_kind ?? 'submit',
-        description_ko: fp.description_ko ?? '',
-        description_en: fp.description_en ?? '',
-        risk_level: fp.risk_level ?? 'medium',
-        receipt_id: fp.receipt_id ?? '',
-        enqueued_at: performance.now(),
-      })
-      // Epic FU-4 — bridge the frame into toolUseConfirmQueue so CC's
-      // canonical PermissionRequest pipeline can render the approval prompt.
-      const { pushIpcPermissionRequest } = await import('../utils/permissions/ipcPermissionBridge.js')
-      pushIpcPermissionRequest(requestFrame)
-      try {
-        var decision = await permissionPromise
-      } finally {
-        // Always clear the reducer mirror so a stale `pending_permission`
-        // never blocks the next turn even on grant/deny/timeout/throw.
-        dispatchSessionAction({ type: 'PERMISSION_RESPONSE' })
-      }
-      // The CC permission prompt bridge sends allow/deny decisions at the
-      // moment the citizen acts. deps.ts only owns the no-interaction timeout
-      // path, where no prompt callback fired and the backend must be unblocked.
-      if (decision === 'timeout') {
-        const respFrame = {
-          session_id: sessionId,
-          correlation_id: correlationId,
-          ts: new Date().toISOString(),
-          role: 'tui' as const,
-          kind: 'permission_response' as const,
-          request_id: fp.request_id ?? '',
-          decision: 'denied' as const,
-        }
-        bridge.send(respFrame as unknown as IPCFrame)
-      }
+      } as import('../ipc/frames.generated.js').PermissionRequestFrame)
     } else if (fa.kind === 'error') {
       const reason = fa.message ?? 'KOSMOS backend error'
       // CC mirror: yield the (error) AssistantMessage first so

@@ -431,6 +431,78 @@ describe('stream-event projection I4', () => {
     expect(toolResultMsg.toolUseResult?.ok).toBe(false)
     expect(toolResultMsg.toolUseResult?.error?.message).toBe('adapter returned 500')
   })
+
+  test('is_error: true set when primitive result carries nested error', async () => {
+    const callId = 'call-err-primitive-001'
+    const errorEnvelope = {
+      kind: 'lookup',
+      tool_id: 'kma_forecast_fetch',
+      result: {
+        kind: 'error',
+        reason: 'invalid_params',
+        message: 'Missing lat/lon; resolve_location must run first',
+      },
+      outbound_traces: [
+        {
+          method: 'GET',
+          url: 'https://api.example.invalid/weather',
+          status_code: 400,
+        },
+      ],
+    }
+
+    const results = await run((corrId) => [
+      makeFrame('tool_call', corrId, {
+        call_id: callId,
+        name: 'lookup',
+        arguments: {
+          mode: 'fetch',
+          tool_id: 'kma_forecast_fetch',
+          params: {},
+        },
+      }),
+      makeFrame('tool_result', corrId, {
+        call_id: callId,
+        envelope: errorEnvelope,
+      }),
+      makeFrame('assistant_chunk', corrId, {
+        message_id: 'mid-004-nested',
+        delta: '',
+        done: true,
+      }),
+    ])
+
+    type UserMsgItem = {
+      type: 'user'
+      toolUseResult?: {
+        ok?: boolean
+        error?: { kind?: string; message?: string }
+        outbound_traces?: unknown[]
+      }
+      message: {
+        role: string
+        content: Array<{ type?: string; is_error?: boolean; content?: string }>
+      }
+    }
+
+    const userMessages = results.filter(
+      (r) => (r as { type?: string }).type === 'user',
+    ) as UserMsgItem[]
+
+    expect(userMessages.length).toBeGreaterThan(0)
+    const toolResultMsg = userMessages[0]!
+    const block = toolResultMsg.message.content[0]!
+    expect(block.is_error).toBe(true)
+    expect(toolResultMsg.toolUseResult?.ok).toBe(false)
+    expect(toolResultMsg.toolUseResult?.error?.kind).toBe('invalid_params')
+    expect(toolResultMsg.toolUseResult?.error?.message).toBe(
+      'Missing lat/lon; resolve_location must run first',
+    )
+    expect(toolResultMsg.toolUseResult?.outbound_traces).toHaveLength(1)
+
+    const llmFacing = JSON.parse(block.content ?? '{}') as Record<string, unknown>
+    expect(llmFacing).not.toHaveProperty('outbound_traces')
+  })
 })
 
 // ---------------------------------------------------------------------------

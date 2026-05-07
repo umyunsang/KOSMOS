@@ -18,6 +18,21 @@
       "title": "Adm Cd",
       "type": "string"
     },
+    "num_of_rows": {
+      "default": 10,
+      "description": "Rows per page. Maps to the official data.go.kr numOfRows wire parameter. Example: 20.",
+      "maximum": 100,
+      "minimum": 1,
+      "title": "Num Of Rows",
+      "type": "integer"
+    },
+    "page_no": {
+      "default": 1,
+      "description": "1-indexed result page. Maps to the official data.go.kr pageNo wire parameter.",
+      "minimum": 1,
+      "title": "Page No",
+      "type": "integer"
+    },
     "year": {
       "description": "Calendar year for the accident dataset. 2023+ uses 강원특별자치도(51)/전북특별자치도(52) codes automatically. Example: 2024.",
       "maximum": 2100,

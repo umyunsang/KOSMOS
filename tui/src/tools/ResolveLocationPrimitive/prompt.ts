@@ -1,19 +1,20 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS — ResolveLocationPrimitive prompt strings.
-// Mirrors the CC Tool prompt convention while exposing the KOSMOS citizen
-// location primitive as a first-class Tool object.
+// KOSMOS-original — ResolveLocationPrimitive prompt strings.
 
 export const RESOLVE_LOCATION_TOOL_NAME = 'resolve_location'
 
+/** Citizen-facing Korean description shown to the LLM. */
 export const DESCRIPTION =
-  '시민 발화의 물리적 위치, 주소, 행정동, 관공서, 역, 병원, POI를 좌표와 행정코드로 변환합니다. 온라인 행정 서비스명에는 호출하지 말고 실제 장소가 필요한 후속 lookup 전에 사용하세요.'
+  '한국 위치 표현을 좌표, 법정동 코드, 주소, 지역명으로 해석합니다. 후속 공공서비스 어댑터가 lat/lon, adm_cd, b_code, region을 요구할 때 먼저 호출하세요.'
 
-export const RESOLVE_LOCATION_TOOL_PROMPT = `Resolve a Korean physical place reference into location identifiers.
+/** Extended prompt included in the system-prompt tool-use section. */
+export const RESOLVE_LOCATION_TOOL_PROMPT = `Resolve a Korean location phrase into structured location identifiers.
 
 Input:
-  { query: string, want?: "coords" | "adm_cd" | "coords_and_admcd" | "road_address" | "jibun_address" | "poi" | "all", near?: [number, number] }
+  { query: string, want?: "coords" | "adm_cd" | "coords_and_admcd" | "road_address" | "jibun_address" | "poi" | "region" | "all", near?: [lat, lon] }
 
-Use this tool only for physical places: addresses, districts, stations, offices, hospitals, landmarks, and walk-in centers.
-Do not use it for online-only service names such as Hometax, Government24, certificates, or mobile ID unless the citizen asks for a physical office/location.
-
-For location-dependent public data, call resolve_location first, then pass only returned coordinates or administrative codes into the matching lookup adapter.`
+Rules:
+- Use this before lookup/submit adapters that require coordinates, b_code, adm_cd, or region text.
+- Preserve the citizen's location phrase in query.
+- Use want="coords_and_admcd" unless a downstream adapter asks for only one identifier.
+- If the result is kind="error", do not invent coordinates or administrative codes.`

@@ -124,7 +124,7 @@
     },
     "delegation_context": {
       "$ref": "#/$defs/DelegationContext",
-      "description": "DelegationContext from the prior verify step."
+      "description": "DelegationContext from the prior verify step. Keep it nested under this field only; do not spread token/citizen_did/purpose fields into top-level submit params."
     },
     "delivery_method": {
       "description": "Delivery channel for the requested document.",
@@ -149,7 +149,7 @@
       "type": "string"
     },
     "session_id": {
-      "description": "Consuming session ID (used for delegation session-binding check).",
+      "description": "Consuming session ID used for delegation session-binding check. Must equal the session_id supplied to the preceding verify params/session_context.",
       "maxLength": 128,
       "minLength": 1,
       "title": "Session Id",

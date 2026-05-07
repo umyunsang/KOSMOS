@@ -48,7 +48,8 @@ def render(rows: list[ChecklistRow]) -> str:
         "",
         "> Auto-generated from [`tests/fixtures/plugin_validation/checklist_manifest.yaml`]"
         "(../../tests/fixtures/plugin_validation/checklist_manifest.yaml).",
-        "> 수동 편집하지 말고, YAML 을 갱신한 뒤 `uv run python scripts/render_checklist.py` 로 재생성하세요.",
+        "> 수동 편집하지 말고, YAML 을 갱신한 뒤 "
+        "`uv run python scripts/render_checklist.py` 로 재생성하세요.",
         "",
         f"Total: **{len(rows)}** items.",
         "",

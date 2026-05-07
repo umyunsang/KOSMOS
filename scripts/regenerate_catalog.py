@@ -40,7 +40,7 @@ PLUGIN_PREFIX = "kosmos-plugin-"
 def _run_gh(args: list[str], *, timeout: float = 30.0) -> str:
     """Invoke `gh` and return stdout. Raises on non-zero exit."""
     completed = subprocess.run(  # noqa: S603 — argv list, no shell.
-        ["gh", *args],
+        ["gh", *args],  # noqa: S607 - uses PATH-resolved GitHub CLI
         check=True,
         capture_output=True,
         text=True,

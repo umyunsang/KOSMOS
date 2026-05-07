@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-from pydantic import AnyHttpUrl, Field, SecretStr, field_validator
+from pydantic import AliasChoices, AnyHttpUrl, Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -15,13 +15,13 @@ class LLMClientConfig(BaseSettings):
         KOSMOS_FRIENDLI_BASE_URL    — API base URL
         KOSMOS_FRIENDLI_MODEL       — model identifier
         KOSMOS_LLM_SESSION_BUDGET   — per-session token budget
+        KOSMOS_LLM_TIMEOUT_SECONDS  — HTTP stream timeout budget
     """
 
     model_config = SettingsConfigDict(
         env_prefix="",  # each field uses an explicit validation_alias
         case_sensitive=False,
         extra="ignore",
-        populate_by_name=True,
     )
 
     token: SecretStr = Field(
@@ -51,12 +51,13 @@ class LLMClientConfig(BaseSettings):
         description="Maximum tokens allowed per session.",
     )
     timeout: float = Field(
-        default=180.0,
-        validation_alias="KOSMOS_LLM_TIMEOUT_SECONDS",
-        description=(
-            "HTTP request timeout in seconds. K-EXAONE reasoning streams can stay "
-            "silent for over 60 seconds on high-effort turns."
+        default=300.0,
+        validation_alias=AliasChoices(
+            "KOSMOS_LLM_TIMEOUT_SECONDS",
+            "KOSMOS_LLM_TIMEOUT",
+            "timeout",
         ),
+        description="HTTP request timeout in seconds.",
     )
     max_retries: int = Field(
         default=3,

@@ -133,7 +133,7 @@ def _spawn_tui(env_overrides: dict[str, str]) -> tuple[int, int]:
     if pid == 0:
         # Child — exec the TUI in the worktree's tui/ directory.
         os.chdir(str(TUI_DIR))
-        os.execvpe(cmd[0], cmd, env)
+        os.execvpe(cmd[0], cmd, env)  # noqa: S606
     return pid, fd
 
 
@@ -162,7 +162,7 @@ def _send(fd: int, payload: bytes, label: str) -> None:
     sys.stdout.flush()
 
 
-def _shutdown(pid: int, fd: int, grace_ms: int = 1500) -> int | None:
+def _shutdown(pid: int, fd: int, grace_ms: int = 1500) -> int | None:  # noqa: C901
     """Send Ctrl-C twice + SIGTERM, then reap. Returns exit code if available."""
     try:
         os.write(fd, b"\x03")  # Ctrl-C #1
@@ -319,7 +319,13 @@ def cmd_greeting(_args: argparse.Namespace) -> HarnessResult:
         def _has_first_chunk(frames: list[dict]) -> bool:
             return any(f.get("kind") == "assistant_chunk" for f in frames)
 
-        found_first = _drain_until(fd, result.captured_stdout, turn_deadline, _has_first_chunk, f"{scenario}-first-chunk")
+        found_first = _drain_until(
+            fd,
+            result.captured_stdout,
+            turn_deadline,
+            _has_first_chunk,
+            f"{scenario}-first-chunk",
+        )
         if found_first:
             first_chunk_ms = int((time.time() - send_ts) * 1000)
             log.debug("first assistant_chunk in %dms", first_chunk_ms)
@@ -328,7 +334,13 @@ def cmd_greeting(_args: argparse.Namespace) -> HarnessResult:
         def _has_done_chunk(frames: list[dict]) -> bool:
             return any(f.get("kind") == "assistant_chunk" and f.get("done") for f in frames)
 
-        found_done = _drain_until(fd, result.captured_stdout, turn_deadline, _has_done_chunk, f"{scenario}-done-chunk")
+        found_done = _drain_until(
+            fd,
+            result.captured_stdout,
+            turn_deadline,
+            _has_done_chunk,
+            f"{scenario}-done-chunk",
+        )
         if found_done:
             done_chunk_ms = int((time.time() - send_ts) * 1000)
             log.debug("done assistant_chunk in %dms", done_chunk_ms)
@@ -348,7 +360,7 @@ def cmd_greeting(_args: argparse.Namespace) -> HarnessResult:
 
 
 def cmd_lookup_emergency_room(_args: argparse.Namespace) -> HarnessResult:
-    """T074: send '응급실 알려줘' then '강남구 응급실'; assert tool_call frames for lookup + resolve_location."""
+    """T074: assert lookup and resolve_location frames for an emergency-room query."""
     scenario = "lookup-emergency-room"
     started = time.time()
     pid, fd = _spawn_tui({})
@@ -370,12 +382,24 @@ def cmd_lookup_emergency_room(_args: argparse.Namespace) -> HarnessResult:
         def _has_any_tool_call(frames: list[dict]) -> bool:
             return any(f.get("kind") == "tool_call" for f in frames)
 
-        _drain_until(fd, result.captured_stdout, turn1_deadline, _has_any_tool_call, f"{scenario}-tc1")
+        _drain_until(
+            fd,
+            result.captured_stdout,
+            turn1_deadline,
+            _has_any_tool_call,
+            f"{scenario}-tc1",
+        )
 
         # Phase 3: second message with location qualifier.
         _send(fd, "강남구 응급실\r".encode(), f"{scenario}-turn2")
         turn2_deadline = time.time() + DEFAULT_TURN_TIMEOUT_MS / 1000
-        _drain_until(fd, result.captured_stdout, turn2_deadline, _has_any_tool_call, f"{scenario}-tc2")
+        _drain_until(
+            fd,
+            result.captured_stdout,
+            turn2_deadline,
+            _has_any_tool_call,
+            f"{scenario}-tc2",
+        )
 
     finally:
         result.exit_code = _shutdown(pid, fd)
@@ -394,7 +418,8 @@ def cmd_lookup_emergency_room(_args: argparse.Namespace) -> HarnessResult:
     primitive_names_seen = {tc["name"] for tc in seen_call_ids}
     has_lookup = "lookup" in primitive_names_seen
     has_resolve = "resolve_location" in primitive_names_seen
-    # Accept either primitive alone or the chain — spec says "both expected primitives appear in the call sequence"
+    # Accept either primitive alone or the chain; the spec expects both
+    # primitives to appear in the call sequence.
     success = has_lookup or has_resolve
 
     if not has_lookup:
@@ -413,7 +438,10 @@ def cmd_lookup_emergency_room(_args: argparse.Namespace) -> HarnessResult:
         "has_resolve_location": has_resolve,
         "total_ms": result.total_ms,
     }
-    result.markers_seen = _scan_markers(result.stdout_text, ["tool_call", "lookup", "resolve_location"])
+    result.markers_seen = _scan_markers(
+        result.stdout_text,
+        ["tool_call", "lookup", "resolve_location"],
+    )
     return result
 
 
@@ -423,8 +451,8 @@ def _check_friendli_token(scenario: str) -> None:
         raise SystemExit(1)
 
 
-def cmd_submit_fine_pay(args: argparse.Namespace) -> HarnessResult:
-    """T075: send '교통 범칙금 납부할게', handle permission_request per --auto-* flag, assert submit tool_call/tool_result."""
+def cmd_submit_fine_pay(args: argparse.Namespace) -> HarnessResult:  # noqa: C901
+    """T075: handle permission_request and assert submit tool_call/tool_result."""
     _check_friendli_token("submit-fine-pay")
     scenario = "submit-fine-pay"
     started = time.time()
@@ -461,13 +489,23 @@ def cmd_submit_fine_pay(args: argparse.Namespace) -> HarnessResult:
             return any(f.get("kind") == "permission_request" for f in frames)
 
         found_perm = _drain_until(
-            fd, result.captured_stdout, perm_deadline, _has_permission_request, f"{scenario}-perm-req"
+            fd,
+            result.captured_stdout,
+            perm_deadline,
+            _has_permission_request,
+            f"{scenario}-perm-req",
         )
         if found_perm:
             log.debug("permission_request received; sending decision=%s", decision)
 
             # Phase 4: respond with the chosen permission decision.
-            perm_response = json.dumps({"kind": "permission_response", "decision": decision}, ensure_ascii=False) + "\r\n"
+            perm_response = (
+                json.dumps(
+                    {"kind": "permission_response", "decision": decision},
+                    ensure_ascii=False,
+                )
+                + "\r\n"
+            )
             _send(fd, perm_response.encode("utf-8"), f"{scenario}-perm-resp")
         else:
             log.debug("no permission_request within timeout; proceeding to tool_call watch")
@@ -489,7 +527,11 @@ def cmd_submit_fine_pay(args: argparse.Namespace) -> HarnessResult:
             return any(f.get("kind") in ("tool_result", "error") for f in frames)
 
         _drain_until(
-            fd, result.captured_stdout, tr_deadline, _has_tool_result_or_error, f"{scenario}-tool-result"
+            fd,
+            result.captured_stdout,
+            tr_deadline,
+            _has_tool_result_or_error,
+            f"{scenario}-tool-result",
         )
 
     finally:
@@ -513,12 +555,15 @@ def cmd_submit_fine_pay(args: argparse.Namespace) -> HarnessResult:
         if not tool_results:
             result.errors.append("allow path: no tool_result observed after submit dispatch")
 
-    result.markers_seen = _scan_markers(result.stdout_text, ["permission_request", "tool_call", "tool_result"])
+    result.markers_seen = _scan_markers(
+        result.stdout_text,
+        ["permission_request", "tool_call", "tool_result"],
+    )
     return result
 
 
 def cmd_verify_gongdong(_args: argparse.Namespace) -> HarnessResult:
-    """T076: send '공동인증서로 본인인증 부탁해', assert verify tool_call + AuthContext tool_result."""
+    """T076: assert verify tool_call and AuthContext tool_result."""
     _check_friendli_token("verify-gongdong")
     scenario = "verify-gongdong"
     started = time.time()
@@ -592,9 +637,14 @@ def cmd_verify_gongdong(_args: argparse.Namespace) -> HarnessResult:
     if tool_call_ms is None:
         result.errors.append("timeout: no tool_call{name:'verify'} observed")
     if auth_context_ms is None:
-        result.errors.append("timeout: no tool_result{kind:'verify', family:'gongdong_injeungseo'} observed")
+        result.errors.append(
+            "timeout: no tool_result{kind:'verify', family:'gongdong_injeungseo'} observed"
+        )
 
-    result.markers_seen = _scan_markers(result.stdout_text, ["tool_call", "tool_result", "gongdong_injeungseo"])
+    result.markers_seen = _scan_markers(
+        result.stdout_text,
+        ["tool_call", "tool_result", "gongdong_injeungseo"],
+    )
     return result
 
 
@@ -618,14 +668,32 @@ def _build_parser() -> argparse.ArgumentParser:
 
     for name, helptext, handler in [
         ("greeting", "User Story 1 — '안녕하세요' (FR-001 / SC-001)", cmd_greeting),
-        ("lookup-emergency-room", "US1 — 응급실 lookup chain (SC-001)", cmd_lookup_emergency_room),
-        ("submit-fine-pay", "US2 — Mock submit + permission gauntlet (SC-002)", cmd_submit_fine_pay),
+        (
+            "lookup-emergency-room",
+            "US1 — 응급실 lookup chain (SC-001)",
+            cmd_lookup_emergency_room,
+        ),
+        (
+            "submit-fine-pay",
+            "US2 — Mock submit + permission gauntlet (SC-002)",
+            cmd_submit_fine_pay,
+        ),
         ("verify-gongdong", "US3 — Mock verify gongdong_injeungseo (SC-003)", cmd_verify_gongdong),
         ("subscribe-cbs", "US4 — Mock CBS subscribe (FR-012)", cmd_subscribe_cbs),
     ]:
         p = sub.add_parser(name, help=helptext)
-        p.add_argument("--capture-out", type=Path, default=None, help="Persist stdout (frame stream) here.")
-        p.add_argument("--capture-err", type=Path, default=None, help="Persist stderr (DEBUG log) here.")
+        p.add_argument(
+            "--capture-out",
+            type=Path,
+            default=None,
+            help="Persist stdout (frame stream) here.",
+        )
+        p.add_argument(
+            "--capture-err",
+            type=Path,
+            default=None,
+            help="Persist stderr (DEBUG log) here.",
+        )
         if name == "submit-fine-pay":
             perm_group = p.add_mutually_exclusive_group(required=False)
             perm_group.add_argument(
@@ -641,7 +709,10 @@ def _build_parser() -> argparse.ArgumentParser:
             perm_group.add_argument(
                 "--auto-deny",
                 action="store_true",
-                help="Auto-respond to permission_request with decision='deny' and assert no submit dispatch.",
+                help=(
+                    "Auto-respond to permission_request with decision='deny' "
+                    "and assert no submit dispatch."
+                ),
             )
         p.set_defaults(handler=handler)
     return parser

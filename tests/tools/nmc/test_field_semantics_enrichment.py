@@ -297,7 +297,7 @@ class TestEnrichmentEndToEnd:
 
         result = await executor.invoke(
             "nmc_emergency_search",
-            {"lat": 37.5729, "lon": 126.9794, "limit": 2},
+            {"mode": "coordinate", "lat": 37.5729, "lon": 126.9794, "limit": 2},
             request_id="test-req-jongno-live-shape",
             session_identity=object(),
         )

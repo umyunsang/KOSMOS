@@ -13,9 +13,10 @@
 //   - On `enter`, the selected entry's `query_text` becomes the new draft.
 //   - On `escape`, the saved draft is restored verbatim.
 //
-// This handler is pure — it returns the request envelope rather than mounting
-// a component itself. Runtime history search remains owned by the CC
-// `components/HistorySearchDialog.tsx` path.
+// This handler is pure — it returns the request envelope rather than
+// mounting the overlay itself. The mounting is wired in
+// `tui/src/components/history/HistorySearchOverlay.tsx` (T037 second half),
+// and the resolver dispatches into either based on its mounting strategy.
 
 import {
   type AccessibilityAnnouncer,

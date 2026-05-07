@@ -17,16 +17,19 @@ from __future__ import annotations
 import logging
 import xml.etree.ElementTree as ET
 from datetime import UTC, datetime
-from typing import Any, Literal
+from typing import Any, Final, Literal, Self
 
 import httpx
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from kosmos.tools._description_template import build_description_v4
 from kosmos.tools._outbound_trace import traced_async_client
 from kosmos.tools.errors import ToolExecutionError, _require_env
 from kosmos.tools.models import AdapterRealDomainPolicy, GovAPITool
-from kosmos.tools.mohw._short_references import MOHW_LIFE_STAGE_SHORT_REFERENCE
+from kosmos.tools.mohw._short_references import (
+    MOHW_LIFE_STAGE_SHORT_REFERENCE,
+    MOHW_TARGET_HOUSEHOLD_SHORT_REFERENCE,
+)
 from kosmos.tools.ssis.codes import (
     CallType,
     IntrsThemaCode,
@@ -41,6 +44,26 @@ logger = logging.getLogger(__name__)
 _BASE_URL = (
     "https://apis.data.go.kr/B554287/NationalWelfareInformationsV001/NationalWelfarelistV001"
 )
+_SINGLE_PARENT_PRECISION_TERMS: Final[tuple[str, ...]] = (
+    "한부모",
+    "조손",
+    "아동양육비",
+)
+_SINGLE_PARENT_CHILD_SUPPORT_CANONICAL_SEARCH: Final[str] = "한부모가족 아동양육비"
+_SINGLE_PARENT_CHILD_SUPPORT_ALIASES: Final[tuple[str, ...]] = (
+    "한부모 아동양육비",
+    "한부모아동양육비",
+    "한부모가족아동양육비",
+)
+
+
+def _canonical_single_parent_child_support_search(search_wrd: str) -> str:
+    compact = "".join(search_wrd.split())
+    if search_wrd.strip() in _SINGLE_PARENT_CHILD_SUPPORT_ALIASES:
+        return _SINGLE_PARENT_CHILD_SUPPORT_CANONICAL_SEARCH
+    if compact in _SINGLE_PARENT_CHILD_SUPPORT_ALIASES:
+        return _SINGLE_PARENT_CHILD_SUPPORT_CANONICAL_SEARCH
+    return search_wrd
 
 # ---------------------------------------------------------------------------
 # Input schema (T025) — snake_case pydantic; camelCase mapping happens in handle()
@@ -64,14 +87,18 @@ class MohwWelfareEligibilitySearchInput(BaseModel):
         description=(
             "Life-stage filter. "
             "001=영유아 / 002=아동 / 003=청소년 / 004=청년 / "
-            "005=중장년 / 006=노년 / 007=임신·출산"
+            "005=중장년 / 006=노년 / 007=임신·출산. "
+            "For 한부모/조손 child-support searches, omit this field and use "
+            "trgter_indvdl_array='060'."
         ),
     )
     trgter_indvdl_array: TrgterIndvdlCode | None = Field(
         default=None,
         description=(
             "Target individual / household-type filter "
-            "(e.g. '020' 다자녀, '040' 장애인, '050' 저소득)."
+            "(010 다문화·탈북민, 020 다자녀, 030 보훈, 040 장애인, "
+            "050 저소득, 060 한부모·조손). "
+            "For 한부모/조손, use '060' here; do not put household type in life_array."
         ),
     )
     intrs_thema_array: IntrsThemaCode | None = Field(
@@ -112,6 +139,42 @@ class MohwWelfareEligibilitySearchInput(BaseModel):
         le=500,
         description="Records per page. Default 10, maximum 500 per SSIS API contract.",
     )
+
+    @model_validator(mode="before")
+    @classmethod
+    def normalize_single_parent_child_support_search(cls, data: object) -> object:
+        """Map common user-facing abbreviations to the SSIS-matching service term."""
+        if not isinstance(data, dict):
+            return data
+        if str(data.get("trgter_indvdl_array") or "") != str(TrgterIndvdlCode.single_parent):
+            return data
+        search_wrd = data.get("search_wrd")
+        if not isinstance(search_wrd, str):
+            return data
+
+        canonical = _canonical_single_parent_child_support_search(search_wrd)
+        if canonical == search_wrd:
+            return data
+        normalized = dict(data)
+        normalized["search_wrd"] = canonical
+        return normalized
+
+    @model_validator(mode="after")
+    def reject_single_parent_life_stage_collision(self) -> Self:
+        """Reject the SSIS filter combination proven to suppress valid records."""
+        if (
+            self.life_array is not None
+            and self.trgter_indvdl_array == TrgterIndvdlCode.single_parent
+            and self.search_wrd is not None
+            and any(term in self.search_wrd for term in _SINGLE_PARENT_PRECISION_TERMS)
+        ):
+            raise ValueError(
+                "For 한부모/조손 child-support searches, omit life_array; use "
+                "trgter_indvdl_array='060' with search_wrd='아동양육비'. "
+                "Direct curl evidence 2026-05-06: adding lifeArray=002 returns "
+                "resultCode=40 NO DATA, while omitting lifeArray returns WLF00001068."
+            )
+        return self
 
 
 # ---------------------------------------------------------------------------
@@ -206,6 +269,11 @@ _TEXT_FIELDS = {
 }
 
 
+def _clean_ssis_text(value: str) -> str:
+    """Normalize government XML text before it reaches terminal captures."""
+    return value.replace("\ufffd", "").strip()
+
+
 def _parse_xml_response(xml_bytes: bytes) -> dict[str, Any]:
     """Parse SSIS NationalWelfarelistV001 UTF-8 XML response.
 
@@ -244,7 +312,7 @@ def _parse_xml_response(xml_bytes: bytes) -> dict[str, Any]:
 
     def _text_in(parent: ET.Element, tag: str) -> str:
         el = parent.find(tag)
-        return (el.text or "").strip() if el is not None and el.text else ""
+        return _clean_ssis_text(el.text or "") if el is not None and el.text else ""
 
     result_code = _text_in(root, "resultCode")
     result_message = _text_in(root, "resultMessage")
@@ -283,7 +351,7 @@ def _parse_xml_response(xml_bytes: bytes) -> dict[str, Any]:
         for field in _TEXT_FIELDS:
             el = item_el.find(field)
             if el is not None and el.text:
-                item[field] = el.text.strip()
+                item[field] = _clean_ssis_text(el.text)
             else:
                 item[field] = None
         # servId and servNm are required — skip malformed items
@@ -438,7 +506,12 @@ _MOHW_DESCRIPTION = build_description_v4(
         "intrs_thema_array→intrsThemaArray, num_of_rows→numOfRows, page_no→pageNo. "
         "callTp=L and srchKeyCode=003 are auto-injected; do not set them."
     ),
-    short_reference=("[LIFE_ARRAY codes] " + MOHW_LIFE_STAGE_SHORT_REFERENCE),
+    short_reference=(
+        "[LIFE_ARRAY] "
+        + MOHW_LIFE_STAGE_SHORT_REFERENCE
+        + " [TARGET] "
+        + MOHW_TARGET_HOUSEHOLD_SHORT_REFERENCE
+    ),
     domain_quirk=(
         "Response is UTF-8 XML only (no JSON option). "
         "resultCode='0' = SUCCESS (SSIS v2.0 convention). "
@@ -449,6 +522,8 @@ _MOHW_DESCRIPTION = build_description_v4(
         "This tool is self-contained for catalog queries. "
         "No resolve_location prerequisite. "
         "For '임신·출산' welfare services use life_array='007'. "
+        "For '한부모' welfare services use trgter_indvdl_array='060', not life_array; "
+        "for child-support precision add search_wrd='아동양육비'. "
         "For online-only results add onap_psblt_yn='Y'. "
         "Combine life_array + intrs_thema_array (080 임신·출산) for best precision."
     ),
@@ -470,7 +545,8 @@ MOHW_WELFARE_ELIGIBILITY_SEARCH_TOOL = GovAPITool(
     llm_description=_MOHW_DESCRIPTION,
     search_hint=(
         "복지서비스 출산 보조금 복지혜택 신청 사회보장정보원 보건복지부 임산부 지원 "
-        "welfare benefit eligibility childbirth subsidy MOHW SSIS social security Korea"
+        "한부모 조손 아동양육비 welfare benefit eligibility childbirth subsidy "
+        "single parent child support MOHW SSIS social security Korea"
     ),
     policy=AdapterRealDomainPolicy(
         real_classification_url=(

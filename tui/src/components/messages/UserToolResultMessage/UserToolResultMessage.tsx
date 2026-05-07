@@ -69,6 +69,13 @@ export function UserToolResultMessage(t0) {
     return t2;
   }
   if (param.is_error) {
+    const canRenderVerboseToolError =
+      (verbose || isTranscriptMode === true) &&
+      message.toolUseResult !== undefined &&
+      toolUse.tool.renderToolResultMessage !== undefined;
+    if (canRenderVerboseToolError) {
+      return <UserToolSuccessMessage message={message} lookups={lookups} toolUseID={toolUse.toolUse.id} progressMessagesForMessage={progressMessagesForMessage} style={style} tool={toolUse.tool} tools={tools} verbose={verbose} width={width} isTranscriptMode={isTranscriptMode} />;
+    }
     let t1;
     if ($[10] !== isTranscriptMode || $[11] !== param || $[12] !== progressMessagesForMessage || $[13] !== toolUse.tool || $[14] !== tools || $[15] !== verbose) {
       t1 = <UserToolErrorMessage progressMessagesForMessage={progressMessagesForMessage} tool={toolUse.tool} tools={tools} param={param} verbose={verbose} isTranscriptMode={isTranscriptMode} />;

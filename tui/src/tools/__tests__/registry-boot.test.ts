@@ -8,13 +8,17 @@
 //   Case 4: Citation enforcement is inside validateInput (Spec 2294 R-3), NOT in the boot guard.
 //           (Skipped per task spec — boot guard only does structural member presence.)
 //
-// Case 1 uses LookupPrimitive (real) + compliant synthetic stubs for the other
-// four, demonstrating the same guard
+// NOTE: SubmitPrimitive / VerifyPrimitive / SubscribePrimitive are authored in
+// `.ts` files with JSX by sonnet-submit/verify/subscribe teammates (T010-T018).
+// Bun 1.3.x cannot parse JSX in `.ts` files without a global loader override.
+// Case 1 therefore uses LookupPrimitive + ResolveLocationPrimitive +
+// compliant synthetic stubs for the other three, demonstrating the same guard
 // correctness as calling getAllBaseTools() would.
 
 import { describe, test, expect } from 'bun:test'
 import type { Tool } from '../../Tool.js'
 import { LookupPrimitive } from '../LookupPrimitive/LookupPrimitive.js'
+import { ResolveLocationPrimitive } from '../ResolveLocationPrimitive/ResolveLocationPrimitive.js'
 import { verifyBootRegistry } from '../../services/toolRegistry/bootGuard.js'
 
 // ---------------------------------------------------------------------------
@@ -42,14 +46,16 @@ function fakePrimitive(name: string, overrides: Partial<Record<string, unknown>>
 
 // ---------------------------------------------------------------------------
 // Case 1: Full 5-primitive registry boot
-// Uses LookupPrimitive (real) + synthetic stubs for ResolveLocation/Submit/Verify/Subscribe.
+// Uses LookupPrimitive and ResolveLocationPrimitive (real) + synthetic stubs for Submit/Verify/Subscribe
+// (those are authored with JSX in .ts files by parallel teammates; Bun 1.3.x
+// cannot load them without a loader override that breaks unrelated .ts files).
 // ---------------------------------------------------------------------------
 
 describe('verifyBootRegistry — full 5-primitive registry (Case 1)', () => {
   test('passes with ok === true, 5 primitives, durationMs ≤ 200', () => {
     const registry: readonly Tool[] = [
       LookupPrimitive,
-      fakePrimitive('resolve_location'),
+      ResolveLocationPrimitive,
       fakePrimitive('submit'),
       fakePrimitive('verify'),
       fakePrimitive('subscribe'),

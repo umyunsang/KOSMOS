@@ -86,6 +86,28 @@ def test_accident_search_invalid_sido_4digit_raises() -> None:
         )
 
 
+def test_accident_hazard_pagination_fields_validate() -> None:
+    """Hazard adapter exposes official numOfRows/pageNo pagination params."""
+    inp = AccidentHazardSearchInput(
+        adm_cd="1168000000",
+        year=2024,
+        num_of_rows=20,
+        page_no=3,
+    )
+    assert inp.num_of_rows == 20
+    assert inp.page_no == 3
+
+
+def test_accident_hazard_num_of_rows_bounds() -> None:
+    """num_of_rows follows the data.go.kr 1-100 row contract."""
+    AccidentHazardSearchInput(adm_cd="1168000000", year=2024, num_of_rows=1)
+    AccidentHazardSearchInput(adm_cd="1168000000", year=2024, num_of_rows=100)
+    with pytest.raises(ValidationError):
+        AccidentHazardSearchInput(adm_cd="1168000000", year=2024, num_of_rows=0)
+    with pytest.raises(ValidationError):
+        AccidentHazardSearchInput(adm_cd="1168000000", year=2024, num_of_rows=101)
+
+
 # ---------------------------------------------------------------------------
 # T037-C  _strip_geom_json helper unit tests
 # ---------------------------------------------------------------------------
@@ -221,12 +243,15 @@ async def test_handle_strips_geom_json_via_mock(monkeypatch: pytest.MonkeyPatch)
     mock_client = AsyncMock(spec=httpx.AsyncClient)
     mock_client.get.return_value = mock_response
 
-    inp = AccidentHazardSearchInput(adm_cd="1168010100", year=2024)
+    inp = AccidentHazardSearchInput(adm_cd="1168010100", year=2024, num_of_rows=1, page_no=2)
     result = await handle(inp, client=mock_client)
 
     assert result["kind"] == "collection"
     assert result["total_count"] == 1
     assert len(result["items"]) == 1
+    _, kwargs = mock_client.get.call_args
+    assert kwargs["params"]["numOfRows"] == 1
+    assert kwargs["params"]["pageNo"] == 2
 
     item = result["items"][0]
     assert "geom_json" not in item, (

@@ -51,6 +51,7 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
+import re
 from enum import StrEnum
 from typing import TYPE_CHECKING, Any
 
@@ -65,6 +66,8 @@ if TYPE_CHECKING:
     pass
 
 logger = logging.getLogger(__name__)
+_SUBMIT_TOOL_ID_RE = re.compile(r"^[a-z][a-z0-9_]*$")
+_INVALID_TOOL_ID_SENTINEL = "invalid_tool_id"
 
 # ---------------------------------------------------------------------------
 # Public models — T021
@@ -144,8 +147,6 @@ class SubmitOutput(BaseModel):
 
 # Maps tool_id → (AdapterRegistration, invoke_callable)
 _ADAPTER_REGISTRY: dict[str, tuple[AdapterRegistration, Any]] = {}
-_SESSION_SINGLETON_SUBMIT_TOOL_IDS = frozenset({"mock_traffic_fine_pay_v1"})
-_SUCCESSFUL_SESSION_SINGLETON_SUBMITS: set[tuple[str, str]] = set()
 
 
 def register_submit_adapter(registration: AdapterRegistration, invoke_fn: Any) -> None:
@@ -450,37 +451,49 @@ async def submit(
         params = {}
 
     tracer = trace.get_tracer("kosmos.primitives.submit")
+    requested_tool_id = str(tool_id or "")
 
     with tracer.start_as_current_span("gen_ai.tool_loop.iteration") as span:
-        span.set_attribute("gen_ai.tool.name", tool_id)
+        span.set_attribute("gen_ai.tool.name", requested_tool_id or _INVALID_TOOL_ID_SENTINEL)
         span.set_attribute("kosmos.submit.session_id", session_id)
 
+        if not _SUBMIT_TOOL_ID_RE.fullmatch(requested_tool_id):
+            logger.warning("submit: invalid tool_id shape: %r", requested_tool_id)
+            span.set_attribute("error.type", "invalid_tool_id")
+            return AdapterNotFoundError(
+                tool_id=_INVALID_TOOL_ID_SENTINEL,
+                message=(
+                    "submit requires a non-empty registered adapter tool_id matching "
+                    "^[a-z][a-z0-9_]*$; call submit(tool_id=<adapter>, params={...})."
+                ),
+            )
+
         # Step 1 — Resolve adapter
-        if tool_id not in _ADAPTER_REGISTRY:
-            logger.warning("submit: adapter not found: %s", tool_id)
+        if requested_tool_id not in _ADAPTER_REGISTRY:
+            logger.warning("submit: adapter not found: %s", requested_tool_id)
             span.set_attribute("error.type", "adapter_not_found")
             return AdapterNotFoundError(
-                tool_id=tool_id,
+                tool_id=requested_tool_id,
                 message=(
-                    f"No submit adapter registered for tool_id={tool_id!r}. "
+                    f"No submit adapter registered for tool_id={requested_tool_id!r}. "
                     "Check that the adapter module is imported before calling submit()."
                 ),
             )
 
-        registration, invoke_fn = _ADAPTER_REGISTRY[tool_id]
+        registration, invoke_fn = _ADAPTER_REGISTRY[requested_tool_id]
 
         # Step 2 — Published tier gate (SC-005)
         rejection = check_tier_gate(registration=registration, auth_context=auth_context)
         if rejection is not None:
             logger.info(
                 "submit: tier gate rejected invocation for %s: %s",
-                tool_id,
+                requested_tool_id,
                 rejection.get("reason", ""),
             )
             span.set_attribute("error.type", "tier_gate_rejected")
             return SubmitOutput(
                 transaction_id=derive_transaction_id(
-                    tool_id,
+                    requested_tool_id,
                     params,
                     adapter_nonce=registration.nonce,
                 ),
@@ -492,32 +505,12 @@ async def submit(
             )
 
         # Step 3 — Derive deterministic transaction_id
-        transaction_id = derive_transaction_id(tool_id, params, adapter_nonce=registration.nonce)
-        span.set_attribute("kosmos.submit.transaction_id", transaction_id)
-
-        singleton_key = (session_id, tool_id)
-        singleton_guard_active = (
-            session_id not in {"", "unknown"} and tool_id in _SESSION_SINGLETON_SUBMIT_TOOL_IDS
+        transaction_id = derive_transaction_id(
+            requested_tool_id,
+            params,
+            adapter_nonce=registration.nonce,
         )
-        if singleton_guard_active and singleton_key in _SUCCESSFUL_SESSION_SINGLETON_SUBMITS:
-            logger.warning(
-                "submit: duplicate singleton write blocked for session_id=%s tool_id=%s",
-                session_id,
-                tool_id,
-            )
-            span.set_attribute("error.type", "duplicate_singleton_submit")
-            return SubmitOutput(
-                transaction_id=transaction_id,
-                status=SubmitStatus.rejected,
-                adapter_receipt={
-                    "reason": "duplicate_singleton_submit",
-                    "message": (
-                        "This singleton submit adapter already succeeded in the "
-                        "current session; repeated execution was blocked to "
-                        "avoid duplicate receipt/payment side effects."
-                    ),
-                },
-            )
+        span.set_attribute("kosmos.submit.transaction_id", transaction_id)
 
         # Step 4 + 5 — Validate params (best-effort) and invoke adapter
         try:
@@ -525,17 +518,17 @@ async def submit(
         except Exception as exc:  # noqa: BLE001
             logger.error(
                 "submit: adapter invocation failed for %s: %s: %s",
-                tool_id,
+                requested_tool_id,
                 type(exc).__name__,
                 exc,
             )
             span.set_attribute("error.type", type(exc).__name__)
             span.record_exception(exc)
             return AdapterInvocationError(
-                tool_id=tool_id,
+                tool_id=requested_tool_id,
                 structured={"exception_type": type(exc).__name__, "message": str(exc)},
                 message=(
-                    f"Adapter {tool_id!r} raised {type(exc).__name__}: {exc}. "
+                    f"Adapter {requested_tool_id!r} raised {type(exc).__name__}: {exc}. "
                     "See structured for details."
                 ),
             )
@@ -544,22 +537,21 @@ async def submit(
         if isinstance(result, SubmitOutput):
             # Ensure transaction_id matches derived value (adapters may override)
             span.set_attribute("kosmos.submit.status", result.status.value)
-            if singleton_guard_active and result.status == SubmitStatus.succeeded:
-                _SUCCESSFUL_SESSION_SINGLETON_SUBMITS.add(singleton_key)
             return result
 
         # Adapter returned something unexpected — wrap as failure (FR-005)
         logger.error(
             "submit: adapter %s returned unexpected type %s (expected SubmitOutput)",
-            tool_id,
+            requested_tool_id,
             type(result).__name__,
         )
         span.set_attribute("error.type", "unexpected_adapter_return_type")
         return AdapterInvocationError(
-            tool_id=tool_id,
+            tool_id=requested_tool_id,
             structured={"return_type": type(result).__name__},
             message=(
-                f"Adapter {tool_id!r} returned {type(result).__name__!r} instead of SubmitOutput."
+                f"Adapter {requested_tool_id!r} returned {type(result).__name__!r} "
+                "instead of SubmitOutput."
             ),
         )
 

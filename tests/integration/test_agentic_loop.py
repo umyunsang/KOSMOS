@@ -204,11 +204,10 @@ async def _run_with_frame(  # noqa: C901 — test harness deliberately covers ma
     - Monkeypatch LLMClient + LLMClientConfig.
     - Monkeypatch ToolRegistry.export_core_tools_openai.
     - Monkeypatch PromptLoader for fast system-prompt resolution.
-    - Create an OS pipe for stdin; write frame + exit sentinel; pass read-end
-      to run() via sys.stdin.buffer.
+    - Create an OS pipe for stdin; write frame then close the pipe so EOF
+      lets the reader drain background chat_request handlers.
     """
     from kosmos.ipc import stdio as stdio_mod
-    from kosmos.ipc.frame_schema import SessionEventFrame
 
     # Reset stdout lock so a fresh asyncio.Lock is created for this run.
     monkeypatch.setattr(stdio_mod, "_stdout_lock", None)
@@ -259,24 +258,14 @@ async def _run_with_frame(  # noqa: C901 — test harness deliberately covers ma
     for k, v in (env_overrides or {}).items():
         monkeypatch.setenv(k, v)
 
-    # Build stdin payload with chat_request first, then send session_event{exit}
-    # only after the background chat_request task has emitted its terminal
-    # assistant_chunk. The production stdio loop keeps draining stdin while a
-    # chat request runs; sending exit immediately races and cancels the
-    # background agentic loop before multi-turn fixtures reach their final turn.
+    # Build stdin payload: chat_request only. EOF drives graceful shutdown so
+    # background chat_request handlers are drained instead of cancelled.
     session_id = frame.session_id
-    exit_frame = SessionEventFrame(
-        session_id=session_id,
-        correlation_id=str(uuid.uuid4()),
-        role="tui",
-        ts=_ts(),
-        kind="session_event",
-        event="exit",
-        payload={},
-    )
+    payload = _encode_frame(frame)
 
     r_fd, w_fd = os.pipe()
-    os.write(w_fd, _encode_frame(frame))
+    os.write(w_fd, payload)
+    os.close(w_fd)
     r_file = os.fdopen(r_fd, "rb")
 
     class _FakeStdinWrapper:
@@ -286,27 +275,14 @@ async def _run_with_frame(  # noqa: C901 — test harness deliberately covers ma
 
     from kosmos.ipc.stdio import run as ipc_run
 
-    run_task = asyncio.create_task(ipc_run(session_id=session_id))
     try:
-        deadline = asyncio.get_running_loop().time() + _RUNNER_TIMEOUT
-        while asyncio.get_running_loop().time() < deadline:
-            frames = fake_stdout.buffer.as_frames()
-            if any(f.get("kind") == "assistant_chunk" and f.get("done") is True for f in frames):
-                break
-            await asyncio.sleep(0.01)
-        os.write(w_fd, (exit_frame.model_dump_json() + "\n").encode("utf-8"))
-        os.close(w_fd)
-        await asyncio.wait_for(run_task, timeout=1.0)
+        await asyncio.wait_for(ipc_run(session_id=session_id), timeout=_RUNNER_TIMEOUT)
     except TimeoutError:
-        run_task.cancel()
         pass
     except Exception:  # noqa: BLE001, S110 — test inspects captured state regardless of how the loop exited
-        run_task.cancel()
         pass
 
     try:
-        with contextlib.suppress(OSError):
-            os.close(w_fd)
         if not r_file.closed:
             r_file.close()
     except OSError:
@@ -330,7 +306,7 @@ _CC_TOOL_NAMES = re.compile(
 class _SingleLookupThenAnswerLLMClient(_BaseFakeLLMClient):
     """LLM that calls lookup once on Turn 1, then answers on Turn 2.
 
-    Turn 1: tool_call_delta(name='lookup', args for a read-only adapter fetch) + done.
+    Turn 1: tool_call_delta(name='lookup', args='{"mode":"fetch",...}') + done.
     Turn 2: emits content_delta('강남구 응급실은 강남세브란스병원입니다.') + done.
     """
 
@@ -363,13 +339,9 @@ class _SingleLookupThenAnswerLLMClient(_BaseFakeLLMClient):
                 tool_call_index=0,
                 tool_call_id=f"call-{uuid.uuid4().hex[:12]}",
                 function_name="lookup",
-                function_args_delta=json.dumps(
-                    {
-                        "mode": "fetch",
-                        "tool_id": "kma_pre_warning",
-                        "params": {},
-                    },
-                    ensure_ascii=False,
+                function_args_delta=(
+                    '{"mode":"fetch","tool_id":"nmc_emergency_search",'
+                    '"params":{"query":"강남구 응급실"}}'
                 ),
             )
             yield StreamEvent(type="done")
@@ -524,13 +496,9 @@ class _FiveTurnToolCallLLMClient(_BaseFakeLLMClient):
                 tool_call_index=0,
                 tool_call_id=f"call-turn{turn}-{uuid.uuid4().hex[:8]}",
                 function_name="lookup",
-                function_args_delta=json.dumps(
-                    {
-                        "mode": "fetch",
-                        "tool_id": "kma_weather_alert_status",
-                        "params": {"stn_id": f"10{turn}"},
-                    },
-                    ensure_ascii=False,
+                function_args_delta=(
+                    '{"mode":"fetch","tool_id":"nmc_emergency_search",'
+                    f'"params":{{"query":"응급실 검색 {turn}"}}}}'
                 ),
             )
             yield StreamEvent(type="done")
@@ -811,33 +779,6 @@ async def test_multi_tool_turn_is_coerced_to_one_visible_dispatch(
         )
 
     monkeypatch.setattr(lookup_mod, "lookup", _multi_lookup)
-    import kosmos.tools.registry as registry_mod
-
-    class _ReadOnlyPolicy:
-        citizen_facing_gate = "read-only"
-        real_classification_url = None
-
-    class _Schema:
-        @staticmethod
-        def model_json_schema() -> dict[str, object]:
-            return {}
-
-    class _ReadOnlyAdapter:
-        policy = _ReadOnlyPolicy()
-        adapter_mode = "mock"
-        category: tuple[str, ...] = ("emergency",)
-        delegation_source_tool_id = None
-        search_hint = "강남 구급출동"
-        llm_description = "Read-only emergency dispatch fixture."
-        primitive = "lookup"
-        input_schema = _Schema()
-        output_schema = _Schema()
-
-    monkeypatch.setattr(
-        registry_mod.ToolRegistry,
-        "lookup",
-        lambda self, tool_id: _ReadOnlyAdapter(),
-    )
 
     buf, _ = await _run_with_frame(
         frame,

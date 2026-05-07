@@ -20,6 +20,7 @@ from kosmos.tools.models import (
     AdmCodeResult,
     CoordResult,
     POIResult,
+    RegionResult,
     ResolveBundle,
     ResolveError,
     ResolveLocationOutputUnion,  # type: ignore[attr-defined]
@@ -189,6 +190,28 @@ class TestPOIResultRoundTrip:
         )
         with pytest.raises(ValidationError):
             _ADAPTER.validate_json(raw)
+
+
+class TestRegionResultRoundTrip:
+    def test_region_result(self):
+        raw = json.dumps(
+            {
+                "kind": "region",
+                "region_type": "B",
+                "address_name": "부산광역시 사하구 하단동",
+                "region_1depth_name": "부산광역시",
+                "region_2depth_name": "사하구",
+                "region_3depth_name": "하단동",
+                "region_4depth_name": "",
+                "code": "2638010300",
+                "x": 128.96044110450242,
+                "y": 35.11437276296668,
+                "source": "kakao",
+            }
+        )
+        result = _ADAPTER.validate_json(raw)
+        assert isinstance(result, RegionResult)
+        assert result.region_2depth_name == "사하구"
 
 
 class TestResolveBundleRoundTrip:

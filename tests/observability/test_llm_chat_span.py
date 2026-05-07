@@ -23,6 +23,8 @@ Strategy:
 
 from __future__ import annotations
 
+import asyncio
+import logging
 import os
 from collections import defaultdict
 from collections.abc import AsyncIterator
@@ -336,3 +338,49 @@ async def test_chat_span_tool_calls_finish_reason(
     tool_events = [e for e in events if e.type == "tool_call_delta"]
     assert len(tool_events) == 1, f"Expected 1 tool_call_delta event, got {len(tool_events)}"
     assert tool_events[0].function_name == "search_traffic"
+
+
+@pytest.mark.asyncio
+async def test_stream_close_from_other_task_does_not_detach_otel_context(
+    caplog: pytest.LogCaptureFixture,
+    mem_exporter: InMemorySpanExporter,
+) -> None:
+    """Closing a partially consumed stream from another task must not log OTel
+    context detach errors.
+
+    The TUI stops reading the model stream as soon as a tool call is ready, then
+    drives the next agentic step. That closes this async generator across a
+    yield boundary, so the chat span cannot keep an active OTel context manager
+    alive while control is in the caller.
+    """
+
+    client = _make_client()
+
+    async def _fake(
+        self: Any,
+        payload: dict[str, object],
+        _finalize: dict[str, object],
+    ) -> AsyncIterator[StreamEvent]:
+        yield StreamEvent(type="content_delta", content="partial")
+        _finalize["input_tokens"] = 1
+        _finalize["output_tokens"] = 1
+        _finalize["response_model"] = "LGAI-EXAONE/K-EXAONE-236B-A23B"
+        _finalize["finish_reasons"] = ["stop"]
+
+    caplog.set_level(logging.ERROR, logger="opentelemetry.context")
+
+    with patch.object(type(client), "_stream_with_retry", _fake):
+        stream = client.stream([ChatMessage(role="user", content="test query")])
+        event = await stream.__anext__()
+        assert event.type == "content_delta"
+        await asyncio.create_task(stream.aclose())
+
+    assert not [
+        record
+        for record in caplog.records
+        if record.name == "opentelemetry.context"
+        and "Failed to detach context" in record.getMessage()
+    ]
+
+    spans = mem_exporter.get_finished_spans()
+    assert [span.name for span in spans].count("chat") == 1

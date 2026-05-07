@@ -69,10 +69,10 @@ def test_default_session_budget(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_default_timeout(monkeypatch: pytest.MonkeyPatch) -> None:
-    """timeout defaults to 180.0 seconds for K-EXAONE high-effort streams."""
+    """timeout defaults to 300.0 seconds."""
     monkeypatch.setenv("KOSMOS_FRIENDLI_TOKEN", "test-token-123")
     config = LLMClientConfig()
-    assert config.timeout == 180.0
+    assert config.timeout == 300.0
 
 
 def test_default_max_retries(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -111,12 +111,12 @@ def test_override_session_budget_via_env(monkeypatch: pytest.MonkeyPatch) -> Non
     assert config.session_budget == 50000
 
 
-def test_override_timeout_via_kosmos_env(monkeypatch: pytest.MonkeyPatch) -> None:
-    """KOSMOS_LLM_TIMEOUT_SECONDS overrides the default HTTP timeout."""
+def test_override_timeout_via_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    """KOSMOS_LLM_TIMEOUT_SECONDS overrides the default stream timeout."""
     monkeypatch.setenv("KOSMOS_FRIENDLI_TOKEN", "test-token-123")
-    monkeypatch.setenv("KOSMOS_LLM_TIMEOUT_SECONDS", "240")
+    monkeypatch.setenv("KOSMOS_LLM_TIMEOUT_SECONDS", "180")
     config = LLMClientConfig()
-    assert config.timeout == 240.0
+    assert config.timeout == 180.0
 
 
 # ---------------------------------------------------------------------------
@@ -137,3 +137,11 @@ def test_invalid_timeout_negative(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("KOSMOS_FRIENDLI_TOKEN", "test-token-123")
     with pytest.raises(ValidationError):
         LLMClientConfig(timeout=-1)
+
+
+def test_invalid_timeout_env_negative(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A negative KOSMOS_LLM_TIMEOUT_SECONDS is rejected with ValidationError."""
+    monkeypatch.setenv("KOSMOS_FRIENDLI_TOKEN", "test-token-123")
+    monkeypatch.setenv("KOSMOS_LLM_TIMEOUT_SECONDS", "-1")
+    with pytest.raises(ValidationError):
+        LLMClientConfig()

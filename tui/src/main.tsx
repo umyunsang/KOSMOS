@@ -48,7 +48,7 @@ import { getCommands } from './commands.js';
 import type { StatsStore } from './context/stats.js';
 import { launchInvalidSettingsDialog, launchResumeChooser } from './dialogLaunchers.js';
 import { SHOW_CURSOR } from './ink/termio/dec.js';
-import { exitWithError, exitWithMessage, getRenderContext, renderAndRun, showSetupScreens } from './interactiveHelpers.js';
+import { exitWithError, exitWithMessage, getRenderContext, renderAndRun, showSetupScreens, showDialog } from './interactiveHelpers.js';
 import { initBuiltinPlugins } from './plugins/bundled/index.js';
 /* eslint-enable @typescript-eslint/no-require-imports */
 import { getMcpToolsCommandsAndResources, prefetchAllMcpResources } from './services/mcp/client.js';
@@ -502,7 +502,7 @@ async function run(): Promise<CommanderCommand> {
     // terminal shell integration may mirror the process name to the tab.
     // After init() so settings.json env can also gate this (gh-4765).
     if (!isEnvTruthy(process.env.CLAUDE_CODE_DISABLE_TERMINAL_TITLE)) {
-      process.title = 'claude';
+      process.title = 'kosmos';
     }
 
     // Attach logging sinks so subcommand handlers can use logEvent/logError.
@@ -1489,6 +1489,37 @@ async function run(): Promise<CommanderCommand> {
         // — enrollTrustedDevice() via checkGate_CACHED_OR_BLOCKING (awaits
         // the GrowthBook reinit above), clearTrustedDeviceToken() via the
         // sync cached check (acceptable since clear is idempotent).
+      }
+
+      // KOSMOS P4 UI L2 — T049/T052: KOSMOS 5-step onboarding gate
+      // Runs after the CC trust/login setup screen so auth is established first.
+      // If the citizen has never completed the 5-step sequence
+      // (~/.kosmos/memdir/user/onboarding/state.json is absent or incomplete),
+      // render OnboardingFlow and block until all 5 steps are done.
+      {
+        const { loadOnboardingState } = await import('./utils/uiL2Memdir.js');
+        const { isOnboardingComplete } = await import('./schemas/ui-l2/onboarding.js');
+        const { emitSurfaceActivation } = await import('./observability/surface.js');
+        const { getCurrentLocale } = await import('./commands/lang.js');
+        const { getKosmosBridgeSessionId } = await import('./ipc/bridgeSingleton.js');
+        const onboardingState = await loadOnboardingState();
+        if (!isOnboardingComplete(onboardingState)) {
+          // T052: emit surface activation before mounting the flow
+          emitSurfaceActivation('onboarding', { 'onboarding.mode': 'initial' });
+          logForDebugging('[KOSMOS] Onboarding incomplete — launching 5-step flow');
+          // SWAP: KOSMOS-integration-verification — `require()` of OnboardingFlow.tsx
+          // fails on Bun because the module's transitive deps include top-level
+          // await; switch to dynamic `await import()` (already async-safe context).
+          const { OnboardingFlow } = await import('./components/onboarding/OnboardingFlow.js');
+          await showDialog(root, (done) => {
+            return React.createElement(OnboardingFlow, {
+              sessionId: getKosmosBridgeSessionId(),
+              onComplete: () => done(),
+              locale: getCurrentLocale(),
+            });
+          });
+          logForDebugging('[KOSMOS] Onboarding complete — proceeding to REPL');
+        }
       }
 
     }
@@ -2754,7 +2785,7 @@ function extractTeammateOptions(options: unknown): TeammateOptions {
 // `main()` to execute TWICE: once at module-import side-effect time (this
 // block) and once via the explicit `await cliMain()` at
 // `src/entrypoints/cli.tsx:338`. The double-execution surfaced as duplicate
-// `tool_registry: 14 entries verified` log lines + duplicated welcome banner
+// duplicate `tool_registry: ... entries verified` log lines + duplicated welcome banner
 // rendering visible in the user's interactive PTY session (2026-04-30 user
 // report). cli.tsx is the canonical CLI entry per `package.json#scripts.tui`
 // and ALWAYS imports main.js + awaits it; the bottom-of-file invocation has

@@ -40,8 +40,8 @@ Verifies a citizen's 마이데이터 (MyData) OAuth 2.0 + mTLS session with a li
 
 ## Search hints
 
-- 한국어: `마이데이터`, `금융데이터`, `금결원`, `KFTC`, `개인신용정보`
-- English: `mydata`, `open banking`, `KFTC mydata`, `personal credit data`
+- 한국어: `마이데이터`, `금융데이터`, `금결원`, `KFTC`, `개인신용정보`, `복지`, `복지신청`, `복지급여신청`, `사회보장`, `한부모가족`, `한부모`, `아동양육비`
+- English: `mydata`, `open banking`, `KFTC mydata`, `personal credit data`, `welfare`, `welfare application`, `benefit application`, `social assistance`
 
 ## Endpoint
 

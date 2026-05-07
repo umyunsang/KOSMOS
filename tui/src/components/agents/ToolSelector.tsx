@@ -19,6 +19,7 @@ import { ReadMcpResourceTool } from 'src/tools/ReadMcpResourceTool/ReadMcpResour
 import { TaskOutputTool } from 'src/tools/TaskOutputTool/TaskOutputTool.js';
 import { TaskStopTool } from 'src/tools/TaskStopTool/TaskStopTool.js';
 import { TodoWriteTool } from 'src/tools/TodoWriteTool/TodoWriteTool.js';
+import { TungstenTool } from 'src/tools/TungstenTool/TungstenTool.js';
 import { WebFetchTool } from 'src/tools/WebFetchTool/WebFetchTool.js';
 import { WebSearchTool } from 'src/tools/WebSearchTool/WebSearchTool.js';
 import type { KeyboardEvent } from '../../ink/events/keyboard-event.js';
@@ -57,10 +58,7 @@ function getToolBuckets(): ToolBuckets {
     },
     EXECUTION: {
       name: 'Execution tools',
-      // KOSMOS Spec 1633 / Epic #2293: TungstenTool was removed with the
-      // Claude Code-internal tmux workflow; BashTool is the remaining
-      // execution bucket member in the citizen TUI.
-      toolNames: new Set([BashTool.name])
+      toolNames: new Set([BashTool.name, "external" === 'ant' ? TungstenTool.name : undefined].filter(n => n !== undefined))
     },
     MCP: {
       name: 'MCP tools',

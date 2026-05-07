@@ -36,32 +36,6 @@ _POLICY_AUTHORITY: Final = (
     "?bbsId=BBSMSTR_000000000016&nttId=104636"
 )
 _INTERNATIONAL_REF: Final = "Japan マイナポータル API"
-_MOCK_FIDELITY_GRADE: Final = "B-official-policy-private-hub-api-inferred"
-_MOCK_EVIDENCE: Final[dict[str, Any]] = {
-    "credential_status": "student_no_live_authority",
-    "basis_urls": [
-        "https://www.kisa.or.kr/1051203",
-        "https://www.ez-iok.com/guide/eziok_intro/",
-        "https://www.ez-iok.com/guide/eziok_std_guide/",
-    ],
-    "supports": [
-        "official KISA electronic-signature provider recognition framework",
-        "public integrated simple-auth hub JSON request and result pattern",
-        "service ID, encrypted client transaction ID, service type, and provider-result "
-        "verification pattern",
-    ],
-    "inference_boundary": (
-        "Government simple-auth relay contracts are provider and institution gated; "
-        "KOSMOS mirrors common hub transaction semantics and does not claim provider "
-        "result validity."
-    ),
-    "live_swap_requirements": [
-        "approved relying-party registration",
-        "service ID and encryption key material",
-        "provider result comparison and verification procedure",
-        "agency-specific callback/result contract",
-    ],
-}
 
 _TOOL_ID: Final = "mock_verify_module_simple_auth"
 _ISSUER_DID: Final = "did:web:simpleauth.go.kr"
@@ -71,8 +45,28 @@ _ISSUER_DID: Final = "did:web:simpleauth.go.kr"
 # ---------------------------------------------------------------------------
 
 SEARCH_HINT: Final[dict[str, list[str]]] = {
-    "ko": ["간편인증", "카카오인증", "PASS인증", "네이버인증", "간편인증서"],
-    "en": ["simple auth", "easy cert", "kakao cert", "pass cert", "ganpyeon injeung"],
+    "ko": [
+        "간편인증",
+        "카카오인증",
+        "PASS인증",
+        "네이버인증",
+        "간편인증서",
+        "정부24",
+        "민원",
+        "주민등록등본",
+        "발급",
+    ],
+    "en": [
+        "simple auth",
+        "easy cert",
+        "kakao cert",
+        "pass cert",
+        "ganpyeon injeung",
+        "gov24",
+        "civil petition",
+        "resident registration certificate",
+        "issuance",
+    ],
 }
 
 
@@ -172,8 +166,6 @@ def invoke(session_context: dict[str, Any]) -> SimpleAuthModuleContext:
         security_wrapping_pattern=_SECURITY_WRAPPING,
         policy_authority=_POLICY_AUTHORITY,
         international_reference=_INTERNATIONAL_REF,
-        mock_fidelity_grade=_MOCK_FIDELITY_GRADE,
-        mock_evidence=_MOCK_EVIDENCE,
     )
 
     # Return a typed AuthContext variant so verify(family_hint=...) accepts it
