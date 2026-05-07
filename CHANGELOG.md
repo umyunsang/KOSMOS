@@ -32,6 +32,9 @@ The KOSMOS migration-completion release. Initiative #1631 closed; the six Phase 
 
 ## [Unreleased]
 
+### Fixed
+- Corrected prepackage TUI branding so resume instructions, terminal titles, and package/version output use KOSMOS/kosmos and `v0.1.0-alpha` instead of upstream Claude CLI names or issue-number build metadata.
+
 ### Added
 - Initial project scaffold with `README.md` and `.gitignore`
 - Apache License 2.0
