@@ -5,10 +5,10 @@ exports[`WelcomeV2 renders the UMMAYA welcome header + mascot mark 1`] = `
 Unified Multi-Ministry Agent for Your Administration
 ………………………………………………………………………………………………………………
 
-                           ▟▀▀▀▙
-                          ▟▛███▜▙
-                         ▟███████▙
-                        ▝▜██▟█▙██▛▘
+                           ▗▟▀▙▖
+                          ▟▛▗ ▖▜▙
+                         ▟▛ ▘ ▝ ▜▙
+                        ▝▜▙ ▟█▙ ▟▛▘
                            ▘▘ ▝▝
 "
 `;
@@ -18,10 +18,10 @@ exports[`WelcomeV2 renders identically under reduced-motion 1`] = `
 Unified Multi-Ministry Agent for Your Administration
 ………………………………………………………………………………………………………………
 
-                           ▟▀▀▀▙
-                          ▟▛███▜▙
-                         ▟███████▙
-                        ▝▜██▟█▙██▛▘
+                           ▗▟▀▙▖
+                          ▟▛▗ ▖▜▙
+                         ▟▛ ▘ ▝ ▜▙
+                        ▝▜▙ ▟█▙ ▟▛▘
                            ▘▘ ▝▝
 "
 `;

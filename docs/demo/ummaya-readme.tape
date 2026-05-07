@@ -4,16 +4,18 @@
 #
 # Regenerate:
 #   vhs docs/demo/ummaya-readme.tape
+#   ffmpeg -y -i assets/ummaya-demo.gif -vf "fps=8,scale=960:-1:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=32:stats_mode=diff[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle" -loop 0 /tmp/ummaya-demo-optimized.gif
+#   mv /tmp/ummaya-demo-optimized.gif assets/ummaya-demo.gif
 
 Output assets/ummaya-demo.gif
 Output assets/ummaya-demo.txt
 Set Shell "bash"
-Set FontSize 11
+Set FontSize 12
 Set FontFamily "JetBrains Mono"
-Set Width 940
-Set Height 560
-Set Framerate 5
-Set PlaybackSpeed 2.4
+Set Width 1024
+Set Height 576
+Set Framerate 8
+Set PlaybackSpeed 2.0
 Set Theme "TokyoNightStorm"
 Set Padding 8
 Set Margin 0
@@ -21,11 +23,11 @@ Set CursorBlink false
 Set TypingSpeed 20ms
 
 Hide
-Type "cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_FRIENDLI_TOKEN=sk-readme-demo UMMAYA_FRIENDLI_SESSION_ACTIVE=1 UMMAYA_ONBOARDING_AUTO_COMPLETE=1 UMMAYA_BACKEND_CMD='uv run python /Users/um-yunsang/UMMAYA/docs/demo/readme_scenario_backend.py' NODE_ENV=test IS_DEMO=1 /Users/um-yunsang/.bun/bin/bun run tui"
+Type "./docs/demo/run-readme-demo.sh"
 Enter
 Wait+Screen@10s /UMMAYA/
 Show
-Sleep 500ms
+Sleep 1500ms
 
 Copy "작년 종합소득세 신고하고 환급받을 수 있으면 환급 계좌까지 등록해줘."
 Paste

@@ -1193,10 +1193,6 @@ async function run(): Promise<CommanderCommand> {
         console.error(guardResult.diagnostic)
         process.exit(1)
       }
-      console.log(
-        `tool_registry: ${guardResult.entries} entries verified ` +
-        `(${guardResult.primitives} primitives) in ${Math.round(guardResult.durationMs)}ms`,
-      )
     }
 
       let jsonSchema: ToolInputJSONSchema | undefined;

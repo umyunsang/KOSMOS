@@ -1,4 +1,4 @@
->
+
 
 
 
@@ -52,63 +52,6 @@
 
 ────────────────────────────────────────────────────────────────────────────────
 >
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-────────────────────────────────────────────────────────────────────────────────
->
-
-
-
-
 
 
 
@@ -221,77 +164,8 @@
 
 
 
-
-
-
-
 ────────────────────────────────────────────────────────────────────────────────
 >
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-────────────────────────────────────────────────────────────────────────────────
->
-
-
-
-
 
 
 
@@ -404,77 +278,8 @@
 
 
 
-
-
-
-
 ────────────────────────────────────────────────────────────────────────────────
 >
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-────────────────────────────────────────────────────────────────────────────────
->
-
-
-
-
 
 
 
@@ -587,77 +392,8 @@
 
 
 
-
-
-
-
 ────────────────────────────────────────────────────────────────────────────────
 >
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-────────────────────────────────────────────────────────────────────────────────
->
-
-
-
-
 
 
 
@@ -770,16 +506,8 @@
 
 
 
-
-
-
-
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_FRIENDLI_TOKEN=sk-readme-demo UMMAYA_FRIENDLI
-_SESSION_ACTIVE=1 UMMAYA_ONBOARDING_AUTO_COMPLETE=1 UMMAYA_BACKEND_CMD='uv run python /Us
-ers/um-yunsang/UMMAYA/docs/demo/readme_scenario_backend.py' NODE_ENV=test IS_DEMO=1 /User
-s/um-yunsang/.bun/bin/bun run tui
-$ bun run src/entrypoints/cli.tsx
+>
 
 
 
@@ -799,29 +527,6 @@ $ bun run src/entrypoints/cli.tsx
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_FRIENDLI_TOKEN=sk-readme-demo UMMAYA_FRIENDLI
-_SESSION_ACTIVE=1 UMMAYA_ONBOARDING_AUTO_COMPLETE=1 UMMAYA_BACKEND_CMD='uv run python /Us
-ers/um-yunsang/UMMAYA/docs/demo/readme_scenario_backend.py' NODE_ENV=test IS_DEMO=1 /User
-s/um-yunsang/.bun/bin/bun run tui
-$ bun run src/entrypoints/cli.tsx
 
 
 
@@ -859,11 +564,26 @@ $ bun run src/entrypoints/cli.tsx
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_FRIENDLI_TOKEN=sk-readme-demo UMMAYA_FRIENDLI
-_SESSION_ACTIVE=1 UMMAYA_ONBOARDING_AUTO_COMPLETE=1 UMMAYA_BACKEND_CMD='uv run python /Us
-ers/um-yunsang/UMMAYA/docs/demo/readme_scenario_backend.py' NODE_ENV=test IS_DEMO=1 /User
-s/um-yunsang/.bun/bin/bun run tui
-$ bun run src/entrypoints/cli.tsx
+>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -901,26 +621,108 @@ $ bun run src/entrypoints/cli.tsx
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_FRIENDLI_TOKEN=sk-readme-demo UMMAYA_FRIENDLI
-_SESSION_ACTIVE=1 UMMAYA_ONBOARDING_AUTO_COMPLETE=1 UMMAYA_BACKEND_CMD='uv run python /Us
-ers/um-yunsang/UMMAYA/docs/demo/readme_scenario_backend.py' NODE_ENV=test IS_DEMO=1 /User
-s/um-yunsang/.bun/bin/bun run tui
-$ bun run src/entrypoints/cli.tsx
-tool_registry: 14 entries verified (4 primitives) in 0ms
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+────────────────────────────────────────────────────────────────────────────────
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ─────────────────────────────────────────────────────────────────────────────────────────
-❯ 작년 종합고 환급받을 수 있으면 환급 계좌까지 등록해줘
+❯
+─────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+────────────────────────────────────────────────────────────────────────────────
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
+
+─────────────────────────────────────────────────────────────────────────────────────────
+❯
 ─────────────────────────────────────────────────────────────────────────────────────────
                                                     statusline skipped · restart to fix
 
@@ -942,27 +744,22 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
+
+
+
+
+
+
+
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_FRIENDLI_TOKEN=sk-readme-demo UMMAYA_FRIENDLI
-_SESSION_ACTIVE=1 UMMAYA_ONBOARDING_AUTO_COMPLETE=1 UMMAYA_BACKEND_CMD='uv run python /Us
-ers/um-yunsang/UMMAYA/docs/demo/readme_scenario_backend.py' NODE_ENV=test IS_DEMO=1 /User
-s/um-yunsang/.bun/bin/bun run tui
-$ bun run src/entrypoints/cli.tsx
-tool_registry: 14 entries verified (4 primitives) in 0ms
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ─────────────────────────────────────────────────────────────────────────────────────────
-❯ 작년 종합고 환급받을 수 있으면 환급 계좌까지 등록해줘.
+❯
 ─────────────────────────────────────────────────────────────────────────────────────────
                                                     statusline skipped · restart to fix
 
@@ -984,26 +781,95 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
-────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_FRIENDLI_TOKEN=sk-readme-demo UMMAYA_FRIENDLI
-_SESSION_ACTIVE=1 UMMAYA_ONBOARDING_AUTO_COMPLETE=1 UMMAYA_BACKEND_CMD='uv run python /Us
-ers/um-yunsang/UMMAYA/docs/demo/readme_scenario_backend.py' NODE_ENV=test IS_DEMO=1 /User
-s/um-yunsang/.bun/bin/bun run tui
-$ bun run src/entrypoints/cli.tsx
-tool_registry: 14 entries verified (4 primitives) in 0ms
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
 
-❯ 작년 종합고 환급받을 수 있으면 환급 계좌까지 등록해줘.
+
+
+
+
+
+
+────────────────────────────────────────────────────────────────────────────────
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
+
+─────────────────────────────────────────────────────────────────────────────────────────
+❯ 작년 종합소득세 신고하고 환급받을 수 있으면 환급 계좌까지 등록해줘
+─────────────────────────────────────────────────────────────────────────────────────────
+                                                    statusline skipped · restart to fix
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+────────────────────────────────────────────────────────────────────────────────
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
+
+─────────────────────────────────────────────────────────────────────────────────────────
+❯ 작년 종합소득세 신고하고 환급받을 수 있으면 환급 계좌까지 등록해줘.
+─────────────────────────────────────────────────────────────────────────────────────────
+                                                    statusline skipped · restart to fix
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+────────────────────────────────────────────────────────────────────────────────
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
+
+❯ 작년 종합소득세 신고하고 환급받을 수 있으면 환급 계좌까지 등록해줘.
   ⎿  검증 결과: demo_ok
   ⎿  mock_lookup_module_hometax_simplified — 1건
        {"kind":"lookup","tool_id":"mock_lookup_module_hometax_simplified","status":"
@@ -1026,26 +892,21 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
-────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_FRIENDLI_TOKEN=sk-readme-demo UMMAYA_FRIENDLI
-_SESSION_ACTIVE=1 UMMAYA_ONBOARDING_AUTO_COMPLETE=1 UMMAYA_BACKEND_CMD='uv run python /Us
-ers/um-yunsang/UMMAYA/docs/demo/readme_scenario_backend.py' NODE_ENV=test IS_DEMO=1 /User
-s/um-yunsang/.bun/bin/bun run tui
-$ bun run src/entrypoints/cli.tsx
-tool_registry: 14 entries verified (4 primitives) in 0ms
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
 
-❯ 작년 종합고 환급받을 수 있으면 환급 계좌까지 등록해줘.
+
+
+
+
+
+
+────────────────────────────────────────────────────────────────────────────────
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
+
+❯ 작년 종합소득세 신고하고 환급받을 수 있으면 환급 계좌까지 등록해줘.
   ⎿  검증 결과: demo_ok
   ⎿  mock_lookup_module_hometax_simplified — 1건
        {"kind":"lookup","tool_id":"mock_lookup_module_hometax_simplified","status":"
@@ -1068,26 +929,21 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
-────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_FRIENDLI_TOKEN=sk-readme-demo UMMAYA_FRIENDLI
-_SESSION_ACTIVE=1 UMMAYA_ONBOARDING_AUTO_COMPLETE=1 UMMAYA_BACKEND_CMD='uv run python /Us
-ers/um-yunsang/UMMAYA/docs/demo/readme_scenario_backend.py' NODE_ENV=test IS_DEMO=1 /User
-s/um-yunsang/.bun/bin/bun run tui
-$ bun run src/entrypoints/cli.tsx
-tool_registry: 14 entries verified (4 primitives) in 0ms
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
 
-❯ 작년 종합고 환급받을 수 있으면 환급 계좌까지 등록해줘.
+
+
+
+
+
+
+────────────────────────────────────────────────────────────────────────────────
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
+
+❯ 작년 종합소득세 신고하고 환급받을 수 있으면 환급 계좌까지 등록해줘.
   ⎿  검증 결과: demo_ok
   ⎿  mock_lookup_module_hometax_simplified — 1건
        {"kind":"lookup","tool_id":"mock_lookup_module_hometax_simplified","status":"
@@ -1110,24 +966,19 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
+
+
+
+
+
+
+
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_FRIENDLI_TOKEN=sk-readme-demo UMMAYA_FRIENDLI
-_SESSION_ACTIVE=1 UMMAYA_ONBOARDING_AUTO_COMPLETE=1 UMMAYA_BACKEND_CMD='uv run python /Us
-ers/um-yunsang/UMMAYA/docs/demo/readme_scenario_backend.py' NODE_ENV=test IS_DEMO=1 /User
-s/um-yunsang/.bun/bin/bun run tui
-$ bun run src/entrypoints/cli.tsx
-tool_registry: 14 entries verified (4 primitives) in 0ms
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -1152,24 +1003,19 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
+
+
+
+
+
+
+
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_FRIENDLI_TOKEN=sk-readme-demo UMMAYA_FRIENDLI
-_SESSION_ACTIVE=1 UMMAYA_ONBOARDING_AUTO_COMPLETE=1 UMMAYA_BACKEND_CMD='uv run python /Us
-ers/um-yunsang/UMMAYA/docs/demo/readme_scenario_backend.py' NODE_ENV=test IS_DEMO=1 /User
-s/um-yunsang/.bun/bin/bun run tui
-$ bun run src/entrypoints/cli.tsx
-tool_registry: 14 entries verified (4 primitives) in 0ms
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -1194,24 +1040,19 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
+
+
+
+
+
+
+
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_FRIENDLI_TOKEN=sk-readme-demo UMMAYA_FRIENDLI
-_SESSION_ACTIVE=1 UMMAYA_ONBOARDING_AUTO_COMPLETE=1 UMMAYA_BACKEND_CMD='uv run python /Us
-ers/um-yunsang/UMMAYA/docs/demo/readme_scenario_backend.py' NODE_ENV=test IS_DEMO=1 /User
-s/um-yunsang/.bun/bin/bun run tui
-$ bun run src/entrypoints/cli.tsx
-tool_registry: 14 entries verified (4 primitives) in 0ms
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -1236,24 +1077,19 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
+
+
+
+
+
+
+
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_FRIENDLI_TOKEN=sk-readme-demo UMMAYA_FRIENDLI
-_SESSION_ACTIVE=1 UMMAYA_ONBOARDING_AUTO_COMPLETE=1 UMMAYA_BACKEND_CMD='uv run python /Us
-ers/um-yunsang/UMMAYA/docs/demo/readme_scenario_backend.py' NODE_ENV=test IS_DEMO=1 /User
-s/um-yunsang/.bun/bin/bun run tui
-$ bun run src/entrypoints/cli.tsx
-tool_registry: 14 entries verified (4 primitives) in 0ms
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -1278,31 +1114,28 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
+
+
+
+
+
+
+
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_FRIENDLI_TOKEN=sk-readme-demo UMMAYA_FRIENDLI
-_SESSION_ACTIVE=1 UMMAYA_ONBOARDING_AUTO_COMPLETE=1 UMMAYA_BACKEND_CMD='uv run python /Us
-ers/um-yunsang/UMMAYA/docs/demo/readme_scenario_backend.py' NODE_ENV=test IS_DEMO=1 /User
-s/um-yunsang/.bun/bin/bun run tui
-$ bun run src/entrypoints/cli.tsx
-tool_registry: 14 entries verified (4 primitives) in 0ms
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
 
 ❯ 이사했어. 전입신고하고 자동차, 건강보험, 학교 관련 주소도 한 번에 바꿔줘.
 
-⏺ Scenario MOVE: Residence transfer
+✢ Crystallizing…
+  ⎿  Tip: Use Plan Mode to prepare for a complex request before making changes. Press
+     shift+tab twice to enable.
 
 ─────────────────────────────────────────────────────────────────────────────────────────
 ❯
@@ -1320,24 +1153,17 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
+
+
+
+
+
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_FRIENDLI_TOKEN=sk-readme-demo UMMAYA_FRIENDLI
-_SESSION_ACTIVE=1 UMMAYA_ONBOARDING_AUTO_COMPLETE=1 UMMAYA_BACKEND_CMD='uv run python /Us
-ers/um-yunsang/UMMAYA/docs/demo/readme_scenario_backend.py' NODE_ENV=test IS_DEMO=1 /User
-s/um-yunsang/.bun/bin/bun run tui
-$ bun run src/entrypoints/cli.tsx
-tool_registry: 14 entries verified (4 primitives) in 0ms
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -1362,24 +1188,19 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 ─────────────────────────────────────────────────────────────────────────────────────────
                                                     statusline skipped · restart to fix
 
+
+
+
+
+
+
+
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_FRIENDLI_TOKEN=sk-readme-demo UMMAYA_FRIENDLI
-_SESSION_ACTIVE=1 UMMAYA_ONBOARDING_AUTO_COMPLETE=1 UMMAYA_BACKEND_CMD='uv run python /Us
-ers/um-yunsang/UMMAYA/docs/demo/readme_scenario_backend.py' NODE_ENV=test IS_DEMO=1 /User
-s/um-yunsang/.bun/bin/bun run tui
-$ bun run src/entrypoints/cli.tsx
-tool_registry: 14 entries verified (4 primitives) in 0ms
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -1402,26 +1223,21 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 ─────────────────────────────────────────────────────────────────────────────────────────
 ❯
 ─────────────────────────────────────────────────────────────────────────────────────────
-                                                    statusline skipped · restart to fix
+                                                                       ● high · /effort
+
+
+
+
+
+
+
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_FRIENDLI_TOKEN=sk-readme-demo UMMAYA_FRIENDLI
-_SESSION_ACTIVE=1 UMMAYA_ONBOARDING_AUTO_COMPLETE=1 UMMAYA_BACKEND_CMD='uv run python /Us
-ers/um-yunsang/UMMAYA/docs/demo/readme_scenario_backend.py' NODE_ENV=test IS_DEMO=1 /User
-s/um-yunsang/.bun/bin/bun run tui
-$ bun run src/entrypoints/cli.tsx
-tool_registry: 14 entries verified (4 primitives) in 0ms
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -1444,26 +1260,21 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 ─────────────────────────────────────────────────────────────────────────────────────────
 ❯ /clear
 ─────────────────────────────────────────────────────────────────────────────────────────
-                                                    statusline skipped · restart to fix
+                                                                       ● high · /effort
+
+
+
+
+
+
+
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_FRIENDLI_TOKEN=sk-readme-demo UMMAYA_FRIENDLI
-_SESSION_ACTIVE=1 UMMAYA_ONBOARDING_AUTO_COMPLETE=1 UMMAYA_BACKEND_CMD='uv run python /Us
-ers/um-yunsang/UMMAYA/docs/demo/readme_scenario_backend.py' NODE_ENV=test IS_DEMO=1 /User
-s/um-yunsang/.bun/bin/bun run tui
-$ bun run src/entrypoints/cli.tsx
-tool_registry: 14 entries verified (4 primitives) in 0ms
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -1471,7 +1282,14 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 ─────────────────────────────────────────────────────────────────────────────────────────
 ❯
 ─────────────────────────────────────────────────────────────────────────────────────────
-                                                    statusline skipped · restart to fix
+                                                                       ● high · /effort
+
+
+
+
+
+
+
 
 
 
@@ -1489,23 +1307,11 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_FRIENDLI_TOKEN=sk-readme-demo UMMAYA_FRIENDLI
-_SESSION_ACTIVE=1 UMMAYA_ONBOARDING_AUTO_COMPLETE=1 UMMAYA_BACKEND_CMD='uv run python /Us
-ers/um-yunsang/UMMAYA/docs/demo/readme_scenario_backend.py' NODE_ENV=test IS_DEMO=1 /User
-s/um-yunsang/.bun/bin/bun run tui
-$ bun run src/entrypoints/cli.tsx
-tool_registry: 14 entries verified (4 primitives) in 0ms
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -1513,7 +1319,14 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 ─────────────────────────────────────────────────────────────────────────────────────────
 ❯
 ─────────────────────────────────────────────────────────────────────────────────────────
-                                                    statusline skipped · restart to fix
+                                                                       ● high · /effort
+
+
+
+
+
+
+
 
 
 
@@ -1531,23 +1344,11 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_FRIENDLI_TOKEN=sk-readme-demo UMMAYA_FRIENDLI
-_SESSION_ACTIVE=1 UMMAYA_ONBOARDING_AUTO_COMPLETE=1 UMMAYA_BACKEND_CMD='uv run python /Us
-ers/um-yunsang/UMMAYA/docs/demo/readme_scenario_backend.py' NODE_ENV=test IS_DEMO=1 /User
-s/um-yunsang/.bun/bin/bun run tui
-$ bun run src/entrypoints/cli.tsx
-tool_registry: 14 entries verified (4 primitives) in 0ms
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -1555,7 +1356,14 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 ─────────────────────────────────────────────────────────────────────────────────────────
 ❯
 ─────────────────────────────────────────────────────────────────────────────────────────
-                                                    statusline skipped · restart to fix
+                                                                       ● high · /effort
+
+
+
+
+
+
+
 
 
 
@@ -1573,23 +1381,11 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_FRIENDLI_TOKEN=sk-readme-demo UMMAYA_FRIENDLI
-_SESSION_ACTIVE=1 UMMAYA_ONBOARDING_AUTO_COMPLETE=1 UMMAYA_BACKEND_CMD='uv run python /Us
-ers/um-yunsang/UMMAYA/docs/demo/readme_scenario_backend.py' NODE_ENV=test IS_DEMO=1 /User
-s/um-yunsang/.bun/bin/bun run tui
-$ bun run src/entrypoints/cli.tsx
-tool_registry: 14 entries verified (4 primitives) in 0ms
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -1614,24 +1410,19 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
+
+
+
+
+
+
+
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_FRIENDLI_TOKEN=sk-readme-demo UMMAYA_FRIENDLI
-_SESSION_ACTIVE=1 UMMAYA_ONBOARDING_AUTO_COMPLETE=1 UMMAYA_BACKEND_CMD='uv run python /Us
-ers/um-yunsang/UMMAYA/docs/demo/readme_scenario_backend.py' NODE_ENV=test IS_DEMO=1 /User
-s/um-yunsang/.bun/bin/bun run tui
-$ bun run src/entrypoints/cli.tsx
-tool_registry: 14 entries verified (4 primitives) in 0ms
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -1656,24 +1447,19 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
+
+
+
+
+
+
+
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_FRIENDLI_TOKEN=sk-readme-demo UMMAYA_FRIENDLI
-_SESSION_ACTIVE=1 UMMAYA_ONBOARDING_AUTO_COMPLETE=1 UMMAYA_BACKEND_CMD='uv run python /Us
-ers/um-yunsang/UMMAYA/docs/demo/readme_scenario_backend.py' NODE_ENV=test IS_DEMO=1 /User
-s/um-yunsang/.bun/bin/bun run tui
-$ bun run src/entrypoints/cli.tsx
-tool_registry: 14 entries verified (4 primitives) in 0ms
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -1698,24 +1484,19 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 ─────────────────────────────────────────────────────────────────────────────────────────
                                                                        ● high · /effort
 
+
+
+
+
+
+
+
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_FRIENDLI_TOKEN=sk-readme-demo UMMAYA_FRIENDLI
-_SESSION_ACTIVE=1 UMMAYA_ONBOARDING_AUTO_COMPLETE=1 UMMAYA_BACKEND_CMD='uv run python /Us
-ers/um-yunsang/UMMAYA/docs/demo/readme_scenario_backend.py' NODE_ENV=test IS_DEMO=1 /User
-s/um-yunsang/.bun/bin/bun run tui
-$ bun run src/entrypoints/cli.tsx
-tool_registry: 14 entries verified (4 primitives) in 0ms
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -1740,24 +1521,19 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 ─────────────────────────────────────────────────────────────────────────────────────────
                                                                        ● high · /effort
 
+
+
+
+
+
+
+
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_FRIENDLI_TOKEN=sk-readme-demo UMMAYA_FRIENDLI
-_SESSION_ACTIVE=1 UMMAYA_ONBOARDING_AUTO_COMPLETE=1 UMMAYA_BACKEND_CMD='uv run python /Us
-ers/um-yunsang/UMMAYA/docs/demo/readme_scenario_backend.py' NODE_ENV=test IS_DEMO=1 /User
-s/um-yunsang/.bun/bin/bun run tui
-$ bun run src/entrypoints/cli.tsx
-tool_registry: 14 entries verified (4 primitives) in 0ms
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -1782,24 +1558,19 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 ─────────────────────────────────────────────────────────────────────────────────────────
                                                                        ● high · /effort
 
+
+
+
+
+
+
+
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_FRIENDLI_TOKEN=sk-readme-demo UMMAYA_FRIENDLI
-_SESSION_ACTIVE=1 UMMAYA_ONBOARDING_AUTO_COMPLETE=1 UMMAYA_BACKEND_CMD='uv run python /Us
-ers/um-yunsang/UMMAYA/docs/demo/readme_scenario_backend.py' NODE_ENV=test IS_DEMO=1 /User
-s/um-yunsang/.bun/bin/bun run tui
-$ bun run src/entrypoints/cli.tsx
-tool_registry: 14 entries verified (4 primitives) in 0ms
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -1824,24 +1595,19 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
+
+
+
+
+
+
+
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_FRIENDLI_TOKEN=sk-readme-demo UMMAYA_FRIENDLI
-_SESSION_ACTIVE=1 UMMAYA_ONBOARDING_AUTO_COMPLETE=1 UMMAYA_BACKEND_CMD='uv run python /Us
-ers/um-yunsang/UMMAYA/docs/demo/readme_scenario_backend.py' NODE_ENV=test IS_DEMO=1 /User
-s/um-yunsang/.bun/bin/bun run tui
-$ bun run src/entrypoints/cli.tsx
-tool_registry: 14 entries verified (4 primitives) in 0ms
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -1866,24 +1632,19 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
+
+
+
+
+
+
+
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_FRIENDLI_TOKEN=sk-readme-demo UMMAYA_FRIENDLI
-_SESSION_ACTIVE=1 UMMAYA_ONBOARDING_AUTO_COMPLETE=1 UMMAYA_BACKEND_CMD='uv run python /Us
-ers/um-yunsang/UMMAYA/docs/demo/readme_scenario_backend.py' NODE_ENV=test IS_DEMO=1 /User
-s/um-yunsang/.bun/bin/bun run tui
-$ bun run src/entrypoints/cli.tsx
-tool_registry: 14 entries verified (4 primitives) in 0ms
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -1908,24 +1669,19 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
+
+
+
+
+
+
+
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_FRIENDLI_TOKEN=sk-readme-demo UMMAYA_FRIENDLI
-_SESSION_ACTIVE=1 UMMAYA_ONBOARDING_AUTO_COMPLETE=1 UMMAYA_BACKEND_CMD='uv run python /Us
-ers/um-yunsang/UMMAYA/docs/demo/readme_scenario_backend.py' NODE_ENV=test IS_DEMO=1 /User
-s/um-yunsang/.bun/bin/bun run tui
-$ bun run src/entrypoints/cli.tsx
-tool_registry: 14 entries verified (4 primitives) in 0ms
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -1950,24 +1706,19 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
+
+
+
+
+
+
+
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_FRIENDLI_TOKEN=sk-readme-demo UMMAYA_FRIENDLI
-_SESSION_ACTIVE=1 UMMAYA_ONBOARDING_AUTO_COMPLETE=1 UMMAYA_BACKEND_CMD='uv run python /Us
-ers/um-yunsang/UMMAYA/docs/demo/readme_scenario_backend.py' NODE_ENV=test IS_DEMO=1 /User
-s/um-yunsang/.bun/bin/bun run tui
-$ bun run src/entrypoints/cli.tsx
-tool_registry: 14 entries verified (4 primitives) in 0ms
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -1992,24 +1743,19 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
+
+
+
+
+
+
+
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_FRIENDLI_TOKEN=sk-readme-demo UMMAYA_FRIENDLI
-_SESSION_ACTIVE=1 UMMAYA_ONBOARDING_AUTO_COMPLETE=1 UMMAYA_BACKEND_CMD='uv run python /Us
-ers/um-yunsang/UMMAYA/docs/demo/readme_scenario_backend.py' NODE_ENV=test IS_DEMO=1 /User
-s/um-yunsang/.bun/bin/bun run tui
-$ bun run src/entrypoints/cli.tsx
-tool_registry: 14 entries verified (4 primitives) in 0ms
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -2034,24 +1780,19 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
                                                                        ● high · /effort
 
 
+
+
+
+
+
+
+
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_FRIENDLI_TOKEN=sk-readme-demo UMMAYA_FRIENDLI
-_SESSION_ACTIVE=1 UMMAYA_ONBOARDING_AUTO_COMPLETE=1 UMMAYA_BACKEND_CMD='uv run python /Us
-ers/um-yunsang/UMMAYA/docs/demo/readme_scenario_backend.py' NODE_ENV=test IS_DEMO=1 /User
-s/um-yunsang/.bun/bin/bun run tui
-$ bun run src/entrypoints/cli.tsx
-tool_registry: 14 entries verified (4 primitives) in 0ms
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -2076,24 +1817,19 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
                                                                        ● high · /effort
 
 
+
+
+
+
+
+
+
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_FRIENDLI_TOKEN=sk-readme-demo UMMAYA_FRIENDLI
-_SESSION_ACTIVE=1 UMMAYA_ONBOARDING_AUTO_COMPLETE=1 UMMAYA_BACKEND_CMD='uv run python /Us
-ers/um-yunsang/UMMAYA/docs/demo/readme_scenario_backend.py' NODE_ENV=test IS_DEMO=1 /User
-s/um-yunsang/.bun/bin/bun run tui
-$ bun run src/entrypoints/cli.tsx
-tool_registry: 14 entries verified (4 primitives) in 0ms
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -2118,24 +1854,19 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
                                                                        ● high · /effort
 
 
+
+
+
+
+
+
+
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_FRIENDLI_TOKEN=sk-readme-demo UMMAYA_FRIENDLI
-_SESSION_ACTIVE=1 UMMAYA_ONBOARDING_AUTO_COMPLETE=1 UMMAYA_BACKEND_CMD='uv run python /Us
-ers/um-yunsang/UMMAYA/docs/demo/readme_scenario_backend.py' NODE_ENV=test IS_DEMO=1 /User
-s/um-yunsang/.bun/bin/bun run tui
-$ bun run src/entrypoints/cli.tsx
-tool_registry: 14 entries verified (4 primitives) in 0ms
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -2160,24 +1891,19 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
+
+
+
+
+
+
+
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_FRIENDLI_TOKEN=sk-readme-demo UMMAYA_FRIENDLI
-_SESSION_ACTIVE=1 UMMAYA_ONBOARDING_AUTO_COMPLETE=1 UMMAYA_BACKEND_CMD='uv run python /Us
-ers/um-yunsang/UMMAYA/docs/demo/readme_scenario_backend.py' NODE_ENV=test IS_DEMO=1 /User
-s/um-yunsang/.bun/bin/bun run tui
-$ bun run src/entrypoints/cli.tsx
-tool_registry: 14 entries verified (4 primitives) in 0ms
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -2202,24 +1928,19 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
+
+
+
+
+
+
+
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_FRIENDLI_TOKEN=sk-readme-demo UMMAYA_FRIENDLI
-_SESSION_ACTIVE=1 UMMAYA_ONBOARDING_AUTO_COMPLETE=1 UMMAYA_BACKEND_CMD='uv run python /Us
-ers/um-yunsang/UMMAYA/docs/demo/readme_scenario_backend.py' NODE_ENV=test IS_DEMO=1 /User
-s/um-yunsang/.bun/bin/bun run tui
-$ bun run src/entrypoints/cli.tsx
-tool_registry: 14 entries verified (4 primitives) in 0ms
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -2244,24 +1965,19 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
+
+
+
+
+
+
+
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_FRIENDLI_TOKEN=sk-readme-demo UMMAYA_FRIENDLI
-_SESSION_ACTIVE=1 UMMAYA_ONBOARDING_AUTO_COMPLETE=1 UMMAYA_BACKEND_CMD='uv run python /Us
-ers/um-yunsang/UMMAYA/docs/demo/readme_scenario_backend.py' NODE_ENV=test IS_DEMO=1 /User
-s/um-yunsang/.bun/bin/bun run tui
-$ bun run src/entrypoints/cli.tsx
-tool_registry: 14 entries verified (4 primitives) in 0ms
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -2270,7 +1986,14 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 ❯ 전세 계약했어. 확정일자, 임대차 신고, 전세보증 관련 절차를 위험한 부분까지 체크해서
   처리해줘
 ─────────────────────────────────────────────────────────────────────────────────────────
-                                                                       ● high · /effort
+                                                    statusline skipped · restart to fix
+
+
+
+
+
+
+
 
 
 
@@ -2287,23 +2010,11 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_FRIENDLI_TOKEN=sk-readme-demo UMMAYA_FRIENDLI
-_SESSION_ACTIVE=1 UMMAYA_ONBOARDING_AUTO_COMPLETE=1 UMMAYA_BACKEND_CMD='uv run python /Us
-ers/um-yunsang/UMMAYA/docs/demo/readme_scenario_backend.py' NODE_ENV=test IS_DEMO=1 /User
-s/um-yunsang/.bun/bin/bun run tui
-$ bun run src/entrypoints/cli.tsx
-tool_registry: 14 entries verified (4 primitives) in 0ms
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -2311,13 +2022,20 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 ❯ 전세 계약했어. 확정일자, 임대차 신고, 전세보증 관련 절차를 위험한 부분까지 체크해서
 처리해줘.
 
-✢ Pontificating…
-  ⎿  Tip: Hit Enter to queue up additional messages while Claude is working.
+✢ Crafting…
+  ⎿  Tip: Try setting environment variable COLORTERM=truecolor for richer colors
 
 ─────────────────────────────────────────────────────────────────────────────────────────
 ❯
 ─────────────────────────────────────────────────────────────────────────────────────────
-                                                                       ● high · /effort
+                                                    statusline skipped · restart to fix
+
+
+
+
+
+
+
 
 
 
@@ -2329,23 +2047,11 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_FRIENDLI_TOKEN=sk-readme-demo UMMAYA_FRIENDLI
-_SESSION_ACTIVE=1 UMMAYA_ONBOARDING_AUTO_COMPLETE=1 UMMAYA_BACKEND_CMD='uv run python /Us
-ers/um-yunsang/UMMAYA/docs/demo/readme_scenario_backend.py' NODE_ENV=test IS_DEMO=1 /User
-s/um-yunsang/.bun/bin/bun run tui
-$ bun run src/entrypoints/cli.tsx
-tool_registry: 14 entries verified (4 primitives) in 0ms
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -2370,24 +2076,19 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 ─────────────────────────────────────────────────────────────────────────────────────────
 ❯
+─────────────────────────────────────────────────────────────────────────────────────────
+                                                    statusline skipped · restart to fix
+
+
+
+
+
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_FRIENDLI_TOKEN=sk-readme-demo UMMAYA_FRIENDLI
-_SESSION_ACTIVE=1 UMMAYA_ONBOARDING_AUTO_COMPLETE=1 UMMAYA_BACKEND_CMD='uv run python /Us
-ers/um-yunsang/UMMAYA/docs/demo/readme_scenario_backend.py' NODE_ENV=test IS_DEMO=1 /User
-s/um-yunsang/.bun/bin/bun run tui
-$ bun run src/entrypoints/cli.tsx
-tool_registry: 14 entries verified (4 primitives) in 0ms
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -2412,18 +2113,19 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 ─────────────────────────────────────────────────────────────────────────────────────────
 ❯
+─────────────────────────────────────────────────────────────────────────────────────────
+                                                    statusline skipped · restart to fix
+
+
+
+
+
 ────────────────────────────────────────────────────────────────────────────────
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -2454,18 +2156,13 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
+
 ────────────────────────────────────────────────────────────────────────────────
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -2496,18 +2193,13 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
+
 ────────────────────────────────────────────────────────────────────────────────
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -2538,18 +2230,13 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
+
 ────────────────────────────────────────────────────────────────────────────────
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -2580,18 +2267,13 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
+
 ────────────────────────────────────────────────────────────────────────────────
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -2622,18 +2304,13 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
+
 ────────────────────────────────────────────────────────────────────────────────
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -2641,7 +2318,8 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 ❯ 카페 창업하려고 해. 사업자등록, 영업신고, 위생교육, 카드가맹, 세금 준비까지 순서대로
 처리해줘.
 
-⏺ Scenario BIZ: Business start
+✽ Metamorphosing…
+  ⎿  Tip: Send messages to Claude while it works to steer Claude in real-time
 
 ─────────────────────────────────────────────────────────────────────────────────────────
 ❯
@@ -2665,17 +2343,11 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -2706,18 +2378,13 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
+
 ────────────────────────────────────────────────────────────────────────────────
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -2748,18 +2415,13 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
+
 ────────────────────────────────────────────────────────────────────────────────
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -2790,18 +2452,13 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
+
 ────────────────────────────────────────────────────────────────────────────────
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -2832,18 +2489,13 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
+
 ────────────────────────────────────────────────────────────────────────────────
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -2874,18 +2526,13 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
+
 ────────────────────────────────────────────────────────────────────────────────
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -2893,7 +2540,8 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 ─────────────────────────────────────────────────────────────────────────────────────────
 ❯
 ─────────────────────────────────────────────────────────────────────────────────────────
-                                                    statusline skipped · restart to fix
+
+
 
 
 
@@ -2917,17 +2565,11 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -2958,18 +2600,13 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
+
 ────────────────────────────────────────────────────────────────────────────────
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -3000,18 +2637,13 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
+
 ────────────────────────────────────────────────────────────────────────────────
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -3042,18 +2674,13 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
+
 ────────────────────────────────────────────────────────────────────────────────
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -3084,18 +2711,13 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
+
 ────────────────────────────────────────────────────────────────────────────────
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -3126,18 +2748,13 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
+
 ────────────────────────────────────────────────────────────────────────────────
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -3168,18 +2785,13 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
+
 ────────────────────────────────────────────────────────────────────────────────
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -3210,18 +2822,13 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
+
 ────────────────────────────────────────────────────────────────────────────────
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -3252,18 +2859,13 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
+
 ────────────────────────────────────────────────────────────────────────────────
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -3294,18 +2896,13 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
+
 ────────────────────────────────────────────────────────────────────────────────
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -3336,18 +2933,13 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
+
 ────────────────────────────────────────────────────────────────────────────────
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -3378,18 +2970,13 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 ❯
 ─────────────────────────────────────────────────────────────────────────────────────────
                                                     statusline skipped · restart to fix
+
 ────────────────────────────────────────────────────────────────────────────────
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -3420,18 +3007,13 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 ❯
 ─────────────────────────────────────────────────────────────────────────────────────────
                                                     statusline skipped · restart to fix
+
 ────────────────────────────────────────────────────────────────────────────────
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -3462,18 +3044,13 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 ❯ /clear
 ─────────────────────────────────────────────────────────────────────────────────────────
                                                     statusline skipped · restart to fix
+
 ────────────────────────────────────────────────────────────────────────────────
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -3504,18 +3081,13 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
+
 ────────────────────────────────────────────────────────────────────────────────
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -3546,18 +3118,13 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
+
 ────────────────────────────────────────────────────────────────────────────────
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -3588,18 +3155,13 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
+
 ────────────────────────────────────────────────────────────────────────────────
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -3630,18 +3192,13 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
+
 ────────────────────────────────────────────────────────────────────────────────
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -3672,18 +3229,13 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
+
 ────────────────────────────────────────────────────────────────────────────────
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -3714,18 +3266,13 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
+
 ────────────────────────────────────────────────────────────────────────────────
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -3756,18 +3303,13 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
+
 ────────────────────────────────────────────────────────────────────────────────
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -3798,18 +3340,13 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
+
 ────────────────────────────────────────────────────────────────────────────────
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -3840,18 +3377,13 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
+
 ────────────────────────────────────────────────────────────────────────────────
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -3882,18 +3414,13 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
+
 ────────────────────────────────────────────────────────────────────────────────
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -3924,18 +3451,13 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
+
 ────────────────────────────────────────────────────────────────────────────────
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -3966,25 +3488,22 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
+
 ────────────────────────────────────────────────────────────────────────────────
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
 
 ❯ 정부기관들이 내 정보를 어디에 쓰고 있는지 확인하고 잘못된 주소나 연락처는 고쳐줘.
 
-⏺ Scenario DATA: Personal-data rights
+✻ Ruminating…
+  ⎿  Tip: Hit shift+tab to cycle between default mode, auto-accept edit mode, and plan
+     mode
 
 ─────────────────────────────────────────────────────────────────────────────────────────
 ❯
@@ -4007,19 +3526,12 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
-
 ────────────────────────────────────────────────────────────────────────────────
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -4050,18 +3562,13 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
+
 ────────────────────────────────────────────────────────────────────────────────
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -4092,18 +3599,13 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
+
 ────────────────────────────────────────────────────────────────────────────────
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -4134,18 +3636,13 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
+
 ────────────────────────────────────────────────────────────────────────────────
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -4176,18 +3673,13 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
+
 ────────────────────────────────────────────────────────────────────────────────
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -4218,18 +3710,13 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 
+
 ────────────────────────────────────────────────────────────────────────────────
-╭─── UMMAYA v0.1.0 ─────────────────────────────────────────────────────────────────────╮
-│                                                   │ Recent activity                   │
-│                   Welcome back!                   │ No recent activity                │
-│                       ▟▀▀▀▙                       │ ───────────────────────────────── │
-│                      ▟▛███▜▙                      │ What's new                        │
-│                     ▟███████▙                     │ Added `CLAUDE_CODE_SESSION_ID` e… │
-│                    ▝▜██▟█▙██▛▘                    │ Added `CLAUDE_CODE_DISABLE_ALTER… │
-│                       ▘▘ ▝▝                       │ Added a "Pasting…" footer hint w… │
-│   K-EXAONE with high effort · API Usage Billing   │ /release-notes for more           │
-│                   ~/UMMAYA/tui                    │                                   │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+   ▗▟▀▙▖
+  ▟▛▗ ▖▜▙    UMMAYA v0.1.0
+ ▟▛ ▘ ▝ ▜▙   K-EXAONE with high effort · API Usage Billing
+▝▜▙ ▟█▙ ▟▛▘  ~/UMMAYA/tui
+   ▘▘ ▝▝
 
 ❯ /clear
   ⎿  (no content)
@@ -4253,6 +3740,7 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 ❯ >
 ─────────────────────────────────────────────────────────────────────────────────────────
   Press Ctrl-C again to exit                        statusline skipped · restart to fix
+
 
 
 
