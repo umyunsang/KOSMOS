@@ -8,10 +8,10 @@ Successful resume RESETS the failure count.
 
 from __future__ import annotations
 
+from tests.ipc.conftest import FakeClock, UUIDv7Factory
 from ummaya.ipc.frame_schema import ResumeRejectedFrame, ResumeResponseFrame
 from ummaya.ipc.resume_manager import RejectionReason, ResumeManager
 from ummaya.ipc.ring_buffer import SessionRingBuffer
-from tests.ipc.conftest import FakeClock, UUIDv7Factory
 
 # ---------------------------------------------------------------------------
 # Helpers

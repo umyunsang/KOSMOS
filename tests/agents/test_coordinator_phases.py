@@ -17,6 +17,7 @@ from uuid import UUID, uuid4
 
 import pytest
 
+from tests.agents.conftest import StubLLMClient, build_test_registry
 from ummaya.agents.coordinator import Coordinator
 from ummaya.agents.mailbox.messages import (
     AgentMessage,
@@ -25,7 +26,6 @@ from ummaya.agents.mailbox.messages import (
 )
 from ummaya.agents.plan import CoordinatorPlan, ExecutionMode, PlanStatus, PlanStep
 from ummaya.tools.models import LookupMeta, LookupRecord
-from tests.agents.conftest import StubLLMClient, build_test_registry
 
 
 class _InMemoryMailbox:

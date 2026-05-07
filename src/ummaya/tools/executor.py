@@ -27,7 +27,7 @@ from ummaya.observability import (
     filter_metadata,
 )
 from ummaya.tools.envelope import make_error_envelope
-from ummaya.tools.errors import UmmayaToolError, LookupErrorReason, ToolNotFoundError
+from ummaya.tools.errors import LookupErrorReason, ToolNotFoundError, UmmayaToolError
 from ummaya.tools.models import ToolResult
 from ummaya.tools.registry import ToolRegistry
 

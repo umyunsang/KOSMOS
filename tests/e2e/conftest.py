@@ -37,16 +37,6 @@ from opentelemetry.sdk.trace.export import SimpleSpanProcessor
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
 from opentelemetry.trace import StatusCode
 
-from ummaya.context.builder import ContextBuilder
-from ummaya.engine.config import QueryEngineConfig
-from ummaya.engine.engine import QueryEngine
-from ummaya.engine.events import QueryEvent, StopReason
-from ummaya.llm.client import LLMClient
-from ummaya.llm.models import ChatMessage, StreamEvent, TokenUsage
-from ummaya.llm.usage import UsageTracker
-from ummaya.recovery.executor import RecoveryExecutor
-from ummaya.tools.executor import ToolExecutor
-from ummaya.tools.registry import ToolRegistry
 from tests.e2e.models import (
     CapturedSpan,
     ObservabilitySnapshot,
@@ -58,6 +48,16 @@ from tests.e2e.models import (
 
 # Re-export MockLLMClient from engine test fixtures for reuse
 from tests.engine.conftest import MockLLMClient
+from ummaya.context.builder import ContextBuilder
+from ummaya.engine.config import QueryEngineConfig
+from ummaya.engine.engine import QueryEngine
+from ummaya.engine.events import QueryEvent, StopReason
+from ummaya.llm.client import LLMClient
+from ummaya.llm.models import ChatMessage, StreamEvent, TokenUsage
+from ummaya.llm.usage import UsageTracker
+from ummaya.recovery.executor import RecoveryExecutor
+from ummaya.tools.executor import ToolExecutor
+from ummaya.tools.registry import ToolRegistry
 
 logger = logging.getLogger(__name__)
 

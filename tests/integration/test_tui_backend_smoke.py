@@ -112,11 +112,6 @@ async def test_sc8_scenario1_ipc_frame_sequence() -> None:  # noqa: C901
     """
     import uuid
 
-    from ummaya.context.builder import ContextBuilder
-    from ummaya.engine.config import QueryEngineConfig
-    from ummaya.engine.engine import QueryEngine
-    from ummaya.engine.events import QueryEvent
-    from ummaya.ipc.frame_schema import ToolResultEnvelope
     from tests.e2e.conftest import (
         TRIGGER_QUERY,
         _build_httpx_mock,
@@ -124,6 +119,11 @@ async def test_sc8_scenario1_ipc_frame_sequence() -> None:  # noqa: C901
         build_happy_script,
     )
     from tests.engine.conftest import MockLLMClient
+    from ummaya.context.builder import ContextBuilder
+    from ummaya.engine.config import QueryEngineConfig
+    from ummaya.engine.engine import QueryEngine
+    from ummaya.engine.events import QueryEvent
+    from ummaya.ipc.frame_schema import ToolResultEnvelope
 
     # Build scripted mock LLM (same as e2e happy scenario)
     event_sequences, _script = build_happy_script()

@@ -44,7 +44,8 @@ def check_otel_attr(ctx: CheckContext) -> CheckOutcome:
                 f"plugin_id {expected!r} 와 일치해야 함"
             ),
             en=(
-                f"otel_attributes['ummaya.plugin.id'] = {actual!r} must equal plugin_id {expected!r}"
+                f"otel_attributes['ummaya.plugin.id'] = {actual!r} "
+                f"must equal plugin_id {expected!r}"
             ),
         )
     return passed()

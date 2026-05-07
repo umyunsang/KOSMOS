@@ -28,9 +28,9 @@ from typing import Final
 
 import pytest
 
+from tests.ipc.test_envelope_roundtrip import ALL_FRAMES
 from ummaya.ipc.envelope import emit_ndjson, parse_ndjson_line
 from ummaya.ipc.frame_schema import IPCFrame
-from tests.ipc.test_envelope_roundtrip import ALL_FRAMES
 
 # ---------------------------------------------------------------------------
 # Test parameters (SC-007)

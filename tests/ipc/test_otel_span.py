@@ -194,7 +194,9 @@ async def test_outbound_assistant_chunk_span(
     attrs = dict(span.attributes or {})
 
     assert attrs.get("ummaya.session.id") == session_id, f"ummaya.session.id mismatch: {attrs}"
-    assert attrs.get("ummaya.frame.kind") == "assistant_chunk", f"ummaya.frame.kind mismatch: {attrs}"
+    assert attrs.get("ummaya.frame.kind") == "assistant_chunk", (
+        f"ummaya.frame.kind mismatch: {attrs}"
+    )
     assert attrs.get("ummaya.frame.direction") == "outbound", (
         f"ummaya.frame.direction mismatch: {attrs}"
     )

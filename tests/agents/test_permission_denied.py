@@ -16,6 +16,7 @@ from uuid import UUID, uuid4
 
 import pytest
 
+from tests.agents.conftest import StubLLMClient, build_test_registry
 from ummaya.agents.consent import ConsentGateway
 from ummaya.agents.context import AgentContext
 from ummaya.agents.coordinator import Coordinator
@@ -26,7 +27,6 @@ from ummaya.agents.mailbox.messages import (
     PermissionResponsePayload,
 )
 from ummaya.agents.worker import Worker
-from tests.agents.conftest import StubLLMClient, build_test_registry
 
 # ---------------------------------------------------------------------------
 # Helpers

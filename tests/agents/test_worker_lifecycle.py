@@ -19,6 +19,7 @@ from uuid import uuid4
 
 import pytest
 
+from tests.agents.conftest import StubLLMClient, build_test_registry
 from ummaya.agents.context import AgentContext
 from ummaya.agents.errors import AgentConfigurationError
 from ummaya.agents.mailbox.messages import AgentMessage, MessageType
@@ -26,7 +27,6 @@ from ummaya.agents.worker import Worker
 from ummaya.llm.client import LLMClient
 from ummaya.llm.models import StreamEvent, TokenUsage
 from ummaya.tools.registry import ToolRegistry
-from tests.agents.conftest import StubLLMClient, build_test_registry
 
 # ---------------------------------------------------------------------------
 # Helpers

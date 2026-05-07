@@ -21,11 +21,6 @@ from unittest.mock import AsyncMock, patch
 import httpx
 import pytest
 
-from ummaya.context.builder import ContextBuilder
-from ummaya.engine.config import QueryEngineConfig
-from ummaya.engine.engine import QueryEngine
-from ummaya.engine.events import StopReason
-from ummaya.llm.models import StreamEvent, TokenUsage
 from tests.e2e.conftest import (
     TRIGGER_QUERY,
     _build_httpx_mock,
@@ -33,6 +28,11 @@ from tests.e2e.conftest import (
     _MockLLMClientAdapter,
 )
 from tests.engine.conftest import MockLLMClient
+from ummaya.context.builder import ContextBuilder
+from ummaya.engine.config import QueryEngineConfig
+from ummaya.engine.engine import QueryEngine
+from ummaya.engine.events import StopReason
+from ummaya.llm.models import StreamEvent, TokenUsage
 
 # ---------------------------------------------------------------------------
 # Helper: minimal no-op httpx mock (no actual HTTP calls expected)

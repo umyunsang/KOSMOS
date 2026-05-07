@@ -22,6 +22,7 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import SimpleSpanProcessor
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
 
+from tests.agents.conftest import StubLLMClient, build_test_registry
 from ummaya.agents.mailbox.messages import (
     AgentMessage,
     MessageType,
@@ -29,7 +30,6 @@ from ummaya.agents.mailbox.messages import (
     TaskPayload,
 )
 from ummaya.tools.models import LookupMeta, LookupRecord
-from tests.agents.conftest import StubLLMClient, build_test_registry
 
 # ---------------------------------------------------------------------------
 # Helpers

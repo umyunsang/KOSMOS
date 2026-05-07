@@ -189,8 +189,8 @@ def _build_multi_ministry_script():  # type: ignore[no-untyped-def]
     event_sequences: list of per-turn StreamEvent lists consumed by MockLLMClient.
     expected_tool_order: ordered list of tool names for assertion.
     """
-    from ummaya.llm.models import TokenUsage
     from tests.e2e.conftest import _make_text_events, _tce
+    from ummaya.llm.models import TokenUsage
 
     _u = TokenUsage(input_tokens=200, output_tokens=50)
     _u_synth = TokenUsage(input_tokens=900, output_tokens=180)
@@ -237,6 +237,8 @@ async def test_sc8_phase2_multi_ministry_ipc_frame_sequence() -> None:  # noqa: 
     """
     import uuid
 
+    from tests.e2e.conftest import _build_registry_and_executor
+    from tests.engine.conftest import MockLLMClient
     from ummaya.context.builder import ContextBuilder
     from ummaya.engine.config import QueryEngineConfig
     from ummaya.engine.engine import QueryEngine
@@ -245,8 +247,6 @@ async def test_sc8_phase2_multi_ministry_ipc_frame_sequence() -> None:  # noqa: 
     from ummaya.llm.models import ChatMessage, StreamEvent
     from ummaya.llm.usage import UsageTracker
     from ummaya.tools.hira.hospital_search import register as reg_hira
-    from tests.e2e.conftest import _build_registry_and_executor
-    from tests.engine.conftest import MockLLMClient
 
     # Build mock LLM event sequences
     event_sequences, expected_tool_order = _build_multi_ministry_script()

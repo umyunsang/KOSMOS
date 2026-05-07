@@ -13,10 +13,10 @@ from uuid import uuid4
 
 import pytest
 
+from tests.agents.conftest import StubLLMClient, build_test_registry
 from ummaya.agents.coordinator import Coordinator
 from ummaya.agents.mailbox.messages import AgentMessage
 from ummaya.agents.plan import PlanStatus
-from tests.agents.conftest import StubLLMClient, build_test_registry
 
 # ---------------------------------------------------------------------------
 # Helpers

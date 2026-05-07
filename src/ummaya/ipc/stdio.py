@@ -6345,7 +6345,9 @@ async def run(  # noqa: C901
                             correlation_id=frame.correlation_id,
                             ledger_path=_ummaya_settings_revoke.permission_ledger_path,
                             key_path=_ummaya_settings_revoke.permission_key_path,
-                            key_registry_path=(_ummaya_settings_revoke.permission_key_registry_path),
+                            key_registry_path=(
+                                _ummaya_settings_revoke.permission_key_registry_path
+                            ),
                         )
                         record_hash = withdraw_record.record_hash
                         last_record_hash = record_hash

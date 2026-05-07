@@ -322,7 +322,9 @@ class TestOtelEmissionSC007:
         assert result.exit_code == 0
         spans = list(exporter.get_finished_spans())
         install_spans = [s for s in spans if s.name == "ummaya.plugin.install"]
-        assert install_spans, f"no ummaya.plugin.install span emitted; got {[s.name for s in spans]}"
+        assert install_spans, (
+            f"no ummaya.plugin.install span emitted; got {[s.name for s in spans]}"
+        )
         attrs = dict(install_spans[-1].attributes or {})
         assert attrs.get("ummaya.plugin.id") == "timing_demo"
         assert attrs.get("ummaya.plugin.version") == "1.0.0"
