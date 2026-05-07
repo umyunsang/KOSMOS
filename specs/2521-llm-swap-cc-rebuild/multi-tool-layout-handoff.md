@@ -99,7 +99,7 @@ reorderedContent.push(..._thinking, ..._text, ..._tools, ..._other)
 
 **검증법**:
 ```bash
-cd /Users/um-yunsang/KOSAX/tui
+cd /Users/um-yunsang/UMMAYA/tui
 rm -rf node_modules/.cache
 pkill -f "bun run tui"  # 기존 프로세스 정리
 bun run tui  # 새로 시작
@@ -118,7 +118,7 @@ bun run tui  # 새로 시작
 
 각 tool 이 별도 assistant message 라면 fix #1 (같은 message 내부 index) 이 작동 안 함. 각 message 의 첫 content block 은 항상 addMargin=true 받음.
 
-**검증법**: backend 로그에서 `tool_call_buf` 한 turn 에 몇 개 entry 있는지 확인. 또는 TUI session JSONL `~/.kosax/sessions/<id>.jsonl` 에서 assistant 엔트리 개수 확인.
+**검증법**: backend 로그에서 `tool_call_buf` 한 turn 에 몇 개 entry 있는지 확인. 또는 TUI session JSONL `~/.ummaya/sessions/<id>.jsonl` 에서 assistant 엔트리 개수 확인.
 
 ### 가설 4: React Compiler 캐시 ($ memoCache)
 
@@ -131,15 +131,15 @@ bun run tui  # 새로 시작
 1. **빌드 캐시 우선 정리**:
    ```bash
    pkill -f "bun run tui"
-   rm -rf /Users/um-yunsang/KOSAX/tui/node_modules/.cache
-   cd /Users/um-yunsang/KOSAX/tui && bun run tui
+   rm -rf /Users/um-yunsang/UMMAYA/tui/node_modules/.cache
+   cd /Users/um-yunsang/UMMAYA/tui && bun run tui
    ```
    부산 날씨 재시도 후 회귀 여부 확인. 사라지면 **가설 1** 확정.
 
 2. **Layer 5 frame capture** (캐시 정리 후):
    ```bash
-   cd /Users/um-yunsang/KOSAX
-   KOSAX_DEBUG_COLS=180 KOSAX_DEBUG_ROWS=60 \
+   cd /Users/um-yunsang/UMMAYA
+   UMMAYA_DEBUG_COLS=180 UMMAYA_DEBUG_ROWS=60 \
      scripts/tui-text-debug.sh /tmp/tdb-busan-clean \
      specs/2521-llm-swap-cc-rebuild/scripts/text-debug-busan-weather.expect
    grep -l "● lookup" /tmp/tdb-busan-clean/frame_*.txt | head -1 | xargs cat
@@ -152,7 +152,7 @@ bun run tui  # 새로 시작
 
 4. **Backend 로그 trace** (가설 3 검증):
    ```bash
-   KOSAX_LOG_LEVEL=DEBUG bun run tui 2>&1 | tee /tmp/busan-trace.log
+   UMMAYA_LOG_LEVEL=DEBUG bun run tui 2>&1 | tee /tmp/busan-trace.log
    # 부산 날씨 입력
    grep -E "tool_call_buf|tool_call_index|message_id" /tmp/busan-trace.log
    ```
@@ -196,11 +196,11 @@ bun run tui  # 새로 시작
 
 > 백엔드가 ToolResultFrame 을 보냈을 때, 해당 tool_use block 바로 아래에 `⎿ ...` 가 paint 되어야 한다.
 
-**현재 동작**: CC 의 `processedMessages` 가 tool_use 직후에 user message (tool_result) 를 reorder 해서 `UserToolSuccessMessage` 가 paint. KOSAX 도 동일 로직 작동해야 함.
+**현재 동작**: CC 의 `processedMessages` 가 tool_use 직후에 user message (tool_result) 를 reorder 해서 `UserToolSuccessMessage` 가 paint. UMMAYA 도 동일 로직 작동해야 함.
 
 **Acceptance**:
 1. Layer 5 PTY 캡처에서 `● lookup(...) ⎿ ...` 가 같은 block 으로 paint.
-2. 백엔드 `kosax.tools._outbound_trace` 가 send 한 `outbound_traces` 가 verbose 모드에서 보이는지 (이건 이미 PR 에서 검증 완료).
+2. 백엔드 `ummaya.tools._outbound_trace` 가 send 한 `outbound_traces` 가 verbose 모드에서 보이는지 (이건 이미 PR 에서 검증 완료).
 
 ## 7. 회귀 위험 영역
 
@@ -217,13 +217,13 @@ bun run tui  # 새로 시작
 | ToolUseLoader spinner | `tui/src/components/ToolUseLoader.tsx` | `●` ↔ ` ` blink 애니메이션 |
 | Final content reorder | `tui/src/ipc/llmClient.ts:625-657` | `[thinking, text, tool_use, other]` 정렬 |
 | streamingThinking render | `tui/src/components/Messages.tsx:720` | thinking preview 위치 |
-| K-EXAONE thinking gate | `src/kosax/llm/client.py:969` | `KOSAX_K_EXAONE_THINKING` env (default true) |
-| Backend tool_call dispatch | `src/kosax/ipc/stdio.py:1661` | `tool_call_buf` 순회 → ToolCallFrame emit |
+| K-EXAONE thinking gate | `src/ummaya/llm/client.py:969` | `UMMAYA_K_EXAONE_THINKING` env (default true) |
+| Backend tool_call dispatch | `src/ummaya/ipc/stdio.py:1661` | `tool_call_buf` 순회 → ToolCallFrame emit |
 | System prompt turn_order | `prompts/system_v1.md` `<turn_order>` 섹션 | "One tool per turn" 제약 (LLM 이 무시 중) |
 
 ## 9. 빠른 실험 아이디어
 
-1. **다른 LLM 모델로 동일 시도**: `KOSAX_K_EXAONE_THINKING=false` 로 강제 비활성화 → reasoning channel 안 와서 thinking 위치 문제 사라지는지 확인.
+1. **다른 LLM 모델로 동일 시도**: `UMMAYA_K_EXAONE_THINKING=false` 로 강제 비활성화 → reasoning channel 안 와서 thinking 위치 문제 사라지는지 확인.
 2. **하나의 어댑터로 성공한 케이스 확인**: `서울특별시 종로구 청와대로 1 좌표 알려줘` (resolve_location) 는 verbose smoke (frame_0425) 에서 정상 layout. multi-tool 만 깨지는지 확정.
 3. **Backend 측 enforcement**: `stdio.py:1661` 의 `for idx in sorted(tool_call_buf.keys()):` 에서 첫 번째만 dispatch + 나머지는 LLM 에게 "turn_order 위반" 메시지로 reject.
 

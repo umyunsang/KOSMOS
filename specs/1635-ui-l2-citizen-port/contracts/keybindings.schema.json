@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://kosax.local/schemas/1635/keybindings.schema.json",
-  "title": "KOSAX UI L2 Keybinding Contract Additions",
+  "$id": "https://ummaya.local/schemas/1635/keybindings.schema.json",
+  "title": "UMMAYA UI L2 Keybinding Contract Additions",
   "description": "Keybindings introduced or modified by Spec 1635-ui-l2-citizen-port on top of the existing tui/src/keybindings/defaultBindings.ts. The full keybinding registry is owned by Spec 287/288; this contract enumerates only this epic's additions.",
   "type": "array",
   "items": {
@@ -11,7 +11,7 @@
     "properties": {
       "binding_id": {
         "type": "string",
-        "pattern": "^kosax\\.ui-l2\\.[a-z][a-z0-9-]*$"
+        "pattern": "^ummaya\\.ui-l2\\.[a-z][a-z0-9-]*$"
       },
       "keys": {
         "type": "string",
@@ -40,7 +40,7 @@
   "examples": [
     [
       {
-        "binding_id": "kosax.ui-l2.toggle-expand",
+        "binding_id": "ummaya.ui-l2.toggle-expand",
         "keys": "ctrl+o",
         "context": "repl",
         "action_id": "message.toggleExpand",
@@ -48,7 +48,7 @@
         "fr_ref": "FR-009"
       },
       {
-        "binding_id": "kosax.ui-l2.permission-mode-cycle",
+        "binding_id": "ummaya.ui-l2.permission-mode-cycle",
         "keys": "shift+tab",
         "context": "repl",
         "action_id": "permission.cycleMode",
@@ -56,7 +56,7 @@
         "fr_ref": "FR-022"
       },
       {
-        "binding_id": "kosax.ui-l2.slash-trigger",
+        "binding_id": "ummaya.ui-l2.slash-trigger",
         "keys": "/",
         "context": "repl",
         "action_id": "promptInput.openAutocomplete",
@@ -64,7 +64,7 @@
         "fr_ref": "FR-014"
       },
       {
-        "binding_id": "kosax.ui-l2.permission-allow-once",
+        "binding_id": "ummaya.ui-l2.permission-allow-once",
         "keys": "y",
         "context": "permission-modal",
         "action_id": "permission.allowOnce",
@@ -72,7 +72,7 @@
         "fr_ref": "FR-017"
       },
       {
-        "binding_id": "kosax.ui-l2.permission-allow-session",
+        "binding_id": "ummaya.ui-l2.permission-allow-session",
         "keys": "a",
         "context": "permission-modal",
         "action_id": "permission.allowSession",
@@ -80,7 +80,7 @@
         "fr_ref": "FR-017"
       },
       {
-        "binding_id": "kosax.ui-l2.permission-deny",
+        "binding_id": "ummaya.ui-l2.permission-deny",
         "keys": "n",
         "context": "permission-modal",
         "action_id": "permission.deny",
@@ -88,7 +88,7 @@
         "fr_ref": "FR-017"
       },
       {
-        "binding_id": "kosax.ui-l2.plugin-toggle-active",
+        "binding_id": "ummaya.ui-l2.plugin-toggle-active",
         "keys": "space",
         "context": "plugin-browser",
         "action_id": "plugin.toggleActive",
@@ -96,7 +96,7 @@
         "fr_ref": "FR-031"
       },
       {
-        "binding_id": "kosax.ui-l2.plugin-detail",
+        "binding_id": "ummaya.ui-l2.plugin-detail",
         "keys": "i",
         "context": "plugin-browser",
         "action_id": "plugin.openDetail",
@@ -104,7 +104,7 @@
         "fr_ref": "FR-031"
       },
       {
-        "binding_id": "kosax.ui-l2.plugin-remove",
+        "binding_id": "ummaya.ui-l2.plugin-remove",
         "keys": "r",
         "context": "plugin-browser",
         "action_id": "plugin.remove",
@@ -112,7 +112,7 @@
         "fr_ref": "FR-031"
       },
       {
-        "binding_id": "kosax.ui-l2.plugin-marketplace",
+        "binding_id": "ummaya.ui-l2.plugin-marketplace",
         "keys": "a",
         "context": "plugin-browser",
         "action_id": "plugin.openMarketplace",

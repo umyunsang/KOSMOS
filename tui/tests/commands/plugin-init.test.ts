@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 //
-// T019 — Negative-path tests for `kosax plugin init <name>` per
+// T019 — Negative-path tests for `ummaya plugin init <name>` per
 // specs/1636-plugin-dx-5tier/contracts/plugin-init.cli.md.
 //
 // Covers the 4 contract negative paths plus a happy-path emission shape
@@ -97,7 +97,7 @@ describe('runPluginInit — happy path', () => {
     expect(manifest.tier).toBe('live')
     expect(manifest.processes_pii).toBe(false)
     expect(manifest.pipa_trustee_acknowledgment).toBeNull()
-    expect(manifest.otel_attributes['kosax.plugin.id']).toBe('demo_plugin')
+    expect(manifest.otel_attributes['ummaya.plugin.id']).toBe('demo_plugin')
     expect(manifest.permission_layer).toBe(1)
   })
 
@@ -193,7 +193,7 @@ describe('runPluginInit — PIPA acknowledgment', () => {
         cwd: tmp,
         pii: false,
         pipaAcknowledgment: {
-          trustee_org_name: 'KOSAX Demo',
+          trustee_org_name: 'UMMAYA Demo',
           trustee_contact: 'demo@example.com',
           pii_fields_handled: ['phone_number'],
           legal_basis: 'PIPA §15-1-2',
@@ -210,7 +210,7 @@ describe('runPluginInit — PIPA acknowledgment', () => {
         cwd: tmp,
         pii: true,
         pipaAcknowledgment: {
-          trustee_org_name: 'KOSAX Demo',
+          trustee_org_name: 'UMMAYA Demo',
           trustee_contact: 'demo@example.com',
           pii_fields_handled: ['phone_number'],
           legal_basis: 'PIPA §15-1-2',
@@ -228,7 +228,7 @@ describe('runPluginInit — PIPA acknowledgment', () => {
         cwd: tmp,
         pii: true,
         pipaAcknowledgment: {
-          trustee_org_name: 'KOSAX Demo',
+          trustee_org_name: 'UMMAYA Demo',
           trustee_contact: 'demo@example.com',
           pii_fields_handled: ['phone_number'],
           legal_basis: 'PIPA §15-1-2',
@@ -241,7 +241,7 @@ describe('runPluginInit — PIPA acknowledgment', () => {
       readFileSync(join(result.outDir!, 'manifest.yaml'), 'utf-8'),
     )
     expect(manifest.processes_pii).toBe(true)
-    expect(manifest.pipa_trustee_acknowledgment.trustee_org_name).toBe('KOSAX Demo')
+    expect(manifest.pipa_trustee_acknowledgment.trustee_org_name).toBe('UMMAYA Demo')
   })
 })
 
@@ -388,7 +388,7 @@ describe('mainPluginInit', () => {
       '2',
       '--pii',
       '--pipa-org',
-      'KOSAX Demo',
+      'UMMAYA Demo',
       '--pipa-contact',
       'demo@example.com',
       '--pipa-fields',
@@ -403,7 +403,7 @@ describe('mainPluginInit', () => {
     expect(result.exitCode).toBe(0)
     const manifest = yaml.parse(readFileSync(join(out, 'manifest.yaml'), 'utf-8'))
     expect(manifest.processes_pii).toBe(true)
-    expect(manifest.pipa_trustee_acknowledgment.trustee_org_name).toBe('KOSAX Demo')
+    expect(manifest.pipa_trustee_acknowledgment.trustee_org_name).toBe('UMMAYA Demo')
     expect(manifest.pipa_trustee_acknowledgment.pii_fields_handled).toEqual([
       'phone_number',
       'resident_registration_number',

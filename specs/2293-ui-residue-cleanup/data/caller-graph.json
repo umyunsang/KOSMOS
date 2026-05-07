@@ -1,6 +1,6 @@
 [
   {
-    "kosax_path": "tui/src/cli/print.ts",
+    "ummaya_path": "tui/src/cli/print.ts",
     "module_path": "cli/print",
     "line_count": 5601,
     "importer_count": 0,
@@ -30,7 +30,7 @@
     "epic_alpha_summary": "Anthropic / Spec 033 잔재 토큰 감지: @anthropic-ai/, queryHaiku"
   },
   {
-    "kosax_path": "tui/src/commands/insights.ts",
+    "ummaya_path": "tui/src/commands/insights.ts",
     "module_path": "commands/insights",
     "line_count": 3164,
     "importer_count": 0,
@@ -60,7 +60,7 @@
     "epic_alpha_summary": "Anthropic / Spec 033 잔재 토큰 감지: queryWithModel"
   },
   {
-    "kosax_path": "tui/src/commands/rename/generateSessionName.ts",
+    "ummaya_path": "tui/src/commands/rename/generateSessionName.ts",
     "module_path": "commands/rename/generateSessionName",
     "line_count": 62,
     "importer_count": 1,
@@ -83,7 +83,7 @@
       "from 'bun:bundle'": 0,
       "feature(": 0
     },
-    "first_lines": "// SPDX-License-Identifier: Apache-2.0\n// KOSAX-1633 P2 / KOSAX-1978 T007 — `queryHaiku` import severed.\n//\n// Original CC module: .references/claude-code-sourcemap/restored-src/src/commands/rename/generateSessionName.ts\n// CC version: 2.1.88",
+    "first_lines": "// SPDX-License-Identifier: Apache-2.0\n// UMMAYA-1633 P2 / UMMAYA-1978 T007 — `queryHaiku` import severed.\n//\n// Original CC module: .references/claude-code-sourcemap/restored-src/src/commands/rename/generateSessionName.ts\n// CC version: 2.1.88",
     "epic_alpha_signal": {
       "directory_match": null,
       "git_history_match": "spec:1632,1978",
@@ -92,7 +92,7 @@
     "epic_alpha_summary": "Anthropic / Spec 033 잔재 토큰 감지: queryHaiku"
   },
   {
-    "kosax_path": "tui/src/components/Feedback.tsx",
+    "ummaya_path": "tui/src/components/Feedback.tsx",
     "module_path": "components/Feedback",
     "line_count": 572,
     "importer_count": 1,
@@ -124,7 +124,7 @@
     "epic_alpha_summary": "Anthropic / Spec 033 잔재 토큰 감지: queryHaiku"
   },
   {
-    "kosax_path": "tui/src/services/api/adminRequests.ts",
+    "ummaya_path": "tui/src/services/api/adminRequests.ts",
     "module_path": "services/api/adminRequests",
     "line_count": 14,
     "importer_count": 1,
@@ -147,16 +147,16 @@
       "from 'bun:bundle'": 0,
       "feature(": 0
     },
-    "first_lines": "// SPDX-License-Identifier: Apache-2.0\n// KOSAX-original — Epic #1633 stub restoration.\n\nexport async function checkAdminRequestEligibility(): Promise<boolean> {\n  return false",
+    "first_lines": "// SPDX-License-Identifier: Apache-2.0\n// UMMAYA-original — Epic #1633 stub restoration.\n\nexport async function checkAdminRequestEligibility(): Promise<boolean> {\n  return false",
     "epic_alpha_signal": {
       "directory_match": "cleanup:tui/src/services/api/",
       "git_history_match": "spec:1632,1633",
-      "import_scan_match": "kosax:KOSAX"
+      "import_scan_match": "ummaya:UMMAYA"
     },
     "epic_alpha_summary": "Spec 1633 cleanup 디렉토리: tui/src/services/api/"
   },
   {
-    "kosax_path": "tui/src/services/api/claude.ts",
+    "ummaya_path": "tui/src/services/api/claude.ts",
     "module_path": "services/api/claude",
     "line_count": 1098,
     "importer_count": 0,
@@ -177,7 +177,7 @@
       "from 'bun:bundle'": 1,
       "feature(": 4
     },
-    "first_lines": "// SPDX-License-Identifier: Apache-2.0\n// Research use — adapted from Claude Code 2.1.88 src/services/api/claude.ts\n//\n// KOSAX Epic #2077 — Full CC API surface restored. LLM-calling functions\n// (queryModelWithoutStreaming, queryModelWithStreaming, executeNonStreamingRequest)",
+    "first_lines": "// SPDX-License-Identifier: Apache-2.0\n// Research use — adapted from Claude Code 2.1.88 src/services/api/claude.ts\n//\n// UMMAYA Epic #2077 — Full CC API surface restored. LLM-calling functions\n// (queryModelWithoutStreaming, queryModelWithStreaming, executeNonStreamingRequest)",
     "epic_alpha_signal": {
       "directory_match": "cleanup:tui/src/services/api/",
       "git_history_match": "spec:1632,1633,1637,2077",
@@ -186,7 +186,7 @@
     "epic_alpha_summary": "Anthropic / Spec 033 잔재 토큰 감지: verifyApiKey, queryHaiku, queryWithModel"
   },
   {
-    "kosax_path": "tui/src/services/api/client.ts",
+    "ummaya_path": "tui/src/services/api/client.ts",
     "module_path": "services/api/client",
     "line_count": 40,
     "importer_count": 0,
@@ -207,7 +207,7 @@
       "from 'bun:bundle'": 0,
       "feature(": 0
     },
-    "first_lines": "// SPDX-License-Identifier: Apache-2.0\n// KOSAX-original — Epic #2077 client.ts no-op stub.\n//\n// CC's client.ts constructed the Anthropic SDK client (AnthropicClient,\n// AnthropicBedrock, AnthropicVertex, etc.) and exported getAnthropicClient.",
+    "first_lines": "// SPDX-License-Identifier: Apache-2.0\n// UMMAYA-original — Epic #2077 client.ts no-op stub.\n//\n// CC's client.ts constructed the Anthropic SDK client (AnthropicClient,\n// AnthropicBedrock, AnthropicVertex, etc.) and exported getAnthropicClient.",
     "epic_alpha_signal": {
       "directory_match": "cleanup:tui/src/services/api/",
       "git_history_match": "spec:1632,1633,1637,2077",
@@ -216,7 +216,7 @@
     "epic_alpha_summary": "Anthropic / Spec 033 잔재 토큰 감지: verifyApiKey"
   },
   {
-    "kosax_path": "tui/src/services/api/errorUtils.ts",
+    "ummaya_path": "tui/src/services/api/errorUtils.ts",
     "module_path": "services/api/errorUtils",
     "line_count": 362,
     "importer_count": 5,
@@ -247,12 +247,12 @@
     "epic_alpha_signal": {
       "directory_match": "cleanup:tui/src/services/api/",
       "git_history_match": "spec:1632,1633",
-      "import_scan_match": "kosax:KOSAX"
+      "import_scan_match": "ummaya:UMMAYA"
     },
     "epic_alpha_summary": "Spec 1633 cleanup 디렉토리: tui/src/services/api/"
   },
   {
-    "kosax_path": "tui/src/services/api/errors.ts",
+    "ummaya_path": "tui/src/services/api/errors.ts",
     "module_path": "services/api/errors",
     "line_count": 157,
     "importer_count": 6,
@@ -284,12 +284,12 @@
     "epic_alpha_signal": {
       "directory_match": "cleanup:tui/src/services/api/",
       "git_history_match": "spec:1632,1633",
-      "import_scan_match": "kosax:KOSAX"
+      "import_scan_match": "ummaya:UMMAYA"
     },
     "epic_alpha_summary": "Spec 1633 cleanup 디렉토리: tui/src/services/api/"
   },
   {
-    "kosax_path": "tui/src/services/api/filesApi.ts",
+    "ummaya_path": "tui/src/services/api/filesApi.ts",
     "module_path": "services/api/filesApi",
     "line_count": 50,
     "importer_count": 2,
@@ -313,16 +313,16 @@
       "from 'bun:bundle'": 0,
       "feature(": 0
     },
-    "first_lines": "// SPDX-License-Identifier: Apache-2.0\n// KOSAX-original — Epic #1633 FR-009 stub.\n//\n// The original Anthropic Files API client has been removed. KOSAX has no\n// Files API surface in P1+P2 scope. If / when file handling is introduced",
+    "first_lines": "// SPDX-License-Identifier: Apache-2.0\n// UMMAYA-original — Epic #1633 FR-009 stub.\n//\n// The original Anthropic Files API client has been removed. UMMAYA has no\n// Files API surface in P1+P2 scope. If / when file handling is introduced",
     "epic_alpha_signal": {
       "directory_match": "cleanup:tui/src/services/api/",
       "git_history_match": "spec:1632,1633",
-      "import_scan_match": "kosax:KOSAX"
+      "import_scan_match": "ummaya:UMMAYA"
     },
     "epic_alpha_summary": "Spec 1633 cleanup 디렉토리: tui/src/services/api/"
   },
   {
-    "kosax_path": "tui/src/services/api/firstTokenDate.ts",
+    "ummaya_path": "tui/src/services/api/firstTokenDate.ts",
     "module_path": "services/api/firstTokenDate",
     "line_count": 61,
     "importer_count": 1,
@@ -345,16 +345,16 @@
       "from 'bun:bundle'": 0,
       "feature(": 0
     },
-    "first_lines": "import axios from 'axios'\n// constants/oauth removed in P1+P2 (Spec 1633); KOSAX uses FriendliAI, not Anthropic OAuth.\nconst getOauthConfig = (): { authorizationUrl: string; tokenUrl: string; clientId: string; scopes: readonly string[]; BASE_API_URL: string } => ({ authorizationUrl: '', tokenUrl: '', clientId: '', scopes: [] as readonly string[], BASE_API_URL: '' })\nimport { getGlobalConfig, saveGlobalConfig } from '../../utils/config.js'\nimport { getAuthHeaders } from '../../utils/http.js'",
+    "first_lines": "import axios from 'axios'\n// constants/oauth removed in P1+P2 (Spec 1633); UMMAYA uses FriendliAI, not Anthropic OAuth.\nconst getOauthConfig = (): { authorizationUrl: string; tokenUrl: string; clientId: string; scopes: readonly string[]; BASE_API_URL: string } => ({ authorizationUrl: '', tokenUrl: '', clientId: '', scopes: [] as readonly string[], BASE_API_URL: '' })\nimport { getGlobalConfig, saveGlobalConfig } from '../../utils/config.js'\nimport { getAuthHeaders } from '../../utils/http.js'",
     "epic_alpha_signal": {
       "directory_match": "cleanup:tui/src/services/api/",
       "git_history_match": "spec:1632,1637",
-      "import_scan_match": "kosax:KOSAX|FriendliAI"
+      "import_scan_match": "ummaya:UMMAYA|FriendliAI"
     },
     "epic_alpha_summary": "Spec 1633 cleanup 디렉토리: tui/src/services/api/"
   },
   {
-    "kosax_path": "tui/src/services/api/grove.ts",
+    "ummaya_path": "tui/src/services/api/grove.ts",
     "module_path": "services/api/grove",
     "line_count": 15,
     "importer_count": 1,
@@ -377,16 +377,16 @@
       "from 'bun:bundle'": 0,
       "feature(": 0
     },
-    "first_lines": "// SPDX-License-Identifier: Apache-2.0\n// KOSAX-original — Epic #1633 stub restoration · Epic #2077 surface preservation.\n// Research use — adapted from Claude Code 2.1.88 src/services/api/grove.ts\n// Anthropic's Grove (claude.ai pro-tier billing path) is upstream-only — KOSAX\n// has no claude.ai backend, so the eligibility check returns false and the",
+    "first_lines": "// SPDX-License-Identifier: Apache-2.0\n// UMMAYA-original — Epic #1633 stub restoration · Epic #2077 surface preservation.\n// Research use — adapted from Claude Code 2.1.88 src/services/api/grove.ts\n// Anthropic's Grove (claude.ai pro-tier billing path) is upstream-only — UMMAYA\n// has no claude.ai backend, so the eligibility check returns false and the",
     "epic_alpha_signal": {
       "directory_match": "cleanup:tui/src/services/api/",
       "git_history_match": "spec:1632,1633,1978,2077",
-      "import_scan_match": "kosax:KOSAX"
+      "import_scan_match": "ummaya:UMMAYA"
     },
     "epic_alpha_summary": "Spec 1633 cleanup 디렉토리: tui/src/services/api/"
   },
   {
-    "kosax_path": "tui/src/services/api/logging.ts",
+    "ummaya_path": "tui/src/services/api/logging.ts",
     "module_path": "services/api/logging",
     "line_count": 788,
     "importer_count": 4,
@@ -416,12 +416,12 @@
     "epic_alpha_signal": {
       "directory_match": "cleanup:tui/src/services/api/",
       "git_history_match": "spec:1632,1633,1637",
-      "import_scan_match": "kosax:KOSAX"
+      "import_scan_match": "ummaya:UMMAYA"
     },
     "epic_alpha_summary": "Spec 1633 cleanup 디렉토리: tui/src/services/api/"
   },
   {
-    "kosax_path": "tui/src/services/api/overageCreditGrant.ts",
+    "ummaya_path": "tui/src/services/api/overageCreditGrant.ts",
     "module_path": "services/api/overageCreditGrant",
     "line_count": 18,
     "importer_count": 2,
@@ -445,16 +445,16 @@
       "from 'bun:bundle'": 0,
       "feature(": 0
     },
-    "first_lines": "// SPDX-License-Identifier: Apache-2.0\n// KOSAX-original — Epic #1633 stub restoration.\n\nexport function formatGrantAmount(_cents: number): string {\n  return '$0.00'",
+    "first_lines": "// SPDX-License-Identifier: Apache-2.0\n// UMMAYA-original — Epic #1633 stub restoration.\n\nexport function formatGrantAmount(_cents: number): string {\n  return '$0.00'",
     "epic_alpha_signal": {
       "directory_match": "cleanup:tui/src/services/api/",
       "git_history_match": "spec:1632,1633",
-      "import_scan_match": "kosax:KOSAX"
+      "import_scan_match": "ummaya:UMMAYA"
     },
     "epic_alpha_summary": "Spec 1633 cleanup 디렉토리: tui/src/services/api/"
   },
   {
-    "kosax_path": "tui/src/services/api/promptCacheBreakDetection.ts",
+    "ummaya_path": "tui/src/services/api/promptCacheBreakDetection.ts",
     "module_path": "services/api/promptCacheBreakDetection",
     "line_count": 796,
     "importer_count": 3,
@@ -479,16 +479,16 @@
       "from 'bun:bundle'": 0,
       "feature(": 0
     },
-    "first_lines": "import type { BetaToolUnion } from 'src/sdk-compat.js'\nimport type { TextBlockParam } from 'src/sdk-compat.js'\nimport type { KosaxUsage } from '../../ipc/llmTypes.js'\nimport { createPatch } from 'diff'\nimport { mkdir, writeFile } from 'fs/promises'",
+    "first_lines": "import type { BetaToolUnion } from 'src/sdk-compat.js'\nimport type { TextBlockParam } from 'src/sdk-compat.js'\nimport type { UmmayaUsage } from '../../ipc/llmTypes.js'\nimport { createPatch } from 'diff'\nimport { mkdir, writeFile } from 'fs/promises'",
     "epic_alpha_signal": {
       "directory_match": "cleanup:tui/src/services/api/",
       "git_history_match": "spec:1632,1633",
-      "import_scan_match": "kosax:KOSAX|kosax|EXAONE"
+      "import_scan_match": "ummaya:UMMAYA|ummaya|EXAONE"
     },
     "epic_alpha_summary": "Spec 1633 cleanup 디렉토리: tui/src/services/api/"
   },
   {
-    "kosax_path": "tui/src/services/api/referral.ts",
+    "ummaya_path": "tui/src/services/api/referral.ts",
     "module_path": "services/api/referral",
     "line_count": 26,
     "importer_count": 5,
@@ -515,16 +515,16 @@
       "from 'bun:bundle'": 0,
       "feature(": 0
     },
-    "first_lines": "// SPDX-License-Identifier: Apache-2.0\n// KOSAX-original — Epic #1633 stub restoration.\n\nexport function checkCachedPassesEligibility(): boolean {\n  return false",
+    "first_lines": "// SPDX-License-Identifier: Apache-2.0\n// UMMAYA-original — Epic #1633 stub restoration.\n\nexport function checkCachedPassesEligibility(): boolean {\n  return false",
     "epic_alpha_signal": {
       "directory_match": "cleanup:tui/src/services/api/",
       "git_history_match": "spec:1632,1633",
-      "import_scan_match": "kosax:KOSAX"
+      "import_scan_match": "ummaya:UMMAYA"
     },
     "epic_alpha_summary": "Spec 1633 cleanup 디렉토리: tui/src/services/api/"
   },
   {
-    "kosax_path": "tui/src/services/api/sessionIngress.ts",
+    "ummaya_path": "tui/src/services/api/sessionIngress.ts",
     "module_path": "services/api/sessionIngress",
     "line_count": 516,
     "importer_count": 2,
@@ -548,16 +548,16 @@
       "from 'bun:bundle'": 0,
       "feature(": 0
     },
-    "first_lines": "import axios, { type AxiosError } from 'axios'\nimport type { UUID } from 'crypto'\n// KOSAX: constants/oauth.js deleted by Spec 1633 P1+P2. OAuth not used with FriendliAI provider.\nconst getOauthConfig = (): { BASE_API_URL: string } => ({ BASE_API_URL: '' })\nimport type { Entry, TranscriptMessage } from '../../types/logs.js'",
+    "first_lines": "import axios, { type AxiosError } from 'axios'\nimport type { UUID } from 'crypto'\n// UMMAYA: constants/oauth.js deleted by Spec 1633 P1+P2. OAuth not used with FriendliAI provider.\nconst getOauthConfig = (): { BASE_API_URL: string } => ({ BASE_API_URL: '' })\nimport type { Entry, TranscriptMessage } from '../../types/logs.js'",
     "epic_alpha_signal": {
       "directory_match": "cleanup:tui/src/services/api/",
       "git_history_match": "spec:1632,1637",
-      "import_scan_match": "kosax:KOSAX|FriendliAI"
+      "import_scan_match": "ummaya:UMMAYA|FriendliAI"
     },
     "epic_alpha_summary": "Spec 1633 cleanup 디렉토리: tui/src/services/api/"
   },
   {
-    "kosax_path": "tui/src/services/api/ultrareviewQuota.ts",
+    "ummaya_path": "tui/src/services/api/ultrareviewQuota.ts",
     "module_path": "services/api/ultrareviewQuota",
     "line_count": 43,
     "importer_count": 1,
@@ -580,16 +580,16 @@
       "from 'bun:bundle'": 0,
       "feature(": 0
     },
-    "first_lines": "import axios from 'axios'\n// constants/oauth removed in P1+P2 (Spec 1633); KOSAX uses FriendliAI, not Anthropic OAuth.\nconst getOauthConfig = (): { authorizationUrl: string; tokenUrl: string; clientId: string; scopes: readonly string[]; BASE_API_URL: string } => ({ authorizationUrl: '', tokenUrl: '', clientId: '', scopes: [] as readonly string[], BASE_API_URL: '' })\nimport { isClaudeAISubscriber } from '../../utils/auth.js'\nimport { logForDebugging } from '../../utils/debug.js'",
+    "first_lines": "import axios from 'axios'\n// constants/oauth removed in P1+P2 (Spec 1633); UMMAYA uses FriendliAI, not Anthropic OAuth.\nconst getOauthConfig = (): { authorizationUrl: string; tokenUrl: string; clientId: string; scopes: readonly string[]; BASE_API_URL: string } => ({ authorizationUrl: '', tokenUrl: '', clientId: '', scopes: [] as readonly string[], BASE_API_URL: '' })\nimport { isClaudeAISubscriber } from '../../utils/auth.js'\nimport { logForDebugging } from '../../utils/debug.js'",
     "epic_alpha_signal": {
       "directory_match": "cleanup:tui/src/services/api/",
       "git_history_match": "spec:1632,1637,1978",
-      "import_scan_match": "kosax:KOSAX|FriendliAI"
+      "import_scan_match": "ummaya:UMMAYA|FriendliAI"
     },
     "epic_alpha_summary": "Spec 1633 cleanup 디렉토리: tui/src/services/api/"
   },
   {
-    "kosax_path": "tui/src/services/api/usage.ts",
+    "ummaya_path": "tui/src/services/api/usage.ts",
     "module_path": "services/api/usage",
     "line_count": 26,
     "importer_count": 3,
@@ -614,16 +614,16 @@
       "from 'bun:bundle'": 0,
       "feature(": 0
     },
-    "first_lines": "// SPDX-License-Identifier: Apache-2.0\n// KOSAX-original — Epic #1633 stub restoration.\n\nexport interface RateLimit {\n  readonly remaining: number",
+    "first_lines": "// SPDX-License-Identifier: Apache-2.0\n// UMMAYA-original — Epic #1633 stub restoration.\n\nexport interface RateLimit {\n  readonly remaining: number",
     "epic_alpha_signal": {
       "directory_match": "cleanup:tui/src/services/api/",
       "git_history_match": "spec:1632,1633",
-      "import_scan_match": "kosax:KOSAX"
+      "import_scan_match": "ummaya:UMMAYA"
     },
     "epic_alpha_summary": "Spec 1633 cleanup 디렉토리: tui/src/services/api/"
   },
   {
-    "kosax_path": "tui/src/services/api/withRetry.ts",
+    "ummaya_path": "tui/src/services/api/withRetry.ts",
     "module_path": "services/api/withRetry",
     "line_count": 787,
     "importer_count": 2,
@@ -651,12 +651,12 @@
     "epic_alpha_signal": {
       "directory_match": "cleanup:tui/src/services/api/",
       "git_history_match": "spec:1632,1633,2112",
-      "import_scan_match": "kosax:KOSAX|kosax|FriendliAI"
+      "import_scan_match": "ummaya:UMMAYA|ummaya|FriendliAI"
     },
     "epic_alpha_summary": "Spec 1633 cleanup 디렉토리: tui/src/services/api/"
   },
   {
-    "kosax_path": "tui/src/services/tokenEstimation.ts",
+    "ummaya_path": "tui/src/services/tokenEstimation.ts",
     "module_path": "services/tokenEstimation",
     "line_count": 502,
     "importer_count": 11,
@@ -698,7 +698,7 @@
     "epic_alpha_summary": "Anthropic / Spec 033 잔재 토큰 감지: anthropic-sdk"
   },
   {
-    "kosax_path": "tui/src/services/toolUseSummary/toolUseSummaryGenerator.ts",
+    "ummaya_path": "tui/src/services/toolUseSummary/toolUseSummaryGenerator.ts",
     "module_path": "services/toolUseSummary/toolUseSummaryGenerator",
     "line_count": 93,
     "importer_count": 1,
@@ -730,7 +730,7 @@
     "epic_alpha_summary": "Anthropic / Spec 033 잔재 토큰 감지: queryHaiku"
   },
   {
-    "kosax_path": "tui/src/tools/WebFetchTool/utils.ts",
+    "ummaya_path": "tui/src/tools/WebFetchTool/utils.ts",
     "module_path": "tools/WebFetchTool/utils",
     "line_count": 522,
     "importer_count": 0,
@@ -760,7 +760,7 @@
     "epic_alpha_summary": "Anthropic / Spec 033 잔재 토큰 감지: queryHaiku"
   },
   {
-    "kosax_path": "tui/src/utils/mcp/dateTimeParser.ts",
+    "ummaya_path": "tui/src/utils/mcp/dateTimeParser.ts",
     "module_path": "utils/mcp/dateTimeParser",
     "line_count": 38,
     "importer_count": 0,
@@ -781,7 +781,7 @@
       "from 'bun:bundle'": 0,
       "feature(": 0
     },
-    "first_lines": "// KOSAX Epic #2293: queryHaiku removed (Spec 1633 + Spec 2293 closure).\n// KOSAX DateParser (MVP7) handles datetime parsing via the Python backend.\n// This module is kept for the looksLikeISO8601 utility only; NL parsing\n// always returns a non-destructive error directing the user to ISO 8601 input.\n",
+    "first_lines": "// UMMAYA Epic #2293: queryHaiku removed (Spec 1633 + Spec 2293 closure).\n// UMMAYA DateParser (MVP7) handles datetime parsing via the Python backend.\n// This module is kept for the looksLikeISO8601 utility only; NL parsing\n// always returns a non-destructive error directing the user to ISO 8601 input.\n",
     "epic_alpha_signal": {
       "directory_match": null,
       "git_history_match": "spec:1632,1637",
@@ -790,7 +790,7 @@
     "epic_alpha_summary": "Anthropic / Spec 033 잔재 토큰 감지: queryHaiku"
   },
   {
-    "kosax_path": "tui/src/utils/permissions/permissionSetup.ts",
+    "ummaya_path": "tui/src/utils/permissions/permissionSetup.ts",
     "module_path": "utils/permissions/permissionSetup",
     "line_count": 1533,
     "importer_count": 11,
@@ -827,12 +827,12 @@
     "epic_alpha_signal": {
       "directory_match": "cleanup:tui/src/utils/permissions/",
       "git_history_match": "spec:1632,1637",
-      "import_scan_match": "kosax:KOSAX|EXAONE"
+      "import_scan_match": "ummaya:UMMAYA|EXAONE"
     },
     "epic_alpha_summary": "Spec 1633 cleanup 디렉토리: tui/src/utils/permissions/"
   },
   {
-    "kosax_path": "tui/src/utils/permissions/permissions.ts",
+    "ummaya_path": "tui/src/utils/permissions/permissions.ts",
     "module_path": "utils/permissions/permissions",
     "line_count": 1487,
     "importer_count": 14,
@@ -872,12 +872,12 @@
     "epic_alpha_signal": {
       "directory_match": "cleanup:tui/src/utils/permissions/",
       "git_history_match": "spec:1632,1633,1637",
-      "import_scan_match": "kosax:KOSAX|FriendliAI"
+      "import_scan_match": "ummaya:UMMAYA|FriendliAI"
     },
     "epic_alpha_summary": "Spec 1633 cleanup 디렉토리: tui/src/utils/permissions/"
   },
   {
-    "kosax_path": "tui/src/utils/permissions/yoloClassifier.ts",
+    "ummaya_path": "tui/src/utils/permissions/yoloClassifier.ts",
     "module_path": "utils/permissions/yoloClassifier",
     "line_count": 1497,
     "importer_count": 2,
@@ -905,12 +905,12 @@
     "epic_alpha_signal": {
       "directory_match": "cleanup:tui/src/utils/permissions/",
       "git_history_match": "spec:1632,1633,1637",
-      "import_scan_match": "kosax:KOSAX|EXAONE"
+      "import_scan_match": "ummaya:UMMAYA|EXAONE"
     },
     "epic_alpha_summary": "Spec 1633 cleanup 디렉토리: tui/src/utils/permissions/"
   },
   {
-    "kosax_path": "tui/src/utils/plugins/mcpbHandler.ts",
+    "ummaya_path": "tui/src/utils/plugins/mcpbHandler.ts",
     "module_path": "utils/plugins/mcpbHandler",
     "line_count": 975,
     "importer_count": 2,
@@ -943,7 +943,7 @@
     "epic_alpha_summary": "Anthropic / Spec 033 잔재 토큰 감지: @anthropic-ai/"
   },
   {
-    "kosax_path": "tui/src/utils/sessionTitle.ts",
+    "ummaya_path": "tui/src/utils/sessionTitle.ts",
     "module_path": "utils/sessionTitle",
     "line_count": 53,
     "importer_count": 4,
@@ -969,7 +969,7 @@
       "from 'bun:bundle'": 0,
       "feature(": 0
     },
-    "first_lines": "/**\n * Session title generation.\n *\n * KOSAX Epic #2293: Anthropic queryHaiku removed (Spec 1633 + Spec 2293\n * closure). generateSessionTitle always returns null — the REPL title bar",
+    "first_lines": "/**\n * Session title generation.\n *\n * UMMAYA Epic #2293: Anthropic queryHaiku removed (Spec 1633 + Spec 2293\n * closure). generateSessionTitle always returns null — the REPL title bar",
     "epic_alpha_signal": {
       "directory_match": null,
       "git_history_match": "spec:1632,1637",
@@ -978,7 +978,7 @@
     "epic_alpha_summary": "Anthropic / Spec 033 잔재 토큰 감지: queryHaiku"
   },
   {
-    "kosax_path": "tui/src/utils/shell/prefix.ts",
+    "ummaya_path": "tui/src/utils/shell/prefix.ts",
     "module_path": "utils/shell/prefix",
     "line_count": 237,
     "importer_count": 0,

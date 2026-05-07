@@ -8,18 +8,18 @@ import {
   type LangCommandResult,
 } from '../../src/commands/lang'
 
-// Save and restore KOSAX_TUI_LOCALE across tests
-const SAVED_LOCALE = process.env['KOSAX_TUI_LOCALE']
+// Save and restore UMMAYA_TUI_LOCALE across tests
+const SAVED_LOCALE = process.env['UMMAYA_TUI_LOCALE']
 
 beforeEach(() => {
-  delete process.env['KOSAX_TUI_LOCALE']
+  delete process.env['UMMAYA_TUI_LOCALE']
 })
 
 afterEach(() => {
   if (SAVED_LOCALE !== undefined) {
-    process.env['KOSAX_TUI_LOCALE'] = SAVED_LOCALE
+    process.env['UMMAYA_TUI_LOCALE'] = SAVED_LOCALE
   } else {
-    delete process.env['KOSAX_TUI_LOCALE']
+    delete process.env['UMMAYA_TUI_LOCALE']
   }
 })
 
@@ -28,14 +28,14 @@ describe('parseLangCommand — valid locales', () => {
     const result = parseLangCommand('ko')
     expect(result.ok).toBe(true)
     expect((result as Extract<LangCommandResult, { ok: true }>).locale).toBe('ko')
-    expect(process.env['KOSAX_TUI_LOCALE']).toBe('ko')
+    expect(process.env['UMMAYA_TUI_LOCALE']).toBe('ko')
   })
 
   it('switches to English (en)', () => {
     const result = parseLangCommand('en')
     expect(result.ok).toBe(true)
     expect((result as Extract<LangCommandResult, { ok: true }>).locale).toBe('en')
-    expect(process.env['KOSAX_TUI_LOCALE']).toBe('en')
+    expect(process.env['UMMAYA_TUI_LOCALE']).toBe('en')
   })
 
   it('is case-insensitive — KO normalizes to ko', () => {
@@ -72,25 +72,25 @@ describe('parseLangCommand — invalid inputs', () => {
   })
 
   it('does not mutate process.env on error', () => {
-    process.env['KOSAX_TUI_LOCALE'] = 'ko'
+    process.env['UMMAYA_TUI_LOCALE'] = 'ko'
     parseLangCommand('unsupported')
-    expect(process.env['KOSAX_TUI_LOCALE']).toBe('ko')
+    expect(process.env['UMMAYA_TUI_LOCALE']).toBe('ko')
   })
 })
 
 describe('getCurrentLocale', () => {
-  it('returns ko by default when KOSAX_TUI_LOCALE is unset', () => {
-    delete process.env['KOSAX_TUI_LOCALE']
+  it('returns ko by default when UMMAYA_TUI_LOCALE is unset', () => {
+    delete process.env['UMMAYA_TUI_LOCALE']
     expect(getCurrentLocale()).toBe('ko')
   })
 
-  it('returns en when KOSAX_TUI_LOCALE=en', () => {
-    process.env['KOSAX_TUI_LOCALE'] = 'en'
+  it('returns en when UMMAYA_TUI_LOCALE=en', () => {
+    process.env['UMMAYA_TUI_LOCALE'] = 'en'
     expect(getCurrentLocale()).toBe('en')
   })
 
   it('returns ko as fallback for unrecognised locale values', () => {
-    process.env['KOSAX_TUI_LOCALE'] = 'ja'
+    process.env['UMMAYA_TUI_LOCALE'] = 'ja'
     expect(getCurrentLocale()).toBe('ko')
   })
 })

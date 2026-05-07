@@ -18,17 +18,17 @@ from uuid import uuid4
 
 import pytest
 
-from kosax.agents.context import AgentContext
-from kosax.agents.coordinator import Coordinator
-from kosax.agents.mailbox.messages import (
+from ummaya.agents.context import AgentContext
+from ummaya.agents.coordinator import Coordinator
+from ummaya.agents.mailbox.messages import (
     AgentMessage,
     MessageType,
     ResultPayload,
 )
-from kosax.agents.worker import Worker
-from kosax.llm.client import LLMClient
-from kosax.llm.models import StreamEvent, TokenUsage
-from kosax.tools.models import LookupMeta, LookupRecord
+from ummaya.agents.worker import Worker
+from ummaya.llm.client import LLMClient
+from ummaya.llm.models import StreamEvent, TokenUsage
+from ummaya.tools.models import LookupMeta, LookupRecord
 from tests.agents.conftest import StubLLMClient, build_test_registry
 
 # ---------------------------------------------------------------------------
@@ -192,7 +192,7 @@ async def test_cancel_sends_cancel_messages_to_workers() -> None:
 @pytest.mark.asyncio
 async def test_partial_results_preserved_after_cancel() -> None:
     """spec Edge Cases: partial results posted before cancel are preserved in plan."""
-    from kosax.agents.plan import PlanStatus
+    from ummaya.agents.plan import PlanStatus
 
     session_id = uuid4()
     llm = StubLLMClient(responses=[])

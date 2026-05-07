@@ -11,9 +11,9 @@
 
 ### User Story 1 — Citizen end-to-end one-stop tax filing in Mock mode (Priority: P1)
 
-A Korean citizen tells KOSAX "내 종합소득세 신고해줘". The LLM recognises the request as an OPAQUE-domain submit class, chains `verify(modid)` → `lookup(hometax_simplified)` → `submit(hometax_taxreturn)`, and returns a 접수번호 to the citizen. Every adapter call carries a scope-bound `DelegationToken`; every response carries the six transparency fields proving the call ran in Mock mode against an AX-callable-channel reference shape (Singapore APEX style). Three append-only audit lines land in `~/.kosax/memdir/user/consent/` (delegation_issued / delegation_used ×2).
+A Korean citizen tells UMMAYA "내 종합소득세 신고해줘". The LLM recognises the request as an OPAQUE-domain submit class, chains `verify(modid)` → `lookup(hometax_simplified)` → `submit(hometax_taxreturn)`, and returns a 접수번호 to the citizen. Every adapter call carries a scope-bound `DelegationToken`; every response carries the six transparency fields proving the call ran in Mock mode against an AX-callable-channel reference shape (Singapore APEX style). Three append-only audit lines land in `~/.ummaya/memdir/user/consent/` (delegation_issued / delegation_used ×2).
 
-**Why this priority**: This is the entire reason Epic ε exists. The chain is the canonical demonstration that KOSAX's five-primitive client surface can drive the LLM-callable secure-wrapping channels the national AX policy stack will mandate. Without this user story, the new schema and adapters have no demonstrable value.
+**Why this priority**: This is the entire reason Epic ε exists. The chain is the canonical demonstration that UMMAYA's five-primitive client surface can drive the LLM-callable secure-wrapping channels the national AX policy stack will mandate. Without this user story, the new schema and adapters have no demonstrable value.
 
 **Independent Test**: A scripted PTY scenario can execute the full chain end-to-end against the Mock backend and assert (a) three audit ledger entries with matching `delegation_token`, (b) a 접수번호 surfaced in the final assistant message, (c) every adapter response carries the six transparency fields.
 
@@ -53,9 +53,9 @@ A reviewer (operator, auditor, policy stakeholder) can observe the full mock cat
 
 **Acceptance Scenarios**:
 
-1. **Given** a fresh KOSAX backend boot, **When** the test enumerates the four registry surfaces (main `ToolRegistry` + the three per-primitive `_ADAPTER_REGISTRY` sub-registries), **Then** the totals match SC-003 exactly (16 + 10 + 5 + 3 = 34 entries) with no duplicate IDs anywhere.
+1. **Given** a fresh UMMAYA backend boot, **When** the test enumerates the four registry surfaces (main `ToolRegistry` + the three per-primitive `_ADAPTER_REGISTRY` sub-registries), **Then** the totals match SC-003 exactly (16 + 10 + 5 + 3 = 34 entries) with no duplicate IDs anywhere.
 2. **Given** the new mock catalog is registered, **When** any consumer searches BM25 for "디지털원패스", **Then** zero adapters match (deletion confirmed).
-3. **Given** the citizen ran the US1 chain, **When** the auditor inspects the consent ledger, **Then** every `delegation_used` entry references a tool ID that resolves through the synced manifest to a citation URL belonging to the issuing agency (not a KOSAX-invented URL).
+3. **Given** the citizen ran the US1 chain, **When** the auditor inspects the consent ledger, **Then** every `delegation_used` entry references a tool ID that resolves through the synced manifest to a citation URL belonging to the issuing agency (not a UMMAYA-invented URL).
 
 ---
 
@@ -79,7 +79,7 @@ A reviewer (operator, auditor, policy stakeholder) can observe the full mock cat
 - **FR-002**: System MUST register three new mock submit adapters: `mock_submit_module_hometax_taxreturn` (홈택스 종합소득세), `mock_submit_module_gov24_minwon` (정부24 민원), `mock_submit_module_public_mydata_action` (공공마이데이터 action-scope extension).
 - **FR-003**: System MUST register two new mock lookup adapters: `mock_lookup_module_hometax_simplified` (홈택스 간이장부), `mock_lookup_module_gov24_certificate` (정부24 증명서).
 - **FR-004**: System MUST delete `mock_verify_digital_onepass` (서비스 종료 2025-12-30) and remove it from BM25 indices.
-- **FR-005**: Every Mock adapter response payload MUST carry six transparency fields: `_mode` (always `"mock"`), `_reference_implementation` (e.g., `"ax-infrastructure-callable-channel"`), `_actual_endpoint_when_live` (the URL the agency would expose when the policy mandate ships, e.g., `"https://api.gateway.kosax.gov.kr/v1/..."`), `_security_wrapping_pattern` (e.g., `"OAuth2.1 + mTLS + scope=..."`), `_policy_authority` (citation of the agency-published policy URL), `_international_reference` (e.g., `"Singapore APEX"`, `"Estonia X-Road"`, `"EU EUDI Wallet"`, `"Japan マイナポータル API"`).
+- **FR-005**: Every Mock adapter response payload MUST carry six transparency fields: `_mode` (always `"mock"`), `_reference_implementation` (e.g., `"ax-infrastructure-callable-channel"`), `_actual_endpoint_when_live` (the URL the agency would expose when the policy mandate ships, e.g., `"https://api.gateway.ummaya.gov.kr/v1/..."`), `_security_wrapping_pattern` (e.g., `"OAuth2.1 + mTLS + scope=..."`), `_policy_authority` (citation of the agency-published policy URL), `_international_reference` (e.g., `"Singapore APEX"`, `"Estonia X-Road"`, `"EU EUDI Wallet"`, `"Japan マイナポータル API"`).
 - **FR-006**: A registry-wide test MUST iterate every Mock adapter through one happy-path invocation and assert the six transparency fields are present and non-empty; the test MUST fail closed if any single adapter omits any single field.
 
 #### Delegation Schema (US1)
@@ -92,7 +92,7 @@ A reviewer (operator, auditor, policy stakeholder) can observe the full mock cat
 
 #### Audit Ledger (US1)
 
-- **FR-012**: When a verify adapter issues a `DelegationToken`, the system MUST append a `delegation_issued` event to `~/.kosax/memdir/user/consent/` recording timestamp, opaque token value, scope, expiry, and issuer DID.
+- **FR-012**: When a verify adapter issues a `DelegationToken`, the system MUST append a `delegation_issued` event to `~/.ummaya/memdir/user/consent/` recording timestamp, opaque token value, scope, expiry, and issuer DID.
 - **FR-013**: When a submit or lookup adapter consumes a `DelegationToken`, the system MUST append a `delegation_used` event recording the token value and the consuming `tool_id` (and `receipt_id` if a submit).
 - **FR-014**: When a citizen revokes a token via the existing `/consent` UI surface, the system MUST append a `delegation_revoked` event. Subsequent token use MUST be rejected.
 
@@ -101,20 +101,20 @@ A reviewer (operator, auditor, policy stakeholder) can observe the full mock cat
 - **FR-015**: The backend MUST emit, on every successful boot, an `adapter_manifest_sync` IPC frame containing the full set of registered adapter IDs together with each adapter's name, primitive verb, and citation slot (the published `policy_authority_url` from the adapter's real-domain-policy declaration).
 - **FR-016**: The TUI MUST cache the most-recent `adapter_manifest_sync` frame in memory; the cache MUST be replaced (not merged) when a new frame arrives.
 - **FR-017**: Each primitive's `validateInput` (`lookup`, `submit`, `verify`, `subscribe`) MUST resolve `tool_id` against the cached backend manifest first; on miss, it MUST fall back to the existing TS-side internal-tools list (WebFetch, Calculator, etc.).
-- **FR-018**: When `validateInput` resolves an ID through the cached backend manifest, it MUST populate the permission UI's citation slot from that adapter's `policy_authority_url` (no KOSAX-invented citation).
+- **FR-018**: When `validateInput` resolves an ID through the cached backend manifest, it MUST populate the permission UI's citation slot from that adapter's `policy_authority_url` (no UMMAYA-invented citation).
 - **FR-019**: When `validateInput` is invoked before the first manifest frame has arrived (cold boot race), it MUST fail closed with a distinct error indicating "manifest not yet synced", not silently treat the empty manifest as authoritative.
 - **FR-020**: When `validateInput` cannot resolve `tool_id` in either source, it MUST fail closed with `AdapterNotFound` naming the unknown ID.
 
 #### Smoke Verification (US1, US2)
 
-- **FR-021**: System MUST provide a PTY smoke harness scenario that spawns a Mock-fixture backend (NOT `KOSAX_BACKEND_CMD=sleep 60`), executes the full US1 chain, and asserts the three audit ledger entries plus the surfaced 접수번호. (The `sleep 60` placeholder used in prior smoke harnesses is the gap Codex P1 #2395 flagged as unable to catch the dispatch path.)
+- **FR-021**: System MUST provide a PTY smoke harness scenario that spawns a Mock-fixture backend (NOT `UMMAYA_BACKEND_CMD=sleep 60`), executes the full US1 chain, and asserts the three audit ledger entries plus the surfaced 접수번호. (The `sleep 60` placeholder used in prior smoke harnesses is the gap Codex P1 #2395 flagged as unable to catch the dispatch path.)
 - **FR-022**: System MUST provide a vhs `.tape` scenario that emits an animated `.gif` plus three named `Screenshot` PNG keyframes (boot+branding, citizen-query-accepted, post-action-receipt) consistent with the AGENTS.md vhs Layer 4 mandate.
 
 #### Hard-Rule Preservation
 
 - **FR-023**: System MUST add zero new runtime dependencies (Python or TypeScript). The IPC frame variant MUST reuse the existing Spec 032 envelope and discriminated-union shape.
 - **FR-024**: All new source text MUST be English; Korean is permitted only inside domain-data fields (`search_hint`, `llm_description`, transparency-field `_policy_authority` if the citation URL points to a Korean-language gov page).
-- **FR-025**: Each Mock adapter MUST cite an agency-published policy URL in `_policy_authority`; no KOSAX-invented permission classifications are permitted.
+- **FR-025**: Each Mock adapter MUST cite an agency-published policy URL in `_policy_authority`; no UMMAYA-invented permission classifications are permitted.
 
 ### Key Entities
 
@@ -132,44 +132,44 @@ A reviewer (operator, auditor, policy stakeholder) can observe the full mock cat
 - **SC-002**: After an end-to-end run, the consent ledger shows exactly three new entries (one `delegation_issued`, two `delegation_used`) all referencing the same opaque token value.
 - **SC-003**: After a fresh boot, the four registry surfaces report the following counts (corrected during Phase 0 research — see `research.md § Decision 1` for why "15 Mock in ToolRegistry" was architecturally impossible):
   - Main `ToolRegistry`: 16 entries (12 Live agency tools + 2 MVP-surface tools `resolve_location` + `lookup` + 2 new lookup mock GovAPITools)
-  - `kosax.primitives.verify._ADAPTER_REGISTRY`: 10 families (5 existing after `mock_verify_digital_onepass` deletion + 5 new `mock_verify_module_*`)
-  - `kosax.primitives.submit._ADAPTER_REGISTRY`: 5 families (2 existing + 3 new `mock_submit_module_*`)
-  - `kosax.primitives.subscribe._ADAPTER_REGISTRY`: 3 families (unchanged)
+  - `ummaya.primitives.verify._ADAPTER_REGISTRY`: 10 families (5 existing after `mock_verify_digital_onepass` deletion + 5 new `mock_verify_module_*`)
+  - `ummaya.primitives.submit._ADAPTER_REGISTRY`: 5 families (2 existing + 3 new `mock_submit_module_*`)
+  - `ummaya.primitives.subscribe._ADAPTER_REGISTRY`: 3 families (unchanged)
   - **Total Mock surfaces across all registries**: 20 (10 verify + 5 submit + 3 subscribe + 2 lookup)
 - **SC-004**: Zero `mock_verify_digital_onepass` matches when BM25 is searched for "디지털원패스" or "digital_onepass".
 - **SC-005**: A registry-wide transparency scan invokes every Mock adapter once and reports zero missing transparency fields across all 20 Mock surfaces (10 verify + 5 submit + 3 subscribe + 2 lookup).
-- **SC-006**: A direct primitive call `lookup(mode='fetch', tool_id='nmc_emergency_search', params={...})` from the TUI reaches the backend's `call()` method (verified via OTEL span attribute `kosax.tool.id=nmc_emergency_search`), with zero `AdapterNotFound` errors.
+- **SC-006**: A direct primitive call `lookup(mode='fetch', tool_id='nmc_emergency_search', params={...})` from the TUI reaches the backend's `call()` method (verified via OTEL span attribute `ummaya.tool.id=nmc_emergency_search`), with zero `AdapterNotFound` errors.
 - **SC-007**: A scope-violation regression test confirms that a token issued with `scope=submit:hometax.tax-return` is rejected when presented to `mock_submit_module_gov24_minwon`, with the rejection logged in the consent ledger.
 - **SC-008**: Zero new entries appear in `pyproject.toml` `[project.dependencies]` and zero new entries appear in `tui/package.json` `dependencies` after the merge.
 - **SC-009**: The vhs Layer 4 tape produces three named PNG keyframes whose pixel content (visually verified via Read tool by Lead Opus) shows the citizen branding (boot), the typed citizen query (input), and the surfaced 접수번호 (action) respectively.
 
 ## Assumptions
 
-- The Goal section of Epic #2296 says "9 new mock adapters" but the deliverable list enumerates 5+3+2 = 10. This spec adopts **10 new adapters**, treating the prose count as a typo. Phase 0 research (`research.md § Decision 1`) further corrected the spec's original "15 Mock in ToolRegistry" count — the existing per-primitive sub-registry architecture (Spec 031) means most mocks live in `kosax.primitives.{verify,submit,subscribe}._ADAPTER_REGISTRY`, not in the main `ToolRegistry`. The corrected breakdown is enumerated in SC-003.
+- The Goal section of Epic #2296 says "9 new mock adapters" but the deliverable list enumerates 5+3+2 = 10. This spec adopts **10 new adapters**, treating the prose count as a typo. Phase 0 research (`research.md § Decision 1`) further corrected the spec's original "15 Mock in ToolRegistry" count — the existing per-primitive sub-registry architecture (Spec 031) means most mocks live in `ummaya.primitives.{verify,submit,subscribe}._ADAPTER_REGISTRY`, not in the main `ToolRegistry`. The corrected breakdown is enumerated in SC-003.
 - `mock_verify_module_any_id_sso` is the Any-ID successor stub. Per the project's delegation-flow research (`specs/1979-plugin-dx-tui-integration/delegation-flow-design.md § 2.2`), Any-ID is identity-SSO only, not delegation-grant, so this adapter MUST return an identity assertion only — NOT a `DelegationToken`. It exists in the catalog as the fail-closed canonical for "the citizen authenticated, but the gateway has not yet defined a delegation channel for this ID family".
 - The backend already exposes `real_domain_policy.policy_authority_url` on every adapter (Spec 022 + Spec 1636). This spec assumes that field is the source of truth for the citation slot synced over IPC. If a particular adapter is missing that field, the manifest-sync emitter MUST fail closed at boot rather than silently emit an empty citation.
-- `_actual_endpoint_when_live` URLs are illustrative-only ("https://api.gateway.kosax.gov.kr/v1/...") and do not imply that any such gateway exists today. The reference-implementation framing is documented in the transparency field's value itself.
+- `_actual_endpoint_when_live` URLs are illustrative-only ("https://api.gateway.ummaya.gov.kr/v1/...") and do not imply that any such gateway exists today. The reference-implementation framing is documented in the transparency field's value itself.
 - The IPC frame MUST be a NEW arm of the existing Spec 032 discriminated union (e.g., a new variant `adapter_manifest_sync`). Extending an existing arm risks correlation-id ambiguity and breaks the Spec 032 ring-buffer replay invariant. This spec assumes the new arm approach.
-- The Mock backend used by the PTY smoke is a pure-Python process that imports `kosax.tools.registry` and answers the JSONL frames the TUI sends — the same shape the production backend speaks. No new external dependency, no `KOSAX_BACKEND_CMD=sleep 60` placeholder.
+- The Mock backend used by the PTY smoke is a pure-Python process that imports `ummaya.tools.registry` and answers the JSONL frames the TUI sends — the same shape the production backend speaks. No new external dependency, no `UMMAYA_BACKEND_CMD=sleep 60` placeholder.
 - All transparency fields are stamped at adapter-call time (in the response builder), not at registration time, so they are observable in OTEL spans and JSONL session logs.
 
 ## Scope Boundaries & Deferred Items *(mandatory)*
 
 ### Out of Scope (Permanent)
 
-- **Live calls to any holders of the simulated channels** (홈택스 / 정부24 / KOMSCO 모바일ID / NPKI / 금융결제원 / 마이데이터 게이트웨이 — none of these expose an LLM-callable channel as of 2026-04). KOSAX will never call them in this Epic; the Mock surface is the entire deliverable.
-- **Browser-automation fallback** (Playwright / mobile-companion) — explicitly OPAQUE per `delegation-flow-design.md § 12.10`. KOSAX as student-tier does not operate the citizen's browser.
+- **Live calls to any holders of the simulated channels** (홈택스 / 정부24 / KOMSCO 모바일ID / NPKI / 금융결제원 / 마이데이터 게이트웨이 — none of these expose an LLM-callable channel as of 2026-04). UMMAYA will never call them in this Epic; the Mock surface is the entire deliverable.
+- **Browser-automation fallback** (Playwright / mobile-companion) — explicitly OPAQUE per `delegation-flow-design.md § 12.10`. UMMAYA as student-tier does not operate the citizen's browser.
 - **Inventing a permission classification not cited from agency policy** — AGENTS.md hard rule + Spec 024/025 invariants. Every adapter cites an agency-published policy URL or it does not ship.
-- **Writing back to or proposing changes to any agency's published API surface** — KOSAX provides the client-side reference shape; the agency-side wrapping is policy-driven (`delegation-flow-design.md § 12 final canonical`).
+- **Writing back to or proposing changes to any agency's published API surface** — UMMAYA provides the client-side reference shape; the agency-side wrapping is policy-driven (`delegation-flow-design.md § 12 final canonical`).
 
 ### Deferred to Future Work
 
 | Item | Reason for Deferral | Target Epic/Phase | Tracking Issue |
 |------|---------------------|-------------------|----------------|
-| End-to-end smoke transcript + KOSAX-adapter ↔ Singapore APEX / Estonia X-Road / EU EUDI / Japan マイナポータル mapping doc | Belongs in Epic ζ which depends on the 10 mocks shipped here | Epic ζ #2297 (E2E smoke + policy mapping doc) | #2297 |
+| End-to-end smoke transcript + UMMAYA-adapter ↔ Singapore APEX / Estonia X-Road / EU EUDI / Japan マイナポータル mapping doc | Belongs in Epic ζ which depends on the 10 mocks shipped here | Epic ζ #2297 (E2E smoke + policy mapping doc) | #2297 |
 | System-prompt rewrite teaching K-EXAONE the 5-primitive citizen UX + OPAQUE hand-off rules + the new delegation-token vocabulary | Belongs in Epic η; optional, executed only if the LLM is observed using outdated tool guidance | Epic η #2298 (System prompt rewrite, optional) | #2298 |
 | Manifest-frame chunking / streaming for adapter counts at scale (~hundreds) | Current target is 28-34 adapters; chunking is unnecessary at this scale and adds complexity. Add when adapter count crosses a measured size threshold | TBD — future scaling spec | #2441 |
 | Hot-reload of adapter manifest mid-session (TUI receives a new frame after first one) | FR-016 requires cache replacement when a new frame arrives, but the trigger that causes the backend to re-emit (admin command, plugin install, etc.) is not designed in this Epic | Future plugin-DX or live-config spec | #2442 |
 | Live-mode promotion: swap any Mock adapter to a Live adapter once the corresponding agency channel ships | Live adapters require agency credentials + a real channel that does not yet exist | Future post-Epic-ζ work; revisit when a national AX gateway publishes a spec | #2443 |
 | Spec 035 ledger UI surface for the new `delegation_*` event kinds (`/consent list` rendering of token issuance vs. plain consent receipts) | UI-side rendering can ship after the backend ledger format is proven by US1 | Spec 035 follow-up or Epic ζ | #2444 |
-| ~~Wire `mock_verify_module_*` into the Spec 031 `verify(family_hint=...)` dispatch path~~ — **RESOLVED in this PR** | The new verify mocks now return typed `AuthContext` variants (`SimpleAuthModuleContext`, `ModidContext`, `KECContext`, `GeumyungModuleContext`, `AnyIdSsoContext` — 5 new arms in the discriminated union). 5 new `PublishedTier` literals added to `src/kosax/tools/registry.py`. Verified by `tests/integration/test_verify_module_dispatch.py` (6 tests covering all 5 families + unknown-family mismatch). | (Resolved in PR #2445 head) | #2446 (will close on merge) |
+| ~~Wire `mock_verify_module_*` into the Spec 031 `verify(family_hint=...)` dispatch path~~ — **RESOLVED in this PR** | The new verify mocks now return typed `AuthContext` variants (`SimpleAuthModuleContext`, `ModidContext`, `KECContext`, `GeumyungModuleContext`, `AnyIdSsoContext` — 5 new arms in the discriminated union). 5 new `PublishedTier` literals added to `src/ummaya/tools/registry.py`. Verified by `tests/integration/test_verify_module_dispatch.py` (6 tests covering all 5 families + unknown-family mismatch). | (Resolved in PR #2445 head) | #2446 (will close on merge) |

@@ -15,9 +15,9 @@ Spec reference: specs/019-phase1-hardening/data-model.md § Entity 5
 
 from __future__ import annotations
 
-from kosax.context.builder import ContextBuilder
-from kosax.context.models import SystemPromptConfig
-from kosax.context.system_prompt import SystemPromptAssembler
+from ummaya.context.builder import ContextBuilder
+from ummaya.context.models import SystemPromptConfig
+from ummaya.context.system_prompt import SystemPromptAssembler
 
 # ---------------------------------------------------------------------------
 # Verbatim rule sentences from Entity 5 (data-model.md § Entity 5)

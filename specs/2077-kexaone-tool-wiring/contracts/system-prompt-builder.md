@@ -1,16 +1,16 @@
 # Contract — `system_prompt_builder.build_system_prompt_with_tools()`
 
-> Epic [#2077](https://github.com/umyunsang/KOSAX/issues/2077) · 2026-04-27
+> Epic [#2077](https://github.com/umyunsang/UMMAYA/issues/2077) · 2026-04-27
 > A new Python helper that bridges `frame.tools` to the LLM's system prompt. Mirrors CC's `appendSystemContext()` pattern (`_cc_reference/api.ts`).
 
 ## Module
 
-`src/kosax/llm/system_prompt_builder.py` (NEW).
+`src/ummaya/llm/system_prompt_builder.py` (NEW).
 
 ## Public API
 
 ```python
-from kosax.llm.client import LLMToolDefinition
+from ummaya.llm.client import LLMToolDefinition
 
 def build_system_prompt_with_tools(
     base: str,
@@ -60,14 +60,14 @@ The function MUST be byte-stable for byte-identical inputs:
 - `json.dumps` MUST use `sort_keys=True` so JSON object key order is deterministic.
 - Tool order in the output MUST match the input list order (caller is responsible for sorting if desired — `getToolDefinitionsForFrame()` on the TUI side sorts alphabetically by `function.name`).
 
-This determinism is required by the Spec 026 prompt-hash invariant — though the augmentation is excluded from the `kosax.prompt.hash` span attribute (which hashes only `base`), the augmented text is reused inside the prompt cache for the LLM provider, and reuse depends on byte stability.
+This determinism is required by the Spec 026 prompt-hash invariant — though the augmentation is excluded from the `ummaya.prompt.hash` span attribute (which hashes only `base`), the augmented text is reused inside the prompt cache for the LLM provider, and reuse depends on byte stability.
 
 ## Caller pattern
 
-Single caller: `src/kosax/ipc/stdio.py:_handle_chat_request`.
+Single caller: `src/ummaya/ipc/stdio.py:_handle_chat_request`.
 
 ```python
-from kosax.llm.system_prompt_builder import build_system_prompt_with_tools
+from ummaya.llm.system_prompt_builder import build_system_prompt_with_tools
 
 # existing line: gather base from frame.system or _ensure_system_prompt()
 base_system = frame.system or await _ensure_system_prompt()
@@ -94,9 +94,9 @@ llm_messages.insert(0, LLMChatMessage(role="system", content=augmented_system))
 | `test_korean_description_preserved` | Korean characters in `description` round-trip. |
 | `test_sort_keys_invariant` | Two calls with same tool but different parameter dict insertion order produce same output. |
 | `test_multiple_tools_alphabetic_input_preserved` | Output preserves caller's order (no sorting inside helper). |
-| `test_no_timestamp_or_env_leakage` | grep output for `2026` / `KOSAX_` env vars — none present unless caller-provided. |
+| `test_no_timestamp_or_env_leakage` | grep output for `2026` / `UMMAYA_` env vars — none present unless caller-provided. |
 
 ## OTEL attributes
 
-- `kosax.system_prompt.augmented_chars` (int) — len(augmented) - len(base). Useful for debugging prompt budget.
-- `kosax.system_prompt.tool_count` (int) — number of tools rendered into the section.
+- `ummaya.system_prompt.augmented_chars` (int) — len(augmented) - len(base). Useful for debugging prompt budget.
+- `ummaya.system_prompt.tool_count` (int) — number of tools rendered into the section.

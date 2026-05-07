@@ -2,8 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 # Spec 2296 Epic ε T037 — Layer 2 PTY smoke: citizen tax-return filing chain.
 #
-# User story US1: a citizen types "내 종합소득세 신고해줘" and the KOSAX TUI:
-#  1. boots with KOSAX branding
+# User story US1: a citizen types "내 종합소득세 신고해줘" and the UMMAYA TUI:
+#  1. boots with UMMAYA branding
 #  2. submits the natural-language query to the agentic loop
 #  3. LLM chains verify(modid) → lookup(hometax_simplified) → submit(hometax_taxreturn)
 #  4. permission prompt surfaces with agency-published citation
@@ -16,7 +16,7 @@
 #          | tee specs/2296-ax-mock-adapters/smoke-citizen-taxreturn-pty.txt
 #
 # Grep markers (must all appear in the captured log):
-#   CHECKPOINTKOSAX branding observed
+#   CHECKPOINTUMMAYA branding observed
 #   CHECKPOINTquery submitted
 #   CHECKPOINTpermission prompt observed
 #   CHECKPOINTpermission approved
@@ -34,26 +34,26 @@ set spec_dir [file dirname [file dirname [info script]]]
 set log_path "$spec_dir/smoke-citizen-taxreturn-pty.txt"
 
 # Use the real Mock backend so the TUI boots with all 20 mock surfaces registered.
-# KOSAX_BACKEND_CMD is read by the TUI's IPC bridge at startup.
-set env(KOSAX_BACKEND_CMD) "uv run python -m kosax.ipc.demo.mock_backend"
+# UMMAYA_BACKEND_CMD is read by the TUI's IPC bridge at startup.
+set env(UMMAYA_BACKEND_CMD) "uv run python -m ummaya.ipc.demo.mock_backend"
 
-# KOSAX_FORCE_INTERACTIVE=1 is required under expect's PTY harness because
+# UMMAYA_FORCE_INTERACTIVE=1 is required under expect's PTY harness because
 # Bun's process.stdout.isTTY is undefined (not true) when invoked through
 # wrapper scripts. Without this override, main.tsx treats the session as
-# non-interactive and exits immediately (see KOSAX-1978 T003b comment).
-set env(KOSAX_FORCE_INTERACTIVE) "1"
+# non-interactive and exits immediately (see UMMAYA-1978 T003b comment).
+set env(UMMAYA_FORCE_INTERACTIVE) "1"
 
 # Spawn the TUI session under script(1) so the full PTY output is saved to
 # log_path while also being replayed to stdout for `tee` in T039.
-spawn script -q $log_path bash -c "cd /Users/um-yunsang/KOSAX-w-2296/tui && bun run tui"
+spawn script -q $log_path bash -c "cd /Users/um-yunsang/UMMAYA-w-2296/tui && bun run tui"
 
-# ── Checkpoint 1: KOSAX branding ─────────────────────────────────────────────
+# ── Checkpoint 1: UMMAYA branding ─────────────────────────────────────────────
 expect {
-  -re {KOSAX|kosax} {
-    puts "CHECKPOINTKOSAX branding observed"
+  -re {UMMAYA|ummaya} {
+    puts "CHECKPOINTUMMAYA branding observed"
   }
   timeout {
-    puts "FAILKOSAX branding never appeared"
+    puts "FAILUMMAYA branding never appeared"
     exit 1
   }
 }

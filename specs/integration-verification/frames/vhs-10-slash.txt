@@ -301,12 +301,12 @@
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSAX/tui && KOSAX_ONBOARDING_AUTO_COMPLETE=1 bun run tui
+> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_ONBOARDING_AUTO_COMPLETE=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 14 entries verified (4 primitives) in 0ms
-    ▛███▜      KOSAX v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSAX/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ❯
@@ -347,12 +347,12 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSAX/tui && KOSAX_ONBOARDING_AUTO_COMPLETE=1 bun run tui
+> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_ONBOARDING_AUTO_COMPLETE=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 14 entries verified (4 primitives) in 0ms
-    ▛███▜      KOSAX v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSAX/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ❯
@@ -393,12 +393,12 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSAX/tui && KOSAX_ONBOARDING_AUTO_COMPLETE=1 bun run tui
+> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_ONBOARDING_AUTO_COMPLETE=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 14 entries verified (4 primitives) in 0ms
-    ▛███▜      KOSAX v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSAX/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ❯ /
@@ -439,12 +439,12 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSAX/tui && KOSAX_ONBOARDING_AUTO_COMPLETE=1 bun run tui
+> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_ONBOARDING_AUTO_COMPLETE=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 14 entries verified (4 primitives) in 0ms
-    ▛███▜      KOSAX v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSAX/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ❯ /
@@ -485,12 +485,12 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSAX/tui && KOSAX_ONBOARDING_AUTO_COMPLETE=1 bun run tui
+> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_ONBOARDING_AUTO_COMPLETE=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 14 entries verified (4 primitives) in 0ms
-    ▛███▜      KOSAX v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSAX/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ❯ /
@@ -531,12 +531,12 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSAX/tui && KOSAX_ONBOARDING_AUTO_COMPLETE=1 bun run tui
+> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_ONBOARDING_AUTO_COMPLETE=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 14 entries verified (4 primitives) in 0ms
-    ▛███▜      KOSAX v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSAX/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ❯ /lan
@@ -577,12 +577,12 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSAX/tui && KOSAX_ONBOARDING_AUTO_COMPLETE=1 bun run tui
+> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_ONBOARDING_AUTO_COMPLETE=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 14 entries verified (4 primitives) in 0ms
-    ▛███▜      KOSAX v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSAX/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ❯ /lan
@@ -623,12 +623,12 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSAX/tui && KOSAX_ONBOARDING_AUTO_COMPLETE=1 bun run tui
+> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_ONBOARDING_AUTO_COMPLETE=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 14 entries verified (4 primitives) in 0ms
-    ▛███▜      KOSAX v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSAX/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ❯ /lan
@@ -669,12 +669,12 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSAX/tui && KOSAX_ONBOARDING_AUTO_COMPLETE=1 bun run tui
+> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_ONBOARDING_AUTO_COMPLETE=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 14 entries verified (4 primitives) in 0ms
-    ▛███▜      KOSAX v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSAX/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ❯ /
@@ -715,12 +715,12 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSAX/tui && KOSAX_ONBOARDING_AUTO_COMPLETE=1 bun run tui
+> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_ONBOARDING_AUTO_COMPLETE=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 14 entries verified (4 primitives) in 0ms
-    ▛███▜      KOSAX v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSAX/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ❯ /
@@ -761,12 +761,12 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSAX/tui && KOSAX_ONBOARDING_AUTO_COMPLETE=1 bun run tui
+> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_ONBOARDING_AUTO_COMPLETE=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 14 entries verified (4 primitives) in 0ms
-    ▛███▜      KOSAX v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSAX/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ❯ /agen
@@ -807,12 +807,12 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSAX/tui && KOSAX_ONBOARDING_AUTO_COMPLETE=1 bun run tui
+> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_ONBOARDING_AUTO_COMPLETE=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 14 entries verified (4 primitives) in 0ms
-    ▛███▜      KOSAX v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSAX/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ❯ /agen
@@ -853,12 +853,12 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSAX/tui && KOSAX_ONBOARDING_AUTO_COMPLETE=1 bun run tui
+> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_ONBOARDING_AUTO_COMPLETE=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 14 entries verified (4 primitives) in 0ms
-    ▛███▜      KOSAX v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSAX/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ❯ /agen
@@ -899,12 +899,12 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSAX/tui && KOSAX_ONBOARDING_AUTO_COMPLETE=1 bun run tui
+> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_ONBOARDING_AUTO_COMPLETE=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 14 entries verified (4 primitives) in 0ms
-    ▛███▜      KOSAX v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSAX/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ❯ /agen
@@ -945,12 +945,12 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSAX/tui && KOSAX_ONBOARDING_AUTO_COMPLETE=1 bun run tui
+> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_ONBOARDING_AUTO_COMPLETE=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 14 entries verified (4 primitives) in 0ms
-    ▛███▜      KOSAX v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSAX/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ❯
@@ -991,12 +991,12 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSAX/tui && KOSAX_ONBOARDING_AUTO_COMPLETE=1 bun run tui
+> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_ONBOARDING_AUTO_COMPLETE=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 14 entries verified (4 primitives) in 0ms
-    ▛███▜      KOSAX v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSAX/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ❯
@@ -1037,12 +1037,12 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSAX/tui && KOSAX_ONBOARDING_AUTO_COMPLETE=1 bun run tui
+> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_ONBOARDING_AUTO_COMPLETE=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 14 entries verified (4 primitives) in 0ms
-    ▛███▜      KOSAX v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSAX/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ❯
@@ -1083,12 +1083,12 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSAX/tui && KOSAX_ONBOARDING_AUTO_COMPLETE=1 bun run tui
+> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_ONBOARDING_AUTO_COMPLETE=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 14 entries verified (4 primitives) in 0ms
-    ▛███▜      KOSAX v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSAX/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ❯
@@ -1129,12 +1129,12 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSAX/tui && KOSAX_ONBOARDING_AUTO_COMPLETE=1 bun run tui
+> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_ONBOARDING_AUTO_COMPLETE=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 14 entries verified (4 primitives) in 0ms
-    ▛███▜      KOSAX v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSAX/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ❯ >

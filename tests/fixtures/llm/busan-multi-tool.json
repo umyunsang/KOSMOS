@@ -1,5 +1,5 @@
 {
-  "_comment": "Regression fixture for Spec 2521: parallel_tool_calls=False fix. This fixture emits 3 tool_calls. KOSAX must drop extras and only execute the first one when parallel_tool_calls is disabled. If the fix regresses, all 3 will fire and the adapter layer will emit 3 distinct upstream calls.",
+  "_comment": "Regression fixture for Spec 2521: parallel_tool_calls=False fix. This fixture emits 3 tool_calls. UMMAYA must drop extras and only execute the first one when parallel_tool_calls is disabled. If the fix regresses, all 3 will fire and the adapter layer will emit 3 distinct upstream calls.",
   "fixtures": [
     {
       "match": {

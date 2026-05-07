@@ -33,7 +33,7 @@ describe('match — ChordEvent synthesis', () => {
   test('meta+m Windows fallback', () => {
     const ev = buildChordEvent('m', blankKey({ meta: true }))
     expect(ev).not.toBeNull()
-    // Ink collapses alt/meta; KOSAX canonicalises to "alt" token first.
+    // Ink collapses alt/meta; UMMAYA canonicalises to "alt" token first.
     expect(String(ev!.chord)).toBe('alt+m')
   })
 

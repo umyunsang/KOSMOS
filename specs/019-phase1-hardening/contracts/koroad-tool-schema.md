@@ -1,7 +1,7 @@
 # Contract — KOROAD accident-search tool input schema
 
 **Feature**: 019-phase1-hardening
-**Target file**: `src/kosax/tools/koroad/koroad_accident_search.py`
+**Target file**: `src/ummaya/tools/koroad/koroad_accident_search.py`
 
 ## Contract scope
 

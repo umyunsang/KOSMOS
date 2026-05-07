@@ -1,7 +1,7 @@
 # Phase 0 Research — P3 · Tool System Wiring
 
 **Branch**: `feat/1634-tool-system-wiring` | **Date**: 2026-04-24 | **Spec**: [spec.md](./spec.md) | **Plan**: [plan.md](./plan.md)
-**Epic**: #1634 | **Phase**: P3 (per `docs/requirements/kosax-migration-tree.md § Execution phases`)
+**Epic**: #1634 | **Phase**: P3 (per `docs/requirements/ummaya-migration-tree.md § Execution phases`)
 
 > Per Constitution v1.1.1 § I and AGENTS.md "Reference source rule," every design decision below maps first to the **restored-src primary reference** (`.references/claude-code-sourcemap/restored-src/src/`, Claude Code 2.1.88). Escalations to secondary references from `docs/vision.md § Reference materials` are documented inline.
 
@@ -15,7 +15,7 @@ P3 introduces five distinct concerns. Each maps to a concrete CC restored-src pa
 
 Spec 031 already mapped each primitive to its CC analog (see `specs/031-five-primitive-harness/research.md § 1`). P3 inherits that mapping verbatim:
 
-| KOSAX primitive | CC analog (primary, restored-src 2.1.88) | Shape carried over |
+| UMMAYA primitive | CC analog (primary, restored-src 2.1.88) | Shape carried over |
 |---|---|---|
 | `lookup` (`mode=search`) | `src/tools/GrepTool/` + `src/tools/ToolSearchTool/` | BM25 over `search_hint`, no side effects, idempotent |
 | `lookup` (`mode=fetch`) | `src/tools/FileReadTool/` + `src/tools/WebFetchTool/` | Deterministic, cache-friendly, idempotent |
@@ -23,7 +23,7 @@ Spec 031 already mapped each primitive to its CC analog (see `specs/031-five-pri
 | `verify` | `src/services/oauth/` + `src/tools/McpAuthTool/` (CC delegates credentials, never mints) | Discriminated union over credential families |
 | `subscribe` | No byte analog in CC tools; closest is `src/services/SessionMemory/` + `src/tools/shared/` async generator streaming | `AsyncIterator[Event]` with handle lifetime |
 
-**Decision**: P3 builds the TUI-side wrappers (`tui/src/tools/primitive/{lookup,submit,verify,subscribe}.ts`) as thin dispatchers that translate CC's tool-call shape into the existing Python `kosax.primitives.*` module calls. The Python primitives already exist (Spec 031 shipped `submit.py`, `subscribe.py`, `verify.py`); `lookup` lives in `src/kosax/tools/lookup.py`. P3 does **not** rewrite Python primitive code — only adds TUI wrappers and the MCP transport layer between them.
+**Decision**: P3 builds the TUI-side wrappers (`tui/src/tools/primitive/{lookup,submit,verify,subscribe}.ts`) as thin dispatchers that translate CC's tool-call shape into the existing Python `ummaya.primitives.*` module calls. The Python primitives already exist (Spec 031 shipped `submit.py`, `subscribe.py`, `verify.py`); `lookup` lives in `src/ummaya/tools/lookup.py`. P3 does **not** rewrite Python primitive code — only adds TUI wrappers and the MCP transport layer between them.
 
 **Rationale**: keeping primitive logic in Python (where adapter validation happens) preserves the AGENTS.md hard rule that all adapter I/O is Pydantic v2. The TUI wrapper just shapes the tool-call envelope; it does not validate adapter parameters.
 
@@ -31,7 +31,7 @@ Spec 031 already mapped each primitive to its CC analog (see `specs/031-five-pri
 - TS-side primitive logic with a re-implemented adapter registry — rejected: violates AGENTS.md "no Go/Rust/duplicate-substrate" + duplicates Spec 022/025/031 work.
 - Single primitive wrapper that switches on `primitive` enum at runtime — rejected: harder to unit-test in isolation and obscures the four-primitive contract.
 
-### 1.2 MCP bridge — `tui/src/ipc/mcp.ts` + `src/kosax/ipc/mcp_server.py`
+### 1.2 MCP bridge — `tui/src/ipc/mcp.ts` + `src/ummaya/ipc/mcp_server.py`
 
 **Primary reference**: `src/tools/MCPTool/MCPTool.ts` (CC's external-MCP passthrough — already in restored-src). It demonstrates the MCP message envelope shape the LLM expects from a registered MCP tool.
 
@@ -39,7 +39,7 @@ Spec 031 already mapped each primitive to its CC analog (see `specs/031-five-pri
 
 **Decision**: The MCP bridge is **additive** on top of the existing Spec 287/032 IPC stack:
 - `tui/src/ipc/mcp.ts` is a thin client that constructs MCP-protocol frames and hands them to `bridge.ts` for stdio transport.
-- `src/kosax/ipc/mcp_server.py` is a thin server stub that consumes MCP-protocol frames from `stdio.py` and dispatches to the existing tool registry.
+- `src/ummaya/ipc/mcp_server.py` is a thin server stub that consumes MCP-protocol frames from `stdio.py` and dispatches to the existing tool registry.
 - Neither side re-implements framing, ring-buffer, back-pressure, or heartbeat — those are Spec 032 responsibilities and stay untouched.
 
 **Rationale**: this preserves all of Spec 032's hardening work (correlation IDs, transaction LRU, ring buffer, heartbeat) without duplicating it at the MCP layer. The MCP layer carries protocol concerns (handshake, tool list, tool call routing) only.
@@ -48,21 +48,21 @@ Spec 031 already mapped each primitive to its CC analog (see `specs/031-five-pri
 - Replace `bridge.ts` ↔ `stdio.py` with raw MCP transport — rejected: would re-implement Spec 032 hardening from scratch + invalidate prior IPC test coverage.
 - Run MCP-over-HTTP instead of stdio — rejected: violates Constitution § Citizen privacy (no external egress) + AGENTS.md zero-egress observability rule (Spec 028).
 
-### 1.3 Adapter registry deltas — `src/kosax/tools/{models.py, register_all.py, routing_index.py, permissions.py}`
+### 1.3 Adapter registry deltas — `src/ummaya/tools/{models.py, register_all.py, routing_index.py, permissions.py}`
 
 **Primary reference**: `src/services/tools/toolOrchestration.ts` + `src/services/tools/toolExecution.ts` (CC's tool registration + execution loop — already in restored-src).
 
-**Secondary references**: Pydantic AI tool registry pattern (schema-driven typed registration); Spec 025 v6 invariant module (`src/kosax/security/v12_dual_axis.py`) for the `(auth_type, auth_level)` invariant we must preserve.
+**Secondary references**: Pydantic AI tool registry pattern (schema-driven typed registration); Spec 025 v6 invariant module (`src/ummaya/security/v12_dual_axis.py`) for the `(auth_type, auth_level)` invariant we must preserve.
 
-**Decision (clarification Q1 — `adapter_mode`)**: Add a new field `adapter_mode: Literal["live", "mock"] = "live"` on `GovAPITool`. Mock adapters in `src/kosax/tools/mock/*` set `adapter_mode="mock"` explicitly. The existing `AdapterRegistration.source_mode` (`OPENAPI` / `OOS` / `HARNESS_ONLY`) stays as mirror-fidelity classification; the two axes are orthogonal.
+**Decision (clarification Q1 — `adapter_mode`)**: Add a new field `adapter_mode: Literal["live", "mock"] = "live"` on `GovAPITool`. Mock adapters in `src/ummaya/tools/mock/*` set `adapter_mode="mock"` explicitly. The existing `AdapterRegistration.source_mode` (`OPENAPI` / `OOS` / `HARNESS_ONLY`) stays as mirror-fidelity classification; the two axes are orthogonal.
 
-**Rationale**: confirmed by reading `src/kosax/tools/registry.py:48-58` — `AdapterSourceMode` documents itself as "how faithfully the adapter mirrors its external source," not "does this adapter call the network at runtime." Conflating them breaks the OPENAPI-mock case (a mock built from a published OpenAPI spec — high fidelity, runs as mock).
+**Rationale**: confirmed by reading `src/ummaya/tools/registry.py:48-58` — `AdapterSourceMode` documents itself as "how faithfully the adapter mirrors its external source," not "does this adapter call the network at runtime." Conflating them breaks the OPENAPI-mock case (a mock built from a published OpenAPI spec — high fidelity, runs as mock).
 
 **Decision (clarification Q2 — `ministry`)**: Rename `provider: str` → `ministry: Literal[<closed enum>]` with the initial enum: `KOROAD, KMA, NMC, HIRA, NFA, MOHW, MOLIT, MOIS, KEC, MFDS, GOV24, OTHER`. All 15 currently-registered adapters migrate at the same commit.
 
 **Rationale**: Spec 025 v6 already uses the same Literal-typed pattern for `auth_type` (`Literal["public", "api_key", "oauth"]`) — pattern parity. Free-form `provider` strings would diverge in spelling across plugin authors and break ministry-scoped consent (Spec 035 onboarding) which needs machine-checkable ministry identity. `OTHER` is a transitional escape hatch for adapters whose institutional mapping is not yet decided; CI emits a warning when used (per Assumption added to spec.md).
 
-**Decision (clarification Q3 — `permission_tier`)**: Introduce a derived helper `compute_permission_tier(auth_level: AALLevel, is_irreversible: bool) -> Literal[1, 2, 3]` in `src/kosax/tools/permissions.py`. No new field. Mapping:
+**Decision (clarification Q3 — `permission_tier`)**: Introduce a derived helper `compute_permission_tier(auth_level: AALLevel, is_irreversible: bool) -> Literal[1, 2, 3]` in `src/ummaya/tools/permissions.py`. No new field. Mapping:
 
 ```
 public/AAL1                            → 1
@@ -71,7 +71,7 @@ AAL3                                   → 3
 is_irreversible=True (overrides AAL)   → 3
 ```
 
-**Rationale**: Spec 025 v6 (`src/kosax/tools/models.py:313-327`) enforces a strict `(auth_type, auth_level)` allow-list. Adding a third permission axis would introduce drift risk (the helper might disagree with the validator). A pure derived function reads from existing fields, has zero state, and is unit-testable in isolation. UI-C C1 (layer color rendering) and the permission gauntlet both call this single function.
+**Rationale**: Spec 025 v6 (`src/ummaya/tools/models.py:313-327`) enforces a strict `(auth_type, auth_level)` allow-list. Adding a third permission axis would introduce drift risk (the helper might disagree with the validator). A pure derived function reads from existing fields, has zero state, and is unit-testable in isolation. UI-C C1 (layer color rendering) and the permission gauntlet both call this single function.
 
 **Alternatives considered**:
 - Store `permission_tier` as a third field with a validator that asserts consistency with `(auth_level, is_irreversible)` — rejected: more code, more failure modes, no benefit.
@@ -79,15 +79,15 @@ is_irreversible=True (overrides AAL)   → 3
 
 ### 1.4 CC dev tool removal — deletions only
 
-**Primary reference**: the full directory list under `src/tools/` in restored-src — KOSAX deletes the developer-oriented subset because the citizen domain has no use for filesystem mutation, shell execution, or Jupyter notebook editing.
+**Primary reference**: the full directory list under `src/tools/` in restored-src — UMMAYA deletes the developer-oriented subset because the citizen domain has no use for filesystem mutation, shell execution, or Jupyter notebook editing.
 
 **Decision**: delete the 14 directories listed in spec.md FR-012 (Bash, FileEdit, FileRead, FileWrite, Glob, Grep, NotebookEdit, PowerShell, LSP, REPL, Config, Plan/Worktree mode tools). Add a CI grep guard at the runtime registration entry points.
 
-**Rationale**: `feedback_harness_not_reimplementation` — KOSAX is a harness that *uses* CC's substrate, not a re-implementation of CC. Tools that don't serve citizens are deleted, not stubbed. Stubs would create resurrection risk (a future PR adds them back without thinking).
+**Rationale**: `feedback_harness_not_reimplementation` — UMMAYA is a harness that *uses* CC's substrate, not a re-implementation of CC. Tools that don't serve citizens are deleted, not stubbed. Stubs would create resurrection risk (a future PR adds them back without thinking).
 
 **Alternatives considered**:
 - Keep the directories but `delete export` from the registration index — rejected: dead code accumulates and tools can be re-imported by accident.
-- Move them under a `dev-only/` subtree — rejected: KOSAX is not a developer tool. There is no "dev mode."
+- Move them under a `dev-only/` subtree — rejected: UMMAYA is not a developer tool. There is no "dev mode."
 
 ### 1.5 New auxiliary tools — Translate, Calculator, DateParser, ExportPDF
 
@@ -127,7 +127,7 @@ All three NEEDS CLARIFICATION markers in spec.md were resolved during `/speckit-
 
 **Rationale**: citizen prompts are typically primitive-agnostic ("how do I report this?", "where do I check this?"). Pre-filtering by primitive would force the LLM to issue multiple search calls. Spec 022 already established this pattern; P3 adds the `primitive` field to results without changing the scoring or top-K logic.
 
-**Reference**: `src/kosax/tools/search.py` (Spec 022 BM25), `feat/585-retrieval-dense` (dense layer).
+**Reference**: `src/ummaya/tools/search.py` (Spec 022 BM25), `feat/585-retrieval-dense` (dense layer).
 
 ### 3.2 MCP handshake performance budget
 
@@ -135,7 +135,7 @@ All three NEEDS CLARIFICATION markers in spec.md were resolved during `/speckit-
 
 **Decision**: Yes. `bridge.ts` Spec 287/032 already achieves stdio frame round-trip under 10 ms warm on developer machines. MCP handshake is 2 frame exchanges (initialize + initialized notification) + tool list discovery (1 frame). Budget headroom is ~10x the measured baseline.
 
-**Rationale**: stdio JSONL framing is local IPC; dominant cost is process startup (Python interpreter + module imports), not transport. Cold-start budget gives Python's `kosax.tools.register_all` ~400 ms, which matches the current observed Spec 022 cold-start.
+**Rationale**: stdio JSONL framing is local IPC; dominant cost is process startup (Python interpreter + module imports), not transport. Cold-start budget gives Python's `ummaya.tools.register_all` ~400 ms, which matches the current observed Spec 022 cold-start.
 
 **Reference**: `tui/src/ipc/bridge.ts` (transport), `tests/ipc/test_stdio_roundtrip.py` (Spec 032 baseline).
 
@@ -185,9 +185,9 @@ Constitution § II requires fail-closed defaults for new boolean/enum fields on 
 
 **Justification**: the principle's intent is to prevent a contributor from accidentally exposing a personal-data API as public. With `adapter_mode`, the failure mode is inverted: a `"mock"` default would silently ship fixture data to a real citizen. **Fail-explicit > fail-safe** here because:
 
-1. Mock adapters live in a clearly-segregated subtree (`src/kosax/tools/mock/*`); the maintainer of every mock adapter has direct line-of-sight to set `adapter_mode="mock"`.
+1. Mock adapters live in a clearly-segregated subtree (`src/ummaya/tools/mock/*`); the maintainer of every mock adapter has direct line-of-sight to set `adapter_mode="mock"`.
 2. Live adapters are the production case; an undeclared adapter should *be* live, not silently degraded to a fixture.
-3. The CI consistency test (§ 3.3 invariant 3) verifies `adapter_mode ∈ {live, mock}` is declared on every registration, so "default" never silently propagates — the field is effectively required, with `"live"` only used when omitted by an obviously-live adapter under `src/kosax/tools/{koroad,kma,hira,nmc,nfa,mohw}/`.
+3. The CI consistency test (§ 3.3 invariant 3) verifies `adapter_mode ∈ {live, mock}` is declared on every registration, so "default" never silently propagates — the field is effectively required, with `"live"` only used when omitted by an obviously-live adapter under `src/ummaya/tools/{koroad,kma,hira,nmc,nfa,mohw}/`.
 
 This deviation is recorded in plan.md § Complexity Tracking. No other field gets a non-fail-closed default in this epic.
 

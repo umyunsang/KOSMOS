@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """T030 — submit primitive end-to-end integration tests.
 
-Verifies ``kosax.primitives.submit.submit()`` end-to-end with:
+Verifies ``ummaya.primitives.submit.submit()`` end-to-end with:
   - Happy path: valid params → SubmitOutput with transaction_id, status, adapter_receipt.
   - Audit ledger emission: the AdapterRegistration captured in the dispatch table
     carries primitive="submit" AND tool_id as distinct, non-empty string fields
@@ -14,9 +14,9 @@ No live network calls are made.  Both adapters are shape-mirrored mocks (OOS).
 References
 ----------
 - specs/1634-tool-system-wiring/contracts/primitive-envelope.md § 3
-- src/kosax/primitives/submit.py
-- src/kosax/tools/mock/data_go_kr/fines_pay.py
-- src/kosax/tools/mock/mydata/welfare_application.py
+- src/ummaya/primitives/submit.py
+- src/ummaya/tools/mock/data_go_kr/fines_pay.py
+- src/ummaya/tools/mock/mydata/welfare_application.py
 """
 
 from __future__ import annotations
@@ -24,11 +24,11 @@ from __future__ import annotations
 import pytest
 
 # Import adapter modules so they self-register into the submit dispatcher
-import kosax.tools.mock.data_go_kr.fines_pay  # noqa: F401
-import kosax.tools.mock.mydata.welfare_application  # noqa: F401
-from kosax.primitives._errors import AdapterNotFoundError
-from kosax.primitives.submit import _ADAPTER_REGISTRY, SubmitOutput, SubmitStatus, submit
-from kosax.tools.registry import AdapterPrimitive
+import ummaya.tools.mock.data_go_kr.fines_pay  # noqa: F401
+import ummaya.tools.mock.mydata.welfare_application  # noqa: F401
+from ummaya.primitives._errors import AdapterNotFoundError
+from ummaya.primitives.submit import _ADAPTER_REGISTRY, SubmitOutput, SubmitStatus, submit
+from ummaya.tools.registry import AdapterPrimitive
 
 # ---------------------------------------------------------------------------
 # T030-A: Happy path — mock_traffic_fine_pay_v1
@@ -75,7 +75,7 @@ class TestSubmitFinesPayHappyPath:
         )
         assert isinstance(result, SubmitOutput)
         assert result.status == SubmitStatus.succeeded
-        assert result.transaction_id.startswith("urn:kosax:submit:")
+        assert result.transaction_id.startswith("urn:ummaya:submit:")
         assert isinstance(result.adapter_receipt, dict)
         assert len(result.adapter_receipt) > 0
 
@@ -103,7 +103,7 @@ class TestSubmitFinesPayHappyPath:
 
     @pytest.mark.asyncio
     async def test_submit_transaction_id_is_urn(self) -> None:
-        """transaction_id must be a URN in urn:kosax:submit: format (FR-004)."""
+        """transaction_id must be a URN in urn:ummaya:submit: format (FR-004)."""
         from pydantic import BaseModel, ConfigDict
 
         class _MinimalAuthContext(BaseModel):
@@ -117,9 +117,9 @@ class TestSubmitFinesPayHappyPath:
             auth_context=auth_ctx,
         )
         assert isinstance(result, SubmitOutput)
-        assert result.transaction_id.startswith("urn:kosax:submit:")
+        assert result.transaction_id.startswith("urn:ummaya:submit:")
         # SHA-256 hex is 64 chars; total URN length tracks the active project prefix.
-        assert len(result.transaction_id) == len("urn:kosax:submit:") + 64
+        assert len(result.transaction_id) == len("urn:ummaya:submit:") + 64
 
 
 # ---------------------------------------------------------------------------
@@ -155,7 +155,7 @@ class TestSubmitWelfareApplicationHappyPath:
         )
         assert isinstance(result, SubmitOutput)
         assert result.status == SubmitStatus.succeeded
-        assert result.transaction_id.startswith("urn:kosax:submit:")
+        assert result.transaction_id.startswith("urn:ummaya:submit:")
 
     @pytest.mark.asyncio
     async def test_submit_welfare_adapter_receipt_contains_benefit_code(self) -> None:

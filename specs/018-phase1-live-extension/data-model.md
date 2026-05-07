@@ -10,8 +10,8 @@
 
 **Scope**: `session`
 **Returns**: `str` — the Kakao REST API key.
-**Source**: `os.environ["KOSAX_KAKAO_API_KEY"]`.
-**Failure mode**: `pytest.fail("set KOSAX_KAKAO_API_KEY to run live geocoding tests")` — exact string, no parameterization.
+**Source**: `os.environ["UMMAYA_KAKAO_API_KEY"]`.
+**Failure mode**: `pytest.fail("set UMMAYA_KAKAO_API_KEY to run live geocoding tests")` — exact string, no parameterization.
 
 **Consumers**: all tests in `test_live_geocoding.py`; `test_live_scenario1_from_natural_address` in `test_live_e2e.py`.
 
@@ -126,8 +126,8 @@ An ordered list of `(tool_id, outcome)` tuples captured during an E2E test. Popu
 
 No production Pydantic schemas are added or modified. Tests reference the following existing schemas (assertions are structural; schema evolution in a later epic does not break these tests unless the asserted fields are removed):
 
-- `KakaoSearchResult`, `KakaoAddressDocument`, `KakaoAddressResult` — `src/kosax/tools/geocoding/kakao_client.py`
-- `AddressToGridInput`/`Output` — `src/kosax/tools/geocoding/address_to_grid.py`
-- `AddressToRegionInput`/`Output` — `src/kosax/tools/geocoding/address_to_region.py`
-- `MetricsCollector`, `ObservabilityEventLogger`, `Event` types — `src/kosax/observability/`
+- `KakaoSearchResult`, `KakaoAddressDocument`, `KakaoAddressResult` — `src/ummaya/tools/geocoding/kakao_client.py`
+- `AddressToGridInput`/`Output` — `src/ummaya/tools/geocoding/address_to_grid.py`
+- `AddressToRegionInput`/`Output` — `src/ummaya/tools/geocoding/address_to_region.py`
+- `MetricsCollector`, `ObservabilityEventLogger`, `Event` types — `src/ummaya/observability/`
 - `ToolResult` — existing tool framework.

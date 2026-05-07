@@ -7,16 +7,16 @@
 
 ### 1.1 `LLMClientConfig` — Python source-of-truth
 
-**Location**: `src/kosax/llm/config.py:10-91`
+**Location**: `src/ummaya/llm/config.py:10-91`
 **Type**: `pydantic_settings.BaseSettings`
 **Status**: PRESERVED (read-only to this epic)
 
 | Field | Default | Env var | Validator |
 |---|---|---|---|
-| `token: SecretStr` | `...` (required) | `KOSAX_FRIENDLI_TOKEN` | `token_must_not_be_empty` |
-| `base_url: AnyHttpUrl` | `https://api.friendli.ai/serverless/v1` | `KOSAX_FRIENDLI_BASE_URL` | (built-in URL) |
-| `model: str` | `LGAI-EXAONE/K-EXAONE-236B-A23B` | `KOSAX_FRIENDLI_MODEL` | (string) |
-| `session_budget: int` | `1_000_000` | `KOSAX_LLM_SESSION_BUDGET` | `session_budget_must_be_positive` |
+| `token: SecretStr` | `...` (required) | `UMMAYA_FRIENDLI_TOKEN` | `token_must_not_be_empty` |
+| `base_url: AnyHttpUrl` | `https://api.friendli.ai/serverless/v1` | `UMMAYA_FRIENDLI_BASE_URL` | (built-in URL) |
+| `model: str` | `LGAI-EXAONE/K-EXAONE-236B-A23B` | `UMMAYA_FRIENDLI_MODEL` | (string) |
+| `session_budget: int` | `1_000_000` | `UMMAYA_LLM_SESSION_BUDGET` | `session_budget_must_be_positive` |
 | `timeout: float` | `60.0` | (no env) | `timeout_must_be_positive` |
 | `max_retries: int` | `3` | (no env) | `max_retries_must_be_non_negative` |
 
@@ -24,7 +24,7 @@
 
 ### 1.2 `LLMClient` sampling defaults — preserved by FR-013
 
-**Location**: `src/kosax/llm/client.py:155-166` (non-streaming) and `:282-293` (streaming)
+**Location**: `src/ummaya/llm/client.py:155-166` (non-streaming) and `:282-293` (streaming)
 
 | Parameter | Value | HF recommendation match |
 |---|---|---|
@@ -35,7 +35,7 @@
 
 ### 1.3 `LLMClient` rate-limit retry — preserved by FR-014
 
-**Location**: `src/kosax/llm/client.py:226-280, 411-613, 698-728, 877-915`
+**Location**: `src/ummaya/llm/client.py:226-280, 411-613, 698-728, 877-915`
 
 | Component | Behaviour |
 |---|---|
@@ -48,11 +48,11 @@
 
 ### 1.4 `enable_thinking` toggle — preserved by FR-015
 
-**Location**: `src/kosax/llm/client.py:838-844, 854-858`
+**Location**: `src/ummaya/llm/client.py:838-844, 854-858`
 
 | Component | Value |
 |---|---|
-| Env var | `KOSAX_K_EXAONE_THINKING ∈ {true, 1, yes}` (default `false`) |
+| Env var | `UMMAYA_K_EXAONE_THINKING ∈ {true, 1, yes}` (default `false`) |
 | Payload field | `chat_template_kwargs.enable_thinking: bool` |
 | Default | `False` for citizen latency (sub-10s vs 60-180s reasoning trace) |
 
@@ -85,7 +85,7 @@
 | `getDefaultOpusModel()` | returns Anthropic Opus model ID | Either deleted, or thin alias → `getDefaultMainLoopModel()` per caller-reach rule | FR-006 |
 | `getDefaultHaikuModel()` | returns Anthropic Haiku model ID | Either deleted, or thin alias → `getDefaultMainLoopModel()` per caller-reach rule | FR-006 |
 | `getSmallFastModel()` (`:38-40`) | reads `ANTHROPIC_SMALL_FAST_MODEL` env, falls back to `getDefaultHaikuModel()` | Returns `getDefaultMainLoopModel()` (no env path) | FR-001/004 |
-| `isNonCustomOpusModel(model)` (`:42-49`) | checks `model === modelStrings.opus40 \|\| ... \|\| opus46` | Returns `false` (no Opus model exists in KOSAX) — or removed if no callers | FR-001 |
+| `isNonCustomOpusModel(model)` (`:42-49`) | checks `model === modelStrings.opus40 \|\| ... \|\| opus46` | Returns `false` (no Opus model exists in UMMAYA) — or removed if no callers | FR-001 |
 
 ### 2.3 Type-level deletions inside `tui/src/services/mockRateLimits.ts` (entire file)
 
@@ -164,9 +164,9 @@ The 9 external caller files of `firstPartyNameToCanonical` / `getDefault{Sonnet,
 | FR-010 | `cd tui && bun test` and `uv run pytest` | ≥ 984 / ≥ 437 pass |
 | FR-011 | `bun run tui` smoke (manual or scripted PTY) | both flows complete |
 | FR-012 | `rg "K-EXAONE-236B-A23B" --type ts --type py` | only at `model.ts:179,187` and `config.py:37` |
-| FR-013 | `rg "temperature: float = 1\.0" src/kosax/llm/client.py` | matches at `:161` and `:288` |
-| FR-014 | `rg "RetryPolicy\|_compute_rate_limit_delay\|_is_rate_limit_envelope" src/kosax/llm/client.py` | unchanged from baseline |
-| FR-015 | `rg "KOSAX_K_EXAONE_THINKING\|chat_template_kwargs" src/kosax/llm/client.py` | unchanged from baseline |
+| FR-013 | `rg "temperature: float = 1\.0" src/ummaya/llm/client.py` | matches at `:161` and `:288` |
+| FR-014 | `rg "RetryPolicy\|_compute_rate_limit_delay\|_is_rate_limit_envelope" src/ummaya/llm/client.py` | unchanged from baseline |
+| FR-015 | `rg "UMMAYA_K_EXAONE_THINKING\|chat_template_kwargs" src/ummaya/llm/client.py` | unchanged from baseline |
 
 ---
 
@@ -185,7 +185,7 @@ firstPartyNameToCanonical 15+      ─collapse→          1-branch fail-safe
 getDefault{Sonnet,Opus,Haiku}      ─alias→             return getDefaultMainLoopModel()
 [ANT-ONLY] markers in 3 files      ─delete→            absent
 Anthropic header schema            ─delete→            absent
-src/kosax/llm/{config,client}.py  ─unchanged→         (FR-012/013/014/015 preserve)
+src/ummaya/llm/{config,client}.py  ─unchanged→         (FR-012/013/014/015 preserve)
 ```
 
 Total LOC reduction estimate: 2 019 + ~222 = 2 241 → ~640 = **−1 601 LOC** (≥ 70 % drop), well above SC-006's ≥ 40 % target.

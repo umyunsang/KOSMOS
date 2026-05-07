@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Tests for kosax.tools.kma.kma_current_observation."""
+"""Tests for ummaya.tools.kma.kma_current_observation."""
 
 from __future__ import annotations
 
@@ -11,9 +11,9 @@ import httpx
 import pytest
 from pydantic import ValidationError
 
-from kosax.tools.errors import ConfigurationError, ToolExecutionError
-from kosax.tools.executor import ToolExecutor
-from kosax.tools.kma.kma_current_observation import (
+from ummaya.tools.errors import ConfigurationError, ToolExecutionError
+from ummaya.tools.executor import ToolExecutor
+from ummaya.tools.kma.kma_current_observation import (
     KMA_CURRENT_OBSERVATION_TOOL,
     KmaCurrentObservationInput,
     KmaCurrentObservationOutput,
@@ -22,7 +22,7 @@ from kosax.tools.kma.kma_current_observation import (
     _pivot_rows_to_output,
     register,
 )
-from kosax.tools.registry import ToolRegistry
+from ummaya.tools.registry import ToolRegistry
 
 # ---------------------------------------------------------------------------
 # Fixture helpers
@@ -255,7 +255,7 @@ class TestCall:
     @pytest.mark.asyncio
     async def test_success_flow(self, monkeypatch):
         """_call with a mocked httpx client returns a dict matching output schema."""
-        monkeypatch.setenv("KOSAX_DATA_GO_KR_API_KEY", "test-key-abc")
+        monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", "test-key-abc")
         fixture_data = _load_fixture("kma_obs_success.json")
         mock_client = _make_mock_client(fixture_data)
 
@@ -270,8 +270,8 @@ class TestCall:
 
     @pytest.mark.asyncio
     async def test_missing_api_key(self, monkeypatch):
-        """Absent KOSAX_DATA_GO_KR_API_KEY raises ConfigurationError."""
-        monkeypatch.delenv("KOSAX_DATA_GO_KR_API_KEY", raising=False)
+        """Absent UMMAYA_DATA_GO_KR_API_KEY raises ConfigurationError."""
+        monkeypatch.delenv("UMMAYA_DATA_GO_KR_API_KEY", raising=False)
 
         params = KmaCurrentObservationInput(base_date="20260413", base_time="0600", nx=61, ny=126)
         with pytest.raises(ConfigurationError):
@@ -297,7 +297,7 @@ class TestToolDefinition:
         assert KMA_CURRENT_OBSERVATION_TOOL.cache_ttl_seconds == 600
 
     # test_not_personal_data removed in Epic δ #2295 — is_personal_data field deleted
-    # from GovAPITool as Spec 033 KOSAX-invented residue (Constitution § II).
+    # from GovAPITool as Spec 033 UMMAYA-invented residue (Constitution § II).
 
 
 # ---------------------------------------------------------------------------

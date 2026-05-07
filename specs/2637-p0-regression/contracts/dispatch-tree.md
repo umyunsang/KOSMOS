@@ -44,9 +44,9 @@ T007 Stage-1 NO-OP 박제 + decisions.md 업데이트 + 최종 검증 (R-7) ┘
 ## Sonnet teammate prompt (≤ 30 lines)
 
 ```
-너는 sonnet-2637-impl. KOSAX Epic A (#2637, P0 회귀 즉시 복구) 의 implementation teammate.
+너는 sonnet-2637-impl. UMMAYA Epic A (#2637, P0 회귀 즉시 복구) 의 implementation teammate.
 
-워크트리: /Users/um-yunsang/KOSAX-w-2637 (branch: feat/2637-p0-regression)
+워크트리: /Users/um-yunsang/UMMAYA-w-2637 (branch: feat/2637-p0-regression)
 스펙: specs/2637-p0-regression/spec.md
 계획: specs/2637-p0-regression/plan.md
 빠른시작: specs/2637-p0-regression/quickstart.md
@@ -61,7 +61,7 @@ T007 Stage-1 NO-OP 박제 + decisions.md 업데이트 + 최종 검증 (R-7) ┘
 
 원칙:
 - CC = source of truth, byte-identical default
-- swap-1 종속 식별자만 KOSAX-side 로 교체 (data-model.md § Swap1IdentifierWhitelist)
+- swap-1 종속 식별자만 UMMAYA-side 로 교체 (data-model.md § Swap1IdentifierWhitelist)
 - 누락/추측/임의 발산 금지
 - typecheck 회귀 발견 시 cascade dep stub 패턴 (analytics/index.ts) 참조
 - git push / gh pr create / Codex 응답 = Lead Opus 가 수행, 너는 코드 + 테스트 + commit 만
@@ -71,7 +71,7 @@ T007 Stage-1 NO-OP 박제 + decisions.md 업데이트 + 최종 검증 (R-7) ┘
 
 ## 충돌 차단
 
-- 다른 worktree `/Users/um-yunsang/KOSAX-w-2522/` (Spec 2522 Tool surface v4, Epic #2579, 23/49 진행) 와 영역 완전 분리:
+- 다른 worktree `/Users/um-yunsang/UMMAYA-w-2522/` (Spec 2522 Tool surface v4, Epic #2579, 23/49 진행) 와 영역 완전 분리:
   - 본 Epic A: TUI types/constants/utils/services
   - Spec 2522: Python 백엔드 + prompts + docs/api
 - 충돌 가능성 0
@@ -81,6 +81,6 @@ T007 Stage-1 NO-OP 박제 + decisions.md 업데이트 + 최종 검증 (R-7) ┘
 
 - T001/T002/T003 typecheck 회귀 → cascade dep 발견 → 추가 cascade stub 신설 → spec FR-016 처럼 follow-up FR 추가 + Lead Opus 에 보고
 - T004 dependency install 실패 → bun add 명령 재시도 + offline cache 확인 → 실패 시 Lead Opus 에 보고
-- T005 OTEL trace 누락 → KOSAX toolSpans.ts attribute namespace 정합 재검증
+- T005 OTEL trace 누락 → UMMAYA toolSpans.ts attribute namespace 정합 재검증
 - T006 cli/print.ts cascade dep 누락 다수 발견 → 본 Epic scope 외부로 deferred (Lead Opus 결정 + spec 업데이트)
 - T007 audit 재실행 시 D-bucket 잔존 → root cause 분석 후 추가 fix

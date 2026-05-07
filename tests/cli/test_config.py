@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import pytest
 
-from kosax.cli.config import CLIConfig
+from ummaya.cli.config import CLIConfig
 
 
 class TestCLIConfigDefaults:
@@ -24,16 +24,16 @@ class TestCLIConfigDefaults:
 
 class TestCLIConfigEnvOverride:
     def test_history_size_override(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.setenv("KOSAX_CLI_HISTORY_SIZE", "500")
+        monkeypatch.setenv("UMMAYA_CLI_HISTORY_SIZE", "500")
         cfg = CLIConfig()
         assert cfg.history_size == 500
 
     def test_show_usage_false(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.setenv("KOSAX_CLI_SHOW_USAGE", "false")
+        monkeypatch.setenv("UMMAYA_CLI_SHOW_USAGE", "false")
         cfg = CLIConfig()
         assert cfg.show_usage is False
 
     def test_welcome_banner_false(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.setenv("KOSAX_CLI_WELCOME_BANNER", "false")
+        monkeypatch.setenv("UMMAYA_CLI_WELCOME_BANNER", "false")
         cfg = CLIConfig()
         assert cfg.welcome_banner is False

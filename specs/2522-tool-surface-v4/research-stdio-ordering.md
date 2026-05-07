@@ -8,7 +8,7 @@
 
 ## 1. 현재 ORDERING 지시 발화 조건
 
-파일: `src/kosax/ipc/stdio.py:846` (`_build_available_adapters_suffix`)
+파일: `src/ummaya/ipc/stdio.py:846` (`_build_available_adapters_suffix`)
 
 ```python
 needs_kma_grid = "nx" in required and "ny" in required

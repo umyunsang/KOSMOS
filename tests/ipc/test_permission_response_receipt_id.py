@@ -22,7 +22,7 @@ from typing import Any
 
 import pytest
 
-from kosax.ipc.frame_schema import (
+from ummaya.ipc.frame_schema import (
     PermissionRequestFrame,
     PermissionResponseFrame,
 )
@@ -188,10 +188,10 @@ async def test_backend_emits_receipt_id_on_allow_once(  # noqa: C901
     # Replicate _check_permission_gate's logic directly with our mocked components.
     # (The full IPC loop integration is covered by test_stdio_verify_dispatch.py.)
 
-    from kosax.ipc.frame_schema import (
+    from ummaya.ipc.frame_schema import (
         PermissionResponseFrame,
     )
-    from kosax.primitives import GATED_PRIMITIVES
+    from ummaya.primitives import GATED_PRIMITIVES
 
     prim_risk: dict[str, str] = {"verify": "low", "submit": "high"}
     prim_ko: dict[str, str] = {
@@ -251,7 +251,7 @@ async def test_backend_emits_receipt_id_on_allow_once(  # noqa: C901
         decision_label = "allow_session" if is_allow_session else "allow_once"
 
         try:
-            consent_dir = pathlib.Path.home() / ".kosax" / "memdir" / "user" / "consent"
+            consent_dir = pathlib.Path.home() / ".ummaya" / "memdir" / "user" / "consent"
             consent_dir.mkdir(parents=True, exist_ok=True)
             receipt_path = consent_dir / f"{receipt_id}.json"
             import json as _j
@@ -334,7 +334,7 @@ async def test_backend_emits_receipt_id_on_allow_once(  # noqa: C901
     assert echo.decision == "allow_once"
 
     # Verify the consent receipt was written to disk
-    consent_dir = tmp_path / ".kosax" / "memdir" / "user" / "consent"
+    consent_dir = tmp_path / ".ummaya" / "memdir" / "user" / "consent"
     receipt_files = list(consent_dir.glob("*.json"))
     assert receipt_files, "Consent receipt must be written to disk on allow_once"
     receipt_data = json.loads(receipt_files[0].read_text())
@@ -364,10 +364,10 @@ async def test_backend_emits_receipt_id_on_allow_session(  # noqa: C901
     _session_id = str(_uuid.uuid4())
     _correlation_id = str(_uuid.uuid4())
 
-    from kosax.ipc.frame_schema import (
+    from ummaya.ipc.frame_schema import (
         PermissionResponseFrame,
     )
-    from kosax.primitives import GATED_PRIMITIVES
+    from ummaya.primitives import GATED_PRIMITIVES
 
     prim_risk: dict[str, str] = {"verify": "low", "submit": "high"}
     prim_ko: dict[str, str] = {"submit": "정부 API에 데이터를 제출합니다."}
@@ -414,7 +414,7 @@ async def test_backend_emits_receipt_id_on_allow_session(  # noqa: C901
         decision_label = "allow_session" if is_allow_session else "allow_once"
 
         try:
-            consent_dir = pathlib.Path.home() / ".kosax" / "memdir" / "user" / "consent"
+            consent_dir = pathlib.Path.home() / ".ummaya" / "memdir" / "user" / "consent"
             consent_dir.mkdir(parents=True, exist_ok=True)
             import json as _j
 

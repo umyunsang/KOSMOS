@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SWAP/anti-anthropic-1p(2521): minimal stub for the byte-copied
 // services/api/claude.ts which references CC's Anthropic prompt-cache-break
-// detection (1h TTL gating + cache-prefix invalidation tracking). KOSAX
+// detection (1h TTL gating + cache-prefix invalidation tracking). UMMAYA
 // runs FriendliAI's prompt cache via different headers (Spec 026 manifest
 // SHA), so this CC helper is irrelevant. Stubs preserve the import shape.
 

@@ -6,7 +6,7 @@ Set Width 1200
 Set Height 700
 Set TypingSpeed 50ms
 
-Type "cd /Users/um-yunsang/KOSAX-w-2298/tui && bun run tui"
+Type "cd /Users/um-yunsang/UMMAYA-w-2298/tui && bun run tui"
 Enter
 Sleep 6s
 

@@ -4,15 +4,15 @@
 **Created**: 2026-04-24
 **Status**: Draft
 **Epic**: #1634
-**Phase**: P3 (per `docs/requirements/kosax-migration-tree.md § Execution phases`)
-**Canonical references**: `docs/requirements/kosax-migration-tree.md § L1-B` (도구 시스템) · `§ L1-C` (메인 동사 추상화) · `docs/vision.md` (six-layer harness, Claude Code reference thesis)
-**Input**: User description: "Wire Python adapters in src/kosax/tools/ as the LLM tool surface via stdio MCP. Expose 4 reserved primitives (lookup/submit/verify/subscribe) plus auxiliary tools. Remove all Claude Code developer-oriented tools from the runtime path."
+**Phase**: P3 (per `docs/requirements/ummaya-migration-tree.md § Execution phases`)
+**Canonical references**: `docs/requirements/ummaya-migration-tree.md § L1-B` (도구 시스템) · `§ L1-C` (메인 동사 추상화) · `docs/vision.md` (six-layer harness, Claude Code reference thesis)
+**Input**: User description: "Wire Python adapters in src/ummaya/tools/ as the LLM tool surface via stdio MCP. Expose 4 reserved primitives (lookup/submit/verify/subscribe) plus auxiliary tools. Remove all Claude Code developer-oriented tools from the runtime path."
 
 ---
 
 ## Background and Mission Anchor
 
-KOSAX migrates the Claude Code harness from the developer domain to the Korean public-service domain. P0 (#1632) restored the CC 2.1.88 baseline; P1+P2 (#1633) eliminated dead code and migrated the LLM provider to FriendliAI + K-EXAONE. **P3 is where the LLM stops seeing developer tools and starts seeing the four citizen-facing primitives wired to real Korean public-service adapters.**
+UMMAYA migrates the Claude Code harness from the developer domain to the Korean public-service domain. P0 (#1632) restored the CC 2.1.88 baseline; P1+P2 (#1633) eliminated dead code and migrated the LLM provider to FriendliAI + K-EXAONE. **P3 is where the LLM stops seeing developer tools and starts seeing the four citizen-facing primitives wired to real Korean public-service adapters.**
 
 This is the load-bearing transition: after P3, the LLM's entire tool surface is `lookup` · `submit` · `verify` · `subscribe` (plus a small set of auxiliary utilities), with all 15 currently-registered Python adapters reachable by name through the `lookup(mode="fetch", tool_id=…)` envelope. CC's developer tools (Bash, FileEdit, Glob, Grep, etc.) must no longer appear in the runtime registry.
 
@@ -36,11 +36,11 @@ A Seoul citizen tells the assistant "근처 응급실 알려줘" (find me a near
 
 **Why this priority**: This is the single most representative end-to-end flow for the entire L1-B+L1-C pillar. If this works, the citizen sees the harness; if it fails, P3 has not delivered. Every other story extends this loop.
 
-**Independent Test**: With KOSAX booted and FriendliAI provider active, send a one-turn citizen prompt asking for an emergency-room lookup near a Korean address. The LLM must (a) only see `lookup` in its tool surface (not see `hira_hospital_search` directly), (b) issue a `lookup(mode="search", query=…)` call that returns candidate `tool_id`s, (c) issue a `lookup(mode="fetch", tool_id=…, params=…)` call that hits the real adapter, (d) return a citizen-readable answer. No CC dev tool may appear in the trace.
+**Independent Test**: With UMMAYA booted and FriendliAI provider active, send a one-turn citizen prompt asking for an emergency-room lookup near a Korean address. The LLM must (a) only see `lookup` in its tool surface (not see `hira_hospital_search` directly), (b) issue a `lookup(mode="search", query=…)` call that returns candidate `tool_id`s, (c) issue a `lookup(mode="fetch", tool_id=…, params=…)` call that hits the real adapter, (d) return a citizen-readable answer. No CC dev tool may appear in the trace.
 
 **Acceptance Scenarios**:
 
-1. **Given** a fresh KOSAX session with the citizen-facing system prompt loaded, **When** the citizen asks for an emergency room near a Korean address, **Then** the LLM completes the request using only `lookup` (with internal `search` then `fetch` calls) and returns at least one hospital result with name + address.
+1. **Given** a fresh UMMAYA session with the citizen-facing system prompt loaded, **When** the citizen asks for an emergency room near a Korean address, **Then** the LLM completes the request using only `lookup` (with internal `search` then `fetch` calls) and returns at least one hospital result with name + address.
 2. **Given** the LLM's exposed tool list during the same session, **When** an operator inspects what the LLM actually sees, **Then** the list contains the four primitives plus the agreed auxiliary set, and contains zero entries from the CC dev-tool list (BashTool, FileEditTool, FileReadTool, FileWriteTool, GlobTool, GrepTool, NotebookEditTool, PowerShellTool, LSPTool, EnterWorktreeTool, ExitWorktreeTool, EnterPlanModeTool, ExitPlanModeTool, REPLTool, ConfigTool).
 3. **Given** the BM25 retrieval index is rebuilt at adapter-registration time, **When** `lookup(mode="search")` is called for "응급실", **Then** the top results include both `hira_hospital_search` and `nmc_emergency_search`, scored by Korean morpheme tokenization.
 
@@ -52,7 +52,7 @@ A citizen asks the assistant to file a road-hazard report. The LLM calls the `su
 
 **Why this priority**: `submit` is the second of the four primitives and the first one that crosses the irreversible-action boundary. It validates that primitive-level routing also flows through the existing permission system without primitive-default leakage (per `§ L1-C C5`: permissions live at the adapter layer only).
 
-**Independent Test**: With KOSAX in non-bypass permission mode, run a citizen prompt that triggers a `submit`-mode adapter (mock). The permission modal must appear, the receipt ID must be displayed on consent, the adapter must return a structured response, and no permission rule may be inferred from the primitive name alone.
+**Independent Test**: With UMMAYA in non-bypass permission mode, run a citizen prompt that triggers a `submit`-mode adapter (mock). The permission modal must appear, the receipt ID must be displayed on consent, the adapter must return a structured response, and no permission rule may be inferred from the primitive name alone.
 
 **Acceptance Scenarios**:
 
@@ -62,9 +62,9 @@ A citizen asks the assistant to file a road-hazard report. The LLM calls the `su
 
 ---
 
-### User Story 3 — An operator boots KOSAX and the routing index fails closed if any adapter is misconfigured (Priority: P3)
+### User Story 3 — An operator boots UMMAYA and the routing index fails closed if any adapter is misconfigured (Priority: P3)
 
-An operator (or CI) starts KOSAX. During boot, `build_routing_index()` walks the registered adapters and verifies that each one declares a non-null `primitive` and that the adapter's `tool_id` is unique. If any adapter is missing the primitive field, the boot fails with a clear error naming the offending adapter and the field gap. CI runs the same check via `tests/tools/test_routing_consistency.py`.
+An operator (or CI) starts UMMAYA. During boot, `build_routing_index()` walks the registered adapters and verifies that each one declares a non-null `primitive` and that the adapter's `tool_id` is unique. If any adapter is missing the primitive field, the boot fails with a clear error naming the offending adapter and the field gap. CI runs the same check via `tests/tools/test_routing_consistency.py`.
 
 **Why this priority**: This is the governance gate that prevents P3 from silently regressing in P4/P5. Without it, future plugin or adapter additions can ship with `primitive=None` and the LLM's discovery surface becomes inconsistent.
 
@@ -125,7 +125,7 @@ A citizen asks for ongoing severe-weather alerts for their region. The LLM calls
 ### Functional Requirements — CC dev tool removal
 
 - **FR-012**: The runtime tool-registration path MUST contain zero references to the CC dev tools enumerated as: `BashTool`, `FileEditTool`, `FileReadTool`, `FileWriteTool`, `GlobTool`, `GrepTool`, `NotebookEditTool`, `PowerShellTool`, `LSPTool`, `EnterWorktreeTool`, `ExitWorktreeTool`, `EnterPlanModeTool`, `ExitPlanModeTool`, `REPLTool`, `ConfigTool`.
-- **FR-013** (revised during `/speckit-implement` Phase 3 — recorded as scope correction): The corresponding tool directories under the TUI tools tree MUST be **removed from `getAllBaseTools()` active registration** in `tui/src/tools.ts`. Full filesystem deletion of the directories was deferred during implementation because the `toolName`/`constants`/`prompt` modules inside each CC dev tool directory are imported by KOSAX-shared infrastructure (permissions gauntlet, sandbox adapter, attachments handler, session-restore hooks — 30+ importers) that P3 does not own. Full directory removal is tracked under a new deferred item (post-P3 harness cleanup epic); see Scope Boundaries § Deferred Items. The spirit of FR-013 — "the LLM never sees these tools" — is preserved by FR-012 + FR-020 (closed 13-tool surface via `getAllBaseTools()` rewrite).
+- **FR-013** (revised during `/speckit-implement` Phase 3 — recorded as scope correction): The corresponding tool directories under the TUI tools tree MUST be **removed from `getAllBaseTools()` active registration** in `tui/src/tools.ts`. Full filesystem deletion of the directories was deferred during implementation because the `toolName`/`constants`/`prompt` modules inside each CC dev tool directory are imported by UMMAYA-shared infrastructure (permissions gauntlet, sandbox adapter, attachments handler, session-restore hooks — 30+ importers) that P3 does not own. Full directory removal is tracked under a new deferred item (post-P3 harness cleanup epic); see Scope Boundaries § Deferred Items. The spirit of FR-013 — "the LLM never sees these tools" — is preserved by FR-012 + FR-020 (closed 13-tool surface via `getAllBaseTools()` rewrite).
 - **FR-014**: A CI grep guard MUST scan the runtime registration entry points and fail the build if any of the FR-012 names reappear there.
 
 ### Functional Requirements — Auxiliary tools
@@ -139,7 +139,7 @@ A citizen asks for ongoing severe-weather alerts for their region. The LLM calls
 
 ### Functional Requirements — MCP bridge
 
-- **FR-021**: The Python side MUST expose a stdio-MCP server stub (`src/kosax/ipc/mcp_server.py`) that wraps the existing `src/kosax/ipc/stdio.py` transport without re-implementing framing, ring-buffer, or backpressure.
+- **FR-021**: The Python side MUST expose a stdio-MCP server stub (`src/ummaya/ipc/mcp_server.py`) that wraps the existing `src/ummaya/ipc/stdio.py` transport without re-implementing framing, ring-buffer, or backpressure.
 - **FR-022**: The TUI side MUST provide a stdio-MCP client (`tui/src/ipc/mcp.ts`) that reuses the existing `tui/src/ipc/bridge.ts` for transport and adds only MCP protocol concerns (handshake, tool list discovery, tool call routing).
 - **FR-023**: The MCP client MUST surface a clear error to the user when handshake or tool-list discovery fails; it MUST NOT present an empty tool list as a successful boot.
 
@@ -151,7 +151,7 @@ A citizen asks for ongoing severe-weather alerts for their region. The LLM calls
 
 ### Functional Requirements — Composite tool removal
 
-- **FR-027**: The existing composite adapter `road_risk_score` (`src/kosax/tools/composite/road_risk_score.py`), which fans out to three inner adapters and computes a derived score internally, MUST be deleted from the runtime registration path per migration tree `§ L1-B B6` ("Composite 제거 · LLM primitive chain"). The `src/kosax/tools/composite/` directory MUST be removed. Risk-assessment-style requests are expected to be served by the LLM chaining `lookup(mode="fetch")` calls against the three underlying adapters (`koroad_accident_search`, `kma_weather_alert_status`, `kma_current_observation`) and reasoning over the combined output.
+- **FR-027**: The existing composite adapter `road_risk_score` (`src/ummaya/tools/composite/road_risk_score.py`), which fans out to three inner adapters and computes a derived score internally, MUST be deleted from the runtime registration path per migration tree `§ L1-B B6` ("Composite 제거 · LLM primitive chain"). The `src/ummaya/tools/composite/` directory MUST be removed. Risk-assessment-style requests are expected to be served by the LLM chaining `lookup(mode="fetch")` calls against the three underlying adapters (`koroad_accident_search`, `kma_weather_alert_status`, `kma_current_observation`) and reasoning over the combined output.
 - **FR-028**: After P3 ships, no registered `GovAPITool` MAY perform adapter-level fan-out to multiple inner adapters. The CI consistency test MUST include a guard that rejects any adapter whose module imports another adapter's `_call`/`register` function (composite pattern detector).
 
 ### Functional Requirements — Undecided tool classification (explicit resolution of FR-019)
@@ -177,7 +177,7 @@ A citizen asks for ongoing severe-weather alerts for their region. The LLM calls
 - **SC-005**: A citizen-facing operator can identify, for any tool call recorded in the audit ledger, both the primitive and the resolved adapter `tool_id` from the same record without joining external sources.
 - **SC-006**: After P3 ships, a fresh contributor can add a new adapter, declare its primitive, and have it appear under `lookup(mode="search")` with no code changes outside the adapter file (no central registry edits, no TUI changes) — measured by a documented contributor walkthrough.
 - **SC-007**: The integrated PR for this epic includes a `bun run tui` visual verification screenshot or transcript demonstrating User Story 1 end-to-end (per `feedback_integrated_pr_only`).
-- **SC-008**: After P3 ships, `src/kosax/tools/composite/` does not exist, `road_risk_score` does not appear in the routing index, and the CI composite-pattern detector (FR-028) passes.
+- **SC-008**: After P3 ships, `src/ummaya/tools/composite/` does not exist, `road_risk_score` does not appear in the routing index, and the CI composite-pattern detector (FR-028) passes.
 - **SC-009**: All 13 tools listed in FR-019 have a recorded per-tool decision (kept / deferred / deleted) committed to the spec before registry closure; zero tools remain in "undecided" state after P3 ships.
 
 ---
@@ -200,7 +200,7 @@ A citizen asks for ongoing severe-weather alerts for their region. The LLM calls
 
 ### Out of Scope (Permanent)
 
-- **Re-introducing CC dev tools** (BashTool, FileEditTool, etc.) for citizen use — KOSAX targets citizens, not developers; the dev tools' threat surface is incompatible with the citizen permission model.
+- **Re-introducing CC dev tools** (BashTool, FileEditTool, etc.) for citizen use — UMMAYA targets citizens, not developers; the dev tools' threat surface is incompatible with the citizen permission model.
 - **Composite tools** (a single tool that performs multi-step adapter chains internally) — explicitly removed per `§ L1-B B6`; LLM primitive chain replaces them.
 - **Live API calls in CI** — per AGENTS.md hard rule; recorded fixtures only.
 
@@ -214,7 +214,7 @@ A citizen asks for ongoing severe-weather alerts for their region. The LLM calls
 | Phase-2 auxiliary tools (`TextToSpeech`, `SpeechToText`, `LargeFontRender`, `OCR`, `Reminder`) | Migration tree explicitly classifies these as Phase 2 (`§ L1-C C6`) | Phase 2 (epic TBD) | #1754 |
 | Cross-session subscribe-handle resumption | Spec 031 currently scopes handles to the session lifetime; cross-session resume requires a separate persistence + revocation design | TBD (Spec 031 follow-up) | #1755 |
 | Reclassification of undecided tools (`TodoWriteTool`, `ToolSearchTool`, `AskUserQuestionTool`, `SleepTool`, `MonitorTool`, `WorkflowTool`, `ScheduleCronTool`, Task-* family, Team-* family) for any tools whose decision is "defer to P4/P5" rather than "delete now" — residual after T027a | Some of these are operator/agent-internal and may belong to P4 (UI surfaces) or P5 (plugin DX) | P4 / P5 (per per-tool decision in T027a) | #1756 |
-| Full filesystem deletion of the 15 CC dev tool directories under `tui/src/tools/{Bash,FileEdit,FileRead,FileWrite,Glob,Grep,NotebookEdit,PowerShell,LSP,REPL,Config,EnterWorktree,ExitWorktree,EnterPlanMode,ExitPlanMode}Tool/` (FR-013 original) | The `toolName`/`constants`/`prompt` modules in each directory are imported by KOSAX-shared infrastructure (permissions gauntlet, sandbox adapter, attachments handler, session-restore hooks — 30+ importers) that P3 does not own. Full deletion requires coordinated rewiring of that infrastructure to inline name constants or to a shared tool-name module, which is a harness-cleanup concern beyond P3's tool-wiring scope. | Post-P3 harness cleanup epic (TBD) | #1757 |
+| Full filesystem deletion of the 15 CC dev tool directories under `tui/src/tools/{Bash,FileEdit,FileRead,FileWrite,Glob,Grep,NotebookEdit,PowerShell,LSP,REPL,Config,EnterWorktree,ExitWorktree,EnterPlanMode,ExitPlanMode}Tool/` (FR-013 original) | The `toolName`/`constants`/`prompt` modules in each directory are imported by UMMAYA-shared infrastructure (permissions gauntlet, sandbox adapter, attachments handler, session-restore hooks — 30+ importers) that P3 does not own. Full deletion requires coordinated rewiring of that infrastructure to inline name constants or to a shared tool-name module, which is a harness-cleanup concern beyond P3's tool-wiring scope. | Post-P3 harness cleanup epic (TBD) | #1757 |
 
 ---
 

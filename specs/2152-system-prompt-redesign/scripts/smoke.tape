@@ -14,7 +14,7 @@ Set TypingSpeed 30ms
 Set PlaybackSpeed 1.5
 
 Hide
-Type "cd ~/KOSAX && set -a && source .env && set +a && cd tui"
+Type "cd ~/UMMAYA && set -a && source .env && set +a && cd tui"
 Enter
 Sleep 500ms
 Show

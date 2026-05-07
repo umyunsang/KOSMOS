@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
-// Source: KOSAX Epic H #1302 (035-onboarding-brand-port)
+// Source: UMMAYA Epic H #1302 (035-onboarding-brand-port)
 //
 // Filesystem read/write helpers for the memdir USER tier.  The TUI writes
-// consent + ministry-scope records directly to `~/.kosax/memdir/user/...`
-// using the same atomic-write pattern as `src/kosax/memdir/*.py`: tmp file
+// consent + ministry-scope records directly to `~/.ummaya/memdir/user/...`
+// using the same atomic-write pattern as `src/ummaya/memdir/*.py`: tmp file
 // + fsync + rename.  Reading scans descending filenames and returns the
 // first Zod-validating record.
 //
@@ -34,30 +34,30 @@ import {
 // P0-3: lazy user-tier root — env-override aware
 //
 // `DEFAULT_MEMDIR_ROOT` was a module-load constant, so `writeConsentRecord`
-// and `writeScopeRecord` always wrote to `~/.kosax/memdir/user/` even when
-// `KOSAX_MEMDIR_USER` was set (as `uiL2Memdir.ts:25` already handles).
+// and `writeScopeRecord` always wrote to `~/.ummaya/memdir/user/` even when
+// `UMMAYA_MEMDIR_USER` was set (as `uiL2Memdir.ts:25` already handles).
 //
 // `getDefaultUserTierRoot()` returns the USER-tier directory (the directory
 // that contains `consent/`, `ministry-scope/`, etc.) using the same priority
 // order as `uiL2Memdir.ts:25` and `ExportPDFTool.ts:89`:
 //
-//   1. KOSAX_MEMDIR_USER  — direct user-tier root override (mirrors uiL2Memdir)
-//   2. KOSAX_MEMDIR_ROOT  — full memdir root override → appends `/user`
-//   3. ~/.kosax/memdir/user — production default
+//   1. UMMAYA_MEMDIR_USER  — direct user-tier root override (mirrors uiL2Memdir)
+//   2. UMMAYA_MEMDIR_ROOT  — full memdir root override → appends `/user`
+//   3. ~/.ummaya/memdir/user — production default
 //
 // The function is intentionally call-time (no module-level memoize) so test
 // suites can change the env variable between test cases without cache leakage.
 // ---------------------------------------------------------------------------
 export function getDefaultUserTierRoot(): string {
-  const userOverride = process.env['KOSAX_MEMDIR_USER']
+  const userOverride = process.env['UMMAYA_MEMDIR_USER']
   if (userOverride) {
     return userOverride
   }
-  const rootOverride = process.env['KOSAX_MEMDIR_ROOT']
+  const rootOverride = process.env['UMMAYA_MEMDIR_ROOT']
   if (rootOverride) {
     return join(rootOverride, 'user')
   }
-  return join(homedir(), '.kosax', 'memdir', 'user')
+  return join(homedir(), '.ummaya', 'memdir', 'user')
 }
 
 /**
@@ -67,7 +67,7 @@ export function getDefaultUserTierRoot(): string {
  * NOT respect runtime env changes — new callers should use
  * `getDefaultUserTierRoot()`.
  */
-export const DEFAULT_MEMDIR_ROOT = join(homedir(), '.kosax', 'memdir')
+export const DEFAULT_MEMDIR_ROOT = join(homedir(), '.ummaya', 'memdir')
 
 // ---------------------------------------------------------------------------
 // Common: atomic write
@@ -99,7 +99,7 @@ function atomicWriteJson(path: string, bodyText: string): void {
 // ---------------------------------------------------------------------------
 
 // P0-3: `userTierRoot` is the USER-tier directory (contains consent/, ministry-scope/).
-// Default uses the lazy env-aware getter so KOSAX_MEMDIR_USER is respected.
+// Default uses the lazy env-aware getter so UMMAYA_MEMDIR_USER is respected.
 export function consentDir(userTierRoot: string = getDefaultUserTierRoot()): string {
   return join(userTierRoot, 'consent')
 }

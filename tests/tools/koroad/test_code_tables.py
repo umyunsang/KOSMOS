@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-from kosax.tools.koroad.code_tables import (
+from ummaya.tools.koroad.code_tables import (
     GANGWON_NEW_CODE_YEAR,
     JEONBUK_NEW_CODE_YEAR,
     SIDO_GUGUN_MAP,

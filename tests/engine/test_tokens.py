@@ -1,11 +1,11 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Unit tests for kosax.engine.tokens.estimate_tokens."""
+"""Unit tests for ummaya.engine.tokens.estimate_tokens."""
 
 from __future__ import annotations
 
 import pytest
 
-from kosax.engine.tokens import estimate_tokens
+from ummaya.engine.tokens import estimate_tokens
 
 # ---------------------------------------------------------------------------
 # Parametrized happy-path cases
@@ -105,7 +105,7 @@ def test_korean_boundary_classification(char: str, should_be_korean: bool) -> No
 
 def test_estimate_tokens_long_mixed_text() -> None:
     """estimate_tokens returns a positive integer for a realistic mixed-language sentence."""
-    # A realistic query a user might send to KOSAX.
+    # A realistic query a user might send to UMMAYA.
     text = "서울특별시 강남구 교통사고 현황을 조회해 주세요. (Seoul Gangnam traffic)"
     result = estimate_tokens(text)
     # We don't hardcode the exact number; we verify structural correctness.

@@ -1,12 +1,12 @@
-# KOSAX API Catalog
+# UMMAYA API Catalog
 
-This directory documents every active adapter registered with KOSAX at the close of the Claude Code → Korean public-service harness migration (Initiative #1631, Epic P6 #1637). Twenty-one adapters span seven Korean ministries and agencies: twelve call live `data.go.kr` or public-infrastructure endpoints, eight replay public-spec-mirrored fixtures (six identity-verification and two submission), and one is the `resolve_location` meta-tool. Subscription adapters are intentionally deferred until KOSAX has an app/push-notification runtime.
+This directory documents every active adapter registered with UMMAYA at the close of the Claude Code → Korean public-service harness migration (Initiative #1631, Epic P6 #1637). Twenty-one adapters span seven Korean ministries and agencies: twelve call live `data.go.kr` or public-infrastructure endpoints, eight replay public-spec-mirrored fixtures (six identity-verification and two submission), and one is the `resolve_location` meta-tool. Subscription adapters are intentionally deferred until UMMAYA has an app/push-notification runtime.
 
 The catalog is intended for three audiences:
 
-- **Citizen developers** (and external plugin contributors) discovering what KOSAX already ships.
+- **Citizen developers** (and external plugin contributors) discovering what UMMAYA already ships.
 - **Release validators** confirming the registered surface against documentation.
-- **Maintainers** keeping schemas in sync with `src/kosax/tools/` source.
+- **Maintainers** keeping schemas in sync with `src/ummaya/tools/` source.
 
 Every adapter spec follows the seven-section template in [`specs/1637-p6-docs-smoke/contracts/adapter-spec-template.md`](../../specs/1637-p6-docs-smoke/contracts/adapter-spec-template.md): YAML front matter (`tool_id` · `primitive` · `tier` · `permission_tier`) followed by Overview · Envelope · Search hints · Endpoint · Permission tier rationale · Worked example · Constraints. JSON Schema Draft 2020-12 exports for every adapter live under [`schemas/`](./schemas/) and are produced deterministically by [`scripts/build_schemas.py`](../../scripts/build_schemas.py).
 
@@ -84,7 +84,7 @@ Every adapter spec follows the seven-section template in [`specs/1637-p6-docs-sm
 
 The `lookup` meta-tool is the LLM's primary entry point for `lookup`-class operations. It accepts `mode` (`"search"` for BM25 retrieval, `"fetch"` for adapter invocation) plus `tool_id` + `params` and dispatches to the correct adapter under the hood. `lookup` itself has its own JSON Schema export at [`schemas/lookup.json`](./schemas/lookup.json) but is NOT a content-bearing adapter — it is the dispatch surface every adapter row above flows through.
 
-For implementation details see [`src/kosax/tools/lookup.py`](../../src/kosax/tools/lookup.py) and the BM25 + dense hybrid retrieval backend under [`src/kosax/tools/retrieval/`](../../src/kosax/tools/retrieval/).
+For implementation details see [`src/ummaya/tools/lookup.py`](../../src/ummaya/tools/lookup.py) and the BM25 + dense hybrid retrieval backend under [`src/ummaya/tools/retrieval/`](../../src/ummaya/tools/retrieval/).
 
 ## Conventions
 
@@ -96,6 +96,6 @@ For implementation details see [`src/kosax/tools/lookup.py`](../../src/kosax/too
 
 ## Out of scope for this catalog
 
-- External plugin adapters published under `kosax-plugin-store/<repo>` carry their own `README.ko.md` per the Spec 1636 plugin DX. Their docs live in the plugin repo, not here.
+- External plugin adapters published under `ummaya-plugin-store/<repo>` carry their own `README.ko.md` per the Spec 1636 plugin DX. Their docs live in the plugin repo, not here.
 - OPAQUE-tier mock stubs (`barocert/`, `npki_crypto/`, `omnione/` placeholder packages) have no entries here per the [Mock-vs-Scenario rule](../scenarios/README.md) — they belong in `docs/scenarios/`.
 - Live API regression coverage is `@pytest.mark.live` skipped by default; this catalog documents fixture-replay behavior only.

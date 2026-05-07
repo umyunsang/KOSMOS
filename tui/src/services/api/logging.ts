@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 // SWAP/anti-anthropic-1p(2521): minimal stub for the byte-copied
 // services/api/claude.ts which references CC's Anthropic-API request/response
-// telemetry. KOSAX uses OTEL spans (Spec 021) and audit ledger (Spec 024)
+// telemetry. UMMAYA uses OTEL spans (Spec 021) and audit ledger (Spec 024)
 // instead. Stubs preserve the import shape; functions are no-ops because the
-// byte-copy has zero callers in KOSAX.
+// byte-copy has zero callers in UMMAYA.
 
 export const EMPTY_USAGE = {
   input_tokens: 0,

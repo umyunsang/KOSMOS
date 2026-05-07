@@ -1,10 +1,10 @@
 ---
-description: "Task list for Epic β v2 — KOSAX-original UI Residue Cleanup (Initiative #2290) — caller-graph driven"
+description: "Task list for Epic β v2 — UMMAYA-original UI Residue Cleanup (Initiative #2290) — caller-graph driven"
 ---
 
 # Tasks: UI Residue Cleanup (Epic β · #2293 · v2)
 
-**Input**: Design documents from `/specs/2293-ui-residue-cleanup/` (worktree at `/Users/um-yunsang/KOSAX-w-2293/`)
+**Input**: Design documents from `/specs/2293-ui-residue-cleanup/` (worktree at `/Users/um-yunsang/UMMAYA-w-2293/`)
 **Prerequisites**: spec.md (v2), plan.md, research.md (v2), data-model.md (v2), quickstart.md (v2), `data/caller-graph.json`, `data/disposition.json`
 **Tests**: 본 Epic 은 신규 unit test 작성 0. baseline (`bun test`) 비교로 NEW failure 0 검증.
 
@@ -15,7 +15,7 @@ description: "Task list for Epic β v2 — KOSAX-original UI Residue Cleanup (In
 
 ## Path Convention
 
-- Worktree: `/Users/um-yunsang/KOSAX-w-2293/`
+- Worktree: `/Users/um-yunsang/UMMAYA-w-2293/`
 - Spec dir: `specs/2293-ui-residue-cleanup/`
 - Source: `tui/src/`
 - v2 입력: `data/caller-graph.json` + `data/disposition.json`

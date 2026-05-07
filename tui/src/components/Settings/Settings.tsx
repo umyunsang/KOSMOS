@@ -10,7 +10,7 @@ import { Pane } from '../design-system/Pane.js';
 import { Tabs, Tab } from '../design-system/Tabs.js';
 import { Status, buildDiagnostics } from './Status.js';
 import { Config } from './Config.js';
-// Usage component removed — claude.ai SaaS billing/usage dead in KOSAX
+// Usage component removed — claude.ai SaaS billing/usage dead in UMMAYA
 import type { LocalJSXCommandContext, CommandResultDisplay } from '../../commands.js';
 type Props = {
   onClose: (result?: string, options?: {

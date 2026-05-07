@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
   - name: Question or discussion
-    url: https://github.com/umyunsang/KOSAX/discussions
+    url: https://github.com/umyunsang/UMMAYA/discussions
     about: Ask questions, propose designs, or discuss architecture in GitHub Discussions.
   - name: Security vulnerability
-    url: https://github.com/umyunsang/KOSAX/security/advisories/new
+    url: https://github.com/umyunsang/UMMAYA/security/advisories/new
     about: Report a vulnerability privately. Do not file public issues for security.

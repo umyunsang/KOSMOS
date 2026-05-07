@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto'
 import type { HookEvent } from 'src/entrypoints/agentSdkTypes.js'
-// KOSAX: services/api/claude.js deleted by Spec 1633 P1+P2. queryModelWithoutStreaming not available.
+// UMMAYA: services/api/claude.js deleted by Spec 1633 P1+P2. queryModelWithoutStreaming not available.
 import type { ToolUseContext } from '../../Tool.js'
 import type { Message } from '../../types/message.js'
 import { createAttachmentMessage } from '../attachments.js'
@@ -59,9 +59,9 @@ export async function execPromptHook(
       createCombinedAbortSignal(signal, { timeoutMs: hookTimeoutMs })
 
     try {
-      // KOSAX: queryModelWithoutStreaming removed (Spec 1633 P1+P2). Anthropic API not available.
-      // Prompt-based hooks are not executable in KOSAX — FriendliAI backend handles LLM calls.
-      throw new Error('Anthropic API not available in KOSAX — Spec 1633')
+      // UMMAYA: queryModelWithoutStreaming removed (Spec 1633 P1+P2). Anthropic API not available.
+      // Prompt-based hooks are not executable in UMMAYA — FriendliAI backend handles LLM calls.
+      throw new Error('Anthropic API not available in UMMAYA — Spec 1633')
       // eslint-disable-next-line no-unreachable
       const response = await Promise.resolve(null as never)
 

@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSAX-original — Epic #1634 P3 · LookupPrimitive.
+// UMMAYA-original — Epic #1634 P3 · LookupPrimitive.
 //
 // LLM-visible tool name: "lookup"
-// Primitive wrapper over Spec 022 kosax.tools.lookup — two modes:
+// Primitive wrapper over Spec 022 ummaya.tools.lookup — two modes:
 //   search: BM25+dense hybrid retrieval over registered adapters
 //   fetch:  direct adapter invocation by tool_id
 //
@@ -33,16 +33,16 @@ import {
   renderVerboseInputJson,
   renderVerboseOutputJson,
 } from '../_shared/verboseRender.js'
-import { getOrCreateKosaxBridge } from '../../ipc/bridgeSingleton.js'
+import { getOrCreateUmmayaBridge } from '../../ipc/bridgeSingleton.js'
 import { getOrCreatePendingCallRegistry } from '../../ipc/pendingCallSingleton.js'
 
 // ---------------------------------------------------------------------------
-// KOSAX citation extension — attaches resolved citation to the context so the
+// UMMAYA citation extension — attaches resolved citation to the context so the
 // permission UI can surface the verbatim agency policy URL. Does NOT modify
 // Tool.ts or ToolPermissionContext (byte-identical CC port).
 // ---------------------------------------------------------------------------
 type ContextWithCitation = ToolUseContext & {
-  kosaxCitations?: AdapterCitation[]
+  ummayaCitations?: AdapterCitation[]
 }
 
 // ---------------------------------------------------------------------------
@@ -76,7 +76,7 @@ type InputSchema = ReturnType<typeof inputSchema>
 
 // Spec 2521 (2026-05-02) — ``outbound_traces`` carries the captured
 // outbound HTTP request/response array from
-// ``kosax.tools._outbound_trace``. Optional + ``z.unknown()`` items so
+// ``ummaya.tools._outbound_trace``. Optional + ``z.unknown()`` items so
 // each primitive doesn't have to mirror the full Pydantic schema. The
 // verbose render path (``verboseRender.ts``) reads this field; without
 // it Zod's strip default would drop the trace at safeParse time.
@@ -162,7 +162,7 @@ export const LookupPrimitive = buildTool({
     }
   },
 
-  // KOSAX hotfix #2518 follow-up — CC pattern (tools/BashTool/UI.tsx:renderToolUseMessage)
+  // UMMAYA hotfix #2518 follow-up — CC pattern (tools/BashTool/UI.tsx:renderToolUseMessage)
   // 따라 args preview 반환. null 반환은 AssistantToolUseMessage가 tool block을 통째로
   // 숨겨서 시민이 어떤 tool이 dispatch 됐는지 못 봄. CC byte-identical pattern.
   // Spec 2521 (2026-05-01) — fetch-only surface; legacy mode='search'
@@ -208,7 +208,7 @@ export const LookupPrimitive = buildTool({
       if (backendEntry) {
         // Internal-mode adapters are exempt from the citation invariant.
         if (backendEntry.source_mode === 'internal') {
-          ;(context as ContextWithCitation).kosaxCitations = []
+          ;(context as ContextWithCitation).ummayaCitations = []
           return { result: true }
         }
         if (!backendEntry.policy_authority_url) {
@@ -222,7 +222,7 @@ export const LookupPrimitive = buildTool({
           real_classification_url: backendEntry.policy_authority_url,
           policy_authority: backendEntry.name,
         }
-        ;(context as ContextWithCitation).kosaxCitations = [citation]
+        ;(context as ContextWithCitation).ummayaCitations = [citation]
         return { result: true }
       }
     }
@@ -240,7 +240,7 @@ export const LookupPrimitive = buildTool({
           errorCode: PrimitiveErrorCode.CitationMissing,
         }
       }
-      ;(context as ContextWithCitation).kosaxCitations = [citation]
+      ;(context as ContextWithCitation).ummayaCitations = [citation]
       return { result: true }
     }
 
@@ -283,11 +283,11 @@ export const LookupPrimitive = buildTool({
     if (options.verbose || options.isTranscriptMode) {
       return renderVerboseOutputJson(output)
     }
-    // KOSAX hotfix #2519 (CC-original migration, 2026-04-30):
+    // UMMAYA hotfix #2519 (CC-original migration, 2026-04-30):
     //
     // After the dispatchPrimitive register-and-await rewrite, output.result
     // is the actual primitive output (the inner of the backend envelope:
-    // src/kosax/tools/lookup.py LookupSearchResult / LookupRecord /
+    // src/ummaya/tools/lookup.py LookupSearchResult / LookupRecord /
     // LookupCollection / LookupTimeseries / LookupError) — discriminated by
     // its own `kind` field. The CC pattern wraps each branch in
     // <MessageResponse> so the "  ⎿  " gutter glyph prefixes every row
@@ -458,7 +458,7 @@ export const LookupPrimitive = buildTool({
 
   /**
    * Dispatch lookup call via real IPC bridge (T009 — stub replaced).
-   * validateInput has already resolved the adapter and populated kosaxCitations on the context.
+   * validateInput has already resolved the adapter and populated ummayaCitations on the context.
    */
   async call(input, context) {
     return dispatchPrimitive<Output>({
@@ -466,7 +466,7 @@ export const LookupPrimitive = buildTool({
       args: input as Record<string, unknown>,
       context,
       registry: getOrCreatePendingCallRegistry(),
-      bridge: getOrCreateKosaxBridge(),
+      bridge: getOrCreateUmmayaBridge(),
     })
   },
 } satisfies ToolDef<InputSchema, Output>)

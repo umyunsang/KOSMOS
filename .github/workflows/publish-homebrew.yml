@@ -45,24 +45,24 @@ jobs:
       - name: Download npm tarball
         run: |
           version="${{ steps.version.outputs.version }}"
-          url="https://registry.npmjs.org/@umyunsang/kosax/-/kosax-${version}.tgz"
-          curl -fsSL "${url}" -o "kosax-${version}.tgz"
-          sha256="$(sha256sum "kosax-${version}.tgz" | cut -d ' ' -f1)"
-          echo "KOSAX_TARBALL_SHA256=${sha256}" >> "${GITHUB_ENV}"
+          url="https://registry.npmjs.org/ummaya/-/ummaya-${version}.tgz"
+          curl -fsSL "${url}" -o "ummaya-${version}.tgz"
+          sha256="$(sha256sum "ummaya-${version}.tgz" | cut -d ' ' -f1)"
+          echo "UMMAYA_TARBALL_SHA256=${sha256}" >> "${GITHUB_ENV}"
 
       - name: Render formula
         run: |
           node scripts/render-homebrew-formula.mjs \
             "${{ steps.version.outputs.version }}" \
-            "${KOSAX_TARBALL_SHA256}" \
-            Formula/kosax.rb
+            "${UMMAYA_TARBALL_SHA256}" \
+            Formula/ummaya.rb
 
       - name: Fetch Homebrew tap token from Infisical
         uses: Infisical/secrets-action@77ab1f4ccd183a543cb5b42435fbd181189f4995
         with:
           method: oidc
           identity-id: ${{ vars.INFISICAL_CLIENT_ID }}
-          project-slug: kosax-3f-zs
+          project-slug: ummaya-3f-zs
           env-slug: prod
           secret-path: "/release"
           export-type: env
@@ -70,21 +70,21 @@ jobs:
       - name: Checkout tap
         uses: actions/checkout@v6
         with:
-          repository: umyunsang/homebrew-kosax
+          repository: umyunsang/homebrew-ummaya
           path: tap
-          token: ${{ env.KOSAX_HOMEBREW_TAP_TOKEN }}
+          token: ${{ env.UMMAYA_HOMEBREW_TAP_TOKEN }}
 
       - name: Commit formula
         run: |
           mkdir -p tap/Formula
-          cp Formula/kosax.rb tap/Formula/kosax.rb
+          cp Formula/ummaya.rb tap/Formula/ummaya.rb
           cd tap
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add Formula/kosax.rb
+          git add Formula/ummaya.rb
           if git diff --cached --quiet; then
             echo "Formula unchanged"
             exit 0
           fi
-          git commit -m "kosax ${{ steps.version.outputs.version }}"
+          git commit -m "ummaya ${{ steps.version.outputs.version }}"
           git push

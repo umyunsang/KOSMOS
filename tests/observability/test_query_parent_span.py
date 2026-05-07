@@ -2,7 +2,7 @@
 """T013 — Tests for the root OTel span produced by query().
 
 Verifies:
-- Exactly one root span named 'invoke_agent kosax-query'.
+- Exactly one root span named 'invoke_agent ummaya-query'.
 - Root span attributes: gen_ai.operation.name, gen_ai.agent.name,
   gen_ai.conversation.id.
 - At least one 'chat' child span and one 'execute_tool *' child span.
@@ -27,15 +27,15 @@ from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanE
 from opentelemetry.trace import StatusCode
 from pydantic import BaseModel
 
-from kosax.engine.config import QueryEngineConfig
-from kosax.engine.models import QueryContext, QueryState
-from kosax.llm.client import LLMClient
-from kosax.llm.models import StreamEvent, TokenUsage
-from kosax.llm.usage import UsageTracker
-from kosax.permissions.models import SessionContext
-from kosax.tools.executor import ToolExecutor
-from kosax.tools.models import GovAPITool
-from kosax.tools.registry import ToolRegistry
+from ummaya.engine.config import QueryEngineConfig
+from ummaya.engine.models import QueryContext, QueryState
+from ummaya.llm.client import LLMClient
+from ummaya.llm.models import StreamEvent, TokenUsage
+from ummaya.llm.usage import UsageTracker
+from ummaya.permissions.models import SessionContext
+from ummaya.tools.executor import ToolExecutor
+from ummaya.tools.models import GovAPITool
+from ummaya.tools.registry import ToolRegistry
 
 # ---------------------------------------------------------------------------
 # Per-test InMemorySpanExporter fixture using dedicated TracerProvider
@@ -50,12 +50,12 @@ def memory_exporter(monkeypatch: pytest.MonkeyPatch) -> InMemorySpanExporter:
     provider = TracerProvider()
     provider.add_span_processor(SimpleSpanProcessor(exporter))
 
-    import kosax.engine.query as query_mod
-    import kosax.tools.executor as executor_mod
+    import ummaya.engine.query as query_mod
+    import ummaya.tools.executor as executor_mod
 
     # Patch the module-level _tracer in each instrumented module.
-    monkeypatch.setattr(query_mod, "_tracer", provider.get_tracer("kosax.engine.query"))
-    monkeypatch.setattr(executor_mod, "_tracer", provider.get_tracer("kosax.tools.executor"))
+    monkeypatch.setattr(query_mod, "_tracer", provider.get_tracer("ummaya.engine.query"))
+    monkeypatch.setattr(executor_mod, "_tracer", provider.get_tracer("ummaya.tools.executor"))
 
     # Also store provider so mock stream can create 'chat' spans on same provider.
     monkeypatch.setattr(
@@ -136,10 +136,10 @@ def _make_executor(registry: ToolRegistry, tool_id: str = "dummy_tool") -> ToolE
 async def test_query_produces_root_span_with_correct_attributes(
     memory_exporter: InMemorySpanExporter,
 ) -> None:
-    """query() must produce one 'invoke_agent kosax-query' root span with
+    """query() must produce one 'invoke_agent ummaya-query' root span with
     required attributes and child spans for chat + execute_tool."""
     # Import after monkeypatch so _tracer is already patched.
-    from kosax.engine.query import query
+    from ummaya.engine.query import query
 
     TOOL_ID = "dummy_tool"  # noqa: N806
     SESSION_ID = "test-uuid"  # noqa: N806
@@ -150,7 +150,7 @@ async def test_query_produces_root_span_with_correct_attributes(
     usage_tracker = UsageTracker(budget=100_000)
     state = QueryState(usage=usage_tracker)
 
-    from kosax.llm.models import ChatMessage
+    from ummaya.llm.models import ChatMessage
 
     state.messages.append(ChatMessage(role="user", content="hello"))
 
@@ -167,7 +167,7 @@ async def test_query_produces_root_span_with_correct_attributes(
 
         # Use the test provider to create the 'chat' span, mimicking LLMClient.stream().
         assert _TEST_PROVIDER is not None
-        _tracer = _TEST_PROVIDER.get_tracer("kosax.llm.client")
+        _tracer = _TEST_PROVIDER.get_tracer("ummaya.llm.client")
         span = _tracer.start_span("chat")
         span.set_attribute("gen_ai.operation.name", "chat")
         span.set_attribute("gen_ai.provider.name", "friendliai")
@@ -214,10 +214,10 @@ async def test_query_produces_root_span_with_correct_attributes(
     spans = memory_exporter.get_finished_spans()
     span_names = [s.name for s in spans]
 
-    # --- Assert: exactly one root span named 'invoke_agent kosax-query' ---
-    root_spans = [s for s in spans if s.name == "invoke_agent kosax-query"]
+    # --- Assert: exactly one root span named 'invoke_agent ummaya-query' ---
+    root_spans = [s for s in spans if s.name == "invoke_agent ummaya-query"]
     assert len(root_spans) == 1, (
-        f"Expected exactly 1 root span 'invoke_agent kosax-query', "
+        f"Expected exactly 1 root span 'invoke_agent ummaya-query', "
         f"found {len(root_spans)}. All spans: {span_names}"
     )
     root = root_spans[0]
@@ -227,7 +227,7 @@ async def test_query_produces_root_span_with_correct_attributes(
     assert attrs.get("gen_ai.operation.name") == "invoke_agent", (
         f"gen_ai.operation.name mismatch: {attrs}"
     )
-    assert attrs.get("gen_ai.agent.name") == "kosax-query", f"gen_ai.agent.name mismatch: {attrs}"
+    assert attrs.get("gen_ai.agent.name") == "ummaya-query", f"gen_ai.agent.name mismatch: {attrs}"
     assert attrs.get("gen_ai.conversation.id") == SESSION_ID, (
         f"gen_ai.conversation.id mismatch: {attrs}"
     )

@@ -1,17 +1,17 @@
-# KOSAX Scenarios — OPAQUE System Narratives
+# UMMAYA Scenarios — OPAQUE System Narratives
 
-This directory contains journey narratives for systems that KOSAX integrates with but **cannot mock** because the protocol, schema, or API is not publicly disclosed. These are distinct from the mockable systems documented under `docs/mock/`.
+This directory contains journey narratives for systems that UMMAYA integrates with but **cannot mock** because the protocol, schema, or API is not publicly disclosed. These are distinct from the mockable systems documented under `docs/mock/`.
 
 ## Why scenarios exist
 
-The KOSAX harness distinguishes between two categories of external system:
+The UMMAYA harness distinguishes between two categories of external system:
 
 | Category | Criteria | Location |
 |----------|----------|----------|
 | **Mock** | Public OpenAPI, public SDK docs, or open reference implementation exists; wire format can be reproduced byte-for-byte (`byte` axis) or shape-for-shape (`shape` axis) | `docs/mock/<system>/README.md` |
 | **Scenario** | Protocol, XSD, API schema, or session handshake is withheld from public disclosure; reproduction is not possible without a commercial license or inter-agency agreement | `docs/scenarios/<system>.md` |
 
-An OPAQUE system appearing in `docs/scenarios/` must **never** have a mock adapter under `src/kosax/tools/mock/`. CI enforces this boundary via `tests/test_no_opaque_mock_adapter.py`.
+An OPAQUE system appearing in `docs/scenarios/` must **never** have a mock adapter under `src/ummaya/tools/mock/`. CI enforces this boundary via `tests/test_no_opaque_mock_adapter.py`.
 
 ## Current scenarios
 
@@ -25,7 +25,7 @@ An OPAQUE system appearing in `docs/scenarios/` must **never** have a mock adapt
 
 A scenario can be promoted to a mock when the blocking factor is resolved — typically because:
 - The authority publishes a public OpenAPI spec or reference implementation.
-- A commercial partner grants KOSAX access to a sandbox environment with documented wire format.
+- A commercial partner grants UMMAYA access to a sandbox environment with documented wire format.
 - A community reverse-engineering effort produces a verified public spec (e.g., a government open-data mandate).
 
 **Promotion process**:
@@ -34,7 +34,7 @@ A scenario can be promoted to a mock when the blocking factor is resolved — ty
 2. Attach the evidence that resolves the blocking factor (link to public spec, sandbox access confirmation, etc.).
 3. The Lead agent reviews the evidence and assigns a mirror axis (`byte`, `shape`, or `shape+seed`).
 4. A new `docs/mock/<system>/README.md` is created following the mock README template.
-5. A mock adapter is implemented under `src/kosax/tools/mock/<system>/`.
+5. A mock adapter is implemented under `src/ummaya/tools/mock/<system>/`.
 6. The scenario file (`docs/scenarios/<system>.md`) is updated with the promotion footer (see template below) but **not deleted** — it serves as a historical record of the OPAQUE boundary.
 7. `tests/test_mock_scenario_split.py` is updated to reflect the new mock count and scenario count.
 
@@ -48,6 +48,6 @@ A scenario can be promoted to a mock when the blocking factor is resolved — ty
 
 ## Harness discipline
 
-Scenarios define the boundary of KOSAX's responsibility. Everything inside the `## KOSAX ↔ real system handoff point` section of each scenario file is what KOSAX does on its side of the boundary. Everything outside that section is the real system's responsibility.
+Scenarios define the boundary of UMMAYA's responsibility. Everything inside the `## UMMAYA ↔ real system handoff point` section of each scenario file is what UMMAYA does on its side of the boundary. Everything outside that section is the real system's responsibility.
 
-KOSAX never guesses, approximates, or reimplements an OPAQUE protocol. If the protocol is not publicly documented, KOSAX delegates to the real system and records only the structured outcome.
+UMMAYA never guesses, approximates, or reimplements an OPAQUE protocol. If the protocol is not publicly documented, UMMAYA delegates to the real system and records only the structured outcome.

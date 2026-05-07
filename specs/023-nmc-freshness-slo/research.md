@@ -23,7 +23,7 @@
 
 **Finding**: The current pipeline is: `lookup(fetch)` → `executor.invoke()` → auth gate → adapter handler → `envelope.normalize()` → return. The freshness check is NMC-specific (depends on `hvidate` field semantics), so it should NOT live in the generic executor or envelope normalizer.
 
-**Decision**: Implement freshness validation as a utility function in `src/kosax/tools/nmc/freshness.py`. The NMC adapter handler calls this utility after parsing the upstream response. If stale, the handler returns a `LookupError` dict directly (pre-envelope); if fresh, it injects `freshness_status: "fresh"` into the response dict before returning to the executor.
+**Decision**: Implement freshness validation as a utility function in `src/ummaya/tools/nmc/freshness.py`. The NMC adapter handler calls this utility after parsing the upstream response. If stale, the handler returns a `LookupError` dict directly (pre-envelope); if fresh, it injects `freshness_status: "fresh"` into the response dict before returning to the executor.
 
 **Alternatives considered**:
 - Post-processing hook in `executor.invoke()`: Rejected — couples NMC-specific logic to the generic executor.

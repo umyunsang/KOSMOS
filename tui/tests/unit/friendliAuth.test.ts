@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSAX-original — process-scoped FriendliAI auth helper tests.
+// UMMAYA-original — process-scoped FriendliAI auth helper tests.
 
 import { describe, expect, it } from 'bun:test'
 import {

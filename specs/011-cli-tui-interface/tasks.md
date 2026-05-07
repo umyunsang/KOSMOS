@@ -8,18 +8,18 @@
 
 ## Phase 1: Setup (Package Structure + Dependencies)
 
-**Purpose**: Create the `src/kosax/cli/` sub-package and `tests/cli/` directory,
+**Purpose**: Create the `src/ummaya/cli/` sub-package and `tests/cli/` directory,
 add `prompt-toolkit` to dependencies, and establish shared test fixtures.
 No source code yet — just the file system skeleton and dependency wiring.
 
-- [ ] T001 [P] Create `src/kosax/cli/__init__.py` with empty public export list and `src/kosax/cli/py.typed` marker
+- [ ] T001 [P] Create `src/ummaya/cli/__init__.py` with empty public export list and `src/ummaya/cli/py.typed` marker
   - Labels: `parallel-safe`, `size/S`
 - [ ] T002 [P] Create `tests/cli/__init__.py` and `tests/cli/conftest.py` with shared fixtures (mock `QueryEngine`, mock `Console`, mock `ToolRegistry` with `lookup()` returning a tool with `name_ko`)
   - Labels: `parallel-safe`, `size/S`
-- [ ] T003 Add `prompt-toolkit>=3.0` to `pyproject.toml` dependencies and add `[project.scripts]` entry `kosax = "kosax.cli.app:main"`
+- [ ] T003 Add `prompt-toolkit>=3.0` to `pyproject.toml` dependencies and add `[project.scripts]` entry `ummaya = "ummaya.cli.app:main"`
   - Labels: `size/S`
 
-**Completion gate**: `src/kosax/cli/` and `tests/cli/` exist as importable packages. `uv sync` succeeds with the new dependency. `uv run python -c "import kosax.cli"` works.
+**Completion gate**: `src/ummaya/cli/` and `tests/cli/` exist as importable packages. `uv sync` succeeds with the new dependency. `uv run python -c "import ummaya.cli"` works.
 
 ---
 
@@ -28,9 +28,9 @@ No source code yet — just the file system skeleton and dependency wiring.
 **Purpose**: Lay down CLIConfig (pydantic-settings) and SlashCommand (frozen Pydantic v2 model).
 Every later phase depends on these types being present and correct.
 
-- [ ] T004 Implement `CLIConfig` via pydantic-settings with `KOSAX_CLI_*` prefixed env vars (`history_size: int = 1000`, `show_usage: bool = True`, `welcome_banner: bool = True`) in `src/kosax/cli/config.py`
+- [ ] T004 Implement `CLIConfig` via pydantic-settings with `UMMAYA_CLI_*` prefixed env vars (`history_size: int = 1000`, `show_usage: bool = True`, `welcome_banner: bool = True`) in `src/ummaya/cli/config.py`
   - Labels: `size/S`
-- [ ] T005 Implement `SlashCommand` frozen Pydantic v2 model with `name: str`, `description: str`, `aliases: tuple[str, ...] = ()` and `COMMANDS` registry dict mapping command names to `SlashCommand` instances (`/help`, `/new`, `/exit`, `/usage`) in `src/kosax/cli/models.py`
+- [ ] T005 Implement `SlashCommand` frozen Pydantic v2 model with `name: str`, `description: str`, `aliases: tuple[str, ...] = ()` and `COMMANDS` registry dict mapping command names to `SlashCommand` instances (`/help`, `/new`, `/exit`, `/usage`) in `src/ummaya/cli/models.py`
   - Labels: `size/S`
 - [ ] T006 [P] Write unit tests for `CLIConfig`: validate defaults, env var override via monkeypatch, `extra="ignore"` behavior in `tests/cli/test_config.py`
   - Labels: `parallel-safe`, `size/S`
@@ -47,11 +47,11 @@ Every later phase depends on these types being present and correct.
 instances into terminal output. This is the core display module and the most complex
 single file in the CLI package.
 
-- [ ] T008 Implement `EventRenderer` class with `render(event: QueryEvent, console: Console) -> None` dispatch method and private `_render_text_delta()` handler that appends text to a buffer and prints raw text during streaming in `src/kosax/cli/renderer.py`
+- [ ] T008 Implement `EventRenderer` class with `render(event: QueryEvent, console: Console) -> None` dispatch method and private `_render_text_delta()` handler that appends text to a buffer and prints raw text during streaming in `src/ummaya/cli/renderer.py`
   - Labels: `size/M`
-- [ ] T009 Implement `_render_tool_use()` handler: display `rich.status.Status` spinner with tool's Korean name (`name_ko` from `ToolRegistry.lookup()`) and `_render_tool_result()` handler: replace spinner with `rich.panel.Panel` showing success/error summary in `src/kosax/cli/renderer.py`
+- [ ] T009 Implement `_render_tool_use()` handler: display `rich.status.Status` spinner with tool's Korean name (`name_ko` from `ToolRegistry.lookup()`) and `_render_tool_result()` handler: replace spinner with `rich.panel.Panel` showing success/error summary in `src/ummaya/cli/renderer.py`
   - Labels: `size/M`
-- [ ] T010 Implement `_render_usage_update()` handler: buffer token counts for turn-end summary, and `_render_stop()` handler: re-render complete message with `rich.markdown.Markdown`, display citizen-friendly stop reason messages for each `StopReason` variant, show usage summary in `src/kosax/cli/renderer.py`
+- [ ] T010 Implement `_render_usage_update()` handler: buffer token counts for turn-end summary, and `_render_stop()` handler: re-render complete message with `rich.markdown.Markdown`, display citizen-friendly stop reason messages for each `StopReason` variant, show usage summary in `src/ummaya/cli/renderer.py`
   - Labels: `size/M`
 - [ ] T011 [P] Write unit tests for `EventRenderer`: construct mock `QueryEvent` instances for each type, verify renderer produces expected output using `Console(file=io.StringIO())` for capture — test `text_delta` streaming (5 deltas + stop = complete text), `tool_use` + `tool_result` pair, each `StopReason` variant maps to human-readable message, Korean text renders without exceptions in `tests/cli/test_renderer.py`
   - Labels: `parallel-safe`, `size/M`
@@ -65,7 +65,7 @@ single file in the CLI package.
 **Purpose**: Implement the consent prompt scaffold for citizen approval of tool execution.
 Wired to mock escalation path in v1 (permission pipeline treats `escalate` as `deny`).
 
-- [ ] T012 Implement `ConsentPromptHandler` with `prompt(tool_name: str, provider: str, description: str) -> bool` using `rich.prompt.Confirm` for Y/n interaction, and `display_denial(tool_name: str, reason: str) -> None` for bypass-immune denials in `src/kosax/cli/permissions.py`
+- [ ] T012 Implement `ConsentPromptHandler` with `prompt(tool_name: str, provider: str, description: str) -> bool` using `rich.prompt.Confirm` for Y/n interaction, and `display_denial(tool_name: str, reason: str) -> None` for bypass-immune denials in `src/ummaya/cli/permissions.py`
   - Labels: `size/S`
 - [ ] T013 [P] Write unit tests for `ConsentPromptHandler`: mock stdin to test approve (y, Y, Enter default) and deny (n, N) paths, verify output includes tool name and provider, verify `display_denial()` shows reason without offering override in `tests/cli/test_permissions.py`
   - Labels: `parallel-safe`, `size/S`
@@ -80,11 +80,11 @@ Wired to mock escalation path in v1 (permission pipeline treats `escalate` as `d
 engine execution, event rendering, and interrupt handling. This is the orchestrator
 that connects all other modules.
 
-- [ ] T014 Implement `REPLLoop` class skeleton in `src/kosax/cli/repl.py`: constructor accepting `QueryEngine`, `ToolRegistry`, `Console`, `CLIConfig`, `EventRenderer`; `async run()` method with welcome banner display (session ID, version) and main prompt loop via `prompt_toolkit.PromptSession`
+- [ ] T014 Implement `REPLLoop` class skeleton in `src/ummaya/cli/repl.py`: constructor accepting `QueryEngine`, `ToolRegistry`, `Console`, `CLIConfig`, `EventRenderer`; `async run()` method with welcome banner display (session ID, version) and main prompt loop via `prompt_toolkit.PromptSession`
   - Labels: `size/M`
-- [ ] T015 Implement slash command routing in `REPLLoop`: `/help` displays available commands with descriptions, `/exit` (aliases: `exit`, `quit`) prints farewell and calls `sys.exit(0)`, `/new` creates fresh `QueryEngine` instance with new session ID, `/usage` displays current `SessionBudget` snapshot; skip empty/whitespace input in `src/kosax/cli/repl.py`
+- [ ] T015 Implement slash command routing in `REPLLoop`: `/help` displays available commands with descriptions, `/exit` (aliases: `exit`, `quit`) prints farewell and calls `sys.exit(0)`, `/new` creates fresh `QueryEngine` instance with new session ID, `/usage` displays current `SessionBudget` snapshot; skip empty/whitespace input in `src/ummaya/cli/repl.py`
   - Labels: `size/M`
-- [ ] T016 Implement interrupt handling in `REPLLoop`: single Ctrl+C during streaming cancels async generator via `aclose()` and appends `[cancelled]` indicator, double Ctrl+C within 1 second calls `sys.exit(130)`, Ctrl+C at idle prompt clears input and re-prompts in `src/kosax/cli/repl.py`
+- [ ] T016 Implement interrupt handling in `REPLLoop`: single Ctrl+C during streaming cancels async generator via `aclose()` and appends `[cancelled]` indicator, double Ctrl+C within 1 second calls `sys.exit(130)`, Ctrl+C at idle prompt clears input and re-prompts in `src/ummaya/cli/repl.py`
   - Labels: `size/M`
 - [ ] T017 [P] Write unit tests for `REPLLoop`: mock `QueryEngine.run()` to yield predetermined event sequences, test slash command routing (`/help` output, `/exit` calls `sys.exit`), test empty input skipping, test `/new` creates fresh engine, test `/usage` displays budget, test interrupt handling with mock signal delivery verifying generator cancellation in `tests/cli/test_repl.py`
   - Labels: `parallel-safe`, `size/L`
@@ -98,18 +98,18 @@ that connects all other modules.
 **Purpose**: Wire the CLI to the full backend stack via `__main__.py` and `app.py`,
 then verify end-to-end conversation flow with mock LLM.
 
-- [ ] T018 Implement `src/kosax/cli/__main__.py` with `python -m kosax.cli` entry point that calls `main()` from `app.py`
+- [ ] T018 Implement `src/ummaya/cli/__main__.py` with `python -m ummaya.cli` entry point that calls `main()` from `app.py`
   - Labels: `size/S`
-- [ ] T019 Implement `main()` in `src/kosax/cli/app.py`: typer app with `--version` flag, load `CLIConfig`, initialize `LLMClient`, `ToolRegistry`, `ToolExecutor`, `ContextBuilder`, `PermissionPipeline`, register tool adapters, create `QueryEngine`, launch `REPLLoop` via `asyncio.run()`; handle `ConfigurationError` with user-friendly message (e.g., "Set KOSAX_FRIENDLI_TOKEN")
+- [ ] T019 Implement `main()` in `src/ummaya/cli/app.py`: typer app with `--version` flag, load `CLIConfig`, initialize `LLMClient`, `ToolRegistry`, `ToolExecutor`, `ContextBuilder`, `PermissionPipeline`, register tool adapters, create `QueryEngine`, launch `REPLLoop` via `asyncio.run()`; handle `ConfigurationError` with user-friendly message (e.g., "Set UMMAYA_FRIENDLI_TOKEN")
   - Labels: `size/M`
-- [ ] T020 Update `src/kosax/cli/__init__.py` to export `CLIConfig`, `EventRenderer`, `REPLLoop`, `ConsentPromptHandler`, `create_app` (if applicable)
+- [ ] T020 Update `src/ummaya/cli/__init__.py` to export `CLIConfig`, `EventRenderer`, `REPLLoop`, `ConsentPromptHandler`, `create_app` (if applicable)
   - Labels: `size/S`
 - [ ] T021 [P] Write integration test in `tests/cli/test_integration.py`: mock LLM (via `respx`) + recorded tool fixtures -> complete Scenario 1 flow; verify welcome banner -> citizen question -> `tool_use` spinner -> `tool_result` panel -> streamed answer -> stop -> re-prompt; verify multi-turn conversation maintains context; verify error stop reasons display citizen-friendly messages; verify budget exhaustion displays appropriate message
   - Labels: `parallel-safe`, `size/L`
-- [ ] T022 [P] Write manual test checklist as comments in `tests/cli/test_integration.py`: launch `python -m kosax.cli`, verify welcome banner within 3 seconds, type question, observe streaming, press Ctrl+C mid-turn, verify `/help`, `/new`, `/exit` commands
+- [ ] T022 [P] Write manual test checklist as comments in `tests/cli/test_integration.py`: launch `python -m ummaya.cli`, verify welcome banner within 3 seconds, type question, observe streaming, press Ctrl+C mid-turn, verify `/help`, `/new`, `/exit` commands
   - Labels: `parallel-safe`, `size/S`
 
-**Completion gate**: Integration test passes. `python -m kosax.cli --help` works. `python -m kosax.cli --version` prints version.
+**Completion gate**: Integration test passes. `python -m ummaya.cli --help` works. `python -m ummaya.cli --version` prints version.
 
 ---
 
@@ -118,11 +118,11 @@ then verify end-to-end conversation flow with mock LLM.
 **Purpose**: Ensure type safety, lint compliance, and test coverage meet project standards.
 No new functionality — quality gates only.
 
-- [ ] T023 [P] Run `uv run mypy src/kosax/cli/` strict mode — fix all type errors
+- [ ] T023 [P] Run `uv run mypy src/ummaya/cli/` strict mode — fix all type errors
   - Labels: `parallel-safe`, `size/S`
-- [ ] T024 [P] Run `uv run ruff check src/kosax/cli/` and `uv run ruff format --check src/kosax/cli/` — fix all violations (T20 suppressed per `pyproject.toml` per-file-ignores)
+- [ ] T024 [P] Run `uv run ruff check src/ummaya/cli/` and `uv run ruff format --check src/ummaya/cli/` — fix all violations (T20 suppressed per `pyproject.toml` per-file-ignores)
   - Labels: `parallel-safe`, `size/S`
-- [ ] T025 [P] Run `uv run pytest tests/cli/ --cov=src/kosax/cli --cov-report=term-missing` — verify coverage >= 80%; identify and fill gaps if below threshold
+- [ ] T025 [P] Run `uv run pytest tests/cli/ --cov=src/ummaya/cli --cov-report=term-missing` — verify coverage >= 80%; identify and fill gaps if below threshold
   - Labels: `parallel-safe`, `size/S`
 - [ ] T026 Run `uv run pytest` (full test suite) — verify no regressions in engine, llm, tools, context, permissions test suites
   - Labels: `size/S`
@@ -178,7 +178,7 @@ REPL loop imports and orchestrates both the renderer and the permission handler.
 | Phase 4: Permission Prompt | 2 | 1 | `permissions.py`, `test_permissions.py` |
 | Phase 5: REPL Loop | 4 | 1 | `repl.py`, `test_repl.py` |
 | Phase 6: Entry Point | 5 | 2 | `__main__.py`, `app.py`, `__init__.py`, `test_integration.py` |
-| Phase 7: Quality | 4 | 3 | All `src/kosax/cli/` and `tests/cli/` files |
+| Phase 7: Quality | 4 | 3 | All `src/ummaya/cli/` and `tests/cli/` files |
 | **Total** | **26** | **12** | — |
 
 - **Total tasks**: 26

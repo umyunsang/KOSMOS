@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: Apache-2.0
 //
-// KOSAX-original slash command: /migrate-sessions
+// UMMAYA-original slash command: /migrate-sessions
 //
 // Migrates CC-workspace JSONL sessions (leaked into `~/.claude/projects/`)
-// to the KOSAX-native memdir USER-tier sessions directory.
+// to the UMMAYA-native memdir USER-tier sessions directory.
 //
 // Usage:
 //   /migrate-sessions
 //   /migrate-sessions --dry-run
-//   /migrate-sessions --filter-cwd '.*KOSAX.*'
+//   /migrate-sessions --filter-cwd '.*UMMAYA.*'
 //   /migrate-sessions --prune                   (destructive — requires Y confirm)
 //   /migrate-sessions --prune --dry-run          (show what would be pruned)
 //
@@ -17,7 +17,7 @@
 //                        copy. Any unlink failure aborts the prune phase and
 //                        throws — no partial-prune state is left.
 //   --filter-cwd <regex> Regex applied to the CC project-dir name (sanitized
-//                        cwd). Default: .*KOSAX.*
+//                        cwd). Default: .*UMMAYA.*
 //   --dry-run            List what would be copied/pruned without touching disk.
 //
 // --prune without --dry-run requires the caller to have confirmed the
@@ -172,7 +172,7 @@ async function handle({ args }: CommandHandlerArgs): Promise<CommandResult> {
 const migrateSessionsCommand: CommandDefinition = {
   name: 'migrate-sessions',
   description:
-    'Migrate CC-workspace JSONL sessions to the KOSAX memdir sessions directory',
+    'Migrate CC-workspace JSONL sessions to the UMMAYA memdir sessions directory',
   argumentHint: '[--dry-run] [--filter-cwd <regex>] [--prune]',
   handle,
 }

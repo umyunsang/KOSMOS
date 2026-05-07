@@ -4,8 +4,8 @@
 **Replaces**: `UserInputFrame` for tools-aware chat requests
 **Coexists with**: `UserInputFrame` (kept for echo / plain-text fallback paths)
 **Direction**: TUI → backend
-**Pydantic location**: `src/kosax/ipc/frame_schema.py` (new arm under the existing 19-arm union)
-**JSON Schema location**: `tui/src/ipc/schema/frame.schema.json` (lockstep with Pydantic; SHA-256 hash will change — re-published at backend boot via `kosax.ipc.schema.hash` OTEL attribute per Spec 032 FR-037)
+**Pydantic location**: `src/ummaya/ipc/frame_schema.py` (new arm under the existing 19-arm union)
+**JSON Schema location**: `tui/src/ipc/schema/frame.schema.json` (lockstep with Pydantic; SHA-256 hash will change — re-published at backend boot via `ummaya.ipc.schema.hash` OTEL attribute per Spec 032 FR-037)
 
 ## Envelope (inherited from `_BaseFrame`)
 
@@ -37,7 +37,7 @@
 - `messages` must contain at least one entry.
 - If any `messages[i].role == "tool"`, then `messages[i].name` and `messages[i].tool_call_id` must both be set.
 - `tools[].function.parameters` must be a valid JSON Schema object (Pydantic accepts `dict[str, object]`; deeper validation deferred to LLMClient).
-- Total approximate token estimate (sum of message lengths × 4) must be ≤ `KOSAX_LLM_SESSION_BUDGET` env (default 100,000); over-budget rejected with `error{code="budget_exceeded"}` frame.
+- Total approximate token estimate (sum of message lengths × 4) must be ≤ `UMMAYA_LLM_SESSION_BUDGET` env (default 100,000); over-budget rejected with `error{code="budget_exceeded"}` frame.
 
 ## Round-trip pairing
 
@@ -60,13 +60,13 @@ Backend MUST emit either a terminal `assistant_chunk{done=True}` or a terminal `
 
 ## Telemetry attributes (per ADR-0004)
 
-When `_handle_chat_request` receives this frame, a new OTEL span `kosax.turn` is opened with:
+When `_handle_chat_request` receives this frame, a new OTEL span `ummaya.turn` is opened with:
 
 ```
-kosax.session_id      = <envelope.session_id>
-kosax.correlation_id  = <envelope.correlation_id>
-kosax.frame.kind      = "chat_request"
-kosax.frame.seq       = <envelope.frame_seq>
+ummaya.session_id      = <envelope.session_id>
+ummaya.correlation_id  = <envelope.correlation_id>
+ummaya.frame.kind      = "chat_request"
+ummaya.frame.seq       = <envelope.frame_seq>
 gen_ai.system          = "friendliai"
 gen_ai.request.model   = "LGAI-EXAONE/K-EXAONE-236B-A23B"
 ```
@@ -75,4 +75,4 @@ Closes when the matched terminal frame (`assistant_chunk{done=True}` or `error`)
 
 ## Audit trail
 
-Every `ChatRequestFrame` is logged to the structured observability event log (`kosax.observability.event_logger.ObservabilityEventLogger`) with `event_type="chat_request_received"`. Tool dispatches inside the turn append `chat_request.{call_id}.invoked` events. This stitches into Spec 024 `ToolCallAuditRecord` chain via `correlation_id`.
+Every `ChatRequestFrame` is logged to the structured observability event log (`ummaya.observability.event_logger.ObservabilityEventLogger`) with `event_type="chat_request_received"`. Tool dispatches inside the turn append `chat_request.{call_id}.invoked` events. This stitches into Spec 024 `ToolCallAuditRecord` chain via `correlation_id`.

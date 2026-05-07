@@ -26,7 +26,7 @@ import json
 from types import SimpleNamespace
 from typing import Any
 
-from kosax.ipc.stdio import (
+from ummaya.ipc.stdio import (
     _build_verify_session_context,
     _check_chain_prerequisite,
     _check_duplicate_submit_prerequisite,
@@ -50,13 +50,13 @@ from kosax.ipc.stdio import (
     _sensitive_lookup_verify_redirect_for_query,
     _submit_requirement_for_query,
 )
-from kosax.llm.models import (
+from ummaya.llm.models import (
     ChatMessage as LLMChatMessage,
 )
-from kosax.llm.models import (
+from ummaya.llm.models import (
     FunctionCall as LLMFunctionCall,
 )
-from kosax.llm.models import (
+from ummaya.llm.models import (
     ToolCall as LLMToolCall,
 )
 
@@ -786,7 +786,7 @@ def test_submit_followup_gate_passes_after_successful_submit() -> None:
             {
                 "kind": "submit",
                 "result": {
-                    "transaction_id": "urn:kosax:submit:test",
+                    "transaction_id": "urn:ummaya:submit:test",
                     "status": "succeeded",
                     "adapter_receipt": {"receipt_id": "gov24-2026-05-07-MW-TEST"},
                 },
@@ -824,7 +824,7 @@ def test_duplicate_submit_after_success_is_rejected() -> None:
             {
                 "kind": "submit",
                 "result": {
-                    "transaction_id": "urn:kosax:submit:test",
+                    "transaction_id": "urn:ummaya:submit:test",
                     "status": "succeeded",
                     "adapter_receipt": {"receipt_id": "gov24-2026-05-07-MW-TEST"},
                 },

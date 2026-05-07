@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """Extended-corpus harness test — T030 (spec 026, US3 P2).
 
-Tests that ``run_extended_gate()`` in ``kosax.eval.retrieval``:
+Tests that ``run_extended_gate()`` in ``ummaya.eval.retrieval``:
 
 1. Emits ``sc_01_status: "PENDING_#22"`` with a machine-readable
    ``sc_01_reason`` when the registry has only the 4 seed adapters (either
@@ -75,7 +75,7 @@ def synthetic_queries_path(tmp_path_factory: pytest.TempPathFactory) -> Path:
 @pytest.fixture(scope="module")
 def seed_registry():
     """Build a ToolRegistry with only the 4 seed adapters (registry_size == 4)."""
-    from kosax.eval.retrieval import _build_registry
+    from ummaya.eval.retrieval import _build_registry
 
     registry, _ = _build_registry()
     return registry
@@ -97,7 +97,7 @@ class TestExtendedCorpusHarness:
         (all starting with seed prefixes and registry_size < 8), the function
         MUST return sc_01_status='PENDING_#22'.
         """
-        from kosax.eval.retrieval import run_extended_gate
+        from ummaya.eval.retrieval import run_extended_gate
 
         report = run_extended_gate(
             backend="hybrid",
@@ -117,7 +117,7 @@ class TestExtendedCorpusHarness:
         seed_registry: object,
     ) -> None:
         """sc_01_reason must mention registry_size < 8 or Phase-3 adapter heuristic."""
-        from kosax.eval.retrieval import run_extended_gate
+        from ummaya.eval.retrieval import run_extended_gate
 
         report = run_extended_gate(
             backend="hybrid",
@@ -147,7 +147,7 @@ class TestExtendedCorpusHarness:
         New fields (sc_01_status, sc_01_reason, sc_02_status) are ADDITIVE —
         they must not replace or remove any existing field.
         """
-        from kosax.eval.retrieval import run_extended_gate
+        from ummaya.eval.retrieval import run_extended_gate
 
         report = run_extended_gate(
             backend="hybrid",
@@ -167,7 +167,7 @@ class TestExtendedCorpusHarness:
         seed_registry: object,
     ) -> None:
         """Baseline field types must match the existing schema contract."""
-        from kosax.eval.retrieval import run_extended_gate
+        from ummaya.eval.retrieval import run_extended_gate
 
         report = run_extended_gate(
             backend="hybrid",
@@ -190,7 +190,7 @@ class TestExtendedCorpusHarness:
         seed_registry: object,
     ) -> None:
         """New SC-status fields must be present in the extended report."""
-        from kosax.eval.retrieval import run_extended_gate
+        from ummaya.eval.retrieval import run_extended_gate
 
         report = run_extended_gate(
             backend="hybrid",
@@ -209,7 +209,7 @@ class TestExtendedCorpusHarness:
         seed_registry: object,
     ) -> None:
         """Recall values must remain in [0.0, 1.0] under the extended gate."""
-        from kosax.eval.retrieval import run_extended_gate
+        from ummaya.eval.retrieval import run_extended_gate
 
         report = run_extended_gate(
             backend="hybrid",

@@ -1,6 +1,6 @@
 # Contract — Stream-event projection for `tool_call` / `tool_result` frames
 
-> Epic [#2077](https://github.com/umyunsang/KOSAX/issues/2077) · 2026-04-27
+> Epic [#2077](https://github.com/umyunsang/UMMAYA/issues/2077) · 2026-04-27
 > `deps.ts` projects each `tool_call` frame into two CC stream events and each `tool_result` frame into a user-role transcript message. Mirrors `_cc_reference/claude.ts:1995-2052` and `_cc_reference/messages.ts:ensureToolResultPairing()`.
 
 ## Module
@@ -144,4 +144,4 @@ If the backend emits a `tool_result` frame whose `call_id` does not match any pr
 
 ## OTEL spans
 
-No new spans introduced. Existing spans on `tool_call` / `tool_result` frames already carry `kosax.tool.name`, `kosax.tool.call_id`, `kosax.tool.duration_ms`. The projection is a TUI-side transformation invisible to backend OTEL.
+No new spans introduced. Existing spans on `tool_call` / `tool_result` frames already carry `ummaya.tool.name`, `ummaya.tool.call_id`, `ummaya.tool.duration_ms`. The projection is a TUI-side transformation invisible to backend OTEL.

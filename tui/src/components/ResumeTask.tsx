@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { useTerminalSize } from 'src/hooks/useTerminalSize.js';
-// KOSAX-1633 P1+P2 / KOSAX-1978 T011 — utils/teleport/ deleted; stub.
+// UMMAYA-1633 P1+P2 / UMMAYA-1978 T011 — utils/teleport/ deleted; stub.
 type CodeSession = { id: string; title: string; description: string; status: 'idle' | 'working' | 'waiting' | 'completed' | 'archived' | 'cancelled' | 'rejected'; repo: { name: string; owner: { login: string }; default_branch?: string } | null; turns: string[]; created_at: string; updated_at: string }
 const fetchCodeSessionsFromSessionsAPI = async (): Promise<CodeSession[]> => []
 // eslint-disable-next-line custom-rules/prefer-use-keybindings -- raw j/k/arrow list navigation

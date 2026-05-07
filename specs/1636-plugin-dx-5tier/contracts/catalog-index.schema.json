@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://kosax.dev/schemas/plugin-catalog-index/1.0.0.json",
-  "title": "KOSAX plugin-store catalog index",
-  "description": "Schema for kosax-plugin-store/index/main/index.json. Source-of-truth for `kosax plugin install` resolution.",
+  "$id": "https://ummaya.dev/schemas/plugin-catalog-index/1.0.0.json",
+  "title": "UMMAYA plugin-store catalog index",
+  "description": "Schema for ummaya-plugin-store/index/main/index.json. Source-of-truth for `ummaya plugin install` resolution.",
   "type": "object",
   "additionalProperties": false,
   "required": ["schema_version", "generated_iso", "entries"],

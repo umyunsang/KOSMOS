@@ -1,14 +1,14 @@
-# Codex Goal: KOSAX Final Packaging Readiness
+# Codex Goal: UMMAYA Final Packaging Readiness
 
 ## Ultimate Goal
 
-Make KOSAX packaging-ready as a client-side reference implementation for Korea's national AX infrastructure.
+Make UMMAYA packaging-ready as a client-side reference implementation for Korea's national AX infrastructure.
 
-KOSAX is not a demo app and this goal is not "fix one module." The real product target is a conversational execution surface where a citizen asks for an outcome and KOSAX decomposes, routes, verifies, asks permission, calls the right Korean public-service tools, renders inspectable evidence, and either completes the action or gives a legally/technically honest handoff.
+UMMAYA is not a demo app and this goal is not "fix one module." The real product target is a conversational execution surface where a citizen asks for an outcome and UMMAYA decomposes, routes, verifies, asks permission, calls the right Korean public-service tools, renders inspectable evidence, and either completes the action or gives a legally/technically honest handoff.
 
 Canonical thesis:
 
-- KOSAX = Claude Code original harness + two swaps.
+- UMMAYA = Claude Code original harness + two swaps.
 - Swap 1: Anthropic model surface becomes FriendliAI Serverless + K-EXAONE.
 - Swap 2: developer tools become Korean public-service / national-infrastructure tools.
 - Everything else follows the Claude Code restored source unless a documented Korean public-service constraint requires an explicit adaptation.
@@ -22,8 +22,8 @@ Use these sources in this order. If sources conflict, stop and document the conf
 1. `AGENTS.md`
 2. `docs/onboarding/codex-continuation.md`
 3. `docs/vision.md`
-4. `docs/requirements/kosax-migration-tree.md`
-5. `.agents/skills/kosax-reference-first/SKILL.md`
+4. `docs/requirements/ummaya-migration-tree.md`
+5. `.agents/skills/ummaya-reference-first/SKILL.md`
 6. `.references/claude-code-sourcemap/restored-src/`
 7. Local adapter docs under `docs/api/`, `specs/`, and local downloaded agency docs
 8. Official agency/API/standard/vendor documentation
@@ -37,13 +37,13 @@ Research material discovery is also a skill-driven workflow. Do not search for r
 
 Before collecting or using research material, explicitly invoke and follow:
 
-- `$kosax-reference-first`
-- Skill file: `.agents/skills/kosax-reference-first/SKILL.md`
+- `$ummaya-reference-first`
+- Skill file: `.agents/skills/ummaya-reference-first/SKILL.md`
 
 This skill is mandatory for:
 
 - Finding CC restored-source reference paths.
-- Finding KOSAX canonical docs and active spec artifacts.
+- Finding UMMAYA canonical docs and active spec artifacts.
 - Finding adapter/API docs under `docs/api/`, `specs/`, and local downloaded agency documents.
 - Deciding when external primary-source research is required.
 - Enforcing direct `curl` as first-class evidence for live public API endpoint/key/parameter validation.
@@ -56,14 +56,14 @@ Every research pass must output a research-source ledger with:
 - Skill used.
 - Query or file-search pattern used.
 - Source path or URL.
-- Source authority level: CC source, KOSAX canonical doc, local adapter doc, official primary source, upstream open source, community secondary source.
+- Source authority level: CC source, UMMAYA canonical doc, local adapter doc, official primary source, upstream open source, community secondary source.
 - Decision supported by that source.
 - Unknowns or blocked evidence.
 
 ## Hard Rules
 
-- Use `kosax-reference-first` before planning or editing runtime behavior.
-- Use `kosax-reference-first` before research-material discovery for KOSAX runtime, adapter, TUI, tool-loop, workflow, or verification decisions.
+- Use `ummaya-reference-first` before planning or editing runtime behavior.
+- Use `ummaya-reference-first` before research-material discovery for UMMAYA runtime, adapter, TUI, tool-loop, workflow, or verification decisions.
 - Read CC restored source before changing tool loop, permission UX, TUI rendering, keybindings, context assembly, IPC, error handling, or debug infrastructure.
 - Do not modify `.references/`.
 - Do not add hardcoded routing, keyword gates, static service matrices, static policy tables, or fallback branches.
@@ -75,13 +75,13 @@ Every research pass must output a research-source ledger with:
 - For live APIs, prove credential acceptance/rejection, endpoint URL, required fields, optional fields, encoded parameter values, response headers, result code, total count, and payload shape.
 - If an official live API returns zero results, first prove the request is valid before proposing alternate paths.
 - Never call live government, identity, payment, certificate, utility, or citizen-infrastructure channels from CI tests.
-- Privileged actions must be evidence-graded mock unless KOSAX has official credential, legal authority, and documented permission policy.
-- Permission classification must cite agency policy; KOSAX must not invent policy classes.
+- Privileged actions must be evidence-graded mock unless UMMAYA has official credential, legal authority, and documented permission policy.
+- Permission classification must cite agency policy; UMMAYA must not invent policy classes.
 - Tool errors must remain visible, styled as errors, inspectable, and traceable.
 - Source code text must be English except Korean domain data.
 - Use stdlib `logging`; no `print()` outside CLI output layers.
 - Use Pydantic v2 for tool I/O; do not use `Any`.
-- Use env vars prefixed `KOSAX_`; never commit `.env`, `secrets/`, or local Codex config.
+- Use env vars prefixed `UMMAYA_`; never commit `.env`, `secrets/`, or local Codex config.
 - Do not add dependencies outside a spec-driven PR.
 - Do not introduce Go or Rust. TypeScript is allowed only in the TUI layer.
 - Do not commit files over 1 MB without asking.
@@ -148,16 +148,16 @@ Anti-patterns that invalidate a success claim:
 
 ## LLMOps Rendering-Flow Verification
 
-Use the LLMOps rendering verification infrastructure researched for KOSAX. Do not perform rendering checks as isolated screenshot review. Every real-use scenario must be evaluated as a correlated execution trace from model reasoning to final terminal pixels.
+Use the LLMOps rendering verification infrastructure researched for UMMAYA. Do not perform rendering checks as isolated screenshot review. Every real-use scenario must be evaluated as a correlated execution trace from model reasoning to final terminal pixels.
 
 Use Langfuse/OTEL trace ids, `correlation_id`, `transaction_id`, and `frame_seq` as join keys across:
 
 - User input event and input-mode state.
 - `chat_request` frame carrying conversation history and tool definitions.
-- LLM streaming chunks, including `kosax.llm.chunk` timing when available.
+- LLM streaming chunks, including `ummaya.llm.chunk` timing when available.
 - Tool selection, normalized tool arguments, adapter dispatch, adapter result, and adapter error.
 - `permission_request` and `permission_response` frames.
-- `kosax.tui.frame_commit` render events and frame hashes when available.
+- `ummaya.tui.frame_commit` render events and frame hashes when available.
 - Bun PTY / tmux / vhs / frame snapshot artifacts.
 - Expanded transcript/tool-detail capture visible to the user.
 - Scenario audit result and root-cause note.
@@ -199,7 +199,7 @@ The LLMOps verdict must fail the scenario even if process exit code is zero when
 
 Repeat this loop until acceptance criteria pass.
 
-1. Research: invoke `$kosax-reference-first`, then read the relevant KOSAX docs, CC restored source, local adapter docs, official API docs, and only then secondary open-source/community references for implementation insight. For OpenAI/Codex behavior, also invoke `openai-docs`.
+1. Research: invoke `$ummaya-reference-first`, then read the relevant UMMAYA docs, CC restored source, local adapter docs, official API docs, and only then secondary open-source/community references for implementation insight. For OpenAI/Codex behavior, also invoke `openai-docs`.
 2. Analyze: reproduce the issue with real user-like TUI/PTY flow and full-frame captures. Inspect the entire frame sequence, not only the final screen.
 3. Locate root cause: identify the exact contract boundary that allowed the abnormal flow.
 4. Fix: change the root boundary with the smallest reference-grounded patch. No fallback, static special case, or symptom-only patch.
@@ -213,7 +213,7 @@ Three failed symptom fixes in a row means stop, capture the timeline, and re-eva
 
 ## Scenario Coverage
 
-Build and run broad real-use scenarios from KOSAX' ultimate goal. Include both happy paths and failure/recovery paths.
+Build and run broad real-use scenarios from UMMAYA' ultimate goal. Include both happy paths and failure/recovery paths.
 
 - Emergency: child fever near Hadan Station, resolve location first, then NMC emergency lookup.
 - Weather/safety: Busan Saha-gu Dadae 1-dong weather, resolve location first, then KMA current/forecast flow.
@@ -254,7 +254,7 @@ If a full gate is blocked, state the exact blocker and run the strongest safe su
 
 The goal is complete only when all of these are true:
 
-- KOSAX still implements the CC harness migration thesis with only the sanctioned swaps.
+- UMMAYA still implements the CC harness migration thesis with only the sanctioned swaps.
 - The five primitive abstraction works across the scenario matrix.
 - Recoverable tool validation errors do not terminate the agentic loop.
 - Missing data is resolved through available tools or surfaced as structured citizen input, not guessed or silently abandoned.
@@ -272,4 +272,4 @@ The goal is complete only when all of these are true:
 
 ## First Turn Instruction
 
-Start by invoking `$kosax-reference-first` and reading the source-of-truth hierarchy above. Then write the research-source ledger and reference bootstrap note before editing anything. Reproduce the highest-risk current flows with real-use TUI/PTY captures, starting with permission flow and public-service adapter parameter recovery. Continue the RALF loop until KOSAX is packaging-ready by the acceptance criteria, or stop only when a blocker is proven with exact file references, command output, and evidence.
+Start by invoking `$ummaya-reference-first` and reading the source-of-truth hierarchy above. Then write the research-source ledger and reference bootstrap note before editing anything. Reproduce the highest-risk current flows with real-use TUI/PTY captures, starting with permission flow and public-service adapter parameter recovery. Continue the RALF loop until UMMAYA is packaging-ready by the acceptance criteria, or stop only when a blocker is proven with exact file references, command output, and evidence.

@@ -23,7 +23,7 @@ import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
 } from '../analytics/index.js'
-// KOSAX-original: CC claudeAiLimits not used — always allowed.
+// UMMAYA-original: CC claudeAiLimits not used — always allowed.
 const currentLimits = { status: 'allowed' as const }
 import { isSpeculationEnabled, startSpeculation } from './speculation.js'
 

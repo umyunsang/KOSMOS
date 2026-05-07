@@ -1,7 +1,7 @@
-export const KOSAX_CLI_COMMAND = 'kosax'
-export const KOSAX_CONTINUE_COMMAND = `${KOSAX_CLI_COMMAND} --continue`
-export const KOSAX_PRINT_RESUME_USAGE = `${KOSAX_CLI_COMMAND} -p --resume <session-id>`
+export const UMMAYA_CLI_COMMAND = 'ummaya'
+export const UMMAYA_CONTINUE_COMMAND = `${UMMAYA_CLI_COMMAND} --continue`
+export const UMMAYA_PRINT_RESUME_USAGE = `${UMMAYA_CLI_COMMAND} -p --resume <session-id>`
 
-export function formatKosaxResumeCommand(resumeArg: string): string {
-  return `${KOSAX_CLI_COMMAND} --resume ${resumeArg}`
+export function formatUmmayaResumeCommand(resumeArg: string): string {
+  return `${UMMAYA_CLI_COMMAND} --resume ${resumeArg}`
 }

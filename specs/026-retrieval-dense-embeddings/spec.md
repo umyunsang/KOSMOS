@@ -11,11 +11,11 @@
 
 ### 1. Current retrieval stack (verified in this worktree)
 
-`lookup(mode="search")` resolves to `kosax.tools.search.search()` → `ToolRegistry.bm25_index.score(query)` → `rank_bm25.BM25Okapi.get_scores()` with a kiwipiepy morpheme tokenizer (POS-filtered: NNG/NNP/VV/VA/SL; ASCII fallback to whitespace). Ranked `AdapterCandidate` objects flow back through `lookup.py` to the LLM as `LookupSearchResult(kind="search", candidates=…)`. Adaptive `top_k = max(1, min(k, registry_size, 20))` comes from `KOSAX_LOOKUP_TOPK`.
+`lookup(mode="search")` resolves to `ummaya.tools.search.search()` → `ToolRegistry.bm25_index.score(query)` → `rank_bm25.BM25Okapi.get_scores()` with a kiwipiepy morpheme tokenizer (POS-filtered: NNG/NNP/VV/VA/SL; ASCII fallback to whitespace). Ranked `AdapterCandidate` objects flow back through `lookup.py` to the LLM as `LookupSearchResult(kind="search", candidates=…)`. Adaptive `top_k = max(1, min(k, registry_size, 20))` comes from `UMMAYA_LOOKUP_TOPK`.
 
 ### 2. Measured baseline — saturation problem
 
-Running `kosax.eval.retrieval._evaluate()` against the committed 30-query set in `eval/retrieval_queries.yaml` (4 seed adapters) produces:
+Running `ummaya.eval.retrieval._evaluate()` against the committed 30-query set in `eval/retrieval_queries.yaml` (4 seed adapters) produces:
 
 | Metric | Value |
 |---|---|
@@ -51,29 +51,29 @@ A citizen types "아이 열이 40도 넘어요 지금 응급실 가려면 어디
 
 **Why this priority**: This is the entire motivation of Epic #585. Without a paraphrase-robust retrieval layer, users are forced to mimic the tool's `search_hint` vocabulary — which is exactly the failure mode that Claude Code / K-AI-2026 discoverability principle 8/9 forbids.
 
-**Independent Test**: Can be fully tested by running the adversarial paraphrase subset (`eval/retrieval_queries_adversarial.yaml`, authored in this PR) with `KOSAX_RETRIEVAL_BACKEND=hybrid` vs `bm25` and asserting SC-02 thresholds. No live API calls.
+**Independent Test**: Can be fully tested by running the adversarial paraphrase subset (`eval/retrieval_queries_adversarial.yaml`, authored in this PR) with `UMMAYA_RETRIEVAL_BACKEND=hybrid` vs `bm25` and asserting SC-02 thresholds. No live API calls.
 
 **Acceptance Scenarios**:
 
-1. **Given** `KOSAX_RETRIEVAL_BACKEND=hybrid` and the adversarial 20-query subset, **When** `lookup(mode="search")` is invoked for each query, **Then** recall@5 ≥ 0.80.
-2. **Given** `KOSAX_RETRIEVAL_BACKEND=bm25` (default) and the same adversarial 20-query subset, **When** `lookup(mode="search")` is invoked, **Then** recall@5 < 0.50 (establishes the gap the hybrid backend must close).
-3. **Given** any `KOSAX_RETRIEVAL_BACKEND` value, **When** a query arrives, **Then** the returned `LookupSearchResult` JSON schema is byte-identical to the committed snapshot (regression gate).
+1. **Given** `UMMAYA_RETRIEVAL_BACKEND=hybrid` and the adversarial 20-query subset, **When** `lookup(mode="search")` is invoked for each query, **Then** recall@5 ≥ 0.80.
+2. **Given** `UMMAYA_RETRIEVAL_BACKEND=bm25` (default) and the same adversarial 20-query subset, **When** `lookup(mode="search")` is invoked, **Then** recall@5 < 0.50 (establishes the gap the hybrid backend must close).
+3. **Given** any `UMMAYA_RETRIEVAL_BACKEND` value, **When** a query arrives, **Then** the returned `LookupSearchResult` JSON schema is byte-identical to the committed snapshot (regression gate).
 
 ---
 
 ### User Story 2 — Zero-change default path (backward compatibility) (Priority: P1)
 
-Existing callers (the tool loop, E2E tests, `lookup(mode="search")` consumers) MUST see no behaviour change unless they explicitly opt into the new backend. `KOSAX_RETRIEVAL_BACKEND` unset or `=bm25` produces identical rankings to today's code — same order, same scores, same `why_matched` strings.
+Existing callers (the tool loop, E2E tests, `lookup(mode="search")` consumers) MUST see no behaviour change unless they explicitly opt into the new backend. `UMMAYA_RETRIEVAL_BACKEND` unset or `=bm25` produces identical rankings to today's code — same order, same scores, same `why_matched` strings.
 
 **Why this priority**: Parent Epic #507 (CLOSED) owns the byte-level contract. Breaking the default path invalidates #507's acceptance evidence and the 30-query gate committed with Spec 022.
 
-**Independent Test**: Can be fully tested by running `tests/eval/test_retrieval_gate.py` with `KOSAX_RETRIEVAL_BACKEND` unset and asserting `recall_at_5 == 1.0`, `recall_at_1 == 0.9333`, plus a JSON-schema snapshot regression test over `LookupSearchInput` / `LookupSearchResult`.
+**Independent Test**: Can be fully tested by running `tests/eval/test_retrieval_gate.py` with `UMMAYA_RETRIEVAL_BACKEND` unset and asserting `recall_at_5 == 1.0`, `recall_at_1 == 0.9333`, plus a JSON-schema snapshot regression test over `LookupSearchInput` / `LookupSearchResult`.
 
 **Acceptance Scenarios**:
 
-1. **Given** `KOSAX_RETRIEVAL_BACKEND` unset, **When** the 30-query gate runs, **Then** `recall_at_5 == 1.0` and `recall_at_1 == 0.9333` exactly (byte-for-byte baseline preservation).
+1. **Given** `UMMAYA_RETRIEVAL_BACKEND` unset, **When** the 30-query gate runs, **Then** `recall_at_5 == 1.0` and `recall_at_1 == 0.9333` exactly (byte-for-byte baseline preservation).
 2. **Given** the committed pydantic schemas for `LookupSearchInput` and `LookupSearchResult`, **When** `model_json_schema()` is exported and compared against a snapshot file, **Then** the diff is empty.
-3. **Given** `KOSAX_RETRIEVAL_BACKEND=dense` and a simulated model-load failure (patched import raises `RuntimeError`), **When** the registry boots, **Then** it degrades to BM25, emits exactly one structured WARN line, and continues to serve the 30-query gate at `recall_at_5 == 1.0`.
+3. **Given** `UMMAYA_RETRIEVAL_BACKEND=dense` and a simulated model-load failure (patched import raises `RuntimeError`), **When** the registry boots, **Then** it degrades to BM25, emits exactly one structured WARN line, and continues to serve the 30-query gate at `recall_at_5 == 1.0`.
 
 ---
 
@@ -83,7 +83,7 @@ Once Epic #22 lands (≥ 4 new adapters, ≥ 20 new queries) the combined ≥ 50
 
 **Why this priority**: The Epic's "+10%p" claim becomes verifiable only on the extended set. Until #22 lands, SC-01 will be marked PENDING in the CI artifact with a WARN, not a FAIL.
 
-**Independent Test**: Can be fully tested by re-running `kosax.eval.retrieval._evaluate()` on the combined corpus under `backend=bm25` and `backend=hybrid` and comparing the two JSON reports. The harness already emits a `per_adapter` breakdown and `registry_size` for audit.
+**Independent Test**: Can be fully tested by re-running `ummaya.eval.retrieval._evaluate()` on the combined corpus under `backend=bm25` and `backend=hybrid` and comparing the two JSON reports. The harness already emits a `per_adapter` breakdown and `registry_size` for audit.
 
 **Acceptance Scenarios**:
 
@@ -124,17 +124,17 @@ A synthetic 100-adapter registry (padded by cloning seed adapters with suffixed 
 
 ### Functional Requirements
 
-- **FR-001 (Pluggable backend)**: `ToolRegistry` MUST resolve its retrieval implementation from a `KOSAX_RETRIEVAL_BACKEND` value in `{bm25, dense, hybrid}` at construction time. Unset → `bm25`. Unknown value → `ValueError` at boot (fail-closed on config).
+- **FR-001 (Pluggable backend)**: `ToolRegistry` MUST resolve its retrieval implementation from a `UMMAYA_RETRIEVAL_BACKEND` value in `{bm25, dense, hybrid}` at construction time. Unset → `bm25`. Unknown value → `ValueError` at boot (fail-closed on config).
 - **FR-002 (Fail-open runtime degradation)**: When `backend ∈ {dense, hybrid}` and model load or tokenizer initialisation fails, the registry MUST degrade to pure BM25, emit exactly one structured WARN log line (keys: `event=retrieval.degraded`, `requested_backend`, `effective_backend=bm25`, `reason`), and continue to serve. Auth/invocation gates MUST remain fail-closed — only the retrieval ordering degrades.
 - **FR-003 (Byte-level contract preservation)**: `LookupSearchInput` and `LookupSearchResult` JSON schemas MUST remain byte-identical to the committed snapshot. `AdapterCandidate` field set, types, and default values MUST remain byte-identical. A schema-snapshot regression test MUST gate CI.
 - **FR-004 (Deterministic tie-break preserved)**: For every backend, the final ranking MUST tie-break on `score DESC, tool_id ASC`. Fusion layers MUST feed this invariant, not replace it.
-- **FR-005 (Adaptive top_k preserved)**: The existing clamp `max(1, min(k, registry_size, 20))` and the `KOSAX_LOOKUP_TOPK` default MUST remain the single place `top_k` is shaped. Dense/hybrid backends operate on the already-clamped value.
+- **FR-005 (Adaptive top_k preserved)**: The existing clamp `max(1, min(k, registry_size, 20))` and the `UMMAYA_LOOKUP_TOPK` default MUST remain the single place `top_k` is shaped. Dense/hybrid backends operate on the already-clamped value.
 - **FR-006 (Reproducibility manifest)**: When `backend ∈ {dense, hybrid}`, the release manifest MUST carry the model weight SHA-256, the tokenizer version, and the embedding dimension. Final field names come from Epic #467; this spec proposes extension fields only.
 - **FR-007 (No new OTEL span attributes)**: This spec MUST NOT introduce new OTEL semantic-convention attribute names. It MAY emit values on attributes already defined by Epic #501 (e.g., a backend tag, if one exists) — otherwise telemetry is log-only via stdlib logging.
 - **FR-008 (No hardcoded synonym/keyword/salvage layer)**: No static synonym lists, query-rewrite heuristics, stopword curations outside of kiwipiepy's POS filter, or salvage loops. Residual miss recovery is the LLM's job, consistent with `feedback_no_hardcoding.md`.
 - **FR-009 (BM25Index interface preserved)**: `BM25Index.rebuild(corpus)` and `BM25Index.score(query) → list[(tool_id, float)]` remain the only contact surface between `ToolRegistry` and the retrieval layer. New backends MUST satisfy an identical `Retriever` protocol so `registry.py` and `search.py` change by dependency injection only.
 - **FR-010 (No model weights in the repo)**: Weight artefacts MUST be resolved via Hugging Face hub cache at install-time or first boot. The repo MUST NOT contain any `*.bin`, `*.safetensors`, or `*.onnx` file > 1 MB. CI MUST NOT download weights; tests use a mocked embedder or the `backend=bm25` default.
-- **FR-011 (Cold-start strategy is configurable)**: Cold-start behaviour (eager at boot vs lazy on first search) MUST be selectable via env var (proposed: `KOSAX_RETRIEVAL_COLD_START ∈ {eager, lazy}`; final name registered via Epic #468). Default: `lazy` — matches current zero-latency-at-boot behaviour for `backend=bm25`.
+- **FR-011 (Cold-start strategy is configurable)**: Cold-start behaviour (eager at boot vs lazy on first search) MUST be selectable via env var (proposed: `UMMAYA_RETRIEVAL_COLD_START ∈ {eager, lazy}`; final name registered via Epic #468). Default: `lazy` — matches current zero-latency-at-boot behaviour for `backend=bm25`.
 - **FR-012 (Adversarial eval subset authored in-PR)**: The PR MUST deliver `eval/retrieval_queries_adversarial.yaml` with ≥ 20 queries that have zero lexical overlap with any adapter's `search_hint` token set. The harness MUST accept this file as a secondary eval surface alongside the existing `eval/retrieval_queries.yaml`.
 - **FR-013 (Extended-corpus A/B posture)**: If Epic #22 has landed at merge time, SC-01 MUST be evaluated against the combined corpus. If #22 has not landed, the harness MUST emit `PENDING_#22` (not a pass, not a fail) on SC-01 and document this in the CI artifact.
 
@@ -151,7 +151,7 @@ A synthetic 100-adapter registry (padded by cloning seed adapters with suffixed 
 ### Key Entities
 
 - **Retriever (protocol)**: `rebuild(corpus: dict[str, str]) -> None` + `score(query: str) -> list[tuple[str, float]]`. Mirrors the existing `BM25Index` surface so the registry swaps by DI.
-- **BM25Backend**: Current implementation, unchanged externally. May wrap `kosax.tools.bm25_index.BM25Index` verbatim.
+- **BM25Backend**: Current implementation, unchanged externally. May wrap `ummaya.tools.bm25_index.BM25Index` verbatim.
 - **DenseBackend**: Holds a sentence-transformer-style encoder + a numpy or FAISS vector index. Implements `rebuild` (tokenize → embed → index) and `score` (embed query → cosine / IP → `[(tool_id, score)]`).
 - **HybridBackend**: Composes one BM25Backend + one DenseBackend under a fusion algorithm (RRF default at k=60 per Cormack 2009, or RSF per Weaviate 2024). Returns a single fused ranking.
 - **RetrievalManifest**: Structured record `{ backend, model_id, weight_sha256, tokenizer_version, embedding_dim, built_at }` surfaced into the Epic #467 release manifest.
@@ -166,8 +166,8 @@ A synthetic 100-adapter registry (padded by cloning seed adapters with suffixed 
 - **SC-001 (Extended-corpus recall uplift)**: On the Epic-#22-extended query set (≥ 50 queries over ≥ 8 adapters), `backend=hybrid` MUST achieve recall@5 ≥ 0.90 AND recall@1 ≥ (bm25_recall@1 + 0.05). If #22 has not landed at merge time, this SC is `PENDING_#22` and MUST NOT be marked green.
 - **SC-002 (Adversarial paraphrase robustness)**: On `eval/retrieval_queries_adversarial.yaml` (≥ 20 queries, zero lexical overlap with `search_hint` tokens), `backend=hybrid` MUST achieve recall@5 ≥ 0.80 AND `backend=bm25` MUST remain < 0.50 — demonstrating the synonym-robustness hypothesis that motivated the epic.
 - **SC-003 (Performance envelope)**: On a synthetic 100-adapter padded registry, `backend=hybrid` p99 per-query search latency MUST stay < 50 ms. `backend=bm25` p99 MUST stay within ±10% of the pre-#585 baseline on the same padded registry.
-- **SC-004 (Contract preservation)**: With `KOSAX_RETRIEVAL_BACKEND` unset (default `bm25`), 100% of the committed schema snapshot test and 100% of the existing `tests/eval/test_retrieval_gate.py` suite MUST pass. `recall_at_5 == 1.0`, `recall_at_1 == 0.9333` byte-for-byte on the committed 30-query set.
-- **SC-005 (Graceful degradation)**: With `KOSAX_RETRIEVAL_BACKEND=dense` and a forced model-load failure, the registry MUST serve zero 5xx, emit exactly one structured WARN line with `event=retrieval.degraded`, and continue to satisfy SC-004 thresholds via the BM25 fallback.
+- **SC-004 (Contract preservation)**: With `UMMAYA_RETRIEVAL_BACKEND` unset (default `bm25`), 100% of the committed schema snapshot test and 100% of the existing `tests/eval/test_retrieval_gate.py` suite MUST pass. `recall_at_5 == 1.0`, `recall_at_1 == 0.9333` byte-for-byte on the committed 30-query set.
+- **SC-005 (Graceful degradation)**: With `UMMAYA_RETRIEVAL_BACKEND=dense` and a forced model-load failure, the registry MUST serve zero 5xx, emit exactly one structured WARN line with `event=retrieval.degraded`, and continue to satisfy SC-004 thresholds via the BM25 fallback.
 
 ---
 
@@ -177,7 +177,7 @@ A synthetic 100-adapter registry (padded by cloning seed adapters with suffixed 
 - Reference CPU for SC-003 is Apple M-series 8-core (primary) or Linux x86_64 8-core (fallback); both are available to CI runners that carry the `reference-cpu` label.
 - Epic #501 will not rename existing OTEL attributes before this spec merges; if it does, the safer log-only telemetry path (FR-007) still holds.
 - Epic #467's release-manifest format is additive (extension fields acceptable); final field names will be reconciled in a follow-on.
-- Epic #468 accepts four new `KOSAX_*` env vars (backend, model id, fusion, cold-start) without objection — names may be renamed by #468 but semantics as specified here MUST survive.
+- Epic #468 accepts four new `UMMAYA_*` env vars (backend, model id, fusion, cold-start) without objection — names may be renamed by #468 but semantics as specified here MUST survive.
 - Users of `lookup(mode="search")` rely only on the public `LookupSearchResult` shape, not on internal score magnitudes (scores are documented as opaque ranking signal, not probabilities).
 
 ---
@@ -230,7 +230,7 @@ Excluded (unless licence confirmation arrives before `/speckit-plan`):
 - **#22 (OPEN, Phase 3 Adapters)** — Corpus extension. Adds ≥ 4 adapters (Gov24, MOLTM vehicle, NHIS, NEMA) and ≥ 20 queries to `eval/retrieval_queries.yaml`. SC-01 becomes measurable only after #22 lands; FR-013 requires `PENDING_#22` status in the interim. Absorbs the closed #579.
 - **#501 (OPEN, OTEL spans)** — Owns `gen_ai.tool.execute`, `gen_ai.tool_loop.iteration`, `gen_ai.resolve_location`, `gen_ai.adapter.request` attribute sets. This spec emits telemetry via stdlib logging only (FR-007). Any new OTEL attribute names require an ADR under #501.
 - **#467 (OPEN, release manifest)** — Weight SHA-256, tokenizer version, and embedding dim enter the manifest. This spec proposes the fields; #467 owns their final names.
-- **#468 (OPEN, env-var registry)** — Four proposed env vars: `KOSAX_RETRIEVAL_BACKEND`, `KOSAX_RETRIEVAL_MODEL_ID`, `KOSAX_RETRIEVAL_FUSION`, `KOSAX_RETRIEVAL_COLD_START` (plus `KOSAX_RETRIEVAL_FUSION_K` if RRF is selected). Names may be adjusted by #468; semantics are load-bearing here.
+- **#468 (OPEN, env-var registry)** — Four proposed env vars: `UMMAYA_RETRIEVAL_BACKEND`, `UMMAYA_RETRIEVAL_MODEL_ID`, `UMMAYA_RETRIEVAL_FUSION`, `UMMAYA_RETRIEVAL_COLD_START` (plus `UMMAYA_RETRIEVAL_FUSION_K` if RRF is selected). Names may be adjusted by #468; semantics are load-bearing here.
 
 ---
 
@@ -244,7 +244,7 @@ Excluded (unless licence confirmation arrives before `/speckit-plan`):
 | Pydantic v2; stdlib logging; no `print()` outside CLI | All new code conforms. WARN on degradation uses `logger.warning(...)` with structured kwargs. |
 | No dependency added outside a spec-driven PR | This IS the spec-driven PR. Proposed new deps: one embedding-model library (`sentence-transformers` or HF `transformers` CPU stack), optionally `faiss-cpu` or `hnswlib`, plus `torch` CPU wheel transitively. Final selection in `/speckit-plan`. |
 | No Go / Rust; TypeScript only for TUI | All additions are Python. |
-| Apache-2.0-compatible model weights only | NFR-License — enforced at **design time** via the shortlist in `research.md` §Models; ko-sroberta / KR-SBERT excluded by default. No runtime licence validation is performed at load; operators who override `KOSAX_RETRIEVAL_MODEL_ID` take responsibility for the chosen slug's licence. |
+| Apache-2.0-compatible model weights only | NFR-License — enforced at **design time** via the shortlist in `research.md` §Models; ko-sroberta / KR-SBERT excluded by default. No runtime licence validation is performed at load; operators who override `UMMAYA_RETRIEVAL_MODEL_ID` take responsibility for the chosen slug's licence. |
 | CPU-only | NFR-CPU — enforced. |
 | No model weights committed to repo (> 1 MB) | FR-010 — enforced; CI MUST NOT download weights. |
 | Korean chat output, English source, no Claude co-author trailer | Session-scoped; not codified in spec. |
@@ -254,7 +254,7 @@ Excluded (unless licence confirmation arrives before `/speckit-plan`):
 ## Clarifications *(resolved 2026-04-17 prior to `/speckit-taskstoissues`)*
 
 1. **Adversarial subset location — RESOLVED**: `eval/retrieval_queries_adversarial.yaml` is authored inside this spec's PR (not gated on Epic #22). Rationale: adversarial queries test retrieval **semantics** (synonym robustness), not adapter breadth; coupling them to adapter delivery would delay SC-002 evidence without payoff.
-2. **Default backend at merge — RESOLVED**: Ship as `KOSAX_RETRIEVAL_BACKEND=bm25` (default) with `hybrid` opt-in for one release cycle. A follow-on Epic (see §Deferred Items — "Default-backend rollout") owns the future flip to `hybrid` default after real-usage signal. Rationale: protects SC-004 (byte-level preservation) and gives ops a zero-cost revert path.
+2. **Default backend at merge — RESOLVED**: Ship as `UMMAYA_RETRIEVAL_BACKEND=bm25` (default) with `hybrid` opt-in for one release cycle. A follow-on Epic (see §Deferred Items — "Default-backend rollout") owns the future flip to `hybrid` default after real-usage signal. Rationale: protects SC-004 (byte-level preservation) and gives ops a zero-cost revert path.
 3. **ko-SBERT licence status — RESOLVED**: `jhgan/ko-sroberta-multitask` and `snunlp/KR-SBERT-V40K-klueNLI-augSTS` are formally **excluded** from the shortlist. They remain excluded until a licence declaration PR is filed upstream and the HF model card carries an explicit Apache-2.0-compatible SPDX identifier. Rationale: NFR-License is a hard rule; shortlist discipline prevents analysis-of-analysis at `/speckit-plan` time.
 
 ---
@@ -264,7 +264,7 @@ Excluded (unless licence confirmation arrives before `/speckit-plan`):
 ### Out of Scope (Permanent)
 
 - **Real-time corpus updates / streaming index rebuild** — not a registry use case at this scale; full rebuild stays < 5 ms on BM25 and is acceptable with a small embed cache on dense.
-- **GPU / CUDA inference** — KOSAX is CPU-only per AGENTS.md.
+- **GPU / CUDA inference** — UMMAYA is CPU-only per AGENTS.md.
 - **Model fine-tuning** — we consume off-the-shelf multilingual weights only.
 - **TypeScript / TUI changes (Layer 7)** — retrieval lives entirely in the Python tool layer.
 - **Changes to any adapter body or `GovAPITool` schema** — Spec 024/025 V1–V6 invariants are load-bearing.
@@ -277,7 +277,7 @@ Excluded (unless licence confirmation arrives before `/speckit-plan`):
 | New OTEL span attributes for retrieval (e.g., `retrieval.backend`, `retrieval.latency_ms`, `retrieval.fusion`) | Attribute namespace owned by #501; this spec is log-only. | Epic #501 | #501 |
 | Final release-manifest field names for weight SHA-256 / tokenizer version / embedding dim | Manifest format owned by #467. | Epic #467 | #467 |
 | Canonical env-var names (final strings) | Env-var registry owned by #468. | Epic #468 | #468 |
-| Default-backend rollout — flip `KOSAX_RETRIEVAL_BACKEND` default from `bm25` to `hybrid` after one release cycle of real-usage signal (supersedes the earlier split "aggressive rollout" row; same concern, single follow-up). | Clarification #2 locks in conservative default for this spec; the flip itself is a separate release decision that needs an independent SC on real-traffic recall. | Follow-on Epic (post-#585) | #779 |
+| Default-backend rollout — flip `UMMAYA_RETRIEVAL_BACKEND` default from `bm25` to `hybrid` after one release cycle of real-usage signal (supersedes the earlier split "aggressive rollout" row; same concern, single follow-up). | Clarification #2 locks in conservative default for this spec; the flip itself is a separate release decision that needs an independent SC on real-traffic recall. | Follow-on Epic (post-#585) | #779 |
 | Adapter growth beyond #22 (Phase 4 adapters) | Out of retrieval-layer scope. | Phase 4 | Phase 4 umbrella |
 
 ---
@@ -301,7 +301,7 @@ Excluded (unless licence confirmation arrives before `/speckit-plan`):
 }
 ```
 
-Method: direct invocation of `kosax.eval.retrieval._build_registry()` + `_evaluate()` on the committed 4-seed-adapter registry and `eval/retrieval_queries.yaml`. No live API calls. The saturated `recall_at_5 = 1.0` is the specific justification for the SC re-anchoring above.
+Method: direct invocation of `ummaya.eval.retrieval._build_registry()` + `_evaluate()` on the committed 4-seed-adapter registry and `eval/retrieval_queries.yaml`. No live API calls. The saturated `recall_at_5 = 1.0` is the specific justification for the SC re-anchoring above.
 
 ---
 
@@ -311,5 +311,5 @@ Method: direct invocation of `kosax.eval.retrieval._build_registry()` + `_evalua
 2. Commit the snapshot.
 3. A pytest-level snapshot-comparison test (`tests/retrieval/test_schema_snapshot.py`) fails on any diff.
 4. `AdapterCandidate.model_json_schema()` snapshot is committed and compared the same way.
-5. The 30-query gate (`tests/eval/test_retrieval_gate.py`) is run under `KOSAX_RETRIEVAL_BACKEND=bm25` as SC-004 evidence.
+5. The 30-query gate (`tests/eval/test_retrieval_gate.py`) is run under `UMMAYA_RETRIEVAL_BACKEND=bm25` as SC-004 evidence.
 6. CI blocks merge on any of steps 3, 4, or 5 failing.

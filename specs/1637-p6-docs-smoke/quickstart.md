@@ -2,11 +2,11 @@
 
 **Spec**: [spec.md](./spec.md) | **Plan**: [plan.md](./plan.md) | **Date**: 2026-04-26
 
-This quickstart validates spec User Story 1 (Priority P1) and Success Criterion SC-007. It documents the exact procedure a contributor follows when discovering a KOSAX adapter from a cold start.
+This quickstart validates spec User Story 1 (Priority P1) and Success Criterion SC-007. It documents the exact procedure a contributor follows when discovering a UMMAYA adapter from a cold start.
 
 ## Goal
 
-A first-time reader (no prior KOSAX knowledge) locates an arbitrary tool spec, verifies its envelope, and consumes its JSON Schema in **under 30 seconds**.
+A first-time reader (no prior UMMAYA knowledge) locates an arbitrary tool spec, verifies its envelope, and consumes its JSON Schema in **under 30 seconds**.
 
 ## Pre-requisites
 

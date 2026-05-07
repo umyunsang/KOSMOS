@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSAX-original — Spec 288 Codex P1 integration regression.
+// UMMAYA-original — Spec 288 Codex P1 integration regression.
 //
 // Asserts the bridge between `buildTier1Handlers` and
 // `<KeybindingProviderSetup handlerOverrides={...}>`: once the bags are
@@ -279,7 +279,7 @@ describe('Tier 1 wiring — buildTier1Handlers × KeybindingProviderSetup', () =
     expect(probes.processExitCalls[0]).toBe(0)
   })
 
-  // KOSAX Spec 1979 — Spec 033 permission-mode-cycle test removed.
+  // UMMAYA Spec 1979 — Spec 033 permission-mode-cycle test removed.
 
   it('dispatches history-prev through the real navigator (setDraft fires)', async () => {
     const { probes } = await mount()

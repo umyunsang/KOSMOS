@@ -1,6 +1,6 @@
 Warning: Cannot polyfill `Path2D`, rendering may be broken.
-{"span":"kosax.onboarding.step","step":"splash","kind":"advance","ts":"2026-05-03T08:14:10.845Z"}
-{"span":"kosax.onboarding.step","step":"done","kind":"enter","ts":"2026-05-03T08:14:10.849Z"}
+{"span":"ummaya.onboarding.step","step":"splash","kind":"advance","ts":"2026-05-03T08:14:10.845Z"}
+{"span":"ummaya.onboarding.step","step":"done","kind":"enter","ts":"2026-05-03T08:14:10.849Z"}
 
  966 pass
  11 skip

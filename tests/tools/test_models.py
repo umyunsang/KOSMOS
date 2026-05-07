@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Unit tests for GovAPITool and ToolResult validation in kosax.tools.models."""
+"""Unit tests for GovAPITool and ToolResult validation in ummaya.tools.models."""
 
 import pytest
 from pydantic import BaseModel, ValidationError
 
-from kosax.tools.models import GovAPITool, ToolResult
+from ummaya.tools.models import GovAPITool, ToolResult
 
 # ---------------------------------------------------------------------------
 # Helper: minimal valid GovAPITool kwargs (without factory fixture)
@@ -29,7 +29,7 @@ _MINIMAL_KWARGS = {
     "input_schema": _MinimalInput,
     "output_schema": _MinimalOutput,
     "search_hint": "test 테스트 sample",
-    # Note: KOSAX-invented Spec 033/024/025 fields removed in Epic δ #2295.
+    # Note: UMMAYA-invented Spec 033/024/025 fields removed in Epic δ #2295.
     # auth_level / pipa_class / is_irreversible / dpa_reference /
     # requires_auth / is_personal_data are deleted from GovAPITool.
     # Use AdapterRealDomainPolicy for agency-published policy citations.

@@ -8,7 +8,7 @@
 
 | Input | Type | Required | Default | Description |
 |---|---|---|---|---|
-| `kosax-ref` | string | false | `main` | Pin the umyunsang/KOSAX commit the validator code comes from. |
+| `ummaya-ref` | string | false | `main` | Pin the umyunsang/UMMAYA commit the validator code comes from. |
 | `python-version` | string | false | `3.12` | Python version for tests. |
 | `bun-version` | string | false | `1.2` | Bun version (for any TS lint steps). |
 
@@ -22,8 +22,8 @@ Runs on `ubuntu-latest`. Steps execute strictly sequentially; any failure aborts
 1.  Checkout PR HEAD
 2.  Setup Python 3.12 + uv
 3.  Setup Bun 1.2 (only needed if TS lint enabled)
-4.  Install KOSAX validator package (uv add git+https://github.com/umyunsang/KOSAX@<kosax-ref>#subdirectory=src/kosax/plugins)
-5.  Load checklist manifest from KOSAX repo
+4.  Install UMMAYA validator package (uv add git+https://github.com/umyunsang/UMMAYA@<ummaya-ref>#subdirectory=src/ummaya/plugins)
+5.  Load checklist manifest from UMMAYA repo
     (tests/fixtures/plugin_validation/checklist_manifest.yaml — 50 items)
 6.  For each item in manifest, run check_implementation:
     - check_type=static  → AST/regex check via Python helper
@@ -45,7 +45,7 @@ Runs on `ubuntu-latest`. Steps execute strictly sequentially; any failure aborts
 ## Output: PR comment shape
 
 ```markdown
-## KOSAX plugin-validation — 검증 결과 (commit `<sha>`)
+## UMMAYA plugin-validation — 검증 결과 (commit `<sha>`)
 
 **✓ 47 / 50 통과**
 **✗ 3 / 50 실패**
@@ -78,11 +78,11 @@ Runs on `ubuntu-latest`. Steps execute strictly sequentially; any failure aborts
 
 ## Self-test obligation (SC-006)
 
-Every example plugin's repo MUST run this workflow against itself in CI. The `kosax-plugin-template` repo has a meta-test that scaffolds a fresh plugin via `kosax plugin init demo` and runs the workflow against it; expects 50/50 pass. This is CI-gated on every PR to the template.
+Every example plugin's repo MUST run this workflow against itself in CI. The `ummaya-plugin-template` repo has a meta-test that scaffolds a fresh plugin via `ummaya plugin init demo` and runs the workflow against it; expects 50/50 pass. This is CI-gated on every PR to the template.
 
 ## Negative-path matrix (verifies FR-015)
 
-The validator's own test suite (in this repo, `src/kosax/plugins/tests/test_validation_workflow.py`) drives the workflow with synthetic manifests:
+The validator's own test suite (in this repo, `src/ummaya/plugins/tests/test_validation_workflow.py`) drives the workflow with synthetic manifests:
 
 | Synthetic input | Expected outcome |
 |---|---|
@@ -94,7 +94,7 @@ The validator's own test suite (in this repo, `src/kosax/plugins/tests/test_vali
 | Acknowledgment with wrong hash | failure on Q6-PIPA-HASH |
 | `tool_id` not namespaced | failure on Q8-NAMESPACE |
 | `tool_id` overriding root primitive (`lookup`) | failure on Q8-NO-ROOT-OVERRIDE |
-| `otel_attributes` missing `kosax.plugin.id` | failure on Q9-OTEL-ATTR |
+| `otel_attributes` missing `ummaya.plugin.id` | failure on Q9-OTEL-ATTR |
 
 ≥ 5 negative cases per SC-003.
 
@@ -102,7 +102,7 @@ The validator's own test suite (in this repo, `src/kosax/plugins/tests/test_vali
 
 The workflow file itself (`.github/workflows/plugin-validation.yml`) MUST NOT contain hand-coded check logic. All check semantics live in:
 1. `tests/fixtures/plugin_validation/checklist_manifest.yaml` (the 50 rows)
-2. `src/kosax/plugins/checks/q*_*.py` (one helper per item)
+2. `src/ummaya/plugins/checks/q*_*.py` (one helper per item)
 3. `docs/plugins/review-checklist.md` (the human-readable rendering)
 
 A meta-CI step verifies the YAML row count is exactly 50 and that every `check_implementation` reference resolves to an existing function. Drift between Markdown / YAML / Python is caught at this step.

@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSAX-1633 — context-collapse minimal stub.
+// UMMAYA-1633 — context-collapse minimal stub.
 //
 // Original CC module instrumented Anthropic-internal token-budget collapse
-// telemetry (TokenWarning component subscribes to a stats stream). KOSAX
+// telemetry (TokenWarning component subscribes to a stats stream). UMMAYA
 // uses Spec 027 mailbox + Spec 028 OTLP collector for budget tracking;
 // the in-process subscriber is a no-op stream that satisfies the consumer's
 // `getStats()` / `subscribe()` shape.
@@ -26,7 +26,7 @@ export function getStats(): ContextCollapseStats {
 }
 
 export function subscribe(_listener: (stats: ContextCollapseStats) => void): () => void {
-  // No-op subscription — the listener will never fire because KOSAX does
+  // No-op subscription — the listener will never fire because UMMAYA does
   // not run in-process token-budget collapse. Returns an idempotent
   // unsubscribe handle.
   return () => {}

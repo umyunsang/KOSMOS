@@ -90,10 +90,10 @@ describe('waitForFrame helpers', () => {
 
   it('waitForText is sugar for substring match', async () => {
     const r = render(
-      <Stepper steps={['boot', 'KOSAX v0.1.0']} intervalMs={20} />,
+      <Stepper steps={['boot', 'UMMAYA v0.1.0']} intervalMs={20} />,
     )
-    const out = await waitForText(r, 'KOSAX v0.1.0', { deadlineMs: 1000 })
-    expect(out.lastFrame).toContain('KOSAX')
+    const out = await waitForText(r, 'UMMAYA v0.1.0', { deadlineMs: 1000 })
+    expect(out.lastFrame).toContain('UMMAYA')
   })
 
   it('waitForRegex matches a regex predicate', async () => {

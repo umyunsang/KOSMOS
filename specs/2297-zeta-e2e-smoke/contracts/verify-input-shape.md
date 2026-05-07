@@ -1,7 +1,7 @@
 # Contract — Verify Input Shape Translation (FR-008 / 008a / 008b / 009 / 010)
 
 **Date**: 2026-04-30
-**Owner**: Backend (`src/kosax/tools/mvp_surface.py`) + canonical-map module (`src/kosax/tools/verify_canonical_map.py`)
+**Owner**: Backend (`src/ummaya/tools/mvp_surface.py`) + canonical-map module (`src/ummaya/tools/verify_canonical_map.py`)
 
 ## I-V1 — LLM-emitted shape MUST be accepted
 
@@ -51,8 +51,8 @@
 
 **Given** `prompts/system_v1.md` is on disk with the η-shipped `<verify_families>` block.
 
-**Then** the first call to `kosax.tools.verify_canonical_map.resolve_family(...)` MUST:
-- Locate `prompts/system_v1.md` via `KOSAX_PROMPTS_DIR` env (default `<repo_root>/prompts`).
+**Then** the first call to `ummaya.tools.verify_canonical_map.resolve_family(...)` MUST:
+- Locate `prompts/system_v1.md` via `UMMAYA_PROMPTS_DIR` env (default `<repo_root>/prompts`).
 - Read the `<verify_families>` ... `</verify_families>` block.
 - Parse all `mock_verify_*` rows.
 - Return a 10-entry frozen mapping.

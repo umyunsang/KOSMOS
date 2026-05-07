@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSAX-original — no upstream analog.
+// UMMAYA-original — no upstream analog.
 //
 // Thin stdio-MCP client that speaks JSON-RPC 2.0 + MCP to the Python
-// `kosax.ipc.mcp_server` subprocess. This is a SEPARATE client from
+// `ummaya.ipc.mcp_server` subprocess. This is a SEPARATE client from
 // `bridge.ts`, which owns the main REPL session transport (Spec 032).
 // `mcp.ts` spawns its own `mcp_server.py` subprocess on demand for
 // on-demand tool discovery and invocation; it does NOT share the REPL
@@ -25,7 +25,7 @@
 // ---------------------------------------------------------------------------
 
 const MCP_PROTOCOL_VERSION = "2025-06-18";
-const CLIENT_NAME = "kosax-tui";
+const CLIENT_NAME = "ummaya-tui";
 const CLIENT_VERSION = "0.1.0";
 
 /** Handshake cold-path budget: 500 ms (SC-004, contracts/mcp-bridge.md § 2.2). */
@@ -136,7 +136,7 @@ export class MCPProtocolError extends Error {
 }
 
 // ---------------------------------------------------------------------------
-// Log helper (mirrors bridge.ts: KOSAX_TUI_LOG_LEVEL, stderr only)
+// Log helper (mirrors bridge.ts: UMMAYA_TUI_LOG_LEVEL, stderr only)
 // ---------------------------------------------------------------------------
 
 type LogLevel = "DEBUG" | "INFO" | "WARN" | "ERROR";
@@ -149,7 +149,7 @@ const _levelOrder: Record<LogLevel, number> = {
 };
 
 function _getLogLevel(): LogLevel {
-  const raw = (process.env["KOSAX_TUI_LOG_LEVEL"] ?? "WARN").toUpperCase();
+  const raw = (process.env["UMMAYA_TUI_LOG_LEVEL"] ?? "WARN").toUpperCase();
   if (raw in _levelOrder) return raw as LogLevel;
   return "WARN";
 }
@@ -157,29 +157,29 @@ function _getLogLevel(): LogLevel {
 function _log(level: LogLevel, ...args: unknown[]): void {
   if (_levelOrder[level] >= _levelOrder[_getLogLevel()]) {
     process.stderr.write(
-      `[KOSAX MCP ${level}] ${args.map(String).join(" ")}\n`,
+      `[UMMAYA MCP ${level}] ${args.map(String).join(" ")}\n`,
     );
   }
 }
 
 // ---------------------------------------------------------------------------
-// KosaxMCPClient
+// UmmayaMCPClient
 // ---------------------------------------------------------------------------
 
 /**
- * Thin stdio-MCP client for the KOSAX tool subsystem.
+ * Thin stdio-MCP client for the UMMAYA tool subsystem.
  *
- * Spawns `uv run python -m kosax.ipc.mcp_server` as a subprocess and speaks
+ * Spawns `uv run python -m ummaya.ipc.mcp_server` as a subprocess and speaks
  * MCP JSON-RPC 2.0 directly over its stdin/stdout. One request at a time is
  * correlated via incrementing integer ids; responses are matched by id and
  * resolved via per-request Promises.
  *
  * NOTE: this is NOT the same as `bridge.ts`. `bridge.ts` owns the main REPL
- * session IPC channel (Spec 032). `KosaxMCPClient` is an auxiliary client
+ * session IPC channel (Spec 032). `UmmayaMCPClient` is an auxiliary client
  * that talks to a separate `mcp_server.py` subprocess purely for tool
  * discovery and invocation. The two share no state.
  */
-export class KosaxMCPClient {
+export class UmmayaMCPClient {
   private readonly _proc: ReturnType<typeof Bun.spawn>;
   private _nextId = 1;
   private readonly _pending = new Map<number, PendingRequest>();
@@ -188,7 +188,7 @@ export class KosaxMCPClient {
   private _stderrBuffer = "";
 
   constructor() {
-    const cmd = ["uv", "run", "python", "-m", "kosax.ipc.mcp_server"];
+    const cmd = ["uv", "run", "python", "-m", "ummaya.ipc.mcp_server"];
     _log("INFO", `Spawning MCP server: ${cmd.join(" ")}`);
 
     this._proc = Bun.spawn(cmd, {
@@ -251,7 +251,7 @@ export class KosaxMCPClient {
     if (elapsedMs > COLD_BUDGET_MS * 2) {
       _log(
         "WARN",
-        `MCP cold-path handshake exceeded 2x budget (${COLD_BUDGET_MS * 2}ms): actual=${elapsedMs}ms; kosax.mcp.handshake_ms=${elapsedMs}`,
+        `MCP cold-path handshake exceeded 2x budget (${COLD_BUDGET_MS * 2}ms): actual=${elapsedMs}ms; ummaya.mcp.handshake_ms=${elapsedMs}`,
       );
     }
 

@@ -8,7 +8,7 @@
 ## Content Quality
 
 - [x] No implementation details (languages, frameworks, APIs) — spec describes WHAT (primitives, adapters, registry, MCP bridge as concepts) and WHY; concrete file paths appear only as anchors for the audit-trail FR/SC and the Background section, not as prescribed implementations
-- [x] Focused on user value and business needs — User Stories 1–4 lead with citizen and operator outcomes; Background ties P3 to the KOSAX mission anchor
+- [x] Focused on user value and business needs — User Stories 1–4 lead with citizen and operator outcomes; Background ties P3 to the UMMAYA mission anchor
 - [x] Written for non-technical stakeholders — User Stories use citizen-facing language; technical terms (BM25, MCP, OTEL) appear only where the existing canonical references already establish them
 - [x] All mandatory sections completed — User Scenarios, Requirements, Success Criteria, Assumptions, Scope Boundaries all present
 

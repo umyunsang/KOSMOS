@@ -16,13 +16,13 @@ import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 
 // ---------------------------------------------------------------------------
-// Test isolation: override the SESSIONS_DIR by pointing KOSAX_MEMDIR_USER
+// Test isolation: override the SESSIONS_DIR by pointing UMMAYA_MEMDIR_USER
 // ---------------------------------------------------------------------------
 
-const TMP_ROOT = join(tmpdir(), `kosax-history-reader-test-${Date.now()}`)
+const TMP_ROOT = join(tmpdir(), `ummaya-history-reader-test-${Date.now()}`)
 const SESSIONS_DIR = join(TMP_ROOT, 'sessions')
 
-const ORIG_KOSAX_MEMDIR_USER = process.env.KOSAX_MEMDIR_USER
+const ORIG_UMMAYA_MEMDIR_USER = process.env.UMMAYA_MEMDIR_USER
 
 // Session UUIDs
 const SESSION_WITH_SENTINEL = 'aaaaaaaa-0000-0000-0000-000000000001'
@@ -112,15 +112,15 @@ beforeEach(() => {
     ].join('\n'),
   )
 
-  // Point KOSAX_MEMDIR_USER at our temp dir so history.ts reads from SESSIONS_DIR
-  process.env.KOSAX_MEMDIR_USER = TMP_ROOT
+  // Point UMMAYA_MEMDIR_USER at our temp dir so history.ts reads from SESSIONS_DIR
+  process.env.UMMAYA_MEMDIR_USER = TMP_ROOT
 })
 
 afterEach(() => {
-  if (ORIG_KOSAX_MEMDIR_USER === undefined) {
-    delete process.env.KOSAX_MEMDIR_USER
+  if (ORIG_UMMAYA_MEMDIR_USER === undefined) {
+    delete process.env.UMMAYA_MEMDIR_USER
   } else {
-    process.env.KOSAX_MEMDIR_USER = ORIG_KOSAX_MEMDIR_USER
+    process.env.UMMAYA_MEMDIR_USER = ORIG_UMMAYA_MEMDIR_USER
   }
   try {
     rmSync(TMP_ROOT, { recursive: true, force: true })
@@ -207,7 +207,7 @@ test('history reader permission_layer is empty array when no annotations present
 test('Audit-7 P0-4: history reader walks sanitized-cwd subdirectories (CC-style projects layout)', async () => {
   // Pre-populate: simulate /migrate-sessions output (subdirectory layout
   // with a real CC-style session JSONL inside).
-  const subDir = join(SESSIONS_DIR, '-Users-um-yunsang-KOSAX-tui')
+  const subDir = join(SESSIONS_DIR, '-Users-um-yunsang-UMMAYA-tui')
   mkdirSync(subDir, { recursive: true })
   const SUBDIR_SESSION = 'ffffffff-0000-0000-0000-000000000099'
   writeFileSync(

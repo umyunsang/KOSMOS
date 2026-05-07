@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 220" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="720" y2="220" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#111827"/>
+      <stop offset="100%" stop-color="#1f2937"/>
+    </linearGradient>
+    <linearGradient id="home" x1="42" y1="32" x2="166" y2="188" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#ea580c"/>
+    </linearGradient>
+    <linearGradient id="door" x1="70" y1="85" x2="138" y2="170" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#7c2d12"/>
+      <stop offset="100%" stop-color="#431407"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="720" height="220" rx="24" fill="url(#bg)"/>
+  <g transform="translate(34 24)">
+    <path d="M86 0 172 70H150V166H22V70H0L86 0Z" fill="url(#home)"/>
+    <rect x="48" y="76" width="76" height="88" rx="22" fill="url(#door)"/>
+    <text x="86" y="134" text-anchor="middle" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="56" font-weight="800" fill="#ffedd5">U</text>
+    <path d="M40 18C54 4 70 -3 86 -3C102 -3 118 4 132 18" stroke="#fdba74" stroke-width="8" stroke-linecap="round"/>
+    <path d="M54 178H118" stroke="#fb923c" stroke-width="8" stroke-linecap="round"/>
+    <path d="M66 194H106" stroke="#34d399" stroke-width="6" stroke-linecap="round"/>
+  </g>
+
+  <text x="250" y="96" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="56" font-weight="800" fill="#f8fafc">UMMAYA</text>
+  <text x="252" y="132" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="15" font-weight="600" fill="#fdba74">UNIFIED MULTI-MINISTRY AGENT</text>
+  <text x="252" y="160" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="14" font-weight="400" fill="#cbd5e1">for your administration</text>
+</svg>

@@ -13,9 +13,9 @@ from uuid import uuid4
 
 import pytest
 
-from kosax.agents.coordinator import Coordinator
-from kosax.agents.mailbox.messages import AgentMessage
-from kosax.agents.plan import PlanStatus
+from ummaya.agents.coordinator import Coordinator
+from ummaya.agents.mailbox.messages import AgentMessage
+from ummaya.agents.plan import PlanStatus
 from tests.agents.conftest import StubLLMClient, build_test_registry
 
 # ---------------------------------------------------------------------------
@@ -102,7 +102,7 @@ async def test_solo_mode_mailbox_receives_no_worker_messages() -> None:
     await coordinator.run("Citizens query.")
 
     # No messages from workers in the mailbox
-    from kosax.agents.mailbox.messages import MessageType
+    from ummaya.agents.mailbox.messages import MessageType
 
     worker_message_types = {MessageType.task, MessageType.result, MessageType.error}
     for msg in mailbox._messages:
@@ -114,7 +114,7 @@ async def test_solo_mode_mailbox_receives_no_worker_messages() -> None:
 @pytest.mark.asyncio
 async def test_solo_mode_returns_coordinator_plan() -> None:
     """FR-007: solo mode returns a proper CoordinatorPlan instance."""
-    from kosax.agents.plan import CoordinatorPlan
+    from ummaya.agents.plan import CoordinatorPlan
 
     llm = StubLLMClient(responses=['{"steps": [], "message": null}'])
     mailbox = _InMemoryMailbox()

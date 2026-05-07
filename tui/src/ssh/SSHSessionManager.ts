@@ -4,11 +4,11 @@
 //
 // Wraps an SSHSession with a message-pump abstraction the REPL uses to
 // route user input to a remote CLI and collect responses. Upstream CC
-// implements this over a JSONL stdio channel tunneled via SSH; in KOSAX
+// implements this over a JSONL stdio channel tunneled via SSH; in UMMAYA
 // it stays a disconnected shell until Epic #1633 decides whether to port
 // or delete the SSH feature.
 
-// KOSAX-1633 P1+P2 / KOSAX-1978 T011 — utils/teleport/ deleted; stub.
+// UMMAYA-1633 P1+P2 / UMMAYA-1978 T011 — utils/teleport/ deleted; stub.
 type RemoteMessageContent = string | Array<{ type: string; [key: string]: unknown }>
 import type {
   SSHSession,
@@ -32,7 +32,7 @@ export class SSHSessionManager {
   }
 
   /**
-   * Start the SSH connection. In KOSAX this is a no-op — the underlying
+   * Start the SSH connection. In UMMAYA this is a no-op — the underlying
    * transport is deferred to Epic #1633. Returns immediately.
    */
   connect(): void {

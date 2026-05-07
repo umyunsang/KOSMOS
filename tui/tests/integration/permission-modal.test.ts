@@ -137,10 +137,10 @@ describe('T022 Test 2 — deny path', () => {
 // ---------------------------------------------------------------------------
 
 describe('T022 Test 3 — timeout fail-closed', () => {
-  it('Promise resolves to "timeout" when no decision is made within KOSAX_PERMISSION_TIMEOUT_SEC', async () => {
-    const originalEnv = process.env['KOSAX_PERMISSION_TIMEOUT_SEC']
+  it('Promise resolves to "timeout" when no decision is made within UMMAYA_PERMISSION_TIMEOUT_SEC', async () => {
+    const originalEnv = process.env['UMMAYA_PERMISSION_TIMEOUT_SEC']
     // Set 1-second timeout for a fast test.
-    process.env['KOSAX_PERMISSION_TIMEOUT_SEC'] = '1'
+    process.env['UMMAYA_PERMISSION_TIMEOUT_SEC'] = '1'
 
     // Reset so getPermissionTimeoutMs() re-reads the updated env.
     _resetPermissionSlotForTest()
@@ -156,17 +156,17 @@ describe('T022 Test 3 — timeout fail-closed', () => {
       expect(decision).toBe('timeout')
     } finally {
       if (originalEnv === undefined) {
-        delete process.env['KOSAX_PERMISSION_TIMEOUT_SEC']
+        delete process.env['UMMAYA_PERMISSION_TIMEOUT_SEC']
       } else {
-        process.env['KOSAX_PERMISSION_TIMEOUT_SEC'] = originalEnv
+        process.env['UMMAYA_PERMISSION_TIMEOUT_SEC'] = originalEnv
       }
       _resetPermissionSlotForTest()
     }
   }, 5000)
 
   it('getActivePermission returns null after the timeout fires (slot cleared)', async () => {
-    const originalEnv = process.env['KOSAX_PERMISSION_TIMEOUT_SEC']
-    process.env['KOSAX_PERMISSION_TIMEOUT_SEC'] = '1'
+    const originalEnv = process.env['UMMAYA_PERMISSION_TIMEOUT_SEC']
+    process.env['UMMAYA_PERMISSION_TIMEOUT_SEC'] = '1'
     _resetPermissionSlotForTest()
 
     try {
@@ -179,9 +179,9 @@ describe('T022 Test 3 — timeout fail-closed', () => {
       expect(getActivePermission()).toBeNull()
     } finally {
       if (originalEnv === undefined) {
-        delete process.env['KOSAX_PERMISSION_TIMEOUT_SEC']
+        delete process.env['UMMAYA_PERMISSION_TIMEOUT_SEC']
       } else {
-        process.env['KOSAX_PERMISSION_TIMEOUT_SEC'] = originalEnv
+        process.env['UMMAYA_PERMISSION_TIMEOUT_SEC'] = originalEnv
       }
       _resetPermissionSlotForTest()
     }

@@ -50,7 +50,7 @@ describe('PdfInlineViewer (FR-010)', () => {
   test('does not crash for a non-existent path', () => {
     // Should render without throwing (async errors are handled internally).
     const { lastFrame } = render(
-      <PdfInlineViewer pdfPath="/tmp/does-not-exist-kosax-test.pdf" />,
+      <PdfInlineViewer pdfPath="/tmp/does-not-exist-ummaya-test.pdf" />,
     );
     expect(lastFrame).toBeDefined();
   });

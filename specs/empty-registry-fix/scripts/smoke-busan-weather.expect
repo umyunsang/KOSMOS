@@ -18,8 +18,8 @@ set log_path "$spec_dir/smoke-busan-weather-pty.txt"
 spawn script -q $log_path bash -c "cd tui && bun run tui"
 
 expect {
-  -re ".*KOSAX.*" { puts "✓ KOSAX branding observed" }
-  timeout { puts "✗ KOSAX branding not seen — TUI failed to boot"; exit 1 }
+  -re ".*UMMAYA.*" { puts "✓ UMMAYA branding observed" }
+  timeout { puts "✗ UMMAYA branding not seen — TUI failed to boot"; exit 1 }
 }
 
 sleep 6

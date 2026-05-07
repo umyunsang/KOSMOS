@@ -83,7 +83,7 @@ export function dumpTier1Catalogue(): ReadonlyArray<Tier1CatalogueLine> {
  */
 export function renderTier1CatalogueText(): string {
   const lines: string[] = [
-    '## KOSAX Tier 1 Keybindings / 단축키 목록',
+    '## UMMAYA Tier 1 Keybindings / 단축키 목록',
     '',
   ]
   for (const item of dumpTier1Catalogue()) {

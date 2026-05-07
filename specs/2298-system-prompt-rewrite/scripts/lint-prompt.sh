@@ -59,7 +59,7 @@ else
 fi
 
 # Check 3c: Verbatim no-tool fallback phrase
-SENTENCE_3C='현재 KOSAX가 다루는 공공 데이터로는 답할 수 없습니다'
+SENTENCE_3C='현재 UMMAYA가 다루는 공공 데이터로는 답할 수 없습니다'
 if grep -qF "$SENTENCE_3C" "$FILE" 2>/dev/null; then
     ok "3c" "verbatim no-tool fallback phrase"
 else

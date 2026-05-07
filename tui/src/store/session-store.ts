@@ -1,6 +1,6 @@
 // Source: .references/claude-code-sourcemap/restored-src/src/state/store.ts (Claude Code 2.1.88, research-use)
 // createStore pattern lifted verbatim; SessionState, Action discriminated union,
-// and useSessionStore hook are KOSAX-original following data-model.md § 3.
+// and useSessionStore hook are UMMAYA-original following data-model.md § 3.
 import { useSyncExternalStore } from 'react'
 import {
   setPendingPermission as _setPendingPermission,
@@ -58,7 +58,7 @@ function createStore<T>(
 }
 
 // ---------------------------------------------------------------------------
-// KOSAX session state — data-model.md § 3
+// UMMAYA session state — data-model.md § 3
 // ---------------------------------------------------------------------------
 
 /** One of the four coordinator phases from Spec 031 */

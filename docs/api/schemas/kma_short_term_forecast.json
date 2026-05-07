@@ -72,7 +72,7 @@
       "type": "object"
     }
   },
-  "$id": "https://kosax.example/api/schemas/kma_short_term_forecast.json",
+  "$id": "https://ummaya.example/api/schemas/kma_short_term_forecast.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Input parameters for the KMA short-term forecast (단기예보) API.",
   "properties": {

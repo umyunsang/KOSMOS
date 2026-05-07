@@ -8,35 +8,35 @@ This is a configuration-schema Epic, not a persistence Epic. The "entities" belo
 
 ## 1. `RequiredVar`
 
-Represents a `KOSAX_*` (or allowlisted non-`KOSAX_*`, i.e. `LANGFUSE_*`) environment variable that the guard checks for non-empty presence at CLI start-up.
+Represents a `UMMAYA_*` (or allowlisted non-`UMMAYA_*`, i.e. `LANGFUSE_*`) environment variable that the guard checks for non-empty presence at CLI start-up.
 
 **Fields**:
 
 | Field | Type | Constraints | Purpose |
 |-------|------|-------------|---------|
-| `name` | `str` | matches `^(KOSAX|LANGFUSE)_[A-Z0-9_]+$` | exact env var name |
-| `consumer` | `str` | non-empty | module path that reads this var (e.g., `kosax.settings.KosaxSettings`) |
+| `name` | `str` | matches `^(UMMAYA|LANGFUSE)_[A-Z0-9_]+$` | exact env var name |
+| `consumer` | `str` | non-empty | module path that reads this var (e.g., `ummaya.settings.UmmayaSettings`) |
 | `required_in` | `frozenset[Literal["dev", "ci", "prod"]]` | non-empty subset | environments where this var MUST be non-empty |
-| `doc_anchor` | `str` | non-empty | slug into `docs/configuration.md` (e.g., `#kosax_kakao_api_key`) |
+| `doc_anchor` | `str` | non-empty | slug into `docs/configuration.md` (e.g., `#ummaya_kakao_api_key`) |
 
 **Invariants**:
-- `name` MUST start with `KOSAX_` unless explicitly allowlisted (currently `LANGFUSE_*` only; FR-040).
+- `name` MUST start with `UMMAYA_` unless explicitly allowlisted (currently `LANGFUSE_*` only; FR-040).
 - `required_in` MUST contain at least one environment; a var with no required environments is a `ConditionalVar`, not `RequiredVar`.
 
 **Examples**:
 
 ```python
 RequiredVar(
-    name="KOSAX_KAKAO_API_KEY",
-    consumer="kosax.settings.KosaxSettings.kakao_api_key",
+    name="UMMAYA_KAKAO_API_KEY",
+    consumer="ummaya.settings.UmmayaSettings.kakao_api_key",
     required_in=frozenset({"dev", "ci", "prod"}),
-    doc_anchor="#kosax_kakao_api_key",
+    doc_anchor="#ummaya_kakao_api_key",
 )
 RequiredVar(
-    name="KOSAX_FRIENDLI_TOKEN",
-    consumer="kosax.llm.config.LLMClientConfig.token",
+    name="UMMAYA_FRIENDLI_TOKEN",
+    consumer="ummaya.llm.config.LLMClientConfig.token",
     required_in=frozenset({"dev", "ci", "prod"}),
-    doc_anchor="#kosax_friendli_token",
+    doc_anchor="#ummaya_friendli_token",
 )
 ```
 
@@ -44,7 +44,7 @@ RequiredVar(
 
 ## 2. `ConditionalVar`
 
-Represents a variable that becomes required *only* when `KOSAX_ENV` takes a specific value. Distinct from `RequiredVar` because `required_in` semantics differ: `ConditionalVar` allows empty `required_in` for dev while still being catalogued.
+Represents a variable that becomes required *only* when `UMMAYA_ENV` takes a specific value. Distinct from `RequiredVar` because `required_in` semantics differ: `ConditionalVar` allows empty `required_in` for dev while still being catalogued.
 
 **Fields** (superset of `RequiredVar`):
 
@@ -62,7 +62,7 @@ Represents a variable that becomes required *only* when `KOSAX_ENV` takes a spec
 ```python
 ConditionalVar(
     name="LANGFUSE_PUBLIC_KEY",
-    consumer="kosax.observability.langfuse (#501)",
+    consumer="ummaya.observability.langfuse (#501)",
     required_in=frozenset({"prod"}),
     conditional_note="Required only in prod where Langfuse export is on; dev/ci use OTel no-op.",
     owner_epic="#501",
@@ -90,11 +90,11 @@ Represents a legacy variable name that the codebase still honours for backward c
 
 ```python
 DeprecatedVar(
-    name="KOSAX_API_KEY",
-    consumer="kosax.permissions.credentials.resolve_credential (global fallback)",
-    replacement="per-provider: KOSAX_KAKAO_API_KEY / KOSAX_DATA_GO_KR_API_KEY",
+    name="UMMAYA_API_KEY",
+    consumer="ummaya.permissions.credentials.resolve_credential (global fallback)",
+    replacement="per-provider: UMMAYA_KAKAO_API_KEY / UMMAYA_DATA_GO_KR_API_KEY",
     removal_target="NEEDS TRACKING — post-#468",
-    doc_anchor="#kosax_api_key-deprecated",
+    doc_anchor="#ummaya_api_key-deprecated",
 )
 ```
 
@@ -104,24 +104,24 @@ The guard treats `DeprecatedVar` like `ConditionalVar` with empty `required_in`:
 
 ## 4. `OverrideFamily`
 
-Represents the `KOSAX_<TOOL_ID>_API_KEY` per-tool override pattern. Not a single var — a **pattern** the audit script must recognise without flagging each concrete expansion as undocumented.
+Represents the `UMMAYA_<TOOL_ID>_API_KEY` per-tool override pattern. Not a single var — a **pattern** the audit script must recognise without flagging each concrete expansion as undocumented.
 
 **Fields**:
 
 | Field | Type | Constraints | Purpose |
 |-------|------|-------------|---------|
-| `pattern` | `str` | matches `^KOSAX_\{[A-Z_]+\}_[A-Z_]+$` | template with `{TOOL_ID}` placeholder |
-| `consumer` | `str` | non-empty | `kosax.permissions.credentials._tool_specific_var` |
-| `expansion_fn` | `str` | non-empty | `lambda tool_id: f"KOSAX_{tool_id.upper()}_API_KEY"` |
+| `pattern` | `str` | matches `^UMMAYA_\{[A-Z_]+\}_[A-Z_]+$` | template with `{TOOL_ID}` placeholder |
+| `consumer` | `str` | non-empty | `ummaya.permissions.credentials._tool_specific_var` |
+| `expansion_fn` | `str` | non-empty | `lambda tool_id: f"UMMAYA_{tool_id.upper()}_API_KEY"` |
 | `doc_anchor` | `str` | non-empty | |
 
 **Examples**:
 
 ```python
 OverrideFamily(
-    pattern="KOSAX_{TOOL_ID}_API_KEY",
-    consumer="kosax.permissions.credentials._tool_specific_var",
-    expansion_fn="lambda tool_id: f'KOSAX_{tool_id.upper()}_API_KEY'",
+    pattern="UMMAYA_{TOOL_ID}_API_KEY",
+    consumer="ummaya.permissions.credentials._tool_specific_var",
+    expansion_fn="lambda tool_id: f'UMMAYA_{tool_id.upper()}_API_KEY'",
     doc_anchor="#per-tool-override-pattern",
 )
 ```
@@ -137,10 +137,10 @@ Human-facing Markdown table. Exactly these columns, in this order, to guarantee 
 ```markdown
 | Variable | Required | Default | Range / Format | Consumed by | Source doc |
 |----------|----------|---------|----------------|-------------|------------|
-| `KOSAX_KAKAO_API_KEY` | yes (all envs) | — | 32-char hex | `kosax.settings` | Kakao Developers Console |
-| `KOSAX_FRIENDLI_TOKEN` | yes (all envs) | — | bearer token | `kosax.llm.config` | FriendliAI Suite |
-| `LANGFUSE_PUBLIC_KEY` | yes (prod only, #501) | — | `pk-lf-…` | `kosax.observability` | Langfuse Cloud |
-| `KOSAX_API_KEY` | **deprecated** | — | — | `kosax.permissions.credentials` (legacy fallback) | — |
+| `UMMAYA_KAKAO_API_KEY` | yes (all envs) | — | 32-char hex | `ummaya.settings` | Kakao Developers Console |
+| `UMMAYA_FRIENDLI_TOKEN` | yes (all envs) | — | bearer token | `ummaya.llm.config` | FriendliAI Suite |
+| `LANGFUSE_PUBLIC_KEY` | yes (prod only, #501) | — | `pk-lf-…` | `ummaya.observability` | Langfuse Cloud |
+| `UMMAYA_API_KEY` | **deprecated** | — | — | `ummaya.permissions.credentials` (legacy fallback) | — |
 | … | | | | | |
 ```
 
@@ -148,45 +148,45 @@ Human-facing Markdown table. Exactly these columns, in this order, to guarantee 
 - Column headers MUST match exactly (case-sensitive).
 - Variable names MUST be wrapped in backticks.
 - `Required` column values MUST be one of: `yes (all envs)`, `yes (prod only, #NNN)`, `yes (ci+prod)`, `conditional (see note)`, `no (opt-in)`, `**deprecated**`.
-- Every variable appearing via `rg 'KOSAX_[A-Z_]+'` in `src/`, `.github/workflows/ci.yml`, `.env.example` MUST have a row (or match an `OverrideFamily` pattern).
+- Every variable appearing via `rg 'UMMAYA_[A-Z_]+'` in `src/`, `.github/workflows/ci.yml`, `.env.example` MUST have a row (or match an `OverrideFamily` pattern).
 
 ---
 
 ## 6. Full Registry Surface (for Phase 2 population)
 
-17 `KOSAX_*` vars confirmed via `rg -hoE "KOSAX_[A-Z_]+" src/ --type py | sort -u`:
+17 `UMMAYA_*` vars confirmed via `rg -hoE "UMMAYA_[A-Z_]+" src/ --type py | sort -u`:
 
 | # | Variable | Source module |
 |---|----------|---------------|
-| 1 | `KOSAX_API_KEY` | `permissions/credentials.py` (deprecated) |
-| 2 | `KOSAX_CLI_HISTORY_SIZE` | `cli/config.py` |
-| 3 | `KOSAX_CLI_SHOW_USAGE` | `cli/config.py` |
-| 4 | `KOSAX_CLI_THEME` | `cli/` (theme) |
-| 5 | `KOSAX_CLI_WELCOME_BANNER` | `cli/config.py` |
-| 6 | `KOSAX_DATA_GO_KR_API_KEY` | `settings.py` |
-| 7 | `KOSAX_FRIENDLI_BASE_URL` | `llm/config.py` |
-| 8 | `KOSAX_FRIENDLI_MODEL` | `llm/config.py` |
-| 9 | `KOSAX_FRIENDLI_TOKEN` | `llm/config.py` |
-| 10 | `KOSAX_JUSO_CONFM_KEY` | `settings.py` |
-| 11 | `KOSAX_KAKAO_API_KEY` | `settings.py` + `permissions/credentials.py` |
-| 12 | `KOSAX_KOROAD_ACCIDENT_SEARCH_API_KEY` | `permissions/credentials.py` (OverrideFamily expansion) |
-| 13 | `KOSAX_KOROAD_API_KEY` | `.github/workflows/ci.yml` test placeholder |
-| 14 | `KOSAX_LLM_SESSION_BUDGET` | `llm/config.py` |
-| 15 | `KOSAX_LOOKUP_TOPK` | `settings.py` |
-| 16 | `KOSAX_SGIS_KEY` | `settings.py` |
-| 17 | `KOSAX_SGIS_SECRET` | `settings.py` |
+| 1 | `UMMAYA_API_KEY` | `permissions/credentials.py` (deprecated) |
+| 2 | `UMMAYA_CLI_HISTORY_SIZE` | `cli/config.py` |
+| 3 | `UMMAYA_CLI_SHOW_USAGE` | `cli/config.py` |
+| 4 | `UMMAYA_CLI_THEME` | `cli/` (theme) |
+| 5 | `UMMAYA_CLI_WELCOME_BANNER` | `cli/config.py` |
+| 6 | `UMMAYA_DATA_GO_KR_API_KEY` | `settings.py` |
+| 7 | `UMMAYA_FRIENDLI_BASE_URL` | `llm/config.py` |
+| 8 | `UMMAYA_FRIENDLI_MODEL` | `llm/config.py` |
+| 9 | `UMMAYA_FRIENDLI_TOKEN` | `llm/config.py` |
+| 10 | `UMMAYA_JUSO_CONFM_KEY` | `settings.py` |
+| 11 | `UMMAYA_KAKAO_API_KEY` | `settings.py` + `permissions/credentials.py` |
+| 12 | `UMMAYA_KOROAD_ACCIDENT_SEARCH_API_KEY` | `permissions/credentials.py` (OverrideFamily expansion) |
+| 13 | `UMMAYA_KOROAD_API_KEY` | `.github/workflows/ci.yml` test placeholder |
+| 14 | `UMMAYA_LLM_SESSION_BUDGET` | `llm/config.py` |
+| 15 | `UMMAYA_LOOKUP_TOPK` | `settings.py` |
+| 16 | `UMMAYA_SGIS_KEY` | `settings.py` |
+| 17 | `UMMAYA_SGIS_SECRET` | `settings.py` |
 
-Plus `KOSAX_THEME` (legacy CLI theme var) observed in `cli/` — include as `DeprecatedVar` if not actively read; or `RequiredVar` with `required_in=frozenset()` if opt-in.
+Plus `UMMAYA_THEME` (legacy CLI theme var) observed in `cli/` — include as `DeprecatedVar` if not actively read; or `RequiredVar` with `required_in=frozenset()` if opt-in.
 
 Plus allowlisted `LANGFUSE_*`: `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, `LANGFUSE_HOST` (#501-owned conditional).
 
-Plus `KOSAX_OTEL_ENDPOINT` (#501-owned conditional).
+Plus `UMMAYA_OTEL_ENDPOINT` (#501-owned conditional).
 
-Plus `KOSAX_NMC_FRESHNESS_MINUTES` (#507-owned; appears in `settings.py`).
+Plus `UMMAYA_NMC_FRESHNESS_MINUTES` (#507-owned; appears in `settings.py`).
 
-Plus `KOSAX_ENV` itself (meta-flag; always optional, default `dev`).
+Plus `UMMAYA_ENV` itself (meta-flag; always optional, default `dev`).
 
-**Expected registry row count**: 18–22 (17 scanned + `KOSAX_ENV` + 2 `LANGFUSE_*` + `KOSAX_OTEL_ENDPOINT` + 1 override-family-pattern row + optional Langfuse host).
+**Expected registry row count**: 18–22 (17 scanned + `UMMAYA_ENV` + 2 `LANGFUSE_*` + `UMMAYA_OTEL_ENDPOINT` + 1 override-family-pattern row + optional Langfuse host).
 
 ---
 
@@ -201,14 +201,14 @@ Output of `scripts/audit-env-registry.py` on drift detection:
   "verdict": "drift" | "clean",
   "findings": {
     "in_code_not_in_registry": [
-      {"name": "KOSAX_NEW_THING", "source_files": ["src/kosax/foo.py:42"]}
+      {"name": "UMMAYA_NEW_THING", "source_files": ["src/ummaya/foo.py:42"]}
     ],
     "in_registry_not_in_code": [
-      {"name": "KOSAX_OLD_THING", "registry_line": 87}
+      {"name": "UMMAYA_OLD_THING", "registry_line": 87}
     ],
     "prefix_violations": [
-      {"name": "MY_BAD_VAR", "source_files": ["src/kosax/bar.py:10"],
-       "reason": "not KOSAX_ prefixed and not in LANGFUSE_ allowlist"}
+      {"name": "MY_BAD_VAR", "source_files": ["src/ummaya/bar.py:10"],
+       "reason": "not UMMAYA_ prefixed and not in LANGFUSE_ allowlist"}
     ],
     "override_family_unmatched": []
   }
@@ -224,7 +224,7 @@ Exit code semantics specified in `contracts/audit-env-registry.md`.
 There are no long-lived states. Configuration is read once at CLI start (via pydantic-settings + the guard's snapshot), and neither the guard nor the audit scripts mutate it. The only "transitions" are:
 
 1. **Missing → Present**: contributor edits `.env`; next CLI launch sees the var. Guard passes.
-2. **Active → Deprecated**: registry row's `Required` column edited to `**deprecated**`; var moves from `RequiredVar` list to `DeprecatedVar` list in `src/kosax/config/guard.py`. Normal PR flow.
+2. **Active → Deprecated**: registry row's `Required` column edited to `**deprecated**`; var moves from `RequiredVar` list to `DeprecatedVar` list in `src/ummaya/config/guard.py`. Normal PR flow.
 3. **Allowlist change**: `LANGFUSE_*` exemption would require constitution-level discussion; not in this Epic's scope.
 
 No DB schema, no migrations, no versioning beyond `schema_version` in the drift-report JSON (bumped only on breaking schema changes).

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSAX-original — Epic #1633 stub restoration · Epic #2077 TDZ fix.
+// UMMAYA-original — Epic #1633 stub restoration · Epic #2077 TDZ fix.
 //
 // CC declares ``const proactiveModule = feature('PROACTIVE') ? require(...) : null;``
 // at module scope in four files. Bun's loader evaluates these at import time,
@@ -7,7 +7,7 @@
 // error when the four files form a circular import graph. Routing through
 // a lazy getter defers the require() to first call, breaking the cycle.
 //
-// KOSAX does not ship the proactive feature (`tui/src/proactive/` does not
+// UMMAYA does not ship the proactive feature (`tui/src/proactive/` does not
 // exist; `feature('PROACTIVE')` and `feature('KAIROS')` always return false).
 // The getter therefore always returns null in production, but the indirection
 // preserves the upstream API for any future Epic that reintroduces it.

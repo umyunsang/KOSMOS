@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: Apache-2.0
-"""KOSAX IPC bridge diagnostic probe — Spec 1978 T079.
+"""UMMAYA IPC bridge diagnostic probe — Spec 1978 T079.
 
 Sends a hand-rolled ChatRequestFrame directly to a freshly-spawned backend
-(``uv run kosax --ipc stdio``) via its stdin pipe, reads all resulting frames
+(``uv run ummaya --ipc stdio``) via its stdin pipe, reads all resulting frames
 from stdout until the process exits or a timeout fires, and pretty-prints each
 frame with its kind, correlation_id, and elapsed time.
 
@@ -58,7 +58,7 @@ def _make_chat_request(
 ) -> dict:
     """Build a minimal ChatRequestFrame dict matching the Pydantic schema.
 
-    Constructs the dict directly (no import of kosax.ipc.frame_schema needed
+    Constructs the dict directly (no import of ummaya.ipc.frame_schema needed
     at the call site) so the probe works even when the package is not installed,
     while still honouring the schema contract.
     """
@@ -94,11 +94,11 @@ def _make_chat_request(
 
 
 def _spawn_backend(env_overrides: dict[str, str]) -> subprocess.Popen:
-    """Spawn ``uv run kosax --ipc stdio`` with pipes on stdin/stdout."""
-    cmd = ["uv", "run", "kosax", "--ipc", "stdio"]
+    """Spawn ``uv run ummaya --ipc stdio`` with pipes on stdin/stdout."""
+    cmd = ["uv", "run", "ummaya", "--ipc", "stdio"]
     env = os.environ.copy()
     env.setdefault("OTEL_SDK_DISABLED", "true")
-    env.setdefault("KOSAX_TUI_LOG_LEVEL", "DEBUG")
+    env.setdefault("UMMAYA_TUI_LOG_LEVEL", "DEBUG")
     env.update(env_overrides)
     log.debug("spawning: %s", " ".join(cmd))
     return subprocess.Popen(  # noqa: S603
@@ -202,7 +202,7 @@ def _try_validate_frames(frames: list[dict]) -> list[str]:
     try:
         from pydantic import TypeAdapter, ValidationError  # type: ignore[import]
 
-        from kosax.ipc.frame_schema import IPCFrame  # type: ignore[import]
+        from ummaya.ipc.frame_schema import IPCFrame  # type: ignore[import]
 
         adapter: TypeAdapter = TypeAdapter(IPCFrame)  # type: ignore[type-arg]
         for i, f in enumerate(frames):
@@ -214,7 +214,7 @@ def _try_validate_frames(frames: list[dict]) -> list[str]:
                     f"{exc.error_count()} validation error(s)"
                 )
     except ImportError:
-        log.debug("kosax package not importable — skipping Pydantic validation")
+        log.debug("ummaya package not importable — skipping Pydantic validation")
     return errors
 
 
@@ -227,7 +227,7 @@ def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="probe-bridge.py",
         description=(
-            "KOSAX IPC bridge diagnostic (Spec 1978 T079). "
+            "UMMAYA IPC bridge diagnostic (Spec 1978 T079). "
             "Spawns the backend, sends one ChatRequestFrame, and pretty-prints the responses."
         ),
     )
@@ -250,7 +250,7 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--validate",
         action="store_true",
-        help="Run Pydantic validation on received frames (requires kosax package installed).",
+        help="Run Pydantic validation on received frames (requires ummaya package installed).",
     )
     parser.add_argument("--debug", action="store_true", help="Enable DEBUG logging to stderr.")
     return parser
@@ -276,7 +276,7 @@ def main(argv: list[str] | None = None) -> int:
     except FileNotFoundError as exc:
         sys.stderr.write(f"[probe-error] could not spawn backend: {exc}\n")
         sys.stderr.write(
-            "[probe-error] ensure 'uv' is on PATH and the kosax package is installed.\n"
+            "[probe-error] ensure 'uv' is on PATH and the ummaya package is installed.\n"
         )
         return 2
 

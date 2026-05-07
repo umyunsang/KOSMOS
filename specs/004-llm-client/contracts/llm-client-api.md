@@ -1,6 +1,6 @@
 # Contract: LLM Client API
 
-**Module**: `kosax.llm`
+**Module**: `ummaya.llm`
 **Date**: 2026-04-12
 
 ## Public Interface
@@ -15,7 +15,7 @@ class LLMClient:
         """Initialize with config. Loads from env vars if config is None.
 
         Raises:
-            ConfigurationError: If KOSAX_FRIENDLI_TOKEN is missing.
+            ConfigurationError: If UMMAYA_FRIENDLI_TOKEN is missing.
         """
 
     async def complete(
@@ -95,32 +95,32 @@ class UsageTracker:
 ## Error Hierarchy
 
 ```python
-class KosaxLLMError(Exception):
+class UmmayaLLMError(Exception):
     """Base exception for all LLM client errors."""
 
-class ConfigurationError(KosaxLLMError):
-    """Missing or invalid configuration (e.g., missing KOSAX_FRIENDLI_TOKEN)."""
+class ConfigurationError(UmmayaLLMError):
+    """Missing or invalid configuration (e.g., missing UMMAYA_FRIENDLI_TOKEN)."""
 
-class BudgetExceededError(KosaxLLMError):
+class BudgetExceededError(UmmayaLLMError):
     """Session token budget exhausted."""
 
-class AuthenticationError(KosaxLLMError):
+class AuthenticationError(UmmayaLLMError):
     """API authentication failed (401/403)."""
 
-class LLMConnectionError(KosaxLLMError):
+class LLMConnectionError(UmmayaLLMError):
     """Endpoint unreachable after retry exhaustion."""
 
-class LLMResponseError(KosaxLLMError):
+class LLMResponseError(UmmayaLLMError):
     """Non-retryable API error (400, 404, 500)."""
 
-class StreamInterruptedError(KosaxLLMError):
+class StreamInterruptedError(UmmayaLLMError):
     """Streaming response interrupted mid-delivery."""
 ```
 
 ## Module Layout
 
 ```
-src/kosax/llm/
+src/ummaya/llm/
 ├── __init__.py          # Public exports: LLMClient, models, errors
 ├── client.py            # LLMClient implementation
 ├── models.py            # Pydantic v2 models (ChatMessage, StreamEvent, etc.)

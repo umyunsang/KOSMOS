@@ -63,7 +63,7 @@ function isModifier(s: string): s is Modifier {
  * would let user overrides like `{"meta+k": "history-search"}` load but
  * never match. The schema + `Modifier` union still document `meta` as
  * valid spelling; the normalisation happens silently here to preserve
- * the KOSAX invariant that loader-accepted strings match matcher-emitted
+ * the UMMAYA invariant that loader-accepted strings match matcher-emitted
  * ones. Addresses Codex P2 on PR #1591.
  */
 export function parseChord(input: string): ChordString {

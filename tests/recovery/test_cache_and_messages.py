@@ -5,10 +5,10 @@ from __future__ import annotations
 
 import pytest
 
-from kosax.recovery.cache import CacheEntry, ResponseCache
-from kosax.recovery.classifier import ClassifiedError, ErrorClass
-from kosax.recovery.messages import build_degradation_message
-from kosax.tools.models import GovAPITool
+from ummaya.recovery.cache import CacheEntry, ResponseCache
+from ummaya.recovery.classifier import ClassifiedError, ErrorClass
+from ummaya.recovery.messages import build_degradation_message
+from ummaya.tools.models import GovAPITool
 
 # ---------------------------------------------------------------------------
 # ResponseCache

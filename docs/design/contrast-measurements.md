@@ -1,4 +1,4 @@
-# Contrast Measurements — KOSAX dark theme
+# Contrast Measurements — UMMAYA dark theme
 
 **Generated**: 2026-04-20T00:28:32.698Z
 **Source**: `tui/src/theme/dark.ts`
@@ -28,8 +28,8 @@ generator script after any palette change and commit the output.
 
 | # | Foreground token | Fg hex | Bg hex | Ratio | Threshold | Pass? |
 |---|---|---|---|---|---|---|
-| 1 | kosaxCore | #6366f1 | #0a0e27 | 4.25 | 3.0 | ✅ |
-| 2 | kosaxCoreShimmer | #a5b4fc | #0a0e27 | 9.53 | 3.0 | ✅ |
+| 1 | ummayaCore | #6366f1 | #0a0e27 | 4.25 | 3.0 | ✅ |
+| 2 | ummayaCoreShimmer | #a5b4fc | #0a0e27 | 9.53 | 3.0 | ✅ |
 | 3 | orbitalRing | #60a5fa | #0a0e27 | 7.47 | 3.0 | ✅ |
 | 4 | orbitalRingShimmer | #c7d2fe | #0a0e27 | 12.74 | 3.0 | ✅ |
 | 5 | diffAdded | #408c56 | #0a0e27 | 4.62 | 3.0 | ✅ |

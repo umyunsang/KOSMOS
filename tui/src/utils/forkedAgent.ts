@@ -18,7 +18,7 @@ import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
 } from '../services/analytics/index.js'
-// KOSAX-original: CC usage accumulation not used with FriendliAI provider.
+// UMMAYA-original: CC usage accumulation not used with FriendliAI provider.
 const accumulateUsage = (a: unknown, _b: unknown): unknown => a
 const updateUsage = (base: unknown, _delta: unknown): unknown => base
 // services/api/logging removed (Spec 2293 cleanup); re-export from emptyUsage.

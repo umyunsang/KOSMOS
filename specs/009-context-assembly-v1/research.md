@@ -16,7 +16,7 @@ This document records the technical unknowns that existed at plan creation and h
 
 **Question**: Is `resolved_tasks` a list of structured objects or plain strings? The spec says "human-readable descriptions of tasks resolved during the session."
 
-**Resolution**: Confirmed in `src/kosax/engine/models.py` line 55:
+**Resolution**: Confirmed in `src/ummaya/engine/models.py` line 55:
 ```python
 resolved_tasks: list[str] = field(default_factory=list)
 ```
@@ -44,7 +44,7 @@ situational = sorted(
 
 **Question**: Can `ChatMessage(role="user", content="")` be constructed? If `AttachmentCollector` accidentally returns an empty string, does `ContextBuilder` produce an invalid message?
 
-**Resolution**: Inspected `src/kosax/llm/models.py`. The `@model_validator` enforces:
+**Resolution**: Inspected `src/ummaya/llm/models.py`. The `@model_validator` enforces:
 ```python
 if self.role in ("system", "user") and self.content is None:
     raise ValueError(...)

@@ -3,7 +3,7 @@
 **Date**: 2026-04-29
 **Status**: Read-only audit complete
 **Authority**:
-- `AGENTS.md § CORE THESIS` — KOSAX = AX-infrastructure callable-channel client
+- `AGENTS.md § CORE THESIS` — UMMAYA = AX-infrastructure callable-channel client
 - `specs/1979-plugin-dx-tui-integration/cc-source-scope-audit.md § 1.1, § 1.2, § 3 (Phase α)` — 1,531 / 73 / 212 / 274 / 68 baseline
 - `specs/1979-plugin-dx-tui-integration/delegation-flow-design.md § 12` — final canonical architecture
 - `.references/claude-code-sourcemap/restored-src/` — CC 2.1.88 byte-identical source-of-truth (research-only)
@@ -20,7 +20,7 @@
 | keep-byte-identical | 1531 | 1531 | +0 |
 | import-candidate    | 67 | 73 | -6 |
 | modified (strictly) | 218 | 212 | +6 |
-| kosax-only         | 274 | 274 | +0 |
+| ummaya-only         | 274 | 274 | +0 |
 | cc-only             | 68 | 68 | +0 |
 | **differing union** | 285 | 285 | +0 |
 
@@ -56,103 +56,103 @@ Import-only diff verification: **67/67 confirmed import-only**, 0 reclassified t
 <details>
 <summary>전체 표 펼치기 (218 rows)</summary>
 
-| # | kosax_path | classification | change_summary | reference |
+| # | ummaya_path | classification | change_summary | reference |
 |---|---|---|---|---|
-| 1 | tui/src/QueryEngine.ts | Legitimate | KOSAX-only 토큰 (KOSAX, EXAONE, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1637 |
+| 1 | tui/src/QueryEngine.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA, EXAONE, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1637 |
 | 2 | tui/src/Tool.ts | Legitimate | Spec id 인용 (1632, 1633) — git 기록 기반 정당 변경 | Specs: #1632, #1633 |
-| 3 | tui/src/assistant/sessionHistory.ts | Legitimate | KOSAX-only 토큰 (KOSAX, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637, 1978 |
-| 4 | tui/src/bridge/bridgeConfig.ts | Legitimate | KOSAX 인프라 디렉토리 (tui/src/bridge/) — 정당 변경 | Spec 287 (TUI Ink+React+Bun) 또는 Spec 032 (IPC std… |
-| 5 | tui/src/bridge/bridgeMain.ts | Legitimate | KOSAX 인프라 디렉토리 (tui/src/bridge/) — 정당 변경 | Spec 287 (TUI Ink+React+Bun) 또는 Spec 032 (IPC std… |
-| 6 | tui/src/bridge/createSession.ts | Legitimate | KOSAX 인프라 디렉토리 (tui/src/bridge/) — 정당 변경 | Spec 287 (TUI Ink+React+Bun) 또는 Spec 032 (IPC std… |
-| 7 | tui/src/bridge/inboundMessages.ts | Legitimate | KOSAX 인프라 디렉토리 (tui/src/bridge/) — 정당 변경 | Spec 287 (TUI Ink+React+Bun) 또는 Spec 032 (IPC std… |
-| 8 | tui/src/bridge/initReplBridge.ts | Legitimate | KOSAX 인프라 디렉토리 (tui/src/bridge/) — 정당 변경 | Spec 287 (TUI Ink+React+Bun) 또는 Spec 032 (IPC std… |
-| 9 | tui/src/bridge/trustedDevice.ts | Legitimate | KOSAX 인프라 디렉토리 (tui/src/bridge/) — 정당 변경 | Spec 287 (TUI Ink+React+Bun) 또는 Spec 032 (IPC std… |
-| 10 | tui/src/cli/handlers/auth.ts | Legitimate | KOSAX-only 토큰 (KOSAX, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
+| 3 | tui/src/assistant/sessionHistory.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637, 1978 |
+| 4 | tui/src/bridge/bridgeConfig.ts | Legitimate | UMMAYA 인프라 디렉토리 (tui/src/bridge/) — 정당 변경 | Spec 287 (TUI Ink+React+Bun) 또는 Spec 032 (IPC std… |
+| 5 | tui/src/bridge/bridgeMain.ts | Legitimate | UMMAYA 인프라 디렉토리 (tui/src/bridge/) — 정당 변경 | Spec 287 (TUI Ink+React+Bun) 또는 Spec 032 (IPC std… |
+| 6 | tui/src/bridge/createSession.ts | Legitimate | UMMAYA 인프라 디렉토리 (tui/src/bridge/) — 정당 변경 | Spec 287 (TUI Ink+React+Bun) 또는 Spec 032 (IPC std… |
+| 7 | tui/src/bridge/inboundMessages.ts | Legitimate | UMMAYA 인프라 디렉토리 (tui/src/bridge/) — 정당 변경 | Spec 287 (TUI Ink+React+Bun) 또는 Spec 032 (IPC std… |
+| 8 | tui/src/bridge/initReplBridge.ts | Legitimate | UMMAYA 인프라 디렉토리 (tui/src/bridge/) — 정당 변경 | Spec 287 (TUI Ink+React+Bun) 또는 Spec 032 (IPC std… |
+| 9 | tui/src/bridge/trustedDevice.ts | Legitimate | UMMAYA 인프라 디렉토리 (tui/src/bridge/) — 정당 변경 | Spec 287 (TUI Ink+React+Bun) 또는 Spec 032 (IPC std… |
+| 10 | tui/src/cli/handlers/auth.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
 | 11 | tui/src/cli/print.ts | Cleanup-needed | Anthropic / Spec 033 잔재 토큰 감지: @anthropic-ai/, queryHaiku | Spec 1633 closure pending |
-| 12 | tui/src/commands.ts | Legitimate | KOSAX-only 토큰 (KOSAX, kosax, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1637, 1979, 2112 |
-| 13 | tui/src/commands/bridge/bridge.tsx | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
-| 14 | tui/src/commands/cost/cost.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1978 |
-| 15 | tui/src/commands/fast/fast.tsx | Legitimate | KOSAX-only 토큰 (KOSAX, EXAONE, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1978 |
-| 16 | tui/src/commands/feedback/index.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
+| 12 | tui/src/commands.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA, ummaya, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1637, 1979, 2112 |
+| 13 | tui/src/commands/bridge/bridge.tsx | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
+| 14 | tui/src/commands/cost/cost.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1978 |
+| 15 | tui/src/commands/fast/fast.tsx | Legitimate | UMMAYA-only 토큰 (UMMAYA, EXAONE, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1978 |
+| 16 | tui/src/commands/feedback/index.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
 | 17 | tui/src/commands/insights.ts | Cleanup-needed | Anthropic / Spec 033 잔재 토큰 감지: queryWithModel | Spec 1633 closure pending |
-| 18 | tui/src/commands/privacy-settings/privacy-settings.tsx | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1978 |
-| 19 | tui/src/commands/rate-limit-options/rate-limit-options.tsx | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1978 |
-| 20 | tui/src/commands/remote-env/index.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
-| 21 | tui/src/commands/remote-setup/api.ts | Legitimate | KOSAX-only 토큰 (KOSAX, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637, 1978 |
-| 22 | tui/src/commands/remote-setup/index.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
+| 18 | tui/src/commands/privacy-settings/privacy-settings.tsx | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1978 |
+| 19 | tui/src/commands/rate-limit-options/rate-limit-options.tsx | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1978 |
+| 20 | tui/src/commands/remote-env/index.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
+| 21 | tui/src/commands/remote-setup/api.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637, 1978 |
+| 22 | tui/src/commands/remote-setup/index.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
 | 23 | tui/src/commands/rename/generateSessionName.ts | Cleanup-needed | Anthropic / Spec 033 잔재 토큰 감지: queryHaiku | Spec 1633 closure pending |
-| 24 | tui/src/commands/review/reviewRemote.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1978 |
-| 25 | tui/src/commands/ultraplan.tsx | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1978 |
+| 24 | tui/src/commands/review/reviewRemote.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1978 |
+| 25 | tui/src/commands/ultraplan.tsx | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1978 |
 | 26 | tui/src/components/Feedback.tsx | Cleanup-needed | Anthropic / Spec 033 잔재 토큰 감지: queryHaiku | Spec 1633 closure pending |
-| 27 | tui/src/components/FeedbackSurvey/useFeedbackSurvey.tsx | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
-| 28 | tui/src/components/FeedbackSurvey/useMemorySurvey.tsx | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
-| 29 | tui/src/components/FeedbackSurvey/usePostCompactSurvey.tsx | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
-| 30 | tui/src/components/HelpV2/HelpV2.tsx | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 2077 |
-| 31 | tui/src/components/IdeOnboardingDialog.tsx | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 2077 |
-| 32 | tui/src/components/LogoV2/AnimatedClawd.tsx | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632 |
-| 33 | tui/src/components/LogoV2/Clawd.tsx | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632 |
-| 34 | tui/src/components/LogoV2/CondensedLogo.tsx | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 2077 |
-| 35 | tui/src/components/LogoV2/LogoV2.tsx | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 2077 |
-| 36 | tui/src/components/LogoV2/Opus1mMergeNotice.tsx | Legitimate | KOSAX-only 토큰 (EXAONE) 식별 — 정당 변경 | Spec ids in git log: 1632, 2077 |
-| 37 | tui/src/components/LogoV2/WelcomeV2.tsx | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
-| 38 | tui/src/components/Markdown.tsx | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632 |
+| 27 | tui/src/components/FeedbackSurvey/useFeedbackSurvey.tsx | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
+| 28 | tui/src/components/FeedbackSurvey/useMemorySurvey.tsx | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
+| 29 | tui/src/components/FeedbackSurvey/usePostCompactSurvey.tsx | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
+| 30 | tui/src/components/HelpV2/HelpV2.tsx | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 2077 |
+| 31 | tui/src/components/IdeOnboardingDialog.tsx | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 2077 |
+| 32 | tui/src/components/LogoV2/AnimatedClawd.tsx | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632 |
+| 33 | tui/src/components/LogoV2/Clawd.tsx | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632 |
+| 34 | tui/src/components/LogoV2/CondensedLogo.tsx | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 2077 |
+| 35 | tui/src/components/LogoV2/LogoV2.tsx | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 2077 |
+| 36 | tui/src/components/LogoV2/Opus1mMergeNotice.tsx | Legitimate | UMMAYA-only 토큰 (EXAONE) 식별 — 정당 변경 | Spec ids in git log: 1632, 2077 |
+| 37 | tui/src/components/LogoV2/WelcomeV2.tsx | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
+| 38 | tui/src/components/Markdown.tsx | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632 |
 | 39 | tui/src/components/Messages.tsx | Legitimate | Spec id 인용 (1632, 2077) — git 기록 기반 정당 변경 | Specs: #1632, #2077 |
-| 40 | tui/src/components/PromptInput/Notifications.tsx | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1978 |
-| 41 | tui/src/components/PromptInput/PromptInput.tsx | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1978 |
+| 40 | tui/src/components/PromptInput/Notifications.tsx | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1978 |
+| 41 | tui/src/components/PromptInput/PromptInput.tsx | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1978 |
 | 42 | tui/src/components/PromptInput/PromptInputFooterLeftSide.tsx | Legitimate | Spec id 인용 (1632, 2077) — git 기록 기반 정당 변경 | Specs: #1632, #2077 |
 | 43 | tui/src/components/PromptInput/usePromptInputPlaceholder.ts | Legitimate | Spec id 인용 (1632, 2077) — git 기록 기반 정당 변경 | Specs: #1632, #2077 |
-| 44 | tui/src/components/RemoteEnvironmentDialog.tsx | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1978 |
-| 45 | tui/src/components/ResumeTask.tsx | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1978 |
-| 46 | tui/src/components/StatusLine.tsx | Legitimate | KOSAX-only 토큰 (KOSAX, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1978 |
-| 47 | tui/src/components/TeleportProgress.tsx | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1978 |
-| 48 | tui/src/components/agents/generateAgent.ts | Legitimate | KOSAX-only 토큰 (KOSAX, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1637 |
-| 49 | tui/src/components/mcp/MCPRemoteServerMenu.tsx | Legitimate | KOSAX-only 토큰 (KOSAX, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
-| 50 | tui/src/components/messages/AssistantTextMessage.tsx | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1637 |
-| 51 | tui/src/components/messages/RateLimitMessage.tsx | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637, 2112 |
+| 44 | tui/src/components/RemoteEnvironmentDialog.tsx | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1978 |
+| 45 | tui/src/components/ResumeTask.tsx | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1978 |
+| 46 | tui/src/components/StatusLine.tsx | Legitimate | UMMAYA-only 토큰 (UMMAYA, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1978 |
+| 47 | tui/src/components/TeleportProgress.tsx | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1978 |
+| 48 | tui/src/components/agents/generateAgent.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1637 |
+| 49 | tui/src/components/mcp/MCPRemoteServerMenu.tsx | Legitimate | UMMAYA-only 토큰 (UMMAYA, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
+| 50 | tui/src/components/messages/AssistantTextMessage.tsx | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1637 |
+| 51 | tui/src/components/messages/RateLimitMessage.tsx | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637, 2112 |
 | 52 | tui/src/components/tasks/BackgroundTasksDialog.tsx | Legitimate | Spec id 인용 (1632) — git 기록 기반 정당 변경 | Specs: #1632 |
-| 53 | tui/src/components/tasks/RemoteSessionDetailDialog.tsx | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1978 |
+| 53 | tui/src/components/tasks/RemoteSessionDetailDialog.tsx | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1978 |
 | 54 | tui/src/constants/figures.ts | Legitimate | Spec id 인용 (1632) — git 기록 기반 정당 변경 | Specs: #1632 |
 | 55 | tui/src/constants/messages.ts | Legitimate | Spec id 인용 (1632) — git 기록 기반 정당 변경 | Specs: #1632 |
-| 56 | tui/src/constants/prompts.ts | Legitimate | KOSAX-only 토큰 (KOSAX, friendli) 식별 — 정당 변경 | Spec ids in git log: 1632, 1634, 1637, 2077 |
+| 56 | tui/src/constants/prompts.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA, friendli) 식별 — 정당 변경 | Spec ids in git log: 1632, 1634, 1637, 2077 |
 | 57 | tui/src/constants/xml.ts | Legitimate | Spec id 인용 (1632) — git 기록 기반 정당 변경 | Specs: #1632 |
 | 58 | tui/src/cost-tracker.ts | Legitimate | Spec id 인용 (1632, 1633) — git 기록 기반 정당 변경 | Specs: #1632, #1633 |
-| 59 | tui/src/entrypoints/cli.tsx | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637, 1978 |
-| 60 | tui/src/entrypoints/init.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1637, 2077 |
-| 61 | tui/src/entrypoints/sdk/coreSchemas.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633 |
-| 62 | tui/src/hooks/notifs/useMcpConnectivityStatus.tsx | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
-| 63 | tui/src/hooks/notifs/useNpmDeprecationNotification.tsx | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 2077 |
-| 64 | tui/src/hooks/notifs/useRateLimitWarningNotification.tsx | Legitimate | KOSAX-only 토큰 (KOSAX, EXAONE, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1978 |
-| 65 | tui/src/hooks/toolPermission/permissionLogging.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
-| 66 | tui/src/hooks/useApiKeyVerification.ts | Legitimate | KOSAX-only 토큰 (KOSAX, kosax, EXAONE) 식별 — 정당 변경 | Spec ids in git log: 1632, 1978 |
-| 67 | tui/src/hooks/useAssistantHistory.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1978 |
-| 68 | tui/src/hooks/useCanUseTool.tsx | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1637 |
-| 69 | tui/src/hooks/useDirectConnect.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1978 |
-| 70 | tui/src/hooks/useRemoteSession.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1978 |
-| 71 | tui/src/hooks/useSSHSession.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1978 |
+| 59 | tui/src/entrypoints/cli.tsx | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637, 1978 |
+| 60 | tui/src/entrypoints/init.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1637, 2077 |
+| 61 | tui/src/entrypoints/sdk/coreSchemas.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633 |
+| 62 | tui/src/hooks/notifs/useMcpConnectivityStatus.tsx | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
+| 63 | tui/src/hooks/notifs/useNpmDeprecationNotification.tsx | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 2077 |
+| 64 | tui/src/hooks/notifs/useRateLimitWarningNotification.tsx | Legitimate | UMMAYA-only 토큰 (UMMAYA, EXAONE, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1978 |
+| 65 | tui/src/hooks/toolPermission/permissionLogging.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
+| 66 | tui/src/hooks/useApiKeyVerification.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA, ummaya, EXAONE) 식별 — 정당 변경 | Spec ids in git log: 1632, 1978 |
+| 67 | tui/src/hooks/useAssistantHistory.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1978 |
+| 68 | tui/src/hooks/useCanUseTool.tsx | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1637 |
+| 69 | tui/src/hooks/useDirectConnect.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1978 |
+| 70 | tui/src/hooks/useRemoteSession.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1978 |
+| 71 | tui/src/hooks/useSSHSession.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1978 |
 | 72 | tui/src/hooks/useTerminalSize.ts | Legitimate | Spec id 인용 (1632, 1637) — git 기록 기반 정당 변경 | Specs: #1632, #1637 |
 | 73 | tui/src/hooks/useVirtualScroll.ts | Legitimate | Spec id 인용 (1632, 1637, 287) — git 기록 기반 정당 변경 | Specs: #1632, #1637, #287 |
 | 74 | tui/src/interactiveHelpers.tsx | Legitimate | Spec id 인용 (1632, 1633) — git 기록 기반 정당 변경 | Specs: #1632, #1633 |
-| 75 | tui/src/keybindings/KeybindingProviderSetup.tsx | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637, 288 |
-| 76 | tui/src/keybindings/defaultBindings.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1635, 1637, 288 |
+| 75 | tui/src/keybindings/KeybindingProviderSetup.tsx | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637, 288 |
+| 76 | tui/src/keybindings/defaultBindings.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1635, 1637, 288 |
 | 77 | tui/src/keybindings/loadUserBindings.ts | Legitimate | Spec id 인용 (1632, 1637, 288) — git 기록 기반 정당 변경 | Specs: #1632, #1637, #288 |
 | 78 | tui/src/keybindings/match.ts | Legitimate | Spec id 인용 (1632, 1637, 288) — git 기록 기반 정당 변경 | Specs: #1632, #1637, #288 |
-| 79 | tui/src/keybindings/parser.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637, 288 |
-| 80 | tui/src/keybindings/resolver.ts | Legitimate | KOSAX-only 토큰 (kosax) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637, 288 |
-| 81 | tui/src/keybindings/template.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637, 288 |
+| 79 | tui/src/keybindings/parser.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637, 288 |
+| 80 | tui/src/keybindings/resolver.ts | Legitimate | UMMAYA-only 토큰 (ummaya) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637, 288 |
+| 81 | tui/src/keybindings/template.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637, 288 |
 | 82 | tui/src/keybindings/useKeybinding.ts | Legitimate | Spec id 인용 (1632, 1637, 288) — git 기록 기반 정당 변경 | Specs: #1632, #1637, #288 |
 | 83 | tui/src/keybindings/validate.ts | Legitimate | Spec id 인용 (1632, 1637, 288) — git 기록 기반 정당 변경 | Specs: #1632, #1637, #288 |
-| 84 | tui/src/main.tsx | Legitimate | KOSAX-only 토큰 (KOSAX, kosax) 식별 — 정당 변경 | Spec ids in git log: 1635, 1637, 1978, 2077, 2152 |
+| 84 | tui/src/main.tsx | Legitimate | UMMAYA-only 토큰 (UMMAYA, ummaya) 식별 — 정당 변경 | Spec ids in git log: 1635, 1637, 1978, 2077, 2152 |
 | 85 | tui/src/query.ts | Legitimate | Spec id 인용 (1632, 1633, 2152) — git 기록 기반 정당 변경 | Specs: #1632, #1633, #2152 |
-| 86 | tui/src/query/deps.ts | Legitimate | KOSAX-only 토큰 (KOSAX, kosax, EXAONE) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637, 2077 |
+| 86 | tui/src/query/deps.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA, ummaya, EXAONE) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637, 2077 |
 | 87 | tui/src/replLauncher.tsx | Legitimate | Spec id 인용 (1632) — git 기록 기반 정당 변경 | Specs: #1632 |
-| 88 | tui/src/screens/REPL.tsx | Legitimate | KOSAX-only 토큰 (KOSAX, kosax, EXAONE) 식별 — 정당 변경 | Spec ids in git log: 1978, 1979, 2077, 2152 |
-| 89 | tui/src/server/directConnectManager.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1978 |
-| 90 | tui/src/services/PromptSuggestion/promptSuggestion.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
-| 91 | tui/src/services/analytics/config.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633 |
-| 92 | tui/src/services/analytics/firstPartyEventLogger.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1637, 2077 |
-| 93 | tui/src/services/analytics/growthbook.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633 |
-| 94 | tui/src/services/analytics/index.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1978 |
-| 95 | tui/src/services/analytics/metadata.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633 |
+| 88 | tui/src/screens/REPL.tsx | Legitimate | UMMAYA-only 토큰 (UMMAYA, ummaya, EXAONE) 식별 — 정당 변경 | Spec ids in git log: 1978, 1979, 2077, 2152 |
+| 89 | tui/src/server/directConnectManager.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1978 |
+| 90 | tui/src/services/PromptSuggestion/promptSuggestion.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
+| 91 | tui/src/services/analytics/config.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633 |
+| 92 | tui/src/services/analytics/firstPartyEventLogger.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1637, 2077 |
+| 93 | tui/src/services/analytics/growthbook.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633 |
+| 94 | tui/src/services/analytics/index.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1978 |
+| 95 | tui/src/services/analytics/metadata.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633 |
 | 96 | tui/src/services/api/adminRequests.ts | Cleanup-needed | Spec 1633 cleanup 디렉토리: tui/src/services/api/ | Spec 1633 closure pending |
 | 97 | tui/src/services/api/claude.ts | Resolved by Spec 2521 byte-copy | Anthropic / Spec 033 잔재 토큰 감지: verifyApiKey, queryHaiku, qu… — byte-copy(2521) commit 3175862 replaces 1101 LOC with CC 3419 LOC original; swap commits 4d6b9a1 / 3139e4c / 07d23f8 layered on top. Old residues eliminated. | Spec 2521 commit: 3175862 · Closure date: 2026-05-01 |
 | 98 | tui/src/services/api/client.ts | Cleanup-needed | Anthropic / Spec 033 잔재 토큰 감지: verifyApiKey | Spec 1633 closure pending |
@@ -169,113 +169,113 @@ Import-only diff verification: **67/67 confirmed import-only**, 0 reclassified t
 | 109 | tui/src/services/api/ultrareviewQuota.ts | Cleanup-needed | Spec 1633 cleanup 디렉토리: tui/src/services/api/ | Spec 1633 closure pending |
 | 110 | tui/src/services/api/usage.ts | Cleanup-needed | Spec 1633 cleanup 디렉토리: tui/src/services/api/ | Spec 1633 closure pending |
 | 111 | tui/src/services/api/withRetry.ts | Cleanup-needed | Spec 1633 cleanup 디렉토리: tui/src/services/api/ | Spec 1633 closure pending |
-| 112 | tui/src/services/awaySummary.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 2077 |
-| 113 | tui/src/services/claudeAiLimits.ts | Legitimate | KOSAX-only 토큰 (KOSAX, kosax) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1637, 2077 |
-| 114 | tui/src/services/compact/autoCompact.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
-| 115 | tui/src/services/compact/compact.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1637 |
-| 116 | tui/src/services/compact/postCompactCleanup.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
+| 112 | tui/src/services/awaySummary.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 2077 |
+| 113 | tui/src/services/claudeAiLimits.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA, ummaya) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1637, 2077 |
+| 114 | tui/src/services/compact/autoCompact.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
+| 115 | tui/src/services/compact/compact.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1637 |
+| 116 | tui/src/services/compact/postCompactCleanup.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
 | 117 | tui/src/services/compact/prompt.ts | Legitimate | Spec id 인용 (1632, 2077) — git 기록 기반 정당 변경 | Specs: #1632, #2077 |
-| 118 | tui/src/services/mcp/auth.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
-| 119 | tui/src/services/mcp/claudeai.ts | Legitimate | KOSAX-only 토큰 (KOSAX, kosax) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1637, 2077 |
-| 120 | tui/src/services/mcp/client.ts | Legitimate | KOSAX-only 토큰 (KOSAX, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1637 |
-| 121 | tui/src/services/mcp/config.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
-| 122 | tui/src/services/mcp/xaaIdpLogin.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
-| 123 | tui/src/services/oauth/client.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633 |
-| 124 | tui/src/services/oauth/getOauthProfile.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633 |
-| 125 | tui/src/services/oauth/index.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633 |
-| 126 | tui/src/services/plugins/pluginCliCommands.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
-| 127 | tui/src/services/settingsSync/index.ts | Legitimate | KOSAX-only 토큰 (KOSAX, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637, 2112 |
-| 128 | tui/src/services/teamMemorySync/index.ts | Legitimate | KOSAX-only 토큰 (KOSAX, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637, 2112 |
+| 118 | tui/src/services/mcp/auth.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
+| 119 | tui/src/services/mcp/claudeai.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA, ummaya) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1637, 2077 |
+| 120 | tui/src/services/mcp/client.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1637 |
+| 121 | tui/src/services/mcp/config.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
+| 122 | tui/src/services/mcp/xaaIdpLogin.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
+| 123 | tui/src/services/oauth/client.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633 |
+| 124 | tui/src/services/oauth/getOauthProfile.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633 |
+| 125 | tui/src/services/oauth/index.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633 |
+| 126 | tui/src/services/plugins/pluginCliCommands.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
+| 127 | tui/src/services/settingsSync/index.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637, 2112 |
+| 128 | tui/src/services/teamMemorySync/index.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637, 2112 |
 | 129 | tui/src/services/tokenEstimation.ts | Cleanup-needed | Anthropic / Spec 033 잔재 토큰 감지: anthropic-sdk | Spec 1633 closure pending |
 | 130 | tui/src/services/toolUseSummary/toolUseSummaryGenerator.ts | Cleanup-needed | Anthropic / Spec 033 잔재 토큰 감지: queryHaiku | Spec 1633 closure pending |
-| 131 | tui/src/services/tools/toolExecution.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1637 |
-| 132 | tui/src/services/vcr.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1637 |
-| 133 | tui/src/services/voiceStreamSTT.ts | Legitimate | KOSAX-only 토큰 (KOSAX, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
+| 131 | tui/src/services/tools/toolExecution.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1637 |
+| 132 | tui/src/services/vcr.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1637 |
+| 133 | tui/src/services/voiceStreamSTT.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
 | 134 | tui/src/setup.ts | Legitimate | Spec id 인용 (1632, 1633) — git 기록 기반 정당 변경 | Specs: #1632, #1633 |
-| 135 | tui/src/skills/bundled/debug.ts | Legitimate | KOSAX-only 토큰 (kosax) 식별 — 정당 변경 | Spec ids in git log: 1632, 1634 |
-| 136 | tui/src/skills/bundled/scheduleRemoteAgents.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637, 1978 |
+| 135 | tui/src/skills/bundled/debug.ts | Legitimate | UMMAYA-only 토큰 (ummaya) 식별 — 정당 변경 | Spec ids in git log: 1632, 1634 |
+| 136 | tui/src/skills/bundled/scheduleRemoteAgents.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637, 1978 |
 | 137 | tui/src/state/AppState.tsx | Legitimate | Spec id 인용 (1632) — git 기록 기반 정당 변경 | Specs: #1632 |
-| 138 | tui/src/tasks/RemoteAgentTask/RemoteAgentTask.tsx | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1637 |
+| 138 | tui/src/tasks/RemoteAgentTask/RemoteAgentTask.tsx | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1637 |
 | 139 | tui/src/tools.ts | Legitimate | Spec id 인용 (1632, 1634) — git 기록 기반 정당 변경 | Specs: #1632, #1634 |
-| 140 | tui/src/tools/AgentTool/AgentTool.tsx | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637, 2077 |
+| 140 | tui/src/tools/AgentTool/AgentTool.tsx | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637, 2077 |
 | 141 | tui/src/tools/AgentTool/builtInAgents.ts | Legitimate | Spec id 인용 (1632, 1634) — git 기록 기반 정당 변경 | Specs: #1632, #1634 |
-| 142 | tui/src/tools/AgentTool/prompt.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1634 |
-| 143 | tui/src/tools/AgentTool/runAgent.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
+| 142 | tui/src/tools/AgentTool/prompt.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1634 |
+| 143 | tui/src/tools/AgentTool/runAgent.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
 | 144 | tui/src/tools/BashTool/utils.ts | Legitimate | Spec id 인용 (1632, 1633) — git 기록 기반 정당 변경 | Specs: #1632, #1633 |
-| 145 | tui/src/tools/BriefTool/upload.ts | Legitimate | KOSAX-only 토큰 (KOSAX, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
-| 146 | tui/src/tools/RemoteTriggerTool/RemoteTriggerTool.ts | Legitimate | KOSAX-only 토큰 (KOSAX, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
-| 147 | tui/src/tools/SkillTool/SkillTool.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1637 |
+| 145 | tui/src/tools/BriefTool/upload.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
+| 146 | tui/src/tools/RemoteTriggerTool/RemoteTriggerTool.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
+| 147 | tui/src/tools/SkillTool/SkillTool.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1637 |
 | 148 | tui/src/tools/WebFetchTool/utils.ts | Cleanup-needed | Anthropic / Spec 033 잔재 토큰 감지: queryHaiku | Spec 1633 closure pending |
-| 149 | tui/src/tools/WebSearchTool/WebSearchTool.ts | Legitimate | KOSAX-only 토큰 (KOSAX, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1637 |
-| 150 | tui/src/types/generated/events_mono/claude_code/v1/claude_code_internal_event.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1978 |
-| 151 | tui/src/types/generated/events_mono/growthbook/v1/growthbook_experiment_event.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1978 |
+| 149 | tui/src/tools/WebSearchTool/WebSearchTool.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1637 |
+| 150 | tui/src/types/generated/events_mono/claude_code/v1/claude_code_internal_event.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1978 |
+| 151 | tui/src/types/generated/events_mono/growthbook/v1/growthbook_experiment_event.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1978 |
 | 152 | tui/src/types/logs.ts | Legitimate | Spec id 인용 (1632) — git 기록 기반 정당 변경 | Specs: #1632 |
-| 153 | tui/src/utils/advisor.ts | Legitimate | KOSAX-only 토큰 (KOSAX, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1637 |
-| 154 | tui/src/utils/api.ts | Legitimate | KOSAX-only 토큰 (KOSAX, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1637, 2112 |
-| 155 | tui/src/utils/apiPreconnect.ts | Legitimate | KOSAX-only 토큰 (KOSAX, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
+| 153 | tui/src/utils/advisor.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1637 |
+| 154 | tui/src/utils/api.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1637, 2112 |
+| 155 | tui/src/utils/apiPreconnect.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
 | 156 | tui/src/utils/attachments.ts | Legitimate | Spec id 인용 (1632, 1633) — git 기록 기반 정당 변경 | Specs: #1632, #1633 |
-| 157 | tui/src/utils/auth.ts | Legitimate | KOSAX-only 토큰 (KOSAX, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 2077 |
-| 158 | tui/src/utils/authPortable.ts | Legitimate | KOSAX-only 토큰 (KOSAX, kosax) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
-| 159 | tui/src/utils/background/remote/preconditions.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633 |
-| 160 | tui/src/utils/background/remote/remoteSession.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633 |
-| 161 | tui/src/utils/claudeInChrome/mcpServer.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1978 |
-| 162 | tui/src/utils/computerUse/mcpServer.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1978 |
-| 163 | tui/src/utils/context.ts | Legitimate | KOSAX-only 토큰 (KOSAX, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
+| 157 | tui/src/utils/auth.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 2077 |
+| 158 | tui/src/utils/authPortable.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA, ummaya) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
+| 159 | tui/src/utils/background/remote/preconditions.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633 |
+| 160 | tui/src/utils/background/remote/remoteSession.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633 |
+| 161 | tui/src/utils/claudeInChrome/mcpServer.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1978 |
+| 162 | tui/src/utils/computerUse/mcpServer.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1978 |
+| 163 | tui/src/utils/context.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
 | 164 | tui/src/utils/contextAnalysis.ts | Legitimate | Spec id 인용 (1632, 1633) — git 기록 기반 정당 변경 | Specs: #1632, #1633 |
-| 165 | tui/src/utils/env.ts | Legitimate | KOSAX-only 토큰 (KOSAX, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
-| 166 | tui/src/utils/fastMode.ts | Legitimate | KOSAX-only 토큰 (KOSAX, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
-| 167 | tui/src/utils/filePersistence/outputsScanner.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1978 |
-| 168 | tui/src/utils/forkedAgent.ts | Legitimate | KOSAX-only 토큰 (KOSAX, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
-| 169 | tui/src/utils/gracefulShutdown.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
-| 170 | tui/src/utils/hooks.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
-| 171 | tui/src/utils/hooks/apiQueryHookHelper.ts | Legitimate | KOSAX-only 토큰 (KOSAX, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
-| 172 | tui/src/utils/hooks/execPromptHook.ts | Legitimate | KOSAX-only 토큰 (KOSAX, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
-| 173 | tui/src/utils/hooks/skillImprovement.ts | Legitimate | KOSAX-only 토큰 (KOSAX, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
-| 174 | tui/src/utils/http.ts | Legitimate | KOSAX-only 토큰 (KOSAX, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
+| 165 | tui/src/utils/env.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
+| 166 | tui/src/utils/fastMode.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
+| 167 | tui/src/utils/filePersistence/outputsScanner.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1978 |
+| 168 | tui/src/utils/forkedAgent.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
+| 169 | tui/src/utils/gracefulShutdown.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
+| 170 | tui/src/utils/hooks.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
+| 171 | tui/src/utils/hooks/apiQueryHookHelper.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
+| 172 | tui/src/utils/hooks/execPromptHook.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
+| 173 | tui/src/utils/hooks/skillImprovement.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
+| 174 | tui/src/utils/http.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
 | 175 | tui/src/utils/imageResizer.ts | Legitimate | Spec id 인용 (1632, 1633) — git 기록 기반 정당 변경 | Specs: #1632, #1633 |
-| 176 | tui/src/utils/managedEnv.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
+| 176 | tui/src/utils/managedEnv.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
 | 177 | tui/src/utils/mcp/dateTimeParser.ts | Cleanup-needed | Anthropic / Spec 033 잔재 토큰 감지: queryHaiku | Spec 1633 closure pending |
 | 178 | tui/src/utils/mcpValidation.ts | Legitimate | Spec id 인용 (1632, 1633) — git 기록 기반 정당 변경 | Specs: #1632, #1633 |
 | 179 | tui/src/utils/messages.ts | Legitimate | Spec id 인용 (1632, 1633, 1634) — git 기록 기반 정당 변경 | Specs: #1632, #1633, #1634 |
-| 180 | tui/src/utils/messages/mappers.ts | Legitimate | KOSAX-only 토큰 (KOSAX, EXAONE, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1978 |
-| 181 | tui/src/utils/model/agent.ts | Legitimate | KOSAX-only 토큰 (KOSAX, EXAONE, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 2112 |
-| 182 | tui/src/utils/model/aliases.ts | Legitimate | KOSAX-only 토큰 (KOSAX, EXAONE, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 2112 |
-| 183 | tui/src/utils/model/bedrock.ts | Legitimate | KOSAX-only 토큰 (KOSAX, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 2112 |
-| 184 | tui/src/utils/model/check1mAccess.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1978 |
-| 185 | tui/src/utils/model/configs.ts | Legitimate | KOSAX-only 토큰 (KOSAX, EXAONE) 식별 — 정당 변경 | Spec ids in git log: 1632, 2112 |
-| 186 | tui/src/utils/model/deprecation.ts | Legitimate | KOSAX-only 토큰 (KOSAX, EXAONE) 식별 — 정당 변경 | Spec ids in git log: 1632, 2112 |
-| 187 | tui/src/utils/model/model.ts | Legitimate | KOSAX-only 토큰 (KOSAX, kosax, EXAONE) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1637, 2112 |
-| 188 | tui/src/utils/model/modelAllowlist.ts | Legitimate | KOSAX-only 토큰 (KOSAX, EXAONE) 식별 — 정당 변경 | Spec ids in git log: 1632, 2112 |
-| 189 | tui/src/utils/model/modelCapabilities.ts | Legitimate | KOSAX-only 토큰 (KOSAX, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637, 2112 |
-| 190 | tui/src/utils/model/modelOptions.ts | Legitimate | KOSAX-only 토큰 (KOSAX, kosax, EXAONE) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637, 2112 |
-| 191 | tui/src/utils/model/modelStrings.ts | Legitimate | KOSAX-only 토큰 (KOSAX, EXAONE) 식별 — 정당 변경 | Spec ids in git log: 1632, 2112 |
-| 192 | tui/src/utils/model/modelSupportOverrides.ts | Legitimate | KOSAX-only 토큰 (KOSAX, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 2112 |
-| 193 | tui/src/utils/model/providers.ts | Legitimate | KOSAX-only 토큰 (KOSAX, FriendliAI, friendli) 식별 — 정당 변경 | Spec ids in git log: 1632, 2112 |
-| 194 | tui/src/utils/model/validateModel.ts | Legitimate | KOSAX-only 토큰 (KOSAX, EXAONE, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 2112 |
+| 180 | tui/src/utils/messages/mappers.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA, EXAONE, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1978 |
+| 181 | tui/src/utils/model/agent.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA, EXAONE, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 2112 |
+| 182 | tui/src/utils/model/aliases.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA, EXAONE, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 2112 |
+| 183 | tui/src/utils/model/bedrock.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 2112 |
+| 184 | tui/src/utils/model/check1mAccess.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1978 |
+| 185 | tui/src/utils/model/configs.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA, EXAONE) 식별 — 정당 변경 | Spec ids in git log: 1632, 2112 |
+| 186 | tui/src/utils/model/deprecation.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA, EXAONE) 식별 — 정당 변경 | Spec ids in git log: 1632, 2112 |
+| 187 | tui/src/utils/model/model.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA, ummaya, EXAONE) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1637, 2112 |
+| 188 | tui/src/utils/model/modelAllowlist.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA, EXAONE) 식별 — 정당 변경 | Spec ids in git log: 1632, 2112 |
+| 189 | tui/src/utils/model/modelCapabilities.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637, 2112 |
+| 190 | tui/src/utils/model/modelOptions.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA, ummaya, EXAONE) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637, 2112 |
+| 191 | tui/src/utils/model/modelStrings.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA, EXAONE) 식별 — 정당 변경 | Spec ids in git log: 1632, 2112 |
+| 192 | tui/src/utils/model/modelSupportOverrides.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 2112 |
+| 193 | tui/src/utils/model/providers.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA, FriendliAI, friendli) 식별 — 정당 변경 | Spec ids in git log: 1632, 2112 |
+| 194 | tui/src/utils/model/validateModel.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA, EXAONE, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 2112 |
 | 195 | tui/src/utils/modifiers.ts | Legitimate | Spec id 인용 (1632, 2077) — git 기록 기반 정당 변경 | Specs: #1632, #2077 |
 | 196 | tui/src/utils/notebook.ts | Legitimate | Spec id 인용 (1632, 1633) — git 기록 기반 정당 변경 | Specs: #1632, #1633 |
 | 197 | tui/src/utils/permissions/permissionSetup.ts | Cleanup-needed | Spec 1633 cleanup 디렉토리: tui/src/utils/permissions/ | Spec 1633 closure pending |
 | 198 | tui/src/utils/permissions/permissions.ts | Cleanup-needed | Spec 1633 cleanup 디렉토리: tui/src/utils/permissions/ | Spec 1633 closure pending |
 | 199 | tui/src/utils/permissions/yoloClassifier.ts | Cleanup-needed | Spec 1633 cleanup 디렉토리: tui/src/utils/permissions/ | Spec 1633 closure pending |
 | 200 | tui/src/utils/plugins/mcpbHandler.ts | Cleanup-needed | Anthropic / Spec 033 잔재 토큰 감지: @anthropic-ai/ | Spec 1633 closure pending |
-| 201 | tui/src/utils/plugins/pluginInstallationHelpers.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
-| 202 | tui/src/utils/plugins/pluginOptionsStorage.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
-| 203 | tui/src/utils/preflightChecks.tsx | Legitimate | KOSAX-only 토큰 (KOSAX, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
-| 204 | tui/src/utils/processUserInput/processSlashCommand.tsx | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1637 |
-| 205 | tui/src/utils/processUserInput/processTextPrompt.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1637 |
+| 201 | tui/src/utils/plugins/pluginInstallationHelpers.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
+| 202 | tui/src/utils/plugins/pluginOptionsStorage.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
+| 203 | tui/src/utils/preflightChecks.tsx | Legitimate | UMMAYA-only 토큰 (UMMAYA, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
+| 204 | tui/src/utils/processUserInput/processSlashCommand.tsx | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1637 |
+| 205 | tui/src/utils/processUserInput/processTextPrompt.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1637 |
 | 206 | tui/src/utils/processUserInput/processUserInput.ts | Legitimate | Spec id 인용 (1632, 1633) — git 기록 기반 정당 변경 | Specs: #1632, #1633 |
 | 207 | tui/src/utils/sessionTitle.ts | Cleanup-needed | Anthropic / Spec 033 잔재 토큰 감지: queryHaiku | Spec 1633 closure pending |
-| 208 | tui/src/utils/settings/settings.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
-| 209 | tui/src/utils/settings/validation.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632 |
+| 208 | tui/src/utils/settings/settings.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
+| 209 | tui/src/utils/settings/validation.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632 |
 | 210 | tui/src/utils/shell/prefix.ts | Cleanup-needed | Anthropic / Spec 033 잔재 토큰 감지: queryHaiku | Spec 1633 closure pending |
-| 211 | tui/src/utils/sideQuery.ts | Legitimate | KOSAX-only 토큰 (KOSAX, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1637 |
+| 211 | tui/src/utils/sideQuery.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA, FriendliAI) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1637 |
 | 212 | tui/src/utils/sinks.ts | Legitimate | Spec id 인용 (1632, 1633) — git 기록 기반 정당 변경 | Specs: #1632, #1633 |
-| 213 | tui/src/utils/swarm/inProcessRunner.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1637 |
-| 214 | tui/src/utils/swarm/spawnInProcess.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
-| 215 | tui/src/utils/swarm/teammateModel.ts | Legitimate | KOSAX-only 토큰 (KOSAX, EXAONE) 식별 — 정당 변경 | Spec ids in git log: 1632, 2112 |
+| 213 | tui/src/utils/swarm/inProcessRunner.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1637 |
+| 214 | tui/src/utils/swarm/spawnInProcess.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637 |
+| 215 | tui/src/utils/swarm/teammateModel.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA, EXAONE) 식별 — 정당 변경 | Spec ids in git log: 1632, 2112 |
 | 216 | tui/src/utils/systemPrompt.ts | Legitimate | Spec id 인용 (1632, 2077) — git 기록 기반 정당 변경 | Specs: #1632, #2077 |
-| 217 | tui/src/utils/toolSearch.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637, 2112 |
-| 218 | tui/src/utils/ultraplan/ccrSession.ts | Legitimate | KOSAX-only 토큰 (KOSAX) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1978 |
+| 217 | tui/src/utils/toolSearch.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1637, 2112 |
+| 218 | tui/src/utils/ultraplan/ccrSession.ts | Legitimate | UMMAYA-only 토큰 (UMMAYA) 식별 — 정당 변경 | Spec ids in git log: 1632, 1633, 1978 |
 
 </details>
 
@@ -284,7 +284,7 @@ Import-only diff verification: **67/67 confirmed import-only**, 0 reclassified t
 
 ## 3. Suspicious Transfer List (T008 · spec.md FR-005 / SC-004)
 
-Suspicious 분류 0 건 — audit 결과 모든 modified 파일에 명확한 KOSAX 정당화 또는 알려진 Spec 1633 잔재. 후속 Epic 진입을 위한 transfer 는 다음과 같다:
+Suspicious 분류 0 건 — audit 결과 모든 modified 파일에 명확한 UMMAYA 정당화 또는 알려진 Spec 1633 잔재. 후속 Epic 진입을 위한 transfer 는 다음과 같다:
 
 **Suspicious transfer (Epic β/δ)**
 
@@ -317,7 +317,7 @@ Population: 1,531 byte-identical files. Sample: 50 files via Python `random.Rand
 <details>
 <summary>전체 표 펼치기 (50 rows)</summary>
 
-| idx | kosax_path | match | sha256 (prefix) |
+| idx | ummaya_path | match | sha256 (prefix) |
 |---|---|---|---|
 | 0 | tui/src/hooks/useClaudeCodeHintRecommendation.tsx | ✅ | 8b2966eb1a… |
 | 1 | tui/src/utils/extraUsage.ts | ✅ | 507a8df3b3… |
@@ -384,7 +384,7 @@ Candidate population: 67 files (cc-source-scope-audit baseline 73 → 67 actual;
 <details>
 <summary>전체 표 펼치기 (67 rows)</summary>
 
-| kosax_path | verdict | first import line changed |
+| ummaya_path | verdict | first import line changed |
 |---|---|---|
 | tui/src/bootstrap/state.ts | import-only confirmed | -import type { BetaMessageStreamParams } from '@anthropic-a… |
 | tui/src/bridge/inboundAttachments.ts | import-only confirmed | -import type { ContentBlockParam } from '@anthropic-ai/sdk/… |
@@ -463,7 +463,7 @@ Candidate population: 67 files (cc-source-scope-audit baseline 73 → 67 actual;
 
 Reviewer: Lead (Opus, Initiative #2290 Epic α); Date: 2026-04-29
 
-**Verdict**: PASS — 자동 분류 결과 신뢰성 확인. 30 Cleanup-needed 모두 알려진 Spec 1633 잔재와 정확히 매칭. 5 Legitimate sample 모두 KOSAX-only 토큰 (KOSAX / EXAONE / FriendliAI) 정당화 확인.
+**Verdict**: PASS — 자동 분류 결과 신뢰성 확인. 30 Cleanup-needed 모두 알려진 Spec 1633 잔재와 정확히 매칭. 5 Legitimate sample 모두 UMMAYA-only 토큰 (UMMAYA / EXAONE / FriendliAI) 정당화 확인.
 
 **Coverage**: 30 Cleanup-needed 전수 + 5 Legitimate sample + 0 Suspicious. Staging 파일 (spot-check, import-verify) 부재 — reclassification 후처리 0 건.
 
@@ -475,7 +475,7 @@ Reviewer: Lead (Opus, Initiative #2290 Epic α); Date: 2026-04-29
 Re-run sequence (≈5 min total):
 
 ```bash
-cd /Users/um-yunsang/KOSAX  # or your repo root
+cd /Users/um-yunsang/UMMAYA  # or your repo root
 specs/2292-cc-parity-audit/scripts/enumerate-files.sh        # R1
 python3 specs/2292-cc-parity-audit/scripts/spot-check-50.py     # R2 (seed=2292)
 python3 specs/2292-cc-parity-audit/scripts/verify-import-diff.py # R3
@@ -498,9 +498,9 @@ Manifest: [`data/repro-manifest.json`](data/repro-manifest.json) — 4-step form
 
 ### Next-Epic readiness
 
-- **Epic β #2293 (KOSAX-original UI residue cleanup)**: 진입 가능. 30 Cleanup-needed 항목이 task 입력 — 그 중 15개는 `tui/src/services/api/*` (claude.ts dispatcher Spec 1633 closure), 8개는 `queryHaiku` callsite, 3개는 `utils/permissions/*` (Spec 033 잔재).
+- **Epic β #2293 (UMMAYA-original UI residue cleanup)**: 진입 가능. 30 Cleanup-needed 항목이 task 입력 — 그 중 15개는 `tui/src/services/api/*` (claude.ts dispatcher Spec 1633 closure), 8개는 `queryHaiku` callsite, 3개는 `utils/permissions/*` (Spec 033 잔재).
 - **Epic γ #2294 (5-primitive align with CC Tool.ts)**: 본 audit 산출이 직접 transfer 항목 0 건 — Epic γ 는 별도 design 진입 (delegation-flow-design § 12 의존).
-- **Epic δ #2295 (Backend permissions/ cleanup)**: 본 audit (TUI-only) 산출이 직접 transfer 항목 0 건 — Epic δ 는 `src/kosax/permissions/` 백엔드 audit 별도 필요 (Out of Scope Permanent of this Epic α).
+- **Epic δ #2295 (Backend permissions/ cleanup)**: 본 audit (TUI-only) 산출이 직접 transfer 항목 0 건 — Epic δ 는 `src/ummaya/permissions/` 백엔드 audit 별도 필요 (Out of Scope Permanent of this Epic α).
 - **Epic ε #2296 (AX-infrastructure mock adapters)**: 의존성 없음, Epic γ/δ 결과 후 진입.
 - **Epic ζ #2297 (E2E smoke + policy mapping)**: Epic ε 후속.
 - **Epic η #2298 (System prompt rewrite)**: 선택, 마지막 진입.
@@ -530,7 +530,7 @@ git status --short -- ':!specs/2292-cc-parity-audit'
 ## 10. Follow-up cleanup tracking (post-Spec-2521)
 
 **Updated**: 2026-05-01 (T038–T041 of Spec 2521)
-**Scope**: Spec 2521 in-scope files = `tui/src/services/api/claude.ts`, `tui/src/ipc/llmClient.ts`, `src/kosax/llm/client.py`, `src/kosax/ipc/stdio.py`
+**Scope**: Spec 2521 in-scope files = `tui/src/services/api/claude.ts`, `tui/src/ipc/llmClient.ts`, `src/ummaya/llm/client.py`, `src/ummaya/ipc/stdio.py`
 
 ### Spec 2521 closure summary
 
@@ -548,34 +548,34 @@ These 29 entries are outside the 4 Spec 2521 in-scope files and require separate
 
 #### Group 1 — tui/src/services/api/* (14 entries, excluding claude.ts which is resolved)
 
-These files are Anthropic-1P cloud API modules (admin, billing, referral, quota, session ingress, etc.) that have no FriendliAI equivalent and should be either deleted or replaced with KOSAX-equivalent stubs.
+These files are Anthropic-1P cloud API modules (admin, billing, referral, quota, session ingress, etc.) that have no FriendliAI equivalent and should be either deleted or replaced with UMMAYA-equivalent stubs.
 
 | # | File | Cleanup reason | Epic candidate |
 |---|---|---|---|
-| 96 | tui/src/services/api/adminRequests.ts | Anthropic admin API — no KOSAX equivalent; dead code | Epic β #2293 (UI residue cleanup) |
+| 96 | tui/src/services/api/adminRequests.ts | Anthropic admin API — no UMMAYA equivalent; dead code | Epic β #2293 (UI residue cleanup) |
 | 98 | tui/src/services/api/client.ts | `verifyApiKey` residue — Anthropic key validation, not applicable to FriendliAI | Epic β #2293 |
 | 99 | tui/src/services/api/errorUtils.ts | Anthropic error shape dependency; replace with FriendliAI error handling | Epic β #2293 |
-| 100 | tui/src/services/api/errors.ts | Anthropic error types; replace or stub with KOSAX equivalents | Epic β #2293 |
+| 100 | tui/src/services/api/errors.ts | Anthropic error types; replace or stub with UMMAYA equivalents | Epic β #2293 |
 | 101 | tui/src/services/api/filesApi.ts | Anthropic Files API (claude.ai cloud); no FriendliAI equivalent | Epic β #2293 |
-| 102 | tui/src/services/api/firstTokenDate.ts | Anthropic account-level metadata API; irrelevant to KOSAX | Epic β #2293 |
-| 103 | tui/src/services/api/grove.ts | Anthropic internal service API; no KOSAX equivalent | Epic β #2293 |
+| 102 | tui/src/services/api/firstTokenDate.ts | Anthropic account-level metadata API; irrelevant to UMMAYA | Epic β #2293 |
+| 103 | tui/src/services/api/grove.ts | Anthropic internal service API; no UMMAYA equivalent | Epic β #2293 |
 | 104 | tui/src/services/api/logging.ts | Anthropic event logging endpoint; replace with OTEL (Spec 021) | Epic β #2293 |
-| 105 | tui/src/services/api/overageCreditGrant.ts | Anthropic billing API; no KOSAX equivalent | Epic β #2293 |
+| 105 | tui/src/services/api/overageCreditGrant.ts | Anthropic billing API; no UMMAYA equivalent | Epic β #2293 |
 | 106 | tui/src/services/api/promptCacheBreakDetection.ts | Prompt cache break detection tied to Anthropic cache headers; review for FriendliAI compat | Epic β #2293 |
-| 107 | tui/src/services/api/referral.ts | Anthropic referral program API; no KOSAX equivalent | Epic β #2293 |
-| 108 | tui/src/services/api/sessionIngress.ts | Anthropic session ingress (claude.ai cloud); no KOSAX equivalent | Epic β #2293 |
-| 109 | tui/src/services/api/ultrareviewQuota.ts | Anthropic ultra-review quota API; no KOSAX equivalent | Epic β #2293 |
-| 110 | tui/src/services/api/usage.ts | Anthropic usage tracking API; replace with KOSAX OTEL spans | Epic β #2293 |
+| 107 | tui/src/services/api/referral.ts | Anthropic referral program API; no UMMAYA equivalent | Epic β #2293 |
+| 108 | tui/src/services/api/sessionIngress.ts | Anthropic session ingress (claude.ai cloud); no UMMAYA equivalent | Epic β #2293 |
+| 109 | tui/src/services/api/ultrareviewQuota.ts | Anthropic ultra-review quota API; no UMMAYA equivalent | Epic β #2293 |
+| 110 | tui/src/services/api/usage.ts | Anthropic usage tracking API; replace with UMMAYA OTEL spans | Epic β #2293 |
 | 111 | tui/src/services/api/withRetry.ts | Retry logic references Anthropic-specific 429/529 patterns; review for FriendliAI compat | Epic β #2293 |
 
 #### Group 2 — queryHaiku callsites (8 entries)
 
-These files call `queryHaiku` (a lightweight Anthropic model query helper) for summarization or classification tasks. Each must be rewired to call K-EXAONE via the KOSAX query engine, or the calling feature must be disabled/replaced.
+These files call `queryHaiku` (a lightweight Anthropic model query helper) for summarization or classification tasks. Each must be rewired to call K-EXAONE via the UMMAYA query engine, or the calling feature must be disabled/replaced.
 
 | # | File | Cleanup reason | Epic candidate |
 |---|---|---|---|
 | 11 | tui/src/cli/print.ts | `queryHaiku` + `@anthropic-ai/` import for print formatting; rewire to K-EXAONE or remove | Epic β #2293 |
-| 17 | tui/src/commands/insights.ts | `queryWithModel` for insights generation; rewire to KOSAX query engine | Epic β #2293 |
+| 17 | tui/src/commands/insights.ts | `queryWithModel` for insights generation; rewire to UMMAYA query engine | Epic β #2293 |
 | 23 | tui/src/commands/rename/generateSessionName.ts | `queryHaiku` for session name generation; rewire to K-EXAONE | Epic β #2293 |
 | 26 | tui/src/components/Feedback.tsx | `queryHaiku` for feedback summarization; rewire or stub out | Epic β #2293 |
 | 130 | tui/src/services/toolUseSummary/toolUseSummaryGenerator.ts | `queryHaiku` for tool-use summary; rewire to K-EXAONE | Epic β #2293 |
@@ -586,13 +586,13 @@ These files call `queryHaiku` (a lightweight Anthropic model query helper) for s
 
 #### Group 3 — tui/src/utils/permissions/* (3 entries)
 
-These files contain Spec 033 (CC permission gauntlet) residue mixed with Anthropic-specific permission logic. They require the KOSAX permission V2 spectrum (Spec 033) re-application.
+These files contain Spec 033 (CC permission gauntlet) residue mixed with Anthropic-specific permission logic. They require the UMMAYA permission V2 spectrum (Spec 033) re-application.
 
 | # | File | Cleanup reason | Epic candidate |
 |---|---|---|---|
-| 197 | tui/src/utils/permissions/permissionSetup.ts | Anthropic permission setup residue (Spec 033 migration incomplete); needs KOSAX V2 spectrum wiring | Epic β #2293 or Epic δ #2295 |
-| 198 | tui/src/utils/permissions/permissions.ts | Anthropic permission model residue; needs KOSAX V2 computed derivation (Spec 025 Path B) | Epic β #2293 or Epic δ #2295 |
-| 199 | tui/src/utils/permissions/yoloClassifier.ts | Anthropic YOLO mode classifier residue; review for KOSAX `bypassPermissions` equivalence | Epic β #2293 |
+| 197 | tui/src/utils/permissions/permissionSetup.ts | Anthropic permission setup residue (Spec 033 migration incomplete); needs UMMAYA V2 spectrum wiring | Epic β #2293 or Epic δ #2295 |
+| 198 | tui/src/utils/permissions/permissions.ts | Anthropic permission model residue; needs UMMAYA V2 computed derivation (Spec 025 Path B) | Epic β #2293 or Epic δ #2295 |
+| 199 | tui/src/utils/permissions/yoloClassifier.ts | Anthropic YOLO mode classifier residue; review for UMMAYA `bypassPermissions` equivalence | Epic β #2293 |
 
 #### Group 4 — Miscellaneous (3 entries)
 
@@ -603,4 +603,4 @@ These files contain Spec 033 (CC permission gauntlet) residue mixed with Anthrop
 
 ### Priority recommendation
 
-All 29 deferred entries map to **Epic β #2293 (KOSAX-original UI residue cleanup)** as the primary destination. Entries #197 and #198 (`permissions/`) may overlap with **Epic δ #2295 (Backend permissions cleanup)** and should be assigned after Epic δ spec review confirms scope boundary. No new epic is required — existing Epic β absorbs all 29.
+All 29 deferred entries map to **Epic β #2293 (UMMAYA-original UI residue cleanup)** as the primary destination. Entries #197 and #198 (`permissions/`) may overlap with **Epic δ #2295 (Backend permissions cleanup)** and should be assigned after Epic δ spec review confirms scope boundary. No new epic is required — existing Epic β absorbs all 29.

@@ -17,8 +17,8 @@ from pathlib import Path
 
 import pytest
 
-from kosax.permissions.ledger import append
-from kosax.permissions.models import ConsentLedgerRecord
+from ummaya.permissions.ledger import append
+from ummaya.permissions.models import ConsentLedgerRecord
 
 # Deterministic sentinel digest (64 hex zeros) used for action_digest in tests.
 _ZERO_DIGEST = "0" * 64

@@ -16,7 +16,7 @@
 # Usage:
 #   bash specs/1979-plugin-dx-tui-integration/scripts/smoke-stdio.sh
 #
-# Pre-requisites: KOSAX backend importable as `python -m kosax.cli`,
+# Pre-requisites: UMMAYA backend importable as `python -m ummaya.cli`,
 # fixture catalog + bundle present under scripts/fixtures/.
 
 set -euo pipefail
@@ -30,15 +30,15 @@ OUTPUT="$SPEC_DIR/smoke-stdio.jsonl"
 CATALOG_URL="file://$SCRIPT_DIR/fixtures/catalog.json"
 
 # Fail-soft env so the install path doesn't block on real SLSA verification.
-export KOSAX_PLUGIN_CATALOG_URL="$CATALOG_URL"
-export KOSAX_PLUGIN_SLSA_SKIP="true"
-export KOSAX_ENV="development"
+export UMMAYA_PLUGIN_CATALOG_URL="$CATALOG_URL"
+export UMMAYA_PLUGIN_SLSA_SKIP="true"
+export UMMAYA_ENV="development"
 
 # Use a tmp install root so we don't pollute the citizen's real memdir.
-TMPROOT="$(mktemp -d /tmp/kosax-1979-smoke.XXXXXX)"
-export KOSAX_PLUGIN_INSTALL_ROOT="$TMPROOT/plugins"
-export KOSAX_USER_MEMDIR_ROOT="$TMPROOT/memdir"
-mkdir -p "$KOSAX_PLUGIN_INSTALL_ROOT" "$KOSAX_USER_MEMDIR_ROOT/consent"
+TMPROOT="$(mktemp -d /tmp/ummaya-1979-smoke.XXXXXX)"
+export UMMAYA_PLUGIN_INSTALL_ROOT="$TMPROOT/plugins"
+export UMMAYA_USER_MEMDIR_ROOT="$TMPROOT/memdir"
+mkdir -p "$UMMAYA_PLUGIN_INSTALL_ROOT" "$UMMAYA_USER_MEMDIR_ROOT/consent"
 
 cleanup() { rm -rf "$TMPROOT"; }
 trap cleanup EXIT
@@ -67,7 +67,7 @@ TS="2026-04-28T00:00:00.000Z"
   # Trigger graceful shutdown so the loop exits cleanly
   echo "{\"kind\":\"session_event\",\"version\":\"1.0\",\"session_id\":\"$SESSION_ID\",\"correlation_id\":\"smoke-exit\",\"ts\":\"$TS\",\"role\":\"tui\",\"event\":\"exit\",\"payload\":{}}"
 
-} | uv run python -m kosax.cli --ipc stdio > "$OUTPUT" 2>/dev/null || true
+} | uv run python -m ummaya.cli --ipc stdio > "$OUTPUT" 2>/dev/null || true
 
 echo "L2 stdio JSONL probe complete: $OUTPUT"
 echo "==="

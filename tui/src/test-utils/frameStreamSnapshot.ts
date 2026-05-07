@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSAX-original — observability/spec(debug-infra-rebuild RFC § P3 + § P4 2026-05-02)
+// UMMAYA-original — observability/spec(debug-infra-rebuild RFC § P3 + § P4 2026-05-02)
 //
 // frameStreamSnapshot — per-render Ink snapshot stream helpers.
 //
@@ -148,7 +148,7 @@ export function assertFrameSequence(
  *   await waitForText(r, '● lookup')
  *   const snap = takeStreamSnapshot(r)
  *   expect(snap.hashes).toHaveLength(3)
- *   expect(snap.previews[0]).toContain('KOSAX')
+ *   expect(snap.previews[0]).toContain('UMMAYA')
  */
 export function takeStreamSnapshot(result: RenderResult): StreamSnapshot {
   const seq = frameSequence(result)

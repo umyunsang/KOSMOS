@@ -23,7 +23,7 @@ even when the underlying tool chain is sound.
 
 - Fix all 4 issues with minimal blast radius. Defense-in-depth, not band-aid.
 - Preserve byte-identical CC behavior wherever the bug is upstream of the swap
-  surface. Modify KOSAX swap layers only.
+  surface. Modify UMMAYA swap layers only.
 - Keep AGENTS.md hard rules: zero new runtime deps, English source, KST only
   on citizen-facing strings (OTEL/audit ledger stays UTC).
 

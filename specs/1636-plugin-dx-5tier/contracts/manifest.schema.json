@@ -13,7 +13,7 @@
     },
     "AdapterRealDomainPolicy": {
       "additionalProperties": false,
-      "description": "KOSAX adapter single permission representation — cite of agency published policy.\n\nKOSAX does NOT invent permission policy (.specify/memory/constitution.md § II).\nThis model is the single source of truth where an adapter (a) cites the\nagency's published policy URL, (b) declares the citizen-facing gate category,\nand (c) records the last verification timestamp of the policy citation.\n\nReferences:\n- AGENTS.md § CORE THESIS — KOSAX = AX-infrastructure callable-channel client\n- .specify/memory/constitution.md § II Fail-Closed Security (NON-NEGOTIABLE)\n- .specify/memory/constitution.md § III Pydantic v2 Strict Typing\n- specs/1979-plugin-dx-tui-integration/domain-harness-design.md § 3.2",
+      "description": "UMMAYA adapter single permission representation — cite of agency published policy.\n\nUMMAYA does NOT invent permission policy (.specify/memory/constitution.md § II).\nThis model is the single source of truth where an adapter (a) cites the\nagency's published policy URL, (b) declares the citizen-facing gate category,\nand (c) records the last verification timestamp of the policy citation.\n\nReferences:\n- AGENTS.md § CORE THESIS — UMMAYA = AX-infrastructure callable-channel client\n- .specify/memory/constitution.md § II Fail-Closed Security (NON-NEGOTIABLE)\n- .specify/memory/constitution.md § III Pydantic v2 Strict Typing\n- specs/1979-plugin-dx-tui-integration/domain-harness-design.md § 3.2",
       "properties": {
         "real_classification_url": {
           "description": "Agency published policy URL (https:// prefix recommended)",
@@ -57,7 +57,7 @@
     },
     "AdapterRegistration": {
       "additionalProperties": false,
-      "description": "T009 — registry metadata for active primitive adapters.\n\nMirrors data-model.md § 4 verbatim. Spec 024 V1–V4 (applied via pydantic\n``@model_validator`` on :class:`GovAPITool`) and Spec 025 V6 + the Spec 031\nv1.2 dual-axis invariant (applied via ``@model_validator`` on this class at\nconstruction time; see :mod:`kosax.security.v12_dual_axis`) remain the\nauthoritative enforcement points; :meth:`ToolRegistry.register` only\nadditionally validates :class:`GovAPITool` instances passed to it.\n``published_tier_minimum`` / ``nist_aal_hint`` are optional during the\npre-v1.2 compatibility window (FR-028) and become mandatory when the\n:mod:`kosax.security.v12_dual_axis` backstop flips ``V12_GA_ACTIVE = True``.",
+      "description": "T009 — registry metadata for active primitive adapters.\n\nMirrors data-model.md § 4 verbatim. Spec 024 V1–V4 (applied via pydantic\n``@model_validator`` on :class:`GovAPITool`) and Spec 025 V6 + the Spec 031\nv1.2 dual-axis invariant (applied via ``@model_validator`` on this class at\nconstruction time; see :mod:`ummaya.security.v12_dual_axis`) remain the\nauthoritative enforcement points; :meth:`ToolRegistry.register` only\nadditionally validates :class:`GovAPITool` instances passed to it.\n``published_tier_minimum`` / ``nist_aal_hint`` are optional during the\npre-v1.2 compatibility window (FR-028) and become mandatory when the\n:mod:`ummaya.security.v12_dual_axis` backstop flips ``V12_GA_ACTIVE = True``.",
       "properties": {
         "tool_id": {
           "maxLength": 128,
@@ -252,7 +252,7 @@
           "type": "string"
         },
         "acknowledgment_sha256": {
-          "description": "Lowercase hex SHA-256 of the canonical PIPA §26 text from docs/plugins/security-review.md. Must equal kosax.plugins.canonical_acknowledgment.CANONICAL_ACKNOWLEDGMENT_SHA256.",
+          "description": "Lowercase hex SHA-256 of the canonical PIPA §26 text from docs/plugins/security-review.md. Must equal ummaya.plugins.canonical_acknowledgment.CANONICAL_ACKNOWLEDGMENT_SHA256.",
           "pattern": "^[a-f0-9]{64}$",
           "title": "Acknowledgment Sha256",
           "type": "string"
@@ -270,7 +270,7 @@
     }
   },
   "additionalProperties": false,
-  "description": "Top-level Pydantic v2 manifest contract for a KOSAX plugin release.\n\nMirrors data-model.md § 1 verbatim. A successfully constructed\ninstance is byte-equivalent to a valid ``manifest.yaml``; the JSON\nSchema export :data:`PluginManifest.model_json_schema` is contract-\npinned to ``contracts/manifest.schema.json`` (parity test in T008).\n\nSee module docstring for the 5 cross-field validators and ADR-007 for\nthe namespacing rule rationale.",
+  "description": "Top-level Pydantic v2 manifest contract for a UMMAYA plugin release.\n\nMirrors data-model.md § 1 verbatim. A successfully constructed\ninstance is byte-equivalent to a valid ``manifest.yaml``; the JSON\nSchema export :data:`PluginManifest.model_json_schema` is contract-\npinned to ``contracts/manifest.schema.json`` (parity test in T008).\n\nSee module docstring for the 5 cross-field validators and ADR-007 for\nthe namespacing rule rationale.",
   "properties": {
     "plugin_id": {
       "description": "snake_case plugin identifier; immutable across versions. Used as the namespace prefix in adapter.tool_id.",
@@ -339,7 +339,7 @@
       "additionalProperties": {
         "type": "string"
       },
-      "description": "OTEL span attributes emitted on every plugin tool invocation (Spec 021 extension). MUST contain key 'kosax.plugin.id' with value equal to plugin_id (enforced by _v_otel_attribute).",
+      "description": "OTEL span attributes emitted on every plugin tool invocation (Spec 021 extension). MUST contain key 'ummaya.plugin.id' with value equal to plugin_id (enforced by _v_otel_attribute).",
       "title": "Otel Attributes",
       "type": "object"
     },
@@ -393,5 +393,5 @@
   "title": "PluginManifest",
   "type": "object",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://kosax.dev/schemas/plugin-manifest/1.0.0.json"
+  "$id": "https://ummaya.dev/schemas/plugin-manifest/1.0.0.json"
 }

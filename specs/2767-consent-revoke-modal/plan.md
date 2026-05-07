@@ -11,12 +11,12 @@ AGENTS.md `/speckit-plan` 룰: Phase 0 마다 `.specify/memory/constitution.md` 
 
 | Design Decision | Reference | Reason |
 |---|---|---|
-| `ConsentRevokeConfirmDialog` shell 구조 | `.references/claude-code-sourcemap/restored-src/src/components/PermissionRequest.tsx` (research-use, line-cited only) | CC 2.1.88 의 모달 dialog 패턴 — KOSAX UI L2 의 직접 baseline (AGENTS.md CORE THESIS "CC harness 1:1 보존") |
-| `consentBridge.ts` IPC singleton 패턴 | `tui/src/bridge/replBridgeHandle.ts` (Spec 1978 ChatRequestFrame) | KOSAX 내 기존 IPC bridge 모듈의 transport singleton 패턴 — 동일 구조 재사용 |
-| ToolJSX overlay mount 룰 | `tui/src/components/ExportPdfDialog.tsx` (Spec 035 P4 port) + AGENTS.md "Infrastructure insights" #3 | `isLocalJSXCommand: false` + 자체 `useInput` Esc fallback (검증된 KOSAX 패턴) |
+| `ConsentRevokeConfirmDialog` shell 구조 | `.references/claude-code-sourcemap/restored-src/src/components/PermissionRequest.tsx` (research-use, line-cited only) | CC 2.1.88 의 모달 dialog 패턴 — UMMAYA UI L2 의 직접 baseline (AGENTS.md CORE THESIS "CC harness 1:1 보존") |
+| `consentBridge.ts` IPC singleton 패턴 | `tui/src/bridge/replBridgeHandle.ts` (Spec 1978 ChatRequestFrame) | UMMAYA 내 기존 IPC bridge 모듈의 transport singleton 패턴 — 동일 구조 재사용 |
+| ToolJSX overlay mount 룰 | `tui/src/components/ExportPdfDialog.tsx` (Spec 035 P4 port) + AGENTS.md "Infrastructure insights" #3 | `isLocalJSXCommand: false` + 자체 `useInput` Esc fallback (검증된 UMMAYA 패턴) |
 | IPC frame arm 추가 절차 | `specs/032-ipc-stdio-hardening/spec.md` § E3 role allow-list, § ring-buffer registration | Spec 032 invariant — 모든 신규 arm 은 role allow-list + correlation_id + ring-buffer 통과 필수 |
-| Ledger append `action="withdraw"` 구조 | `src/kosax/permissions/ledger.py:1-100` + `specs/033-permission-v2-spectrum/data-model.md § 2.1 L1-L5` | Spec 033 의 backend 면 byte-identical 재사용 — 본 Epic 은 caller 만 추가, ledger logic 재구현 X |
-| Receipt 파일 atomic 업데이트 | `src/kosax/ipc/stdio.py:1471-1487` (기존 receipt write 패턴) | atomic temp+rename, 0o600 mode preservation |
+| Ledger append `action="withdraw"` 구조 | `src/ummaya/permissions/ledger.py:1-100` + `specs/033-permission-v2-spectrum/data-model.md § 2.1 L1-L5` | Spec 033 의 backend 면 byte-identical 재사용 — 본 Epic 은 caller 만 추가, ledger logic 재구현 X |
+| Receipt 파일 atomic 업데이트 | `src/ummaya/ipc/stdio.py:1471-1487` (기존 receipt write 패턴) | atomic temp+rename, 0o600 mode preservation |
 | TUI verification chain | AGENTS.md "TUI verification methodology" Layer 1b/4/5 + Spec debug-infra-rebuild RFC | tmux capture-pane (NOT asciinema), waitForFrame (NOT Sleep), vhs `.txt` golden file (NOT GIF only) |
 | Korean-primary i18n | `tui/src/i18n/uiL2.ts` (기존) | 모달 텍스트는 한국어 primary + English fallback (`getUiL2I18n(locale)`) |
 
@@ -34,7 +34,7 @@ AGENTS.md `/speckit-plan` 룰: Phase 0 마다 `.specify/memory/constitution.md` 
 
 ```text
 ┌──────────────────────────────────────────────────────────────────┐
-│  ✻ KOSAX · 권한 영수증 철회 / Revoke consent receipt           │
+│  ✻ UMMAYA · 권한 영수증 철회 / Revoke consent receipt           │
 ├──────────────────────────────────────────────────────────────────┤
 │  영수증 ID: rcpt-01HX2K3M4N5P6Q7R8S9T                            │
 │  도구:      hira_hospital_search                                  │
@@ -48,7 +48,7 @@ AGENTS.md `/speckit-plan` 룰: Phase 0 마다 `.specify/memory/constitution.md` 
 └──────────────────────────────────────────────────────────────────┘
 ```
 
-CC analog: `PermissionRequest.tsx` 의 box-bordered dialog shell + 3-key footer + Esc dismiss. KOSAX-only 차이: receipt metadata 4 필드 + PIPA §36 명시 안내.
+CC analog: `PermissionRequest.tsx` 의 box-bordered dialog shell + 3-key footer + Esc dismiss. UMMAYA-only 차이: receipt metadata 4 필드 + PIPA §36 명시 안내.
 
 ### 1.2 IPC envelope — 신규 2 arm
 
@@ -77,7 +77,7 @@ Ring-buffer registration: 두 arm 모두 Spec 032 의 `SessionRingBuffer` (256-f
 
 ### 1.3 Backend handler dispatch sketch
 
-`src/kosax/ipc/stdio.py` 의 `_handle_consent_revoke_request(frame, transport, ...)` 신규 함수:
+`src/ummaya/ipc/stdio.py` 의 `_handle_consent_revoke_request(frame, transport, ...)` 신규 함수:
 
 ```python
 # 1. HMAC key check (fail-closed)
@@ -92,7 +92,7 @@ except (HMACKeyFileModeError, FileNotFoundError):
     return
 
 # 2. Receipt file existence
-receipt_path = _Path.home() / ".kosax" / "memdir" / "user" / "consent" / f"{frame.receipt_id}.json"
+receipt_path = _Path.home() / ".ummaya" / "memdir" / "user" / "consent" / f"{frame.receipt_id}.json"
 if not receipt_path.exists():
     await transport.send(ConsentRevokeResponseFrame(
         request_id=frame.request_id, ok=False,
@@ -189,21 +189,21 @@ export function _handleConsentRevokeResponse(frame: ConsentRevokeResponseFrame):
 
 ```typescript
 } else if (subCmd === 'revoke') {
-  const parsed = parseConsentArgs(_kosaxArgs);
+  const parsed = parseConsentArgs(_ummayaArgs);
   if (parsed.sub !== 'revoke') {
-    addNotification({ key: 'kosax-consent-revoke-usage',
+    addNotification({ key: 'ummaya-consent-revoke-usage',
       text: '사용법: /consent revoke <receipt-id>', priority: 'immediate' });
     return;
   }
   const target = permissionReceiptsRef.current.find(
     (r) => r.receipt_id === parsed.receiptId);
   if (!target) {
-    addNotification({ key: 'kosax-consent-revoke-not-found',
+    addNotification({ key: 'ummaya-consent-revoke-not-found',
       text: `영수증을 찾을 수 없음: ${parsed.receiptId}`, priority: 'immediate' });
     return;
   }
   if (isReceiptRevoked(target)) {
-    addNotification({ key: 'kosax-consent-revoke-already',
+    addNotification({ key: 'ummaya-consent-revoke-already',
       text: `이미 철회된 영수증: ${parsed.receiptId}`, priority: 'immediate' });
     return;
   }
@@ -215,7 +215,7 @@ export function _handleConsentRevokeResponse(frame: ConsentRevokeResponseFrame):
           parsed.receiptId, { scope: decision === 'session-all' ? 'session-all' : 'once' });
         if (result.ok) {
           permissionReceiptsCtx.revokeReceipt(parsed.receiptId);
-          addNotification({ key: 'kosax-consent-revoke-done',
+          addNotification({ key: 'ummaya-consent-revoke-done',
             text: `철회 완료: ${parsed.receiptId}`, priority: 'immediate' });
         } else {
           const errMsg = result.error === 'ledger_key_missing'
@@ -223,12 +223,12 @@ export function _handleConsentRevokeResponse(frame: ConsentRevokeResponseFrame):
             : result.error === 'timeout'
             ? '응답 시간 초과'
             : `철회 실패: ${result.error}`;
-          addNotification({ key: 'kosax-consent-revoke-error',
+          addNotification({ key: 'ummaya-consent-revoke-error',
             text: errMsg, priority: 'immediate' });
         }
-        _kosaxCloseJSX();
+        _ummayaCloseJSX();
       },
-      onCancel: () => _kosaxCloseJSX(),
+      onCancel: () => _ummayaCloseJSX(),
     }),
     shouldHidePromptInput: false,
     isLocalJSXCommand: false,
@@ -242,9 +242,9 @@ export function _handleConsentRevokeResponse(frame: ConsentRevokeResponseFrame):
 
 - **T001 [P] Phase Foundational**: `ConsentRevokeConfirmDialog.tsx` 컴포넌트 + ko/en i18n + `useInput` 핸들러 (FR-A01..A05).
 - **T002 Phase Foundational**: `tui/src/components/consent/__tests__/ConsentRevokeConfirmDialog.test.tsx` (FR-F01).
-- **T003 [P] Phase US1**: `src/kosax/ipc/frame_schema.py` 신규 arm 2종 + role allow-list 갱신 (FR-C01, FR-C02). `tui/src/ipc/frames.generated.ts` 재생성 (FR-C03).
-- **T004 Phase US1**: `src/kosax/ipc/stdio.py` `_handle_consent_revoke_request` 핸들러 + ledger append + atomic receipt 갱신 (FR-D01..D05).
-- **T005 Phase US1**: `src/kosax/ipc/tests/test_consent_revoke_dispatch.py` (FR-F03) + `tui/src/services/ipc/__tests__/consentBridge.test.ts` (FR-F02).
+- **T003 [P] Phase US1**: `src/ummaya/ipc/frame_schema.py` 신규 arm 2종 + role allow-list 갱신 (FR-C01, FR-C02). `tui/src/ipc/frames.generated.ts` 재생성 (FR-C03).
+- **T004 Phase US1**: `src/ummaya/ipc/stdio.py` `_handle_consent_revoke_request` 핸들러 + ledger append + atomic receipt 갱신 (FR-D01..D05).
+- **T005 Phase US1**: `src/ummaya/ipc/tests/test_consent_revoke_dispatch.py` (FR-F03) + `tui/src/services/ipc/__tests__/consentBridge.test.ts` (FR-F02).
 - **T006 [P] Phase US1**: `tui/src/services/ipc/consentBridge.ts` 신규 + replBridge subscriber wire (FR-B01..B05).
 - **T007 Phase US2 + US3**: `tui/src/screens/REPL.tsx` `subCmd === 'revoke'` 분기 재작성 + dangling comment 정리 (FR-E01..E04). `tui/src/screens/__tests__/REPL.consent-revoke.test.tsx` (FR-F04).
 - **T008 Phase Polish**: `specs/2767-consent-revoke-modal/scripts/smoke-revoke.sh` (tmux) + `smoke-revoke.tape` (vhs, 3 PNG keyframes + .txt golden) + 5-layer verification chain 캡처 (FR-F05). `closure-2767.md` Spec 1635 P4 US2 마감 노트 + 본 Epic PR 의 Codex 리뷰 응답.
@@ -273,7 +273,7 @@ Phase Polish (T008): Lead Opus solo (smoke + closure 작성 + PR 본문)
 - **R-03 (Ledger append race)**: 동일 receipt 에 대한 동시 revoke 요청 2건. Spec 033 의 `fcntl.LOCK_EX` 가 이미 보장하므로 추가 가드 불필요. 검증 노트만 plan 에 남김.
 - **R-04 (i18n drift)**: `uiL2.ts` 의 `consentRevoked` / `consentAlreadyRevoked` 메시지가 본 Epic 의 새 토스트 텍스트와 정합되지 않을 가능성. 검증: T001 에서 i18n bundle 재사용 가능성 확인 + 부족 시 추가 키 등록.
 - **OQ-01**: `A` 키 (영구 철회) 의 backend 의미 — 본 Epic 에서는 P1 범위로 `Y` 와 동일 처리하되 ledger record 의 `scope` 만 `once_via_a_key` 로 마킹. 향후 Spec 에서 "동일 tool 미사용 영수증 일괄 철회" 로 확장 시 backend 핸들러만 변경하면 frame schema 무수정 가능. → Out of Scope OOS-03 으로 명시.
-- **OQ-02**: receipt 파일이 `~/.kosax/memdir/user/consent/` 에 없고 ledger 에만 존재하는 케이스 — Spec 033 의 reconciliation logic 영역이므로 본 Epic 은 receipt 파일을 source of truth 로 간주. `not_found` 응답 후 사용자가 `kosax-permissions reconcile` 실행 (별도 spec).
+- **OQ-02**: receipt 파일이 `~/.ummaya/memdir/user/consent/` 에 없고 ledger 에만 존재하는 케이스 — Spec 033 의 reconciliation logic 영역이므로 본 Epic 은 receipt 파일을 source of truth 로 간주. `not_found` 응답 후 사용자가 `ummaya-permissions reconcile` 실행 (별도 spec).
 
 ## Phase 4 — Success Criteria Mapping
 
@@ -284,7 +284,7 @@ Phase Polish (T008): Lead Opus solo (smoke + closure 작성 + PR 본문)
 | SC-03 | T002, T007 | `bun test` 4 케이스 + Layer 5 `snap-006-invalid-format.txt` 등 |
 | SC-04 | T005, T008 | `pytest test_consent_revoke_dispatch.py::test_fail_closed_no_hmac` + Layer 5 mock backend 시나리오 |
 | SC-05 | T005 | `pytest test_consent_revoke_dispatch.py::test_idempotent_double_revoke` |
-| SC-06 | T003 | `pytest src/kosax/ipc/tests/test_frame_schema_role_allowlist.py` (Spec 032 기존 테스트에 신규 arm 추가 검증) |
+| SC-06 | T003 | `pytest src/ummaya/ipc/tests/test_frame_schema_role_allowlist.py` (Spec 032 기존 테스트에 신규 arm 추가 검증) |
 | SC-07 | T008 | `git diff main...HEAD pyproject.toml tui/package.json` empty deps 변경 확인 |
 | SC-08 | T008 | `specs/2767-consent-revoke-modal/scripts/` + `smoke-keyframe-*.png` 3+ 개 commit |
 | SC-09 | T007 | `grep -rn "consentBridge.ts" tui/src` exit 0 + `grep -rn "P5 연동 예정" tui/src` exit 1 (no match) |
@@ -295,7 +295,7 @@ Phase Polish (T008): Lead Opus solo (smoke + closure 작성 + PR 본문)
 전 layer 적용:
 1. **Layer 1a (pytest)**: `test_consent_revoke_dispatch.py` 5 케이스.
 2. **Layer 1b (bun test + ink-testing-library)**: `ConsentRevokeConfirmDialog.test.tsx` (component) + `consentBridge.test.ts` (service) + `REPL.consent-revoke.test.tsx` (integration).
-3. **Layer 2 (stdio JSONL probe)**: `python -m kosax.ipc.demo.consent_revoke_probe` (신규 — 본 Epic 의 demo 스크립트) — TUI 우회로 backend 단독 검증.
+3. **Layer 2 (stdio JSONL probe)**: `python -m ummaya.ipc.demo.consent_revoke_probe` (신규 — 본 Epic 의 demo 스크립트) — TUI 우회로 backend 단독 검증.
 4. **Layer 3 (interactive PTY)**: `expect` 기반 `smoke-revoke.expect` 시나리오.
 5. **Layer 4 (vhs `.tape`)**: `smoke-revoke.tape` — 3+ PNG keyframes + `.txt` golden + `.gif` 보조.
 6. **Layer 5 (tmux capture-pane)**: `scripts/tui-tmux-capture.sh` 기반 `smoke-revoke.sh` — `wait_for_pane` deadline-based polling.

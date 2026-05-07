@@ -16,11 +16,11 @@ Submits a welfare benefit application on behalf of a citizen and returns a deter
 | Classification | Mock · Permission tier 2 |
 | Source | 보건복지부 마이데이터 복지 서비스 신청 API (KFTC MyData v240930 / 마이데이터 기본 API) — shape-mirrored (OOS) from the MyData standard welfare-application surface |
 | Primitive | `submit` |
-| Module | `src/kosax/tools/mock/mydata/welfare_application.py` |
+| Module | `src/ummaya/tools/mock/mydata/welfare_application.py` |
 
 ## Envelope
 
-**Input model**: `WelfareApplicationParams` defined at `src/kosax/tools/mock/mydata/welfare_application.py:45–72`.
+**Input model**: `WelfareApplicationParams` defined at `src/ummaya/tools/mock/mydata/welfare_application.py:45–72`.
 
 | Field | Type | Required | Description |
 |---|---|---|---|
@@ -29,11 +29,11 @@ Submits a welfare benefit application on behalf of a citizen and returns a deter
 | `application_type` | `Literal["new", "renewal", "modification"]` | yes | Whether this is a new application, a renewal, or a modification of an existing application |
 | `household_size` | `int` (1–50) | yes | Number of household members |
 
-**Output model**: `SubmitOutput` (from `kosax.primitives.submit`) — `adapter_receipt` block shown below.
+**Output model**: `SubmitOutput` (from `ummaya.primitives.submit`) — `adapter_receipt` block shown below.
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `transaction_id` | `str` | yes | Deterministic KOSAX transaction UUID derived from input params + adapter nonce |
+| `transaction_id` | `str` | yes | Deterministic UMMAYA transaction UUID derived from input params + adapter nonce |
 | `status` | `SubmitStatus` (`"succeeded"`) | yes | Final application status |
 | `adapter_receipt.application_ref` | `str` | yes | `MOCK-WA-<sha256[:12]>` — deterministic application receipt number |
 | `adapter_receipt.benefit_code` | `str` | yes | Echo of the submitted benefit code |
@@ -54,7 +54,7 @@ Submits a welfare benefit application on behalf of a citizen and returns a deter
 
 ## Permission tier rationale
 
-This adapter sits at permission tier 2 (orange ⓶) because it submits an application that creates an official government welfare record and processes sensitive personal data including household composition and applicant identity (PIPA class `personal_standard`). Spec 033 defines tier 2 for consequential, authenticated actions where the side effect persists in a government registry but is reversible through official withdrawal procedures outside KOSAX. The adapter declares `is_irreversible=True` per the V1 invariant (`primitive=submit` ∧ `pipa_class=personal_standard` → `is_irreversible=True`), requires OAuth AAL2 (`mydata_individual_aal2`), and enforces `requires_auth=True`. Citizens are prompted in the permission gauntlet before the dispatcher forwards the call.
+This adapter sits at permission tier 2 (orange ⓶) because it submits an application that creates an official government welfare record and processes sensitive personal data including household composition and applicant identity (PIPA class `personal_standard`). Spec 033 defines tier 2 for consequential, authenticated actions where the side effect persists in a government registry but is reversible through official withdrawal procedures outside UMMAYA. The adapter declares `is_irreversible=True` per the V1 invariant (`primitive=submit` ∧ `pipa_class=personal_standard` → `is_irreversible=True`), requires OAuth AAL2 (`mydata_individual_aal2`), and enforces `requires_auth=True`. Citizens are prompted in the permission gauntlet before the dispatcher forwards the call.
 
 ## Worked example
 
@@ -93,7 +93,7 @@ This adapter sits at permission tier 2 (orange ⓶) because it submits an applic
 
 ```text
 Citizen: 기초생활수급 신규 신청을 하고 싶어요. 가구원 수는 3명이에요.
-KOSAX: 기초생활수급 신규 신청이 완료되었습니다. 접수 번호는 MOCK-WA-7d3f9c1e2a4b이며, 담당 기관에서 추가 안내 연락을 드릴 예정입니다.
+UMMAYA: 기초생활수급 신규 신청이 완료되었습니다. 접수 번호는 MOCK-WA-7d3f9c1e2a4b이며, 담당 기관에서 추가 안내 연락을 드릴 예정입니다.
 ```
 
 ## Constraints

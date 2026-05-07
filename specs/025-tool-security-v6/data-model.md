@@ -13,10 +13,10 @@ No database, no persistent state, no new pydantic models. V6 extends the existin
 
 ## 1. Canonical Mapping (single source of truth for FR-039/FR-040/FR-042)
 
-Declared as a module-level `Final` constant in `src/kosax/tools/models.py`, imported by `src/kosax/tools/registry.py`.
+Declared as a module-level `Final` constant in `src/ummaya/tools/models.py`, imported by `src/ummaya/tools/registry.py`.
 
 ```python
-# src/kosax/tools/models.py
+# src/ummaya/tools/models.py
 from typing import Final
 
 _AUTH_TYPE_LEVEL_MAPPING: Final[dict[str, frozenset[str]]] = {
@@ -42,7 +42,7 @@ _AUTH_TYPE_LEVEL_MAPPING: Final[dict[str, frozenset[str]]] = {
 
 ### Rationale for allowed set (documentation mirror of FR-040)
 
-- **`public` ⇒ `{public, AAL1}`**: A transport-layer `auth_type="public"` means the upstream API requires no credential. V5 already enforces that `auth_level="public"` ⇔ `requires_auth=False`, so the `(public, public)` pair is the classic no-auth transport + no-auth assurance combination. `(public, AAL1)` is the approved MVP-meta-tool pattern (`resolve_location`, `lookup`) — no upstream credential, but KOSAX still requires an authenticated citizen session (`requires_auth=True`) for rate-limit accounting and audit continuity. AAL2+ with `auth_type="public"` is rejected because a transport-unauthenticated endpoint cannot by itself meet AAL2/AAL3 assurance; the assurance must come from the transport layer.
+- **`public` ⇒ `{public, AAL1}`**: A transport-layer `auth_type="public"` means the upstream API requires no credential. V5 already enforces that `auth_level="public"` ⇔ `requires_auth=False`, so the `(public, public)` pair is the classic no-auth transport + no-auth assurance combination. `(public, AAL1)` is the approved MVP-meta-tool pattern (`resolve_location`, `lookup`) — no upstream credential, but UMMAYA still requires an authenticated citizen session (`requires_auth=True`) for rate-limit accounting and audit continuity. AAL2+ with `auth_type="public"` is rejected because a transport-unauthenticated endpoint cannot by itself meet AAL2/AAL3 assurance; the assurance must come from the transport layer.
 - **`api_key` / `oauth` ⇒ `{AAL1, AAL2, AAL3}`**: Both auth types deliver authenticated transport. `auth_level="public"` is rejected for both because V5 requires `requires_auth=False` at `auth_level="public"`, which contradicts needing an API key or OAuth token at all.
 
 ### Interaction with V5 (already in force)
@@ -60,7 +60,7 @@ V6 + V5 combined effect on the MVP-meta-tool pattern:
 ### 2.1. Pydantic validator error (layer 1 — FR-039, FR-041)
 
 - **Exception type**: `ValueError` (raised inside `@model_validator(mode="after")`; pydantic re-wraps as `ValidationError` with `type="value_error"`).
-- **Error origin**: `src/kosax/tools/models.py :: GovAPITool._validate_security_invariants`.
+- **Error origin**: `src/ummaya/tools/models.py :: GovAPITool._validate_security_invariants`.
 - **Message format** (exact, test-asserted):
   ```
   V6 violation (FR-039/FR-040): tool '{tool_id}' declares auth_type='{auth_type}' with auth_level='{auth_level}'; auth_type='{auth_type}' permits auth_level in {sorted_allowed_list}.
@@ -71,14 +71,14 @@ V6 + V5 combined effect on the MVP-meta-tool pattern:
 
 ### 2.2. Registry backstop error (layer 2 — FR-042, FR-043)
 
-- **Exception type**: `RegistrationError` (existing class in `src/kosax/tools/errors.py`).
-- **Error origin**: `src/kosax/tools/registry.py :: ToolRegistry.register`.
+- **Exception type**: `RegistrationError` (existing class in `src/ummaya/tools/errors.py`).
+- **Error origin**: `src/ummaya/tools/registry.py :: ToolRegistry.register`.
 - **Message format** (exact, test-asserted):
   ```
   V6 violation (FR-042): tool '{tool_id}' declares auth_type='{auth_type}' with auth_level='{auth_level}'; permitted auth_levels are {sorted_allowed_list}. (registry backstop — bypass of pydantic V6 detected)
   ```
 - **Distinguishability from layer 1** (FR-043): the `"(registry backstop — bypass of pydantic V6 detected)"` suffix is a unique substring not present in the layer-1 message. Log observability and tests can reliably tell which layer fired.
-- **Structured log emission**: before raising, emit `logger.error("V6 violation at registry.register: tool_id=%s auth_type=%s auth_level=%s allowed=%s", tool.id, tool.auth_type, tool.auth_level, sorted(allowed))`. Matches the V3 backstop's log shape at `src/kosax/tools/registry.py:68-74`.
+- **Structured log emission**: before raising, emit `logger.error("V6 violation at registry.register: tool_id=%s auth_type=%s auth_level=%s allowed=%s", tool.id, tool.auth_type, tool.auth_level, sorted(allowed))`. Matches the V3 backstop's log shape at `src/ummaya/tools/registry.py:68-74`.
 - **Fail-closed on unknown `auth_type`** (FR-048): if `tool.auth_type` is not a key in the mapping, `RegistrationError(tool.id, "V6 violation (FR-048): unknown auth_type={...!r} at registry.register; refusing to allow ambiguous registration.")` is raised.
 
 ### 2.3. Positional guarantees (no drift between layers)

@@ -19,10 +19,10 @@ Every design decision traces to a concrete reference per Constitution § I.
 | Bypass-immune rule set as a frozen constant | `claude-reviews-claude` — bypass-immune subset analysis | NeMo Guardrails — Colang 2.0 whitelist-of-approved-actions | Frozen at module level; runtime config cannot relax it |
 | Classifier input isolation (future step 2) | NeMo Guardrails — declarative rail sees only tool + args | `docs/vision.md § Layer 3` | Step 2 stub designed to accept the same narrow signature |
 | Runner-level enforcement, not adapter-level | Google ADK — runner-level plugin pattern | AutoGen — `InterventionHandler` | Pipeline wraps executor; adapters never see permission logic |
-| Fail-closed on any step exception | LangGraph — `ToolNode(handle_tool_errors=True)`, `ValidationError` lesson | KOSAX constitution § II | Exceptions are caught at the pipeline boundary, never propagated |
-| Audit log structure and namespace | Google ADK — centralized permission enforcement log | `docs/vision.md § Layer 3` | Dedicated `kosax.permissions.audit` logger namespace |
-| Pydantic v2 frozen models for all I/O | Pydantic AI — schema-driven registry pattern | KOSAX constitution § III | No `Any`; all models `frozen=True` |
-| Env var read at call time (not import time) | `claude-code-sourcemap` — deferred credential resolution | KOSAX constitution § II | Supports key rotation without process restart |
+| Fail-closed on any step exception | LangGraph — `ToolNode(handle_tool_errors=True)`, `ValidationError` lesson | UMMAYA constitution § II | Exceptions are caught at the pipeline boundary, never propagated |
+| Audit log structure and namespace | Google ADK — centralized permission enforcement log | `docs/vision.md § Layer 3` | Dedicated `ummaya.permissions.audit` logger namespace |
+| Pydantic v2 frozen models for all I/O | Pydantic AI — schema-driven registry pattern | UMMAYA constitution § III | No `Any`; all models `frozen=True` |
+| Env var read at call time (not import time) | `claude-code-sourcemap` — deferred credential resolution | UMMAYA constitution § II | Supports key rotation without process restart |
 
 ### Constitution compliance check
 
@@ -32,24 +32,24 @@ Every design decision traces to a concrete reference per Constitution § I.
 | § II — Bypass-immune non-overridable | Compliant | `BYPASS_IMMUNE_RULES` is a `frozenset` module constant |
 | § III — Pydantic v2, no `Any` | Compliant | All models use strict types; see data-model.md |
 | § IV — No live API calls in CI | Compliant | Pipeline itself never calls external APIs; all tests mock the executor |
-| § IV — `KOSAX_`-prefixed env vars | Compliant | Only `KOSAX_DATA_GO_KR_API_KEY` is read |
+| § IV — `UMMAYA_`-prefixed env vars | Compliant | Only `UMMAYA_DATA_GO_KR_API_KEY` is read |
 
 ### Critical forward dependency: `ToolResult.error_type`
 
-`kosax.tools.models.ToolResult.error_type` is currently typed as:
+`ummaya.tools.models.ToolResult.error_type` is currently typed as:
 
 ```python
 Literal["validation", "rate_limit", "not_found", "execution", "schema_mismatch"]
 ```
 
-FR-021 requires the pipeline to return `ToolResult(error_type="permission_denied")`. This literal extension must be applied to `src/kosax/tools/models.py` as part of Phase 4 (integration). It is a non-breaking additive change to an existing Literal type; no existing tests will break.
+FR-021 requires the pipeline to return `ToolResult(error_type="permission_denied")`. This literal extension must be applied to `src/ummaya/tools/models.py` as part of Phase 4 (integration). It is a non-breaking additive change to an existing Literal type; no existing tests will break.
 
 ---
 
 ## Technical Context
 
 - **Python 3.12+**, `pydantic>=2.0`, stdlib only (no new `pyproject.toml` entries)
-- **Integration point**: `dispatch_tool_calls()` in `src/kosax/engine/query.py` calls `tool_executor.dispatch()`. Phase 4 of this plan replaces that call with `permission_pipeline.run()`, which wraps the executor internally.
+- **Integration point**: `dispatch_tool_calls()` in `src/ummaya/engine/query.py` calls `tool_executor.dispatch()`. Phase 4 of this plan replaces that call with `permission_pipeline.run()`, which wraps the executor internally.
 - **Existing tool models**: `GovAPITool.auth_type` is `Literal["public", "api_key", "oauth"]`; the pipeline maps this to `AccessTier` at entry (see data-model.md for the mapping table).
 - **Executor contract**: `ToolExecutor.dispatch()` never raises — it returns `ToolResult`. The pipeline's step 6 calls it in an isolated credential context and captures any exception from the executor's own internals as a deny result.
 - **Re-entrancy**: `PermissionPipeline.run()` creates all step state per-call. No shared mutable state between concurrent invocations. The executor's `RateLimiter` handles concurrent calls at the tool level.
@@ -59,14 +59,14 @@ FR-021 requires the pipeline to return `ToolResult(error_type="permission_denied
 ## Module Structure
 
 ```
-src/kosax/permissions/
+src/ummaya/permissions/
 ├── __init__.py            # exports: PermissionPipeline, AccessTier, PermissionDecision
 ├── models.py              # all Pydantic v2 models + enums (AccessTier, PermissionDecision,
 │                          #   SessionContext, PermissionCheckRequest, PermissionStepResult,
 │                          #   AuditLogEntry)
 ├── pipeline.py            # PermissionPipeline class — gauntlet runner + integration entry point
 ├── bypass.py              # BYPASS_IMMUNE_RULES frozenset + check_bypass_immune() function
-├── audit.py               # AuditLogger — writes AuditLogEntry to kosax.permissions.audit
+├── audit.py               # AuditLogger — writes AuditLogEntry to ummaya.permissions.audit
 └── steps/
     ├── __init__.py        # re-exports all step functions for clean imports
     ├── step1_config.py    # ACTIVE: configuration rules (access tier + api key check)
@@ -117,7 +117,7 @@ Step 6 uses a `contextlib.contextmanager` that temporarily filters `os.environ` 
 
 **Trade-off**: A buggy adapter that spawns its own subprocess or uses `ctypes` to read environment bytes is not constrained by this approach. Accepted for v1 per the out-of-scope decision on per-ministry credential isolation.
 
-**Implementation**: The sandbox function saves `os.environ.copy()`, deletes all `KOSAX_*` vars except the ones relevant to the tool's `access_tier`, runs the adapter, then restores with `os.environ.clear(); os.environ.update(saved)`. A try/finally guarantees restoration even if the adapter raises.
+**Implementation**: The sandbox function saves `os.environ.copy()`, deletes all `UMMAYA_*` vars except the ones relevant to the tool's `access_tier`, runs the adapter, then restores with `os.environ.clear(); os.environ.update(saved)`. A try/finally guarantees restoration even if the adapter raises.
 
 ### Decision 3: `BYPASS_IMMUNE_RULES` as a named frozenset of rule identifiers
 
@@ -144,9 +144,9 @@ The pipeline must return `ToolResult(error_type="permission_denied")` (FR-021), 
 **Goal**: All data structures exist and validate correctly. No pipeline logic yet.
 
 **Files to create/modify**:
-- `src/kosax/permissions/__init__.py` — empty package init
-- `src/kosax/permissions/models.py` — complete model definitions (see data-model.md)
-- `src/kosax/permissions/steps/__init__.py` — empty
+- `src/ummaya/permissions/__init__.py` — empty package init
+- `src/ummaya/permissions/models.py` — complete model definitions (see data-model.md)
+- `src/ummaya/permissions/steps/__init__.py` — empty
 - `tests/permissions/__init__.py` — empty
 - `tests/permissions/test_models.py` — model validation tests
 
@@ -163,12 +163,12 @@ The pipeline must return `ToolResult(error_type="permission_denied")` (FR-021), 
 **Goal**: The per-step logic for the pre-execution gate is complete and individually testable.
 
 **Files to create**:
-- `src/kosax/permissions/bypass.py` — `BYPASS_IMMUNE_RULES`, `check_bypass_immune()`
-- `src/kosax/permissions/steps/step1_config.py` — access tier check against env var
-- `src/kosax/permissions/steps/step2_intent.py` — stub returning `allow`
-- `src/kosax/permissions/steps/step3_params.py` — stub returning `allow`
-- `src/kosax/permissions/steps/step4_authn.py` — stub returning `allow`
-- `src/kosax/permissions/steps/step5_terms.py` — stub returning `allow`
+- `src/ummaya/permissions/bypass.py` — `BYPASS_IMMUNE_RULES`, `check_bypass_immune()`
+- `src/ummaya/permissions/steps/step1_config.py` — access tier check against env var
+- `src/ummaya/permissions/steps/step2_intent.py` — stub returning `allow`
+- `src/ummaya/permissions/steps/step3_params.py` — stub returning `allow`
+- `src/ummaya/permissions/steps/step4_authn.py` — stub returning `allow`
+- `src/ummaya/permissions/steps/step5_terms.py` — stub returning `allow`
 
 **Tests to create**:
 - `tests/permissions/test_step1_config.py`
@@ -182,7 +182,7 @@ match request.access_tier:
     case AccessTier.public:
         return allow(step=1)
     case AccessTier.api_key:
-        key = os.environ.get("KOSAX_DATA_GO_KR_API_KEY", "")
+        key = os.environ.get("UMMAYA_DATA_GO_KR_API_KEY", "")
         return allow(step=1) if key else deny(step=1, reason="api_key_not_configured")
     case AccessTier.authenticated:
         return deny(step=1, reason="citizen_auth_not_implemented")
@@ -199,9 +199,9 @@ match request.access_tier:
 **Goal**: The execution and post-execution stages are complete.
 
 **Files to create**:
-- `src/kosax/permissions/steps/step6_sandbox.py` — isolated credential context
-- `src/kosax/permissions/steps/step7_audit.py` — delegates to `audit.py`
-- `src/kosax/permissions/audit.py` — `AuditLogger.log()` writing `AuditLogEntry`
+- `src/ummaya/permissions/steps/step6_sandbox.py` — isolated credential context
+- `src/ummaya/permissions/steps/step7_audit.py` — delegates to `audit.py`
+- `src/ummaya/permissions/audit.py` — `AuditLogger.log()` writing `AuditLogEntry`
 
 **Tests to create**:
 - `tests/permissions/test_step6_sandbox.py`
@@ -216,11 +216,11 @@ def _credential_scope(access_tier: AccessTier) -> Iterator[dict[str, str]]:
     credentials: dict[str, str] = {}
     try:
         if access_tier == AccessTier.api_key:
-            key = os.environ.get("KOSAX_DATA_GO_KR_API_KEY", "")
+            key = os.environ.get("UMMAYA_DATA_GO_KR_API_KEY", "")
             if key:
                 credentials["data_go_kr_api_key"] = key
-        # Remove ALL KOSAX_* vars from os.environ during adapter execution
-        for k in [k for k in os.environ if k.startswith("KOSAX_")]:
+        # Remove ALL UMMAYA_* vars from os.environ during adapter execution
+        for k in [k for k in os.environ if k.startswith("UMMAYA_")]:
             del os.environ[k]
         yield credentials
     finally:
@@ -234,7 +234,7 @@ Step 6 calls `await executor.dispatch(tool_id, arguments_json)` inside the `_cre
 - `AuditLogger` has one method: `log(entry: AuditLogEntry) -> None`
 - Logs at `INFO` if `entry.decision == PermissionDecision.allow` and `entry.outcome != "denied"`
 - Logs at `WARNING` if `entry.outcome == "denied"`
-- Uses `getLogger("kosax.permissions.audit")`
+- Uses `getLogger("ummaya.permissions.audit")`
 - If the log call itself raises, a fallback `logging.error()` to root logger is made — step 7 never raises (US-004 edge case)
 
 **Key acceptance criteria**: SC-005, SC-006.
@@ -246,10 +246,10 @@ Step 6 calls `await executor.dispatch(tool_id, arguments_json)` inside the `_cre
 **Goal**: Full gauntlet runner assembled; integration with `ToolExecutor` complete; `query.py` updated.
 
 **Files to create/modify**:
-- `src/kosax/permissions/pipeline.py` — `PermissionPipeline` class
-- `src/kosax/permissions/__init__.py` — update exports
-- `src/kosax/tools/models.py` — add `"permission_denied"` to `error_type` Literal
-- `src/kosax/engine/query.py` — replace `tool_executor.dispatch()` with `permission_pipeline.run()` in `dispatch_tool_calls()`
+- `src/ummaya/permissions/pipeline.py` — `PermissionPipeline` class
+- `src/ummaya/permissions/__init__.py` — update exports
+- `src/ummaya/tools/models.py` — add `"permission_denied"` to `error_type` Literal
+- `src/ummaya/engine/query.py` — replace `tool_executor.dispatch()` with `permission_pipeline.run()` in `dispatch_tool_calls()`
 
 **Tests to create/modify**:
 - `tests/permissions/test_pipeline.py` — end-to-end tests
@@ -349,10 +349,10 @@ _AUTH_TYPE_TO_ACCESS_TIER: dict[str, AccessTier] = {
 
 | File | Change type | Description |
 |---|---|---|
-| `src/kosax/tools/models.py` | Additive Literal extension | Add `"permission_denied"` to `error_type` |
-| `src/kosax/engine/query.py` | Interface addition | `dispatch_tool_calls()` accepts optional `PermissionPipeline`; `QueryContext` gains `permission_pipeline` field |
-| `src/kosax/engine/models.py` | Additive field | `QueryContext` gains `permission_pipeline: PermissionPipeline \| None = None` and `session_context: SessionContext \| None = None` |
-| `src/kosax/permissions/` | New package | All new files |
+| `src/ummaya/tools/models.py` | Additive Literal extension | Add `"permission_denied"` to `error_type` |
+| `src/ummaya/engine/query.py` | Interface addition | `dispatch_tool_calls()` accepts optional `PermissionPipeline`; `QueryContext` gains `permission_pipeline` field |
+| `src/ummaya/engine/models.py` | Additive field | `QueryContext` gains `permission_pipeline: PermissionPipeline \| None = None` and `session_context: SessionContext \| None = None` |
+| `src/ummaya/permissions/` | New package | All new files |
 | `tests/permissions/` | New directory | All new test files |
 
 ---
@@ -394,7 +394,7 @@ All tests use `pytest` + `pytest-asyncio`. No `@pytest.mark.live` tests — the 
 | NFR-001 (<5 ms overhead, non-exec path) | Steps 1 and 7 are env var read + `logging` call. No serialization, no I/O. Benchmark target: each active step <1 ms; combined <3 ms. |
 | NFR-002 (no new deps) | `os`, `logging`, `datetime`, `enum`, `contextlib` + `pydantic>=2.0` only. |
 | NFR-003 (individually testable steps) | Each step is a standalone function with a `PermissionCheckRequest → PermissionStepResult` signature. |
-| NFR-004 (audit log namespace) | `getLogger("kosax.permissions.audit")` dedicated namespace. |
+| NFR-004 (audit log namespace) | `getLogger("ummaya.permissions.audit")` dedicated namespace. |
 | NFR-005 (re-entrant) | No class-level mutable state. Each `run()` builds its own `PermissionCheckRequest` and step result chain. |
 
 ---
@@ -404,7 +404,7 @@ All tests use `pytest` + `pytest-asyncio`. No `@pytest.mark.live` tests — the 
 | Edge case | Handling |
 |---|---|
 | Malformed `arguments_json` | Step 1 does not parse args (only reads `access_tier`). Malformed JSON propagates to `ToolExecutor.dispatch()` which returns `error_type="validation"`. Step 7 logs the outcome. |
-| `KOSAX_DATA_GO_KR_API_KEY` is non-empty whitespace | `os.environ.get(..., "").strip()` — whitespace-only treated as absent; deny at step 1. |
+| `UMMAYA_DATA_GO_KR_API_KEY` is non-empty whitespace | `os.environ.get(..., "").strip()` — whitespace-only treated as absent; deny at step 1. |
 | `session_context.citizen_id` is `None` with `is_personal_data=True` | `check_bypass_immune()` compares `None` to any `citizen_id` in args. Since `None != <any_value>`, the rule triggers. Pipeline denies. |
 | Step 7 itself raises | Caught in `_run_step7` wrapper with try/except; fallback `logging.error()` to root logger. Never propagates. |
 | Concurrent calls for same tool | Each `run()` is independent. `RateLimiter` in `ToolExecutor` handles concurrency at tool level. |

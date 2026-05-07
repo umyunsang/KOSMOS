@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSAX — /fork as a first-class session-fork command (decision:
+// UMMAYA — /fork as a first-class session-fork command (decision:
 // docs/decisions/fork-command-decision.md, 2026-05-04).
 //
-// Honors `docs/requirements/kosax-migration-tree.md § L1-A · A5` which
+// Honors `docs/requirements/ummaya-migration-tree.md § L1-A · A5` which
 // promises four distinct citizen-facing session-lifecycle modes:
 // `--continue / --resume / --fork / new`.
 //
 // CC's `FORK_SUBAGENT` feature flag (tui/src/stubs/bun-bundle.ts:5) is a
-// permanent stub returning `false` in KOSAX — that flag gates a different
+// permanent stub returning `false` in UMMAYA — that flag gates a different
 // concept (parallel subagent dispatch with prompt-cache-aligned prefix,
-// `tui/src/tools/AgentTool/forkSubagent.ts`). KOSAX's `/fork` is the
+// `tui/src/tools/AgentTool/forkSubagent.ts`). UMMAYA's `/fork` is the
 // session-fork variant: copy the current transcript JSONL with a new
 // `sessionId` and resume into the copy. The handler is byte-identical to
 // `/branch`'s handler (`tui/src/commands/branch/branch.ts:call`) so we

@@ -16,11 +16,11 @@ Fetches the KMA ultra-short-term forecast (초단기예보) for a grid point, co
 | Classification | Live · Permission tier 1 |
 | Source | KMA (기상청) — VilageFcstInfoService_2.0/getUltraSrtFcst |
 | Primitive | `lookup` |
-| Module | `src/kosax/tools/kma/kma_ultra_short_term_forecast.py` |
+| Module | `src/ummaya/tools/kma/kma_ultra_short_term_forecast.py` |
 
 ## Envelope
 
-**Input model**: `KmaUltraShortTermForecastInput` defined at `src/kosax/tools/kma/kma_ultra_short_term_forecast.py:44-95`.
+**Input model**: `KmaUltraShortTermForecastInput` defined at `src/ummaya/tools/kma/kma_ultra_short_term_forecast.py:44-95`.
 
 | Field | Type | Required | Description |
 |---|---|---|---|
@@ -32,7 +32,7 @@ Fetches the KMA ultra-short-term forecast (초단기예보) for a grid point, co
 | `page_no` | `int` | no | 1-indexed page number. Default `1`. |
 | `data_type` | `Literal["JSON", "XML"]` | no | Response format. Default `"JSON"`. XML is rejected at call time. |
 
-**Output model**: `KmaUltraShortTermForecastOutput` (alias for `KmaShortTermForecastOutput`) defined at `src/kosax/tools/kma/kma_ultra_short_term_forecast.py:98`.
+**Output model**: `KmaUltraShortTermForecastOutput` (alias for `KmaShortTermForecastOutput`) defined at `src/ummaya/tools/kma/kma_ultra_short_term_forecast.py:98`.
 
 | Field | Type | Required | Description |
 |---|---|---|---|
@@ -48,7 +48,7 @@ Fetches the KMA ultra-short-term forecast (초단기예보) for a grid point, co
 
 - **data.go.kr endpoint**: `1360000/VilageFcstInfoService_2.0/getUltraSrtFcst`
 - **Source URL**: https://www.data.go.kr/data/15084084/openapi.do
-- **Authentication**: API key via `KOSAX_DATA_GO_KR_API_KEY` (per Constitution IV)
+- **Authentication**: API key via `UMMAYA_DATA_GO_KR_API_KEY` (per Constitution IV)
 
 ## Permission tier rationale
 
@@ -110,7 +110,7 @@ This adapter is classified as Permission tier 1 (green) per Spec 033 (`specs/033
 
 ```text
 Citizen: 지금부터 6시간 동안 서울 날씨가 어떻게 될까요?
-KOSAX: 2026년 4월 26일 13시 30분 기준 서울(격자 61, 125) 초단기예보(향후 6시간)입니다. 오후 2시 기온은 19°C이며 하늘상태는 맑음(SKY=1)입니다. 강수는 예측되지 않습니다. 전체 60개 예보 항목을 조회했습니다.
+UMMAYA: 2026년 4월 26일 13시 30분 기준 서울(격자 61, 125) 초단기예보(향후 6시간)입니다. 오후 2시 기온은 19°C이며 하늘상태는 맑음(SKY=1)입니다. 강수는 예측되지 않습니다. 전체 60개 예보 항목을 조회했습니다.
 ```
 
 ## Constraints
@@ -120,5 +120,5 @@ KOSAX: 2026년 4월 26일 13시 30분 기준 서울(격자 61, 125) 초단기예
 - **Fixture coverage gaps**: `LGT` (lightning) category is only included when there is a lightning risk; fixtures may not cover this path. The output model is shared with `kma_short_term_forecast` — TMN/TMX and WAV categories do not appear in ultra-short-term data and are never present in `items`.
 - **Error envelope examples**:
   - Tier-1 fail: `{"error": {"code": "TOOL_EXECUTION_ERROR", "tool_id": "kma_ultra_short_term_forecast", "message": "KMA API error: resultCode='03' resultMsg='NO_DATA'"}}`
-  - Tier-2 / Tier-3 (auth) fail: `{"error": {"code": "CONFIGURATION_ERROR", "message": "Missing required environment variable: KOSAX_DATA_GO_KR_API_KEY"}}`
+  - Tier-2 / Tier-3 (auth) fail: `{"error": {"code": "CONFIGURATION_ERROR", "message": "Missing required environment variable: UMMAYA_DATA_GO_KR_API_KEY"}}`
   - Network timeout: `{"error": {"code": "TOOL_EXECUTION_ERROR", "tool_id": "kma_ultra_short_term_forecast", "message": "Network error reaching KMA ultra-short-term forecast API: connection refused"}}`

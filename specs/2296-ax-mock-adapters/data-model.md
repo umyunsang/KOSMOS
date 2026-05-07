@@ -9,7 +9,7 @@ This document specifies every new or modified data shape introduced by Epic ε. 
 
 ---
 
-## 1. `DelegationToken` *(NEW · `src/kosax/primitives/delegation.py`)*
+## 1. `DelegationToken` *(NEW · `src/ummaya/primitives/delegation.py`)*
 
 Opaque, scope-bound, time-bound, session-bound credential issued by a verify adapter and consumed by a subsequent submit or lookup adapter. Mirrors the OID4VP-style envelope the AX gateway is expected to issue when the policy mandate ships.
 
@@ -37,7 +37,7 @@ Opaque, scope-bound, time-bound, session-bound credential issued by a verify ada
 
 ---
 
-## 2. `DelegationContext` *(NEW · `src/kosax/primitives/delegation.py`)*
+## 2. `DelegationContext` *(NEW · `src/ummaya/primitives/delegation.py`)*
 
 Wrapper that carries a `DelegationToken` plus the bilingual purpose strings shown in the permission UI to the citizen. Optional citizen DID for audit-anchoring.
 
@@ -54,7 +54,7 @@ Wrapper that carries a `DelegationToken` plus the bilingual purpose strings show
 
 ---
 
-## 3. `IdentityAssertion` *(NEW · `src/kosax/primitives/delegation.py`)*
+## 3. `IdentityAssertion` *(NEW · `src/ummaya/primitives/delegation.py`)*
 
 Returned **instead of** `DelegationContext` by the `mock_verify_module_any_id_sso` adapter. Per `delegation-flow-design.md § 2.2`, Any-ID is identity-SSO only — it does not produce a delegation grant. This shape exists to demonstrate the AX-gateway-spec gap fail-closed.
 
@@ -69,7 +69,7 @@ Returned **instead of** `DelegationContext` by the `mock_verify_module_any_id_ss
 
 ---
 
-## 4. `AdapterManifestEntry` *(NEW · `src/kosax/ipc/frame_schema.py`)*
+## 4. `AdapterManifestEntry` *(NEW · `src/ummaya/ipc/frame_schema.py`)*
 
 One record inside an `AdapterManifestSyncFrame.entries` array. Used by the TS-side cache to resolve `tool_id` and populate the citation slot in permission prompts.
 
@@ -78,14 +78,14 @@ One record inside an `AdapterManifestSyncFrame.entries` array. Used by the TS-si
 | `tool_id` | `str` | non-empty, lowercase, snake-case | Globally unique within the registry; e.g., `nmc_emergency_search` |
 | `name` | `str` | non-empty, ≤ 80 chars | Human-readable display name; bilingual permitted |
 | `primitive` | `Literal["lookup", "submit", "subscribe", "verify", "resolve_location"]` | matches `AdapterPrimitive` enum | Primitive verb the adapter is registered under |
-| `policy_authority_url` | `str \| None` | when set: URL form, ≤ 2048 chars | The agency-published policy URL the adapter cites; `None` only for KOSAX-internal MVP-surface entries (`resolve_location`, `lookup`) which do not call agency APIs |
+| `policy_authority_url` | `str \| None` | when set: URL form, ≤ 2048 chars | The agency-published policy URL the adapter cites; `None` only for UMMAYA-internal MVP-surface entries (`resolve_location`, `lookup`) which do not call agency APIs |
 | `source_mode` | `Literal["live", "mock", "internal"]` | matches `AdapterSourceMode` | Tag for the citation-rendering surface |
 
 **Validators**: `@field_validator("policy_authority_url")` requires HTTPS URL when `source_mode in ("live", "mock")`; `None` only allowed when `source_mode == "internal"`.
 
 ---
 
-## 5. `AdapterManifestFrame` *(NEW · `src/kosax/ipc/frame_schema.py`)*
+## 5. `AdapterManifestFrame` *(NEW · `src/ummaya/ipc/frame_schema.py`)*
 
 The full IPC frame the backend emits on boot. Becomes the **21st arm** of the existing `IPCFrame` discriminated union (Spec 032).
 
@@ -106,9 +106,9 @@ The full IPC frame the backend emits on boot. Becomes the **21st arm** of the ex
 
 ---
 
-## 6. `DelegationLedgerEvent` (union) *(NEW · `src/kosax/memdir/consent_ledger.py`)*
+## 6. `DelegationLedgerEvent` (union) *(NEW · `src/ummaya/memdir/consent_ledger.py`)*
 
-Three new event kinds appended to the existing Spec 035 consent ledger discriminated union. Same JSONL append-only path: `~/.kosax/memdir/user/consent/<YYYY-MM-DD>.jsonl`.
+Three new event kinds appended to the existing Spec 035 consent ledger discriminated union. Same JSONL append-only path: `~/.ummaya/memdir/user/consent/<YYYY-MM-DD>.jsonl`.
 
 ### 6.1 `DelegationIssuedEvent`
 
@@ -152,13 +152,13 @@ Three new event kinds appended to the existing Spec 035 consent ledger discrimin
 
 ## 7. Mock Adapter Response Shape (six transparency fields)
 
-Every Mock adapter response payload (returned from `invoke()` or `call()`) MUST contain six top-level fields plus the adapter's domain-specific data. Stamped by the shared helper `kosax.tools.transparency.stamp_mock_response()` (research.md Decision 7).
+Every Mock adapter response payload (returned from `invoke()` or `call()`) MUST contain six top-level fields plus the adapter's domain-specific data. Stamped by the shared helper `ummaya.tools.transparency.stamp_mock_response()` (research.md Decision 7).
 
 | Field | Type | Allowed values |
 |---|---|---|
 | `_mode` | `Literal["mock"]` | always `"mock"` |
 | `_reference_implementation` | `str` | non-empty; the AX-channel reference family this adapter mirrors. Recommended values: `"ax-infrastructure-callable-channel"` (Singapore-APEX-style verify/submit), `"public-mydata-action-extension"` (마이데이터 write extension), `"public-mydata-read-v240930"` (마이데이터 read existing) |
-| `_actual_endpoint_when_live` | `str` | URL form; the URL the agency is expected to expose when the policy mandate ships. Format: `https://api.gateway.kosax.gov.kr/v1/<verb>/<adapter_id>` for AX-gateway placeholder URLs; agency-specific URLs allowed when known |
+| `_actual_endpoint_when_live` | `str` | URL form; the URL the agency is expected to expose when the policy mandate ships. Format: `https://api.gateway.ummaya.gov.kr/v1/<verb>/<adapter_id>` for AX-gateway placeholder URLs; agency-specific URLs allowed when known |
 | `_security_wrapping_pattern` | `str` | the security stack the channel is expected to use, e.g., `"OAuth2.1 + mTLS + scope-bound bearer"` or `"OID4VP + DID-resolved RP"` or `"마이데이터 표준동의서 OAuth2 + finAuth"` |
 | `_policy_authority` | `str` | URL form; the agency-published policy URL. Examples: `"https://www.mois.go.kr/frt/bbs/.../public-mydata.do"`, `"https://www.kdca.go.kr/.../digital-id.html"` |
 | `_international_reference` | `str` | non-empty; the closest international-analog system, e.g., `"Singapore APEX"`, `"Estonia X-Road"`, `"EU EUDI Wallet"`, `"Japan マイナポータル API"`, `"UK HMRC Making Tax Digital"` |
@@ -175,14 +175,14 @@ The five existing verify mocks (after `digital_onepass` deletion) return per-fam
 
 **Modification**: Each context type gains six optional fields with `Field(default=None)`. The Mock adapter implementations populate them via the `stamp_mock_response` helper at response construction time. Live adapters (when they ship in a future epic) leave them `None` — the contract is "Mock adapters MUST populate, Live adapters MUST NOT".
 
-**Affected types** (all in `src/kosax/primitives/verify.py`):
+**Affected types** (all in `src/ummaya/primitives/verify.py`):
 - `MobileIdContext` (used by `mock_verify_mobile_id`)
 - `KECInjeungseoContext` (used by `mock_verify_gongdong_injeungseo`)
 - `GeumyungInjeungseoContext` (used by `mock_verify_geumyung_injeungseo`)
 - `GanpyeonInjeungContext` (used by `mock_verify_ganpyeon_injeung`)
 - `MydataContext` (used by `mock_verify_mydata`)
 
-Same retrofit applies to the existing submit context type(s) in `src/kosax/primitives/submit.py` (used by `mock_traffic_fine_pay_v1`, `mock_welfare_application_submit_v1`) and the existing subscribe context type(s) in `src/kosax/primitives/subscribe.py`.
+Same retrofit applies to the existing submit context type(s) in `src/ummaya/primitives/submit.py` (used by `mock_traffic_fine_pay_v1`, `mock_welfare_application_submit_v1`) and the existing subscribe context type(s) in `src/ummaya/primitives/subscribe.py`.
 
 **Why optional + default `None`**: Live and Mock adapters share the context types; making the fields required would break Live adapter construction. The regression test (FR-006) iterates only Mock adapter responses and asserts `value is not None and value != ""` for each of the six fields.
 
@@ -236,12 +236,12 @@ The scope-violation acceptance scenario (US1 acceptance scenario #3) appends a f
 
 | Entity | File (after Epic ε) | First introduced by | Validators |
 |---|---|---|---|
-| `DelegationToken` | `src/kosax/primitives/delegation.py` | this Epic (NEW) | `expires_at > issued_at`; scope regex; token prefix |
-| `DelegationContext` | `src/kosax/primitives/delegation.py` | this Epic (NEW) | string-length |
-| `IdentityAssertion` | `src/kosax/primitives/delegation.py` | this Epic (NEW) | `expires_at` UTC; JWS-shape |
-| `AdapterManifestEntry` | `src/kosax/ipc/frame_schema.py` | this Epic (NEW) | URL form when source_mode != internal |
-| `AdapterManifestFrame` | `src/kosax/ipc/frame_schema.py` | this Epic (NEW) | non-empty entries; no duplicate tool_id; SHA-256 hash matches |
-| `DelegationIssuedEvent` | `src/kosax/memdir/consent_ledger.py` | this Epic (NEW) | matches `DelegationToken` constraints on referenced fields |
-| `DelegationUsedEvent` | `src/kosax/memdir/consent_ledger.py` | this Epic (NEW) | outcome enum |
-| `DelegationRevokedEvent` | `src/kosax/memdir/consent_ledger.py` | this Epic (NEW) | reason enum |
-| `MobileIdContext` and 4 siblings | `src/kosax/primitives/verify.py` | Spec 031 (MODIFY) | retain existing + add six optional transparency fields |
+| `DelegationToken` | `src/ummaya/primitives/delegation.py` | this Epic (NEW) | `expires_at > issued_at`; scope regex; token prefix |
+| `DelegationContext` | `src/ummaya/primitives/delegation.py` | this Epic (NEW) | string-length |
+| `IdentityAssertion` | `src/ummaya/primitives/delegation.py` | this Epic (NEW) | `expires_at` UTC; JWS-shape |
+| `AdapterManifestEntry` | `src/ummaya/ipc/frame_schema.py` | this Epic (NEW) | URL form when source_mode != internal |
+| `AdapterManifestFrame` | `src/ummaya/ipc/frame_schema.py` | this Epic (NEW) | non-empty entries; no duplicate tool_id; SHA-256 hash matches |
+| `DelegationIssuedEvent` | `src/ummaya/memdir/consent_ledger.py` | this Epic (NEW) | matches `DelegationToken` constraints on referenced fields |
+| `DelegationUsedEvent` | `src/ummaya/memdir/consent_ledger.py` | this Epic (NEW) | outcome enum |
+| `DelegationRevokedEvent` | `src/ummaya/memdir/consent_ledger.py` | this Epic (NEW) | reason enum |
+| `MobileIdContext` and 4 siblings | `src/ummaya/primitives/verify.py` | Spec 031 (MODIFY) | retain existing + add six optional transparency fields |

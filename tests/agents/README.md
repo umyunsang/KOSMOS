@@ -60,6 +60,6 @@ to `data.go.kr`, `api.friendli.ai`, or any external host. Enforced by `test_zero
 ## OTel span capture strategy
 
 `test_observability_spans.py` uses `monkeypatch.setattr` to replace the module-level
-`_tracer` objects in `kosax.agents.coordinator`, `kosax.agents.worker`, and
-`kosax.agents.mailbox.file_mailbox` with tracers backed by an `InMemorySpanExporter`.
+`_tracer` objects in `ummaya.agents.coordinator`, `ummaya.agents.worker`, and
+`ummaya.agents.mailbox.file_mailbox` with tracers backed by an `InMemorySpanExporter`.
 This avoids the global-provider-override guard in the OTel SDK.

@@ -20,7 +20,7 @@ from typing import Any, Literal
 import numpy as np
 import pytest
 
-from kosax.tools.retrieval.dense_backend import DenseBackend, DenseBackendLoadError  # noqa: F401
+from ummaya.tools.retrieval.dense_backend import DenseBackend, DenseBackendLoadError  # noqa: F401
 
 # ---------------------------------------------------------------------------
 # Stubs
@@ -125,11 +125,11 @@ def stub_encoder(monkeypatch: pytest.MonkeyPatch) -> None:
     """Patch SentenceTransformer + weight-file lookup for offline testing."""
     monkeypatch.setattr("sentence_transformers.SentenceTransformer", _FixedStubTransformer)
     monkeypatch.setattr(
-        "kosax.tools.retrieval.dense_backend.DenseBackend._find_weight_file",
+        "ummaya.tools.retrieval.dense_backend.DenseBackend._find_weight_file",
         staticmethod(lambda model_id: "/fake/path/model.safetensors"),  # noqa: ARG005
     )
     monkeypatch.setattr(
-        "kosax.tools.retrieval.dense_backend.DenseBackend._sha256_file",
+        "ummaya.tools.retrieval.dense_backend.DenseBackend._sha256_file",
         staticmethod(lambda path: _FAKE_SHA256),  # noqa: ARG005
     )
 
@@ -249,11 +249,11 @@ class TestDenseBackendNormalisation:
         """Negative cosine similarities must be clamped to 0.0."""
         monkeypatch.setattr("sentence_transformers.SentenceTransformer", _NegativeScoreStub)
         monkeypatch.setattr(
-            "kosax.tools.retrieval.dense_backend.DenseBackend._find_weight_file",
+            "ummaya.tools.retrieval.dense_backend.DenseBackend._find_weight_file",
             staticmethod(lambda model_id: "/fake/path/model.safetensors"),
         )
         monkeypatch.setattr(
-            "kosax.tools.retrieval.dense_backend.DenseBackend._sha256_file",
+            "ummaya.tools.retrieval.dense_backend.DenseBackend._sha256_file",
             staticmethod(lambda path: _FAKE_SHA256),
         )
         backend = _make_backend()
@@ -440,7 +440,7 @@ class TestLazyBehavior:
         """Lazy encoder load failure must raise DenseBackendLoadError + clear buffers.
 
         Codex review round 5 on #837: the previous contract (return [])
-        silently 0-recalled under ``KOSAX_RETRIEVAL_BACKEND=dense``
+        silently 0-recalled under ``UMMAYA_RETRIEVAL_BACKEND=dense``
         because ``ToolRegistry.register()``'s fail-open path already
         ran at register-time. The new contract re-raises so the outer
         wrapper (``_DenseFailOpenWrapper`` for pure-dense, or
@@ -456,11 +456,11 @@ class TestLazyBehavior:
         # _find_weight_file / _sha256_file won't be reached because load fails first,
         # but we patch them defensively so the test can't accidentally hit disk.
         monkeypatch.setattr(
-            "kosax.tools.retrieval.dense_backend.DenseBackend._find_weight_file",
+            "ummaya.tools.retrieval.dense_backend.DenseBackend._find_weight_file",
             staticmethod(lambda model_id: "/fake/path/model.safetensors"),  # noqa: ARG005
         )
         monkeypatch.setattr(
-            "kosax.tools.retrieval.dense_backend.DenseBackend._sha256_file",
+            "ummaya.tools.retrieval.dense_backend.DenseBackend._sha256_file",
             staticmethod(lambda path: _FAKE_SHA256),  # noqa: ARG005
         )
 

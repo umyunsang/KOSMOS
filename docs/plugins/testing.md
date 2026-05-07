@@ -95,7 +95,7 @@ def fixture_payload() -> dict[str, Any]:
 
 @pytest.fixture
 def env_key(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("KOSAX_<MINISTRY>_API_KEY", "test-key")
+    monkeypatch.setenv("UMMAYA_<MINISTRY>_API_KEY", "test-key")
 
 
 @pytest.mark.allow_network              # ← httpx monkey-patch 통과용
@@ -115,7 +115,7 @@ async def test_adapter_happy_path(
 
 
 async def test_adapter_missing_api_key(monkeypatch):
-    monkeypatch.delenv("KOSAX_<MINISTRY>_API_KEY", raising=False)
+    monkeypatch.delenv("UMMAYA_<MINISTRY>_API_KEY", raising=False)
     with pytest.raises(RuntimeError, match="API_KEY"):
         await adapter(LookupInput(...))
 
@@ -197,7 +197,7 @@ from plugin_<name>.adapter import adapter
 from plugin_<name>.schema import LookupInput
 
 async def main():
-    # 로컬에서 .env 로 KOSAX_<MINISTRY>_API_KEY 설정 후 실행
+    # 로컬에서 .env 로 UMMAYA_<MINISTRY>_API_KEY 설정 후 실행
     payload = LookupInput(...)
     result = await adapter(payload)
     Path("tests/fixtures/plugin.<tool_id>.lookup.json").write_text(
@@ -241,7 +241,7 @@ def block_network():
 
 ```python
 async def test_real_api():   # @pytest.mark.live 마커 누락
-    result = await adapter(...)   # 실제 KOSAX_*_API_KEY 사용
+    result = await adapter(...)   # 실제 UMMAYA_*_API_KEY 사용
 ```
 
 → CI 가 secret 으로 키 주입 시 quota 소진. `@pytest.mark.live` 마커 + CI 가 `-m 'not live'` 로 deselect 권장.
@@ -287,8 +287,8 @@ async def adapter(payload):
 ## Reference
 
 - [Constitution §IV](../../.specify/memory/constitution.md) — Government API Compliance + Live API CI 차단
-- [`docs/testing.md`](../testing.md) — KOSAX 메인 테스트 가이드
+- [`docs/testing.md`](../testing.md) — UMMAYA 메인 테스트 가이드
 - [50-item Q10 그룹](review-checklist.md#q10--tests--fixtures-4) — 4 항목 매트릭스
-- [`src/kosax/plugins/checks/q10_tests.py`](../../src/kosax/plugins/checks/q10_tests.py) — 검사 구현
+- [`src/ummaya/plugins/checks/q10_tests.py`](../../src/ummaya/plugins/checks/q10_tests.py) — 검사 구현
 - [docs/plugins/data-go-kr.md § 5](data-go-kr.md) — Fixture 기록 절차
 - [docs/plugins/live-vs-mock.md](live-vs-mock.md) — Tier 별 테스트 패턴 차이

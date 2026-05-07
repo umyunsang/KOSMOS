@@ -11,7 +11,7 @@
         "specs/2773-rollback-debug-infra/scripts/generic-realuse.bun-pty.ts"
       ],
       "audit_cmd": [
-        "/Users/um-yunsang/KOSAX/.venv/bin/python3",
+        "/Users/um-yunsang/UMMAYA/.venv/bin/python3",
         "scripts/tui-realuse-audit.py",
         "specs/2773-rollback-debug-infra/captures/WELFARE-APPLICATION-001",
         "--expect-chain",

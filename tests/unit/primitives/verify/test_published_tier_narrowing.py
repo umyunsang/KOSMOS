@@ -17,7 +17,7 @@ from datetime import UTC, datetime
 import pytest
 from pydantic import ValidationError
 
-from kosax.primitives.verify import (
+from ummaya.primitives.verify import (
     DigitalOnepassContext,
     GanpyeonInjeungContext,
     GeumyungInjeungseoContext,

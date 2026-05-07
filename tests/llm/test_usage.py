@@ -1,13 +1,13 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Unit tests for UsageTracker in the KOSAX LLM client module."""
+"""Unit tests for UsageTracker in the UMMAYA LLM client module."""
 
 from __future__ import annotations
 
 import pytest
 
-from kosax.llm.errors import BudgetExceededError
-from kosax.llm.models import TokenUsage
-from kosax.llm.usage import UsageTracker
+from ummaya.llm.errors import BudgetExceededError
+from ummaya.llm.models import TokenUsage
+from ummaya.llm.usage import UsageTracker
 
 
 def _make_usage(input_tokens: int = 0, output_tokens: int = 0) -> TokenUsage:

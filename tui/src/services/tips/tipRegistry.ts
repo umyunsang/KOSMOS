@@ -1,5 +1,5 @@
 import chalk from 'chalk'
-import { KOSAX_CONTINUE_COMMAND, KOSAX_CLI_COMMAND } from '../../constants/cli.js'
+import { UMMAYA_CONTINUE_COMMAND, UMMAYA_CLI_COMMAND } from '../../constants/cli.js'
 import { logForDebugging } from 'src/utils/debug.js'
 import { fileHistoryEnabled } from 'src/utils/fileHistory.js'
 import {
@@ -45,7 +45,7 @@ import {
   isCustomTitleEnabled,
 } from '../../utils/sessionStorage.js'
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '../analytics/growthbook.js'
-// overageCreditGrant + referral imports removed — claude.ai SaaS billing dead in KOSAX
+// overageCreditGrant + referral imports removed — claude.ai SaaS billing dead in UMMAYA
 import { getSessionsSinceLastShown } from './tipHistory.js'
 import type { Tip, TipContext } from './types.js'
 
@@ -369,7 +369,7 @@ const externalTips: Tip[] = [
   {
     id: 'continue',
     content: async () =>
-      `Run ${KOSAX_CONTINUE_COMMAND} or ${KOSAX_CLI_COMMAND} --resume to resume a conversation`,
+      `Run ${UMMAYA_CONTINUE_COMMAND} or ${UMMAYA_CLI_COMMAND} --resume to resume a conversation`,
     cooldownSessions: 10,
     isRelevant: async () => true,
   },
@@ -580,7 +580,7 @@ const externalTips: Tip[] = [
       )
     },
   },
-  // guest-passes + overage-credit tips removed — claude.ai SaaS billing dead in KOSAX
+  // guest-passes + overage-credit tips removed — claude.ai SaaS billing dead in UMMAYA
   {
     id: 'feedback-command',
     content: async () => 'Use /feedback to help us improve!',

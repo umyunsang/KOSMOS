@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """Busan-weather payload probe.
 
-Mirrors the EXACT system prompt KOSAX sends when the citizen says
+Mirrors the EXACT system prompt UMMAYA sends when the citizen says
 "부산 사하구 날씨 알려줘".  Built from:
   - prompts/system_v1.md  (static prefix via PromptLoader)
   - build_system_prompt_with_tools(base, llm_tools)   (adds ## Available tools)
@@ -26,12 +26,12 @@ from pathlib import Path
 import httpx
 
 # ---------------------------------------------------------------------------
-# Repo root on sys.path so KOSAX modules are importable
+# Repo root on sys.path so UMMAYA modules are importable
 # ---------------------------------------------------------------------------
 REPO = Path(__file__).parent.parent.parent.parent
 sys.path.insert(0, str(REPO / "src"))
 
-from kosax.tools.kma.kma_short_term_forecast import (  # noqa: E402
+from ummaya.tools.kma.kma_short_term_forecast import (  # noqa: E402
     KMA_SHORT_TERM_FORECAST_TOOL,
     KmaShortTermForecastInput,
 )
@@ -136,7 +136,7 @@ full_system = (
 
 
 # ---------------------------------------------------------------------------
-# The lookup primitive tool definition (exact shape KOSAX registers)
+# The lookup primitive tool definition (exact shape UMMAYA registers)
 # ---------------------------------------------------------------------------
 
 lookup_tool = {
@@ -194,12 +194,12 @@ resolve_location_tool = {
 # FriendliAI API call
 # ---------------------------------------------------------------------------
 
-TOKEN = os.environ.get("KOSAX_FRIENDLI_TOKEN", "")
+TOKEN = os.environ.get("UMMAYA_FRIENDLI_TOKEN", "")
 if not TOKEN:
     sys.exit(1)
 
 BASE_URL = os.environ.get(
-    "KOSAX_FRIENDLI_BASE_URL", "https://api.friendli.ai/serverless/v1"
+    "UMMAYA_FRIENDLI_BASE_URL", "https://api.friendli.ai/serverless/v1"
 )
 MODEL = "LGAI-EXAONE/K-EXAONE-236B-A23B"
 

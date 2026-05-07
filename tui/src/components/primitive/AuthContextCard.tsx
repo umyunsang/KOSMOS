@@ -1,5 +1,5 @@
 /**
- * KOSAX-original — AuthContextCard renderer.
+ * UMMAYA-original — AuthContextCard renderer.
  *
  * Success card shown after a verify primitive completes.
  * Displays authenticated identity, Korea tier (primary label per FR-030),

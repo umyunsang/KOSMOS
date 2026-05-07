@@ -3,7 +3,7 @@
 //
 // CC reference: .references/claude-code-sourcemap/restored-src/src/components/permissions/PermissionRequest.tsx
 //   (CC 2.1.88, research-use) — modal layout, Y/N/A key-handling pattern.
-// KOSAX adaptation: consent revoke scope, PIPA §36 citation, border+color
+// UMMAYA adaptation: consent revoke scope, PIPA §36 citation, border+color
 //   matching HelpV2Grouped (AGENTS.md "Infrastructure insights" #3/#4).
 //
 // Key-handling rules (AGENTS.md "Infrastructure insights" #4):
@@ -135,7 +135,7 @@ export function ConsentRevokeConfirmDialog({
     >
       {/* Title bar — mirrors HelpV2Grouped pattern */}
       <Box marginBottom={1}>
-        <Text bold color={theme.kosaxCore}>{'✻ KOSAX · '}</Text>
+        <Text bold color={theme.ummayaCore}>{'✻ UMMAYA · '}</Text>
         <Text color={theme.wordmark}>{s.title}</Text>
         <Text color={theme.subtle}>{' / '}</Text>
         <Text color={theme.subtle}>{s.subtitle}</Text>
@@ -207,7 +207,7 @@ export function ConsentRevokeConfirmDialog({
 
       {/* Key choice prompt */}
       <Box paddingLeft={2} marginTop={1}>
-        <Text bold color={theme.kosaxCore}>{s.choicePrompt}</Text>
+        <Text bold color={theme.ummayaCore}>{s.choicePrompt}</Text>
       </Box>
     </Box>
   );

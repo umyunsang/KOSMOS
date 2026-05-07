@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSAX-original — Epic #1633 stub restoration.
+// UMMAYA-original — Epic #1633 stub restoration.
 
 export function isAnalyticsDisabled(): boolean {
   return true

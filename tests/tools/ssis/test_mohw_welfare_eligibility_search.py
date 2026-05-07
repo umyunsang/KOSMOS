@@ -18,24 +18,24 @@ import pytest
 import respx
 from pydantic import ValidationError
 
-from kosax.tools.errors import Layer3GateViolation
-from kosax.tools.executor import ToolExecutor
-from kosax.tools.lookup import lookup
-from kosax.tools.models import (
+from ummaya.tools.errors import Layer3GateViolation
+from ummaya.tools.executor import ToolExecutor
+from ummaya.tools.lookup import lookup
+from ummaya.tools.models import (
     LookupError,  # noqa: A004
     LookupFetchInput,
     LookupSearchInput,
     LookupSearchResult,
 )
-from kosax.tools.registry import ToolRegistry
-from kosax.tools.ssis.codes import (
+from ummaya.tools.registry import ToolRegistry
+from ummaya.tools.ssis.codes import (
     CallType,
     IntrsThemaCode,
     LifeArrayCode,
     OrderBy,
     SrchKeyCode,
 )
-from kosax.tools.ssis.welfare_eligibility_search import (
+from ummaya.tools.ssis.welfare_eligibility_search import (
     MOHW_WELFARE_ELIGIBILITY_SEARCH_TOOL,
     MohwWelfareEligibilitySearchInput,
     SsisWelfareServiceItem,
@@ -374,7 +374,7 @@ class TestMohwToolMetadata:
     """Verify MOHW_WELFARE_ELIGIBILITY_SEARCH_TOOL metadata matches spec 029 §4.2."""
 
     def test_tool_constants(self) -> None:
-        # KOSAX-invented Spec 033/024/025 fields removed in Epic δ #2295:
+        # UMMAYA-invented Spec 033/024/025 fields removed in Epic δ #2295:
         # requires_auth, is_personal_data, auth_level, pipa_class, is_irreversible,
         # dpa_reference — deleted from GovAPITool (Constitution § II).
         assert MOHW_WELFARE_ELIGIBILITY_SEARCH_TOOL.id == "mohw_welfare_eligibility_search"

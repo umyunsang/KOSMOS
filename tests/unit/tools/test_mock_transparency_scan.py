@@ -2,8 +2,8 @@
 """T034 — Registry-wide transparency scan (FR-006 / SC-005).
 
 Parameterised over active mock adapter IDs:
-  - 10 verify families  (kosax.primitives.verify._VERIFY_ADAPTERS)
-  - 5  submit adapters  (kosax.primitives.submit._ADAPTER_REGISTRY)
+  - 10 verify families  (ummaya.primitives.verify._VERIFY_ADAPTERS)
+  - 5  submit adapters  (ummaya.primitives.submit._ADAPTER_REGISTRY)
   - 2  lookup tools     (main ToolRegistry, adapter_mode='mock')
 
 Each adapter is invoked with minimal synthetic input and the six transparency
@@ -42,7 +42,7 @@ _SIX_FIELDS = (
 
 def _make_delegation_context(scope: str) -> Any:
     """Build a minimal valid DelegationContext for testing."""
-    from kosax.primitives.delegation import DelegationContext, DelegationToken
+    from ummaya.primitives.delegation import DelegationContext, DelegationToken
 
     token = DelegationToken(
         vp_jwt=(
@@ -96,8 +96,8 @@ _VERIFY_SYNTHETIC_INPUT: dict[str, Any] = {
 
 def _invoke_verify_adapter(family: str) -> dict[str, Any]:
     """Invoke a verify adapter with synthetic input; normalise result to dict."""
-    import kosax.tools.mock  # noqa: F401 — trigger side-effect registration
-    from kosax.primitives.verify import _VERIFY_ADAPTERS
+    import ummaya.tools.mock  # noqa: F401 — trigger side-effect registration
+    from ummaya.primitives.verify import _VERIFY_ADAPTERS
 
     adapter = _VERIFY_ADAPTERS[family]
     result = adapter(_VERIFY_SYNTHETIC_INPUT)
@@ -111,7 +111,7 @@ def _invoke_verify_adapter(family: str) -> dict[str, Any]:
 @pytest.mark.parametrize("family", _ALL_VERIFY_FAMILIES)
 def test_verify_adapter_carries_six_transparency_fields(family: str) -> None:
     """Each verify adapter response carries all six transparency fields non-empty."""
-    import kosax.tools.mock  # noqa: F401 — trigger side-effect registration
+    import ummaya.tools.mock  # noqa: F401 — trigger side-effect registration
 
     result = _invoke_verify_adapter(family)
 
@@ -190,8 +190,8 @@ _ALL_SUBMIT_IDS = [case[0] for case in _DELEGATION_SUBMIT_CASES] + [
 
 async def _get_submit_receipt(adapter_id: str) -> dict[str, Any]:
     """Invoke a submit adapter with synthetic input; return adapter_receipt dict."""
-    import kosax.tools.mock  # noqa: F401 — trigger side-effect registration
-    from kosax.primitives.submit import _ADAPTER_REGISTRY
+    import ummaya.tools.mock  # noqa: F401 — trigger side-effect registration
+    from ummaya.primitives.submit import _ADAPTER_REGISTRY
 
     _reg, invoke_fn = _ADAPTER_REGISTRY[adapter_id]
 
@@ -259,7 +259,7 @@ async def test_lookup_adapter_response_carries_six_transparency_fields(
 ) -> None:
     """Each lookup mock's handle() returns a dict with all six transparency fields."""
     if adapter_id == "mock_lookup_module_hometax_simplified":
-        from kosax.tools.mock.lookup_module_hometax_simplified import (
+        from ummaya.tools.mock.lookup_module_hometax_simplified import (
             HometaxSimplifiedInput,
             handle,
         )
@@ -268,7 +268,7 @@ async def test_lookup_adapter_response_carries_six_transparency_fields(
         result = await handle(inp)
 
     elif adapter_id == "mock_lookup_module_gov24_certificate":
-        from kosax.tools.mock.lookup_module_gov24_certificate import (
+        from ummaya.tools.mock.lookup_module_gov24_certificate import (
             Gov24CertificateInput,
             handle,
         )

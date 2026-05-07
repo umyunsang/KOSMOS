@@ -1,9 +1,9 @@
-T014 — bun run typecheck (KOSAX official narrow scope: src/stubs/** + tests/unit/stubs/**)
+T014 — bun run typecheck (UMMAYA official narrow scope: src/stubs/** + tests/unit/stubs/**)
 $ tsc --noEmit -p tsconfig.typecheck.json
 exit=0
 
 Notes:
-- The official KOSAX typecheck (tsconfig.typecheck.json) excludes src/utils/** + src/ink/**
+- The official UMMAYA typecheck (tsconfig.typecheck.json) excludes src/utils/** + src/ink/**
   per Epic #1633 P1 cleanup tracking. The newly created src/utils/sessionTitle.ts is
   byte-identical with CC and uses imports verified to resolve in T011.
 - bun test (which compiles via Bun's transpiler, not tsc) confirms full TypeScript

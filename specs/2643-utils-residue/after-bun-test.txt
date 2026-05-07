@@ -1,4 +1,4 @@
-{"span":"kosax.onboarding.step","step":"done","kind":"enter","ts":"2026-05-03T08:18:10.097Z"}
+{"span":"ummaya.onboarding.step","step":"done","kind":"enter","ts":"2026-05-03T08:18:10.097Z"}
 
  966 pass
  11 skip

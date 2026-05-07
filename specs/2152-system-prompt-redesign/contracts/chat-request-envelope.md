@@ -2,7 +2,7 @@
 
 **Spec**: [../spec.md](../spec.md) · **Plan**: [../plan.md](../plan.md) · **Research**: [../research.md](../research.md) (R3 + R4 + R5)
 
-Defines the behaviour of `src/kosax/ipc/stdio.py:_handle_chat_request` (lines 1129–1230 today, adjusted by this Epic) for assembling the LLM message stack from a `ChatRequestFrame`. The IPC schema itself is unchanged (no `frames.generated.ts` modification, no Pydantic model bump).
+Defines the behaviour of `src/ummaya/ipc/stdio.py:_handle_chat_request` (lines 1129–1230 today, adjusted by this Epic) for assembling the LLM message stack from a `ChatRequestFrame`. The IPC schema itself is unchanged (no `frames.generated.ts` modification, no Pydantic model bump).
 
 ---
 
@@ -15,7 +15,7 @@ Defines the behaviour of `src/kosax/ipc/stdio.py:_handle_chat_request` (lines 11
 | 3. Tool inventory augmentation | `build_system_prompt_with_tools(base, llm_tools)` appends `## Available tools`. | Same call, but `build_system_prompt_with_tools` now emits the R6 trigger phrase per tool. |
 | 4. Boundary marker | Absent. | Inserted by the assembler — `static_prefix` always ends with `\nSYSTEM_PROMPT_DYNAMIC_BOUNDARY\n`. |
 | 5. Dynamic suffix | Absent. | `SystemPromptManifest.dynamic_suffix` appended after the boundary marker if any decorator returned a non-`None` string. |
-| 6. OTEL attribute | `kosax.prompt.hash` hashed the entire system text. | `kosax.prompt.hash = manifest.prefix_hash` — hashes only the prefix up to (but not including) the boundary marker. |
+| 6. OTEL attribute | `ummaya.prompt.hash` hashed the entire system text. | `ummaya.prompt.hash = manifest.prefix_hash` — hashes only the prefix up to (but not including) the boundary marker. |
 | 7. User-message wrap | Citizen text passed through unchanged. | Citizen text wrapped via `wrap_citizen_request(text)` for messages whose `role == "user"`. Other roles (`tool`, `assistant`, `system`) are not wrapped. |
 
 ---
@@ -47,7 +47,7 @@ SYSTEM_PROMPT_DYNAMIC_BOUNDARY
 
 ```
 
-(leading and trailing newlines included). The `prefix_hash` is `sha256(static_prefix.encode("utf-8")).hexdigest()` — recorded as the OTEL `kosax.prompt.hash` attribute on the chat-request span (Spec 021 surface; the existing emission point in `_handle_chat_request` is updated to read from `manifest.prefix_hash` instead of recomputing).
+(leading and trailing newlines included). The `prefix_hash` is `sha256(static_prefix.encode("utf-8")).hexdigest()` — recorded as the OTEL `ummaya.prompt.hash` attribute on the chat-request span (Spec 021 surface; the existing emission point in `_handle_chat_request` is updated to read from `manifest.prefix_hash` instead of recomputing).
 
 The dynamic suffix is concatenated after the boundary marker without any separator:
 
@@ -72,10 +72,10 @@ After R5 ships, the production TUI path always sends `frame.system == ""`. The c
 | ID | Invariant | Test location |
 |---|---|---|
 | I-C1 | After `_handle_chat_request` constructs `llm_messages`, the system message contains the literal `\nSYSTEM_PROMPT_DYNAMIC_BOUNDARY\n` exactly once (R4). | `tests/ipc/test_stdio_chat_request.py::test_boundary_marker_in_system_message` |
-| I-C2 | The OTEL span emitted for the chat request carries `kosax.prompt.hash` equal to `sha256(static_prefix).hexdigest()` (R4 + Spec 021). | `tests/ipc/test_stdio_chat_request.py::test_prompt_hash_matches_prefix` |
+| I-C2 | The OTEL span emitted for the chat request carries `ummaya.prompt.hash` equal to `sha256(static_prefix).hexdigest()` (R4 + Spec 021). | `tests/ipc/test_stdio_chat_request.py::test_prompt_hash_matches_prefix` |
 | I-C3 | Every `LLMChatMessage` whose `role == "user"` has content starting with `<citizen_request>\n` and ending with `\n</citizen_request>` (R3). | `tests/ipc/test_stdio_chat_request.py::test_user_messages_wrapped` |
 | I-C4 | No `LLMChatMessage` whose `role` is `"tool"`, `"assistant"`, or `"system"` is wrapped (R3 negative assertion). | `tests/ipc/test_stdio_chat_request.py::test_non_user_messages_not_wrapped` |
-| I-C5 | Two consecutive chat requests in the same session with the same registered tool inventory produce byte-identical `kosax.prompt.hash` values across both spans (SC-3). | `tests/ipc/test_stdio_chat_request.py::test_prompt_hash_byte_stable_across_turns` |
+| I-C5 | Two consecutive chat requests in the same session with the same registered tool inventory produce byte-identical `ummaya.prompt.hash` values across both spans (SC-3). | `tests/ipc/test_stdio_chat_request.py::test_prompt_hash_byte_stable_across_turns` |
 | I-C6 | Empty user-message content is not wrapped — `wrap_citizen_request("") == ""` (FR-015 spirit; no-op invariance). | `tests/ipc/test_stdio_chat_request.py::test_empty_user_no_wrap` |
 
 ---
@@ -83,5 +83,5 @@ After R5 ships, the production TUI path always sends `frame.system == ""`. The c
 ## Out of scope for this contract
 
 - Adding new IPC frame arms or fields. The existing `ChatRequestFrame` is sufficient.
-- Changing the agentic-loop turn budget (`KOSAX_AGENTIC_LOOP_MAX_TURNS`). Owned by Spec 1978 / Epic #2077.
+- Changing the agentic-loop turn budget (`UMMAYA_AGENTIC_LOOP_MAX_TURNS`). Owned by Spec 1978 / Epic #2077.
 - Streaming token emission shape (`AssistantChunkFrame`). Unchanged.

@@ -2,12 +2,12 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # bootstrap_slsa_verifier.sh — vendors the slsa-framework/slsa-verifier
-# binary into KOSAX_PLUGIN_VENDOR_ROOT (default ~/.kosax/vendor) for
+# binary into UMMAYA_PLUGIN_VENDOR_ROOT (default ~/.ummaya/vendor) for
 # the host's platform.
 #
-# Invoked automatically by `kosax plugin install <name>` on first use
+# Invoked automatically by `ummaya plugin install <name>` on first use
 # when the platform-specific binary is missing (per Spec 1636 R-3 + the
-# `binary_not_found` arm of kosax.plugins.slsa.SLSAFailureKind). Can
+# `binary_not_found` arm of ummaya.plugins.slsa.SLSAFailureKind). Can
 # also be run manually to refresh the vendored binary.
 #
 # Usage:
@@ -24,7 +24,7 @@ set -euo pipefail
 # ---------------------------------------------------------------------------
 
 _DEFAULT_VERSION="v2.6.0"
-_VENDOR_ROOT="${KOSAX_PLUGIN_VENDOR_ROOT:-$HOME/.kosax/vendor}"
+_VENDOR_ROOT="${UMMAYA_PLUGIN_VENDOR_ROOT:-$HOME/.ummaya/vendor}"
 
 # ---------------------------------------------------------------------------
 # Parse args

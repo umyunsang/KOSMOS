@@ -140,14 +140,14 @@ The full `smoke-citizen-taxreturn-pty.txt` is committed to the spec dir. The syn
 
 ---
 
-## E-5 AAL Tier Reference (sourced from `kosax.tools.registry.PublishedTier`)
+## E-5 AAL Tier Reference (sourced from `ummaya.tools.registry.PublishedTier`)
 
-Read-only reference table — no new schema. The rewritten prompt's `<verify_families>` section MUST cite `published_tier` values that exist in the `PublishedTier` Literal at `src/kosax/tools/registry.py:68-93`.
+Read-only reference table — no new schema. The rewritten prompt's `<verify_families>` section MUST cite `published_tier` values that exist in the `PublishedTier` Literal at `src/ummaya/tools/registry.py:68-93`.
 
 **Pre-flight verification** (run before authoring the prompt section):
 
 ```bash
-grep -E '^\s*"(simple_auth_module|modid|kec|geumyung_module|any_id_sso)' src/kosax/tools/registry.py
+grep -E '^\s*"(simple_auth_module|modid|kec|geumyung_module|any_id_sso)' src/ummaya/tools/registry.py
 ```
 
 Must return exactly 5 lines (one per Epic ε family). If any are missing, the rewrite is blocked and the discrepancy escalates to a Phase 2 Foundational task (registry expansion).

@@ -20,7 +20,7 @@ from typing import Any
 import pytest
 from pydantic import TypeAdapter, ValidationError
 
-from kosax.ipc.frame_schema import IPCFrame, ipc_frame_json_schema
+from ummaya.ipc.frame_schema import IPCFrame, ipc_frame_json_schema
 
 
 def _compute_manifest_hash_for_test() -> str:

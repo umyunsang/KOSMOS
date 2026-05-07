@@ -4,7 +4,7 @@
 > [P] = parallel-safe (no dependency on other [P] tasks at the same phase).
 
 ## Phase 1 — Setup
-- **T001**: Verify worktree state (`/Users/um-yunsang/KOSAX-w-2641` on
+- **T001**: Verify worktree state (`/Users/um-yunsang/UMMAYA-w-2641` on
   `feat/2641-s6-services-swap1` branch, clean tree). Read project memory + spec.
 
 ## Phase 2 — Foundational (no [P], single edit)
@@ -50,11 +50,11 @@ _없음 — 본 spec 은 3 개 모듈이 완전 독립이라 Phase 2 생략._
   - `syncTeamMemory` (current line ~1153)
   - `isTeamMemorySyncAvailable` (current line ~762)
   Gate text per FR-003 (env override
-  `KOSAX_ENABLE_DEAD_TEAM_MEM_SYNC`). (SC-005)
+  `UMMAYA_ENABLE_DEAD_TEAM_MEM_SYNC`). (SC-005)
 
 - **T004 [P]**: Create `tui/src/services/teamMemorySync/__tests__/dead-call-gate.test.ts`.
   Use `bun:test` describe/it. Test the 4 gated entry-points throw with the
-  expected message when the env override is unset. Use a `delete process.env.KOSAX_ENABLE_DEAD_TEAM_MEM_SYNC`
+  expected message when the env override is unset. Use a `delete process.env.UMMAYA_ENABLE_DEAD_TEAM_MEM_SYNC`
   in `beforeEach`. (SC-004)
 
 ## Phase 5 — User Story 3 [P] · settingsSync 박제 (T005 + T006)
@@ -76,12 +76,12 @@ _없음 — 본 spec 은 3 개 모듈이 완전 독립이라 Phase 2 생략._
   - `downloadUserSettings` (gate inserted before `if (downloadPromise)`
     short-circuit; on gate-active path return `Promise.resolve(false)`)
   - `redownloadUserSettings` (returns `Promise.resolve(false)`)
-  Gate text per FR-005 (env override `KOSAX_ENABLE_DEAD_SETTINGS_SYNC`).
+  Gate text per FR-005 (env override `UMMAYA_ENABLE_DEAD_SETTINGS_SYNC`).
   (SC-006)
 
 - **T006 [P]**: Create `tui/src/services/settingsSync/__tests__/dead-call-gate.test.ts`.
   Test the 4 gated entry-points return early without throwing when the env
-  override is unset. Use `delete process.env.KOSAX_ENABLE_DEAD_SETTINGS_SYNC`
+  override is unset. Use `delete process.env.UMMAYA_ENABLE_DEAD_SETTINGS_SYNC`
   in `beforeEach`. Verify `_resetDownloadPromiseForTesting()` is callable.
   (SC-004)
 

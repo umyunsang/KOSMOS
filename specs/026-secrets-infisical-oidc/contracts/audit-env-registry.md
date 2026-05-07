@@ -1,6 +1,6 @@
 # Contract — `scripts/audit-env-registry.py`
 
-**Purpose**: Cross-check the in-code `KOSAX_*` surface against `docs/configuration.md` registry. Fail CI on drift.
+**Purpose**: Cross-check the in-code `UMMAYA_*` surface against `docs/configuration.md` registry. Fail CI on drift.
 **Related FR**: FR-020, FR-022, FR-023 · **SC**: SC-003 · **NFR**: NFR-006 (10 s budget)
 
 ---
@@ -10,7 +10,7 @@
 ```
 usage: audit-env-registry.py [--repo-root PATH] [--registry PATH]
 
-Cross-check KOSAX_* env-var surface vs. the registry in docs/configuration.md.
+Cross-check UMMAYA_* env-var surface vs. the registry in docs/configuration.md.
 Always emits a JSON report on stdout (see §"Drift report shape").
 
 options:
@@ -29,21 +29,21 @@ Stdlib-only: `argparse`, `re`, `pathlib`, `json`, `sys`. No third-party imports.
 ## Name extraction regex
 
 ```python
-_NAME_RE = re.compile(r"\bKOSAX_[A-Z][A-Z0-9_]*\b")
+_NAME_RE = re.compile(r"\bUMMAYA_[A-Z][A-Z0-9_]*\b")
 _LANGFUSE_RE = re.compile(r"\bLANGFUSE_[A-Z][A-Z0-9_]*\b")
 ```
 
-Allowlisted prefixes: `KOSAX_`, `LANGFUSE_`. Any other all-caps identifier matched via a broader `[A-Z_]{3,}` sweep is flagged as a `prefix_violation` only if it lives in an assignment / `env_prefix` / `validation_alias` context (contextual filter to suppress trivial constants).
+Allowlisted prefixes: `UMMAYA_`, `LANGFUSE_`. Any other all-caps identifier matched via a broader `[A-Z_]{3,}` sweep is flagged as a `prefix_violation` only if it lives in an assignment / `env_prefix` / `validation_alias` context (contextual filter to suppress trivial constants).
 
 ## OverrideFamily suppression
 
-Per-tool `KOSAX_<TOOL_ID>_API_KEY` expansions (e.g., `KOSAX_KOROAD_ACCIDENT_SEARCH_API_KEY`) are detected via `permissions/credentials.py::_tool_specific_var`. The audit recognises the family pattern via a registry row with exact variable literal `KOSAX_{TOOL_ID}_API_KEY` (literal, not regex) and suppresses "undocumented" findings that match the expansion rule.
+Per-tool `UMMAYA_<TOOL_ID>_API_KEY` expansions (e.g., `UMMAYA_KOROAD_ACCIDENT_SEARCH_API_KEY`) are detected via `permissions/credentials.py::_tool_specific_var`. The audit recognises the family pattern via a registry row with exact variable literal `UMMAYA_{TOOL_ID}_API_KEY` (literal, not regex) and suppresses "undocumented" findings that match the expansion rule.
 
 ## Parsing contract — registry Markdown
 
 The registry table MUST satisfy:
 - Exactly one Markdown table whose header row begins with `| Variable | Required |` (case-sensitive).
-- Each data row's first cell MUST be a backtick-wrapped variable name: `` `KOSAX_X` `` or `` `LANGFUSE_X` `` or the literal override-family placeholder.
+- Each data row's first cell MUST be a backtick-wrapped variable name: `` `UMMAYA_X` `` or `` `LANGFUSE_X` `` or the literal override-family placeholder.
 - Data rows are any lines matching `^\| ` that follow the header (up to the next blank line or next `##` heading).
 
 Parse algorithm:
@@ -71,15 +71,15 @@ Malformed table → exit 2 (see §Exit codes) with a single-line error identifyi
   },
   "findings": {
     "in_code_not_in_registry": [
-      {"name": "KOSAX_NEW_THING", "source_files": ["src/kosax/foo.py:42"]}
+      {"name": "UMMAYA_NEW_THING", "source_files": ["src/ummaya/foo.py:42"]}
     ],
     "in_registry_not_in_code": [
-      {"name": "KOSAX_OLD_THING", "registry_line": 87}
+      {"name": "UMMAYA_OLD_THING", "registry_line": 87}
     ],
     "prefix_violations": [
       {"name": "MY_BAD_VAR",
-       "source_files": ["src/kosax/bar.py:10"],
-       "reason": "not KOSAX_-prefixed and not in LANGFUSE_ allowlist"}
+       "source_files": ["src/ummaya/bar.py:10"],
+       "reason": "not UMMAYA_-prefixed and not in LANGFUSE_ allowlist"}
     ],
     "override_family_unmatched": []
   }
@@ -127,11 +127,11 @@ Non-zero exit fails the CI job.
 | Test ID | Input | Expected |
 |---------|-------|----------|
 | T-AR01 | Clean repo + registry matching 1:1 | exit 0, `verdict=clean` |
-| T-AR02 | Code has `KOSAX_X` not in registry | exit 1, `in_code_not_in_registry` contains `KOSAX_X` |
-| T-AR03 | Registry has `KOSAX_X` not in code | exit 1, `in_registry_not_in_code` contains `KOSAX_X` |
+| T-AR02 | Code has `UMMAYA_X` not in registry | exit 1, `in_code_not_in_registry` contains `UMMAYA_X` |
+| T-AR03 | Registry has `UMMAYA_X` not in code | exit 1, `in_registry_not_in_code` contains `UMMAYA_X` |
 | T-AR04 | Malformed registry (missing header) | exit 2 |
 | T-AR05 | `LANGFUSE_PUBLIC_KEY` in code, in registry | exit 0 (allowlisted prefix) |
-| T-AR06 | `KOSAX_KOROAD_ACCIDENT_SEARCH_API_KEY` in code, family pattern in registry | exit 0 (family match) |
+| T-AR06 | `UMMAYA_KOROAD_ACCIDENT_SEARCH_API_KEY` in code, family pattern in registry | exit 0 (family match) |
 | T-AR07 | Performance: 10 s wall-clock on full repo | `duration_seconds < 10.0` |
 
 ## Non-goals

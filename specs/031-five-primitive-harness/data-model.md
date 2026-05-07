@@ -233,7 +233,7 @@ class AdapterRegistration(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
     tool_id: str = Field(min_length=1, max_length=128, pattern=r"^[a-z][a-z0-9_]*$")
     primitive: AdapterPrimitive
-    module_path: str             # e.g. "kosax.tools.mock.data_go_kr.fines_pay"
+    module_path: str             # e.g. "ummaya.tools.mock.data_go_kr.fines_pay"
     input_model_ref: str         # dotted ref to adapter's Pydantic input model
     source_mode: AdapterSourceMode
 
@@ -274,15 +274,15 @@ These are filesystem shapes, not runtime Pydantic models, but they are enforced 
 docs/mock/<system>/
 ├── README.md                 # public-spec URL, license, mirror axis (byte|shape)
 ├── fixtures/                 # recorded fixtures
-└── adapters/                 # stub pointing at src/kosax/tools/mock/<ministry>/*.py
+└── adapters/                 # stub pointing at src/ummaya/tools/mock/<ministry>/*.py
 
-docs/scenarios/<journey>.md   # includes an explicit "KOSAX ↔ real system" handoff heading
+docs/scenarios/<journey>.md   # includes an explicit "UMMAYA ↔ real system" handoff heading
 ```
 
 **Invariants** (docs-lint, exercised by `tests/test_mock_scenario_split.py`):
 - `docs/mock/` contains **exactly 6** subdirectories: `data_go_kr`, `omnione`, `barocert`, `mydata`, `npki_crypto`, `cbs` (FR-021, SC-004).
 - `docs/scenarios/` contains **exactly 3** `.md` files documenting OPAQUE journeys (FR-023, SC-004). Each file MUST contain the handoff heading (FR-024).
-- No adapter under `src/kosax/tools/mock/` may implement an OPAQUE system (FR-026). Enforced by grep over adapter modules vs the scenario list.
+- No adapter under `src/ummaya/tools/mock/` may implement an OPAQUE system (FR-026). Enforced by grep over adapter modules vs the scenario list.
 
 ---
 

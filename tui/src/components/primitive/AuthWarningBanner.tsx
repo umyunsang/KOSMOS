@@ -1,5 +1,5 @@
 /**
- * KOSAX-original — AuthWarningBanner renderer.
+ * UMMAYA-original — AuthWarningBanner renderer.
  *
  * Failure banner shown when a verify primitive returns ok=false.
  * Displays the Korea tier, error code, message, and actionable remediation.

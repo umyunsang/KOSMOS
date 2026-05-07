@@ -14,9 +14,9 @@ Validates four contractual guarantees defined in
 
 from __future__ import annotations
 
-from kosax.tools.bm25_index import BM25Index
-from kosax.tools.retrieval.backend import Retriever
-from kosax.tools.retrieval.bm25_backend import BM25Backend
+from ummaya.tools.bm25_index import BM25Index
+from ummaya.tools.retrieval.backend import Retriever
+from ummaya.tools.retrieval.bm25_backend import BM25Backend
 
 # ---------------------------------------------------------------------------
 # Shared fixture — small non-empty corpus with real Korean search_hints.

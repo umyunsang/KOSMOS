@@ -2,6 +2,7 @@
 .env
 .env.*
 !.env.example
+.infisical.json
 *.key
 *.pem
 secrets/
@@ -15,7 +16,7 @@ __pycache__/
 venv/
 .venv/
 # Anchor `env/` to the repo root so it does NOT match `tui/src/commands/env/`
-# (Spec 1632 P0 auto-stub) or `kosax.tools.env` modules. Only top-level
+# (Spec 1632 P0 auto-stub) or `ummaya.tools.env` modules. Only top-level
 # Python virtualenv directories are intended to be ignored.
 /env/
 .pytest_cache/
@@ -68,7 +69,7 @@ htmlcov/
 .references/
 
 # Claude Code local state
-.agents/skills/kosax-reference-first/
+.agents/skills/ummaya-reference-first/
 .agents/
 .claude/
 .claude/scheduled_tasks.lock

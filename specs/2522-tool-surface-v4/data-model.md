@@ -7,7 +7,7 @@
 
 ### 1. `GovAPITool` (existing, 변경 X)
 
-기존 KOSAX `GovAPITool` 메타데이터 schema 그대로. 13 어댑터 + `resolve_location` 모두 이 schema 인스턴스. 사용자 디렉티브 "도메인 독립" + Constitution III (Pydantic v2 strict) 정합.
+기존 UMMAYA `GovAPITool` 메타데이터 schema 그대로. 13 어댑터 + `resolve_location` 모두 이 schema 인스턴스. 사용자 디렉티브 "도메인 독립" + Constitution III (Pydantic v2 strict) 정합.
 
 **Fields** (existing, 인용용):
 - `id: str` — stable snake_case identifier (예: `kma_current_observation`)
@@ -59,7 +59,7 @@ class DescriptionSection(BaseModel):
 
 ### 3. `ShortReference` (new — mirror data conceptual entity)
 
-각 도메인의 17 광역시도 short reference table. KOSAX 코드 안 mirror dict (`grid_coords.py:REGION_TO_GRID`, `koroad/code_tables.py:SidoCode` 등) 의 description 인라인 형태.
+각 도메인의 17 광역시도 short reference table. UMMAYA 코드 안 mirror dict (`grid_coords.py:REGION_TO_GRID`, `koroad/code_tables.py:SidoCode` 등) 의 description 인라인 형태.
 
 ```python
 class ShortReference(BaseModel):
@@ -71,7 +71,7 @@ class ShortReference(BaseModel):
 
     domain: Literal["KMA_GRID", "KMA_STATION", "KOROAD_SIDO", "MOHW_LIFE", "NFA_HQ"]
     rows: list[ShortReferenceRow]  # 17 광역시도 (KMA_GRID/STATION/KOROAD_SIDO/NFA_HQ) 또는 7 enum (MOHW_LIFE)
-    source_doc: str  # 출처 docs path (예: "/tmp/kosax-domain-docs/kma_asos.txt")
+    source_doc: str  # 출처 docs path (예: "/tmp/ummaya-domain-docs/kma_asos.txt")
     last_verified: date
 
 
@@ -94,7 +94,7 @@ class ShortReferenceRow(BaseModel):
 **Validation rules**:
 - `rows` 길이: 17 (4 광역시도 도메인) 또는 7 (MOHW_LIFE) 또는 17 (NFA_HQ)
 - 각 row 의 `code` MUST agency wire format (KMA: "60,127" / KOROAD: "11" / MOHW: "001")
-- `source_doc` MUST `/tmp/kosax-domain-docs/*.txt` 또는 `docs/api/*.md` 의 절대 경로 또는 KOSAX 코드 모듈 경로 (`src/kosax/tools/kma/grid_coords.py`)
+- `source_doc` MUST `/tmp/ummaya-domain-docs/*.txt` 또는 `docs/api/*.md` 의 절대 경로 또는 UMMAYA 코드 모듈 경로 (`src/ummaya/tools/kma/grid_coords.py`)
 
 ### 4. `AdapterPolicy` (existing, 변경 X)
 
@@ -191,14 +191,14 @@ KMA_CURRENT_OBSERVATION_TOOL = GovAPITool(
 ### Mirror dict 보존 (FR-018)
 
 ```python
-# src/kosax/tools/kma/grid_coords.py — 변경 X (mirror dict 그대로)
+# src/ummaya/tools/kma/grid_coords.py — 변경 X (mirror dict 그대로)
 REGION_TO_GRID = {
     "서울": (60, 127),
     "부산": (98, 76),
     # ... 17 광역시도
 }
 
-# src/kosax/tools/koroad/code_tables.py — 변경 X (mirror IntEnum 그대로)
+# src/ummaya/tools/koroad/code_tables.py — 변경 X (mirror IntEnum 그대로)
 class SidoCode(IntEnum):
     SEOUL = 1100
     BUSAN = 1200
@@ -216,7 +216,7 @@ class SidoCode(IntEnum):
 v4 정정:
 ```python
 "- 'all' : 모든 위 정보. 후속 도구별 input schema 는 각 도구의 description 참조. "
-"각 도구는 self-contained — KOSAX 가 cross-domain chain 강제하지 않음."
+"각 도구는 self-contained — UMMAYA 가 cross-domain chain 강제하지 않음."
 ```
 
 ## Constraints summary
@@ -228,4 +228,4 @@ v4 정정:
 | `ResolveLocationOutput` 4 필수 필드 | spec FR-016 | pydantic v2 strict validation |
 | `models.py:577` 정정 phrasing | research.md Decision 4 | grep test (잘못된 phrase 부재 확인) |
 | 13 도구 모두 5-섹션 골격 적용 | spec FR-006 | description regex match (5 섹션 헤더) |
-| Mirror dict KOSAX 코드 안 보존 (분리 X) | research.md Decision 1 | `data/agency-codes/` 디렉토리 부재 검증 |
+| Mirror dict UMMAYA 코드 안 보존 (분리 X) | research.md Decision 1 | `data/agency-codes/` 디렉토리 부재 검증 |

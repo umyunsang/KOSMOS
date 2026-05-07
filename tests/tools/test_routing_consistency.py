@@ -13,15 +13,15 @@ from pathlib import Path
 
 import pytest
 
-from kosax.tools.executor import ToolExecutor
-from kosax.tools.register_all import register_all_tools
-from kosax.tools.registry import ToolRegistry
-from kosax.tools.routing_index import (
+from ummaya.tools.executor import ToolExecutor
+from ummaya.tools.register_all import register_all_tools
+from ummaya.tools.registry import ToolRegistry
+from ummaya.tools.routing_index import (
     RoutingIndex,
 )
 
 REPO_ROOT = Path(__file__).parent.parent.parent
-SRC_TOOLS = REPO_ROOT / "src" / "kosax" / "tools"
+SRC_TOOLS = REPO_ROOT / "src" / "ummaya" / "tools"
 
 
 @pytest.fixture(scope="module")
@@ -83,7 +83,7 @@ class TestInvariant2MinistryClosedEnum:
 
 # ---------------------------------------------------------------------------
 # Invariant 3 — adapter_mode declared in mock subtree (CI-only file-path inspection)
-# Every GovAPITool constructed under src/kosax/tools/mock/* MUST set
+# Every GovAPITool constructed under src/ummaya/tools/mock/* MUST set
 # adapter_mode="mock" explicitly.
 # ---------------------------------------------------------------------------
 
@@ -157,7 +157,7 @@ class TestInvariant4UniqueToolId:
 # ---------------------------------------------------------------------------
 # Invariant 5 (compute_permission_tier) + Invariant 6 (auth_type/auth_level)
 # REMOVED in Epic δ #2295 — auth_level / is_irreversible / _AUTH_TYPE_LEVEL_MAPPING
-# deleted from GovAPITool as Spec 033 KOSAX-invented residue (Constitution § II).
+# deleted from GovAPITool as Spec 033 UMMAYA-invented residue (Constitution § II).
 # ---------------------------------------------------------------------------
 
 
@@ -244,7 +244,7 @@ class TestCheck7ToolListClosure:
 
 # ---------------------------------------------------------------------------
 # Check 8 — CC dev tool absence
-# Grep src/kosax/tools/register_all.py for any of the 16 CC dev tool names.
+# Grep src/ummaya/tools/register_all.py for any of the 16 CC dev tool names.
 # Fail-closed if found (FR-012 violation).
 # ---------------------------------------------------------------------------
 
@@ -279,10 +279,10 @@ class TestCheck8CCDevToolAbsence:
         )
 
     def test_tools_init_has_no_cc_dev_tool_refs(self):
-        """src/kosax/tools/__init__.py must not re-export CC developer tooling."""
+        """src/ummaya/tools/__init__.py must not re-export CC developer tooling."""
         init_path = SRC_TOOLS / "__init__.py"
         if not init_path.exists():
-            pytest.skip("src/kosax/tools/__init__.py does not exist")
+            pytest.skip("src/ummaya/tools/__init__.py does not exist")
         source = init_path.read_text()
         violations = [name for name in self.CC_DEV_TOOL_NAMES if name in source]
         assert not violations, (
@@ -348,9 +348,9 @@ class TestFR028CompositePatternDetector:
     callables only; intra-module self-imports are not flagged.
     """
 
-    # Pattern: `from kosax.tools.<pkg>.<mod> import <_call|register|_fetch>`
+    # Pattern: `from ummaya.tools.<pkg>.<mod> import <_call|register|_fetch>`
     _IMPORT_PATTERN = re.compile(
-        r"from\s+(kosax\.tools\.(?P<pkg>[^.\s]+)\.(?P<mod>[^\s]+))\s+"
+        r"from\s+(ummaya\.tools\.(?P<pkg>[^.\s]+)\.(?P<mod>[^\s]+))\s+"
         r"import\s+(?:_call|register|_fetch)",
         re.MULTILINE,
     )

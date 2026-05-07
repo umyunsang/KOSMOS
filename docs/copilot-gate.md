@@ -33,7 +33,7 @@ gh pr checks <PR_NUMBER> --json name,status,conclusion \
 
 ```bash
 # Get PR node ID
-PR_NODE_ID=$(gh api repos/umyunsang/KOSAX/pulls/<PR_NUMBER> --jq '.node_id')
+PR_NODE_ID=$(gh api repos/umyunsang/UMMAYA/pulls/<PR_NUMBER> --jq '.node_id')
 
 # Request Copilot re-review via GraphQL
 gh api graphql -f query='

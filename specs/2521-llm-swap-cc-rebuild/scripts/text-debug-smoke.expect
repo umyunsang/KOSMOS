@@ -12,7 +12,7 @@ expect {
   timeout { puts "\n\[FAIL\] no backend boot log"; exit 1 }
 }
 expect {
-  -re "KOSAX" { puts "\n\[OK\] branding visible" }
+  -re "UMMAYA" { puts "\n\[OK\] branding visible" }
   timeout { puts "\n\[FAIL\] no branding"; exit 1 }
 }
 sleep 2

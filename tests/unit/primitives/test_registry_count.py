@@ -9,7 +9,7 @@ No more, no fewer.
 
 from __future__ import annotations
 
-import kosax.primitives as primitives_module
+import ummaya.primitives as primitives_module
 
 _EXPECTED_PRIMITIVES: frozenset[str] = frozenset({"lookup", "resolve_location", "submit", "verify"})
 

@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Text } from '../../ink.js'
-import { closeKosaxBridge } from '../../ipc/bridgeSingleton.js'
+import { closeUmmayaBridge } from '../../ipc/bridgeSingleton.js'
 import type {
   LocalJSXCommandContext,
   LocalJSXCommandOnDone,
@@ -10,7 +10,7 @@ import { gracefulShutdownSync } from '../../utils/gracefulShutdown.js'
 
 export async function performLogout(context?: LocalJSXCommandContext): Promise<void> {
   clearFriendliCredential()
-  await closeKosaxBridge()
+  await closeUmmayaBridge()
   if (context) {
     await Promise.resolve(context.onChangeAPIKey())
     context.setAppState(prev => ({

@@ -5,7 +5,7 @@
 // - Renders text when streaming completes (flush-all).
 // - Shows streaming hint while isStreaming=true.
 // - Hides streaming hint when isStreaming=false.
-// - KOSAX_TUI_STREAM_CHUNK_TOKENS env override accepted (smoke check).
+// - UMMAYA_TUI_STREAM_CHUNK_TOKENS env override accepted (smoke check).
 
 import { describe, test, expect, beforeEach, afterEach } from 'bun:test';
 import React from 'react';

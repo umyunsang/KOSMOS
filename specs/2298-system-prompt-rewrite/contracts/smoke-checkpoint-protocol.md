@@ -17,7 +17,7 @@
 The expect script:
 
 1. Spawns `bun run tui` from the worktree root with stdio attached to a pseudo-terminal.
-2. Asserts the literal string `KOSAX` appears in the boot output (the welcome banner).
+2. Asserts the literal string `UMMAYA` appears in the boot output (the welcome banner).
 3. Sends the citizen prompt `내 종합소득세 신고해줘\r` after a 2 s settling delay (allows session_id assignment + permission scaffold).
 4. Polls the assistant_chunk stream for any text matching the regex `hometax-2026-\d{2}-\d{2}-RX-[A-Z0-9]{5}`.
 5. On first match, emits the synthetic checkpoint string `CHECKPOINTreceipt token observed\n` to stdout.
@@ -103,7 +103,7 @@ Sleep 500ms
 
 | Keyframe | Expected visual content | Validation |
 |---|---|---|
-| `smoke-citizen-taxreturn-keyframe-1.png` | KOSAX boot banner with `KOSAX` brand text + UFO mascot + version line + (optional) onboarding hint. **No** input prompt activity yet. | Lead Opus Read-tool: must see the literal `KOSAX` glyph rendered. |
+| `smoke-citizen-taxreturn-keyframe-1.png` | UMMAYA boot banner with `UMMAYA` brand text + UFO mascot + version line + (optional) onboarding hint. **No** input prompt activity yet. | Lead Opus Read-tool: must see the literal `UMMAYA` glyph rendered. |
 | `smoke-citizen-taxreturn-keyframe-2.png` | Input area shows `내 종합소득세 신고해줘` (cursor visible, Enter NOT yet pressed). | Lead Opus Read-tool: must see the literal Korean string in the input field. |
 | `smoke-citizen-taxreturn-keyframe-3.png` | Assistant response visible with `접수번호: hometax-2026-MM-DD-RX-XXXXX` cited (citation styling per `<output_style>`). | Lead Opus Read-tool: must see content matching regex `접수번호[:\s]+hometax-2026-\d{2}-\d{2}-RX-[A-Z0-9]{5}`. |
 
@@ -130,7 +130,7 @@ The PR description MUST cite all 5 files (gif + 3 PNGs + the PTY .txt) per AGENT
 
 | Mode | Detection | Recovery |
 |---|---|---|
-| TUI does not boot | Layer 2 expect timeout on `KOSAX` banner | Investigate `bun run tui` independently; not a smoke fix |
+| TUI does not boot | Layer 2 expect timeout on `UMMAYA` banner | Investigate `bun run tui` independently; not a smoke fix |
 | LLM emits no `verify` call | Layer 2 captures session but no receipt → checkpoint missing | Prompt regression — re-examine `<verify_chain_pattern>` content |
 | Mock backend not registered | `mock_submit_module_hometax_taxreturn` returns error | Fix Epic ε breakage; not Epic η scope |
 | vhs `Screenshot` directive unsupported | `vhs <tape>` errors at parse | Upgrade vhs to ≥ 0.11 |

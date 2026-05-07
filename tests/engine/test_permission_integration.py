@@ -15,14 +15,14 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from kosax.engine.config import QueryEngineConfig
-from kosax.engine.models import QueryContext, QueryState
-from kosax.engine.query import dispatch_tool_calls
-from kosax.llm.client import LLMClient  # noqa: F401 — needed by model_rebuild
-from kosax.llm.models import FunctionCall, ToolCall
-from kosax.llm.usage import UsageTracker
-from kosax.tools.executor import ToolExecutor
-from kosax.tools.registry import ToolRegistry
+from ummaya.engine.config import QueryEngineConfig
+from ummaya.engine.models import QueryContext, QueryState
+from ummaya.engine.query import dispatch_tool_calls
+from ummaya.llm.client import LLMClient  # noqa: F401 — needed by model_rebuild
+from ummaya.llm.models import FunctionCall, ToolCall
+from ummaya.llm.usage import UsageTracker
+from ummaya.tools.executor import ToolExecutor
+from ummaya.tools.registry import ToolRegistry
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -42,7 +42,7 @@ def _make_registry(
     """Return a ToolRegistry populated with a single minimal GovAPITool."""
     from pydantic import BaseModel
 
-    from kosax.tools.models import GovAPITool
+    from ummaya.tools.models import GovAPITool
 
     class _In(BaseModel):
         query: str = ""

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSAX-original: strategy-selector hook for Korean Hangul IME input composition.
+// UMMAYA-original: strategy-selector hook for Korean Hangul IME input composition.
 
 import { useState, useCallback } from 'react'
 import { useInput } from 'ink'
@@ -155,7 +155,7 @@ export interface KoreanIMEState {
 // ---------------------------------------------------------------------------
 
 /**
- * Stub returned when KOSAX_TUI_IME_STRATEGY=readline.
+ * Stub returned when UMMAYA_TUI_IME_STRATEGY=readline.
  *
  * Full readline hybrid implementation is deferred per ADR-005 § Consequences.
  * The stub throws immediately so callers discover the misconfiguration at
@@ -163,7 +163,7 @@ export interface KoreanIMEState {
  */
 function useKoreanIME_readline(): KoreanIMEState {
   throw new Error(
-    'KOSAX_TUI_IME_STRATEGY=readline not yet implemented; see docs/adr/ADR-005-korean-ime-strategy.md',
+    'UMMAYA_TUI_IME_STRATEGY=readline not yet implemented; see docs/adr/ADR-005-korean-ime-strategy.md',
   )
 }
 
@@ -399,17 +399,17 @@ function useKoreanIME_fork(isActive: boolean): KoreanIMEState {
 /**
  * Strategy is evaluated once at module load time.
  *
- * `process.env['KOSAX_TUI_IME_STRATEGY']` is static for the lifetime of the
+ * `process.env['UMMAYA_TUI_IME_STRATEGY']` is static for the lifetime of the
  * process.  Evaluating it here avoids a conditional-hook call inside the
  * exported `useKoreanIME` function, which would violate the Rules of Hooks if
  * the linter treats the branch as dynamic.
  */
-const _IME_STRATEGY: string = process.env['KOSAX_TUI_IME_STRATEGY'] ?? 'fork'
+const _IME_STRATEGY: string = process.env['UMMAYA_TUI_IME_STRATEGY'] ?? 'fork'
 
 /**
  * useKoreanIME — strategy-selector hook for Korean IME input.
  *
- * Reads `KOSAX_TUI_IME_STRATEGY` env var (evaluated once at module load):
+ * Reads `UMMAYA_TUI_IME_STRATEGY` env var (evaluated once at module load):
  *   - `'fork'` (default): uses @jrichman/ink@6.6.9 patched `useInput` (ADR-005 Option a)
  *   - `'readline'`: throws NotImplementedError stub (ADR-005 Option b, deferred)
  *

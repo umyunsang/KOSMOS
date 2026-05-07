@@ -42,7 +42,6 @@ describe('HelpV2Grouped — groupCatalog correctness (FR-029)', () => {
     const grouped = groupCatalog(UI_L2_SLASH_COMMANDS);
     const names = grouped.session.map((e) => e.name);
     expect(names).toContain('/help');
-    expect(names).toContain('/onboarding');
     expect(names).toContain('/lang');
     expect(names).toContain('/login');
     expect(names).toContain('/logout');

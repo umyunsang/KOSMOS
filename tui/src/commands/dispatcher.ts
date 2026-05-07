@@ -1,6 +1,6 @@
 // Source: .references/claude-code-sourcemap/restored-src/src/commands.ts (Claude Code 2.1.88, research-use)
 // Lifted structural pattern: command registry map, findCommand, dispatchCommand.
-// All KOSAX-domain logic (IPC frames, session events, help renderer) is original.
+// All UMMAYA-domain logic (IPC frames, session events, help renderer) is original.
 
 import type { CommandDefinition, CommandHandlerArgs, CommandResult, SendFrame } from './types'
 import { i18n } from '../i18n'

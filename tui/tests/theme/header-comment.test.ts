@@ -12,8 +12,8 @@ const DARK_PATH = resolve(import.meta.dir, '../../src/theme/dark.ts')
 
 const SOURCE_LINE =
   '// Source: .references/claude-code-sourcemap/restored-src/src/utils/theme.ts'
-const KOSAX_RENAME_LINE =
-  '// KOSAX 브랜드 토큰으로 리네이밍됨 (ADR-006 A-9)'
+const UMMAYA_RENAME_LINE =
+  '// UMMAYA 브랜드 토큰으로 리네이밍됨 (ADR-006 A-9)'
 
 describe('theme file header comments (brand-token-surface § 5)', () => {
   it('tokens.ts carries the CC source attribution line', () => {
@@ -21,9 +21,9 @@ describe('theme file header comments (brand-token-surface § 5)', () => {
     expect(body).toContain(SOURCE_LINE)
   })
 
-  it('tokens.ts carries the KOSAX rename header', () => {
+  it('tokens.ts carries the UMMAYA rename header', () => {
     const body = readFileSync(TOKENS_PATH, 'utf8')
-    expect(body).toContain(KOSAX_RENAME_LINE)
+    expect(body).toContain(UMMAYA_RENAME_LINE)
   })
 
   it('dark.ts carries the CC source attribution line', () => {
@@ -31,15 +31,15 @@ describe('theme file header comments (brand-token-surface § 5)', () => {
     expect(body).toContain(SOURCE_LINE)
   })
 
-  it('dark.ts carries the KOSAX rename header', () => {
+  it('dark.ts carries the UMMAYA rename header', () => {
     const body = readFileSync(DARK_PATH, 'utf8')
-    expect(body).toContain(KOSAX_RENAME_LINE)
+    expect(body).toContain(UMMAYA_RENAME_LINE)
   })
 
   it('rename header follows the source line in tokens.ts', () => {
     const body = readFileSync(TOKENS_PATH, 'utf8')
     const sourceIdx = body.indexOf(SOURCE_LINE)
-    const renameIdx = body.indexOf(KOSAX_RENAME_LINE)
+    const renameIdx = body.indexOf(UMMAYA_RENAME_LINE)
     expect(sourceIdx).toBeGreaterThan(-1)
     expect(renameIdx).toBeGreaterThan(sourceIdx)
   })
@@ -47,7 +47,7 @@ describe('theme file header comments (brand-token-surface § 5)', () => {
   it('rename header follows the source line in dark.ts', () => {
     const body = readFileSync(DARK_PATH, 'utf8')
     const sourceIdx = body.indexOf(SOURCE_LINE)
-    const renameIdx = body.indexOf(KOSAX_RENAME_LINE)
+    const renameIdx = body.indexOf(UMMAYA_RENAME_LINE)
     expect(sourceIdx).toBeGreaterThan(-1)
     expect(renameIdx).toBeGreaterThan(sourceIdx)
   })

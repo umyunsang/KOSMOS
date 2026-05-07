@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSAX-original — Epic #1633 P2 · @anthropic-ai/sdk compatibility shim.
+// UMMAYA-original — Epic #1633 P2 · @anthropic-ai/sdk compatibility shim.
 //
 // Purpose: every TS/TSX file that used to import from '@anthropic-ai/sdk'
 // (or any sub-path like '/resources', '/resources/beta/messages/messages.mjs',
 // '/streaming.mjs', '/error') now imports from 'src/sdk-compat.js' instead.
-// The exports below are structural aliases into the KOSAX-native
+// The exports below are structural aliases into the UMMAYA-native
 // `tui/src/ipc/llmTypes.ts` type catalog, plus minimal stub classes for
 // the two runtime error types that propagate through catch sites.
 //
@@ -13,34 +13,34 @@
 // runtime code) and FR-001 (no Anthropic SDK in the runtime graph).
 
 import type {
-  KosaxContentBlockParam,
-  KosaxTextBlockParam,
-  KosaxToolUseBlockParam,
-  KosaxToolResultBlockParam,
-  KosaxMessageParam,
-  KosaxMessageStreamParams,
-  KosaxRawMessageStreamEvent,
-  KosaxToolDefinition,
-  KosaxUsage,
-  KosaxStopReason,
+  UmmayaContentBlockParam,
+  UmmayaTextBlockParam,
+  UmmayaToolUseBlockParam,
+  UmmayaToolResultBlockParam,
+  UmmayaMessageParam,
+  UmmayaMessageStreamParams,
+  UmmayaRawMessageStreamEvent,
+  UmmayaToolDefinition,
+  UmmayaUsage,
+  UmmayaStopReason,
 } from './ipc/llmTypes.js'
 
 // ---------------------------------------------------------------------------
 // Content block aliases (from the SDK's @anthropic-ai/sdk/resources/* tree)
 // ---------------------------------------------------------------------------
 
-export type ContentBlockParam = KosaxContentBlockParam
-export type TextBlockParam = KosaxTextBlockParam
-export type ToolUseBlock = KosaxToolUseBlockParam
-export type ToolUseBlockParam = KosaxToolUseBlockParam
-export type ToolResultBlockParam = KosaxToolResultBlockParam
-export type MessageParam = KosaxMessageParam
+export type ContentBlockParam = UmmayaContentBlockParam
+export type TextBlockParam = UmmayaTextBlockParam
+export type ToolUseBlock = UmmayaToolUseBlockParam
+export type ToolUseBlockParam = UmmayaToolUseBlockParam
+export type ToolResultBlockParam = UmmayaToolResultBlockParam
+export type MessageParam = UmmayaMessageParam
 
 /** Closed content-block representation (post-stream). Structurally identical
- * to the input-block form for KOSAX purposes. */
-export type ContentBlock = KosaxContentBlockParam
+ * to the input-block form for UMMAYA purposes. */
+export type ContentBlock = UmmayaContentBlockParam
 
-// Image and thinking blocks are carried as opaque records — KOSAX does not
+// Image and thinking blocks are carried as opaque records — UMMAYA does not
 // introspect these but they must compile in the callers' type positions.
 export type Base64ImageSource = {
   type: 'base64'
@@ -65,34 +65,34 @@ export type ThinkingBlockParam = ThinkingBlock
 // Beta-prefixed aliases (SDK's @anthropic-ai/sdk/resources/beta/* tree)
 // ---------------------------------------------------------------------------
 //
-// All Beta* names resolve to the same Kosax structures — the "beta"
+// All Beta* names resolve to the same Ummaya structures — the "beta"
 // namespace existed in CC because Anthropic shipped thinking + tool-use
-// behind a beta flag; KOSAX merges them into a single surface.
+// behind a beta flag; UMMAYA merges them into a single surface.
 
-export type BetaContentBlock = KosaxContentBlockParam
-export type BetaContentBlockParam = KosaxContentBlockParam
-export type BetaTextBlockParam = KosaxTextBlockParam
+export type BetaContentBlock = UmmayaContentBlockParam
+export type BetaContentBlockParam = UmmayaContentBlockParam
+export type BetaTextBlockParam = UmmayaTextBlockParam
 export type BetaImageBlockParam = ImageBlockParam
-export type BetaToolResultBlockParam = KosaxToolResultBlockParam
-export type BetaToolUseBlock = KosaxToolUseBlockParam
-export type BetaToolUseBlockParam = KosaxToolUseBlockParam
-export type BetaMessageParam = KosaxMessageParam
+export type BetaToolResultBlockParam = UmmayaToolResultBlockParam
+export type BetaToolUseBlock = UmmayaToolUseBlockParam
+export type BetaToolUseBlockParam = UmmayaToolUseBlockParam
+export type BetaMessageParam = UmmayaMessageParam
 export type BetaMessage = {
   id: string
   role: 'assistant'
   model: string
-  content: KosaxContentBlockParam[]
-  stop_reason: KosaxStopReason
-  usage: KosaxUsage
+  content: UmmayaContentBlockParam[]
+  stop_reason: UmmayaStopReason
+  usage: UmmayaUsage
 }
-export type BetaMessageStreamParams = KosaxMessageStreamParams
-export type BetaMessageStreamEvent = KosaxRawMessageStreamEvent
-export type BetaRawMessageStreamEvent = KosaxRawMessageStreamEvent
-export type BetaMessageDeltaUsage = KosaxUsage
-export type BetaUsage = KosaxUsage
-export type BetaStopReason = KosaxStopReason
-export type BetaTool = KosaxToolDefinition
-export type BetaToolUnion = KosaxToolDefinition
+export type BetaMessageStreamParams = UmmayaMessageStreamParams
+export type BetaMessageStreamEvent = UmmayaRawMessageStreamEvent
+export type BetaRawMessageStreamEvent = UmmayaRawMessageStreamEvent
+export type BetaMessageDeltaUsage = UmmayaUsage
+export type BetaUsage = UmmayaUsage
+export type BetaStopReason = UmmayaStopReason
+export type BetaTool = UmmayaToolDefinition
+export type BetaToolUnion = UmmayaToolDefinition
 export type BetaToolChoiceAuto = { type: 'auto' }
 export type BetaToolChoiceTool = { type: 'tool'; name: string }
 export type BetaJSONOutputFormat = { type: 'json_object' }
@@ -101,14 +101,14 @@ export type BetaRequestDocumentBlock = Record<string, unknown>
 
 // Some call sites import `Usage` via alias (`BetaUsage as Usage`). Keep a
 // direct alias too.
-export type Usage = KosaxUsage
+export type Usage = UmmayaUsage
 
 // ---------------------------------------------------------------------------
 // Streaming generator (SDK's @anthropic-ai/sdk/streaming.mjs)
 // ---------------------------------------------------------------------------
 //
 // The SDK's Stream<T> is an async iterable with a synchronous abort hook.
-// KOSAX streams come from the Spec 032 IPC bridge, which naturally provides
+// UMMAYA streams come from the Spec 032 IPC bridge, which naturally provides
 // AsyncIterable. We expose a structurally compatible shape.
 
 export interface Stream<T> extends AsyncIterable<T> {
@@ -119,7 +119,7 @@ export interface Stream<T> extends AsyncIterable<T> {
 // Client + ClientOptions (SDK's top-level `Anthropic` class)
 // ---------------------------------------------------------------------------
 //
-// Any `new Anthropic(...)` call site is dead in KOSAX because LLM traffic
+// Any `new Anthropic(...)` call site is dead in UMMAYA because LLM traffic
 // goes through `tui/src/ipc/llmClient.ts` via the stdio bridge. If one
 // remains, it throws at construction time — fail-closed.
 
@@ -157,7 +157,7 @@ export default Anthropic
 // Error classes (SDK's @anthropic-ai/sdk/error)
 // ---------------------------------------------------------------------------
 //
-// CC code catches these by instanceof. KOSAX preserves the class hierarchy
+// CC code catches these by instanceof. UMMAYA preserves the class hierarchy
 // so `catch (err) { if (err instanceof APIError) ... }` still compiles and
 // matches at runtime when the wire layer rethrows these shapes.
 

@@ -12,7 +12,7 @@ citizen saw no answer. Two factors compounded:
 
 1. **HIRA upstream latency** — `getHospBasisList` regional queries (large
    radius / dense urban areas) regularly take 20-45 s on cold cache. The
-   pre-fix `httpx.AsyncClient(timeout=30.0)` (`src/kosax/tools/hira/hospital_search.py:141`)
+   pre-fix `httpx.AsyncClient(timeout=30.0)` (`src/ummaya/tools/hira/hospital_search.py:141`)
    sometimes fired `httpx.ReadTimeout` on the first attempt, returning
    `LookupError(reason='upstream_unavailable')`.
 
@@ -22,12 +22,12 @@ citizen saw no answer. Two factors compounded:
 
 ## Fix (US3)
 
-- `src/kosax/tools/hira/hospital_search.py:141` — bump `timeout=30.0` →
+- `src/ummaya/tools/hira/hospital_search.py:141` — bump `timeout=30.0` →
   `timeout=60.0`. Genuine network outages still produce a clean error
   envelope (executor `_classify_adapter_exception` → `upstream_unavailable`).
-- `src/kosax/tools/executor.py` — annotate `execute_tool` span with
-  `kosax.tool.stage` (`fetch | fetch_failed | parse`) and
-  `kosax.tool.fetch_ms` so OTLP / Langfuse traces show where time was
+- `src/ummaya/tools/executor.py` — annotate `execute_tool` span with
+  `ummaya.tool.stage` (`fetch | fetch_failed | parse`) and
+  `ummaya.tool.fetch_ms` so OTLP / Langfuse traces show where time was
   spent. Citizen support can now distinguish slow upstream vs slow LLM
   thinking vs slow envelope parse.
 
@@ -50,6 +50,6 @@ Combined, the citizen sees `⏺ lookup(...) → ⎿ record(15 hospitals) →
 
 - Layer 1: `tests/tools/test_hira_hospital_search.py` (existing) PASS.
 - Layer 1: existing `test_otel_spans_preserved` confirms the new
-  `kosax.tool.stage` attribute does not break the required-keys check.
+  `ummaya.tool.stage` attribute does not break the required-keys check.
 - Live verification deferred to manual citizen flow (HIRA `@pytest.mark.live`
-  test gated behind `KOSAX_DATA_GO_KR_API_KEY`).
+  test gated behind `UMMAYA_DATA_GO_KR_API_KEY`).

@@ -1,8 +1,8 @@
 # Implementation Plan: Safety Rails — PII Redaction, Guardrails, Indirect Injection Defense
 
 **Branch**: `feat/466-safety-rails` | **Date**: 2026-04-17 | **Spec**: [spec.md](./spec.md)
-**Input**: `/Users/um-yunsang/KOSAX-466/specs/026-safety-rails/spec.md`
-**Epic**: [#466 — Safety Rails](https://github.com/umyunsang/KOSAX/issues/466)
+**Input**: `/Users/um-yunsang/UMMAYA-466/specs/026-safety-rails/spec.md`
+**Epic**: [#466 — Safety Rails](https://github.com/umyunsang/UMMAYA/issues/466)
 
 ---
 
@@ -56,7 +56,7 @@ new bounded attribute key on existing spans for #501).
 
 **Target Platform**: Linux server (CI) and developer laptops (macOS/Linux). No platform-specific code.
 
-**Project Type**: Single library (KOSAX backend). TUI (`kosax-ink`) is not touched by this spec — safety decisions surface via existing envelope + span channels.
+**Project Type**: Single library (UMMAYA backend). TUI (`ummaya-ink`) is not touched by this spec — safety decisions surface via existing envelope + span channels.
 
 **Performance Goals**:
 
@@ -87,7 +87,7 @@ Verified against `.specify/memory/constitution.md` v1.1.0:
 | Principle | Status | Evidence |
 |---|---|---|
 | I. Reference-Driven Development | ✅ PASS | Every design decision below maps to a concrete reference. See "Phase 0 — Reference Mapping" section. |
-| II. Fail-Closed Security | ✅ PASS | Redactor on by default; detector on by default; moderation off by default only because #465 proxy wiring is upstream-dependent. Missing `KOSAX_OPENAI_MODERATION_API_KEY` with moderation enabled fails closed at startup (FR-022). |
+| II. Fail-Closed Security | ✅ PASS | Redactor on by default; detector on by default; moderation off by default only because #465 proxy wiring is upstream-dependent. Missing `UMMAYA_OPENAI_MODERATION_API_KEY` with moderation enabled fails closed at startup (FR-022). |
 | III. Pydantic v2 Strict Typing | ✅ PASS | All 5 Key Entities (RedactionResult, SafetyEvent, SafetyDecision, InjectionSignalSet, SafetySettings) are strict, frozen, discriminated where applicable. No `Any` introduced. |
 | IV. Government API Compliance | ✅ PASS | No adapter changes. `@pytest.mark.live` not added — moderation tests mock via `respx`. |
 | V. Policy Alignment | ✅ PASS | PIPA §26(4) processor-role honored (tool outputs redacted before LLM synthesis, where controller-level responsibility engages); AI Action Plan 원칙8 (single conversational window) preserved by keeping the harness shape unchanged. |
@@ -116,7 +116,7 @@ Each design decision below is anchored to at least one reference from
 | Trust-hierarchy block between Sections 3 and 4 of system prompt | **Claude Code sourcemap — context assembly** | **NFR-003 FriendliAI cache stability** | Section 5 (session guidance) was deliberately placed last to protect the FriendliAI prompt-cache prefix; inserting before it preserves that property. |
 | Moderation callbacks via LiteLLM pre/post hooks | **LiteLLM docs** (callback contract) | Epic **#465** (proxy + budget) | LiteLLM's callback slot is the sanctioned extension point; calling it directly from our code avoids forking LiteLLM. |
 | Single span attribute `gen_ai.safety.event` | **OpenTelemetry GenAI semantic conventions** (experimental v1.40) | Epic **#501** (OTLP collector policy) | Minimal footprint on #501's schema; bounded enum value avoids any raw-payload leak through span export. |
-| PIPA §26(4) carve-out for LLM synthesis step | **개인정보 보호법 §23, §26** | **MEMORY.md — project_pipa_role.md** | KOSAX's default posture is processor (수탁자); the LLM synthesis step is the only carve-out where controller-level obligations engage, which is precisely where the redactor sits. |
+| PIPA §26(4) carve-out for LLM synthesis step | **개인정보 보호법 §23, §26** | **MEMORY.md — project_pipa_role.md** | UMMAYA's default posture is processor (수탁자); the LLM synthesis step is the only carve-out where controller-level obligations engage, which is precisely where the redactor sits. |
 | AI Action Plan 원칙8/9 alignment | **대한민국 AI 행동계획 2026–2028** | **MEMORY.md — reference_ai_action_plan.md** | 원칙8 mandates single-conversational-window for cross-ministry citizen services; safety that breaks the conversational surface would regress the mission. |
 
 All 14 design decisions traceable. No gap flagged.
@@ -145,7 +145,7 @@ specs/026-safety-rails/
 ### Source Code (repository root)
 
 ```text
-src/kosax/
+src/ummaya/
 ├── safety/                              # NEW package
 │   ├── __init__.py                      # public re-exports (RedactionResult, SafetyEvent, run_redactor, run_detector)
 │   ├── _patterns.py                     # NEW — canonical _PII_PATTERNS + PII_ACCEPTING_PARAMS (lifted from step3_params.py)
@@ -153,11 +153,11 @@ src/kosax/
 │   ├── _injection.py                    # NEW — structural + entropy detector
 │   ├── _litellm_callbacks.py            # NEW — pre_call / post_call hook functions
 │   ├── _models.py                       # NEW — RedactionResult, SafetyEvent (discriminated union), SafetyDecision, InjectionSignalSet
-│   ├── _settings.py                     # NEW — pydantic-settings SafetySettings (4 KOSAX_SAFETY_* env vars)
+│   ├── _settings.py                     # NEW — pydantic-settings SafetySettings (4 UMMAYA_SAFETY_* env vars)
 │   └── _span.py                         # NEW — emit_safety_event(kind, ...) helper that writes gen_ai.safety.event
 ├── permissions/
 │   └── steps/
-│       └── step3_params.py              # MODIFIED — replace local _PII_PATTERNS + PII_ACCEPTING_PARAMS with imports from kosax.safety._patterns
+│       └── step3_params.py              # MODIFIED — replace local _PII_PATTERNS + PII_ACCEPTING_PARAMS with imports from ummaya.safety._patterns
 ├── tools/
 │   ├── errors.py                        # MODIFIED (PR-A) — extend LookupErrorReason with content_blocked + injection_detected
 │   └── executor.py                      # MODIFIED (PR-B) — wire detector → redactor before normalize() at invoke() ~L222 and dispatch() ~L394
@@ -194,7 +194,7 @@ docs/
 #   LICENSE, NOTICE                      ← Apache-2.0 purity preserved
 ```
 
-**Structure Decision**: Single library extension. New `kosax.safety` subpackage isolates the four-layer pipeline; three existing modules (`errors.py`, `executor.py`, `system_prompt.py`) receive small surgical edits; one module (`step3_params.py`) drops literals in favor of imports. This matches KOSAX's existing subpackage layout (`kosax.permissions`, `kosax.observability`, `kosax.security`) — safety is the next sibling.
+**Structure Decision**: Single library extension. New `ummaya.safety` subpackage isolates the four-layer pipeline; three existing modules (`errors.py`, `executor.py`, `system_prompt.py`) receive small surgical edits; one module (`step3_params.py`) drops literals in favor of imports. This matches UMMAYA's existing subpackage layout (`ummaya.permissions`, `ummaya.observability`, `ummaya.security`) — safety is the next sibling.
 
 ---
 
@@ -203,7 +203,7 @@ docs/
 ### Data Model (inline summary — full schemas live in `contracts/`)
 
 ```python
-# kosax.safety._models
+# ummaya.safety._models
 
 class RedactionResult(BaseModel):
     model_config = ConfigDict(frozen=True, strict=True)
@@ -258,12 +258,12 @@ class InjectionSignalSet(BaseModel):
     decision: Literal["allow","block"]
 
 class SafetySettings(BaseSettings):
-    model_config = SettingsConfigDict(env_prefix="KOSAX_SAFETY_", frozen=True)
+    model_config = SettingsConfigDict(env_prefix="UMMAYA_SAFETY_", frozen=True)
     redact_tool_output: bool = True
     injection_detector_enabled: bool = True
     moderation_enabled: bool = False                              # gated on #465
-    # OPENAI key does NOT follow the KOSAX_SAFETY_ prefix; use explicit field.
-    openai_moderation_api_key: SecretStr | None = Field(default=None, alias="KOSAX_OPENAI_MODERATION_API_KEY")
+    # OPENAI key does NOT follow the UMMAYA_SAFETY_ prefix; use explicit field.
+    openai_moderation_api_key: SecretStr | None = Field(default=None, alias="UMMAYA_OPENAI_MODERATION_API_KEY")
 ```
 
 Full JSON Schemas go in `specs/026-safety-rails/contracts/*.schema.md` during implementation; the spec + plan fix the semantics so the schemas are mechanical.
@@ -275,9 +275,9 @@ Full JSON Schemas go in `specs/026-safety-rails/contracts/*.schema.md` during im
 uv add presidio-analyzer openai
 
 # 2. Env setup (temporary — real registry is #468's job)
-export KOSAX_SAFETY_REDACT_TOOL_OUTPUT=true
-export KOSAX_SAFETY_INJECTION_DETECTOR_ENABLED=true
-export KOSAX_SAFETY_MODERATION_ENABLED=false   # default; set true only after #465 lands
+export UMMAYA_SAFETY_REDACT_TOOL_OUTPUT=true
+export UMMAYA_SAFETY_INJECTION_DETECTOR_ENABLED=true
+export UMMAYA_SAFETY_MODERATION_ENABLED=false   # default; set true only after #465 lands
 
 # 3. Run the safety test suite only
 uv run pytest tests/safety/ -q
@@ -301,7 +301,7 @@ once spec + plan are merged.
 
 **PR-A — `feat(safety): extend LookupErrorReason with content_blocked and injection_detected (Refs #507)`**
 
-- T01 Extend `LookupErrorReason` enum in `src/kosax/tools/errors.py` with `content_blocked`, `injection_detected`.
+- T01 Extend `LookupErrorReason` enum in `src/ummaya/tools/errors.py` with `content_blocked`, `injection_detected`.
 - T02 Add envelope-normalization tests covering the two new reasons (round-trip serialization).
 - T03 Update any docstrings in `errors.py` that enumerate reasons.
 
@@ -309,34 +309,34 @@ once spec + plan are merged.
 
 Layer A:
 
-- T04 Create `kosax/safety/_patterns.py` lifting `_PII_PATTERNS` + `PII_ACCEPTING_PARAMS` from `step3_params.py`.
+- T04 Create `ummaya/safety/_patterns.py` lifting `_PII_PATTERNS` + `PII_ACCEPTING_PARAMS` from `step3_params.py`.
 - T05 Refactor `step3_params.py` to import from `_patterns.py`. Step 3 regression test MUST pass unchanged.
-- T06 Create `kosax/safety/_models.py` (RedactionResult, RedactionMatch, SafetyEvent union, SafetyDecision, InjectionSignalSet).
-- T07 Create `kosax/safety/_redactor.py` (Presidio PatternRecognizer + Luhn validator + `run_redactor()` API).
+- T06 Create `ummaya/safety/_models.py` (RedactionResult, RedactionMatch, SafetyEvent union, SafetyDecision, InjectionSignalSet).
+- T07 Create `ummaya/safety/_redactor.py` (Presidio PatternRecognizer + Luhn validator + `run_redactor()` API).
 - T08 Write `tests/safety/test_redactor.py` — 10 PII fixtures incl. Luhn-valid/invalid pair.
 - T09 Write `tests/safety/test_patterns.py` — SoT check (`_PII_PATTERNS` defined exactly once).
 
 Layer B:
 
-- T10 Create `kosax/safety/_settings.py` (SafetySettings).
-- T11 Create `kosax/safety/_litellm_callbacks.py` (pre_call, post_call, 1393/1366 Korean hotlines in refusal).
+- T10 Create `ummaya/safety/_settings.py` (SafetySettings).
+- T11 Create `ummaya/safety/_litellm_callbacks.py` (pre_call, post_call, 1393/1366 Korean hotlines in refusal).
 - T12 Write `tests/safety/test_litellm_callbacks.py` — 5 block + 5 pass fixtures (OpenAI Moderation mocked via respx).
 - T13 Write `tests/safety/test_settings.py` — defaults + fail-closed on missing moderation key when moderation enabled.
 
 Layer C:
 
-- T14 Create `kosax/safety/_injection.py` (structural + entropy + length-deviation detector, `run_detector()`).
+- T14 Create `ummaya/safety/_injection.py` (structural + entropy + length-deviation detector, `run_detector()`).
 - T15 Write `tests/safety/test_injection.py` — 10 arXiv 2504.11168 fixtures.
 
 Layer D:
 
-- T16 Modify `src/kosax/context/system_prompt.py` — insert `_trust_hierarchy_section()` between sections 3 and 4; Section 5 stays last.
+- T16 Modify `src/ummaya/context/system_prompt.py` — insert `_trust_hierarchy_section()` between sections 3 and 4; Section 5 stays last.
 - T17 Write `tests/safety/test_system_prompt_trust_hierarchy.py` — section ordering + cache-prefix stability (SC-006).
 
 Wiring & Observability:
 
-- T18 Wire detector → redactor in `src/kosax/tools/executor.py` `invoke()` (~L222) and `dispatch()` (~L394) before `normalize()`.
-- T19 Create `kosax/safety/_span.py` (`emit_safety_event(kind, ...)` helper) and emit `gen_ai.safety.event` on every decision.
+- T18 Wire detector → redactor in `src/ummaya/tools/executor.py` `invoke()` (~L222) and `dispatch()` (~L394) before `normalize()`.
+- T19 Create `ummaya/safety/_span.py` (`emit_safety_event(kind, ...)` helper) and emit `gen_ai.safety.event` on every decision.
 - T20 Write `tests/safety/test_executor_wiring.py` — end-to-end through ToolExecutor.invoke().
 
 Dependencies & Docs:
@@ -347,7 +347,7 @@ Dependencies & Docs:
 Follow-up (NOT in this PR — comments on upstream Epics):
 
 - T23 File follow-up comment on #465 describing the LiteLLM callback entrypoint.
-- T24 File follow-up comment on #468 listing the four `KOSAX_SAFETY_*` + one `KOSAX_OPENAI_MODERATION_API_KEY` env keys.
+- T24 File follow-up comment on #468 listing the four `UMMAYA_SAFETY_*` + one `UMMAYA_OPENAI_MODERATION_API_KEY` env keys.
 - T25 File follow-up comment on #501 listing `gen_ai.safety.event` and its bounded enum values.
 
 **Parallelism**: Layer A, B, C tasks are largely independent until wiring (T18). Agent Teams can take `Backend Architect` on A, `Security Engineer` on B, `API Tester` on C in parallel.

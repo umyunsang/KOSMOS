@@ -11,7 +11,7 @@
 #   vhs specs/2294-5-primitive-align/scripts/smoke-emergency-lookup.tape
 # Outputs:
 #   specs/2294-5-primitive-align/smoke-emergency-lookup.gif       (animated, humans + animated proof)
-#   specs/2294-5-primitive-align/smoke-keyframe-1-boot.png        (LLM Read — boot guard + KOSAX branding)
+#   specs/2294-5-primitive-align/smoke-keyframe-1-boot.png        (LLM Read — boot guard + UMMAYA branding)
 #   specs/2294-5-primitive-align/smoke-keyframe-2-input.png       (LLM Read — Korean input accepted)
 #   specs/2294-5-primitive-align/smoke-keyframe-3-action.png      (LLM Read — agentic-loop entry)
 
@@ -23,7 +23,7 @@ Set FontFamily "JetBrains Mono"
 Set Theme "TokyoNightStorm"
 
 # Backend mock so the TUI boots without a live FriendliAI key (CI parity).
-Env KOSAX_BACKEND_CMD "sleep 60"
+Env UMMAYA_BACKEND_CMD "sleep 60"
 
 Type "cd tui && bun run tui"
 Enter

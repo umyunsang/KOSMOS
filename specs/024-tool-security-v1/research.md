@@ -16,7 +16,7 @@ The six research lanes (Epic #605, under `.eval-artifacts/security-design-resear
 
 | Context slot | Resolution | Basis |
 |---|---|---|
-| Language/Version | Python 3.12+ (project baseline, no bump) | Existing `pyproject.toml`; KOSAX constitution § Development Standards |
+| Language/Version | Python 3.12+ (project baseline, no bump) | Existing `pyproject.toml`; UMMAYA constitution § Development Standards |
 | Primary Dependencies | Pydantic v2, httpx >=0.27, pytest, pytest-asyncio — all existing. No new runtime deps. | This spec is a contract + model seed; the full pipeline lives in later epics |
 | Storage | N/A — schema contract only | `ToolCallAuditRecord` is a shape, not a backing store. Append-only storage is explicitly deferred. |
 | Testing | pytest unit tests for registration invariants + audit-record round-trip. JSON Schema validates 3 worked examples in CI. | FR-005, FR-009, SC-003, SC-004 |
@@ -55,7 +55,7 @@ Every decision below binds to a source in `docs/vision.md § Reference materials
 - **Decision**: Permission pipeline remains deny-by-default with short-circuit auth-gate ahead of any adapter `handle()` body, mirroring `docs/tool-adapters.md § Layer 3 auth-gate contract`.
 - **Primary reference**: OpenAI Agents SDK guardrail pipeline (`docs/vision.md § Reference materials`, Permission Pipeline row).
 - **Secondary reference**: Claude Code reconstructed permission model (same row).
-- **Rationale**: Guardrail-style composition lets KOSAX wrap statutory checks (PIPA §17, §28-2) and standards checks (OWASP ASVS V4.1.5 fail-secure, NIST SP 800-207 Zero Trust policy decision point) as discrete steps without rewriting the pipeline. Preserves Constitution II.
+- **Rationale**: Guardrail-style composition lets UMMAYA wrap statutory checks (PIPA §17, §28-2) and standards checks (OWASP ASVS V4.1.5 fail-secure, NIST SP 800-207 Zero Trust policy decision point) as discrete steps without rewriting the pipeline. Preserves Constitution II.
 - **Alternatives considered**: Inline per-adapter checks (rejected — violates DRY and Constitution II by letting each adapter author redefine "secure enough"), middleware-only (rejected — does not surface per-step decisions to the audit record the way a discrete-step pipeline does).
 - **Spec binding**: FR-006, FR-007, FR-008.
 
@@ -85,8 +85,8 @@ Every decision below binds to a source in `docs/vision.md § Reference materials
 
 ### 3.5 PIPA role — `§26 수탁자` default + LLM-synthesis carve-out
 
-- **Decision**: KOSAX acts as 수탁자 (processor) by default for pre-synthesis tool-call processing. The LLM synthesis stage (combining citizen PII with ministry response text) is carved out as controller-level processing. Consent records carry both `dpa_reference` (for the §26 processor chain) and `synthesis_consent: bool` (for the carve-out).
-- **Rationale**: Most tool-call processing has no independent purpose decision by KOSAX — it is a pipe with evidentiary obligations, which matches §26(4) 수탁자 duties. Synthesis independently re-purposes PII to produce a bespoke artifact, which matches 처리자 (controller) duties. Separating the two consents aligns user expectations with legal posture and provides a clean DPA negotiation surface.
+- **Decision**: UMMAYA acts as 수탁자 (processor) by default for pre-synthesis tool-call processing. The LLM synthesis stage (combining citizen PII with ministry response text) is carved out as controller-level processing. Consent records carry both `dpa_reference` (for the §26 processor chain) and `synthesis_consent: bool` (for the carve-out).
+- **Rationale**: Most tool-call processing has no independent purpose decision by UMMAYA — it is a pipe with evidentiary obligations, which matches §26(4) 수탁자 duties. Synthesis independently re-purposes PII to produce a bespoke artifact, which matches 처리자 (controller) duties. Separating the two consents aligns user expectations with legal posture and provides a clean DPA negotiation surface.
 - **Parallel track**: PIPC 유권해석 질의서 (D4) not required for v1 spec acceptance but recommended before any production launch.
 - **Spec binding**: FR-014, FR-015; Edge Case "LLM synthesis carve-out".
 - **Citations**: auto-memory `project_pipa_role.md`; `01-korean-legal-baseline.md` § PIPA §26; `00-consistency-review.md` § PIPA role.
@@ -94,14 +94,14 @@ Every decision below binds to a source in `docs/vision.md § Reference materials
 ### 3.6 Delegation protocol — IETF/W3C only
 
 - **Decision**: `/agent-delegation` endpoint family published as OpenAPI 3.0 skeleton citing only IETF RFCs (8628 device grant, 8693 token exchange, 9068 JWT profile, 7636 PKCE, 7662 introspection, 7009 revocation) and W3C recommendations (VC Data Model v2.0, DID Core). PASS / 공동인증서 TEE-binding is acknowledged and not bypassed; the protocol builds equivalent assurance from OAuth 2.1 + Verifiable Credentials.
-- **Rationale**: Ministry partners must be able to adopt the protocol without KOSAX-proprietary coupling. Citing only open standards avoids lock-in and maximizes adoptability.
-- **Alternatives considered**: KOSAX-specific token shape (rejected — coupling risk), SAML (rejected — mobile-first agent context favors OAuth 2.1), bespoke VC profile (rejected — unnecessary invention over W3C VC Data Model v2.0).
+- **Rationale**: Ministry partners must be able to adopt the protocol without UMMAYA-proprietary coupling. Citing only open standards avoids lock-in and maximizes adoptability.
+- **Alternatives considered**: UMMAYA-specific token shape (rejected — coupling risk), SAML (rejected — mobile-first agent context favors OAuth 2.1), bespoke VC profile (rejected — unnecessary invention over W3C VC Data Model v2.0).
 - **Spec binding**: FR-013, FR-014, FR-015, FR-016; SC-007.
 - **Citations**: `04-identity-delegation.md` § OAuth 2.1 + VC; lane 4 OpenAPI draft.
 
 ### 3.7 Supply-chain posture — SLSA L3 gap + dual-format SBOM
 
-- **Decision**: Scaffold `.github/workflows/sbom.yml` to emit both SPDX 2.3 and CycloneDX 1.6 from `pyproject.toml` + `uv.lock` on every push to `main` and every tag. Spec documents SLSA v1.0 L3 gap (current → target) and lists provenance artifacts KOSAX commits to producing for a ministry pilot. Build-gate policy: SBOM divergence fails the build; recovery requires a signed regeneration with a reviewer-authored note.
+- **Decision**: Scaffold `.github/workflows/sbom.yml` to emit both SPDX 2.3 and CycloneDX 1.6 from `pyproject.toml` + `uv.lock` on every push to `main` and every tag. Spec documents SLSA v1.0 L3 gap (current → target) and lists provenance artifacts UMMAYA commits to producing for a ministry pilot. Build-gate policy: SBOM divergence fails the build; recovery requires a signed regeneration with a reviewer-authored note.
 - **Primary reference**: SLSA v1.0 (Levels 1-3), sigstore/cosign, Rekor transparency log, NIST SP 800-218 SSDF.
 - **Rationale**: Dual-format SBOM maximizes ministry-reviewer tooling compatibility (some Korean public-sector scanners consume SPDX only, others CycloneDX only). Build-gate-on-divergence prevents silent supply-chain mutation; the signed-regeneration recovery path preserves audit integrity when dependencies legitimately change.
 - **Spec binding**: FR-017, FR-018, FR-019; SC-005; Edge Case "SBOM divergence".
@@ -110,7 +110,7 @@ Every decision below binds to a source in `docs/vision.md § Reference materials
 ### 3.8 Fail-closed registration invariant
 
 - **Decision**: `ToolRegistry.register()` rejects any `GovAPITool` whose four new fields (`auth_level`, `pipa_class`, `is_irreversible`, `dpa_reference`) are missing, ambiguous, or inconsistent with `TOOL_MIN_AAL`. Cross-invariant: `pipa_class != non_personal → auth_level != public`. `pipa_class != non_personal → dpa_reference is not None`.
-- **Primary reference**: OWASP ASVS 4.0 V4.1.5 (fail-secure); KOSAX Constitution II.
+- **Primary reference**: OWASP ASVS 4.0 V4.1.5 (fail-secure); UMMAYA Constitution II.
 - **Rationale**: Load-time failure prevents an under-documented adapter from ever reaching the permission pipeline. Cross-invariant binds statutory classification to auth strength and DPA documentation — eliminates the "PII tool with no DPA reference" class of bug.
 - **Spec binding**: FR-003, FR-004, FR-005; SC-003.
 

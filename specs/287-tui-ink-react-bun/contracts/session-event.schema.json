@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://kosax.dev/schemas/spec-287/session-event.schema.json",
+  "$id": "https://ummaya.dev/schemas/spec-287/session-event.schema.json",
   "title": "SessionEventFrame",
   "description": "Bidirectional: session lifecycle events. Direction: bidirectional. Backed by Phase 1 Python JSONL store (backend-owned; TUI holds zero session state, FR-131).",
   "type": "object",

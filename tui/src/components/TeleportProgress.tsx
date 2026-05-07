@@ -5,7 +5,7 @@ import { useState } from 'react';
 import type { Root } from '../ink.js';
 import { Box, Text, useAnimationFrame } from '../ink.js';
 import { AppStateProvider } from '../state/AppState.js';
-// KOSAX-1633 P1+P2 / KOSAX-1978 T011 — utils/teleport deleted. KOSAX
+// UMMAYA-1633 P1+P2 / UMMAYA-1978 T011 — utils/teleport deleted. UMMAYA
 // citizen TUI does not ship Anthropic CCR teleport; the Progress UI is
 // retained as an unreachable component (no live trigger). Stubs preserve
 // the type contract so existing renders compile.
@@ -13,7 +13,7 @@ type TeleportProgressStep = 'idle' | 'preparing' | 'pushing' | 'creating' | 'res
 type TeleportResult = { success: boolean; sessionId?: string; error?: string };
 const checkOutTeleportedSessionBranch = async (..._args: unknown[]): Promise<void> => undefined;
 const processMessagesForTeleportResume = async (..._args: unknown[]): Promise<void> => undefined;
-const teleportResumeCodeSession = async (..._args: unknown[]): Promise<TeleportResult> => ({ success: false, error: 'KOSAX: teleport disabled' });
+const teleportResumeCodeSession = async (..._args: unknown[]): Promise<TeleportResult> => ({ success: false, error: 'UMMAYA: teleport disabled' });
 type Props = {
   currentStep: TeleportProgressStep;
   sessionId?: string;

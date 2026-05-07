@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "VerifyInput",
-  "description": "Main-surface input for the verify primitive. FR-006. Delegation-only — KOSAX never operates CA / HSM / VC issuer (FR-009).",
+  "description": "Main-surface input for the verify primitive. FR-006. Delegation-only — UMMAYA never operates CA / HSM / VC issuer (FR-009).",
   "type": "object",
   "additionalProperties": false,
   "required": ["family_hint", "session_context"],

@@ -19,12 +19,12 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 
-from kosax.primitives.delegation import (
+from ummaya.primitives.delegation import (
     DelegationContext,
     DelegationToken,
     DelegationValidationOutcome,
 )
-from kosax.primitives.submit import SubmitStatus
+from ummaya.primitives.submit import SubmitStatus
 
 # ---------------------------------------------------------------------------
 # Transparency fields list
@@ -92,17 +92,17 @@ def _make_params(
 @pytest.mark.asyncio
 async def test_mydata_action_happy_path_returns_succeeded() -> None:
     """Valid delegation → SubmitStatus.succeeded with receipt_id starting 'mydata-'."""
-    from kosax.tools.mock.submit_module_public_mydata_action import invoke
+    from ummaya.tools.mock.submit_module_public_mydata_action import invoke
 
     params = _make_params()
 
     with (
         mock.patch(
-            "kosax.tools.mock.submit_module_public_mydata_action.validate_delegation",
+            "ummaya.tools.mock.submit_module_public_mydata_action.validate_delegation",
             return_value=DelegationValidationOutcome.OK,
         ),
         mock.patch(
-            "kosax.tools.mock.submit_module_public_mydata_action.append_delegation_used"
+            "ummaya.tools.mock.submit_module_public_mydata_action.append_delegation_used"
         ) as mock_append,
     ):
         result = await invoke(params)
@@ -123,16 +123,16 @@ async def test_mydata_action_happy_path_returns_succeeded() -> None:
 @pytest.mark.asyncio
 async def test_mydata_action_transparency_fields_present() -> None:
     """All six transparency fields are present in adapter_receipt on success."""
-    from kosax.tools.mock.submit_module_public_mydata_action import invoke
+    from ummaya.tools.mock.submit_module_public_mydata_action import invoke
 
     params = _make_params()
 
     with (
         mock.patch(
-            "kosax.tools.mock.submit_module_public_mydata_action.validate_delegation",
+            "ummaya.tools.mock.submit_module_public_mydata_action.validate_delegation",
             return_value=DelegationValidationOutcome.OK,
         ),
-        mock.patch("kosax.tools.mock.submit_module_public_mydata_action.append_delegation_used"),
+        mock.patch("ummaya.tools.mock.submit_module_public_mydata_action.append_delegation_used"),
     ):
         result = await invoke(params)
 
@@ -150,17 +150,17 @@ async def test_mydata_action_transparency_fields_present() -> None:
 @pytest.mark.asyncio
 async def test_mydata_action_scope_violation_returns_rejected() -> None:
     """Wrong scope → rejected with scope_violation outcome."""
-    from kosax.tools.mock.submit_module_public_mydata_action import invoke
+    from ummaya.tools.mock.submit_module_public_mydata_action import invoke
 
     params = _make_params()
 
     with (
         mock.patch(
-            "kosax.tools.mock.submit_module_public_mydata_action.validate_delegation",
+            "ummaya.tools.mock.submit_module_public_mydata_action.validate_delegation",
             return_value=DelegationValidationOutcome.SCOPE_VIOLATION,
         ),
         mock.patch(
-            "kosax.tools.mock.submit_module_public_mydata_action.append_delegation_used"
+            "ummaya.tools.mock.submit_module_public_mydata_action.append_delegation_used"
         ) as mock_append,
     ):
         result = await invoke(params)
@@ -178,17 +178,17 @@ async def test_mydata_action_scope_violation_returns_rejected() -> None:
 @pytest.mark.asyncio
 async def test_mydata_action_expired_token_returns_rejected() -> None:
     """Expired outcome → rejected."""
-    from kosax.tools.mock.submit_module_public_mydata_action import invoke
+    from ummaya.tools.mock.submit_module_public_mydata_action import invoke
 
     params = _make_params()
 
     with (
         mock.patch(
-            "kosax.tools.mock.submit_module_public_mydata_action.validate_delegation",
+            "ummaya.tools.mock.submit_module_public_mydata_action.validate_delegation",
             return_value=DelegationValidationOutcome.EXPIRED,
         ),
         mock.patch(
-            "kosax.tools.mock.submit_module_public_mydata_action.append_delegation_used"
+            "ummaya.tools.mock.submit_module_public_mydata_action.append_delegation_used"
         ) as mock_append,
     ):
         result = await invoke(params)
@@ -201,17 +201,17 @@ async def test_mydata_action_expired_token_returns_rejected() -> None:
 @pytest.mark.asyncio
 async def test_mydata_action_session_violation_returns_rejected() -> None:
     """Session violation outcome → rejected."""
-    from kosax.tools.mock.submit_module_public_mydata_action import invoke
+    from ummaya.tools.mock.submit_module_public_mydata_action import invoke
 
     params = _make_params(session_id="sess-B")
 
     with (
         mock.patch(
-            "kosax.tools.mock.submit_module_public_mydata_action.validate_delegation",
+            "ummaya.tools.mock.submit_module_public_mydata_action.validate_delegation",
             return_value=DelegationValidationOutcome.SESSION_VIOLATION,
         ),
         mock.patch(
-            "kosax.tools.mock.submit_module_public_mydata_action.append_delegation_used"
+            "ummaya.tools.mock.submit_module_public_mydata_action.append_delegation_used"
         ) as mock_append,
     ):
         result = await invoke(params)

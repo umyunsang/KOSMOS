@@ -23,11 +23,11 @@ Expected: **green in < 5 seconds** (SC-8). No network I/O. No artifacts written 
 uv run pytest tests/e2e/test_route_safety_happy.py -v
 
 # Degraded path — KMA down, retryable
-KOSAX_E2E_SCENARIO=degraded_kma_retry \
+UMMAYA_E2E_SCENARIO=degraded_kma_retry \
   uv run pytest tests/e2e/test_route_safety_degraded.py -v
 
 # KOROAD 2023 year-code quirk (강원 42 → 51)
-KOSAX_E2E_SCENARIO=quirk_2023_gangwon \
+UMMAYA_E2E_SCENARIO=quirk_2023_gangwon \
   uv run pytest tests/e2e/test_route_safety_quirk.py -v
 
 # Observability assertions only
@@ -42,7 +42,7 @@ For debugging or for a future DeepEval consumer:
 
 ```
 mkdir -p .run-reports
-KOSAX_E2E_DUMP_DIR=$(pwd)/.run-reports \
+UMMAYA_E2E_DUMP_DIR=$(pwd)/.run-reports \
   uv run pytest tests/e2e/test_route_safety_happy.py -v
 
 ls .run-reports
@@ -72,8 +72,8 @@ print('ok')
 | Assertion | Source |
 |---|---|
 | `gen_ai.operation.name == "execute_tool"` exists on every `execute_tool` span | FR-017 |
-| `kosax.tool.outcome ∈ {"ok", "error"}` on every `execute_tool` span | FR-017 |
-| `kosax.tool.adapter == tool_id` **only** on `lookup(mode="fetch")` spans | FR-018 |
+| `ummaya.tool.outcome ∈ {"ok", "error"}` on every `execute_tool` span | FR-017 |
+| `ummaya.tool.adapter == tool_id` **only** on `lookup(mode="fetch")` spans | FR-018 |
 | No Korean citizen query string appears in any span attribute value | FR-019 |
 | When `OTEL_SDK_DISABLED=true` is set, the test is skipped (not failed) | FR-020 |
 
@@ -109,7 +109,7 @@ All HTTP is intercepted by patching `httpx.AsyncClient.get`. To add a new record
 1. Re-run with `-v --tb=short` to see the assertion message.
 2. If the failure is on `tool_call_order` or `fetched_adapter_ids`, dump the `RunReport` (see §3) — it contains the exact executed sequence.
 3. If the failure is on a span assertion, inspect `RunReport.observability.spans` in the JSON artifact.
-4. If the failure is a schema-envelope error (`LookupCollection` vs `LookupTimeseries`), cross-reference with `src/kosax/tools/envelope.py` and `src/kosax/tools/models.py`.
+4. If the failure is a schema-envelope error (`LookupCollection` vs `LookupTimeseries`), cross-reference with `src/ummaya/tools/envelope.py` and `src/ummaya/tools/models.py`.
 
 ---
 

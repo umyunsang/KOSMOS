@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Tests for kosax.tools.geocoding.kakao_client."""
+"""Tests for ummaya.tools.geocoding.kakao_client."""
 
 from __future__ import annotations
 
@@ -10,8 +10,8 @@ from unittest.mock import AsyncMock, MagicMock
 import httpx
 import pytest
 
-from kosax.tools.errors import ConfigurationError
-from kosax.tools.geocoding.kakao_client import (
+from ummaya.tools.errors import ConfigurationError
+from ummaya.tools.geocoding.kakao_client import (
     KakaoAddressDocument,
     KakaoCoord2RegionResult,
     KakaoRegionDocument,
@@ -142,7 +142,7 @@ class TestKakaoCoord2RegionResult:
 class TestSearchAddress:
     @pytest.mark.asyncio
     async def test_happy_path_gangnam(self, monkeypatch):
-        monkeypatch.setenv("KOSAX_KAKAO_API_KEY", "test-key-123")
+        monkeypatch.setenv("UMMAYA_KAKAO_API_KEY", "test-key-123")
         fixture = _load_fixture("address_to_region_gangnam.json")
         mock_client = _make_mock_client(fixture)
 
@@ -156,7 +156,7 @@ class TestSearchAddress:
 
     @pytest.mark.asyncio
     async def test_no_results(self, monkeypatch):
-        monkeypatch.setenv("KOSAX_KAKAO_API_KEY", "test-key-123")
+        monkeypatch.setenv("UMMAYA_KAKAO_API_KEY", "test-key-123")
         fixture = _load_fixture("address_to_region_nonsense.json")
         mock_client = _make_mock_client(fixture)
 
@@ -165,13 +165,13 @@ class TestSearchAddress:
 
     @pytest.mark.asyncio
     async def test_missing_api_key_raises_config_error(self, monkeypatch):
-        monkeypatch.delenv("KOSAX_KAKAO_API_KEY", raising=False)
+        monkeypatch.delenv("UMMAYA_KAKAO_API_KEY", raising=False)
         with pytest.raises(ConfigurationError):
             await search_address("서울 강남구")
 
     @pytest.mark.asyncio
     async def test_http_401_propagates_as_http_status_error(self, monkeypatch):
-        monkeypatch.setenv("KOSAX_KAKAO_API_KEY", "bad-key")
+        monkeypatch.setenv("UMMAYA_KAKAO_API_KEY", "bad-key")
         mock_response = MagicMock(spec=httpx.Response)
         mock_response.status_code = 401
         mock_response.headers = {"content-type": "application/json"}
@@ -186,7 +186,7 @@ class TestSearchAddress:
 
     @pytest.mark.asyncio
     async def test_http_429_propagates_as_http_status_error(self, monkeypatch):
-        monkeypatch.setenv("KOSAX_KAKAO_API_KEY", "test-key")
+        monkeypatch.setenv("UMMAYA_KAKAO_API_KEY", "test-key")
         mock_response = MagicMock(spec=httpx.Response)
         mock_response.status_code = 429
         mock_response.headers = {"content-type": "application/json"}
@@ -201,7 +201,7 @@ class TestSearchAddress:
 
     @pytest.mark.asyncio
     async def test_timeout_propagates_as_httpx_exception(self, monkeypatch):
-        monkeypatch.setenv("KOSAX_KAKAO_API_KEY", "test-key")
+        monkeypatch.setenv("UMMAYA_KAKAO_API_KEY", "test-key")
         mock_client = AsyncMock(spec=httpx.AsyncClient)
         mock_client.get.side_effect = httpx.TimeoutException("timed out")
 
@@ -212,7 +212,7 @@ class TestSearchAddress:
 class TestCoordToRegionCode:
     @pytest.mark.asyncio
     async def test_coord_to_region_code_uses_xy_params(self, monkeypatch):
-        monkeypatch.setenv("KOSAX_KAKAO_API_KEY", "test-key-123")
+        monkeypatch.setenv("UMMAYA_KAKAO_API_KEY", "test-key-123")
         fixture = {
             "meta": {"total_count": 1},
             "documents": [

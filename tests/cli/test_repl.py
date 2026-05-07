@@ -10,12 +10,12 @@ from unittest.mock import MagicMock, patch
 
 from rich.console import Console
 
-from kosax.cli.config import CLIConfig
-from kosax.cli.renderer import EventRenderer
-from kosax.cli.repl import REPLLoop
-from kosax.engine.events import QueryEvent, StopReason
-from kosax.llm.models import TokenUsage
-from kosax.tools.registry import ToolRegistry
+from ummaya.cli.config import CLIConfig
+from ummaya.cli.renderer import EventRenderer
+from ummaya.cli.repl import REPLLoop
+from ummaya.engine.events import QueryEvent, StopReason
+from ummaya.llm.models import TokenUsage
+from ummaya.tools.registry import ToolRegistry
 
 
 def _make_console() -> Console:
@@ -189,7 +189,7 @@ class TestREPLRun:
         with patch.object(type(repl._engine), "__init__", return_value=None):
             mock_session = MagicMock()
             mock_session.prompt_async = mock_prompt_async
-            with patch("kosax.cli.repl.PromptSession", return_value=mock_session):
+            with patch("ummaya.cli.repl.PromptSession", return_value=mock_session):
                 await repl.run()
 
         assert call_count == 1
@@ -208,7 +208,7 @@ class TestREPLRun:
 
         mock_session = MagicMock()
         mock_session.prompt_async = mock_prompt_async
-        with patch("kosax.cli.repl.PromptSession", return_value=mock_session):
+        with patch("ummaya.cli.repl.PromptSession", return_value=mock_session):
             await repl.run()
 
         # Should have called prompt 3 times (2 empty + 1 exit)
@@ -219,7 +219,7 @@ class TestHistoryLimit:
     """Fix 3: CLIConfig.history_size must be applied to prompt history."""
 
     def test_limited_history_respects_max_entries(self) -> None:
-        from kosax.cli.repl import _LimitedInMemoryHistory
+        from ummaya.cli.repl import _LimitedInMemoryHistory
 
         hist = _LimitedInMemoryHistory(max_entries=3)
         for i in range(5):
@@ -228,7 +228,7 @@ class TestHistoryLimit:
         assert len(hist._loaded_strings) == 3
 
     def test_limited_history_retains_newest(self) -> None:
-        from kosax.cli.repl import _LimitedInMemoryHistory
+        from ummaya.cli.repl import _LimitedInMemoryHistory
 
         hist = _LimitedInMemoryHistory(max_entries=2)
         hist.append_string("old")
@@ -241,7 +241,7 @@ class TestHistoryLimit:
 
     def test_history_size_from_config_used(self) -> None:
         """REPLLoop must use _LimitedInMemoryHistory with history_size from config."""
-        from kosax.cli.repl import _LimitedInMemoryHistory
+        from ummaya.cli.repl import _LimitedInMemoryHistory
 
         engine = _MockEngine([])
         config = CLIConfig(welcome_banner=False, history_size=42)
@@ -257,7 +257,7 @@ class TestCommandsRegistryRouting:
 
     async def test_help_generated_from_registry(self) -> None:
         """Help output must include all command names from the COMMANDS registry."""
-        from kosax.cli.models import COMMANDS
+        from ummaya.cli.models import COMMANDS
 
         engine = _MockEngine([])
         repl, console = _make_repl(engine)

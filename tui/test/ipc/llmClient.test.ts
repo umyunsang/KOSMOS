@@ -6,7 +6,7 @@ import { describe, test, expect, beforeEach } from 'bun:test'
 import { LLMClient } from '../../src/ipc/llmClient.js'
 import type { IPCBridge } from '../../src/ipc/bridge.js'
 import type { IPCFrame, AssistantChunkFrame } from '../../src/ipc/frames.generated.js'
-import type { KosaxRawMessageStreamEvent, KosaxMessageFinal } from '../../src/ipc/llmTypes.js'
+import type { UmmayaRawMessageStreamEvent, UmmayaMessageFinal } from '../../src/ipc/llmTypes.js'
 
 // ---------------------------------------------------------------------------
 // Helpers: minimal fake AssistantChunkFrame builder
@@ -118,13 +118,13 @@ describe('LLMClient.stream() — happy-path (T018)', () => {
       max_tokens: 100,
     })
 
-    const events: KosaxRawMessageStreamEvent[] = []
-    let finalValue: KosaxMessageFinal | null = null
+    const events: UmmayaRawMessageStreamEvent[] = []
+    let finalValue: UmmayaMessageFinal | null = null
 
     while (true) {
       const result = await gen.next()
       if (result.done) {
-        finalValue = result.value as KosaxMessageFinal
+        finalValue = result.value as UmmayaMessageFinal
         break
       }
       events.push(result.value)
@@ -144,7 +144,7 @@ describe('LLMClient.stream() — happy-path (T018)', () => {
 
     // Verify message_start has correct model
     const msgStart = events.find(e => e.type === 'message_start') as Extract<
-      KosaxRawMessageStreamEvent,
+      UmmayaRawMessageStreamEvent,
       { type: 'message_start' }
     >
     expect(msgStart).toBeDefined()
@@ -153,7 +153,7 @@ describe('LLMClient.stream() — happy-path (T018)', () => {
     // Verify content_block_start at index 0 with type text
     const blockStart = events.find(
       e => e.type === 'content_block_start',
-    ) as Extract<KosaxRawMessageStreamEvent, { type: 'content_block_start' }>
+    ) as Extract<UmmayaRawMessageStreamEvent, { type: 'content_block_start' }>
     expect(blockStart).toBeDefined()
     expect(blockStart!.index).toBe(0)
     expect(blockStart!.content_block.type).toBe('text')
@@ -161,7 +161,7 @@ describe('LLMClient.stream() — happy-path (T018)', () => {
     // Verify the two content_block_delta events
     const deltas = events.filter(
       e => e.type === 'content_block_delta',
-    ) as Extract<KosaxRawMessageStreamEvent, { type: 'content_block_delta' }>[]
+    ) as Extract<UmmayaRawMessageStreamEvent, { type: 'content_block_delta' }>[]
     expect(deltas).toHaveLength(2)
     expect(deltas[0]!.delta.type).toBe('text_delta')
     expect((deltas[0]!.delta as { type: 'text_delta'; text: string }).text).toBe('안녕')
@@ -170,13 +170,13 @@ describe('LLMClient.stream() — happy-path (T018)', () => {
     // Verify content_block_stop at index 0
     const blockStop = events.find(
       e => e.type === 'content_block_stop',
-    ) as Extract<KosaxRawMessageStreamEvent, { type: 'content_block_stop' }>
+    ) as Extract<UmmayaRawMessageStreamEvent, { type: 'content_block_stop' }>
     expect(blockStop).toBeDefined()
     expect(blockStop!.index).toBe(0)
 
     // Verify message_delta with stop_reason and usage
     const msgDelta = events.find(e => e.type === 'message_delta') as Extract<
-      KosaxRawMessageStreamEvent,
+      UmmayaRawMessageStreamEvent,
       { type: 'message_delta' }
     >
     expect(msgDelta).toBeDefined()
@@ -187,7 +187,7 @@ describe('LLMClient.stream() — happy-path (T018)', () => {
     const msgStop = events.find(e => e.type === 'message_stop')
     expect(msgStop).toBeDefined()
 
-    // Verify generator return value (KosaxMessageFinal)
+    // Verify generator return value (UmmayaMessageFinal)
     expect(finalValue).not.toBeNull()
     expect(finalValue!.stop_reason).toBe('end_turn')
     expect(finalValue!.usage.input_tokens).toBe(10)

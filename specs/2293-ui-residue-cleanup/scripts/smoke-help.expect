@@ -1,7 +1,7 @@
 #!/usr/bin/env expect -f
 # Spec 2293 Epic β — interactive /help slash command scenario.
 # Validates that the post-cleanup TUI:
-#  1. boots cleanly with KOSAX branding (UFO mascot + K-EXAONE banner)
+#  1. boots cleanly with UMMAYA branding (UFO mascot + K-EXAONE banner)
 #  2. opens the slash-command autocomplete dropdown when "/" is typed
 #  3. dispatches /help and renders the help payload
 #  4. exits cleanly via Ctrl-C
@@ -12,13 +12,13 @@ set timeout 45
 set spec_dir [file dirname [file dirname [info script]]]
 set log_path "$spec_dir/smoke-help-pty.txt"
 
-set env(KOSAX_BACKEND_CMD) "sleep 60"
+set env(UMMAYA_BACKEND_CMD) "sleep 60"
 
-spawn script -q $log_path bash -c "cd /Users/um-yunsang/KOSAX-w-2293/tui && bun run tui"
+spawn script -q $log_path bash -c "cd /Users/um-yunsang/UMMAYA-w-2293/tui && bun run tui"
 
 expect {
-  -re ".*KOSAX.*" { puts "CHECKPOINTKOSAX branding observed" }
-  timeout { puts "FAILKOSAX branding never appeared"; exit 1 }
+  -re ".*UMMAYA.*" { puts "CHECKPOINTUMMAYA branding observed" }
+  timeout { puts "FAILUMMAYA branding never appeared"; exit 1 }
 }
 
 sleep 3

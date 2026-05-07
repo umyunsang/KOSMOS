@@ -12,7 +12,7 @@
     Epic #1632 itself defines those artifacts as the contract (this is an infra-recovery
     epic, not a product feature). No algorithms, control flow, or code structure leaked.
 - [x] Focused on user value and business needs
-  - Audience is KOSAX 기여자; value framed as "마이그레이션 DAG 최하단 복구" enabling all
+  - Audience is UMMAYA 기여자; value framed as "마이그레이션 DAG 최하단 복구" enabling all
     downstream phases (#1633–#1637).
 - [x] Written for non-technical stakeholders
   - Acceptance scenarios are Given/When/Then in plain Korean; deferred items explain *why*

@@ -1,4 +1,4 @@
-// KOSAX Epic #2112: provider-specific model-string lookup collapsed to a single
+// UMMAYA Epic #2112: provider-specific model-string lookup collapsed to a single
 // K-EXAONE entry. Bedrock inference-profile fetching is dead (no-op stub in
 // bedrock.ts). resolveOverriddenModel preserved for settings-driven overrides.
 
@@ -25,7 +25,7 @@ function getBuiltinModelStrings(provider: APIProvider): ModelStrings {
 
 /**
  * Layer user-configured modelOverrides on top of the provider-derived strings.
- * Keys are canonical first-party model IDs (KOSAX: only `kexaone`).
+ * Keys are canonical first-party model IDs (UMMAYA: only `kexaone`).
  */
 function applyModelOverrides(ms: ModelStrings): ModelStrings {
   const overrides = getInitialSettings().modelOverrides

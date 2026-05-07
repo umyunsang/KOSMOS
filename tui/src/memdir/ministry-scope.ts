@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Source: KOSAX Epic H #1302 (035-onboarding-brand-port), task T027
+// Source: UMMAYA Epic H #1302 (035-onboarding-brand-port), task T027
 // Contract: specs/035-onboarding-brand-port/contracts/memdir-ministry-scope-schema.md § 3
 //
 // Zod mirror of the Python `MinistryScopeAcknowledgment` model.  TUI
@@ -46,7 +46,7 @@ export type MinistryScopeAcknowledgment = z.infer<
 
 /**
  * Lock-stepped with
- * `src/kosax/memdir/ministry_scope.py::CURRENT_SCOPE_VERSION`.  Bump
+ * `src/ummaya/memdir/ministry_scope.py::CURRENT_SCOPE_VERSION`.  Bump
  * both in the same PR.
  */
 export const CURRENT_SCOPE_VERSION = 'v1'

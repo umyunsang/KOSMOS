@@ -8,11 +8,11 @@
 
 ### RT-1: Tool Registry Architecture Pattern
 
-**Question**: What registry pattern best fits KOSAX's tool system?
+**Question**: What registry pattern best fits UMMAYA's tool system?
 
 **Decision**: In-memory registry with decorator-based registration, similar to Pydantic AI's schema-driven approach. Tools register at import time via a `@register_tool` decorator or explicit `registry.register(tool)` call.
 
-**Rationale**: From `docs/vision.md` Layer 2 — "Each public API is wrapped as a tool module with a schema-driven registration and fail-closed defaults." Pydantic AI uses schema-driven tool definitions with Pydantic models for input/output validation. This pattern fits naturally since KOSAX already mandates Pydantic v2 for all I/O.
+**Rationale**: From `docs/vision.md` Layer 2 — "Each public API is wrapped as a tool module with a schema-driven registration and fail-closed defaults." Pydantic AI uses schema-driven tool definitions with Pydantic models for input/output validation. This pattern fits naturally since UMMAYA already mandates Pydantic v2 for all I/O.
 
 **Reference**: Pydantic AI (`pydantic/pydantic-ai`) — schema-driven tool registry. Claude Agent SDK (`anthropics/claude-agent-sdk-python`) — tool definitions and execution.
 

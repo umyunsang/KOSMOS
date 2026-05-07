@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Tests for latlon_to_grid() in kosax.tools.kma.grid_coords."""
+"""Tests for latlon_to_grid() in ummaya.tools.kma.grid_coords."""
 
 from __future__ import annotations
 
-from kosax.tools.kma.grid_coords import latlon_to_grid
+from ummaya.tools.kma.grid_coords import latlon_to_grid
 
 
 class TestLatLonToGrid:

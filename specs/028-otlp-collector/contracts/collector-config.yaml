@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 #
-# KOSAX OTel Collector Contrib — local dev pipeline contract.
+# UMMAYA OTel Collector Contrib — local dev pipeline contract.
 # Spec: specs/028-otlp-collector/
 # Ref: research.md §3 (Reference mapping)
 #
@@ -42,7 +42,7 @@ processors:
       - key: patient.address
         action: delete
       # --- hash the raw location query (preserve cardinality, redact content) ---
-      - key: kosax.location.query
+      - key: ummaya.location.query
         action: hash
         # algorithm: SHA-256 (collector default for `hash` action since v0.92.0)
 
@@ -53,9 +53,9 @@ processors:
 
 exporters:
   otlphttp:
-    endpoint: "${env:KOSAX_LANGFUSE_OTLP_ENDPOINT:-http://langfuse-web:3000/api/public/otel/v1/traces}"
+    endpoint: "${env:UMMAYA_LANGFUSE_OTLP_ENDPOINT:-http://langfuse-web:3000/api/public/otel/v1/traces}"
     headers:
-      Authorization: "${env:KOSAX_LANGFUSE_OTLP_AUTH_HEADER}"
+      Authorization: "${env:UMMAYA_LANGFUSE_OTLP_AUTH_HEADER}"
       x-langfuse-ingestion-version: "4"
     compression: gzip
     tls:

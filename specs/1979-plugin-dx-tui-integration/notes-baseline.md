@@ -8,7 +8,7 @@
 
 ## Gap 1 — `/plugin` slash command mis-routing (commands.ts:133)
 
-**Symptom**: Citizen typing `/plugin install <name>` reaches the CC marketplace surface, NOT the KOSAX singular `plugin.ts` path that emits `plugin_op_request` frames.
+**Symptom**: Citizen typing `/plugin install <name>` reaches the CC marketplace surface, NOT the UMMAYA singular `plugin.ts` path that emits `plugin_op_request` frames.
 
 **Root cause** — line-precise:
 
@@ -33,7 +33,7 @@ const plugin = {
 } satisfies Command;
 ```
 
-The KOSAX singular file at `tui/src/commands/plugin.ts` (with full `sendPluginOp` IPC emit logic at lines 90-167) is **never imported** anywhere — confirmed by `grep -rn "from.*'./commands/plugin'" tui/src/commands.ts`.
+The UMMAYA singular file at `tui/src/commands/plugin.ts` (with full `sendPluginOp` IPC emit logic at lines 90-167) is **never imported** anywhere — confirmed by `grep -rn "from.*'./commands/plugin'" tui/src/commands.ts`.
 
 **Verification**:
 
@@ -43,24 +43,24 @@ $ grep -n "import plugin\|import plugins" tui/src/commands.ts
 $ # Note: NO import of './commands/plugin.js' (singular file) anywhere
 ```
 
-**Citizen impact**: `/plugin install seoul-subway` opens CC `Manage Claude Code plugins` UI, not the KOSAX install flow. No `plugin_op_request` frame ever leaves the TUI; `installer.py:install_plugin()` is never reached through the citizen's primary surface.
+**Citizen impact**: `/plugin install seoul-subway` opens CC `Manage Claude Code plugins` UI, not the UMMAYA install flow. No `plugin_op_request` frame ever leaves the TUI; `installer.py:install_plugin()` is never reached through the citizen's primary surface.
 
 ---
 
 ## Gap 2 — `plugin_op` IPC frame emit count = 0 (backend dispatcher missing)
 
-**Symptom**: Even if the citizen's slash command somehow emits a `plugin_op_request` frame (e.g. via the orphaned `tui/src/commands/plugin.ts`), the backend `src/kosax/ipc/stdio.py` dispatcher has no `frame.kind == "plugin_op"` arm.
+**Symptom**: Even if the citizen's slash command somehow emits a `plugin_op_request` frame (e.g. via the orphaned `tui/src/commands/plugin.ts`), the backend `src/ummaya/ipc/stdio.py` dispatcher has no `frame.kind == "plugin_op"` arm.
 
 **Verification** (from main branch):
 
 ```bash
-$ grep -n 'plugin_op' src/kosax/ipc/stdio.py
+$ grep -n 'plugin_op' src/ummaya/ipc/stdio.py
 (no matches)
 $ grep -rn 'plugin_op\|PluginOpFrame' src/ | grep -v 'frame_schema.py\|tests/'
 (no matches outside the schema definition)
 ```
 
-The `PluginOpFrame` is defined as the 20th IPC arm (`src/kosax/ipc/frame_schema.py:780-936`) with full shape validators and role allow-list (`tui:request / backend:progress+complete`), but **no module emits or consumes it** outside the schema and unit tests. The dispatcher's if-elif chain at `stdio.py:1675-1751` covers `user_input`, `chat_request`, `tool_result`, `permission_response`, `session_event` — `plugin_op` is absent.
+The `PluginOpFrame` is defined as the 20th IPC arm (`src/ummaya/ipc/frame_schema.py:780-936`) with full shape validators and role allow-list (`tui:request / backend:progress+complete`), but **no module emits or consumes it** outside the schema and unit tests. The dispatcher's if-elif chain at `stdio.py:1675-1751` covers `user_input`, `chat_request`, `tool_result`, `permission_response`, `session_event` — `plugin_op` is absent.
 
 **Acknowledgment of deferral** (already shipped):
 
@@ -72,16 +72,16 @@ The `PluginOpFrame` is defined as the 20th IPC arm (`src/kosax/ipc/frame_schema.
 //  the IPC bridge that turns a TUI request into a Python install_plugin()
 //  call is deferred to a follow-up. Until that lands, the slash command's
 //  acknowledgement carries an explicit '(backend not yet wired — use
-//  `kosax plugin install` shell entry-point instead)' suffix..."
+//  `ummaya plugin install` shell entry-point instead)' suffix..."
 ```
 
 This Epic IS that follow-up.
 
 ---
 
-## Gap 3 — orphaned `tui/src/commands/plugin.ts` (KOSAX singular)
+## Gap 3 — orphaned `tui/src/commands/plugin.ts` (UMMAYA singular)
 
-**Symptom**: The file at `tui/src/commands/plugin.ts` (singular, 209 LOC) carries the full KOSAX-aware command implementation: `sendPluginOp({kind: "plugin_op", op: "request", request_op: "install"|"list"|"uninstall", ...})` for three sub-commands, with the canonical PIPA hash import from `../ipc/pipa.generated`. But it is **not imported** by `tui/src/commands.ts` — it is dead code that ships in `bun build` but never registered.
+**Symptom**: The file at `tui/src/commands/plugin.ts` (singular, 209 LOC) carries the full UMMAYA-aware command implementation: `sendPluginOp({kind: "plugin_op", op: "request", request_op: "install"|"list"|"uninstall", ...})` for three sub-commands, with the canonical PIPA hash import from `../ipc/pipa.generated`. But it is **not imported** by `tui/src/commands.ts` — it is dead code that ships in `bun build` but never registered.
 
 **Verification**:
 

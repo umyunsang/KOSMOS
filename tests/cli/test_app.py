@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from typer.testing import CliRunner
 
-from kosax.cli.app import __version__, _app, main
+from ummaya.cli.app import __version__, _app, main
 
 runner = CliRunner()
 
@@ -29,7 +29,7 @@ class TestMainEntry:
     def test_main_callable(self) -> None:
         """main() is a callable that delegates to typer app."""
         # Just test that calling main with --version works
-        with pytest.raises(SystemExit) as exc_info, patch("sys.argv", ["kosax", "--version"]):
+        with pytest.raises(SystemExit) as exc_info, patch("sys.argv", ["ummaya", "--version"]):
             main()
         # typer exits with 0 for --version
         assert exc_info.value.code == 0
@@ -38,21 +38,21 @@ class TestMainEntry:
 class TestRunReplConfigurationError:
     def test_configuration_error_exits_1(self) -> None:
         """ConfigurationError during LLM init results in exit code 1."""
-        from kosax.llm.errors import ConfigurationError
+        from ummaya.llm.errors import ConfigurationError
 
-        with patch("kosax.llm.client.LLMClient", side_effect=ConfigurationError("missing token")):
+        with patch("ummaya.llm.client.LLMClient", side_effect=ConfigurationError("missing token")):
             result = runner.invoke(_app, [])
         assert result.exit_code == 1
 
     def test_generic_llm_error_exits_1(self) -> None:
         """Any unexpected error during LLM init results in exit code 1."""
-        with patch("kosax.llm.client.LLMClient", side_effect=RuntimeError("boom")):
+        with patch("ummaya.llm.client.LLMClient", side_effect=RuntimeError("boom")):
             result = runner.invoke(_app, [])
         assert result.exit_code == 1
 
     def test_cli_config_error_exits_1(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """CLIConfig init failure results in exit code 1."""
-        monkeypatch.setenv("KOSAX_CLI_HISTORY_SIZE", "not_a_number")
+        monkeypatch.setenv("UMMAYA_CLI_HISTORY_SIZE", "not_a_number")
         result = runner.invoke(_app, [])
         assert result.exit_code == 1
 
@@ -70,14 +70,14 @@ class TestRunReplSuccess:
         mock_repl_instance.run = mock_run
 
         with (
-            patch("kosax.llm.client.LLMClient"),
-            patch("kosax.tools.registry.ToolRegistry"),
-            patch("kosax.tools.executor.ToolExecutor"),
-            patch("kosax.tools.register_all.register_all_tools"),
-            patch("kosax.context.builder.ContextBuilder"),
-            patch("kosax.engine.engine.QueryEngine"),
-            patch("kosax.cli.app.EventRenderer"),
-            patch("kosax.cli.app.REPLLoop", return_value=mock_repl_instance) as mock_repl_cls,
+            patch("ummaya.llm.client.LLMClient"),
+            patch("ummaya.tools.registry.ToolRegistry"),
+            patch("ummaya.tools.executor.ToolExecutor"),
+            patch("ummaya.tools.register_all.register_all_tools"),
+            patch("ummaya.context.builder.ContextBuilder"),
+            patch("ummaya.engine.engine.QueryEngine"),
+            patch("ummaya.cli.app.EventRenderer"),
+            patch("ummaya.cli.app.REPLLoop", return_value=mock_repl_instance) as mock_repl_cls,
         ):
             result = runner.invoke(_app, [])
         assert result.exit_code == 0
@@ -87,14 +87,14 @@ class TestRunReplSuccess:
     def test_keyboard_interrupt_exits_130(self) -> None:
         """KeyboardInterrupt from the REPL results in exit code 130."""
         # Patch _run_repl directly so sys.exit(130) propagates through typer.
-        with patch("kosax.cli.app._run_repl", side_effect=SystemExit(130)):
+        with patch("ummaya.cli.app._run_repl", side_effect=SystemExit(130)):
             result = runner.invoke(_app, [])
         assert result.exit_code == 130
 
     def test_unexpected_error_exits_1(self) -> None:
         """Unexpected error from REPL results in exit code 1."""
         # Patch _run_repl directly so sys.exit(1) propagates through typer.
-        with patch("kosax.cli.app._run_repl", side_effect=SystemExit(1)):
+        with patch("ummaya.cli.app._run_repl", side_effect=SystemExit(1)):
             result = runner.invoke(_app, [])
         assert result.exit_code == 1
 
@@ -108,15 +108,15 @@ class TestRunReplSuccess:
         mock_repl_instance.run = mock_run
 
         with (
-            patch("kosax.llm.client.LLMClient"),
-            patch("kosax.tools.registry.ToolRegistry"),
-            patch("kosax.tools.executor.ToolExecutor"),
-            patch("kosax.tools.register_all.register_all_tools"),
-            patch("kosax.context.builder.ContextBuilder"),
-            patch("kosax.engine.engine.QueryEngine"),
-            patch("kosax.cli.app.EventRenderer"),
-            patch("kosax.cli.app.REPLLoop", return_value=mock_repl_instance),
-            patch("kosax.cli.app.logging.basicConfig") as mock_logging,
+            patch("ummaya.llm.client.LLMClient"),
+            patch("ummaya.tools.registry.ToolRegistry"),
+            patch("ummaya.tools.executor.ToolExecutor"),
+            patch("ummaya.tools.register_all.register_all_tools"),
+            patch("ummaya.context.builder.ContextBuilder"),
+            patch("ummaya.engine.engine.QueryEngine"),
+            patch("ummaya.cli.app.EventRenderer"),
+            patch("ummaya.cli.app.REPLLoop", return_value=mock_repl_instance),
+            patch("ummaya.cli.app.logging.basicConfig") as mock_logging,
         ):
             runner.invoke(_app, ["--debug"])
         import logging
@@ -132,8 +132,8 @@ class TestRuntimeWiring:
     """
 
     def test_recovery_executor_wired_to_query_engine(self) -> None:
-        from kosax.recovery.executor import RecoveryExecutor
-        from kosax.tools.executor import ToolExecutor
+        from ummaya.recovery.executor import RecoveryExecutor
+        from ummaya.tools.executor import ToolExecutor
 
         captured: dict[str, object] = {}
 
@@ -149,10 +149,10 @@ class TestRuntimeWiring:
         mock_repl_instance.run = mock_run
 
         with (
-            patch("kosax.llm.client.LLMClient"),
-            patch("kosax.engine.engine.QueryEngine", _FakeEngine),
-            patch("kosax.cli.app.EventRenderer"),
-            patch("kosax.cli.app.REPLLoop", return_value=mock_repl_instance),
+            patch("ummaya.llm.client.LLMClient"),
+            patch("ummaya.engine.engine.QueryEngine", _FakeEngine),
+            patch("ummaya.cli.app.EventRenderer"),
+            patch("ummaya.cli.app.REPLLoop", return_value=mock_repl_instance),
         ):
             result = runner.invoke(_app, [])
 

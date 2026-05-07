@@ -1,6 +1,6 @@
-# KOSAX Research
+# UMMAYA Research
 
-Academic research artifacts for KOSAX. This directory supports conference and journal submissions alongside the main implementation.
+Academic research artifacts for UMMAYA. This directory supports conference and journal submissions alongside the main implementation.
 
 ## Directory structure
 
@@ -41,7 +41,7 @@ research/
 - Compare: cache-partitioned vs. naive (all tools in prompt)
 
 ### E4: User study (5-10 participants)
-- Task: 5 cross-ministry scenarios, KOSAX vs. data.go.kr portal
+- Task: 5 cross-ministry scenarios, UMMAYA vs. data.go.kr portal
 - Metrics: task completion time, success rate, SUS score
 
 ### E5: Ablation study

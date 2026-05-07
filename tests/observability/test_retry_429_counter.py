@@ -2,14 +2,14 @@
 """T022 — Tests for the 429 retry counter and chat span uniqueness.
 
 Verifies:
-- kosax_llm_rate_limit_retries_total increments exactly once per retry
+- ummaya_llm_rate_limit_retries_total increments exactly once per retry
   (two 429 → two increments).
 - Exactly one 'chat' span is emitted for the whole logical stream call
   regardless of how many retry attempts are made.
 - The single 'chat' span has gen_ai.usage.input_tokens set on success.
 - No metric increment occurs when self._metrics is None (None-guard works).
 
-Strategy: monkeypatch kosax.llm.client._tracer with a dedicated
+Strategy: monkeypatch ummaya.llm.client._tracer with a dedicated
 TracerProvider backed by InMemorySpanExporter (same pattern as
 test_query_parent_span.py / test_tool_execute_span.py). Use respx to
 mock httpx at the transport level so no real network calls are made.
@@ -33,10 +33,10 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import SimpleSpanProcessor
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
 
-from kosax.llm.client import LLMClient
-from kosax.llm.config import LLMClientConfig
-from kosax.llm.models import ChatMessage
-from kosax.observability.metrics import MetricsCollector
+from ummaya.llm.client import LLMClient
+from ummaya.llm.config import LLMClientConfig
+from ummaya.llm.models import ChatMessage
+from ummaya.observability.metrics import MetricsCollector
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -99,24 +99,24 @@ def _sse_rate_limit_envelope() -> str:
 
 @pytest.fixture(autouse=True)
 def _clean_env(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Strip KOSAX_ env vars and inject a known test token."""
+    """Strip UMMAYA_ env vars and inject a known test token."""
     for key in list(os.environ):
-        if key.startswith("KOSAX_"):
+        if key.startswith("UMMAYA_"):
             monkeypatch.delenv(key, raising=False)
-    monkeypatch.setenv("KOSAX_FRIENDLI_TOKEN", "test-token-t022")
+    monkeypatch.setenv("UMMAYA_FRIENDLI_TOKEN", "test-token-t022")
     monkeypatch.delenv("OTEL_SDK_DISABLED", raising=False)
 
 
 @pytest.fixture()
 def mem_exporter(monkeypatch: pytest.MonkeyPatch) -> InMemorySpanExporter:
-    """Patch kosax.llm.client._tracer with a dedicated in-memory TracerProvider."""
+    """Patch ummaya.llm.client._tracer with a dedicated in-memory TracerProvider."""
     exporter = InMemorySpanExporter()
     provider = TracerProvider()
     provider.add_span_processor(SimpleSpanProcessor(exporter))
 
-    import kosax.llm.client as client_mod
+    import ummaya.llm.client as client_mod
 
-    monkeypatch.setattr(client_mod, "_tracer", provider.get_tracer("kosax.llm.client"))
+    monkeypatch.setattr(client_mod, "_tracer", provider.get_tracer("ummaya.llm.client"))
 
     exporter.clear()
     return exporter
@@ -177,7 +177,7 @@ async def test_prestream_429_counter_and_single_chat_span(
 
     # --- Assertion 1: counter incremented exactly 2 times ---
     count = metrics.get_counter(
-        "kosax_llm_rate_limit_retries_total",
+        "ummaya_llm_rate_limit_retries_total",
         labels={"provider": "friendliai", "model": _MODEL},
     )
     assert count == 2, (
@@ -250,7 +250,7 @@ async def test_midstream_429_counter_and_single_chat_span(
 
     # --- Assertion 1: counter incremented exactly 2 times ---
     count = metrics.get_counter(
-        "kosax_llm_rate_limit_retries_total",
+        "ummaya_llm_rate_limit_retries_total",
         labels={"provider": "friendliai", "model": _MODEL},
     )
     assert count == 2, (

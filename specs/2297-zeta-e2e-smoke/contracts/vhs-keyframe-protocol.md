@@ -10,7 +10,7 @@
 **Then** `smoke-citizen-taxreturn.tape` MUST:
 1. Set output: `Output specs/2297-zeta-e2e-smoke/smoke-citizen-taxreturn.gif`.
 2. Set canonical terminal sizing: `Set FontSize 14`, `Set Width 120`, `Set Height 36`, `Set Theme "Tokyo Night"`.
-3. Spawn the TUI: `Type "cd ~/KOSAX-w-2297/tui && bun run tui"`, `Enter`, `Sleep 5s`.
+3. Spawn the TUI: `Type "cd ~/UMMAYA-w-2297/tui && bun run tui"`, `Enter`, `Sleep 5s`.
 4. Capture **keyframe 1** (boot+branding): `Screenshot specs/2297-zeta-e2e-smoke/scripts/smoke-keyframe-1-boot.png`, `Sleep 1s`.
 5. Type the citizen prompt: `Type "종합소득세 신고해줘"`, `Sleep 1s`, `Enter`, `Sleep 8s`.
 6. Capture **keyframe 2** (dispatch active — verify just emitted, spinner visible OR the verify tool_call marker rendered): `Screenshot specs/2297-zeta-e2e-smoke/scripts/smoke-keyframe-2-dispatch.png`, `Sleep 1s`.
@@ -30,7 +30,7 @@
 
 **Then** Lead Opus MUST use the Read tool on this PNG (multimodal vision) and verify:
 - The image renders the citizen-facing assistant message containing `접수번호: hometax-2026-MM-DD-RX-XXXXX`.
-- The KOSAX branding is visible at the top.
+- The UMMAYA branding is visible at the top.
 - No stub markers (`status: stub`, `Lollygagging…` mid-spinner) are present in the final state.
 
 If any of the above fails, the change is BLOCKED. Lead reports the specific anomaly in the PR description.

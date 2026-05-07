@@ -7,11 +7,11 @@ import httpx
 import pytest
 from pydantic import BaseModel
 
-from kosax.recovery.executor import RecoveryExecutor
-from kosax.recovery.retry import ToolRetryPolicy
-from kosax.tools.executor import ToolExecutor
-from kosax.tools.models import GovAPITool
-from kosax.tools.registry import ToolRegistry
+from ummaya.recovery.executor import RecoveryExecutor
+from ummaya.recovery.retry import ToolRetryPolicy
+from ummaya.tools.executor import ToolExecutor
+from ummaya.tools.models import GovAPITool
+from ummaya.tools.registry import ToolRegistry
 
 
 class _In(BaseModel):

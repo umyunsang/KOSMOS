@@ -3,9 +3,9 @@
  * Unit tests for dual-path session enumeration in listSessionsImpl.
  *
  * Verifies:
- *   1. Sessions in KOSAX path (~/.kosax/memdir/user/sessions/) are enumerated.
+ *   1. Sessions in UMMAYA path (~/.ummaya/memdir/user/sessions/) are enumerated.
  *   2. Sessions in CC-legacy path (~/.claude/projects/) are enumerated.
- *   3. When a sessionId appears in both paths, KOSAX version takes priority.
+ *   3. When a sessionId appears in both paths, UMMAYA version takes priority.
  *   4. Sort by last_active_at desc is preserved across both paths.
  */
 
@@ -18,8 +18,8 @@ import { tmpdir } from 'node:os'
 // Test fixture helpers
 // ---------------------------------------------------------------------------
 
-const TMP_ROOT = join(tmpdir(), `kosax-dual-path-test-${Date.now()}`)
-const KOSAX_ROOT = join(TMP_ROOT, 'kosax-sessions')
+const TMP_ROOT = join(tmpdir(), `ummaya-dual-path-test-${Date.now()}`)
+const UMMAYA_ROOT = join(TMP_ROOT, 'ummaya-sessions')
 const CC_LEGACY_ROOT = join(TMP_ROOT, 'cc-legacy')
 
 /** Minimal valid JSONL session content with a timestamp and user message. */
@@ -28,7 +28,7 @@ function makeSessionContent(opts: {
   timestamp: string
   preview: string
 }): string {
-  // First line: a user message entry (typical KOSAX session format)
+  // First line: a user message entry (typical UMMAYA session format)
   const userEntry = JSON.stringify({
     type: 'user',
     session_id: opts.sessionId,
@@ -51,7 +51,7 @@ function writeSession(
 }
 
 // UUID-formatted session IDs for the tests
-const SESSION_KOSAX_ONLY = '11111111-0000-0000-0000-000000000001'
+const SESSION_UMMAYA_ONLY = '11111111-0000-0000-0000-000000000001'
 const SESSION_CC_ONLY = '22222222-0000-0000-0000-000000000002'
 const SESSION_BOTH = '33333333-0000-0000-0000-000000000003'
 
@@ -60,33 +60,33 @@ const TS_MID = '2026-06-01T00:00:00.000Z'
 const TS_LATE = '2026-12-01T00:00:00.000Z'
 
 // Save original env vars so we can restore after each test
-const ORIG_KOSAX_MEMDIR_USER = process.env.KOSAX_MEMDIR_USER
+const ORIG_UMMAYA_MEMDIR_USER = process.env.UMMAYA_MEMDIR_USER
 const ORIG_CLAUDE_CONFIG_DIR = process.env.CLAUDE_CONFIG_DIR
 
 beforeEach(() => {
   // Set up temp directory trees
-  mkdirSync(KOSAX_ROOT, { recursive: true })
+  mkdirSync(UMMAYA_ROOT, { recursive: true })
   mkdirSync(CC_LEGACY_ROOT, { recursive: true })
 
-  // KOSAX-native: one exclusive + one shared
+  // UMMAYA-native: one exclusive + one shared
   writeSession(
-    KOSAX_ROOT,
+    UMMAYA_ROOT,
     'project-a',
-    SESSION_KOSAX_ONLY,
+    SESSION_UMMAYA_ONLY,
     makeSessionContent({
-      sessionId: SESSION_KOSAX_ONLY,
+      sessionId: SESSION_UMMAYA_ONLY,
       timestamp: TS_MID,
-      preview: 'KOSAX-only session',
+      preview: 'UMMAYA-only session',
     }),
   )
   writeSession(
-    KOSAX_ROOT,
+    UMMAYA_ROOT,
     'project-b',
     SESSION_BOTH,
     makeSessionContent({
       sessionId: SESSION_BOTH,
       timestamp: TS_LATE,
-      preview: 'Shared session — KOSAX copy (newer)',
+      preview: 'Shared session — UMMAYA copy (newer)',
     }),
   )
 
@@ -113,34 +113,34 @@ beforeEach(() => {
   )
 
   // Point env vars at temp trees
-  process.env.KOSAX_MEMDIR_USER = join(TMP_ROOT, 'kosax-user')
-  // We need sessions subdir under KOSAX_MEMDIR_USER
-  mkdirSync(join(TMP_ROOT, 'kosax-user', 'sessions'), { recursive: true })
+  process.env.UMMAYA_MEMDIR_USER = join(TMP_ROOT, 'ummaya-user')
+  // We need sessions subdir under UMMAYA_MEMDIR_USER
+  mkdirSync(join(TMP_ROOT, 'ummaya-user', 'sessions'), { recursive: true })
   // Copy project dirs into the sessions subdir
-  mkdirSync(join(TMP_ROOT, 'kosax-user', 'sessions', 'project-a'), {
+  mkdirSync(join(TMP_ROOT, 'ummaya-user', 'sessions', 'project-a'), {
     recursive: true,
   })
-  mkdirSync(join(TMP_ROOT, 'kosax-user', 'sessions', 'project-b'), {
+  mkdirSync(join(TMP_ROOT, 'ummaya-user', 'sessions', 'project-b'), {
     recursive: true,
   })
   writeFileSync(
     join(
       TMP_ROOT,
-      'kosax-user',
+      'ummaya-user',
       'sessions',
       'project-a',
-      `${SESSION_KOSAX_ONLY}.jsonl`,
+      `${SESSION_UMMAYA_ONLY}.jsonl`,
     ),
     makeSessionContent({
-      sessionId: SESSION_KOSAX_ONLY,
+      sessionId: SESSION_UMMAYA_ONLY,
       timestamp: TS_MID,
-      preview: 'KOSAX-only session',
+      preview: 'UMMAYA-only session',
     }),
   )
   writeFileSync(
     join(
       TMP_ROOT,
-      'kosax-user',
+      'ummaya-user',
       'sessions',
       'project-b',
       `${SESSION_BOTH}.jsonl`,
@@ -148,7 +148,7 @@ beforeEach(() => {
     makeSessionContent({
       sessionId: SESSION_BOTH,
       timestamp: TS_LATE,
-      preview: 'Shared session — KOSAX copy (newer)',
+      preview: 'Shared session — UMMAYA copy (newer)',
     }),
   )
 
@@ -191,10 +191,10 @@ beforeEach(() => {
 
 afterEach(() => {
   // Restore env
-  if (ORIG_KOSAX_MEMDIR_USER === undefined) {
-    delete process.env.KOSAX_MEMDIR_USER
+  if (ORIG_UMMAYA_MEMDIR_USER === undefined) {
+    delete process.env.UMMAYA_MEMDIR_USER
   } else {
-    process.env.KOSAX_MEMDIR_USER = ORIG_KOSAX_MEMDIR_USER
+    process.env.UMMAYA_MEMDIR_USER = ORIG_UMMAYA_MEMDIR_USER
   }
   if (ORIG_CLAUDE_CONFIG_DIR === undefined) {
     delete process.env.CLAUDE_CONFIG_DIR
@@ -213,11 +213,11 @@ afterEach(() => {
 // Tests
 // ---------------------------------------------------------------------------
 
-test('listSessionsImpl enumerates KOSAX-native sessions', async () => {
+test('listSessionsImpl enumerates UMMAYA-native sessions', async () => {
   const { listSessionsImpl } = await import('../listSessionsImpl.js')
   const sessions = await listSessionsImpl()
   const ids = sessions.map(s => s.sessionId)
-  expect(ids).toContain(SESSION_KOSAX_ONLY)
+  expect(ids).toContain(SESSION_UMMAYA_ONLY)
 })
 
 test('listSessionsImpl enumerates CC-legacy sessions', async () => {
@@ -234,24 +234,24 @@ test('listSessionsImpl deduplicates: shared sessionId appears only once', async 
   expect(matches.length).toBe(1)
 })
 
-test('listSessionsImpl dedup: KOSAX copy wins over CC-legacy copy', async () => {
+test('listSessionsImpl dedup: UMMAYA copy wins over CC-legacy copy', async () => {
   const { listSessionsImpl } = await import('../listSessionsImpl.js')
   const sessions = await listSessionsImpl()
   const shared = sessions.find(s => s.sessionId === SESSION_BOTH)
-  // KOSAX copy has TS_LATE; CC-legacy copy has TS_EARLY.
-  // If KOSAX wins, the session's content should reflect the KOSAX entry.
+  // UMMAYA copy has TS_LATE; CC-legacy copy has TS_EARLY.
+  // If UMMAYA wins, the session's content should reflect the UMMAYA entry.
   expect(shared).toBeDefined()
-  // The KOSAX copy's timestamp is TS_LATE (newer), so lastModified should
+  // The UMMAYA copy's timestamp is TS_LATE (newer), so lastModified should
   // be greater than the CC-legacy copy's mtime.
-  // We verify by checking that the preview matches the KOSAX copy text.
-  expect(shared!.firstPrompt).toContain('KOSAX copy')
+  // We verify by checking that the preview matches the UMMAYA copy text.
+  expect(shared!.firstPrompt).toContain('UMMAYA copy')
 })
 
 test('listSessionsImpl returns all three distinct sessions', async () => {
   const { listSessionsImpl } = await import('../listSessionsImpl.js')
   const sessions = await listSessionsImpl()
   const ids = new Set(sessions.map(s => s.sessionId))
-  expect(ids.has(SESSION_KOSAX_ONLY)).toBe(true)
+  expect(ids.has(SESSION_UMMAYA_ONLY)).toBe(true)
   expect(ids.has(SESSION_CC_ONLY)).toBe(true)
   expect(ids.has(SESSION_BOTH)).toBe(true)
   expect(ids.size).toBe(3)

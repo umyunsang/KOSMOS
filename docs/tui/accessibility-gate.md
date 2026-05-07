@@ -12,10 +12,10 @@ FR-018 mandates that `docs/tui/accessibility-gate.md` exist and enumerate per-ve
 
 ### §1.1 · Terminal screen-reader pathway
 
-KOSAX TUI renders through Ink (React for CLIs) in a terminal emulator. Unlike the browser DOM, a terminal has **no native accessibility tree**: VoiceOver, NVDA, and JAWS cannot introspect Ink's virtual DOM directly. Per-row mentions of "스크린 리더 접근 가능" in §3 KWCAG notes therefore rely on the following concrete pathways, not on a DOM accessibility API:
+UMMAYA TUI renders through Ink (React for CLIs) in a terminal emulator. Unlike the browser DOM, a terminal has **no native accessibility tree**: VoiceOver, NVDA, and JAWS cannot introspect Ink's virtual DOM directly. Per-row mentions of "스크린 리더 접근 가능" in §3 KWCAG notes therefore rely on the following concrete pathways, not on a DOM accessibility API:
 
 1. **Text stream accessibility** — all visible content MUST render as plain UTF-8 text in the terminal output buffer. macOS VoiceOver in terminal mode (`Cmd+F5` in Terminal.app or iTerm2) reads the text stream line by line; refreshable braille displays attached via BRLTTY (Linux) or Duxbury (Windows) consume the same stream. Animated surfaces (Spinner, LogoV2 shimmer) MUST degrade gracefully when reading — no information may be conveyed by animation alone.
-2. **Reduced-motion fallback** — components that animate (all `Spinner/*` rows, `LogoV2/AnimatedAsterisk.tsx`, `LogoV2/WelcomeV2.tsx`, `useShimmerAnimation.ts` consumers) MUST honor the `NO_COLOR` / `KOSAX_REDUCED_MOTION=1` env flag and emit a static-text equivalent. Implementation Epic is H #1302 (palette + motion tokens); runtime check is the responsibility of the implementing Epic (typically H or B).
+2. **Reduced-motion fallback** — components that animate (all `Spinner/*` rows, `LogoV2/AnimatedAsterisk.tsx`, `LogoV2/WelcomeV2.tsx`, `useShimmerAnimation.ts` consumers) MUST honor the `NO_COLOR` / `UMMAYA_REDUCED_MOTION=1` env flag and emit a static-text equivalent. Implementation Epic is H #1302 (palette + motion tokens); runtime check is the responsibility of the implementing Epic (typically H or B).
 3. **Semantic ordering** — rendered output MUST follow top-to-bottom reading order matching visual precedence. Ink's `<Box>` flex layout with `flexDirection="column"` is the default compliant shape; `position="absolute"` or out-of-order rendering is a regression that breaks the text-stream pathway.
 4. **Focus narration** — focus transitions (WCAG 2.4.7) MUST emit a human-readable cue in the text stream when focus lands. Inverse-video alone is insufficient for screen readers that cannot see color — every focused affordance MUST carry a visible label or announcement line.
 5. **Keyboard-only operation** — per WCAG 2.1.1, no affordance may require a mouse or trackpad; no citizen workflow may depend on terminal mouse reporting (`xterm-mouse`). All `IME-safe = yes` rows (§5) additionally guard against composition-mid-submit — the composition keypress MUST NOT trigger an action.
@@ -89,12 +89,12 @@ Deep ARIA-style role/name/value conformance (WCAG 4.1.2) for an Ink virtual DOM 
 | # | CC source path | Verdict | WCAG | KWCAG notes | IME-safe | Contrast constraint |
 |---|---|---|---|---|---|---|
 | 31 | LogoV2/AnimatedAsterisk.tsx | REWRITE | 1.4.3, 4.1.2 | 은하계 로고 애니메이션 대체 텍스트 제공; 고대비 모드 지원 · **SHIPPED-Epic-H #1302** | n/a | 3:1 |
-| 32 | LogoV2/CondensedLogo.tsx | REWRITE | 1.4.3, 4.1.2 | 축약 헤더 KOSAX 워드마크 대체 텍스트; 스크린 리더 세션 정보 안내 · **SHIPPED-Epic-H #1302** | n/a | 4.5:1 |
+| 32 | LogoV2/CondensedLogo.tsx | REWRITE | 1.4.3, 4.1.2 | 축약 헤더 UMMAYA 워드마크 대체 텍스트; 스크린 리더 세션 정보 안내 · **SHIPPED-Epic-H #1302** | n/a | 4.5:1 |
 | 33 | LogoV2/Feed.tsx | REWRITE | 1.4.3, 4.1.2 | 피드 항목 스크린 리더 접근 가능; 사역부 상태 피드 대체 텍스트 · **SHIPPED-Epic-H #1302** | n/a | 4.5:1 |
 | 34 | LogoV2/FeedColumn.tsx | PORT | 1.4.3 | **SHIPPED-Epic-H #1302** | n/a | 4.5:1 |
 | 35 | LogoV2/feedConfigs.tsx | REWRITE | 1.4.3, 4.1.2 | 피드 팩토리 시민 온보딩 단계 스크린 리더 내레이션; 사역부 가용성 상태 안내 · **SHIPPED-Epic-H #1302** | n/a | 4.5:1 |
 | 36 | LogoV2/LogoV2.tsx | REWRITE | 1.4.3, 2.1.1, 2.4.7, 4.1.2 | 은하계 스플래시 대체 텍스트; 키보드 포커스 순서 명확; 고대비 모드 지원 · **SHIPPED-Epic-H #1302** | n/a | 4.5:1 |
-| 37 | LogoV2/WelcomeV2.tsx | REWRITE | 1.4.3, 2.1.1, 2.4.7, 4.1.2 | 은하계 웰컴 화면 대체 텍스트; 키보드 포커스 순서 명확; KOSAX 핵(kosaxCore) 은유 설명 · **SHIPPED-Epic-H #1302** | n/a | 4.5:1 |
+| 37 | LogoV2/WelcomeV2.tsx | REWRITE | 1.4.3, 2.1.1, 2.4.7, 4.1.2 | 은하계 웰컴 화면 대체 텍스트; 키보드 포커스 순서 명확; UMMAYA 핵(ummayaCore) 은유 설명 · **SHIPPED-Epic-H #1302** | n/a | 4.5:1 |
 
 <a id="ag-spinner"></a>
 
@@ -402,9 +402,9 @@ The following families must include non-empty KWCAG notes in their gate rows (FR
 - `Settings` — language/theme/permission-mode labels; immediate error message announcement
 - `Onboarding` (root-level family bin `root.onboarding`, i.e., `Onboarding.tsx`) — galaxy splash alt text; keyboard focus order
 - `HelpV2` — searchable single-pane help; focus return on close
-- Any row whose KOSAX target lives under `tui/src/components/conversation/` or `tui/src/components/input/`
+- Any row whose UMMAYA target lives under `tui/src/components/conversation/` or `tui/src/components/input/`
 - Any row from subdirectories `Passes`, `permissions`, `Spinner` when surfaced in citizen-visible flows
-- `LogoV2` rows that are REWRITE — splash-screen brand metaphor surfaces require alt text for the kosaxCore glyph
+- `LogoV2` rows that are REWRITE — splash-screen brand metaphor surfaces require alt text for the ummayaCore glyph
 - `TrustDialog` — consent flow must be keyboard-accessible and screen-reader narrated
 - `ManagedSettingsSecurityDialog` — citizen-visible dangerous-settings warning
 - Shortcut surfaces (`root.shortcuts/*`, `KeybindingWarnings.tsx`) — keyboard conflict warnings and IME-mode-switch guidance
@@ -456,10 +456,10 @@ Epic H's `/speckit-specify` input MUST acknowledge this line before proposing an
 
 ### §7.1 · Epic H #1302 shipped surface
 
-The `035-onboarding-brand-port` Epic ships the following accessibility-gate rows as the first citizen-facing KOSAX surface:
+The `035-onboarding-brand-port` Epic ships the following accessibility-gate rows as the first citizen-facing UMMAYA surface:
 
 - Rows 31–37 (ag-logov2 family): every LogoV2 REWRITE + the FeedColumn PORT — see `specs/035-onboarding-brand-port/contracts/logov2-rewrite-visual-specs.md` for per-component visual specs and reduced-motion fallback rules. Measured contrast ratios are published in `docs/design/contrast-measurements.md` (populated by `scripts/compute-contrast.mjs` — Epic H tasks T045/T046).
-- Row 154 / 162 equivalents (chrome/KosaxCoreIcon.tsx): ag-logo-wordmark; static + shimmering variants verified under reduced-motion.
+- Row 154 / 162 equivalents (chrome/UmmayaCoreIcon.tsx): ag-logo-wordmark; static + shimmering variants verified under reduced-motion.
 - Row 156/165 equivalent (onboarding/Onboarding.tsx): ag-onboarding; three-step state machine with IME-gated Enter, Escape-to-exit, fail-closed PIPA consent + ministry-scope flow.
 
-All nine shipped rows meet the FR-022 contrast constraint by construction — KOSAX navy `#0a0e27` against every Epic H-introduced foreground token has been measured via `scripts/compute-contrast.mjs`.
+All nine shipped rows meet the FR-022 contrast constraint by construction — UMMAYA navy `#0a0e27` against every Epic H-introduced foreground token has been measured via `scripts/compute-contrast.mjs`.

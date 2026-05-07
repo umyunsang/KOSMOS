@@ -421,7 +421,7 @@ describe('Hangul syllable assembly — unit checks', () => {
   })
 })
 
-describe('KOSAX_TUI_IME_STRATEGY=readline stub', () => {
+describe('UMMAYA_TUI_IME_STRATEGY=readline stub', () => {
   // Verify that reading the env var would route to the stub.
   // We test the routing logic without importing the hook itself (avoids React
   // render context requirement in a headless test environment).

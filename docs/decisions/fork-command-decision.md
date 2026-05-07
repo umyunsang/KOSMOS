@@ -2,12 +2,12 @@
 
 **Status**: Decided — Option A (standalone command).
 **Date**: 2026-05-04.
-**Owners**: KOSAX Lead Opus (TUI Epic surface).
+**Owners**: UMMAYA Lead Opus (TUI Epic surface).
 **References**:
-- `docs/requirements/kosax-migration-tree.md § L1-A · A5` ("--continue/--resume/--fork/new" promise).
+- `docs/requirements/ummaya-migration-tree.md § L1-A · A5` ("--continue/--resume/--fork/new" promise).
 - `tui/src/commands/branch/index.ts:8` (current alias gate).
 - `tui/src/stubs/bun-bundle.ts:5` (`feature('FORK_SUBAGENT')` permanent stub returning `false`).
-- `tui/src/tools/AgentTool/forkSubagent.ts` (CC's subagent fork — distinct feature, NOT what KOSAX wants).
+- `tui/src/tools/AgentTool/forkSubagent.ts` (CC's subagent fork — distinct feature, NOT what UMMAYA wants).
 - `tui/src/commands/catalog.ts` (UI L2 autocomplete SSOT, Spec 1635).
 - `specs/integration-verification/scripts/scn-S10-session-lifecycle.sh:13–15` (S10 capture: `/fork` keystrokes that motivated this decision).
 
@@ -15,11 +15,11 @@
 
 There are two unrelated concepts colliding under the word "fork":
 
-1. **CC `FORK_SUBAGENT`** (`tui/src/tools/AgentTool/forkSubagent.ts`) — an experimental Claude Code feature where the parent agent spawns a child subagent that inherits the full conversation context as a prompt-cache-aligned prefix. The `/fork` slash command in CC takes a directive string and dispatches it to the child. **This feature is gated by `feature('FORK_SUBAGENT')`, which KOSAX's `bun-bundle` stub hard-codes to `false`.** Subagent fork is mutually exclusive with coordinator mode and has no analogue in the KOSAX migration plan — it is not part of the citizen-facing surface.
+1. **CC `FORK_SUBAGENT`** (`tui/src/tools/AgentTool/forkSubagent.ts`) — an experimental Claude Code feature where the parent agent spawns a child subagent that inherits the full conversation context as a prompt-cache-aligned prefix. The `/fork` slash command in CC takes a directive string and dispatches it to the child. **This feature is gated by `feature('FORK_SUBAGENT')`, which UMMAYA's `bun-bundle` stub hard-codes to `false`.** Subagent fork is mutually exclusive with coordinator mode and has no analogue in the UMMAYA migration plan — it is not part of the citizen-facing surface.
 
 2. **CC `/branch`** (`tui/src/commands/branch/branch.ts`) — copies the current session's transcript JSONL to a new file with a new `sessionId`, preserves all messages (including content-replacement rewrites for prompt-cache continuity), then resumes into the new session. This is **session forking**: same conversation history, divergent future. `/fork` was registered as a CC alias of `/branch` ONLY when `FORK_SUBAGENT` was off, on the rationale that the noun "fork" is more colloquial than "branch" when the subagent feature is unavailable.
 
-KOSAX inherits both code paths byte-identical from CC restored-src. KOSAX migration tree A5 promises `--continue/--resume/--fork/new` as four distinct citizen-facing session lifecycle modes. The contract A5 references is **session forking** (concept #2), not subagent forking (concept #1).
+UMMAYA inherits both code paths byte-identical from CC restored-src. UMMAYA migration tree A5 promises `--continue/--resume/--fork/new` as four distinct citizen-facing session lifecycle modes. The contract A5 references is **session forking** (concept #2), not subagent forking (concept #1).
 
 ## The bug surfaced in S10
 
@@ -42,10 +42,10 @@ Integration scenario S10 (`scn-S10-session-lifecycle.sh:13`) types `/fork` then 
 - Add `tui/src/commands/fork/index.ts` as a first-class `Command` that delegates `load()` to `branch/branch.js`. The handler is identical to branch — both copy session JSONL with a new UUID and resume into the copy.
 - Add `/fork`, `/branch`, `/resume`, `/continue` to `tui/src/commands/catalog.ts` so the autocomplete dropdown surfaces them.
 - Keep the existing `branch` alias `['fork']` ONLY as belt-and-suspenders; the standalone `fork` command becomes the canonical surface.
-- `feature('FORK_SUBAGENT')` stays `false` permanently — the subagent variant is dead in KOSAX. The `forkCmd` slot in `commands.ts:112` is decoupled from the FORK_SUBAGENT gate and points at the new standalone command unconditionally.
+- `feature('FORK_SUBAGENT')` stays `false` permanently — the subagent variant is dead in UMMAYA. The `forkCmd` slot in `commands.ts:112` is decoupled from the FORK_SUBAGENT gate and points at the new standalone command unconditionally.
 
 **Pros**:
-- Honors `kosax-migration-tree.md § A5` literally (4 distinct modes).
+- Honors `ummaya-migration-tree.md § A5` literally (4 distinct modes).
 - Surfaces `/fork` in the autocomplete dropdown so citizens can discover it.
 - Reuses `branch.ts` implementation 100% — no duplicate session-fork logic to maintain.
 - Spec 027 session lifecycle invariant preserved (one JSONL per session_id, append-only, immutable).
@@ -55,12 +55,12 @@ Integration scenario S10 (`scn-S10-session-lifecycle.sh:13`) types `/fork` then 
 
 ### Option B — drop `/fork` from the migration tree
 
-- Remove the A5 mention of `/fork` from `docs/requirements/kosax-migration-tree.md`. Keep `/branch` only (with its `['fork']` alias for muscle memory, decoupled from FORK_SUBAGENT gate).
-- Document in the migration tree that "fork" and "branch" are synonyms in KOSAX, both pointing at session JSONL copy.
+- Remove the A5 mention of `/fork` from `docs/requirements/ummaya-migration-tree.md`. Keep `/branch` only (with its `['fork']` alias for muscle memory, decoupled from FORK_SUBAGENT gate).
+- Document in the migration tree that "fork" and "branch" are synonyms in UMMAYA, both pointing at session JSONL copy.
 
 **Pros**:
 - Minimal change.
-- Acknowledges that the noun "fork" doesn't carry CC's subagent meaning in KOSAX.
+- Acknowledges that the noun "fork" doesn't carry CC's subagent meaning in UMMAYA.
 
 **Cons**:
 - Drops a citizen-facing affordance that A5 promised. Existing scenario captures (S10) expect `/fork` as a probe.
@@ -70,8 +70,8 @@ Integration scenario S10 (`scn-S10-session-lifecycle.sh:13`) types `/fork` then 
 
 A is chosen because:
 1. A5 of the migration tree is canonical. Honoring it costs ~30 LOC (one new command file + 4 catalog entries + one test).
-2. The Option A change is non-destructive. The CC subagent fork code path remains intact behind `feature('FORK_SUBAGENT')` and can be revived if KOSAX ever introduces a citizen-facing parallel-execution surface (currently out of scope per AGENTS.md L1 pillars).
-3. Spec 027 session lifecycle is preserved: forking creates a new `session_id` and a new `~/.kosax/memdir/user/sessions/<new_id>.jsonl` (or current `~/.claude/projects/<...>` path until Spec 027 storage migration completes — see `tui/src/utils/sessionStorage.ts:getTranscriptPathForSession`). The path migration is tracked separately (P0 #11, "session storage path mismatch") and is **not** in scope of this decision.
+2. The Option A change is non-destructive. The CC subagent fork code path remains intact behind `feature('FORK_SUBAGENT')` and can be revived if UMMAYA ever introduces a citizen-facing parallel-execution surface (currently out of scope per AGENTS.md L1 pillars).
+3. Spec 027 session lifecycle is preserved: forking creates a new `session_id` and a new `~/.ummaya/memdir/user/sessions/<new_id>.jsonl` (or current `~/.claude/projects/<...>` path until Spec 027 storage migration completes — see `tui/src/utils/sessionStorage.ts:getTranscriptPathForSession`). The path migration is tracked separately (P0 #11, "session storage path mismatch") and is **not** in scope of this decision.
 
 ## Implementation summary
 
@@ -84,5 +84,5 @@ A is chosen because:
 ## Out of scope
 
 - Spec 027 session storage path migration (P0 #11). Fork still uses the legacy `~/.claude/projects/...` path until that Epic ships.
-- CC `FORK_SUBAGENT` revival. Subagent fork is a separate feature with its own Epic if/when KOSAX pursues a parallel-execution surface.
-- Worktree-scoped fork (CC `forkSubagent.ts:buildWorktreeNotice`). KOSAX does not yet have a worktree story.
+- CC `FORK_SUBAGENT` revival. Subagent fork is a separate feature with its own Epic if/when UMMAYA pursues a parallel-execution surface.
+- Worktree-scoped fork (CC `forkSubagent.ts:buildWorktreeNotice`). UMMAYA does not yet have a worktree story.

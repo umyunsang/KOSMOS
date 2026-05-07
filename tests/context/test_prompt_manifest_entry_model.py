@@ -19,7 +19,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from kosax.context.prompt_models import PromptManifestEntry
+from ummaya.context.prompt_models import PromptManifestEntry
 
 # ---------------------------------------------------------------------------
 # Shared valid fixture values — all invariants satisfied simultaneously.

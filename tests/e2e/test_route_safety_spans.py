@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: Apache-2.0
 """E2E OTel span assertion tests for Scenario 1 Route Safety (030 rebase).
 
-Verifies FR-017 (kosax.tool.outcome on execute_tool span) and FR-018
-(kosax.tool.adapter on lookup fetch path) using InMemorySpanExporter.
+Verifies FR-017 (ummaya.tool.outcome on execute_tool span) and FR-018
+(ummaya.tool.adapter on lookup fetch path) using InMemorySpanExporter.
 
 These tests are skipped when OTEL_SDK_DISABLED=true is set in the environment.
 """
@@ -21,7 +21,7 @@ _SDK_DISABLED = os.getenv("OTEL_SDK_DISABLED", "").lower() == "true"
 @pytest.mark.asyncio
 @pytest.mark.skipif(_SDK_DISABLED, reason="OTEL_SDK_DISABLED=true; span assertions skipped")
 async def test_fr017_execute_tool_span_has_outcome() -> None:
-    """FR-017: every execute_tool span carries kosax.tool.outcome ('ok' or 'error').
+    """FR-017: every execute_tool span carries ummaya.tool.outcome ('ok' or 'error').
 
     The executor.py finally block must set the attribute before the span ends.
     """
@@ -45,7 +45,7 @@ async def test_fr017_execute_tool_span_has_outcome() -> None:
 
     for span in execute_tool_spans:
         assert span.outcome in ("ok", "error"), (
-            f"FR-017: kosax.tool.outcome must be 'ok' or 'error', got {span.outcome!r} "
+            f"FR-017: ummaya.tool.outcome must be 'ok' or 'error', got {span.outcome!r} "
             f"for span {span.name!r}"
         )
 
@@ -53,9 +53,9 @@ async def test_fr017_execute_tool_span_has_outcome() -> None:
 @pytest.mark.asyncio
 @pytest.mark.skipif(_SDK_DISABLED, reason="OTEL_SDK_DISABLED=true; span assertions skipped")
 async def test_fr018_fetch_span_has_adapter_attribute() -> None:
-    """FR-018: execute_tool spans for lookup-fetch calls carry kosax.tool.adapter.
+    """FR-018: execute_tool spans for lookup-fetch calls carry ummaya.tool.adapter.
 
-    The lookup.py fetch path sets current_span.set_attribute('kosax.tool.adapter', inp.tool_id).
+    The lookup.py fetch path sets current_span.set_attribute('ummaya.tool.adapter', inp.tool_id).
     """
     report = await run_scenario("happy")
 
@@ -72,9 +72,9 @@ async def test_fr018_fetch_span_has_adapter_attribute() -> None:
         )
 
     for span in adapter_spans:
-        # FR-018: kosax.tool.adapter is only set on lookup fetch spans
+        # FR-018: ummaya.tool.adapter is only set on lookup fetch spans
         assert span.tool_name == "lookup" or "lookup" in span.name.lower(), (
-            f"FR-018: kosax.tool.adapter must only appear on lookup spans, "
+            f"FR-018: ummaya.tool.adapter must only appear on lookup spans, "
             f"but span {span.name!r} has adapter_id={span.adapter_id!r}"
         )
         # adapter_id must be a known adapter
@@ -92,7 +92,7 @@ async def test_fr018_fetch_span_has_adapter_attribute() -> None:
 @pytest.mark.asyncio
 @pytest.mark.skipif(_SDK_DISABLED, reason="OTEL_SDK_DISABLED=true; span assertions skipped")
 async def test_fr018_search_spans_have_no_adapter_attribute() -> None:
-    """FR-018 (negative): search-mode lookup spans must NOT carry kosax.tool.adapter.
+    """FR-018 (negative): search-mode lookup spans must NOT carry ummaya.tool.adapter.
 
     The spec explicitly states that search mode and resolve_location MUST NOT
     carry this attribute (only fetch mode sets it).
@@ -108,5 +108,5 @@ async def test_fr018_search_spans_have_no_adapter_attribute() -> None:
     for span in resolve_spans:
         assert span.adapter_id is None, (
             f"FR-018: resolve_location span {span.name!r} must NOT have "
-            f"kosax.tool.adapter, but got adapter_id={span.adapter_id!r}"
+            f"ummaya.tool.adapter, but got adapter_id={span.adapter_id!r}"
         )

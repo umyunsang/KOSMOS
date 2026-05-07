@@ -1,7 +1,7 @@
 import axios from 'axios'
 import memoize from 'lodash-es/memoize.js'
 import { hostname } from 'os'
-// constants/oauth removed in P1+P2 (Spec 1633); KOSAX uses FriendliAI, not Anthropic OAuth.
+// constants/oauth removed in P1+P2 (Spec 1633); UMMAYA uses FriendliAI, not Anthropic OAuth.
 const getOauthConfig = (): { authorizationUrl: string; tokenUrl: string; clientId: string; scopes: readonly string[]; BASE_API_URL: string } => ({
   authorizationUrl: '', tokenUrl: '', clientId: '', scopes: [] as readonly string[], BASE_API_URL: '',
 })
@@ -12,7 +12,7 @@ import {
 import { logForDebugging } from '../utils/debug.js'
 import { errorMessage } from '../utils/errors.js'
 import { isEssentialTrafficOnly } from '../utils/privacyLevel.js'
-// utils/secureStorage removed in P1+P2 (Spec 1633); KOSAX uses .env-backed secrets, not OS keychain.
+// utils/secureStorage removed in P1+P2 (Spec 1633); UMMAYA uses .env-backed secrets, not OS keychain.
 const getSecureStorage = (): { read: () => null } => ({ read: () => null })
 import { jsonStringify } from '../utils/slowOperations.js'
 

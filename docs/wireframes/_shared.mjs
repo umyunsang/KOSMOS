@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Shared primitives for KOSAX UI wireframe proposals.
+// Shared primitives for UMMAYA UI wireframe proposals.
 //
 // Run any proposal file with Bun + tui's node_modules (has Ink):
 //
@@ -60,10 +60,10 @@ export function Divider({ label }) {
   )
 }
 
-export function CondensedLogo({ cwd = '~/KOSAX/tui', model = 'K-EXAONE' }) {
+export function CondensedLogo({ cwd = '~/UMMAYA/tui', model = 'K-EXAONE' }) {
   return h(Box, null,
     h(Text, { color: C.brand }, '✱ '),
-    h(Text, { bold: true, color: C.brand }, 'KOSAX'),
+    h(Text, { bold: true, color: C.brand }, 'UMMAYA'),
     h(Text, { color: C.subtle }, `  ·  ${model}  ·  `),
     h(Text, { color: C.dim }, cwd),
   )
@@ -73,7 +73,7 @@ export function WelcomeV2Block() {
   // CC WelcomeV2 14-row ASCII block — abbreviated for wireframe clarity.
   return h(Box, { flexDirection: 'column', width: 60 },
     h(Box, null,
-      h(Text, { bold: true, color: C.brand }, 'Welcome to KOSAX '),
+      h(Text, { bold: true, color: C.brand }, 'Welcome to UMMAYA '),
       h(Text, { dimColor: true }, 'v0.1-alpha')
     ),
     h(Text, { color: C.dim }, '…'.repeat(58)),
@@ -159,7 +159,7 @@ export function Spinner({ verb }) {
 //
 // Dot color → primitive:
 //     blue   (lookup)  ·  orange (submit)  ·  red (verify)
-//     purple (plugin-namespaced verb). Subscribe was deferred until KOSAX has
+//     purple (plugin-namespaced verb). Subscribe was deferred until UMMAYA has
 //     an app/push-notification runtime.
 export function ToolUseBlock({ primitive = 'lookup', ministry, result, detail }) {
   const dot = PRIMITIVE_DOT[primitive] ?? C.ring

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # S3: 출산 보조금 신청 — lookup(mohw) + verify(simple_auth) + submit(welfare_application) + permission ⓷ + receipt + export
 set -euo pipefail
-wait_for_pane "KOSAX|❯" 30
+wait_for_pane "UMMAYA|❯" 30
 snapshot_pane 00-boot
 
 # Step 1: search MOHW welfare

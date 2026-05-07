@@ -25,9 +25,9 @@
 set -uo pipefail   # -e disabled — we want to capture timeout snapshots without exit
 
 # ---------------------------------------------------------------------------
-# Wait for boot + KOSAX branding
+# Wait for boot + UMMAYA branding
 # ---------------------------------------------------------------------------
-wait_for_pane "KOSAX|kosax" 60 || true
+wait_for_pane "UMMAYA|ummaya" 60 || true
 snapshot_pane boot
 
 # ---------------------------------------------------------------------------

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Tests for kosax.tools.kma.kma_pre_warning."""
+"""Tests for ummaya.tools.kma.kma_pre_warning."""
 
 from __future__ import annotations
 
@@ -11,10 +11,10 @@ import httpx
 import pytest
 from pydantic import ValidationError
 
-from kosax.tools.errors import ConfigurationError, ToolExecutionError
-from kosax.tools.executor import ToolExecutor
-from kosax.tools.kma import kma_pre_warning as kma_pre_warning_module
-from kosax.tools.kma.kma_pre_warning import (
+from ummaya.tools.errors import ConfigurationError, ToolExecutionError
+from ummaya.tools.executor import ToolExecutor
+from ummaya.tools.kma import kma_pre_warning as kma_pre_warning_module
+from ummaya.tools.kma.kma_pre_warning import (
     KMA_PRE_WARNING_TOOL,
     KmaPreWarningInput,
     KmaPreWarningOutput,
@@ -23,8 +23,8 @@ from kosax.tools.kma.kma_pre_warning import (
     _parse_response,
     register,
 )
-from kosax.tools.models import LookupCollection
-from kosax.tools.registry import ToolRegistry
+from ummaya.tools.models import LookupCollection
+from ummaya.tools.registry import ToolRegistry
 
 # ---------------------------------------------------------------------------
 # Fixture helpers
@@ -203,7 +203,7 @@ class TestCall:
     @pytest.mark.asyncio
     async def test_success_flow(self, monkeypatch):
         """_call with a mocked httpx client returns a dict matching output schema."""
-        monkeypatch.setenv("KOSAX_DATA_GO_KR_API_KEY", "test-key-abc")
+        monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", "test-key-abc")
         fixture_data = _load_fixture("kma_pre_warning_success.json")
         mock_client = _make_mock_client(fixture_data)
 
@@ -218,7 +218,7 @@ class TestCall:
     @pytest.mark.asyncio
     async def test_success_with_stn_id_filter(self, monkeypatch):
         """_call with stn_id passes the parameter to the API."""
-        monkeypatch.setenv("KOSAX_DATA_GO_KR_API_KEY", "test-key-abc")
+        monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", "test-key-abc")
         fixture_data = _load_fixture("kma_pre_warning_success.json")
         mock_client = _make_mock_client(fixture_data)
 
@@ -233,7 +233,7 @@ class TestCall:
     @pytest.mark.asyncio
     async def test_no_stn_id_excludes_param(self, monkeypatch):
         """_call without stn_id must NOT include stnId in the request parameters."""
-        monkeypatch.setenv("KOSAX_DATA_GO_KR_API_KEY", "test-key-abc")
+        monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", "test-key-abc")
         fixture_data = _load_fixture("kma_pre_warning_empty.json")
         mock_client = _make_mock_client(fixture_data)
 
@@ -247,7 +247,7 @@ class TestCall:
     @pytest.mark.asyncio
     async def test_empty_response_no_error(self, monkeypatch):
         """A no-data (resultCode=03) response must return empty output without error."""
-        monkeypatch.setenv("KOSAX_DATA_GO_KR_API_KEY", "test-key-abc")
+        monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", "test-key-abc")
         fixture_data = _load_fixture("kma_pre_warning_empty.json")
         mock_client = _make_mock_client(fixture_data)
 
@@ -259,8 +259,8 @@ class TestCall:
 
     @pytest.mark.asyncio
     async def test_missing_api_key(self, monkeypatch):
-        """Absent KOSAX_DATA_GO_KR_API_KEY raises ConfigurationError."""
-        monkeypatch.delenv("KOSAX_DATA_GO_KR_API_KEY", raising=False)
+        """Absent UMMAYA_DATA_GO_KR_API_KEY raises ConfigurationError."""
+        monkeypatch.delenv("UMMAYA_DATA_GO_KR_API_KEY", raising=False)
 
         inp = KmaPreWarningInput()
         with pytest.raises(ConfigurationError):
@@ -269,7 +269,7 @@ class TestCall:
     @pytest.mark.asyncio
     async def test_xml_content_type_guard(self, monkeypatch):
         """An XML content-type response must raise ToolExecutionError."""
-        monkeypatch.setenv("KOSAX_DATA_GO_KR_API_KEY", "test-key-abc")
+        monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", "test-key-abc")
 
         mock_response = MagicMock(spec=httpx.Response)
         mock_response.status_code = 200
@@ -286,7 +286,7 @@ class TestCall:
     @pytest.mark.asyncio
     async def test_http_status_error(self, monkeypatch):
         """An HTTP 500 must raise ToolExecutionError."""
-        monkeypatch.setenv("KOSAX_DATA_GO_KR_API_KEY", "test-key-abc")
+        monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", "test-key-abc")
 
         mock_response = MagicMock(spec=httpx.Response)
         mock_response.status_code = 500

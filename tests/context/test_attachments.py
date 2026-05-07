@@ -18,11 +18,11 @@ from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 
-from kosax.context.attachments import AttachmentCollector
-from kosax.context.models import SystemPromptConfig
-from kosax.engine.config import QueryEngineConfig
-from kosax.engine.models import QueryState
-from kosax.llm.usage import UsageTracker
+from ummaya.context.attachments import AttachmentCollector
+from ummaya.context.models import SystemPromptConfig
+from ummaya.engine.config import QueryEngineConfig
+from ummaya.engine.models import QueryState
+from ummaya.llm.usage import UsageTracker
 
 # ---------------------------------------------------------------------------
 # Helpers

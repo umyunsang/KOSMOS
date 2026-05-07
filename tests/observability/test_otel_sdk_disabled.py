@@ -15,7 +15,7 @@ import pytest
 from opentelemetry import trace as otel_trace
 from opentelemetry.trace import NoOpTracerProvider
 
-from kosax.observability.tracing import TracingSettings, _settings_from_env, setup_tracing
+from ummaya.observability.tracing import TracingSettings, _settings_from_env, setup_tracing
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -97,7 +97,7 @@ def test_sdk_disabled_no_otlp_http_calls() -> None:
         patch("httpx.Client.post", mock_post),
     ):
         provider = setup_tracing(_noop_settings())
-        tracer = provider.get_tracer("kosax")
+        tracer = provider.get_tracer("ummaya")
 
         with tracer.start_as_current_span("chat") as span:
             # Simulate attribute setting — would trigger export in real provider

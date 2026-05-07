@@ -1,5 +1,5 @@
 /**
- * KOSAX-original — SubmitErrorBanner renderer.
+ * UMMAYA-original — SubmitErrorBanner renderer.
  *
  * Failure banner shown when a submit primitive returns ok=false.
  * Includes error code, message, optional retry guidance, and mock chip.

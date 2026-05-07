@@ -2,7 +2,7 @@
 // CC reference: .references/claude-code-sourcemap/restored-src/src/interactiveHelpers.tsx
 // Divergence LOC: ~42 (Grove dialog removed; logEvent calls removed; getClaudeAIOAuthTokens removed; channel-allowlist OAuth check fall-through)
 // Spec citation: #1633 (services/api/grove + utils/auth removal), Epic #2639 (audit § 5.7)
-// Justification: Grove + Anthropic OAuth + tengu_* analytics all swap-1 dependent; KOSAX removes them and falls through to no-OAuth branches preserving control flow.
+// Justification: Grove + Anthropic OAuth + tengu_* analytics all swap-1 dependent; UMMAYA removes them and falls through to no-OAuth branches preserving control flow.
 import { feature } from 'bun:bundle';
 import { appendFileSync } from 'fs';
 import React from 'react';

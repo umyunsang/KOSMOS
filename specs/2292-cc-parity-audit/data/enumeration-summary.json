@@ -1,6 +1,6 @@
 {
   "audit_timestamp_utc": "2026-04-29T19:00:00Z",
-  "kosax_total_files": 2090,
+  "ummaya_total_files": 2090,
   "cc_total_files": 1884,
   "categories": {
     "keep-byte-identical": {
@@ -23,7 +23,7 @@
       "baseline_source": "specs/1979-plugin-dx-tui-integration/cc-source-scope-audit.md § 1.2",
       "drift_explanation": "+6 corresponds 1:1 to import-candidate -6. Internal boundary shift only — total differing union (modified + import-candidate) = 285, identical to baseline (212+73)."
     },
-    "kosax-only": {
+    "ummaya-only": {
       "actual": 274,
       "baseline": 274,
       "delta": 0,
@@ -37,7 +37,7 @@
     }
   },
   "totals": {
-    "kosax_categories_sum": 2090,
+    "ummaya_categories_sum": 2090,
     "cc_categories_sum": 1884,
     "differing_union_actual": 285,
     "differing_union_baseline": 285,

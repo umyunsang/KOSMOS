@@ -68,7 +68,7 @@ function makeContext(internalToolNames: string[] = []): ToolUseContext {
 
 /**
  * Build a synthetic AdapterManifestSyncFrame mimicking a real backend emission.
- * Represents the frame that kosax.ipc.adapter_manifest_emitter.emit_manifest()
+ * Represents the frame that ummaya.ipc.adapter_manifest_emitter.emit_manifest()
  * would write to stdout when the Mock backend boots.
  */
 function makeBackendManifestFrame(
@@ -153,7 +153,7 @@ describe('US2 Scenario 1: nmc_emergency_search resolves through synced manifest'
     expect(result.result).toBe(true)
 
     // Citation slot must be populated from the manifest entry (FR-018).
-    const citations = (ctx as { kosaxCitations?: { real_classification_url: string }[] }).kosaxCitations
+    const citations = (ctx as { ummayaCitations?: { real_classification_url: string }[] }).ummayaCitations
     expect(citations).toBeDefined()
     expect(citations!.length).toBeGreaterThan(0)
     expect(citations![0]?.real_classification_url).toBe('https://www.e-gen.or.kr/nemc/main.do')

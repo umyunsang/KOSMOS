@@ -20,10 +20,10 @@ import httpx
 import pytest
 from pydantic import ValidationError
 
-from kosax.tools.errors import ConfigurationError, ToolExecutionError
-from kosax.tools.executor import ToolExecutor
-from kosax.tools.koroad.code_tables import GugunCode, SearchYearCd, SidoCode
-from kosax.tools.koroad.koroad_accident_search import (
+from ummaya.tools.errors import ConfigurationError, ToolExecutionError
+from ummaya.tools.executor import ToolExecutor
+from ummaya.tools.koroad.code_tables import GugunCode, SearchYearCd, SidoCode
+from ummaya.tools.koroad.koroad_accident_search import (
     KOROAD_ACCIDENT_SEARCH_TOOL,
     KoroadAccidentSearchInput,
     KoroadAccidentSearchOutput,
@@ -32,7 +32,7 @@ from kosax.tools.koroad.koroad_accident_search import (
     _parse_response,
     register,
 )
-from kosax.tools.registry import ToolRegistry
+from ummaya.tools.registry import ToolRegistry
 
 # ---------------------------------------------------------------------------
 # Fixture file helpers
@@ -259,7 +259,7 @@ class TestCall:
     """_call async adapter with mocked httpx."""
 
     async def test_success_flow(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.setenv("KOSAX_DATA_GO_KR_API_KEY", "test-key")
+        monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", "test-key")
         fixture_data = _load_fixture("koroad_success.json")
 
         mock_response = MagicMock(spec=httpx.Response)
@@ -283,7 +283,7 @@ class TestCall:
         assert result["hotspots"][0]["spot_cd"] == "2025119.0001"
 
     async def test_missing_api_key(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.delenv("KOSAX_DATA_GO_KR_API_KEY", raising=False)
+        monkeypatch.delenv("UMMAYA_DATA_GO_KR_API_KEY", raising=False)
         inp = KoroadAccidentSearchInput(
             search_year_cd=SearchYearCd.GENERAL_2024,
             si_do=SidoCode.SEOUL,
@@ -291,10 +291,10 @@ class TestCall:
         )
         with pytest.raises(ConfigurationError) as exc_info:
             await _call(inp)
-        assert "KOSAX_DATA_GO_KR_API_KEY" in str(exc_info.value)
+        assert "UMMAYA_DATA_GO_KR_API_KEY" in str(exc_info.value)
 
     async def test_xml_content_type_guard(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.setenv("KOSAX_DATA_GO_KR_API_KEY", "test-key")
+        monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", "test-key")
 
         mock_response = MagicMock(spec=httpx.Response)
         mock_response.status_code = 200

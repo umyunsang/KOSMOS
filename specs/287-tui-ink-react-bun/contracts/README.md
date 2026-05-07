@@ -1,7 +1,7 @@
 # IPC Frame Contracts — Spec 287 TUI
 
 **Branch**: `287-tui-ink-react-bun`
-**Source of truth**: Python Pydantic v2 models at `src/kosax/ipc/frame_schema.py` (to be created by task T-BACKEND-001).
+**Source of truth**: Python Pydantic v2 models at `src/ummaya/ipc/frame_schema.py` (to be created by task T-BACKEND-001).
 **Consumer**: TypeScript TUI via generated types at `tui/src/ipc/frames.generated.ts` (emitted by `tui/scripts/gen-ipc-types.ts`).
 
 These JSON Schemas are reference artifacts — they MUST match the `model_json_schema()` output of the Pydantic models. A CI gate compares them and fails on drift.

@@ -7,11 +7,11 @@
 #   - tui/src/state/subscriptionRegistry.ts              (Lead-FU-5 process singleton)
 #   - tui/src/tools/SubscribePrimitive/SubscribePrimitive.ts (call() → registry.record())
 #   - tui/src/schemas/ui-l2/agent.ts                     (shouldActivateSwarm A+C union)
-#   - src/kosax/primitives/subscribe.py                  (4 modality drivers)
-#   - src/kosax/tools/mock/cbs/disaster_feed.py         (mock_cbs_disaster_v1)
-#   - src/kosax/tools/mock/data_go_kr/rss_notices.py    (mock_rss_public_notices_v1)
-#   - src/kosax/tools/mock/data_go_kr/rest_pull_tick.py (mock_rest_pull_tick_v1)
-#   - src/kosax/ipc/frame_schema.py:516                 (WorkerStatusFrame)
+#   - src/ummaya/primitives/subscribe.py                  (4 modality drivers)
+#   - src/ummaya/tools/mock/cbs/disaster_feed.py         (mock_cbs_disaster_v1)
+#   - src/ummaya/tools/mock/data_go_kr/rss_notices.py    (mock_rss_public_notices_v1)
+#   - src/ummaya/tools/mock/data_go_kr/rest_pull_tick.py (mock_rest_pull_tick_v1)
+#   - src/ummaya/ipc/frame_schema.py:516                 (WorkerStatusFrame)
 #
 # Probe matrix (5 mandatory probe points per AGENTS.md):
 #   1. Input ingress  — /agents + /agents --detail keystrokes (snap-* labels)
@@ -32,7 +32,7 @@ set -uo pipefail
 # ---------------------------------------------------------------------------
 # Stage 0 — Boot + branding
 # ---------------------------------------------------------------------------
-wait_for_pane "KOSAX|kosax|external CLAUDE" 60 || true
+wait_for_pane "UMMAYA|ummaya|external CLAUDE" 60 || true
 snapshot_pane stage0-boot
 
 # Auto-allow CLAUDE.md external imports prompt (1 = Yes), then onboarding Esc

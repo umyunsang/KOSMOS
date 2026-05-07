@@ -29,8 +29,8 @@ import pathlib
 
 import pytest
 
-from kosax.context.models import SystemPromptConfig
-from kosax.context.system_prompt import SystemPromptAssembler
+from ummaya.context.models import SystemPromptConfig
+from ummaya.context.system_prompt import SystemPromptAssembler
 
 # ---------------------------------------------------------------------------
 # Path constants — all absolute, resolved from this file's location.

@@ -1,12 +1,12 @@
 // Source: .references/claude-code-sourcemap/restored-src/src/utils/theme.ts (Claude Code 2.1.88, research-use)
-// KOSAX 브랜드 토큰으로 리네이밍됨 (ADR-006 A-9)
+// UMMAYA 브랜드 토큰으로 리네이밍됨 (ADR-006 A-9)
 import type { ThemeToken } from './tokens'
 
 /**
- * Dark theme — KOSAX brand palette (ADR-006 A-9).
- * Extracted from assets/kosax-logo.svg + assets/kosax-banner-dark.svg.
+ * Dark theme — UMMAYA brand palette (ADR-006 A-9).
+ * Extracted from assets/ummaya-logo.svg + assets/ummaya-banner-dark.svg.
  * Navy background `#0a0e27` replaces the CC cyan placeholder; ten new metaphor
- * tokens (kosaxCore, orbitalRing, wordmark, subtitle, 4 ministry satellites)
+ * tokens (ummayaCore, orbitalRing, wordmark, subtitle, 4 ministry satellites)
  * supersede the 7 CC-legacy identifiers.
  *
  * Contract: specs/035-onboarding-brand-port/contracts/brand-token-surface.md
@@ -18,16 +18,16 @@ import type { ThemeToken } from './tokens'
 const darkTheme: ThemeToken = {
   autoAccept: 'rgb(175,135,255)', // Electric violet
   bashBorder: 'rgb(253,93,177)', // Bright pink
-  // KOSAX metaphor — orbital core (asterisk glyph)
-  kosaxCore: 'rgb(99,102,241)', // #6366f1 — kosaxCore (brand-token-surface § 2 row 1)
-  kosaxCoreShimmer: 'rgb(165,180,252)', // #a5b4fc — shimmer variant (research R-2)
-  // KOSAX metaphor — orbital ring
+  // UMMAYA metaphor — orbital core (asterisk glyph)
+  ummayaCore: 'rgb(99,102,241)', // #6366f1 — ummayaCore (brand-token-surface § 2 row 1)
+  ummayaCoreShimmer: 'rgb(165,180,252)', // #a5b4fc — shimmer variant (research R-2)
+  // UMMAYA metaphor — orbital ring
   orbitalRing: 'rgb(96,165,250)', // #60a5fa — orbitalRing (brand-token-surface § 2 row 3)
   orbitalRingShimmer: 'rgb(199,210,254)', // #c7d2fe — shimmer variant
-  // KOSAX wordmark + subtitle
+  // UMMAYA wordmark + subtitle
   wordmark: 'rgb(224,231,255)', // #e0e7ff — wordmark slot
   subtitle: 'rgb(148,163,184)', // #94a3b8 — subtitle slot
-  // KOSAX ministry satellites (Phase 1 ministry roster)
+  // UMMAYA ministry satellites (Phase 1 ministry roster)
   agentSatelliteKoroad: 'rgb(244,114,182)', // #f472b6 — KOROAD accent (한국도로공사)
   agentSatelliteKma: 'rgb(52,211,153)', // #34d399 — KMA accent (기상청)
   agentSatelliteHira: 'rgb(147,197,253)', // #93c5fd — HIRA accent (건강보험심사평가원)
@@ -45,7 +45,7 @@ const darkTheme: ThemeToken = {
   subtle: 'rgb(148,148,148)', // Medium gray — raised from rgb(80,80,80) for WCAG 4.5:1 vs #0a0e27 (Epic H FR-011)
   suggestion: 'rgb(177,185,249)', // Light blue-purple
   remember: 'rgb(177,185,249)', // Light blue-purple
-  background: 'rgb(10,14,39)', // #0a0e27 — KOSAX navy (ADR-006 A-9)
+  background: 'rgb(10,14,39)', // #0a0e27 — UMMAYA navy (ADR-006 A-9)
   success: 'rgb(78,186,101)', // Bright green
   error: 'rgb(255,107,128)', // Bright red
   warning: 'rgb(255,193,7)', // Bright amber

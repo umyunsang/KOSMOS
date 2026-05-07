@@ -465,8 +465,8 @@ function _temp4(s) {
   return s.replBridgeSessionUrl;
 }
 async function checkBridgePrerequisites(): Promise<string | null> {
-  // policyLimits removed in P1+P2 (Spec 1633); KOSAX opens features by default via Spec 033 permission gauntlet.
-  // No policy gate in KOSAX — remote control allowed by default.
+  // policyLimits removed in P1+P2 (Spec 1633); UMMAYA opens features by default via Spec 033 permission gauntlet.
+  // No policy gate in UMMAYA — remote control allowed by default.
   const disabledReason = await getBridgeDisabledReason();
   if (disabledReason) {
     return disabledReason;

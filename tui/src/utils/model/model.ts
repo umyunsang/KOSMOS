@@ -1,9 +1,9 @@
-// KOSAX Epic #2112: legacy model-dispatch matrix removed; collapsed to K-EXAONE single branch.
+// UMMAYA Epic #2112: legacy model-dispatch matrix removed; collapsed to K-EXAONE single branch.
 // Public function signatures preserved per FR-006 caller-reach rule (callers in services/api/claude.ts,
 // memdir/findRelevantMemories.ts, utils/attachments.ts, commands/insights.ts, services/tokenEstimation.ts,
 // components/messages/AssistantTextMessage.tsx are bucket B — kept alive until P2 issue #2147 lands).
 //
-// Source-of-truth literals: this file (lines below) + src/kosax/llm/config.py:37.
+// Source-of-truth literals: this file (lines below) + src/ummaya/llm/config.py:37.
 // FR-012 mandates no NEW K-EXAONE literal location; existing pre-spec sites at
 // tui/src/ipc/llmClient.ts:31 and tui/src/tools/TranslateTool/TranslateTool.ts:64
 // remain in place (P2 cleanup tracked under issue #2150).
@@ -24,14 +24,14 @@ export type ModelSetting = ModelName | ModelAlias | null
 // FR-012 source-of-truth: imports from constants.ts (single declaration site
 // in tui/src/utils/model/). All other callers in this subtree share the same
 // constants, breaking module-init cycles cleanly.
-import { KOSAX_K_EXAONE_MODEL, KOSAX_K_EXAONE_SHORT, KOSAX_K_EXAONE_DISPLAY } from './constants.js'
+import { UMMAYA_K_EXAONE_MODEL, UMMAYA_K_EXAONE_SHORT, UMMAYA_K_EXAONE_DISPLAY } from './constants.js'
 
 export function getSmallFastModel(): ModelName {
   return getDefaultMainLoopModel()
 }
 
 export function isNonCustomOpusModel(_model: ModelName): boolean {
-  // KOSAX: no Opus model exists; always returns false.
+  // UMMAYA: no Opus model exists; always returns false.
   return false
 }
 
@@ -44,7 +44,7 @@ export function isNonCustomOpusModel(_model: ModelName): boolean {
  * Priority order within this function:
  * 1. Model override during session (from /model command) - highest priority
  * 2. Model override at startup (from --model flag)
- * 3. KOSAX_FRIENDLI_MODEL environment variable
+ * 3. UMMAYA_FRIENDLI_MODEL environment variable
  * 4. Settings (from user's saved settings)
  */
 export function getUserSpecifiedModelSetting(): ModelSetting | undefined {
@@ -55,7 +55,7 @@ export function getUserSpecifiedModelSetting(): ModelSetting | undefined {
     specifiedModel = modelOverride
   } else {
     const settings = getSettings_DEPRECATED() || {}
-    specifiedModel = process.env.KOSAX_FRIENDLI_MODEL || settings.model || undefined
+    specifiedModel = process.env.UMMAYA_FRIENDLI_MODEL || settings.model || undefined
   }
 
   if (specifiedModel && !isModelAllowed(specifiedModel)) {
@@ -97,7 +97,7 @@ export function getDefaultHaikuModel(): ModelName {
 
 /**
  * Get the model to use for runtime, depending on the runtime context.
- * KOSAX: always returns the K-EXAONE main-loop model; permission-mode-driven
+ * UMMAYA: always returns the K-EXAONE main-loop model; permission-mode-driven
  * model swap is dead under the single-fixed provider invariant.
  */
 export function getRuntimeMainLoopModel(_params: {
@@ -111,10 +111,10 @@ export function getRuntimeMainLoopModel(_params: {
 /**
  * Get the default main loop model setting.
  *
- * KOSAX always uses the canonical K-EXAONE model via FriendliAI Serverless.
+ * UMMAYA always uses the canonical K-EXAONE model via FriendliAI Serverless.
  */
 export function getDefaultMainLoopModelSetting(): ModelName | ModelAlias {
-  return KOSAX_K_EXAONE_MODEL
+  return UMMAYA_K_EXAONE_MODEL
 }
 
 /**
@@ -122,11 +122,11 @@ export function getDefaultMainLoopModelSetting(): ModelName | ModelAlias {
  * (bypassing any user-specified values).
  */
 export function getDefaultMainLoopModel(): ModelName {
-  return KOSAX_K_EXAONE_MODEL as ModelName
+  return UMMAYA_K_EXAONE_MODEL as ModelName
 }
 
 /**
- * KOSAX Epic #2112: legacy name-pattern dispatch (15+ branches) collapsed to a
+ * UMMAYA Epic #2112: legacy name-pattern dispatch (15+ branches) collapsed to a
  * fail-safe single branch keyed on K-EXAONE detection.
  *
  * [Deferred to P2 — issue #2147]: this function is preserved as an export for
@@ -135,7 +135,7 @@ export function getDefaultMainLoopModel(): ModelName {
 export function firstPartyNameToCanonical(name: ModelName): ModelShortName {
   const lowered = name.toLowerCase()
   if (lowered.includes('k-exaone')) {
-    return KOSAX_K_EXAONE_SHORT as ModelShortName
+    return UMMAYA_K_EXAONE_SHORT as ModelShortName
   }
   // Fall back to the original name unchanged. Pre-P2 callers that pass
   // legacy-shaped strings receive them back as-is — the dispatch table
@@ -145,14 +145,14 @@ export function firstPartyNameToCanonical(name: ModelName): ModelShortName {
 
 /**
  * Maps a full model string to a shorter canonical version.
- * KOSAX routes everything through firstPartyNameToCanonical's K-EXAONE branch.
+ * UMMAYA routes everything through firstPartyNameToCanonical's K-EXAONE branch.
  */
 export function getCanonicalName(fullModelName: ModelName): ModelShortName {
   return firstPartyNameToCanonical(resolveOverriddenModel(fullModelName))
 }
 
 export function getClaudeAiUserDefaultModelDescription(_fastMode = false): string {
-  return `${KOSAX_K_EXAONE_DISPLAY} · KOSAX default`
+  return `${UMMAYA_K_EXAONE_DISPLAY} · UMMAYA default`
 }
 
 export function renderDefaultModelSetting(setting: ModelName | ModelAlias): string {
@@ -160,18 +160,18 @@ export function renderDefaultModelSetting(setting: ModelName | ModelAlias): stri
 }
 
 export function getOpus46PricingSuffix(_fastMode: boolean): string {
-  // KOSAX: no Opus pricing tier; returns empty.
+  // UMMAYA: no Opus pricing tier; returns empty.
   return ''
 }
 
 export function isOpus1mMergeEnabled(): boolean {
-  // KOSAX: no Opus 1M merge — single-fixed K-EXAONE 256K context.
+  // UMMAYA: no Opus 1M merge — single-fixed K-EXAONE 256K context.
   return false
 }
 
 export function renderModelSetting(setting: ModelName | ModelAlias): string {
   if (isModelAlias(setting)) {
-    return KOSAX_K_EXAONE_DISPLAY
+    return UMMAYA_K_EXAONE_DISPLAY
   }
   return renderModelName(setting)
 }
@@ -180,11 +180,11 @@ export function renderModelSetting(setting: ModelName | ModelAlias): string {
  * Returns a human-readable display name for known public models, or null
  * if the model is not recognized as a public model.
  *
- * KOSAX: only the canonical K-EXAONE identifier is recognised; everything else returns null.
+ * UMMAYA: only the canonical K-EXAONE identifier is recognised; everything else returns null.
  */
 export function getPublicModelDisplayName(model: ModelName): string | null {
-  if (model === KOSAX_K_EXAONE_MODEL) {
-    return KOSAX_K_EXAONE_DISPLAY
+  if (model === UMMAYA_K_EXAONE_MODEL) {
+    return UMMAYA_K_EXAONE_DISPLAY
   }
   // modelStrings still exposes legacy keys for the bucket-B callers; if they
   // happen to match one of those keys at runtime, fall through to null so the
@@ -198,21 +198,21 @@ export function renderModelName(model: ModelName): string {
 
 /**
  * Returns a safe author name for public display (e.g., in git commit trailers).
- * KOSAX: returns "K-EXAONE" branding instead of "Claude".
+ * UMMAYA: returns "K-EXAONE" branding instead of "Claude".
  */
 export function getPublicModelName(model: ModelName): string {
   const publicName = getPublicModelDisplayName(model)
   if (publicName) {
     return publicName
   }
-  return `KOSAX (${model})`
+  return `UMMAYA (${model})`
 }
 
 /**
  * Returns a full model name for use in this session, possibly after resolving
  * a model alias.
  *
- * KOSAX: every alias and unknown name resolves to the canonical K-EXAONE model;
+ * UMMAYA: every alias and unknown name resolves to the canonical K-EXAONE model;
  * the [1m] suffix path is dead (K-EXAONE supports 256K natively).
  */
 export function parseUserSpecifiedModel(modelInput: ModelName | ModelAlias): ModelName {
@@ -224,8 +224,8 @@ export function parseUserSpecifiedModel(modelInput: ModelName | ModelAlias): Mod
   if (isModelAlias(normalised)) {
     return getDefaultMainLoopModel()
   }
-  if (normalised === KOSAX_K_EXAONE_MODEL.toLowerCase()) {
-    return KOSAX_K_EXAONE_MODEL
+  if (normalised === UMMAYA_K_EXAONE_MODEL.toLowerCase()) {
+    return UMMAYA_K_EXAONE_MODEL
   }
   // Codex P1 (PR #2151): legacy alias values (`sonnet`, `opus`, `haiku`, `best`,
   // `opusplan`, plus `[1m]` variants) may still flow in from existing configs,
@@ -249,7 +249,7 @@ export function parseUserSpecifiedModel(modelInput: ModelName | ModelAlias): Mod
 
 /**
  * Resolves a skill's `model:` frontmatter against the current model.
- * KOSAX: K-EXAONE has a single context window (256K native); the [1m] carry-over
+ * UMMAYA: K-EXAONE has a single context window (256K native); the [1m] carry-over
  * logic is dead. Pass the skill model through unchanged when it does not already
  * carry a [1m] tag, otherwise honour the explicit tag.
  */
@@ -264,7 +264,7 @@ export function resolveSkillModelOverride(skillModel: string, currentModel: stri
 }
 
 export function isLegacyModelRemapEnabled(): boolean {
-  // KOSAX: no legacy remap; helper preserved for caller import-graph.
+  // UMMAYA: no legacy remap; helper preserved for caller import-graph.
   return false
 }
 
@@ -280,13 +280,13 @@ export function modelDisplayString(model: ModelSetting): string {
 }
 
 /**
- * KOSAX: returns the K-EXAONE marketing name for the canonical identifier;
+ * UMMAYA: returns the K-EXAONE marketing name for the canonical identifier;
  * undefined for everything else. Bucket-B callers that pass legacy-shaped
  * strings receive undefined and apply their own fallback.
  */
 export function getMarketingNameForModel(modelId: string): string | undefined {
-  if (modelId === KOSAX_K_EXAONE_MODEL) {
-    return KOSAX_K_EXAONE_DISPLAY
+  if (modelId === UMMAYA_K_EXAONE_MODEL) {
+    return UMMAYA_K_EXAONE_DISPLAY
   }
   return undefined
 }

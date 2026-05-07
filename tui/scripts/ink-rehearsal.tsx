@@ -8,7 +8,7 @@
  *
  * Strategy: ink-testing-library mounts the actual Ink components in-process
  * with a mocked stdin/stdout. We:
- *   1. Spawn the real Python backend (`uv run kosax --ipc stdio`) via the
+ *   1. Spawn the real Python backend (`uv run ummaya --ipc stdio`) via the
  *      production `createBridge()` IPC bridge.
  *   2. Mount a minimal `<RehearsalHarness />` Ink component using
  *      `ink-testing-library`'s `render()`.
@@ -22,7 +22,7 @@
  *   bun run scripts/ink-rehearsal.tsx greeting
  *   bun run scripts/ink-rehearsal.tsx lookup-emergency-room
  *
- * Env: KOSAX_FRIENDLI_TOKEN must be exported (or in `.env` sourced before
+ * Env: UMMAYA_FRIENDLI_TOKEN must be exported (or in `.env` sourced before
  * invocation). Without it the backend will return an error frame; the
  * rehearsal still completes with a structured failure summary.
  */
@@ -417,7 +417,7 @@ async function main(): Promise<void> {
   const scenario = SCENARIOS[scenarioName]
   process.stderr.write(`[ink-rehearsal] scenario=${scenario.name} prompt=${JSON.stringify(scenario.prompt)}\n`)
 
-  // Spawn the real Python backend (cmd defaults to `uv run kosax --ipc stdio`).
+  // Spawn the real Python backend (cmd defaults to `uv run ummaya --ipc stdio`).
   const bridge = createBridge({})
 
   let summary: RehearsalSummary | null = null

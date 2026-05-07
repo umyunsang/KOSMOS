@@ -9,8 +9,8 @@
       "versions": [
         {
           "version": "1.0.0",
-          "bundle_url": "file:///Users/um-yunsang/KOSAX/specs/1979-plugin-dx-tui-integration/scripts/fixtures/seoul-subway-1.0.0.tar.gz",
-          "provenance_url": "file:///Users/um-yunsang/KOSAX/specs/1979-plugin-dx-tui-integration/scripts/fixtures/seoul-subway-1.0.0.intoto.jsonl",
+          "bundle_url": "file:///Users/um-yunsang/UMMAYA/specs/1979-plugin-dx-tui-integration/scripts/fixtures/seoul-subway-1.0.0.tar.gz",
+          "provenance_url": "file:///Users/um-yunsang/UMMAYA/specs/1979-plugin-dx-tui-integration/scripts/fixtures/seoul-subway-1.0.0.intoto.jsonl",
           "bundle_sha256": "7a4f8b26cfae5e63fd137e613d7ba0e9aaab7e9beae4ca711ade2dbcd0654f46",
           "published_iso": "2026-04-28T00:00:00Z"
         }

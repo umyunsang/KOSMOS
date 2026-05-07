@@ -29,11 +29,11 @@ from typing import Any
 
 import pytest
 
-from kosax.ipc.frame_schema import (
+from ummaya.ipc.frame_schema import (
     ChatMessage as IPCChatMessage,
 )
-from kosax.ipc.frame_schema import ChatRequestFrame
-from kosax.llm.models import StreamEvent
+from ummaya.ipc.frame_schema import ChatRequestFrame
+from ummaya.llm.models import StreamEvent
 
 # Receipt-id regex (FR-015 / I-P4).
 _RECEIPT_RE = re.compile(r"hometax-\d{4}-\d{2}-\d{2}-RX-[A-Z0-9]{5}")
@@ -218,8 +218,8 @@ async def _run_chain(
     frame: ChatRequestFrame,
     monkeypatch: pytest.MonkeyPatch,
 ) -> _CaptureBuf:
-    import kosax.tools.mock  # noqa: F401 — registers all mock adapters
-    from kosax.ipc import stdio as stdio_mod
+    import ummaya.tools.mock  # noqa: F401 — registers all mock adapters
+    from ummaya.ipc import stdio as stdio_mod
 
     monkeypatch.setattr(stdio_mod, "_stdout_lock", None)
 
@@ -232,13 +232,13 @@ async def _run_chain(
     class _FakeLLMConfig:
         pass
 
-    import kosax.llm.client as llm_client_mod
-    import kosax.llm.config as llm_config_mod
+    import ummaya.llm.client as llm_client_mod
+    import ummaya.llm.config as llm_config_mod
 
     monkeypatch.setattr(llm_client_mod, "LLMClient", _TaxReturnChainLLMClient)
     monkeypatch.setattr(llm_config_mod, "LLMClientConfig", _FakeLLMConfig)
 
-    import kosax.tools.registry as registry_mod
+    import ummaya.tools.registry as registry_mod
 
     _core_tools: list[dict[str, object]] = [
         {
@@ -259,12 +259,12 @@ async def _run_chain(
     # Patch lookup to return a synthetic hometax result without needing a
     # populated executor (the fresh ToolRegistry() in _dispatch_primitive has
     # no adapters by default).
-    import kosax.tools.lookup as lookup_mod
+    import ummaya.tools.lookup as lookup_mod
 
     async def _fake_lookup(inp: Any, **_kwargs: Any) -> Any:
         from datetime import UTC, datetime
 
-        from kosax.tools.models import LookupMeta, LookupRecord
+        from ummaya.tools.models import LookupMeta, LookupRecord
 
         return LookupRecord(
             kind="record",
@@ -273,7 +273,7 @@ async def _run_chain(
                 "total_income_krw": 42_000_000,
                 "_mode": "mock",
                 "_reference_implementation": "public-mydata-read-v240930",
-                "_actual_endpoint_when_live": "https://api.gateway.kosax.gov.kr/v1/lookup/hometax_simplified",
+                "_actual_endpoint_when_live": "https://api.gateway.ummaya.gov.kr/v1/lookup/hometax_simplified",
                 "_security_wrapping_pattern": "마이데이터 OAuth2",
                 "_policy_authority": "https://www.hometax.go.kr/",
                 "_international_reference": "UK HMRC Making Tax Digital",
@@ -290,7 +290,7 @@ async def _run_chain(
 
     # Bypass the permission gate for submit so the test does not
     # wait 60 s for a TUI response that never comes in the headless harness.
-    import kosax.primitives as primitives_mod
+    import ummaya.primitives as primitives_mod
 
     monkeypatch.setattr(primitives_mod, "GATED_PRIMITIVES", frozenset())
 
@@ -299,12 +299,12 @@ async def _run_chain(
     # in this harness test we verify IPC plumbing (tool_call/tool_result pairs),
     # not the delegation chain (which is covered by test_e2e_citizen_taxreturn_chain.py).
     #
-    # _dispatch_primitive uses `from kosax.primitives.submit import submit` —
+    # _dispatch_primitive uses `from ummaya.primitives.submit import submit` —
     # we import the actual module file (not the __init__ re-export) and patch there.
 
     # Ensure we have the actual module, not the re-exported function.
-    submit_module = sys.modules["kosax.primitives.submit"]
-    from kosax.primitives.submit import SubmitOutput, SubmitStatus
+    submit_module = sys.modules["ummaya.primitives.submit"]
+    from ummaya.primitives.submit import SubmitOutput, SubmitStatus
 
     async def _fake_submit(tool_id: str, params: Any = None, **_kw: Any) -> SubmitOutput:
         receipt_id = "hometax-2026-04-30-RX-TEST1"
@@ -316,7 +316,7 @@ async def _run_chain(
                 "tool_id": tool_id,
                 "_mode": "mock",
                 "_reference_implementation": "hometax-taxreturn-v2",
-                "_actual_endpoint_when_live": "https://api.gateway.kosax.gov.kr/v1/submit/hometax_taxreturn",
+                "_actual_endpoint_when_live": "https://api.gateway.ummaya.gov.kr/v1/submit/hometax_taxreturn",
                 "_security_wrapping_pattern": "홈택스 API + OAuth2",
                 "_policy_authority": "https://www.hometax.go.kr/",
                 "_international_reference": "UK HMRC Self Assessment",
@@ -326,7 +326,7 @@ async def _run_chain(
     monkeypatch.setattr(submit_module, "submit", _fake_submit)
 
     try:
-        import kosax.context.prompt_loader as pl_mod
+        import ummaya.context.prompt_loader as pl_mod
 
         class _FPL:
             def __init__(self, *, manifest_path: Any) -> None:
@@ -354,7 +354,7 @@ async def _run_chain(
 
     import logging as _logging
 
-    from kosax.ipc.stdio import run as ipc_run
+    from ummaya.ipc.stdio import run as ipc_run
 
     try:
         await asyncio.wait_for(ipc_run(session_id=session_id), timeout=_RUNNER_TIMEOUT)

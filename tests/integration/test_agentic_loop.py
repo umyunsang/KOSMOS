@@ -45,14 +45,14 @@ from typing import Any
 
 import pytest
 
-from kosax.ipc.frame_schema import (
+from ummaya.ipc.frame_schema import (
     ChatMessage as IPCChatMessage,
 )
-from kosax.ipc.frame_schema import (
+from ummaya.ipc.frame_schema import (
     ChatRequestFrame,
     ToolDefinition,
 )
-from kosax.llm.models import StreamEvent
+from ummaya.llm.models import StreamEvent
 
 logger = logging.getLogger(__name__)
 
@@ -199,7 +199,7 @@ async def _run_with_frame(  # noqa: C901 — test harness deliberately covers ma
     - Create an OS pipe for stdin; write frame then close the pipe so EOF
       lets the reader drain background chat_request handlers.
     """
-    from kosax.ipc import stdio as stdio_mod
+    from ummaya.ipc import stdio as stdio_mod
 
     # Reset stdout lock so a fresh asyncio.Lock is created for this run.
     monkeypatch.setattr(stdio_mod, "_stdout_lock", None)
@@ -217,14 +217,14 @@ async def _run_with_frame(  # noqa: C901 — test harness deliberately covers ma
     class _FakeLLMClientConfig:
         pass
 
-    import kosax.llm.client as llm_client_mod
-    import kosax.llm.config as llm_config_mod
+    import ummaya.llm.client as llm_client_mod
+    import ummaya.llm.config as llm_config_mod
 
     monkeypatch.setattr(llm_client_mod, "LLMClient", fake_client_cls)
     monkeypatch.setattr(llm_config_mod, "LLMClientConfig", _FakeLLMClientConfig)
 
     # Monkeypatch ToolRegistry.export_core_tools_openai.
-    import kosax.tools.registry as registry_mod
+    import ummaya.tools.registry as registry_mod
 
     def _fake_export(self: Any) -> list[dict[str, object]]:
         return _MINIMAL_TEST_TOOLS
@@ -233,7 +233,7 @@ async def _run_with_frame(  # noqa: C901 — test harness deliberately covers ma
 
     # Monkeypatch PromptLoader for fast resolution.
     try:
-        import kosax.context.prompt_loader as pl_mod
+        import ummaya.context.prompt_loader as pl_mod
 
         class _FakePromptLoader:
             def __init__(self, *, manifest_path: Any) -> None:
@@ -265,7 +265,7 @@ async def _run_with_frame(  # noqa: C901 — test harness deliberately covers ma
 
     monkeypatch.setattr(sys, "stdin", _FakeStdinWrapper())
 
-    from kosax.ipc.stdio import run as ipc_run
+    from ummaya.ipc.stdio import run as ipc_run
 
     try:
         await asyncio.wait_for(ipc_run(session_id=session_id), timeout=_RUNNER_TIMEOUT)
@@ -287,7 +287,7 @@ async def _run_with_frame(  # noqa: C901 — test harness deliberately covers ma
 # Scenario (a) helpers — Single tool-call closure
 # ---------------------------------------------------------------------------
 
-# CC-era tool names that MUST NOT appear in KOSAX output (SC-001 whitelist).
+# CC-era tool names that MUST NOT appear in UMMAYA output (SC-001 whitelist).
 _CC_TOOL_NAMES = re.compile(
     r'<tool_call>\s*\{[^}]*"name"\s*:\s*"'
     r'(Read|Glob|Bash|Write|Edit|Grep|NotebookEdit|Task)"',
@@ -364,10 +364,10 @@ async def test_single_tool_call_closure(monkeypatch: pytest.MonkeyPatch) -> None
         tools=[],
     )
 
-    # Monkeypatch kosax.tools.lookup.lookup to resolve immediately with a
+    # Monkeypatch ummaya.tools.lookup.lookup to resolve immediately with a
     # synthetic envelope (bypasses BM25 + real adapters, no live network).
-    import kosax.tools.lookup as lookup_mod
-    from kosax.tools.models import AdapterCandidate, LookupSearchResult
+    import ummaya.tools.lookup as lookup_mod
+    from ummaya.tools.models import AdapterCandidate, LookupSearchResult
 
     async def _fake_lookup(
         inp: Any,
@@ -399,8 +399,8 @@ async def test_single_tool_call_closure(monkeypatch: pytest.MonkeyPatch) -> None
         _SingleLookupThenAnswerLLMClient,
         monkeypatch=monkeypatch,
         env_overrides={
-            "KOSAX_TOOL_RESULT_TIMEOUT_SECONDS": "10",
-            "KOSAX_AGENTIC_LOOP_MAX_TURNS": "8",
+            "UMMAYA_TOOL_RESULT_TIMEOUT_SECONDS": "10",
+            "UMMAYA_AGENTIC_LOOP_MAX_TURNS": "8",
         },
     )
 
@@ -523,8 +523,8 @@ async def test_five_turn_agentic_loop(monkeypatch: pytest.MonkeyPatch) -> None:
     )
 
     # Monkeypatch lookup to resolve immediately.
-    import kosax.tools.lookup as lookup_mod
-    from kosax.tools.models import AdapterCandidate, LookupSearchResult
+    import ummaya.tools.lookup as lookup_mod
+    from ummaya.tools.models import AdapterCandidate, LookupSearchResult
 
     call_counter = {"n": 0}
 
@@ -560,8 +560,8 @@ async def test_five_turn_agentic_loop(monkeypatch: pytest.MonkeyPatch) -> None:
         _FiveTurnToolCallLLMClient,
         monkeypatch=monkeypatch,
         env_overrides={
-            "KOSAX_TOOL_RESULT_TIMEOUT_SECONDS": "10",
-            "KOSAX_AGENTIC_LOOP_MAX_TURNS": "8",
+            "UMMAYA_TOOL_RESULT_TIMEOUT_SECONDS": "10",
+            "UMMAYA_AGENTIC_LOOP_MAX_TURNS": "8",
         },
     )
     elapsed = time.perf_counter() - start
@@ -736,10 +736,10 @@ async def test_multi_tool_turn_is_coerced_to_one_visible_dispatch(
         tools=[],
     )
 
-    # Monkeypatch kosax.tools.lookup.lookup to return a different result per
+    # Monkeypatch ummaya.tools.lookup.lookup to return a different result per
     # call (identified by a sequential counter) so pairing can be verified.
-    import kosax.tools.lookup as lookup_mod
-    from kosax.tools.models import AdapterCandidate, LookupSearchResult
+    import ummaya.tools.lookup as lookup_mod
+    from ummaya.tools.models import AdapterCandidate, LookupSearchResult
 
     call_counter: dict[str, int] = {"n": 0}
     district_names = ["강남", "서초", "송파"]
@@ -777,8 +777,8 @@ async def test_multi_tool_turn_is_coerced_to_one_visible_dispatch(
         _ThreeToolsInOneTurnLLMClient,
         monkeypatch=monkeypatch,
         env_overrides={
-            "KOSAX_TOOL_RESULT_TIMEOUT_SECONDS": "10",
-            "KOSAX_AGENTIC_LOOP_MAX_TURNS": "8",
+            "UMMAYA_TOOL_RESULT_TIMEOUT_SECONDS": "10",
+            "UMMAYA_AGENTIC_LOOP_MAX_TURNS": "8",
         },
     )
 

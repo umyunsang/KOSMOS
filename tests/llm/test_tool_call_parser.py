@@ -9,7 +9,7 @@ never sees the marker.
 
 from __future__ import annotations
 
-from kosax.llm.tool_call_parser import (
+from ummaya.llm.tool_call_parser import (
     ParsedToolCall,
     StreamGate,
     extract_textual_tool_calls,

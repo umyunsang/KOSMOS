@@ -10,7 +10,7 @@
 Every Mock adapter response payload (the dict returned by `invoke()` or the result of `call()`) MUST contain six top-level transparency fields. These fields are stamped by a single shared helper to prevent drift.
 
 ```python
-# src/kosax/tools/transparency.py
+# src/ummaya/tools/transparency.py
 
 from typing import Any, Final
 
@@ -58,7 +58,7 @@ def stamp_mock_response(
 |---|---|---|---|
 | `_mode` | `Literal["mock"]` | always `"mock"` | constant for Epic ε |
 | `_reference_implementation` | `str` | `"ax-infrastructure-callable-channel"`, `"public-mydata-action-extension"`, `"public-mydata-read-v240930"` | non-empty |
-| `_actual_endpoint_when_live` | `str` (URL) | `"https://api.gateway.kosax.gov.kr/v1/verify/modid"`, `"https://hometax.go.kr/.../mock-future-llm-channel"` | non-empty, URL-shaped |
+| `_actual_endpoint_when_live` | `str` (URL) | `"https://api.gateway.ummaya.gov.kr/v1/verify/modid"`, `"https://hometax.go.kr/.../mock-future-llm-channel"` | non-empty, URL-shaped |
 | `_security_wrapping_pattern` | `str` | `"OAuth2.1 + mTLS + scope-bound bearer"`, `"OID4VP + DID-resolved RP"`, `"마이데이터 표준동의서 OAuth2 + finAuth"` | non-empty |
 | `_policy_authority` | `str` (URL) | `"https://www.mois.go.kr/.../public-mydata.do"`, `"https://www.kdca.go.kr/.../mobile-id.html"` | non-empty, URL-shaped, agency-published |
 | `_international_reference` | `str` | `"Singapore APEX"`, `"Estonia X-Road"`, `"EU EUDI Wallet"`, `"Japan マイナポータル API"`, `"UK HMRC Making Tax Digital"` | non-empty |
@@ -68,10 +68,10 @@ def stamp_mock_response(
 Every Mock adapter declares its five caller-supplied values as module-level constants:
 
 ```python
-# src/kosax/tools/mock/verify_module_modid.py
+# src/ummaya/tools/mock/verify_module_modid.py
 
 _REFERENCE_IMPL: Final = "ax-infrastructure-callable-channel"
-_ACTUAL_ENDPOINT: Final = "https://api.gateway.kosax.gov.kr/v1/verify/modid"
+_ACTUAL_ENDPOINT: Final = "https://api.gateway.ummaya.gov.kr/v1/verify/modid"
 _SECURITY_WRAPPING: Final = "OID4VP + DID-resolved RP + DPoP"
 _POLICY_AUTHORITY: Final = "https://www.mois.go.kr/.../mobile-id-policy.do"
 _INTERNATIONAL_REF: Final = "EU EUDI Wallet"

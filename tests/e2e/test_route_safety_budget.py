@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import pytest
 
-from kosax.engine.events import StopReason
+from ummaya.engine.events import StopReason
 from tests.e2e.conftest import run_scenario
 
 # ---------------------------------------------------------------------------
@@ -63,10 +63,10 @@ async def test_t014_api_budget_exceeded_scenario() -> None:
 
     import httpx
 
-    from kosax.context.builder import ContextBuilder
-    from kosax.engine.config import QueryEngineConfig
-    from kosax.engine.engine import QueryEngine
-    from kosax.llm.models import StreamEvent, TokenUsage
+    from ummaya.context.builder import ContextBuilder
+    from ummaya.engine.config import QueryEngineConfig
+    from ummaya.engine.engine import QueryEngine
+    from ummaya.llm.models import StreamEvent, TokenUsage
     from tests.e2e.conftest import (
         TRIGGER_QUERY,
         _build_httpx_mock,

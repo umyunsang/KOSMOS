@@ -13,18 +13,18 @@
 | 도구 input schema agency contract 보존 (alias / 통일 X) | `docs/vision.md` § Tool System (Pydantic AI 패턴) | 사용자 디렉티브 (2026-05-03) "통일 X / 도메인 독립" | LangChain / LlamaIndex / Semantic Kernel 모두 input schema 도메인 별 다양성 허용. 통일은 도메인 독립 위반. |
 | Description 5-섹션 골격 + 17 광역시도 short reference 인라인 | Anthropic 공식 (≥3-4문장, niche terminology 명시) | Semantic Kernel `[Description("""enum:""")]` 패턴 + MCP-Smelly 2026 (+5.85pp success / 16.67% regression 균형) | description 인라인 = LLM-visible context, 정적 dict 보다 효과 (deep research Agent A·B·C 만장일치). |
 | Cross-domain auto-chain 제거 (`models.py:577` 정정) | Anthropic Engineering "Writing tools for agents" — "self-contained" + "do not chain" | 사용자 디렉티브 "chain X" + Google 2025 scaling paper (multi-agent sequential 39-70% 저하) | Spec 2521 회귀의 직접 원인 — 잘못된 LLM 지시가 K-EXAONE 의 chain 시도 유발 + 실패. |
-| Mirror reference dict (`grid_coords.py:REGION_TO_GRID` 등) KOSAX 코드 안 보존 | AGENTS.md hard rule "Korean domain data is the only exception" | 사용자 디렉티브 정정 (2026-05-03) "미러 허용 — reimplementation 의미가 아니었음" | Software Architect reviewer 의 "data 분리도 status-quo refactor" 비판 정합. 분리 비용 < 효과. |
-| `kma_pre_warning` endpoint `getPreWrnList` → `getWthrWrnList` | `/tmp/kosax-evidence/kma-evidence.md` (2026-05-03 live 측정 — 404 vs 200) | KMA OpenAPI 활용가이드 (`/tmp/kosax-domain-docs/kma_asos.txt` § endpoint 설명) | 단순 typo, evidence 명확. |
-| `kma_weather_alert_status` stn_id/tmFc 필수 + autonomous chain 명시 | `/tmp/kosax-evidence/kma-evidence.md` (resultCode=11 NO_MANDATORY_REQUEST_PARAMETERS_ERROR) | spec.md FR-009 | LLM autonomous turn 1 = pre_warning, turn 2 = alert_status (chain 강제 X, description 으로 권장만). |
-| `hira_hospital_search` `_type=json` (param 명) | `/tmp/kosax-evidence/medical-evidence.md` (3 형식 비교 측정) | HIRA OpenAPI 활용가이드 (`/tmp/kosax-domain-docs/hira.txt` § 응답 메시지 명세) | type=json / dataType=JSON 모두 XML 반환 (ignored), `_type=json` 만 정답. |
-| `nmc_emergency_search` URL encoding 자동화 | `/tmp/kosax-evidence/medical-evidence.md` (HTTP 400 → 200 with urlencode) | `httpx.params={}` 패턴 (httpx 공식 docs) | "STAGE1=서울특별시" 직접 string interpolation 시 한국어 미인코딩 → HTTP 400. params dict 사용 시 자동 인코딩. |
-| KOROAD siDo/guGun 2+3-digit (4-digit 아님) | `/tmp/kosax-evidence/koroad-mohw-evidence.md` (4-digit 1100/1116 NODATA, 2+3 digit 11/680 LIVE) | KOROAD OpenAPI 활용가이드 § 3.2/3.3 (`/tmp/kosax-domain-docs/koroad.txt` 표) | docs 의 4-digit 표기는 wire param 형식 오해. 실제 API 는 2-digit + 3-digit 분리. |
-| KOROAD `geom_json` strip | `/tmp/kosax-evidence/koroad-mohw-evidence.md` (~500자 Polygon 필드) | LongFuncEval 2025 (긴 응답 LLM 정확도 저하) | LLM emit 전 strip 으로 token 절약 + 응답 정확도 보존. |
-| NFA `nfa_emergency_info_service` 진짜 구현 (stub → 실 구현) | `/tmp/kosax-evidence/medical-evidence.md` (handle() Layer3GateViolation stub) | NFA OpenAPI 활용가이드 (`/tmp/kosax-domain-docs/nfa_emg.txt` § 6 sub-operation) | wire param 명세 미확정 (data.go.kr 포털 추가 조사 → P4 implementation step). |
-| MOHW `welfare_eligibility_search` 진짜 구현 + `callTp=L` 자동주입 | `/tmp/kosax-evidence/koroad-mohw-evidence.md` (handle() stub + camelCase 버그) | MOHW SSIS API 가이드 (`/tmp/kosax-domain-docs/mohw_codes.txt` § 7 enum) | snake_case 정의되어 있지만 API 는 camelCase + `callTp=L`+`srchKeyCode=003` 필수. 어댑터가 자동 주입. |
-| `resolve_location` 출력 4종 필드 (`lat, lon, b_code, address_name`) | `/tmp/kosax-evidence/geocoding-evidence.md` (Kakao 단독 4 시나리오 success) | LlamaIndex / Spring AI "tolerant tools" 패턴 | 4종 누락 시 하위 어댑터 중복 호출. Kakao 단독 충분 (JUSO/SGIS optional). |
+| Mirror reference dict (`grid_coords.py:REGION_TO_GRID` 등) UMMAYA 코드 안 보존 | AGENTS.md hard rule "Korean domain data is the only exception" | 사용자 디렉티브 정정 (2026-05-03) "미러 허용 — reimplementation 의미가 아니었음" | Software Architect reviewer 의 "data 분리도 status-quo refactor" 비판 정합. 분리 비용 < 효과. |
+| `kma_pre_warning` endpoint `getPreWrnList` → `getWthrWrnList` | `/tmp/ummaya-evidence/kma-evidence.md` (2026-05-03 live 측정 — 404 vs 200) | KMA OpenAPI 활용가이드 (`/tmp/ummaya-domain-docs/kma_asos.txt` § endpoint 설명) | 단순 typo, evidence 명확. |
+| `kma_weather_alert_status` stn_id/tmFc 필수 + autonomous chain 명시 | `/tmp/ummaya-evidence/kma-evidence.md` (resultCode=11 NO_MANDATORY_REQUEST_PARAMETERS_ERROR) | spec.md FR-009 | LLM autonomous turn 1 = pre_warning, turn 2 = alert_status (chain 강제 X, description 으로 권장만). |
+| `hira_hospital_search` `_type=json` (param 명) | `/tmp/ummaya-evidence/medical-evidence.md` (3 형식 비교 측정) | HIRA OpenAPI 활용가이드 (`/tmp/ummaya-domain-docs/hira.txt` § 응답 메시지 명세) | type=json / dataType=JSON 모두 XML 반환 (ignored), `_type=json` 만 정답. |
+| `nmc_emergency_search` URL encoding 자동화 | `/tmp/ummaya-evidence/medical-evidence.md` (HTTP 400 → 200 with urlencode) | `httpx.params={}` 패턴 (httpx 공식 docs) | "STAGE1=서울특별시" 직접 string interpolation 시 한국어 미인코딩 → HTTP 400. params dict 사용 시 자동 인코딩. |
+| KOROAD siDo/guGun 2+3-digit (4-digit 아님) | `/tmp/ummaya-evidence/koroad-mohw-evidence.md` (4-digit 1100/1116 NODATA, 2+3 digit 11/680 LIVE) | KOROAD OpenAPI 활용가이드 § 3.2/3.3 (`/tmp/ummaya-domain-docs/koroad.txt` 표) | docs 의 4-digit 표기는 wire param 형식 오해. 실제 API 는 2-digit + 3-digit 분리. |
+| KOROAD `geom_json` strip | `/tmp/ummaya-evidence/koroad-mohw-evidence.md` (~500자 Polygon 필드) | LongFuncEval 2025 (긴 응답 LLM 정확도 저하) | LLM emit 전 strip 으로 token 절약 + 응답 정확도 보존. |
+| NFA `nfa_emergency_info_service` 진짜 구현 (stub → 실 구현) | `/tmp/ummaya-evidence/medical-evidence.md` (handle() Layer3GateViolation stub) | NFA OpenAPI 활용가이드 (`/tmp/ummaya-domain-docs/nfa_emg.txt` § 6 sub-operation) | wire param 명세 미확정 (data.go.kr 포털 추가 조사 → P4 implementation step). |
+| MOHW `welfare_eligibility_search` 진짜 구현 + `callTp=L` 자동주입 | `/tmp/ummaya-evidence/koroad-mohw-evidence.md` (handle() stub + camelCase 버그) | MOHW SSIS API 가이드 (`/tmp/ummaya-domain-docs/mohw_codes.txt` § 7 enum) | snake_case 정의되어 있지만 API 는 camelCase + `callTp=L`+`srchKeyCode=003` 필수. 어댑터가 자동 주입. |
+| `resolve_location` 출력 4종 필드 (`lat, lon, b_code, address_name`) | `/tmp/ummaya-evidence/geocoding-evidence.md` (Kakao 단독 4 시나리오 success) | LlamaIndex / Spring AI "tolerant tools" 패턴 | 4종 누락 시 하위 어댑터 중복 호출. Kakao 단독 충분 (JUSO/SGIS optional). |
 
-### KOSAX-internal cross-references
+### UMMAYA-internal cross-references
 
 | 관련 spec | 정합 보장 |
 |---|---|
@@ -32,7 +32,7 @@
 | Spec 025 (V6 auth_type ↔ auth_level) | v4 의 13 도구 모두 기존 `(api_key, AAL1)` (KMA / KOROAD / HIRA / NFA / MOHW) 또는 `(api_key, AAL2)` (NMC) 보존. 새 분류 도입 X. |
 | Spec 033 (PermissionRule v2) | v4 의 어댑터는 기존 `AdapterPermissionMetadata` 그대로. citizen path / agency path dual-input 패턴 X (사용자 디렉티브 — 도메인 독립 보존), PIPA §15(2) 4-tuple 위반 위험 0. |
 | Spec 027 (Agent Swarm Core) | 영향 X — v4 는 backend tool surface 만, mailbox / coordinator 변경 X. |
-| Spec 021 (OTel GenAI) | 13 도구 모두 기존 `kosax.tool.invoke` span 그대로. NFA / MOHW stub 진짜 구현 시 동일 span pattern. |
+| Spec 021 (OTel GenAI) | 13 도구 모두 기존 `ummaya.tool.invoke` span 그대로. NFA / MOHW stub 진짜 구현 시 동일 span pattern. |
 | Spec 026 (CICD Prompt Registry) | `prompts/system_v1.md` 의 `models.py:577` 잘못된 LLM 지시 정정 시 SHA-256 manifest 갱신 필요. P3 작업의 일부. |
 | Spec 1637 (Adapter docs 7-section) | 13 도구 + resolve_location 의 docs/api/* 동기화 P8 작업으로 보장. |
 
@@ -47,7 +47,7 @@
 - Anthropic dead code 제거 → Spec 1633 진행 중
 - resolve_location JUSO/SGIS backend 활성화 → 키 발급 후 별도 Epic
 - 시군구 단위 정확도 보장 → LLM 한계 인정
-- plugin (Spec 1636) data isolation → KOSAX 본체 vs plugin 경로 분리
+- plugin (Spec 1636) data isolation → UMMAYA 본체 vs plugin 경로 분리
 
 **Deferred to Future Work** — 7 항목 (모두 NEEDS TRACKING — `/speckit-taskstoissues` 가 placeholder 발행):
 1. K-EXAONE Korean function-calling benchmark 정량 측정 → Phase 2 — Korean LLM eval
@@ -72,7 +72,7 @@ scan 패턴: `separate epic` / `future epic` / `Phase [2+]` / `v2` / `deferred t
 
 ### Decision 1 — Mirror data location
 
-- **Decision**: KOSAX 코드 안 reference dict (`grid_coords.py:REGION_TO_GRID`, `koroad/code_tables.py:SidoCode·GugunCode·SIDO_GUGUN_MAP` 등) 그대로 보존. `data/agency-codes/*.csv` 분리 도입 X.
+- **Decision**: UMMAYA 코드 안 reference dict (`grid_coords.py:REGION_TO_GRID`, `koroad/code_tables.py:SidoCode·GugunCode·SIDO_GUGUN_MAP` 등) 그대로 보존. `data/agency-codes/*.csv` 분리 도입 X.
 - **Rationale**: (a) 사용자 디렉티브 "mirror 허용" 은 reimplementation 거부였지 file 분리 강제 X. (b) Software Architect reviewer 의 "data 분리도 status-quo refactor — 분리 비용 > 효과" 비판 정합. (c) AGENTS.md hard rule "Korean domain data is the only exception" 명시적 면제. (d) 새 디렉토리 도입 = 새 CI workflow + plugin contributor 친화도 영향 — engineering overhead.
 - **Alternatives considered**: data file 분리 (v3 plan 의 (iii) 옵션) — Software Architect 비판으로 reject. CSV / JSON loader 도입 — 사용자 디렉티브 "lookup 도구 X" 와 회색 영역.
 

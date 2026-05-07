@@ -165,7 +165,7 @@ async function assemblePdf(
 
   // Audit-7 P0-1: register fontkit BEFORE any embedFont(custom_bytes) call.
   // The bundled NotoSansKR-Hangul-subset.ttf covers Hangul + ASCII so a single
-  // font handles both '대화' and 'KOSAX' / 'Tool Invocations'. pdf-lib's
+  // font handles both '대화' and 'UMMAYA' / 'Tool Invocations'. pdf-lib's
   // `subset: true` strips unused glyphs from the embedded font — final PDF
   // typically <100 KB even with thousands of Korean syllables in scope.
   pdfDoc.registerFontkit(fontkit);
@@ -215,7 +215,7 @@ async function assemblePdf(
   };
 
   // Header
-  addLine('KOSAX — 대화 내보내기 / Conversation Export', true, rgb(0.4, 0.1, 0.7));
+  addLine('UMMAYA — 대화 내보내기 / Conversation Export', true, rgb(0.4, 0.1, 0.7));
   addLine(`생성 시각 / Generated: ${new Date().toISOString()}`);
   addLine('');
 
@@ -225,7 +225,7 @@ async function assemblePdf(
     addLine('  (내역 없음 / no turns)');
   } else {
     for (const turn of turns) {
-      const prefix = turn.role === 'citizen' ? '시민' : 'KOSAX';
+      const prefix = turn.role === 'citizen' ? '시민' : 'UMMAYA';
       addLine(`[${turn.timestamp}] ${prefix}:`);
       // Word-wrap content (simple: split at 80 chars)
       const content = sanitizeForExport(turn.content);
@@ -337,7 +337,7 @@ export function ExportPdfDialog({
       )}
       {state === 'writing' && (
         <Box>
-          <Text color={theme.kosaxCore}>{'⏳ '}</Text>
+          <Text color={theme.ummayaCore}>{'⏳ '}</Text>
           <Text color={theme.text}>{i18n.exportPdfWriting}</Text>
         </Box>
       )}

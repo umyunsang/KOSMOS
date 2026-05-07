@@ -1,8 +1,8 @@
-// KOSAX Epic #2112: legacy model aliases removed; only the `default` alias survives
+// UMMAYA Epic #2112: legacy model aliases removed; only the `default` alias survives
 // (resolves to K-EXAONE via parseUserSpecifiedModel).
 //
 // Pre-existing legacy alias names ('opus', 'sonnet', 'haiku', 'best', 'opusplan',
-// '*[1m]') are dead under KOSAX's single-fixed FriendliAI provider invariant.
+// '*[1m]') are dead under UMMAYA's single-fixed FriendliAI provider invariant.
 // Removing them entirely would break callers that still pass these strings (e.g.
 // stale settings.json or skill frontmatter) — parseUserSpecifiedModel collapses
 // them to K-EXAONE silently, so the union type can be empty here without runtime

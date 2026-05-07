@@ -1,5 +1,5 @@
 import type { Command } from '../../commands.js'
-// KOSAX: policyLimits deleted by Spec 1633 P1. isPolicyAllowed → false (remote sessions disabled in KOSAX).
+// UMMAYA: policyLimits deleted by Spec 1633 P1. isPolicyAllowed → false (remote sessions disabled in UMMAYA).
 const isPolicyAllowed = (_policy: string): boolean => false
 import { isClaudeAISubscriber } from '../../utils/auth.js'
 

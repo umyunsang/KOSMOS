@@ -25,24 +25,24 @@
 ## Files Created
 
 ### Components
-- `/Users/um-yunsang/KOSAX/tui/src/components/messages/StreamingChunk.tsx`
-- `/Users/um-yunsang/KOSAX/tui/src/components/messages/PdfInlineViewer.tsx`
-- `/Users/um-yunsang/KOSAX/tui/src/components/messages/MarkdownRenderer.tsx`
-- `/Users/um-yunsang/KOSAX/tui/src/components/messages/MarkdownTable.tsx`
-- `/Users/um-yunsang/KOSAX/tui/src/components/messages/ErrorEnvelope.tsx`
-- `/Users/um-yunsang/KOSAX/tui/src/components/messages/ContextQuoteBlock.tsx`
-- `/Users/um-yunsang/KOSAX/tui/src/components/PromptInput/CtrlOToExpand.tsx`
-- `/Users/um-yunsang/KOSAX/tui/src/components/PromptInput/SlashCommandSuggestions.tsx`
+- `/Users/um-yunsang/UMMAYA/tui/src/components/messages/StreamingChunk.tsx`
+- `/Users/um-yunsang/UMMAYA/tui/src/components/messages/PdfInlineViewer.tsx`
+- `/Users/um-yunsang/UMMAYA/tui/src/components/messages/MarkdownRenderer.tsx`
+- `/Users/um-yunsang/UMMAYA/tui/src/components/messages/MarkdownTable.tsx`
+- `/Users/um-yunsang/UMMAYA/tui/src/components/messages/ErrorEnvelope.tsx`
+- `/Users/um-yunsang/UMMAYA/tui/src/components/messages/ContextQuoteBlock.tsx`
+- `/Users/um-yunsang/UMMAYA/tui/src/components/PromptInput/CtrlOToExpand.tsx`
+- `/Users/um-yunsang/UMMAYA/tui/src/components/PromptInput/SlashCommandSuggestions.tsx`
 
 ### Tests
-- `/Users/um-yunsang/KOSAX/tui/tests/components/messages/StreamingChunk.test.tsx`
-- `/Users/um-yunsang/KOSAX/tui/tests/components/messages/PdfInlineViewer.test.tsx`
-- `/Users/um-yunsang/KOSAX/tui/tests/components/messages/MarkdownRenderer.test.tsx`
-- `/Users/um-yunsang/KOSAX/tui/tests/components/messages/MarkdownTable.test.tsx`
-- `/Users/um-yunsang/KOSAX/tui/tests/components/messages/ErrorEnvelope.test.tsx`
-- `/Users/um-yunsang/KOSAX/tui/tests/components/messages/ContextQuoteBlock.test.tsx`
-- `/Users/um-yunsang/KOSAX/tui/tests/components/PromptInput/CtrlOToExpand.test.tsx`
-- `/Users/um-yunsang/KOSAX/tui/tests/components/PromptInput/SlashCommandSuggestions.test.tsx`
+- `/Users/um-yunsang/UMMAYA/tui/tests/components/messages/StreamingChunk.test.tsx`
+- `/Users/um-yunsang/UMMAYA/tui/tests/components/messages/PdfInlineViewer.test.tsx`
+- `/Users/um-yunsang/UMMAYA/tui/tests/components/messages/MarkdownRenderer.test.tsx`
+- `/Users/um-yunsang/UMMAYA/tui/tests/components/messages/MarkdownTable.test.tsx`
+- `/Users/um-yunsang/UMMAYA/tui/tests/components/messages/ErrorEnvelope.test.tsx`
+- `/Users/um-yunsang/UMMAYA/tui/tests/components/messages/ContextQuoteBlock.test.tsx`
+- `/Users/um-yunsang/UMMAYA/tui/tests/components/PromptInput/CtrlOToExpand.test.tsx`
+- `/Users/um-yunsang/UMMAYA/tui/tests/components/PromptInput/SlashCommandSuggestions.test.tsx`
 
 ---
 
@@ -164,7 +164,7 @@ Call `emitSurfaceActivation('repl')` on REPL mount (see T022 snippet above). No 
 
 4. **PdfInlineViewer writes to `process.stdout`** directly for graphics-protocol escape sequences (Kitty/iTerm2). This is correct — Ink cannot render binary sequences via JSX. The component renders a placeholder `<Text dimColor>[PDF inline]</Text>` after writing the sequence.
 
-5. **ErrorEnvelope locale** is read from `process.env['KOSAX_TUI_LOCALE']`. Lead should ensure `KOSAX_TUI_LOCALE` is set (or defaults to `'ko'`).
+5. **ErrorEnvelope locale** is read from `process.env['UMMAYA_TUI_LOCALE']`. Lead should ensure `UMMAYA_TUI_LOCALE` is set (or defaults to `'ko'`).
 
 ---
 

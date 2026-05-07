@@ -24,7 +24,7 @@
 - [x] Success criteria are measurable
   - SC-001..SC-010 carry numeric thresholds (≤ 30 s, ≤ 3 s, ≥ 984 / ≥ 3458, ≤ 90, 100 % across N test cases).
 - [x] Success criteria are technology-agnostic (no implementation details)
-  - Edge case: SC-005 cites concrete test counts (`bun test ≥ 984`, `pytest ≥ 3458`). These are KOSAX-canonical baseline parity numbers (post-#2152) and act as objective regression detection rather than implementation prescription. Memory `project_frame_schema_dead_arms` documents these as the canonical baseline. Accepted.
+  - Edge case: SC-005 cites concrete test counts (`bun test ≥ 984`, `pytest ≥ 3458`). These are UMMAYA-canonical baseline parity numbers (post-#2152) and act as objective regression detection rather than implementation prescription. Memory `project_frame_schema_dead_arms` documents these as the canonical baseline. Accepted.
 - [x] All acceptance scenarios are defined
   - 5 scenarios for Story 1, 5 for Story 2, 5 for Story 3, 3 for Story 4 = 18 total.
 - [x] Edge cases are identified

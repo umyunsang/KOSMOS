@@ -9,11 +9,11 @@
 
 ### User Story 1 — Tool construction rejects inconsistent auth triples (Priority: P1)
 
-An adapter author adds a new government-API tool to KOSAX. When the author sets a combination such as `auth_type="public"` with `auth_level="AAL2"` (or any other pair outside the canonical mapping), tool construction fails immediately with a validation error that names the offending field pair and lists the allowed values. The author cannot accidentally land a tool whose transport-layer auth posture disagrees with its assurance level.
+An adapter author adds a new government-API tool to UMMAYA. When the author sets a combination such as `auth_type="public"` with `auth_level="AAL2"` (or any other pair outside the canonical mapping), tool construction fails immediately with a validation error that names the offending field pair and lists the allowed values. The author cannot accidentally land a tool whose transport-layer auth posture disagrees with its assurance level.
 
 **Why this priority**: This is the core defensive invariant the Epic exists to add. Without it, a future adapter with `public + AAL2 + requires_auth=True` passes V1–V5 but is anonymously callable through the legacy `PermissionPipeline.dispatch()` path, which derives its access tier from `auth_type` alone. Every other deliverable (registry backstop, spec doc, tests) depends on this invariant being enforced at the earliest possible point.
 
-**Independent Test**: Construct a `GovAPITool` with each disallowed `(auth_type, auth_level)` pair — construction must raise at model-validation time with a message identifying both fields and the allowed levels for that `auth_type`. Construct a tool with each compliant pair — construction must succeed. No other KOSAX subsystem needs to be involved.
+**Independent Test**: Construct a `GovAPITool` with each disallowed `(auth_type, auth_level)` pair — construction must raise at model-validation time with a message identifying both fields and the allowed levels for that `auth_type`. Construct a tool with each compliant pair — construction must succeed. No other UMMAYA subsystem needs to be involved.
 
 **Acceptance Scenarios**:
 

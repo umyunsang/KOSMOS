@@ -16,7 +16,7 @@
 - [X] No [NEEDS CLARIFICATION] markers remain  *(0 markers — 사용자 디렉티브 + 4 evidence + 4 reviewer + 3 deep research 종합으로 모든 결정 가능)*
 - [X] Requirements are testable and unambiguous
 - [X] Success criteria are measurable  *(SC-001~SC-008 모두 정량)*
-- [X] Success criteria are technology-agnostic  *(주: K-EXAONE / pytest / TUI PTY 언급은 KOSAX 의 정의된 plat — implementation choice 가 아님)*
+- [X] Success criteria are technology-agnostic  *(주: K-EXAONE / pytest / TUI PTY 언급은 UMMAYA 의 정의된 plat — implementation choice 가 아님)*
 - [X] All acceptance scenarios are defined
 - [X] Edge cases are identified
 - [X] Scope is clearly bounded

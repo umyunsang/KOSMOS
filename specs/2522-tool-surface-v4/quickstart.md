@@ -9,10 +9,10 @@ v4 의 단일 Epic 근본 해결 (13 도구 description 갈아엎기 + chain 의
 
 ## Prerequisites
 
-- KOSAX worktree: `/Users/um-yunsang/KOSAX-w-2522/` (이미 생성됨)
-- `KOSAX_DATA_GO_KR_API_KEY` (KMA / HIRA / NMC / NFA / MOHW / KOROAD 통합 키, `.env`)
-- `KOSAX_KAKAO_API_KEY` (resolve_location 의 Kakao 백엔드)
-- `KOSAX_FRIENDLI_TOKEN` (K-EXAONE on FriendliAI tier 1)
+- UMMAYA worktree: `/Users/um-yunsang/UMMAYA-w-2522/` (이미 생성됨)
+- `UMMAYA_DATA_GO_KR_API_KEY` (KMA / HIRA / NMC / NFA / MOHW / KOROAD 통합 키, `.env`)
+- `UMMAYA_KAKAO_API_KEY` (resolve_location 의 Kakao 백엔드)
+- `UMMAYA_FRIENDLI_TOKEN` (K-EXAONE on FriendliAI tier 1)
 - `uv sync --frozen` 실행됨
 - `bun --cwd tui install` 실행됨
 
@@ -22,7 +22,7 @@ v4 의 단일 Epic 근본 해결 (13 도구 description 갈아엎기 + chain 의
 
 ```bash
 # pytest live
-cd /Users/um-yunsang/KOSAX-w-2522
+cd /Users/um-yunsang/UMMAYA-w-2522
 uv run pytest tests/tools/kma/test_kma_current_observation_v4.py::test_busan_live -m live -v
 
 # TUI PTY smoke
@@ -37,7 +37,7 @@ bash specs/2522-tool-surface-v4/scripts/smoke-busan-weather.expect
 **검증 포인트**:
 - description 의 17 광역시도 표 (`부산=(98,76)`) 보고 LLM 가 nx/ny 직접 채움
 - 시민 발화 "부산 날씨" → 어댑터 input 의 nx=98, ny=76 정확
-- KOSAX 가 cross-domain chain 강제 안 함 (LLM 자율 결정)
+- UMMAYA 가 cross-domain chain 강제 안 함 (LLM 자율 결정)
 
 ### 시나리오 2: 강남구 병원 (P2)
 
@@ -115,7 +115,7 @@ uv run pytest tests/tools/test_chain_independence_v4.py -v
 ## TUI smoke setup
 
 ```bash
-cd /Users/um-yunsang/KOSAX-w-2522
+cd /Users/um-yunsang/UMMAYA-w-2522
 bash scripts/tui-tmux-capture.sh \
   specs/2522-tool-surface-v4/frames-busan-weather \
   specs/2522-tool-surface-v4/scripts/smoke-busan-weather.expect

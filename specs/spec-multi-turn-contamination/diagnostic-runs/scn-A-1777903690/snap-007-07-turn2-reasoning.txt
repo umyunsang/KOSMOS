@@ -29,32 +29,32 @@
        3. {"ykiho":"JDQ4MTg4MSM1MSMkMiMkOCMkMDAkMzgxOTYxIzMxIyQxIyQ3IyQ4MiQyNjEyMjIjNDEjJDEjJDgjJDgz","yadmNm":"강남스마트신경과의원","addr"
 
 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-❯ 재난 알림 구독해줘[KOSAX-QUERY] callModel:enter messages=8
+❯ 재난 알림 구독해줘[UMMAYA-QUERY] callModel:enter messages=8
 ❯ 재난 알림 구독해줘
       S    R         g chat_request corr=b9256472-2aab-4fc9-91d1-487985642dd4 chatMessages=5
 ∴ Thinking — 사용자가 "재난 알림 구독해줘"라고 요청했습니다. (ctrl+o to expand)
 
 ✽ Enchanting…
   ⎿  Tip: Hit shift+tab to cycle between default mode, auto-accept edit mode, and plan mode
-   KOSAX-QUERY] recv #1 kind=assistant_chunk corr=85642dd4 done=false delta="" thinking="사용자가"
+   UMMAYA-QUERY] recv #1 kind=assistant_chunk corr=85642dd4 done=false delta="" thinking="사용자가"
 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-❯ [KOSAX-QUERY] recv #12 kind=assistant_chunk corr=85642dd4 done=false delta="" thinking=" 앞서"
-[KOSAX-QUERY] recv #13 kind=assistant_chunk corr=85642dd4 done=false delta="" thinking=" 제공된""──────────────────────────────────────────────────────────────────────────────────
-[KOSAX-QUERY] recv #14 kind=assistant_chunk corr=85642dd4 done=false delta="" thinking=" available"
-[KOSAX-QUERY] recv #15 kind=assistant_chunk corr=85642dd4 done=false delta="" thinking="_ad"
-[KOSAX-QUERY] recv #16 kind=assistant_chunk corr=85642dd4 done=false delta="" thinking="ap"
-[KOSAX-QUERY] recv #17 kind=assistant_chunk corr=85642dd4 done=false delta="" thinking="ters"
-[KOSAX-QUERY] recv #18 kind=assistant_chunk corr=85642dd4 done=false delta="" thinking=" 목록"
-[KOSAX-QUERY] recv #19 kind=assistant_chunk corr=85642dd4 done=false delta="" thinking="을 보면"
-[KOSAX-QUERY] recv #20 kind=assistant_chunk corr=85642dd4 done=false delta="" thinking=" 재난"
-[KOSAX-QUERY] recv #21 kind=assistant_chunk corr=85642dd4 done=false delta="" thinking=" 알림"
-[KOSAX-QUERY] recv #22 kind=assistant_chunk corr=85642dd4 done=false delta="" thinking=" 구독"
-[KOSAX-QUERY] recv #23 kind=assistant_chunk corr=85642dd4 do앞서 제공된 av=ilable_adapters 목록을 보면 재난 알림 구독과 관련된 여러... (ctrl+o to expand)
-[KOSAX-QUERY] recv #24 kind=assistant_chunk corr=85642dd4 done=false delta="" thinking=" 여러"
-✶KOSAX-QUERY] recv #25 kind=assistant_chunk corr=85642dd4 done=false delta="" thinking=" adapter"
-[KOSAX-QUERY] recv #26 kind=assistant_chunk corr=85642dd4 done=false delta="" thinking="가 있습니다"
-[KOSAX-QUERY] recv #27 kind=assistant_chunk corr=85642dd4 done=false delta="" thinking=":"
-[KOSAX-QUERY] recv #28 kind=assistant_chunk corr=85642dd4 done=false delta="" thinking="\n\n"
-[KOSAX-QUERY] recv #29 kind=assistant_chunk corr=85642dd4 done=false delta="" thinking="1"
-[KOSAX-QUERY] recv #30 kind=assistant_chunk corr=85642dd4 done=false delta="" thinking="."
+❯ [UMMAYA-QUERY] recv #12 kind=assistant_chunk corr=85642dd4 done=false delta="" thinking=" 앞서"
+[UMMAYA-QUERY] recv #13 kind=assistant_chunk corr=85642dd4 done=false delta="" thinking=" 제공된""──────────────────────────────────────────────────────────────────────────────────
+[UMMAYA-QUERY] recv #14 kind=assistant_chunk corr=85642dd4 done=false delta="" thinking=" available"
+[UMMAYA-QUERY] recv #15 kind=assistant_chunk corr=85642dd4 done=false delta="" thinking="_ad"
+[UMMAYA-QUERY] recv #16 kind=assistant_chunk corr=85642dd4 done=false delta="" thinking="ap"
+[UMMAYA-QUERY] recv #17 kind=assistant_chunk corr=85642dd4 done=false delta="" thinking="ters"
+[UMMAYA-QUERY] recv #18 kind=assistant_chunk corr=85642dd4 done=false delta="" thinking=" 목록"
+[UMMAYA-QUERY] recv #19 kind=assistant_chunk corr=85642dd4 done=false delta="" thinking="을 보면"
+[UMMAYA-QUERY] recv #20 kind=assistant_chunk corr=85642dd4 done=false delta="" thinking=" 재난"
+[UMMAYA-QUERY] recv #21 kind=assistant_chunk corr=85642dd4 done=false delta="" thinking=" 알림"
+[UMMAYA-QUERY] recv #22 kind=assistant_chunk corr=85642dd4 done=false delta="" thinking=" 구독"
+[UMMAYA-QUERY] recv #23 kind=assistant_chunk corr=85642dd4 do앞서 제공된 av=ilable_adapters 목록을 보면 재난 알림 구독과 관련된 여러... (ctrl+o to expand)
+[UMMAYA-QUERY] recv #24 kind=assistant_chunk corr=85642dd4 done=false delta="" thinking=" 여러"
+✶UMMAYA-QUERY] recv #25 kind=assistant_chunk corr=85642dd4 done=false delta="" thinking=" adapter"
+[UMMAYA-QUERY] recv #26 kind=assistant_chunk corr=85642dd4 done=false delta="" thinking="가 있습니다"
+[UMMAYA-QUERY] recv #27 kind=assistant_chunk corr=85642dd4 done=false delta="" thinking=":"
+[UMMAYA-QUERY] recv #28 kind=assistant_chunk corr=85642dd4 done=false delta="" thinking="\n\n"
+[UMMAYA-QUERY] recv #29 kind=assistant_chunk corr=85642dd4 done=false delta="" thinking="1"
+[UMMAYA-QUERY] recv #30 kind=assistant_chunk corr=85642dd4 done=false delta="" thinking="."
 

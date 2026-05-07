@@ -2,8 +2,8 @@
 # Source-only — uses tui-tmux-capture.sh helpers (TMUX_SESSION/OUTDIR exported)
 set -euo pipefail
 
-# Wait for KOSAX REPL boot (5–8s typical).
-wait_for_pane "KOSAX|❯" 25
+# Wait for UMMAYA REPL boot (5–8s typical).
+wait_for_pane "UMMAYA|❯" 25
 snapshot_pane 01-boot
 
 # Citizen query that previously routed "동아대학교" through Kakao address

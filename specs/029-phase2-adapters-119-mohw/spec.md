@@ -64,7 +64,7 @@ so that the harness route is validated without a live upstream call.
 - **Single-item normalization**: `data.go.kr` XML/JSON endpoints sometimes wrap a single result
   item as a bare object rather than a list. Both adapters MUST normalize to `list[dict]` before
   constructing the `LookupCollection`.
-- **Missing `serviceKey`**: If `KOSAX_DATA_GO_KR_API_KEY` is not set, return
+- **Missing `serviceKey`**: If `UMMAYA_DATA_GO_KR_API_KEY` is not set, return
   `LookupError(reason="upstream_unavailable", retryable=False)` immediately — do not call the API.
 - **Upstream 4xx / 5xx**: Wrap in `LookupError(reason="upstream_unavailable", retryable=True)`.
 - **Empty result set**: Return `LookupCollection(items=[], total_count=0)` — not an error.
@@ -86,7 +86,7 @@ so that the harness route is validated without a live upstream call.
 - Fixture stubs under `tests/fixtures/<provider>/<tool_id>.json`
 - Happy-path + error-path tests using recorded fixture stubs
 - `docs/tools/nfa119.md` and `docs/tools/ssis.md` documentation entries
-- TOOL_MIN_AAL additions for both tool IDs in `src/kosax/security/audit.py`
+- TOOL_MIN_AAL additions for both tool IDs in `src/ummaya/security/audit.py`
 
 ### Out of Scope (Deferred)
 
@@ -363,8 +363,8 @@ sample: `sidoHqOgidNm="충청남도소방본부"`, `rsacGutFsttOgidNm="천안동
 #### Module path
 
 ```
-src/kosax/tools/nfa119/__init__.py
-src/kosax/tools/nfa119/emergency_info_service.py
+src/ummaya/tools/nfa119/__init__.py
+src/ummaya/tools/nfa119/emergency_info_service.py
 tests/tools/nfa119/test_nfa_emergency_info_service.py
 tests/fixtures/nfa119/nfa_emergency_info_service.json
 docs/tools/nfa119.md
@@ -567,8 +567,8 @@ SSIS XML response shape converted to a Python dict. Synthetic data: `servNm="출
 #### Module path
 
 ```
-src/kosax/tools/ssis/__init__.py
-src/kosax/tools/ssis/welfare_eligibility_search.py
+src/ummaya/tools/ssis/__init__.py
+src/ummaya/tools/ssis/welfare_eligibility_search.py
 tests/tools/ssis/test_mohw_welfare_eligibility_search.py
 tests/fixtures/ssis/mohw_welfare_eligibility_search.json
 docs/tools/ssis.md
@@ -583,7 +583,7 @@ docs/tools/ssis.md
 | `nfa_emergency_info_service` | `api_key` | `AAL1` | `non_personal` | `False` | `None` | `True` | `False` |
 | `mohw_welfare_eligibility_search` | `api_key` | `AAL2` | `personal` | `False` | `dpa-ssis-welfare-v1` | `True` | `True` |
 
-Both adapters are read-only (`is_irreversible=False`) and share `KOSAX_DATA_GO_KR_API_KEY`.
+Both adapters are read-only (`is_irreversible=False`) and share `UMMAYA_DATA_GO_KR_API_KEY`.
 Neither fires FR-007 live-introspection, as `is_irreversible=False`.
 
 Output sanitization declaration (security PR checklist §224):
@@ -597,7 +597,7 @@ Output sanitization declaration (security PR checklist §224):
 
 ## 6. TOOL_MIN_AAL Changes Required
 
-The `src/kosax/security/audit.py` `TOOL_MIN_AAL` table must be extended in the same PR:
+The `src/ummaya/security/audit.py` `TOOL_MIN_AAL` table must be extended in the same PR:
 
 ```python
 TOOL_MIN_AAL: Final[dict[str, AALLevel]] = {
@@ -647,7 +647,7 @@ can use raw `str | None` fields for code parameters and upgrade to `Enum` after 
 ### C3 — DPA template `dpa-ssis-welfare-v1`
 
 The `dpa_reference` value `dpa-ssis-welfare-v1` is a placeholder identifier. A DPA template
-document governing KOSAX's §26 processor relationship with SSIS does not yet exist. Per the
+document governing UMMAYA's §26 processor relationship with SSIS does not yet exist. Per the
 security PR checklist, this identifier must be traceable to an actual DPA template before the
 adapter is deployed to production. For Phase 2 development purposes, the placeholder is
 sufficient — but Epic #15 should include a task to draft the DPA template outline.
@@ -658,12 +658,12 @@ sufficient — but Epic #15 should include a task to draft the DPA template outl
 
 | Source | How used |
 |---|---|
-| Epic #15 issue body (`gh issue view 15 --repo umyunsang/KOSAX`) | Primary scope definition, adapter field tables, SSIS/MOHW decision prompt |
+| Epic #15 issue body (`gh issue view 15 --repo umyunsang/UMMAYA`) | Primary scope definition, adapter field tables, SSIS/MOHW decision prompt |
 | `specs/022-mvp-main-tool/spec.md` | `lookup` mode=fetch registration pattern, interface-only adapter pattern |
-| `src/kosax/tools/nmc/emergency_search.py` | Canonical interface-only adapter implementation (NMC reference pattern) |
-| `src/kosax/tools/hira/hospital_search.py` | Full HTTP adapter pattern reference |
-| `src/kosax/tools/models.py` | `GovAPITool` field contract, V1–V6 validators, `_AUTH_TYPE_LEVEL_MAPPING` |
-| `src/kosax/security/audit.py` | `TOOL_MIN_AAL` table, `AALLevel` type |
+| `src/ummaya/tools/nmc/emergency_search.py` | Canonical interface-only adapter implementation (NMC reference pattern) |
+| `src/ummaya/tools/hira/hospital_search.py` | Full HTTP adapter pattern reference |
+| `src/ummaya/tools/models.py` | `GovAPITool` field contract, V1–V6 validators, `_AUTH_TYPE_LEVEL_MAPPING` |
+| `src/ummaya/security/audit.py` | `TOOL_MIN_AAL` table, `AALLevel` type |
 | `specs/024-tool-security-v1/spec.md` | `ToolCallAuditRecord`, PIPA role, DPA reference contract |
 | `specs/025-tool-security-v6/spec.md` | `auth_type ↔ auth_level` invariant canonical mapping |
 | `docs/tool-adapters.md` | Adapter shape, PR checklist, interface-only pattern rules |

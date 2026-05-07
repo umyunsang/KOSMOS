@@ -1,4 +1,4 @@
-// KOSAX-1633 P1+P2 / KOSAX-1978 T011 — services/claudeAiLimits deleted.
+// UMMAYA-1633 P1+P2 / UMMAYA-1978 T011 — services/claudeAiLimits deleted.
 type OverageDisabledReason = null | string
 import { isClaudeAISubscriber } from '../auth.js'
 import { getGlobalConfig } from '../config.js'

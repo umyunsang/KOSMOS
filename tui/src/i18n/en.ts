@@ -1,7 +1,7 @@
 import type { I18nBundle } from './keys';
 
 const en: I18nBundle = {
-  sessionStarting: 'Starting KOSAX session\u2026',
+  sessionStarting: 'Starting UMMAYA session\u2026',
   sessionReady: 'Ready',
   sessionEnded: 'Session ended',
   commandNotFound: (name) => `Unknown command: /${name}`,
@@ -12,7 +12,7 @@ const en: I18nBundle = {
   cmdResumeMissingId: 'Usage: /resume <session-id>',
   cmdNewAck: 'Starting new session\u2026',
   cmdHandlerFailed: (name, message) => `/${name} failed: ${message}`,
-  helpTitle: 'KOSAX slash commands',
+  helpTitle: 'UMMAYA slash commands',
   helpUsage: 'Type /<command> [args]',
   permissionPromptTitle: 'Permission required',
   permissionPromptBody: (toolName) => `Allow tool "${toolName}" to run?`,

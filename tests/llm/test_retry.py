@@ -1,13 +1,13 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Unit tests for retry_with_backoff and RetryPolicy in kosax.llm.retry."""
+"""Unit tests for retry_with_backoff and RetryPolicy in ummaya.llm.retry."""
 
 from __future__ import annotations
 
 import httpx
 import pytest
 
-from kosax.llm.errors import AuthenticationError, LLMConnectionError, LLMResponseError
-from kosax.llm.retry import RetryPolicy, retry_with_backoff
+from ummaya.llm.errors import AuthenticationError, LLMConnectionError, LLMResponseError
+from ummaya.llm.retry import RetryPolicy, retry_with_backoff
 
 # ---------------------------------------------------------------------------
 # Helpers

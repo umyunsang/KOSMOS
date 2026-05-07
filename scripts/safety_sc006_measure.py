@@ -19,8 +19,8 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
-from kosax.context.models import SystemPromptConfig  # noqa: E402
-from kosax.context.system_prompt import SystemPromptAssembler  # noqa: E402
+from ummaya.context.models import SystemPromptConfig  # noqa: E402
+from ummaya.context.system_prompt import SystemPromptAssembler  # noqa: E402
 
 
 def _prefix_through_section_4(assembler: SystemPromptAssembler, cfg: SystemPromptConfig) -> str:

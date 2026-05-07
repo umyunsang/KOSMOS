@@ -181,7 +181,7 @@ export const getUserContext = memoize(
       claudemd_disabled: Boolean(shouldDisableClaudeMd),
     })
 
-    // KOSAX hotfix (2026-05-04): inject KST date + current time so the
+    // UMMAYA hotfix (2026-05-04): inject KST date + current time so the
     // LLM cannot guess KMA `base_time` (KST HHMM publication slots:
     // 0200/0500/0800/1100/1400/1700/2000/2300). The same information is
     // emitted by stdio.py into the system-prompt dynamic suffix; both

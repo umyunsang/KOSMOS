@@ -5,7 +5,7 @@
 # 호출 시 표시" placeholder render correctly even with 0 subscriptions.
 
 set -euo pipefail
-wait_for_pane "KOSAX|❯" 30
+wait_for_pane "UMMAYA|❯" 30
 snapshot_pane 00-boot
 
 # Default /agents — compact empty state

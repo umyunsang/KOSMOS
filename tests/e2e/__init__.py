@@ -1,2 +1,2 @@
 # SPDX-License-Identifier: Apache-2.0
-"""End-to-end integration tests for the KOSAX pipeline."""
+"""End-to-end integration tests for the UMMAYA pipeline."""

@@ -16,14 +16,14 @@ from uuid import uuid4
 
 import pytest
 
-from kosax.agents.mailbox.file_mailbox import FileMailbox
-from kosax.agents.mailbox.messages import (
+from ummaya.agents.mailbox.file_mailbox import FileMailbox
+from ummaya.agents.mailbox.messages import (
     AgentMessage,
     MessageType,
     ResultPayload,
     TaskPayload,
 )
-from kosax.tools.models import LookupMeta, LookupRecord
+from ummaya.tools.models import LookupMeta, LookupRecord
 
 # ---------------------------------------------------------------------------
 # Helpers

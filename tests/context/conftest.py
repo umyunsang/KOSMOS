@@ -33,7 +33,7 @@ def _write_valid_prompt_tree(tmp_path: Path) -> Path:
 
     # Distinct content per prompt so SHA-256 values differ.
     contents: dict[str, bytes] = {
-        "system_v1.md": b"# System Prompt v1\nYou are KOSAX, a Korean public-service assistant.\n",
+        "system_v1.md": b"# System Prompt v1\nYou are UMMAYA, a Korean public-service assistant.\n",
         "session_guidance_v1.md": (
             b"# Session Guidance v1\nUse resolve_location for address-to-region conversion.\n"
         ),

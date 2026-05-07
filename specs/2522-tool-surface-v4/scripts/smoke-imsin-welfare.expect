@@ -7,7 +7,7 @@
 #
 # Verification targets:
 #   1. Boot: "tool_registry: N entries verified"
-#   2. Branding: "KOSAX"
+#   2. Branding: "UMMAYA"
 #   3. Input accepted: "임신·출산 복지서비스" submitted
 #   4. mohw_welfare_eligibility_search(life_array="007") dispatched — camelCase serialize
 #   5. callTp=L + srchKeyCode=003 auto-injected (not in pydantic input)
@@ -16,7 +16,7 @@
 #   8. No "invalid_params" error visible
 #   9. No "Layer3GateViolation" in output (real handle() reached)
 #
-# KOSAX_DATA_GO_KR_API_KEY must be set in the caller environment for live call.
+# UMMAYA_DATA_GO_KR_API_KEY must be set in the caller environment for live call.
 # Without it the adapter raises ConfigurationError — smoke catches + logs WARN.
 #
 # Sourced by tui-tmux-capture.sh — helpers available:
@@ -27,8 +27,8 @@
 wait_for_pane "tool_registry: [0-9]+ entries verified" 60
 snapshot_pane "boot"
 
-# ── Stage A2: KOSAX branding ─────────────────────────────────────────────────
-wait_for_pane "KOSAX" 20
+# ── Stage A2: UMMAYA branding ─────────────────────────────────────────────────
+wait_for_pane "UMMAYA" 20
 snapshot_pane "branding"
 
 # ── Stage B: Submit welfare query ─────────────────────────────────────────────

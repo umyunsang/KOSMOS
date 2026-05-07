@@ -12,12 +12,12 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from kosax.observability.event_logger import (
+from ummaya.observability.event_logger import (
     _ALLOWED_METADATA_KEYS,
     ObservabilityEventLogger,
     _log_level_for,
 )
-from kosax.observability.events import ObservabilityEvent
+from ummaya.observability.events import ObservabilityEvent
 
 # ---------------------------------------------------------------------------
 # Log level mapping
@@ -133,7 +133,7 @@ def test_emit_fail_safe_warning_on_exception() -> None:
     logger = ObservabilityEventLogger(logger=mock_log)
     event = ObservabilityEvent(event_type="tool_call")
 
-    with patch("kosax.observability.event_logger.logging") as mock_logging_module:
+    with patch("ummaya.observability.event_logger.logging") as mock_logging_module:
         mock_inner_logger = MagicMock()
         mock_logging_module.getLogger.return_value = mock_inner_logger
         # This patches the inner fallback warning call — if it reaches there,
@@ -155,7 +155,7 @@ def test_emit_json_serializable() -> None:
             captured_messages.append(record.getMessage())
 
     handler = CapturingHandler()
-    events_logger = logging.getLogger("kosax.events")
+    events_logger = logging.getLogger("ummaya.events")
     original_level = events_logger.level
     events_logger.setLevel(logging.DEBUG)
     events_logger.addHandler(handler)

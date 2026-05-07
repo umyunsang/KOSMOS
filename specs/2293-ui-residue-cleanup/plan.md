@@ -1,33 +1,33 @@
-# Implementation Plan: KOSAX-original UI Residue Cleanup (Epic β)
+# Implementation Plan: UMMAYA-original UI Residue Cleanup (Epic β)
 
 **Branch**: `2293-ui-residue-cleanup` | **Date**: 2026-04-29 | **Spec**: [spec.md](./spec.md)
 **Input**: Feature specification from `/specs/2293-ui-residue-cleanup/spec.md`
 
 ## Summary
 
-Initiative #2290 의 두 번째 Epic. Epic α (#2292, merged in `bc523b7`) 의 cc-parity-audit 산출물에서 Cleanup-needed 로 분류된 30 TUI 파일과 Spec 1979 § 1.3.4 의 6 KOSAX-only Tool deletion candidate 를 정리. Spec 1633 (Anthropic→FriendliAI) closure 의 마지막 미완 영역 + Constitution II 잔재를 모두 제거해 KOSAX 의 "CC + 2 swaps" thesis 가 코드 레벨에서 verify 되도록 한다.
+Initiative #2290 의 두 번째 Epic. Epic α (#2292, merged in `bc523b7`) 의 cc-parity-audit 산출물에서 Cleanup-needed 로 분류된 30 TUI 파일과 Spec 1979 § 1.3.4 의 6 UMMAYA-only Tool deletion candidate 를 정리. Spec 1633 (Anthropic→FriendliAI) closure 의 마지막 미완 영역 + Constitution II 잔재를 모두 제거해 UMMAYA 의 "CC + 2 swaps" thesis 가 코드 레벨에서 verify 되도록 한다.
 
 기술 접근:
 - (a) `tui/src/services/api/` 17 잔재 파일 + `tui/src/services/tokenEstimation.ts` 의 importer 를 `grep -r` 로 추적해 caller 마이그레이션 또는 caller 와 함께 삭제 (memory `feedback_no_stubs_remove_or_migrate`)
-- (b) 8 callsite (queryHaiku / queryWithModel / verifyApiKey) 의 dead 여부 평가 후 KOSAX i18n / IPC / memdir 등가 호출로 교체 또는 dead feature 인 경우 caller block 통째 삭제
+- (b) 8 callsite (queryHaiku / queryWithModel / verifyApiKey) 의 dead 여부 평가 후 UMMAYA i18n / IPC / memdir 등가 호출로 교체 또는 dead feature 인 경우 caller block 통째 삭제
 - (c) `tui/src/utils/permissions/` 3 Spec 033 잔재 + `tui/src/schemas/ui-l2/permission.ts` (PermissionDecisionT/PermissionLayerT) 평가 후 삭제 (Constitution II 강제 — 보존 사유 거의 없음 예상)
-- (d) 6 KOSAX-only Tool 평가: 각 도구의 시민 use case 검증 — 발견 시 keep + Decision Log 인용; 발견 못하면 도구 디렉토리 + tools.ts registry entry + 모든 import site 삭제
-- (e) `tui/src/utils/plugins/mcpbHandler.ts` 의 `@anthropic-ai/` import 제거 (KOSAX 등가 import 또는 caller 블록 삭제)
+- (d) 6 UMMAYA-only Tool 평가: 각 도구의 시민 use case 검증 — 발견 시 keep + Decision Log 인용; 발견 못하면 도구 디렉토리 + tools.ts registry entry + 모든 import site 삭제
+- (e) `tui/src/utils/plugins/mcpbHandler.ts` 의 `@anthropic-ai/` import 제거 (UMMAYA 등가 import 또는 caller 블록 삭제)
 - (f) Spec 1633 + Constitution II 통합 grep gate 로 0-residue 검증
 
-모든 작업은 `/Users/um-yunsang/KOSAX-w-2293/` worktree 에서 수행. main worktree 와 file conflict 없음. 산출물은 (i) 코드 변경 (deletions + migrations), (ii) `specs/2293-ui-residue-cleanup/` 의 spec/plan/tasks/decision-log/baseline-test/after-test 박제.
+모든 작업은 `/Users/um-yunsang/UMMAYA-w-2293/` worktree 에서 수행. main worktree 와 file conflict 없음. 산출물은 (i) 코드 변경 (deletions + migrations), (ii) `specs/2293-ui-residue-cleanup/` 의 spec/plan/tasks/decision-log/baseline-test/after-test 박제.
 
 ## Technical Context
 
 **Language/Version**: TypeScript 5.6+ on Bun v1.2.x (TUI layer, existing Spec 287 stack — no version bump). Python 3.12+ (백엔드, 본 Epic 은 변경하지 않음).
 **Primary Dependencies**: 기존 — `ink`, `react`, `@inkjs/ui`, `string-width`, `@modelcontextprotocol/sdk`. 신규 dependency 0 (AGENTS.md hard rule + spec FR-008 invariant 보존).
-**Storage**: 본 Epic 은 in-memory + filesystem-only — `~/.kosax/memdir/user/sessions/` (Spec 027) 등 기존 storage 구조 변경 없음. 산출물 신규 파일은 spec dir 내부.
+**Storage**: 본 Epic 은 in-memory + filesystem-only — `~/.ummaya/memdir/user/sessions/` (Spec 027) 등 기존 storage 구조 변경 없음. 산출물 신규 파일은 spec dir 내부.
 **Testing**: `bun test` (TUI 단위 테스트, 기존). 본 Epic 은 신규 unit test 작성 안 함 — 기존 테스트가 deletion 후 typecheck + 회귀 검증 역할. 단 잔재 파일을 직접 import 하던 dead test 는 함께 삭제.
 **Target Platform**: macOS / Linux dev 환경 (Bun + Node fallback). CI는 Linux container (`lint-and-test` workflow + `Dead Code Detection`).
 **Project Type**: TUI cleanup — TypeScript source code 변경. 신규 모듈 0, 신규 추상화 0. 100% deletion + migration.
 **Performance Goals**: 본 Epic 은 정리 작업이라 별도 perf goal 없음. `bun typecheck` < 60 s, `bun test` < 5 min (기존 baseline).
 **Constraints**: read-only 입력 디렉토리 = `.references/claude-code-sourcemap/restored-src/src/` (변경 금지, AGENTS.md § Do not touch). 모든 변경은 `tui/src/`, 산출물은 `specs/2293-ui-residue-cleanup/`.
-**Scale/Scope**: 30 Cleanup-needed paths + 6 KOSAX-only Tool candidates + 1 ui-l2 permission file = 약 37 file/dir 평가 대상. 예상 commit 수 5~10. 예상 라인 변경: -3,500 ~ -5,000 (대부분 삭제) / +50 ~ +200 (Decision Log + spec 산출물).
+**Scale/Scope**: 30 Cleanup-needed paths + 6 UMMAYA-only Tool candidates + 1 ui-l2 permission file = 약 37 file/dir 평가 대상. 예상 commit 수 5~10. 예상 라인 변경: -3,500 ~ -5,000 (대부분 삭제) / +50 ~ +200 (Decision Log + spec 산출물).
 
 ## Constitution Check
 
@@ -58,7 +58,7 @@ specs/2293-ui-residue-cleanup/
 ├── checklists/
 │   └── requirements.md        # ✅ /speckit-specify 산출물
 ├── tasks.md                   # ⏳ /speckit-tasks 산출물
-├── decision-log.md            # 🎯 implement 단계 산출물 — 6 KOSAX-only Tool + ui-l2/permission.ts 결정 기록
+├── decision-log.md            # 🎯 implement 단계 산출물 — 6 UMMAYA-only Tool + ui-l2/permission.ts 결정 기록
 ├── baseline-test.txt          # 🎯 implement 직전 bun test 결과 박제
 └── after-test.txt             # 🎯 implement 후 bun test 결과 박제 (NEW failure 검출 input)
 ```
@@ -89,7 +89,7 @@ tools.ts (registry)              ← UPDATE: 삭제된 도구 entries 제거
 specs/2293-ui-residue-cleanup/   # 산출물 디렉토리
 ```
 
-**Structure Decision**: 본 Epic 은 "code deletion + caller migration" 패턴. 신규 디렉토리 0, 신규 모듈 0. tools.ts registry 의 import list + tool array 갱신 외에는 모두 deletion. plan-template 의 Option 1/2/3 트리는 사용하지 않음 — 기존 KOSAX TUI 구조를 그대로 유지하면서 Anthropic 1P + Spec 033 잔재만 제거.
+**Structure Decision**: 본 Epic 은 "code deletion + caller migration" 패턴. 신규 디렉토리 0, 신규 모듈 0. tools.ts registry 의 import list + tool array 갱신 외에는 모두 deletion. plan-template 의 Option 1/2/3 트리는 사용하지 않음 — 기존 UMMAYA TUI 구조를 그대로 유지하면서 Anthropic 1P + Spec 033 잔재만 제거.
 
 ## Complexity Tracking
 

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://kosax.dev/schemas/spec-287/tool-call.schema.json",
+  "$id": "https://ummaya.dev/schemas/spec-287/tool-call.schema.json",
   "title": "ToolCallFrame",
   "description": "backend → TUI (display only): a tool invocation decision by the model. Direction: backend → TUI.",
   "type": "object",

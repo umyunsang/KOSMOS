@@ -16,11 +16,11 @@ import asyncio
 
 import pytest
 
-from kosax.tools.executor import ToolExecutor
-from kosax.tools.lookup import lookup
-from kosax.tools.models import LookupSearchInput
-from kosax.tools.register_all import register_all_tools
-from kosax.tools.registry import ToolRegistry
+from ummaya.tools.executor import ToolExecutor
+from ummaya.tools.lookup import lookup
+from ummaya.tools.models import LookupSearchInput
+from ummaya.tools.register_all import register_all_tools
+from ummaya.tools.registry import ToolRegistry
 
 
 @pytest.fixture(scope="module")

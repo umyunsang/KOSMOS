@@ -61,7 +61,7 @@
 All 7 sections pass. Spec is ready for `/speckit-plan` Phase 0 Research.
 
 **Next step**: Run `/speckit-plan`; Phase 0 Research must:
-1. Validate Kantara Consent Receipt v1.1.0 JSON schema licensing for KOSAX use.
+1. Validate Kantara Consent Receipt v1.1.0 JSON schema licensing for UMMAYA use.
 2. Confirm Continue.dev permissions.yaml schema compatibility for tri-state encoding.
 3. Select exact hash-chain canonical JSON encoding (recommend RFC 8785 JCS).
 4. Select HMAC key rotation policy (recommend single key + yearly manual rotation for single-user MVP).

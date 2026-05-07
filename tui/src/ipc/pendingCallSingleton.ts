@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSAX-original — Epic ζ #2297 Phase 0b · T007/T013
+// UMMAYA-original — Epic ζ #2297 Phase 0b · T007/T013
 //
 // Process-wide singleton PendingCallRegistry for TUI primitive dispatches.
 //

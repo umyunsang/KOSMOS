@@ -20,8 +20,8 @@ import { formatDuration, truncateToWidth } from '../../utils/format.js';
 import { toInternalMessages } from '../../utils/messages/mappers.js';
 import { EMPTY_LOOKUPS, normalizeMessages } from '../../utils/messages.js';
 import { plural } from '../../utils/stringUtils.js';
-// KOSAX-1633 P1+P2 / KOSAX-1978 T011 — utils/teleport deleted.
-const teleportResumeCodeSession = async (..._args: unknown[]): Promise<{ success: boolean; sessionId?: string; error?: string }> => ({ success: false, error: 'KOSAX: teleport disabled' });
+// UMMAYA-1633 P1+P2 / UMMAYA-1978 T011 — utils/teleport deleted.
+const teleportResumeCodeSession = async (..._args: unknown[]): Promise<{ success: boolean; sessionId?: string; error?: string }> => ({ success: false, error: 'UMMAYA: teleport disabled' });
 import { Select } from '../CustomSelect/select.js';
 import { Byline } from '../design-system/Byline.js';
 import { Dialog } from '../design-system/Dialog.js';

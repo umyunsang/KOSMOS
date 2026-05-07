@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """T074 — Unit tests for v1.2 GA dual-axis enforcement backstop.
 
-Toggles ``kosax.security.v12_dual_axis.V12_GA_ACTIVE = True`` and asserts
+Toggles ``ummaya.security.v12_dual_axis.V12_GA_ACTIVE = True`` and asserts
 that ``AdapterRegistration`` construction raises ``DualAxisMissingError`` when
 either of the dual-axis fields (``published_tier_minimum`` / ``nist_aal_hint``)
 is ``None`` (FR-030, SC-007).
@@ -12,7 +12,7 @@ Phase 9 T073-T080 cutover, :data:`V12_GA_ACTIVE` now defaults to ``True``; the
 compatibility-window tests explicitly toggle it off via ``monkeypatch``.
 
 Expected red state:
-  - ``DualAxisMissingError`` does not yet exist in ``kosax.tools.errors``
+  - ``DualAxisMissingError`` does not yet exist in ``ummaya.tools.errors``
     (Lead will add it as a subclass of ``RegistrationError``).
   - ``enforce()`` is not yet wired into ``AdapterRegistration.__init__``
     (Lead will wire it).
@@ -22,8 +22,8 @@ Expected red state:
 References:
 - specs/031-five-primitive-harness/spec.md FR-028, FR-030, SC-007
 - specs/031-five-primitive-harness/tasks.md T074
-- src/kosax/security/v12_dual_axis.py (enforce + V12_GA_ACTIVE)
-- src/kosax/tools/errors.py (RegistrationError — parent class)
+- src/ummaya/security/v12_dual_axis.py (enforce + V12_GA_ACTIVE)
+- src/ummaya/tools/errors.py (RegistrationError — parent class)
 """
 
 from __future__ import annotations
@@ -32,11 +32,11 @@ import pytest
 
 # Top-level imports so that ImportError surfaces immediately as a red test
 # (explicit red state per T074 TDD contract).
-from kosax.tools.errors import (  # type: ignore[attr-defined]
+from ummaya.tools.errors import (  # type: ignore[attr-defined]
     DualAxisMissingError,
     RegistrationError,
 )
-from kosax.tools.registry import AdapterPrimitive, AdapterRegistration, AdapterSourceMode
+from ummaya.tools.registry import AdapterPrimitive, AdapterRegistration, AdapterSourceMode
 
 # ---------------------------------------------------------------------------
 # Helpers — kwargs factory
@@ -48,7 +48,7 @@ def _base_kwargs(**overrides: object) -> dict[str, object]:
 
     Mirrors the pattern from tests/unit/registry/test_adapter_primitive_field.py.
 
-    Note: KOSAX-invented Spec 033/024/025 fields (auth_level, pipa_class,
+    Note: UMMAYA-invented Spec 033/024/025 fields (auth_level, pipa_class,
     dpa_reference, requires_auth, is_personal_data, is_concurrency_safe,
     cache_ttl_seconds, rate_limit_per_minute) removed from AdapterRegistration
     in Epic δ #2295 (Constitution § II cleanup).
@@ -56,8 +56,8 @@ def _base_kwargs(**overrides: object) -> dict[str, object]:
     base: dict[str, object] = {
         "tool_id": "fake_v12_adapter",
         "primitive": AdapterPrimitive.submit,
-        "module_path": "kosax.tools.mock.data_go_kr.fake_v12_adapter",
-        "input_model_ref": "kosax.tools.mock.data_go_kr.fake_v12_adapter:FakeInput",
+        "module_path": "ummaya.tools.mock.data_go_kr.fake_v12_adapter",
+        "input_model_ref": "ummaya.tools.mock.data_go_kr.fake_v12_adapter:FakeInput",
         "source_mode": AdapterSourceMode.HARNESS_ONLY,
         # Dual-axis fields — both set for the positive-control baseline.
         "published_tier_minimum": "digital_onepass_level2_aal2",
@@ -79,7 +79,7 @@ def test_v12_active_missing_published_tier_minimum_raises(monkeypatch: pytest.Mo
     The error message must mention the missing field name (FR-030).
     RED until Lead wires enforce() into AdapterRegistration and adds DualAxisMissingError.
     """
-    import kosax.security.v12_dual_axis as _mod
+    import ummaya.security.v12_dual_axis as _mod
 
     monkeypatch.setattr(_mod, "V12_GA_ACTIVE", True)
 
@@ -102,7 +102,7 @@ def test_v12_active_missing_nist_aal_hint_raises(monkeypatch: pytest.MonkeyPatch
     The error message must mention the missing field name (FR-030).
     RED until Lead wires enforce() and adds DualAxisMissingError.
     """
-    import kosax.security.v12_dual_axis as _mod
+    import ummaya.security.v12_dual_axis as _mod
 
     monkeypatch.setattr(_mod, "V12_GA_ACTIVE", True)
 
@@ -126,7 +126,7 @@ def test_v12_active_both_fields_missing_raises_mentioning_both(
 
     RED until Lead wires enforce() and adds DualAxisMissingError.
     """
-    import kosax.security.v12_dual_axis as _mod
+    import ummaya.security.v12_dual_axis as _mod
 
     monkeypatch.setattr(_mod, "V12_GA_ACTIVE", True)
 
@@ -153,7 +153,7 @@ def test_v12_active_both_fields_set_succeeds(monkeypatch: pytest.MonkeyPatch) ->
     This is the positive control. RED only if enforce() is wired incorrectly.
     Expected green once Lead completes T079.
     """
-    import kosax.security.v12_dual_axis as _mod
+    import ummaya.security.v12_dual_axis as _mod
 
     monkeypatch.setattr(_mod, "V12_GA_ACTIVE", True)
 
@@ -173,7 +173,7 @@ def test_v12_inactive_both_none_succeeds(monkeypatch: pytest.MonkeyPatch) -> Non
     This must pass NOW (without any Lead changes) because the current default
     is V12_GA_ACTIVE=False and the current AdapterRegistration allows None.
     """
-    import kosax.security.v12_dual_axis as _mod
+    import ummaya.security.v12_dual_axis as _mod
 
     monkeypatch.setattr(_mod, "V12_GA_ACTIVE", False)
 

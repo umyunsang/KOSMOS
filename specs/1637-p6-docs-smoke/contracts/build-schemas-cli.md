@@ -22,7 +22,7 @@ python scripts/build_schemas.py [--check] [--output-dir DIR] [--quiet]
 ## Behavior
 
 1. **Resolve repository root**: ascend from the script's own location until a `pyproject.toml` is found. ERROR if not found.
-2. **Import the registry**: `from kosax.tools import register_all` (or equivalent — confirm the canonical entry point during implement). The import populates `kosax.tools.registry.ToolRegistry._tools` per Spec 1634.
+2. **Import the registry**: `from ummaya.tools import register_all` (or equivalent — confirm the canonical entry point during implement). The import populates `ummaya.tools.registry.ToolRegistry._tools` per Spec 1634.
 3. **Iterate adapters in alphabetical order by tool_id** (deterministic sort).
 4. **For each adapter**:
    1. Locate input model class and output model class (per AdapterRegistration data structure).

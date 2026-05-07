@@ -1,5 +1,5 @@
 /**
- * KOSAX-original — ErrorBanner renderer.
+ * UMMAYA-original — ErrorBanner renderer.
  *
  * Displays a red banner with a title, description, and optional retry hint.
  * Used for lookup-level errors surfaced from a tool result envelope.

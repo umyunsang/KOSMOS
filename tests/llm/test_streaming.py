@@ -10,10 +10,10 @@ import httpx
 import pytest
 import respx
 
-from kosax.llm.client import LLMClient
-from kosax.llm.config import LLMClientConfig
-from kosax.llm.errors import AuthenticationError, StreamInterruptedError
-from kosax.llm.models import ChatMessage, StreamEvent
+from ummaya.llm.client import LLMClient
+from ummaya.llm.config import LLMClientConfig
+from ummaya.llm.errors import AuthenticationError, StreamInterruptedError
+from ummaya.llm.models import ChatMessage, StreamEvent
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -91,11 +91,11 @@ def _stop_chunk(
 
 @pytest.fixture(autouse=True)
 def _clean_env(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Strip all KOSAX_ env vars and inject a known test token."""
+    """Strip all UMMAYA_ env vars and inject a known test token."""
     for key in list(os.environ):
-        if key.startswith("KOSAX_"):
+        if key.startswith("UMMAYA_"):
             monkeypatch.delenv(key, raising=False)
-    monkeypatch.setenv("KOSAX_FRIENDLI_TOKEN", "test-token-12345")
+    monkeypatch.setenv("UMMAYA_FRIENDLI_TOKEN", "test-token-12345")
 
 
 @pytest.fixture

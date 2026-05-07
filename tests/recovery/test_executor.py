@@ -7,10 +7,10 @@ import httpx
 import pytest
 from pydantic import BaseModel
 
-from kosax.recovery.circuit_breaker import CircuitBreakerConfig, CircuitState
-from kosax.recovery.executor import RecoveryExecutor
-from kosax.recovery.retry import ToolRetryPolicy
-from kosax.tools.models import GovAPITool
+from ummaya.recovery.circuit_breaker import CircuitBreakerConfig, CircuitState
+from ummaya.recovery.executor import RecoveryExecutor
+from ummaya.recovery.retry import ToolRetryPolicy
+from ummaya.tools.models import GovAPITool
 
 
 class _DummyInput(BaseModel):

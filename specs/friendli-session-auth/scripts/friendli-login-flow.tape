@@ -12,7 +12,7 @@ Set Height 900
 Set Theme "TokyoNightStorm"
 
 Hide
-Type "cd $(git rev-parse --show-toplevel)/tui && env KOSAX_FRIENDLI_TOKEN= KOSAX_FRIENDLI_SESSION_ACTIVE= KOSAX_ONBOARDING_AUTO_COMPLETE=1 KOSAX_BACKEND_CMD='sleep 60' NODE_ENV=test IS_DEMO=1 bun run tui"
+Type "cd $(git rev-parse --show-toplevel)/tui && env UMMAYA_FRIENDLI_TOKEN= UMMAYA_FRIENDLI_SESSION_ACTIVE= UMMAYA_ONBOARDING_AUTO_COMPLETE=1 UMMAYA_BACKEND_CMD='sleep 60' NODE_ENV=test IS_DEMO=1 bun run tui"
 Enter
 Sleep 5s
 Show

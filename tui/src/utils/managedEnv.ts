@@ -1,4 +1,4 @@
-// remoteManagedSettings removed in P1+P2 (Spec 1633); KOSAX does not use Anthropic enterprise policy.
+// remoteManagedSettings removed in P1+P2 (Spec 1633); UMMAYA does not use Anthropic enterprise policy.
 const isRemoteManagedSettingsEligible = (): boolean => false
 import { clearCACertsCache } from './caCerts.js'
 import { getGlobalConfig } from './config.js'

@@ -3,17 +3,17 @@
 **Feature Branch**: `feat/1637-p6-docs-smoke`
 **Created**: 2026-04-26
 **Status**: Draft
-**Input**: User description: P6 · Docs/API specs + Integration smoke — KOSAX migration's terminal Epic. (a) Author Markdown specifications for every active adapter registered in `kosax.tools.register_all` under a new `docs/api/` directory, (b) export each Pydantic envelope as a JSON Schema Draft 2020-12 file under `docs/api/schemas/`, (c) absorb the legacy `docs/tools/` directory into the new layout, (d) clean up the 9 stale `road_risk_score` (composite) references left over from the P3 #1758 adapter removal, (e) recover `bun test` to 0 fail / 0 errors (≥ 830 tests), (f) gate the release on a hand-driven `bun run tui` visual smoke covering 5 UI states + active primitive flows + slash commands + 3 error envelopes + PDF inline render, and (g) ship a single integrated PR `Closes #1637` that closes Initiative #1631 alongside KOSAX v0.1-alpha CHANGELOG. Canonical sources: Epic #1637, `docs/requirements/kosax-migration-tree.md § L1-B B7 + § P6`, `docs/vision.md § Reference materials` (Claude Code primary), `AGENTS.md § Spec-driven workflow + § Hard rules`.
+**Input**: User description: P6 · Docs/API specs + Integration smoke — UMMAYA migration's terminal Epic. (a) Author Markdown specifications for every active adapter registered in `ummaya.tools.register_all` under a new `docs/api/` directory, (b) export each Pydantic envelope as a JSON Schema Draft 2020-12 file under `docs/api/schemas/`, (c) absorb the legacy `docs/tools/` directory into the new layout, (d) clean up the 9 stale `road_risk_score` (composite) references left over from the P3 #1758 adapter removal, (e) recover `bun test` to 0 fail / 0 errors (≥ 830 tests), (f) gate the release on a hand-driven `bun run tui` visual smoke covering 5 UI states + active primitive flows + slash commands + 3 error envelopes + PDF inline render, and (g) ship a single integrated PR `Closes #1637` that closes Initiative #1631 alongside UMMAYA v0.1-alpha CHANGELOG. Canonical sources: Epic #1637, `docs/requirements/ummaya-migration-tree.md § L1-B B7 + § P6`, `docs/vision.md § Reference materials` (Claude Code primary), `AGENTS.md § Spec-driven workflow + § Hard rules`.
 
 ## User Scenarios & Testing *(mandatory)*
 
-### User Story 1 - Citizen developer discovers and understands every registered KOSAX adapter from a single index (Priority: P1)
+### User Story 1 - Citizen developer discovers and understands every registered UMMAYA adapter from a single index (Priority: P1)
 
-A citizen developer (or external plugin contributor reviewing KOSAX conventions before submitting to `kosax-plugin-store`) wants to learn what tools KOSAX already ships, what each adapter requires as input, what permission tier it lives at, and how to invoke it through the `lookup(mode="fetch")` envelope. Today this knowledge is fragmented — half is in `docs/tools/` (P3-era, partial), half in `docs/design/mvp-tools.md` (planning artifact), half in `docs/plugins/` (external-author guides), and the rest is buried inside Pydantic source files under `src/kosax/tools/`. There is no single canonical catalog.
+A citizen developer (or external plugin contributor reviewing UMMAYA conventions before submitting to `ummaya-plugin-store`) wants to learn what tools UMMAYA already ships, what each adapter requires as input, what permission tier it lives at, and how to invoke it through the `lookup(mode="fetch")` envelope. Today this knowledge is fragmented — half is in `docs/tools/` (P3-era, partial), half in `docs/design/mvp-tools.md` (planning artifact), half in `docs/plugins/` (external-author guides), and the rest is buried inside Pydantic source files under `src/ummaya/tools/`. There is no single canonical catalog.
 
-**Why this priority**: This is the entire reason P6 exists. The migration tree § L1-B B7 explicitly mandates "어댑터별 Markdown + JSON Schema/OpenAPI + index" as the closing deliverable for the Tool System pillar. Without a single canonical `docs/api/` index, every external contributor has to re-discover the conventions by reading source code, every QA review has to cross-check four directories, and the public-facing claim that KOSAX "orchestrates Korean public APIs" stays unverifiable from the documentation alone. P1 because it dominates the Epic's file scope and unblocks every other story.
+**Why this priority**: This is the entire reason P6 exists. The migration tree § L1-B B7 explicitly mandates "어댑터별 Markdown + JSON Schema/OpenAPI + index" as the closing deliverable for the Tool System pillar. Without a single canonical `docs/api/` index, every external contributor has to re-discover the conventions by reading source code, every QA review has to cross-check four directories, and the public-facing claim that UMMAYA "orchestrates Korean public APIs" stays unverifiable from the documentation alone. P1 because it dominates the Epic's file scope and unblocks every other story.
 
-**Independent Test**: Open `docs/api/README.md` cold (no prior KOSAX knowledge). Within 30 seconds, locate the row for `koroad_accident_search`. Click through to the adapter spec. Read the seven-field structure (Tier · Envelope · Search hints · Endpoint · Permission tier · Example call · Constraints). Open the linked JSON Schema file under `docs/api/schemas/koroad_accident_search.json`. Validate it against a Draft 2020-12 validator. Repeat for one Mock-tier adapter (e.g., `mock_traffic_fine_pay_v1`). Success: the same seven fields render with the same headings; the Mock entry visibly carries the `[Mock]` classification; the JSON Schema imports cleanly into a generic schema viewer.
+**Independent Test**: Open `docs/api/README.md` cold (no prior UMMAYA knowledge). Within 30 seconds, locate the row for `koroad_accident_search`. Click through to the adapter spec. Read the seven-field structure (Tier · Envelope · Search hints · Endpoint · Permission tier · Example call · Constraints). Open the linked JSON Schema file under `docs/api/schemas/koroad_accident_search.json`. Validate it against a Draft 2020-12 validator. Repeat for one Mock-tier adapter (e.g., `mock_traffic_fine_pay_v1`). Success: the same seven fields render with the same headings; the Mock entry visibly carries the `[Mock]` classification; the JSON Schema imports cleanly into a generic schema viewer.
 
 **Acceptance Scenarios**:
 
@@ -24,7 +24,7 @@ A citizen developer (or external plugin contributor reviewing KOSAX conventions 
 
 ---
 
-### User Story 2 - Release validator confirms KOSAX v0.1-alpha is integration-ready before tagging (Priority: P1)
+### User Story 2 - Release validator confirms UMMAYA v0.1-alpha is integration-ready before tagging (Priority: P1)
 
 The release validator (project lead in this case) needs to confirm that the assembled migration — P0 baseline + P1/P2 dead-code/Friendli + P3 tool wiring + P4 UI L2 + P5 plugin DX + P6 docs — actually runs end-to-end on a fresh checkout, with no test regressions and no broken UI flows, before the v0.1-alpha tag is cut and Initiative #1631 is closed.
 
@@ -36,7 +36,7 @@ The release validator (project lead in this case) needs to confirm that the asse
 
 1. **Given** the head of `feat/1637-p6-docs-smoke`, **When** `bun test` runs, **Then** the final summary reports 0 fail and 0 errors across at least 830 tests; pre-existing skip and todo counts remain unchanged.
 2. **Given** the `tui/src/hooks/useVirtualScroll.ts:273` `Set` constructor type error, **When** the fix lands, **Then** the `VirtualizedList overflowToBackbuffer` test family passes without modification of test expectations (the test fixture is the contract).
-3. **Given** a fresh `bun run tui` session, **When** the validator completes the 5-step onboarding flow, **Then** every step renders, accepts input, and persists state to `~/.kosax/memdir/user/onboarding/state.json`; resuming with `/onboarding` returns to the recorded step.
+3. **Given** a fresh `bun run tui` session, **When** the validator completes the 5-step onboarding flow, **Then** every step renders, accepts input, and persists state to `~/.ummaya/memdir/user/onboarding/state.json`; resuming with `/onboarding` returns to the recorded step.
 4. **Given** the running TUI, **When** the validator triggers each active primitive flow (`lookup` search/fetch · `submit` mock · `verify` mock), **Then** the request lands at the corresponding adapter, the permission-gauntlet modal fires for tier-2 / tier-3 adapters, and the response renders in the conversation pane with the documented envelope shape.
 5. **Given** the running TUI, **When** the validator forces each of the three error envelopes (LLM 4xx, tool fail-closed, network timeout), **Then** the rendered error follows the Spec 035 envelope with the documented error icon, classification line, and remediation hint — no raw exception traces leak into the visible frame.
 
@@ -44,7 +44,7 @@ The release validator (project lead in this case) needs to confirm that the asse
 
 ### User Story 3 - Maintainer confirms zero residual references to the removed composite tool (Priority: P2)
 
-A maintainer or downstream agent reading KOSAX docs or grepping for examples of how composite tools work expects the documentation to match the code. Today, `road_risk_score` (composite) was removed from the registry by P3 #1758 (per migration tree § L1-B B6 "Composite 제거"), but nine documentation locations still describe it as a registered, callable tool. Anyone trusting the docs will hit `tool not found` and lose trust in the documentation as a whole.
+A maintainer or downstream agent reading UMMAYA docs or grepping for examples of how composite tools work expects the documentation to match the code. Today, `road_risk_score` (composite) was removed from the registry by P3 #1758 (per migration tree § L1-B B6 "Composite 제거"), but nine documentation locations still describe it as a registered, callable tool. Anyone trusting the docs will hit `tool not found` and lose trust in the documentation as a whole.
 
 **Why this priority**: This is a consistency story, not a feature story — without it, the new `docs/api/` catalog cannot be trusted because the surrounding documentation contradicts it. P2 because it is straightforward cleanup work whose value is unlocked only when US1 has landed.
 
@@ -65,7 +65,7 @@ A maintainer or downstream agent reading KOSAX docs or grepping for examples of 
 - **Empty mock stubs (`barocert/`, `npki_crypto/`, `omnione/`)**: per memory `feedback_mock_vs_scenario`, OPAQUE-tier items belong in `docs/scenarios/`, not in `docs/api/`. The directories exist as code-side placeholders only.
 - **`docs/tools/` migration vs deletion**: most `docs/tools/*.md` files map 1-to-1 to a `docs/api/<source>/<tool>.md` destination, but legacy files describing tools that no longer exist (`road-risk-score.md`) are deleted outright, not migrated.
 - **Test-fail triage classification**: each of the 47 fails / 17 errors must be classified as either (a) a real regression to fix, (b) a CC-port test whose contract is no longer applicable and which must be deleted with rationale, or (c) a test whose expectation needs updating to match a deliberate behavior change. The classification log lives in the spec's plan artifact.
-- **CHANGELOG framing**: KOSAX v0.1-alpha is the migration-completion release, not a feature release. Entries describe the migration end-state, not a feature-by-feature changelog.
+- **CHANGELOG framing**: UMMAYA v0.1-alpha is the migration-completion release, not a feature release. Entries describe the migration end-state, not a feature-by-feature changelog.
 - **PDF inline render**: depends on terminal-graphics-protocol detection (Kitty / iTerm2). On terminals without graphics support, the smoke checklist accepts the documented `open` fallback as the success criterion — visual inline rendering is not asserted on incompatible terminals.
 
 ## Requirements *(mandatory)*
@@ -76,11 +76,11 @@ A maintainer or downstream agent reading KOSAX docs or grepping for examples of 
 
 - **FR-001**: System MUST expose a single index file at `docs/api/README.md` that catalogs active registered adapters in two cross-cutting matrices: by source (KOROAD, KMA, HIRA, NMC, NFA119, MOHW, mock-verify, mock-submit, resolve_location) and by primitive (`lookup` · `submit` · `verify` · `resolve_location`). Each row MUST link to the adapter's Markdown spec and to its JSON Schema export.
 - **FR-002**: System MUST publish 12 Live-tier adapter specs covering `koroad_accident_search`, `koroad_accident_hazard_search`, `kma_current_observation`, `kma_short_term_forecast`, `kma_ultra_short_term_forecast`, `kma_weather_alert_status`, `kma_pre_warning`, `kma_forecast_fetch`, `hira_hospital_search`, `nmc_emergency_search` (with freshness sub-tool documented inline), `nfa_emergency_info_service`, and `mohw_welfare_eligibility_search`.
-- **FR-003**: System MUST publish active Mock-tier adapter specs covering verify and submit adapters. Mock entries MUST cite their public-spec source per memory `feedback_mock_evidence_based`. Subscribe mock specs are deferred until KOSAX owns an app/push delivery runtime.
+- **FR-003**: System MUST publish active Mock-tier adapter specs covering verify and submit adapters. Mock entries MUST cite their public-spec source per memory `feedback_mock_evidence_based`. Subscribe mock specs are deferred until UMMAYA owns an app/push delivery runtime.
 - **FR-004**: System MUST publish 1 meta-tool spec for `resolve_location` at `docs/api/resolve_location/index.md` covering the juso, sgis, and kakao backends as variants of a single dispatch surface.
 - **FR-005**: Every adapter spec MUST populate the seven mandatory fields: (1) classification (Live or Mock + permission tier 1/2/3), (2) Pydantic input/output envelope reference (with file path and line range to the model definition), (3) search hints in Korean and English, (4) endpoint identifier (data.go.kr endpoint ID, ministry source URL, or "fixture-replay only" for Mock), (5) permission tier rationale referencing Spec 033, (6) at least one worked invocation example using `lookup(mode="fetch")` envelope, (7) constraints (rate limits, freshness windows, fixture coverage gaps).
 - **FR-006**: System MUST export each adapter's input and output Pydantic models as a JSON Schema Draft 2020-12 document under `docs/api/schemas/<tool_id>.json`. The export MUST validate against a generic Draft 2020-12 validator without manual edits.
-- **FR-007**: System MUST provide an automated build script `scripts/build_schemas.py` that walks the registry from `kosax.tools.register_all`, invokes Pydantic v2's `model_json_schema()` per envelope, and writes the resulting JSON files into `docs/api/schemas/`. Re-running the script on an unchanged tree MUST produce a byte-identical output (deterministic).
+- **FR-007**: System MUST provide an automated build script `scripts/build_schemas.py` that walks the registry from `ummaya.tools.register_all`, invokes Pydantic v2's `model_json_schema()` per envelope, and writes the resulting JSON files into `docs/api/schemas/`. Re-running the script on an unchanged tree MUST produce a byte-identical output (deterministic).
 
 #### Documentation migration — legacy `docs/tools/` absorption
 
@@ -102,7 +102,7 @@ A maintainer or downstream agent reading KOSAX docs or grepping for examples of 
 
 - **FR-015**: System MUST update `docs/vision.md § L1-A`, `§ L1-B`, and `§ L1-C` to reflect the realized migration outcome (previous text described the migration as planned; the post-merge text describes it as shipped, with date and Epic reference).
 - **FR-016**: System MUST update `CLAUDE.md § Active Technologies` to reflect the post-P6 surface and `CLAUDE.md § Recent Changes` with a P6 entry that mirrors the prose convention used by the prior P0–P5 entries.
-- **FR-017**: System MUST add a `CHANGELOG.md` entry tagged "KOSAX v0.1-alpha" describing the migration completion. The entry MUST be a release-readiness-grade summary, not a feature-by-feature changelog — it is the closing note for Initiative #1631.
+- **FR-017**: System MUST add a `CHANGELOG.md` entry tagged "UMMAYA v0.1-alpha" describing the migration completion. The entry MUST be a release-readiness-grade summary, not a feature-by-feature changelog — it is the closing note for Initiative #1631.
 
 #### Release packaging
 
@@ -119,12 +119,12 @@ A maintainer or downstream agent reading KOSAX docs or grepping for examples of 
 
 - **AdapterSpec**: a Markdown document under `docs/api/<source>/<tool_id>.md` with seven mandatory fields (classification, envelope reference, bilingual search hints, endpoint identifier, permission tier, worked example, constraints). One per active registered adapter.
 - **AdapterIndex**: the single `docs/api/README.md` document that cross-tabulates all adapters by source and by primitive, linking to each AdapterSpec and to the corresponding JSONSchema.
-- **JSONSchema**: a JSON Schema Draft 2020-12 document under `docs/api/schemas/<tool_id>.json`, machine-generated by `scripts/build_schemas.py` from the Pydantic envelopes registered in `kosax.tools.register_all`. Deterministic.
+- **JSONSchema**: a JSON Schema Draft 2020-12 document under `docs/api/schemas/<tool_id>.json`, machine-generated by `scripts/build_schemas.py` from the Pydantic envelopes registered in `ummaya.tools.register_all`. Deterministic.
 - **SchemaBuildScript**: the `scripts/build_schemas.py` Python module that performs the deterministic export. Inputs: the live registry. Output: the schemas directory. Idempotent.
 - **SmokeChecklist**: the hand-driven validation document recording the bun-run-tui visual-smoke flow. Captures: every state checked, the visual evidence file, pass / fail / blocked state, and any edge-case observations.
 - **VisualEvidenceArtifact**: an ANSI-text capture under `specs/1637-p6-docs-smoke/visual-evidence/`, one per smoke step, mirroring the file-naming convention from Spec 1636.
 - **CompositeRemovalAudit**: the implicit deliverable confirming zero non-historical references to the removed `road_risk_score` tool, verifiable by `grep`.
-- **ChangeLogEntry**: the single `CHANGELOG.md` entry tagged "KOSAX v0.1-alpha" closing out Initiative #1631.
+- **ChangeLogEntry**: the single `CHANGELOG.md` entry tagged "UMMAYA v0.1-alpha" closing out Initiative #1631.
 
 ## Success Criteria *(mandatory)*
 
@@ -136,28 +136,28 @@ A maintainer or downstream agent reading KOSAX docs or grepping for examples of 
 - **SC-004**: Searching the documentation tree for the removed composite tool returns zero non-historical references. Verification: `grep -rn 'road_risk_score' docs/ | grep -vE '(release-manifests|adr|release-notes)' | wc -l` returns 0.
 - **SC-005**: A release validator can complete the full bun-run-tui smoke checklist (5 onboarding steps + active primitive flows + slash commands + 3 error envelopes + PDF render path) without any unrecoverable error or visual crash. Verification: every smoke-checklist row has a corresponding `visual-evidence/<slug>.ansi.txt` artifact and a pass mark.
 - **SC-006**: The legacy `docs/tools/` directory does not exist after the merge. Verification: `test ! -d docs/tools && echo gone` prints "gone".
-- **SC-007**: A new contributor with no prior KOSAX knowledge can locate the spec for an arbitrarily named adapter (provided as a string) starting from `docs/api/README.md` in under 30 seconds. Verification: a documented walk-through (project-lead self-test) recorded in the smoke checklist.
+- **SC-007**: A new contributor with no prior UMMAYA knowledge can locate the spec for an arbitrarily named adapter (provided as a string) starting from `docs/api/README.md` in under 30 seconds. Verification: a documented walk-through (project-lead self-test) recorded in the smoke checklist.
 - **SC-008**: The integrated PR `Closes #1637` merges cleanly to `main`, the Copilot Review Gate transitions to `completed` with zero CRITICAL findings, and the resulting commit on `main` lets `bun test` and `bun run tui` start without bootstrap errors on a fresh clone. Verification: PR-merge state recorded by GitHub.
-- **SC-009**: After the PR merges, Initiative #1631 (KOSAX TUI Migration) can be closed because all six Phase Epics (#1632, #1633, #1634, #1847, #1927, #1637) are in MERGED / CLOSED state. Verification: GitHub issue state.
-- **SC-010**: KOSAX v0.1-alpha CHANGELOG entry exists and reads as a coherent migration-completion summary. Verification: prose review by project lead documented in PR body.
+- **SC-009**: After the PR merges, Initiative #1631 (UMMAYA TUI Migration) can be closed because all six Phase Epics (#1632, #1633, #1634, #1847, #1927, #1637) are in MERGED / CLOSED state. Verification: GitHub issue state.
+- **SC-010**: UMMAYA v0.1-alpha CHANGELOG entry exists and reads as a coherent migration-completion summary. Verification: prose review by project lead documented in PR body.
 
 ## Assumptions
 
-- The active adapter count is derived from `kosax.tools.register_all`. Any adapter added or removed between the spec freeze and PR submission updates the count and triggers a spec amendment.
-- External plugin contributors host their own `docs/` content inside `kosax-plugin-store/<repo>` and are out of scope. The post-P5 plugin DX (Spec 1636) covers their authoring path.
+- The active adapter count is derived from `ummaya.tools.register_all`. Any adapter added or removed between the spec freeze and PR submission updates the count and triggers a spec amendment.
+- External plugin contributors host their own `docs/` content inside `ummaya-plugin-store/<repo>` and are out of scope. The post-P5 plugin DX (Spec 1636) covers their authoring path.
 - The 47 fail / 17 errors current bun-test baseline is largely traceable to P4 #1847 (TUI L2 citizen port). Fix work concentrates on that surface; CC-port tests whose contract no longer applies are deleted with explicit rationale rather than skipped.
 - Visual-evidence capture follows the same ANSI-text convention introduced by Spec 1636 (`specs/1636-plugin-dx-5tier/visual-evidence/`). No new tooling required.
-- KOSAX-only tests are preserved; tests that were ports of Claude Code internals describing CC-only abstractions are eligible for deletion when KOSAX no longer contains the corresponding abstraction.
+- UMMAYA-only tests are preserved; tests that were ports of Claude Code internals describing CC-only abstractions are eligible for deletion when UMMAYA no longer contains the corresponding abstraction.
 - OpenAPI 3.0 export is treated as polish; the JSON Schema export is the primary machine-readable contract. If OpenAPI authoring would lengthen the Epic by a meaningful margin, it is deferred.
 - The Initiative-close action is performed manually by the project lead after PR merge — this Epic does not automate Initiative closure.
-- Search-hint translations follow the conventions already established in `src/kosax/tools/*/search_hint` Python literals; the spec author transcribes them, does not retranslate.
+- Search-hint translations follow the conventions already established in `src/ummaya/tools/*/search_hint` Python literals; the spec author transcribes them, does not retranslate.
 
 ## Scope Boundaries & Deferred Items *(mandatory)*
 
 ### Out of Scope (Permanent)
 
-- **External plugin documentation**: every plugin published under `kosax-plugin-store/<repo>` carries its own `README.ko.md` + `manifest.yaml` + per-repo docs. KOSAX core repo `docs/api/` covers only registry-bundled adapters. (Reason: ownership boundary; trying to mirror external repo docs centrally would invert the Spec 1636 plugin DX model.)
-- **OPAQUE mock stubs (`barocert/`, `npki_crypto/`, `omnione/`)**: per memory `feedback_mock_vs_scenario`, OPAQUE-tier subjects belong in `docs/scenarios/`, not in `docs/api/`. The empty `__init__.py` placeholder directories under `src/kosax/tools/mock/` exist for future shape-mirrored Mock work and are intentionally excluded from this catalog.
+- **External plugin documentation**: every plugin published under `ummaya-plugin-store/<repo>` carries its own `README.ko.md` + `manifest.yaml` + per-repo docs. UMMAYA core repo `docs/api/` covers only registry-bundled adapters. (Reason: ownership boundary; trying to mirror external repo docs centrally would invert the Spec 1636 plugin DX model.)
+- **OPAQUE mock stubs (`barocert/`, `npki_crypto/`, `omnione/`)**: per memory `feedback_mock_vs_scenario`, OPAQUE-tier subjects belong in `docs/scenarios/`, not in `docs/api/`. The empty `__init__.py` placeholder directories under `src/ummaya/tools/mock/` exist for future shape-mirrored Mock work and are intentionally excluded from this catalog.
 - **Live API key acquisition or live regression coverage**: live data.go.kr calls remain `@pytest.mark.live` skip-by-default per `AGENTS.md § Hard rules`. P6 verifies fixture-replay paths only.
 - **Constitution / vision rewrite**: `docs/vision.md` Layer names are fixed by ADR; this Epic updates phase-realization prose only, not architectural definitions.
 
@@ -166,7 +166,7 @@ A maintainer or downstream agent reading KOSAX docs or grepping for examples of 
 | Item | Reason for Deferral | Target Epic/Phase | Tracking Issue |
 |------|---------------------|-------------------|----------------|
 | Full OpenAPI 3.0 specification for `/agent-delegation` meta-tool | JSON Schema is the primary contract; OpenAPI is polish that requires its own design pass for authentication and error-shape conventions | Post-v0.1-alpha plugin DX expansion or a dedicated docs-tooling Epic | #1972 |
-| Permanent removal of the `ministries_for_composite()` API surface in `src/kosax/tools/main_router.py` | The function is unused after the composite removal but is retained as an extension point per its in-code comment; removing it requires confirming no future composite tool is planned | Post-v0.1-alpha refactor pass once primitive-only invariant is firmly established | #1973 |
+| Permanent removal of the `ministries_for_composite()` API surface in `src/ummaya/tools/main_router.py` | The function is unused after the composite removal but is retained as an extension point per its in-code comment; removing it requires confirming no future composite tool is planned | Post-v0.1-alpha refactor pass once primitive-only invariant is firmly established | #1973 |
 | Live-mode regression coverage for the 12 Live-tier adapters | Requires API-key acquisition agreements with each ministry; orthogonal to the docs+smoke release gate | Phase 2 live hardening (post-v0.1-alpha) | #1974 |
 | Auto-generated adapter spec stubs from Pydantic docstrings | Out of scope for first authoring pass; once active manual specs land, a generator can replace the manual maintenance burden | Post-v0.1-alpha docs-tooling Epic | #1975 |
 | Migration of OPAQUE mock stubs into `docs/scenarios/` shape-mirror entries | OPAQUE items need scenario-level evidence research first (memory `feedback_mock_evidence_based`) | Future scenarios-coverage Epic, when shape-mirror evidence is ready | #1976 |

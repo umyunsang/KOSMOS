@@ -70,7 +70,7 @@ function makeAnnouncer(): {
 }
 
 const SAMPLE_ENTRY: HistoryEntry = {
-  query_text: '안녕하세요 KOSAX',
+  query_text: '안녕하세요 UMMAYA',
   timestamp: '2026-04-20T08:00:00Z',
   session_id: '01956b00-d4c9-7a1e-9c8b-0b2c3d4e5f60',
   consent_scope: 'current-session',

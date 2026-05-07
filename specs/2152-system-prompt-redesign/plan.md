@@ -1,22 +1,22 @@
-# Implementation Plan: KOSAX System Prompt Redesign
+# Implementation Plan: UMMAYA System Prompt Redesign
 
 **Branch**: `feat/2152-system-prompt-redesign` | **Date**: 2026-04-28 | **Spec**: [spec.md](./spec.md)
-**Input**: Feature specification from `/Users/um-yunsang/KOSAX/specs/2152-system-prompt-redesign/spec.md`
+**Input**: Feature specification from `/Users/um-yunsang/UMMAYA/specs/2152-system-prompt-redesign/spec.md`
 
 ## Summary
 
-Migrate the Claude Code 2.1.88 system-prompt architecture (section-based static prefix + dynamic suffix + boundary marker + per-tool trigger guidance) from `.references/claude-code-sourcemap/restored-src/src/constants/prompts.ts` (lines 175–590, the `getSystemPrompt` 7-static / 12-dynamic composition) to the KOSAX citizen-domain harness. The redesign rewrites `prompts/system_v1.md` as four XML-tagged sections (R1), augments the existing `build_system_prompt_with_tools` to emit per-tool trigger phrases (R6), excises the developer-context injectors (`getSystemContext` / `appendSystemContext` / `prependUserContext` / `getUserContext`) from the citizen TUI chat-request emit path (R5), wraps citizen utterances in a `<citizen_request>` envelope at the chat-request boundary (R3), inserts a `SYSTEM_PROMPT_DYNAMIC_BOUNDARY` marker between the cacheable static prefix and the per-turn dynamic suffix while wiring `kosax.prompt.hash` to hash only the static prefix (R4), and introduces a `kosax.llm.prompt_assembler` module with a Pydantic-AI-style decorator surface for future per-turn injectors (R2). The work ships as a single integrated PR with zero new runtime dependencies.
+Migrate the Claude Code 2.1.88 system-prompt architecture (section-based static prefix + dynamic suffix + boundary marker + per-tool trigger guidance) from `.references/claude-code-sourcemap/restored-src/src/constants/prompts.ts` (lines 175–590, the `getSystemPrompt` 7-static / 12-dynamic composition) to the UMMAYA citizen-domain harness. The redesign rewrites `prompts/system_v1.md` as four XML-tagged sections (R1), augments the existing `build_system_prompt_with_tools` to emit per-tool trigger phrases (R6), excises the developer-context injectors (`getSystemContext` / `appendSystemContext` / `prependUserContext` / `getUserContext`) from the citizen TUI chat-request emit path (R5), wraps citizen utterances in a `<citizen_request>` envelope at the chat-request boundary (R3), inserts a `SYSTEM_PROMPT_DYNAMIC_BOUNDARY` marker between the cacheable static prefix and the per-turn dynamic suffix while wiring `ummaya.prompt.hash` to hash only the static prefix (R4), and introduces a `ummaya.llm.prompt_assembler` module with a Pydantic-AI-style decorator surface for future per-turn injectors (R2). The work ships as a single integrated PR with zero new runtime dependencies.
 
 ## Technical Context
 
 **Language/Version**: Python 3.12+ (backend, existing baseline) · TypeScript 5.6+ on Bun v1.2.x (TUI, existing Spec 287 stack). No version bump.
-**Primary Dependencies**: All existing — `pydantic >= 2.13` (frozen models for `PromptSection` / `PromptAssemblyContext` / `SystemPromptManifest`), `pydantic-settings >= 2.0` (env catalog), `opentelemetry-sdk` + `opentelemetry-semantic-conventions` (Spec 021 spans, `kosax.prompt.hash` attribute), `pytest` + `pytest-asyncio` (existing test stack), stdlib `hashlib` (SHA-256 prefix hash) / `pathlib` (PromptLoader I/O) / `re` (XML-tag presence assertions in tests). TS side: existing `ink`, `react`, `@inkjs/ui`, `string-width`, Bun stdlib. **Zero new runtime dependencies** (AGENTS.md hard rule + spec FR-012 + SC-6).
-**Storage**: N/A at runtime. `prompts/system_v1.md` and `prompts/manifest.yaml` continue to live in the repository as the canonical source-of-truth (Spec 026 SHA-256 manifest invariant). The PromptLoader still loads them into an immutable in-memory cache at process boot. Dynamic-suffix injectors that pull from memdir USER tier (`~/.kosax/memdir/user/consent/`, `~/.kosax/memdir/user/ministry-scope/`) reuse the existing Spec 027 / Spec 035 paths.
+**Primary Dependencies**: All existing — `pydantic >= 2.13` (frozen models for `PromptSection` / `PromptAssemblyContext` / `SystemPromptManifest`), `pydantic-settings >= 2.0` (env catalog), `opentelemetry-sdk` + `opentelemetry-semantic-conventions` (Spec 021 spans, `ummaya.prompt.hash` attribute), `pytest` + `pytest-asyncio` (existing test stack), stdlib `hashlib` (SHA-256 prefix hash) / `pathlib` (PromptLoader I/O) / `re` (XML-tag presence assertions in tests). TS side: existing `ink`, `react`, `@inkjs/ui`, `string-width`, Bun stdlib. **Zero new runtime dependencies** (AGENTS.md hard rule + spec FR-012 + SC-6).
+**Storage**: N/A at runtime. `prompts/system_v1.md` and `prompts/manifest.yaml` continue to live in the repository as the canonical source-of-truth (Spec 026 SHA-256 manifest invariant). The PromptLoader still loads them into an immutable in-memory cache at process boot. Dynamic-suffix injectors that pull from memdir USER tier (`~/.ummaya/memdir/user/consent/`, `~/.ummaya/memdir/user/ministry-scope/`) reuse the existing Spec 027 / Spec 035 paths.
 **Testing**: `uv run pytest` (Python unit + integration) · `bun test` (TS parity + snapshot) · `expect`/`asciinema` text-log E2E TUI smoke (memory `feedback_vhs_tui_smoke` — text logs are primary, gif/png are auxiliary).
 **Target Platform**: macOS / Linux terminal (TUI on Bun, backend on uv-managed Python 3.12+ over stdio JSONL IPC).
-**Project Type**: Harness — split between Python backend (`src/kosax/`) and Ink/React TUI (`tui/`) talking through stdio IPC frames (Spec 032).
-**Performance Goals**: `kosax.prompt.hash` byte-stable across two consecutive turns of the same session (cache prefix invariant, SC-3) · ≥ 3 of 5 citizen smoke scenarios trigger a tool call before the assistant's final answer (SC-1) · `bun test` ≥ 984 pass and `uv run pytest` ≥ 3458 pass (SC-5 parity with `main`).
-**Constraints**: Zero new runtime dependencies (FR-012, SC-6, AGENTS.md hard rule) · English source text only with the approved Korean exception inside `<role>` and `<core_rules>` prose (constitution Development Standards) · Pydantic v2 only with `Any` forbidden in I/O schemas (constitution Principle III) · all `KOSAX_`-prefixed env vars (AGENTS.md) · stdlib `logging` only with no `print()` outside CLI surfaces (AGENTS.md) · Spec 026 prompt-registry SHA-256 contract preserved (FR-013).
+**Project Type**: Harness — split between Python backend (`src/ummaya/`) and Ink/React TUI (`tui/`) talking through stdio IPC frames (Spec 032).
+**Performance Goals**: `ummaya.prompt.hash` byte-stable across two consecutive turns of the same session (cache prefix invariant, SC-3) · ≥ 3 of 5 citizen smoke scenarios trigger a tool call before the assistant's final answer (SC-1) · `bun test` ≥ 984 pass and `uv run pytest` ≥ 3458 pass (SC-5 parity with `main`).
+**Constraints**: Zero new runtime dependencies (FR-012, SC-6, AGENTS.md hard rule) · English source text only with the approved Korean exception inside `<role>` and `<core_rules>` prose (constitution Development Standards) · Pydantic v2 only with `Any` forbidden in I/O schemas (constitution Principle III) · all `UMMAYA_`-prefixed env vars (AGENTS.md) · stdlib `logging` only with no `print()` outside CLI surfaces (AGENTS.md) · Spec 026 prompt-registry SHA-256 contract preserved (FR-013).
 **Scale/Scope**: Single-user TUI session per process · ~12 registered citizen-data tools today (Spec 1637 catalog: `lookup`, `resolve_location`, KOROAD ×2, KMA ×6, HIRA ×1, NMC ×1, NFA119 ×1, MOHW ×1) · roughly 25–35 implementation tasks (≤ 90 sub-issue budget per memory `feedback_subissue_100_cap`).
 
 ## Constitution Check
@@ -61,7 +61,7 @@ prompts/
 ├── system_v1.md                                  # R1 — rewrite as XML-tagged 4 sections
 └── manifest.yaml                                 # R1 — update SHA-256 for system_v1.md
 
-src/kosax/llm/
+src/ummaya/llm/
 ├── system_prompt_builder.py                      # R6 — strengthen build_system_prompt_with_tools
 │                                                 #     to emit per-tool trigger phrase line
 ├── prompt_assembler.py                           # R2 — NEW module — Pydantic-AI-style decorator
@@ -70,15 +70,15 @@ src/kosax/llm/
 └── _cc_reference/
     └── prompts.ts                                # CC reference mirror (read-only)
 
-src/kosax/ipc/
+src/ummaya/ipc/
 └── stdio.py                                      # R3 — wrap user msg in <citizen_request>
                                                   # R4 — emit BOUNDARY marker between
                                                   #      static prefix and dynamic suffix in
                                                   #      _handle_chat_request system assembly
 
-src/kosax/observability/
+src/ummaya/observability/
 └── prompt_hash.py                                # R4 — hash ONLY the static prefix into
-                                                  #      kosax.prompt.hash (extend if exists,
+                                                  #      ummaya.prompt.hash (extend if exists,
                                                   #      else fold into prompt_assembler)
 
 tui/src/
@@ -113,7 +113,7 @@ tests/ipc/
 tui/src/__tests__/
 ├── chatRequestEmit.test.ts                       # NEW — assert no developer context attached
 │                                                 # to chat_request frame (R5 / SC-4)
-└── promptCacheStability.test.ts                  # NEW — assert kosax.prompt.hash byte-stable
+└── promptCacheStability.test.ts                  # NEW — assert ummaya.prompt.hash byte-stable
                                                   # across 2 turns (R4 / SC-3)
 
 specs/2152-system-prompt-redesign/
@@ -121,7 +121,7 @@ specs/2152-system-prompt-redesign/
 └── smoke-scenario-{1..5}-*.txt                   # Per-scenario asciinema logs
 ```
 
-**Structure Decision**: KOSAX is a single-repo polyglot harness with two long-lived top-level source trees: `src/kosax/` (Python backend) and `tui/src/` (Ink/React TUI on Bun). This Epic touches both — the prompt-assembler and IPC envelope wiring live in Python; the developer-context excision lives in TUI. No new top-level directories; no `apps/` or `packages/` split needed. The existing layout already enforces the "harness, not reimplementation" rule (memory `feedback_harness_not_reimplementation`) — `_cc_reference/` mirrors stay read-only and unchanged.
+**Structure Decision**: UMMAYA is a single-repo polyglot harness with two long-lived top-level source trees: `src/ummaya/` (Python backend) and `tui/src/` (Ink/React TUI on Bun). This Epic touches both — the prompt-assembler and IPC envelope wiring live in Python; the developer-context excision lives in TUI. No new top-level directories; no `apps/` or `packages/` split needed. The existing layout already enforces the "harness, not reimplementation" rule (memory `feedback_harness_not_reimplementation`) — `_cc_reference/` mirrors stay read-only and unchanged.
 
 ## Complexity Tracking
 

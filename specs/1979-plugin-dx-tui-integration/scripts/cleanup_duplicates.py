@@ -11,7 +11,7 @@ import subprocess
 import sys
 import time
 
-REPO = "umyunsang/KOSAX"
+REPO = "umyunsang/UMMAYA"
 EPIC_NUM = 1979
 
 # Duplicate range — second-batch issue numbers
@@ -60,7 +60,7 @@ def close_as_duplicate(num: int, canonical_num: int) -> None:
 def main() -> None:
     epic_id = gh(
         "api", "graphql", "-f",
-        f'query=query {{ repository(owner: "umyunsang", name: "KOSAX") {{ issue(number: {EPIC_NUM}) {{ id }} }} }}',
+        f'query=query {{ repository(owner: "umyunsang", name: "UMMAYA") {{ issue(number: {EPIC_NUM}) {{ id }} }} }}',
         "--jq", ".data.repository.issue.id",
     )
 
@@ -76,7 +76,7 @@ def main() -> None:
 
     gh(
         "api", "graphql", "-f",
-        f'query=query {{ repository(owner: "umyunsang", name: "KOSAX") {{ issue(number: {EPIC_NUM}) {{ subIssues {{ totalCount }} }} }} }}',
+        f'query=query {{ repository(owner: "umyunsang", name: "UMMAYA") {{ issue(number: {EPIC_NUM}) {{ subIssues {{ totalCount }} }} }} }}',
         "--jq", ".data.repository.issue.subIssues.totalCount",
     )
 

@@ -227,12 +227,12 @@ Internal functions may raise for programming errors (assertion failures, type er
 ## Module Exports
 
 ```python
-# src/kosax/engine/__init__.py
+# src/ummaya/engine/__init__.py
 
-from kosax.engine.config import QueryEngineConfig
-from kosax.engine.engine import QueryEngine
-from kosax.engine.events import QueryEvent, StopReason
-from kosax.engine.models import QueryContext, QueryState, SessionBudget
+from ummaya.engine.config import QueryEngineConfig
+from ummaya.engine.engine import QueryEngine
+from ummaya.engine.events import QueryEvent, StopReason
+from ummaya.engine.models import QueryContext, QueryState, SessionBudget
 
 __all__ = [
     "QueryEngine",

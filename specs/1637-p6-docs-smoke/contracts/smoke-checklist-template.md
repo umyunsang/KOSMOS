@@ -5,7 +5,7 @@
 ---
 
 ```markdown
-# Smoke checklist — KOSAX v0.1-alpha pre-merge gate
+# Smoke checklist — UMMAYA v0.1-alpha pre-merge gate
 
 **Branch**: `feat/1637-p6-docs-smoke`
 **Run date**: <YYYY-MM-DD>
@@ -34,7 +34,7 @@ sed 's/\x1b\[[0-9;]*m//g' \
 | `onboarding-1-preflight` | Auto on TUI start; preflight panel renders | All checks green; "Continue" hint visible | `onboarding-1-preflight.ansi.txt` + `.txt` | ☐ |
 | `onboarding-2-theme` | Theme selector | Selected theme applied to next frame | `onboarding-2-theme.ansi.txt` + `.txt` | ☐ |
 | `onboarding-3-pipa` | PIPA consent prompt | Receipt ID rendered after Y | `onboarding-3-pipa.ansi.txt` + `.txt` | ☐ |
-| `onboarding-4-ministry` | Ministry scope selection | Selected scope persisted to `~/.kosax/memdir/user/onboarding/state.json` | `onboarding-4-ministry.ansi.txt` + `.txt` | ☐ |
+| `onboarding-4-ministry` | Ministry scope selection | Selected scope persisted to `~/.ummaya/memdir/user/onboarding/state.json` | `onboarding-4-ministry.ansi.txt` + `.txt` | ☐ |
 | `onboarding-5-terminal` | Terminal setup; transition to REPL | Main REPL prompt visible | `onboarding-5-terminal.ansi.txt` + `.txt` | ☐ |
 
 ## Primitive flows (active flows)

@@ -1,10 +1,10 @@
-# KOSAX Observability — Local Stack Guide
+# UMMAYA Observability — Local Stack Guide
 
 **Spec**: 028-otlp-collector | **Epic**: #501 | **Updated**: 2026-04-18
 
-This document is the authoritative guide for running the KOSAX observability
+This document is the authoritative guide for running the UMMAYA observability
 stack locally during development and KSC 2026 demo sessions. It covers the
-full pipeline from KOSAX app to Langfuse UI and the PII redaction gate in
+full pipeline from UMMAYA app to Langfuse UI and the PII redaction gate in
 between.
 
 ---
@@ -15,7 +15,7 @@ The local observability stack has three tiers:
 
 ```text
 ┌─────────────┐     OTLP HTTP      ┌──────────────┐     OTLP HTTP      ┌──────────────┐
-│ KOSAX app  │ ─────────────────▶ │   otelcol    │ ─────────────────▶ │ langfuse-web │
+│ UMMAYA app  │ ─────────────────▶ │   otelcol    │ ─────────────────▶ │ langfuse-web │
 │ (host proc) │   :4318 (host)     │  (container) │   :3000/api/...    │  (container) │
 └─────────────┘                    └──────────────┘                    └──────────────┘
                                           │                                   │
@@ -24,7 +24,7 @@ The local observability stack has three tiers:
                                    config.yaml (:ro)              Postgres / ClickHouse / MinIO
 ```
 
-- **KOSAX app** (host process): emits OTLP/HTTP spans to `http://localhost:4318`.
+- **UMMAYA app** (host process): emits OTLP/HTTP spans to `http://localhost:4318`.
 - **otelcol** (OTel Collector Contrib container): receives spans, applies PII
   redaction rules, batches, and forwards to Langfuse.
 - **langfuse-web** (Langfuse v3 container): ingests spans via the OTLP HTTP
@@ -39,19 +39,19 @@ to version `3.35.0`.
 
 ## 2. Span Tree Reference
 
-A single KOSAX agent session emits the following three-level span tree
+A single UMMAYA agent session emits the following three-level span tree
 (SC-002):
 
 ```
-invoke_agent kosax-query       ← root span
+invoke_agent ummaya-query       ← root span
 ├── chat                        ← LLM call (gen_ai.request.model=EXAONE-...)
 └── execute_tool <tool_id>      ← tool invocation
 ```
 
 Each span carries:
 - `gen_ai.system` / `gen_ai.request.model` — model identity
-- `kosax.tool.id` — tool adapter identifier (on `execute_tool` spans)
-- `kosax.location.query` — **hashed** by the collector before Langfuse
+- `ummaya.tool.id` — tool adapter identifier (on `execute_tool` spans)
+- `ummaya.location.query` — **hashed** by the collector before Langfuse
   ingestion (SHA-256, see PII Redaction Gate below)
 
 ---
@@ -61,7 +61,7 @@ Each span carries:
 From a fresh clone or after `docker compose down -v`:
 
 ```bash
-cd <kosax-checkout>
+cd <ummaya-checkout>
 docker compose -f docker-compose.dev.yml up -d
 ```
 
@@ -85,21 +85,21 @@ All rows should show `healthy` (or the minio-init exit 0).
 
 ## 4. Environment Variable Reference
 
-All variables follow the `KOSAX_` prefix rule (AGENTS.md hard rule).
+All variables follow the `UMMAYA_` prefix rule (AGENTS.md hard rule).
 
 ### New variables (spec 028)
 
 | Variable | Default | Description |
 |---|---|---|
-| `KOSAX_OTEL_COLLECTOR_PORT` | `4318` | Host port for the `otelcol` OTLP HTTP receiver. Consumed by `docker-compose.dev.yml`. |
-| `KOSAX_LANGFUSE_OTLP_ENDPOINT` | `http://langfuse-web:3000/api/public/otel` | Langfuse OTLP **base** URL used by the collector exporter (compose-internal). The `otlphttp` exporter appends `/v1/traces` automatically. Consumed by `infra/otel-collector/config.yaml`. |
-| `KOSAX_LANGFUSE_OTLP_AUTH_HEADER` | `` (empty) | `Basic <base64(pk-xxx:sk-xxx)>` for Langfuse OTLP auth. Empty = anonymous. **Sensitive** — do not commit. Consumed by `infra/otel-collector/config.yaml`. |
+| `UMMAYA_OTEL_COLLECTOR_PORT` | `4318` | Host port for the `otelcol` OTLP HTTP receiver. Consumed by `docker-compose.dev.yml`. |
+| `UMMAYA_LANGFUSE_OTLP_ENDPOINT` | `http://langfuse-web:3000/api/public/otel` | Langfuse OTLP **base** URL used by the collector exporter (compose-internal). The `otlphttp` exporter appends `/v1/traces` automatically. Consumed by `infra/otel-collector/config.yaml`. |
+| `UMMAYA_LANGFUSE_OTLP_AUTH_HEADER` | `` (empty) | `Basic <base64(pk-xxx:sk-xxx)>` for Langfuse OTLP auth. Empty = anonymous. **Sensitive** — do not commit. Consumed by `infra/otel-collector/config.yaml`. |
 
 ### Inherited from spec 021 (unchanged)
 
 | Variable | Role in 028 |
 |---|---|
-| `OTEL_EXPORTER_OTLP_ENDPOINT` | KOSAX Python app points here. For local dev: `http://localhost:4318`. |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | UMMAYA Python app points here. For local dev: `http://localhost:4318`. |
 | `OTEL_SDK_DISABLED` | Set to `true` to disable all OTLP export (SC-004 — CI passthrough). |
 
 See `.env.example` for the full list of variables.
@@ -113,8 +113,8 @@ Follow this one-time procedure (approximately 2 min):
 
 1. Open `http://localhost:3000` in a browser.
 2. Sign up as the first user (any email; stored locally in Postgres only).
-3. Click "New organization" and enter a name (e.g., `kosax-local`).
-4. Click "New project" and enter a name (e.g., `kosax-dev`).
+3. Click "New organization" and enter a name (e.g., `ummaya-local`).
+4. Click "New project" and enter a name (e.g., `ummaya-dev`).
 5. Go to **Settings → API Keys** → click "Create new API keys".
 6. Copy the **public key** (`pk-lf-...`) and **secret key** (`sk-lf-...`).
 
@@ -122,7 +122,7 @@ Construct the Basic auth header and add it to your `.env` file:
 
 ```bash
 AUTH=$(printf '%s' "pk-lf-xxxx:sk-lf-xxxx" | base64)
-echo "KOSAX_LANGFUSE_OTLP_AUTH_HEADER=Basic $AUTH" >> .env
+echo "UMMAYA_LANGFUSE_OTLP_AUTH_HEADER=Basic $AUTH" >> .env
 ```
 
 Restart the collector to pick up the new header:
@@ -136,9 +136,9 @@ docker compose -f docker-compose.dev.yml restart otelcol
 ## 6. PII Redaction Gate
 
 The `otelcol` service applies a second-layer PII redaction gate **before**
-spans reach Langfuse. This complements the first gate in the KOSAX Python
+spans reach Langfuse. This complements the first gate in the UMMAYA Python
 layer (`ObservabilityEventLogger._ALLOWED_METADATA_KEYS` in
-`src/kosax/observability/event_logger.py`).
+`src/ummaya/observability/event_logger.py`).
 
 ### Covered keys (explicit enumeration — no wildcard support)
 
@@ -151,7 +151,7 @@ matching. The following four `patient.*` keys are explicitly enumerated:
 | `patient.phone` | `delete` | PIPA §26 — personal identifier |
 | `patient.rrn` | `delete` | PIPA §26 — resident registration number |
 | `patient.address` | `delete` | PIPA §26 — address |
-| `kosax.location.query` | `hash` (SHA-256) | Preserves cardinality for analytics while redacting raw query text |
+| `ummaya.location.query` | `hash` (SHA-256) | Preserves cardinality for analytics while redacting raw query text |
 
 ### Relationship to spec 021 whitelist
 
@@ -161,7 +161,7 @@ it controls which attributes may be emitted at all. The collector config is the
 
 ### Single source of truth hierarchy
 
-1. `src/kosax/observability/event_logger.py` — `_ALLOWED_METADATA_KEYS`
+1. `src/ummaya/observability/event_logger.py` — `_ALLOWED_METADATA_KEYS`
    whitelist (Python layer, first gate).
 2. `infra/otel-collector/config.yaml` — `attributes/pii_redact` processor
    rules (collector layer, second gate).
@@ -177,10 +177,10 @@ uv run pytest -m live tests/live/test_collector_pii_redaction.py
 ```
 
 This test emits a fixture span with `patient.name="TEST_OPERATOR"` and
-`kosax.location.query="서울역"`, then queries the Langfuse public API to
+`ummaya.location.query="서울역"`, then queries the Langfuse public API to
 verify:
 - `patient.name` is **absent** from the stored span.
-- `kosax.location.query` equals the SHA-256 hex hash of `"서울역"`.
+- `ummaya.location.query` equals the SHA-256 hex hash of `"서울역"`.
 
 CI skips this test automatically (`@pytest.mark.live`).
 
@@ -196,7 +196,7 @@ CI skips this test automatically (`@pytest.mark.live`).
 **Fix**: Override the host port:
 
 ```bash
-echo "KOSAX_OTEL_COLLECTOR_PORT=14318" >> .env
+echo "UMMAYA_OTEL_COLLECTOR_PORT=14318" >> .env
 docker compose -f docker-compose.dev.yml up -d otelcol
 export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:14318
 ```
@@ -210,11 +210,11 @@ docker compose -f docker-compose.dev.yml logs otelcol --tail=50
 ```
 
 **Most common causes**:
-- `401 Unauthorized` — `KOSAX_LANGFUSE_OTLP_AUTH_HEADER` is missing or
+- `401 Unauthorized` — `UMMAYA_LANGFUSE_OTLP_AUTH_HEADER` is missing or
   malformed. Re-run the first-run bootstrap in Section 5.
 - `connection refused` — `langfuse-web` is not healthy yet. Run
   `docker compose -f docker-compose.dev.yml ps` to confirm.
-- KOSAX app `OTEL_EXPORTER_OTLP_ENDPOINT` still points at Langfuse directly
+- UMMAYA app `OTEL_EXPORTER_OTLP_ENDPOINT` still points at Langfuse directly
   (legacy spec 021 config). Update to `http://localhost:4318`.
 
 ### C. ClickHouse slow cold-start drops early spans

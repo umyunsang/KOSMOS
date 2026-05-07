@@ -18,11 +18,11 @@ Queries the KOROAD accident hazard spot dataset for a Korean municipality by 10-
 | Classification | Live · Permission tier 1 |
 | Source | KOROAD (도로교통공단) — B552061/frequentzoneLg |
 | Primitive | `lookup` |
-| Module | `src/kosax/tools/koroad/accident_hazard_search.py` |
+| Module | `src/ummaya/tools/koroad/accident_hazard_search.py` |
 
 ## Envelope
 
-**Input model**: `AccidentHazardSearchInput` defined at `src/kosax/tools/koroad/accident_hazard_search.py`.
+**Input model**: `AccidentHazardSearchInput` defined at `src/ummaya/tools/koroad/accident_hazard_search.py`.
 
 | Field | Type | Required | Description |
 |---|---|---|---|
@@ -48,7 +48,7 @@ Queries the KOROAD accident hazard spot dataset for a Korean municipality by 10-
 
 - **data.go.kr endpoint**: `B552061/frequentzoneLg/getRestFrequentzoneLg`
 - **Source URL**: https://www.data.go.kr/data/15063424/openapi.do
-- **Authentication**: API key via `KOSAX_DATA_GO_KR_API_KEY` (per Constitution IV)
+- **Authentication**: API key via `UMMAYA_DATA_GO_KR_API_KEY` (per Constitution IV)
 
 ## Permission tier rationale
 
@@ -103,7 +103,7 @@ Note: `geom_json` is not present in output items — it is stripped by `_strip_g
 
 ```text
 Citizen: 강남구에서 작년에 교통사고가 많이 난 위험한 곳을 알려주세요.
-KOSAX: 2024년 강남구(adm_cd 1168000000) 교통사고 위험지점 조회 결과, 총 3개 지점이 확인되었습니다.
+UMMAYA: 2024년 강남구(adm_cd 1168000000) 교통사고 위험지점 조회 결과, 총 3개 지점이 확인되었습니다.
         가장 사고가 잦은 곳은 '역삼동 리춘시장 강남역점 부근'으로 연간 63건의 사고(총 68명 사상)가 발생했습니다.
         위치는 위도 37.4979, 경도 127.0276 근방입니다.
 ```
@@ -117,5 +117,5 @@ KOSAX: 2024년 강남구(adm_cd 1168000000) 교통사고 위험지점 조회 결
 - **Freshness window**: Annual dataset; 2024 data uses `searchYearCd=2025119`. New datasets publish each spring. `cache_ttl_seconds=3600`.
 - **Error envelope examples**:
   - Tier-1 fail: `{"error": {"code": "TOOL_EXECUTION_ERROR", "tool_id": "koroad_accident_hazard_search", "message": "KOROAD API error: code='99' msg='SERVICE_ERROR'"}}`
-  - Tier-2 / Tier-3 (auth) fail: `{"error": {"code": "CONFIGURATION_ERROR", "message": "Missing required environment variable: KOSAX_DATA_GO_KR_API_KEY"}}`
+  - Tier-2 / Tier-3 (auth) fail: `{"error": {"code": "CONFIGURATION_ERROR", "message": "Missing required environment variable: UMMAYA_DATA_GO_KR_API_KEY"}}`
   - Network timeout: `{"error": {"code": "TOOL_EXECUTION_ERROR", "tool_id": "koroad_accident_hazard_search", "message": "Network error reaching KOROAD API: timed out after 30s"}}`

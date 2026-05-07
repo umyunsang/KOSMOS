@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """Round-trip integration test for the Python IPC stdio loop.
 
-Spawns ``uv run kosax --ipc stdio`` as a subprocess, writes frames of every
+Spawns ``uv run ummaya --ipc stdio`` as a subprocess, writes frames of every
 arm to its stdin, reads the responses from stdout, and validates that each
 response deserialises cleanly as an ``IPCFrame``.
 
@@ -21,7 +21,7 @@ from pathlib import Path
 import pytest
 from pydantic import TypeAdapter
 
-from kosax.ipc.frame_schema import (
+from ummaya.ipc.frame_schema import (
     IPCFrame,
     SessionEventFrame,
     UserInputFrame,
@@ -66,15 +66,15 @@ async def _read_lines(stream: asyncio.StreamReader, n: int, timeout: float = 10.
 
 
 # ---------------------------------------------------------------------------
-# Fixture: spawn the kosax backend in --ipc stdio mode
+# Fixture: spawn the ummaya backend in --ipc stdio mode
 # ---------------------------------------------------------------------------
 
 
 @pytest.fixture
 async def backend_proc() -> AsyncIterator[asyncio.subprocess.Process]:
-    """Spawn ``uv run kosax --ipc stdio`` and yield the process handle.
+    """Spawn ``uv run ummaya --ipc stdio`` and yield the process handle.
 
-    KOSAX_IPC_HANDLER=echo selects the test-friendly echo handler so the
+    UMMAYA_IPC_HANDLER=echo selects the test-friendly echo handler so the
     round-trip test does not depend on FRIENDLI_API_KEY or network. The
     production handler (Epic #1633) routes user_input frames through
     LLMClient.stream() against FriendliAI.
@@ -83,15 +83,15 @@ async def backend_proc() -> AsyncIterator[asyncio.subprocess.Process]:
 
     env = {
         **os.environ,
-        "KOSAX_IPC_HANDLER": "echo",
-        "KOSAX_DATA_GO_KR_API_KEY": "test-dummy",
-        "KOSAX_FRIENDLI_TOKEN": "test-dummy",
-        "KOSAX_KAKAO_API_KEY": "test-dummy",
+        "UMMAYA_IPC_HANDLER": "echo",
+        "UMMAYA_DATA_GO_KR_API_KEY": "test-dummy",
+        "UMMAYA_FRIENDLI_TOKEN": "test-dummy",
+        "UMMAYA_KAKAO_API_KEY": "test-dummy",
     }
     proc = await asyncio.create_subprocess_exec(
         sys.executable,
         "-m",
-        "kosax.cli",
+        "ummaya.cli",
         "--ipc",
         "stdio",
         stdin=asyncio.subprocess.PIPE,

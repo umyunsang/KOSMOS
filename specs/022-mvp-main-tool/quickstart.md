@@ -10,17 +10,17 @@ End-to-end walkthrough exercising the **full happy + sad path** of the two-tool 
 
 ```bash
 # Geocoding providers
-export KOSAX_KAKAO_REST_KEY="..."          # Kakao Local (coords + address + POI)
-export KOSAX_JUSO_CONFM_KEY="..."          # 도로명주소 API (road/jibun address)
-export KOSAX_SGIS_KEY="..."                # SGIS Consumer Key (10-digit adm_cd)
-export KOSAX_SGIS_SECRET="..."             # SGIS Consumer Secret
+export UMMAYA_KAKAO_REST_KEY="..."          # Kakao Local (coords + address + POI)
+export UMMAYA_JUSO_CONFM_KEY="..."          # 도로명주소 API (road/jibun address)
+export UMMAYA_SGIS_KEY="..."                # SGIS Consumer Key (10-digit adm_cd)
+export UMMAYA_SGIS_SECRET="..."             # SGIS Consumer Secret
 
 # data.go.kr services (KOROAD / KMA / HIRA / NMC all share the same key)
-export KOSAX_DATA_GO_KR_API_KEY="..."
+export UMMAYA_DATA_GO_KR_API_KEY="..."
 
 # Retrieval tuning (optional; shown with defaults)
-export KOSAX_LOOKUP_TOPK=5                 # clamped [1, 20]
-export KOSAX_NMC_FRESHNESS_MINUTES=30      # clamped [1, 1440]
+export UMMAYA_LOOKUP_TOPK=5                 # clamped [1, 20]
+export UMMAYA_NMC_FRESHNESS_MINUTES=30      # clamped [1, 1440]
 ```
 
 Issue publication procedure for each key is in **Discussion #508**.
@@ -39,7 +39,7 @@ Live-API tests are gated by `@pytest.mark.live` and stay skipped in CI.
 ## 1. Launch a conversational session
 
 ```bash
-uv run python -m kosax.cli
+uv run python -m ummaya.cli
 ```
 
 The CLI starts a FriendliAI Serverless (OpenAI-compatible) session against K-EXAONE with the two-tool schema registered:
@@ -126,7 +126,7 @@ Expected output (`LookupSearchResult` variant):
 }
 ```
 
-`effective_top_k = min(KOSAX_LOOKUP_TOPK, 4) = 4` for MVP.
+`effective_top_k = min(UMMAYA_LOOKUP_TOPK, 4) = 4` for MVP.
 
 ### 2.4 Tool call #3 — lookup.fetch → Layer 3 gate fires
 
@@ -219,7 +219,7 @@ Exhaustive patterns in `docs/design/mvp-tools.md §7`.
 ## 4. Retrieval gate — measuring BM25 quality
 
 ```bash
-uv run python -m kosax.eval.retrieval eval/retrieval_queries.yaml
+uv run python -m ummaya.eval.retrieval eval/retrieval_queries.yaml
 ```
 
 Produces:

@@ -5,7 +5,7 @@ set spec_dir [file dirname [file dirname [info script]]]
 
 spawn script -q "$spec_dir/debug-enter.txt" bash -c "cd tui && bun run tui"
 
-expect { -re ".*KOSAX.*" {} timeout { exit 1 } }
+expect { -re ".*UMMAYA.*" {} timeout { exit 1 } }
 sleep 3
 
 # Type whole command + try CR+LF

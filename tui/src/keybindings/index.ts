@@ -71,7 +71,7 @@ export {
   type SessionExitResult,
   type SessionExitBlockedReason,
 } from './actions/sessionExit'
-// KOSAX Spec 1979 — Spec 033 5-mode permission cycle removed.
+// UMMAYA Spec 1979 — Spec 033 5-mode permission cycle removed.
 export {
   buildChordEvent,
   lookupChord,

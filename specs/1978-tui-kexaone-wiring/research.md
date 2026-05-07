@@ -10,10 +10,10 @@
 
 | Path | Read for | Finding |
 |---|---|---|
-| `.references/claude-code-sourcemap/restored-src/src/services/api/claude.ts` | `queryModelWithStreaming` shape | Signature carries `messages, systemPrompt, thinkingConfig, tools, signal, options`. KOSAX `tui/src/services/api/claude.ts` is **byte-identical 3,419 lines** to this file. KOSAX `tui/src/query/deps.ts:queryModelWithStreaming` is the wrapper that routes the call to `LLMClient` instead of Anthropic SDK — but `tools` is forwarded through to the LLMClient correctly. The forwarding gap is on the **harness side**, not the TS side. |
-| `.references/claude-code-sourcemap/restored-src/src/query.ts` | how `tools` reaches the API site | Constructed via `Tools` registry (`tui/src/Tool.ts`) and passed through `query.ts` → `deps.ts:queryModelWithStreaming` → `LLMClient.stream({tools})`. KOSAX `tui/src/query.ts` mirrors this verbatim (16-line import diff explained by KOSAX-1633 stub injection). |
-| `.references/claude-code-sourcemap/restored-src/src/Tool.ts` | tool-definition shape | `Tools` is `ReadonlyArray<Tool>`; each Tool has `name`, `description`, `inputSchema`. `KosaxToolDefinition` in `tui/src/ipc/llmTypes.ts` is shape-compatible. |
-| `.references/claude-code-sourcemap/restored-src/src/query/deps.ts` | DI boundary | Original CC ships a `productionDeps` factory binding the real `queryModelWithStreaming`. KOSAX replaces only this binding (memory `project_tui_architecture` confirmed). |
+| `.references/claude-code-sourcemap/restored-src/src/services/api/claude.ts` | `queryModelWithStreaming` shape | Signature carries `messages, systemPrompt, thinkingConfig, tools, signal, options`. UMMAYA `tui/src/services/api/claude.ts` is **byte-identical 3,419 lines** to this file. UMMAYA `tui/src/query/deps.ts:queryModelWithStreaming` is the wrapper that routes the call to `LLMClient` instead of Anthropic SDK — but `tools` is forwarded through to the LLMClient correctly. The forwarding gap is on the **harness side**, not the TS side. |
+| `.references/claude-code-sourcemap/restored-src/src/query.ts` | how `tools` reaches the API site | Constructed via `Tools` registry (`tui/src/Tool.ts`) and passed through `query.ts` → `deps.ts:queryModelWithStreaming` → `LLMClient.stream({tools})`. UMMAYA `tui/src/query.ts` mirrors this verbatim (16-line import diff explained by UMMAYA-1633 stub injection). |
+| `.references/claude-code-sourcemap/restored-src/src/Tool.ts` | tool-definition shape | `Tools` is `ReadonlyArray<Tool>`; each Tool has `name`, `description`, `inputSchema`. `UmmayaToolDefinition` in `tui/src/ipc/llmTypes.ts` is shape-compatible. |
+| `.references/claude-code-sourcemap/restored-src/src/query/deps.ts` | DI boundary | Original CC ships a `productionDeps` factory binding the real `queryModelWithStreaming`. UMMAYA replaces only this binding (memory `project_tui_architecture` confirmed). |
 | `.references/claude-code-sourcemap/restored-src/src/hooks/useCanUseTool.ts` | sync-vs-async permission gate | CC uses `Promise<CanUseToolResult>` — synchronous in the sense that the tool dispatch awaits the resolution. Confirms ADR-0002. |
 | `.references/claude-code-sourcemap/restored-src/src/services/mcp/` | MCP client connection model | CC eagerly opens MCP connections at session start (per `mcpClients` populate site). Confirms ADR-0003. |
 
@@ -32,14 +32,14 @@
 | `feedback_speckit_autonomous` | No user gating between speckit phases. |
 | `feedback_no_hardcoding` | Tool routing stays LLM-driven; no static keyword tables added. |
 | `project_friendli_tier_wait` | FriendliAI Tier 1 active; live tests permitted under `@pytest.mark.live`. |
-| `feedback_env_check_first` | `KOSAX_FRIENDLI_TOKEN` precondition documented in spec.md Assumptions + quickstart.md. |
+| `feedback_env_check_first` | `UMMAYA_FRIENDLI_TOKEN` precondition documented in spec.md Assumptions + quickstart.md. |
 
-### KOSAX canonical docs
+### UMMAYA canonical docs
 
 | Source | Used for | Note |
 |---|---|---|
 | `AGENTS.md` | Hard rules (zero new deps, branches, PR closing) | All hard rules pass; see plan.md Constitution Check |
-| `docs/requirements/kosax-migration-tree.md § L1-A/B/C` | Pillars | Phases A-H map: A→ TUI input transport (L1-A·A6 error recovery); B→ L1-A·A1 single fixed provider; C/D→ L1-A·A3 native function calling; E→ L1-B·B4 + L1-C·C5 permission; G/H→ L1-A·A4 context |
+| `docs/requirements/ummaya-migration-tree.md § L1-A/B/C` | Pillars | Phases A-H map: A→ TUI input transport (L1-A·A6 error recovery); B→ L1-A·A1 single fixed provider; C/D→ L1-A·A3 native function calling; E→ L1-B·B4 + L1-C·C5 permission; G/H→ L1-A·A4 context |
 | `docs/vision.md § Layer 1-6` | Architectural intent | **§183 Query↔TUI transport** says "Python query loop never touches the terminal". Empirically incorrect (see `tui/src/query.ts` 1,200-line agent loop). spec.md Assumptions section authorises correction; this Epic does NOT amend vision.md (out of scope, `feedback_subissue_100_cap` discipline) — a follow-up doc-only PR will. |
 
 ### Spec history walk
@@ -61,7 +61,7 @@
 | ADR-0001 | Frame schema design — extend vs new arm | **New `ChatRequestFrame` arm**. See plan.md ADR-0001. |
 | ADR-0002 | Permission pipeline sync vs async | **Synchronous request/response with 60 s timeout, default deny on timeout.** See plan.md ADR-0002. |
 | ADR-0003 | mcp.ts ↔ mcp_server.py lifecycle | **Eager spawn at TUI startup.** See plan.md ADR-0003. |
-| ADR-0004 | Telemetry span hierarchy | **`kosax.session > kosax.turn > kosax.frame{kind}`.** See plan.md ADR-0004. |
+| ADR-0004 | Telemetry span hierarchy | **`ummaya.session > ummaya.turn > ummaya.frame{kind}`.** See plan.md ADR-0004. |
 | ADR-0005 | Conversation history canonical location | **TUI side (`tui/src/query.ts`).** See plan.md ADR-0005. |
 
 All five resolved with cited reference sources. No `[NEEDS CLARIFICATION]` markers remain.
@@ -98,7 +98,7 @@ Result (manually verified during this research):
 ## Best-practice findings (per stream)
 
 ### Stream 1 (tool forwarding)
-- **Decision**: Backend `_handle_chat_request` forwards `tools` directly into `LLMClient.stream(tools=...)`. The existing `kosax.llm.client.LLMClient.stream` already accepts `tools: list[ToolDefinition | dict]` per its signature.
+- **Decision**: Backend `_handle_chat_request` forwards `tools` directly into `LLMClient.stream(tools=...)`. The existing `ummaya.llm.client.LLMClient.stream` already accepts `tools: list[ToolDefinition | dict]` per its signature.
 - **Rationale**: Pre-existing API surface — zero adapter overhead.
 - **Alternatives considered**: Mid-bridge tool registry on backend (rejected — duplicates TUI registry, breaks single-source-of-truth).
 
@@ -108,24 +108,24 @@ Result (manually verified during this research):
 - **Alternatives considered**: Polymorphic `UserInputFrame` (rejected — `extra="forbid"` blocks).
 
 ### Stream 3 (permission bridge)
-- **Decision**: Backend `_handle_chat_request` instantiates `PermissionPipeline` once per session, calls `evaluate(tool, ctx)` before each tool dispatch. On `decision == ASK`, emit `PermissionRequestFrame{transaction_id}`, await matching response (60 s timeout via `asyncio.wait_for`), record receipt to `~/.kosax/memdir/user/consent/`. On any other decision, proceed/abort directly.
+- **Decision**: Backend `_handle_chat_request` instantiates `PermissionPipeline` once per session, calls `evaluate(tool, ctx)` before each tool dispatch. On `decision == ASK`, emit `PermissionRequestFrame{transaction_id}`, await matching response (60 s timeout via `asyncio.wait_for`), record receipt to `~/.ummaya/memdir/user/consent/`. On any other decision, proceed/abort directly.
 - **Rationale**: ADR-0002. Spec 033 contract. CC `useCanUseTool.ts` semantic match.
 - **Alternatives considered**: Async fire-and-forget (rejected — fail-closed violation).
 
 ### Stream 4 (mcp.ts lifecycle)
-- **Decision**: Spawn `kosax.ipc.mcp_server` at TUI boot (parallel to main bridge). Cache MCP client connection on `bridgeSingleton`. mcpClients populate site is `tui/src/bootstrap/state.ts` (preliminary trace; verified during Phase 1 implementation).
+- **Decision**: Spawn `ummaya.ipc.mcp_server` at TUI boot (parallel to main bridge). Cache MCP client connection on `bridgeSingleton`. mcpClients populate site is `tui/src/bootstrap/state.ts` (preliminary trace; verified during Phase 1 implementation).
 - **Rationale**: ADR-0003. Latency budget SC-002.
 - **Alternatives considered**: Lazy spawn (rejected — 500 ms regression).
 
 ### Stream 5 (telemetry)
-- **Decision**: Span hierarchy `kosax.session > kosax.turn > kosax.frame{kind}` with `correlation_id` attribute on all spans. GenAI spans (Spec 021) parented to `kosax.turn`.
+- **Decision**: Span hierarchy `ummaya.session > ummaya.turn > ummaya.frame{kind}` with `correlation_id` attribute on all spans. GenAI spans (Spec 021) parented to `ummaya.turn`.
 - **Rationale**: ADR-0004. FR-014 reconstructibility.
 - **Alternatives considered**: Flat span list (rejected — Langfuse navigability).
 
 ## Cross-stream conflict scan
 
 - ADR-0002 (sync permission) ↔ ADR-0005 (TUI-canonical history): no conflict — permission roundtrip happens **between** turns, not inside the message store.
-- ADR-0001 (new frame arm) ↔ Spec 032 18-arm freeze: existing 18 arms unchanged; +1 new arm is additive, not amending. Spec 032 schema SHA-256 hash will change — captured as a Phase C task (re-emit `kosax.ipc.schema.hash` OTEL attribute).
+- ADR-0001 (new frame arm) ↔ Spec 032 18-arm freeze: existing 18 arms unchanged; +1 new arm is additive, not amending. Spec 032 schema SHA-256 hash will change — captured as a Phase C task (re-emit `ummaya.ipc.schema.hash` OTEL attribute).
 - ADR-0003 (eager MCP spawn) ↔ Spec 1634 mcp-bridge contract: contract permits both lazy and eager (§ 2.2); we choose eager. No contract amendment needed.
 
 ## Phase 0 conclusion

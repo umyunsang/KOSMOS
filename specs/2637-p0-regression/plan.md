@@ -5,7 +5,7 @@
 
 ## Summary
 
-audit Initiative #2636 의 9-stream 결과에서 발견된 9건 회귀 (6 P0 + 3 부수) 를 byte-copy 복원 + Spec 021 OTEL telemetry wire 로 해결한다. CORE THESIS ("KOSAX = CC + 2 swap만, byte-identical default") 의 직접 위반 영역을 복구하는 P0 작업.
+audit Initiative #2636 의 9-stream 결과에서 발견된 9건 회귀 (6 P0 + 3 부수) 를 byte-copy 복원 + Spec 021 OTEL telemetry wire 로 해결한다. CORE THESIS ("UMMAYA = CC + 2 swap만, byte-identical default") 의 직접 위반 영역을 복구하는 P0 작업.
 
 **기술적 접근**: CC source-of-truth (`.references/claude-code-sourcemap/restored-src/src/`) 에서 7개 파일 byte-copy + 1개 wire (toolExecution.ts) + 3개 stub 헤더 박제 + 1개 누락 cascade module 신설. swap-1 종속 식별자 화이트리스트 외 diff 라인 0 보장.
 
@@ -15,7 +15,7 @@ audit Initiative #2636 의 9-stream 결과에서 발견된 9건 회귀 (6 P0 + 3
 **Primary Dependencies**:
 - 기존: `@opentelemetry/api ^1.9.1`, `@opentelemetry/api-logs ^0.215.0`, `@opentelemetry/core ^2.7.0`, `@opentelemetry/resources ^2.7.0`, `@opentelemetry/sdk-logs ^0.215.0`, `@opentelemetry/sdk-metrics ^2.7.0`, `@opentelemetry/sdk-trace-base ^2.7.0`, `https-proxy-agent ^9.0.0`
 - **신규** (본 spec-driven PR 에서 추가, AGENTS.md 하드 룰 준수): `@opentelemetry/semantic-conventions`, `@opentelemetry/exporter-trace-otlp-http`, `@opentelemetry/exporter-trace-otlp-grpc`, `@opentelemetry/exporter-logs-otlp-http`, `@opentelemetry/exporter-logs-otlp-grpc`, `@opentelemetry/exporter-metrics-otlp-http`, `@opentelemetry/exporter-metrics-otlp-grpc`, `@grpc/grpc-js` (총 8개) — `instrumentation.ts` PORT 가 dynamic import 하는 OTLP/gRPC exporter 패키지들. 모두 Apache-2.0.
-**Storage**: N/A — 본 Epic 은 in-memory + filesystem-only. `~/.kosax/memdir/user/sessions/` JSONL (Spec 027) 와 OTLP collector → Langfuse (Spec 028) 기존 경로 변경 없음.
+**Storage**: N/A — 본 Epic 은 in-memory + filesystem-only. `~/.ummaya/memdir/user/sessions/` JSONL (Spec 027) 와 OTLP collector → Langfuse (Spec 028) 기존 경로 변경 없음.
 **Testing**: `bun test` (Ink snapshot + ts-bun unit) · `uv run pytest` (백엔드 parity 유지) · `bun typecheck` · TUI 5-layer smoke (Layer 1a/1b/2/3/4/5).
 **Target Platform**: macOS / Linux 터미널 (Bun runtime + ink).
 **Project Type**: TypeScript TUI client (Ink + React) over IPC stdio bridge to Python backend. 본 Epic 은 TUI 측만 건드림.
@@ -23,7 +23,7 @@ audit Initiative #2636 의 9-stream 결과에서 발견된 9건 회귀 (6 P0 + 3
 **Constraints**:
 - AGENTS.md 하드 룰 "Never add a dependency outside a spec-driven PR" — 본 PR 이 spec-driven 이므로 OTel 8개 추가 정당, 단 plan 단계 명시 필수 (✅ 위 Primary Dependencies).
 - AGENTS.md 하드 룰 "TypeScript is allowed only for the TUI layer (Ink + Bun)" — 본 Epic TS 측만 변경, 준수.
-- AGENTS.md 하드 룰 "All source text in English" — PORTed 파일은 CC byte-identical, KOSAX 헤더 주석은 영어, ko 도메인 데이터 변경 없음.
+- AGENTS.md 하드 룰 "All source text in English" — PORTed 파일은 CC byte-identical, UMMAYA 헤더 주석은 영어, ko 도메인 데이터 변경 없음.
 - byte-identical 검증: PORTed 파일 7개 모두 swap-1 식별자 화이트리스트 외 diff 라인 0.
 **Scale/Scope**: 7 PORT (총 ~7900 LOC, byte-copy) + 1 wire (~50 LOC) + 3 박제 (~30 LOC 주석) + 1 신설 stub (`remoteManagedSettings/index.ts` ~30 LOC) + 8 dependency 추가. 단일 PR. ~7 task.
 
@@ -40,17 +40,17 @@ audit Initiative #2636 의 9-stream 결과에서 발견된 9건 회귀 (6 P0 + 3
 | 변경 영역 | Primary Reference | Secondary Reference |
 |---|---|---|
 | `instrumentation.ts` PORT | Claude Code reconstructed (TUI components — `restored-src/src/utils/telemetry/instrumentation.ts` 825 LOC) | Spec 021 OTEL GenAI v1.40 + Spec 028 OTLP collector |
-| `toolExecution.ts` wire | Claude Code reconstructed (Tool System — `restored-src/src/services/tools/toolExecution.ts` 1745 LOC byte-identical 본체) | Spec 021 4-tier OTEL Tool layer (KOSAX-side helper, swap-5 spillover) |
+| `toolExecution.ts` wire | Claude Code reconstructed (Tool System — `restored-src/src/services/tools/toolExecution.ts` 1745 LOC byte-identical 본체) | Spec 021 4-tier OTEL Tool layer (UMMAYA-side helper, swap-5 spillover) |
 | `events_mono/*.ts` PORT | Claude Code reconstructed (`restored-src/src/types/generated/events_mono/`) | type-only, dependency 없음 |
-| `constants/{messages,xml,figures,oauth}.ts` PORT | Claude Code reconstructed (`restored-src/src/constants/`) | swap-1 종속 식별자 (Anthropic OAuth) 만 KOSAX-side null |
+| `constants/{messages,xml,figures,oauth}.ts` PORT | Claude Code reconstructed (`restored-src/src/constants/`) | swap-1 종속 식별자 (Anthropic OAuth) 만 UMMAYA-side null |
 | `types/logs.ts` PORT | Claude Code reconstructed (`restored-src/src/types/logs.ts`) | type-only |
-| `cli/print.ts` PORT | Claude Code reconstructed (`restored-src/src/cli/print.ts` 5594 LOC) | swap-1 종속 cascade (`remoteManagedSettings/`) KOSAX-side stub 신설 |
-| Stage-1 NO-OP 3 박제 | KOSAX-original (CC source 부재 — find 결과 0) | decisions.md S9 § Stage-1 cite |
-| 누락 cascade `remoteManagedSettings/index.ts` 신설 | KOSAX-original stub (Spec 1633 P1 dead-surface) | KOSAX analytics/index.ts 패턴 (Spec 1633 stub-noop replacement) |
+| `cli/print.ts` PORT | Claude Code reconstructed (`restored-src/src/cli/print.ts` 5594 LOC) | swap-1 종속 cascade (`remoteManagedSettings/`) UMMAYA-side stub 신설 |
+| Stage-1 NO-OP 3 박제 | UMMAYA-original (CC source 부재 — find 결과 0) | decisions.md S9 § Stage-1 cite |
+| 누락 cascade `remoteManagedSettings/index.ts` 신설 | UMMAYA-original stub (Spec 1633 P1 dead-surface) | UMMAYA analytics/index.ts 패턴 (Spec 1633 stub-noop replacement) |
 
 ### Principle II — Fail-Closed Security ✅ PASS
 
-본 Epic 은 권한 정책 변경 없음. KOSAX-invented permission classifications 도입 0. byte-copy 한 `oauth.ts` 의 `USER_TYPE === 'ant'` 가드는 CC 그대로 — KOSAX 환경에서는 자동 prod fallback. OAuth flow 자체는 swap-1 종속이라 영구 비활성 (out of scope).
+본 Epic 은 권한 정책 변경 없음. UMMAYA-invented permission classifications 도입 0. byte-copy 한 `oauth.ts` 의 `USER_TYPE === 'ant'` 가드는 CC 그대로 — UMMAYA 환경에서는 자동 prod fallback. OAuth flow 자체는 swap-1 종속이라 영구 비활성 (out of scope).
 
 ### Principle III — Pydantic v2 Strict Typing ✅ N/A
 
@@ -97,7 +97,7 @@ specs/2637-p0-regression/
 └── tasks.md             # Phase 2 — /speckit-tasks 산출
 ```
 
-### Source Code (worktree root: `/Users/um-yunsang/KOSAX-w-2637/`)
+### Source Code (worktree root: `/Users/um-yunsang/UMMAYA-w-2637/`)
 
 ```text
 tui/src/
@@ -119,7 +119,7 @@ tui/src/
 │   └── print.ts                        # FR-003 신설 5594 LOC byte-copy
 ├── utils/
 │   ├── telemetry/
-│   │   └── instrumentation.ts          # FR-005 신설 825 LOC, swap-1 import 만 KOSAX-side
+│   │   └── instrumentation.ts          # FR-005 신설 825 LOC, swap-1 import 만 UMMAYA-side
 │   ├── protectedNamespace.ts           # FR-007a 헤더 박제 only
 │   ├── systemThemeWatcher.ts           # FR-007b 헤더 박제 only
 │   └── ultraplan/prompt.txt            # FR-007c 헤더 박제 only
@@ -127,7 +127,7 @@ tui/src/
 │   ├── tools/
 │   │   └── toolExecution.ts            # FR-006 9 stub wire (line 91-100)
 │   └── remoteManagedSettings/
-│       └── index.ts                    # FR-016 신설 KOSAX stub (cascade)
+│       └── index.ts                    # FR-016 신설 UMMAYA stub (cascade)
 └── main.tsx                            # FR-003 L1960 차단 메시지 제거 (PORT 후)
 
 tui/package.json                        # 8개 OTel 의존성 추가 (FR-005 prerequisite)
@@ -141,6 +141,6 @@ specs/cc-migration-audit/decisions.md   # FR-015 Stage-1 row 업데이트
 | Violation | Why Needed | Simpler Alternative Rejected Because |
 |-----------|------------|-------------------------------------|
 | 8개 OTel dependency 신규 추가 | `instrumentation.ts` byte-copy PORT 의 dynamic import targets (semantic-conventions 1 + OTLP exporters 6 + grpc-js 1). audit S9 § P0-1 + spec FR-005 직접 종속. AGENTS.md 하드 룰 "spec-driven PR" 조건 충족. | "instrumentation.ts 본체 stub 유지" 거부 이유: Spec 021 4-tier OTEL TS-측 telemetry surface 가 silent. Spec 028 OTLP collector 가 Python-측 spans 만 받아 GenAI/Tool layer 의 client-side trace 누락. CC byte-identical 원칙 위반. |
-| `toolExecution.ts` 9 stub wire 가 KOSAX-side OTEL helper 직접 사용 (CC `events.ts` + `sessionTracing.ts` cascade PORT 회피) | CC `sessionTracing.ts` 927 LOC + `betaSessionTracing.ts` 491 LOC + `events.ts` 75 LOC + `perfettoTracing.ts` + `bigqueryExporter.ts` + `logger.ts` 모두 swap-1 (Anthropic 1P GrowthBook + BigQuery + Perfetto) 종속. Cascade PORT 폭발 (~2000+ LOC). swap-5 (Observability) 정당성으로 KOSAX Spec 021 helper 직접 wire 가 정답. | "CC 7-file telemetry cascade PORT" 거부 이유: swap-1 종속 dependency 7 file PORT 후 다시 stubbing 필요 → 의미 0 + Spec 021 attribute 정합 깨짐. |
-| `cli/print.ts` PORT 시 누락 cascade `remoteManagedSettings/index.ts` KOSAX-side stub 신설 (CC source 의 swap-1 종속 surface) | CC `print.ts:9` 가 `services/remoteManagedSettings/index.js` import. KOSAX 누락 → import 실패. Spec 1633 P1 dead-surface 패턴 (analytics/index.ts 와 동일 stub-noop replacement). | "CC remoteManagedSettings/ 본체 PORT" 거부 이유: Anthropic enterprise managed settings (claude.ai 1P 종속) → swap-1 종속이라 본체 무의미. KOSAX analytics/index.ts 패턴으로 stub 정당. |
-| Stage-1 NO-OP 3건 박제 (byte-copy 불가, CC source 부재) | `find .references/.../src -name "protectedNamespace*" -o -name "systemThemeWatcher*" -o -name "prompt.txt"` 결과 0건. audit 권고 "byte-copy" 가 CC source 가 정의되지 않은 영역에서는 사실상 KOSAX-only stub 정당화 + decisions.md cite 박제로만 처리 가능. | "CC source-of-truth 에 정식 구현 추가" 거부 이유: research-only mirror (`restored-src/`) 는 modify 금지 (AGENTS.md hard rule). KOSAX 정식 구현은 spec 외부 (Out of Scope). |
+| `toolExecution.ts` 9 stub wire 가 UMMAYA-side OTEL helper 직접 사용 (CC `events.ts` + `sessionTracing.ts` cascade PORT 회피) | CC `sessionTracing.ts` 927 LOC + `betaSessionTracing.ts` 491 LOC + `events.ts` 75 LOC + `perfettoTracing.ts` + `bigqueryExporter.ts` + `logger.ts` 모두 swap-1 (Anthropic 1P GrowthBook + BigQuery + Perfetto) 종속. Cascade PORT 폭발 (~2000+ LOC). swap-5 (Observability) 정당성으로 UMMAYA Spec 021 helper 직접 wire 가 정답. | "CC 7-file telemetry cascade PORT" 거부 이유: swap-1 종속 dependency 7 file PORT 후 다시 stubbing 필요 → 의미 0 + Spec 021 attribute 정합 깨짐. |
+| `cli/print.ts` PORT 시 누락 cascade `remoteManagedSettings/index.ts` UMMAYA-side stub 신설 (CC source 의 swap-1 종속 surface) | CC `print.ts:9` 가 `services/remoteManagedSettings/index.js` import. UMMAYA 누락 → import 실패. Spec 1633 P1 dead-surface 패턴 (analytics/index.ts 와 동일 stub-noop replacement). | "CC remoteManagedSettings/ 본체 PORT" 거부 이유: Anthropic enterprise managed settings (claude.ai 1P 종속) → swap-1 종속이라 본체 무의미. UMMAYA analytics/index.ts 패턴으로 stub 정당. |
+| Stage-1 NO-OP 3건 박제 (byte-copy 불가, CC source 부재) | `find .references/.../src -name "protectedNamespace*" -o -name "systemThemeWatcher*" -o -name "prompt.txt"` 결과 0건. audit 권고 "byte-copy" 가 CC source 가 정의되지 않은 영역에서는 사실상 UMMAYA-only stub 정당화 + decisions.md cite 박제로만 처리 가능. | "CC source-of-truth 에 정식 구현 추가" 거부 이유: research-only mirror (`restored-src/`) 는 modify 금지 (AGENTS.md hard rule). UMMAYA 정식 구현은 spec 외부 (Out of Scope). |

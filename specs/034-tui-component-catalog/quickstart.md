@@ -36,7 +36,7 @@ Per FR-029, copy this block verbatim into your `/speckit-specify` input and chec
 3. Use the grammar from §2: `{metaphorRole}{Variant}?`. Examples:
    - ✅ `orbitalRingBackground`
    - ✅ `agentSatelliteKoroad`
-   - ✅ `kosaxCoreShimmer`
+   - ✅ `ummayaCoreShimmer`
    - ❌ `primary` — banned (BAN-04)
    - ❌ `accent1` — banned (BAN-05)
    - ❌ `mainColor` — banned (BAN-06)
@@ -57,9 +57,9 @@ Per FR-029, copy this block verbatim into your `/speckit-specify` input and chec
 
 | Proposed | Violates | Suggested alternative |
 |---|---|---|
-| `primary` | BAN-04 | `kosaxCore` (if core-color role) or a ministry satellite |
+| `primary` | BAN-04 | `ummayaCore` (if core-color role) or a ministry satellite |
 | `accent1` | BAN-05 | Name the role explicitly (e.g., `autoAccept`, `planMode`) |
-| `claudeShimmer` (new) | BAN-01 | `orbitalRingShimmer` if tool-loop visual; `kosaxCoreShimmer` if headline emphasis |
+| `claudeShimmer` (new) | BAN-01 | `orbitalRingShimmer` if tool-loop visual; `ummayaCoreShimmer` if headline emphasis |
 | `mainColor` | BAN-06 | Decompose into context (`promptBorder`, `subtitle`, etc.) |
 | `background` | BAN-07 | `orbitalRingBackground` or another qualified form |
 

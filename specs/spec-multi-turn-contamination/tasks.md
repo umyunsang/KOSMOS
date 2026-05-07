@@ -17,13 +17,13 @@
 
 ### T001 — Backend `_handle_chat_request` diagnostic emit (FR-001 / FR-002)
 
-**Files**: `src/kosax/ipc/stdio.py`
+**Files**: `src/ummaya/ipc/stdio.py`
 
 **Surface**:
 1. Add module-level `_session_turn_counter: dict[str, int] = {}` near other module-level state in stdio.py (NOT a singleton — process-lifetime per-session counter, in-memory only, AGENTS.md hard rule preserved).
 2. At the top of `_handle_chat_request` (after the `isinstance(frame, ChatRequestFrame)` guard, BEFORE any other logic):
    ```python
-   if os.getenv("KOSAX_CHAT_REQUEST_DUMP") == "1":
+   if os.getenv("UMMAYA_CHAT_REQUEST_DUMP") == "1":
        turn_idx = _session_turn_counter.get(frame.session_id, 0) + 1
        _session_turn_counter[frame.session_id] = turn_idx
        payload = [
@@ -38,7 +38,7 @@
    ```
 3. After the `latest_user_utt` extraction loop (existing code at `stdio.py:~1980`), add:
    ```python
-   if os.getenv("KOSAX_CHAT_REQUEST_DUMP") == "1":
+   if os.getenv("UMMAYA_CHAT_REQUEST_DUMP") == "1":
        logger.info(
            "[LATEST_USER_UTT] turn=%d utt_first256=%s",
            _session_turn_counter.get(frame.session_id, 0),
@@ -47,7 +47,7 @@
    ```
 4. In the LLM-stream consumer where `accumulatedThinking` (or its Python equivalent — `accumulated_reasoning`) is built, emit when buffer first reaches 1024 bytes OR on stream completion:
    ```python
-   if os.getenv("KOSAX_CHAT_REQUEST_DUMP") == "1" and not _reasoning_preview_emitted:
+   if os.getenv("UMMAYA_CHAT_REQUEST_DUMP") == "1" and not _reasoning_preview_emitted:
        if len(accumulated_reasoning) >= 1024 or stream_done:
            logger.info(
                "[REASONING_PREVIEW] turn=%d first1024=%s",
@@ -56,14 +56,14 @@
            )
            _reasoning_preview_emitted = True
    ```
-5. Add OTEL span attribute `kosax.chat.turn_index` on the existing `kosax.chat.request` span (Spec 021 extension — additive, no new span):
+5. Add OTEL span attribute `ummaya.chat.turn_index` on the existing `ummaya.chat.request` span (Spec 021 extension — additive, no new span):
    ```python
-   span.set_attribute("kosax.chat.turn_index", turn_idx)
+   span.set_attribute("ummaya.chat.turn_index", turn_idx)
    ```
 
 **Verification**: `pytest tests/python/ipc/test_chat_request_diagnostic.py::test_emit_off_by_default` (NEW small unit test) confirms NO `[CHAT_REQUEST_DUMP]` lines in caplog when env unset; confirms 3 lines when env set + two-turn flow simulated against fake LLM.
 
-**Acceptance**: Backend builds + boots. `bun run tui` smoke (single turn) leaves the diagnostic OFF by default — no log lines. With `KOSAX_CHAT_REQUEST_DUMP=1`, single-turn flow emits exactly one `[CHAT_REQUEST_DUMP] turn=1 ...` + one `[LATEST_USER_UTT] turn=1 ...` + one `[REASONING_PREVIEW] turn=1 ...` line. Performance: <1ms when off, <10ms when on.
+**Acceptance**: Backend builds + boots. `bun run tui` smoke (single turn) leaves the diagnostic OFF by default — no log lines. With `UMMAYA_CHAT_REQUEST_DUMP=1`, single-turn flow emits exactly one `[CHAT_REQUEST_DUMP] turn=1 ...` + one `[LATEST_USER_UTT] turn=1 ...` + one `[REASONING_PREVIEW] turn=1 ...` line. Performance: <1ms when off, <10ms when on.
 
 ---
 
@@ -84,18 +84,18 @@
    ```
 3. Pre-extraction raw-shape log (one line) for shape-drift discrimination per plan.md R-3:
    ```typescript
-   if (process.env.KOSAX_QUERY_TRACE === '1') {
+   if (process.env.UMMAYA_QUERY_TRACE === '1') {
      for (let i = 0; i < messages.length; i++) {
        const ma = messages[i] as { type?: string; message?: { content?: unknown } }
        __t(`[RAW_MESSAGE] idx=${i} type=${ma?.type} content_typeof=${typeof ma?.message?.content} content_isArray=${Array.isArray(ma?.message?.content)}`)
      }
    }
    ```
-4. The existing `__t` helper already gates on `KOSAX_QUERY_TRACE` — do NOT add a new env var. Per AGENTS.md hard rule "stdlib `logging` only", the TUI uses `require('fs').writeSync(2, ...)` already (existing pattern at `deps.ts:113-115`).
+4. The existing `__t` helper already gates on `UMMAYA_QUERY_TRACE` — do NOT add a new env var. Per AGENTS.md hard rule "stdlib `logging` only", the TUI uses `require('fs').writeSync(2, ...)` already (existing pattern at `deps.ts:113-115`).
 
 **Verification**: `bun test tui/src/__tests__/multi-turn-contamination.test.ts::test_diagnostic_emit_gated` confirms emit OFF by default, ON when env set, exactly one `[CHAT_MESSAGES_BUILT]` line per `callModel` invocation.
 
-**Acceptance**: `bun run tui` boots cleanly. With `KOSAX_QUERY_TRACE=1`, every TUI-side `callModel` emits one `[CHAT_MESSAGES_BUILT]` line + N `[RAW_MESSAGE]` lines.
+**Acceptance**: `bun run tui` boots cleanly. With `UMMAYA_QUERY_TRACE=1`, every TUI-side `callModel` emits one `[CHAT_MESSAGES_BUILT]` line + N `[RAW_MESSAGE]` lines.
 
 ---
 
@@ -105,7 +105,7 @@
 
 **Surface**: Wrap `scripts/tui-tmux-capture.sh` per `plan.md § D-2`. Hard requirements:
 - All waits via `wait_for_pane <regex> <deadline>` — NO `Sleep` (AGENTS.md `feedback_debug_infra_rebuild`).
-- Both env vars set: `KOSAX_CHAT_REQUEST_DUMP=1 KOSAX_QUERY_TRACE=1`.
+- Both env vars set: `UMMAYA_CHAT_REQUEST_DUMP=1 UMMAYA_QUERY_TRACE=1`.
 - Captures: `backend.log` (stderr from backend) + `snap-001-turn1-done.txt` (post-turn-1 pane) + `snap-002-turn2-done.txt` (post-turn-2 pane) + `final.txt` (final pane state).
 - Output directory: `specs/spec-multi-turn-contamination/diagnostic-runs/$(date -u +%Y-%m-%dT%H-%M-%SZ)/`.
 - Per-turn deadline: 90 seconds (K-EXAONE reasoning latency budget per memory).
@@ -155,10 +155,10 @@
 **Trigger**: ONLY if T004's discrimination matrix is ambiguous (e.g. two hypotheses still in play). If T004 yields a clean verdict, SKIP this task and document the skip in VERDICT.md.
 
 **Surface**: Per `plan.md § D-4`, run the isolation tests for whichever hypotheses remain in play:
-- **H1 isolation**: Add a debug build flag (env `KOSAX_DEBUG_AWAIT_RECONCILE=1`) that synchronously awaits React reconciliation before `callModel`. Run scenario A. Capture results.
-- **H2-cache isolation**: Rotate `session_id` per turn (env `KOSAX_DEBUG_ROTATE_SESSION=1`). Run scenario A. Capture results.
-- **H2-thinking isolation**: Set `KOSAX_K_EXAONE_THINKING=false`. Run scenario A. Capture results.
-- **H3-suffix isolation**: Skip BM25 suffix injection (env `KOSAX_DEBUG_SKIP_BM25_SUFFIX=1`). Run scenario A. Capture results.
+- **H1 isolation**: Add a debug build flag (env `UMMAYA_DEBUG_AWAIT_RECONCILE=1`) that synchronously awaits React reconciliation before `callModel`. Run scenario A. Capture results.
+- **H2-cache isolation**: Rotate `session_id` per turn (env `UMMAYA_DEBUG_ROTATE_SESSION=1`). Run scenario A. Capture results.
+- **H2-thinking isolation**: Set `UMMAYA_K_EXAONE_THINKING=false`. Run scenario A. Capture results.
+- **H3-suffix isolation**: Skip BM25 suffix injection (env `UMMAYA_DEBUG_SKIP_BM25_SUFFIX=1`). Run scenario A. Capture results.
 
 Each isolation test's debug flag is a single-line guard in the relevant code; remove all flags after T010 (do not ship debug flags to main).
 
@@ -191,8 +191,8 @@ Each isolation test's debug flag is a single-line guard in the relevant code; re
 
 **Files**: Determined by `fix-design.md` from T006. Possibilities per `plan.md § F-1`:
 - **H1 fix**: `tui/src/query/deps.ts:117-133` (snapshot `messages` correctly).
-- **H2 fix**: `src/kosax/ipc/stdio.py` agentic-loop message ordering (port CC's `yieldMissingToolResultBlocks` pattern from `services/api/claude.ts:957`).
-- **H3 fix**: `src/kosax/ipc/stdio.py` BM25 suffix or local message-list lifecycle.
+- **H2 fix**: `src/ummaya/ipc/stdio.py` agentic-loop message ordering (port CC's `yieldMissingToolResultBlocks` pattern from `services/api/claude.ts:957`).
+- **H3 fix**: `src/ummaya/ipc/stdio.py` BM25 suffix or local message-list lifecycle.
 
 **Surface**: Implement EXACTLY the change cited in `fix-design.md`. Cite the CC reference line in the commit message per AGENTS.md `feedback_cc_source_migration_pattern`. Do NOT change `ChatRequestFrame` shape (FR-009). Do NOT add runtime dependencies (FR-010).
 
@@ -227,7 +227,7 @@ Each isolation test's debug flag is a single-line guard in the relevant code; re
 
 **Surface**: Strip the debug-only env flags introduced in T005. Confirm no flag survives into shipped code. Permanent diagnostic emits from T001/T002 remain (per FR-014).
 
-**Acceptance**: `git grep KOSAX_DEBUG_` returns 0 hits in `src/` and `tui/src/`.
+**Acceptance**: `git grep UMMAYA_DEBUG_` returns 0 hits in `src/` and `tui/src/`.
 
 **Dependency**: T007 (fix done first so isolation tests no longer needed).
 
@@ -288,8 +288,8 @@ This is consumed by FR-012 unit test + FR-013 regression smoke. Korean is the on
 
 **Surface**:
 1. **ADR**: Five-section ADR (Status: Accepted / Context / Decision / Consequences / Alternatives) per `docs/adr/ADR-009-secureStorage-drop.md` template (Spec 2643). Decision section MUST cite specific log file paths under `specs/spec-multi-turn-contamination/diagnostic-runs/`. Alternatives section MUST enumerate H1/H2/H3 with the evidence that ruled out the rejected ones.
-2. **`docs/testing.md` update**: Add a subsection under "TUI verification methodology" titled "Multi-turn diagnostic env vars" documenting `KOSAX_CHAT_REQUEST_DUMP=1` and the existing-extended `KOSAX_QUERY_TRACE=1`. Cite `specs/spec-multi-turn-contamination/scripts/repro-two-turn.sh` as the canonical scenario.
-3. **`regress-multi-turn.sh`**: Layer 5 tmux smoke against `KOSAX_LLM_PROVIDER=fake-multi-turn` deterministic stub backend (fake LLM returns canned per-turn reasoning matching the user message). `wait_for_pane <regex> <deadline>` per turn. Asserts via `grep` on captured pane that turn-2's reasoning blob references turn-2 keywords AND not turn-1 keywords.
+2. **`docs/testing.md` update**: Add a subsection under "TUI verification methodology" titled "Multi-turn diagnostic env vars" documenting `UMMAYA_CHAT_REQUEST_DUMP=1` and the existing-extended `UMMAYA_QUERY_TRACE=1`. Cite `specs/spec-multi-turn-contamination/scripts/repro-two-turn.sh` as the canonical scenario.
+3. **`regress-multi-turn.sh`**: Layer 5 tmux smoke against `UMMAYA_LLM_PROVIDER=fake-multi-turn` deterministic stub backend (fake LLM returns canned per-turn reasoning matching the user message). `wait_for_pane <regex> <deadline>` per turn. Asserts via `grep` on captured pane that turn-2's reasoning blob references turn-2 keywords AND not turn-1 keywords.
 4. **Commit** the diagnostic-runs/ pre-fix and post-fix directories together so the before/after demonstration lives in repo history.
 
 **Acceptance**: ADR is complete (5 sections). `docs/testing.md` cites the new env vars + script. `regress-multi-turn.sh` runs green against the rebuilt branch + against a deliberately-reverted-fix throwaway commit it FAILS (per SC-007). All diagnostic-runs/ artefacts committed.

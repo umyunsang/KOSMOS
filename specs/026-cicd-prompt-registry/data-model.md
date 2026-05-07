@@ -9,7 +9,7 @@ The schema contracts (JSON Schema Draft 2020-12) that mirror these models live u
 ## 1. Prompt Registry — `PromptManifestEntry`
 
 ```python
-# src/kosax/context/prompt_loader.py (Phase 1 contract; implementation in /speckit-implement)
+# src/ummaya/context/prompt_loader.py (Phase 1 contract; implementation in /speckit-implement)
 
 from __future__ import annotations
 
@@ -207,7 +207,7 @@ class ReleaseManifest(BaseModel):
                        │  PromptLoader            │
                        │  .load(prompt_id) -> str │
                        │  .get_hash(id) -> str    │◄── consumed by Context Assembly to stamp
-                       │  .all_hashes() -> dict   │    kosax.prompt.hash on every LLM span (FR-C07)
+                       │  .all_hashes() -> dict   │    ummaya.prompt.hash on every LLM span (FR-C07)
                        └────────────┬─────────────┘
                                     │ at release time, .all_hashes() is read by
                                     ▼

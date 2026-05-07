@@ -2,7 +2,7 @@
 
 **Owner**: Spec 026 (Retrieval Backend Evolution)
 **Stability**: Internal contract — may evolve with spec 026; external consumers (`lookup`, `search`) MUST NOT depend on it directly.
-**Module**: `src/kosax/tools/retrieval/backend.py` (NEW)
+**Module**: `src/ummaya/tools/retrieval/backend.py` (NEW)
 
 ## Purpose
 
@@ -65,28 +65,28 @@ class Retriever(Protocol):
 | R3 | Deterministic tie-break (score DESC, tool_id ASC) is applied **at the Retriever boundary**, not shifted onto the registry. | Unit test feeds a corpus with guaranteed ties and asserts ordering. |
 | R4 | `rebuild({})` must succeed and leave the backend in a legal empty state; a subsequent `score("anything")` returns `[]`. | Unit test. |
 | R5 | `rebuild()` is the only mutation entry point. No implicit re-indexing on `score()`. | Code review; no registry code path triggers reindex from a search. |
-| R6 | No backend may raise on `score()` for well-formed queries (≥1 char). Degradation paths log + return ranked or empty; they do not raise. | API-level integration test via `kosax.eval.retrieval._evaluate`. |
+| R6 | No backend may raise on `score()` for well-formed queries (≥1 char). Degradation paths log + return ranked or empty; they do not raise. | API-level integration test via `ummaya.eval.retrieval._evaluate`. |
 
 ## Implementations (in-scope for spec 026)
 
-### `BM25Backend` (default — `KOSAX_RETRIEVAL_BACKEND=bm25`)
+### `BM25Backend` (default — `UMMAYA_RETRIEVAL_BACKEND=bm25`)
 
 - Wraps the existing `BM25Index` (no internal change).
 - Preserves baseline recall@5 = 1.0, recall@1 = 0.9333 on the 30-query set.
 - Boot latency unchanged (Principle II — default path cannot regress).
 
-### `DenseBackend` (opt-in — `KOSAX_RETRIEVAL_BACKEND=dense`)
+### `DenseBackend` (opt-in — `UMMAYA_RETRIEVAL_BACKEND=dense`)
 
-- Lazy-loads `sentence-transformers` model referenced by `KOSAX_RETRIEVAL_MODEL_ID` (default: `intfloat/multilingual-e5-small`).
+- Lazy-loads `sentence-transformers` model referenced by `UMMAYA_RETRIEVAL_MODEL_ID` (default: `intfloat/multilingual-e5-small`).
 - Applies `"query: "` / `"passage: "` prefixes for e5-family models.
 - Stores embeddings as an in-memory `numpy.ndarray` matrix (`float32`, L2-normalized rows).
 - `score()` computes cosine similarity via a single matmul (≤ 200 tools fits comfortably in < 5 ms on reference CPU).
 - On load failure → invokes `DegradationRecord.latch("model_load_failed", ...)` and falls back to BM25 (surfaced via `HybridBackend` when in hybrid mode, or directly via `ToolRegistry.bm25_index` fallback when in dense mode).
 
-### `HybridBackend` (opt-in — `KOSAX_RETRIEVAL_BACKEND=hybrid`)
+### `HybridBackend` (opt-in — `UMMAYA_RETRIEVAL_BACKEND=hybrid`)
 
 - Composes one `BM25Backend` and one `DenseBackend`.
-- Fusion: Reciprocal Rank Fusion with `k = KOSAX_RETRIEVAL_FUSION_K` (default 60, Cormack et al. SIGIR 2009).
+- Fusion: Reciprocal Rank Fusion with `k = UMMAYA_RETRIEVAL_FUSION_K` (default 60, Cormack et al. SIGIR 2009).
 - Formula: `RRF_score(d) = Σ_retriever 1 / (k + rank_retriever(d))`.
 - On Dense subsystem degradation → `HybridBackend` transparently returns BM25-only ranking with a WARN log line (fail-open on retrieval path; Principle II is preserved because auth/invocation remain fail-closed).
 
@@ -96,9 +96,9 @@ class Retriever(Protocol):
 
 ```python
 self._retriever: Retriever = build_retriever_from_env(
-    backend=os.getenv("KOSAX_RETRIEVAL_BACKEND", "bm25"),
-    model_id=os.getenv("KOSAX_RETRIEVAL_MODEL_ID"),
-    fusion_k=int(os.getenv("KOSAX_RETRIEVAL_FUSION_K", "60")),
+    backend=os.getenv("UMMAYA_RETRIEVAL_BACKEND", "bm25"),
+    model_id=os.getenv("UMMAYA_RETRIEVAL_MODEL_ID"),
+    fusion_k=int(os.getenv("UMMAYA_RETRIEVAL_FUSION_K", "60")),
 )
 # Back-compat alias (used by existing tests that reference `.bm25_index`).
 # Points to a BM25Backend view regardless of the selected retriever, so
@@ -108,7 +108,7 @@ self._retriever: Retriever = build_retriever_from_env(
 self.bm25_index = self._retriever.bm25_view()  # see manifest for view semantics
 ```
 
-**External callers (`kosax.tools.search.search`, `kosax.tools.lookup.lookup`) see no signature change.**
+**External callers (`ummaya.tools.search.search`, `ummaya.tools.lookup.lookup`) see no signature change.**
 
 ## Non-Goals (spec 026)
 

@@ -18,8 +18,8 @@
 | Adapters | `road_risk_score` composite (KOROAD + KMA + KMA-obs fused in one call) | Two discrete `lookup(mode="fetch")` calls: `koroad_accident_hazard_search` then `kma_forecast_fetch` |
 | NMC involvement | Out of scope (Scenario 2) | Still out of scope, but `nmc_emergency_search` is referenced for adapter-level gating patterns |
 | Security contract | None — spec predates 024/025 | All adapters must satisfy V1–V6 invariants (`auth_type`↔`auth_level`, fail-closed defaults) |
-| Secrets/config | No startup guard | `KOSAX_KAKAO_REST_KEY` + `KOSAX_DATA_GO_KR_API_KEY` validated at boot by guard (#468); scenario tests must NOT boot without these present (or use in-memory fixture fixture override) |
-| Observability | `UsageTracker` token counts only | OTel GenAI spans: `gen_ai.tool.execute` per call, `kosax.tool.adapter` attribute on `fetch` calls, no raw query strings in PII span attributes |
+| Secrets/config | No startup guard | `UMMAYA_KAKAO_REST_KEY` + `UMMAYA_DATA_GO_KR_API_KEY` validated at boot by guard (#468); scenario tests must NOT boot without these present (or use in-memory fixture fixture override) |
+| Observability | `UsageTracker` token counts only | OTel GenAI spans: `gen_ai.tool.execute` per call, `ummaya.tool.adapter` attribute on `fetch` calls, no raw query strings in PII span attributes |
 | Return schema | `road_risk_score` custom dict | Frozen discriminated union: `LookupCollection` (KOROAD) + `LookupTimeseries` (KMA) |
 | KOROAD code quirks | Not addressed | Year-aware code mapping (2023: 강원 42→51, 전북 45→52) exercised by dedicated fixture path |
 | Test structure | `tests/e2e/` against mock LLM + composite fixture | Same location; mock LLM replays exact `resolve→search→fetch→fetch` sequence; all fixtures recorded |
@@ -28,7 +28,7 @@
 
 ## Overview & Context
 
-This is the Phase 1 capstone: an end-to-end test validating the complete KOSAX pipeline for the route-safety citizen scenario. A citizen asks a natural-language question about travel safety; the system fuses KOROAD accident-hotspot data with KMA weather forecast data — routed entirely through the `resolve_location` + `lookup` two-tool facade — and produces an actionable Korean-language safety recommendation.
+This is the Phase 1 capstone: an end-to-end test validating the complete UMMAYA pipeline for the route-safety citizen scenario. A citizen asks a natural-language question about travel safety; the system fuses KOROAD accident-hotspot data with KMA weather forecast data — routed entirely through the `resolve_location` + `lookup` two-tool facade — and produces an actionable Korean-language safety recommendation.
 
 The scenario exercises the tool loop (Layer 1), the tool system's facade + BM25 retrieval gate + adapter invocation (Layer 2), the fail-closed auth gate (Layer 3 interface), context assembly (Layer 5), and cost accounting. It does NOT exercise Layer 4 (Agent Swarms), which is Phase 2+ (Epics #13, #14).
 
@@ -75,7 +75,7 @@ Turn 6 — LLM synthesizes:
 
 ### User Story 1 — Happy-Path Route Safety Query (Priority: P1)
 
-A citizen asks a natural-language route-safety question. KOSAX executes the full `resolve→search→fetch×2→synthesize` pipeline using recorded fixtures, then produces a Korean-language recommendation that names at least one KOROAD hazard spot and at least one KMA forecast field.
+A citizen asks a natural-language route-safety question. UMMAYA executes the full `resolve→search→fetch×2→synthesize` pipeline using recorded fixtures, then produces a Korean-language recommendation that names at least one KOROAD hazard spot and at least one KMA forecast field.
 
 **Why this priority**: This is the fundamental proof that the Phase 1 pipeline works end-to-end under the frozen two-tool facade. Without this, Phase 1 acceptance is not complete.
 
@@ -137,11 +137,11 @@ Every tool call during the scenario emits an OTel `gen_ai.tool.execute` span wit
 
 **Acceptance Scenarios**:
 
-1. **Given** the happy-path scenario completes, **When** the span list is inspected, **Then** every tool call (both `resolve_location` and `lookup`) has produced exactly one `gen_ai.tool.execute` span with `gen_ai.tool.name ∈ {"resolve_location", "lookup"}` and `kosax.tool.outcome ∈ {"ok", "error"}`.
+1. **Given** the happy-path scenario completes, **When** the span list is inspected, **Then** every tool call (both `resolve_location` and `lookup`) has produced exactly one `gen_ai.tool.execute` span with `gen_ai.tool.name ∈ {"resolve_location", "lookup"}` and `ummaya.tool.outcome ∈ {"ok", "error"}`.
 
-2. **Given** the two `lookup(mode="fetch")` calls, **When** spans are inspected, **Then** those spans carry a `kosax.tool.adapter` attribute set to `"koroad_accident_hazard_search"` and `"kma_forecast_fetch"` respectively (this attribute is only present on `fetch` calls, not `search` or `resolve_location` calls).
+2. **Given** the two `lookup(mode="fetch")` calls, **When** spans are inspected, **Then** those spans carry a `ummaya.tool.adapter` attribute set to `"koroad_accident_hazard_search"` and `"kma_forecast_fetch"` respectively (this attribute is only present on `fetch` calls, not `search` or `resolve_location` calls).
 
-3. **Given** a `lookup(mode="fetch")` call that fails with `LookupError`, **When** the span is inspected, **Then** `kosax.tool.outcome = "error"` and `error.type` names the error class; no raw citizen query string appears in any span attribute (PII masking per spec 021).
+3. **Given** a `lookup(mode="fetch")` call that fails with `LookupError`, **When** the span is inspected, **Then** `ummaya.tool.outcome = "error"` and `error.type` names the error class; no raw citizen query string appears in any span attribute (PII masking per spec 021).
 
 ---
 
@@ -182,7 +182,7 @@ Every tool call during the scenario emits an OTel `gen_ai.tool.execute` span wit
 
 **Configuration and startup guard (new vs spec 012)**
 
-- **FR-011**: Test fixtures MUST either populate `KOSAX_DATA_GO_KR_API_KEY` and `KOSAX_KAKAO_REST_KEY` via in-memory override (using `pydantic-settings` test injection) or configure the startup guard to no-op in unit mode. Tests MUST NOT expose real key values.
+- **FR-011**: Test fixtures MUST either populate `UMMAYA_DATA_GO_KR_API_KEY` and `UMMAYA_KAKAO_REST_KEY` via in-memory override (using `pydantic-settings` test injection) or configure the startup guard to no-op in unit mode. Tests MUST NOT expose real key values.
 - **FR-012**: The startup guard (spec 026-secrets / Epic #468) MUST NOT be bypassed in the scenario test harness — instead, the test fixture MUST provide the required env vars via `monkeypatch.setenv` or a `pytest` fixture that sets dummy values for CI.
 
 **KOROAD year-code quirks**
@@ -197,8 +197,8 @@ Every tool call during the scenario emits an OTel `gen_ai.tool.execute` span wit
 
 **Observability spans (new vs spec 012)**
 
-- **FR-017**: Every tool call (both `resolve_location` and `lookup`) MUST emit one `"execute_tool"` span (`gen_ai.operation.name = "execute_tool"`, see `src/kosax/observability/semconv.py`) with `gen_ai.tool.name` and `kosax.tool.outcome`.
-- **FR-018**: `lookup(mode="fetch")` spans MUST additionally carry `kosax.tool.adapter` set to the resolved adapter id.
+- **FR-017**: Every tool call (both `resolve_location` and `lookup`) MUST emit one `"execute_tool"` span (`gen_ai.operation.name = "execute_tool"`, see `src/ummaya/observability/semconv.py`) with `gen_ai.tool.name` and `ummaya.tool.outcome`.
+- **FR-018**: `lookup(mode="fetch")` spans MUST additionally carry `ummaya.tool.adapter` set to the resolved adapter id.
 - **FR-019**: Span assertions MUST verify that no raw Korean query strings from citizen input appear in exported span attributes. Citizen-originating strings MUST be absent from span attributes or represented only by a hash (per spec 021 PII masking rules).
 - **FR-020**: The span assertion test MUST be skipped gracefully (not fail) when `OTEL_SDK_DISABLED=true` is set, to preserve CI compatibility with spec 021's no-op path.
 
@@ -229,7 +229,7 @@ Every tool call during the scenario emits an OTel `gen_ai.tool.execute` span wit
 | SC-4 | Both-adapters failure | Graceful Korean error message; `stop_reason=error_unrecoverable`; no exception to CLI |
 | SC-5 | KOROAD 2023 quirk path | Quirk fixture produces same non-zero hazard-count assertion as non-quirk path |
 | SC-6 | Token accounting | `UsageTracker` totals match mock LLM reports; 0% deviation |
-| SC-7 | Span assertions | Every tool call produces exactly one `gen_ai.tool.execute` span; `fetch` spans carry `kosax.tool.adapter`; no citizen query strings in span attributes |
+| SC-7 | Span assertions | Every tool call produces exactly one `gen_ai.tool.execute` span; `fetch` spans carry `ummaya.tool.adapter`; no citizen query strings in span attributes |
 | SC-8 | CI runtime | Full scenario test suite (happy + degraded + quirk + span paths) completes in < 5 s with no live HTTP calls |
 | SC-9 | Security invariants | `ToolRegistry.register()` passes V1–V6 checks for both adapters; test fails if a misconfigured adapter is introduced |
 | SC-10 | No hardcoding | No static keyword lists, no hardcoded adapter IDs in the mock LLM fixture beyond the scripted sequence; no salvage logic; no `Any` in I/O schemas |
@@ -243,7 +243,7 @@ Every tool call during the scenario emits an OTel `gen_ai.tool.execute` span wit
 3. Recorded HTTP fixtures follow the existing pattern: JSON (or `respx` tape) files under `tests/fixtures/{provider}/` loaded via path resolution.
 4. The startup guard (spec 026-secrets) is implemented; test fixtures neutralize it via `monkeypatch.setenv`.
 5. OTel spans are captured in-process via an in-memory `SpanExporter` in tests (no real OTLP endpoint needed for CI assertions).
-6. `KOSAX_DATA_GO_KR_API_KEY` is the shared key for both KOROAD and KMA endpoints; `KOSAX_KAKAO_REST_KEY` covers Kakao Local geocoding.
+6. `UMMAYA_DATA_GO_KR_API_KEY` is the shared key for both KOROAD and KMA endpoints; `UMMAYA_KAKAO_REST_KEY` covers Kakao Local geocoding.
 
 ---
 

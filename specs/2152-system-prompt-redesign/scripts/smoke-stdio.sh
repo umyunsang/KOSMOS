@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Backend stdio JSONL smoke — sends 5 citizen scenarios sequentially through
-# the KOSAX backend stdio bridge, captures the response frames as .jsonl
+# the UMMAYA backend stdio bridge, captures the response frames as .jsonl
 # per scenario plus an aggregated smoke.txt with the SC-1 grep audit at the
 # end. Memory `feedback_vhs_tui_smoke` Layer 2.
 set -euo pipefail
@@ -13,8 +13,8 @@ set -a
 source "${REPO_ROOT}/.env"
 set +a
 
-if [[ -z "${KOSAX_FRIENDLI_TOKEN:-}" ]]; then
-  echo "ERROR: KOSAX_FRIENDLI_TOKEN not set after sourcing .env" >&2
+if [[ -z "${UMMAYA_FRIENDLI_TOKEN:-}" ]]; then
+  echo "ERROR: UMMAYA_FRIENDLI_TOKEN not set after sourcing .env" >&2
   exit 2
 fi
 
@@ -32,7 +32,7 @@ declare -a SCENARIOS=(
 AGG="${SPEC_DIR}/smoke.txt"
 : > "${AGG}"
 {
-  echo "==== KOSAX Epic #2152 P5 stdio smoke ===="
+  echo "==== UMMAYA Epic #2152 P5 stdio smoke ===="
   echo "date:    ${TS}"
   echo "branch:  $(git rev-parse --abbrev-ref HEAD)"
   echo "commit:  $(git rev-parse --short HEAD)"
@@ -76,7 +76,7 @@ print(json.dumps({
   (
     printf '%s\n' "${frame}"
     sleep 30
-  ) | uv run kosax --ipc stdio 2>/dev/null >>"${out}" || true
+  ) | uv run ummaya --ipc stdio 2>/dev/null >>"${out}" || true
 
   # Per-scenario summary.
   local total tool_n done_n

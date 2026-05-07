@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // Source: .references/claude-code-sourcemap/restored-src/src/components/HelpV2/ (CC 2.1.88, research-use)
-// KOSAX adaptation: renders the /consent list permission-receipt table inside the
+// UMMAYA adaptation: renders the /consent list permission-receipt table inside the
 // CC ToolJSX overlay slot.  Uses buildConsentListRows() + formatConsentListRow()
 // from src/commands/consent.ts (FR-019).
 //
@@ -136,8 +136,8 @@ export function ConsentListView({
     <Box flexDirection="column" paddingX={1} paddingY={1}>
       {/* Header — mirrors HelpV2Grouped title bar */}
       <Box marginBottom={1}>
-        <Text bold color={theme.kosaxCore}>
-          {'✻ KOSAX · '}
+        <Text bold color={theme.ummayaCore}>
+          {'✻ UMMAYA · '}
         </Text>
         <Text color={theme.wordmark}>
           {'권한 영수증 / Consent receipts'}

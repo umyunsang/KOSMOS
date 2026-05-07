@@ -5,16 +5,16 @@ from __future__ import annotations
 
 from collections.abc import AsyncIterator
 
-from kosax.engine.config import QueryEngineConfig
-from kosax.engine.events import QueryEvent, StopReason
-from kosax.engine.models import QueryContext, QueryState
-from kosax.engine.query import query
-from kosax.llm.client import LLMClient  # noqa: F401 — needed for model_rebuild
-from kosax.llm.errors import StreamInterruptedError
-from kosax.llm.models import ChatMessage, StreamEvent, TokenUsage
-from kosax.llm.usage import UsageTracker
-from kosax.tools.executor import ToolExecutor
-from kosax.tools.registry import ToolRegistry
+from ummaya.engine.config import QueryEngineConfig
+from ummaya.engine.events import QueryEvent, StopReason
+from ummaya.engine.models import QueryContext, QueryState
+from ummaya.engine.query import query
+from ummaya.llm.client import LLMClient  # noqa: F401 — needed for model_rebuild
+from ummaya.llm.errors import StreamInterruptedError
+from ummaya.llm.models import ChatMessage, StreamEvent, TokenUsage
+from ummaya.llm.usage import UsageTracker
+from ummaya.tools.executor import ToolExecutor
+from ummaya.tools.registry import ToolRegistry
 
 # Rebuild QueryContext so model_construct() works with mock llm_client objects
 QueryContext.model_rebuild()

@@ -1,7 +1,7 @@
 # Citizen scenario frame — 도로안전/02-query-engine-search
 # 도로 안전 — 쿼리엔진 RAG 검색 (4 부처 후보)
 # Captured 2026-04-26T16:08:04.463Z via ink-testing-library render()
-# KOSAX v0.1-alpha · K-EXAONE-236B-A23B + FriendliAI Serverless
+# UMMAYA v0.1-alpha · K-EXAONE-236B-A23B + FriendliAI Serverless
 
 ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
 │  ⏺ 단계 2/5 · K-EXAONE → RAG 검색 (BM25 + dense hybrid)                                          │

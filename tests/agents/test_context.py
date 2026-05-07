@@ -17,9 +17,9 @@ from uuid import uuid4
 import pytest
 from pydantic import ValidationError
 
-from kosax.agents.context import AgentContext
-from kosax.llm.client import LLMClient
-from kosax.tools.registry import ToolRegistry
+from ummaya.agents.context import AgentContext
+from ummaya.llm.client import LLMClient
+from ummaya.tools.registry import ToolRegistry
 
 
 def _mock_registry() -> ToolRegistry:

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Shared test fixtures for the KOSAX Query Engine test suite.
+"""Shared test fixtures for the UMMAYA Query Engine test suite.
 
 All fixtures use mocks only — no live API calls, no environment variables required.
 """
@@ -12,12 +12,12 @@ from collections.abc import AsyncIterator
 import pytest
 from pydantic import BaseModel
 
-from kosax.engine.config import QueryEngineConfig
-from kosax.llm.models import ChatMessage, StreamEvent, TokenUsage
-from kosax.llm.usage import UsageTracker
-from kosax.tools.executor import ToolExecutor
-from kosax.tools.models import GovAPITool
-from kosax.tools.registry import ToolRegistry
+from ummaya.engine.config import QueryEngineConfig
+from ummaya.llm.models import ChatMessage, StreamEvent, TokenUsage
+from ummaya.llm.usage import UsageTracker
+from ummaya.tools.executor import ToolExecutor
+from ummaya.tools.models import GovAPITool
+from ummaya.tools.registry import ToolRegistry
 
 # ---------------------------------------------------------------------------
 # Minimal Pydantic schemas shared across mock tool definitions
@@ -490,7 +490,7 @@ def sample_config() -> QueryEngineConfig:
 def sample_messages() -> list[ChatMessage]:
     """Short conversation history for context-management and snapshot tests."""
     return [
-        ChatMessage(role="system", content="You are KOSAX."),
+        ChatMessage(role="system", content="You are UMMAYA."),
         ChatMessage(role="user", content="서울 강남구 교통사고 현황"),
         ChatMessage(role="assistant", content="교통사고 현황을 조회하겠습니다."),
     ]

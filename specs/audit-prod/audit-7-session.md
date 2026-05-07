@@ -9,11 +9,11 @@
 
 | Surface | Count / state | Path |
 |---|---|---|
-| KOSAX sessions root (flat) | 152 files (151 are 330 B Python-stub metadata-only, 1 directory) | `~/.kosax/memdir/user/sessions/` |
-| KOSAX sessions CC-shape (sanitized cwd) | ≥ 30 CC-native JSONL | `~/.kosax/memdir/user/sessions/-Users-um-yunsang-KOSAX-tui/` |
+| UMMAYA sessions root (flat) | 152 files (151 are 330 B Python-stub metadata-only, 1 directory) | `~/.ummaya/memdir/user/sessions/` |
+| UMMAYA sessions CC-shape (sanitized cwd) | ≥ 30 CC-native JSONL | `~/.ummaya/memdir/user/sessions/-Users-um-yunsang-UMMAYA-tui/` |
 | CC-legacy projects | 24 dirs | `~/.claude/projects/` |
 | TUI canonical write path | CC-shape `<sessions>/<sanitized-cwd>/<sessionId>.jsonl` (parentUuid/isSidechain/promptId/uuid/timestamp/sessionId/version/gitBranch/cwd) | `tui/src/utils/sessionStorage.ts:211 getProjectsDir()` |
-| Backend write path | Flat `<sessions>/<sessionId>.jsonl`, schema `{timestamp, entry_type:"metadata", data:{session_id, ...}}` (NOT CC-native) | `~/.kosax/memdir/user/sessions/<uuid>.jsonl` |
+| Backend write path | Flat `<sessions>/<sessionId>.jsonl`, schema `{timestamp, entry_type:"metadata", data:{session_id, ...}}` (NOT CC-native) | `~/.ummaya/memdir/user/sessions/<uuid>.jsonl` |
 
 ## 1. Captured artefacts
 
@@ -34,20 +34,20 @@ Scripts (committed):
 
 | Surface | Status | Evidence |
 |---|---|---|
-| First-turn JSONL canonical write | PASS | snap-002 — LLM responded with coords; CC-shape JSONL written to `~/.kosax/memdir/user/sessions/-Users-um-yunsang-KOSAX-tui/c4eac756-...jsonl` |
+| First-turn JSONL canonical write | PASS | snap-002 — LLM responded with coords; CC-shape JSONL written to `~/.ummaya/memdir/user/sessions/-Users-um-yunsang-UMMAYA-tui/c4eac756-...jsonl` |
 | `/resume` picker open | PASS | snap-008 — `Resume Session (1 of 33)`, current worktree, all 33 sessions enumerated with timestamp / branch / file size |
 | `/resume` Ctrl+A/B/W/V/R footer | PASS | snap-008 line 59: `Ctrl+A to show all projects · Ctrl+B to toggle branch · Ctrl+W to show all worktrees · Ctrl+V to preview · Ctrl+R to rename · Type to search · Esc to cancel` |
 | `/resume` Esc dismiss | **P1 FAIL** | snap-009 — Esc sent, overlay still on screen identical to snap-008. Subsequent `/history` typed into Resume search box. |
-| `/resume` dual-path enumeration (KOSAX + CC-legacy) | PASS by code | `tui/src/utils/listSessionsImpl.ts:412 gatherAllCandidates()` walks both roots, dedups by sessionId. 33 sessions visible in picker matches the recently-written CC-shape sessions from this audit. |
+| `/resume` dual-path enumeration (UMMAYA + CC-legacy) | PASS by code | `tui/src/utils/listSessionsImpl.ts:412 gatherAllCandidates()` walks both roots, dedups by sessionId. 33 sessions visible in picker matches the recently-written CC-shape sessions from this audit. |
 | `/fork audit-fork` | PASS | snap-007 — `❯ /branch audit-fork ⎿ Branched conversation "audit-fork". You are now in the branch.` Fork JSONL `c4eac756-...jsonl` header has `forkedFrom: { sessionId: "66d1ea39-...", messageUuid: "585f7ec0-..." }` — parent_session_id preserved as required by Epic3-S3. UX label says `/branch` not `/fork` (minor cosmetic). |
-| `/continue` (legacy alias) | PARTIAL | `commands/resume.ts:31 aliases:['continue']` registered, but it requires explicit `<session-id>` arg (KOSAX-original, NOT CC interactive picker). Bare `/continue` returns missing-id error. Bare `/resume` triggers CC interactive picker. **Two divergent code paths share the name `/resume`**. |
-| `/migrate-sessions --dry-run` | **P0 FAIL** | snap-006 — `❯ Unknown skill: migrate-sessions ⏺ Args from unknown skill: --dry-run`. Command IS registered in `commands/index.ts:32` but **REPL.tsx slash dispatcher does not consult the KOSAX registry** — only hardcodes arms for `export`, `history`, `consent`, `agents`, etc. |
+| `/continue` (legacy alias) | PARTIAL | `commands/resume.ts:31 aliases:['continue']` registered, but it requires explicit `<session-id>` arg (UMMAYA-original, NOT CC interactive picker). Bare `/continue` returns missing-id error. Bare `/resume` triggers CC interactive picker. **Two divergent code paths share the name `/resume`**. |
+| `/migrate-sessions --dry-run` | **P0 FAIL** | snap-006 — `❯ Unknown skill: migrate-sessions ⏺ Args from unknown skill: --dry-run`. Command IS registered in `commands/index.ts:32` but **REPL.tsx slash dispatcher does not consult the UMMAYA registry** — only hardcodes arms for `export`, `history`, `consent`, `agents`, etc. |
 | `/history` open | PASS | snap-002 (audit-7) — `과거 세션 검색`, 8 visible + `+143 more = 151 sessions`, layer/date/session filter hints visible. |
 | `/history --date YYYY-MM-DD..YYYY-MM-DD --layer N` arg parse | PASS by code | `commands/history.ts:204-216` regex matches `/--date \d{4}-\d{2}-\d{2}\.\.\d{4}-\d{2}-\d{2}/`, `/--session [\w-]+/`, `/--layer [123]/`. `applyHistoryFilters()` AND-composes 3 filters. |
 | `/history` source enumeration | **P1 FAIL** | `commands/history.ts:49 readdirSync(sessionsDir)` reads only the **flat root** (151 stale stub files), NOT the CC-shape `<sanitized-cwd>/` subdirectory where TUI actually writes. Real conversation sessions are invisible to `/history` — only Python backend stubs show up. The visible 151 in snap-002 are stub metadata, not real conversation sessions. |
 | `/history` Esc dismiss | **P0 FAIL** | snap-002→snap-003 (audit-7) — Esc sent, overlay persists. All subsequent `/export`, `/migrate-sessions`, `/fork`, `/resume` typed into stuck History search box and silently dropped. Root cause: `REPL.tsx:3686 isLocalJSXCommand: true` deactivates parent prompt's `useInput` subtree per Infrastructure insight #3, so Dialog's own `useInput((_,k)=>k.escape&&onCancel())` at `HistorySearchDialog.tsx:179` never fires. The fix that worked for `/export`/`/consent` (`isLocalJSXCommand: false`) is not applied here. |
 | `/export` dialog open | PASS (then errors) | snap-003 (audit-7d) — overlay opens, K-EXAONE model visible. Lead-Fix7 wiring (`REPL.tsx:3653 executeExport(exportTurns, toolInvocations, receipts)`) feeds real data. |
-| `/export` PDF write to `~/Downloads` | **P0 FAIL** | snap-003 status line: `Export failed: WinAnsi cannot encode "대" (0xb300)`. `~/Downloads/kosax-export*.pdf` never created. Root cause: `ExportPdfDialog.tsx:97-98` uses `StandardFonts.Helvetica` / `HelveticaBold` (WinAnsi 8-bit, no CJK). First Korean char drawn at line 134 (`대화 내보내기`) immediately fails. **Korean public-service platform's export is fundamentally broken for Korean.** |
+| `/export` PDF write to `~/Downloads` | **P0 FAIL** | snap-003 status line: `Export failed: WinAnsi cannot encode "대" (0xb300)`. `~/Downloads/ummaya-export*.pdf` never created. Root cause: `ExportPdfDialog.tsx:97-98` uses `StandardFonts.Helvetica` / `HelveticaBold` (WinAnsi 8-bit, no CJK). First Korean char drawn at line 134 (`대화 내보내기`) immediately fails. **Korean public-service platform's export is fundamentally broken for Korean.** |
 | `/export` Esc dismiss | PASS | `REPL.tsx:3669 isLocalJSXCommand: false` + `ExportPdfDialog.tsx:219 useInput(...key.escape...)` — defense-in-depth Esc per Infrastructure insight #3 + #4. |
 | Session JSONL CC-native schema | PASS | `head -1 c4eac756-...jsonl` shows `{sessionId, forkedFrom:{sessionId, messageUuid}, parentUuid:null, type:"user", timestamp, gitBranch}` — matches CC 2.1.88 byte-identical contract. |
 | Backend ↔ TUI session-storage agreement | **P0 FAIL** | Two writers, two schemas, two paths: TUI writes CC-native to `<cwd>/<id>.jsonl`; Python backend writes `{entry_type:"metadata"}` stub to flat `<id>.jsonl`. The two never reconcile. Result: 151 root-level orphan stubs, 0 visible-to-user CC-shape sessions through `/history`. |
@@ -71,11 +71,11 @@ Scripts (committed):
 ### P0-3 — `/migrate-sessions` not wired to REPL dispatcher (HIGH)
 - **Symptom**: `❯ Unknown skill: migrate-sessions ⏺ Args from unknown skill: --dry-run`
 - **Files**: Command exists in `tui/src/commands/migrate-sessions.ts` and is registered in `tui/src/commands/index.ts:32`; **but `tui/src/screens/REPL.tsx`'s slash dispatcher hardcodes only a fixed set (`export`, `history`, `consent`, `agents`, ...) and falls through to CC's "skill" lookup which has no `migrate-sessions`.**
-- **Fix**: Either (a) add `if (_kosaxCmd === 'migrate-sessions') { ... }` arm in REPL.tsx alongside the others, OR (b) bridge the KOSAX `commands/index.ts` registry into REPL's dispatch chain so all KOSAX-original commands resolve from a single source.
-- **Production impact**: Cannot drain the 24 CC-leaked workspace dirs into KOSAX storage from inside the TUI; blocks Spec UI-E.5 / Lead-Diag-3 cleanup.
+- **Fix**: Either (a) add `if (_ummayaCmd === 'migrate-sessions') { ... }` arm in REPL.tsx alongside the others, OR (b) bridge the UMMAYA `commands/index.ts` registry into REPL's dispatch chain so all UMMAYA-original commands resolve from a single source.
+- **Production impact**: Cannot drain the 24 CC-leaked workspace dirs into UMMAYA storage from inside the TUI; blocks Spec UI-E.5 / Lead-Diag-3 cleanup.
 
 ### P0-4 — Backend ↔ TUI session storage schema/path mismatch (HIGH)
-- **Symptom**: 151 metadata-only stub files at `~/.kosax/memdir/user/sessions/*.jsonl` from Python backend, never read by TUI; TUI's CC-native sessions live one tier deeper at `<sessions>/<sanitized-cwd>/<id>.jsonl` and are invisible to `/history` (which only reads the flat root).
+- **Symptom**: 151 metadata-only stub files at `~/.ummaya/memdir/user/sessions/*.jsonl` from Python backend, never read by TUI; TUI's CC-native sessions live one tier deeper at `<sessions>/<sanitized-cwd>/<id>.jsonl` and are invisible to `/history` (which only reads the flat root).
 - **Files**: Python backend writer (writes `{entry_type:"metadata", data:{...}}` stubs) vs `tui/src/commands/history.ts:49 readdirSync(sessionsDir)` vs `tui/src/utils/sessionStorage.ts:211 getProjectsDir()` (writes `<sessions>/<sanitized-cwd>/<id>.jsonl`)
 - **Fix**: Pick one canonical layout. Recommended: TUI is the canonical writer (CC-native schema in `<sessions>/<sanitized-cwd>/<id>.jsonl`); Python backend stops writing flat stubs OR consumes from the CC-shape path. Update `commands/history.ts:loadSessionEntries()` to walk subdirectories (mirror `listSessionsImpl.ts:gatherFromRoot`).
 - **Production impact**: `/history` shows fake stubs and never the user's real conversations.
@@ -93,7 +93,7 @@ Scripts (committed):
 
 **N — NOT production-ready.** Three P0 surface bugs:
 
-1. **PDF export breaks on the very first Korean character** (Helvetica vs CJK). KOSAX is a Korean public-service platform; this is a release-blocker.
+1. **PDF export breaks on the very first Korean character** (Helvetica vs CJK). UMMAYA is a Korean public-service platform; this is a release-blocker.
 2. **`/history` Esc-stuck** softlocks subsequent commands. UX-fatal.
 3. **`/migrate-sessions` not wired** into REPL dispatch. The Lead-Diag-3 leakage cleanup path is unreachable from the TUI.
 
@@ -104,18 +104,18 @@ Plus one P0 architectural issue (backend/TUI session-storage schema mismatch) an
 | ETA | Task |
 |---|---|
 | 30 min | P0-2 + P1-1 — flip `isLocalJSXCommand: true → false` at REPL.tsx:3686 and any analogous Resume/LogSelector mount sites |
-| 60 min | P0-3 — add `if (_kosaxCmd === 'migrate-sessions')` arm in REPL.tsx that calls `migrateSessionsCommand.handle({ args: _kosaxArgs, ... })` and renders `MigrateSessionsResult` |
-| 4 h | P0-1 — Vendor `Noto Sans KR Regular/Bold` (subset to ~3 MB), wire `pdfDoc.registerFontkit(fontkit) + pdfDoc.embedFont(...)` in `ExportPdfDialog.tsx:97`; add `@pdf-lib/fontkit` to `tui/package.json`. Re-run audit-7d, verify `~/Downloads/kosax-export_*.pdf` opens with Korean glyphs intact. |
+| 60 min | P0-3 — add `if (_ummayaCmd === 'migrate-sessions')` arm in REPL.tsx that calls `migrateSessionsCommand.handle({ args: _ummayaArgs, ... })` and renders `MigrateSessionsResult` |
+| 4 h | P0-1 — Vendor `Noto Sans KR Regular/Bold` (subset to ~3 MB), wire `pdfDoc.registerFontkit(fontkit) + pdfDoc.embedFont(...)` in `ExportPdfDialog.tsx:97`; add `@pdf-lib/fontkit` to `tui/package.json`. Re-run audit-7d, verify `~/Downloads/ummaya-export_*.pdf` opens with Korean glyphs intact. |
 | 1 day | P0-4 — Decide canonical layout, migrate one writer, drain stubs, repoint `/history` to walk subdirectories |
 | 30 min | P1-2 — Rename `/branch` ack text → "Forked conversation" |
 
 ## 5. Positives (what works as-spec'd)
 
-- Session JSONL canonical write path (`tui/src/utils/sessionStorage.ts:211 getProjectsDir()` returns `~/.kosax/memdir/user/sessions/`).
+- Session JSONL canonical write path (`tui/src/utils/sessionStorage.ts:211 getProjectsDir()` returns `~/.ummaya/memdir/user/sessions/`).
 - CC-native schema preserved byte-identical (parentUuid / isSidechain / promptId / uuid / timestamp / sessionId / version / gitBranch / cwd).
 - `/fork` lineage preservation works — `forkedFrom: { sessionId, messageUuid }` captured at the fork session header.
 - `/resume` interactive picker mirrors CC byte-identical (Ctrl+A/B/W/V/R + Esc/Enter footer hints, "current worktree" header, timestamp + branch + size per row).
-- Dual-path enumeration code path (`listSessionsImpl.ts:412 gatherAllCandidates()`) walks both KOSAX + CC-legacy roots and dedupes by sessionId.
+- Dual-path enumeration code path (`listSessionsImpl.ts:412 gatherAllCandidates()`) walks both UMMAYA + CC-legacy roots and dedupes by sessionId.
 - `/migrate-sessions` core util (`utils/migrateSessions.ts`) is correctly implemented (COPYFILE_EXCL + fsync + abort-on-prune-failure invariants honoured); only the REPL wire is missing.
 - `/export` Lead-Fix7 wiring is in place (`REPL.tsx:3653 executeExport(exportTurns, toolInvocations, receipts)` feeds real data; `isLocalJSXCommand: false` honours Infrastructure insight #3).
 - `/history` 3-filter AND-composition logic is correct (`commands/history.ts:204-216` + `applyHistoryFilters`).

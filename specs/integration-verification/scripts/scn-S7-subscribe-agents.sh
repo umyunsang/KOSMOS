@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # S7: 재난 알림 구독 3종 + /agents --detail
 set -euo pipefail
-wait_for_pane "KOSAX|❯" 30
+wait_for_pane "UMMAYA|❯" 30
 snapshot_pane 00-boot
 
 send_text_pane "재난문자 알림 구독해줘"; sleep 1; send_enter_pane; sleep 60

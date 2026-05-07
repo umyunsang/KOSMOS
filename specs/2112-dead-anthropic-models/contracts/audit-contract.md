@@ -55,7 +55,7 @@ rg -n 'K-EXAONE-236B-A23B' --type ts --type py | sort -u
 **Expected output**: matches confined to **at most three lines**:
 
 ```
-src/kosax/llm/config.py:37:    default="LGAI-EXAONE/K-EXAONE-236B-A23B",
+src/ummaya/llm/config.py:37:    default="LGAI-EXAONE/K-EXAONE-236B-A23B",
 tui/src/utils/model/model.ts:179:  return 'LGAI-EXAONE/K-EXAONE-236B-A23B'
 tui/src/utils/model/model.ts:187:  return 'LGAI-EXAONE/K-EXAONE-236B-A23B' as ModelName
 ```
@@ -70,7 +70,7 @@ tui/src/utils/model/model.ts:187:  return 'LGAI-EXAONE/K-EXAONE-236B-A23B' as Mo
 
 ```bash
 rg -n 'temperature: float = 1\.0|top_p: float = 0\.95|presence_penalty: float = 0\.0|max_tokens: int = 1024' \
-   src/kosax/llm/client.py
+   src/ummaya/llm/client.py
 ```
 
 **Expected output**: at least 8 lines (4 parameters × 2 sites: non-streaming `:161-164` and streaming `:288-291`).
@@ -85,7 +85,7 @@ rg -n 'temperature: float = 1\.0|top_p: float = 0\.95|presence_penalty: float = 
 
 ```bash
 rg -n 'class RetryPolicy|_compute_rate_limit_delay|_is_rate_limit_envelope|_complete_with_retry|_stream_with_retry' \
-   src/kosax/llm/client.py
+   src/ummaya/llm/client.py
 ```
 
 **Expected output**: at least 5 declarations matching the five names listed (RetryPolicy class, two private methods for delay/envelope, two retry-loop methods).
@@ -99,7 +99,7 @@ rg -n 'class RetryPolicy|_compute_rate_limit_delay|_is_rate_limit_envelope|_comp
 **Command**:
 
 ```bash
-rg -n 'KOSAX_K_EXAONE_THINKING|chat_template_kwargs' src/kosax/llm/client.py
+rg -n 'UMMAYA_K_EXAONE_THINKING|chat_template_kwargs' src/ummaya/llm/client.py
 ```
 
 **Expected output**: at least 2 matches (env-var read at `:838-844`, payload field at `:854-858`).

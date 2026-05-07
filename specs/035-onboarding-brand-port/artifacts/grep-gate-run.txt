@@ -18,8 +18,8 @@ PR-added identifiers (delta on tui/src/theme/tokens.ts ThemeToken type)
 
 10 new identifiers (from contracts/brand-token-surface.md §2):
 
-  01. kosaxCore
-  02. kosaxCoreShimmer
+  01. ummayaCore
+  02. ummayaCoreShimmer
   03. orbitalRing
   04. orbitalRingShimmer
   05. wordmark

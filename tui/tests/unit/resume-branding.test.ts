@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSAX-original — guards user-visible resume instructions from regressing
+// UMMAYA-original — guards user-visible resume instructions from regressing
 // to Claude Code's upstream CLI name.
 
 import { describe, expect, test } from 'bun:test'
 import { readFileSync } from 'fs'
 import { join } from 'path'
 import {
-  KOSAX_CLI_COMMAND,
-  KOSAX_CONTINUE_COMMAND,
-  KOSAX_PRINT_RESUME_USAGE,
-  formatKosaxResumeCommand,
+  UMMAYA_CLI_COMMAND,
+  UMMAYA_CONTINUE_COMMAND,
+  UMMAYA_PRINT_RESUME_USAGE,
+  formatUmmayaResumeCommand,
 } from '../../src/constants/cli'
 
 const REPO_ROOT = join(import.meta.dir, '..', '..', '..')
@@ -21,13 +21,13 @@ const RESUME_SURFACE_FILES = [
   'tui/src/cli/print.ts',
 ]
 
-describe('KOSAX resume branding', () => {
-  test('formats resume commands with the KOSAX CLI name', () => {
-    expect(KOSAX_CLI_COMMAND).toBe('kosax')
-    expect(KOSAX_CONTINUE_COMMAND).toBe('kosax --continue')
-    expect(KOSAX_PRINT_RESUME_USAGE).toBe('kosax -p --resume <session-id>')
-    expect(formatKosaxResumeCommand('550e8400-e29b-41d4-a716-446655440000')).toBe(
-      'kosax --resume 550e8400-e29b-41d4-a716-446655440000',
+describe('UMMAYA resume branding', () => {
+  test('formats resume commands with the UMMAYA CLI name', () => {
+    expect(UMMAYA_CLI_COMMAND).toBe('ummaya')
+    expect(UMMAYA_CONTINUE_COMMAND).toBe('ummaya --continue')
+    expect(UMMAYA_PRINT_RESUME_USAGE).toBe('ummaya -p --resume <session-id>')
+    expect(formatUmmayaResumeCommand('550e8400-e29b-41d4-a716-446655440000')).toBe(
+      'ummaya --resume 550e8400-e29b-41d4-a716-446655440000',
     )
   })
 
@@ -45,9 +45,9 @@ describe('KOSAX resume branding', () => {
     )
     const mainSource = readFileSync(join(REPO_ROOT, 'tui/src/main.tsx'), 'utf8')
 
-    expect(replSource).toContain("?? 'KOSAX'")
+    expect(replSource).toContain("?? 'UMMAYA'")
     expect(replSource).not.toContain("?? 'Claude Code'")
-    expect(mainSource).toContain("process.title = 'kosax'")
+    expect(mainSource).toContain("process.title = 'ummaya'")
     expect(mainSource).not.toContain("process.title = 'claude'")
   })
 })

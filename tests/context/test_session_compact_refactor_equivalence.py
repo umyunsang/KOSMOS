@@ -54,9 +54,9 @@ import pathlib
 
 import pytest
 
-from kosax.context.compact_models import CompactionConfig
-from kosax.context.session_compact import session_compact
-from kosax.llm.models import ChatMessage, FunctionCall, ToolCall
+from ummaya.context.compact_models import CompactionConfig
+from ummaya.context.session_compact import session_compact
+from ummaya.llm.models import ChatMessage, FunctionCall, ToolCall
 
 # ---------------------------------------------------------------------------
 # Prompt-file precondition
@@ -105,7 +105,7 @@ def _build_transcript() -> list[ChatMessage]:
     """
     return [
         # [0] canonical system prompt — preserved at index 0, not compacted
-        ChatMessage(role="system", content="You are KOSAX, a Korean public-service assistant."),
+        ChatMessage(role="system", content="You are UMMAYA, a Korean public-service assistant."),
         # [1] first user turn — goes into compacted window
         ChatMessage(role="user", content="서울 강남구 응급실 알려줘"),
         # [2] assistant issues tool call, no text content — compacted

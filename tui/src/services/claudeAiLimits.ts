@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSAX-original — Epic #1633 stub restoration · Epic #2077 surface preservation.
+// UMMAYA-original — Epic #1633 stub restoration · Epic #2077 surface preservation.
 // Research use — adapted from Claude Code 2.1.88 src/services/claudeAiLimits.ts
-// permissive no-op for CC compatibility. KOSAX has no claude.ai subscription
+// permissive no-op for CC compatibility. UMMAYA has no claude.ai subscription
 // quota; adapter-layer rate limiting is enforced by Spec 022 `usage_tracker`
-// and the per-API `KOSAX_*` env vars. Type aliases remain so the
+// and the per-API `UMMAYA_*` env vars. Type aliases remain so the
 // `rateLimitMessages.ts` and `mockRateLimits.ts` consumers compile.
 
 export type ClaudeAILimits = {
@@ -14,19 +14,19 @@ export type ClaudeAILimits = {
 }
 
 export type OverageDisabledReason =
-  | 'kosax_no_overage'
+  | 'ummaya_no_overage'
   | 'unknown'
   | string
 
 // SWAP/anti-anthropic-1p(2521): the byte-copied tui/src/services/api/claude.ts
 // imports `currentLimits` + `extractQuotaStatusFromError` + `extractQuotaStatusFromHeaders`
-// from this module (CC 2.1.88 surface). KOSAX deleted the live quota-tracker
+// from this module (CC 2.1.88 surface). UMMAYA deleted the live quota-tracker
 // in Spec 1633 P1+P2; these inert exports preserve ESM link-time resolvability
 // so Bun's `linkAndEvaluateModule` doesn't throw "Export named ... not found"
 // at boot when claude.ts enters the import graph (via awaySummary.ts →
 // queryModelWithoutStreaming). Values are zero/empty — claude.ts's quota gates
 // fall through to the not-overage branch which the GrowthBook allowlist
-// already keeps passable for KOSAX's FriendliAI single provider.
+// already keeps passable for UMMAYA's FriendliAI single provider.
 export const currentLimits: { isUsingOverage: boolean } = {
   isUsingOverage: false,
 }

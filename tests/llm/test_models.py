@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Unit tests for Pydantic model validation in kosax.llm.models."""
+"""Unit tests for Pydantic model validation in ummaya.llm.models."""
 
 import pytest
 from pydantic import ValidationError
 
-from kosax.llm.models import (
+from ummaya.llm.models import (
     ChatCompletionResponse,
     ChatMessage,
     FunctionCall,

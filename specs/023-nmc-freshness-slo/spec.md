@@ -39,7 +39,7 @@ A user asks about nearby emergency rooms, but the upstream NMC data has not been
 
 ### User Story 3 - Configurable Freshness Threshold (Priority: P2)
 
-An operator adjusts the freshness threshold via the `KOSAX_NMC_FRESHNESS_MINUTES` environment variable to match their deployment's acceptable staleness window. The threshold is clamped to a safe range of 1 to 1440 minutes (1 minute to 24 hours) to prevent misconfiguration.
+An operator adjusts the freshness threshold via the `UMMAYA_NMC_FRESHNESS_MINUTES` environment variable to match their deployment's acceptable staleness window. The threshold is clamped to a safe range of 1 to 1440 minutes (1 minute to 24 hours) to prevent misconfiguration.
 
 **Why this priority**: Different deployment environments may have different tolerance for data staleness. Configurability supports production flexibility without code changes.
 
@@ -47,9 +47,9 @@ An operator adjusts the freshness threshold via the `KOSAX_NMC_FRESHNESS_MINUTES
 
 **Acceptance Scenarios**:
 
-1. **Given** `KOSAX_NMC_FRESHNESS_MINUTES` is set to 60, **When** the NMC response contains an `hvidate` that is 59 minutes old, **Then** the system treats the data as fresh.
-2. **Given** `KOSAX_NMC_FRESHNESS_MINUTES` is not set, **When** the system starts, **Then** the freshness threshold defaults to 30 minutes.
-3. **Given** `KOSAX_NMC_FRESHNESS_MINUTES` is set to 0, **When** the system starts, **Then** the value is rejected with a validation error (pydantic `ge=1` constraint).
+1. **Given** `UMMAYA_NMC_FRESHNESS_MINUTES` is set to 60, **When** the NMC response contains an `hvidate` that is 59 minutes old, **Then** the system treats the data as fresh.
+2. **Given** `UMMAYA_NMC_FRESHNESS_MINUTES` is not set, **When** the system starts, **Then** the freshness threshold defaults to 30 minutes.
+3. **Given** `UMMAYA_NMC_FRESHNESS_MINUTES` is set to 0, **When** the system starts, **Then** the value is rejected with a validation error (pydantic `ge=1` constraint).
 
 ---
 
@@ -64,12 +64,12 @@ An operator adjusts the freshness threshold via the `KOSAX_NMC_FRESHNESS_MINUTES
 ### Functional Requirements
 
 - **FR-001**: System MUST compare the `hvidate` timestamp in every NMC emergency room response against the current time to determine data freshness.
-- **FR-002**: System MUST classify data as "fresh" when the age of `hvidate` is less than or equal to `KOSAX_NMC_FRESHNESS_MINUTES`.
-- **FR-003**: System MUST classify data as "stale" when the age of `hvidate` exceeds `KOSAX_NMC_FRESHNESS_MINUTES`.
+- **FR-002**: System MUST classify data as "fresh" when the age of `hvidate` is less than or equal to `UMMAYA_NMC_FRESHNESS_MINUTES`.
+- **FR-003**: System MUST classify data as "stale" when the age of `hvidate` exceeds `UMMAYA_NMC_FRESHNESS_MINUTES`.
 - **FR-004**: When data is stale, the system MUST return a structured error with reason "stale_data" instead of returning the bed availability data.
 - **FR-005**: When data is fresh, the system MUST include `freshness_status: "fresh"` metadata in the response envelope.
 - **FR-006**: When data is stale, the stale_data error MUST include a human-readable message stating the data age and the configured threshold.
-- **FR-007**: The `KOSAX_NMC_FRESHNESS_MINUTES` configuration MUST default to 30 minutes and be clamped to the range [1, 1440].
+- **FR-007**: The `UMMAYA_NMC_FRESHNESS_MINUTES` configuration MUST default to 30 minutes and be clamped to the range [1, 1440].
 - **FR-008**: When `hvidate` is missing, empty, or unparseable, the system MUST treat the data as stale (fail-closed).
 
 ### Key Entities
@@ -92,7 +92,7 @@ An operator adjusts the freshness threshold via the `KOSAX_NMC_FRESHNESS_MINUTES
 
 - The NMC API `hvidate` field uses a parseable Korean datetime format (e.g., `YYYY-MM-DD HH:MM:SS` or similar).
 - The system clock on the deployment server is reasonably synchronized (within a few minutes of NMC server time).
-- The existing `KOSAX_NMC_FRESHNESS_MINUTES` setting in the configuration module is the canonical source for the threshold value.
+- The existing `UMMAYA_NMC_FRESHNESS_MINUTES` setting in the configuration module is the canonical source for the threshold value.
 - The existing `stale_data` reason in the error taxonomy is the correct classification for this error type.
 - The NMC adapter currently has an auth gate that short-circuits before the handler; freshness enforcement will be added to the response processing path that runs after a successful upstream fetch.
 
@@ -101,7 +101,7 @@ An operator adjusts the freshness threshold via the `KOSAX_NMC_FRESHNESS_MINUTES
 ### Out of Scope (Permanent)
 
 - Automatic retry or fallback to cached data when stale data is detected — the system reports staleness; the LLM agent decides how to communicate it to the user.
-- NMC server-side freshness monitoring or alerting — KOSAX only validates at the point of consumption.
+- NMC server-side freshness monitoring or alerting — UMMAYA only validates at the point of consumption.
 - Freshness enforcement for non-NMC adapters — each adapter's freshness semantics differ; this epic covers NMC only.
 
 ### Deferred to Future Work

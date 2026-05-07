@@ -5,7 +5,7 @@
 
 ## Summary
 
-End-to-end integration test for the Phase 1 capstone: a citizen's route safety query flows through the complete KOSAX pipeline (QueryEngine → ContextBuilder → MockLLM → ToolDispatch → KOROAD/KMA adapters → RecoveryExecutor → PermissionPipeline → Response synthesis). All API calls use recorded JSON fixtures; LLM responses use MockLLMClient. Tests validate happy-path, degraded-path, cost accounting, and permission audit scenarios.
+End-to-end integration test for the Phase 1 capstone: a citizen's route safety query flows through the complete UMMAYA pipeline (QueryEngine → ContextBuilder → MockLLM → ToolDispatch → KOROAD/KMA adapters → RecoveryExecutor → PermissionPipeline → Response synthesis). All API calls use recorded JSON fixtures; LLM responses use MockLLMClient. Tests validate happy-path, degraded-path, cost accounting, and permission audit scenarios.
 
 ## Technical Context
 
@@ -77,18 +77,18 @@ tests/e2e/conftest.py (E2EFixtureBuilder)
     ├── MockLLMClient (from tests/engine/conftest.py pattern)
     │   └── Pre-configured StreamEvent sequences
     │
-    ├── ContextBuilder (real, from src/kosax/context/)
+    ├── ContextBuilder (real, from src/ummaya/context/)
     │   └── build_system_message() with real ToolRegistry
     │
-    ├── ToolRegistry (real, from src/kosax/tools/)
+    ├── ToolRegistry (real, from src/ummaya/tools/)
     │   ├── koroad_accident_search (registered)
     │   ├── kma_weather_alert_status (registered)
     │   ├── kma_current_observation (registered)
     │   └── road_risk_score (registered)
     │
-    ├── ToolExecutor (real, from src/kosax/tools/)
+    ├── ToolExecutor (real, from src/ummaya/tools/)
     │   ├── Real adapters registered
-    │   └── RecoveryExecutor (real, from src/kosax/recovery/)
+    │   └── RecoveryExecutor (real, from src/ummaya/recovery/)
     │       ├── RetryPolicy
     │       ├── CircuitBreaker (per-adapter)
     │       └── ErrorClassifier

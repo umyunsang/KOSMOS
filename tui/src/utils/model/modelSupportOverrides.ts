@@ -1,6 +1,6 @@
-// KOSAX Epic #2112: legacy 3-tier per-model env-var overrides removed.
-// KOSAX uses a single FriendliAI Serverless deployment configured via
-// KOSAX_FRIENDLI_MODEL only. Helper signature preserved for caller import-graph.
+// UMMAYA Epic #2112: legacy 3-tier per-model env-var overrides removed.
+// UMMAYA uses a single FriendliAI Serverless deployment configured via
+// UMMAYA_FRIENDLI_MODEL only. Helper signature preserved for caller import-graph.
 
 import memoize from 'lodash-es/memoize.js'
 

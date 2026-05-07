@@ -1,7 +1,7 @@
 // biome-ignore-all assist/source/organizeImports: ANT-ONLY import markers must not be reordered
 import type {
-  KosaxToolResultBlockParam as ToolResultBlockParam,
-  KosaxToolUseBlockParam as ToolUseBlock,
+  UmmayaToolResultBlockParam as ToolResultBlockParam,
+  UmmayaToolUseBlockParam as ToolUseBlock,
 } from './ipc/llmTypes.js'
 import type { CanUseToolFn } from './hooks/useCanUseTool.js'
 // services/api/withRetry removed (Spec 2293 cleanup); inline stub below.

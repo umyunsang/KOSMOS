@@ -6,16 +6,16 @@
 
 ## Summary
 
-Re-baseline the Scenario 1 (route safety) end-to-end test onto the post-Epic 022 MVP main-tool surface. The citizen trigger query now flows exclusively through the two LLM-visible tools `resolve_location` + `lookup(mode=search|fetch)`; the deprecated `road_risk_score` composite and standalone geocoding tools are not called. Two adapters are invoked behind `lookup(mode="fetch")`: `koroad_accident_hazard_search` and `kma_forecast_fetch`. All providers are replayed from recorded fixtures; the LLM is a deterministic `MockLLMClient` scripted to the 6-turn sequence in `spec.md §Overview`. The test module is purely new — no production code changes are required for happy/degraded/quirk paths. Two small, scoped production touches are required for the observability assertions: wiring `kosax.tool.outcome` + `kosax.tool.adapter` attributes on the existing `execute_tool` span inside `ToolExecutor.dispatch()` / `invoke()` (FR-017/018), which is a missing part of the spec 021 contract that this scenario is the first to assert end-to-end.
+Re-baseline the Scenario 1 (route safety) end-to-end test onto the post-Epic 022 MVP main-tool surface. The citizen trigger query now flows exclusively through the two LLM-visible tools `resolve_location` + `lookup(mode=search|fetch)`; the deprecated `road_risk_score` composite and standalone geocoding tools are not called. Two adapters are invoked behind `lookup(mode="fetch")`: `koroad_accident_hazard_search` and `kma_forecast_fetch`. All providers are replayed from recorded fixtures; the LLM is a deterministic `MockLLMClient` scripted to the 6-turn sequence in `spec.md §Overview`. The test module is purely new — no production code changes are required for happy/degraded/quirk paths. Two small, scoped production touches are required for the observability assertions: wiring `ummaya.tool.outcome` + `ummaya.tool.adapter` attributes on the existing `execute_tool` span inside `ToolExecutor.dispatch()` / `invoke()` (FR-017/018), which is a missing part of the spec 021 contract that this scenario is the first to assert end-to-end.
 
 ## Technical Context
 
 **Language/Version**: Python 3.12+ (existing project baseline; no version bump).
-**Primary Dependencies**: `pydantic >= 2.13` (existing), `httpx >= 0.27` (existing, mock target), `pytest` + `pytest-asyncio` (existing), `opentelemetry-sdk` + `opentelemetry-semantic-conventions` (existing from spec 021, used via `kosax.observability.semconv`). **No new runtime dependencies** (AGENTS.md hard rule).
+**Primary Dependencies**: `pydantic >= 2.13` (existing), `httpx >= 0.27` (existing, mock target), `pytest` + `pytest-asyncio` (existing), `opentelemetry-sdk` + `opentelemetry-semantic-conventions` (existing from spec 021, used via `ummaya.observability.semconv`). **No new runtime dependencies** (AGENTS.md hard rule).
 **Storage**: N/A — in-memory test state + in-memory OTel `InMemorySpanExporter`. Recorded HTTP fixtures live under `tests/fixtures/{kakao,koroad,kma}/` as JSON.
 **Testing**: `pytest` + `pytest-asyncio`; `unittest.mock.AsyncMock` patching `httpx.AsyncClient.get`; `opentelemetry.sdk.trace.export.in_memory_span_exporter.InMemorySpanExporter` for span assertions; `monkeypatch.setenv` for startup-guard neutralization.
 **Target Platform**: macOS/Linux CI — the existing GitHub Actions matrix.
-**Project Type**: Integration test suite (single-project layout). New files live only under `tests/e2e/`; minimal production edits confined to `src/kosax/tools/executor.py` and `src/kosax/tools/lookup.py` for FR-017/018.
+**Project Type**: Integration test suite (single-project layout). New files live only under `tests/e2e/`; minimal production edits confined to `src/ummaya/tools/executor.py` and `src/ummaya/tools/lookup.py` for FR-017/018.
 **Performance Goals**: Full scenario suite (happy + degraded + quirk + span + edge) completes in **< 5 s wall-clock** (SC-8) and < 1.5 s CPU on a modern developer machine. No network I/O.
 **Constraints**:
   - Zero live API calls in CI (Constitution §IV; FR-004).
@@ -32,12 +32,12 @@ Re-baseline the Scenario 1 (route safety) end-to-end test onto the post-Epic 022
 |-----------|--------|-------|
 | I. Reference-Driven Development | PASS | Every design decision in `research.md` maps to a source from `docs/vision.md § Reference materials`. |
 | II. Fail-Closed Security | PASS | Test fixtures neutralize the startup guard via `monkeypatch.setenv` (FR-012) — they do **not** bypass it. Adapters register through `ToolRegistry.register()` so V1–V6 backstop runs. |
-| III. Pydantic v2 Strict Typing | PASS | No `Any` in new I/O; assertions use the frozen `LookupCollection` / `LookupTimeseries` / `LookupError` discriminated union from `kosax.tools.models`. |
+| III. Pydantic v2 Strict Typing | PASS | No `Any` in new I/O; assertions use the frozen `LookupCollection` / `LookupTimeseries` / `LookupError` discriminated union from `ummaya.tools.models`. |
 | IV. Government API Compliance | PASS | All HTTP intercepted by recorded fixtures; live variants gated behind `@pytest.mark.live` (FR-004). `rate_limit_per_minute` and `usage_tracker` are exercised once per adapter (FR-016). |
 | V. Policy Alignment | N/A | No policy change; KOROAD + KMA are `is_personal_data=False` so the full 7-step permission gauntlet is intentionally not exercised (spec §Overview, Epic #16). |
 | VI. Deferred Work Accountability | PASS | All six deferred items in `spec.md § Deferred to Future Work` have a tracking destination. The three `NEEDS TRACKING` rows are resolved below in the Deferred-Item Dispositions table; `/speckit-taskstoissues` will create the placeholder issues and back-fill. |
 
-**Post-Phase 1 re-check**: PASS — no new violations introduced by design artifacts. The two small production edits (span attributes `kosax.tool.outcome` / `kosax.tool.adapter`) satisfy a pre-existing spec 021 contract obligation and do not require their own ADR.
+**Post-Phase 1 re-check**: PASS — no new violations introduced by design artifacts. The two small production edits (span attributes `ummaya.tool.outcome` / `ummaya.tool.adapter`) satisfy a pre-existing spec 021 contract obligation and do not require their own ADR.
 
 ## Deferred-Item Dispositions (Phase 0 resolution)
 
@@ -68,10 +68,10 @@ specs/030-scenario1-route-safety-rebase/
 ### Source Code (repository root — existing layout; no new top-level dirs)
 
 ```text
-src/kosax/
+src/ummaya/
 ├── tools/
-│   ├── executor.py              # EDIT — add kosax.tool.outcome span attr (FR-017)
-│   ├── lookup.py                # EDIT — add kosax.tool.adapter span attr on fetch (FR-018)
+│   ├── executor.py              # EDIT — add ummaya.tool.outcome span attr (FR-017)
+│   ├── lookup.py                # EDIT — add ummaya.tool.adapter span attr on fetch (FR-018)
 │   ├── resolve_location.py      # UNCHANGED — already span-instrumented by executor
 │   ├── koroad/
 │   │   ├── accident_hazard_search.py  # UNCHANGED — year-quirk logic already in place
@@ -125,7 +125,7 @@ tests/
                +-----------------------------+
 ```
 
-- **Runner layer**: Existing `QueryEngine` (`src/kosax/engine/engine.py`) — no wrapper, no new runner class. The scenario is a normal `pytest` test that drives `QueryEngine.run()` with the scripted mock client. This is deliberately smaller surface than spec 012's `E2EFixtureBuilder` because the two-tool facade removes the fan-out composite.
+- **Runner layer**: Existing `QueryEngine` (`src/ummaya/engine/engine.py`) — no wrapper, no new runner class. The scenario is a normal `pytest` test that drives `QueryEngine.run()` with the scripted mock client. This is deliberately smaller surface than spec 012's `E2EFixtureBuilder` because the two-tool facade removes the fan-out composite.
 - **Turn-loop shape**: The Claude-Code-style async-generator tool loop (Layer 1) is unmodified. The tool loop "just works" once `MockLLMClient` replays the scripted `StreamEvent` sequence against a `ToolRegistry` that has both adapters registered and the two facade tools (`resolve_location`, `lookup`) exposed.
 - **Fixture-driven HTTP seam**: `httpx.AsyncClient.get` is patched at the test boundary. URL-pattern matching selects the right tape (Kakao vs KOROAD vs KMA). No `respx`, no `vcrpy` — existing in-repo pattern continues (RQ-1 in research.md).
 - **Observability**: OTel `TracerProvider` is configured in the test fixture with an `InMemorySpanExporter`. After `QueryEngine.run()` completes, the test inspects the exported span list. `OTEL_SDK_DISABLED=true` is set for FR-020's graceful-skip variant.
@@ -133,7 +133,7 @@ tests/
 ### Eval integration (how the scenario surfaces evidence)
 
 - **Run report**: Every scenario run produces an in-memory `RunReport` (new Pydantic v2 model in `tests/e2e/conftest.py`) holding: trigger query, tool-call order, stop reason, UsageTracker totals, span snapshot, final Korean response. The happy-path test asserts on this structured artifact, not on loose locals.
-- **JSON export (optional, for manual debugging)**: When `KOSAX_E2E_DUMP_DIR` is set, the scenario writes the `RunReport` as JSON to `$KOSAX_E2E_DUMP_DIR/030-<timestamp>.json` per the `contracts/eval-output.schema.json` contract. Unset by default — CI writes nothing to disk.
+- **JSON export (optional, for manual debugging)**: When `UMMAYA_E2E_DUMP_DIR` is set, the scenario writes the `RunReport` as JSON to `$UMMAYA_E2E_DUMP_DIR/030-<timestamp>.json` per the `contracts/eval-output.schema.json` contract. Unset by default — CI writes nothing to disk.
 - **DeepEval hook point**: `RunReport.final_response` is the canonical surface that a future DeepEval harness would read. We document the shape; we do **not** integrate DeepEval under this spec (deferred — see disposition above).
 - **Span extraction**: `RunReport.spans` is a typed snapshot of exported OTel spans filtered by name prefix `execute_tool`. This is the input to FR-017/018/019 assertions.
 
@@ -147,16 +147,16 @@ tests/e2e/conftest.py (ScenarioFixtureBuilder)
     ├── MockLLMClient (from tests/engine/conftest.py)
     │   └── 6-turn StreamEvent sequence (+ alt sequences for degraded/retry)
     │
-    ├── ContextBuilder (real — kosax.context.builder)
+    ├── ContextBuilder (real — ummaya.context.builder)
     │   └── System prompt includes resolve_location + lookup only
     │
-    ├── ToolRegistry (real — kosax.tools.registry)
+    ├── ToolRegistry (real — ummaya.tools.registry)
     │   ├── resolve_location        (facade; LLM-visible)
     │   ├── lookup                  (facade; LLM-visible)
     │   ├── koroad_accident_hazard_search  (adapter; lookup-fetch target only)
     │   └── kma_forecast_fetch              (adapter; lookup-fetch target only)
     │
-    ├── ToolExecutor (real — kosax.tools.executor)
+    ├── ToolExecutor (real — ummaya.tools.executor)
     │   └── RecoveryExecutor (real — retry + circuit breaker)
     │
     ├── OTel TracerProvider
@@ -183,10 +183,10 @@ tests/e2e/conftest.py (ScenarioFixtureBuilder)
 
 ### Production edits (minimal, scoped)
 
-1. **`src/kosax/tools/executor.py`**
-   - On the `execute_tool` span, add `span.set_attribute("kosax.tool.outcome", "ok" | "error")` exactly once in the `finally` block, derived from `_final_result.success`. This closes FR-017 for all callers (resolve_location, lookup, and any future facade).
-2. **`src/kosax/tools/lookup.py`**
-   - When `LookupInput.mode == "fetch"`, attach `span.set_attribute("kosax.tool.adapter", input.tool_id)` on the current span **only on the fetch path**. `search` and `resolve_location` calls MUST NOT carry this attribute (FR-018 gate).
+1. **`src/ummaya/tools/executor.py`**
+   - On the `execute_tool` span, add `span.set_attribute("ummaya.tool.outcome", "ok" | "error")` exactly once in the `finally` block, derived from `_final_result.success`. This closes FR-017 for all callers (resolve_location, lookup, and any future facade).
+2. **`src/ummaya/tools/lookup.py`**
+   - When `LookupInput.mode == "fetch"`, attach `span.set_attribute("ummaya.tool.adapter", input.tool_id)` on the current span **only on the fetch path**. `search` and `resolve_location` calls MUST NOT carry this attribute (FR-018 gate).
    - Use the current span (via `trace.get_current_span()`); do not create a second span.
 3. **No other production edits.** The `koroad_accident_hazard_search` year-quirk mapping, fail-closed defaults, and V1–V6 invariants are already in place (spec 025 landed in #676).
 

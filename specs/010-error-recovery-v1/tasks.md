@@ -8,14 +8,14 @@
 
 ## Phase 1: Setup (Package Structure)
 
-**Purpose**: Create the `src/kosax/recovery/` sub-package and `tests/recovery/` directory.
+**Purpose**: Create the `src/ummaya/recovery/` sub-package and `tests/recovery/` directory.
 No source code yet — just the file system skeleton that all later tasks populate.
 
-- [ ] T001 Create `src/kosax/recovery/__init__.py` with empty public export list
+- [ ] T001 Create `src/ummaya/recovery/__init__.py` with empty public export list
 - [ ] T002 Create `tests/recovery/__init__.py` to make test directory a package
 - [ ] T003 Create `tests/recovery/conftest.py` with shared fixtures: mock adapter factory (`make_adapter` yielding success/failure/timeout), mock `GovAPITool` with `cache_ttl_seconds` and `name_ko`, sample XML gateway response string, sample JSON error response bodies for each `DataGoKrErrorCode`
 
-**Checkpoint**: `src/kosax/recovery/` and `tests/recovery/` exist as importable packages. `conftest.py` fixtures are available.
+**Checkpoint**: `src/ummaya/recovery/` and `tests/recovery/` exist as importable packages. `conftest.py` fixtures are available.
 
 ---
 
@@ -26,11 +26,11 @@ breaker, executor) depends on `ClassifiedError` and `ErrorClass`. The `ToolResul
 literal is extended here because downstream modules reference the new values. No user story
 work begins until this phase is complete.
 
-- [ ] T004 Implement `DataGoKrErrorCode` (IntEnum) and `ErrorClass` (StrEnum) enums with all values from the spec in `src/kosax/recovery/classifier.py`
-- [ ] T005 Implement `ClassifiedError` frozen Pydantic v2 model (`error_class`, `is_retryable`, `raw_code`, `raw_message`, `source`) in `src/kosax/recovery/classifier.py`
-- [ ] T006 Implement `DataGoKrErrorClassifier` with `classify_response(status_code, body, content_type)` method: XML gateway detection via `str.startswith('<OpenAPI_ServiceResponse>')` + `str.find()` extraction of `returnReasonCode` (no XML parser per NFR-006), JSON `resultCode` parsing, HTTP status code classification (429 -> RATE_LIMIT, 401/403 -> AUTH_FAILURE, 502/503/504 -> TRANSIENT) in `src/kosax/recovery/classifier.py`
-- [ ] T007 Implement `DataGoKrErrorClassifier.classify_exception(exc)` method: `httpx.ConnectTimeout`/`ReadTimeout` -> TIMEOUT, `httpx.HTTPStatusError` -> classify by status code, all other exceptions -> APP_ERROR, in `src/kosax/recovery/classifier.py`
-- [ ] T008 Extend `ToolResult.error_type` literal in `src/kosax/tools/models.py` with four new values: `"timeout"`, `"circuit_open"`, `"api_error"`, `"auth_expired"` (FR-012)
+- [ ] T004 Implement `DataGoKrErrorCode` (IntEnum) and `ErrorClass` (StrEnum) enums with all values from the spec in `src/ummaya/recovery/classifier.py`
+- [ ] T005 Implement `ClassifiedError` frozen Pydantic v2 model (`error_class`, `is_retryable`, `raw_code`, `raw_message`, `source`) in `src/ummaya/recovery/classifier.py`
+- [ ] T006 Implement `DataGoKrErrorClassifier` with `classify_response(status_code, body, content_type)` method: XML gateway detection via `str.startswith('<OpenAPI_ServiceResponse>')` + `str.find()` extraction of `returnReasonCode` (no XML parser per NFR-006), JSON `resultCode` parsing, HTTP status code classification (429 -> RATE_LIMIT, 401/403 -> AUTH_FAILURE, 502/503/504 -> TRANSIENT) in `src/ummaya/recovery/classifier.py`
+- [ ] T007 Implement `DataGoKrErrorClassifier.classify_exception(exc)` method: `httpx.ConnectTimeout`/`ReadTimeout` -> TIMEOUT, `httpx.HTTPStatusError` -> classify by status code, all other exceptions -> APP_ERROR, in `src/ummaya/recovery/classifier.py`
+- [ ] T008 Extend `ToolResult.error_type` literal in `src/ummaya/tools/models.py` with four new values: `"timeout"`, `"circuit_open"`, `"api_error"`, `"auth_expired"` (FR-012)
 - [ ] T009 [P] Write unit tests for all 9 `data.go.kr` error codes, XML gateway detection, HTTP-level classification (429, 401/403, 502/503/504), transport exceptions, empty response body -> UNKNOWN, unknown `resultCode` -> UNKNOWN with `is_retryable=False`, non-httpx exceptions -> APP_ERROR in `tests/recovery/test_classifier.py`
 
 **Completion gate**: `uv run pytest tests/recovery/test_classifier.py` passes. All 9 `data.go.kr` error codes correctly classified. XML gateway detection works with `<OpenAPI_ServiceResponse>` prefix. SC-003 passes.
@@ -49,8 +49,8 @@ returned with `attempt_count == 3`.
 
 ### Implementation for User Story 1
 
-- [ ] T010 [US1] Implement `ToolRetryPolicy` frozen Pydantic v2 model (`max_retries`, `base_delay`, `multiplier`, `max_delay`, `retryable_classes`) with field validators in `src/kosax/recovery/retry.py`
-- [ ] T011 [US1] Implement `retry_tool_call()` async function with exponential backoff + full jitter (`delay = random.uniform(0, min(max_delay, base_delay * multiplier^attempt))`), foreground/background distinction (`min(1, policy.max_retries)` for background), WARNING log per retry attempt, returning `(result_dict | None, ClassifiedError | None, attempt_count)` tuple in `src/kosax/recovery/retry.py`
+- [ ] T010 [US1] Implement `ToolRetryPolicy` frozen Pydantic v2 model (`max_retries`, `base_delay`, `multiplier`, `max_delay`, `retryable_classes`) with field validators in `src/ummaya/recovery/retry.py`
+- [ ] T011 [US1] Implement `retry_tool_call()` async function with exponential backoff + full jitter (`delay = random.uniform(0, min(max_delay, base_delay * multiplier^attempt))`), foreground/background distinction (`min(1, policy.max_retries)` for background), WARNING log per retry attempt, returning `(result_dict | None, ClassifiedError | None, attempt_count)` tuple in `src/ummaya/recovery/retry.py`
 - [ ] T012 [P] [US1] Write unit tests for US1 acceptance scenarios: retry on 429, retry on timeout, no retry on 400, `max_retries=0`, foreground full budget (3 retries = 4 attempts), background `min(1, max_retries)` cap (1 retry = 2 attempts) in `tests/recovery/test_retry.py`
 
 **Completion gate**: `uv run pytest tests/recovery/test_retry.py` passes. SC-001 (retry with `attempt_count == 3`) and SC-004 (background max 2 attempts) pass.
@@ -69,9 +69,9 @@ transitions are atomic within the event loop.
 
 ### Implementation for User Story 2
 
-- [ ] T013 [US2] Implement `CircuitState` (StrEnum) and `CircuitBreakerConfig` frozen Pydantic v2 model (`failure_threshold`, `recovery_timeout`, `half_open_max_calls`) in `src/kosax/recovery/circuit_breaker.py`
-- [ ] T014 [US2] Implement `CircuitBreaker` class with `allow_request()`, `record_success()`, `record_failure()` methods and the three-state machine (CLOSED -> OPEN at threshold, OPEN -> HALF_OPEN after recovery_timeout, HALF_OPEN -> CLOSED on probe success, HALF_OPEN -> OPEN on probe failure) using `time.monotonic()` in `src/kosax/recovery/circuit_breaker.py`
-- [ ] T015 [US2] Implement `CircuitBreakerRegistry` class with lazy per-tool `CircuitBreaker` creation via `get(tool_id)` in `src/kosax/recovery/circuit_breaker.py`
+- [ ] T013 [US2] Implement `CircuitState` (StrEnum) and `CircuitBreakerConfig` frozen Pydantic v2 model (`failure_threshold`, `recovery_timeout`, `half_open_max_calls`) in `src/ummaya/recovery/circuit_breaker.py`
+- [ ] T014 [US2] Implement `CircuitBreaker` class with `allow_request()`, `record_success()`, `record_failure()` methods and the three-state machine (CLOSED -> OPEN at threshold, OPEN -> HALF_OPEN after recovery_timeout, HALF_OPEN -> CLOSED on probe success, HALF_OPEN -> OPEN on probe failure) using `time.monotonic()` in `src/ummaya/recovery/circuit_breaker.py`
+- [ ] T015 [US2] Implement `CircuitBreakerRegistry` class with lazy per-tool `CircuitBreaker` creation via `get(tool_id)` in `src/ummaya/recovery/circuit_breaker.py`
 - [ ] T016 [P] [US2] Write unit tests for US2 acceptance scenarios: CLOSED -> OPEN at threshold, OPEN -> HALF_OPEN after recovery timeout, HALF_OPEN -> CLOSED on success, HALF_OPEN -> OPEN on failure, failure counter reset on success, lazy CLOSED creation for new tool, concurrent HALF_OPEN probe limiting in `tests/recovery/test_circuit_breaker.py`
 
 **Completion gate**: `uv run pytest tests/recovery/test_circuit_breaker.py` passes. SC-002 (circuit breaker sub-1ms rejection) passes.
@@ -92,9 +92,9 @@ assert the message contains the tool's `name_ko` and mentions maintenance.
 
 ### Implementation for User Story 5 + 6
 
-- [ ] T017 [US5] Implement `CacheEntry` frozen Pydantic v2 model (`tool_id`, `arguments_hash`, `data`, `cached_at`, `ttl_seconds`) in `src/kosax/recovery/cache.py`
-- [ ] T018 [US5] Implement `ResponseCache` class with `get(tool_id, arguments_hash, ttl_seconds)`, `put(entry)`, and `compute_hash(arguments)` methods using `collections.OrderedDict` for LRU eviction with configurable `max_entries=256` in `src/kosax/recovery/cache.py`
-- [ ] T019 [US6] Implement `build_degradation_message(tool, error)` function with Korean-language templates for general failure, circuit open, service deprecated, and auth expired cases in `src/kosax/recovery/messages.py`
+- [ ] T017 [US5] Implement `CacheEntry` frozen Pydantic v2 model (`tool_id`, `arguments_hash`, `data`, `cached_at`, `ttl_seconds`) in `src/ummaya/recovery/cache.py`
+- [ ] T018 [US5] Implement `ResponseCache` class with `get(tool_id, arguments_hash, ttl_seconds)`, `put(entry)`, and `compute_hash(arguments)` methods using `collections.OrderedDict` for LRU eviction with configurable `max_entries=256` in `src/ummaya/recovery/cache.py`
+- [ ] T019 [US6] Implement `build_degradation_message(tool, error)` function with Korean-language templates for general failure, circuit open, service deprecated, and auth expired cases in `src/ummaya/recovery/messages.py`
 - [ ] T020 [P] [US5] Write unit tests for US5 acceptance scenarios: cache hit within TTL, cache miss after TTL expiry, no cache for `cache_ttl_seconds=0`, LRU eviction at `max_entries`, cache store on success, cache key is `(tool_id, SHA-256(args))` in `tests/recovery/test_cache.py`
 - [ ] T021 [P] [US6] Write unit tests for US6 acceptance scenarios: message contains `name_ko`, circuit open message mentions maintenance, deprecated API message mentions retirement, message is in Korean in `tests/recovery/test_messages.py`
 
@@ -114,9 +114,9 @@ a Korean degradation message.
 
 ### Implementation for User Story 3 + 4 (Orchestration)
 
-- [ ] T022 [US3/4] Implement `ErrorContext` frozen Pydantic v2 model (`attempt_count`, `elapsed_seconds`, `error_class`, `is_cached_fallback`, `circuit_state`, `tool_id`) and `RecoveryResult` frozen model (`tool_result`, `error_context`) in `src/kosax/recovery/executor.py`
-- [ ] T023 [US3/4] Implement `RecoveryExecutor` class with `execute(tool, adapter, validated_input, *, is_foreground=True) -> RecoveryResult` orchestrating: circuit breaker check -> retry loop -> cache fallback -> degradation message. Never raises. Logs WARNING per retry, ERROR when all paths exhausted. in `src/kosax/recovery/executor.py`
-- [ ] T024 [US3/4] Update `src/kosax/recovery/__init__.py` to export all public symbols: `RecoveryExecutor`, `RecoveryResult`, `ErrorContext`, `ToolRetryPolicy`, `CircuitBreaker`, `CircuitBreakerConfig`, `CircuitBreakerRegistry`, `DataGoKrErrorClassifier`, `ErrorClass`, `ClassifiedError`, `DataGoKrErrorCode`, `CircuitState`, `ResponseCache`, `CacheEntry`
+- [ ] T022 [US3/4] Implement `ErrorContext` frozen Pydantic v2 model (`attempt_count`, `elapsed_seconds`, `error_class`, `is_cached_fallback`, `circuit_state`, `tool_id`) and `RecoveryResult` frozen model (`tool_result`, `error_context`) in `src/ummaya/recovery/executor.py`
+- [ ] T023 [US3/4] Implement `RecoveryExecutor` class with `execute(tool, adapter, validated_input, *, is_foreground=True) -> RecoveryResult` orchestrating: circuit breaker check -> retry loop -> cache fallback -> degradation message. Never raises. Logs WARNING per retry, ERROR when all paths exhausted. in `src/ummaya/recovery/executor.py`
+- [ ] T024 [US3/4] Update `src/ummaya/recovery/__init__.py` to export all public symbols: `RecoveryExecutor`, `RecoveryResult`, `ErrorContext`, `ToolRetryPolicy`, `CircuitBreaker`, `CircuitBreakerConfig`, `CircuitBreakerRegistry`, `DataGoKrErrorClassifier`, `ErrorClass`, `ClassifiedError`, `DataGoKrErrorCode`, `CircuitState`, `ResponseCache`, `CacheEntry`
 - [ ] T025 [P] [US3/4] Write unit tests for RecoveryExecutor: retry -> success, retry -> exhaustion -> cache hit (is_cached_fallback=True), retry -> exhaustion -> cache miss -> degradation message, circuit breaker OPEN -> cache hit, circuit breaker OPEN -> no cache -> reject with error_type="circuit_open", foreground vs background attempt counts, first-attempt success (ErrorContext is None) in `tests/recovery/test_executor.py`
 
 **Completion gate**: `uv run pytest tests/recovery/test_executor.py` passes. RecoveryExecutor never raises on any error path. All orchestration scenarios produce correct `RecoveryResult`.
@@ -137,8 +137,8 @@ on first call, succeed on second, assert `query()` completes with `stop` event.
 
 ### Implementation for Integration
 
-- [ ] T026 [US1-6] Add optional `recovery_executor: RecoveryExecutor | None = None` parameter to `ToolExecutor.__init__()`, delegate step 5 of dispatch pipeline to `RecoveryExecutor.execute()` when present, preserve original path when absent (backward-compatible) in `src/kosax/tools/executor.py`
-- [ ] T027 [US7] Add `except StreamInterruptedError` clause to `query.py` try/except block around `ctx.llm_client.stream()`, with `_stream_retry_count` variable, single retry on first interruption, `error_unrecoverable` on second in `src/kosax/engine/query.py`
+- [ ] T026 [US1-6] Add optional `recovery_executor: RecoveryExecutor | None = None` parameter to `ToolExecutor.__init__()`, delegate step 5 of dispatch pipeline to `RecoveryExecutor.execute()` when present, preserve original path when absent (backward-compatible) in `src/ummaya/tools/executor.py`
+- [ ] T027 [US7] Add `except StreamInterruptedError` clause to `query.py` try/except block around `ctx.llm_client.stream()`, with `_stream_retry_count` variable, single retry on first interruption, `error_unrecoverable` on second in `src/ummaya/engine/query.py`
 - [ ] T028 [P] Write integration tests through `ToolExecutor.dispatch()` with `RecoveryExecutor` wired in: mock adapter fails twice then succeeds -> `ToolResult.success=True`; always-failing adapter with circuit breaker -> `error_type="circuit_open"`; backward compatibility test with `recovery_executor=None` in `tests/recovery/test_integration.py`
 - [ ] T029 [P] [US7] Write streaming retry tests: single interruption retried successfully, double interruption -> `error_unrecoverable`, partial content discarded on retry, `_stream_retry_count` resets between turns in `tests/recovery/test_streaming_retry.py`
 
@@ -162,12 +162,12 @@ test suites.
 
 **Purpose**: Pass all quality checks: type checking, linting, formatting, and coverage.
 
-- [ ] T032 [P] Run `uv run mypy src/kosax/recovery/ --strict` — fix any type errors
-- [ ] T033 [P] Run `uv run ruff check src/kosax/recovery/ tests/recovery/` and `uv run ruff format src/kosax/recovery/ tests/recovery/` — fix lint and format violations
-- [ ] T034 Run `uv run pytest tests/recovery/ --cov=src/kosax/recovery --cov-report=term-missing` — verify >= 80% coverage on `src/kosax/recovery/`
+- [ ] T032 [P] Run `uv run mypy src/ummaya/recovery/ --strict` — fix any type errors
+- [ ] T033 [P] Run `uv run ruff check src/ummaya/recovery/ tests/recovery/` and `uv run ruff format src/ummaya/recovery/ tests/recovery/` — fix lint and format violations
+- [ ] T034 Run `uv run pytest tests/recovery/ --cov=src/ummaya/recovery --cov-report=term-missing` — verify >= 80% coverage on `src/ummaya/recovery/`
 - [ ] T035 Verify all 8 success criteria (SC-001 through SC-008) pass end-to-end
 
-**Completion gate**: All quality checks pass. Coverage >= 80% on `src/kosax/recovery/`. SC-001 through SC-008 all pass. `uv run pytest tests/recovery/` is 100% green. No regressions in `tests/tools/` or `tests/engine/`.
+**Completion gate**: All quality checks pass. Coverage >= 80% on `src/ummaya/recovery/`. SC-001 through SC-008 all pass. `uv run pytest tests/recovery/` is 100% green. No regressions in `tests/tools/` or `tests/engine/`.
 
 ---
 
@@ -209,16 +209,16 @@ different files (`retry.py` vs `circuit_breaker.py` vs `cache.py` + `messages.py
 
 ```
 Teammate A — US1 Retry (Phase 3):
-  src/kosax/recovery/retry.py           (T010, T011)
+  src/ummaya/recovery/retry.py           (T010, T011)
   tests/recovery/test_retry.py           (T012)
 
 Teammate B — US2 Circuit Breaker (Phase 4):
-  src/kosax/recovery/circuit_breaker.py  (T013, T014, T015)
+  src/ummaya/recovery/circuit_breaker.py  (T013, T014, T015)
   tests/recovery/test_circuit_breaker.py  (T016)
 
 Teammate C — US5+6 Cache + Messages (Phase 5):
-  src/kosax/recovery/cache.py            (T017, T018)
-  src/kosax/recovery/messages.py         (T019)
+  src/ummaya/recovery/cache.py            (T017, T018)
+  src/ummaya/recovery/messages.py         (T019)
   tests/recovery/test_cache.py            (T020)
   tests/recovery/test_messages.py         (T021)
 ```
@@ -226,7 +226,7 @@ Teammate C — US5+6 Cache + Messages (Phase 5):
 All three teammates finish before Phase 6 (RecoveryExecutor) begins. Phase 6 touches
 `executor.py` and `__init__.py` which are not edited by Phases 3–5.
 
-Phase 7 integration touches `src/kosax/tools/executor.py` and `src/kosax/engine/query.py`
+Phase 7 integration touches `src/ummaya/tools/executor.py` and `src/ummaya/engine/query.py`
 (external modules), which are not edited by any prior recovery phase.
 
 ---

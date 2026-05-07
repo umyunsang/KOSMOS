@@ -25,7 +25,7 @@ def stub_tool() -> Any:
     """Build a minimal GovAPITool that satisfies registry invariants."""
     from pydantic import BaseModel, ConfigDict, Field
 
-    from kosax.tools.models import GovAPITool
+    from ummaya.tools.models import GovAPITool
 
     class _LookupInput(BaseModel):
         model_config = ConfigDict(frozen=True, extra="forbid")
@@ -65,7 +65,7 @@ class TestInstallToInvoke:
     """T018 — installed plugin tool surfaces in core_tools + export_core_tools_openai."""
 
     def test_registered_plugin_appears_in_core_tools(self, stub_tool: Any) -> None:
-        from kosax.tools.registry import ToolRegistry
+        from ummaya.tools.registry import ToolRegistry
 
         registry = ToolRegistry()
         registry.register(stub_tool)
@@ -76,7 +76,7 @@ class TestInstallToInvoke:
         )
 
     def test_registered_plugin_appears_in_export_core_tools_openai(self, stub_tool: Any) -> None:
-        from kosax.tools.registry import ToolRegistry
+        from ummaya.tools.registry import ToolRegistry
 
         registry = ToolRegistry()
         registry.register(stub_tool)
@@ -90,7 +90,7 @@ class TestInstallToInvoke:
 
     def test_inactive_plugin_excluded_from_core_tools(self, stub_tool: Any) -> None:
         """R-3+R-4 verdict: _inactive shadow set filters core_tools."""
-        from kosax.tools.registry import ToolRegistry
+        from ummaya.tools.registry import ToolRegistry
 
         registry = ToolRegistry()
         registry.register(stub_tool)
@@ -103,7 +103,7 @@ class TestInstallToInvoke:
         )
 
     def test_inactive_plugin_excluded_from_openai_export(self, stub_tool: Any) -> None:
-        from kosax.tools.registry import ToolRegistry
+        from ummaya.tools.registry import ToolRegistry
 
         registry = ToolRegistry()
         registry.register(stub_tool)
@@ -117,7 +117,7 @@ class TestInstallToInvoke:
 
     def test_deregister_removes_plugin_entirely(self, stub_tool: Any) -> None:
         """Spec 1979 ToolRegistry.deregister — full removal (used by uninstall_plugin)."""
-        from kosax.tools.registry import ToolRegistry
+        from ummaya.tools.registry import ToolRegistry
 
         registry = ToolRegistry()
         registry.register(stub_tool)

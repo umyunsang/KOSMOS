@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""KOSAX plugin adapter for my_plugin.
+"""UMMAYA plugin adapter for my_plugin.
 
 Layer 1 (green) — read-only public data.
 """
@@ -17,11 +17,11 @@ def _build_tool() -> Any:
     """Construct the GovAPITool registry entry on first access.
 
     Imported lazily so the scaffold's tests (which do not require the
-    KOSAX host) can run without ``kosax`` installed. The host triggers
+    UMMAYA host) can run without ``ummaya`` installed. The host triggers
     construction at install time when reading the module-level ``TOOL``
     attribute via PEP 562.
     """
-    from kosax.tools.models import GovAPITool
+    from ummaya.tools.models import GovAPITool
 
     return GovAPITool(
         id="plugin.my_plugin.lookup",
@@ -49,7 +49,7 @@ _TOOL_CACHE: Any = None
 
 def __getattr__(name: str) -> Any:
     """PEP 562: provide lazy module-level ``TOOL`` so this file imports
-    without ``kosax`` being available (e.g. scaffold tests)."""
+    without ``ummaya`` being available (e.g. scaffold tests)."""
     global _TOOL_CACHE
     if name == "TOOL":
         if _TOOL_CACHE is None:

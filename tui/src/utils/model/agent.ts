@@ -1,4 +1,4 @@
-// KOSAX Epic #2112: legacy subagent model-selection logic collapsed. KOSAX
+// UMMAYA Epic #2112: legacy subagent model-selection logic collapsed. UMMAYA
 // runs a single FriendliAI K-EXAONE deployment, so subagents always inherit
 // that model via getRuntimeMainLoopModel. Bedrock region-prefix carry-over is
 // preserved as a stub; getAgentModelOptions exposes only the inherit option.
@@ -24,7 +24,7 @@ export function getDefaultSubagentModel(): string {
 /**
  * Get the effective model string for an agent.
  *
- * KOSAX: single-fixed FriendliAI provider; cross-region inference prefixes are
+ * UMMAYA: single-fixed FriendliAI provider; cross-region inference prefixes are
  * dead, alias-based downgrades are dead. Always resolves through
  * parseUserSpecifiedModel which collapses every input to K-EXAONE.
  */
@@ -34,8 +34,8 @@ export function getAgentModel(
   toolSpecifiedModel?: ModelAlias,
   permissionMode?: PermissionMode,
 ): string {
-  if (process.env.KOSAX_SUBAGENT_MODEL) {
-    return parseUserSpecifiedModel(process.env.KOSAX_SUBAGENT_MODEL)
+  if (process.env.UMMAYA_SUBAGENT_MODEL) {
+    return parseUserSpecifiedModel(process.env.UMMAYA_SUBAGENT_MODEL)
   }
 
   if (toolSpecifiedModel) {
@@ -62,7 +62,7 @@ export function getAgentModelDisplay(model: string | undefined): string {
 }
 
 /**
- * Get available model options for agents. KOSAX exposes only the inherit
+ * Get available model options for agents. UMMAYA exposes only the inherit
  * choice — every concrete alias resolves to the same K-EXAONE model anyway.
  */
 export function getAgentModelOptions(): AgentModelOption[] {

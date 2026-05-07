@@ -33,7 +33,7 @@ core/situational partitioning, and a context budget guard.
 arXiv 2601.06007 ("Don't Break the Cache") empirically demonstrates that
 placing dynamic content (tool results, per-turn attachments) *after* the stable
 prefix saves 41–80% of prompt encoding cost in sessions with 30–50+ tool calls.
-This finding directly maps to the KOSAX tool registry partition already in
+This finding directly maps to the UMMAYA tool registry partition already in
 place (`is_core` / situational split in `ToolRegistry`). `ContextBuilder` must
 enforce that partition ordering as an invariant, not a convention.
 
@@ -151,7 +151,7 @@ asserts that `QueryEngine` raises (or yields a stop event) when the guard fires.
 
 ### User Story 5 — Reminder Cadence (Priority: P3)
 
-✅ Implemented in Phase 1 — `src/kosax/context/attachments.py` (`AttachmentCollector._reminder_section`, lines 135–154), `src/kosax/context/models.py` (`SystemPromptConfig.reminder_cadence`, lines 31–56). Tests: `tests/context/test_attachments.py` (`TestAttachmentReminderCadenceStress`, `test_reminder_fires_at_cadence`, `test_reminder_skips_turn_0`, `test_reminder_skips_non_cadence`), `tests/context/test_models.py` (`test_reminder_cadence_zero_raises`, `test_reminder_cadence_negative_raises`).
+✅ Implemented in Phase 1 — `src/ummaya/context/attachments.py` (`AttachmentCollector._reminder_section`, lines 135–154), `src/ummaya/context/models.py` (`SystemPromptConfig.reminder_cadence`, lines 31–56). Tests: `tests/context/test_attachments.py` (`TestAttachmentReminderCadenceStress`, `test_reminder_fires_at_cadence`, `test_reminder_skips_turn_0`, `test_reminder_skips_non_cadence`), `tests/context/test_models.py` (`test_reminder_cadence_zero_raises`, `test_reminder_cadence_negative_raises`).
 
 In a long session, the LLM tends to forget earlier unfinished tasks and
 authentication context. Every N turns the system injects a structured reminder
@@ -238,7 +238,7 @@ format already consumed by `QueryEngine.query()` via
 - **NFR-002**: `ContextBuilder` MUST be stateless between turns; all session state is passed in at call time. No instance variables that accumulate per-turn state.
 - **NFR-003**: The system message content MUST be identical across calls with the same `SystemPromptConfig` so the FriendliAI/K-EXAONE prompt cache is not invalidated between turns.
 - **NFR-004**: All logging MUST use `logging.getLogger(__name__)` at appropriate levels; no `print()` statements.
-- **NFR-005**: The module MUST be located at `src/kosax/context/` (new sub-package), keeping it isolated from `engine/` and `llm/` to respect layer separation.
+- **NFR-005**: The module MUST be located at `src/ummaya/context/` (new sub-package), keeping it isolated from `engine/` and `llm/` to respect layer separation.
 
 ---
 
@@ -318,7 +318,7 @@ Per constitution § I, every design decision must trace to a source in
 | Core tools in prefix, situational tools in suffix | arXiv 2601.06007 ("Don't Break the Cache") + `docs/vision.md § Layer 2 — Prompt cache partitioning` |
 | `ContextBuilder` stateless, called per turn | Claude Code reconstructed (`ChinaSiro/claude-code-sourcemap`) — context assembly is pure per-turn function |
 | Frozen Pydantic v2 models for all context objects | Constitution § III; Pydantic AI schema-driven pattern |
-| `estimate_tokens()` reuse for budget accounting | Existing `kosax.engine.tokens` module — consistency with `PreprocessingPipeline` |
+| `estimate_tokens()` reuse for budget accounting | Existing `ummaya.engine.tokens` module — consistency with `PreprocessingPipeline` |
 | Reminder cadence every N turns | `docs/vision.md § Layer 5 — Reminder cadence` |
 | `api_health` as injected dependency (not fetched internally) | Constitution § IV — never call live APIs from within a non-adapter module |
-| `src/kosax/context/` new sub-package | `AGENTS.md § Directory layout` — layer separation |
+| `src/ummaya/context/` new sub-package | `AGENTS.md § Directory layout` — layer separation |

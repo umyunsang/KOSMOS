@@ -8,7 +8,7 @@ from datetime import UTC, datetime
 import pytest
 from pydantic import ValidationError
 
-from kosax.observability.events import ObservabilityEvent
+from ummaya.observability.events import ObservabilityEvent
 
 # ---------------------------------------------------------------------------
 # Defaults

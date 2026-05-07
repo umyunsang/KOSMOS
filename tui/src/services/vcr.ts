@@ -5,7 +5,7 @@ import isPlainObject from 'lodash-es/isPlainObject.js'
 import mapValues from 'lodash-es/mapValues.js'
 import { dirname, join } from 'path'
 import { addToTotalSessionCost } from 'src/cost-tracker.js'
-// KOSAX: utils/modelCost.js deleted by Spec 1633 P1. calculateUSDCost → 0 (cost tracking not applicable).
+// UMMAYA: utils/modelCost.js deleted by Spec 1633 P1. calculateUSDCost → 0 (cost tracking not applicable).
 const calculateUSDCost = (_model: string, _usage: unknown): number => 0
 import type {
   AssistantMessage,

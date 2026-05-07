@@ -22,7 +22,7 @@ This checklist validates `spec.md` against Spec Kit quality gates before plan/ta
 ## Requirement Completeness
 
 - [x] No [NEEDS CLARIFICATION] markers remain
-  - Validation: `grep -n "NEEDS CLARIFICATION" spec.md` returns zero matches. All ambiguities resolved at spec-write time using KOSAX norms (Apache-2.0 purity, fail-closed defaults, Pydantic v2 strict, NFR-003 cache stability).
+  - Validation: `grep -n "NEEDS CLARIFICATION" spec.md` returns zero matches. All ambiguities resolved at spec-write time using UMMAYA norms (Apache-2.0 purity, fail-closed defaults, Pydantic v2 strict, NFR-003 cache stability).
 - [x] Requirements are testable and unambiguous
   - Every FR names a concrete enforcement point (module path, function name, or decision outcome). Test fixtures in Validation Scenarios provide deterministic inputs for each FR cluster.
 - [x] Success criteria are measurable
@@ -56,7 +56,7 @@ This checklist validates `spec.md` against Spec Kit quality gates before plan/ta
 - [x] Span boundary respected
   - `gen_ai.safety.event` is the only new attribute key proposed to #501. Spec explicitly forbids raw PII or raw tool-output bytes in span attributes.
 - [x] Env key ownership respected
-  - 4 `KOSAX_SAFETY_*` keys proposed as a follow-up note to #468; spec forbids hand-editing `docs/configuration.md` in this epic.
+  - 4 `UMMAYA_SAFETY_*` keys proposed as a follow-up note to #468; spec forbids hand-editing `docs/configuration.md` in this epic.
 - [x] LiteLLM config ownership respected
   - Hook registration is code-only; spec forbids modifying `infra/litellm/config.yaml` in this epic.
 - [x] Permission layer boundary respected
@@ -83,7 +83,7 @@ This checklist validates `spec.md` against Spec Kit quality gates before plan/ta
 ## Single Source of Truth
 
 - [x] `_PII_PATTERNS` canonical location defined
-  - `src/kosax/safety/_patterns.py` is the single source. `step3_params.py` imports from it.
+  - `src/ummaya/safety/_patterns.py` is the single source. `step3_params.py` imports from it.
 - [x] Duplicate-elimination verification planned
   - FR-002 requires `grep -rn "_PII_PATTERNS" src/` to return matches only in `_patterns.py` and import sites post-implementation.
 

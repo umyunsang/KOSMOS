@@ -1,8 +1,8 @@
 """Smoke test to verify test infrastructure works."""
 
 
-def test_import_kosax() -> None:
-    """Verify the kosax package is importable."""
-    import kosax
+def test_import_ummaya() -> None:
+    """Verify the ummaya package is importable."""
+    import ummaya
 
-    assert kosax.__doc__ is not None
+    assert ummaya.__doc__ is not None

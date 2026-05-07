@@ -1,9 +1,9 @@
 // Source: .references/claude-code-sourcemap/restored-src/src/utils/theme.ts (Claude Code 2.1.88, research-use)
-// KOSAX 브랜드 토큰으로 리네이밍됨 (ADR-006 A-9)
+// UMMAYA 브랜드 토큰으로 리네이밍됨 (ADR-006 A-9)
 
 /**
  * ThemeToken is the canonical set of named color slots used throughout the
- * KOSAX TUI.  It binds to the KOSAX brand metaphor (orbital core, orbital
+ * UMMAYA TUI.  It binds to the UMMAYA brand metaphor (orbital core, orbital
  * ring, wordmark, subtitle, ministry satellites) per ADR-006 A-9; keys that
  * are tied to harness semantics (subagent palette, diff colours, rainbow
  * shimmer) are retained verbatim from the upstream source so that lifted
@@ -12,21 +12,21 @@
  * Contract: specs/035-onboarding-brand-port/contracts/brand-token-surface.md
  * Grep gate: specs/034-tui-component-catalog/contracts/grep-gate-rules.md § 4
  *
- * The "default" KOSAX theme maps to the upstream "dark" palette.
+ * The "default" UMMAYA theme maps to the upstream "dark" palette.
  */
 export type ThemeToken = {
   autoAccept: string
   bashBorder: string
-  // KOSAX metaphor — orbital core (asterisk glyph)
-  kosaxCore: string
-  kosaxCoreShimmer: string
-  // KOSAX metaphor — orbital ring (ADR-006 A-9 composition)
+  // UMMAYA metaphor — orbital core (asterisk glyph)
+  ummayaCore: string
+  ummayaCoreShimmer: string
+  // UMMAYA metaphor — orbital ring (ADR-006 A-9 composition)
   orbitalRing: string
   orbitalRingShimmer: string
-  // KOSAX wordmark + subtitle
+  // UMMAYA wordmark + subtitle
   wordmark: string
   subtitle: string
-  // KOSAX ministry satellites (Phase 1 ministries)
+  // UMMAYA ministry satellites (Phase 1 ministries)
   agentSatelliteKoroad: string
   agentSatelliteKma: string
   agentSatelliteHira: string

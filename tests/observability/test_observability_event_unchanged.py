@@ -23,11 +23,11 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from kosax.observability.event_logger import (
+from ummaya.observability.event_logger import (
     _ALLOWED_METADATA_KEYS,
     ObservabilityEventLogger,
 )
-from kosax.observability.events import ObservabilityEvent
+from ummaya.observability.events import ObservabilityEvent
 
 # ---------------------------------------------------------------------------
 # Expected whitelist (single source of truth in this guard)
@@ -66,7 +66,7 @@ def _emit_with_mixed_metadata(
         def emit(self, record: logging.LogRecord) -> None:
             captured.append(record.getMessage())
 
-    backing_logger = logging.getLogger("kosax.events.test_guard")
+    backing_logger = logging.getLogger("ummaya.events.test_guard")
     backing_logger.setLevel(logging.DEBUG)
     handler = _Handler()
     backing_logger.addHandler(handler)
@@ -127,12 +127,12 @@ class TestAllowedMetadataKeysConstant:
         snapshot_before = frozenset(_ALLOWED_METADATA_KEYS)
 
         monkeypatch.setenv("OTEL_SDK_DISABLED", "true")
-        from kosax.observability.tracing import TracingSettings, setup_tracing
+        from ummaya.observability.tracing import TracingSettings, setup_tracing
 
         setup_tracing(TracingSettings(disabled=True))
 
         # Re-import to pick up any potential modification
-        from kosax.observability.event_logger import (
+        from ummaya.observability.event_logger import (
             _ALLOWED_METADATA_KEYS as after_keys,  # noqa: N811
         )
 
@@ -170,7 +170,7 @@ class TestObservabilityEventSchemaUnchanged:
         snapshot_before = _event_field_snapshot(ObservabilityEvent)
 
         monkeypatch.setenv("OTEL_SDK_DISABLED", "true")
-        from kosax.observability.tracing import TracingSettings, setup_tracing
+        from ummaya.observability.tracing import TracingSettings, setup_tracing
 
         setup_tracing(TracingSettings(disabled=True))
 
@@ -224,7 +224,7 @@ class TestObservabilityEventLoggerSignatureUnchanged:
         sig_before = str(inspect.signature(ObservabilityEventLogger.emit))
 
         monkeypatch.setenv("OTEL_SDK_DISABLED", "true")
-        from kosax.observability.tracing import TracingSettings, setup_tracing
+        from ummaya.observability.tracing import TracingSettings, setup_tracing
 
         setup_tracing(TracingSettings(disabled=True))
 
@@ -334,7 +334,7 @@ class TestMetadataWhitelistEnforcement:
                 if record.levelno == logging.INFO:
                     captured_before.append(record.getMessage())
 
-        before_logger = logging.getLogger("kosax.events.before_guard")
+        before_logger = logging.getLogger("ummaya.events.before_guard")
         before_logger.setLevel(logging.DEBUG)
         h_before = _BeforeHandler()
         before_logger.addHandler(h_before)
@@ -345,7 +345,7 @@ class TestMetadataWhitelistEnforcement:
 
         # --- call setup_tracing (no-op) ---
         monkeypatch.setenv("OTEL_SDK_DISABLED", "true")
-        from kosax.observability.tracing import TracingSettings, setup_tracing
+        from ummaya.observability.tracing import TracingSettings, setup_tracing
 
         setup_tracing(TracingSettings(disabled=True))
 
@@ -356,7 +356,7 @@ class TestMetadataWhitelistEnforcement:
                 if record.levelno == logging.INFO:
                     captured_after.append(record.getMessage())
 
-        after_logger = logging.getLogger("kosax.events.after_guard")
+        after_logger = logging.getLogger("ummaya.events.after_guard")
         after_logger.setLevel(logging.DEBUG)
         h_after = _AfterHandler()
         after_logger.addHandler(h_after)

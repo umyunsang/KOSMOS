@@ -22,9 +22,9 @@ layer: "Layer 2 — Tool System"
 **Purpose**: Create all empty package directories and `__init__.py` files so Phase 2+ tasks can work
 in their target paths without conflict. No logic; no dependencies.
 
-- [ ] T001 [P] Create `src/kosax/tools/koroad/__init__.py` (empty package marker)
-- [ ] T002 [P] Create `src/kosax/tools/kma/__init__.py` (empty package marker)
-- [ ] T003 [P] Create `src/kosax/tools/composite/__init__.py` (empty package marker)
+- [ ] T001 [P] Create `src/ummaya/tools/koroad/__init__.py` (empty package marker)
+- [ ] T002 [P] Create `src/ummaya/tools/kma/__init__.py` (empty package marker)
+- [ ] T003 [P] Create `src/ummaya/tools/composite/__init__.py` (empty package marker)
 - [ ] T004 [P] Create `tests/tools/koroad/__init__.py` (empty package marker)
 - [ ] T005 [P] Create `tests/tools/kma/__init__.py` (empty package marker)
 - [ ] T006 [P] Create `tests/tools/composite/__init__.py` (empty package marker)
@@ -43,9 +43,9 @@ the phase itself has no dependency on any other work.
 
 **CRITICAL**: No user story task can begin until T009 through T012 are all complete.
 
-- [ ] T009 Add `ConfigurationError` class and `_require_env()` helper to `src/kosax/tools/errors.py`
-- [ ] T010 Implement `SidoCode`, `GugunCode`, `SearchYearCd`, `HazardType` enums and `SIDO_GUGUN_MAP` validation dict in `src/kosax/tools/koroad/code_tables.py` (depends on T001)
-- [ ] T011 Implement `REGION_TO_GRID` lookup dict and `lookup_grid()` utility in `src/kosax/tools/kma/grid_coords.py` with minimum 17 metro city centroids (depends on T002)
+- [ ] T009 Add `ConfigurationError` class and `_require_env()` helper to `src/ummaya/tools/errors.py`
+- [ ] T010 Implement `SidoCode`, `GugunCode`, `SearchYearCd`, `HazardType` enums and `SIDO_GUGUN_MAP` validation dict in `src/ummaya/tools/koroad/code_tables.py` (depends on T001)
+- [ ] T011 Implement `REGION_TO_GRID` lookup dict and `lookup_grid()` utility in `src/ummaya/tools/kma/grid_coords.py` with minimum 17 metro city centroids (depends on T002)
 - [ ] T012 [P] Write unit tests for `SidoCode`/`GugunCode`/`SearchYearCd` enum members and `SIDO_GUGUN_MAP` correctness in `tests/tools/koroad/test_code_tables.py` (depends on T004, T010)
 - [ ] T013 [P] Write unit tests for `lookup_grid()` covering known grid points and unknown region fallback in `tests/tools/kma/test_grid_coords.py` (depends on T005, T011)
 
@@ -64,10 +64,10 @@ normalizes single-item vs. array responses, and validates input enums against th
 **Depends on**: T001, T004, T009, T010 (Phase 1 + Phase 2 completion)
 **Parallel-safe with**: Phase 3 tasks for US2 and US3 (different subpackages, no shared files)
 
-- [ ] T014 [P] [US1] Implement `AccidentHotspot`, `KoroadAccidentSearchInput` (with cross-validator for legacy sido codes), and `KoroadAccidentSearchOutput` Pydantic v2 models in `src/kosax/tools/koroad/koroad_accident_search.py`
-- [ ] T015 [US1] Implement `_normalize_items()` helper and `_parse_response()` function in `src/kosax/tools/koroad/koroad_accident_search.py` (depends on T014)
-- [ ] T016 [US1] Implement `_call()` async adapter function with httpx client injection, `_require_env("KOSAX_KOROAD_API_KEY")` key loading, XML fallback guard, and `resultCode != "00"` error mapping in `src/kosax/tools/koroad/koroad_accident_search.py` (depends on T015)
-- [ ] T017 [US1] Declare `KOROAD_ACCIDENT_SEARCH_TOOL` as a `GovAPITool` instance and implement `register(registry, executor)` helper in `src/kosax/tools/koroad/koroad_accident_search.py` (depends on T016)
+- [ ] T014 [P] [US1] Implement `AccidentHotspot`, `KoroadAccidentSearchInput` (with cross-validator for legacy sido codes), and `KoroadAccidentSearchOutput` Pydantic v2 models in `src/ummaya/tools/koroad/koroad_accident_search.py`
+- [ ] T015 [US1] Implement `_normalize_items()` helper and `_parse_response()` function in `src/ummaya/tools/koroad/koroad_accident_search.py` (depends on T014)
+- [ ] T016 [US1] Implement `_call()` async adapter function with httpx client injection, `_require_env("UMMAYA_KOROAD_API_KEY")` key loading, XML fallback guard, and `resultCode != "00"` error mapping in `src/ummaya/tools/koroad/koroad_accident_search.py` (depends on T015)
+- [ ] T017 [US1] Declare `KOROAD_ACCIDENT_SEARCH_TOOL` as a `GovAPITool` instance and implement `register(registry, executor)` helper in `src/ummaya/tools/koroad/koroad_accident_search.py` (depends on T016)
 - [ ] T018 [P] [US1] Create recorded fixture `tests/fixtures/koroad/koroad_accident_search.json` (realistic synthetic JSON for sido=11, gugun=680 with 3+ hotspot records; no PII)
 - [ ] T019 [US1] Write `test_happy_path_from_fixture()`, `test_error_path_bad_input()` (sido=99), `test_missing_api_key()`, and `@pytest.mark.live` test in `tests/tools/koroad/test_koroad_accident_search.py` (depends on T014, T016, T018)
 - [ ] T020 [US1] Write `test_legacy_sido_cross_validator()`: verify `ValidationError` is raised for sido=42 + 2023+ year code, and sido=51 passes cleanly in `tests/tools/koroad/test_koroad_accident_search.py` (depends on T014, T019)
@@ -88,10 +88,10 @@ cancelled warnings (`cancel=1`), and handles empty-string / null `items` respons
 **Depends on**: T002, T005, T009, T011 (Phase 1 + Phase 2 completion)
 **Parallel-safe with**: Phase 3 (US1) and Phase 5 (US3) tasks
 
-- [ ] T022 [P] [US2] Implement `WeatherWarning`, `KmaWeatherAlertStatusInput` (with `numOfRows` defaulting to 2000), and `KmaWeatherAlertStatusOutput` Pydantic v2 models in `src/kosax/tools/kma/kma_weather_alert_status.py`
-- [ ] T023 [US2] Implement `_normalize_items()` helper that treats `items=""`, `items=None`, and `items=[]` all as empty list, and filters `cancel=1` records before building output in `src/kosax/tools/kma/kma_weather_alert_status.py` (depends on T022)
-- [ ] T024 [US2] Implement `_call()` async adapter function with httpx client injection, `_require_env("KOSAX_DATA_GO_KR_KEY")` key loading, and `resultCode != "00"` error mapping in `src/kosax/tools/kma/kma_weather_alert_status.py` (depends on T023)
-- [ ] T025 [US2] Declare `KMA_WEATHER_ALERT_STATUS_TOOL` as a `GovAPITool` instance and implement `register(registry, executor)` helper in `src/kosax/tools/kma/kma_weather_alert_status.py` (depends on T024)
+- [ ] T022 [P] [US2] Implement `WeatherWarning`, `KmaWeatherAlertStatusInput` (with `numOfRows` defaulting to 2000), and `KmaWeatherAlertStatusOutput` Pydantic v2 models in `src/ummaya/tools/kma/kma_weather_alert_status.py`
+- [ ] T023 [US2] Implement `_normalize_items()` helper that treats `items=""`, `items=None`, and `items=[]` all as empty list, and filters `cancel=1` records before building output in `src/ummaya/tools/kma/kma_weather_alert_status.py` (depends on T022)
+- [ ] T024 [US2] Implement `_call()` async adapter function with httpx client injection, `_require_env("UMMAYA_DATA_GO_KR_KEY")` key loading, and `resultCode != "00"` error mapping in `src/ummaya/tools/kma/kma_weather_alert_status.py` (depends on T023)
+- [ ] T025 [US2] Declare `KMA_WEATHER_ALERT_STATUS_TOOL` as a `GovAPITool` instance and implement `register(registry, executor)` helper in `src/ummaya/tools/kma/kma_weather_alert_status.py` (depends on T024)
 - [ ] T026 [P] [US2] Create recorded fixture `tests/fixtures/kma/kma_weather_alert_status.json` (realistic synthetic JSON with 2 active warnings and 1 cancelled warning; no PII)
 - [ ] T027 [US2] Write `test_happy_path_from_fixture()`, `test_empty_warnings_no_error()` (items="" response), `test_cancelled_warnings_filtered()`, `test_missing_api_key()`, and `@pytest.mark.live` test in `tests/tools/kma/test_kma_weather_alert_status.py` (depends on T022, T024, T026)
 
@@ -111,10 +111,10 @@ previous hour's `base_time` on first-call failure (EC-002).
 **Depends on**: T002, T005, T009, T011 (Phase 1 + Phase 2 completion)
 **Parallel-safe with**: Phase 3 (US1) and Phase 4 (US2) tasks
 
-- [ ] T028 [P] [US3] Implement `KmaCurrentObservationInput` (with `base_time` normalizer stripping minutes to nearest hour) and `KmaCurrentObservationOutput` (with `rn1` field validator normalizing `"-"`, `None`, `""` to `0.0`) Pydantic v2 models in `src/kosax/tools/kma/kma_current_observation.py`
-- [ ] T029 [US3] Implement `_pivot_rows()` helper that converts `[{category, obsrValue}, ...]` list into a flat dict keyed by category in `src/kosax/tools/kma/kma_current_observation.py` (depends on T028)
-- [ ] T030 [US3] Implement `_call()` async adapter function with httpx client injection, `_require_env("KOSAX_DATA_GO_KR_KEY")` key loading, `resultCode != "00"` error mapping, and one-time retry with previous hour's `base_time` (EC-002) in `src/kosax/tools/kma/kma_current_observation.py` (depends on T029)
-- [ ] T031 [US3] Declare `KMA_CURRENT_OBSERVATION_TOOL` as a `GovAPITool` instance and implement `register(registry, executor)` helper in `src/kosax/tools/kma/kma_current_observation.py` (depends on T030)
+- [ ] T028 [P] [US3] Implement `KmaCurrentObservationInput` (with `base_time` normalizer stripping minutes to nearest hour) and `KmaCurrentObservationOutput` (with `rn1` field validator normalizing `"-"`, `None`, `""` to `0.0`) Pydantic v2 models in `src/ummaya/tools/kma/kma_current_observation.py`
+- [ ] T029 [US3] Implement `_pivot_rows()` helper that converts `[{category, obsrValue}, ...]` list into a flat dict keyed by category in `src/ummaya/tools/kma/kma_current_observation.py` (depends on T028)
+- [ ] T030 [US3] Implement `_call()` async adapter function with httpx client injection, `_require_env("UMMAYA_DATA_GO_KR_KEY")` key loading, `resultCode != "00"` error mapping, and one-time retry with previous hour's `base_time` (EC-002) in `src/ummaya/tools/kma/kma_current_observation.py` (depends on T029)
+- [ ] T031 [US3] Declare `KMA_CURRENT_OBSERVATION_TOOL` as a `GovAPITool` instance and implement `register(registry, executor)` helper in `src/ummaya/tools/kma/kma_current_observation.py` (depends on T030)
 - [ ] T032 [P] [US3] Create recorded fixture `tests/fixtures/kma/kma_current_observation.json` (realistic synthetic JSON for nx=61, ny=125 with 8 category rows including RN1="-"; no PII)
 - [ ] T033 [US3] Write `test_happy_path_from_fixture()`, `test_rn1_dash_normalizes_to_zero()`, `test_base_time_rounded_down()`, `test_base_time_retry_on_no_data()` (mock first call returning `resultCode != "00"`, assert second call uses previous hour; covers EC-002), `test_missing_api_key()`, and `@pytest.mark.live` test in `tests/tools/kma/test_kma_current_observation.py` (depends on T028, T030, T032)
 
@@ -134,10 +134,10 @@ returns a Korean-language `summary` string.
 **Depends on**: T017 (US1 complete), T025 (US2 complete — required by T036 for kma_alert inner call), T031 (US3 complete)
 **NOT parallel-safe with Phase 3, 4, or 5** — must wait for all three leaf adapters.
 
-- [ ] T034 [US4] Implement `RoadRiskScoreInput` and `RoadRiskScoreOutput` Pydantic v2 models in `src/kosax/tools/composite/road_risk_score.py`; `RoadRiskScoreInput` defaults `search_year_cd` to `SearchYearCd.GENERAL_2024` when `None`
-- [ ] T035 [US4] Implement `_compute_risk_score()` pure function applying the scoring algorithm (hotspot_count weights 0.5, weather weights 0.5; `min(1.0, base_score)`) and `_risk_level()` classifier (`[0,0.3)=low`, `[0.3,0.6)=moderate`, `[0.6,0.8)=high`, `[0.8,1.0]=severe`) in `src/kosax/tools/composite/road_risk_score.py` (depends on T034)
-- [ ] T036 [US4] Implement `_call()` async composite adapter: import `_call` from all three inner adapters, fan-out with `asyncio.gather(return_exceptions=True)`, handle partial failure producing `data_gaps` list, generate Korean `summary` string, and return total failure as `error_type="execution"` when all inner calls fail in `src/kosax/tools/composite/road_risk_score.py` (depends on T035)
-- [ ] T037 [US4] Declare `ROAD_RISK_SCORE_TOOL` (`requires_auth=False`, `auth_type="public"`, `endpoint=""`, `is_core=True`) as a `GovAPITool` instance and implement `register(registry, executor)` helper in `src/kosax/tools/composite/road_risk_score.py` (depends on T036)
+- [ ] T034 [US4] Implement `RoadRiskScoreInput` and `RoadRiskScoreOutput` Pydantic v2 models in `src/ummaya/tools/composite/road_risk_score.py`; `RoadRiskScoreInput` defaults `search_year_cd` to `SearchYearCd.GENERAL_2024` when `None`
+- [ ] T035 [US4] Implement `_compute_risk_score()` pure function applying the scoring algorithm (hotspot_count weights 0.5, weather weights 0.5; `min(1.0, base_score)`) and `_risk_level()` classifier (`[0,0.3)=low`, `[0.3,0.6)=moderate`, `[0.6,0.8)=high`, `[0.8,1.0]=severe`) in `src/ummaya/tools/composite/road_risk_score.py` (depends on T034)
+- [ ] T036 [US4] Implement `_call()` async composite adapter: import `_call` from all three inner adapters, fan-out with `asyncio.gather(return_exceptions=True)`, handle partial failure producing `data_gaps` list, generate Korean `summary` string, and return total failure as `error_type="execution"` when all inner calls fail in `src/ummaya/tools/composite/road_risk_score.py` (depends on T035)
+- [ ] T037 [US4] Declare `ROAD_RISK_SCORE_TOOL` (`requires_auth=False`, `auth_type="public"`, `endpoint=""`, `is_core=True`) as a `GovAPITool` instance and implement `register(registry, executor)` helper in `src/ummaya/tools/composite/road_risk_score.py` (depends on T036)
 - [ ] T038 [US4] Write `test_high_risk_scenario()` (5 hotspots + 20 mm precip → risk_level="high"), `test_low_risk_scenario()` (0 hotspots + 0 mm → risk_level="low"), `test_partial_failure_kma_obs()` (KOROAD ok + kma_obs fails → data_gaps=["kma_obs"]), `test_partial_failure_kma_alert()` (KOROAD ok + kma_alert fails → data_gaps=["kma_alert"]), and `test_total_failure()` (all inner adapters fail → error_type="execution") using mocked inner `_call` functions in `tests/tools/composite/test_road_risk_score.py` (depends on T034, T036)
 
 **Checkpoint**: `road_risk_score` fully implemented and tested. US-004 acceptance scenarios covered. All four tools are ready.
@@ -149,7 +149,7 @@ returns a Korean-language `summary` string.
 **Purpose**: Tool registry wiring, discovery smoke tests, scenario integration test, and documentation.
 All tasks depend on Phase 6 completion.
 
-- [ ] T039 Register all four tools by calling each `register()` helper from `src/kosax/tools/__init__.py` or a dedicated entrypoint; verify no import errors at module load in `tests/tools/test_registration.py`
+- [ ] T039 Register all four tools by calling each `register()` helper from `src/ummaya/tools/__init__.py` or a dedicated entrypoint; verify no import errors at module load in `tests/tools/test_registration.py`
 - [ ] T040 [P] Write `test_search_discovery()`: assert `road_risk_score` appears in top-5 search results for the Scenario 1 query "오늘 서울 가는 길 안전해" via `ToolRegistry.search()` in `tests/tools/test_search_integration.py`
 - [ ] T041 [P] Write `test_scenario1_flow_simulation()`: load all three fixtures, call `road_risk_score._call()` with mocked inner adapters returning fixture data, assert `risk_level` is a valid value and `summary` is a non-empty Korean string in `tests/tools/test_search_integration.py`
 - [ ] T042 [P] Write `docs/tools/koroad.md`: bilingual tool doc for `koroad_accident_search` covering endpoint, auth, input/output schema, code table references, and usage example
@@ -281,29 +281,29 @@ If live keys are unavailable, synthetic fixtures are constructed manually and co
 ### New files created by these tasks
 
 ```
-src/kosax/tools/koroad/__init__.py                     (T001)
-src/kosax/tools/kma/__init__.py                        (T002)
-src/kosax/tools/composite/__init__.py                  (T003)
+src/ummaya/tools/koroad/__init__.py                     (T001)
+src/ummaya/tools/kma/__init__.py                        (T002)
+src/ummaya/tools/composite/__init__.py                  (T003)
 tests/tools/koroad/__init__.py                          (T004)
 tests/tools/kma/__init__.py                             (T005)
 tests/tools/composite/__init__.py                       (T006)
 tests/fixtures/koroad/.gitkeep                          (T007)
 tests/fixtures/kma/.gitkeep                             (T008)
-src/kosax/tools/errors.py                              (T009, update existing)
-src/kosax/tools/koroad/code_tables.py                  (T010)
-src/kosax/tools/kma/grid_coords.py                     (T011)
+src/ummaya/tools/errors.py                              (T009, update existing)
+src/ummaya/tools/koroad/code_tables.py                  (T010)
+src/ummaya/tools/kma/grid_coords.py                     (T011)
 tests/tools/koroad/test_code_tables.py                  (T012)
 tests/tools/kma/test_grid_coords.py                     (T013)
-src/kosax/tools/koroad/koroad_accident_search.py       (T014–T017)
+src/ummaya/tools/koroad/koroad_accident_search.py       (T014–T017)
 tests/fixtures/koroad/koroad_accident_search.json       (T018)
 tests/tools/koroad/test_koroad_accident_search.py       (T019–T021)
-src/kosax/tools/kma/kma_weather_alert_status.py        (T022–T025)
+src/ummaya/tools/kma/kma_weather_alert_status.py        (T022–T025)
 tests/fixtures/kma/kma_weather_alert_status.json        (T026)
 tests/tools/kma/test_kma_weather_alert_status.py        (T027)
-src/kosax/tools/kma/kma_current_observation.py         (T028–T031)
+src/ummaya/tools/kma/kma_current_observation.py         (T028–T031)
 tests/fixtures/kma/kma_current_observation.json         (T032)
 tests/tools/kma/test_kma_current_observation.py         (T033)
-src/kosax/tools/composite/road_risk_score.py           (T034–T037)
+src/ummaya/tools/composite/road_risk_score.py           (T034–T037)
 tests/tools/composite/test_road_risk_score.py           (T038)
 tests/tools/test_registration.py                        (T039)
 tests/tools/test_search_integration.py                  (T040–T041)

@@ -18,7 +18,7 @@ import {
 import { clearFileSuggestionCaches } from '../../hooks/fileSuggestions.js'
 import { clearAllPendingCallbacks } from '../../hooks/useSwarmPermissionPoller.js'
 import { clearAllDumpState } from '../../services/api/dumpPrompts.js'
-// KOSAX: promptCacheBreakDetection + sessionIngress deleted (Anthropic-only). No-op stubs.
+// UMMAYA: promptCacheBreakDetection + sessionIngress deleted (Anthropic-only). No-op stubs.
 const resetPromptCacheBreakDetection = (): void => {}
 const clearAllSessions = (): void => {}
 import { runPostCompactCleanup } from '../../services/compact/postCompactCleanup.js'

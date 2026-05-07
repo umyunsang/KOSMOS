@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // P0-2 regression test — single-stack slash suggestions.
 //
-// Verifies that `generateCommandSuggestions` only surfaces KOSAX citizen
+// Verifies that `generateCommandSuggestions` only surfaces UMMAYA citizen
 // catalog entries and never exposes CC dev commands like /speckit-*, /add-dir,
 // /doctor, /review, /ultrareview, /commit, /security-review, etc.
 //
@@ -43,7 +43,7 @@ function makePromptCmd(name: string): Command {
 }
 
 // ---------------------------------------------------------------------------
-// Test commands array: mix of CC dev commands + KOSAX catalog commands
+// Test commands array: mix of CC dev commands + UMMAYA catalog commands
 // ---------------------------------------------------------------------------
 
 const CC_DEV_COMMANDS: Command[] = [
@@ -67,17 +67,17 @@ const CC_DEV_COMMANDS: Command[] = [
 ]
 
 // Citizen-facing commands from UI_L2_SLASH_COMMANDS (strip leading /)
-const KOSAX_CITIZEN_COMMANDS: Command[] = UI_L2_SLASH_COMMANDS
+const UMMAYA_CITIZEN_COMMANDS: Command[] = UI_L2_SLASH_COMMANDS
   .filter(e => !e.hidden)
   .map(e => makeLocalCmd(e.name.startsWith('/') ? e.name.slice(1) : e.name))
 
-const ALL_COMMANDS: Command[] = [...CC_DEV_COMMANDS, ...KOSAX_CITIZEN_COMMANDS]
+const ALL_COMMANDS: Command[] = [...CC_DEV_COMMANDS, ...UMMAYA_CITIZEN_COMMANDS]
 
 // ---------------------------------------------------------------------------
 // P0-2 assertions
 // ---------------------------------------------------------------------------
 
-describe('generateCommandSuggestions — KOSAX single-stack', () => {
+describe('generateCommandSuggestions — UMMAYA single-stack', () => {
   it('typing "/" shows only catalog commands — no /speckit-* or /add-dir', () => {
     const suggestions = generateCommandSuggestions('/', ALL_COMMANDS)
 
@@ -106,7 +106,7 @@ describe('generateCommandSuggestions — KOSAX single-stack', () => {
     expect(speckit).toHaveLength(0)
   })
 
-  it('typing "/" shows known KOSAX catalog commands', () => {
+  it('typing "/" shows known UMMAYA catalog commands', () => {
     const suggestions = generateCommandSuggestions('/', ALL_COMMANDS)
     const names = suggestions.map(s => s.displayText)
 
@@ -135,7 +135,7 @@ describe('generateCommandSuggestions — KOSAX single-stack', () => {
   })
 
   it('only one dropdown should be active — no duplicate slash stacks', async () => {
-    // The KOSAX SlashCommandSuggestions overlay has been removed from REPL.tsx.
+    // The UMMAYA SlashCommandSuggestions overlay has been removed from REPL.tsx.
     // This test verifies the catalog-filtered generateCommandSuggestions returns
     // exactly the same set as matchPrefix('/') from catalog.ts.
     const { matchPrefix } = await import('../../../commands/catalog.js')

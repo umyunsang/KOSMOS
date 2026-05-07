@@ -1,5 +1,5 @@
 /**
- * KOSAX-original — PointCard renderer.
+ * UMMAYA-original — PointCard renderer.
  *
  * Displays a single point-of-interest result from a lookup tool call.
  * Renders a title, optional subtitle, and a row of key/value fields.

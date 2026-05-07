@@ -11,7 +11,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from uuid import uuid4
 
-from kosax.agents.mailbox.messages import (
+from ummaya.agents.mailbox.messages import (
     AgentMessage,
     CancelPayload,
     ErrorPayload,
@@ -21,7 +21,7 @@ from kosax.agents.mailbox.messages import (
     ResultPayload,
     TaskPayload,
 )
-from kosax.tools.models import LookupMeta, LookupRecord
+from ummaya.tools.models import LookupMeta, LookupRecord
 
 _SCHEMA_PATH = (
     Path(__file__).parent.parent.parent

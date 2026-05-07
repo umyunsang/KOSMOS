@@ -5,7 +5,7 @@
 
 ## Summary
 
-Add freshness validation to the NMC emergency room adapter: compare the `hvidate` timestamp in every NMC response against `KOSAX_NMC_FRESHNESS_MINUTES`, return `LookupError(reason="stale_data")` when stale, and inject `freshness_status` metadata into the response envelope when fresh. No new dependencies or layers; this is a Phase 1 quality hardening of existing Tool System infrastructure.
+Add freshness validation to the NMC emergency room adapter: compare the `hvidate` timestamp in every NMC response against `UMMAYA_NMC_FRESHNESS_MINUTES`, return `LookupError(reason="stale_data")` when stale, and inject `freshness_status` metadata into the response envelope when fresh. No new dependencies or layers; this is a Phase 1 quality hardening of existing Tool System infrastructure.
 
 ## Technical Context
 
@@ -28,7 +28,7 @@ Add freshness validation to the NMC emergency room adapter: compare the `hvidate
 | I. Reference-Driven Development | PASS | Freshness SLO pattern references Layer 2 Tool System (Pydantic AI schema-driven registry) and Layer 6 Error Recovery (fail-closed defaults). No new architectural pattern introduced. |
 | II. Fail-Closed Security | PASS | Missing/unparseable `hvidate` → treated as stale (FR-008). `stale_data` error returned, data never silently passed. Consistent with `requires_auth=True`, `is_personal_data=True` defaults. |
 | III. Pydantic v2 Strict Typing | PASS | `freshness_status` added as Literal field on `LookupMeta`. `hvidate` parsing produces typed datetime. No `Any` types. |
-| IV. Government API Compliance | PASS | No live `data.go.kr` calls in CI tests. All tests use recorded fixtures. `KOSAX_NMC_FRESHNESS_MINUTES` read from env var. |
+| IV. Government API Compliance | PASS | No live `data.go.kr` calls in CI tests. All tests use recorded fixtures. `UMMAYA_NMC_FRESHNESS_MINUTES` read from env var. |
 | V. Policy Alignment | PASS | Freshness enforcement prevents delivery of stale emergency data to citizens — safety-first per Principle 8 (single conversational window quality). |
 | VI. Deferred Work Accountability | PASS | No items deferred. All requirements addressed in this epic. |
 
@@ -48,8 +48,8 @@ specs/023-nmc-freshness-slo/
 ### Source Code (repository root)
 
 ```text
-src/kosax/
-├── settings.py                          # KOSAX_NMC_FRESHNESS_MINUTES (existing, no changes)
+src/ummaya/
+├── settings.py                          # UMMAYA_NMC_FRESHNESS_MINUTES (existing, no changes)
 └── tools/
     ├── models.py                        # LookupMeta.freshness_status field (new)
     ├── envelope.py                      # No changes required
@@ -69,7 +69,7 @@ tests/
     └── test_freshness_validation.py        # New: freshness check unit tests
 ```
 
-**Structure Decision**: Freshness validation lives in `src/kosax/tools/nmc/freshness.py` as a standalone utility module, keeping the adapter handler (`emergency_search.py`) focused on HTTP orchestration. The utility is NMC-specific (hvidate field semantics) so it belongs in the `nmc/` package, not in the generic tool system.
+**Structure Decision**: Freshness validation lives in `src/ummaya/tools/nmc/freshness.py` as a standalone utility module, keeping the adapter handler (`emergency_search.py`) focused on HTTP orchestration. The utility is NMC-specific (hvidate field semantics) so it belongs in the `nmc/` package, not in the generic tool system.
 
 ## Complexity Tracking
 

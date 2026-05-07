@@ -12,11 +12,11 @@ Not a persisted entity — test-time configuration derived from environment.
 
 | Field | Source | Required |
 |-------|--------|----------|
-| `KOSAX_FRIENDLI_TOKEN` | Environment variable | Yes |
-| `KOSAX_DATA_GO_KR_API_KEY` | Environment variable | Yes (KMA adapters) |
-| `KOSAX_KOROAD_API_KEY` | Environment variable | Yes (KOROAD adapter) |
-| `KOSAX_FRIENDLI_BASE_URL` | Environment variable | No (defaults to `https://api.friendli.ai/v1`) |
-| `KOSAX_FRIENDLI_MODEL` | Environment variable | No (defaults to `dep89a2fde0e09`) |
+| `UMMAYA_FRIENDLI_TOKEN` | Environment variable | Yes |
+| `UMMAYA_DATA_GO_KR_API_KEY` | Environment variable | Yes (KMA adapters) |
+| `UMMAYA_KOROAD_API_KEY` | Environment variable | Yes (KOROAD adapter) |
+| `UMMAYA_FRIENDLI_BASE_URL` | Environment variable | No (defaults to `https://api.friendli.ai/v1`) |
+| `UMMAYA_FRIENDLI_MODEL` | Environment variable | No (defaults to `dep89a2fde0e09`) |
 
 ### API Response Schemas Under Validation
 

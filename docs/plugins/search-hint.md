@@ -8,7 +8,7 @@
 
 ## 왜 두 언어인가?
 
-KOSAX 의 시민은 **한국어로 질문** 하지만 LLM 의 토큰 분포는 양방향 — 영문 키워드도 함께 들어가야 BM25 의 IDF 분포가 안정적이고 검색 recall 이 높아집니다.
+UMMAYA 의 시민은 **한국어로 질문** 하지만 LLM 의 토큰 분포는 양방향 — 영문 키워드도 함께 들어가야 BM25 의 IDF 분포가 안정적이고 검색 recall 이 높아집니다.
 
 | 언어 | 용도 | 예시 |
 |---|---|---|
@@ -59,7 +59,7 @@ Kiwipiepy 가 한국어 형태소 분석으로 명사를 추출합니다. 다음
 
 ### 3. 부처/기관 이름 강제 (Q4-HINT-MINISTRY)
 
-KOSAX 의 ministry 화이트리스트 (`q4_discovery.py:_MINISTRY_NAMES_KO`):
+UMMAYA 의 ministry 화이트리스트 (`q4_discovery.py:_MINISTRY_NAMES_KO`):
 - 도로교통공단, 기상청, 국립중앙의료원, 건강보험심사평가원, 소방청
 - 보건복지부, 국토교통부, 행정안전부, 한국교통안전공단
 - 식품의약품안전처, 정부24, 우정사업본부, 우체국
@@ -183,5 +183,5 @@ Spec 022 의 BM25 는 다음 weights:
 
 - [Spec 022 BM25 retrieval](../../specs/022-mvp-main-tool/spec.md) — `lookup(mode="search")` 의 ranking 모델
 - [Q4 row 그룹](review-checklist.md#q4--discovery--docs-8) — 50-item 검증 매트릭스의 8 항목
-- [`src/kosax/plugins/checks/q4_discovery.py`](../../src/kosax/plugins/checks/q4_discovery.py) — 검사 구현
+- [`src/ummaya/plugins/checks/q4_discovery.py`](../../src/ummaya/plugins/checks/q4_discovery.py) — 검사 구현
 - [Kiwipiepy 문서](https://github.com/bab2min/kiwipiepy) — Korean morphology library

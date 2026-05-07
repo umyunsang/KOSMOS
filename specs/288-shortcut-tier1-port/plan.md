@@ -7,19 +7,19 @@
 
 Port Claude Code 2.1.88's central keybinding system (14 files under `.references/claude-code-sourcemap/restored-src/src/keybindings/`) into `tui/src/keybindings/` as a shape-compatible registry, then wire exactly the Tier 1 six actions (`agent-interrupt`, `session-exit`, `draft-cancel`, `history-search`, `history-prev`, `history-next`, `permission-mode-cycle`) across Global / Chat / HistorySearch / Confirmation contexts. The IME-composition gate (`useKoreanIME().isComposing`) is centralised at the resolver, making Tier 1 Hangul-safe and leaving a correct inheritance path for the Tier 2/3 ports that Epic E (#1300) and the post-launch Tier 2 work will do next.
 
-Technical approach: (a) mechanical port of CC's 14-file keybinding module minus the 58 bindings KOSAX does not adopt; (b) a KOSAX-specific override wrapper that enforces the reserved-binding list (`agent-interrupt`, `session-exit`) and the IME gate at resolution time; (c) integration with Spec 033 `ModeCycle` for `shift+tab`, Spec 027 mailbox for `ctrl+c` cancellation, and Spec 024 audit writer for reserved-action records; (d) accessibility announcements through the existing `useLiveRegion` screen-reader channel (if absent, added as KOSAX-original per Principle I escalation, justified in research.md).
+Technical approach: (a) mechanical port of CC's 14-file keybinding module minus the 58 bindings UMMAYA does not adopt; (b) a UMMAYA-specific override wrapper that enforces the reserved-binding list (`agent-interrupt`, `session-exit`) and the IME gate at resolution time; (c) integration with Spec 033 `ModeCycle` for `shift+tab`, Spec 027 mailbox for `ctrl+c` cancellation, and Spec 024 audit writer for reserved-action records; (d) accessibility announcements through the existing `useLiveRegion` screen-reader channel (if absent, added as UMMAYA-original per Principle I escalation, justified in research.md).
 
 ## Technical Context
 
 **Language/Version**: TypeScript 5.6+ (strict, `noUncheckedIndexedAccess`); Python 3.12+ only touched via existing Spec 024 audit writer and Spec 027 cancellation mailbox.
 **Primary Dependencies**: `ink` (existing), `react` (existing), `zod` v4 (already present in `tui/` from Spec 287 — used in existing schemas; no new dep). No new runtime dependencies — see SC-008 and AGENTS.md hard rule.
-**Storage**: Registry is in-memory, rebuilt at TUI launch. User-override JSON at `~/.kosax/keybindings.json` (read-only; never written by this spec). Consumed-but-not-produced by this spec: memdir USER tier (Epic D #1299) for cross-session history; degrades to in-memory session history when absent.
+**Storage**: Registry is in-memory, rebuilt at TUI launch. User-override JSON at `~/.ummaya/keybindings.json` (read-only; never written by this spec). Consumed-but-not-produced by this spec: memdir USER tier (Epic D #1299) for cross-session history; degrades to in-memory session history when absent.
 **Testing**: Existing `bun test` harness (Spec 287) for unit + integration tests against Ink test-renderer. New test fixtures for (a) Korean IME composition sequences (reused from `useKoreanIME` existing tests), (b) raw-byte chord tables, (c) accessibility-announcement assertions.
-**Target Platform**: Bun v1.2.x runtime; terminals xterm-256color, Windows Terminal (with VT mode), macOS Terminal.app, iTerm2. Per CC `defaultBindings.ts` L16-L30, Windows pre-VT fallback maps `shift+tab` → `meta+m`; KOSAX inherits this.
+**Target Platform**: Bun v1.2.x runtime; terminals xterm-256color, Windows Terminal (with VT mode), macOS Terminal.app, iTerm2. Per CC `defaultBindings.ts` L16-L30, Windows pre-VT fallback maps `shift+tab` → `meta+m`; UMMAYA inherits this.
 **Project Type**: Frontend (TUI) feature port, backed by Python audit/cancellation services via existing stdio JSONL channel.
 **Performance Goals**: ctrl+c interrupt ≤ 500 ms (SC-001); mode-indicator update ≤ 200 ms (FR-010); history-search overlay open ≤ 300 ms (AS-6.1); accessibility announcement ≤ 1 s (FR-030).
 **Constraints**: Zero new runtime deps (SC-008). IME-safe: 100% zero-jamo-drop over 200-sample test suite (SC-002). KWCAG 2.1 / WCAG 2.1.4 compliance (FR-029..FR-032, FR-023..FR-028).
-**Scale/Scope**: 6 Tier 1 action handlers, 7 user stories, 34 FR, 9 SC. Port surface = 14 CC files (shape-preserved), minus 58 bindings not adopted. Affected KOSAX surfaces: `tui/src/keybindings/` (new), `tui/src/components/input/InputBar.tsx` (refactor), `tui/src/permissions/ModeCycle.tsx` (integration point, no change), `tui/src/hooks/useKoreanIME.ts` (consumer, no change). ~2,600 LOC of CC reference, estimated ~900 LOC of KOSAX port after removing unused bindings and Korean/accessibility additions.
+**Scale/Scope**: 6 Tier 1 action handlers, 7 user stories, 34 FR, 9 SC. Port surface = 14 CC files (shape-preserved), minus 58 bindings not adopted. Affected UMMAYA surfaces: `tui/src/keybindings/` (new), `tui/src/components/input/InputBar.tsx` (refactor), `tui/src/permissions/ModeCycle.tsx` (integration point, no change), `tui/src/hooks/useKoreanIME.ts` (consumer, no change). ~2,600 LOC of CC reference, estimated ~900 LOC of UMMAYA port after removing unused bindings and Korean/accessibility additions.
 
 ## Constitution Check
 
@@ -49,7 +49,7 @@ specs/288-shortcut-tier1-port/
 ├── quickstart.md        # Phase 1 output (this cycle)
 ├── contracts/           # Phase 1 output (this cycle)
 │   ├── keybinding-schema.ts    # Zod + TS type surface for registry entries
-│   └── user-override.schema.json   # JSON Schema for ~/.kosax/keybindings.json
+│   └── user-override.schema.json   # JSON Schema for ~/.ummaya/keybindings.json
 ├── checklists/
 │   └── requirements.md  # Quality checklist from /speckit-specify
 └── tasks.md             # Phase 2 output (/speckit-tasks — NOT created here)
@@ -60,13 +60,13 @@ specs/288-shortcut-tier1-port/
 ```text
 tui/src/
 ├── keybindings/                             # NEW — port of CC src/keybindings/
-│   ├── defaultBindings.ts                   # Tier 1 seed (KOSAX subset, 6 actions)
-│   ├── schema.ts                            # Context enum + Zod schema (KOSAX subset)
+│   ├── defaultBindings.ts                   # Tier 1 seed (UMMAYA subset, 6 actions)
+│   ├── schema.ts                            # Context enum + Zod schema (UMMAYA subset)
 │   ├── reservedShortcuts.ts                 # agent-interrupt + session-exit guards
 │   ├── parser.ts                            # chord string → normalised tuple
 │   ├── match.ts                             # chord matcher (ctrl+c, shift+tab, etc.)
 │   ├── resolver.ts                          # modal→form→context→global precedence + IME gate
-│   ├── loadUserBindings.ts                  # read ~/.kosax/keybindings.json, validate, merge
+│   ├── loadUserBindings.ts                  # read ~/.ummaya/keybindings.json, validate, merge
 │   ├── validate.ts                          # schema + reserved guard checks
 │   ├── template.ts                          # catalogue template for help/discovery
 │   ├── shortcutFormat.ts                    # chord → display string ("ctrl+c" → "Ctrl+C")
@@ -74,7 +74,7 @@ tui/src/
 │   ├── useShortcutDisplay.ts                # formatter hook
 │   ├── KeybindingContext.tsx                # React context
 │   ├── KeybindingProviderSetup.tsx          # provider wiring
-│   └── accessibilityAnnouncer.ts            # KOSAX-original: live-region text channel
+│   └── accessibilityAnnouncer.ts            # UMMAYA-original: live-region text channel
 ├── components/input/InputBar.tsx            # refactor: replace ad-hoc useInput with useKeybinding
 ├── hooks/
 │   ├── useGlobalKeybindings.tsx             # NEW — port of CC hook
@@ -94,8 +94,8 @@ tui/tests/keybindings/                       # NEW
     ├── korean-composition-samples.json
     └── override-files/{disable-ctrl-r,remap-ctrl-r,invalid}.json
 
-src/kosax/tui/audit.py                      # existing (Spec 024) — consumed
-src/kosax/agents/cancellation.py            # existing (Spec 027) — consumed
+src/ummaya/tui/audit.py                      # existing (Spec 024) — consumed
+src/ummaya/agents/cancellation.py            # existing (Spec 027) — consumed
 ```
 
 **Structure Decision**: Port placement under `tui/src/keybindings/` mirrors CC's `src/keybindings/` one-to-one to keep the shape parity called for in SC-009. Hooks colocate with CC under `tui/src/hooks/`. Tests live at `tui/tests/keybindings/` per Spec 287 convention. Zero new top-level directories, zero new dependencies.

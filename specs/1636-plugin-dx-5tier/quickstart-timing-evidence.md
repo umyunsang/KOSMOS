@@ -41,7 +41,7 @@
 ```sh
 cd /tmp && rm -rf timing-test && mkdir timing-test && cd timing-test
 T0=$(python3 -c 'import time;print(time.time())')
-git clone https://github.com/kosax-plugin-store/kosax-plugin-template.git my-plugin
+git clone https://github.com/ummaya-plugin-store/ummaya-plugin-template.git my-plugin
 T1=$(python3 -c 'import time;print(time.time())')
 cd my-plugin
 uv sync --quiet
@@ -84,7 +84,7 @@ tests/test_adapter.py ..  [100%]
 quickstart timing 측정 도중 발견한 scaffold 회귀 3건은 모두 `cli_init.py` / `plugin-init.ts` 본문에 fix 후 외부 template repo 에 sync 완료:
 
 1. **hatch wheel target 누락** — `[tool.hatch.build.targets.wheel] packages = ["plugin_<name>"]` 추가. `uv sync` 실패 → 0초 만에 abort 되던 이슈.
-2. **TOOL eager construction** — `from kosax.tools.models import GovAPITool` 가 모듈 import 시점에 실행되어 standalone 환경에서 `ModuleNotFoundError`. PEP 562 `__getattr__` lazy 전환.
+2. **TOOL eager construction** — `from ummaya.tools.models import GovAPITool` 가 모듈 import 시점에 실행되어 standalone 환경에서 `ModuleNotFoundError`. PEP 562 `__getattr__` lazy 전환.
 3. **block_network autouse fixture 가 asyncio 차단** — AF_INET / AF_INET6 만 차단하도록 family-필터 적용. AF_UNIX socketpair 통과 → pytest-asyncio 동작.
 
-세 fix 는 모두 cli_init / plugin-init 템플릿 정합성 PR 에 포함되어 외부 template repo 에 push 완료 (`kosax-plugin-store/kosax-plugin-template@main`).
+세 fix 는 모두 cli_init / plugin-init 템플릿 정합성 PR 에 포함되어 외부 template repo 에 push 완료 (`ummaya-plugin-store/ummaya-plugin-template@main`).

@@ -14,20 +14,20 @@ from collections.abc import AsyncIterator
 
 import pytest
 
-from kosax.context.builder import ContextBuilder
-from kosax.context.models import SystemPromptConfig
-from kosax.engine.config import QueryEngineConfig
-from kosax.engine.engine import QueryEngine
-from kosax.engine.events import QueryEvent, StopReason
+from ummaya.context.builder import ContextBuilder
+from ummaya.context.models import SystemPromptConfig
+from ummaya.engine.config import QueryEngineConfig
+from ummaya.engine.engine import QueryEngine
+from ummaya.engine.events import QueryEvent, StopReason
 
 # Force QueryContext to resolve the LLMClient forward reference so that
 # mock subclasses pass the isinstance check inside QueryContext validation.
-from kosax.engine.models import QueryContext  # noqa: E402
-from kosax.llm.client import LLMClient
-from kosax.llm.models import ChatMessage, StreamEvent, TokenUsage
-from kosax.llm.usage import UsageTracker
-from kosax.tools.executor import ToolExecutor
-from kosax.tools.registry import ToolRegistry
+from ummaya.engine.models import QueryContext  # noqa: E402
+from ummaya.llm.client import LLMClient
+from ummaya.llm.models import ChatMessage, StreamEvent, TokenUsage
+from ummaya.llm.usage import UsageTracker
+from ummaya.tools.executor import ToolExecutor
+from ummaya.tools.registry import ToolRegistry
 
 QueryContext.model_rebuild()
 

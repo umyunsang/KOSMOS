@@ -1,18 +1,18 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSAX-1633 — cached microcompact minimal module.
+// UMMAYA-1633 — cached microcompact minimal module.
 //
 // Original CC module cached intermediate microcompact results in process
-// memory keyed by message-tail hash. KOSAX Spec 026 (prompt registry +
+// memory keyed by message-tail hash. UMMAYA Spec 026 (prompt registry +
 // session_compact) handles compaction on the Python backend side; the
 // frontend-side cached state is therefore a no-op shell that preserves the
 // `microCompact.ts` consumer's expected shape.
 
 export interface CachedMCState {
-  // Opaque to consumers; carries no behavior in KOSAX.
-  readonly _kind: 'kosax-noop-cached-mc-state'
+  // Opaque to consumers; carries no behavior in UMMAYA.
+  readonly _kind: 'ummaya-noop-cached-mc-state'
 }
 
-const SHARED_STATE: CachedMCState = Object.freeze({ _kind: 'kosax-noop-cached-mc-state' })
+const SHARED_STATE: CachedMCState = Object.freeze({ _kind: 'ummaya-noop-cached-mc-state' })
 
 export function createCachedMCState(): CachedMCState {
   return SHARED_STATE

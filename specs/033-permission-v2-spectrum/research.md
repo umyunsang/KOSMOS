@@ -16,7 +16,7 @@ Every FR cluster maps to at least one primary reference (preferred migration sou
 |---|---|---|---|
 | 5 external modes (`default` / `plan` / `acceptEdits` / `bypassPermissions` / `dontAsk`) | `.references/claude-code-sourcemap/restored-src/src/utils/permissions/PermissionMode.ts` (external modes enum) | Cursor Cascade "Ask/Edit/Agent" modes · Continue.dev `agent-modes` spec | CC's external modes are battle-tested, 1:1 1 match with user expectations from CC CLI users (a majority of our early adopters). Internal modes (`auto` / `bubble`) are gated on `TRANSCRIPT_CLASSIFIER` growth-book feature and tied to CC's transcript classifier — not applicable to citizen-API domain, explicitly out of scope per spec.md Assumption #8. |
 | Shift+Tab cycle order `default → acceptEdits → plan → default` (high-risk excluded) | `.references/claude-code-sourcemap/restored-src/src/utils/permissions/getNextPermissionMode.ts` | Continue.dev Shift+Tab idiom | CC's `getNextPermissionMode` includes bypass in the cycle when `isBypassPermissionsModeAvailable`; we deliberately **deviate** — spec.md US5 requires high-risk modes to be slash-command-only for audit clarity (ledger `action=enter_high_risk_mode` vs a silent keychord toggle). Recorded in `data-model.md § 2.1` state diagram. |
-| Slash commands `/permissions bypass`, `/permissions dontAsk`, `/permissions list`, `/permissions edit`, `/permissions verify` | `.references/claude-code-sourcemap/restored-src/src/commands/permissions/` (command surface) | Continue.dev slash-command style | CC's slash command registry pattern translates directly to our TUI (Spec 287) command surface. `verify` command is new — invokes WS3 `kosax permissions verify` CLI. |
+| Slash commands `/permissions bypass`, `/permissions dontAsk`, `/permissions list`, `/permissions edit`, `/permissions verify` | `.references/claude-code-sourcemap/restored-src/src/commands/permissions/` (command surface) | Continue.dev slash-command style | CC's slash command registry pattern translates directly to our TUI (Spec 287) command surface. `verify` command is new — invokes WS3 `ummaya permissions verify` CLI. |
 | High-risk auto-expire (default 30 min, configurable) | `.references/claude-code-sourcemap/restored-src/src/utils/permissions/permissionSetup.ts` (`stripDangerousPermissionsForAutoMode` + `restoreDangerousPermissions`) | OpenAI Agents SDK session-scoped guardrails | CC's pattern of stashing dangerous perms on auto-mode entry + restoring on exit is the reference for our timeout-based fallback — but we always fallback to `default` (not to a previous mode) per FR-A05 to keep audit semantics unambiguous. |
 | `ToolPermissionContext` injection at every tool call | `.references/claude-code-sourcemap/restored-src/src/utils/permissions/permissions.ts` (`applyPermissionRulesToPermissionContext`) | OpenAI Agents SDK `input_guardrails` pipeline | CC's pattern of passing a context object through the tool loop rather than reading module-level globals keeps tests deterministic and makes the guardrail pipeline auditable. |
 
@@ -42,11 +42,11 @@ Every FR cluster maps to at least one primary reference (preferred migration sou
 
 | Decision | Primary reference | Secondary reference | Rationale |
 |---|---|---|---|
-| Consent receipt record format | **Kantara Initiative Consent Receipt v1.1.0** (ANCR-WG-CRv1_1_0.json schema) | ISO/IEC 29184:2020 (Privacy notices & consent) + KAIO Initiative Notice & Consent Template | Kantara v1.1.0 is the canonical industry schema; ISO 29184 supplies the notice-binding requirement (`notice_hash` + `action_signifying_consent` extension fields). Neither is licensed in a way that blocks KOSAX use (see § 3.1 below). |
+| Consent receipt record format | **Kantara Initiative Consent Receipt v1.1.0** (ANCR-WG-CRv1_1_0.json schema) | ISO/IEC 29184:2020 (Privacy notices & consent) + KAIO Initiative Notice & Consent Template | Kantara v1.1.0 is the canonical industry schema; ISO 29184 supplies the notice-binding requirement (`notice_hash` + `action_signifying_consent` extension fields). Neither is licensed in a way that blocks UMMAYA use (see § 3.1 below). |
 | PIPA 4-tuple (목적·항목·보유기간·거부권) enforced at prompt UI | 개인정보보호법 §15(2) 각호 (1-4) | 개인정보보호위원회 표준 동의서 양식 (2024 개정) | 4-tuple is the statutory minimum. We upgrade to a schema invariant: prompt Pydantic model has `StrictStr(min_length=1)` for each of the 4 fields, so it's structurally impossible for the UI to render a prompt missing any of them (Hypothesis property test in SC-006). |
 | Append-only WORM semantics (software-enforced) | PIPA 개인정보 안전성 확보조치 §8 (접속기록 보관·점검) + ISMS-P 2.9.4 | NIST SP 800-92 § 4.2.1 (append-only log discipline) | §8 mandates ≥ 2 years retention + tamper-evident. Our API surface exposes only `append()` / `iter()` / `verify()` — no update, no delete — so the spec-level WORM is enforced without requiring a WORM filesystem. |
 | Hash chain: `prev_hash || canonical_json(record)` SHA-256 | **RFC 8785 JCS** (JSON Canonicalization Scheme) + NIST FIPS 180-4 SHA-256 | Hyperledger / W3C VC Data Integrity hash-chain precedents | RFC 8785 is the only standardized canonical JSON encoding; alternatives (OLPC canonical JSON, BSON, CBOR) either lack spec precision or introduce deps. See § 3.3 resolution. |
-| HMAC-SHA-256 seal with 32-byte key at `~/.kosax/keys/ledger.key` mode 0400 | NIST SP 800-107 / RFC 2104 HMAC | OWASP ASVS V9.1 (logging integrity controls) | Single-user MVP: one HMAC key, yearly manual rotation (see § 3.4 resolution). Key generation via stdlib `secrets.token_bytes(32)` on first boot; mode 0400 enforced on creation + boot-time check. |
+| HMAC-SHA-256 seal with 32-byte key at `~/.ummaya/keys/ledger.key` mode 0400 | NIST SP 800-107 / RFC 2104 HMAC | OWASP ASVS V9.1 (logging integrity controls) | Single-user MVP: one HMAC key, yearly manual rotation (see § 3.4 resolution). Key generation via stdlib `secrets.token_bytes(32)` on first boot; mode 0400 enforced on creation + boot-time check. |
 | Individual-consent (§22(1)) — no bundled consent | PIPA §22(1) + 개인정보보호위원회 2024 해설서 §22 | Privacy by Design principle 2 (default privacy settings) | Each `purpose_category` gets its own ledger record; a single user interaction that grants multiple purposes produces N records (not 1 bundled). Enforced by `ConsentDecision` schema having `purpose_category: StrictStr` (single-valued), with prompt UI spawning N sequential 4-tuple prompts for N purposes. |
 | Purpose-limitation (§18(2)) re-prompt trigger | PIPA §18(2) + 개인정보보호위원회 2024 해설서 §18 | GDPR Art. 5(1)(b) purpose-limitation (analogous) | When a call reuses an adapter with a different `purpose_category` than the one consented to, killswitch module detects mismatch and forces re-prompt. Implemented in `killswitch.py` + tested in `test_ledger_purpose_mismatch.py` (part of WS3). |
 | Consent validity expiry + re-consent trigger | PIPA 해설서 §15 (동의 유효기간) + 표준 개인정보보호 지침 §13 | Adapter-level `consent_validity_period` metadata | Default validity is a policy constant (`CONSENT_DEFAULT_VALIDITY_DAYS = 180`), with per-adapter override via `AdapterPermissionMetadata.consent_validity_period`. Expiry checked at lookup time in `audit_coupling.py`. |
@@ -56,9 +56,9 @@ Every FR cluster maps to at least one primary reference (preferred migration sou
 
 | Decision | Primary reference | Secondary reference | Rationale |
 |---|---|---|---|
-| KOSAX = 수탁자 default + LLM synthesis = controller-level carve-out | MEMORY `project_pipa_role` (PIPA §26 interpretation) | 개인정보보호위원회 2023 AI 개인정보보호 자율점검표 §4.3 (LLM 합성 단계) | The processor-default + controller-carve-out interpretation was validated with user in the pre-compact session. LLM synthesis is where raw personal data becomes inferences the user didn't explicitly consent to at source — hence controller-level obligations kick in for that stage only. |
+| UMMAYA = 수탁자 default + LLM synthesis = controller-level carve-out | MEMORY `project_pipa_role` (PIPA §26 interpretation) | 개인정보보호위원회 2023 AI 개인정보보호 자율점검표 §4.3 (LLM 합성 단계) | The processor-default + controller-carve-out interpretation was validated with user in the pre-compact session. LLM synthesis is where raw personal data becomes inferences the user didn't explicitly consent to at source — hence controller-level obligations kick in for that stage only. |
 | Pseudonymization failure → LLM call blocked | PIPA §28의2 (가명정보) + 2024 가명정보 처리 가이드 | GDPR Art. 25 privacy-by-default | Fail-closed: if the synthesis guard cannot produce a pseudonymized prompt, the LLM call is refused + ledger appends `action=synthesis_blocked_missing_pseudonym`. Automatic pseudonymization engine (beyond "detect presence") deferred to a separate Epic (spec.md Deferred #6). |
-| AI 기본법 §27 high-impact AI safeguards (banner + `/escalate` + explainability) | 인공지능산업 진흥 및 신뢰 기반 조성 등에 관한 법률 §27 (2026 시행) | AI 행동계획 2026 과제 54 (공공 AI 영향평가) | Three safeguards wired into every session: (a) session-start banner declaring "고영향 AI 사용 세션" (always-on for KOSAX since we touch personal data + irreversible actions), (b) `/escalate` slash command routes to human-operator mailbox (Spec 027), (c) explainability — `/why` command prints recent tool-call history + matched ledger receipts. |
+| AI 기본법 §27 high-impact AI safeguards (banner + `/escalate` + explainability) | 인공지능산업 진흥 및 신뢰 기반 조성 등에 관한 법률 §27 (2026 시행) | AI 행동계획 2026 과제 54 (공공 AI 영향평가) | Three safeguards wired into every session: (a) session-start banner declaring "고영향 AI 사용 세션" (always-on for UMMAYA since we touch personal data + irreversible actions), (b) `/escalate` slash command routes to human-operator mailbox (Spec 027), (c) explainability — `/why` command prints recent tool-call history + matched ledger receipts. |
 
 ### 1.6 Group F — Integration & Audit (FR-F01..F03)
 
@@ -66,7 +66,7 @@ Every FR cluster maps to at least one primary reference (preferred migration sou
 |---|---|---|---|
 | `consent_receipt_id` ↔ Spec 024 `ToolCallAuditRecord` coupling | Spec 024 `ToolCallAuditRecord.consent_receipt_id` field (already declared in Spec 024 v1) | Kantara CR `consentReceiptID` field | Field exists in Spec 024 but is currently optional/unvalidated; FR-F01 makes it a populated-required field whenever `is_personal_data=True`. Coupling is a **read** on Spec 024 schema, no modification. |
 | Spec 025 V6 AAL invariant preservation | Spec 025 V6 `auth_type` ↔ `auth_level` invariant | Spec 024 v1 AAL classes | V6 backstop runs at `ToolRegistry.register()`; Permission v2 adds a **second** backstop at call-time (before mode/rule evaluation). A rule store `allow` for an AAL2 adapter is never honored if the session only has AAL1 — returns `AALInsufficientError`. |
-| OpenTelemetry span attributes | Spec 021 GenAI v1.40 attribute set | OpenTelemetry semantic conventions for security events | Three new KOSAX-namespaced attributes on each tool call span: `kosax.permission.mode`, `kosax.permission.decision` (∈ {`allow`, `deny`, `ask_prompted`, `ask_session_granted`, `ask_session_denied`, `killswitch_blocked`, `aal_insufficient`}), `kosax.consent.receipt_id`. Emitted by `otel_spans.py` helper. |
+| OpenTelemetry span attributes | Spec 021 GenAI v1.40 attribute set | OpenTelemetry semantic conventions for security events | Three new UMMAYA-namespaced attributes on each tool call span: `ummaya.permission.mode`, `ummaya.permission.decision` (∈ {`allow`, `deny`, `ask_prompted`, `ask_session_granted`, `ask_session_denied`, `killswitch_blocked`, `aal_insufficient`}), `ummaya.consent.receipt_id`. Emitted by `otel_spans.py` helper. |
 
 ---
 
@@ -78,7 +78,7 @@ Per spec.md § Scope Boundaries:
 
 | Item | Rationale | Check |
 |---|---|---|
-| 모바일 네이티브 권한 UI | KOSAX is terminal platform | PASS — no prose references mobile inside spec body |
+| 모바일 네이티브 권한 UI | UMMAYA is terminal platform | PASS — no prose references mobile inside spec body |
 | Claude Code 내부 모드 (`auto`, `bubble`) | TRANSCRIPT_CLASSIFIER-gated CC-internal feature, citizen domain unaffected | PASS — FR-A01 explicitly excludes internal modes |
 | 생체정보 기반 AAL3 획득 경로 | Session-layer concern, outside Permission v2 | PASS — spec.md Assumption #5 declares AAL as "trusted input" |
 | AI 행동계획 §31 워터마킹 | Separate research Epic required | PASS — spec.md Assumption #6 scopes §31 to banner only |
@@ -105,19 +105,19 @@ Ripgrep sweep of spec.md for `"separate epic|future phase|v2|later release|defer
 
 ### 3.1 Kantara Consent Receipt v1.1.0 licensing
 
-**Question**: Is the Kantara Initiative CR v1.1.0 JSON schema usable by KOSAX?
+**Question**: Is the Kantara Initiative CR v1.1.0 JSON schema usable by UMMAYA?
 
 **Decision**: Yes — adopt Kantara CR v1.1.0 as the reference schema for `ConsentDecision` records.
 
 **Rationale**:
 - Kantara Initiative publishes the CR specification under the **Kantara Initiative IPR Policy — Non-Assertion Covenant** (effectively a patent non-assertion + copyright-permissive grant for interoperability implementations).
 - The JSON schema itself is published in the Kantara WG repository at MIT / Apache-2.0-equivalent permissive terms (no royalty, no attribution copyleft).
-- KOSAX is Apache-2.0; no conflict.
+- UMMAYA is Apache-2.0; no conflict.
 - We do **not** claim Kantara compliance (that requires a separate certification); we cite the schema as "reference format derived from" to stay honest about our compliance posture.
 
 **Alternatives considered**:
 - **ISO/IEC 29184:2020 native schema** — rejected: ISO spec is behind a paywall, cannot be vendored; we still cite 29184 for notice-binding **concepts** (fields like `notice_hash`).
-- **Custom KOSAX schema, no reference** — rejected: violates Constitution §I (no concrete reference). Also harms interoperability with future external auditors who expect Kantara shape.
+- **Custom UMMAYA schema, no reference** — rejected: violates Constitution §I (no concrete reference). Also harms interoperability with future external auditors who expect Kantara shape.
 
 **Attribution**: Each ledger record carries a `$schema` field pointing to Kantara CR v1.1.0 URL; `docs/security/` gets a new ADR entry citing the IPR policy (to be created as part of WS3).
 
@@ -125,7 +125,7 @@ Ripgrep sweep of spec.md for `"separate epic|future phase|v2|later release|defer
 
 **Question**: Adopt Continue.dev's tri-state file format, or extend it, or roll our own?
 
-**Decision**: **Adopt the tri-state concept but use JSON (not YAML) + KOSAX-specific field names.**
+**Decision**: **Adopt the tri-state concept but use JSON (not YAML) + UMMAYA-specific field names.**
 
 **Rationale**:
 - Continue.dev's `allow | ask | deny` × per-adapter granularity is exactly what we need.
@@ -136,7 +136,7 @@ Ripgrep sweep of spec.md for `"separate epic|future phase|v2|later release|defer
 **Concrete format** (data-model.md § 1.3):
 ```json
 {
-  "$schema": "kosax://permissions-store/v1",
+  "$schema": "ummaya://permissions-store/v1",
   "version": 1,
   "rules": [
     {"adapter_id": "hira_hospital_search", "decision": "allow", "source": "user", "created_at": "...", "updated_at": "..."},
@@ -159,7 +159,7 @@ Ripgrep sweep of spec.md for `"separate epic|future phase|v2|later release|defer
 **Rationale**:
 - RFC 8785 is the only IETF-standardized canonical JSON encoding (2020).
 - Reference Python implementation (`jcs` PyPI package) is MIT-licensed and **stdlib-only** internally — however, adding it as a dep violates AGENTS.md hard rule.
-- **Our approach**: implement a ~50-line `kosax.permissions.canonical_json` module that realizes RFC 8785 on top of stdlib `json` (sort keys + ASCII-escape-preservation + number canonicalization per IEEE 754). This is well within AGENTS.md's "stdlib-first" ethos. WS3 owns this module. Test coverage: RFC 8785 Appendix A test vectors (23 cases) via `test_canonical_json_jcs.py`.
+- **Our approach**: implement a ~50-line `ummaya.permissions.canonical_json` module that realizes RFC 8785 on top of stdlib `json` (sort keys + ASCII-escape-preservation + number canonicalization per IEEE 754). This is well within AGENTS.md's "stdlib-first" ethos. WS3 owns this module. Test coverage: RFC 8785 Appendix A test vectors (23 cases) via `test_canonical_json_jcs.py`.
 
 **Alternatives considered**:
 - **OLPC canonical JSON** — rejected: no IETF status, deprecated.
@@ -179,7 +179,7 @@ Ripgrep sweep of spec.md for `"separate epic|future phase|v2|later release|defer
 - Single-user MVP (per MEMORY `user_profile`) + local-filesystem ledger = no distributed key management.
 - NIST SP 800-57 recommends cryptoperiod ≤ 1 year for HMAC keys used for log integrity — we match.
 - **Automatic rotation** would introduce re-keying complexity (need to re-HMAC every record or maintain key-ID tagging) inappropriate for MVP.
-- **Manual rotation** via `kosax permissions rotate-key` CLI: generates a new key at `~/.kosax/keys/ledger.key.NNN`, writes a `action=hmac_key_rotation, new_key_id=NNN` ledger record sealed with the **new** key (breaking chain deliberately at the rotation boundary), archives old key read-only at `~/.kosax/keys/archive/ledger.key.N-1`. ADR-gated: rotation happens only with explicit operator intent.
+- **Manual rotation** via `ummaya permissions rotate-key` CLI: generates a new key at `~/.ummaya/keys/ledger.key.NNN`, writes a `action=hmac_key_rotation, new_key_id=NNN` ledger record sealed with the **new** key (breaking chain deliberately at the rotation boundary), archives old key read-only at `~/.ummaya/keys/archive/ledger.key.N-1`. ADR-gated: rotation happens only with explicit operator intent.
 - Verifier CLI is key-ID aware — reads `key_id` from each record and loads the matching archived key for verification of records before the rotation boundary.
 
 **Alternatives considered**:
@@ -214,21 +214,21 @@ Seven items (full list in § 2.2). **Rationale**: Constitution §VI mandates a t
 | R5 | `consent_receipt_id` join drift against Spec 024 schema over time | Medium | High (audit query correctness) | `test_audit_coupling_consent_receipt_id.py` runs on every PR that touches either spec via a cross-test CI matrix; SC-009 is the gate | Backend Architect (WS5) |
 | R6 | PIPA §22(1) individual-consent interpretation: users want single-click multi-purpose consent | High (UX pressure) | Medium (compliance regression if relaxed) | Spec-level block: FR-D07 is a hard requirement; no prompt-merging allowed. UX counterweight: `/permissions edit` lets power users batch-enable post-hoc, but each enable emits its own ledger record | Lead (policy decision) |
 | R7 | Canonical JSON test-vector regressions after Pydantic v2 minor upgrade (floating-point repr changes) | Low | Medium (CI flakes) | Lock `pydantic >= 2.13` in pyproject.toml (already done); cross-version CI runs canonical JSON vectors against Pydantic v2.13, 2.14, 2.15 matrix | API Tester (final gate) |
-| R8 | `kosax permissions rotate-key` lost-key scenario (user deletes archive, old records unverifiable) | Low | High (irrecoverable audit gap) | CLI refuses rotation unless archive directory is writable; doc warning + ADR-gated; recovery procedure documented in quickstart.md § Troubleshooting | Backend Architect (WS3) |
+| R8 | `ummaya permissions rotate-key` lost-key scenario (user deletes archive, old records unverifiable) | Low | High (irrecoverable audit gap) | CLI refuses rotation unless archive directory is writable; doc warning + ADR-gated; recovery procedure documented in quickstart.md § Troubleshooting | Backend Architect (WS3) |
 
 ---
 
 ## 5. Existing-Code Extension Analysis
 
-Permission v2 lands in a **new** package (`src/kosax/permissions/`) — no existing code is modified except via imports. Integration points:
+Permission v2 lands in a **new** package (`src/ummaya/permissions/`) — no existing code is modified except via imports. Integration points:
 
 | Touchpoint | Spec of origin | Change type | Risk |
 |---|---|---|---|
-| `src/kosax/tools/base.py` (GovAPITool metadata) | Spec 024 v1 | **Read-only** — Permission v2 consumes `is_personal_data`, `is_irreversible`, `auth_level`, `pipa_class` fields; does not modify. | None |
-| `src/kosax/tools/registry.py` (`ToolRegistry.register`) | Specs 024 + 025 V6 | **Read-only** — Permission v2 adds a second call-time backstop; `register()`-time backstop unchanged. | None |
-| `src/kosax/audit/tool_call_record.py` (ToolCallAuditRecord) | Spec 024 v1 | **Read-only** — Permission v2 populates the existing `consent_receipt_id` optional field. | Depends on Spec 024 field stability (R5). |
-| `src/kosax/telemetry/otel.py` (span emission) | Spec 021 | **Read-only** — Permission v2 adds attributes via the existing `emit_span` helper. | None |
-| `src/kosax/mailbox/` (mailbox IPC) | Spec 027 | **Read-only** — `RequireHumanOversight` errors flow through existing mailbox; no protocol change. | None |
+| `src/ummaya/tools/base.py` (GovAPITool metadata) | Spec 024 v1 | **Read-only** — Permission v2 consumes `is_personal_data`, `is_irreversible`, `auth_level`, `pipa_class` fields; does not modify. | None |
+| `src/ummaya/tools/registry.py` (`ToolRegistry.register`) | Specs 024 + 025 V6 | **Read-only** — Permission v2 adds a second call-time backstop; `register()`-time backstop unchanged. | None |
+| `src/ummaya/audit/tool_call_record.py` (ToolCallAuditRecord) | Spec 024 v1 | **Read-only** — Permission v2 populates the existing `consent_receipt_id` optional field. | Depends on Spec 024 field stability (R5). |
+| `src/ummaya/telemetry/otel.py` (span emission) | Spec 021 | **Read-only** — Permission v2 adds attributes via the existing `emit_span` helper. | None |
+| `src/ummaya/mailbox/` (mailbox IPC) | Spec 027 | **Read-only** — `RequireHumanOversight` errors flow through existing mailbox; no protocol change. | None |
 | `tui/src/ipc/frame_schema.ts` (frame union) | Spec 032 | **Read-only** — Permission v2 prompts piggyback on existing `payload_delta` frame with a new `payload_kind="permission_prompt"` discriminator. No new frame arm required. | None |
 | `tui/src/app/command-registry.ts` (slash command routing) | Spec 287 | **Extend** — register 5 new slash commands (`/permissions` sub-tree). Existing commands unaffected. | None |
 

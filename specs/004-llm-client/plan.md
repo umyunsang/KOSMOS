@@ -14,9 +14,9 @@ Implement an async LLM client for FriendliAI Serverless endpoint serving K-EXAON
 **Storage**: N/A (in-memory session state only)
 **Testing**: pytest + pytest-asyncio + respx (httpx mocking)
 **Target Platform**: Cross-platform (macOS, Linux) CLI
-**Project Type**: Library module within KOSAX (`src/kosax/llm/`)
+**Project Type**: Library module within UMMAYA (`src/ummaya/llm/`)
 **Performance Goals**: Streaming TTFT overhead < 50ms (client-side processing only); non-streaming latency bound by model generation time
-**Constraints**: No hardcoded API keys; session budget enforcement; KOSAX_ env var prefix; fail-closed security posture
+**Constraints**: No hardcoded API keys; session budget enforcement; UMMAYA_ env var prefix; fail-closed security posture
 **Scale/Scope**: Single concurrent session for Phase 1; design for future multi-session support
 
 ## Constitution Check
@@ -31,7 +31,7 @@ Implement an async LLM client for FriendliAI Serverless endpoint serving K-EXAON
 | IV. Government API Compliance | N/A | LLM client does not call data.go.kr APIs |
 | V. Policy Alignment | PASS | Budget enforcement supports taxpayer-funded cost control |
 
-**Post-Phase 1 re-check**: PASS. Data model uses Pydantic v2 throughout. No `Any` in I/O schemas (JSON Schema `parameters` field uses `dict[str, Any]` which represents an external schema definition, not internal KOSAX I/O). All config via `KOSAX_`-prefixed env vars.
+**Post-Phase 1 re-check**: PASS. Data model uses Pydantic v2 throughout. No `Any` in I/O schemas (JSON Schema `parameters` field uses `dict[str, Any]` which represents an external schema definition, not internal UMMAYA I/O). All config via `UMMAYA_`-prefixed env vars.
 
 ## Project Structure
 
@@ -51,14 +51,14 @@ specs/004-llm-client/
 ### Source Code (repository root)
 
 ```text
-src/kosax/
+src/ummaya/
 ├── __init__.py           # Existing
 └── llm/
     ├── __init__.py       # Public exports
     ├── client.py         # LLMClient (complete + stream methods)
     ├── models.py         # Pydantic v2 models (ChatMessage, StreamEvent, etc.)
     ├── config.py         # LLMClientConfig (pydantic-settings)
-    ├── errors.py         # Error hierarchy (KosaxLLMError and subclasses)
+    ├── errors.py         # Error hierarchy (UmmayaLLMError and subclasses)
     ├── retry.py          # RetryPolicy and exponential backoff logic
     └── usage.py          # UsageTracker with budget enforcement
 
@@ -74,7 +74,7 @@ tests/
     └── test_streaming.py # SSE streaming tests
 ```
 
-**Structure Decision**: Single project layout. The LLM client is a library module (`kosax.llm`) within the KOSAX package, not a standalone service.
+**Structure Decision**: Single project layout. The LLM client is a library module (`ummaya.llm`) within the UMMAYA package, not a standalone service.
 
 ## Reference Mapping
 
@@ -85,7 +85,7 @@ tests/
 | Exponential backoff with jitter | vision.md Layer 6 — error recovery matrix | OpenAI Agents SDK — retry matrix with composable policies |
 | Token budget enforcement | vision.md Layer 1 — cost accounting as first-class | Claude Agent SDK — usage tracking |
 | Pydantic v2 models for all I/O | Constitution § III — strict typing | Pydantic AI — schema-driven tool registry |
-| Environment-based config | Constitution § IV — no hardcoded keys | AGENTS.md — KOSAX_ prefix |
+| Environment-based config | Constitution § IV — no hardcoded keys | AGENTS.md — UMMAYA_ prefix |
 
 ## Dependency Note
 

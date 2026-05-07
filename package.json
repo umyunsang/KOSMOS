@@ -1,15 +1,16 @@
 {
-  "name": "@umyunsang/kosax",
+  "name": "ummaya",
   "version": "0.1.0",
   "description": "Conversational multi-agent harness for Korean public-service channels",
   "license": "Apache-2.0",
   "type": "module",
   "bin": {
-    "kosax": "bin/kosax"
+    "ummaya": "bin/ummaya"
   },
   "files": [
-    "bin/kosax",
-    "src/kosax/**",
+    "bin/ummaya",
+    "assets/*.svg",
+    "src/ummaya/**",
     "prompts/**",
     "tui/src/**",
     "tui/package.json",
@@ -24,8 +25,8 @@
     "!tui/src/**/*.test.ts",
     "!tui/src/**/*.test.tsx",
     "!tui/src/**/*.snap",
-    "!src/kosax/**/tests/**",
-    "!src/kosax/**/*.pyc"
+    "!src/ummaya/**/tests/**",
+    "!src/ummaya/**/*.pyc"
   ],
   "scripts": {
     "package:dry-run": "mkdir -p package-evidence && npm pack --dry-run --json > package-evidence/npm-pack-dry-run.json",
@@ -37,12 +38,12 @@
   "packageManager": "npm@11.5.1",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/umyunsang/KOSAX.git"
+    "url": "git+https://github.com/umyunsang/UMMAYA.git"
   },
   "bugs": {
-    "url": "https://github.com/umyunsang/KOSAX/issues"
+    "url": "https://github.com/umyunsang/UMMAYA/issues"
   },
-  "homepage": "https://github.com/umyunsang/KOSAX#readme",
+  "homepage": "https://github.com/umyunsang/UMMAYA#readme",
   "publishConfig": {
     "access": "public",
     "provenance": true

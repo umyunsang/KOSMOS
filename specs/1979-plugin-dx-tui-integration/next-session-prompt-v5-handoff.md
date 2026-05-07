@@ -32,7 +32,7 @@
 
 **v4 그대로 유효.** worktree 와 commit 들이 보존됨:
 
-- **Worktree**: `/Users/um-yunsang/KOSAX-w-2295/`
+- **Worktree**: `/Users/um-yunsang/UMMAYA-w-2295/`
 - **Branch**: `2295-backend-permissions-cleanup` (local only, push 안 됨)
 - **Commits**:
   1. `97b85d1` — Sonnet 1차 (~70%, 안전): AdapterRealDomainPolicy + 19 어댑터 metadata 마이그레이션 + caller-side updates
@@ -40,7 +40,7 @@
 
 ### 다음 세션 권장 처리 (v4 그대로)
 
-1. spec.md 보정 — FR-008 grep gate 정밀화 (`src/kosax/tools/` adapter metadata 영역으로 좁히고, `src/kosax/security/audit.py` + `src/kosax/plugins/checks/q3_security.py` + `src/kosax/recovery/auth_refresh.py` 등 KOSAX-needed 영역 명시 제외)
+1. spec.md 보정 — FR-008 grep gate 정밀화 (`src/ummaya/tools/` adapter metadata 영역으로 좁히고, `src/ummaya/security/audit.py` + `src/ummaya/plugins/checks/q3_security.py` + `src/ummaya/recovery/auth_refresh.py` 등 UMMAYA-needed 영역 명시 제외)
 2. SessionContext 보존 결정 (models.py 통째 삭제 X, SessionContext 만 keep)
 3. 잔재 16 source file + steps/ deletion (importer 추적 후, models.py + credentials.py 보존)
 4. `__init__.py` 재작성: credentials + models.SessionContext + Spec 035 receipt set 만 export
@@ -84,12 +84,12 @@
 
 ```bash
 # 옵션 A: Epic δ 이어서
-cd /Users/um-yunsang/KOSAX-w-2295
+cd /Users/um-yunsang/UMMAYA-w-2295
 # v4 핸드오프 + 위 권장 절차 따라 진행
 
 # 옵션 B: Epic γ 새 시작
-cd /Users/um-yunsang/KOSAX  # main worktree
-git worktree add ../KOSAX-w-2294 -b 2294-5-primitive-align
+cd /Users/um-yunsang/UMMAYA  # main worktree
+git worktree add ../UMMAYA-w-2294 -b 2294-5-primitive-align
 # /speckit-specify Epic γ 시작
 
 # 옵션 C: Epic ε / ζ / η 새 시작

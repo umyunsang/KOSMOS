@@ -19,17 +19,17 @@ spec.md `Scope Boundaries & Deferred Items` 섹션 3 항목:
 
 ---
 
-## R-1 — `src/kosax/permissions/` ~20 잔재 importer 추적 절차
+## R-1 — `src/ummaya/permissions/` ~20 잔재 importer 추적 절차
 
 **Q**: 20 파일을 안전하게 삭제하려면 importer 를 모두 추적해야 한다. 어떤 절차?
 
 **Decision**: 두 단계 grep:
-1. `grep -rE "from\s+kosax\.permissions\.(aal_backstop|adapter_metadata|bypass|cli|credentials|killswitch|mode_bypass|mode_default|models|modes|pipeline|pipeline_v2|prompt|rules|session_boot|synthesis_guard|steps)" src/ tests/` — Python import 추적
-2. `grep -rE "from\s+kosax\.permissions\s+import\s+(PermissionMode|PermissionTier|...)" src/ tests/` — symbol-level import 추적 (예: `from kosax.permissions import PermissionTier`)
+1. `grep -rE "from\s+ummaya\.permissions\.(aal_backstop|adapter_metadata|bypass|cli|credentials|killswitch|mode_bypass|mode_default|models|modes|pipeline|pipeline_v2|prompt|rules|session_boot|synthesis_guard|steps)" src/ tests/` — Python import 추적
+2. `grep -rE "from\s+ummaya\.permissions\s+import\s+(PermissionMode|PermissionTier|...)" src/ tests/` — symbol-level import 추적 (예: `from ummaya.permissions import PermissionTier`)
 
 각 importer 파일에서:
-- (a) 호출이 dead — caller 함수/클래스 통째 삭제 또는 KOSAX-needed 부분만 보존
-- (b) 호출이 KOSAX 등가물로 대체 가능 — 호출부 교체
+- (a) 호출이 dead — caller 함수/클래스 통째 삭제 또는 UMMAYA-needed 부분만 보존
+- (b) 호출이 UMMAYA 등가물로 대체 가능 — 호출부 교체
 - (c) caller 자체가 본 Epic 범위 외 — 별도 follow-up issue 생성 (단 Constitution II 잔존 사유 0)
 
 **Rationale**: memory `feedback_no_stubs_remove_or_migrate` + memory `feedback_main_verb_primitive` (메인 동사 추상화는 어댑터 layer tree 에 박제) 강제. Spec 1979 가 이미 대부분 정리했으므로 importer 잔존 가능성 낮음 (하지만 grep 으로 정확히 확인).
@@ -57,12 +57,12 @@ spec.md `Scope Boundaries & Deferred Items` 섹션 3 항목:
 
 (8 파일이지만 `otel_emit.py` + `otel_integration.py` 가 Spec 035 의 OTEL emission helper 라 영수증 set 에 포함)
 
-잔재 list (~20 파일): `aal_backstop / adapter_metadata / bypass / cli / credentials / killswitch / mode_bypass / mode_default / models / modes / pipeline / pipeline_v2 / prompt / rules / session_boot / synthesis_guard / steps/*`. 대부분 이름에서 KOSAX-invented mode / spectrum / pipeline 시그널 명시.
+잔재 list (~20 파일): `aal_backstop / adapter_metadata / bypass / cli / credentials / killswitch / mode_bypass / mode_default / models / modes / pipeline / pipeline_v2 / prompt / rules / session_boot / synthesis_guard / steps/*`. 대부분 이름에서 UMMAYA-invented mode / spectrum / pipeline 시그널 명시.
 
-**Rationale**: Spec 035 receipt 가 KOSAX = AX-infrastructure callable-channel client thesis 의 audit log invariant — 시민 액션을 한 줄도 누락 없이 박제하는 단방향 receipt. 보존 필수.
+**Rationale**: Spec 035 receipt 가 UMMAYA = AX-infrastructure callable-channel client thesis 의 audit log invariant — 시민 액션을 한 줄도 누락 없이 박제하는 단방향 receipt. 보존 필수.
 
 **Alternatives**:
-- (rejected) receipt 도 함께 정리: Spec 035 ledger 가 사용 중인 Spec 1636 plugin DX 와 향후 정책 매핑 (Epic ζ) 모두 회귀 — KOSAX thesis 의 audit invariant 깨짐.
+- (rejected) receipt 도 함께 정리: Spec 035 ledger 가 사용 중인 Spec 1636 plugin DX 와 향후 정책 매핑 (Epic ζ) 모두 회귀 — UMMAYA thesis 의 audit invariant 깨짐.
 
 ---
 
@@ -77,9 +77,9 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 class AdapterRealDomainPolicy(BaseModel):
-    """KOSAX adapter 의 단일 권한 표현 — 기관 published 정책의 cite.
+    """UMMAYA adapter 의 단일 권한 표현 — 기관 published 정책의 cite.
 
-    KOSAX는 권한을 invent 하지 않는다 (Constitution II). 본 모델은
+    UMMAYA는 권한을 invent 하지 않는다 (Constitution II). 본 모델은
     어댑터가 (a) 기관의 published 정책 URL 을 인용하고, (b) 시민에게
     노출할 gate 카테고리를 선언하며, (c) 정책 인용의 마지막 검증 시점을
     박제하는 단일 진실원이다.
@@ -113,14 +113,14 @@ class AdapterRealDomainPolicy(BaseModel):
 ```
 
 **Rationale**:
-- `frozen=True`: 인스턴스 불변 — Spec 1979 의 KOSAX-invented 가변 enum 패턴과 정반대.
-- `extra="forbid"`: 모르는 필드 추가 시 ValidationError — KOSAX-invented 필드의 슬그머니 reintroduction 차단.
+- `frozen=True`: 인스턴스 불변 — Spec 1979 의 UMMAYA-invented 가변 enum 패턴과 정반대.
+- `extra="forbid"`: 모르는 필드 추가 시 ValidationError — UMMAYA-invented 필드의 슬그머니 reintroduction 차단.
 - `Literal` 5 카테고리: cc-parity-audit 의 시민 use case 분류 기반 — read-only (lookup), login (verify), action (submit dry-run), sign (electronic signature), submit (정부24 식 final submit).
 - `Field(min_length=1)`: empty str 거절.
 
 **Alternatives**:
 - (rejected) `pipa_class` / `auth_level` 같은 이름 재사용: Constitution II 위반.
-- (rejected) 더 많은 필드 (예: `quota`, `rate_limit`): KOSAX-needed runtime data 는 별도 adapter config 에 박제, policy 자체에는 cite 만 충분.
+- (rejected) 더 많은 필드 (예: `quota`, `rate_limit`): UMMAYA-needed runtime data 는 별도 adapter config 에 박제, policy 자체에는 cite 만 충분.
 - (rejected) `Optional[str]` 로 url/text 허용: Constitution II 의 "기관 정책 cite only" 가 약화 — non-empty 강제.
 
 ---
@@ -147,7 +147,7 @@ class AdapterRealDomainPolicy(BaseModel):
 
 placeholder 항목 (TODO 마커) 는 Deferred Items 의 NEEDS TRACKING entry 로 추적 — 실 정책 검증은 후속 spec.
 
-**Rationale**: Live 어댑터는 기관 published 정책 URL 추정 가능; Mock 어댑터는 도메인 자체가 OPAQUE 또는 미공개 정책이라 placeholder + TODO 마커. 단 KOSAX thesis (cite only) 는 placeholder 라도 보존.
+**Rationale**: Live 어댑터는 기관 published 정책 URL 추정 가능; Mock 어댑터는 도메인 자체가 OPAQUE 또는 미공개 정책이라 placeholder + TODO 마커. 단 UMMAYA thesis (cite only) 는 placeholder 라도 보존.
 
 **Alternatives**:
 - (rejected) Mock 은 `policy=None` 허용: 모델이 Optional 안 함 + Constitution II 가 cite invariant 유지.
@@ -160,7 +160,7 @@ placeholder 항목 (TODO 마커) 는 Deferred Items 의 NEEDS TRACKING entry 로
 **Q**: NEW failure 0 + 18 어댑터 schema validation 의 정확한 절차는?
 
 **Decision**:
-1. cleanup 시작 직전: `cd /Users/um-yunsang/KOSAX-w-2295 && uv run pytest 2>&1 | tee specs/2295-backend-permissions-cleanup/baseline-pytest.txt`
+1. cleanup 시작 직전: `cd /Users/um-yunsang/UMMAYA-w-2295 && uv run pytest 2>&1 | tee specs/2295-backend-permissions-cleanup/baseline-pytest.txt`
 2. cleanup + 모델 추가 + 18 마이그레이션 후: `uv run pytest 2>&1 | tee specs/2295-backend-permissions-cleanup/after-pytest.txt`
 3. NEW failure diff: `diff <(grep -E '^FAILED' baseline-pytest.txt | sort) <(grep -E '^FAILED' after-pytest.txt | sort)` — after only 가 NEW failure (0 이어야 PASS)
 4. 18 어댑터 schema test: 신규 단위 테스트 1 개 — `tests/tools/test_adapter_real_domain_policy.py`:
@@ -168,7 +168,7 @@ placeholder 항목 (TODO 마커) 는 Deferred Items 의 NEEDS TRACKING entry 로
    - test_extra_forbid (모르는 필드 추가 시 ValidationError)
    - test_url_non_empty (empty url 거절)
    - test_gate_literal (5 카테고리 외 거절)
-   - test_18_adapters_have_policy (`from kosax.tools.registry import ToolRegistry; for adapter in registry.all(): assert hasattr(adapter, "policy") and adapter.policy.real_classification_url`)
+   - test_18_adapters_have_policy (`from ummaya.tools.registry import ToolRegistry; for adapter in registry.all(): assert hasattr(adapter, "policy") and adapter.policy.real_classification_url`)
 
 **Rationale**: 본 Epic 의 acceptance 가 (a) 잔재 deletion 안전 + (b) 신규 모델 strict + (c) 18 어댑터 마이그레이션 정확. 5 단위 테스트가 (b) + (c) 를 직접 enforce; (a) 는 baseline 비교.
 

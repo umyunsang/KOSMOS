@@ -19,8 +19,8 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from kosax.ipc.backpressure import BackpressureController
-from kosax.ipc.frame_schema import BackpressureSignalFrame
+from ummaya.ipc.backpressure import BackpressureController
+from ummaya.ipc.frame_schema import BackpressureSignalFrame
 
 # ---------------------------------------------------------------------------
 # Fixtures

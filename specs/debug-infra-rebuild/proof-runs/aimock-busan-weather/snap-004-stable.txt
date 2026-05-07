@@ -1,6 +1,6 @@
-    ▛███▜      KOSAX v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSAX/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ❯ 부산 사하구 날씨 알려줘
 

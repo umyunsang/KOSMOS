@@ -1,6 +1,6 @@
 # `data.go.kr` 포털 키 연동 가이드
 
-> 공공데이터포털([data.go.kr](https://data.go.kr)) API 키를 안전하게 사용해 KOSAX 플러그인을 작성하는 방법.
+> 공공데이터포털([data.go.kr](https://data.go.kr)) API 키를 안전하게 사용해 UMMAYA 플러그인을 작성하는 방법.
 >
 > 참고: [`docs/tool-adapters.md § Recording fixtures`](../tool-adapters.md), [`AGENTS.md` hard rules — 키 하드코딩 금지](../../AGENTS.md), [Spec 022 BM25 retrieval](../../specs/022-mvp-main-tool/spec.md), [Constitution §IV — Live API CI 차단](../../.specify/memory/constitution.md).
 
@@ -10,40 +10,40 @@
 
 1. <https://data.go.kr> 회원가입 (무료)
 2. 사용하려는 API (예: KOROAD 사고 다발 지역, KMA 단기예보) 의 "활용신청" 클릭
-3. 일반 인증키 (Encoding) 와 일반 인증키 (Decoding) 두 종류가 발급됩니다 — KOSAX 는 **Encoding 키**를 그대로 사용합니다 (URL-encoded value 가 발급됨).
+3. 일반 인증키 (Encoding) 와 일반 인증키 (Decoding) 두 종류가 발급됩니다 — UMMAYA 는 **Encoding 키**를 그대로 사용합니다 (URL-encoded value 가 발급됨).
 4. 승인까지 평균 1-2시간 (자동), 일부 부처 API 는 1-2일 소요.
 
 > **중요**: 일반 인증키는 IP 화이트리스트 없이 발급되지만, 트래픽 추적을 위해 발급자 정보가 로그됩니다. 키를 공유 / 유출하지 마세요.
 
 ---
 
-## 2. 환경변수 패턴 (`KOSAX_*` 강제)
+## 2. 환경변수 패턴 (`UMMAYA_*` 강제)
 
-KOSAX 의 모든 API 키는 반드시 `KOSAX_` prefix env var 로 읽어야 합니다 (AGENTS.md hard rule):
+UMMAYA 의 모든 API 키는 반드시 `UMMAYA_` prefix env var 로 읽어야 합니다 (AGENTS.md hard rule):
 
 ```python
 # ✓ 올바른 패턴
 import os
-api_key = os.environ["KOSAX_DATA_GO_KR_API_KEY"]
+api_key = os.environ["UMMAYA_DATA_GO_KR_API_KEY"]
 
 # ✗ 금지: 하드코딩
 api_key = "abcd1234..."  # PR 차단됨
 
 # ✗ 금지: 다른 prefix
-api_key = os.environ["DATA_GO_KR_KEY"]  # KOSAX_ prefix 누락
+api_key = os.environ["DATA_GO_KR_KEY"]  # UMMAYA_ prefix 누락
 ```
 
-기존 host 어댑터들은 `data.go.kr` 통합 키 (`KOSAX_DATA_GO_KR_API_KEY`) 를 공유합니다. 부처별로 별도 키가 필요한 경우 다음 패턴을 따르세요:
+기존 host 어댑터들은 `data.go.kr` 통합 키 (`UMMAYA_DATA_GO_KR_API_KEY`) 를 공유합니다. 부처별로 별도 키가 필요한 경우 다음 패턴을 따르세요:
 
 | 환경변수 | 용도 |
 |---|---|
-| `KOSAX_DATA_GO_KR_API_KEY` | 공공데이터포털 통합 키 (KOROAD / KMA / HIRA 공유) |
-| `KOSAX_KAKAO_API_KEY` | Kakao REST API |
-| `KOSAX_JUSO_CONFM_KEY` | 행정안전부 도로명주소 확인키 |
-| `KOSAX_SGIS_KEY` / `KOSAX_SGIS_SECRET` | 통계청 SGIS |
-| `KOSAX_<MINISTRY>_API_KEY` | 신규 부처 API (플러그인이 직접 정의) |
+| `UMMAYA_DATA_GO_KR_API_KEY` | 공공데이터포털 통합 키 (KOROAD / KMA / HIRA 공유) |
+| `UMMAYA_KAKAO_API_KEY` | Kakao REST API |
+| `UMMAYA_JUSO_CONFM_KEY` | 행정안전부 도로명주소 확인키 |
+| `UMMAYA_SGIS_KEY` / `UMMAYA_SGIS_SECRET` | 통계청 SGIS |
+| `UMMAYA_<MINISTRY>_API_KEY` | 신규 부처 API (플러그인이 직접 정의) |
 
-`pydantic_settings.BaseSettings` 와 결합하면 자동 로드 + validation 이 가능합니다 — 자세한 패턴은 `src/kosax/settings.py` 참고.
+`pydantic_settings.BaseSettings` 와 결합하면 자동 로드 + validation 이 가능합니다 — 자세한 패턴은 `src/ummaya/settings.py` 참고.
 
 ---
 
@@ -53,8 +53,8 @@ api_key = os.environ["DATA_GO_KR_KEY"]  # KOSAX_ prefix 누락
 
 ```bash
 # .env (절대 commit 하지 말 것; .gitignore 에 등록 필수)
-KOSAX_DATA_GO_KR_API_KEY=your-encoding-key-here
-KOSAX_KAKAO_API_KEY=your-kakao-key-here
+UMMAYA_DATA_GO_KR_API_KEY=your-encoding-key-here
+UMMAYA_KAKAO_API_KEY=your-kakao-key-here
 ```
 
 `.gitignore` 에 다음 라인이 반드시 포함:
@@ -65,7 +65,7 @@ KOSAX_KAKAO_API_KEY=your-kakao-key-here
 secrets/
 ```
 
-CI 에서는 GitHub Actions Secrets 사용 (`KOSAX_DATA_GO_KR_API_KEY` 같은 이름으로 등록):
+CI 에서는 GitHub Actions Secrets 사용 (`UMMAYA_DATA_GO_KR_API_KEY` 같은 이름으로 등록):
 
 ```yaml
 # .github/workflows/plugin-validation.yml
@@ -92,7 +92,7 @@ TOOL = GovAPITool(
 - `rate_limit_per_minute=10` — 분당 10건 (일 14,400 calls 한도)
 - `cache_ttl_seconds=0` (캐시 안함) → 부처 데이터 변동 빈도 보고 늘리기
 
-KOROAD / KMA / HIRA 는 `rate_limit_per_minute=30` 을 채택 — 데이터가 분 단위 변동성을 가져 캐시 효용이 크지 않기 때문 (`src/kosax/tools/koroad/koroad_accident_search.py` 참고).
+KOROAD / KMA / HIRA 는 `rate_limit_per_minute=30` 을 채택 — 데이터가 분 단위 변동성을 가져 캐시 효용이 크지 않기 때문 (`src/ummaya/tools/koroad/koroad_accident_search.py` 참고).
 
 ---
 
@@ -206,7 +206,7 @@ pipa_trustee_acknowledgment:
   acknowledgment_sha256: "<canonical hash>"
 ```
 
-acknowledgment_sha256 는 `docs/plugins/security-review.md` 의 canonical 텍스트 SHA-256 과 byte-equal 해야 합니다 — TUI 슬래시 커맨드 `/plugin pipa-text` 또는 `python -c "from kosax.plugins import CANONICAL_ACKNOWLEDGMENT_SHA256; print(CANONICAL_ACKNOWLEDGMENT_SHA256)"` 한 줄로 자동 계산 + 표시 가능.
+acknowledgment_sha256 는 `docs/plugins/security-review.md` 의 canonical 텍스트 SHA-256 과 byte-equal 해야 합니다 — TUI 슬래시 커맨드 `/plugin pipa-text` 또는 `python -c "from ummaya.plugins import CANONICAL_ACKNOWLEDGMENT_SHA256; print(CANONICAL_ACKNOWLEDGMENT_SHA256)"` 한 줄로 자동 계산 + 표시 가능.
 
 자세한 PIPA §26 수탁자 책임은 [`docs/plugins/security-review.md`](security-review.md) 참고.
 

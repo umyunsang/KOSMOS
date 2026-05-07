@@ -1,4 +1,4 @@
-# KOSAX 어댑터 ↔ 국제 AX-Gateway 매핑
+# UMMAYA 어댑터 ↔ 국제 AX-Gateway 매핑
 
 > **Bilingual reference doc** — 한국어 primary / English fallback per AGENTS.md § Source Code Language.
 > **Originating spec**: Epic ζ #2297 (`specs/2297-zeta-e2e-smoke/spec.md` FR-017 + SC-009).
@@ -6,15 +6,15 @@
 
 ## Thesis (한국어)
 
-KOSAX 의 정체성은 **한국 국가 AX-인프라 의 client-side reference implementation** 이다 (AGENTS.md § CORE THESIS). 국가인공지능전략위원회 + 행동계획 2026-2028 + 공공AX + 범정부 AI 공통기반 정책은 각 부처 / 기관이 자체 시스템을 LLM-callable 한 보안-wrapping 통로로 노출하도록 강제한다 — KOSAX 는 그 통로를 시민 대신 호출하는 caller 이다. 이 모델은 한국 고유의 발명이 아니다: Singapore APEX, Estonia X-Road, EU EUDI Wallet, Japan マイナポータル API 모두 같은 thesis 의 다른 구현이다. 따라서 KOSAX 의 어댑터 카탈로그는 이 4개 국제 reference 와 row-by-row 대응 가능해야 하며, 그 대응 표가 본 doc 이다. KOSAX 의 어떤 어댑터도 "한국 만의 발명" 이 아니라 4개 reference 중 하나의 한국 적응이라는 것을 증명함으로써, KOSAX 의 client-side caller 패턴이 국제적으로 통용되는 design 임을 보인다.
+UMMAYA 의 정체성은 **한국 국가 AX-인프라 의 client-side reference implementation** 이다 (AGENTS.md § CORE THESIS). 국가인공지능전략위원회 + 행동계획 2026-2028 + 공공AX + 범정부 AI 공통기반 정책은 각 부처 / 기관이 자체 시스템을 LLM-callable 한 보안-wrapping 통로로 노출하도록 강제한다 — UMMAYA 는 그 통로를 시민 대신 호출하는 caller 이다. 이 모델은 한국 고유의 발명이 아니다: Singapore APEX, Estonia X-Road, EU EUDI Wallet, Japan マイナポータル API 모두 같은 thesis 의 다른 구현이다. 따라서 UMMAYA 의 어댑터 카탈로그는 이 4개 국제 reference 와 row-by-row 대응 가능해야 하며, 그 대응 표가 본 doc 이다. UMMAYA 의 어떤 어댑터도 "한국 만의 발명" 이 아니라 4개 reference 중 하나의 한국 적응이라는 것을 증명함으로써, UMMAYA 의 client-side caller 패턴이 국제적으로 통용되는 design 임을 보인다.
 
 ## Thesis (English)
 
-KOSAX positions itself as the **client-side reference implementation for Korea's national AX infrastructure** (AGENTS.md § CORE THESIS). The Korean policy stack — National AI Strategy Committee + Action Plan 2026–2028 + Public AX + Whole-of-Government AI Shared Infrastructure — drives each ministry/agency to expose its own systems as LLM-callable secure-wrapped channels; KOSAX is the caller invoking those channels on the citizen's behalf. This model is not a Korean invention. Singapore APEX, Estonia X-Road, EU EUDI Wallet, and Japan マイナポータル API are all different implementations of the same thesis. Therefore the KOSAX adapter catalog should map row-by-row to these four international references, and that mapping is documented below. By proving every KOSAX adapter has at least one foreign-spec analog, this doc demonstrates that the client-side caller pattern is an internationally established design — not a Korea-only experiment.
+UMMAYA positions itself as the **client-side reference implementation for Korea's national AX infrastructure** (AGENTS.md § CORE THESIS). The Korean policy stack — National AI Strategy Committee + Action Plan 2026–2028 + Public AX + Whole-of-Government AI Shared Infrastructure — drives each ministry/agency to expose its own systems as LLM-callable secure-wrapped channels; UMMAYA is the caller invoking those channels on the citizen's behalf. This model is not a Korean invention. Singapore APEX, Estonia X-Road, EU EUDI Wallet, and Japan マイナポータル API are all different implementations of the same thesis. Therefore the UMMAYA adapter catalog should map row-by-row to these four international references, and that mapping is documented below. By proving every UMMAYA adapter has at least one foreign-spec analog, this doc demonstrates that the client-side caller pattern is an internationally established design — not a Korea-only experiment.
 
 ## Mapping table
 
-| KOSAX adapter family / primitive | Singapore APEX [^1] | Estonia X-Road [^2] | EU EUDI Wallet [^3] | Japan マイナポータル API [^4] |
+| UMMAYA adapter family / primitive | Singapore APEX [^1] | Estonia X-Road [^2] | EU EUDI Wallet [^3] | Japan マイナポータル API [^4] |
 |---|---|---|---|---|
 | `verify` primitive (delegation ceremony) | APEX OAuth 2.0 + Singpass NDI | X-Road **MISP** Member Identity Service + eID auth | EUDI Wallet → PID Issuance + Trust Framework | マイナンバーカード認証 (公的個人認証サービス JPKI) |
 | `mock_verify_module_modid` (Mobile-ID Module) | Singpass NDI mobile token | mID (eID mobile profile) | EUDI Wallet PID (mobile-bound) | マイナンバーカード スマホ搭載機能 |

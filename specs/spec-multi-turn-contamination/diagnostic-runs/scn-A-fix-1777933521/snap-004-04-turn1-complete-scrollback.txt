@@ -1,49 +1,49 @@
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 14 entries verified (4 primitives) in 0ms
-    ▛███▜      KOSAX v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSAX/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ❯ 강남역 근처 내과 알려줘
 
 ✳ Accomplishing…
 
 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-❯ [KOSAX-QUERY] callModel:enter messages=4
+❯ [UMMAYA-QUERY] callModel:enter messages=4
 ✶KAccomplishing…CHAT_MESSAGES_BUILT] count=1 user_turns=1 tail_role=user tail_first256="강남역 근처 내과 알려줘"────────────────────────────────────────────────────────────────────
 ✢KAccomplishing…ending chat_request corr=cedac607-7d48-46f7-b9d7-5d42cc3e01ca chatMessages=1                                                                      ● high · /effort
 ∴ Thinking — The (ctrl+o to expand) true
-❯ [KOSAX-QUERY] recv #1 kind=adapter_manifest_sync corr=b98e0d75 done=undefined delta="" thinking=""
+❯ [UMMAYA-QUERY] recv #1 kind=adapter_manifest_sync corr=b98e0d75 done=undefined delta="" thinking=""
 ✢ Accomplishing…
 
 
-❯ [KOSAX-QUERY] recv #3 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" user is"
-[KOSAX-QUERY] recv #4 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" asking for"────────────────────────────────────────────────────────────────────────────────
-[KOSAX-QUERY] recv #5 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" \""                                                                      ● high · /effort
-[KOSAX-QUERY] reuse# isiasking for "near Gangnam Station internal (ctrl+o to expand)g="near"
-[KOSAX-QUERY] recv #7 kind=assistant_chunk corr=cc3e01ca done=falsmedicine (ctrl+o to expand)
-✳KOSAX-QUERY] recv #8 kind=assistant_chunk corr=cc3e01ca done=false delta=" (ctrl+o to expand)
-✶KOSAX-QiERi] recv #9 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" Station"
-[KOSAX-QUERY] recv #10 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" internal"
-  [KOSAX-QUERY] recv #11 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" medicine"
-  [KOSAX-QUERY] recv #12 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking="\""
-  [KOSAX-QUERY] recv #13 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" in"
-[KOSAX-QUERY] recv #14 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" Korean"
-[KOSAX-QUERY] recv #15 kind=assistant_chunk corr=cc3e01ca done=false delta="in Korean.=(ctrl+o to expand)
-[KOSAX-QUERY] recv #16 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" They"
-[KOSAX-QUERY] recv #17 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" want to"
-[KOSAX-QUERY] recv #18 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" find"
-[KOSAX-QUERY] recv #19 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" internal"
-  [KOSAX-QUERY] recv #20 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" medicine"
-[KOSAX-QUERY] recv #21 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" clinics"
-[KOSAX-QUERY] recv #22 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" near"
-[KOSAX-QUERY] recv #23 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" Gang"
-[KOSAX-QUERY] recv #24 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking="nam"
-[KOSAX-QUERY] recv #25 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" Station"
+❯ [UMMAYA-QUERY] recv #3 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" user is"
+[UMMAYA-QUERY] recv #4 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" asking for"────────────────────────────────────────────────────────────────────────────────
+[UMMAYA-QUERY] recv #5 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" \""                                                                      ● high · /effort
+[UMMAYA-QUERY] reuse# isiasking for "near Gangnam Station internal (ctrl+o to expand)g="near"
+[UMMAYA-QUERY] recv #7 kind=assistant_chunk corr=cc3e01ca done=falsmedicine (ctrl+o to expand)
+✳UMMAYA-QUERY] recv #8 kind=assistant_chunk corr=cc3e01ca done=false delta=" (ctrl+o to expand)
+✶UMMAYA-QiERi] recv #9 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" Station"
+[UMMAYA-QUERY] recv #10 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" internal"
+  [UMMAYA-QUERY] recv #11 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" medicine"
+  [UMMAYA-QUERY] recv #12 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking="\""
+  [UMMAYA-QUERY] recv #13 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" in"
+[UMMAYA-QUERY] recv #14 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" Korean"
+[UMMAYA-QUERY] recv #15 kind=assistant_chunk corr=cc3e01ca done=false delta="in Korean.=(ctrl+o to expand)
+[UMMAYA-QUERY] recv #16 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" They"
+[UMMAYA-QUERY] recv #17 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" want to"
+[UMMAYA-QUERY] recv #18 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" find"
+[UMMAYA-QUERY] recv #19 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" internal"
+  [UMMAYA-QUERY] recv #20 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" medicine"
+[UMMAYA-QUERY] recv #21 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" clinics"
+[UMMAYA-QUERY] recv #22 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" near"
+[UMMAYA-QUERY] recv #23 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" Gang"
+[UMMAYA-QUERY] recv #24 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking="nam"
+[UMMAYA-QUERY] recv #25 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" Station"
 ⏺ 강남역 근처에서 내과를 진료하는 병원/의원을 찾아드렸습니다. 2km 반경 내에서 검색한 결과입니다:
-[KOSAX-QUERY] recv #27 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking="\n\n"
+[UMMAYA-QUERY] recv #27 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking="\n\n"
  K가장 가까운 내과 (병원/의원)                                  false delta="" thinking="To"
-[KOSAX-QUERY] recv #29 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" fulfill"
+[UMMAYA-QUERY] recv #29 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" fulfill"
 
   1. 선한목자병원 (824m)
 

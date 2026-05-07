@@ -22,7 +22,7 @@ Every FR cluster traces to at least one concrete reference source in `docs/visio
 | Structured envelope `{version, correlation_id, role, payload, trailer}` | JSON-RPC id correlation precedent; envelope versioning isolates transport-vs-kind change axes | LSP 3.17 §3 Base Protocol (`jsonrpc` version field + `id` + `method` + `params`) |
 | `correlation_id` UUIDv7 (sortable) | Timestamp-prefixed IDs enable direct LRU ordering + OTEL trace linking without secondary timestamp field | RFC 9562 §5.7 (UUIDv7); Python 3.12 `uuid.uuid7()` stdlib — AGENTS.md no-new-deps hard rule satisfied |
 | `role` enum `{tui, backend, tool, llm, notification}` | Explicit sender identification aids debugger + OTEL span attribution | `.references/claude-code-sourcemap/restored-src/src/services/api/sessionIngress.ts` — sender tag on inbound events |
-| `payload` Pydantic discriminated union by `kind` | Compile-time type safety + runtime validation in one pass; JSON Schema auto-derived | Pydantic v2 `Field(discriminator="kind")` docs; existing `IPCFrame` union in `src/kosax/ipc/frame_schema.py` |
+| `payload` Pydantic discriminated union by `kind` | Compile-time type safety + runtime validation in one pass; JSON Schema auto-derived | Pydantic v2 `Field(discriminator="kind")` docs; existing `IPCFrame` union in `src/ummaya/ipc/frame_schema.py` |
 | `trailer` optional `{final, transaction_id, checksum_sha256}` | Streaming end-of-message signal + integrity check at chunked-frame boundary | HTTP/1.1 chunked trailers (RFC 9112 §7.1.2); gRPC trailers semantic |
 | JSON Schema Draft 2020-12 @ `tui/src/ipc/schema/frame.schema.json` | Cross-language source of truth; Pydantic v2 emits 2020-12 by default; `ajv` / `jsonschema` validators support it | Pydantic v2 `TypeAdapter.json_schema(mode="validation")` defaults to Draft 2020-12 |
 | Chunked split for payload > 1 MiB | stdio pipe buffer limits on macOS (64 KiB default, 1 MiB PIPE_BUF extreme); prevents single-frame pipe block | `man 2 write` PIPE_BUF guarantees; Node.js Streams doc `highWaterMark` = 64 KiB default |
@@ -42,7 +42,7 @@ Every FR cluster traces to at least one concrete reference source in `docs/visio
 |----------|-----------|-----------|
 | `resume_request(session_id, last_seen_correlation_id, last_seen_frame_seq)` | Three-tuple disambiguates "what did the client last see" under crash-replay; matches MCP SSE resume semantic | MCP Transports Spec 2025-03-26 § Resumable Streams — `Last-Event-ID` header |
 | 256-frame session ring buffer | Covers ~10 s of active streaming at typical LLM token rates; fits < 1 MiB per session | Empirical: FriendliAI streaming peak ~25 frames/s × 10 s = 250 < 256 |
-| `.consumed` marker for acked frames | Reuses Spec 027 mailbox idiom (filesystem marker there, in-memory flag here — same semantic) | Spec 027 `src/kosax/swarm/mailbox.py` `_mark_consumed()` helper |
+| `.consumed` marker for acked frames | Reuses Spec 027 mailbox idiom (filesystem marker there, in-memory flag here — same semantic) | Spec 027 `src/ummaya/swarm/mailbox.py` `_mark_consumed()` helper |
 | `resume_rejected` explicit reason codes (`session_expired`, `buffer_overflow`, `backend_restart`, `correlation_unknown`) | Fail-closed — client never guesses why resume failed; matches JSON-RPC error-object precedent | LSP 3.17 `ResponseError.code` enum |
 | 3-fail blacklist | Prevents infinite resume loops under persistent corruption | CC sourcemap `src/services/api/withRetry.ts` max-attempts guard |
 | 30 s heartbeat / 45 s dead | 1.5× heartbeat interval = industry standard dead threshold (TCP keep-alive, WebSocket ping) | RFC 6455 §5.5.2 WebSocket Ping/Pong; gRPC keepalive defaults |
@@ -55,7 +55,7 @@ Every FR cluster traces to at least one concrete reference source in `docs/visio
 | 512-entry LRU per session | Covers typical 1-hour citizen session (~100 transactions) with 5× safety factor | Stripe idempotency-key TTL 24 h → 512 entries × 1-hour session window translates to conservative bound |
 | `is_irreversible=true` pinned (no eviction) | 정부24 민원 제출 / HIRA 진료기록 열람 신청 / MOHW 재신청 — duplicate execution = civil-affairs harm | Spec 024 `ToolCallAuditRecord.is_irreversible`; PIPA §26 수탁자 책임 |
 | `(session_id, transaction_id)` cache key | Session-scope dedup matches "single-window" Principle 8 | Spec 027 mailbox `session_id` scoping |
-| Cache-state OTEL attribute `kosax.ipc.tx.cache_state ∈ {hit, miss, stored}` | Audit-able dedup outcome for PIPA compliance reporting | Spec 021 OTEL attribute namespacing convention |
+| Cache-state OTEL attribute `ummaya.ipc.tx.cache_state ∈ {hit, miss, stored}` | Audit-able dedup outcome for PIPA compliance reporting | Spec 021 OTEL attribute namespacing convention |
 | Stripe 3-step idempotency (UUID + transactional state + stale reclaim) | Battle-tested pattern for at-least-once delivery with exactly-once effect | Stripe engineering blog 2017-03 "Designing robust and predictable APIs with idempotency"; Shopify idempotency-key RFC draft |
 
 ### FR-034..FR-040 — Cross-cutting
@@ -109,13 +109,13 @@ No unregistered deferrals found. PASS.
 
 ### 3.5 Why 64-frame HWM / 256-frame ring / 512-entry LRU / 30 s heartbeat
 
-- **Decision**: These four knobs are the defaults; all are `pydantic-settings` env-var tunable via `KOSAX_IPC_HWM_FRAMES`, `KOSAX_IPC_RING_CAPACITY`, `KOSAX_IPC_TX_LRU_CAPACITY`, `KOSAX_IPC_HEARTBEAT_INTERVAL_MS`.
+- **Decision**: These four knobs are the defaults; all are `pydantic-settings` env-var tunable via `UMMAYA_IPC_HWM_FRAMES`, `UMMAYA_IPC_RING_CAPACITY`, `UMMAYA_IPC_TX_LRU_CAPACITY`, `UMMAYA_IPC_HEARTBEAT_INTERVAL_MS`.
 - **Rationale**: Values chosen per deep-research comparison (Node Streams default, MCP SSE typical buffer depths, Stripe idempotency guidance, WebSocket keepalive conventions). Env-var exposure allows per-deployment tuning without code change.
 - **Alternatives considered**: Hardcoded constants (rejected — operators need adjustment knobs in prod).
 
 ## 4. Existing-code extension analysis
 
-Read `src/kosax/ipc/frame_schema.py` (279 lines, 10 frame arms, Pydantic v2 discriminated union, Spec 287 origin).
+Read `src/ummaya/ipc/frame_schema.py` (279 lines, 10 frame arms, Pydantic v2 discriminated union, Spec 287 origin).
 
 **Existing `_BaseFrame` fields**: `session_id: str`, `correlation_id: str | None`, `ts: str`.
 

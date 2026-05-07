@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSAX-original — Lead-Diag-4 (2026-05-04) role='tool' wire conversion.
+// UMMAYA-original — Lead-Diag-4 (2026-05-04) role='tool' wire conversion.
 //
 // Builds the OpenAI Chat Completions-compliant ``ChatRequestFrame.messages``
 // payload from CC's transcript ``Message[]``.
 //
 // CC (Claude Code) uses the Anthropic Messages API native shape — tool_result
 // blocks live INSIDE ``role='user'`` messages and tool_use blocks live INSIDE
-// ``role='assistant'`` messages. KOSAX forwards to K-EXAONE on FriendliAI,
+// ``role='assistant'`` messages. UMMAYA forwards to K-EXAONE on FriendliAI,
 // which uses the OpenAI Chat Completions spec — tool_result is its own
 // ``role='tool'`` message keyed by ``tool_call_id``, and assistant tool
 // invocations live in the ``tool_calls[]`` array on the assistant message.

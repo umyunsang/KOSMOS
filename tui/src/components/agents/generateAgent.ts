@@ -1,9 +1,9 @@
 import type { ContentBlock } from 'src/sdk-compat.js'
 import { getUserContext } from 'src/context.js'
-// Anthropic API removed in P1+P2 (Spec 1633); KOSAX routes LLM calls
+// Anthropic API removed in P1+P2 (Spec 1633); UMMAYA routes LLM calls
 // through FriendliAI Serverless via the Python backend.
 const queryModelWithoutStreaming = async (..._args: readonly unknown[]): Promise<never> => {
-  throw new Error('Anthropic API not available in KOSAX — Spec 1633')
+  throw new Error('Anthropic API not available in UMMAYA — Spec 1633')
 }
 import { getEmptyToolPermissionContext } from 'src/Tool.js'
 import { AGENT_TOOL_NAME } from 'src/tools/AgentTool/constants.js'

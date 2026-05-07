@@ -3,7 +3,7 @@
 
 The transaction_id produced by the submit dispatcher must be:
 1. Deterministic: same (tool_id, params, adapter_nonce) → same transaction_id.
-2. Prefixed with 'urn:kosax:submit:'.
+2. Prefixed with 'urn:ummaya:submit:'.
 3. Based on SHA-256 over canonical_json(tool_id, params, adapter_nonce).
 
 Reference: specs/031-five-primitive-harness/data-model.md § 1 + T023.
@@ -14,7 +14,7 @@ from __future__ import annotations
 import hashlib
 import json
 
-from kosax.primitives.submit import derive_transaction_id
+from ummaya.primitives.submit import derive_transaction_id
 
 # ---------------------------------------------------------------------------
 # T019-A: URN prefix
@@ -22,10 +22,10 @@ from kosax.primitives.submit import derive_transaction_id
 
 
 def test_transaction_id_has_urn_prefix() -> None:
-    """transaction_id MUST start with 'urn:kosax:submit:'."""
+    """transaction_id MUST start with 'urn:ummaya:submit:'."""
     txid = derive_transaction_id("mock_tool_v1", {"x": 1}, adapter_nonce=None)
-    assert txid.startswith("urn:kosax:submit:"), (
-        f"transaction_id {txid!r} must start with 'urn:kosax:submit:'"
+    assert txid.startswith("urn:ummaya:submit:"), (
+        f"transaction_id {txid!r} must start with 'urn:ummaya:submit:'"
     )
 
 
@@ -88,7 +88,7 @@ def test_transaction_id_is_sha256_based() -> None:
         canonical_payload, sort_keys=True, ensure_ascii=True, separators=(",", ":")
     )
     expected_hash = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
-    expected_txid = f"urn:kosax:submit:{expected_hash}"
+    expected_txid = f"urn:ummaya:submit:{expected_hash}"
 
     assert txid == expected_txid, (
         f"transaction_id {txid!r} does not match expected SHA-256 derivation {expected_txid!r}"
@@ -112,7 +112,7 @@ def test_transaction_id_with_nonce_is_sha256_based() -> None:
         canonical_payload, sort_keys=True, ensure_ascii=True, separators=(",", ":")
     )
     expected_hash = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
-    expected_txid = f"urn:kosax:submit:{expected_hash}"
+    expected_txid = f"urn:ummaya:submit:{expected_hash}"
 
     assert txid == expected_txid
 

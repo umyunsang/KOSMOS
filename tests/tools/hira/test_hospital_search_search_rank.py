@@ -17,11 +17,11 @@ from __future__ import annotations
 
 import pytest
 
-from kosax.tools.executor import ToolExecutor
-from kosax.tools.hira.hospital_search import register as register_hira
-from kosax.tools.lookup import lookup
-from kosax.tools.models import LookupSearchInput, LookupSearchResult
-from kosax.tools.registry import ToolRegistry
+from ummaya.tools.executor import ToolExecutor
+from ummaya.tools.hira.hospital_search import register as register_hira
+from ummaya.tools.lookup import lookup
+from ummaya.tools.models import LookupSearchInput, LookupSearchResult
+from ummaya.tools.registry import ToolRegistry
 
 # ---------------------------------------------------------------------------
 # Fixture: test-local registry with KOROAD + HIRA
@@ -31,7 +31,7 @@ from kosax.tools.registry import ToolRegistry
 @pytest.fixture(scope="module")
 def two_adapter_registry() -> tuple[ToolRegistry, ToolExecutor]:
     """Test-local registry with koroad_accident_hazard_search + hira_hospital_search."""
-    from kosax.tools.koroad.accident_hazard_search import register as register_koroad
+    from ummaya.tools.koroad.accident_hazard_search import register as register_koroad
 
     registry = ToolRegistry()
     executor = ToolExecutor(registry)

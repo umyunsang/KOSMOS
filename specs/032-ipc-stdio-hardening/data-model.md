@@ -5,7 +5,7 @@
 **Research**: [research.md](./research.md)
 **Spec**: [spec.md](./spec.md)
 
-> **Design posture** — This spec EXTENDS `src/kosax/ipc/frame_schema.py`. Every entity below is either (a) a new `_BaseFrame` field shared by all 19 arms, (b) a brand-new Pydantic v2 arm joining the `IPCFrame` discriminated union, or (c) a session-lifetime in-memory structure (no ORM, no persistence).
+> **Design posture** — This spec EXTENDS `src/ummaya/ipc/frame_schema.py`. Every entity below is either (a) a new `_BaseFrame` field shared by all 19 arms, (b) a brand-new Pydantic v2 arm joining the `IPCFrame` discriminated union, or (c) a session-lifetime in-memory structure (no ORM, no persistence).
 
 ---
 
@@ -226,7 +226,7 @@ Prevents double-submission of irreversible actions (FR-026..033). Key = `(sessio
 | ------------------- | ------------------------------------------------- | ------------------------------------------------------------------ |
 | `cache`             | `collections.OrderedDict[tuple[str, str], TxEntry]` | Capacity 512; insertion order = eviction order.                  |
 | `pinned_keys`       | `set[tuple[str, str]]`                            | Keys for `is_irreversible=true` tools. NEVER evicted regardless of LRU. |
-| `capacity`          | `int`                                             | Default 512 (from `KOSAX_IPC_TX_CACHE_CAPACITY`). `ge=1`.         |
+| `capacity`          | `int`                                             | Default 512 (from `UMMAYA_IPC_TX_CACHE_CAPACITY`). `ge=1`.         |
 
 ### 4.3 `TxEntry` sub-shape
 
@@ -396,7 +396,7 @@ File: `tui/src/ipc/schema/frame.schema.json` (JSON Schema Draft 2020-12). Genera
 
 The following fields are deliberately absent to keep the envelope minimal:
 
-- `auth_token` / `signature` — transport is local stdio; AGENTS.md hard rule on `KOSAX_*` secrets config applies upstream.
+- `auth_token` / `signature` — transport is local stdio; AGENTS.md hard rule on `UMMAYA_*` secrets config applies upstream.
 - `priority` / `qos` — stdio is FIFO; priority lanes are out of scope.
 - `encryption` — stdio is process-local; OS handles isolation.
 - `compression` — NDJSON stays human-debuggable; compression is out of scope.

@@ -4,7 +4,7 @@
 
 ## What lives here
 
-500 recorded tool outputs from real KOSAX tool invocations (`koroad_*`, `kma_forecast_fetch`, `hira_hospital_search`, `nmc_emergency_search`). These are **clean** outputs — no PII, no injection attempts — and they represent the traffic the Layer C detector must **not** block.
+500 recorded tool outputs from real UMMAYA tool invocations (`koroad_*`, `kma_forecast_fetch`, `hira_hospital_search`, `nmc_emergency_search`). These are **clean** outputs — no PII, no injection attempts — and they represent the traffic the Layer C detector must **not** block.
 
 ## How it is used
 

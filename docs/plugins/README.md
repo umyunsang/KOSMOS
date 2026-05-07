@@ -1,29 +1,29 @@
-# KOSAX Plugin System
+# UMMAYA Plugin System
 
-부처·기관·지자체·시민 기여자가 KOSAX 의 tool 어댑터를 추가하는 플러그인 시스템. Korean-primary 가이드.
+부처·기관·지자체·시민 기여자가 UMMAYA 의 tool 어댑터를 추가하는 플러그인 시스템. Korean-primary 가이드.
 
 > Spec 1636 P5 Plugin DX 5-tier 완료. 모든 인프라 + 4 examples + 50-item validation 활성.
-> Canonical 근거: [Migration tree § B8](../requirements/kosax-migration-tree.md), [`docs/vision.md`](../vision.md), [Spec 1636](../../specs/1636-plugin-dx-5tier/spec.md).
+> Canonical 근거: [Migration tree § B8](../requirements/ummaya-migration-tree.md), [`docs/vision.md`](../vision.md), [Spec 1636](../../specs/1636-plugin-dx-5tier/spec.md).
 
 ## Five-tier developer-experience package
 
 | Tier | Deliverable | Status |
 |---|---|---|
-| **Tier 1 · Start** | [`kosax-plugin-template`](https://github.com/kosax-plugin-store/kosax-plugin-template) (is_template) · `kosax plugin init <name>` (TUI) · `uvx kosax-plugin-init` (Python fallback) · [quickstart.ko.md](quickstart.ko.md) | ✅ shipped |
+| **Tier 1 · Start** | [`ummaya-plugin-template`](https://github.com/ummaya-plugin-store/ummaya-plugin-template) (is_template) · `ummaya plugin init <name>` (TUI) · `uvx ummaya-plugin-init` (Python fallback) · [quickstart.ko.md](quickstart.ko.md) | ✅ shipped |
 | **Tier 2 · Guide** | [architecture.md](architecture.md) · [pydantic-schema.md](pydantic-schema.md) · [search-hint.md](search-hint.md) · [permission-tier.md](permission-tier.md) · [data-go-kr.md](data-go-kr.md) · [live-vs-mock.md](live-vs-mock.md) · [testing.md](testing.md) · [security-review.md](security-review.md) | ✅ shipped |
-| **Tier 3 · Examples** | [seoul-subway](https://github.com/kosax-plugin-store/kosax-plugin-seoul-subway) (Live) · [post-office](https://github.com/kosax-plugin-store/kosax-plugin-post-office) (Live) · [nts-homtax](https://github.com/kosax-plugin-store/kosax-plugin-nts-homtax) (Mock) · [nhis-check](https://github.com/kosax-plugin-store/kosax-plugin-nhis-check) (Mock) | ✅ shipped |
+| **Tier 3 · Examples** | [seoul-subway](https://github.com/ummaya-plugin-store/ummaya-plugin-seoul-subway) (Live) · [post-office](https://github.com/ummaya-plugin-store/ummaya-plugin-post-office) (Live) · [nts-homtax](https://github.com/ummaya-plugin-store/ummaya-plugin-nts-homtax) (Mock) · [nhis-check](https://github.com/ummaya-plugin-store/ummaya-plugin-nhis-check) (Mock) | ✅ shipped |
 | **Tier 4 · Submit** | [plugin_submission.yml](../../.github/ISSUE_TEMPLATE/plugin_submission.yml) · [plugin-validation.yml](../../.github/workflows/plugin-validation.yml) (reusable) · [review-checklist.md](review-checklist.md) (50 items) · [security-review.md](security-review.md) (PIPA §26) | ✅ shipped |
-| **Tier 5 · Registry** | [kosax-plugin-store/index](https://github.com/kosax-plugin-store/index) (catalog) · `/plugin install <name>` (TUI) · SLSA v1.0 verification · OTEL `kosax.plugin.id` 발산 · 동의 영수증 | ✅ shipped |
+| **Tier 5 · Registry** | [ummaya-plugin-store/index](https://github.com/ummaya-plugin-store/index) (catalog) · `/plugin install <name>` (TUI) · SLSA v1.0 verification · OTEL `ummaya.plugin.id` 발산 · 동의 영수증 | ✅ shipped |
 
 ## 시작하기 (Quickstart)
 
 ```bash
 # 옵션 A — GitHub "Use this template" 버튼
 # 옵션 B — TUI (Bun + Ink)
-kosax plugin init my_plugin --non-interactive --tier live --layer 1 --no-pii
+ummaya plugin init my_plugin --non-interactive --tier live --layer 1 --no-pii
 
 # 옵션 C — Python fallback
-uvx kosax-plugin-init my_plugin --tier live --layer 1 --no-pii
+uvx ummaya-plugin-init my_plugin --tier live --layer 1 --no-pii
 ```
 
 자세한 9단계 walkthrough: [`quickstart.ko.md`](quickstart.ko.md). SC-001 budget: ≤ 30분.
@@ -48,7 +48,7 @@ uvx kosax-plugin-init my_plugin --tier live --layer 1 --no-pii
 | [`pydantic-schema.md`](pydantic-schema.md) | 모든 기여자 | model_config · Field description · 흔한 안티 패턴 |
 | [`search-hint.md`](search-hint.md) | 모든 기여자 | BM25 검색 친화적 hint · Kiwipiepy 명사 ≥ 3 · 부처 화이트리스트 |
 | [`permission-tier.md`](permission-tier.md) | 모든 기여자 | Layer 1/2/3 결정 트리 · Spec 033 · Spec 024 V4 invariant |
-| [`data-go-kr.md`](data-go-kr.md) | Live tier | 키 발급 · KOSAX_* env · rate-limit · fixture 기록 · 부처 특수 사항 |
+| [`data-go-kr.md`](data-go-kr.md) | Live tier | 키 발급 · UMMAYA_* env · rate-limit · fixture 기록 · 부처 특수 사항 |
 | [`live-vs-mock.md`](live-vs-mock.md) | 모든 기여자 | 5점 척도 매트릭스 · 의사결정 트리 · 전환 절차 |
 | [`security-review.md`](security-review.md) | PII / Layer 3 | PIPA §26 5단계 · L3 gate · L2+ sandboxing |
 | [`testing.md`](testing.md) | 모든 기여자 | block_network · @pytest.mark.live · fixture replay |
@@ -67,5 +67,5 @@ uvx kosax-plugin-init my_plugin --tier live --layer 1 --no-pii
 - [`../vision.md`](../vision.md) § Layer 2 (Tool System) — 6-layer harness 위치
 - [`../tool-adapters.md`](../tool-adapters.md) — built-in 어댑터 필드 reference
 - [`../api/`](../api/) — 등록된 부처별 어댑터 spec
-- [`../../AGENTS.md` § New tool adapter](../../AGENTS.md) — KOSAX host 측 contributor 진입점
+- [`../../AGENTS.md` § New tool adapter](../../AGENTS.md) — UMMAYA host 측 contributor 진입점
 - [Spec 1636 plugin DX 5-tier](../../specs/1636-plugin-dx-5tier/spec.md) — 본 시스템 spec

@@ -40,7 +40,7 @@ jobs:
         # The harness emits a WARN in the JSON report but does not treat a low recall
         # as a fatal misconfiguration — it exits with the appropriate code so the
         # PR check reflects reality.  Stage 3 registration will push recall to >= 80%.
-        run: uv run python -m kosax.eval.retrieval eval/retrieval_queries.yaml
+        run: uv run python -m ummaya.eval.retrieval eval/retrieval_queries.yaml
 
       - name: Upload eval report artifact
         # Always upload the report so reviewers can inspect it even on failure.

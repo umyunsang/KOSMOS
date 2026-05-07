@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#111827"/>
+      <stop offset="100%" stop-color="#1f2937"/>
+    </linearGradient>
+    <linearGradient id="home" x1="118" y1="78" x2="394" y2="410" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#ea580c"/>
+    </linearGradient>
+    <linearGradient id="door" x1="174" y1="202" x2="338" y2="390" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#7c2d12"/>
+      <stop offset="100%" stop-color="#431407"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <path d="M256 66 438 214H394V424H118V214H74L256 66Z" fill="url(#home)"/>
+  <rect x="164" y="226" width="184" height="188" rx="44" fill="url(#door)"/>
+  <text x="256" y="354" text-anchor="middle" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="126" font-weight="800" fill="#ffedd5">U</text>
+  <path d="M154 104C186 72 220 56 256 56C292 56 326 72 358 104" stroke="#fdba74" stroke-width="18" stroke-linecap="round"/>
+  <path d="M176 454H336" stroke="#fb923c" stroke-width="18" stroke-linecap="round"/>
+  <path d="M206 486H306" stroke="#34d399" stroke-width="14" stroke-linecap="round"/>
+</svg>

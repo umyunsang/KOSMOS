@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSAX-original — Spec 032 WS1 T018
+// UMMAYA-original — Spec 032 WS1 T018
 //
 // UUIDv7 minting helpers and trailer construction for the TUI-side
 // NDJSON IPC envelope.
@@ -34,7 +34,7 @@ import type { FrameTrailer } from './frames.generated'
  * Implementation uses ``crypto.randomUUID()`` (Bun stdlib) for the random
  * bits and overwrites the high 48 bits with the current millisecond timestamp.
  * This is not a spec-perfect UUIDv7 but is monotonic, sortable, and correct
- * enough for the KOSAX correlation-id use-case.
+ * enough for the UMMAYA correlation-id use-case.
  */
 export function makeUUIDv7(): string {
   const nowMs = Date.now()

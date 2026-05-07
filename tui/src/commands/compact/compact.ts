@@ -4,7 +4,7 @@ import { markPostCompaction } from 'src/bootstrap/state.js'
 import { getSystemPrompt } from '../../constants/prompts.js'
 import { getSystemContext, getUserContext } from '../../context.js'
 import { getShortcutDisplay } from '../../keybindings/shortcutFormat.js'
-// KOSAX: services/api/promptCacheBreakDetection deleted. No-op stub.
+// UMMAYA: services/api/promptCacheBreakDetection deleted. No-op stub.
 const notifyCompaction = (..._args: unknown[]): void => {}
 import {
   type CompactionResult,

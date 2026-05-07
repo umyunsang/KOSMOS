@@ -4,29 +4,29 @@
 
 ## Constitution Principle I — Reference mapping
 
-KOSAX constitution Principle I mandates that every design decision trace to a concrete reference. The constitution's layer table names "Ink + Gemini CLI (React terminal UI)" as the primary TUI reference and "Claude Code reconstructed (TUI components)" as the secondary reference. This spec is a direct shape-preserving port of the secondary reference; primary reference is consulted only for Ink-idiomatic patterns (hook composition, `useInput` semantics).
+UMMAYA constitution Principle I mandates that every design decision trace to a concrete reference. The constitution's layer table names "Ink + Gemini CLI (React terminal UI)" as the primary TUI reference and "Claude Code reconstructed (TUI components)" as the secondary reference. This spec is a direct shape-preserving port of the secondary reference; primary reference is consulted only for Ink-idiomatic patterns (hook composition, `useInput` semantics).
 
 ### Per-decision reference map
 
 | # | Design decision | Primary reference | Secondary reference | Notes |
 |---|---|---|---|---|
-| D1 | Adopt CC's `{context, bindings}` block schema | `.references/claude-code-sourcemap/restored-src/src/keybindings/defaultBindings.ts` L32-L60; `schema.ts` L12-L32 (KEYBINDING_CONTEXTS enum) | — | Shape-preserved; KOSAX uses a narrowed context set (Global, Chat, HistorySearch, Confirmation) covering Tier 1 only. |
+| D1 | Adopt CC's `{context, bindings}` block schema | `.references/claude-code-sourcemap/restored-src/src/keybindings/defaultBindings.ts` L32-L60; `schema.ts` L12-L32 (KEYBINDING_CONTEXTS enum) | — | Shape-preserved; UMMAYA uses a narrowed context set (Global, Chat, HistorySearch, Confirmation) covering Tier 1 only. |
 | D2 | Use raw-byte detection for ctrl+c/ctrl+d | CC `defaultBindings.ts` L36-L41 comment ("special time-based double-press handling"); Ink `setRawMode` + `use-input.ts` | Ink 3 release notes + GitHub `vadimdemedes/ink` `src/hooks/use-input.ts` | Raw bytes `\x03` / `\x04` guarantee behaviour even on terminals where readline translation is disabled. |
-| D3 | Platform-specific `shift+tab` fallback | CC `defaultBindings.ts` L17-L30 (Windows pre-VT fallback to `meta+m`) | — | Inherited verbatim (KOSAX adopts same check on `process.versions.bun >= 1.2.23`). |
-| D4 | IME composition gate centralised in resolver | `tui/src/hooks/useKoreanIME.ts` (existing KOSAX asset, no CC analog — CC has no IME concept, confirmed in ADR-006 Part B row E) + ADR-005 (Korean IME strategy) | — | Principle I permits KOSAX-original surfaces when CC has no analog — this is such a case. The escalation is documented here as required by Principle I. |
-| D5 | User-override JSON at `~/.kosax/keybindings.json` | CC `loadUserBindings.ts` (+472 LOC) reads `~/.claude/keybindings.json` | OpenCode keybinds docs (opencode.ai/docs/keybinds) — validates path-based override pattern in agentic TUIs beyond CC | Path only differs (`~/.kosax/`). Schema shape preserved from CC (chord-string keys → action-string or null values). |
-| D6 | Reserved shortcuts list | CC `reservedShortcuts.ts` L1-L127 | — | KOSAX's reserved set (`agent-interrupt`, `session-exit`) is a strict subset of CC's reserved set. No additions, removals, or semantic divergence. |
+| D3 | Platform-specific `shift+tab` fallback | CC `defaultBindings.ts` L17-L30 (Windows pre-VT fallback to `meta+m`) | — | Inherited verbatim (UMMAYA adopts same check on `process.versions.bun >= 1.2.23`). |
+| D4 | IME composition gate centralised in resolver | `tui/src/hooks/useKoreanIME.ts` (existing UMMAYA asset, no CC analog — CC has no IME concept, confirmed in ADR-006 Part B row E) + ADR-005 (Korean IME strategy) | — | Principle I permits UMMAYA-original surfaces when CC has no analog — this is such a case. The escalation is documented here as required by Principle I. |
+| D5 | User-override JSON at `~/.ummaya/keybindings.json` | CC `loadUserBindings.ts` (+472 LOC) reads `~/.claude/keybindings.json` | OpenCode keybinds docs (opencode.ai/docs/keybinds) — validates path-based override pattern in agentic TUIs beyond CC | Path only differs (`~/.ummaya/`). Schema shape preserved from CC (chord-string keys → action-string or null values). |
+| D6 | Reserved shortcuts list | CC `reservedShortcuts.ts` L1-L127 | — | UMMAYA's reserved set (`agent-interrupt`, `session-exit`) is a strict subset of CC's reserved set. No additions, removals, or semantic divergence. |
 | D7 | Resolver precedence (modal → form → context → global) | CC `resolver.ts` L1-L244 | Kiro CLI terminal-UI docs (context-aware binding precedence) — validates the pattern beyond CC | CC's resolver is the canonical reference. Kiro confirms it's an industry pattern, not a CC idiosyncrasy — reduces risk of shape-copying a future dead-end. |
-| D8 | Accessibility announcements via live region | KWCAG 2.1 (KS X OT 0003) § 4.1.3 (Status Messages) · WCAG 2.1 § 4.1.3 | — | CC has no equivalent surface (no screen-reader support in CC) — KOSAX original per Principle I escalation (justified by Korean public-sector accessibility mandate). The new `accessibilityAnnouncer.ts` module emits text to a buffered channel that existing screen-reader integrations on Korean desktops (NVDA, VoiceOver, 센스리더) pick up through standard stdout-based announce pipelines. |
+| D8 | Accessibility announcements via live region | KWCAG 2.1 (KS X OT 0003) § 4.1.3 (Status Messages) · WCAG 2.1 § 4.1.3 | — | CC has no equivalent surface (no screen-reader support in CC) — UMMAYA original per Principle I escalation (justified by Korean public-sector accessibility mandate). The new `accessibilityAnnouncer.ts` module emits text to a buffered channel that existing screen-reader integrations on Korean desktops (NVDA, VoiceOver, 센스리더) pick up through standard stdout-based announce pipelines. |
 | D9 | History search overlay shape | CC `resolver.ts` uses a `HistorySearch` context; `schema.ts` L20 defines it | — | Overlay rendering will reuse the existing Ink modal pattern under `tui/src/components/onboarding/` (verified against Spec 035 `OnboardingShell.tsx`). |
-| D10 | Audit-record emission on reserved actions | Spec 024 — `ToolCallAuditRecord` schema v1; `src/kosax/tui/audit.py` writer | — | Contract-level reuse of existing writer; this spec only adds two event types (`user-interrupted`, `session-exited`). |
-| D11 | Cancellation signal pathway for ctrl+c | Spec 027 — mailbox IPC `.consumed` marker pattern; `src/kosax/agents/cancellation.py` (existing) | — | ctrl+c action writes a cancellation envelope to the coordinator mailbox; the existing at-least-once delivery guarantees the worker sees it even on retry. |
+| D10 | Audit-record emission on reserved actions | Spec 024 — `ToolCallAuditRecord` schema v1; `src/ummaya/tui/audit.py` writer | — | Contract-level reuse of existing writer; this spec only adds two event types (`user-interrupted`, `session-exited`). |
+| D11 | Cancellation signal pathway for ctrl+c | Spec 027 — mailbox IPC `.consumed` marker pattern; `src/ummaya/agents/cancellation.py` (existing) | — | ctrl+c action writes a cancellation envelope to the coordinator mailbox; the existing at-least-once delivery guarantees the worker sees it even on retry. |
 
 ### Escalations beyond `.references/claude-code-sourcemap/` (documented per Principle I)
 
-Two KOSAX-original surfaces are introduced where CC has no analog:
+Two UMMAYA-original surfaces are introduced where CC has no analog:
 
-1. **IME composition gate in resolver** (D4). Justified by ADR-006 Part B (Epic E, row "CC has no IME notion") and ADR-005. This is a hard mission requirement — KOSAX cannot be IME-unsafe.
+1. **IME composition gate in resolver** (D4). Justified by ADR-006 Part B (Epic E, row "CC has no IME notion") and ADR-005. This is a hard mission requirement — UMMAYA cannot be IME-unsafe.
 2. **Accessibility announcer module** (D8). Justified by KWCAG 2.1 mandatory compliance for Korean public-sector software. CC does not target screen-reader-first experiences.
 
 Both escalations are strictly additive; they do not modify CC's schema or resolver semantics.
@@ -58,7 +58,7 @@ Unregistered deferral patterns scanned across spec.md text (`separate epic`, `fu
 
 **Alternatives considered**:
 - Flat chord-map (single-level `{chord: action}` dict): Rejected — loses context precedence, forces re-implementation of the resolver.
-- OpenCode-style per-profile keymap: Rejected — introduces a "profile" concept KOSAX does not need for Tier 1.
+- OpenCode-style per-profile keymap: Rejected — introduces a "profile" concept UMMAYA does not need for Tier 1.
 
 ### D2 · Raw-byte detection for ctrl+c/ctrl+d
 
@@ -76,7 +76,7 @@ Unregistered deferral patterns scanned across spec.md text (`separate epic`, `fu
 
 **Rationale**: Windows Terminal without VT mode cannot detect `shift+tab`. CC already engineered the fallback to `meta+m`; adopting it avoids a pit Claude Code already fell into.
 
-### D4 · IME gate centralised in resolver (KOSAX-original escalation)
+### D4 · IME gate centralised in resolver (UMMAYA-original escalation)
 
 **Decision**: Add a single IME-composition check inside `resolver.ts` that short-circuits any buffer-mutating action when `useKoreanIME().isComposing === true`.
 
@@ -88,7 +88,7 @@ Unregistered deferral patterns scanned across spec.md text (`separate epic`, `fu
 
 ### D5 · User-override JSON path
 
-**Decision**: `~/.kosax/keybindings.json` with CC-shaped schema (chord-key → action-value or `null`).
+**Decision**: `~/.ummaya/keybindings.json` with CC-shaped schema (chord-key → action-value or `null`).
 
 **Rationale**: Principle I + shape parity with CC's `~/.claude/keybindings.json`. OpenCode's `~/.opencode/keybinds.json` pattern is a secondary validation that the CC pattern is widely adopted in agentic TUIs, reducing risk of schema orphan.
 
@@ -115,7 +115,7 @@ Unregistered deferral patterns scanned across spec.md text (`separate epic`, `fu
 **Alternatives considered**:
 - Fall-through after ignored key: Rejected — subtle bug source; CC explicitly avoided this.
 
-### D8 · Accessibility announcer (KOSAX-original escalation)
+### D8 · Accessibility announcer (UMMAYA-original escalation)
 
 **Decision**: New module `tui/src/keybindings/accessibilityAnnouncer.ts` that buffers text announcements to a reserved stdout/stderr channel. Integrates with screen readers through the standard terminal announce pipe.
 
@@ -129,7 +129,7 @@ Unregistered deferral patterns scanned across spec.md text (`separate epic`, `fu
 
 **Decision**: Reuse the existing Spec 035 onboarding modal shell (`OnboardingShell.tsx` layout pattern) for the ctrl+r overlay.
 
-**Rationale**: Principle I — KOSAX already has a modal shell with proper focus trap, escape handling, and screen-reader announcement wired in Spec 035. Reuse prevents drift between modal surfaces.
+**Rationale**: Principle I — UMMAYA already has a modal shell with proper focus trap, escape handling, and screen-reader announcement wired in Spec 035. Reuse prevents drift between modal surfaces.
 
 ### D10 · Audit-record emission
 
@@ -148,10 +148,10 @@ Unregistered deferral patterns scanned across spec.md text (`separate epic`, `fu
 
 ## Open questions → resolutions
 
-- **Is `~/.kosax/` the right override location on Windows?** Resolved: yes, Node's `os.homedir()` returns `C:\Users\<user>\` on Windows, so `~/.kosax/keybindings.json` becomes `C:\Users\<user>\.kosax\keybindings.json`. Consistent with CC's Windows path handling.
-- **Does Ink's `setRawMode` conflict with Bun's TTY handling?** Resolved per CC `defaultBindings.ts` L19-L25 comment — Bun enabled VT mode in 1.2.23; KOSAX requires Bun >= 1.2.x (Spec 287), so the expected Bun version has the fix.
+- **Is `~/.ummaya/` the right override location on Windows?** Resolved: yes, Node's `os.homedir()` returns `C:\Users\<user>\` on Windows, so `~/.ummaya/keybindings.json` becomes `C:\Users\<user>\.ummaya\keybindings.json`. Consistent with CC's Windows path handling.
+- **Does Ink's `setRawMode` conflict with Bun's TTY handling?** Resolved per CC `defaultBindings.ts` L19-L25 comment — Bun enabled VT mode in 1.2.23; UMMAYA requires Bun >= 1.2.x (Spec 287), so the expected Bun version has the fix.
 - **Does the history-search overlay need its own IME gate?** Resolved: yes, and it inherits the gate by construction — it mounts inside the resolver's composition-gated path, so keystrokes are filtered before reaching the overlay's local `useInput`.
 
 ## Phase 0 conclusion
 
-All NEEDS CLARIFICATION marks in spec.md were zero before Phase 0 started. Principle VI validation passed. Principle I reference mapping is complete with two documented KOSAX-original escalations. No unresolved open questions. **Ready for Phase 1.**
+All NEEDS CLARIFICATION marks in spec.md were zero before Phase 0 started. Principle VI validation passed. Principle I reference mapping is complete with two documented UMMAYA-original escalations. No unresolved open questions. **Ready for Phase 1.**

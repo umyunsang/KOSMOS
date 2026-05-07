@@ -9,7 +9,7 @@ type Harness = {
 }
 
 export default async function run(h: Harness): Promise<void> {
-  await h.waitForPane(/KOSAX|❯/, 60)
+  await h.waitForPane(/UMMAYA|❯/, 60)
   h.snapshot('boot')
 
   h.sendText('부산 사하구 다대1동 날씨 알려줘')

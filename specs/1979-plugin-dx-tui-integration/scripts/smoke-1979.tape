@@ -17,18 +17,18 @@ Set FontFamily "JetBrains Mono"
 Set Theme "TokyoNightStorm"
 
 # Inject fixture catalog env vars so the backend can install the seoul-subway
-# fixture without going through the live kosax-plugin-store catalog.
-Type "export KOSAX_PLUGIN_CATALOG_URL=file:///Users/um-yunsang/KOSAX/specs/1979-plugin-dx-tui-integration/scripts/fixtures/catalog.json"
+# fixture without going through the live ummaya-plugin-store catalog.
+Type "export UMMAYA_PLUGIN_CATALOG_URL=file:///Users/um-yunsang/UMMAYA/specs/1979-plugin-dx-tui-integration/scripts/fixtures/catalog.json"
 Enter
-Type "export KOSAX_PLUGIN_SLSA_SKIP=true"
+Type "export UMMAYA_PLUGIN_SLSA_SKIP=true"
 Enter
-Type "export KOSAX_ENV=development"
+Type "export UMMAYA_ENV=development"
 Enter
-Type "export KOSAX_BACKEND_STDERR_FILE=/tmp/kosax-backend.stderr"
+Type "export UMMAYA_BACKEND_STDERR_FILE=/tmp/ummaya-backend.stderr"
 Enter
 Sleep 500ms
 
-# Launch KOSAX TUI (mirrors Spec 2112 working pattern: cd tui && bun run tui 2>/tmp/tui-bun.stderr)
+# Launch UMMAYA TUI (mirrors Spec 2112 working pattern: cd tui && bun run tui 2>/tmp/tui-bun.stderr)
 Type "cd tui && bun run tui 2>/tmp/tui-bun.stderr"
 Enter
 Sleep 8s

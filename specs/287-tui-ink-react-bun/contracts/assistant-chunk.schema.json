@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://kosax.dev/schemas/spec-287/assistant-chunk.schema.json",
+  "$id": "https://ummaya.dev/schemas/spec-287/assistant-chunk.schema.json",
   "title": "AssistantChunkFrame",
   "description": "backend → TUI: streaming assistant text delta. Direction: backend → TUI. Performance: TUI MUST render within 50ms of receipt (FR-006).",
   "type": "object",

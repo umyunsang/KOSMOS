@@ -33,7 +33,7 @@ import { logError } from '../../utils/log.js';
 import { clearAllCaches } from '../../utils/plugins/cacheUtils.js';
 import { loadInstalledPluginsV2 } from '../../utils/plugins/installedPluginsManager.js';
 import { getMarketplace } from '../../utils/plugins/marketplaceManager.js';
-// KOSAX: utils/plugins/mcpbHandler deleted (Anthropic .mcpb bundle format). .mcpb branch removed below.
+// UMMAYA: utils/plugins/mcpbHandler deleted (Anthropic .mcpb bundle format). .mcpb branch removed below.
 import { getPluginDataDirSize, pluginDataDirPath } from '../../utils/plugins/pluginDirectories.js';
 import { getFlaggedPlugins, markFlaggedPluginsSeen, removeFlaggedPlugin } from '../../utils/plugins/pluginFlagging.js';
 import { type PersistablePluginScope, parsePluginIdentifier } from '../../utils/plugins/pluginIdentifier.js';
@@ -812,7 +812,7 @@ export function ManagePlugins({
   const [isProcessing, setIsProcessing] = useState(false);
   const [processError, setProcessError] = useState<string | null>(null);
 
-  // KOSAX: mcpb configuration state removed (.mcpb Anthropic plugin bundle format deleted).
+  // UMMAYA: mcpb configuration state removed (.mcpb Anthropic plugin bundle format deleted).
 
   // Load installed plugins grouped by marketplace
   useEffect(() => {
@@ -1293,7 +1293,7 @@ export function ManagePlugins({
           }
         }
       });
-      // KOSAX: 'Configure' (.mcpb) menu item removed (mcpbHandler deleted).
+      // UMMAYA: 'Configure' (.mcpb) menu item removed (mcpbHandler deleted).
       if (selectedPlugin.plugin.manifest.userConfig && Object.keys(selectedPlugin.plugin.manifest.userConfig).length > 0) {
         menuItems.push({
           label: 'Configure options',
@@ -1591,7 +1591,7 @@ export function ManagePlugins({
     }} onCancel={() => setViewState('plugin-details')} />;
   }
 
-  // KOSAX: 'configuring' (.mcpb) viewState branch removed (mcpbHandler deleted).
+  // UMMAYA: 'configuring' (.mcpb) viewState branch removed (mcpbHandler deleted).
 
   // Flagged plugin detail view
   if (typeof viewState === 'object' && viewState.type === 'flagged-detail') {

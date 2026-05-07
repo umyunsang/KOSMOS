@@ -2,7 +2,7 @@
   "version": 1,
   "source_basis": [
     "docs/vision.md",
-    "docs/requirements/kosax-migration-tree.md",
+    "docs/requirements/ummaya-migration-tree.md",
     "eval/scenarios/national_ax_citizen_requests_v1.yaml",
     "docs/api/README.md"
   ],
@@ -282,7 +282,7 @@
       "require_expanded_trace": true,
       "decision_path": "Enter",
       "decision_ready_regex": "권한 요청|허용하시겠습니까|한 번만 허용|Permission",
-      "after_decision_regex": "제출이 접수되었습니다|접수 번호|urn:kosax:submit|status:\\s*succeeded|adapter_receipt|receipt_ref|MOCK-FP-",
+      "after_decision_regex": "제출이 접수되었습니다|접수 번호|urn:ummaya:submit|status:\\s*succeeded|adapter_receipt|receipt_ref|MOCK-FP-",
       "require_regex": ["Permission|권한|허용|거부|동의"]
     },
     {
@@ -332,7 +332,7 @@
       "require_expanded_trace": true,
       "decision_path": "Enter",
       "decision_ready_regex": "권한 요청|허용하시겠습니까|한 번만 허용|Permission",
-      "after_decision_regex": "제출이 접수되었습니다|접수 번호|urn:kosax:submit|status:\\s*succeeded|adapter_receipt|receipt_id|mydata-[0-9]{4}-[0-9]{2}-[0-9]{2}-ACT",
+      "after_decision_regex": "제출이 접수되었습니다|접수 번호|urn:ummaya:submit|status:\\s*succeeded|adapter_receipt|receipt_id|mydata-[0-9]{4}-[0-9]{2}-[0-9]{2}-ACT",
       "require_regex": ["Permission|권한|허용|거부|동의"]
     },
     {

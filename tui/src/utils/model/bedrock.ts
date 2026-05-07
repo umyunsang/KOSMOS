@@ -1,4 +1,4 @@
-// KOSAX Epic #2112: AWS Bedrock provider integration is dead under the
+// UMMAYA Epic #2112: AWS Bedrock provider integration is dead under the
 // single-fixed FriendliAI invariant. All exports preserved as no-op stubs for
 // caller import-graph stability (modelStrings.ts, agent.ts).
 
@@ -16,7 +16,7 @@ export function findFirstMatch(profiles: string[], substring: string): string | 
 
 /**
  * Extract a cross-region inference prefix (e.g. "eu.", "us.") from a Bedrock
- * model ID, or null if none is present. KOSAX does not target Bedrock, so this
+ * model ID, or null if none is present. UMMAYA does not target Bedrock, so this
  * always returns null — the caller in agent.ts will then skip prefix carry-over.
  */
 export function getBedrockRegionPrefix(_model: string): string | null {
@@ -24,7 +24,7 @@ export function getBedrockRegionPrefix(_model: string): string | null {
 }
 
 /**
- * Apply a region prefix to a Bedrock model ID. KOSAX no-op — returns the model
+ * Apply a region prefix to a Bedrock model ID. UMMAYA no-op — returns the model
  * unchanged.
  */
 export function applyBedrockRegionPrefix(model: string, _prefix: string): string {
@@ -33,7 +33,7 @@ export function applyBedrockRegionPrefix(model: string, _prefix: string): string
 
 /**
  * Detect whether a model ID is a Bedrock-foundation-model identifier (as opposed
- * to a cross-region inference profile or a custom deployment ARN). KOSAX does
+ * to a cross-region inference profile or a custom deployment ARN). UMMAYA does
  * not target Bedrock — preserved as a no-op stub for tokenEstimation.ts caller.
  */
 export function isFoundationModel(model: string): string | null {
@@ -41,18 +41,18 @@ export function isFoundationModel(model: string): string | null {
 }
 
 /**
- * Bedrock runtime client factory. KOSAX does not target Bedrock — call sites
+ * Bedrock runtime client factory. UMMAYA does not target Bedrock — call sites
  * (tokenEstimation.ts) wrap this in try/catch; throwing here keeps their fallback
  * path (null token count) intact without dragging the Bedrock dead-code into the
  * P1 deletion perimeter.
  */
 export async function createBedrockRuntimeClient(): Promise<never> {
-  throw new Error('KOSAX Epic #2112: Bedrock runtime client is not available — KOSAX uses FriendliAI Serverless.')
+  throw new Error('UMMAYA Epic #2112: Bedrock runtime client is not available — UMMAYA uses FriendliAI Serverless.')
 }
 
 /**
  * Resolve the foundation model ID backing a Bedrock inference profile ARN.
- * KOSAX-unused; returns null so tokenEstimation.ts falls through to the fallback.
+ * UMMAYA-unused; returns null so tokenEstimation.ts falls through to the fallback.
  */
 export async function getInferenceProfileBackingModel(_arn: string): Promise<string | null> {
   return null

@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://kosax.umyunsang.dev/schemas/026-cicd-prompt-registry/prompts-manifest.schema.json",
-  "title": "KOSAX Prompt Registry Manifest",
+  "$id": "https://ummaya.umyunsang.dev/schemas/026-cicd-prompt-registry/prompts-manifest.schema.json",
+  "title": "UMMAYA Prompt Registry Manifest",
   "description": "Schema for prompts/manifest.yaml. Mirrors the Pydantic v2 PromptManifest model in data-model.md. Validated in CI before platform startup.",
   "type": "object",
   "additionalProperties": false,

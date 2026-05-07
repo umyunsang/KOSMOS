@@ -17,11 +17,11 @@
 
 | 필드 | 타입 | 필수 | 설명 |
 |---|---|---|---|
-| `kosax_path` | string | ✅ | `tui/src/` 시작 상대경로. 예: `tui/src/services/api/claude.ts` |
-| `cc_source_path` | string \| null | ✅ | 매칭되는 `restored-src/src/` 상대경로. 매칭 없는 KOSAX-only 파일이 잘못 들어온 경우 `null` 후 reclassify. |
+| `ummaya_path` | string | ✅ | `tui/src/` 시작 상대경로. 예: `tui/src/services/api/claude.ts` |
+| `cc_source_path` | string \| null | ✅ | 매칭되는 `restored-src/src/` 상대경로. 매칭 없는 UMMAYA-only 파일이 잘못 들어온 경우 `null` 후 reclassify. |
 | `classification` | enum {`Legitimate`, `Cleanup-needed`, `Suspicious`} | ✅ | 단일 라벨 (다중 금지, FR-001) |
 | `change_summary` | string | ✅ | 한 줄 (≤120 자). 예: "Anthropic 1P 잔재 — Spec 1633 closure 미완" |
-| `reference_citation` | string | ✅ | CC source-of-truth path (`restored-src/src/services/api/anthropic.ts`) 또는 KOSAX spec id (`Spec 1633`). 둘 중 하나는 반드시 (FR-004). |
+| `reference_citation` | string | ✅ | CC source-of-truth path (`restored-src/src/services/api/anthropic.ts`) 또는 UMMAYA spec id (`Spec 1633`). 둘 중 하나는 반드시 (FR-004). |
 | `signals` | object | ✅ | 자동 분류 시그널 raw — `{directory_match, git_history_match, import_scan_match}` 각각 string \| null |
 | `notes` | string \| null | optional | Suspicious 의 경우 "왜 의심인가" 사유 한 줄. 비-Suspicious 는 null 허용. |
 
@@ -29,7 +29,7 @@
 
 - `classification == "Suspicious"` ⟹ `notes` 가 non-null (FR-001 + spec.md story 1.3).
 - `classification` 이 셋 중 하나가 아니면 schema 위반.
-- `kosax_path` 가 `data/enumerated-modified-212.txt` 에 존재해야 함 (FR-001 모집단 일치).
+- `ummaya_path` 가 `data/enumerated-modified-212.txt` 에 존재해야 함 (FR-001 모집단 일치).
 - 표 전체 행 수 == 212 (drift 발견 시 plan.md FR-010 절차로 정정).
 
 ### State transitions
@@ -46,11 +46,11 @@
 
 | 필드 | 타입 | 필수 | 설명 |
 |---|---|---|---|
-| `kosax_path` | string | ✅ | `tui/src/` 상대경로 |
+| `ummaya_path` | string | ✅ | `tui/src/` 상대경로 |
 | `cc_source_path` | string | ✅ | `restored-src/src/` 매칭경로 (1:1) |
-| `kosax_sha256` | string (64-hex) | ✅ | KOSAX 파일 sha256 |
+| `ummaya_sha256` | string (64-hex) | ✅ | UMMAYA 파일 sha256 |
 | `cc_sha256` | string (64-hex) | ✅ | restored-src 파일 sha256 |
-| `hash_match` | boolean | ✅ | `kosax_sha256 == cc_sha256` |
+| `hash_match` | boolean | ✅ | `ummaya_sha256 == cc_sha256` |
 | `sampling_seed` | int | ✅ | 모든 행 동일 — `2292` |
 | `sampling_index` | int | ✅ | 0..49 — Python `random.Random(2292).sample(...)` 결과의 인덱스 |
 
@@ -59,7 +59,7 @@
 - 행 수 == 50 (FR-002 / SC-002).
 - 모든 행의 `sampling_seed == 2292`.
 - `hash_match == false` 인 행은 산출물 § "Reclassified-to-Modified" subsection 에 자동 합류 → AuditEntry 로 추가 분류 (FR-008).
-- `kosax_path` ∈ `data/enumerated-keep-1531.txt`.
+- `ummaya_path` ∈ `data/enumerated-keep-1531.txt`.
 
 ### State transitions
 
@@ -75,16 +75,16 @@
 
 | 필드 | 타입 | 필수 | 설명 |
 |---|---|---|---|
-| `kosax_path` | string | ✅ | `tui/src/` 상대경로 |
+| `ummaya_path` | string | ✅ | `tui/src/` 상대경로 |
 | `cc_source_path` | string | ✅ | `restored-src/src/` 매칭경로 |
-| `import_lines_changed` | array<string> | ✅ | 변경된 import 라인 (KOSAX / CC 양쪽 페어) |
+| `import_lines_changed` | array<string> | ✅ | 변경된 import 라인 (UMMAYA / CC 양쪽 페어) |
 | `body_diff_present` | boolean | ✅ | import 라인 외 본문 변경 존재 여부 |
 | `reclassified_to_modified` | boolean | ✅ | `body_diff_present == true` 면 true (자동) |
 
 ### Validation rules
 
 - 행 수 == 73 (FR-003 / SC-003).
-- `reclassified_to_modified == true` ⟹ 해당 `kosax_path` 가 `AuditEntry` (Modified Files 표) 에도 존재 (FR-008).
+- `reclassified_to_modified == true` ⟹ 해당 `ummaya_path` 가 `AuditEntry` (Modified Files 표) 에도 존재 (FR-008).
 - `import_lines_changed` 가 빈 배열이면서 `body_diff_present == false` 인 행은 schema 위반 (cc-source-scope-audit § 1.1 가설과 모순).
 
 ### State transitions
@@ -102,7 +102,7 @@
 ```json
 {
   "epic_beta_2293": [
-    {"kosax_path": "tui/src/...", "change_summary": "...", "notes": "...", "audit_entry_ref": "row#NN"}
+    {"ummaya_path": "tui/src/...", "change_summary": "...", "notes": "...", "audit_entry_ref": "row#NN"}
   ],
   "epic_delta_2295": [...],
   "uncategorized": [...]
@@ -113,9 +113,9 @@
 
 ### 라우팅 룰
 
-- `kosax_path` startswith `tui/src/services/api/` ⟹ `epic_beta_2293` (UI/services 잔재)
-- `kosax_path` startswith `tui/src/utils/permissions/` ⟹ `epic_beta_2293` (Spec 033 잔재)
-- `kosax_path` startswith `src/kosax/permissions/` (백엔드) ⟹ scope 외 — 본 Epic 다루지 않음 (Out of Scope Permanent)
+- `ummaya_path` startswith `tui/src/services/api/` ⟹ `epic_beta_2293` (UI/services 잔재)
+- `ummaya_path` startswith `tui/src/utils/permissions/` ⟹ `epic_beta_2293` (Spec 033 잔재)
+- `ummaya_path` startswith `src/ummaya/permissions/` (백엔드) ⟹ scope 외 — 본 Epic 다루지 않음 (Out of Scope Permanent)
 - `change_summary` 에 "5-primitive" 키워드 ⟹ Epic γ #2294 (드물지만 발견되면)
 - 그 외 ⟹ `uncategorized` (Lead 수동 라우팅)
 

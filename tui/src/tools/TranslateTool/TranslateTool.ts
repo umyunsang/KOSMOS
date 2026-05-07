@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSAX-original — Epic #1634 P4 · TranslateTool.
+// UMMAYA-original — Epic #1634 P4 · TranslateTool.
 //
 // Delegates Korean↔English↔Japanese translation to the FriendliAI K-EXAONE
 // model through the existing stdio IPC bridge (LLMClient.complete()).
@@ -15,8 +15,8 @@ import { buildTool, type ToolDef } from '../../Tool.js'
 import { lazySchema } from '../../utils/lazySchema.js'
 import { LLMClient } from '../../ipc/llmClient.js'
 import {
-  getOrCreateKosaxBridge,
-  getKosaxBridgeSessionId,
+  getOrCreateUmmayaBridge,
+  getUmmayaBridgeSessionId,
 } from '../../ipc/bridgeSingleton.js'
 import {
   TRANSLATE_TOOL_NAME,
@@ -58,10 +58,10 @@ type OutputSchema = ReturnType<typeof outputSchema>
 export type Output = z.infer<OutputSchema>
 
 // ---------------------------------------------------------------------------
-// The KOSAX model identifier (matches services/api/claude.ts)
+// The UMMAYA model identifier (matches services/api/claude.ts)
 // ---------------------------------------------------------------------------
 
-const KOSAX_MODEL = 'LGAI-EXAONE/K-EXAONE-236B-A23B'
+const UMMAYA_MODEL = 'LGAI-EXAONE/K-EXAONE-236B-A23B'
 
 // ---------------------------------------------------------------------------
 // Tool definition
@@ -119,23 +119,23 @@ export const TranslateTool = buildTool({
    * Delegate translation to K-EXAONE via the existing stdio IPC bridge.
    *
    * Uses LLMClient.complete() — the non-streaming convenience wrapper —
-   * so we get the full response as a single KosaxMessageFinal, then
+   * so we get the full response as a single UmmayaMessageFinal, then
    * extract the text content block.  No new dependencies required.
    */
   async call({ text, source_lang, target_lang }, _context) {
-    const bridge = getOrCreateKosaxBridge()
-    const sessionId = getKosaxBridgeSessionId()
+    const bridge = getOrCreateUmmayaBridge()
+    const sessionId = getUmmayaBridgeSessionId()
 
     const client = new LLMClient({
       bridge,
-      model: KOSAX_MODEL,
+      model: UMMAYA_MODEL,
       sessionId,
     })
 
     const prompt = buildTranslatePrompt(text, source_lang, target_lang)
 
     const result = await client.complete({
-      model: KOSAX_MODEL,
+      model: UMMAYA_MODEL,
       messages: [{ role: 'user', content: prompt }],
       max_tokens: 4_096,
       // Lower temperature for deterministic translation output.

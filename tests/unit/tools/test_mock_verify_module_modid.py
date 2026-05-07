@@ -19,7 +19,7 @@ from pathlib import Path
 
 def test_modid_invoke_returns_transparency_fields(tmp_path: Path) -> None:
     """invoke() returns a dict with all six transparency fields non-empty."""
-    from kosax.tools.mock.verify_module_modid import invoke
+    from ummaya.tools.mock.verify_module_modid import invoke
 
     result = invoke(
         {
@@ -46,7 +46,7 @@ def test_modid_invoke_returns_transparency_fields(tmp_path: Path) -> None:
 
 def test_modid_international_reference(tmp_path: Path) -> None:
     """_international_reference must be 'EU EUDI Wallet'."""
-    from kosax.tools.mock.verify_module_modid import invoke
+    from ummaya.tools.mock.verify_module_modid import invoke
 
     result = invoke(
         {
@@ -60,7 +60,7 @@ def test_modid_international_reference(tmp_path: Path) -> None:
 
 def test_modid_security_wrapping(tmp_path: Path) -> None:
     """_security_wrapping_pattern must contain OID4VP."""
-    from kosax.tools.mock.verify_module_modid import invoke
+    from ummaya.tools.mock.verify_module_modid import invoke
 
     result = invoke(
         {
@@ -74,7 +74,7 @@ def test_modid_security_wrapping(tmp_path: Path) -> None:
 
 def test_modid_citizen_did_is_set(tmp_path: Path) -> None:
     """citizen_did is populated (DID issued during Mobile-ID ceremony)."""
-    from kosax.tools.mock.verify_module_modid import invoke
+    from ummaya.tools.mock.verify_module_modid import invoke
 
     result = invoke(
         {
@@ -90,7 +90,7 @@ def test_modid_citizen_did_is_set(tmp_path: Path) -> None:
 
 def test_modid_delegation_token_prefix(tmp_path: Path) -> None:
     """The delegation_token inside the returned DelegationContext starts with 'del_'."""
-    from kosax.tools.mock.verify_module_modid import invoke
+    from ummaya.tools.mock.verify_module_modid import invoke
 
     result = invoke(
         {
@@ -104,7 +104,7 @@ def test_modid_delegation_token_prefix(tmp_path: Path) -> None:
 
 def test_modid_ledger_append(tmp_path: Path) -> None:
     """After invoke, delegation_issued event is written to the ledger."""
-    from kosax.tools.mock.verify_module_modid import invoke
+    from ummaya.tools.mock.verify_module_modid import invoke
 
     ledger_dir = tmp_path / "ledger"
     invoke(
@@ -126,7 +126,7 @@ def test_modid_ledger_append(tmp_path: Path) -> None:
 
 def test_modid_is_registered() -> None:
     """Importing the module registers 'modid' in _VERIFY_ADAPTERS."""
-    import kosax.tools.mock.verify_module_modid  # noqa: F401
-    from kosax.primitives.verify import _VERIFY_ADAPTERS
+    import ummaya.tools.mock.verify_module_modid  # noqa: F401
+    from ummaya.primitives.verify import _VERIFY_ADAPTERS
 
     assert "modid" in _VERIFY_ADAPTERS

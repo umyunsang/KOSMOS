@@ -11,18 +11,18 @@ permission_tier: 1
 
 Queries the authoritative KOROAD accident-prone hotspot dataset for a Korean municipality by province/city code (2-digit `siDo`), district code (3-digit `guGun`), and dataset year category, returning ranked hazard zones with coordinates and casualty statistics.
 
-**v4 change**: `siDo` field description corrected to "2-digit 광역시도" and `guGun` to "3-digit 시군구". Prior docs showing 4-digit codes (e.g. `"1100"`, `"1168"`) were wire-param misunderstandings — the API only accepts the 2+3-digit split scheme confirmed by live evidence (`/tmp/kosax-evidence/koroad-mohw-evidence.md`). `KOROAD_SIDO_SHORT_REFERENCE` (17 시도 inline table) is now embedded directly in the `si_do` field description.
+**v4 change**: `siDo` field description corrected to "2-digit 광역시도" and `guGun` to "3-digit 시군구". Prior docs showing 4-digit codes (e.g. `"1100"`, `"1168"`) were wire-param misunderstandings — the API only accepts the 2+3-digit split scheme confirmed by live evidence (`/tmp/ummaya-evidence/koroad-mohw-evidence.md`). `KOROAD_SIDO_SHORT_REFERENCE` (17 시도 inline table) is now embedded directly in the `si_do` field description.
 
 | Field | Value |
 |---|---|
 | Classification | Live · Permission tier 1 |
 | Source | KOROAD (도로교통공단) — B552061/frequentzoneLg |
 | Primitive | `lookup` |
-| Module | `src/kosax/tools/koroad/koroad_accident_search.py` |
+| Module | `src/ummaya/tools/koroad/koroad_accident_search.py` |
 
 ## Envelope
 
-**Input model**: `KoroadAccidentSearchInput` defined at `src/kosax/tools/koroad/koroad_accident_search.py`.
+**Input model**: `KoroadAccidentSearchInput` defined at `src/ummaya/tools/koroad/koroad_accident_search.py`.
 
 | Field | Type | Required | Description |
 |---|---|---|---|
@@ -32,7 +32,7 @@ Queries the authoritative KOROAD accident-prone hotspot dataset for a Korean mun
 | `num_of_rows` | `int` | no | Rows per page (1–100). Default `10`. |
 | `page_no` | `int` | no | 1-indexed page number. Default `1`. |
 
-**Output model**: `KoroadAccidentSearchOutput` defined at `src/kosax/tools/koroad/koroad_accident_search.py`.
+**Output model**: `KoroadAccidentSearchOutput` defined at `src/ummaya/tools/koroad/koroad_accident_search.py`.
 
 | Field | Type | Required | Description |
 |---|---|---|---|
@@ -50,7 +50,7 @@ Queries the authoritative KOROAD accident-prone hotspot dataset for a Korean mun
 
 - **data.go.kr endpoint**: `B552061/frequentzoneLg/getRestFrequentzoneLg`
 - **Source URL**: https://www.data.go.kr/data/15063424/openapi.do
-- **Authentication**: API key via `KOSAX_DATA_GO_KR_API_KEY` (per Constitution IV)
+- **Authentication**: API key via `UMMAYA_DATA_GO_KR_API_KEY` (per Constitution IV)
 
 ## Permission tier rationale
 
@@ -112,7 +112,7 @@ This adapter is classified as Permission tier 1 (green) per Spec 033 (`specs/033
 
 ```text
 Citizen: 강남구에서 교통사고가 자주 발생하는 위험한 곳이 어디인지 알려주세요.
-KOSAX: 강남구(서울특별시)의 2024년 교통사고 사고다발구역 조회 결과입니다. 총 3개 위험지점이 확인되었으며,
+UMMAYA: 강남구(서울특별시)의 2024년 교통사고 사고다발구역 조회 결과입니다. 총 3개 위험지점이 확인되었으며,
         가장 사고 빈도가 높은 지점은 '역삼동 리춘시장 강남역점 부근'으로 2024년 한 해 63건의 사고가
         발생해 68명의 사상자가 나왔습니다. 좌표는 위도 37.4979, 경도 127.0276입니다.
 ```
@@ -126,5 +126,5 @@ KOSAX: 강남구(서울특별시)의 2024년 교통사고 사고다발구역 조
 - **Fixture coverage gaps**: Single-item response (exactly one hotspot) triggers a dict-not-list wire quirk normalized by `_normalize_items`. NODATA_ERROR (resultCode `"03"`) returns an empty `hotspots` list.
 - **Error envelope examples**:
   - Tier-1 fail: `{"error": {"code": "TOOL_EXECUTION_ERROR", "tool_id": "koroad_accident_search", "message": "KOROAD API returned error: code='99' msg='SERVICE_ERROR'"}}`
-  - Tier-2 / Tier-3 (auth) fail: `{"error": {"code": "CONFIGURATION_ERROR", "message": "Missing required environment variable: KOSAX_DATA_GO_KR_API_KEY"}}`
+  - Tier-2 / Tier-3 (auth) fail: `{"error": {"code": "CONFIGURATION_ERROR", "message": "Missing required environment variable: UMMAYA_DATA_GO_KR_API_KEY"}}`
   - Network timeout: `{"error": {"code": "TOOL_EXECUTION_ERROR", "tool_id": "koroad_accident_search", "message": "Network error: timed out after 30s"}}`

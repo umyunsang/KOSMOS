@@ -1,4 +1,4 @@
-# Research: TUI Component Catalog — CC → KOSAX Verdict Matrix + Brand-System Doctrine
+# Research: TUI Component Catalog — CC → UMMAYA Verdict Matrix + Brand-System Doctrine
 
 **Feature**: 034-tui-component-catalog
 **Date**: 2026-04-20
@@ -16,11 +16,11 @@ Per Constitution Principle I, every design decision is mapped to one concrete re
 | Design decision | Primary reference | Secondary reference | Evidence citation |
 |---|---|---|---|
 | Verdict matrix format (rows with Status / Evidence / Feature commit / Merge commit) | `.references/claw-code/PARITY.md` top-level table | `.references/claw-code/README.md` lane-status convention | FR-006 — catalog MUST follow PARITY.md tracker pattern |
-| Component enumeration scope = `src/components/` only | ADR-006 Part D-3 (KOSAX-original surfaces under `src/kosax/*` OUT of scope) | `docs/vision.md § Layer 5 (TUI)` | Spec §Scope Boundaries; FR-033 |
+| Component enumeration scope = `src/components/` only | ADR-006 Part D-3 (UMMAYA-original surfaces under `src/ummaya/*` OUT of scope) | `docs/vision.md § Layer 5 (TUI)` | Spec §Scope Boundaries; FR-033 |
 | CC sourcemap as canonical port source | Constitution §I "Primary migration source" block; ADR-004 (sourcemap port policy, pinned commit) | `docs/vision.md § Reference materials` row "Claude Code sourcemap" | Constitution §I mandates `restored-src/src/` as the first reference for every new module |
 | 10 owning-Epic closed set {B #1297, C #1301, D #1299, E #1300, H #1302, I #1303, J #1307, K #1308, L #1309, M #1310} | ADR-006 Part B 9-Epic table + Part D-2 candidate Epic list | Initiative #2 sub-issue graph (GraphQL `subIssues` verified 2026-04-20) | FR-003 |
-| DISCARD evidence = ADR-006 Part D-1 / D-3 citation | ADR-006 Part D-1 (intentional exclusion list — 4 categories) + Part D-3 (KOSAX-original surfaces) | Spec 287 deferred-items registry | FR-004; SC-005 |
-| Token naming pattern `{metaphorRole}{Variant}?` | ADR-006 A-9 (KOSAX brand splash palette + `orbitalRing` / `kosaxCore` / `wordmark` / `subtitle` / `agentSatellite+MINISTRY` vocabulary) | `assets/kosax-{logo,logo-dark,banner-dark,icon}.{svg,png}` (8 brand assets) | FR-008/009/015 |
+| DISCARD evidence = ADR-006 Part D-1 / D-3 citation | ADR-006 Part D-1 (intentional exclusion list — 4 categories) + Part D-3 (UMMAYA-original surfaces) | Spec 287 deferred-items registry | FR-004; SC-005 |
+| Token naming pattern `{metaphorRole}{Variant}?` | ADR-006 A-9 (UMMAYA brand splash palette + `orbitalRing` / `ummayaCore` / `wordmark` / `subtitle` / `agentSatellite+MINISTRY` vocabulary) | `assets/ummaya-{logo,logo-dark,banner-dark,icon}.{svg,png}` (8 brand assets) | FR-008/009/015 |
 | Banned token patterns (`claude*`, `clawd*`, `primary`, `accent+digits`, etc.) | `tui/src/theme/tokens.ts` current surface (inventoried — 65 CC-legacy tokens to audit) | Brand Guardian role description (agent registry) | FR-008; FR-016 |
 | WCAG 2.1 AA criteria set {1.4.3, 2.1.1, 2.4.7, 3.3.2, 4.1.2} | W3C WCAG 2.1 Recommendation (public) | Gemini CLI accessibility notes (reference only) | FR-019 |
 | 한국 접근성 지침 2.2 (KWCAG 2.2) baseline | 국가표준 KS X 2101 (한국웹접근성표준) public baseline | ADR-006 A-10 IME safety rule | FR-020 |
@@ -37,7 +37,7 @@ Per Constitution Principle I, every design decision is mapped to one concrete re
 ### 2.1 CC sourcemap file counts (evidence for FR-001, FR-007)
 
 - **CC sourcemap submodule commit**: `a8a678c` (submodule HEAD at `.references/claude-code-sourcemap/`, verified by `git rev-parse HEAD` inside submodule).
-- **KOSAX repo commit when enumeration was performed**: `34c48f4` (`feat(033): permission v2 spectrum`, merged on `main` 2026-04-19).
+- **UMMAYA repo commit when enumeration was performed**: `34c48f4` (`feat(033): permission v2 spectrum`, merged on `main` 2026-04-19).
 - **Total files in `.references/claude-code-sourcemap/restored-src/src/components/` (`.tsx` + `.ts`)**: **389**. Verified by `find ... | wc -l`.
 - **Root-level files** (directly under `src/components/`): **113**.
 - **Subdirectories** (one level below `src/components/`): **31** — NOT 30 as the spec's Key Entities section and FR-001 rationale suggests.
@@ -48,10 +48,10 @@ Per Constitution Principle I, every design decision is mapped to one concrete re
 
 **31 subdirectories enumerated** (sorted): `agents`, `ClaudeCodeHint`, `CustomSelect`, `design-system`, `DesktopUpsell`, `diff`, `FeedbackSurvey`, `grove`, `HelpV2`, `HighlightedCode`, `hooks`, `LogoV2`, `LspRecommendation`, `ManagedSettingsSecurityDialog`, `mcp`, `memory`, `messages`, `Passes`, `permissions`, `PromptInput`, `sandbox`, `Settings`, `shell`, `skills`, `Spinner`, `StructuredDiff`, `tasks`, `teams`, `TrustDialog`, `ui`, `wizard`.
 
-### 2.2 KOSAX TUI current tree (evidence for PORT/REWRITE target-path column)
+### 2.2 UMMAYA TUI current tree (evidence for PORT/REWRITE target-path column)
 
 - **Total files under `tui/src/components/`**: 26 across 4 subdirectories: `conversation/`, `coordinator/`, `input/`, `primitive/`.
-- Current mapping is sparse — most CC components have NO KOSAX counterpart yet. This is expected: Epic M is the blueprint; Epics B/C/D/E/H/I/J/K/L do the ports.
+- Current mapping is sparse — most CC components have NO UMMAYA counterpart yet. This is expected: Epic M is the blueprint; Epics B/C/D/E/H/I/J/K/L do the ports.
 
 ### 2.3 Epic status (GraphQL-verified 2026-04-20)
 
@@ -94,7 +94,7 @@ Scan of `spec.md § Scope Boundaries & Deferred Items`:
 
 ### 3.1 Permanent out-of-scope (no tracking required)
 
-Five permanent exclusions listed (KOSAX-original surfaces, dev-domain CC, Gemini CLI parity, CC sourcemap updates, mass file renames). All grounded in ADR-006 Parts D-1/D-3 or Constitution §I. No action required.
+Five permanent exclusions listed (UMMAYA-original surfaces, dev-domain CC, Gemini CLI parity, CC sourcemap updates, mass file renames). All grounded in ADR-006 Parts D-1/D-3 or Constitution §I. No action required.
 
 ### 3.2 Deferred to future work (table walk)
 
@@ -159,7 +159,7 @@ The spec enters plan with **zero `[NEEDS CLARIFICATION: …]`** markers (grep co
 
 - **Decision**: Epic M's 90-cap is partitioned as: ≤ 40 REWRITE Tasks (own + follow-ups from closed Epics) + ≤ 30 family-batch Tasks (FR-027) + ≤ 10 DEFER investigation Tasks + ≤ 10 process Tasks (grep-gate impl, brand-system §3–§9 section-owner ping issues). Buffer = 0 — every cell will be audited before `/speckit-taskstoissues` runs.
 - **Rationale**: SC-007 hard cap; Principle VI hygiene. REWRITE Tasks owned by non-M Epics (FR-026) do NOT count against M's 90.
-- **Alternatives considered**: No partition (rejected: risk of blowing the cap under high-density REWRITE families). Higher cap (rejected: AGENTS.md 100-cap is a GitHub API constraint, not a KOSAX policy choice).
+- **Alternatives considered**: No partition (rejected: risk of blowing the cap under high-density REWRITE families). Higher cap (rejected: AGENTS.md 100-cap is a GitHub API constraint, not a UMMAYA policy choice).
 
 ### R5 · Where does the grep CI gate specification live?
 
@@ -187,16 +187,16 @@ Studied `.references/claw-code/PARITY.md` top-level "9-lane checkpoint" table. C
 | ✅ | Feature commit | Filled post-implementation by downstream Epic; empty at Epic M merge |
 | ✅ | Merge commit | Filled post-implementation by downstream Epic; empty at Epic M merge |
 | ✅ | Evidence path(s) | Citation to ADR-006 Part D-1/D-3 or rationale string |
-| ➕ | CC source path | PARITY.md implicit; KOSAX explicit — drives enumeration audit |
-| ➕ | KOSAX target path | PARITY.md implicit; KOSAX explicit — drives PORT/REWRITE Task acceptance |
-| ➕ | Owning Epic | PARITY.md uses "Lane" — KOSAX uses actual Epic IDs |
+| ➕ | CC source path | PARITY.md implicit; UMMAYA explicit — drives enumeration audit |
+| ➕ | UMMAYA target path | PARITY.md implicit; UMMAYA explicit — drives PORT/REWRITE Task acceptance |
+| ➕ | Owning Epic | PARITY.md uses "Lane" — UMMAYA uses actual Epic IDs |
 | ➕ | Rationale | Free-text; required for DISCARD/DEFER per FR-004/005 |
 
 ### 5.2 Token-naming doctrines (FR-009 grammar)
 
 - Tailwind's semantic tokens (`text-primary`) use role-based names but conflict with FR-008's ban on `primary`. Reason for ban: `primary` is content-free in a multi-ministry public-service context where "which ministry is primary" is a live PR comment every time.
 - Chakra UI uses `brand.50` / `brand.500` — also banned (digit suffixes forbidden by FR-008).
-- **Chosen pattern**: `{metaphorRole}{Variant}?` where `metaphorRole` is one of the fixed vocabulary from ADR-006 A-9. This is KOSAX-native and matches the orbital-ring metaphor documented there.
+- **Chosen pattern**: `{metaphorRole}{Variant}?` where `metaphorRole` is one of the fixed vocabulary from ADR-006 A-9. This is UMMAYA-native and matches the orbital-ring metaphor documented there.
 
 ### 5.3 WCAG 2.1 AA subset selection (FR-019)
 
@@ -230,7 +230,7 @@ No net-new dependencies. Zero `pyproject.toml` or TUI `package.json` edits. This
 | Constitution §IV — Government API compliance | ✅ N/A | No adapter work |
 | Constitution §V — Policy alignment | ✅ PASS | Catalog preserves PIPA permission-gauntlet invariants via FR-021 IME flag and FR-022 contrast constraints passed to Epic H |
 | Constitution §VI — deferred-work accountability | ✅ PASS | 16 items; 10 tracked; 6 backfilled by `/speckit-taskstoissues`; 0 unregistered |
-| ADR-006 Part D-3 | ✅ PASS | `src/kosax/*` surfaces explicitly excluded per FR-033 |
+| ADR-006 Part D-3 | ✅ PASS | `src/ummaya/*` surfaces explicitly excluded per FR-033 |
 | AGENTS.md Issue hierarchy | ✅ PASS | FR-023 uses `addSubIssue` mutation; FR-025 honors 90-cap |
 | AGENTS.md GraphQL-only tracking | ✅ PASS | All issue state verified via `gh api graphql` in §2.3 |
 

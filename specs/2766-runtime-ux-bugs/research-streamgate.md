@@ -11,7 +11,7 @@ tool_call_delta {function_name: "lookup", function_args_delta: "..."}
 done
 ```
 
-The pre-fix backend (`src/kosax/ipc/stdio.py:1633-1650`) immediately wrote the
+The pre-fix backend (`src/ummaya/ipc/stdio.py:1633-1650`) immediately wrote the
 `content_delta` payload as an `assistant_chunk` IPC frame. The TUI's
 `StreamingMarkdown` rendered it as the assistant's prose body. Then the
 `tool_call_delta` events accumulated into `tool_call_buf` and dispatched at
@@ -26,7 +26,7 @@ directly. The render order naturally matches.
 
 ## Fix
 
-`src/kosax/ipc/stdio.py` — Buffer `content_delta` chunks during the stream
+`src/ummaya/ipc/stdio.py` — Buffer `content_delta` chunks during the stream
 into a turn-local `buffered_visible: list[str]`. After the stream completes:
 
 - If `tool_call_buf` is empty → join the buffer and emit as a single
@@ -52,7 +52,7 @@ no-tool turns**. Rejected paths:
   not hard constraints).
 
 Defense-in-depth tier: backend buffer guard (THIS) + existing
-`parallel_tool_calls=False` API (`src/kosax/llm/client.py:1002`) + future
+`parallel_tool_calls=False` API (`src/ummaya/llm/client.py:1002`) + future
 system prompt hint can stack.
 
 ## Test

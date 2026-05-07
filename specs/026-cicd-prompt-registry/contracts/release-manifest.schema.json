@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://kosax.umyunsang.dev/schemas/026-cicd-prompt-registry/release-manifest.schema.json",
-  "title": "KOSAX Release Manifest",
+  "$id": "https://ummaya.umyunsang.dev/schemas/026-cicd-prompt-registry/release-manifest.schema.json",
+  "title": "UMMAYA Release Manifest",
   "description": "Schema for docs/release-manifests/<commit_sha>.yaml. One file per release tag push. Mirrors the Pydantic v2 ReleaseManifest model in data-model.md.",
   "type": "object",
   "additionalProperties": false,

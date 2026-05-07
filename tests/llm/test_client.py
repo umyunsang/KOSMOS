@@ -12,16 +12,16 @@ import httpx
 import pytest
 import respx
 
-from kosax.llm.client import LLMClient, RetryPolicy
-from kosax.llm.config import LLMClientConfig
-from kosax.llm.errors import (
+from ummaya.llm.client import LLMClient, RetryPolicy
+from ummaya.llm.config import LLMClientConfig
+from ummaya.llm.errors import (
     AuthenticationError,
     BudgetExceededError,
     ConfigurationError,
     LLMConnectionError,
     LLMResponseError,
 )
-from kosax.llm.models import ChatMessage, FunctionSchema, ToolDefinition
+from ummaya.llm.models import ChatMessage, FunctionSchema, ToolDefinition
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -32,11 +32,11 @@ CHAT_COMPLETIONS_URL = "https://api.friendli.ai/serverless/v1/chat/completions"
 
 @pytest.fixture
 def _clean_env(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Remove all KOSAX_* env vars then inject a safe test token."""
+    """Remove all UMMAYA_* env vars then inject a safe test token."""
     for key in list(os.environ):
-        if key.startswith("KOSAX_"):
+        if key.startswith("UMMAYA_"):
             monkeypatch.delenv(key, raising=False)
-    monkeypatch.setenv("KOSAX_FRIENDLI_TOKEN", "test-token-12345")
+    monkeypatch.setenv("UMMAYA_FRIENDLI_TOKEN", "test-token-12345")
 
 
 # ---------------------------------------------------------------------------
@@ -64,9 +64,9 @@ async def test_client_init_from_env(
 
 
 async def test_client_init_missing_token(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Client raises ConfigurationError when KOSAX_FRIENDLI_TOKEN is absent."""
+    """Client raises ConfigurationError when UMMAYA_FRIENDLI_TOKEN is absent."""
     for key in list(os.environ):
-        if key.startswith("KOSAX_"):
+        if key.startswith("UMMAYA_"):
             monkeypatch.delenv(key, raising=False)
 
     with pytest.raises(ConfigurationError):
@@ -341,14 +341,14 @@ async def test_complete_budget_exhaustion(
     Budget is set to 1500 tokens so the first call (1020 tokens with default
     max_tokens=1024) passes the pre-flight check, and the second call exhausts it.
     """
-    # Set all KOSAX_ vars then configure a budget just large enough for one call
+    # Set all UMMAYA_ vars then configure a budget just large enough for one call
     for key in list(os.environ):
-        if key.startswith("KOSAX_"):
+        if key.startswith("UMMAYA_"):
             monkeypatch.delenv(key, raising=False)
-    monkeypatch.setenv("KOSAX_FRIENDLI_TOKEN", "test-token-12345")
+    monkeypatch.setenv("UMMAYA_FRIENDLI_TOKEN", "test-token-12345")
     # Budget: 1500 — first call uses 1020 (within limit), second call needs another
     # 1024 (pre-flight) but only 480 remain, triggering BudgetExceededError.
-    monkeypatch.setenv("KOSAX_LLM_SESSION_BUDGET", "1500")
+    monkeypatch.setenv("UMMAYA_LLM_SESSION_BUDGET", "1500")
 
     # First response uses 1020 tokens (within budget of 1500)
     first_response = {

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSAX-original — Epic #1633 P2 · Anthropic→FriendliAI type shim.
+// UMMAYA-original — Epic #1633 P2 · Anthropic→FriendliAI type shim.
 //
 // Structural replacements for the Anthropic SDK types that QueryEngine.ts
 // and query.ts import. These types are in-process only; they never reach the
@@ -14,42 +14,42 @@
 // Message roles and content blocks
 // ---------------------------------------------------------------------------
 
-export type KosaxRole = 'user' | 'assistant'
+export type UmmayaRole = 'user' | 'assistant'
 
-export type KosaxTextBlockParam = {
+export type UmmayaTextBlockParam = {
   type: 'text'
   text: string
 }
 
-export type KosaxToolUseBlockParam = {
+export type UmmayaToolUseBlockParam = {
   type: 'tool_use'
   id: string
   name: string
   input: Record<string, unknown>
 }
 
-export type KosaxToolResultBlockParam = {
+export type UmmayaToolResultBlockParam = {
   type: 'tool_result'
   tool_use_id: string
-  content: string | KosaxContentBlockParam[]
+  content: string | UmmayaContentBlockParam[]
   is_error?: boolean
 }
 
-export type KosaxContentBlockParam =
-  | KosaxTextBlockParam
-  | KosaxToolUseBlockParam
-  | KosaxToolResultBlockParam
+export type UmmayaContentBlockParam =
+  | UmmayaTextBlockParam
+  | UmmayaToolUseBlockParam
+  | UmmayaToolResultBlockParam
 
 // ---------------------------------------------------------------------------
 // Messages + tool definitions
 // ---------------------------------------------------------------------------
 
-export type KosaxMessageParam = {
-  role: KosaxRole
-  content: string | KosaxContentBlockParam[]
+export type UmmayaMessageParam = {
+  role: UmmayaRole
+  content: string | UmmayaContentBlockParam[]
 }
 
-export type KosaxToolDefinition = {
+export type UmmayaToolDefinition = {
   name: string
   description?: string
   input_schema: { type: 'object'; [k: string]: unknown }
@@ -59,17 +59,17 @@ export type KosaxToolDefinition = {
 // Stream parameters + usage
 // ---------------------------------------------------------------------------
 
-export type KosaxMessageStreamParams = {
+export type UmmayaMessageStreamParams = {
   model: string
   system?: string
-  messages: KosaxMessageParam[]
-  tools?: KosaxToolDefinition[]
+  messages: UmmayaMessageParam[]
+  tools?: UmmayaToolDefinition[]
   max_tokens: number
   temperature?: number
   metadata?: Record<string, string>
 }
 
-export type KosaxUsage = {
+export type UmmayaUsage = {
   input_tokens: number
   output_tokens: number
   cache_read_input_tokens?: number
@@ -79,9 +79,9 @@ export type KosaxUsage = {
 // Streaming events (structural compatibility with Anthropic's SDK event shape)
 // ---------------------------------------------------------------------------
 
-export type KosaxStopReason = 'end_turn' | 'max_tokens' | 'tool_use' | 'stop_sequence'
+export type UmmayaStopReason = 'end_turn' | 'max_tokens' | 'tool_use' | 'stop_sequence'
 
-export type KosaxMessageStart = {
+export type UmmayaMessageStart = {
   type: 'message_start'
   message: {
     id: string
@@ -90,77 +90,77 @@ export type KosaxMessageStart = {
   }
 }
 
-export type KosaxContentBlockStart = {
+export type UmmayaContentBlockStart = {
   type: 'content_block_start'
   index: number
-  content_block: KosaxContentBlockParam
+  content_block: UmmayaContentBlockParam
 }
 
-export type KosaxTextDelta = {
+export type UmmayaTextDelta = {
   type: 'text_delta'
   text: string
 }
 
-export type KosaxInputJsonDelta = {
+export type UmmayaInputJsonDelta = {
   type: 'input_json_delta'
   partial_json: string
 }
 
 /**
- * KOSAX / Anthropic-compat thinking delta. Carries a chunk of the model's
+ * UMMAYA / Anthropic-compat thinking delta. Carries a chunk of the model's
  * chain-of-thought trace. The backend forwards K-EXAONE's
  * ``delta.reasoning_content`` (FriendliAI / vLLM separated reasoning channel)
  * via ``AssistantChunkFrame.thinking``, and llmClient.ts converts those frames
- * into one or more ``content_block_delta { delta: KosaxThinkingDelta }``
+ * into one or more ``content_block_delta { delta: UmmayaThinkingDelta }``
  * events on a dedicated thinking block index. The TUI's ``Message.tsx``
  * picks up ``type: 'thinking'`` content blocks and routes them to
  * ``AssistantThinkingMessage`` (``∴ Thinking`` in dim italic).
  */
-export type KosaxThinkingDelta = {
+export type UmmayaThinkingDelta = {
   type: 'thinking_delta'
   thinking: string
 }
 
-export type KosaxContentBlockDelta = {
+export type UmmayaContentBlockDelta = {
   type: 'content_block_delta'
   index: number
-  delta: KosaxTextDelta | KosaxInputJsonDelta | KosaxThinkingDelta
+  delta: UmmayaTextDelta | UmmayaInputJsonDelta | UmmayaThinkingDelta
 }
 
-export type KosaxContentBlockStop = {
+export type UmmayaContentBlockStop = {
   type: 'content_block_stop'
   index: number
 }
 
-export type KosaxMessageDelta = {
+export type UmmayaMessageDelta = {
   type: 'message_delta'
   delta: {
-    stop_reason?: KosaxStopReason
+    stop_reason?: UmmayaStopReason
   }
-  usage?: KosaxUsage
+  usage?: UmmayaUsage
 }
 
-export type KosaxMessageStop = {
+export type UmmayaMessageStop = {
   type: 'message_stop'
 }
 
-export type KosaxRawMessageStreamEvent =
-  | KosaxMessageStart
-  | KosaxContentBlockStart
-  | KosaxContentBlockDelta
-  | KosaxContentBlockStop
-  | KosaxMessageDelta
-  | KosaxMessageStop
+export type UmmayaRawMessageStreamEvent =
+  | UmmayaMessageStart
+  | UmmayaContentBlockStart
+  | UmmayaContentBlockDelta
+  | UmmayaContentBlockStop
+  | UmmayaMessageDelta
+  | UmmayaMessageStop
 
 // ---------------------------------------------------------------------------
 // Finalized message returned by LLMClient.complete() + LLMClient.stream() return
 // ---------------------------------------------------------------------------
 
-export type KosaxMessageFinal = {
+export type UmmayaMessageFinal = {
   id: string
   role: 'assistant'
   model: string
-  content: KosaxContentBlockParam[]
-  stop_reason: KosaxStopReason
-  usage: KosaxUsage
+  content: UmmayaContentBlockParam[]
+  stop_reason: UmmayaStopReason
+  usage: UmmayaUsage
 }

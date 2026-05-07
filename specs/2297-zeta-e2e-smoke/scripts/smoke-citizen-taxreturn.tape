@@ -23,11 +23,11 @@ Set Height 720
 Set Theme "TokyoNight"
 
 # I-K1.3 — spawn the TUI.
-Type "cd ~/KOSAX-w-2297/tui && KOSAX_SMOKE_CHECKPOINTS=true bun run tui"
+Type "cd ~/UMMAYA-w-2297/tui && UMMAYA_SMOKE_CHECKPOINTS=true bun run tui"
 Enter
 Sleep 5s
 
-# I-K1.4 — keyframe 1: boot + KOSAX branding rendered.
+# I-K1.4 — keyframe 1: boot + UMMAYA branding rendered.
 Screenshot specs/2297-zeta-e2e-smoke/scripts/smoke-keyframe-1-boot.png
 Sleep 1s
 

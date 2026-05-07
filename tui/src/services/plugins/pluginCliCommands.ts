@@ -14,7 +14,7 @@ import { getManagedPluginNames } from '../../utils/plugins/managedPlugins.js'
 import { parsePluginIdentifier } from '../../utils/plugins/pluginIdentifier.js'
 import type { PluginScope } from '../../utils/plugins/schemas.js'
 import { writeToStdout } from '../../utils/process.js'
-// utils/telemetry/pluginTelemetry removed — KOSAX telemetry handled by Spec 021 OTEL pipeline.
+// utils/telemetry/pluginTelemetry removed — UMMAYA telemetry handled by Spec 021 OTEL pipeline.
 const buildPluginTelemetryFields = (..._args: unknown[]): Record<string, unknown> => ({})
 const classifyPluginCommandError = (_err: unknown): string => 'unknown'
 import {

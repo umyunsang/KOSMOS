@@ -7,13 +7,13 @@ import os
 
 import pytest
 
-from kosax.cli import app as cli_app
+from ummaya.cli import app as cli_app
 
 
 @pytest.fixture(autouse=True)
 def _isolate_env(monkeypatch: pytest.MonkeyPatch):
     for key in list(os.environ):
-        if key.startswith(("KOSAX_", "LANGFUSE_")):
+        if key.startswith(("UMMAYA_", "LANGFUSE_")):
             monkeypatch.delenv(key, raising=False)
     yield
 
@@ -50,7 +50,7 @@ def test_main_exits_78_when_required_var_missing(
     def _mark_tracing(*_a, **_kw) -> None:
         tracing_called["hit"] = True
 
-    monkeypatch.setenv("KOSAX_ENV", "prod")
+    monkeypatch.setenv("UMMAYA_ENV", "prod")
     monkeypatch.setattr(cli_app, "load_repo_dotenv", lambda: None)
     monkeypatch.setattr(cli_app, "setup_tracing", _mark_tracing)
     monkeypatch.setattr(cli_app, "_app", lambda: None)
@@ -60,4 +60,4 @@ def test_main_exits_78_when_required_var_missing(
     assert excinfo.value.code == 78
     assert tracing_called["hit"] is False, "setup_tracing must not run after guard fails"
     captured = capsys.readouterr()
-    assert captured.err.startswith("KOSAX config error [env=")
+    assert captured.err.startswith("UMMAYA config error [env=")

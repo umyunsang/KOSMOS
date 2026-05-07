@@ -15,7 +15,7 @@ import json
 import pytest
 from pydantic import TypeAdapter, ValidationError
 
-from kosax.tools.models import (
+from ummaya.tools.models import (
     AddressResult,
     AdmCodeResult,
     CoordResult,

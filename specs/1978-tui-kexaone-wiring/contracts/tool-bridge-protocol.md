@@ -101,17 +101,17 @@ async def _on_tool_result(frame: ToolResultFrame) -> None:
         fut.set_result(frame)
 ```
 
-Timeout: the outer `asyncio.gather` has a 120 s timeout per turn (configurable via `KOSAX_TOOL_RESULT_TIMEOUT_SECONDS`). On timeout, all pending futures are cancelled, a synthetic `tool_result` with `error_type="timeout"` is injected, and the turn proceeds to wrap up.
+Timeout: the outer `asyncio.gather` has a 120 s timeout per turn (configurable via `UMMAYA_TOOL_RESULT_TIMEOUT_SECONDS`). On timeout, all pending futures are cancelled, a synthetic `tool_result` with `error_type="timeout"` is injected, and the turn proceeds to wrap up.
 
 ## Multi-turn ReAct loop
 
-Within one `ChatRequestFrame` turn, the backend MAY call `client.stream` multiple times (each iteration of the ReAct loop). Each invocation gets its own GenAI span as a child of the same `kosax.turn` per ADR-0004. The `ChatRequestFrame.messages` list is **not re-emitted by the TUI** between iterations — backend mutates a local copy.
+Within one `ChatRequestFrame` turn, the backend MAY call `client.stream` multiple times (each iteration of the ReAct loop). Each invocation gets its own GenAI span as a child of the same `ummaya.turn` per ADR-0004. The `ChatRequestFrame.messages` list is **not re-emitted by the TUI** between iterations — backend mutates a local copy.
 
 This preserves CC's ReAct loop semantics inside a single TUI request without per-iteration round trips. The TUI sees only the final `assistant_chunk{done=True}` (or `error`) per turn, plus any `tool_call` / `tool_result` frames in between.
 
 ## Audit trail
 
-Each `ToolCallFrame` and `ToolResultFrame` MUST be appended to the Spec 024 `ToolCallAuditRecord` chain via `kosax.observability.event_logger`. Audit fields:
+Each `ToolCallFrame` and `ToolResultFrame` MUST be appended to the Spec 024 `ToolCallAuditRecord` chain via `ummaya.observability.event_logger`. Audit fields:
 
 ```
 correlation_id, transaction_id, call_id, tool_id, decision, granted_at, completed_at, error_type

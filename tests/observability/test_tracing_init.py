@@ -24,7 +24,7 @@ from opentelemetry.trace import NoOpTracerProvider
 
 def _reset_warn_sentinel() -> None:
     """Reset the module-level warn-once sentinel so each test starts clean."""
-    import kosax.observability.tracing as tracing_mod
+    import ummaya.observability.tracing as tracing_mod
 
     tracing_mod._WARN_MISSING_ENDPOINT_ONCE = True
 
@@ -40,7 +40,7 @@ def test_setup_tracing_disabled_returns_noop(monkeypatch: pytest.MonkeyPatch) ->
     monkeypatch.delenv("OTEL_EXPORTER_OTLP_ENDPOINT", raising=False)
     _reset_warn_sentinel()
 
-    from kosax.observability.tracing import TracingSettings, setup_tracing
+    from ummaya.observability.tracing import TracingSettings, setup_tracing
 
     settings = TracingSettings(disabled=True)
     provider = setup_tracing(settings)
@@ -62,7 +62,7 @@ def test_setup_tracing_disabled_env_flag(monkeypatch: pytest.MonkeyPatch) -> Non
     monkeypatch.delenv("OTEL_EXPORTER_OTLP_ENDPOINT", raising=False)
     _reset_warn_sentinel()
 
-    from kosax.observability.tracing import _settings_from_env
+    from ummaya.observability.tracing import _settings_from_env
 
     settings = _settings_from_env()
     assert settings.disabled is True
@@ -83,7 +83,7 @@ def test_setup_tracing_with_endpoint_returns_real_provider(
     monkeypatch.setenv("OTEL_SDK_DISABLED", "false")
     _reset_warn_sentinel()
 
-    from kosax.observability.tracing import TracingSettings, setup_tracing
+    from ummaya.observability.tracing import TracingSettings, setup_tracing
 
     # Do not pass headers to avoid SDK header-parsing ValueError in test env.
     settings = TracingSettings(
@@ -132,7 +132,7 @@ def test_setup_tracing_real_provider_has_batch_processor(
     """Directly construct settings and assert BatchSpanProcessor is attached."""
     _reset_warn_sentinel()
 
-    from kosax.observability.tracing import TracingSettings, setup_tracing
+    from ummaya.observability.tracing import TracingSettings, setup_tracing
 
     settings = TracingSettings(
         endpoint="http://localhost:4318",
@@ -175,11 +175,11 @@ def test_setup_tracing_missing_endpoint_warns_once(
     monkeypatch.setenv("OTEL_SDK_DISABLED", "false")
     _reset_warn_sentinel()
 
-    from kosax.observability.tracing import TracingSettings, setup_tracing
+    from ummaya.observability.tracing import TracingSettings, setup_tracing
 
     settings_no_endpoint = TracingSettings(endpoint=None, disabled=False)
 
-    with caplog.at_level(logging.WARNING, logger="kosax.observability.tracing"):
+    with caplog.at_level(logging.WARNING, logger="ummaya.observability.tracing"):
         provider1 = setup_tracing(settings_no_endpoint)
 
     warning_messages = [r.message for r in caplog.records if r.levelno == logging.WARNING]
@@ -201,18 +201,18 @@ def test_setup_tracing_missing_endpoint_no_repeat_warn(
     monkeypatch.setenv("OTEL_SDK_DISABLED", "false")
     _reset_warn_sentinel()
 
-    from kosax.observability.tracing import TracingSettings, setup_tracing
+    from ummaya.observability.tracing import TracingSettings, setup_tracing
 
     settings_no_endpoint = TracingSettings(endpoint=None, disabled=False)
 
     # First call: emits the warning and flips the sentinel to False.
-    with caplog.at_level(logging.WARNING, logger="kosax.observability.tracing"):
+    with caplog.at_level(logging.WARNING, logger="ummaya.observability.tracing"):
         setup_tracing(settings_no_endpoint)
 
     caplog.clear()
 
     # Second call: sentinel is now False, must not re-warn.
-    with caplog.at_level(logging.WARNING, logger="kosax.observability.tracing"):
+    with caplog.at_level(logging.WARNING, logger="ummaya.observability.tracing"):
         setup_tracing(settings_no_endpoint)
 
     second_call_warnings = [

@@ -22,7 +22,7 @@ echo "════════════════════════�
 # L1 — pytest + bun test
 echo ""
 echo "[L1] Running pytest unit + integration tests..."
-uv run pytest tests/ipc/test_plugin_op_dispatch.py tests/ipc/test_consent_bridge.py src/kosax/plugins/tests/ -q --no-header --benchmark-disable
+uv run pytest tests/ipc/test_plugin_op_dispatch.py tests/ipc/test_consent_bridge.py src/ummaya/plugins/tests/ -q --no-header --benchmark-disable
 echo "[L1] pytest passed."
 
 echo "[L1] Running bun test..."

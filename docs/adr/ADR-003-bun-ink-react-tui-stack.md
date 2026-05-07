@@ -2,13 +2,13 @@
 
 **Status**: Accepted
 **Date**: 2026-04-19
-**Epic**: #287 (KOSAX TUI — Ink + React + Bun)
+**Epic**: #287 (UMMAYA TUI — Ink + React + Bun)
 
 ---
 
 ## Context
 
-Spec 287 ports Claude Code 2.1.88's Ink + React terminal UI to the KOSAX Korean
+Spec 287 ports Claude Code 2.1.88's Ink + React terminal UI to the UMMAYA Korean
 public-service domain.  The TUI must spawn the Python backend as a child process,
 stream JSONL IPC frames over stdio, and render the 5-primitive result variants
 defined by Spec 031.  Before any TUI code lands, FR-057 mandates an ADR that
@@ -82,7 +82,7 @@ stdin/stdout/stderr only.  No extra fds.  No TCP listener.
    satisfying this requirement without installing Node separately.
 
 5. **License compatibility**.  All selected packages are MIT or Apache-2.0,
-   compatible with KOSAX's Apache-2.0 project license.
+   compatible with UMMAYA's Apache-2.0 project license.
 
 ---
 
@@ -99,7 +99,7 @@ stdin/stdout/stderr only.  No extra fds.  No TCP listener.
 - JSONL over stdio requires no TCP listener, no port management, and no OS-level
   socket permissions.  The IPC bridge is debuggable with plain `cat`.
 - `@inkjs/ui` 2.x ships the TextInput / Spinner / Select components that Claude
-  Code uses in permission prompts, reducing the volume of KOSAX-original
+  Code uses in permission prompts, reducing the volume of UMMAYA-original
   component code.
 - `zod` 3.23's `z.discriminatedUnion` gives exhaustive compile-time coverage of
   all 5-primitive return variants, enforcing FR-008's ban on string sniffing.

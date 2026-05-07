@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSAX-original — Epic #1633 stub restoration.
+// UMMAYA-original — Epic #1633 stub restoration.
 //
 // Analytics metadata helpers — all return empty payloads or `false` flags so
 // the downstream logEvent stubs receive nothing from the TUI layer.

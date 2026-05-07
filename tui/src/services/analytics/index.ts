@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSAX-original — Epic #1633 P2 · stub-noop replacement for CC analytics.
+// UMMAYA-original — Epic #1633 P2 · stub-noop replacement for CC analytics.
 //
 // The original Anthropic analytics surface (GrowthBook + Datadog + FirstParty
-// event logger + sinks) has been removed. KOSAX emits all runtime telemetry
+// event logger + sinks) has been removed. UMMAYA emits all runtime telemetry
 // via the Spec 021 OTEL pipeline (local Langfuse, zero external egress —
 // docs/vision.md § L1-A A7).
 //
 // This file preserves the original export surface so call sites compile
 // without mass-editing 300+ files; every function is a no-op at runtime.
-// KOSAX OTEL span emission is orthogonal to these stubs — see
+// UMMAYA OTEL span emission is orthogonal to these stubs — see
 // tui/src/ipc/llmClient.ts for the real observability path.
 
 // ---------------------------------------------------------------------------
@@ -48,7 +48,7 @@ export function profileCheckpoint(
 }
 
 // ---------------------------------------------------------------------------
-// Sink lifecycle — no-op (there is no KOSAX analytics sink; Spec 021 OTEL
+// Sink lifecycle — no-op (there is no UMMAYA analytics sink; Spec 021 OTEL
 // Collector is the sole telemetry destination).
 // ---------------------------------------------------------------------------
 
@@ -67,8 +67,8 @@ export function shutdownAnalyticsSink(): Promise<void> {
 // ---------------------------------------------------------------------------
 // Lifted verbatim from CC restored-src services/analytics/index.ts:45
 // (CC 2.1.88, research-use). Used by sink.ts:14 + firstPartyEventLoggingExporter.ts:33.
-// Returns the same reference when no _PROTO_ keys present — KOSAX payloads
-// have no protobuf-typed PII layer, so it is a fast path. The KOSAX-OTEL
+// Returns the same reference when no _PROTO_ keys present — UMMAYA payloads
+// have no protobuf-typed PII layer, so it is a fast path. The UMMAYA-OTEL
 // pipeline does not consume these results, but CC's import sites still
 // require the function to link.
 // ---------------------------------------------------------------------------
@@ -97,17 +97,17 @@ export function stripProtoFields<V>(
 }
 
 export function attachAnalyticsSink(_sink: AnalyticsSink): void {
-  // KOSAX-1633 P2 — there is no Datadog / 1P sink. CC's body queued events
-  // until a sink attached; KOSAX drops events at the noop logEvent above.
+  // UMMAYA-1633 P2 — there is no Datadog / 1P sink. CC's body queued events
+  // until a sink attached; UMMAYA drops events at the noop logEvent above.
 }
 
 // ---------------------------------------------------------------------------
-// Vendor-aliased shutdown helpers — KOSAX-1633 P1+P2 / KOSAX-1978 T011.
+// Vendor-aliased shutdown helpers — UMMAYA-1633 P1+P2 / UMMAYA-1978 T011.
 // Original CC modules (services/analytics/datadog.ts, sink.ts,
 // firstPartyEventLogger.ts) are deleted by Spec 1633 P1+P2 invariant. These
 // aliases preserve the call signatures so the bridge / chrome MCP / computer-
 // use MCP shutdown paths link cleanly without redirecting to vendor sinks
-// (KOSAX does not ship Datadog or 1P event logging).
+// (UMMAYA does not ship Datadog or 1P event logging).
 // ---------------------------------------------------------------------------
 
 export function shutdownDatadog(): Promise<void> {
@@ -122,7 +122,7 @@ export function logEventTo1P(
   _eventName: string,
   _metadata?: AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
 ): void {
-  // Intentional no-op (KOSAX-1633 P2 stub).
+  // Intentional no-op (UMMAYA-1633 P2 stub).
 }
 
 // ---------------------------------------------------------------------------

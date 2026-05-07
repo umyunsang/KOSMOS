@@ -5,7 +5,7 @@ Authority:
 - specs/2295-backend-permissions-cleanup/spec.md § FR-003 (model definition)
 - specs/2295-backend-permissions-cleanup/spec.md § US2 (model creation acceptance)
 - specs/2295-backend-permissions-cleanup/spec.md § FR-004 (18+ adapters have policy)
-- AGENTS.md § CORE THESIS — KOSAX does NOT invent permission policy
+- AGENTS.md § CORE THESIS — UMMAYA does NOT invent permission policy
 """
 
 from __future__ import annotations
@@ -15,7 +15,7 @@ from datetime import UTC, datetime
 import pytest
 from pydantic import ValidationError
 
-from kosax.tools.models import AdapterRealDomainPolicy
+from ummaya.tools.models import AdapterRealDomainPolicy
 
 
 def test_model_frozen() -> None:
@@ -80,14 +80,14 @@ def test_18_adapters_have_policy() -> None:
     - policy.real_classification_url is non-empty + starts with 'https://'
     - policy.citizen_facing_gate is one of the 5 Literal values
     """
-    from kosax.tools.executor import ToolExecutor  # local import to avoid bootstrap cost
-    from kosax.tools.registry import ToolRegistry  # local import to avoid bootstrap cost
+    from ummaya.tools.executor import ToolExecutor  # local import to avoid bootstrap cost
+    from ummaya.tools.registry import ToolRegistry  # local import to avoid bootstrap cost
 
     registry = ToolRegistry()
     executor = ToolExecutor(registry=registry)
 
     try:
-        from kosax.tools.register_all import register_all_tools
+        from ummaya.tools.register_all import register_all_tools
 
         register_all_tools(registry, executor)
     except Exception:  # noqa: BLE001, S110 — tolerate boot failure; the assertion below covers it
@@ -107,10 +107,10 @@ def test_18_adapters_have_policy() -> None:
         if not hasattr(tool, "policy"):
             continue
         if tool.policy is None:
-            # Allow None only for KOSAX-internal synthetic surfaces.
-            assert tool.ministry == "KOSAX", (
+            # Allow None only for UMMAYA-internal synthetic surfaces.
+            assert tool.ministry == "UMMAYA", (
                 f"adapter {tool.id!r} has policy=None and ministry={tool.ministry!r} "
-                "(non-KOSAX adapter must have policy set per Epic δ #2295 FR-004)"
+                "(non-UMMAYA adapter must have policy set per Epic δ #2295 FR-004)"
             )
             continue
         assert tool.policy.real_classification_url, (

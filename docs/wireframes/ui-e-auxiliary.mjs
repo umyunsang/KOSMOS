@@ -39,14 +39,14 @@ function HelpView() {
 // ── E.2 · Config overlay ═══════════════════════════════════════════════
 function ConfigOverlay() {
   const items = [
-    { k: 'KOSAX_TUI_THEME',          v: 'dark',         edit: true },
-    { k: 'KOSAX_REDUCED_MOTION',     v: '0',            edit: true },
-    { k: 'KOSAX_OTEL_DISABLED',      v: '0',            edit: true },
-    { k: 'KOSAX_AGENT_MAILBOX_ROOT', v: '~/.kosax/...', edit: false },
+    { k: 'UMMAYA_TUI_THEME',          v: 'dark',         edit: true },
+    { k: 'UMMAYA_REDUCED_MOTION',     v: '0',            edit: true },
+    { k: 'UMMAYA_OTEL_DISABLED',      v: '0',            edit: true },
+    { k: 'UMMAYA_AGENT_MAILBOX_ROOT', v: '~/.ummaya/...', edit: false },
     { k: 'FRIENDLI_API_KEY',          v: '(secret)',     edit: false },
   ]
   return h(BorderedNotice, {
-    label: '◆ /config · KOSAX 환경 설정', color: C.brand, width: 72,
+    label: '◆ /config · UMMAYA 환경 설정', color: C.brand, width: 72,
   },
     ...items.map((it, i) => h(Box, { key: i },
       h(Text, { color: it.edit ? C.text : C.dim, dimColor: !it.edit },
@@ -81,7 +81,7 @@ function PluginBrowser() {
     )),
     h(Box, { marginTop: 1 },
       h(Text, { color: C.dim, dimColor: true },
-        '↑↓ 이동 · Space 토글 · i 상세 · r 제거 · a kosax-plugin-store 추가')),
+        '↑↓ 이동 · Space 토글 · i 상세 · r 제거 · a ummaya-plugin-store 추가')),
   )
 }
 
@@ -90,14 +90,14 @@ function ExportPDF() {
   return h(BorderedNotice, {
     label: '◆ /export pdf · 세션 PDF 내보내기', color: C.brand, width: 72,
   },
-    h(Text, null, '파일명:  kosax-session-2026-04-24-1402.pdf'),
+    h(Text, null, '파일명:  ummaya-session-2026-04-24-1402.pdf'),
     h(Text, null, '포함:    ✓ 대화 · ✓ 도구 호출 · ✓ 권한 영수증'),
     h(Text, null, '제외:    ✗ OTEL 로그 · ✗ 플러그인 내부 상태'),
     h(Box, { marginTop: 1 },
       h(Text, { color: C.dim, dimColor: true }, 'PDF 1페이지:')),
     h(Box, { marginLeft: 2, marginTop: 1, borderStyle: 'single',
              borderColor: C.dim, paddingX: 1 },
-      h(Text, { bold: true }, 'KOSAX 세션 기록'),
+      h(Text, { bold: true }, 'UMMAYA 세션 기록'),
       h(Text, { color: C.dim }, '2026-04-24 14:02:31 · session ab12cd34'),
       h(Text, null, ''),
       h(Text, null, '[사용자] 오늘 서울 날씨 어때?'),

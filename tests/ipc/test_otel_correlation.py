@@ -2,15 +2,15 @@
 """T051 — End-to-end correlation_id / transaction_id OTEL attribute tests (Spec 032).
 
 Verifies (FR-027 / FR-053):
-- Every ``kosax.ipc.frame`` span emitted during a synthetic full turn shares
-  the same ``kosax.ipc.correlation_id`` attribute value.
+- Every ``ummaya.ipc.frame`` span emitted during a synthetic full turn shares
+  the same ``ummaya.ipc.correlation_id`` attribute value.
 - The irreversible tool-call frame's outbound span carries
-  ``kosax.ipc.tx.cache_state="miss"`` on first write, and ``"hit"`` on a
+  ``ummaya.ipc.tx.cache_state="miss"`` on first write, and ``"hit"`` on a
   replayed retransmission after a resume handshake.
-- ``kosax.ipc.transaction_id`` is present on irreversible tool-call frames
+- ``ummaya.ipc.transaction_id`` is present on irreversible tool-call frames
   and absent on streaming chunks.
 
-Strategy: monkeypatch the module-level ``_tracer`` in ``kosax.ipc.stdio``
+Strategy: monkeypatch the module-level ``_tracer`` in ``ummaya.ipc.stdio``
 with a dedicated ``TracerProvider`` backed by an ``InMemorySpanExporter``
 (mirrors ``tests/ipc/test_otel_span.py``).  Frames are emitted via
 ``write_frame`` with a fake stdout buffer; no subprocess.
@@ -28,15 +28,15 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import SimpleSpanProcessor
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
 
-from kosax.ipc.frame_schema import (
+from ummaya.ipc.frame_schema import (
     AssistantChunkFrame,
     ToolCallFrame,
     UserInputFrame,
 )
-from kosax.ipc.otel_constants import (
-    KOSAX_IPC_CORRELATION_ID,
-    KOSAX_IPC_TRANSACTION_ID,
-    KOSAX_IPC_TX_CACHE_STATE,
+from ummaya.ipc.otel_constants import (
+    UMMAYA_IPC_CORRELATION_ID,
+    UMMAYA_IPC_TRANSACTION_ID,
+    UMMAYA_IPC_TX_CACHE_STATE,
 )
 
 # ---------------------------------------------------------------------------
@@ -77,16 +77,16 @@ def mem_exporter(monkeypatch: pytest.MonkeyPatch) -> InMemorySpanExporter:
     provider = TracerProvider()
     provider.add_span_processor(SimpleSpanProcessor(exporter))
 
-    import kosax.ipc.stdio as stdio_mod
+    import ummaya.ipc.stdio as stdio_mod
 
-    monkeypatch.setattr(stdio_mod, "_tracer", provider.get_tracer("kosax.ipc"))
+    monkeypatch.setattr(stdio_mod, "_tracer", provider.get_tracer("ummaya.ipc"))
     exporter.clear()
     return exporter
 
 
 @pytest.fixture()
 def fake_stdout(monkeypatch: pytest.MonkeyPatch) -> None:
-    from kosax.ipc import stdio as stdio_mod
+    from ummaya.ipc import stdio as stdio_mod
 
     monkeypatch.setattr(sys, "stdout", _FakeStdout())
     monkeypatch.setattr(stdio_mod, "_stdout_lock", None)
@@ -102,8 +102,8 @@ async def test_full_turn_shares_one_correlation_id(
     mem_exporter: InMemorySpanExporter,
     fake_stdout: None,
 ) -> None:
-    """Synthetic full turn → every span has identical kosax.ipc.correlation_id."""
-    from kosax.ipc import stdio as stdio_mod
+    """Synthetic full turn → every span has identical ummaya.ipc.correlation_id."""
+    from ummaya.ipc import stdio as stdio_mod
 
     session_id = str(uuid.uuid4())
     correlation_id = str(uuid.uuid4())
@@ -145,13 +145,13 @@ async def test_full_turn_shares_one_correlation_id(
     await stdio_mod.write_frame(chunk_one)
     await stdio_mod.write_frame(chunk_two)
 
-    ipc_spans = [s for s in mem_exporter.get_finished_spans() if s.name == "kosax.ipc.frame"]
+    ipc_spans = [s for s in mem_exporter.get_finished_spans() if s.name == "ummaya.ipc.frame"]
     assert len(ipc_spans) == 3, (
-        f"Expected 3 kosax.ipc.frame spans, got {len(ipc_spans)}: "
+        f"Expected 3 ummaya.ipc.frame spans, got {len(ipc_spans)}: "
         f"{[s.name for s in mem_exporter.get_finished_spans()]}"
     )
 
-    corr_ids = {dict(s.attributes or {}).get(KOSAX_IPC_CORRELATION_ID) for s in ipc_spans}
+    corr_ids = {dict(s.attributes or {}).get(UMMAYA_IPC_CORRELATION_ID) for s in ipc_spans}
     assert corr_ids == {correlation_id}, (
         f"correlation_id must be constant across a turn, got {corr_ids}"
     )
@@ -167,7 +167,7 @@ async def test_transaction_id_present_only_on_irreversible_tool_call(
     mem_exporter: InMemorySpanExporter,
     fake_stdout: None,
 ) -> None:
-    from kosax.ipc import stdio as stdio_mod
+    from ummaya.ipc import stdio as stdio_mod
 
     session_id = str(uuid.uuid4())
     correlation_id = str(uuid.uuid4())
@@ -198,20 +198,20 @@ async def test_transaction_id_present_only_on_irreversible_tool_call(
     await stdio_mod.write_frame(tool_call, tx_cache_state="miss")
     await stdio_mod.write_frame(chunk)
 
-    ipc_spans = [s for s in mem_exporter.get_finished_spans() if s.name == "kosax.ipc.frame"]
+    ipc_spans = [s for s in mem_exporter.get_finished_spans() if s.name == "ummaya.ipc.frame"]
     assert len(ipc_spans) == 2
 
     by_kind = {
-        dict(s.attributes or {}).get("kosax.frame.kind"): dict(s.attributes or {})
+        dict(s.attributes or {}).get("ummaya.frame.kind"): dict(s.attributes or {})
         for s in ipc_spans
     }
 
     tool_attrs = by_kind["tool_call"]
-    assert tool_attrs.get(KOSAX_IPC_TRANSACTION_ID) == tx_id
-    assert tool_attrs.get(KOSAX_IPC_TX_CACHE_STATE) == "miss"
+    assert tool_attrs.get(UMMAYA_IPC_TRANSACTION_ID) == tx_id
+    assert tool_attrs.get(UMMAYA_IPC_TX_CACHE_STATE) == "miss"
 
     chunk_attrs = by_kind["assistant_chunk"]
-    assert KOSAX_IPC_TRANSACTION_ID not in chunk_attrs, (
+    assert UMMAYA_IPC_TRANSACTION_ID not in chunk_attrs, (
         f"assistant_chunk must not carry transaction_id: {chunk_attrs}"
     )
 
@@ -227,7 +227,7 @@ async def test_tx_cache_state_transitions_miss_then_hit_on_replay(
     fake_stdout: None,
 ) -> None:
     """First emit: miss.  Replay after resume handshake: hit.  Same transaction_id."""
-    from kosax.ipc import stdio as stdio_mod
+    from ummaya.ipc import stdio as stdio_mod
 
     session_id = str(uuid.uuid4())
     correlation_id = str(uuid.uuid4())
@@ -250,13 +250,13 @@ async def test_tx_cache_state_transitions_miss_then_hit_on_replay(
     # Retransmit after resume → hit (cache already populated).
     await stdio_mod.write_frame(tool_call, tx_cache_state="hit")
 
-    ipc_spans = [s for s in mem_exporter.get_finished_spans() if s.name == "kosax.ipc.frame"]
+    ipc_spans = [s for s in mem_exporter.get_finished_spans() if s.name == "ummaya.ipc.frame"]
     assert len(ipc_spans) == 2
 
-    states = [dict(s.attributes or {}).get(KOSAX_IPC_TX_CACHE_STATE) for s in ipc_spans]
+    states = [dict(s.attributes or {}).get(UMMAYA_IPC_TX_CACHE_STATE) for s in ipc_spans]
     assert states == ["miss", "hit"], f"Expected ['miss','hit'], got {states}"
 
-    tx_ids = {dict(s.attributes or {}).get(KOSAX_IPC_TRANSACTION_ID) for s in ipc_spans}
+    tx_ids = {dict(s.attributes or {}).get(UMMAYA_IPC_TRANSACTION_ID) for s in ipc_spans}
     assert tx_ids == {tx_id}, f"transaction_id must be preserved across replay: {tx_ids}"
 
 
@@ -271,7 +271,7 @@ async def test_inbound_user_input_span_has_correlation_id(
 ) -> None:
     import asyncio
 
-    from kosax.ipc.stdio import _reader_loop
+    from ummaya.ipc.stdio import _reader_loop
 
     session_id = str(uuid.uuid4())
     correlation_id = str(uuid.uuid4())
@@ -294,7 +294,7 @@ async def test_inbound_user_input_span_has_correlation_id(
 
     await _reader_loop(reader, _on_frame, session_id)
 
-    ipc_spans = [s for s in mem_exporter.get_finished_spans() if s.name == "kosax.ipc.frame"]
+    ipc_spans = [s for s in mem_exporter.get_finished_spans() if s.name == "ummaya.ipc.frame"]
     assert len(ipc_spans) == 1
     attrs = dict(ipc_spans[0].attributes or {})
-    assert attrs.get(KOSAX_IPC_CORRELATION_ID) == correlation_id
+    assert attrs.get(UMMAYA_IPC_CORRELATION_ID) == correlation_id

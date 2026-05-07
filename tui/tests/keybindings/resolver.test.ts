@@ -59,9 +59,9 @@ describe('resolver — precedence (D7)', () => {
     expect(chatResult.context).toBe('Chat')
     const spans = taken()
     expect(spans.length).toBe(1)
-    expect(spans[0]!['kosax.tui.binding']).toBe('draft-cancel')
-    expect(spans[0]!['kosax.tui.binding.context']).toBe('Chat')
-    expect(spans[0]!['kosax.tui.binding.reserved']).toBe(false)
+    expect(spans[0]!['ummaya.tui.binding']).toBe('draft-cancel')
+    expect(spans[0]!['ummaya.tui.binding.context']).toBe('Chat')
+    expect(spans[0]!['ummaya.tui.binding.reserved']).toBe(false)
   })
 
   test('Global reserved chord resolves from Chat context (FR-016)', () => {
@@ -118,7 +118,7 @@ describe('resolver — IME gate (FR-005, FR-006, FR-007)', () => {
     expect(result.reason).toBe('ime-composing')
     expect(result.action).toBe('draft-cancel')
     const spans = taken()
-    expect(spans[0]!['kosax.tui.binding.blocked.reason']).toBe('ime-composing')
+    expect(spans[0]!['ummaya.tui.binding.blocked.reason']).toBe('ime-composing')
   })
 
   test('non-mutating action still fires while composing', () => {
@@ -157,9 +157,9 @@ describe('resolver — OTel span emission (FR-033 / FR-034)', () => {
     })
     const spans = taken()
     expect(spans.length).toBe(1)
-    expect(spans[0]!['kosax.tui.binding']).toBe('agent-interrupt')
-    expect(spans[0]!['kosax.tui.binding.reserved']).toBe(true)
-    expect(spans[0]!['kosax.tui.binding.chord']).toBe('ctrl+c')
+    expect(spans[0]!['ummaya.tui.binding']).toBe('agent-interrupt')
+    expect(spans[0]!['ummaya.tui.binding.reserved']).toBe(true)
+    expect(spans[0]!['ummaya.tui.binding.chord']).toBe('ctrl+c')
   })
 
   test('reserved action dispatches emit audit record', async () => {

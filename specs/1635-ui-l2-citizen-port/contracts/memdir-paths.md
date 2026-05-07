@@ -1,13 +1,13 @@
 # Memdir Path Contract — Spec 1635 UI L2
 
-This document enumerates every memdir path read or written by this epic. The USER-tier root is `~/.kosax/memdir/user/` (owned by Spec 027). New paths are owned by this epic. Existing paths are read-only or write-through to Spec 033 / Spec 035.
+This document enumerates every memdir path read or written by this epic. The USER-tier root is `~/.ummaya/memdir/user/` (owned by Spec 027). New paths are owned by this epic. Existing paths are read-only or write-through to Spec 033 / Spec 035.
 
 ## New paths (owned by this epic)
 
 | Path | Owner | Purpose | FR | Schema |
 |---|---|---|---|---|
-| `~/.kosax/memdir/user/onboarding/state.json` | Spec 1635 | Resumable 5-step onboarding state | FR-002 | `OnboardingState` (data-model.md §1) |
-| `~/.kosax/memdir/user/preferences/a11y.json` | Spec 1635 | Accessibility toggles persisted across sessions | FR-005 | `AccessibilityPreference` (data-model.md §5) |
+| `~/.ummaya/memdir/user/onboarding/state.json` | Spec 1635 | Resumable 5-step onboarding state | FR-002 | `OnboardingState` (data-model.md §1) |
+| `~/.ummaya/memdir/user/preferences/a11y.json` | Spec 1635 | Accessibility toggles persisted across sessions | FR-005 | `AccessibilityPreference` (data-model.md §5) |
 
 Both files are atomic-rename writes (`fs.writeFile` to `*.tmp` then `fs.rename`), idempotent, and version-tagged with `schema_version: 1` for forward compatibility. Read failures fall through to default values; the TUI never crashes on a missing or malformed JSON.
 
@@ -15,16 +15,16 @@ Both files are atomic-rename writes (`fs.writeFile` to `*.tmp` then `fs.rename`)
 
 | Path | Owner | This epic's interaction |
 |---|---|---|
-| `~/.kosax/memdir/user/consent/` | Spec 035 + Spec 033 | Read-only — `/consent list` queries the existing ledger. Writes go via the IPC envelope to the Python permission service; the TUI never appends directly. |
-| `~/.kosax/memdir/user/sessions/` | Spec 027 | Read-only — `/history` filters across this directory by date / session-id / Layer. |
-| `~/.kosax/memdir/user/ministry-scope/` | Spec 035 | Read + write-through — onboarding step 4 (`ministry-scope`) writes the citizen's opt-in set. The TS code calls the Spec 035 helper, never `fs.writeFile` directly. |
+| `~/.ummaya/memdir/user/consent/` | Spec 035 + Spec 033 | Read-only — `/consent list` queries the existing ledger. Writes go via the IPC envelope to the Python permission service; the TUI never appends directly. |
+| `~/.ummaya/memdir/user/sessions/` | Spec 027 | Read-only — `/history` filters across this directory by date / session-id / Layer. |
+| `~/.ummaya/memdir/user/ministry-scope/` | Spec 035 | Read + write-through — onboarding step 4 (`ministry-scope`) writes the citizen's opt-in set. The TS code calls the Spec 035 helper, never `fs.writeFile` directly. |
 
 ## Out-of-scope memdir tiers
 
 | Tier | Path root | Why excluded |
 |---|---|---|
-| PROJECT | `<project>/.kosax/memdir/project/` | Citizen surface is per-OS-user; project-scoped state is irrelevant to this epic. |
-| GLOBAL | `~/.kosax/memdir/global/` | Owned by ops; UI-L2 never writes here. |
+| PROJECT | `<project>/.ummaya/memdir/project/` | Citizen surface is per-OS-user; project-scoped state is irrelevant to this epic. |
+| GLOBAL | `~/.ummaya/memdir/global/` | Owned by ops; UI-L2 never writes here. |
 
 ## Egress / network surface
 

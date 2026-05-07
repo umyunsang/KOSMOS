@@ -43,13 +43,13 @@ def _load_adversarial_queries() -> list[dict]:
 
 
 def _build_registry_with_backend(backend: str, monkeypatch: pytest.MonkeyPatch) -> object:
-    """Build a fresh ToolRegistry with the given KOSAX_RETRIEVAL_BACKEND."""
-    monkeypatch.setenv("KOSAX_RETRIEVAL_BACKEND", backend)
+    """Build a fresh ToolRegistry with the given UMMAYA_RETRIEVAL_BACKEND."""
+    monkeypatch.setenv("UMMAYA_RETRIEVAL_BACKEND", backend)
 
     # Import here (after env var is set) so the factory reads the new value.
     # We must rebuild the registry from scratch since the backend is baked in.
-    from kosax.tools.executor import ToolExecutor
-    from kosax.tools.registry import ToolRegistry
+    from ummaya.tools.executor import ToolExecutor
+    from ummaya.tools.registry import ToolRegistry
 
     registry = ToolRegistry()
     executor = ToolExecutor(registry)
@@ -58,10 +58,10 @@ def _build_registry_with_backend(backend: str, monkeypatch: pytest.MonkeyPatch) 
     import importlib
 
     _adapters = [
-        ("kosax.tools.koroad.accident_hazard_search", "register", True),
-        ("kosax.tools.kma.forecast_fetch", "register", False),
-        ("kosax.tools.hira.hospital_search", "register", True),
-        ("kosax.tools.nmc.emergency_search", "register", True),
+        ("ummaya.tools.koroad.accident_hazard_search", "register", True),
+        ("ummaya.tools.kma.forecast_fetch", "register", False),
+        ("ummaya.tools.hira.hospital_search", "register", True),
+        ("ummaya.tools.nmc.emergency_search", "register", True),
     ]
     for module_path, fn_name, requires_executor in _adapters:
         module = importlib.import_module(module_path)
@@ -80,8 +80,8 @@ async def _run_queries(
     top_k: int = 5,
 ) -> float:
     """Run all queries through the search path and compute recall@5."""
-    from kosax.tools.lookup import lookup
-    from kosax.tools.models import LookupSearchInput
+    from ummaya.tools.lookup import lookup
+    from ummaya.tools.models import LookupSearchInput
 
     hits = 0
     for entry in queries:

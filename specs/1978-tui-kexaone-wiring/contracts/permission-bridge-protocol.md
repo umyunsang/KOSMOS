@@ -150,7 +150,7 @@ case 'permission_request':
 On `decision != "deny"`, backend writes:
 
 ```
-Path: ~/.kosax/memdir/user/consent/<receipt_id>.json
+Path: ~/.ummaya/memdir/user/consent/<receipt_id>.json
 Content: {
     "receipt_id": "<uuid>",
     "session_id": "<session>",
@@ -166,14 +166,14 @@ Append-only — no overwrite. Revocation creates `<receipt_id>.json.revoked` mar
 
 ## Telemetry
 
-Span `kosax.frame.permission_request` opened on emit, closed on response or timeout. Attributes:
+Span `ummaya.frame.permission_request` opened on emit, closed on response or timeout. Attributes:
 
 ```
-kosax.permission.tool_id        = <tool_id>
-kosax.permission.gauntlet_step  = <int>
-kosax.permission.pii_class      = <enum>
-kosax.permission.decision       = <on close: allow_once | allow_session | deny | timeout>
-kosax.consent.receipt_id        = <on allow: receipt_id>
+ummaya.permission.tool_id        = <tool_id>
+ummaya.permission.gauntlet_step  = <int>
+ummaya.permission.pii_class      = <enum>
+ummaya.permission.decision       = <on close: allow_once | allow_session | deny | timeout>
+ummaya.consent.receipt_id        = <on allow: receipt_id>
 ```
 
 Per Spec 033 attribute names — no new attribute conventions introduced.

@@ -84,12 +84,12 @@ jobs:
         with:
           method: oidc
           identity-id: ${{ vars.INFISICAL_CLIENT_ID }}
-          project-slug: kosax-3f-zs
+          project-slug: ummaya-3f-zs
           env-slug: dev
           secret-path: "/"
           export-type: env
       - name: Run tests with coverage
-        run: uv run pytest -n auto --cov=src/kosax --cov-report=xml -m "not live"
+        run: uv run pytest -n auto --cov=src/ummaya --cov-report=xml -m "not live"
       - name: Upload coverage
         if: matrix.python-version == '3.12'
         uses: actions/upload-artifact@v7
@@ -155,10 +155,10 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Build image
-        run: docker build -f docker/Dockerfile -t kosax:ci .
+        run: docker build -f docker/Dockerfile -t ummaya:ci .
       - name: Verify image size <= 2 GB
         run: |
-          size_bytes=$(docker inspect kosax:ci --format='{{.Size}}')
+          size_bytes=$(docker inspect ummaya:ci --format='{{.Size}}')
           max_bytes=$((2 * 1024 * 1024 * 1024))
           echo "Image size: $size_bytes bytes (limit: $max_bytes bytes)"
           if [ "$size_bytes" -gt "$max_bytes" ]; then
@@ -167,7 +167,7 @@ jobs:
           fi
       - name: Verify non-root user is UID 1000
         run: |
-          uid_in_container=$(docker run --rm --entrypoint id kosax:ci -u)
+          uid_in_container=$(docker run --rm --entrypoint id ummaya:ci -u)
           echo "Container UID: $uid_in_container"
           if [ "$uid_in_container" != "1000" ]; then
             echo "::error::Expected UID 1000, got $uid_in_container"

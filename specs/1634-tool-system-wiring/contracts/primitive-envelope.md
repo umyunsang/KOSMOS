@@ -10,10 +10,10 @@ The LLM sees exactly the following tools after P3 ships. Anything else is a regr
 
 | Tool name (LLM-visible) | Backed by | Notes |
 |---|---|---|
-| `lookup` | `tui/src/tools/primitive/lookup.ts` → `kosax.tools.lookup` (Spec 022) | Two modes: `search` (BM25+dense over registered adapters) and `fetch` (direct adapter call by `tool_id`) |
-| `submit` | `tui/src/tools/primitive/submit.ts` → `kosax.primitives.submit` (Spec 031) | Permission-gated side-effecting action |
-| `verify` | `tui/src/tools/primitive/verify.ts` → `kosax.primitives.verify` (Spec 031) | Credential delegation, never mints |
-| `subscribe` | `tui/src/tools/primitive/subscribe.ts` → `kosax.primitives.subscribe` (Spec 031) | Returns `SubscriptionHandle` with session lifetime |
+| `lookup` | `tui/src/tools/primitive/lookup.ts` → `ummaya.tools.lookup` (Spec 022) | Two modes: `search` (BM25+dense over registered adapters) and `fetch` (direct adapter call by `tool_id`) |
+| `submit` | `tui/src/tools/primitive/submit.ts` → `ummaya.primitives.submit` (Spec 031) | Permission-gated side-effecting action |
+| `verify` | `tui/src/tools/primitive/verify.ts` → `ummaya.primitives.verify` (Spec 031) | Credential delegation, never mints |
+| `subscribe` | `tui/src/tools/primitive/subscribe.ts` → `ummaya.primitives.subscribe` (Spec 031) | Returns `SubscriptionHandle` with session lifetime |
 | `WebFetch` | `tui/src/tools/WebFetchTool/` (CC retained) | Unchanged from CC |
 | `WebSearch` | `tui/src/tools/WebSearchTool/` (CC retained) | Unchanged from CC |
 | `Translate` | `tui/src/tools/TranslateTool/` (NEW) | Delegates to FriendliAI K-EXAONE; no new dep |
@@ -22,7 +22,7 @@ The LLM sees exactly the following tools after P3 ships. Anything else is a regr
 | `ExportPDF` | `tui/src/tools/ExportPDFTool/` (NEW) | TUI side: existing `pdf-to-img` WASM (UI-B B.3) |
 | `Task` | `tui/src/tools/AgentTool/` (rewired) | Backed by AgentTool with built-in CC agents stripped |
 | `Brief` | `tui/src/tools/BriefTool/` (CC retained) | Citizen document upload |
-| `MCP` | `tui/src/tools/MCPTool/` (CC retained) | External MCP passthrough — distinct from `tui/src/ipc/mcp.ts` (which is the stdio MCP client connecting TUI ↔ KOSAX Python backend) |
+| `MCP` | `tui/src/tools/MCPTool/` (CC retained) | External MCP passthrough — distinct from `tui/src/ipc/mcp.ts` (which is the stdio MCP client connecting TUI ↔ UMMAYA Python backend) |
 
 **Closed set**: 13 entries. Any registration outside this set after P3 is a regression caught by the CI tool-list snapshot test.
 

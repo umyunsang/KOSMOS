@@ -17,7 +17,7 @@
 
 ## Phase 1 — Setup (Lead solo)
 
-- [x] **T001** — Worktree set up at `/Users/um-yunsang/KOSAX-w-2642`, branch `feat/2642-s7-ipc-bridge`. (Done before /speckit-implement.)
+- [x] **T001** — Worktree set up at `/Users/um-yunsang/UMMAYA-w-2642`, branch `feat/2642-s7-ipc-bridge`. (Done before /speckit-implement.)
 
 ## Phase 2 — Foundational (Lead solo)
 
@@ -33,13 +33,13 @@
   - Remove the `useDirectConnect({ ... })` call block (lines 1542-1549).
   - Replace `activeRemote = sshRemote.isRemoteMode ? sshRemote : directConnect.isRemoteMode ? directConnect : remoteSession` (line 1563) with `activeRemote = sshRemote.isRemoteMode ? sshRemote : remoteSession`.
   - Update the comment on line 1039 to remove the stale `useDirectConnect` mention.
-  - Add a header comment at the top of the diff range: `// KOSAX-2642 / Epic F · S7 — directConnect/server/ DROPPED (claude.ai sync swap-out, Spec 2642 § US1).`
+  - Add a header comment at the top of the diff range: `// UMMAYA-2642 / Epic F · S7 — directConnect/server/ DROPPED (claude.ai sync swap-out, Spec 2642 § US1).`
 - [x] **T006** [P] — Find and update any remaining call sites passing `directConnectConfig` to REPL or referencing the deleted surfaces. (Search: `grep -rn 'directConnect\|DirectConnect\|createDirectConnectSession' tui/src/`. Expect zero non-comment matches after the cleanup.)
 - [x] **T007** [P] — Run `cd tui && bun typecheck` and `bun test`; fix any breakage caused by T003-T006.
 
 ## Phase 4 — US2: `notification_push` SWAP doc + parity test (TG-B · Sonnet teammate · `[P]`)
 
-- [x] **T008** [P] — Edit `src/kosax/ipc/frame_schema.py:NotificationPushFrame.__doc__` to insert the CC-parity verification literal `"CC parity: NO equivalent"` and a 4-line explanation of CC's terminal-OSC notification path (per plan § 1.2).
+- [x] **T008** [P] — Edit `src/ummaya/ipc/frame_schema.py:NotificationPushFrame.__doc__` to insert the CC-parity verification literal `"CC parity: NO equivalent"` and a 4-line explanation of CC's terminal-OSC notification path (per plan § 1.2).
 - [x] **T009** [P] — Create `tests/ipc/test_notification_push_swap_parity.py` per spec § US2 acceptance:
   - Test 1: role allow-list assertion (`_KIND_ROLE_ALLOWLIST["notification_push"] == frozenset({"notification"})`).
   - Test 2: docstring contains `"CC parity: NO equivalent"`.
@@ -55,9 +55,9 @@
   2. `_extract_pydantic_envelope_fields() -> dict[str, FieldSpec]` — uses `_BaseFrame.model_fields` + `FrameTrailer.model_fields`.
   3. `run_codec_envelope_parity_check(codec_path: pathlib.Path | None = None) -> None` — compares the two and raises `AssertionError` with a per-field diagnostic on mismatch.
   4. `test_codec_envelope_parity_passes_on_real_codec()` — calls the check with the real `tui/src/ipc/codec.ts`.
-  5. `test_drift_negative_fixture_triggers_failure(monkeypatch)` — sets `KOSAX_IPC_PARITY_DRIFT_FIXTURE=1`, expects `pytest.raises(AssertionError)` matching `"correlation_id"`.
+  5. `test_drift_negative_fixture_triggers_failure(monkeypatch)` — sets `UMMAYA_IPC_PARITY_DRIFT_FIXTURE=1`, expects `pytest.raises(AssertionError)` matching `"correlation_id"`.
 - [x] **T012** [P] — Create `tests/ipc/fixtures/codec_drift_negative.ts` (a 30-line text file mirroring the codec.ts envelope shape but with `correlation_id` made optional; carries a header comment forbidding runtime import).
-- [x] **T013** [P] — Edit `tests/ipc/conftest.py` (or create if absent in that path; check first) to add a guard fixture that ensures `KOSAX_IPC_PARITY_DRIFT_FIXTURE` is unset by default in every test that does not explicitly opt in. (If a separate `tests/conftest.py` already exists, add the guard there.)
+- [x] **T013** [P] — Edit `tests/ipc/conftest.py` (or create if absent in that path; check first) to add a guard fixture that ensures `UMMAYA_IPC_PARITY_DRIFT_FIXTURE` is unset by default in every test that does not explicitly opt in. (If a separate `tests/conftest.py` already exists, add the guard there.)
 - [x] **T014** [P] — Edit `.github/workflows/tui-ipc-drift.yml`:
   - Add `tui/src/ipc/codec.ts` to `paths:` for both `pull_request` and `push`.
   - Add a new step (after the existing drift check):

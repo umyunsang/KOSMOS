@@ -6,31 +6,31 @@
 **Input**: User description: "Spec 035 P5 — Permission Gauntlet wire completion. 시민이 verify/submit/subscribe 호출 시 Permission Gauntlet UX (Layer 색 모달 + Y/A/N + receipt 발급) 표시. 현 상태: useCanUseTool ccCompatDefault 가 항상 'allow' 반환 → Gauntlet 우회. addReceipt() 호출처 0. AAL → Layer 매핑 모듈 부재. PIPA §22-2 위반 (시민 권한 위임 시각적 확인 불가)."
 
 **Epic**: TBD — Lead Opus session에서 GitHub Epic 이슈 발행 보류 (시간 사유). 본 spec 으로 작업 단위 박제.
-**Parent Initiative**: [#2290 — KOSAX DX→AX 마이그레이션](https://github.com/umyunsang/KOSAX/issues/2290)
+**Parent Initiative**: [#2290 — UMMAYA DX→AX 마이그레이션](https://github.com/umyunsang/UMMAYA/issues/2290)
 **Supersedes**: Spec 035 P5 (Permission Gauntlet wire) deferred 분량 — Spec 1635 PR commit 기준 미완.
 
 **Primary upstream sources**:
 - `tui/src/hooks/useCanUseTool.ts:1-55` — 현 ccCompatDefault stub (라인 48-54 하드코딩 'allow')
 - `tui/src/context/PermissionReceiptContext.tsx:37-83` — `addReceipt`/`revokeReceipt` definition (caller 0개)
-- `tui/src/screens/REPL.tsx:5534-5536` — "PermissionGauntletModal × 2, BypassReinforcementModal, KosaxActivePermissionGate removed. fall back to CC's canonical PermissionRequest pipeline" 주석
+- `tui/src/screens/REPL.tsx:5534-5536` — "PermissionGauntletModal × 2, BypassReinforcementModal, UmmayaActivePermissionGate removed. fall back to CC's canonical PermissionRequest pipeline" 주석
 - `tui/src/schemas/ui-l2/permission.ts:43-51` — `LAYER_VISUAL` Layer→glyph/colorToken 매핑 (이미 존재)
 - `tui/src/tools/{VerifyPrimitive,SubmitPrimitive,SubscribePrimitive,LookupPrimitive}/prompt.ts` — primitive 별 Layer 명시 (verify=Layer 1, submit/subscribe=Layer 2)
 - `.references/claude-code-sourcemap/restored-src/src/components/permissions/PermissionRequest.tsx:47-80` — CC `permissionComponentForTool(tool)` dispatcher 패턴
 - `.references/claude-code-sourcemap/restored-src/src/components/permissions/PermissionDialog.tsx` — CC 모달 골격 (Y/A/N + 메시지)
 - `.references/claude-code-sourcemap/restored-src/src/hooks/useCanUseTool.tsx` — CC `(setToolUseConfirmQueue, setToolPermissionContext) → ToolUseConfirmFn` signature
-- `docs/requirements/kosax-migration-tree.md § UI-C` — Layer 색 (1=green ⓵ / 2=orange ⓶ / 3=red ⓷), `[Y / A / N]` 모달, receipt ID 표시, `/consent list`/`/consent revoke` 명령
+- `docs/requirements/ummaya-migration-tree.md § UI-C` — Layer 색 (1=green ⓵ / 2=orange ⓶ / 3=red ⓷), `[Y / A / N]` 모달, receipt ID 표시, `/consent list`/`/consent revoke` 명령
 - `specs/033-permission-v2-spectrum/spec.md` — backend permission service contract (TUI 가 invent 하지 않고 citation)
 - `specs/035-onboarding-brand-port/spec.md` — Spec 1635 P4 citizen-port 의 P5 wire 가 본 spec 의 deferred 영역
 - 메모리 `feedback_pr_pre_merge_interactive_test` + `feedback_vhs_tui_smoke` (TUI 변경 PR 의 5-layer 검증 필수)
 
 **PIPA 근거 (시민 안전 invariant)**:
 - 개인정보 보호법 제22조의2 (개인정보 처리방침의 평가 및 개선) — 시민이 권한 위임을 **시각적으로 확인**하지 못하면 처리방침 운영의 적정성 위반.
-- 개인정보 보호법 제26조 (업무위탁에 따른 개인정보의 처리 제한) — KOSAX 가 수탁자로서 위탁 사실을 시민에게 명시적 동의 흐름으로 전달해야 함.
+- 개인정보 보호법 제26조 (업무위탁에 따른 개인정보의 처리 제한) — UMMAYA 가 수탁자로서 위탁 사실을 시민에게 명시적 동의 흐름으로 전달해야 함.
 - 본 spec 은 **권한 정책을 발명하지 않음** (AGENTS.md hard rule + B4 결정). 각 어댑터가 cite 하는 기관 자체 정책 + Spec 033 backend service decision 만 표시.
 
 **Constitution constraint (non-negotiable)**:
 - **Zero new runtime dependencies** (AGENTS.md hard rule). 본 spec 은 기존 `react`, `ink`, `zod`, `zustand` 만 사용.
-- **CC byte-identical 우선** (CORE THESIS). 새 모달 컴포넌트 작성 금지 — CC `PermissionRequest.tsx` + `PermissionDialog.tsx` 패턴을 Layer 색 mapping 만 KOSAX 적응.
+- **CC byte-identical 우선** (CORE THESIS). 새 모달 컴포넌트 작성 금지 — CC `PermissionRequest.tsx` + `PermissionDialog.tsx` 패턴을 Layer 색 mapping 만 UMMAYA 적응.
 - **Backend permission service 변경 금지** (Spec 033 영역). 본 spec 은 TUI wire-up 만 다룸.
 
 ---
@@ -39,15 +39,15 @@
 
 ### User Story 1 — 시민이 verify (간편인증) 호출 시 Layer 1 green 모달을 본다 (Priority: P1)
 
-KOSAX 사용 중 시민이 자연어로 "내 운전면허 정보 확인" 요청 → LLM 이 `verify(tool_id="kakao_pass_simple_verify")` 호출 → 어댑터의 `auth_family=simple_auth` (간편인증) → AAL2 → Permission Gauntlet 모달이 표시됨. 모달은 Layer 1 green ⓵ glyph (verify primitive 는 read-only 이므로 prompt.ts 가 Layer 1 명시) + 한국어 본문 ("간편인증 자격증명 검증을 위해 KOSAX 가 카카오인증서로 위임 호출합니다") + `[Y 한번만 / A 세션 자동 / N 거부]` 셀렉터. 시민이 Y 또는 A 입력 시 backend permission service 가 receipt 발급 → TUI 가 `addReceipt({receipt_id, layer:1, tool_name, decision, decided_at, session_id, revoked_at:null})` 호출 → 시민에게 `rcpt-<id>` 토스트로 receipt 표시. N 입력 시 IPC 로 deny 전달, 도구 호출 차단.
+UMMAYA 사용 중 시민이 자연어로 "내 운전면허 정보 확인" 요청 → LLM 이 `verify(tool_id="kakao_pass_simple_verify")` 호출 → 어댑터의 `auth_family=simple_auth` (간편인증) → AAL2 → Permission Gauntlet 모달이 표시됨. 모달은 Layer 1 green ⓵ glyph (verify primitive 는 read-only 이므로 prompt.ts 가 Layer 1 명시) + 한국어 본문 ("간편인증 자격증명 검증을 위해 UMMAYA 가 카카오인증서로 위임 호출합니다") + `[Y 한번만 / A 세션 자동 / N 거부]` 셀렉터. 시민이 Y 또는 A 입력 시 backend permission service 가 receipt 발급 → TUI 가 `addReceipt({receipt_id, layer:1, tool_name, decision, decided_at, session_id, revoked_at:null})` 호출 → 시민에게 `rcpt-<id>` 토스트로 receipt 표시. N 입력 시 IPC 로 deny 전달, 도구 호출 차단.
 
-**Why this priority**: verify 는 KOSAX 의 4 primitive 중 가장 자주 호출되는 인증 primitive (간편인증·공인인증서·모바일신분증). 본 path 가 작동하지 않으면 어떤 submit/subscribe 호출도 안전하게 게이팅 불가. PIPA §22-2 의 시민 시각 확인 권리는 verify 모달 이 첫 번째 surface.
+**Why this priority**: verify 는 UMMAYA 의 4 primitive 중 가장 자주 호출되는 인증 primitive (간편인증·공인인증서·모바일신분증). 본 path 가 작동하지 않으면 어떤 submit/subscribe 호출도 안전하게 게이팅 불가. PIPA §22-2 의 시민 시각 확인 권리는 verify 모달 이 첫 번째 surface.
 
-**Independent Test**: KOSAX TUI 부팅 → 자연어 "내 카카오 인증으로 본인확인" 입력 → LLM 이 verify 호출 → (a) Layer 1 green ⓵ glyph 표시 확인, (b) 한국어 본문에 어댑터 명 + 위임 사실 명시 확인, (c) Y 입력 후 receipt ID 토스트 표시 확인, (d) `/consent list` 실행 시 해당 receipt 가 reverse-chronological 첫 번째로 표시 확인.
+**Independent Test**: UMMAYA TUI 부팅 → 자연어 "내 카카오 인증으로 본인확인" 입력 → LLM 이 verify 호출 → (a) Layer 1 green ⓵ glyph 표시 확인, (b) 한국어 본문에 어댑터 명 + 위임 사실 명시 확인, (c) Y 입력 후 receipt ID 토스트 표시 확인, (d) `/consent list` 실행 시 해당 receipt 가 reverse-chronological 첫 번째로 표시 확인.
 
 **Acceptance Scenarios**:
 
-1. **Given** KOSAX 가 부팅된 상태, **When** LLM 이 `verify(tool_id="kakao_pass_simple_verify")` 호출하고 backend permission service 가 prompt 응답 요청, **Then** Permission Gauntlet 모달이 mount 되어 Layer 1 green ⓵ glyph + 한국어 본문 + `[Y / A / N]` 셀렉터가 표시된다.
+1. **Given** UMMAYA 가 부팅된 상태, **When** LLM 이 `verify(tool_id="kakao_pass_simple_verify")` 호출하고 backend permission service 가 prompt 응답 요청, **Then** Permission Gauntlet 모달이 mount 되어 Layer 1 green ⓵ glyph + 한국어 본문 + `[Y / A / N]` 셀렉터가 표시된다.
 2. **Given** 모달이 표시된 상태, **When** 시민이 Y (한 번만 허용) 입력, **Then** PERMISSION_RESPONSE IPC 가 backend 로 전송되고 backend 가 `receipt_id` 반환 → TUI 가 `addReceipt({layer:1, decision:'allow_once', ...})` 호출 → `rcpt-<id>` 토스트가 표시된다.
 3. **Given** 모달이 표시된 상태, **When** 시민이 A (세션 자동 허용) 입력, **Then** decision 이 `allow_session` 으로 receipt 가 발급되고 동일 세션 내 동일 `tool_name` 의 후속 verify 호출 시 모달이 다시 mount 되지 않는다 (CC `permissionContext` cache 패턴 보존).
 4. **Given** 모달이 표시된 상태, **When** 시민이 N (거부) 입력, **Then** decision 이 `deny` 로 receipt 가 발급되고 LLM tool_call 결과로 권한 거부 에러가 반환되어 LLM 이 다른 경로 (수동 안내 등) 로 응답한다.
@@ -122,7 +122,7 @@ KOSAX 사용 중 시민이 자연어로 "내 운전면허 정보 확인" 요청 
 - **FR-001**: `tui/src/hooks/useCanUseTool.ts` 의 `ccCompatDefault` (라인 48-54) 의 하드코딩 `behavior: 'allow'` 를 제거하고 CC `(setToolUseConfirmQueue, setToolPermissionContext) → ToolUseConfirmFn` signature 로 복원한다. ToolUseConfirmFn 은 (a) primitive 가 lookup 이면 즉시 `{behavior:'allow'}` 반환 (User Story 4), (b) primitive 가 verify/submit/subscribe 이면 `setToolUseConfirmQueue` 에 enqueue 후 promise pending → 시민 응답 시 resolve.
 - **FR-002**: `useCanUseTool` 의 named export `useCanUseTool()` (라인 28-40) 는 기존 store-driven path 를 유지하되 새 default export 와 일관성 검증 (단일 source-of-truth). store 의 `pending_permission` 이 set 되는 시점은 backend 의 `permission_request` IPC frame 수신 시.
 - **FR-003**: `tui/src/context/PermissionReceiptContext.tsx` 의 `addReceipt` 호출 site 를 최소 1곳 (Permission Gauntlet 모달 의 Y/A 응답 핸들러) 에 wire-up 한다. 호출 인자는 backend 가 IPC 로 반환한 `receipt_id` + frontend 가 매핑한 `layer` + 도구 metadata 에서 추출한 `tool_name` + 시민 응답 `decision`.
-- **FR-004**: Permission Gauntlet 모달 컴포넌트는 신규 작성 금지 — CC `PermissionRequest.tsx` 의 `permissionComponentForTool(tool)` switch 패턴을 KOSAX primitive 4종 (lookup/verify/submit/subscribe) 으로 매핑하는 KOSAX-side dispatcher 모듈 (`tui/src/components/permissions/KosaxPermissionRequest.tsx`) 을 추가한다. 각 primitive 의 모달 본문은 한국어 primary, 어댑터 metadata (tool_name + auth_family + 기관명) 를 표시.
+- **FR-004**: Permission Gauntlet 모달 컴포넌트는 신규 작성 금지 — CC `PermissionRequest.tsx` 의 `permissionComponentForTool(tool)` switch 패턴을 UMMAYA primitive 4종 (lookup/verify/submit/subscribe) 으로 매핑하는 UMMAYA-side dispatcher 모듈 (`tui/src/components/permissions/UmmayaPermissionRequest.tsx`) 을 추가한다. 각 primitive 의 모달 본문은 한국어 primary, 어댑터 metadata (tool_name + auth_family + 기관명) 를 표시.
 
 ### AAL → Layer 매핑 (P1)
 - **FR-005**: 새 모듈 `tui/src/utils/permissions/aalToLayer.ts` 가 단일 source-of-truth 매핑 함수 `aalToLayer(primitive: 'lookup'|'verify'|'submit'|'subscribe', authLevel?: 'AAL1'|'AAL2'|'AAL3', isIrreversible?: boolean): PermissionLayerT` 를 export 한다. 매핑 표:
@@ -138,7 +138,7 @@ KOSAX 사용 중 시민이 자연어로 "내 운전면허 정보 확인" 요청 
   | subscribe | AAL1 | * | 2 (orange ⓶) |
   | subscribe | AAL2/AAL3 | * | 2 (orange ⓶) |
 
-- **FR-006**: `aalToLayer` 는 backend 에서 IPC 로 전달된 `auth_level` + `is_irreversible` 를 input 으로 받음. KOSAX 는 primitive 별 default 매핑만 가지고 있고 backend 가 어댑터 metadata 의 published policy citation 을 cross-reference 함 (KOSAX 가 권한 정책 invent 하지 않음 — AGENTS.md B4).
+- **FR-006**: `aalToLayer` 는 backend 에서 IPC 로 전달된 `auth_level` + `is_irreversible` 를 input 으로 받음. UMMAYA 는 primitive 별 default 매핑만 가지고 있고 backend 가 어댑터 metadata 의 published policy citation 을 cross-reference 함 (UMMAYA 가 권한 정책 invent 하지 않음 — AGENTS.md B4).
 - **FR-007**: `LAYER_VISUAL` (`tui/src/schemas/ui-l2/permission.ts:43-47`) 매핑은 변경하지 않고 import 하여 재사용. 새 색상 토큰 추가 금지.
 
 ### Receipt 발급 + 표시 (P1)
@@ -158,7 +158,7 @@ KOSAX 사용 중 시민이 자연어로 "내 운전면허 정보 확인" 요청 
 
 ### Out of scope (명시적)
 - ❌ Backend permission service (Spec 033) 의 receipt 발급 로직 변경 — 본 spec 은 TUI wire-up 만 담당.
-- ❌ 새 permission 정책 발명 — KOSAX 가 권한 정책 결정 X, 어댑터 citation + Spec 033 결정 만 표시 (B4).
+- ❌ 새 permission 정책 발명 — UMMAYA 가 권한 정책 결정 X, 어댑터 citation + Spec 033 결정 만 표시 (B4).
 - ❌ Audit ledger 직접 쓰기 — TUI 는 read model only, 모든 ledger write 는 backend IPC 경유.
 - ❌ ConsentListView 컴포넌트 내부 UI 변경 — 본 spec 은 wire 가 도달함만 검증.
 - ❌ Onboarding 흐름의 PIPA consent step (Spec 035 P2 이미 ship 됨) 변경.
@@ -184,7 +184,7 @@ KOSAX 사용 중 시민이 자연어로 "내 운전면허 정보 확인" 요청 
 
 - **R1**: backend (Spec 033) 의 `permission_request` IPC frame 이 현재 emit 되지 않을 수 있음. 본 spec 은 TUI side 만 다루지만 backend emit path 가 끊어져 있다면 SC-001 검증 시 모달 mount 안 됨. → Phase 0 research 에서 backend IPC frame catalog (Spec 032 monomerge frame schema) 를 확인하여 `permission_request` arm 이 alive 인지 검증 필수. dead 면 Spec 033 추가 sub-issue 발행 (별도 Epic) 필요.
 - **R2**: `setToolUseConfirmQueue` 의 React state ownership 위치 — REPL.tsx 가 owner 이지만 state 가 currently dead (`toolUseConfirmQueue` 변수는 `REPL.tsx:5121` 에 남아있음). state 보존된 채 useCanUseTool wire 만 복구 가능한지 또는 state 도 다시 fully wire 필요한지 Phase 1 design 에서 결정.
-- **R3**: bypass 모드 (`bypassPermissions`) 의 강화 확인 모달 (FR-014) 은 CC `BypassReinforcementModal` 이 KOSAX 측에서 이미 제거되었음. 부활 vs CC reference 컴포넌트 그대로 import 결정 — Phase 0 research 에서 CC 코드 라인수 + KOSAX 측 dependency 영향 확인.
+- **R3**: bypass 모드 (`bypassPermissions`) 의 강화 확인 모달 (FR-014) 은 CC `BypassReinforcementModal` 이 UMMAYA 측에서 이미 제거되었음. 부활 vs CC reference 컴포넌트 그대로 import 결정 — Phase 0 research 에서 CC 코드 라인수 + UMMAYA 측 dependency 영향 확인.
 - **R4**: `/consent list` 와 `/consent revoke` 명령 핸들러 위치 — `tui/src/commands/` 디렉토리에 이미 등록되어 있는지 또는 신규 등록 필요한지 Phase 0 grep 으로 확인.
 
 ---

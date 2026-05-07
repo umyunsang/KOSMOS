@@ -5,7 +5,7 @@
 // long response blocks. Bound to the `app:toggleTranscript` action which
 // is already registered in defaultBindings.ts as ctrl+o.
 //
-// KOSAX adaptation: uses KOSAX i18n strings; same SubAgentProvider /
+// UMMAYA adaptation: uses UMMAYA i18n strings; same SubAgentProvider /
 // InVirtualListContext suppression logic as CC to avoid excessive hints.
 
 import React, { useContext, useState } from 'react';

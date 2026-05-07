@@ -18,14 +18,14 @@ Queries the National Medical Center (국립중앙의료원) emergency medical in
 | Classification | Live · Permission tier 3 |
 | Source | National Medical Center (NMC) / data.go.kr B552657 |
 | Primitive | `lookup` |
-| Module | `src/kosax/tools/nmc/emergency_search.py` |
+| Module | `src/ummaya/tools/nmc/emergency_search.py` |
 | Spec version | v4 (Spec 2522 — URL encoding safety + 5-section description + endpoint doc correction) |
 
 ### v4 Changes (Spec 2522 T022)
 
-1. **URL encoding safety**: The adapter enforces `httpx params={}` dict for all query parameters. Raw Korean string interpolation into URLs is prohibited — non-ASCII characters in query strings cause HTTP 400 from the NMC/data.go.kr upstream (evidence: `/tmp/kosax-evidence/medical-evidence.md § Test 1`). The `params={}` dict approach delegates percent-encoding to httpx automatically, preventing this class of regression.
+1. **URL encoding safety**: The adapter enforces `httpx params={}` dict for all query parameters. Raw Korean string interpolation into URLs is prohibited — non-ASCII characters in query strings cause HTTP 400 from the NMC/data.go.kr upstream (evidence: `/tmp/ummaya-evidence/medical-evidence.md § Test 1`). The `params={}` dict approach delegates percent-encoding to httpx automatically, preventing this class of regression.
 
-2. **5-section description**: `llm_description` is now built via `build_description_v4()` (`src/kosax/tools/_description_template.py`) with five sections: purpose · input_quirk · short_reference · domain_quirk · self_contained_decl. Token budget: 324/500 tokens (≤100 per section, ≤500 combined).
+2. **5-section description**: `llm_description` is now built via `build_description_v4()` (`src/ummaya/tools/_description_template.py`) with five sections: purpose · input_quirk · short_reference · domain_quirk · self_contained_decl. Token budget: 324/500 tokens (≤100 per section, ≤500 combined).
 
 3. **input_quirk section now mentions Korean URL encoding quirk** — if STAGE1/STAGE2 administrative division names (한국어 문자열) are ever used as query params in future endpoint migration, string interpolation must not be used.
 
@@ -35,7 +35,7 @@ Queries the National Medical Center (국립중앙의료원) emergency medical in
 
 ## Envelope
 
-**Input model**: `NmcEmergencySearchInput` defined at `src/kosax/tools/nmc/emergency_search.py:41–77`.
+**Input model**: `NmcEmergencySearchInput` defined at `src/ummaya/tools/nmc/emergency_search.py:41–77`.
 
 | Field | Type | Required | Description |
 |---|---|---|---|
@@ -126,7 +126,7 @@ The upstream `getEgytLcinfoInqire` endpoint returns abbreviated fields whose nam
 
 - **Coordinate source URL**: `https://apis.data.go.kr/B552657/ErmctInfoInqireService/getEgytLcinfoInqire`
 - **Region-list source URL**: `https://apis.data.go.kr/B552657/ErmctInfoInqireService/getEgytListInfoInqire`
-- **Authentication**: API key via `KOSAX_DATA_GO_KR_API_KEY` (per Constitution IV)
+- **Authentication**: API key via `UMMAYA_DATA_GO_KR_API_KEY` (per Constitution IV)
 - **Query params** (httpx `params={}` dict — automatic percent-encoding):
   - `serviceKey`: API key string
   - `pageNo`: pagination page number (default 1)
@@ -145,7 +145,7 @@ Korean string query params (e.g. `STAGE1=서울특별시`) MUST NOT be string-in
 
 ## Freshness sub-tool
 
-The freshness validation is implemented in `src/kosax/tools/nmc/freshness.py`. It is an internal quality-control module invoked automatically by `handle()` before any response is returned.
+The freshness validation is implemented in `src/ummaya/tools/nmc/freshness.py`. It is an internal quality-control module invoked automatically by `handle()` before any response is returned.
 
 **`check_freshness(hvidate_str, threshold_minutes=None)`**:
 - Accepts the NMC `hvidate` field value (format: `YYYY-MM-DD HH:MM:SS` KST).
@@ -155,11 +155,11 @@ The freshness validation is implemented in `src/kosax/tools/nmc/freshness.py`. I
 
 **`_evaluate_freshness(items)`** (`emergency_search.py`): computes the worst-case freshness across all returned ER items. If any single item is missing `hvidate` or is stale, the entire batch is rejected.
 
-The freshness threshold is configurable via `KOSAX_NMC_FRESHNESS_MINUTES` (default 30 minutes). The threshold is visible in every stale-data error message so the LLM can relay the exact age and threshold to the citizen.
+The freshness threshold is configurable via `UMMAYA_NMC_FRESHNESS_MINUTES` (default 30 minutes). The threshold is visible in every stale-data error message so the LLM can relay the exact age and threshold to the citizen.
 
 ## Permission tier rationale
 
-This adapter is classified as Permission tier 3 because real-time emergency room bed availability, when combined with a citizen's session identity, constitutes location-linked health-context data (`pipa_class="personal"`, `is_personal_data=True`, `auth_level="AAL2"`). Under PIPA §23 and the KOSAX security spec (Spec 033 §2), personal health-context data requires explicit citizen authentication before retrieval. The Layer 3 auth-gate in `executor.invoke()` short-circuits all unauthenticated calls to `LookupError(reason="auth_required")` before `handle()` is ever reached (FR-025, FR-026, SC-006). A `dpa_reference="dpa-nmc-v1"` is required per Spec 024 for PIPA-personal tools. The adapter also enforces a freshness SLO: stale ER data in an emergency context would be actively harmful, so the response is rejected (not degraded) when data exceeds the freshness threshold.
+This adapter is classified as Permission tier 3 because real-time emergency room bed availability, when combined with a citizen's session identity, constitutes location-linked health-context data (`pipa_class="personal"`, `is_personal_data=True`, `auth_level="AAL2"`). Under PIPA §23 and the UMMAYA security spec (Spec 033 §2), personal health-context data requires explicit citizen authentication before retrieval. The Layer 3 auth-gate in `executor.invoke()` short-circuits all unauthenticated calls to `LookupError(reason="auth_required")` before `handle()` is ever reached (FR-025, FR-026, SC-006). A `dpa_reference="dpa-nmc-v1"` is required per Spec 024 for PIPA-personal tools. The adapter also enforces a freshness SLO: stale ER data in an emergency context would be actively harmful, so the response is rejected (not degraded) when data exceeds the freshness threshold.
 
 ## Worked example
 
@@ -265,7 +265,7 @@ When the caller has no valid session identity, the Layer 3 auth-gate rejects the
 
 ```text
 Citizen: 지금 종로구에서 가까운 응급실 알려줘.
-KOSAX: 종로구 인근 응급실 (모두 24시간 운영):
+UMMAYA: 종로구 인근 응급실 (모두 24시간 운영):
   1. 강북삼성병원 — 1.12km · 02-2001-2001 (대표번호)
   2. 서울적십자병원 — 1.27km · 02-2002-8000 (대표번호)
   3. 서울대학교병원 (권역응급의료센터) — 1.88km · 02-1588-5700 (대표번호)
@@ -278,12 +278,12 @@ KOSAX: 종로구 인근 응급실 (모두 24시간 운영):
 ## Constraints
 
 - **Rate limit**: `rate_limit_per_minute=10`; NMC API quota applies per service key.
-- **Freshness window**: `cache_ttl_seconds=0` — no client-side caching. Freshness threshold is controlled by `KOSAX_NMC_FRESHNESS_MINUTES` (default 30 minutes). Stale responses are rejected rather than degraded.
+- **Freshness window**: `cache_ttl_seconds=0` — no client-side caching. Freshness threshold is controlled by `UMMAYA_NMC_FRESHNESS_MINUTES` (default 30 minutes). Stale responses are rejected rather than degraded.
 - **URL encoding** (v4): All query parameters are passed via `httpx params={}` dict — never string-interpolated into URLs. This prevents HTTP 400 from non-ASCII characters in query strings (documented in `medical-evidence.md § NMC Test 1`).
 - **Fixture coverage gaps**: Live NMC auth is provisioned at the API level; the handler is implemented. CI tests do not call the live endpoint (AGENTS.md hard rule: never call live `data.go.kr` APIs from CI). Fixture shapes for ER-specific fields (`hvgc`, `hvec`, `hvidate`) are derived from NMC published schema.
 - **Error envelope summary**:
   - Unauthenticated call (Layer 3 gate): `{"kind": "error", "reason": "auth_required", ..., "retryable": false}`.
   - Stale data (freshness SLO): `{"kind": "error", "reason": "stale_data", "message": "NMC data is stale: N min old (threshold: M min)", "retryable": false}`.
-  - Missing API key: `{"kind": "error", "reason": "upstream_unavailable", "message": "KOSAX_DATA_GO_KR_API_KEY is not configured", "retryable": false}`.
+  - Missing API key: `{"kind": "error", "reason": "upstream_unavailable", "message": "UMMAYA_DATA_GO_KR_API_KEY is not configured", "retryable": false}`.
   - Non-JSON upstream response: `{"kind": "error", "reason": "upstream_unavailable", "message": "NMC API returned non-JSON content-type: ...", "retryable": true}`.
   - NMC API error code: `{"kind": "error", "reason": "upstream_unavailable", "message": "NMC API error: resultCode=...", "retryable": true}`.

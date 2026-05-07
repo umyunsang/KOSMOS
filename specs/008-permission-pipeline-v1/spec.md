@@ -10,13 +10,13 @@
 
 ## Overview & Context
 
-Every tool invocation in KOSAX must pass through a permission gauntlet before the adapter executes. This feature implements all 7 steps of that gauntlet: three core enforcement steps (1, 6, 7) and four additional enforcement steps (2–5) that were initially planned as pass-through stubs but have been fully implemented in v1. It integrates with the existing `ToolExecutor.dispatch()` flow from Layer 2.
+Every tool invocation in UMMAYA must pass through a permission gauntlet before the adapter executes. This feature implements all 7 steps of that gauntlet: three core enforcement steps (1, 6, 7) and four additional enforcement steps (2–5) that were initially planned as pass-through stubs but have been fully implemented in v1. It integrates with the existing `ToolExecutor.dispatch()` flow from Layer 2.
 
 ### Why this exists
 
-KOSAX routes citizen queries to Korean government APIs that may return personal data (주민등록번호, 의료기록, 주소 등). Korea's Personal Information Protection Act (PIPA, 개인정보보호법) governs every data flow involving personal identifiers. A single unenforced tool call that leaks citizen data is a legal violation, not just a bug.
+UMMAYA routes citizen queries to Korean government APIs that may return personal data (주민등록번호, 의료기록, 주소 등). Korea's Personal Information Protection Act (PIPA, 개인정보보호법) governs every data flow involving personal identifiers. A single unenforced tool call that leaks citizen data is a legal violation, not just a bug.
 
-The permission pipeline is the mechanism that makes KOSAX's fail-closed security posture operational. The constitution (§ II) mandates it; this spec makes it concrete for v1.
+The permission pipeline is the mechanism that makes UMMAYA's fail-closed security posture operational. The constitution (§ II) mandates it; this spec makes it concrete for v1.
 
 ### Scope of v1
 
@@ -44,12 +44,12 @@ The permission pipeline wraps `ToolExecutor.dispatch()`. Before the executor run
 | Decision | Primary source | Secondary source |
 |---|---|---|
 | Multi-step gauntlet pattern | OpenAI Agents SDK (guardrail pipeline) | Claude Code reconstructed (permission model) |
-| Bypass-immune subset | NeMo Guardrails (Colang 2.0 whitelist-of-approved-actions) | KOSAX constitution § II |
+| Bypass-immune subset | NeMo Guardrails (Colang 2.0 whitelist-of-approved-actions) | UMMAYA constitution § II |
 | Classifier input isolation | NeMo Guardrails (declarative rail sees only tool + args) | docs/vision.md § Layer 3 |
 | Runner-level enforcement | Google ADK (runner-level plugin pattern) | AutoGen (InterventionHandler) |
-| Fail-closed on step error | LangGraph (ToolNode handle_tool_errors=True, ValidationError lesson) | KOSAX constitution § II |
+| Fail-closed on step error | LangGraph (ToolNode handle_tool_errors=True, ValidationError lesson) | UMMAYA constitution § II |
 | Audit log structure | Google ADK (centralized permission enforcement log) | docs/vision.md § Layer 3 |
-| Pydantic v2 models | Pydantic AI (schema-driven registry) | KOSAX constitution § III |
+| Pydantic v2 models | Pydantic AI (schema-driven registry) | UMMAYA constitution § III |
 
 ---
 
@@ -57,11 +57,11 @@ The permission pipeline wraps `ToolExecutor.dispatch()`. Before the executor run
 
 ### US-001 — Configuration-based access tier enforcement (P1)
 
-As the KOSAX permission pipeline, when a tool call arrives, I want to check the tool's declared `AccessTier` against the current session's privilege level before any API call is made, so that public-tier tools execute freely while api_key and higher tiers fail closed when credentials are absent.
+As the UMMAYA permission pipeline, when a tool call arrives, I want to check the tool's declared `AccessTier` against the current session's privilege level before any API call is made, so that public-tier tools execute freely while api_key and higher tiers fail closed when credentials are absent.
 
 **Acceptance scenarios**:
 1. Given a tool with `access_tier=AccessTier.public`, when a call arrives with no session context, then the pipeline returns `PermissionDecision.allow`.
-2. Given a tool with `access_tier=AccessTier.api_key`, when `KOSAX_DATA_GO_KR_API_KEY` is not set, then the pipeline returns `PermissionDecision.deny` with `reason="api_key_not_configured"`.
+2. Given a tool with `access_tier=AccessTier.api_key`, when `UMMAYA_DATA_GO_KR_API_KEY` is not set, then the pipeline returns `PermissionDecision.deny` with `reason="api_key_not_configured"`.
 3. Given a tool with `access_tier=AccessTier.api_key`, when the env var is set and non-empty, then the pipeline returns `PermissionDecision.allow`.
 4. Given a tool with `access_tier=AccessTier.restricted`, then the pipeline always returns `PermissionDecision.deny` with `reason="tier_restricted_not_implemented"` in v1.
 5. Given a tool with `access_tier=AccessTier.authenticated`, then the pipeline always returns `PermissionDecision.deny` with `reason="citizen_auth_not_implemented"` in v1.
@@ -85,10 +85,10 @@ As a developer integrating Layer 3 with the query engine, I want steps 2–5 to 
 
 ### US-003 — Sandboxed execution context (P1)
 
-As the KOSAX platform, I want every adapter to execute inside an isolated context where no ambient environment credentials are accessible, so that an adapter cannot exfiltrate API keys that belong to other tools.
+As the UMMAYA platform, I want every adapter to execute inside an isolated context where no ambient environment credentials are accessible, so that an adapter cannot exfiltrate API keys that belong to other tools.
 
 **Acceptance scenarios**:
-1. Given a tool adapter call, when it executes in the sandbox, then it receives only the credentials it declared via its `access_tier` — no other `KOSAX_*` env vars are visible in the execution scope.
+1. Given a tool adapter call, when it executes in the sandbox, then it receives only the credentials it declared via its `access_tier` — no other `UMMAYA_*` env vars are visible in the execution scope.
 2. Given an adapter that raises an exception, when the sandbox catches it, then it returns a `PermissionDecision.deny` result with `reason="execution_error"` and logs the exception; no exception propagates to the caller.
 3. Given a successful adapter execution, when the sandbox returns, then the original environment is fully restored (no credential leakage between calls).
 
@@ -96,19 +96,19 @@ As the KOSAX platform, I want every adapter to execute inside an isolated contex
 
 ### US-004 — Audit log on every invocation (P1)
 
-As a KOSAX operator, I want every tool invocation (approved or denied, succeeded or failed) to produce a structured log entry, so that I have a complete trail for PIPA compliance audits.
+As a UMMAYA operator, I want every tool invocation (approved or denied, succeeded or failed) to produce a structured log entry, so that I have a complete trail for PIPA compliance audits.
 
 **Acceptance scenarios**:
 1. Given any tool call that is approved, when the call completes (success or error), then a log record is emitted at INFO level containing: `timestamp`, `tool_id`, `access_tier`, `decision`, `step_that_decided`, `outcome` (success/failure), and `error_type` if applicable.
 2. Given any tool call that is denied at any step, then a log record is emitted at WARNING level with the same fields plus `deny_reason`.
 3. Given a denied call, when the audit log entry is written, then the `arguments_json` field is omitted (to avoid logging PII from request parameters).
-4. All audit log entries use `logging.getLogger("kosax.permissions.audit")` so they can be routed to a dedicated handler independently of the main application log.
+4. All audit log entries use `logging.getLogger("ummaya.permissions.audit")` so they can be routed to a dedicated handler independently of the main application log.
 
 ---
 
 ### US-005 — Fail-closed on any step error (P1)
 
-As the KOSAX permission pipeline, when any step raises an unexpected exception (not a normal deny decision), I want the overall result to be `PermissionDecision.deny`, so that a buggy or crashed step never accidentally grants access.
+As the UMMAYA permission pipeline, when any step raises an unexpected exception (not a normal deny decision), I want the overall result to be `PermissionDecision.deny`, so that a buggy or crashed step never accidentally grants access.
 
 **Acceptance scenarios**:
 1. Given step 1 raises a Python exception (not a `PermissionDeniedError`), then the pipeline catches it, logs it at ERROR level, and returns `PermissionDecision.deny` with `reason="internal_error"`.
@@ -119,7 +119,7 @@ As the KOSAX permission pipeline, when any step raises an unexpected exception (
 
 ### US-006 — Bypass-immune subset (P1)
 
-As the KOSAX platform, I want certain permission checks to be enforced even when future operating modes (batch automation, admin override, test harness) attempt to skip the pipeline, so that the system cannot be configured into a state that violates PIPA.
+As the UMMAYA platform, I want certain permission checks to be enforced even when future operating modes (batch automation, admin override, test harness) attempt to skip the pipeline, so that the system cannot be configured into a state that violates PIPA.
 
 **Acceptance scenarios**:
 1. Given the bypass-immune rule set (`BYPASS_IMMUNE_RULES`), when a tool call targets another citizen's personal records (is_personal_data=True and citizen_id in arguments does not match session citizen_id), then the pipeline denies regardless of any override flag.
@@ -134,7 +134,7 @@ As an adapter for a data.go.kr API, I want to receive the validated API key from
 
 **Acceptance scenarios**:
 1. Given a tool with `access_tier=AccessTier.api_key`, when the sandbox constructs the execution context, then it injects `data_go_kr_api_key` as a parameter to the adapter function.
-2. Given the env var `KOSAX_DATA_GO_KR_API_KEY` is set, when the sandbox reads it, then it reads it once at call time (not at import time) to support key rotation.
+2. Given the env var `UMMAYA_DATA_GO_KR_API_KEY` is set, when the sandbox reads it, then it reads it once at call time (not at import time) to support key rotation.
 3. Given the env var is absent, then the pipeline denies at step 1 before the sandbox is entered.
 
 ---
@@ -167,7 +167,7 @@ As the query engine (Layer 1), I want a single `PermissionPipeline.run(tool_id, 
 - **FR-008**: The `PermissionPipeline` class MUST execute steps in order 1–6, stopping at the first `deny` or `escalate` result, then always running step 7.
 - **FR-009**: Step 1 MUST check the tool's `AccessTier`:
   - `public` → `allow` unconditionally.
-  - `api_key` → `allow` iff `KOSAX_DATA_GO_KR_API_KEY` env var is set and non-empty; `deny` otherwise.
+  - `api_key` → `allow` iff `UMMAYA_DATA_GO_KR_API_KEY` env var is set and non-empty; `deny` otherwise.
   - `authenticated` → `deny` in v1 with `reason="citizen_auth_not_implemented"`.
   - `restricted` → `deny` in v1 with `reason="tier_restricted_not_implemented"`.
 - **FR-010**: Steps 2–5 MUST be synchronous functions that accept a `PermissionCheckRequest` and return a `PermissionStepResult`. Each step enforces the following policies:
@@ -180,7 +180,7 @@ As the query engine (Layer 1), I want a single `PermissionPipeline.run(tool_id, 
   - Calls the adapter function from `ToolExecutor` with the isolated credential context.
   - Catches all exceptions and converts them to a deny result with `reason="execution_error"`.
   - Restores the original environment after execution (no side effects on `os.environ`).
-- **FR-012**: Step 7 MUST write an `AuditLogEntry` to `logging.getLogger("kosax.permissions.audit")` at `INFO` level for approved calls and `WARNING` level for denied calls.
+- **FR-012**: Step 7 MUST write an `AuditLogEntry` to `logging.getLogger("ummaya.permissions.audit")` at `INFO` level for approved calls and `WARNING` level for denied calls.
 - **FR-013**: Any uncaught exception in steps 1–6 MUST cause the pipeline to return `PermissionDecision.deny` with `reason="internal_error"` and log the exception at `ERROR` level.
 
 ### Bypass-immune enforcement
@@ -192,13 +192,13 @@ As the query engine (Layer 1), I want a single `PermissionPipeline.run(tool_id, 
 ### API key management
 
 - **FR-017**: API keys MUST be read from environment variables at call time (not at module import time) to support key rotation without process restart.
-- **FR-018**: The environment variable for the default data.go.kr key is `KOSAX_DATA_GO_KR_API_KEY`. No other naming is accepted.
+- **FR-018**: The environment variable for the default data.go.kr key is `UMMAYA_DATA_GO_KR_API_KEY`. No other naming is accepted.
 - **FR-019**: API keys MUST NOT appear in log output, `AuditLogEntry` fields, or any Pydantic model that is serialized.
 
 ### Integration
 
 - **FR-020**: `PermissionPipeline` MUST accept a `ToolExecutor` in its constructor and expose a `run(tool_id: str, arguments_json: str, session_context: SessionContext) -> ToolResult` coroutine.
-- **FR-021**: A denied pipeline result MUST return `ToolResult(success=False, error_type="permission_denied", error=<reason>)` using the existing `ToolResult` model from `kosax.tools.models`.
+- **FR-021**: A denied pipeline result MUST return `ToolResult(success=False, error_type="permission_denied", error=<reason>)` using the existing `ToolResult` model from `ummaya.tools.models`.
 - **FR-022**: The pipeline MUST NOT modify the `ToolRegistry` or `GovAPITool` definitions. It reads them; it does not write them.
 
 ---
@@ -208,7 +208,7 @@ As the query engine (Layer 1), I want a single `PermissionPipeline.run(tool_id, 
 - **NFR-001** — Latency: The three active steps (1, 6, 7) combined must add less than 5 ms overhead per call in the non-execution path (i.e., env var read + log write). The adapter execution time itself is not counted.
 - **NFR-002** — No new dependencies: The permission pipeline MUST be implemented using only stdlib (`os`, `logging`, `datetime`, `enum`, `contextlib`) plus already-declared dependencies (`pydantic>=2.0`). No new entries in `pyproject.toml`.
 - **NFR-003** — Testability: All steps MUST be individually testable. Stub steps must be replaceable with real implementations without modifying the gauntlet runner.
-- **NFR-004** — Log routing: Audit log entries MUST use the `kosax.permissions.audit` logger namespace, separate from the root application logger.
+- **NFR-004** — Log routing: Audit log entries MUST use the `ummaya.permissions.audit` logger namespace, separate from the root application logger.
 - **NFR-005** — Thread safety: The pipeline MUST be re-entrant (no shared mutable state between calls). Each `run()` invocation creates its own step result chain.
 
 ---
@@ -216,7 +216,7 @@ As the query engine (Layer 1), I want a single `PermissionPipeline.run(tool_id, 
 ## Module Layout
 
 ```
-src/kosax/
+src/ummaya/
 └── permissions/
     ├── __init__.py          # exports: PermissionPipeline, AccessTier, PermissionDecision
     ├── models.py            # AccessTier, PermissionDecision, PermissionCheckRequest,
@@ -252,7 +252,7 @@ tests/
 ```python
 class AccessTier(str, Enum):
     public        = "public"        # No auth; open data
-    api_key       = "api_key"       # Requires KOSAX_DATA_GO_KR_API_KEY
+    api_key       = "api_key"       # Requires UMMAYA_DATA_GO_KR_API_KEY
     authenticated = "authenticated" # Requires citizen identity verification (v2+)
     restricted    = "restricted"    # Special approval required (v2+)
 
@@ -303,7 +303,7 @@ class AuditLogEntry(BaseModel):
 
 ### Integration with existing models
 
-`PermissionPipeline.run()` returns the existing `ToolResult` from `kosax.tools.models`. No new result type is introduced. Denied calls return:
+`PermissionPipeline.run()` returns the existing `ToolResult` from `ummaya.tools.models`. No new result type is introduced. Denied calls return:
 
 ```python
 ToolResult(
@@ -319,7 +319,7 @@ ToolResult(
 ## Success Criteria
 
 - **SC-001**: A tool with `access_tier=AccessTier.public` is dispatched to the adapter without any credential check, verified by unit test with no env vars set.
-- **SC-002**: A tool with `access_tier=AccessTier.api_key` is denied when `KOSAX_DATA_GO_KR_API_KEY` is unset, verified by unit test with `os.environ` patched.
+- **SC-002**: A tool with `access_tier=AccessTier.api_key` is denied when `UMMAYA_DATA_GO_KR_API_KEY` is unset, verified by unit test with `os.environ` patched.
 - **SC-003**: A tool with `access_tier=AccessTier.api_key` is allowed when the env var is set, and the key value is not present in any log output, verified by unit test capturing log records.
 - **SC-004**: All 4 steps (2–5) return `allow` for clean, compliant requests (no burst, no PII, sufficient auth level, consent granted), verified by unit tests covering both the allow path and each deny condition.
 - **SC-005**: A step 6 adapter exception produces `ToolResult(success=False, error_type="permission_denied")`, verified by injecting a raising mock adapter.
@@ -327,7 +327,7 @@ ToolResult(
 - **SC-007**: An unexpected exception in step 1 produces a deny result (not a Python exception propagating to the caller), verified by monkey-patching step 1 to raise.
 - **SC-008**: `is_bypass_mode=True` does not bypass the personal-data citizen-id mismatch rule, verified by unit test with mismatched citizen IDs.
 - **SC-009**: `uv run pytest tests/permissions/` passes with zero live API calls (no `@pytest.mark.live` tests in this module, since the pipeline itself never calls external APIs).
-- **SC-010**: Importing `kosax.permissions` does not read any environment variables at import time; env var reads occur only inside `run()`, verified by import-time env isolation test.
+- **SC-010**: Importing `ummaya.permissions` does not read any environment variables at import time; env var reads occur only inside `run()`, verified by import-time env isolation test.
 
 ---
 
@@ -336,7 +336,7 @@ ToolResult(
 | Scenario | Expected behavior |
 |---|---|
 | `arguments_json` is malformed JSON | Step 1 parses the tier and allows/denies without parsing args; step 2 detects invalid JSON and denies with `reason="invalid_arguments_json"`; step 3 also has a defensive JSON-parse guard. Step 6 is never reached for malformed payloads. |
-| `KOSAX_DATA_GO_KR_API_KEY` is set but empty string | Treated as absent; step 1 denies with `reason="api_key_not_configured"`. An empty string is not a valid key. |
+| `UMMAYA_DATA_GO_KR_API_KEY` is set but empty string | Treated as absent; step 1 denies with `reason="api_key_not_configured"`. An empty string is not a valid key. |
 | `session_context.citizen_id` is None and tool `is_personal_data=True` | Bypass-immune rule triggers: citizen_id mismatch (None != any value). Pipeline denies. |
 | Step 7 (audit logger) itself raises | Exception is swallowed; a fallback `logging.error()` call is made to the root logger. The audit failure MUST NOT cause the caller to receive an exception. |
 | Pipeline called concurrently for same tool | Each call is independent (no shared mutable state). Rate limiting is handled by `ToolExecutor`'s existing `RateLimiter`. |
@@ -354,7 +354,7 @@ ToolResult(
 - **`escalate` decision path** — The `PermissionDecision.escalate` value is defined in the enum but the gauntlet runner treats it as `deny` in v1.
 - **Refusal circuit breaker** — Consecutive denial counting and routing to human channel. Targeted for v2.
 - **Classifier separation of concerns** — Ensuring LLM classifiers see only tool calls and arguments, not justifying prose. Relevant only when LLM-based intent analysis (v2) activates.
-- **Per-ministry credential isolation** — Separate `KOSAX_KOROAD_API_KEY`, etc. per-provider env vars beyond the shared `KOSAX_DATA_GO_KR_API_KEY`. Targeted for v2.
+- **Per-ministry credential isolation** — Separate `UMMAYA_KOROAD_API_KEY`, etc. per-provider env vars beyond the shared `UMMAYA_DATA_GO_KR_API_KEY`. Targeted for v2.
 - **Credential rotation / secret management** — Dynamic key rotation, HashiCorp Vault integration. Out of scope for Phase 1.
 
 ---
@@ -363,12 +363,12 @@ ToolResult(
 
 | Dependency | Type | Notes |
 |---|---|---|
-| `kosax.tools.models.ToolResult` | Internal, existing | Permission pipeline returns this type |
-| `kosax.tools.executor.ToolExecutor` | Internal, existing | Pipeline wraps the executor; step 6 calls it |
-| `kosax.tools.registry.ToolRegistry` | Internal, existing | Pipeline reads tool definitions to get `access_tier` |
+| `ummaya.tools.models.ToolResult` | Internal, existing | Permission pipeline returns this type |
+| `ummaya.tools.executor.ToolExecutor` | Internal, existing | Pipeline wraps the executor; step 6 calls it |
+| `ummaya.tools.registry.ToolRegistry` | Internal, existing | Pipeline reads tool definitions to get `access_tier` |
 | `pydantic>=2.0` | External, already declared | All pipeline models |
 | stdlib `os`, `logging`, `datetime`, `enum`, `contextlib` | Stdlib | No new pyproject.toml entries |
-| `KOSAX_DATA_GO_KR_API_KEY` env var | Runtime config | Must be set for `api_key`-tier tools |
+| `UMMAYA_DATA_GO_KR_API_KEY` env var | Runtime config | Must be set for `api_key`-tier tools |
 | Epic #6 (Tool System) | Epic dependency | `ToolExecutor`, `ToolRegistry`, `GovAPITool`, `ToolResult` must be merged first |
 
 ---
@@ -376,7 +376,7 @@ ToolResult(
 ## Assumptions
 
 1. `GovAPITool.auth_type` (values: `"public"`, `"api_key"`, `"oauth"`) is the v1 source of truth for access tier mapping. A dedicated `access_tier: AccessTier` field on `GovAPITool` is a v2 enhancement; the pipeline performs the mapping at entry.
-2. All tools registered in v1 use `KOSAX_DATA_GO_KR_API_KEY` for api_key-tier access. Provider-specific keys are a v2 concern.
+2. All tools registered in v1 use `UMMAYA_DATA_GO_KR_API_KEY` for api_key-tier access. Provider-specific keys are a v2 concern.
 3. Session context is passed in from the query engine. The permission pipeline does not create sessions.
 4. In v1, `SessionContext.citizen_id` is always `None` (no citizen authentication yet). Bypass-immune rules still apply.
 5. The pipeline is synchronous in v1 (steps are sync functions). Step 6 calls the async `ToolExecutor.dispatch()` via `asyncio`; the `PermissionPipeline.run()` is itself a coroutine.

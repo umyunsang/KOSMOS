@@ -20,7 +20,7 @@ The top-level contract a plugin author writes (as `manifest.yaml`) and the regis
 | `processes_pii` | `bool` | ✓ | `True` | fail-closed default per Constitution §II | FR-023 |
 | `pipa_trustee_acknowledgment` | `PIPATrusteeAcknowledgment \| None` | conditional | None | required when `processes_pii=True` | FR-014 + R-4 |
 | `slsa_provenance_url` | `str` | ✓ | — | regex `^https://github\.com/` | FR-018 + R-3 |
-| `otel_attributes` | `dict[str, str]` | ✓ | — | must contain key `"kosax.plugin.id"` with value `== plugin_id` | FR-021 + Spec 021 |
+| `otel_attributes` | `dict[str, str]` | ✓ | — | must contain key `"ummaya.plugin.id"` with value `== plugin_id` | FR-021 + Spec 021 |
 | `search_hint_ko` | `str` | ✓ | — | min_length 1, recommended ≥ 3 Korean nouns (R-1 Q4-HINT-NOUNS) | FR-019 + R-1 Q4-HINT-KO |
 | `search_hint_en` | `str` | ✓ | — | min_length 1 | R-1 Q4-HINT-EN |
 | `permission_layer` | `Literal[1, 2, 3]` | ✓ | — | informational; Spec 033 is enforcement | R-1 Q5-LAYER-DECLARED |
@@ -59,9 +59,9 @@ def _v_pipa_hash(self) -> "PluginManifest":
 
 @model_validator(mode="after")
 def _v_otel_attribute(self) -> "PluginManifest":
-    if self.otel_attributes.get("kosax.plugin.id") != self.plugin_id:
+    if self.otel_attributes.get("ummaya.plugin.id") != self.plugin_id:
         raise ValueError(
-            f'otel_attributes["kosax.plugin.id"] must equal plugin_id ({self.plugin_id})'
+            f'otel_attributes["ummaya.plugin.id"] must equal plugin_id ({self.plugin_id})'
         )
     return self
 
@@ -89,24 +89,24 @@ unpublished
    │ (slsa-github-generator on git tag push)
    ▼
 published_unverified  ← bundle + .intoto.jsonl on GitHub Releases
-   │ (catalog generator picks up release, adds to kosax-plugin-store/index.json)
+   │ (catalog generator picks up release, adds to ummaya-plugin-store/index.json)
    ▼
 catalogued
-   │ (citizen runs `kosax plugin install <name>`)
+   │ (citizen runs `ummaya plugin install <name>`)
    ▼
 verified  ← slsa-verifier exit 0 + manifest_schema.model_validate pass
-   │ (installer.py writes to ~/.kosax/memdir/user/plugins/<plugin_id>/)
+   │ (installer.py writes to ~/.ummaya/memdir/user/plugins/<plugin_id>/)
    ▼
 installed
    │ (registry.py auto-discovery rebuilds BM25 index entry)
    ▼
 discoverable  ← appears in lookup(mode="search") results
-   │ (citizen runs `kosax plugin uninstall <name>`)
+   │ (citizen runs `ummaya plugin uninstall <name>`)
    ▼
 uninstalled  ← directory removed; consent receipt for uninstall written
 ```
 
-Failed verification (slsa-verifier exit ≠ 0 OR manifest validation fail) aborts the install; no state transition happens. The bundle stays in `~/.kosax/cache/plugin-bundles/<plugin_id>-<sha>.tar.gz` for forensic inspection.
+Failed verification (slsa-verifier exit ≠ 0 OR manifest validation fail) aborts the install; no state transition happens. The bundle stays in `~/.ummaya/cache/plugin-bundles/<plugin_id>-<sha>.tar.gz` for forensic inspection.
 
 ---
 
@@ -124,7 +124,7 @@ Nested model required when `PluginManifest.processes_pii=True`. Encodes the PIPA
 
 `frozen=True, extra="forbid"`. No internal validators (validation is done by the parent `PluginManifest._v_pipa_hash`).
 
-The canonical acknowledgment text is stored in `docs/plugins/security-review.md` between `<!-- CANONICAL-PIPA-ACK-START -->` and `<!-- CANONICAL-PIPA-ACK-END -->` markers. The hash is computed at module import time by `src/kosax/plugins/canonical_acknowledgment.py:_compute_canonical_hash()` and exposed as the constant `CANONICAL_ACKNOWLEDGMENT_SHA256: str`. See [`contracts/pipa-acknowledgment.md`](./contracts/pipa-acknowledgment.md) for the canonical text content.
+The canonical acknowledgment text is stored in `docs/plugins/security-review.md` between `<!-- CANONICAL-PIPA-ACK-START -->` and `<!-- CANONICAL-PIPA-ACK-END -->` markers. The hash is computed at module import time by `src/ummaya/plugins/canonical_acknowledgment.py:_compute_canonical_hash()` and exposed as the constant `CANONICAL_ACKNOWLEDGMENT_SHA256: str`. See [`contracts/pipa-acknowledgment.md`](./contracts/pipa-acknowledgment.md) for the canonical text content.
 
 ---
 
@@ -139,7 +139,7 @@ The 50-item review checklist source-of-truth row. Lives as YAML in `tests/fixtur
 | `description_en` | `str` | ✓ | min_length 1 | R-1 |
 | `source_rule` | `str` | ✓ | references Constitution principle, AGENTS.md section, or Spec NNN | Constitution §I + R-1 |
 | `check_type` | `Literal["static", "unit", "workflow"]` | ✓ | `static` = AST/regex; `unit` = pytest assertion; `workflow` = workflow step | R-1 |
-| `check_implementation` | `str` | ✓ | dotted path or workflow-step id (e.g. `kosax.plugins.checks.q1_pyv2:check`) | R-1 |
+| `check_implementation` | `str` | ✓ | dotted path or workflow-step id (e.g. `ummaya.plugins.checks.q1_pyv2:check`) | R-1 |
 | `failure_message_ko` | `str` | ✓ | min_length 1; user-facing Korean error shown by workflow on fail | FR-015 |
 | `failure_message_en` | `str` | ✓ | min_length 1 | FR-015 |
 
@@ -149,11 +149,11 @@ The Pydantic model `ReviewChecklistManifest = TypeAdapter(list[ReviewChecklistIt
 
 ## 4 · `CatalogEntry`
 
-One row in `kosax-plugin-store/index.json` describing a published plugin. Source-of-truth for `kosax plugin install <name>` resolution.
+One row in `ummaya-plugin-store/index.json` describing a published plugin. Source-of-truth for `ummaya plugin install <name>` resolution.
 
 | Field | Type | Required | Constraints | Source |
 |---|---|---|---|---|
-| `name` | `str` | ✓ | regex `^[a-z][a-z0-9-]*$`; matches the repo name (without `kosax-plugin-` prefix) | FR-017 |
+| `name` | `str` | ✓ | regex `^[a-z][a-z0-9-]*$`; matches the repo name (without `ummaya-plugin-` prefix) | FR-017 |
 | `plugin_id` | `str` | ✓ | regex `^[a-z][a-z0-9_]*$`; matches `PluginManifest.plugin_id` | FR-017 |
 | `latest_version` | `str` | ✓ | SemVer regex | FR-017 |
 | `versions` | `list[CatalogVersion]` | ✓ | min_length 1; sorted descending by version | FR-017 |
@@ -179,7 +179,7 @@ Where `CatalogVersion` is:
 
 ## 5 · `PluginConsentReceipt` (extension of Spec 035 ConsentRecord)
 
-When the citizen runs `kosax plugin install <name>`, an append-only consent receipt is written to the existing Spec 035 ledger at `~/.kosax/memdir/user/consent/`. Mirrors the existing schema with one new `action_type` discriminator value: `"plugin_install"` (or `"plugin_uninstall"`).
+When the citizen runs `ummaya plugin install <name>`, an append-only consent receipt is written to the existing Spec 035 ledger at `~/.ummaya/memdir/user/consent/`. Mirrors the existing schema with one new `action_type` discriminator value: `"plugin_install"` (or `"plugin_uninstall"`).
 
 | Field | Type | Required | Constraints | Source |
 |---|---|---|---|---|
@@ -188,12 +188,12 @@ When the citizen runs `kosax plugin install <name>`, an append-only consent rece
 | `action_type` | `Literal["plugin_install", "plugin_uninstall"]` | ✓ | new enum values | This spec |
 | `plugin_id` | `str` | ✓ | matches installed plugin | This spec |
 | `plugin_version` | `str` | ✓ | SemVer | This spec |
-| `slsa_verification` | `Literal["passed", "failed", "skipped"]` | ✓ | `skipped` only allowed in dev mode w/ explicit `KOSAX_PLUGIN_SLSA_SKIP=1` env | R-3 |
+| `slsa_verification` | `Literal["passed", "failed", "skipped"]` | ✓ | `skipped` only allowed in dev mode w/ explicit `UMMAYA_PLUGIN_SLSA_SKIP=1` env | R-3 |
 | `trustee_org_name` | `str \| None` | conditional | required if installed plugin's `processes_pii=True` | FR-014 |
 | `consent_ledger_position` | `int` | ✓ | append-only sequence (Spec 035 invariant) | Spec 035 |
 
 Persistence rules (inherited from Spec 035):
-- One JSON file per receipt: `~/.kosax/memdir/user/consent/<receipt_id>.json`
+- One JSON file per receipt: `~/.ummaya/memdir/user/consent/<receipt_id>.json`
 - `fsync()` on write; `.consumed` marker file pattern only applies to mailbox messages, not consent receipts
 - Append-only — no in-place edits; revocation is a *new* receipt with `action_type="plugin_uninstall"` referencing the install receipt's id
 
@@ -211,14 +211,14 @@ CatalogEntry
   └─ list[CatalogVersion] (immutable history)
 
 ReviewChecklistItem  ← independent registry, drives plugin-validation.yml
-  └─ check_implementation → src/kosax/plugins/checks/*.py
+  └─ check_implementation → src/ummaya/plugins/checks/*.py
 
 PluginConsentReceipt  ← writes to Spec 035 ledger
   └─ references: PluginManifest.plugin_id + version (no FK; the ledger is append-only)
 
 ToolRegistry (existing, Spec 022)
   └─ register_plugin_adapter(manifest) → BM25Index.add_or_update(...)
-                                       → emit OTEL span (kosax.plugin.id=...)
+                                       → emit OTEL span (ummaya.plugin.id=...)
 ```
 
 ---
@@ -226,8 +226,8 @@ ToolRegistry (existing, Spec 022)
 ## Storage layout summary
 
 ```
-~/.kosax/memdir/user/plugins/                  # NEW
-├── index.json                                   # cached catalog snapshot for offline kosax plugin list
+~/.ummaya/memdir/user/plugins/                  # NEW
+├── index.json                                   # cached catalog snapshot for offline ummaya plugin list
 └── <plugin_id>/                                 # one dir per installed plugin
     ├── manifest.yaml                            # PluginManifest.model_dump_json() + yaml-encoded
     ├── adapter.py                               # the contributed adapter code
@@ -241,19 +241,19 @@ ToolRegistry (existing, Spec 022)
         ├── provenance.intoto.jsonl
         └── verify-result.json                   # slsa-verifier output
 
-~/.kosax/memdir/user/consent/                  # EXISTS (Spec 035) — extended with plugin_install / plugin_uninstall action types
+~/.ummaya/memdir/user/consent/                  # EXISTS (Spec 035) — extended with plugin_install / plugin_uninstall action types
 └── <receipt_id>.json                            # PluginConsentReceipt records appended
 
-~/.kosax/cache/plugin-bundles/                 # NEW — forensic cache
+~/.ummaya/cache/plugin-bundles/                 # NEW — forensic cache
 └── <plugin_id>-<sha>.tar.gz                     # bundle retained on failed verification
 
-~/.kosax/vendor/slsa-verifier/                 # NEW (per R-3) — vendored binary
+~/.ummaya/vendor/slsa-verifier/                 # NEW (per R-3) — vendored binary
 └── <platform>/slsa-verifier                     # one per darwin-amd64 / darwin-arm64 / linux-amd64 / linux-arm64
 ```
 
-All paths are KOSAX_-prefixed-env-var overridable (per AGENTS.md):
-- `KOSAX_PLUGIN_INSTALL_ROOT` (default `~/.kosax/memdir/user/plugins`)
-- `KOSAX_PLUGIN_BUNDLE_CACHE` (default `~/.kosax/cache/plugin-bundles`)
-- `KOSAX_PLUGIN_VENDOR_ROOT` (default `~/.kosax/vendor`)
-- `KOSAX_PLUGIN_SLSA_SKIP` (default unset; opt-in to skip verification in dev only)
-- `KOSAX_PLUGIN_CATALOG_URL` (default `https://raw.githubusercontent.com/kosax-plugin-store/index/main/index.json`)
+All paths are UMMAYA_-prefixed-env-var overridable (per AGENTS.md):
+- `UMMAYA_PLUGIN_INSTALL_ROOT` (default `~/.ummaya/memdir/user/plugins`)
+- `UMMAYA_PLUGIN_BUNDLE_CACHE` (default `~/.ummaya/cache/plugin-bundles`)
+- `UMMAYA_PLUGIN_VENDOR_ROOT` (default `~/.ummaya/vendor`)
+- `UMMAYA_PLUGIN_SLSA_SKIP` (default unset; opt-in to skip verification in dev only)
+- `UMMAYA_PLUGIN_CATALOG_URL` (default `https://raw.githubusercontent.com/ummaya-plugin-store/index/main/index.json`)

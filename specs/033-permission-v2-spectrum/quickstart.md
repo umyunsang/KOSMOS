@@ -1,7 +1,7 @@
 # Quickstart — Permission v2 (Epic #1297)
 
 **Feature**: 033-permission-v2-spectrum
-**Audience**: KOSAX citizen users + onboarding engineers + auditors
+**Audience**: UMMAYA citizen users + onboarding engineers + auditors
 **Date**: 2026-04-20
 
 > 5 citizen scenarios mapping directly to US1–US5. Each scenario is reproducible end-to-end with stdlib-only tooling. No new runtime dependencies.
@@ -11,19 +11,19 @@
 ## Prerequisites
 
 ```bash
-# KOSAX already installed via uv (see repo root README)
-uv run python -c "from kosax.permissions import modes; print(modes.__version__)"
+# UMMAYA already installed via uv (see repo root README)
+uv run python -c "from ummaya.permissions import modes; print(modes.__version__)"
 # → 1.0.0
 
 # Directories created on first boot (do NOT pre-create)
-ls -la ~/.kosax/
+ls -la ~/.ummaya/
 # drwx------  alice  staff   permissions.json          (mode 0600)
 # drwx------  alice  staff   consent_ledger.jsonl      (mode 0600)
 # drwx------  alice  staff   keys/
 # -r--------  alice  staff   keys/ledger.key           (mode 0400)
 ```
 
-If any file is missing, KOSAX creates it on first call with the correct mode. **Do NOT pre-create with wrong modes** — loader will refuse (Invariant C3).
+If any file is missing, UMMAYA creates it on first call with the correct mode. **Do NOT pre-create with wrong modes** — loader will refuse (Invariant C3).
 
 ---
 
@@ -32,7 +32,7 @@ If any file is missing, KOSAX creates it on first call with the correct mode. **
 **Citizen goal**: find nearest hospital without understanding permission internals.
 
 ```bash
-uv run kosax chat
+uv run ummaya chat
 # TUI opens at default mode (gray status bar).
 ```
 
@@ -52,7 +52,7 @@ Expected behavior:
 4. Second call (`hira_hospital_search` with different params) in same session: **no prompt** (session-scope `allow` rule).
 5. Verify ledger:
    ```bash
-   uv run kosax permissions verify
+   uv run ummaya permissions verify
    # ✓ Ledger verification PASSED
    #   Records: 1
    ```
@@ -65,14 +65,14 @@ Expected behavior:
 
 ```bash
 # Start with clean state
-rm -rf ~/.kosax/consent_ledger.jsonl
+rm -rf ~/.ummaya/consent_ledger.jsonl
 
 # Run Scenario 1 five times (different searches)
 # ... 5 records in ledger
 
 # Simulate external tamper
 python3 -c "
-with open('$HOME/.kosax/consent_ledger.jsonl', 'r+b') as f:
+with open('$HOME/.ummaya/consent_ledger.jsonl', 'r+b') as f:
     f.seek(100)  # flip a byte inside record 1
     byte = f.read(1)
     f.seek(100)
@@ -80,7 +80,7 @@ with open('$HOME/.kosax/consent_ledger.jsonl', 'r+b') as f:
 "
 
 # Verify
-uv run kosax permissions verify
+uv run ummaya permissions verify
 # ✗ Ledger verification FAILED — CHAIN_RECORD_HASH_MISMATCH
 #   First broken index: 0
 #   Reason: record_hash recomputation does not match stored record_hash at record 0.
@@ -94,7 +94,7 @@ uv run kosax permissions verify
 **Citizen goal**: citizen enables bypass for speed but irreversible calls still prompt.
 
 ```bash
-uv run kosax chat
+uv run ummaya chat
 ```
 
 In TUI:
@@ -119,7 +119,7 @@ Expected behavior (assuming `gov24_complaint_submit` adapter has `is_irreversibl
 5. Verify ledger: 2 records, both with `mode="bypassPermissions"`, `granted=true`, distinct `action_digest`.
 
 ```bash
-uv run kosax permissions verify --json | jq '.total_records'
+uv run ummaya permissions verify --json | jq '.total_records'
 # 2
 ```
 
@@ -130,7 +130,7 @@ uv run kosax permissions verify --json | jq '.total_records'
 **Citizen goal**: persistent allow/deny/ask decisions survive restart.
 
 ```bash
-uv run kosax chat
+uv run ummaya chat
 # Set 3 rules via slash commands
 # /permissions allow hira_hospital_search
 # /permissions deny gov24_complaint_submit
@@ -140,7 +140,7 @@ uv run kosax chat
 Exit TUI (`Ctrl+D`).
 
 ```bash
-cat ~/.kosax/permissions.json | python3 -m json.tool
+cat ~/.ummaya/permissions.json | python3 -m json.tool
 # {
 #   "schema_version": "1.0.0",
 #   "generated_at": "2026-04-20T...",
@@ -154,7 +154,7 @@ cat ~/.kosax/permissions.json | python3 -m json.tool
 
 Restart TUI:
 ```bash
-uv run kosax chat
+uv run ummaya chat
 ```
 
 - Call `hira_hospital_search` → silent allow (rule loaded).
@@ -166,7 +166,7 @@ uv run kosax chat
 ## Scenario 5 — US5 (P2): Shift+Tab + slash command cycle
 
 ```bash
-uv run kosax chat
+uv run ummaya chat
 ```
 
 1. Start at `default` (gray).
@@ -184,36 +184,36 @@ uv run kosax chat
 ### "HMAC key file mode mismatch" (exit code 6)
 
 ```bash
-ls -la ~/.kosax/keys/ledger.key
+ls -la ~/.ummaya/keys/ledger.key
 # -rw-------  alice  staff   ...  (mode 0600)  ← WRONG
 ```
 
 Fix:
 ```bash
-chmod 0400 ~/.kosax/keys/ledger.key
+chmod 0400 ~/.ummaya/keys/ledger.key
 ```
 
-If the file is missing, restart KOSAX — it regenerates on first call.
+If the file is missing, restart UMMAYA — it regenerates on first call.
 
 ### "permissions.json schema violation"
 
 External editor broke the schema. Restore from backup or delete to reset (all rules lost):
 
 ```bash
-rm ~/.kosax/permissions.json
-# KOSAX recreates on next call. Rules must be re-added.
+rm ~/.ummaya/permissions.json
+# UMMAYA recreates on next call. Rules must be re-added.
 ```
 
 ### Lost HMAC key
 
 ```bash
-uv run kosax permissions verify --hash-only --acknowledge-key-loss
+uv run ummaya permissions verify --hash-only --acknowledge-key-loss
 # Hash chain remains verifiable. HMAC verification permanently waived for affected records.
 ```
 
 Rotate going forward:
 ```bash
-uv run kosax permissions rotate-key
+uv run ummaya permissions rotate-key
 # New key id: k0002. Old records remain HMAC-unverifiable.
 ```
 
@@ -229,16 +229,16 @@ If Permission v2 behavior is undesirable:
 
 ```bash
 # Option A: delete rule store (loses all rules)
-rm ~/.kosax/permissions.json
+rm ~/.ummaya/permissions.json
 
 # Option B: set all rules to 'ask' (keep history)
-uv run kosax permissions reset-to-ask
+uv run ummaya permissions reset-to-ask
 ```
 
 **Consent ledger is NEVER rolled back.** PIPA §8 (2+ year retention). To archive:
 
 ```bash
-mv ~/.kosax/consent_ledger.jsonl ~/.kosax/consent_ledger.archive.$(date +%Y%m%d).jsonl
+mv ~/.ummaya/consent_ledger.jsonl ~/.ummaya/consent_ledger.archive.$(date +%Y%m%d).jsonl
 # A fresh ledger starts from genesis on next consent event.
 ```
 

@@ -13,7 +13,7 @@
 | **AGENTS.md TUI verification (services 변경)** | PASS | Layer 5 tmux boot smoke 단계 (T009) 명시. interactive scenario 변경 0 이라 Layer 1-4 는 services 단위 테스트로 충족. |
 | **AGENTS.md issue hierarchy: GraphQL only** | PASS | speckit-taskstoissues 가 GraphQL Sub-Issues API v2 사용. |
 | **AGENTS.md PR closing rule: Closes #EPIC only** | PASS | tasks.md T012 명시. |
-| **AGENTS.md L1-A canonical: A1 single provider, A7 zero egress** | PASS | dead-call gate 가 axios → claude.ai 발신을 코드 enforcement. plan.md Phase 0 § kosax-migration-tree 인용. |
+| **AGENTS.md L1-A canonical: A1 single provider, A7 zero egress** | PASS | dead-call gate 가 axios → claude.ai 발신을 코드 enforcement. plan.md Phase 0 § ummaya-migration-tree 인용. |
 | **CC sourcemap byte-copy default** | PASS | restored-src 비교 baseline 명시. 박제 헤더가 SHA-256 path 인용. |
 | **Spec 2521 박제 패턴 일관성** | PASS | claude.ts:1-23 4-항 헤더 구조 그대로 답습. |
 | **Initiative #1633 P2 stub 전례 vs 박제** | RESOLVED | decisions.md § S6 Services 가 "claude.ts 패턴 일관성" 으로 박제 (방안 B) 명시. |
@@ -29,8 +29,8 @@
 - **Risk #3: teamMemorySync throw 가 production 에 도달** — `setup.ts:358`
   의 `feature('TEAMMEM') === false` 1차 gate 가 startTeamMemoryWatcher
   자체를 skip → 4 entry-point 도달 불가. 위험 등급 ZERO.
-- **Risk #4: bun:test fixtures 가 다른 KOSAX env 변수 의존** — 신규 테스트
-  는 `process.env.KOSAX_ENABLE_DEAD_*` 만 명시 unset → 격리. 위험 등급
+- **Risk #4: bun:test fixtures 가 다른 UMMAYA env 변수 의존** — 신규 테스트
+  는 `process.env.UMMAYA_ENABLE_DEAD_*` 만 명시 unset → 격리. 위험 등급
   LOW.
 
 ## Cross-artifact 일관성 check

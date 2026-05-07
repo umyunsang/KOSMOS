@@ -1,5 +1,5 @@
 {
-  "_comment": "Spec 2522 T048 Scenario A — lat/lon given directly in user message. LLM calls hira_hospital_search directly (no resolve_location). Verifies KOSAX does NOT force cross-domain chain when coords are already available.",
+  "_comment": "Spec 2522 T048 Scenario A — lat/lon given directly in user message. LLM calls hira_hospital_search directly (no resolve_location). Verifies UMMAYA does NOT force cross-domain chain when coords are already available.",
   "fixtures": [
     {
       "match": {

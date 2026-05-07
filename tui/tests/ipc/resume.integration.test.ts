@@ -153,7 +153,7 @@ if (attempt === 0) {
 // ---------------------------------------------------------------------------
 
 describe('bridge: resume integration (US1 T031)', () => {
-  const tmpDir = mkdtempSync(join(tmpdir(), 'kosax-resume-test-'))
+  const tmpDir = mkdtempSync(join(tmpdir(), 'ummaya-resume-test-'))
   const backendScript = writeSyntheticBackend(tmpDir)
   const bridges: Array<{ close(): Promise<void> }> = []
 

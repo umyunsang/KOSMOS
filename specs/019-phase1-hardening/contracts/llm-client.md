@@ -1,7 +1,7 @@
 # Contract — LLMClient public surface
 
 **Feature**: 019-phase1-hardening
-**Target file**: `src/kosax/llm/client.py`
+**Target file**: `src/ummaya/llm/client.py`
 
 ## Signatures (defaults established this epic; all overridable)
 

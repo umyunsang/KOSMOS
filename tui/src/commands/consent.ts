@@ -4,7 +4,7 @@
 // /consent revoke <rcpt-id> — idempotent revoke with confirmation (FR-020/021).
 //
 // CC reference: .references/claude-code-sourcemap/restored-src/src/components/HistorySearchDialog.tsx (table layout, Claude Code 2.1.88, research-use)
-// KOSAX adaptation: reads from PermissionReceiptContext (in-session read model);
+// UMMAYA adaptation: reads from PermissionReceiptContext (in-session read model);
 //   revoke triggers a confirmation flow before calling revokeReceipt.
 //   The TUI never writes the audit ledger directly — revoke goes through IPC
 //   to the Spec 033 Python permission service (data flow described in consentBridge.ts).

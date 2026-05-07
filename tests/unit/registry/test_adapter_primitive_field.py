@@ -14,7 +14,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from kosax.tools.registry import (
+from ummaya.tools.registry import (
     AdapterPrimitive,
     AdapterRegistration,
     AdapterSourceMode,
@@ -29,14 +29,14 @@ def _base_kwargs(**overrides: object) -> dict[str, object]:
     the pre-v1.2 compatibility window (None allowed) must ``monkeypatch`` the
     toggle off explicitly.
 
-    Note: KOSAX-invented Spec 033/024/025 fields (auth_level, pipa_class,
+    Note: UMMAYA-invented Spec 033/024/025 fields (auth_level, pipa_class,
     dpa_reference) removed from AdapterRegistration in Epic δ #2295.
     """
     base: dict[str, object] = {
         "tool_id": "fake_adapter",
         "primitive": AdapterPrimitive.lookup,
-        "module_path": "kosax.tools.mock.data_go_kr.fake_adapter",
-        "input_model_ref": "kosax.tools.mock.data_go_kr.fake_adapter:FakeInput",
+        "module_path": "ummaya.tools.mock.data_go_kr.fake_adapter",
+        "input_model_ref": "ummaya.tools.mock.data_go_kr.fake_adapter:FakeInput",
         "source_mode": AdapterSourceMode.OPENAPI,
         "published_tier_minimum": "digital_onepass_level2_aal2",
         "nist_aal_hint": "AAL2",
@@ -85,7 +85,7 @@ def test_pre_v12_allows_none_dual_axis(monkeypatch: pytest.MonkeyPatch) -> None:
     to ``True``, so this test explicitly forces the legacy compatibility mode
     to prove the FR-028 contract still holds in that window.
     """
-    import kosax.security.v12_dual_axis as _mod
+    import ummaya.security.v12_dual_axis as _mod
 
     monkeypatch.setattr(_mod, "V12_GA_ACTIVE", False)
 

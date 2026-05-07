@@ -5,18 +5,18 @@
 // Three labeled swap commits layer atop the byte-copy:
 //   • swap/llm-provider(2521)     — @anthropic-ai/sdk imports → sdk-compat.ts
 //   • swap/anti-anthropic-1p(2521) — claude.ai 1P call-graph deadened via
-//     KOSAX-stubbed support modules (services/claudeAiLimits.ts + utils/auth.ts
+//     UMMAYA-stubbed support modules (services/claudeAiLimits.ts + utils/auth.ts
 //     are inert no-ops since Epic #1633). The 1P functions in this file
 //     (getOauthAccountInfo, currentLimits, extractQuotaStatusFromHeaders,
 //     getCLISyspromptPrefix's claude.ai branches, account_uuid telemetry)
 //     remain in the byte-copy text but resolve to no-op returns at runtime.
-//     No KOSAX callers reach this file (verified post-Spec-2293), so the
+//     No UMMAYA callers reach this file (verified post-Spec-2293), so the
 //     1P graph is doubly dead — by callgraph (no callers) and by support-
 //     module inertness. Spec 2521 byte-copy philosophy (FR-002): keep the
 //     reference text intact; deactivate via supporting infrastructure
 //     instead of deleting in-file.
 //   • swap/identifier-rename(2521) — citizen-visible Claude/Anthropic brand
-//     tokens → KOSAX/EXAONE/FriendliAI (T013).
+//     tokens → UMMAYA/EXAONE/FriendliAI (T013).
 // This file has zero callers in tui/src after Spec 2293; it is retained as
 // the authoritative CC streaming-handler reference for future audit replays
 // (specs/2521-llm-swap-cc-rebuild/scripts/replay_rebuild.sh).
@@ -130,7 +130,7 @@ const autoModeStateModule = feature('TRANSCRIPT_CLASSIFIER')
   : null
 
 import { feature } from 'bun:bundle'
-// SWAP/llm-provider(2521): @anthropic-ai/sdk + /error → KOSAX sdk-compat
+// SWAP/llm-provider(2521): @anthropic-ai/sdk + /error → UMMAYA sdk-compat
 // aliases (ClientOptions, APIError, APIConnectionTimeoutError, APIUserAbortError
 // all re-exported by sdk-compat.ts as structural stubs).
 import type { ClientOptions } from '../../sdk-compat.js'
@@ -2940,7 +2940,7 @@ export function cleanupStream(
 /**
  * Updates usage statistics with new values from streaming API events.
  * Note: the upstream streaming API provides cumulative usage totals, not incremental deltas.
- * (KOSAX: byte-copied from CC where this read "Anthropic's streaming API"; FriendliAI's
+ * (UMMAYA: byte-copied from CC where this read "Anthropic's streaming API"; FriendliAI's
  * OpenAI-compatible streaming surface follows the same cumulative semantics, so the
  * algorithm is unchanged — only the brand token is renamed.)
  * Each event contains the complete usage up to that point in the stream.
@@ -3322,8 +3322,8 @@ export async function queryHaiku({
 type QueryWithModelOptions = Omit<Options, 'getToolPermissionContext'>
 
 /**
- * Query a specific model through the KOSAX infrastructure.
- * (Originally "Claude Code infrastructure" in the CC byte-copy; KOSAX renames
+ * Query a specific model through the UMMAYA infrastructure.
+ * (Originally "Claude Code infrastructure" in the CC byte-copy; UMMAYA renames
  * the citizen-visible doc string but preserves the function shape so future
  * audit replays diff cleanly against CC. swap/identifier-rename(2521).)
  * This goes through the full query pipeline including proper authentication,

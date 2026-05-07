@@ -14,10 +14,10 @@ from __future__ import annotations
 
 import pytest
 
-from kosax.tools.executor import ToolExecutor
-from kosax.tools.models import LookupError, LookupFetchInput  # noqa: A004
-from kosax.tools.register_all import register_all_tools
-from kosax.tools.registry import ToolRegistry
+from ummaya.tools.executor import ToolExecutor
+from ummaya.tools.models import LookupError, LookupFetchInput  # noqa: A004
+from ummaya.tools.register_all import register_all_tools
+from ummaya.tools.registry import ToolRegistry
 
 
 @pytest.fixture()
@@ -51,12 +51,12 @@ class TestLegacyToolsNotInRegistry:
     def test_address_to_region_module_not_importable(self) -> None:
         """The source module must be deleted — ImportError confirms removal."""
         with pytest.raises(ImportError):
-            import kosax.tools.geocoding.address_to_region  # noqa: F401
+            import ummaya.tools.geocoding.address_to_region  # noqa: F401
 
     def test_address_to_grid_module_not_importable(self) -> None:
         """The source module must be deleted — ImportError confirms removal."""
         with pytest.raises(ImportError):
-            import kosax.tools.geocoding.address_to_grid  # noqa: F401
+            import ummaya.tools.geocoding.address_to_grid  # noqa: F401
 
 
 class TestLookupFetchReturnsUnknownTool:
@@ -64,7 +64,7 @@ class TestLookupFetchReturnsUnknownTool:
     async def test_address_to_region_fetch_returns_unknown_tool_error(
         self, full_registry_and_executor: tuple[ToolRegistry, ToolExecutor]
     ) -> None:
-        from kosax.tools.lookup import lookup
+        from ummaya.tools.lookup import lookup
 
         registry, executor = full_registry_and_executor
         inp = LookupFetchInput(mode="fetch", tool_id="address_to_region", params={})
@@ -76,7 +76,7 @@ class TestLookupFetchReturnsUnknownTool:
     async def test_address_to_grid_fetch_returns_unknown_tool_error(
         self, full_registry_and_executor: tuple[ToolRegistry, ToolExecutor]
     ) -> None:
-        from kosax.tools.lookup import lookup
+        from ummaya.tools.lookup import lookup
 
         registry, executor = full_registry_and_executor
         inp = LookupFetchInput(mode="fetch", tool_id="address_to_grid", params={})

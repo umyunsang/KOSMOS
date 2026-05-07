@@ -8,17 +8,17 @@
 # renders the new receipt row.
 #
 # Backed by:
-#   src/kosax/ipc/stdio.py:1372  _check_permission_gate (verify ∈ GATED_PRIMITIVES)
-#   src/kosax/primitives/__init__.py:62  GATED_PRIMITIVES = {verify, submit, subscribe}
-#   src/kosax/tools/mock/verify_gongdong_injeungseo.py  registered Mock adapter
+#   src/ummaya/ipc/stdio.py:1372  _check_permission_gate (verify ∈ GATED_PRIMITIVES)
+#   src/ummaya/primitives/__init__.py:62  GATED_PRIMITIVES = {verify, submit, subscribe}
+#   src/ummaya/tools/mock/verify_gongdong_injeungseo.py  registered Mock adapter
 #   tui/src/query/deps.ts:523-587  IPC permission_request handler
-#   tui/src/components/permissions/KosaxPrimitivePermissionRequest/  modal
+#   tui/src/components/permissions/UmmayaPrimitivePermissionRequest/  modal
 set -euo pipefail
 
 # ---------------------------------------------------------------------------
-# 0. Boot — wait for KOSAX branding
+# 0. Boot — wait for UMMAYA branding
 # ---------------------------------------------------------------------------
-wait_for_pane "KOSAX v0\\.[0-9]" 30
+wait_for_pane "UMMAYA v0\\.[0-9]" 30
 snapshot_pane "00-boot-branding"
 
 # ---------------------------------------------------------------------------

@@ -39,7 +39,7 @@ A line in an in-scope workflow triggers a violation if it matches **any** of:
 1. `\${{ *secrets\.[A-Z_]+_TOKEN *}}` — any GitHub Encrypted Secret named `*_TOKEN`.
 2. `\${{ *secrets\.[A-Z_]+_API_KEY *}}` — any `*_API_KEY` secret.
 3. `\${{ *secrets\.[A-Z_]+_SECRET *}}` — any `*_SECRET` secret.
-4. `\${{ *secrets\.KOSAX_[A-Z_]+ *}}` — any `KOSAX_*` secret reference (long-lived token by definition).
+4. `\${{ *secrets\.UMMAYA_[A-Z_]+ *}}` — any `UMMAYA_*` secret reference (long-lived token by definition).
 5. `\${{ *secrets\.FRIENDLI[A-Z_]* *}}` — legacy `FRIENDLI_*` token references.
 6. `\${{ *secrets\.LANGFUSE_[A-Z_]+ *}}` — Langfuse secrets (must come via Infisical, not GH Secrets).
 
@@ -89,7 +89,7 @@ Multiple violations → one block per violation, summary count last.
 |---------|--------------------------|----------|
 | T-AS01 | Contains `${{ secrets.GITHUB_TOKEN }}` only | exit 0 |
 | T-AS02 | Contains `${{ secrets.FRIENDLI_TOKEN }}` | exit 1, violation reported |
-| T-AS03 | Contains `${{ secrets.KOSAX_KAKAO_API_KEY }}` | exit 1 |
+| T-AS03 | Contains `${{ secrets.UMMAYA_KAKAO_API_KEY }}` | exit 1 |
 | T-AS04 | Contains YAML comment `# secrets.FOO_TOKEN` | exit 0 (comment suppression) |
 | T-AS05 | Contains `uses: some/action@v1-token-helper` | exit 0 (uses-line suppression) |
 | T-AS06 | `.github/workflows/` missing | exit 2 |

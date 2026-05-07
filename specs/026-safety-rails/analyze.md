@@ -70,7 +70,7 @@ Each user story is independently implementable and testable — MVP-shippable pa
 |---|---|---|---|---|
 | `LookupErrorReason` enum extension | Code-owned (ex-#507) | PR-A isolated first | T004–T006 as PR-A; T005 round-trip test | ✅ |
 | `gen_ai.safety.event` span attribute | #501 | Only attribute key, bounded enum, no raw data | T014 (helper), T015 (test), T045 (follow-up comment) | ✅ |
-| `KOSAX_SAFETY_*` env keys | #468 | Propose 4 keys + 1 OpenAI key; never touch docs/configuration.md | T008 (SafetySettings), T044 (follow-up comment on #468) | ✅ |
+| `UMMAYA_SAFETY_*` env keys | #468 | Propose 4 keys + 1 OpenAI key; never touch docs/configuration.md | T008 (SafetySettings), T044 (follow-up comment on #468) | ✅ |
 | LiteLLM callback slot | #465 | Code-only registration; never touch infra/litellm/config.yaml | T030 (callbacks), T043 (follow-up comment on #465) | ✅ |
 | Permission gauntlet boundary | #16, #20 | Out of scope; Step 3 byte-unchanged | T010 (refactor), T012 (regression gate) | ✅ |
 
@@ -98,9 +98,9 @@ All hard constraints have a concrete verification task.
 
 | Anchor referenced in plan/tasks | Actual source state | Match |
 |---|---|---|
-| `step3_params._PII_PATTERNS` at `src/kosax/permissions/steps/step3_params.py:50` | Present (verified via Read during session). Contains 5 categories as spec claims. | ✅ |
-| `LookupErrorReason` enum in `src/kosax/tools/errors.py:83` | Present with 8 members (auth_required, stale_data, timeout, upstream_unavailable, unknown_tool, invalid_params, out_of_domain, empty_registry). Tasks T004 adds 2 → 10 total. | ✅ |
-| `ToolExecutor.invoke` in `src/kosax/tools/executor.py:114` and `dispatch` at `executor.py:259` | Verified by Grep. Plan.md notes "~L222" and "~L394" as approximate lines inside each method; T035 requires locating the exact line by reading the current file, not by line number. Resilient to drift. | ✅ |
+| `step3_params._PII_PATTERNS` at `src/ummaya/permissions/steps/step3_params.py:50` | Present (verified via Read during session). Contains 5 categories as spec claims. | ✅ |
+| `LookupErrorReason` enum in `src/ummaya/tools/errors.py:83` | Present with 8 members (auth_required, stale_data, timeout, upstream_unavailable, unknown_tool, invalid_params, out_of_domain, empty_registry). Tasks T004 adds 2 → 10 total. | ✅ |
+| `ToolExecutor.invoke` in `src/ummaya/tools/executor.py:114` and `dispatch` at `executor.py:259` | Verified by Grep. Plan.md notes "~L222" and "~L394" as approximate lines inside each method; T035 requires locating the exact line by reading the current file, not by line number. Resilient to drift. | ✅ |
 | `SystemPromptAssembler._session_guidance_section` last at `context/system_prompt.py:57` (append after optional Section 4) | Verified by Read. T033 insertion point is between `_tool_use_policy_section()` (line 49) and the conditional append of `_personal_data_reminder_section()` (lines 51–52). | ✅ |
 
 No anchor drift. Plan and tasks align with the current source state.

@@ -6,13 +6,13 @@
 
 ## 0. 사전 조건
 
-- Worktree: `/Users/um-yunsang/KOSAX-w-2295/` on branch `2295-backend-permissions-cleanup`
+- Worktree: `/Users/um-yunsang/UMMAYA-w-2295/` on branch `2295-backend-permissions-cleanup`
 - main `bc523b7` 베이스
 - `uv sync` 완료
 - 신규 dependency 0 (FR-008)
 
 ```bash
-cd /Users/um-yunsang/KOSAX-w-2295
+cd /Users/um-yunsang/UMMAYA-w-2295
 git rev-parse HEAD
 git status --short
 ```
@@ -22,7 +22,7 @@ git status --short
 ## 1. R1 단계 — pytest baseline 박제
 
 ```bash
-cd /Users/um-yunsang/KOSAX-w-2295
+cd /Users/um-yunsang/UMMAYA-w-2295
 uv sync 2>&1 | tail -3
 uv run pytest 2>&1 | tee specs/2295-backend-permissions-cleanup/baseline-pytest.txt
 grep -cE '^(FAILED|PASSED|ERROR)' specs/2295-backend-permissions-cleanup/baseline-pytest.txt
@@ -30,26 +30,26 @@ grep -cE '^(FAILED|PASSED|ERROR)' specs/2295-backend-permissions-cleanup/baselin
 
 ---
 
-## 2. R2 단계 — `src/kosax/permissions/` ~20 잔재 importer 추적 + cleanup (US1)
+## 2. R2 단계 — `src/ummaya/permissions/` ~20 잔재 importer 추적 + cleanup (US1)
 
 ### 2.1 importer 추적
 
 ```bash
-cd /Users/um-yunsang/KOSAX-w-2295
+cd /Users/um-yunsang/UMMAYA-w-2295
 RES="aal_backstop|adapter_metadata|bypass|cli|credentials|killswitch|mode_bypass|mode_default|models|modes|pipeline|pipeline_v2|prompt|rules|session_boot|synthesis_guard|steps"
-grep -rE "from\s+kosax\.permissions\.(${RES})" src/ tests/ | sort -u
-grep -rE "from\s+kosax\.permissions\s+import\s+" src/ tests/ | sort -u
+grep -rE "from\s+ummaya\.permissions\.(${RES})" src/ tests/ | sort -u
+grep -rE "from\s+ummaya\.permissions\s+import\s+" src/ tests/ | sort -u
 ```
 
 각 importer:
 - (a) Dead → caller 함수/블록 삭제
-- (b) Live + Spec 035 receipt 인접 → receipt set 으로 옮기거나 KOSAX 등가물로 교체
+- (b) Live + Spec 035 receipt 인접 → receipt set 으로 옮기거나 UMMAYA 등가물로 교체
 - (c) Live + Constitution II 위반 호출 → caller 도 cleanup (Constitution II 강제)
 
 ### 2.2 잔재 파일 deletion
 
 ```bash
-cd /Users/um-yunsang/KOSAX-w-2295/src/kosax/permissions
+cd /Users/um-yunsang/UMMAYA-w-2295/src/ummaya/permissions
 git rm aal_backstop.py adapter_metadata.py bypass.py cli.py credentials.py
 git rm killswitch.py mode_bypass.py mode_default.py models.py modes.py
 git rm pipeline.py pipeline_v2.py prompt.py rules.py session_boot.py synthesis_guard.py
@@ -59,7 +59,7 @@ git rm -r steps/
 ### 2.3 `__init__.py` 정정
 
 ```bash
-$EDITOR src/kosax/permissions/__init__.py
+$EDITOR src/ummaya/permissions/__init__.py
 # 기존 잔재 모듈 export 줄 모두 제거
 # Spec 035 receipt 모듈만 export:
 #   from .ledger import *  # noqa: F401, F403
@@ -75,7 +75,7 @@ $EDITOR src/kosax/permissions/__init__.py
 ### 2.4 grep gate (Constitution II 토큰)
 
 ```bash
-grep -rE 'pipa_class|auth_level|permission_tier|is_personal_data|is_irreversible|requires_auth|dpa_reference' src/kosax/
+grep -rE 'pipa_class|auth_level|permission_tier|is_personal_data|is_irreversible|requires_auth|dpa_reference' src/ummaya/
 # → 0 행이어야 함
 ```
 
@@ -85,7 +85,7 @@ grep -rE 'pipa_class|auth_level|permission_tier|is_personal_data|is_irreversible
 
 ### 3.1 모델 추가
 
-`src/kosax/tools/models.py` 에 다음 클래스 추가 (data-model.md § 1 참조):
+`src/ummaya/tools/models.py` 에 다음 클래스 추가 (data-model.md § 1 참조):
 
 ```python
 from datetime import datetime
@@ -93,7 +93,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 class AdapterRealDomainPolicy(BaseModel):
-    """KOSAX 어댑터의 단일 권한 표현 — 기관 published 정책의 cite.
+    """UMMAYA 어댑터의 단일 권한 표현 — 기관 published 정책의 cite.
     ...
     """
     model_config = ConfigDict(frozen=True, extra="forbid")
@@ -113,7 +113,7 @@ class AdapterRealDomainPolicy(BaseModel):
 - `test_18_adapters_have_policy` (registry boot 후 모든 어댑터의 `policy` 인스턴스 검증)
 
 ```bash
-cd /Users/um-yunsang/KOSAX-w-2295
+cd /Users/um-yunsang/UMMAYA-w-2295
 uv run pytest tests/tools/test_adapter_real_domain_policy.py -v
 # 5 test pass 필수
 ```
@@ -125,15 +125,15 @@ uv run pytest tests/tools/test_adapter_real_domain_policy.py -v
 ### 4.1 어댑터 metadata 파일 위치
 
 ```bash
-cd /Users/um-yunsang/KOSAX-w-2295
-find src/kosax/tools -maxdepth 3 -name "*.py" | xargs grep -lE 'auth_level|pipa_class|is_personal_data|requires_auth|dpa_reference' 2>/dev/null
+cd /Users/um-yunsang/UMMAYA-w-2295
+find src/ummaya/tools -maxdepth 3 -name "*.py" | xargs grep -lE 'auth_level|pipa_class|is_personal_data|requires_auth|dpa_reference' 2>/dev/null
 ```
 
 ### 4.2 각 어댑터 마이그레이션 (research.md § R-4 매트릭스)
 
 각 어댑터 파일에서:
 1. 금지 필드 (`auth_level / pipa_class / is_personal_data / dpa_reference / is_irreversible / requires_auth`) 제거
-2. `from kosax.tools.models import AdapterRealDomainPolicy` import 추가
+2. `from ummaya.tools.models import AdapterRealDomainPolicy` import 추가
 3. metadata block 에 `policy=AdapterRealDomainPolicy(real_classification_url=..., real_classification_text=..., citizen_facing_gate="...", last_verified=datetime(2026, 4, 29, tzinfo=timezone.utc))` 인스턴스 추가
 4. placeholder URL 인 경우 `# TODO: verify URL` 마커 코멘트 추가
 
@@ -151,9 +151,9 @@ find src/kosax/tools -maxdepth 3 -name "*.py" | xargs grep -lE 'auth_level|pipa_
 ### 4.3 Registry boot 검증
 
 ```bash
-cd /Users/um-yunsang/KOSAX-w-2295
+cd /Users/um-yunsang/UMMAYA-w-2295
 uv run python -c "
-from kosax.tools.registry import ToolRegistry
+from ummaya.tools.registry import ToolRegistry
 r = ToolRegistry()
 print(f'Registered: {len(r.all_tools())} tools')
 for t in r.all_tools():
@@ -171,7 +171,7 @@ for t in r.all_tools():
 ### 5.1 pytest
 
 ```bash
-cd /Users/um-yunsang/KOSAX-w-2295
+cd /Users/um-yunsang/UMMAYA-w-2295
 uv run pytest 2>&1 | tee specs/2295-backend-permissions-cleanup/after-pytest.txt
 diff <(grep -E '^FAILED' specs/2295-backend-permissions-cleanup/baseline-pytest.txt | sort) \
      <(grep -E '^FAILED' specs/2295-backend-permissions-cleanup/after-pytest.txt | sort)
@@ -181,7 +181,7 @@ diff <(grep -E '^FAILED' specs/2295-backend-permissions-cleanup/baseline-pytest.
 ### 5.2 Constitution II grep gate
 
 ```bash
-grep -rE 'pipa_class|auth_level|permission_tier|is_personal_data|is_irreversible|requires_auth|dpa_reference' src/kosax/
+grep -rE 'pipa_class|auth_level|permission_tier|is_personal_data|is_irreversible|requires_auth|dpa_reference' src/ummaya/
 # → 0 행
 ```
 
@@ -197,12 +197,12 @@ uv run pytest tests/tools/test_adapter_real_domain_policy.py -v
 ## 6. R6 단계 — commit + push + PR
 
 ```bash
-cd /Users/um-yunsang/KOSAX-w-2295
+cd /Users/um-yunsang/UMMAYA-w-2295
 git add -A specs/2295-backend-permissions-cleanup/ src/ tests/
 git commit -m "$(cat <<'EOF'
 feat(2295): backend permissions cleanup + AdapterRealDomainPolicy
 
-- src/kosax/permissions/ 의 ~20 Spec 033 KOSAX-invented 잔재 파일 삭제
+- src/ummaya/permissions/ 의 ~20 Spec 033 UMMAYA-invented 잔재 파일 삭제
 - Spec 035 receipt set 8 파일 보존 (ledger / action_digest / hmac_key /
   canonical_json / audit_coupling / ledger_verify / otel_emit / otel_integration)
 - AdapterRealDomainPolicy Pydantic v2 모델 신설 (frozen=True, extra="forbid",
@@ -210,7 +210,7 @@ feat(2295): backend permissions cleanup + AdapterRealDomainPolicy
   citizen_facing_gate / last_verified)
 - 18 어댑터 metadata 마이그레이션:
   KOROAD ×2 + KMA ×6 + HIRA + NMC + NFA119 + MOHW + 6 mocks
-- 기존 KOSAX-invented 권한 분류 (auth_level / pipa_class / is_personal_data /
+- 기존 UMMAYA-invented 권한 분류 (auth_level / pipa_class / is_personal_data /
   is_irreversible / requires_auth / dpa_reference) 코드 레벨 0 회 잔존
 
 Authority:

@@ -3,7 +3,7 @@ import { Box, Text } from '../../ink.js'
 import { ConfigurableShortcutHint } from '../../components/ConfigurableShortcutHint.js'
 import { Dialog } from '../../components/design-system/Dialog.js'
 import TextInput from '../../components/TextInput.js'
-import { closeKosaxBridge } from '../../ipc/bridgeSingleton.js'
+import { closeUmmayaBridge } from '../../ipc/bridgeSingleton.js'
 import type { LocalJSXCommandContext, LocalJSXCommandOnDone } from '../../types/command.js'
 import {
   getFriendliCredentialSource,
@@ -25,7 +25,7 @@ export async function call(
 
         try {
           installFriendliCredential(apiKey)
-          await closeKosaxBridge()
+          await closeUmmayaBridge()
           await Promise.resolve(context.onChangeAPIKey())
           context.setMessages(stripSignatureBlocks)
           context.setAppState(prev => ({

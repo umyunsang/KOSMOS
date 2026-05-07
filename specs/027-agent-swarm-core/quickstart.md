@@ -10,7 +10,7 @@ This quickstart orients a contributor (or a future `/speckit-implement` Teammate
 
 - Python 3.12+ and `uv >= 0.5` installed.
 - Epic #507 (2-tool facade + 4 seed adapters) is merged — confirmed via `gh issue view 507` (CLOSED).
-- Epic #468 (env-var catalog via `KosaxSettings`) is merged — confirmed via `gh issue view 468` (CLOSED).
+- Epic #468 (env-var catalog via `UmmayaSettings`) is merged — confirmed via `gh issue view 468` (CLOSED).
 - No live `data.go.kr` API keys required — this Epic runs entirely on fixture tapes.
 
 ```bash
@@ -23,24 +23,24 @@ uv run pytest tests/agents/ -v    # Will start passing as /speckit-implement lan
 
 ## 2. Environment variables
 
-Four new `KOSAX_AGENT_*` variables are introduced. Defaults are fail-closed and sufficient for local development and CI:
+Four new `UMMAYA_AGENT_*` variables are introduced. Defaults are fail-closed and sufficient for local development and CI:
 
 ```bash
 # Optional — override only if you need to debug a custom layout
-export KOSAX_AGENT_MAILBOX_ROOT="$HOME/.kosax/mailbox"     # default
-export KOSAX_AGENT_MAILBOX_MAX_MESSAGES=1000                # default; range [100, 10000]
-export KOSAX_AGENT_MAX_WORKERS=4                            # default; range [1, 16]
-export KOSAX_AGENT_WORKER_TIMEOUT_SECONDS=120               # default; range [10, 600]
+export UMMAYA_AGENT_MAILBOX_ROOT="$HOME/.ummaya/mailbox"     # default
+export UMMAYA_AGENT_MAILBOX_MAX_MESSAGES=1000                # default; range [100, 10000]
+export UMMAYA_AGENT_MAX_WORKERS=4                            # default; range [1, 16]
+export UMMAYA_AGENT_WORKER_TIMEOUT_SECONDS=120               # default; range [10, 600]
 ```
 
-All four land in `src/kosax/settings.py::KosaxSettings` and are documented in `docs/configuration.md § Agent Swarm` (FR-036).
+All four land in `src/ummaya/settings.py::UmmayaSettings` and are documented in `docs/configuration.md § Agent Swarm` (FR-036).
 
 ---
 
 ## 3. Module layout (after /speckit-implement lands)
 
 ```text
-src/kosax/agents/
+src/ummaya/agents/
 ├── __init__.py              # Re-exports: Coordinator, Worker, AgentContext, CoordinatorPlan,
 │                            #             FileMailbox, ConsentGateway
 ├── coordinator.py           # Coordinator + 4-phase state machine
@@ -63,13 +63,13 @@ src/kosax/agents/
 ```python
 import asyncio
 from uuid import uuid4
-from kosax.agents import (
+from ummaya.agents import (
     Coordinator, AgentContext, FileMailbox, CoordinatorPlan
 )
-from kosax.agents.consent import AlwaysGrantConsentGateway
-from kosax.llm.client import LLMClient
-from kosax.tools.registry import ToolRegistry
-from kosax.tools.mvp_surface import build_mvp_registry   # from Epic #507
+from ummaya.agents.consent import AlwaysGrantConsentGateway
+from ummaya.llm.client import LLMClient
+from ummaya.tools.registry import ToolRegistry
+from ummaya.tools.mvp_surface import build_mvp_registry   # from Epic #507
 
 async def demo():
     session_id = uuid4()
@@ -127,18 +127,18 @@ The mailbox is human-readable. To inspect a live or crashed session:
 
 ```bash
 # Find the session directory
-ls ~/.kosax/mailbox/
+ls ~/.ummaya/mailbox/
 
 # Pretty-print a specific message
 uv run python -c "
 import json, sys
 from pathlib import Path
-msg_file = Path('~/.kosax/mailbox/<session_id>/coordinator/<message_id>.json').expanduser()
+msg_file = Path('~/.ummaya/mailbox/<session_id>/coordinator/<message_id>.json').expanduser()
 print(json.dumps(json.loads(msg_file.read_text()), indent=2, ensure_ascii=False))
 "
 
 # Check which messages are unread (no .consumed marker)
-find ~/.kosax/mailbox/<session_id> -name '*.json' \
+find ~/.ummaya/mailbox/<session_id> -name '*.json' \
   | while read f; do [ -e "$f.consumed" ] || echo "UNREAD: $f"; done
 ```
 
@@ -148,11 +148,11 @@ find ~/.kosax/mailbox/<session_id> -name '*.json' \
 
 When OTLP export is configured (Spec 021), the Langfuse dashboard surfaces three span types:
 
-- `gen_ai.agent.coordinator.phase` — one per phase transition, attribute `kosax.agent.coordinator.phase` ∈ {research, synthesis, implementation, verification}.
-- `gen_ai.agent.worker.iteration` — one per worker tool-loop iteration, attributes `kosax.agent.role` + `kosax.agent.session_id`.
-- `gen_ai.agent.mailbox.message` — one per `send`, attributes `kosax.agent.mailbox.msg_type`, `kosax.agent.mailbox.correlation_id`, `kosax.agent.mailbox.sender`, `kosax.agent.mailbox.recipient`.
+- `gen_ai.agent.coordinator.phase` — one per phase transition, attribute `ummaya.agent.coordinator.phase` ∈ {research, synthesis, implementation, verification}.
+- `gen_ai.agent.worker.iteration` — one per worker tool-loop iteration, attributes `ummaya.agent.role` + `ummaya.agent.session_id`.
+- `gen_ai.agent.mailbox.message` — one per `send`, attributes `ummaya.agent.mailbox.msg_type`, `ummaya.agent.mailbox.correlation_id`, `ummaya.agent.mailbox.sender`, `ummaya.agent.mailbox.recipient`.
 
-These attributes are declared as string constants in `src/kosax/observability/semconv.py` (FR-031) and submitted to Epic #501's boundary table.
+These attributes are declared as string constants in `src/ummaya/observability/semconv.py` (FR-031) and submitted to Epic #501's boundary table.
 
 **Privacy note**: Message bodies are NEVER included as span attributes (PIPA — no PII in telemetry). Only metadata (types, IDs, routing) appears in traces.
 
@@ -163,8 +163,8 @@ These attributes are declared as string constants in `src/kosax/observability/se
 | Symptom | Cause | Fix |
 |---|---|---|
 | `AgentConfigurationError: tool_registry contains unexpected tools` | Registry has an adapter beyond `lookup`/`resolve_location` | Use `build_mvp_registry()` from Epic #507; the agent layer never sees per-API tools. |
-| `MailboxWriteError: permission denied` on first run | `KOSAX_AGENT_MAILBOX_ROOT` not writable | Default is `~/.kosax/mailbox`; ensure `$HOME` is writable or override the var to a tmpdir. |
-| `MailboxOverflowError` in long sessions | > 1000 messages in a session | Either reset the session or raise `KOSAX_AGENT_MAILBOX_MAX_MESSAGES` (clamped at 10000). |
+| `MailboxWriteError: permission denied` on first run | `UMMAYA_AGENT_MAILBOX_ROOT` not writable | Default is `~/.ummaya/mailbox`; ensure `$HOME` is writable or override the var to a tmpdir. |
+| `MailboxOverflowError` in long sessions | > 1000 messages in a session | Either reset the session or raise `UMMAYA_AGENT_MAILBOX_MAX_MESSAGES` (clamped at 10000). |
 | Cooperative cancellation exceeds 500 ms | Worker stuck in blocking call (e.g., `json.dump`) | Wrap heavy fs work in `asyncio.to_thread()`; inspect `test_cooperative_cancellation.py` for pattern. |
 | Synthesis phase calls `lookup` (test fails) | Coordinator passed full tool registry to synthesis LLM | Pass an empty `[]` for tool definitions during synthesis; FR-004 + FR-038 are the invariants. |
 | Cross-run messages replay on new session | Same `session_id` reused after a cancel | Cross-run replay applies only to the same session — use a fresh UUID4 per citizen session (spec edge case 3). |
@@ -176,10 +176,10 @@ These attributes are declared as string constants in `src/kosax/observability/se
 | Epic | Status | How this Epic interacts |
 |---|---|---|
 | #507 MVP Main-Tool | CLOSED | Provides the 2-tool facade + 4 seed adapters that workers consume. |
-| #468 Secrets & Config | CLOSED | `KosaxSettings` hosts the 4 new `KOSAX_AGENT_*` fields. |
+| #468 Secrets & Config | CLOSED | `UmmayaSettings` hosts the 4 new `UMMAYA_AGENT_*` fields. |
 | #019 Phase 1 Hardening | Merged | Per-session LLM semaphore reused unchanged; no new rate-limit infra. |
-| #021 OTel GenAI | Merged | `kosax.agent.*` attributes extend the existing namespace. |
-| #501 OTLP Collector | OPEN | Receives the new `kosax.agent.*` attributes in its boundary table (FR-031). |
+| #021 OTel GenAI | Merged | `ummaya.agent.*` attributes extend the existing namespace. |
+| #501 OTLP Collector | OPEN | Receives the new `ummaya.agent.*` attributes in its boundary table (FR-031). |
 | #14 Ministry Specialists | OPEN | Ships ministry-specific system prompts that slot into `AgentContext.specialist_role`; depends on this Epic. |
 | #287 TUI | OPEN | Real `ConsentGateway` implementation replacing this Epic's stub. |
 | #21 Agent Swarm Production | OPEN | Redis Streams backend, DLQ, cross-process mailbox — all preserve this Epic's `Mailbox` ABC. |

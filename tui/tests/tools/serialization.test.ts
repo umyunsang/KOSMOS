@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSAX-original — Epic #2077 K-EXAONE tool wiring · T006.
+// UMMAYA-original — Epic #2077 K-EXAONE tool wiring · T006.
 //
 // Test coverage for tui/src/query/toolSerialization.ts.
 // Seven invariants per contracts/tool-serialization.md § Test coverage.

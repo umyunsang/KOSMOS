@@ -77,9 +77,9 @@ See [research.md](./research.md) for full details.
 ### Key Decisions
 
 1. **Test file layout**: Per-epic module grouping (`test_live_geocoding.py` for #288, `test_live_observability.py` for #290). E2E natural-address test lives in the existing `test_live_e2e.py` to keep full-scenario coverage co-located.
-2. **Kakao env var**: `KOSAX_KAKAO_API_KEY` (matches `.env` precedent; resolves to the Kakao REST API key).
+2. **Kakao env var**: `UMMAYA_KAKAO_API_KEY` (matches `.env` precedent; resolves to the Kakao REST API key).
 3. **Kakao rate-limit fixture**: Default 200 ms inter-call delay (`kakao_rate_limit_delay`), adjustable via a private constant. 200 ms × ~20 real calls per test run = well under 100k/day quota.
-4. **Hard-fail semantics**: `pytest.fail()` with the exact message `set KOSAX_KAKAO_API_KEY to run live geocoding tests`, mirroring the `_require_env` pattern already used in `conftest.py`.
+4. **Hard-fail semantics**: `pytest.fail()` with the exact message `set UMMAYA_KAKAO_API_KEY to run live geocoding tests`, mirroring the `_require_env` pattern already used in `conftest.py`.
 5. **Assertion style**: Structural only — key presence, type, numeric ranges (Korea bbox, KMA grid bands). No specific document IDs or accident counts.
 6. **Observability test wiring**: Construct a real `MetricsCollector` + `ObservabilityEventLogger` in-test, pass them through the tool executor / LLM client, snapshot counters and event logs pre/post the real call.
 
@@ -104,7 +104,7 @@ See [data-model.md](./data-model.md) for entity details and [contracts/](./contr
 
 Existing `tests/live/conftest.py` already exposes `friendli_token`, `data_go_kr_api_key`, `koroad_api_key`, `live_http_client`, and the autouse `_live_rate_limit_pause` (10 s autouse post-test cooldown; primarily motivated by FriendliAI per-minute limits but applies to every live test regardless of backend). We add two new fixtures without touching the existing ones:
 
-- `kakao_api_key` (session-scoped) — reads `KOSAX_KAKAO_API_KEY`, calls `pytest.fail(f"set KOSAX_KAKAO_API_KEY to run live geocoding tests")` when unset. Mirrors the `_require_env` helper but with the exact message string required by FR-004.
+- `kakao_api_key` (session-scoped) — reads `UMMAYA_KAKAO_API_KEY`, calls `pytest.fail(f"set UMMAYA_KAKAO_API_KEY to run live geocoding tests")` when unset. Mirrors the `_require_env` helper but with the exact message string required by FR-004.
 - `kakao_rate_limit_delay` (function-scoped async) — yields a callable or context manager that sleeps 200 ms between Kakao calls. Implemented via a small async helper invoked explicitly from geocoding tests (autouse would double-delay since `_live_rate_limit_pause` already adds 10 s post-test).
 
 Reference: existing `conftest.py` `_require_env` pattern (tests/live/conftest.py:29) — same hard-fail semantics, different env var name.
@@ -154,7 +154,7 @@ No assertions on LLM-generated text content. Reference: Claude Agent SDK event-b
 
 #### D6: Hard-fail policy (reuse existing primitive)
 
-The existing `_require_env(var_name)` helper in `tests/live/conftest.py:29` already performs `pytest.fail()` with a standard message. For the new Kakao fixture we need a **different** message format (the spec's FR-004 and Story 1 AS-8 demand the exact string `set KOSAX_KAKAO_API_KEY to run live geocoding tests`). Implementation: write a dedicated `kakao_api_key` fixture with a hardcoded message string rather than parameterizing `_require_env`. Keeps the existing helper unchanged, avoids over-generalization.
+The existing `_require_env(var_name)` helper in `tests/live/conftest.py:29` already performs `pytest.fail()` with a standard message. For the new Kakao fixture we need a **different** message format (the spec's FR-004 and Story 1 AS-8 demand the exact string `set UMMAYA_KAKAO_API_KEY to run live geocoding tests`). Implementation: write a dedicated `kakao_api_key` fixture with a hardcoded message string rather than parameterizing `_require_env`. Keeps the existing helper unchanged, avoids over-generalization.
 
 #### D7: CI safety (inherited)
 

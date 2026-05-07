@@ -1,17 +1,17 @@
-# KOSAX — Platform Vision
+# UMMAYA — Platform Vision
 
-> This document is the canonical architectural vision for KOSAX. It is the single source of truth for *what we are trying to build* and *why*. Specs under `specs/` describe how to build individual features; this document describes the whole.
+> This document is the canonical architectural vision for UMMAYA. It is the single source of truth for *what we are trying to build* and *why*. Specs under `specs/` describe how to build individual features; this document describes the whole.
 >
 > Any spec, ADR, or implementation decision must align with this vision. If a later insight contradicts it, update this file in the same pull request.
 >
-> **Migration status (2026-04-26; primitive correction 2026-05-07)** — KOSAX v0.1-alpha shipped. The six-Phase migration (P0 #1632 → P1+P2 #1633 → P3 #1634 → P4 #1847 → P5 #1927 → P6 #1637) completed under Initiative #1631. The harness migration described below is no longer aspirational: the LLM Harness pillar runs through FriendliAI Serverless + K-EXAONE with Claude Code's agent loop preserved; the Tool System pillar exposes active adapters across seven Korean ministries through `lookup` / `resolve_location` / `submit` / `verify` primitives, all documented in [`docs/api/`](./api/) with Pydantic v2 envelopes and Draft 2020-12 JSON Schemas; the 5-tier plugin DX (Spec 1636) is open for external citizen and ministry contributors. Live API regression, an app/push-notification runtime, and the in-TUI marketplace browser are tracked as deferred follow-ups.
+> **Migration status (2026-04-26; primitive correction 2026-05-07)** — UMMAYA v0.1-alpha shipped. The six-Phase migration (P0 #1632 → P1+P2 #1633 → P3 #1634 → P4 #1847 → P5 #1927 → P6 #1637) completed under Initiative #1631. The harness migration described below is no longer aspirational: the LLM Harness pillar runs through FriendliAI Serverless + K-EXAONE with Claude Code's agent loop preserved; the Tool System pillar exposes active adapters across seven Korean ministries through `lookup` / `resolve_location` / `submit` / `verify` primitives, all documented in [`docs/api/`](./api/) with Pydantic v2 envelopes and Draft 2020-12 JSON Schemas; the 5-tier plugin DX (Spec 1636) is open for external citizen and ministry contributors. Live API regression, an app/push-notification runtime, and the in-TUI marketplace browser are tracked as deferred follow-ups.
 >
 > **Vision scope correction (2026-05-04)** — `data.go.kr` public APIs are one useful adapter family, not the product boundary. The target is national administrative and public-infrastructure AX: Hometax tax handling, Government24 civil-affairs submission, Wetax/local payments, certificates, mobile ID, simple authentication, public utility bills, welfare, healthcare, housing, education, labor, immigration, safety, and other citizen-facing state infrastructure exposed through one LLM-mediated execution surface.
 
 ## The ambition
 
 Turn fragmented national administrative and public-infrastructure channels into a single
-conversational execution surface where a citizen can ask for an outcome, not a portal. KOSAX
+conversational execution surface where a citizen can ask for an outcome, not a portal. UMMAYA
 should route, verify, submit, pay, or hand off across agencies and infrastructure
 operators without requiring the citizen to know which institution owns each step.
 
@@ -23,30 +23,30 @@ systems, immigration services, disaster response, and local civil-affairs channe
 
 ```
 Citizen:  "작년 종합소득세 신고하고 환급받을 수 있으면 환급 계좌까지 등록해줘."
-KOSAX:   verifies identity + retrieves Hometax tax data + prepares filing
+UMMAYA:   verifies identity + retrieves Hometax tax data + prepares filing
           + asks final confirmation + submits or hands off with receipt evidence
 
 Citizen:  "이사했어. 전입신고하고 자동차, 건강보험, 학교 관련 주소도 한 번에 바꿔줘."
-KOSAX:   sequences Government24 residence transfer before dependent vehicle,
+UMMAYA:   sequences Government24 residence transfer before dependent vehicle,
           health-insurance, and education address updates
 
 Citizen:  "이번 달 재산세랑 자동차세, 과태료 밀린 거 확인하고 납부 가능한 건 처리해줘."
-KOSAX:   discovers each bill source + itemizes amounts and deadlines
+UMMAYA:   discovers each bill source + itemizes amounts and deadlines
           + requests payment confirmation + executes only selected payments
 
 Citizen:  "부모님 지역에 폭염, 미세먼지, 정전, 단수 알림을 묶어서 받아보고 싶어."
-KOSAX:   identifies the official notification channels and handoff/app path
+UMMAYA:   identifies the official notification channels and handoff/app path
           while separating public area alerts from delegated personal records
 ```
 
 The citizen does not learn which ministry, portal, certificate rail, payment rail, or utility
-operator owns the work. KOSAX does the decomposition and routing.
+operator owns the work. UMMAYA does the decomposition and routing.
 
 ## The thesis — harness migration from developer to citizen
 
-KOSAX's deeper claim is not "connect many public APIs." It is: **the Claude Code harness — the tool loop, the permission gauntlet, the context assembly, the TUI — is a general substrate for any domain that reduces to "call the right tools in the right order." Claude Code proved it for software development. KOSAX migrates that harness from the developer domain to Korean national administrative infrastructure.**
+UMMAYA's deeper claim is not "connect many public APIs." It is: **the Claude Code harness — the tool loop, the permission gauntlet, the context assembly, the TUI — is a general substrate for any domain that reduces to "call the right tools in the right order." Claude Code proved it for software development. UMMAYA migrates that harness from the developer domain to Korean national administrative infrastructure.**
 
-| | Claude Code | KOSAX |
+| | Claude Code | UMMAYA |
 |---|---|---|
 | Who is it for? | Software developers | Citizens using national infrastructure |
 | Tool surface | File system, shell, git, editors | National infrastructure channels: APIs, portals, identity rails, certificates, payments, utility operators, and official handoff paths |
@@ -64,20 +64,20 @@ This framing has three consequences for every decision in this document:
 
 Claude Code's ~5 main tools (Read, Edit, Bash, Grep, Glob, WebFetch) were not designed from first principles. They were **distilled from empirical observation of the most frequent, most general categories of developer work** — file reading, file editing, shell execution, content search, path matching, web fetching cover the bulk of what developers do; everything else is composition of these primitives.
 
-KOSAX must apply the identical method to citizen-government interaction — not copy Claude Code's verbs, but copy Claude Code's **discovery method**:
+UMMAYA must apply the identical method to citizen-government interaction — not copy Claude Code's verbs, but copy Claude Code's **discovery method**:
 
 1. **Survey the full space.** Citizen-facing national infrastructure, not only public-data APIs and not cherry-picked demo scenarios. Tax, civil affairs, payments, identity, welfare, health, housing, mobility, business, labor, education, safety, immigration, legal documents, and personal-data rights must all be in scope.
 2. **Extract cross-domain verbs.** What actions recur across institutions regardless of topic? (조회·신청·납부·발급·예약·알림 등)
 3. **Weight by empirical frequency and consequence.** Use annual transaction volume where available, but also weight rare high-consequence workflows such as disaster relief, immigration deadlines, tax submission, and identity issuance. `data.go.kr` usage metrics are only one input.
 4. **Distill to 6–8 always-loaded verbs.** Everything else is lazily discovered via `search_tools`. The upper bound matches Claude Code's cognitive budget for tool schemas in the system prompt.
 
-**Spec 031** executed this method and originally ratified five domain-agnostic harness primitives. The active surface is now four (`lookup`, `resolve_location`, `submit`, `verify`). `subscribe` is deferred because official Korean notification delivery is anchored in authenticated app/mobile push channels, and KOSAX does not yet own an app runtime that can receive or schedule push notifications. An earlier 8-verb proposal (with domain-tinted names such as `pay`, `issue_certificate`, `submit_application`, `reserve_slot`, `subscribe_alert`, `check_eligibility`) has been **retired** for leaking ministry knowledge into the main surface; domain specialization belongs in adapters (`src/kosax/tools/<ministry>/<adapter>.py`), not in LLM-visible verb names. The method that produced the verb list is what is canonical — if a later survey contradicts a candidate, we re-run the method and update, rather than patching conclusions while keeping stale premises.
+**Spec 031** executed this method and originally ratified five domain-agnostic harness primitives. The active surface is now four (`lookup`, `resolve_location`, `submit`, `verify`). `subscribe` is deferred because official Korean notification delivery is anchored in authenticated app/mobile push channels, and UMMAYA does not yet own an app runtime that can receive or schedule push notifications. An earlier 8-verb proposal (with domain-tinted names such as `pay`, `issue_certificate`, `submit_application`, `reserve_slot`, `subscribe_alert`, `check_eligibility`) has been **retired** for leaking ministry knowledge into the main surface; domain specialization belongs in adapters (`src/ummaya/tools/<ministry>/<adapter>.py`), not in LLM-visible verb names. The method that produced the verb list is what is canonical — if a later survey contradicts a candidate, we re-run the method and update, rather than patching conclusions while keeping stale premises.
 
 The ambition above describes **what** this migration enables. The methodology here fixes **how we decide which tools serve it**. The six layers below describe **how the migration is structured**. All three serve the same thesis.
 
 ## Inspiration and reference sources
 
-KOSAX adapts architectural patterns from the conversational AI agent ecosystem to the Korean public-service domain. We actively reference all available sources — open-source repos, official documentation, reconstructed architecture analyses, and leaked-source review documents — to build the best possible implementation.
+UMMAYA adapts architectural patterns from the conversational AI agent ecosystem to the Korean public-service domain. We actively reference all available sources — open-source repos, official documentation, reconstructed architecture analyses, and leaked-source review documents — to build the best possible implementation.
 
 ### Reference materials
 
@@ -106,9 +106,9 @@ KOSAX adapts architectural patterns from the conversational AI agent ecosystem t
 | @inkjs/ui (`vadimdemedes/ink-ui`) | MIT | Official Ink component library (TextInput, Spinner, Select, theming) — TUI widget foundation |
 | string-width (`sindresorhus/string-width`) | MIT | CJK full-width character column width calculation — Korean text terminal layout |
 | K-AI2026 (`hollobit/K-AI2026`) | Public dashboard | 국가인공지능전략위원회 · 대한민국 인공지능행동계획 (AI Action Plan 2026-2028) live tracker — authoritative source for 공공AX 원칙 8/9 task alignment and ministry-program traceability |
-| `kosax-plugin-store` GitHub org | Apache-2.0 | KOSAX plugin catalog — Tier 1 template + 4 example repos + index. SLSA v1.0 provenance source URI prefix (Spec 1636 R-3 + ADR-008). |
+| `ummaya-plugin-store` GitHub org | Apache-2.0 | UMMAYA plugin catalog — Tier 1 template + 4 example repos + index. SLSA v1.0 provenance source URI prefix (Spec 1636 R-3 + ADR-008). |
 | slsa-framework/slsa-verifier | Apache-2.0 | Vendored Go binary (~10 MB) for SLSA v1.0 provenance verification at install time (Spec 1636 R-3 + ADR-008). |
-| PyPA / PyPI packaging docs | Public | `pyproject.toml`, Trusted Publishing, and OIDC release workflow reference for KOSAX PyPI distribution. |
+| PyPA / PyPI packaging docs | Public | `pyproject.toml`, Trusted Publishing, and OIDC release workflow reference for UMMAYA PyPI distribution. |
 | uv package publishing docs | Public | `uv build --no-sources`, `uv publish`, clean install smoke, and attestation upload behavior for Python release workflows. |
 | npm package and Trusted Publishing docs | Public | `package.json` `bin` / `files` / `publishConfig`, `npm pack --dry-run`, npm OIDC publishing, and provenance requirements for TUI distribution. |
 | Homebrew Formula Cookbook and Taps docs | Public | Third-party tap structure, formula audit/test expectations, stable source URL, Python resource workflow, and formula naming conventions. |
@@ -116,11 +116,11 @@ KOSAX adapts architectural patterns from the conversational AI agent ecosystem t
 | OpenTelemetry GenAI semantic conventions | Public | Agent, model, tool, event, and metric telemetry naming baseline for release-time LLMOps evidence. |
 | Langfuse / MLflow GenAI / Arize Phoenix / W&B Weave docs | Public | Open LLMOps comparison set for traces, prompt management, evaluations, datasets, and experiments in release evidence planning. |
 
-Spec 031 records the original primitive survey; the active primitive list lives in `src/kosax/primitives/__init__.py`.
+Spec 031 records the original primitive survey; the active primitive list lives in `src/ummaya/primitives/__init__.py`.
 
-### What is original to KOSAX
+### What is original to UMMAYA
 
-The patterns above are general-purpose. KOSAX's contribution is adapting them to the government public-service domain, which introduces constraints absent from coding agents:
+The patterns above are general-purpose. UMMAYA's contribution is adapting them to the government public-service domain, which introduces constraints absent from coding agents:
 
 - **Bilingual channel discovery** over heterogeneous public APIs, civil-affairs portals, identity rails, certificate systems, payment rails, utility operators, and official handoff paths
 - **Bypass-immune permission pipeline** for citizen PII protection (governed by Korea's PIPA, not developer convenience)
@@ -130,14 +130,14 @@ The patterns above are general-purpose. KOSAX's contribution is adapting them to
 
 ## Six-layer architecture
 
-KOSAX is built around six architectural layers, each adapting a pattern family into the public-service domain.
+UMMAYA is built around six architectural layers, each adapting a pattern family into the public-service domain.
 
 | # | Layer | Role | Pattern family |
 |---|---|---|---|
 | 1 | **Query Engine** | The `while(True)` tool loop that resolves a civil-affairs request | Async generator state machine |
 | 2 | **Tool System** | Registry and factory for national-infrastructure channel adapters | Schema-driven tool modules |
 | 3 | **Permission Pipeline** | Citizen authentication and personal-data protection gate | Multi-step bypass-immune gauntlet |
-| 4 | **Agent Swarms** | Ministry-specialist agents coordinated by an orchestrator | AsyncLocalStorage in-process coordinator (CC parity) + file-based mailbox IPC for crash resilience (KOSAX Spec 027 extension) |
+| 4 | **Agent Swarms** | Ministry-specialist agents coordinated by an orchestrator | AsyncLocalStorage in-process coordinator (CC parity) + file-based mailbox IPC for crash resilience (UMMAYA Spec 027 extension) |
 | 5 | **Context Assembly** | The 3-tier context the LLM sees each turn | System + memory + attachments |
 | 6 | **Error Recovery** | Resilience against public-service channel outages, rate limits, maintenance, and handoff boundaries | `withRetry`-style error matrix |
 
@@ -147,7 +147,7 @@ The rest of this document walks each layer in detail.
 
 ## Layer 1 — Query Engine
 
-The query engine is the heartbeat of a KOSAX session. It runs an async generator loop that does not terminate until the citizen's request is resolved or unrecoverably blocked.
+The query engine is the heartbeat of a UMMAYA session. It runs an async generator loop that does not terminate until the citizen's request is resolved or unrecoverably blocked.
 
 ### Loop skeleton
 
@@ -185,7 +185,7 @@ QueryState:
 
 ### QueryDeps injection boundary
 
-The query loop receives its LLM client, tool registry, permission policy, and telemetry emitter via an explicit `QueryDeps` dataclass at loop construction time — never imported from module scope inside the loop. This boundary is how Claude Code keeps the engine test-isolatable (parity with `src/query/deps.ts`) and how KOSAX keeps E2E scenarios runnable without side effects on live government, payment, identity, or utility channels. Every new coordinator, worker, or replay harness constructs its own `QueryDeps` with the dependencies it needs; nothing implicit crosses the boundary.
+The query loop receives its LLM client, tool registry, permission policy, and telemetry emitter via an explicit `QueryDeps` dataclass at loop construction time — never imported from module scope inside the loop. This boundary is how Claude Code keeps the engine test-isolatable (parity with `src/query/deps.ts`) and how UMMAYA keeps E2E scenarios runnable without side effects on live government, payment, identity, or utility channels. Every new coordinator, worker, or replay harness constructs its own `QueryDeps` with the dependencies it needs; nothing implicit crosses the boundary.
 
 ### Termination conditions
 
@@ -204,7 +204,7 @@ Every LLM call and every infrastructure-channel call is debited against a sessio
 
 ### Query ↔ TUI transport
 
-The Python query loop never touches the terminal directly. Every progress event, tool call, permission prompt, and backpressure signal crosses the process boundary as a **single-line NDJSON frame on stdout** — the 21-arm discriminated union (`src/kosax/ipc/frame_schema.py`). Spec 032 (`specs/032-ipc-stdio-hardening/spec.md`) established the original 19-arm baseline (Spec 287: 10 arms; Spec 032: 9 additions); Epic #1636 added `plugin_op` (arm 20); Spec 1978 ADR-0001 added `chat_request` (arm 21) — a tools-aware chat request from the TUI that carries the full conversation history and available tool definitions to the query engine (see `specs/1978-tui-kexaone-wiring/contracts/chat-request-frame.md`). KOSAX uses the CC query-engine architecture (not academic ReAct): the TUI drives the conversation loop and the backend is a stateless responder. The JSON Schema at `tui/src/ipc/schema/frame.schema.json` is the versioned contract; its SHA-256 digest is emitted as the `kosax.ipc.schema.hash` OTEL attribute at backend startup (FR-037). Envelope fields (`session_id` / `correlation_id` / `frame_seq` / `transaction_id`) thread every span so a citizen's turn is reconstructible end-to-end from Langfuse alone. `parse_ndjson_line` is fail-closed (FR-035): malformed bytes drop with a structured log, never aborting the session — Spec 032 T057 proves this on a 1000-frame / 5%-malformed stress stream (SC-007).
+The Python query loop never touches the terminal directly. Every progress event, tool call, permission prompt, and backpressure signal crosses the process boundary as a **single-line NDJSON frame on stdout** — the 21-arm discriminated union (`src/ummaya/ipc/frame_schema.py`). Spec 032 (`specs/032-ipc-stdio-hardening/spec.md`) established the original 19-arm baseline (Spec 287: 10 arms; Spec 032: 9 additions); Epic #1636 added `plugin_op` (arm 20); Spec 1978 ADR-0001 added `chat_request` (arm 21) — a tools-aware chat request from the TUI that carries the full conversation history and available tool definitions to the query engine (see `specs/1978-tui-kexaone-wiring/contracts/chat-request-frame.md`). UMMAYA uses the CC query-engine architecture (not academic ReAct): the TUI drives the conversation loop and the backend is a stateless responder. The JSON Schema at `tui/src/ipc/schema/frame.schema.json` is the versioned contract; its SHA-256 digest is emitted as the `ummaya.ipc.schema.hash` OTEL attribute at backend startup (FR-037). Envelope fields (`session_id` / `correlation_id` / `frame_seq` / `transaction_id`) thread every span so a citizen's turn is reconstructible end-to-end from Langfuse alone. `parse_ndjson_line` is fail-closed (FR-035): malformed bytes drop with a structured log, never aborting the session — Spec 032 T057 proves this on a 1000-frame / 5%-malformed stress stream (SC-007).
 
 ---
 
@@ -256,11 +256,11 @@ LLM:      calls only the channels that are allowed for the citizen's confirmed i
 
 ## Layer 3 — Permission Pipeline
 
-Public data is not the same as unconstrained data. Citizens' personal information flows through KOSAX and must be gated.
+Public data is not the same as unconstrained data. Citizens' personal information flows through UMMAYA and must be gated.
 
 ### PermissionMode spectrum
 
-Layer 3 inherits Claude Code's four-mode `PermissionMode` (`default`, `plan`, `acceptEdits`, `bypassPermissions`) as a first-class concept. KOSAX tightens `bypassPermissions` under a PIPA-specific killswitch (parity with `src/utils/permissions/bypassPermissionsKillswitch.ts`) and adds a `citizen-ident-verified` precondition for tools whose `auth_level ∈ {AAL2, AAL3}`. The TUI mode-toggle shortcut (`shift+tab`, CC `chat:cycleMode`) cycles only through the modes the current citizen is permitted to enter; a session without AAL1 cannot reach `acceptEdits` at all.
+Layer 3 inherits Claude Code's four-mode `PermissionMode` (`default`, `plan`, `acceptEdits`, `bypassPermissions`) as a first-class concept. UMMAYA tightens `bypassPermissions` under a PIPA-specific killswitch (parity with `src/utils/permissions/bypassPermissionsKillswitch.ts`) and adds a `citizen-ident-verified` precondition for tools whose `auth_level ∈ {AAL2, AAL3}`. The TUI mode-toggle shortcut (`shift+tab`, CC `chat:cycleMode`) cycles only through the modes the current citizen is permitted to enter; a session without AAL1 cannot reach `acceptEdits` at all.
 
 ### Multi-step gauntlet
 
@@ -284,13 +284,13 @@ When LLM-based classifiers are used for intent risk assessment, they see **only 
 
 ### Refusal circuit breaker
 
-If the same session triggers a configurable number of consecutive refusals, KOSAX stops retrying and routes the citizen to a human channel (call center or in-person service). This avoids infinite loops where the agent keeps trying variations of a disallowed action.
+If the same session triggers a configurable number of consecutive refusals, UMMAYA stops retrying and routes the citizen to a human channel (call center or in-person service). This avoids infinite loops where the agent keeps trying variations of a disallowed action.
 
 ---
 
 ## Layer 4 — Agent Swarms
 
-For multi-institution requests, a single monolithic agent is insufficient. KOSAX uses a coordinator-and-workers swarm.
+For multi-institution requests, a single monolithic agent is insufficient. UMMAYA uses a coordinator-and-workers swarm.
 
 ### Mailbox IPC
 
@@ -350,7 +350,7 @@ Memory files support conditional activation. A rule block for senior-welfare API
 
 ### Phase-1 delivered scope
 
-Of the five memory tiers described above, Phase 1 (on `main` as of 2026-04-19) delivers only **System prompt assembly** (Spec 026 Prompt Registry) and **Session turn compaction** (`microCompact` + `autoCompact` parity with `.references/claude-code-sourcemap/restored-src/src/services/compact/`). The **Region**, **Citizen**, and **Auto** tiers — Claude Code's equivalent `src/memdir/` layer — are deferred to Phase 2+; no KOSAX component currently reads or writes memdir-style files. Declaring this prevents vision drift and keeps the memdir port scoped under the CC→KOSAX Phase 2 Migration meta-Epic (sub-Epic D).
+Of the five memory tiers described above, Phase 1 (on `main` as of 2026-04-19) delivers only **System prompt assembly** (Spec 026 Prompt Registry) and **Session turn compaction** (`microCompact` + `autoCompact` parity with `.references/claude-code-sourcemap/restored-src/src/services/compact/`). The **Region**, **Citizen**, and **Auto** tiers — Claude Code's equivalent `src/memdir/` layer — are deferred to Phase 2+; no UMMAYA component currently reads or writes memdir-style files. Declaring this prevents vision drift and keeps the memdir port scoped under the CC→UMMAYA Phase 2 Migration meta-Epic (sub-Epic D).
 
 ### Per-turn attachments
 
@@ -388,24 +388,24 @@ Channel call → error?
 
 ## TUI experience surface
 
-The six layers above describe how KOSAX reasons. This section describes how a citizen touches KOSAX. The TUI (Ink + React + Bun, ported from `.references/claude-code-sourcemap/restored-src/` per ADR-004) is the Phase-1 and Phase-2 surface; mobile and web surfaces are out of scope for this document.
+The six layers above describe how UMMAYA reasons. This section describes how a citizen touches UMMAYA. The TUI (Ink + React + Bun, ported from `.references/claude-code-sourcemap/restored-src/` per ADR-004) is the Phase-1 and Phase-2 surface; mobile and web surfaces are out of scope for this document.
 
-### Citizen onboarding
+### Runtime identity
 
-First-launch presents a dedicated onboarding sequence derived from Claude Code's step registry (`src/components/Onboarding.tsx`) with the developer-domain steps (API key, OAuth, terminal fonts) replaced by citizen-domain equivalents:
+UMMAYA keeps the Claude Code runtime setup path byte-aligned where possible and does not add a separate UMMAYA-only preflight or onboarding gate. The visible brand layer is limited to the normal welcome/header surfaces and the terminal mascot:
 
-1. **KOSAX brand splash** — renders the orbital-ring logo (`assets/kosax-logo-dark.svg` / icon-component equivalent) with the wordmark `KOSAX` and the subtitle `KOREAN OPEN SERVICE AGENTIC EXECUTION`. The canonical palette is extracted directly from the SVG assets: background `#0a0e27` → `#1a1040` (gradient); orbital ring `#60a5fa` → `#a78bfa`; core `#818cf8` → `#6366f1`; wordmark `#e0e7ff`; subtitle `#94a3b8`; satellite nodes `#34d399` / `#f472b6` / `#93c5fd` / `#c4b5fd`. The current `tui/src/theme/dark.ts` `background` token (placeholder `rgb(0,204,204)`) is replaced with navy `#0a0e27` in the same PR that ports the onboarding splash.
-2. **PIPA consent** — KOSAX-original step with no Claude Code analog. Mandatory under PIPA §15 before any Layer-2 adapter executes; records consent version, timestamp, and the authenticated AAL gate.
-3. **Infrastructure scope acknowledgment** — enumerates the agencies, portals, identity providers, payment rails, utility operators, and public-data sources the session may touch, plus their data categories; the citizen must acknowledge before adapters go live.
-4. **Theme picker** — deferred until a light / high-contrast theme ships; Phase 1 runs the `dark` theme only.
+1. **UMMAYA home-call mascot** — renders the 5-row house character with CC-style eye poses and raised-roof arms, matching the name's "call UMMAYA first" metaphor.
+2. **Operational credentials** — platform/operator keys are supplied through deployment secrets; citizen sessions are only asked for the FriendliAI key through the login flow.
+3. **Permission UX** — citizen consent and agency-scope disclosure stay on the Claude Code permission pipeline and adapter citations, not on a custom first-run wizard.
+4. **Theme surface** — the Phase 1 TUI uses the existing dark theme with UMMAYA brand accents; light/high-contrast themes remain follow-up work.
 
 ### Keyboard-shortcut migration
 
-Claude Code defines 65 bindings across 20 contexts (`src/keybindings/defaultBindings.ts`). KOSAX currently implements 5 (Enter, y/Y, n/N/Esc, Backspace/Delete, IME passthrough for modifiers). The tiered migration scope is:
+Claude Code defines 65 bindings across 20 contexts (`src/keybindings/defaultBindings.ts`). UMMAYA currently implements 5 (Enter, y/Y, n/N/Esc, Backspace/Delete, IME passthrough for modifiers). The tiered migration scope is:
 
 - **Tier 1 (pre-citizen-launch blocker)**: `ctrl+c` (interrupt active agent), `ctrl+d` (clean exit), `escape` in InputBar (cancel draft, gated on `!ime.isComposing`), `ctrl+r` (history search), `up`/`down` in InputBar (history prev/next, gated on empty buffer), `shift+tab` (cycle PermissionMode), `ctrl+o` (toggle transcript view — promoted from Tier 2 in Epic #2766 follow-up after the chord-registry-vs-fallback root-cause fix; see `tui/src/keybindings/types.ts:84` + `tui/src/keybindings/defaultBindings.ts:81`).
 - **Tier 2 (post-launch hardening)**: `pageup`/`pagedown`, `ctrl+l` (redraw), `shift+tab` (cycle PermissionMode — binds to the Layer 3 spectrum), `ctrl+_` (undo), `ctrl+shift+c` (copy selection).
-- **Tier 3 (deferred until dependent specs)**: `ctrl+x ctrl+k` (killAll — requires multi-worker), `ctrl+e` (external editor), `meta+p` (modelPicker — KOSAX uses K-EXAONE only), `ctrl+s` (stash), `ctrl+v` (image paste).
+- **Tier 3 (deferred until dependent specs)**: `ctrl+x ctrl+k` (killAll — requires multi-worker), `ctrl+e` (external editor), `meta+p` (modelPicker — UMMAYA uses K-EXAONE only), `ctrl+s` (stash), `ctrl+v` (image paste).
 
 IME safety rule: every binding that mutates the input buffer MUST check `!useKoreanIME().isComposing` before acting. Hangul composition must not be interrupted by a shortcut. The current `tui/src/hooks/useKoreanIME.ts` exposes the required predicate.
 
@@ -413,7 +413,7 @@ IME safety rule: every binding that mutates the input buffer MUST check `!useKor
 
 The Ink TUI reads the backend's stdout as an NDJSON stream and validates every line through the Zod discriminated union generated from the same schema the Python side emits (`tui/src/ipc/codec.ts` + `tui/src/ipc/frames.generated.ts`, bootstrapped by Spec 032 T018). Three resilience stories land in Phase 2:
 
-- **Resume on stdio drop (FR-018..025).** The backend keeps a 256-frame `SessionRingBuffer` per session. When the TUI reconnects it emits a `resume_request(last_seen_frame_seq, tui_session_token)`; the backend replies with `resume_response(replay_count, resumed_from_frame_seq)` and replays exactly the missed frames — Spec 032 quickstart § 2 probes this end-to-end (`src/kosax/ipc/demo/session_backend.py` ↔ `tui/src/ipc/demo/resume_probe.ts`).
+- **Resume on stdio drop (FR-018..025).** The backend keeps a 256-frame `SessionRingBuffer` per session. When the TUI reconnects it emits a `resume_request(last_seen_frame_seq, tui_session_token)`; the backend replies with `resume_response(replay_count, resumed_from_frame_seq)` and replays exactly the missed frames — Spec 032 quickstart § 2 probes this end-to-end (`src/ummaya/ipc/demo/session_backend.py` ↔ `tui/src/ipc/demo/resume_probe.ts`).
 - **Upstream 429 HUD (FR-014..016).** `BackpressureController.emit_upstream_429` converts an upstream Retry-After header into a `backpressure(signal="throttle")` frame with bilingual `hud_copy_ko` / `hud_copy_en` so the citizen sees a calm Korean banner with a live countdown (Spec 032 quickstart § 3, `tui/src/ipc/demo/hud_probe.ts`).
 - **Critical-lane bypass (FR-017).** CBS 재난문자 and other `severity=critical` frames (notably `notification_push`) skip the pause gate regardless of ring/queue state — a flood-warning push must reach the HUD even when the session is throttled upstream.
 
@@ -423,7 +423,7 @@ Every TUI ↔ backend frame carries the same `correlation_id` the Python query l
 
 ## Citizen scenarios (design targets)
 
-KOSAX success means a citizen can ask for real administrative outcomes without first knowing
+UMMAYA success means a citizen can ask for real administrative outcomes without first knowing
 the agency map. The target-state eval seed is
 [`eval/scenarios/national_ax_citizen_requests_v1.yaml`](../eval/scenarios/national_ax_citizen_requests_v1.yaml).
 Representative conversations:
@@ -466,17 +466,17 @@ Total target: ~30,000 lines for the platform core, plus adapter modules.
 
 ## Non-goals
 
-- KOSAX is not a general-purpose coding agent. It does not edit files or run shell commands in a developer workspace.
-- KOSAX is not a government-endorsed service. It consumes public data but makes no claim of official authority.
-- KOSAX is not a chat wrapper around a single API. A chat wrapper would not need six architectural layers.
+- UMMAYA is not a general-purpose coding agent. It does not edit files or run shell commands in a developer workspace.
+- UMMAYA is not a government-endorsed service. It consumes public data but makes no claim of official authority.
+- UMMAYA is not a chat wrapper around a single API. A chat wrapper would not need six architectural layers.
 
 ## Engineering values
 
-KOSAX is a foundation project (`속이 꽉찬 기초와 토대가 튼튼한 프로젝트`), not a demo. The values below gate every PR. They are deliberately phrased as principles, not metrics, because the failure modes they prevent (band-aid debt, hallucinated invention, surface-only polish) cannot be unit-tested. `AGENTS.md § Engineering principles` carries the operational rules.
+UMMAYA is a foundation project (`속이 꽉찬 기초와 토대가 튼튼한 프로젝트`), not a demo. The values below gate every PR. They are deliberately phrased as principles, not metrics, because the failure modes they prevent (band-aid debt, hallucinated invention, surface-only polish) cannot be unit-tested. `AGENTS.md § Engineering principles` carries the operational rules.
 
 1. **Root-cause over symptom.** Fix the architectural decision that allowed the bug, not the visible failure. Don't add `useInput` fallbacks for broken chord registries; don't `try/except`-swallow wrong contracts; don't stub over stale imports. Three failed symptom-fixes in a row → STOP and choose the root-cause path.
 2. **Reference before invention.** The CC restored-src + the catalog in `Reference materials` answer most design questions. When they don't, escalate to a deep-research pass and add the new source to the catalog in the same PR. Never ship a guess (`feedback_check_references_first`).
-3. **Foundations over surface gloss.** KOSAX' worth is the depth of the swap (CC harness + 2 swaps, byte-identical otherwise), not how the splash screen looks. The 5-layer TUI verification chain (`docs/testing.md § TUI verification methodology`) and the integration-verification capture artefacts under `specs/integration-verification/` exist because surface tests pass while underlying registries silently break.
+3. **Foundations over surface gloss.** UMMAYA' worth is the depth of the swap (CC harness + 2 swaps, byte-identical otherwise), not how the splash screen looks. The 5-layer TUI verification chain (`docs/testing.md § TUI verification methodology`) and the integration-verification capture artefacts under `specs/integration-verification/` exist because surface tests pass while underlying registries silently break.
 4. **Fallbacks are audited and time-bound.** Any fallback merged to `main` MUST cite its root cause (`file:line`) and the follow-up Epic that retires it. The Ctrl+O `useInput` fallback (PRs #2754 / #2767, retired in Epic #2766 follow-up by promoting `app:toggleTranscript` to Tier 1) is the canonical example of the band-aid → root-cause migration this rule enforces.
 
 ## How this document evolves

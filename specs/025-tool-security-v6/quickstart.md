@@ -31,7 +31,7 @@ Everything else is rejected at `GovAPITool` construction time (layer 1) and agai
    - Authenticated session, minimal assurance → `"AAL1"`.
    - Multi-factor, sensitive data → `"AAL2"`.
    - Highest assurance, irreversible actions → `"AAL3"`.
-3. **Check the allow-list table above.** If your pair is ❌, choose differently or justify (via ADR) extending the mapping in `src/kosax/tools/models.py`.
+3. **Check the allow-list table above.** If your pair is ❌, choose differently or justify (via ADR) extending the mapping in `src/ummaya/tools/models.py`.
 4. **Construct the `GovAPITool`**. If V6 rejects, the error names both fields and the allowed set — follow the message.
 5. **Register the tool**. The registry backstop re-checks V6; this catches cases where you built the instance via `model_construct` or mutated a field after construction (don't do that).
 

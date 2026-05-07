@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Concurrent tool dispatch tests for the KOSAX Query Engine.
+"""Concurrent tool dispatch tests for the UMMAYA Query Engine.
 
 Tests cover:
 - dispatch_tool_calls() directly (unit tests)
@@ -18,18 +18,18 @@ import time
 
 import pytest
 
-from kosax.engine.config import QueryEngineConfig
-from kosax.engine.events import StopReason
-from kosax.engine.models import QueryContext, QueryState
-from kosax.engine.query import dispatch_tool_calls, query
+from ummaya.engine.config import QueryEngineConfig
+from ummaya.engine.events import StopReason
+from ummaya.engine.models import QueryContext, QueryState
+from ummaya.engine.query import dispatch_tool_calls, query
 
 # LLMClient must be imported (not just under TYPE_CHECKING) so that
 # QueryContext.model_rebuild() can resolve the forward reference.
-from kosax.llm.client import LLMClient  # noqa: F401
-from kosax.llm.models import ChatMessage, FunctionCall, ToolCall
-from kosax.llm.usage import UsageTracker
-from kosax.tools.executor import ToolExecutor
-from kosax.tools.registry import ToolRegistry
+from ummaya.llm.client import LLMClient  # noqa: F401
+from ummaya.llm.models import ChatMessage, FunctionCall, ToolCall
+from ummaya.llm.usage import UsageTracker
+from ummaya.tools.executor import ToolExecutor
+from ummaya.tools.registry import ToolRegistry
 
 QueryContext.model_rebuild()
 
@@ -61,7 +61,7 @@ def _make_ctx(
     state = QueryState(
         usage=UsageTracker(budget=100_000),
         messages=[
-            ChatMessage(role="system", content="You are KOSAX."),
+            ChatMessage(role="system", content="You are UMMAYA."),
             ChatMessage(role="user", content="test"),
         ],
     )

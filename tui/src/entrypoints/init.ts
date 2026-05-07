@@ -8,13 +8,13 @@ import type { AttributedCounter } from '../bootstrap/state.js'
 import { getSessionCounter, setMeter } from '../bootstrap/state.js'
 import { shutdownLspServerManager } from '../services/lsp/manager.js'
 import { populateOAuthAccountInfoIfNeeded } from '../services/oauth/client.js'
-// policyLimits removed in P1+P2 (Spec 1633); KOSAX does not consume Anthropic
+// policyLimits removed in P1+P2 (Spec 1633); UMMAYA does not consume Anthropic
 // enterprise per-feature policy limits. The eligibility check is a no-op.
 const isPolicyLimitsEligible = (): boolean => false
 const initializePolicyLimitsLoadingPromise = (): void => {
   /* no-op */
 }
-// remoteManagedSettings removed in P1+P2 (Spec 1633); KOSAX does not consume
+// remoteManagedSettings removed in P1+P2 (Spec 1633); UMMAYA does not consume
 // Anthropic enterprise remote-managed settings.
 const isEligibleForRemoteManagedSettings = (): boolean => false
 const initializeRemoteManagedSettingsLoadingPromise = (): void => {
@@ -51,7 +51,7 @@ import {
 // ~400KB of OpenTelemetry + protobuf modules until telemetry is actually initialized.
 // gRPC exporters (~700KB via @grpc/grpc-js) are further lazy-loaded within instrumentation.ts.
 import { configureGlobalAgents } from '../utils/proxy.js'
-// utils/telemetry/betaSessionTracing removed — KOSAX does not use Anthropic beta tracing.
+// utils/telemetry/betaSessionTracing removed — UMMAYA does not use Anthropic beta tracing.
 const isBetaTracingEnabled = (): boolean => false
 import { getTelemetryAttributes } from '../utils/telemetryAttributes.js'
 import { setShellIfWindows } from '../utils/windowsPaths.js'
@@ -94,8 +94,8 @@ export const init = memoize(async (): Promise<void> => {
     setupGracefulShutdown()
     profileCheckpoint('init_after_graceful_shutdown')
 
-    // Initialize 1P event logging (KOSAX no-op — `firstPartyEventLogger`
-    // and `growthbook` are KOSAX no-op stubs per § L1-A.A7 zero egress).
+    // Initialize 1P event logging (UMMAYA no-op — `firstPartyEventLogger`
+    // and `growthbook` are UMMAYA no-op stubs per § L1-A.A7 zero egress).
     void Promise.all([
       import('../services/analytics/firstPartyEventLogger.js'),
       import('../services/analytics/growthbook.js'),
@@ -240,10 +240,10 @@ export const init = memoize(async (): Promise<void> => {
 })
 
 /**
- * Initialize KOSAX OTEL after trust has been granted (Epic #1633 T012,
+ * Initialize UMMAYA OTEL after trust has been granted (Epic #1633 T012,
  * replacing CC's Anthropic 3P telemetry init).
  *
- * KOSAX observability is Spec 021 / Spec 028 — OTEL spans flow over the
+ * UMMAYA observability is Spec 021 / Spec 028 — OTEL spans flow over the
  * stdio IPC bridge to the Python backend, which batches and forwards them
  * to the local Langfuse stack via the OTLP collector. The TUI side only
  * needs to register a tracer name; all exporter wiring is done Python-side.
@@ -252,12 +252,12 @@ export const init = memoize(async (): Promise<void> => {
  * the IPC bridge's own connect path handles that failure separately.
  */
 export function initializeTelemetryAfterTrust(): void {
-  // TODO(1633-post-merge): Once KOSAX OTEL SDK bootstrap lives in a
+  // TODO(1633-post-merge): Once UMMAYA OTEL SDK bootstrap lives in a
   // dedicated module (Spec 021 follow-up), call it here. Until then,
   // tracing works because `@opentelemetry/api` is initialized lazily by
   // llmClient.ts on its first use (see tui/src/ipc/llmClient.ts T009).
   logForDebugging(
-    '[KOSAX OTEL] TUI-side OTEL init deferred to first LLMClient call ' +
+    '[UMMAYA OTEL] TUI-side OTEL init deferred to first LLMClient call ' +
       '(Spec 021 Python backend owns exporter lifecycle).',
   )
 }

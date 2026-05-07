@@ -31,12 +31,12 @@ import { NotebookEditPermissionRequest } from './NotebookEditPermissionRequest/N
 import { PowerShellPermissionRequest } from './PowerShellPermissionRequest/PowerShellPermissionRequest.js';
 import { SkillPermissionRequest } from './SkillPermissionRequest/SkillPermissionRequest.js';
 import { WebFetchPermissionRequest } from './WebFetchPermissionRequest/WebFetchPermissionRequest.js';
-// KOSAX Epic 1 finish — 4 primitive arms wired into permissionComponentForTool.
+// UMMAYA Epic 1 finish — 4 primitive arms wired into permissionComponentForTool.
 import {
   LookupPermissionRequestAdapter,
   VerifyPermissionRequestAdapter,
   SubmitPermissionRequestAdapter,
-} from './KosaxPrimitivePermissionRequest/KosaxPermissionRequestAdapter.js';
+} from './UmmayaPrimitivePermissionRequest/UmmayaPermissionRequestAdapter.js';
 import { LookupPrimitive } from '../../tools/LookupPrimitive/LookupPrimitive.js';
 import { VerifyPrimitive } from '../../tools/VerifyPrimitive/VerifyPrimitive.js';
 import { SubmitPrimitive } from '../../tools/SubmitPrimitive/SubmitPrimitive.js';
@@ -85,7 +85,7 @@ function permissionComponentForTool(tool: Tool): React.ComponentType<PermissionR
     case GrepTool:
     case FileReadTool:
       return FilesystemPermissionRequest;
-    // KOSAX Epic 1 finish — 4 primitive arms (FR-012 spec).
+    // UMMAYA Epic 1 finish — 4 primitive arms (FR-012 spec).
     // lookup: read-only, bypass via checkPermissions allow. Adapter returns null.
     case LookupPrimitive:
       return LookupPermissionRequestAdapter;

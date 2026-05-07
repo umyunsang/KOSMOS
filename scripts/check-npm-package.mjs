@@ -14,21 +14,24 @@ if (!pack || !Array.isArray(pack.files)) {
   throw new Error('npm pack report must contain a files array')
 }
 
-const maxPackedBytes = Number(process.env.KOSAX_NPM_MAX_PACKED_BYTES ?? 15_000_000)
-const maxUnpackedBytes = Number(process.env.KOSAX_NPM_MAX_UNPACKED_BYTES ?? 70_000_000)
-const maxEntries = Number(process.env.KOSAX_NPM_MAX_ENTRIES ?? 2_700)
+const maxPackedBytes = Number(process.env.UMMAYA_NPM_MAX_PACKED_BYTES ?? 15_000_000)
+const maxUnpackedBytes = Number(process.env.UMMAYA_NPM_MAX_UNPACKED_BYTES ?? 70_000_000)
+const maxEntries = Number(process.env.UMMAYA_NPM_MAX_ENTRIES ?? 2_700)
 
 const files = pack.files.map((entry) => entry.path)
 const fileSet = new Set(files)
 
 const required = [
-  'bin/kosax',
+  'bin/ummaya',
   'package.json',
   'README.md',
   'LICENSE',
+  'assets/ummaya-banner-dark.svg',
+  'assets/ummaya-banner-light.svg',
+  'assets/ummaya-logo.svg',
   'pyproject.toml',
   'uv.lock',
-  'src/kosax/__init__.py',
+  'src/ummaya/__init__.py',
   'prompts/manifest.yaml',
   'tui/src/entrypoints/cli.tsx',
   'tui/src/stubs/macro-preload.ts',

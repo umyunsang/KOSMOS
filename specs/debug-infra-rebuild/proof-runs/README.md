@@ -14,7 +14,7 @@ Harness: `scripts/tui-tmux-capture.sh`
 | Stage | wall-clock | predicate |
 |---|---|---|
 | boot | 1 s | `tool_registry: [0-9]+ entries verified` |
-| branding | 0 s | `KOSAX` |
+| branding | 0 s | `UMMAYA` |
 | first tool_call | **8 s** | `● lookup` |
 | result/error/answer | 0 s | `⎿\|검색 오류\|invalid\|기온\|°C\|구름\|맑\|흐림` |
 

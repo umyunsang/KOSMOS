@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://kosax.dev/ipc/schema/frame.schema.json",
-  "title": "KOSAX IPC Frame Envelope",
-  "description": "Normative JSON Schema for KOSAX stdio frames. Draft 2020-12. Mirror target: src/kosax/ipc/frame_schema.py (Pydantic v2 IPCFrame discriminated union). The Python implementation remains the source of truth; this document is the human-readable/TypeScript consumption surface.",
+  "$id": "https://ummaya.dev/ipc/schema/frame.schema.json",
+  "title": "UMMAYA IPC Frame Envelope",
+  "description": "Normative JSON Schema for UMMAYA stdio frames. Draft 2020-12. Mirror target: src/ummaya/ipc/frame_schema.py (Pydantic v2 IPCFrame discriminated union). The Python implementation remains the source of truth; this document is the human-readable/TypeScript consumption surface.",
   "type": "object",
   "required": ["version", "session_id", "correlation_id", "role", "frame_seq", "ts", "kind"],
   "additionalProperties": false,
@@ -121,7 +121,7 @@
   ],
   "$defs": {
     "note": {
-      "$comment": "Per-kind payload field schemas are intentionally omitted from this envelope contract. They live as Pydantic arm classes in src/kosax/ipc/frame_schema.py. The TypeScript side (tui/src/ipc/envelope.ts) mirrors envelope fields + kind-narrowed interfaces generated or hand-maintained against this schema. Schema divergence is detected by the WS1 byte-equal rebuild test (T-??? in tasks.md)."
+      "$comment": "Per-kind payload field schemas are intentionally omitted from this envelope contract. They live as Pydantic arm classes in src/ummaya/ipc/frame_schema.py. The TypeScript side (tui/src/ipc/envelope.ts) mirrors envelope fields + kind-narrowed interfaces generated or hand-maintained against this schema. Schema divergence is detected by the WS1 byte-equal rebuild test (T-??? in tasks.md)."
     }
   }
 }

@@ -1,16 +1,16 @@
 # Codex Continuation Setup
 
-This document is the handoff surface for continuing Claude Code-era KOSAX work in Codex.
+This document is the handoff surface for continuing Claude Code-era UMMAYA work in Codex.
 It captures the local setup, the Claude-to-Codex skill mapping, and the quality gates that
 should be used before opening or updating a PR.
 
 ## Scope Boundary
 
-Codex is the development agent for this repository. It is not the KOSAX runtime model.
-KOSAX remains a FriendliAI Serverless + K-EXAONE client-side reference implementation, per
-`AGENTS.md`, `docs/vision.md`, and `docs/requirements/kosax-migration-tree.md`.
+Codex is the development agent for this repository. It is not the UMMAYA runtime model.
+UMMAYA remains a FriendliAI Serverless + K-EXAONE client-side reference implementation, per
+`AGENTS.md`, `docs/vision.md`, and `docs/requirements/ummaya-migration-tree.md`.
 
-Do not replace `KOSAX_FRIENDLI_MODEL` with GPT-5.5 in product code. Use GPT-5.5 for Codex
+Do not replace `UMMAYA_FRIENDLI_MODEL` with GPT-5.5 in product code. Use GPT-5.5 for Codex
 planning, code review, and research assistance only.
 
 ## Mandatory Codex Startup
@@ -51,7 +51,7 @@ Expected local agent settings:
 model = "gpt-5.5"
 model_reasoning_effort = "xhigh"
 
-[projects."/Users/um-yunsang/KOSAX"]
+[projects."/Users/um-yunsang/UMMAYA"]
 trust_level = "trusted"
 
 [mcp_servers.openaiDeveloperDocs]
@@ -120,10 +120,10 @@ such as `pyte`, and CI also uses the all-extras shape.
 
 Operator-managed live-adapter secrets for real local execution:
 
-- `KOSAX_KAKAO_API_KEY`
-- `KOSAX_DATA_GO_KR_API_KEY`
+- `UMMAYA_KAKAO_API_KEY`
+- `UMMAYA_DATA_GO_KR_API_KEY`
 
-`KOSAX_FRIENDLI_TOKEN` is a user session credential. Public CLI users enter it through `/login`;
+`UMMAYA_FRIENDLI_TOKEN` is a user session credential. Public CLI users enter it through `/login`;
 do not store it in Infisical operator environments.
 
 Never commit `.env`, `secrets/`, local Codex config, or Claude local settings.
@@ -159,7 +159,7 @@ As of 2026-05-04:
 - Current local branch: `fix/resolve-location-keyword-fanout`.
 - There are existing local untracked TUI smoke and frame artifacts; do not delete or normalize
   them unless the active task explicitly owns those artifacts.
-- `src/kosax/ipc/stdio.py` has local uncommitted edits related to a resolve-location chain
+- `src/ummaya/ipc/stdio.py` has local uncommitted edits related to a resolve-location chain
   enforcement gate. Preserve them unless the user asks to change that fix.
 - GitHub Sub-Issues API reports Initiative #2290 and all eight of its sub-issue Epics closed,
   even though `AGENTS.md` still says it is active. Treat `AGENTS.md` as stale on that one
@@ -167,12 +167,12 @@ As of 2026-05-04:
 
 Known documentation/config drift to resolve in a small follow-up PR:
 
-- `AGENTS.md` and some specs state `KOSAX_K_EXAONE_THINKING` defaults to `false`, while
-  `src/kosax/llm/client.py` currently defaults the environment read to `true`.
-- `docs/configuration.md` lists `KOSAX_LLM_SESSION_BUDGET` default as `100000`, while
-  `src/kosax/llm/config.py` defaults to `1_000_000`.
+- `AGENTS.md` and some specs state `UMMAYA_K_EXAONE_THINKING` defaults to `false`, while
+  `src/ummaya/llm/client.py` currently defaults the environment read to `true`.
+- `docs/configuration.md` lists `UMMAYA_LLM_SESSION_BUDGET` default as `100000`, while
+  `src/ummaya/llm/config.py` defaults to `1_000_000`.
 - `docs/testing.md` fixture recording still mentions the stale
-  `KOSAX_DATA_GO_KR_KEY` name; canonical config uses `KOSAX_DATA_GO_KR_API_KEY`.
+  `UMMAYA_DATA_GO_KR_KEY` name; canonical config uses `UMMAYA_DATA_GO_KR_API_KEY`.
 - `tui/package.json` declares Bun `<1.3.0`, while `.github/workflows/tui-smoke.yml` pins
   Bun `1.3.12`.
 - `.specify/memory/constitution.md` says PRs close Task issues, while `AGENTS.md` says PRs
@@ -192,12 +192,12 @@ Use GPT-5.5 where it adds engineering value:
 OpenAI's current guidance for GPT-5.5 emphasizes the Responses API, model-dependent reasoning
 effort, structured outputs, prompt caching, tool descriptions, tool search for large catalogs,
 state compaction for long-running agents, and preserving returned state items when managing
-multi-turn reasoning manually. These map to KOSAX as development-methodology guidance, not as
+multi-turn reasoning manually. These map to UMMAYA as development-methodology guidance, not as
 a runtime provider migration.
 
 ## LLM Quality Management Recommendations
 
-KOSAX already has the right skeleton: Spec Kit, prompt manifests, OTEL spans, Langfuse local
+UMMAYA already has the right skeleton: Spec Kit, prompt manifests, OTEL spans, Langfuse local
 stack, fixture-backed adapters, and strict TUI verification. The next quality step is to connect
 them into a release gate.
 

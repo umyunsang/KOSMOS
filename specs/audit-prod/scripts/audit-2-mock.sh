@@ -50,7 +50,7 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 cd "$REPO_ROOT"
 
 OUT_DIR="$SCRIPT_DIR"
-LOG_FILE="${KOSAX_BACKEND_LOG_FILE:-/tmp/audit-2.log}"
+LOG_FILE="${UMMAYA_BACKEND_LOG_FILE:-/tmp/audit-2.log}"
 
 echo "=== Audit 2 — 20 Mock × 5 axes ==="
 echo "repo_root  = $REPO_ROOT"
@@ -62,7 +62,7 @@ echo
 # -----------------------------------------------------------------------------
 
 echo "--- Stage 1: backend matrix (audit-2-mock.py) ---"
-KOSAX_BACKEND_LOG_FILE="$LOG_FILE" \
+UMMAYA_BACKEND_LOG_FILE="$LOG_FILE" \
   uv run python "$SCRIPT_DIR/audit-2-mock.py" \
   | tee "$OUT_DIR/audit-2-mock-output.txt"
 

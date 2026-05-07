@@ -1,5 +1,5 @@
 /**
- * KOSAX-original — POIMarker renderer.
+ * UMMAYA-original — POIMarker renderer.
  *
  * Marker indicating a resolved named place from the poi slot of a
  * resolve_location result.  Shows name, optional category, and source.

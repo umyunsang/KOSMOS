@@ -26,7 +26,7 @@ T056 — Diff Audit (Spec 2643 Epic G)
 91c91,92
 < import { calculateCostFromTokens } from '../modelCost.js'
 ---
-> // KOSAX-original: model cost calculation not used — FriendliAI pricing N/A.
+> // UMMAYA-original: model cost calculation not used — FriendliAI pricing N/A.
 > const calculateCostFromTokens = (_model?: string, _usage?: unknown): undefined => undefined
 101a103
 > // SWAP/path-b(2643): yoloClassifier extracted to sibling module — Spec 2643 Epic G US3.

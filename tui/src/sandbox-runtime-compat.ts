@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSAX-original — Epic #2293 FR-010 · sandbox-runtime compatibility shim.
+// UMMAYA-original — Epic #2293 FR-010 · sandbox-runtime compatibility shim.
 //
 // Purpose: every tui/src/ file that needs sandbox-runtime types or values
 // imports from 'src/sandbox-runtime-compat.js' instead of directly from the

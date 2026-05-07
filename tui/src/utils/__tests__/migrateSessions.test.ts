@@ -31,7 +31,7 @@ import { migrateSessions } from '../migrateSessions.js'
 let tmpRoot: string
 
 beforeEach(() => {
-  tmpRoot = mkdtempSync(join(tmpdir(), 'kosax-migrate-test-'))
+  tmpRoot = mkdtempSync(join(tmpdir(), 'ummaya-migrate-test-'))
 })
 
 afterEach(() => {
@@ -58,10 +58,10 @@ function setupCcDir(
 }
 
 /**
- * Create a KOSAX sessions destination directory (empty) and return the path.
+ * Create a UMMAYA sessions destination directory (empty) and return the path.
  */
 function setupDestDir(): string {
-  const dest = join(tmpRoot, 'kosax-sessions')
+  const dest = join(tmpRoot, 'ummaya-sessions')
   mkdirSync(dest, { recursive: true })
   return dest
 }
@@ -73,7 +73,7 @@ function setupDestDir(): string {
 describe('migrateSessions — happy path', () => {
   test('copies JSONL files from matching project dir', async () => {
     const content = '{"kind":"user_input","ts":"2026-05-04T00:00:00Z"}\n'
-    const ccDir = setupCcDir('-Users-um-yunsang-KOSAX', {
+    const ccDir = setupCcDir('-Users-um-yunsang-UMMAYA', {
       'session-abc.jsonl': content,
       'session-def.jsonl': content,
     })
@@ -82,7 +82,7 @@ describe('migrateSessions — happy path', () => {
     const summary = await migrateSessions({
       ccProjectsDir: ccDir,
       destDir: dest,
-      filterCwd: '.*KOSAX.*',
+      filterCwd: '.*UMMAYA.*',
     })
 
     expect(summary.copied).toBe(2)
@@ -97,14 +97,14 @@ describe('migrateSessions — happy path', () => {
     expect(destFiles).toContain('session-def.jsonl')
 
     // Verify src is still there (prune=false).
-    expect(existsSync(join(ccDir, '-Users-um-yunsang-KOSAX', 'session-abc.jsonl'))).toBe(true)
+    expect(existsSync(join(ccDir, '-Users-um-yunsang-UMMAYA', 'session-abc.jsonl'))).toBe(true)
   })
 })
 
 describe('migrateSessions — skip collision', () => {
   test('skips files whose destination already exists', async () => {
     const content = '{"kind":"user_input"}\n'
-    const ccDir = setupCcDir('-Users-um-yunsang-KOSAX', {
+    const ccDir = setupCcDir('-Users-um-yunsang-UMMAYA', {
       'session-abc.jsonl': content,
       'session-new.jsonl': content,
     })
@@ -137,9 +137,9 @@ describe('migrateSessions — filter-cwd', () => {
     const content = '{"kind":"user_input"}\n'
     // Two project dirs — only one matches the filter.
     const ccDir = join(tmpRoot, 'cc-projects')
-    mkdirSync(join(ccDir, '-Users-um-yunsang-KOSAX'), { recursive: true })
+    mkdirSync(join(ccDir, '-Users-um-yunsang-UMMAYA'), { recursive: true })
     writeFileSync(
-      join(ccDir, '-Users-um-yunsang-KOSAX', 'session-1.jsonl'),
+      join(ccDir, '-Users-um-yunsang-UMMAYA', 'session-1.jsonl'),
       content,
       'utf-8',
     )
@@ -155,10 +155,10 @@ describe('migrateSessions — filter-cwd', () => {
     const summary = await migrateSessions({
       ccProjectsDir: ccDir,
       destDir: dest,
-      filterCwd: '.*KOSAX.*',
+      filterCwd: '.*UMMAYA.*',
     })
 
-    // Only session-1.jsonl from the KOSAX dir should be copied.
+    // Only session-1.jsonl from the UMMAYA dir should be copied.
     expect(summary.copied).toBe(1)
     expect(summary.skipped).toBe(0)
     expect(existsSync(join(dest, 'session-1.jsonl'))).toBe(true)
@@ -169,7 +169,7 @@ describe('migrateSessions — filter-cwd', () => {
 describe('migrateSessions — dry-run', () => {
   test('returns accurate counts without touching the filesystem', async () => {
     const content = '{"kind":"user_input"}\n'
-    const ccDir = setupCcDir('-Users-um-yunsang-KOSAX', {
+    const ccDir = setupCcDir('-Users-um-yunsang-UMMAYA', {
       'session-a.jsonl': content,
       'session-b.jsonl': content,
     })
@@ -191,12 +191,12 @@ describe('migrateSessions — dry-run', () => {
     expect(destFiles).toHaveLength(0)
 
     // Source files still present.
-    expect(existsSync(join(ccDir, '-Users-um-yunsang-KOSAX', 'session-a.jsonl'))).toBe(true)
+    expect(existsSync(join(ccDir, '-Users-um-yunsang-UMMAYA', 'session-a.jsonl'))).toBe(true)
   })
 
   test('dry-run with prune flag counts pruned without deleting', async () => {
     const content = '{"kind":"user_input"}\n'
-    const ccDir = setupCcDir('-Users-um-yunsang-KOSAX', {
+    const ccDir = setupCcDir('-Users-um-yunsang-UMMAYA', {
       'session-x.jsonl': content,
     })
     const dest = setupDestDir()
@@ -212,7 +212,7 @@ describe('migrateSessions — dry-run', () => {
     expect(summary.pruned).toBe(1)
 
     // Source file must still exist (dry-run).
-    expect(existsSync(join(ccDir, '-Users-um-yunsang-KOSAX', 'session-x.jsonl'))).toBe(true)
+    expect(existsSync(join(ccDir, '-Users-um-yunsang-UMMAYA', 'session-x.jsonl'))).toBe(true)
     // Dest must remain empty (dry-run).
     expect(readdirSync(dest)).toHaveLength(0)
   })
@@ -221,11 +221,11 @@ describe('migrateSessions — dry-run', () => {
 describe('migrateSessions — prune happy path', () => {
   test('unlinks source files after successful copy+fsync', async () => {
     const content = '{"kind":"user_input"}\n'
-    const ccDir = setupCcDir('-Users-um-yunsang-KOSAX', {
+    const ccDir = setupCcDir('-Users-um-yunsang-UMMAYA', {
       'prune-me.jsonl': content,
     })
     const dest = setupDestDir()
-    const srcPath = join(ccDir, '-Users-um-yunsang-KOSAX', 'prune-me.jsonl')
+    const srcPath = join(ccDir, '-Users-um-yunsang-UMMAYA', 'prune-me.jsonl')
 
     const summary = await migrateSessions({
       ccProjectsDir: ccDir,
@@ -263,7 +263,7 @@ describe('migrateSessions — empty CC dir', () => {
   })
 
   test('returns zero summary when matching project dir is empty', async () => {
-    const ccDir = setupCcDir('-Users-um-yunsang-KOSAX', {}) // no files
+    const ccDir = setupCcDir('-Users-um-yunsang-UMMAYA', {}) // no files
     const dest = setupDestDir()
 
     const summary = await migrateSessions({

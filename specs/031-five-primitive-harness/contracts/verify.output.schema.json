@@ -47,7 +47,7 @@
         "published_tier": {"$ref": "#/$defs/PublishedTier"},
         "nist_aal_hint": {"$ref": "#/$defs/NistAalHint"},
         "verified_at": {"type": "string", "format": "date-time", "description": "RFC 3339 with timezone."},
-        "external_session_ref": {"type": ["string", "null"], "description": "Opaque reference to the external provider session. KOSAX holds no signing keys."}
+        "external_session_ref": {"type": ["string", "null"], "description": "Opaque reference to the external provider session. UMMAYA holds no signing keys."}
       }
     },
     "GongdongInjeungseoContext": {

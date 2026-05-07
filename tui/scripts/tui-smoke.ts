@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 // SPDX-License-Identifier: Apache-2.0
-// KOSAX-original — boot smoke gate.
+// UMMAYA-original — boot smoke gate.
 //
 // Purpose
 // -------
@@ -17,8 +17,8 @@
 // 1. Spawn `bun run tui` inside a PTY via `script` (BSD on macOS, util-linux on
 //    Linux/CI). Without a TTY, Ink's `useInput` throws "Raw mode not supported"
 //    and masks the bugs we're actually hunting.
-// 2. Set `KOSAX_BACKEND_CMD=sleep 60` — the bridge's default is
-//    `uv run kosax --ipc stdio`, which may not be installed on the CI runner
+// 2. Set `UMMAYA_BACKEND_CMD=sleep 60` — the bridge's default is
+//    `uv run ummaya --ipc stdio`, which may not be installed on the CI runner
 //    before the Python deps are synced.  `sleep` is a POSIX-guaranteed no-op
 //    that holds the bridge's stdin open exactly like a real backend would.
 // 3. Let the TUI boot for 3 s, then send SIGTERM.
@@ -48,14 +48,14 @@ const FORBIDDEN_STRINGS: ReadonlyArray<string> = [
 
 // Boot window tuned per platform — macOS pty init is ~200 ms; ubuntu-latest
 // under GitHub Actions is slower (~800 ms cold-start overhead).
-const BOOT_MS = Number(process.env['KOSAX_TUI_SMOKE_BOOT_MS'] ?? 3_000)
+const BOOT_MS = Number(process.env['UMMAYA_TUI_SMOKE_BOOT_MS'] ?? 3_000)
 const SHUTDOWN_GRACE_MS = 5_000
 const ACCEPTABLE_EXIT_CODES = new Set([0, 143])
 
 function withoutFriendliCredential(env: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
   const next = { ...env }
-  delete next.KOSAX_FRIENDLI_TOKEN
-  delete next.KOSAX_FRIENDLI_SESSION_ACTIVE
+  delete next.UMMAYA_FRIENDLI_TOKEN
+  delete next.UMMAYA_FRIENDLI_SESSION_ACTIVE
   return next
 }
 
@@ -101,9 +101,9 @@ async function runSmoke(): Promise<SmokeResult> {
       ...withoutFriendliCredential(process.env),
       // Fake backend that stays alive until SIGTERMed — tests the bridge
       // spawn path without requiring the Python harness on the runner.
-      KOSAX_BACKEND_CMD: 'sleep 60',
+      UMMAYA_BACKEND_CMD: 'sleep 60',
       // Surface every decode / send / recv line in case the boot path fails.
-      KOSAX_TUI_LOG_LEVEL: 'DEBUG',
+      UMMAYA_TUI_LOG_LEVEL: 'DEBUG',
       // Disable colour codes where possible to keep forbidden-string matching
       // insensitive to ANSI reset sequences. Ink still emits some; we match
       // substrings anyway.

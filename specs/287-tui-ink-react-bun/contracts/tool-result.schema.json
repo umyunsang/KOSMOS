@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://kosax.dev/schemas/spec-287/tool-result.schema.json",
+  "$id": "https://ummaya.dev/schemas/spec-287/tool-result.schema.json",
   "title": "ToolResultFrame",
-  "description": "backend → TUI (render): the output of a tool invocation. Direction: backend → TUI. The envelope field is a discriminated union over the 5 KOSAX primitives (Spec 031). Renderer dispatch MUST use the envelope.kind field — no string sniffing of payload body (FR-008).",
+  "description": "backend → TUI (render): the output of a tool invocation. Direction: backend → TUI. The envelope field is a discriminated union over the 5 UMMAYA primitives (Spec 031). Renderer dispatch MUST use the envelope.kind field — no string sniffing of payload body (FR-008).",
   "type": "object",
   "required": ["kind", "session_id", "ts", "call_id", "envelope"],
   "properties": {

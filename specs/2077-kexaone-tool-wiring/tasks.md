@@ -22,19 +22,19 @@ description: "Task list for Epic #2077 K-EXAONE tool wiring (CC reference migrat
 
 ## Path Conventions
 
-KOSAX dual-layer (per `plan.md § Project Structure`):
+UMMAYA dual-layer (per `plan.md § Project Structure`):
 
-- Backend Python: `src/kosax/`, `tests/` at repo root
+- Backend Python: `src/ummaya/`, `tests/` at repo root
 - TUI TypeScript: `tui/src/`, `tui/tests/`
-- CC reference cp lives at `src/kosax/llm/_cc_reference/`
+- CC reference cp lives at `src/ummaya/llm/_cc_reference/`
 
 ---
 
 ## Phase 1: Setup
 
-**Purpose**: Confirm baseline state. KOSAX already has all required infrastructure (Bun + uv environments, CC `claude.ts` cp from `fdfd3e9`); the epic adds no new project structure.
+**Purpose**: Confirm baseline state. UMMAYA already has all required infrastructure (Bun + uv environments, CC `claude.ts` cp from `fdfd3e9`); the epic adds no new project structure.
 
-- [X] T001 Pre-flight verification: confirm branch `2077-kexaone-tool-wiring` checked out; `.env` present with `KOSAX_FRIENDLI_TOKEN`; baseline `cd tui && bun test` ≥ 928 pass / 0 fail; baseline `uv run pytest tests/llm tests/ipc` green; record counts in `specs/2077-kexaone-tool-wiring/baseline.txt` for regression budget.
+- [X] T001 Pre-flight verification: confirm branch `2077-kexaone-tool-wiring` checked out; `.env` present with `UMMAYA_FRIENDLI_TOKEN`; baseline `cd tui && bun test` ≥ 928 pass / 0 fail; baseline `uv run pytest tests/llm tests/ipc` green; record counts in `specs/2077-kexaone-tool-wiring/baseline.txt` for regression budget.
 
 ---
 
@@ -44,11 +44,11 @@ KOSAX dual-layer (per `plan.md § Project Structure`):
 
 **⚠️ CRITICAL**: No US1/US2/US3 work begins until Phase 2 is complete.
 
-- [X] T002 [P] cp five utils-layer files into `src/kosax/llm/_cc_reference/` with research-use headers: `api.ts` (from `.references/claude-code-sourcemap/restored-src/src/utils/api.ts`, 718 LOC), `tools.ts` (from `.references/.../tools.ts`, 389 LOC), `prompts.ts` (from `.references/.../constants/prompts.ts`, 914 LOC), `messages.ts` (from `.references/.../utils/messages.ts`, 5512 LOC), `toolResultStorage.ts` (from `.references/.../utils/toolResultStorage.ts`, 1040 LOC). Each file's first two lines: `// SPDX-License-Identifier: Apache-2.0 (Anthropic upstream) — research-use mirror` + `// Source: <upstream path> (CC 2.1.88)`. Per Constitution §I + research § R-1.
+- [X] T002 [P] cp five utils-layer files into `src/ummaya/llm/_cc_reference/` with research-use headers: `api.ts` (from `.references/claude-code-sourcemap/restored-src/src/utils/api.ts`, 718 LOC), `tools.ts` (from `.references/.../tools.ts`, 389 LOC), `prompts.ts` (from `.references/.../constants/prompts.ts`, 914 LOC), `messages.ts` (from `.references/.../utils/messages.ts`, 5512 LOC), `toolResultStorage.ts` (from `.references/.../utils/toolResultStorage.ts`, 1040 LOC). Each file's first two lines: `// SPDX-License-Identifier: Apache-2.0 (Anthropic upstream) — research-use mirror` + `// Source: <upstream path> (CC 2.1.88)`. Per Constitution §I + research § R-1.
 
-- [X] T003 [P] cp four services/query-layer files into `src/kosax/llm/_cc_reference/` with research-use headers: `query.ts` (from `.references/.../query.ts`, 1729 LOC), `toolOrchestration.ts` (from `.references/.../services/tools/toolOrchestration.ts`, 188 LOC), `toolExecution.ts` (from `.references/.../services/tools/toolExecution.ts`, 1745 LOC), `permissions.ts` (from `.references/.../utils/permissions/permissions.ts`, 1486 LOC). Same header convention as T002. Per Constitution §I + research § R-2/R-4/R-5/R-6.
+- [X] T003 [P] cp four services/query-layer files into `src/ummaya/llm/_cc_reference/` with research-use headers: `query.ts` (from `.references/.../query.ts`, 1729 LOC), `toolOrchestration.ts` (from `.references/.../services/tools/toolOrchestration.ts`, 188 LOC), `toolExecution.ts` (from `.references/.../services/tools/toolExecution.ts`, 1745 LOC), `permissions.ts` (from `.references/.../utils/permissions/permissions.ts`, 1486 LOC). Same header convention as T002. Per Constitution §I + research § R-2/R-4/R-5/R-6.
 
-- [X] T004 Write `src/kosax/llm/_cc_reference/README.md` index linking each cp file to its KOSAX migration step (Step 2-7) and to the relevant section of `specs/2077-kexaone-tool-wiring/research.md`. Include the R-1 verification snippet for `zod/v4`'s `z.toJSONSchema()`. Depends on T002 + T003.
+- [X] T004 Write `src/ummaya/llm/_cc_reference/README.md` index linking each cp file to its UMMAYA migration step (Step 2-7) and to the relevant section of `specs/2077-kexaone-tool-wiring/research.md`. Include the R-1 verification snippet for `zod/v4`'s `z.toJSONSchema()`. Depends on T002 + T003.
 
 **Checkpoint**: `_cc_reference/` carries all 13 cp files (4 from `fdfd3e9` + 9 new from this epic). Reference citations in subsequent tasks resolve.
 
@@ -56,7 +56,7 @@ KOSAX dual-layer (per `plan.md § Project Structure`):
 
 ## Phase 3: User Story 1 — Citizen receives accurate answer (Priority: P1) 🎯 MVP
 
-**Goal**: A citizen prompt that requires a public-service lookup (e.g., "강남구 24시간 응급실") completes end-to-end — the agent invokes a registered KOSAX tool, receives a result envelope, and emits a final natural-language answer that incorporates the result. Zero hallucinated CC training-data tools (Read/Glob/Bash/etc).
+**Goal**: A citizen prompt that requires a public-service lookup (e.g., "강남구 24시간 응급실") completes end-to-end — the agent invokes a registered UMMAYA tool, receives a result envelope, and emits a final natural-language answer that incorporates the result. Zero hallucinated CC training-data tools (Read/Glob/Bash/etc).
 
 **Independent Test** (citizen-perspective): Run `vhs /tmp/probe-step5.tape` (per `quickstart.md`) with a 강남구 응급실 prompt; observe within 30 s a tool_use box → tool_result envelope → final assistant message; run SC-001 50-prompt regression and confirm zero `<tool_call>{"name":"Read|Bash|..."}` matches.
 
@@ -70,13 +70,13 @@ KOSAX dual-layer (per `plan.md § Project Structure`):
 
 - [X] T007 [US1] Wire `tools: await getToolDefinitionsForFrame()` into the `ChatRequestFrame` literal at `tui/src/query/deps.ts:73-81` per `contracts/chat-request-frame.md`. Import from `./toolSerialization.js`. Per `data-model.md § 1` lifecycle: emit per turn, no caching. Depends on T005.
 
-- [X] T008 [P] [US1] Implement `src/kosax/llm/system_prompt_builder.py` exporting `build_system_prompt_with_tools(base, tools)` per `contracts/system-prompt-builder.md`. Use `json.dumps(parameters, indent=2, sort_keys=True, ensure_ascii=False)` for byte-stable output. Return `base` unchanged when `tools` is empty. Mirrors `_cc_reference/api.ts:appendSystemContext()` + `_cc_reference/prompts.ts` dynamic composition (research § R-3).
+- [X] T008 [P] [US1] Implement `src/ummaya/llm/system_prompt_builder.py` exporting `build_system_prompt_with_tools(base, tools)` per `contracts/system-prompt-builder.md`. Use `json.dumps(parameters, indent=2, sort_keys=True, ensure_ascii=False)` for byte-stable output. Return `base` unchanged when `tools` is empty. Mirrors `_cc_reference/api.ts:appendSystemContext()` + `_cc_reference/prompts.ts` dynamic composition (research § R-3).
 
 - [X] T009 [P] [US1] Add `tests/llm/test_system_prompt_builder.py` covering 7 invariants from `contracts/system-prompt-builder.md`: (1) empty tools returns base unchanged byte-for-byte, (2) single tool appends section, (3) byte-stable for same input, (4) Korean description preserved, (5) `sort_keys=True` invariant, (6) caller order preserved (no internal sort), (7) no timestamp/env leakage. Run `uv run pytest tests/llm/test_system_prompt_builder.py -v` and confirm pass.
 
-- [X] T010 [US1] In `src/kosax/ipc/stdio.py`: (a) add module-level `_TOOL_REGISTRY` cache populated lazily by `_ensure_tool_registry()` at first `_handle_chat_request` call; (b) inside `_handle_chat_request` after `frame.tools` unpack at line 1099-1101, add `if not llm_tools: llm_tools = _ensure_tool_registry().export_core_tools_openai()` (Step 4 fallback per `contracts/chat-request-frame.md`); (c) call `build_system_prompt_with_tools(base_system, llm_tools)` and use as the system message text (Step 3 inject); (d) migrate hardcoded primitive whitelist at lines 627-679 (`_PERMISSION_GATED_PRIMITIVES`) and per-fname dispatch at lines 890-939 to pull from a `kosax.primitives.PRIMITIVE_REGISTRY` constant (FR-003 single-source-of-truth). Depends on T008.
+- [X] T010 [US1] In `src/ummaya/ipc/stdio.py`: (a) add module-level `_TOOL_REGISTRY` cache populated lazily by `_ensure_tool_registry()` at first `_handle_chat_request` call; (b) inside `_handle_chat_request` after `frame.tools` unpack at line 1099-1101, add `if not llm_tools: llm_tools = _ensure_tool_registry().export_core_tools_openai()` (Step 4 fallback per `contracts/chat-request-frame.md`); (c) call `build_system_prompt_with_tools(base_system, llm_tools)` and use as the system message text (Step 3 inject); (d) migrate hardcoded primitive whitelist at lines 627-679 (`_PERMISSION_GATED_PRIMITIVES`) and per-fname dispatch at lines 890-939 to pull from a `ummaya.primitives.PRIMITIVE_REGISTRY` constant (FR-003 single-source-of-truth). Depends on T008.
 
-- [X] T011 [US1] Update `tests/ipc/test_stdio.py` with five new scenarios: (a) `test_chat_request_with_empty_tools_uses_registry_fallback` — assert backend invokes LLM with non-empty `llm_tools` even when `frame.tools = []`; (b) `test_chat_request_appends_available_tools_section` — assert the LLM-bound system message ends with the dynamically composed `## Available tools` block; (c) `test_unknown_tool_in_frame_dropped_silently` — assert backend logs `kosax.tool.unknown_in_frame` span event and proceeds with intersection; (d) `test_agentic_loop_max_turns_honored` — fixture LLM emits one tool_call per turn forever; assert loop terminates at `_AGENTIC_LOOP_MAX_TURNS` (FR-011); (e) `test_otel_spans_preserved` — capture OTEL spans across one tool call and assert all baseline attribute keys (`kosax.tool.name`, `kosax.tool.call_id`, `kosax.permission.*`, `kosax.session.*`) present at counts ≥ baseline (FR-019/SC-005). Depends on T010.
+- [X] T011 [US1] Update `tests/ipc/test_stdio.py` with five new scenarios: (a) `test_chat_request_with_empty_tools_uses_registry_fallback` — assert backend invokes LLM with non-empty `llm_tools` even when `frame.tools = []`; (b) `test_chat_request_appends_available_tools_section` — assert the LLM-bound system message ends with the dynamically composed `## Available tools` block; (c) `test_unknown_tool_in_frame_dropped_silently` — assert backend logs `ummaya.tool.unknown_in_frame` span event and proceeds with intersection; (d) `test_agentic_loop_max_turns_honored` — fixture LLM emits one tool_call per turn forever; assert loop terminates at `_AGENTIC_LOOP_MAX_TURNS` (FR-011); (e) `test_otel_spans_preserved` — capture OTEL spans across one tool call and assert all baseline attribute keys (`ummaya.tool.name`, `ummaya.tool.call_id`, `ummaya.permission.*`, `ummaya.session.*`) present at counts ≥ baseline (FR-019/SC-005). Depends on T010.
 
 - [X] T012 [US1] In `tui/src/query/deps.ts`: replace the `else if (fa.kind === 'tool_call') { yield createSystemMessage(...) }` branch at line 237-242 with the CC stream-event projection from `contracts/stream-event-projection.md` (Step 5 — yield `content_block_start` + `content_block_stop` with `type: 'tool_use'`); replace the `else if (fa.kind === 'tool_result')` branch at line 243-249 with `createUserMessage([{ type: 'tool_result', tool_use_id, content: JSON.stringify(envelope), ... }])` (Step 6). Promote `blockIndex` to an explicit turn-scoped counter; introduce `pendingContentBlocks` array and merge into the terminal `createAssistantMessage` content array. Mirrors `_cc_reference/claude.ts:1995-2052` + `_cc_reference/messages.ts:ensureToolResultPairing()`. Depends on T007 (same file).
 
@@ -84,7 +84,7 @@ KOSAX dual-layer (per `plan.md § Project Structure`):
 
 - [X] T014 [US1] Add backend integration test `tests/integration/test_agentic_loop.py` (NEW file) that exercises the full multi-turn closure end-to-end against a fixture LLM endpoint: (a) citizen prompt → backend emits `tool_call` frame → tool result returned to LLM context → next turn produces final answer with no `<tool_call>{"name":"Read|Glob|Bash|..."}` matches (validates US1 acceptance scenarios 1, 3 + SC-001 + FR-010); (b) extended scenario — fixture LLM chains 5 sequential tool_calls (4-5 turn agentic conversation); assert all 5 calls complete within FriendliAI Tier 1 RPM budget with zero rate-limit-induced error frames on the citizen's screen (validates SC-004 + FR-012 retry/rate-limit preservation). Depends on T007 + T010 + T012.
 
-**Checkpoint**: US1 MVP — citizen prompt yields end-to-end agentic loop with KOSAX tools only. SC-001 (no hallucinations), SC-002 (≤30 s), SC-006 (zero new deps), SC-007 (≥95 % first-attempt success) verifiable.
+**Checkpoint**: US1 MVP — citizen prompt yields end-to-end agentic loop with UMMAYA tools only. SC-001 (no hallucinations), SC-002 (≤30 s), SC-006 (zero new deps), SC-007 (≥95 % first-attempt success) verifiable.
 
 ---
 
@@ -118,7 +118,7 @@ KOSAX dual-layer (per `plan.md § Project Structure`):
 
 ### Implementation for US3
 
-- [X] T018 [P] [US3] Extend `tui/src/store/sessionStore.ts` with `setPendingPermission(request)` (Promise-returning), `resolvePermissionDecision(request_id, decision)`, `getActivePermission()` selector, plus internal queue FIFO + 5-min timeout per `contracts/pending-permission-slot.md`. Read `KOSAX_PERMISSION_TIMEOUT_SEC` (default 300) for timeout. Idempotent on duplicate `request_id`. Mirrors `_cc_reference/permissions.ts` flow.
+- [X] T018 [P] [US3] Extend `tui/src/store/sessionStore.ts` with `setPendingPermission(request)` (Promise-returning), `resolvePermissionDecision(request_id, decision)`, `getActivePermission()` selector, plus internal queue FIFO + 5-min timeout per `contracts/pending-permission-slot.md`. Read `UMMAYA_PERMISSION_TIMEOUT_SEC` (default 300) for timeout. Idempotent on duplicate `request_id`. Mirrors `_cc_reference/permissions.ts` flow.
 
 - [X] T019 [P] [US3] Add `tui/tests/store/sessionStore.test.ts` (or extend existing) with 7 cases from `contracts/pending-permission-slot.md`: (1) stores active when slot empty, (2) queues when occupied, (3) resolve shifts queue, (4) Promise resolves with decision, (5) timeout → 'timeout', (6) duplicate → 'denied' immediately, (7) unknown id resolve is no-op. Run `cd tui && bun test tests/store/sessionStore.test.ts` and confirm pass.
 
@@ -126,7 +126,7 @@ KOSAX dual-layer (per `plan.md § Project Structure`):
 
 - [X] T021 [US3] Update `PermissionGauntletModal` mount in `tui/src/screens/REPL.tsx:5275-5277` to subscribe to `useSessionStore(s => s.activePermission)`; render the modal only when active is non-null; wire `onGrant` and `onDeny` callbacks to `useSessionStore.getState().resolvePermissionDecision(active.request_id, 'granted'|'denied')`. Modal component itself unchanged (existing 100+ LOC component). Depends on T018.
 
-- [X] T022 [US3] Add integration test `tui/tests/integration/permission-modal.test.ts` (NEW): render REPL with mocked backend; send `permission_request` frame for `submit` primitive; assert modal mounts with correct props (description_ko, risk_level=high, receipt_id) within 1 s (SC-003); simulate Y press; assert outbound `permission_response{decision: 'granted'}` frame; assert backend receives unblocking response; assert audit-ledger entry exists at `~/.kosax/memdir/user/consent/` with matching `receipt_id` (FR-016 — consent receipt emission on grant). Depends on T020 + T021.
+- [X] T022 [US3] Add integration test `tui/tests/integration/permission-modal.test.ts` (NEW): render REPL with mocked backend; send `permission_request` frame for `submit` primitive; assert modal mounts with correct props (description_ko, risk_level=high, receipt_id) within 1 s (SC-003); simulate Y press; assert outbound `permission_response{decision: 'granted'}` frame; assert backend receives unblocking response; assert audit-ledger entry exists at `~/.ummaya/memdir/user/consent/` with matching `receipt_id` (FR-016 — consent receipt emission on grant). Depends on T020 + T021.
 
 **Checkpoint**: US3 — interactive consent end-to-end. FR-013 through FR-018 + SC-003 verifiable.
 
@@ -204,7 +204,7 @@ After Phase 2 checkpoint, launch four tasks in one round:
 Task: "T005 [P] [US1] Implement tui/src/query/toolSerialization.ts per contracts/tool-serialization.md"
 
 # Agent B: implement Python system prompt builder
-Task: "T008 [P] [US1] Implement src/kosax/llm/system_prompt_builder.py per contracts/system-prompt-builder.md"
+Task: "T008 [P] [US1] Implement src/ummaya/llm/system_prompt_builder.py per contracts/system-prompt-builder.md"
 
 # Agent C: TS test scaffolding
 Task: "T006 [P] [US1] Add tui/tests/tools/serialization.test.ts covering 7 invariants"
@@ -251,7 +251,7 @@ Lead (Opus) + 3 Sonnet teammates:
 
 - **Sub-issue budget**: 27 tasks ≤ 90 cap (well under 80 soft warning). Cohesion-merged 2 of 3 deps.ts edits into T012, 3 stdio.py edits into T010 to respect the same-file consolidation rule.
 - **Cohesion merges applied**: T012 covers Steps 5+6 (both in deps.ts); T010 covers Steps 3+4+whitelist migration (all in stdio.py). T002+T003 split cp work along directory boundary for parallel execution.
-- **Tests are inline** (not a separate phase) per AGENTS.md "uv run pytest before every commit" + KOSAX implicit TDD discipline. Each implementation task names its companion test task.
+- **Tests are inline** (not a separate phase) per AGENTS.md "uv run pytest before every commit" + UMMAYA implicit TDD discipline. Each implementation task names its companion test task.
 - **Verify tests fail first** — when authoring T006/T009/T011/T013/T015/T016/T017/T019/T022, run them before the impl lands and confirm they fail; then implement and confirm pass. Skipped only for T002/T003 (mechanical cp).
 - **Commit cadence**: one commit per task (or per cohesion-merged task body). Conventional Commits prefixes: `feat(llm)`, `feat(ipc)`, `feat(tui)`, `test(...)`, `docs(...)`.
 - **Avoid**: cross-story dependencies that break US1's MVP independence (US3 must not silently require US2 polish; US2 must not silently require US3 modal).

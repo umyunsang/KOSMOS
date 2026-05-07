@@ -1,7 +1,7 @@
 T032 — permissions.ts LOC + diff invariant audit (Spec 2643 Epic G US3)
 
 LOC count:
-  KOSAX: 1488 lines
+  UMMAYA: 1488 lines
   CC:     1486 lines
   Delta:  +2 lines (within ≤ 1494 = CC + 8 max)
 
@@ -14,11 +14,11 @@ Diff hunk breakdown:
      + import { APIUserAbortError } from 'src/sdk-compat.js'
   2. Line 91 (swap-1, Spec 1633 modelCost stub):
      - import { calculateCostFromTokens } from '../modelCost.js'
-     + // KOSAX-original: model cost calculation not used — FriendliAY pricing N/A.
+     + // UMMAYA-original: model cost calculation not used — FriendliAY pricing N/A.
      + const calculateCostFromTokens = (_model?: string, _usage?: unknown): undefined => undefined
   3. Line 101a (Path B — yoloClassifier sibling module, this Epic):
      + // SWAP/path-b(2643): yoloClassifier extracted to sibling module — Spec 2643 Epic G US3.
 
 Note: The CC import line `import { classifyYoloAction, formatActionForClassifier } from './yoloClassifier.js'`
-(lines 102-105 of CC) is byte-identical with the KOSAX replacement and therefore does NOT show in diff.
+(lines 102-105 of CC) is byte-identical with the UMMAYA replacement and therefore does NOT show in diff.
 The diff invariant FR-016 (≤ 8 diff lines) is satisfied at 6 lines.

@@ -24,7 +24,7 @@ description: "Task list for Epic #1303 — Shortcut Tier 1 port (spec 288)"
 
 - TUI: `tui/src/keybindings/`, `tui/src/hooks/`, `tui/src/components/input/`, `tui/src/permissions/`
 - Tests: `tui/tests/keybindings/`
-- Python integration: existing `src/kosax/tui/audit.py` (Spec 024) and `src/kosax/agents/cancellation.py` (Spec 027) — consumed, not modified
+- Python integration: existing `src/ummaya/tui/audit.py` (Spec 024) and `src/ummaya/agents/cancellation.py` (Spec 027) — consumed, not modified
 - Docs: `docs/adr/`, spec files under `specs/288-shortcut-tier1-port/`
 
 ---
@@ -52,13 +52,13 @@ description: "Task list for Epic #1303 — Shortcut Tier 1 port (spec 288)"
 - [ ] T004 [P] Port `.references/claude-code-sourcemap/restored-src/src/keybindings/parser.ts` → `tui/src/keybindings/parser.ts`. Preserve the EBNF grammar in data-model.md § ChordString. Canonicalise modifier order (`ctrl→shift→alt→meta`). Unit-testable; no dependencies. Satisfies FR-002, SC-009.
 - [ ] T005 [P] Port CC `match.ts` → `tui/src/keybindings/match.ts`. Chord-to-event matcher. Handles raw-byte detection (`\x03`, `\x04`) per FR-016 and D2. Unit-testable. Satisfies FR-016.
 - [ ] T006 [P] Port CC `shortcutFormat.ts` → `tui/src/keybindings/shortcutFormat.ts`. Chord → human-readable display string (e.g., `ctrl+c` → `Ctrl+C`). Used by `useShortcutDisplay` hook and by the catalogue dump for accessibility (FR-032).
-- [ ] T007 [P] Port CC `schema.ts` → `tui/src/keybindings/schema.ts`. Narrow `KEYBINDING_CONTEXTS` to the 4 KOSAX contexts (Global · Chat · HistorySearch · Confirmation). Mirror `KEYBINDING_CONTEXT_DESCRIPTIONS` but use the Korean+English strings from contracts/keybinding-schema.ts. Satisfies FR-001, data-model.md § 1.
-- [ ] T008 Port CC `reservedShortcuts.ts` → `tui/src/keybindings/reservedShortcuts.ts`. KOSAX reserved set: `agent-interrupt`, `session-exit`. Expose `isReservedAction(action)` and `isReservedChord(chord)`. Depends on T007 (contexts). Satisfies FR-027, D6.
+- [ ] T007 [P] Port CC `schema.ts` → `tui/src/keybindings/schema.ts`. Narrow `KEYBINDING_CONTEXTS` to the 4 UMMAYA contexts (Global · Chat · HistorySearch · Confirmation). Mirror `KEYBINDING_CONTEXT_DESCRIPTIONS` but use the Korean+English strings from contracts/keybinding-schema.ts. Satisfies FR-001, data-model.md § 1.
+- [ ] T008 Port CC `reservedShortcuts.ts` → `tui/src/keybindings/reservedShortcuts.ts`. UMMAYA reserved set: `agent-interrupt`, `session-exit`. Expose `isReservedAction(action)` and `isReservedChord(chord)`. Depends on T007 (contexts). Satisfies FR-027, D6.
 
 ### Registry + override loader
 
 - [ ] T009 Build `tui/src/keybindings/defaultBindings.ts` with the seven Tier 1 entries. Platform-specific `shift+tab` ↔ `meta+m` fallback per D3 (inherit from CC L17-L30). Depends on T004, T007, T008. Satisfies FR-002, data-model.md § 2.
-- [ ] T010 Port CC `loadUserBindings.ts` → `tui/src/keybindings/loadUserBindings.ts`. Read `~/.kosax/keybindings.json`; JSON-schema-validate against `schemas/user-override.schema.json`; silent degrade on missing/invalid (FR-023, FR-024); reject reserved-action remaps with warning (FR-027). Depends on T008. Satisfies FR-023..FR-028.
+- [ ] T010 Port CC `loadUserBindings.ts` → `tui/src/keybindings/loadUserBindings.ts`. Read `~/.ummaya/keybindings.json`; JSON-schema-validate against `schemas/user-override.schema.json`; silent degrade on missing/invalid (FR-023, FR-024); reject reserved-action remaps with warning (FR-027). Depends on T008. Satisfies FR-023..FR-028.
 - [ ] T011 Port CC `validate.ts` → `tui/src/keybindings/validate.ts`. Registry-build-time invariants from data-model.md § KeybindingEntry (reserved ⟹ !remappable; disabled ⟹ !reserved; chord-grammar conformance). Depends on T004, T008. Satisfies data-model.md § 3 invariants.
 - [ ] T012 Build the registry assembler in `tui/src/keybindings/registry.ts` that merges `DEFAULT_BINDINGS` + loader output through `validate`. Exposes `KeybindingRegistry` interface from contracts/keybinding-schema.ts. Immutable, built once at TUI boot. Depends on T009, T010, T011. Satisfies FR-001, FR-003.
 
@@ -66,9 +66,9 @@ description: "Task list for Epic #1303 — Shortcut Tier 1 port (spec 288)"
 
 - [ ] T013 Port CC `resolver.ts` → `tui/src/keybindings/resolver.ts` with precedence modal → form → context → global (D7). Depends on T012. Does NOT yet include IME gate (paired with T014). Satisfies FR-003.
 - [ ] T014 Integrate IME gate into resolver. Inject `useKoreanIME().isComposing` at the resolver entry point; short-circuit every action with `mutates_buffer === true` while composing. Returns `ResolutionResult { kind: 'blocked', reason: 'ime-composing' }`. This is the centralisation mandated by FR-007. Depends on T013. Satisfies FR-005, FR-006, FR-007, D4.
-- [ ] T014b Integrate OTel span emission into resolver. On every `ResolutionResult` of kind `dispatched` or `blocked`, emit a span with attributes `kosax.tui.binding`, `kosax.tui.binding.context`, `kosax.tui.binding.chord`, `kosax.tui.binding.reserved`; on blocks, additionally set `kosax.tui.binding.blocked.reason`. Reserved-action dispatches additionally call the Spec 024 `ToolCallAuditRecord` writer with event types `user-interrupted` / `session-exited`. Depends on T014. Satisfies FR-033, FR-034, data-model.md § Observability fields.
+- [ ] T014b Integrate OTel span emission into resolver. On every `ResolutionResult` of kind `dispatched` or `blocked`, emit a span with attributes `ummaya.tui.binding`, `ummaya.tui.binding.context`, `ummaya.tui.binding.chord`, `ummaya.tui.binding.reserved`; on blocks, additionally set `ummaya.tui.binding.blocked.reason`. Reserved-action dispatches additionally call the Spec 024 `ToolCallAuditRecord` writer with event types `user-interrupted` / `session-exited`. Depends on T014. Satisfies FR-033, FR-034, data-model.md § Observability fields.
 
-### Accessibility announcer (KOSAX-original)
+### Accessibility announcer (UMMAYA-original)
 
 - [ ] T015 Build `tui/src/keybindings/accessibilityAnnouncer.ts` implementing the `AccessibilityAnnouncer` interface from contracts/keybinding-schema.ts. Buffered text channel reaching screen readers (NVDA/VoiceOver/센스리더) through standard stdout announce pipeline per D8 and KWCAG 2.1 § 4.1.3. Satisfies FR-030, FR-031.
 
@@ -139,7 +139,7 @@ description: "Task list for Epic #1303 — Shortcut Tier 1 port (spec 288)"
 
 **Independent Test**: Per quickstart.md § Step 4. Verify SC-005 (100% block rate on irreversible-action flag).
 
-- [ ] T034 [US4] Implement the `permission-mode-cycle` action handler in `tui/src/keybindings/actions/permissionModeCycle.ts`. Thin adapter over existing `tui/src/permissions/ModeCycle.tsx` (Spec 033). Emits OTel span `kosax.permission.mode=<new_mode>` on success; emits `ResolutionResult { blocked, reason: 'permission-mode-blocked' }` on irreversible-action block. Screen-reader announcement on success (FR-030). Depends on T020. Satisfies FR-008, FR-009, FR-010, FR-011, SC-005.
+- [ ] T034 [US4] Implement the `permission-mode-cycle` action handler in `tui/src/keybindings/actions/permissionModeCycle.ts`. Thin adapter over existing `tui/src/permissions/ModeCycle.tsx` (Spec 033). Emits OTel span `ummaya.permission.mode=<new_mode>` on success; emits `ResolutionResult { blocked, reason: 'permission-mode-blocked' }` on irreversible-action block. Screen-reader announcement on success (FR-030). Depends on T020. Satisfies FR-008, FR-009, FR-010, FR-011, SC-005.
 - [ ] T035 [P] [US4] Add `tui/tests/keybindings/permission-mode-cycle.test.ts` — wrap order `plan→default→acceptEdits→bypassPermissions→plan`; block on injected irreversible-action flag; 200 ms indicator-update SLO. Targets T034.
 
 **Checkpoint US4**: citizen can cycle Permission Modes without leaving conversation; `bypassPermissions` cannot leak past an irreversible-action flag. All P1 stories now complete.
@@ -170,7 +170,7 @@ description: "Task list for Epic #1303 — Shortcut Tier 1 port (spec 288)"
 
 ## Phase 9: User Story 7 — Disable/remap via user override (Priority: P2)
 
-**Goal**: citizens satisfy WCAG 2.1.4 by editing `~/.kosax/keybindings.json`.
+**Goal**: citizens satisfy WCAG 2.1.4 by editing `~/.ummaya/keybindings.json`.
 
 **Independent Test**: Per quickstart.md § Steps 7–9. Verifies SC-004.
 
@@ -182,7 +182,7 @@ description: "Task list for Epic #1303 — Shortcut Tier 1 port (spec 288)"
 
 **Purpose**: accessibility audit, catalogue discovery surface, docs cross-refs.
 
-- [ ] T040 Add a catalogue-dump helper `tui/src/keybindings/template.ts` (port of CC `template.ts`) + KOSAX help-surface menu entry rendering the active Tier 1 catalogue. Must be reachable by screen-reader users within 30 s of TUI launch (SC-007). Satisfies FR-032, SC-007. Plus: `tui/tests/keybindings/accessibility.test.ts` that asserts every Tier 1 action emits an announcer event within 1 s of dispatch (FR-030), the catalogue is reachable via a non-chord path (menu), and an ADR-006 cross-reference note is appended to `docs/adr/ADR-006-cc-migration-vision-update.md` (§ "A-10 implementation landed in Spec 288" plus link to this tasks.md).
+- [ ] T040 Add a catalogue-dump helper `tui/src/keybindings/template.ts` (port of CC `template.ts`) + UMMAYA help-surface menu entry rendering the active Tier 1 catalogue. Must be reachable by screen-reader users within 30 s of TUI launch (SC-007). Satisfies FR-032, SC-007. Plus: `tui/tests/keybindings/accessibility.test.ts` that asserts every Tier 1 action emits an announcer event within 1 s of dispatch (FR-030), the catalogue is reachable via a non-chord path (menu), and an ADR-006 cross-reference note is appended to `docs/adr/ADR-006-cc-migration-vision-update.md` (§ "A-10 implementation landed in Spec 288" plus link to this tasks.md).
 
 ---
 

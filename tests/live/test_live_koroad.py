@@ -5,8 +5,8 @@ from __future__ import annotations
 
 import pytest
 
-from kosax.tools.koroad.code_tables import GugunCode, SearchYearCd, SidoCode
-from kosax.tools.koroad.koroad_accident_search import (
+from ummaya.tools.koroad.code_tables import GugunCode, SearchYearCd, SidoCode
+from ummaya.tools.koroad.koroad_accident_search import (
     KoroadAccidentSearchInput,
     KoroadAccidentSearchOutput,
     _call,
@@ -20,7 +20,7 @@ async def test_live_koroad_basic_search(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Call the real KOROAD API with Seoul/GENERAL_2024 and verify response structure."""
-    monkeypatch.setenv("KOSAX_DATA_GO_KR_API_KEY", koroad_api_key)
+    monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", koroad_api_key)
 
     inp = KoroadAccidentSearchInput(
         search_year_cd=SearchYearCd.GENERAL_2024,
@@ -57,7 +57,7 @@ async def test_live_koroad_response_parses_to_output_model(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Verify the raw _call() dict parses cleanly into KoroadAccidentSearchOutput."""
-    monkeypatch.setenv("KOSAX_DATA_GO_KR_API_KEY", koroad_api_key)
+    monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", koroad_api_key)
 
     inp = KoroadAccidentSearchInput(
         search_year_cd=SearchYearCd.GENERAL_2024,
@@ -82,7 +82,7 @@ async def test_live_koroad_pagination(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Request a single-row page and verify pagination fields are respected."""
-    monkeypatch.setenv("KOSAX_DATA_GO_KR_API_KEY", koroad_api_key)
+    monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", koroad_api_key)
 
     inp = KoroadAccidentSearchInput(
         search_year_cd=SearchYearCd.GENERAL_2024,

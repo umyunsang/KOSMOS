@@ -20,7 +20,7 @@ from pathlib import Path
 import pytest
 from pydantic import TypeAdapter, ValidationError
 
-from kosax.primitives.verify import (
+from ummaya.primitives.verify import (
     DigitalOnepassContext,
     GanpyeonInjeungContext,
     GeumyungInjeungseoContext,

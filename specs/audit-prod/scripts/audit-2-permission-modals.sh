@@ -12,7 +12,7 @@
 
 set -uo pipefail
 
-wait_for_pane "KOSAX|kosax" 60 || true
+wait_for_pane "UMMAYA|ummaya" 60 || true
 snapshot_pane boot
 
 # ---------------------------------------------------------------------------

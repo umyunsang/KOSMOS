@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # S1: 신규 시민 첫 사용 — onboarding 5-step + /help + lookup(kma) + permission ⓵
 set -euo pipefail
-wait_for_pane "KOSAX|❯|환영|preflight" 30
+wait_for_pane "UMMAYA|❯|환영|preflight" 30
 snapshot_pane 00-boot
 
-# Onboarding handled by KOSAX_ONBOARDING_AUTO_COMPLETE=1 env (set by
+# Onboarding handled by UMMAYA_ONBOARDING_AUTO_COMPLETE=1 env (set by
 # run-all-S1-S10.sh wrapper). Standalone interactive verification of the
 # 5-step wizard is performed by scn-S0-onboarding-deep.sh (separate agent).
 snapshot_pane 01-post-onboarding

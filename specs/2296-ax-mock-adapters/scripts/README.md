@@ -15,20 +15,20 @@ This directory contains Layer 2 (PTY expect) and Layer 4 (vhs visual) smoke veri
 |---|---|---|
 | `../smoke-citizen-taxreturn-pty.txt` | Layer 2 | Full PTY transcript, LLM-grep-friendly |
 | `../smoke-citizen-taxreturn.gif` | Layer 4 | Animated full chain (shareable) |
-| `../smoke-keyframe-1-boot.png` | Layer 4 | Boot + KOSAX branding visible |
+| `../smoke-keyframe-1-boot.png` | Layer 4 | Boot + UMMAYA branding visible |
 | `../smoke-keyframe-2-input.png` | Layer 4 | Citizen query typed in |
 | `../smoke-keyframe-3-action.png` | Layer 4 | Post-approval state / 접수번호 |
 
 ## What Was Actually Captured (T039 run result)
 
 **Environment at time of capture**:
-- `KOSAX_FRIENDLI_TOKEN`: set (live LLM available)
-- `KOSAX_BACKEND_CMD`: `uv run python -m kosax.ipc.demo.mock_backend`
-- `KOSAX_FORCE_INTERACTIVE=1`: set (required under PTY harness — see KOSAX-1978 T003b)
+- `UMMAYA_FRIENDLI_TOKEN`: set (live LLM available)
+- `UMMAYA_BACKEND_CMD`: `uv run python -m ummaya.ipc.demo.mock_backend`
+- `UMMAYA_FORCE_INTERACTIVE=1`: set (required under PTY harness — see UMMAYA-1978 T003b)
 
 **Layer 2 (expect) scenario**: Full PTY session captured. The script:
 1. Boots the TUI with the real Mock backend
-2. Waits for KOSAX branding (Checkpoint 1)
+2. Waits for UMMAYA branding (Checkpoint 1)
 3. Sends `내 종합소득세 신고해줘\r` (Checkpoint 2)
 4. Waits for permission prompt (Checkpoint 3 — requires live LLM to drive the chain)
 5. Sends `Y\r` (Checkpoint 4)
@@ -36,7 +36,7 @@ This directory contains Layer 2 (PTY expect) and Layer 4 (vhs visual) smoke veri
 7. Exits with double Ctrl-C
 
 **Layer 4 (vhs) scenario**: Three PNG keyframes captured:
-- Keyframe 1 (boot): KOSAX branding after 8s boot wait
+- Keyframe 1 (boot): UMMAYA branding after 8s boot wait
 - Keyframe 2 (input): Citizen query typed in, agentic loop processing
 - Keyframe 3 (action): Post-approval state — 접수번호 surfaced (live LLM) or agentic-loop processing state (mock-only fallback)
 
@@ -56,14 +56,14 @@ This directory contains Layer 2 (PTY expect) and Layer 4 (vhs visual) smoke veri
 If neither path above produces the full receipt token, use the scripted-chain harness:
 
 ```bash
-cd /Users/um-yunsang/KOSAX-w-2296
-uv run python -m kosax.ipc.demo.scripted_chain \
+cd /Users/um-yunsang/UMMAYA-w-2296
+uv run python -m ummaya.ipc.demo.scripted_chain \
   --scenario specs/2296-ax-mock-adapters/scenarios/citizen-taxreturn.json
 ```
 
 The scenario JSON is at `../scenarios/citizen-taxreturn.json`.
 
-Note: `kosax.ipc.demo.scripted_chain` may need to be authored if not yet present — check `src/kosax/ipc/demo/` and see `quickstart.md § 6` for the expected CLI interface.
+Note: `ummaya.ipc.demo.scripted_chain` may need to be authored if not yet present — check `src/ummaya/ipc/demo/` and see `quickstart.md § 6` for the expected CLI interface.
 
 ## Reference
 

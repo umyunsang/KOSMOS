@@ -1,6 +1,6 @@
 [
   {
-    "kosax_path": "tui/src/bootstrap/state.ts",
+    "ummaya_path": "tui/src/bootstrap/state.ts",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/bootstrap/state.ts",
     "import_lines_changed": [
       "-import type { BetaMessageStreamParams } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'",
@@ -10,7 +10,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/bridge/inboundAttachments.ts",
+    "ummaya_path": "tui/src/bridge/inboundAttachments.ts",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/bridge/inboundAttachments.ts",
     "import_lines_changed": [
       "-import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages.mjs'",
@@ -20,7 +20,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/commands/createMovedToPluginCommand.ts",
+    "ummaya_path": "tui/src/commands/createMovedToPluginCommand.ts",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/commands/createMovedToPluginCommand.ts",
     "import_lines_changed": [
       "-import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages.js'",
@@ -30,7 +30,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/commands/review.ts",
+    "ummaya_path": "tui/src/commands/review.ts",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/commands/review.ts",
     "import_lines_changed": [
       "-import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages.js'",
@@ -40,7 +40,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/commands/review/ultrareviewCommand.tsx",
+    "ummaya_path": "tui/src/commands/review/ultrareviewCommand.tsx",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/commands/review/ultrareviewCommand.tsx",
     "import_lines_changed": [
       "-import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages.js';",
@@ -50,7 +50,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/commands/statusline.tsx",
+    "ummaya_path": "tui/src/commands/statusline.tsx",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/commands/statusline.tsx",
     "import_lines_changed": [
       "-import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/index.mjs';",
@@ -60,7 +60,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/components/FallbackToolUseErrorMessage.tsx",
+    "ummaya_path": "tui/src/components/FallbackToolUseErrorMessage.tsx",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/FallbackToolUseErrorMessage.tsx",
     "import_lines_changed": [
       "-import type { ToolResultBlockParam } from '@anthropic-ai/sdk/resources/messages/messages.mjs';",
@@ -70,7 +70,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/components/Message.tsx",
+    "ummaya_path": "tui/src/components/Message.tsx",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/Message.tsx",
     "import_lines_changed": [
       "-import type { BetaContentBlock } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs';",
@@ -82,7 +82,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/components/MessageSelector.tsx",
+    "ummaya_path": "tui/src/components/MessageSelector.tsx",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/MessageSelector.tsx",
     "import_lines_changed": [
       "-import type { ContentBlockParam, TextBlockParam } from '@anthropic-ai/sdk/resources/index.mjs';",
@@ -92,7 +92,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/components/agents/new-agent-creation/wizard-steps/GenerateStep.tsx",
+    "ummaya_path": "tui/src/components/agents/new-agent-creation/wizard-steps/GenerateStep.tsx",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/agents/new-agent-creation/wizard-steps/GenerateStep.tsx",
     "import_lines_changed": [
       "-import { APIUserAbortError } from '@anthropic-ai/sdk';",
@@ -102,7 +102,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/components/messages/AssistantThinkingMessage.tsx",
+    "ummaya_path": "tui/src/components/messages/AssistantThinkingMessage.tsx",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/messages/AssistantThinkingMessage.tsx",
     "import_lines_changed": [
       "-import type { ThinkingBlock, ThinkingBlockParam } from '@anthropic-ai/sdk/resources/index.mjs';",
@@ -112,7 +112,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/components/messages/AssistantToolUseMessage.tsx",
+    "ummaya_path": "tui/src/components/messages/AssistantToolUseMessage.tsx",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/messages/AssistantToolUseMessage.tsx",
     "import_lines_changed": [
       "-import type { ToolUseBlockParam } from '@anthropic-ai/sdk/resources/index.mjs';",
@@ -122,7 +122,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/components/messages/GroupedToolUseContent.tsx",
+    "ummaya_path": "tui/src/components/messages/GroupedToolUseContent.tsx",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/messages/GroupedToolUseContent.tsx",
     "import_lines_changed": [
       "-import type { ToolResultBlockParam, ToolUseBlockParam } from '@anthropic-ai/sdk/resources/messages/messages.mjs';",
@@ -132,7 +132,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/components/messages/UserAgentNotificationMessage.tsx",
+    "ummaya_path": "tui/src/components/messages/UserAgentNotificationMessage.tsx",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/messages/UserAgentNotificationMessage.tsx",
     "import_lines_changed": [
       "-import type { TextBlockParam } from '@anthropic-ai/sdk/resources/index.mjs';",
@@ -142,7 +142,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/components/messages/UserBashInputMessage.tsx",
+    "ummaya_path": "tui/src/components/messages/UserBashInputMessage.tsx",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/messages/UserBashInputMessage.tsx",
     "import_lines_changed": [
       "-import type { TextBlockParam } from '@anthropic-ai/sdk/resources/index.mjs';",
@@ -152,7 +152,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/components/messages/UserChannelMessage.tsx",
+    "ummaya_path": "tui/src/components/messages/UserChannelMessage.tsx",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/messages/UserChannelMessage.tsx",
     "import_lines_changed": [
       "-import type { TextBlockParam } from '@anthropic-ai/sdk/resources/index.mjs';",
@@ -162,7 +162,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/components/messages/UserCommandMessage.tsx",
+    "ummaya_path": "tui/src/components/messages/UserCommandMessage.tsx",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/messages/UserCommandMessage.tsx",
     "import_lines_changed": [
       "-import type { TextBlockParam } from '@anthropic-ai/sdk/resources/index.mjs';",
@@ -172,7 +172,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/components/messages/UserPromptMessage.tsx",
+    "ummaya_path": "tui/src/components/messages/UserPromptMessage.tsx",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/messages/UserPromptMessage.tsx",
     "import_lines_changed": [
       "-import type { TextBlockParam } from '@anthropic-ai/sdk/resources/index.mjs';",
@@ -182,7 +182,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/components/messages/UserResourceUpdateMessage.tsx",
+    "ummaya_path": "tui/src/components/messages/UserResourceUpdateMessage.tsx",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/messages/UserResourceUpdateMessage.tsx",
     "import_lines_changed": [
       "-import type { TextBlockParam } from '@anthropic-ai/sdk/resources/index.mjs';",
@@ -192,7 +192,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/components/messages/UserTeammateMessage.tsx",
+    "ummaya_path": "tui/src/components/messages/UserTeammateMessage.tsx",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/messages/UserTeammateMessage.tsx",
     "import_lines_changed": [
       "-import type { TextBlockParam } from '@anthropic-ai/sdk/resources/index.mjs';",
@@ -202,7 +202,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/components/messages/UserTextMessage.tsx",
+    "ummaya_path": "tui/src/components/messages/UserTextMessage.tsx",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/messages/UserTextMessage.tsx",
     "import_lines_changed": [
       "-import type { TextBlockParam } from '@anthropic-ai/sdk/resources/index.mjs';",
@@ -212,7 +212,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/components/messages/UserToolResultMessage/UserToolErrorMessage.tsx",
+    "ummaya_path": "tui/src/components/messages/UserToolResultMessage/UserToolErrorMessage.tsx",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/messages/UserToolResultMessage/UserToolErrorMessage.tsx",
     "import_lines_changed": [
       "-import type { ToolResultBlockParam } from '@anthropic-ai/sdk/resources/index.mjs';",
@@ -222,7 +222,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/components/messages/UserToolResultMessage/UserToolResultMessage.tsx",
+    "ummaya_path": "tui/src/components/messages/UserToolResultMessage/UserToolResultMessage.tsx",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/messages/UserToolResultMessage/UserToolResultMessage.tsx",
     "import_lines_changed": [
       "-import type { ToolResultBlockParam } from '@anthropic-ai/sdk/resources/index.mjs';",
@@ -232,7 +232,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/components/messages/UserToolResultMessage/utils.tsx",
+    "ummaya_path": "tui/src/components/messages/UserToolResultMessage/utils.tsx",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/messages/UserToolResultMessage/utils.tsx",
     "import_lines_changed": [
       "-import type { ToolUseBlockParam } from '@anthropic-ai/sdk/resources/index.mjs';",
@@ -242,7 +242,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/components/permissions/AskUserQuestionPermissionRequest/AskUserQuestionPermissionRequest.tsx",
+    "ummaya_path": "tui/src/components/permissions/AskUserQuestionPermissionRequest/AskUserQuestionPermissionRequest.tsx",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/permissions/AskUserQuestionPermissionRequest/AskUserQuestionPermissionRequest.tsx",
     "import_lines_changed": [
       "-import type { Base64ImageSource, ImageBlockParam } from '@anthropic-ai/sdk/resources/messages.mjs';",
@@ -252,7 +252,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/components/permissions/ExitPlanModePermissionRequest/ExitPlanModePermissionRequest.tsx",
+    "ummaya_path": "tui/src/components/permissions/ExitPlanModePermissionRequest/ExitPlanModePermissionRequest.tsx",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/permissions/ExitPlanModePermissionRequest/ExitPlanModePermissionRequest.tsx",
     "import_lines_changed": [
       "-import type { Base64ImageSource, ImageBlockParam } from '@anthropic-ai/sdk/resources/messages.mjs';",
@@ -262,7 +262,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/components/permissions/PermissionRequest.tsx",
+    "ummaya_path": "tui/src/components/permissions/PermissionRequest.tsx",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/components/permissions/PermissionRequest.tsx",
     "import_lines_changed": [
       "-import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages.mjs';",
@@ -272,7 +272,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/hooks/toolPermission/PermissionContext.ts",
+    "ummaya_path": "tui/src/hooks/toolPermission/PermissionContext.ts",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/hooks/toolPermission/PermissionContext.ts",
     "import_lines_changed": [
       "-import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages.mjs'",
@@ -282,7 +282,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/hooks/toolPermission/handlers/interactiveHandler.ts",
+    "ummaya_path": "tui/src/hooks/toolPermission/handlers/interactiveHandler.ts",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/hooks/toolPermission/handlers/interactiveHandler.ts",
     "import_lines_changed": [
       "-import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages.mjs'",
@@ -292,7 +292,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/hooks/toolPermission/handlers/swarmWorkerHandler.ts",
+    "ummaya_path": "tui/src/hooks/toolPermission/handlers/swarmWorkerHandler.ts",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/hooks/toolPermission/handlers/swarmWorkerHandler.ts",
     "import_lines_changed": [
       "-import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages.mjs'",
@@ -302,7 +302,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/hooks/usePromptsFromClaudeInChrome.tsx",
+    "ummaya_path": "tui/src/hooks/usePromptsFromClaudeInChrome.tsx",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/hooks/usePromptsFromClaudeInChrome.tsx",
     "import_lines_changed": [
       "-import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages.mjs';",
@@ -312,7 +312,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/services/api/dumpPrompts.ts",
+    "ummaya_path": "tui/src/services/api/dumpPrompts.ts",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/services/api/dumpPrompts.ts",
     "import_lines_changed": [
       "-import type { ClientOptions } from '@anthropic-ai/sdk'",
@@ -322,7 +322,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/services/compact/microCompact.ts",
+    "ummaya_path": "tui/src/services/compact/microCompact.ts",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/services/compact/microCompact.ts",
     "import_lines_changed": [
       "-import type { ToolResultBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'",
@@ -332,7 +332,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/services/tools/StreamingToolExecutor.ts",
+    "ummaya_path": "tui/src/services/tools/StreamingToolExecutor.ts",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/services/tools/StreamingToolExecutor.ts",
     "import_lines_changed": [
       "-import type { ToolUseBlock } from '@anthropic-ai/sdk/resources/index.mjs'",
@@ -342,7 +342,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/services/tools/toolOrchestration.ts",
+    "ummaya_path": "tui/src/services/tools/toolOrchestration.ts",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/services/tools/toolOrchestration.ts",
     "import_lines_changed": [
       "-import type { ToolUseBlock } from '@anthropic-ai/sdk/resources/index.mjs'",
@@ -352,7 +352,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/skills/bundledSkills.ts",
+    "ummaya_path": "tui/src/skills/bundledSkills.ts",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/skills/bundledSkills.ts",
     "import_lines_changed": [
       "-import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'",
@@ -362,7 +362,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/tools/AgentTool/UI.tsx",
+    "ummaya_path": "tui/src/tools/AgentTool/UI.tsx",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/tools/AgentTool/UI.tsx",
     "import_lines_changed": [
       "-import type { ToolResultBlockParam, ToolUseBlockParam } from '@anthropic-ai/sdk/resources/index.mjs';",
@@ -372,7 +372,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/tools/AgentTool/forkSubagent.ts",
+    "ummaya_path": "tui/src/tools/AgentTool/forkSubagent.ts",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/tools/AgentTool/forkSubagent.ts",
     "import_lines_changed": [
       "-import type { BetaToolUseBlock } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'",
@@ -382,7 +382,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/tools/BashTool/BashTool.tsx",
+    "ummaya_path": "tui/src/tools/BashTool/BashTool.tsx",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/tools/BashTool/BashTool.tsx",
     "import_lines_changed": [
       "-import type { ToolResultBlockParam } from '@anthropic-ai/sdk/resources/index.mjs';",
@@ -392,7 +392,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/tools/BashTool/UI.tsx",
+    "ummaya_path": "tui/src/tools/BashTool/UI.tsx",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/tools/BashTool/UI.tsx",
     "import_lines_changed": [
       "-import type { ToolResultBlockParam } from '@anthropic-ai/sdk/resources/index.mjs';",
@@ -402,7 +402,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/tools/BashTool/bashPermissions.ts",
+    "ummaya_path": "tui/src/tools/BashTool/bashPermissions.ts",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/tools/BashTool/bashPermissions.ts",
     "import_lines_changed": [
       "-import { APIUserAbortError } from '@anthropic-ai/sdk'",
@@ -412,7 +412,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/tools/FileEditTool/UI.tsx",
+    "ummaya_path": "tui/src/tools/FileEditTool/UI.tsx",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/tools/FileEditTool/UI.tsx",
     "import_lines_changed": [
       "-import type { ToolResultBlockParam } from '@anthropic-ai/sdk/resources/index.mjs';",
@@ -422,7 +422,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/tools/FileReadTool/FileReadTool.ts",
+    "ummaya_path": "tui/src/tools/FileReadTool/FileReadTool.ts",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/tools/FileReadTool/FileReadTool.ts",
     "import_lines_changed": [
       "-import type { Base64ImageSource } from '@anthropic-ai/sdk/resources/index.mjs'",
@@ -432,7 +432,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/tools/FileReadTool/UI.tsx",
+    "ummaya_path": "tui/src/tools/FileReadTool/UI.tsx",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/tools/FileReadTool/UI.tsx",
     "import_lines_changed": [
       "-import type { ToolResultBlockParam } from '@anthropic-ai/sdk/resources/index.mjs';",
@@ -442,7 +442,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/tools/FileWriteTool/UI.tsx",
+    "ummaya_path": "tui/src/tools/FileWriteTool/UI.tsx",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/tools/FileWriteTool/UI.tsx",
     "import_lines_changed": [
       "-import type { ToolResultBlockParam } from '@anthropic-ai/sdk/resources/index.mjs';",
@@ -452,7 +452,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/tools/GlobTool/UI.tsx",
+    "ummaya_path": "tui/src/tools/GlobTool/UI.tsx",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/tools/GlobTool/UI.tsx",
     "import_lines_changed": [
       "-import type { ToolResultBlockParam } from '@anthropic-ai/sdk/resources/index.mjs';",
@@ -462,7 +462,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/tools/GrepTool/UI.tsx",
+    "ummaya_path": "tui/src/tools/GrepTool/UI.tsx",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/tools/GrepTool/UI.tsx",
     "import_lines_changed": [
       "-import type { ToolResultBlockParam } from '@anthropic-ai/sdk/resources/index.mjs';",
@@ -472,7 +472,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/tools/LSPTool/UI.tsx",
+    "ummaya_path": "tui/src/tools/LSPTool/UI.tsx",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/tools/LSPTool/UI.tsx",
     "import_lines_changed": [
       "-import type { ToolResultBlockParam } from '@anthropic-ai/sdk/resources/index.mjs';",
@@ -482,7 +482,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/tools/NotebookEditTool/UI.tsx",
+    "ummaya_path": "tui/src/tools/NotebookEditTool/UI.tsx",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/tools/NotebookEditTool/UI.tsx",
     "import_lines_changed": [
       "-import type { ToolResultBlockParam } from '@anthropic-ai/sdk/resources/index.mjs';",
@@ -492,7 +492,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/tools/PowerShellTool/PowerShellTool.tsx",
+    "ummaya_path": "tui/src/tools/PowerShellTool/PowerShellTool.tsx",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/tools/PowerShellTool/PowerShellTool.tsx",
     "import_lines_changed": [
       "-import type { ToolResultBlockParam } from '@anthropic-ai/sdk/resources/index.mjs';",
@@ -502,7 +502,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/tools/PowerShellTool/UI.tsx",
+    "ummaya_path": "tui/src/tools/PowerShellTool/UI.tsx",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/tools/PowerShellTool/UI.tsx",
     "import_lines_changed": [
       "-import type { ToolResultBlockParam } from '@anthropic-ai/sdk/resources/index.mjs';",
@@ -512,7 +512,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/tools/SkillTool/UI.tsx",
+    "ummaya_path": "tui/src/tools/SkillTool/UI.tsx",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/tools/SkillTool/UI.tsx",
     "import_lines_changed": [
       "-import type { ToolResultBlockParam } from '@anthropic-ai/sdk/resources/index.mjs';",
@@ -522,7 +522,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/tools/ToolSearchTool/ToolSearchTool.ts",
+    "ummaya_path": "tui/src/tools/ToolSearchTool/ToolSearchTool.ts",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/tools/ToolSearchTool/ToolSearchTool.ts",
     "import_lines_changed": [
       "-import type { ToolResultBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'",
@@ -532,7 +532,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/types/command.ts",
+    "ummaya_path": "tui/src/types/command.ts",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/types/command.ts",
     "import_lines_changed": [
       "-import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'",
@@ -542,7 +542,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/types/permissions.ts",
+    "ummaya_path": "tui/src/types/permissions.ts",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/types/permissions.ts",
     "import_lines_changed": [
       "-import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages.mjs'",
@@ -552,7 +552,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/types/textInputTypes.ts",
+    "ummaya_path": "tui/src/types/textInputTypes.ts",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/types/textInputTypes.ts",
     "import_lines_changed": [
       "-import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages.mjs'",
@@ -562,7 +562,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/utils/analyzeContext.ts",
+    "ummaya_path": "tui/src/utils/analyzeContext.ts",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/analyzeContext.ts",
     "import_lines_changed": [
       "-import type { Anthropic } from '@anthropic-ai/sdk'",
@@ -572,7 +572,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/utils/errors.ts",
+    "ummaya_path": "tui/src/utils/errors.ts",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/errors.ts",
     "import_lines_changed": [
       "-import { APIUserAbortError } from '@anthropic-ai/sdk'",
@@ -582,7 +582,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/utils/groupToolUses.ts",
+    "ummaya_path": "tui/src/utils/groupToolUses.ts",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/groupToolUses.ts",
     "import_lines_changed": [
       "-import type { BetaToolUseBlock } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'",
@@ -594,7 +594,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/utils/log.ts",
+    "ummaya_path": "tui/src/utils/log.ts",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/log.ts",
     "import_lines_changed": [
       "-import type { BetaMessageStreamParams } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'",
@@ -604,7 +604,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/utils/messageQueueManager.ts",
+    "ummaya_path": "tui/src/utils/messageQueueManager.ts",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/messageQueueManager.ts",
     "import_lines_changed": [
       "-import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages.mjs'",
@@ -614,7 +614,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/utils/permissions/classifierShared.ts",
+    "ummaya_path": "tui/src/utils/permissions/classifierShared.ts",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/permissions/classifierShared.ts",
     "import_lines_changed": [
       "-import type { BetaContentBlock } from '@anthropic-ai/sdk/resources/beta/messages.js'",
@@ -624,7 +624,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/utils/processUserInput/processBashCommand.tsx",
+    "ummaya_path": "tui/src/utils/processUserInput/processBashCommand.tsx",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/processUserInput/processBashCommand.tsx",
     "import_lines_changed": [
       "-import type { ContentBlockParam } from '@anthropic-ai/sdk/resources';",
@@ -634,7 +634,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/utils/queryHelpers.ts",
+    "ummaya_path": "tui/src/utils/queryHelpers.ts",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/queryHelpers.ts",
     "import_lines_changed": [
       "-import type { ToolUseBlock } from '@anthropic-ai/sdk/resources/index.mjs'",
@@ -644,7 +644,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/utils/tokens.ts",
+    "ummaya_path": "tui/src/utils/tokens.ts",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/tokens.ts",
     "import_lines_changed": [
       "-import type { BetaUsage as Usage } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'",
@@ -654,7 +654,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/utils/toolResultStorage.ts",
+    "ummaya_path": "tui/src/utils/toolResultStorage.ts",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/toolResultStorage.ts",
     "import_lines_changed": [
       "-import type { ToolResultBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'",
@@ -664,7 +664,7 @@
     "reclassified_to_modified": false
   },
   {
-    "kosax_path": "tui/src/utils/toolSchemaCache.ts",
+    "ummaya_path": "tui/src/utils/toolSchemaCache.ts",
     "cc_source_path": ".references/claude-code-sourcemap/restored-src/src/utils/toolSchemaCache.ts",
     "import_lines_changed": [
       "-import type { BetaTool } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'",

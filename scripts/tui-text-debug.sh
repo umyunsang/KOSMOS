@@ -32,8 +32,8 @@ set -euo pipefail
 
 OUTDIR="${1:?usage: $0 <output-dir> <expect-scenario>}"
 SCENARIO="${2:?usage: $0 <output-dir> <expect-scenario>}"
-COLS="${KOSAX_DEBUG_COLS:-200}"
-ROWS="${KOSAX_DEBUG_ROWS:-50}"
+COLS="${UMMAYA_DEBUG_COLS:-200}"
+ROWS="${UMMAYA_DEBUG_ROWS:-50}"
 
 REPO_ROOT="$(git -C "$(dirname "$0")" rev-parse --show-toplevel)"
 

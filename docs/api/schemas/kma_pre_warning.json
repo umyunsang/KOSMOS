@@ -52,7 +52,7 @@
       "type": "object"
     }
   },
-  "$id": "https://kosax.example/api/schemas/kma_pre_warning.json",
+  "$id": "https://ummaya.example/api/schemas/kma_pre_warning.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Input parameters for the KMA weather pre-warning list (기상예비특보목록) API.",
   "properties": {

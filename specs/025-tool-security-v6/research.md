@@ -8,11 +8,11 @@ Resolve all Technical-Context unknowns and map every V6 design decision to a con
 
 ## Reference Source Mapping (Constitution §I — MANDATORY)
 
-Each V6 design decision is traced to a concrete reference source. Primary references come from `docs/vision.md § Reference materials` and existing KOSAX code that established the pattern we are extending.
+Each V6 design decision is traced to a concrete reference source. Primary references come from `docs/vision.md § Reference materials` and existing UMMAYA code that established the pattern we are extending.
 
 ### Decision 1 — Validator mechanism for FR-039 (model-layer V6 enforcement)
 
-**Decision**: Extend the existing `@model_validator(mode="after")` chain in `GovAPITool._validate_security_invariants` (`src/kosax/tools/models.py:166-238`) with a V6 block that checks `auth_type` ↔ `auth_level` against a module-level canonical mapping constant.
+**Decision**: Extend the existing `@model_validator(mode="after")` chain in `GovAPITool._validate_security_invariants` (`src/ummaya/tools/models.py:166-238`) with a V6 block that checks `auth_type` ↔ `auth_level` against a module-level canonical mapping constant.
 
 **Rationale**:
 - Pydantic v2 `@model_validator(mode="after")` is the pattern V1–V5 already use on the same model. Consistency with the existing chain means a single place to audit all cross-field invariants, a single error-path for authors, and zero new imports.
@@ -25,14 +25,14 @@ Each V6 design decision is traced to a concrete reference source. Primary refere
 - Field-level `@field_validator` — rejected: cannot inspect two fields simultaneously.
 
 **Primary reference**: Pydantic AI (`docs/vision.md § Reference materials` — Tool System row, primary reference). Pydantic AI's schema-driven registry established the convention of model-layer cross-field validation as the first line of defense.
-**Secondary reference**: Existing V1–V5 code at `src/kosax/tools/models.py:166-238` — the exact pattern V6 extends.
+**Secondary reference**: Existing V1–V5 code at `src/ummaya/tools/models.py:166-238` — the exact pattern V6 extends.
 
 ### Decision 2 — Registry backstop mechanism for FR-042 (registration-layer V6 enforcement)
 
-**Decision**: Add a V6 check inside `ToolRegistry.register()` (`src/kosax/tools/registry.py:26-79`) that mirrors the existing V3 FR-038 backstop block. The check: lookup `tool.auth_type` in the canonical mapping module constant; if `tool.auth_level` is not in the allowed set, log a structured error and raise `RegistrationError` with a V6-specific message distinct from the pydantic `ValueError`.
+**Decision**: Add a V6 check inside `ToolRegistry.register()` (`src/ummaya/tools/registry.py:26-79`) that mirrors the existing V3 FR-038 backstop block. The check: lookup `tool.auth_type` in the canonical mapping module constant; if `tool.auth_level` is not in the allowed set, log a structured error and raise `RegistrationError` with a V6-specific message distinct from the pydantic `ValueError`.
 
 **Rationale**:
-- V3 FR-038 (landed in PR #653) already established the "independent backstop at registration" convention for analogous invariants — see `src/kosax/tools/registry.py:39-79` for the three existing FR-038 checks, each guarded against `model_construct` bypass. V6 must match this structural pattern so auditors see a uniform defense-in-depth layout across all security invariants.
+- V3 FR-038 (landed in PR #653) already established the "independent backstop at registration" convention for analogous invariants — see `src/ummaya/tools/registry.py:39-79` for the three existing FR-038 checks, each guarded against `model_construct` bypass. V6 must match this structural pattern so auditors see a uniform defense-in-depth layout across all security invariants.
 - Raising `RegistrationError` (not `ValueError`) satisfies FR-043 (distinguishable from pydantic error) and matches what the other backstops already do, so observability / log-pattern matching stays stable.
 - The backstop re-reads `tool.auth_type` and `tool.auth_level` directly from the instance, which is exactly what the FR-038 `is_personal_data` + `auth_level` check does two lines above; this defeats `model_construct` and `object.__setattr__` bypasses that the pydantic validator would miss.
 
@@ -41,7 +41,7 @@ Each V6 design decision is traced to a concrete reference source. Primary refere
 - Place the backstop in `ToolExecutor.invoke()` instead — rejected: the threat model is "misconfigured tool reaches the orchestrator", and `ToolRegistry.register()` is the earliest chokepoint before the orchestrator can discover it. Moving the check later would allow the tool to be listed by `registry.search()` before being rejected.
 - Use an assert or a private helper — rejected: asserts are stripped in `-O` mode; Constitution §II requires bypass-immune enforcement.
 
-**Primary reference**: V3 FR-038 implementation at `src/kosax/tools/registry.py:39-79` — the prescribed code-pattern reference.
+**Primary reference**: V3 FR-038 implementation at `src/ummaya/tools/registry.py:39-79` — the prescribed code-pattern reference.
 **Secondary reference**: Spec-024 V1 data-model §1 invariants doc (`docs/security/tool-template-security-spec-v1.md`) — establishes the two-layer-defense mental model that V6 extends.
 
 ### Decision 3 — Documentation update strategy for FR-046 (spec v1.1 amendment)
@@ -51,7 +51,7 @@ Each V6 design decision is traced to a concrete reference source. Primary refere
 **Rationale**:
 - Spec-024 V1 (Epic #612, merged in PR #653) established the document structure: one section per invariant (V1, V2, V3, V4, V5). V6 follows the same section shape for consistency — auditors familiar with V1–V5 can locate V6 without re-reading the entire document.
 - v1.1 (semver patch) signals additive content with no breaking reinterpretation of V1–V5 — matches actual code behavior (V1–V5 unchanged per FR-047).
-- A matrix table is the format ministry reviewers expect for allow-list contracts; mirrors the `TOOL_MIN_AAL` table in `src/kosax/security/audit.py`.
+- A matrix table is the format ministry reviewers expect for allow-list contracts; mirrors the `TOOL_MIN_AAL` table in `src/ummaya/security/audit.py`.
 
 **Alternatives considered**:
 - Create `docs/security/tool-template-security-spec-v2.md` — rejected: the change is additive, not a major revision; duplicating the document splits reviewer attention.
@@ -82,19 +82,19 @@ Each V6 design decision is traced to a concrete reference source. Primary refere
 
 ### Decision 5 — Canonical mapping location (module constant vs inline)
 
-**Decision**: Declare the canonical `auth_type → frozenset[auth_level]` mapping as a module-level constant in `src/kosax/tools/models.py` (colocated with the `_validate_security_invariants` method that consumes it). Import and reuse the same constant in `src/kosax/tools/registry.py` for the backstop.
+**Decision**: Declare the canonical `auth_type → frozenset[auth_level]` mapping as a module-level constant in `src/ummaya/tools/models.py` (colocated with the `_validate_security_invariants` method that consumes it). Import and reuse the same constant in `src/ummaya/tools/registry.py` for the backstop.
 
 **Rationale**:
 - Single source of truth — validator and backstop MUST check the identical mapping, or they can drift (Constitution §II violation risk).
 - `frozenset` is immutable (prevents accidental mutation at runtime) and hashable (negligible lookup cost).
-- Module-level constant mirrors how `TOOL_MIN_AAL` (V3 SoT) is declared in `src/kosax/security/audit.py` — a known-good precedent in this codebase.
+- Module-level constant mirrors how `TOOL_MIN_AAL` (V3 SoT) is declared in `src/ummaya/security/audit.py` — a known-good precedent in this codebase.
 
 **Alternatives considered**:
 - Duplicate the mapping in both files — rejected: drift risk.
-- Put the mapping in `src/kosax/security/audit.py` — considered; rejected because V6 is a model-layer invariant about adapter metadata, not a runtime audit constant like `TOOL_MIN_AAL`. The constant's natural home is next to the validator that enforces it.
+- Put the mapping in `src/ummaya/security/audit.py` — considered; rejected because V6 is a model-layer invariant about adapter metadata, not a runtime audit constant like `TOOL_MIN_AAL`. The constant's natural home is next to the validator that enforces it.
 - Config file / YAML — rejected: no runtime configurability needed; hard-coding matches the "spec document is authoritative" principle.
 
-**Primary reference**: `TOOL_MIN_AAL` module-level constant at `src/kosax/security/audit.py` — the single-source-of-truth precedent pattern.
+**Primary reference**: `TOOL_MIN_AAL` module-level constant at `src/ummaya/security/audit.py` — the single-source-of-truth precedent pattern.
 
 ### Decision 6 — Error message format for FR-041, FR-043
 
@@ -109,7 +109,7 @@ The two messages share the "V6 violation" prefix for log grep-ability but differ
 - The "(registry backstop — bypass via model_construct detected)" tail is the exact telemetry signal observability needs to distinguish layer-1 vs layer-2 rejections in production logs.
 - `sorted(allowed)` ensures deterministic error-message ordering for test stability.
 
-**Primary reference**: V1–V5 error-message format at `src/kosax/tools/models.py:184-237` — the layout V6 must match.
+**Primary reference**: V1–V5 error-message format at `src/ummaya/tools/models.py:184-237` — the layout V6 must match.
 
 ## Deferred Items Validation (Constitution §VI — MANDATORY)
 

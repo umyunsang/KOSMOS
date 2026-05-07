@@ -1,6 +1,6 @@
 """T011 — PromptLoader Langfuse opt-in flag tests (FR-C08, FR-C09).
 
-All tests are intentionally RED until src/kosax/context/prompt_loader.py exists (T025).
+All tests are intentionally RED until src/ummaya/context/prompt_loader.py exists (T025).
 
 TEST-COMMENT: test_flag_true_with_mock_client_hash_disagreement_fails_closed is
 intentionally brittle.  It encodes FR-C09's requirement that any disagreement between
@@ -25,7 +25,7 @@ import types
 
 import pytest
 
-from kosax.context.prompt_loader import (  # noqa: F401 — RED import
+from ummaya.context.prompt_loader import (  # noqa: F401 — RED import
     PromptLoader,
     PromptRegistryError,
 )
@@ -36,15 +36,15 @@ from kosax.context.prompt_loader import (  # noqa: F401 — RED import
 
 
 def test_flag_unset_never_imports_langfuse(valid_prompt_tree, monkeypatch):
-    """With KOSAX_PROMPT_REGISTRY_LANGFUSE unset, PromptLoader must not import langfuse."""
-    monkeypatch.delenv("KOSAX_PROMPT_REGISTRY_LANGFUSE", raising=False)
+    """With UMMAYA_PROMPT_REGISTRY_LANGFUSE unset, PromptLoader must not import langfuse."""
+    monkeypatch.delenv("UMMAYA_PROMPT_REGISTRY_LANGFUSE", raising=False)
     # Ensure langfuse is not already cached from a previous test.
     sys.modules.pop("langfuse", None)
 
     _loader = PromptLoader(manifest_path=valid_prompt_tree)
 
     assert "langfuse" not in sys.modules, (
-        "PromptLoader imported 'langfuse' even though KOSAX_PROMPT_REGISTRY_LANGFUSE is unset"
+        "PromptLoader imported 'langfuse' even though UMMAYA_PROMPT_REGISTRY_LANGFUSE is unset"
     )
 
 
@@ -56,7 +56,7 @@ def test_flag_unset_never_imports_langfuse(valid_prompt_tree, monkeypatch):
 def test_flag_true_without_extras_raises_with_install_hint(valid_prompt_tree, monkeypatch):
     """FR-C08: with flag=true and langfuse extras absent, PromptLoader must raise
     PromptRegistryError with a message pointing at 'uv sync --extra langfuse'."""
-    monkeypatch.setenv("KOSAX_PROMPT_REGISTRY_LANGFUSE", "true")
+    monkeypatch.setenv("UMMAYA_PROMPT_REGISTRY_LANGFUSE", "true")
     # Make langfuse unimportable by setting its sys.modules entry to None.
     # Per importlib convention, None means "import was tried and failed" (absent module).
     sys.modules.pop("langfuse", None)
@@ -108,7 +108,7 @@ def test_flag_true_with_mock_client_hash_disagreement_fails_closed(valid_prompt_
     """FR-C09: with flag=true and a Langfuse client returning a hash that disagrees
     with the repo hash for 'system_v1', PromptLoader must raise PromptRegistryError
     naming 'system_v1' and indicating a hash mismatch between sources."""
-    monkeypatch.setenv("KOSAX_PROMPT_REGISTRY_LANGFUSE", "true")
+    monkeypatch.setenv("UMMAYA_PROMPT_REGISTRY_LANGFUSE", "true")
 
     # Inject fake langfuse module with a deliberately wrong hash.
     bad_hash = "a" * 64  # 64-char hex string that won't match the real file SHA-256.

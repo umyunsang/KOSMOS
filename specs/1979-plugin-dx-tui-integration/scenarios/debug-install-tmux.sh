@@ -40,7 +40,7 @@
 
 # ── 1. Boot ──────────────────────────────────────────────────────────────────
 wait_for_pane "tool_registry: [0-9]+ entries verified" 60
-wait_for_pane "KOSAX" 15
+wait_for_pane "UMMAYA" 15
 snapshot_pane boot
 
 # ── 2. Pre-command settle (replaces sleep 2) ─────────────────────────────────

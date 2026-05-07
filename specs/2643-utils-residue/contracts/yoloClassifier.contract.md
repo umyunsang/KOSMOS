@@ -1,16 +1,16 @@
 # Contract — `tui/src/utils/permissions/yoloClassifier.ts`
 
-**Status**: NEW (KOSAX-side Path B stub module — Spec 2295 PR #2364 commit c6747dd precedent)
-**Source-of-truth**: KOSAX-side reconstruction. CC's `utils/permissions/yoloClassifier.ts` interior is Spec 1633 deletion target (Anthropic + GrowthBook-driven auto-mode classifier never re-introduced into KOSAX). What this module *exports* is the **shape** CC's import expects, with KOSAX-side no-op behavior.
+**Status**: NEW (UMMAYA-side Path B stub module — Spec 2295 PR #2364 commit c6747dd precedent)
+**Source-of-truth**: UMMAYA-side reconstruction. CC's `utils/permissions/yoloClassifier.ts` interior is Spec 1633 deletion target (Anthropic + GrowthBook-driven auto-mode classifier never re-introduced into UMMAYA). What this module *exports* is the **shape** CC's import expects, with UMMAYA-side no-op behavior.
 
 ## Module header
 
 ```ts
 /**
- * KOSAX Path B stub for utils/permissions/yoloClassifier
+ * UMMAYA Path B stub for utils/permissions/yoloClassifier
  *
  * CC reference: utils/permissions/yoloClassifier.ts (CC 2.1.88) — Anthropic +
- * GrowthBook-driven auto-mode classifier. KOSAX does not re-introduce the
+ * GrowthBook-driven auto-mode classifier. UMMAYA does not re-introduce the
  * classifier (Spec 1633 / Epic #2293 deletion stands; auto-mode = no-op via
  * cli/handlers/autoMode stub).
  *
@@ -22,7 +22,7 @@
  * the standard prompt path with zero behavior change.
  *
  * SWAP/path-b(2643): module restored to CC import shape; interior remains the
- * KOSAX no-op contract introduced by Spec 1633.
+ * UMMAYA no-op contract introduced by Spec 1633.
  */
 ```
 
@@ -90,8 +90,8 @@ Always returns `unavailable=true`. No I/O, resolves synchronously through the as
 **Before** (lines 102-145, 44-LOC inline stub):
 
 ```ts
-// KOSAX Spec 1633 / Epic #2293 — utils/permissions/yoloClassifier deleted
-// (Anthropic + growthbook-driven auto-mode classifier; KOSAX routes auto-mode
+// UMMAYA Spec 1633 / Epic #2293 — utils/permissions/yoloClassifier deleted
+// (Anthropic + growthbook-driven auto-mode classifier; UMMAYA routes auto-mode
 // through cli/handlers/autoMode no-op stub). The classifier API surface is
 // retained as inline stubs so the existing call sites compile; auto-mode
 // always returns `unavailable=true`, falling back to the standard prompt path.
@@ -122,7 +122,7 @@ import {
 
 **Diff invariant**: After Path B migration, `diff .references/.../permissions.ts tui/src/utils/permissions/permissions.ts | grep "^[<>]" | wc -l` ≤ 8 (FR-016). The remaining diff lines are:
 1. Line 2: `import { APIUserAbortError } from '@anthropic-ai/sdk'` → `'src/sdk-compat.js'` (Spec 2521 SDK shim)
-2. Line 91: `import { calculateCostFromTokens } from '../modelCost.js'` → KOSAX-original 2-line no-op stub (Spec 1633 modelCost.ts gutted)
+2. Line 91: `import { calculateCostFromTokens } from '../modelCost.js'` → UMMAYA-original 2-line no-op stub (Spec 1633 modelCost.ts gutted)
 
 Total expected hunks: 2 swap-1 hunks of ≤ 4 lines each = ≤ 8 diff lines.
 

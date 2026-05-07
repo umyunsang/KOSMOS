@@ -1,6 +1,6 @@
 # Contract — `sessionStore.setPendingPermission()` + `waitForPermissionDecision()`
 
-> Epic [#2077](https://github.com/umyunsang/KOSAX/issues/2077) · 2026-04-27
+> Epic [#2077](https://github.com/umyunsang/UMMAYA/issues/2077) · 2026-04-27
 > Promise-based bridge between the IPC `permission_request` frame and the already-mounted `PermissionGauntletModal`.
 
 ## Module
@@ -60,8 +60,8 @@ setPendingPermission(request) {
 }
 ```
 
-- Idempotent on duplicate `request_id`: second call resolves immediately to `'denied'` with a `kosax.permission.duplicate` warning span.
-- Timeout window: `getPermissionTimeoutMs()` reads `KOSAX_PERMISSION_TIMEOUT_SEC` (default 300, i.e. 5 minutes per Spec 033).
+- Idempotent on duplicate `request_id`: second call resolves immediately to `'denied'` with a `ummaya.permission.duplicate` warning span.
+- Timeout window: `getPermissionTimeoutMs()` reads `UMMAYA_PERMISSION_TIMEOUT_SEC` (default 300, i.e. 5 minutes per Spec 033).
 
 ## `resolvePermissionDecision(request_id, decision)` semantics
 
@@ -142,7 +142,7 @@ The modal component itself is unchanged — only the props pipeline through `ses
 
 | Case | Behavior |
 |---|---|
-| Backend sends two `permission_request` frames with same `request_id` | Second resolves immediately to `'denied'`, span `kosax.permission.duplicate`. |
+| Backend sends two `permission_request` frames with same `request_id` | Second resolves immediately to `'denied'`, span `ummaya.permission.duplicate`. |
 | Modal unmounts mid-decision (e.g., session save) | Cleanup function calls `resolvePermissionDecision(active.request_id, 'denied')` for fail-closed. |
 | Backend never resolves (network drop) | 5-min timeout fires; backend receives `decision: 'timeout'`. |
 | Citizen presses Esc while modal open | Modal calls `resolvePermissionDecision(active.request_id, 'denied')` — Esc maps to deny. |
@@ -171,7 +171,7 @@ The modal component itself is unchanged — only the props pipeline through `ses
 
 ## OTEL attributes
 
-- `kosax.permission.queue_depth` (int gauge) — number of queued requests.
-- `kosax.permission.decision_latency_ms` (histogram) — `performance.now() - enqueued_at` at resolve time.
-- `kosax.permission.timeout_count` (int counter) — number of timeouts fired (alarm signal).
-- `kosax.permission.duplicate_count` (int counter) — duplicate request_ids dropped.
+- `ummaya.permission.queue_depth` (int gauge) — number of queued requests.
+- `ummaya.permission.decision_latency_ms` (histogram) — `performance.now() - enqueued_at` at resolve time.
+- `ummaya.permission.timeout_count` (int counter) — number of timeouts fired (alarm signal).
+- `ummaya.permission.duplicate_count` (int counter) — duplicate request_ids dropped.

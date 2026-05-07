@@ -9,7 +9,7 @@
 
 Phase A delivers a Python-based rapid prototype CLI that validates the end-to-end citizen conversation loop (Scenario 1 from `vision.md`) as fast as possible. The CLI is a thin consumer of the existing backend APIs: `QueryEngine.run()` yields `AsyncIterator[QueryEvent]`, and the CLI renders those events through a Rich-based display pipeline. No new backend abstractions are introduced.
 
-The CLI adds three new dependencies (`typer`, `rich`, `prompt-toolkit`) and a single new sub-package `src/kosax/cli/`. It targets approximately 1,500 LOC of Python. Phase B (Ink + Bun TypeScript TUI) is explicitly deferred.
+The CLI adds three new dependencies (`typer`, `rich`, `prompt-toolkit`) and a single new sub-package `src/ummaya/cli/`. It targets approximately 1,500 LOC of Python. Phase B (Ink + Bun TypeScript TUI) is explicitly deferred.
 
 ---
 
@@ -21,7 +21,7 @@ The CLI adds three new dependencies (`typer`, `rich`, `prompt-toolkit`) and a si
 **Storage**: N/A — in-memory session state only; no persistence across process restarts
 **Testing**: `uv run pytest` — unit tests for renderer, permissions, REPL; integration test with mock LLM; no live API calls
 **Target Platform**: macOS (developer), Linux (CI); terminals supporting ANSI + UTF-8
-**Project Type**: Application sub-package (`src/kosax/cli/`) consumed by `python -m kosax.cli`
+**Project Type**: Application sub-package (`src/ummaya/cli/`) consumed by `python -m ummaya.cli`
 **Constraints**: No `print()` in backend modules (per AGENTS.md); all terminal output through Rich rendering pipeline. English source text; Korean user-facing strings are Korean domain data (permitted exception).
 
 ---
@@ -35,9 +35,9 @@ The CLI adds three new dependencies (`typer`, `rich`, `prompt-toolkit`) and a si
 | I -- Reference-Driven Development | PASS | Design decisions mapped to sources in `docs/vision.md` Reference materials. See Phase 0 below. |
 | II -- Fail-Closed Security | PASS | CLI layer does not introduce new security surfaces. Permission pipeline runs inside `QueryEngine`; CLI only renders outcomes. Consent prompt scaffold displays pipeline decisions, does not override them. |
 | III -- Pydantic v2 Strict Typing | PASS | CLI config uses `pydantic-settings`. CLI-specific models (`SessionState`, `SlashCommand`) are Pydantic v2 frozen models. No `Any` in I/O. |
-| IV -- Government API Compliance | PASS | CLI does not call `data.go.kr` directly. All API interaction flows through `QueryEngine` -> `ToolExecutor` -> adapters. No hardcoded keys; `KOSAX_` prefix on all env vars. |
+| IV -- Government API Compliance | PASS | CLI does not call `data.go.kr` directly. All API interaction flows through `QueryEngine` -> `ToolExecutor` -> adapters. No hardcoded keys; `UMMAYA_` prefix on all env vars. |
 | V -- Policy Alignment | PASS | CLI implements the "single conversational window" (Principle 8) by surfacing cross-ministry tool results in one session. Consent prompts scaffold Principle 5 (consent-based data access). |
-| Dev Standards | PASS | `stdlib logging` in CLI internals; Rich for terminal output (allowed per ruff `T20` exception on `src/kosax/cli/**`). `uv + pyproject.toml`. English source text. |
+| Dev Standards | PASS | `stdlib logging` in CLI internals; Rich for terminal output (allowed per ruff `T20` exception on `src/ummaya/cli/**`). `uv + pyproject.toml`. English source text. |
 
 **Dependency Justification**: Three new dependencies (`typer`, `rich`, `prompt-toolkit`) are pure Python, widely adopted, and CLI-layer only. `typer` and `rich` are already listed in `pyproject.toml` dependencies. `prompt-toolkit` will be added. All three are justified by this spec-driven PR per AGENTS.md.
 
@@ -55,27 +55,27 @@ The CLI adds three new dependencies (`typer`, `rich`, `prompt-toolkit`) and a si
 | Permission consent prompts | Claude Agent SDK (permission types), `openedclaude/claude-reviews-claude` (permission model) | Consent prompt is a blocking Y/n prompt that gates tool execution. V1 permission pipeline treats `escalate` as `deny`, so the consent scaffold is forward-looking. |
 | Event streaming model | Claude Agent SDK (async generator tool loop) | `QueryEngine.run()` yields `QueryEvent` discriminated union. CLI dispatches on `event.type` with a match statement. Same pattern as Claude Agent SDK's event loop. |
 | Interrupt handling | `ultraworkers/claw-code` (runtime behavior, hook system) | Single Ctrl+C cancels async generator (raises `asyncio.CancelledError`). Double Ctrl+C within 1 second exits process with code 130. |
-| CLI framework selection | Gemini CLI (TypeScript CLI entry), `typer` documentation | `typer` provides argument parsing, `--help`, and command routing. Thin wrapper over `click`. Entry point via `python -m kosax.cli`. |
+| CLI framework selection | Gemini CLI (TypeScript CLI entry), `typer` documentation | `typer` provides argument parsing, `--help`, and command routing. Thin wrapper over `click`. Entry point via `python -m ummaya.cli`. |
 | Korean text rendering | `rich` documentation (`cell_len()`), `string-width` (npm, Phase B reference) | Rich handles CJK double-width characters natively via `cell_len()`. No custom width calculation needed for Phase A. |
-| Configuration pattern | Existing `kosax.llm.config.LLMClientConfig` (pydantic-settings) | CLI config follows the same pattern: `pydantic-settings` with `KOSAX_CLI_*` prefixed env vars. |
+| Configuration pattern | Existing `ummaya.llm.config.LLMClientConfig` (pydantic-settings) | CLI config follows the same pattern: `pydantic-settings` with `UMMAYA_CLI_*` prefixed env vars. |
 
 ### Existing backend code the CLI consumes
 
 | Module | Import Path | What the CLI Uses |
 |---|---|---|
-| Query Engine | `kosax.engine.QueryEngine` | `.run(user_message) -> AsyncIterator[QueryEvent]` -- the primary API |
-| Engine Config | `kosax.engine.QueryEngineConfig` | Session configuration (max_turns, context_window) |
-| Events | `kosax.engine.events.QueryEvent`, `StopReason` | Event type discrimination in renderer dispatch |
-| Session Budget | `kosax.engine.models.SessionBudget` | `QueryEngine.budget` property for status bar |
-| Tool Registry | `kosax.tools.registry.ToolRegistry` | `lookup(tool_id)` for Korean display names (`name_ko`) |
-| Tool Executor | `kosax.tools.executor.ToolExecutor` | Passed to `QueryEngine` constructor |
-| Tool Models | `kosax.tools.models.ToolResult` | Tool result rendering (success/error, data display) |
-| LLM Client | `kosax.llm.client.LLMClient` | Passed to `QueryEngine` constructor |
-| LLM Config | `kosax.llm.config.LLMClientConfig` | LLM client initialization |
-| LLM Models | `kosax.llm.models.TokenUsage` | Token usage display in status bar |
-| Context Builder | `kosax.context.builder.ContextBuilder` | Passed to `QueryEngine` constructor (optional) |
-| Permissions | `kosax.permissions.SessionContext` | Session setup for permission pipeline |
-| Permission Pipeline | `kosax.permissions.PermissionPipeline` | Passed to `QueryContext` for tool gating |
+| Query Engine | `ummaya.engine.QueryEngine` | `.run(user_message) -> AsyncIterator[QueryEvent]` -- the primary API |
+| Engine Config | `ummaya.engine.QueryEngineConfig` | Session configuration (max_turns, context_window) |
+| Events | `ummaya.engine.events.QueryEvent`, `StopReason` | Event type discrimination in renderer dispatch |
+| Session Budget | `ummaya.engine.models.SessionBudget` | `QueryEngine.budget` property for status bar |
+| Tool Registry | `ummaya.tools.registry.ToolRegistry` | `lookup(tool_id)` for Korean display names (`name_ko`) |
+| Tool Executor | `ummaya.tools.executor.ToolExecutor` | Passed to `QueryEngine` constructor |
+| Tool Models | `ummaya.tools.models.ToolResult` | Tool result rendering (success/error, data display) |
+| LLM Client | `ummaya.llm.client.LLMClient` | Passed to `QueryEngine` constructor |
+| LLM Config | `ummaya.llm.config.LLMClientConfig` | LLM client initialization |
+| LLM Models | `ummaya.llm.models.TokenUsage` | Token usage display in status bar |
+| Context Builder | `ummaya.context.builder.ContextBuilder` | Passed to `QueryEngine` constructor (optional) |
+| Permissions | `ummaya.permissions.SessionContext` | Session setup for permission pipeline |
+| Permission Pipeline | `ummaya.permissions.PermissionPipeline` | Passed to `QueryContext` for tool gating |
 
 ### Technical decisions resolved
 
@@ -91,14 +91,14 @@ The CLI adds three new dependencies (`typer`, `rich`, `prompt-toolkit`) and a si
 
 ## Architecture
 
-### Module structure: `src/kosax/cli/`
+### Module structure: `src/ummaya/cli/`
 
 ```
-src/kosax/cli/
+src/ummaya/cli/
 +-- __init__.py           # Public exports: create_app()
-+-- __main__.py           # Entry point: python -m kosax.cli
++-- __main__.py           # Entry point: python -m ummaya.cli
 +-- app.py                # typer application, command routing
-+-- config.py             # CLIConfig: KOSAX_CLI_* env vars via pydantic-settings
++-- config.py             # CLIConfig: UMMAYA_CLI_* env vars via pydantic-settings
 +-- models.py             # SlashCommand, SessionState (frozen Pydantic v2 models)
 +-- repl.py               # REPL loop: prompt -> engine.run() -> render events
 +-- renderer.py           # Rich-based event rendering (streaming, spinners, errors)
@@ -108,10 +108,10 @@ src/kosax/cli/
 ### Class responsibilities
 
 **`CLIConfig`** (pydantic-settings):
-- `KOSAX_CLI_HISTORY_SIZE: int = 1000` -- prompt history depth
-- `KOSAX_CLI_THEME: str = "default"` -- reserved for future theming
-- `KOSAX_CLI_SHOW_USAGE: bool = True` -- show token usage after each turn
-- `KOSAX_CLI_WELCOME_BANNER: bool = True` -- show welcome banner on start
+- `UMMAYA_CLI_HISTORY_SIZE: int = 1000` -- prompt history depth
+- `UMMAYA_CLI_THEME: str = "default"` -- reserved for future theming
+- `UMMAYA_CLI_SHOW_USAGE: bool = True` -- show token usage after each turn
+- `UMMAYA_CLI_WELCOME_BANNER: bool = True` -- show welcome banner on start
 
 **`SessionState`** (dataclass, mutable):
 - `session_id: str` -- UUID for this session
@@ -181,9 +181,9 @@ class SlashCommand(BaseModel):
 
 ```python
 class CLIConfig(BaseSettings):
-    """CLI-specific settings loaded from KOSAX_CLI_* environment variables."""
+    """CLI-specific settings loaded from UMMAYA_CLI_* environment variables."""
     model_config = SettingsConfigDict(
-        env_prefix="KOSAX_CLI_",
+        env_prefix="UMMAYA_CLI_",
         case_sensitive=False,
         extra="ignore",
     )
@@ -209,9 +209,9 @@ specs/011-cli-tui-interface/
 ### Source code
 
 ```
-src/kosax/cli/
+src/ummaya/cli/
 +-- __init__.py       # Public exports
-+-- __main__.py       # Entry point: python -m kosax.cli
++-- __main__.py       # Entry point: python -m ummaya.cli
 +-- app.py            # typer application and command routing
 +-- config.py         # CLIConfig (pydantic-settings)
 +-- models.py         # SlashCommand and other CLI models
@@ -233,7 +233,7 @@ tests/cli/
 
 ```
 pyproject.toml        # Add prompt-toolkit>=3.0 to dependencies;
-                      # Add [project.scripts] kosax = "kosax.cli.app:main"
+                      # Add [project.scripts] ummaya = "ummaya.cli.app:main"
 ```
 
 ---
@@ -242,14 +242,14 @@ pyproject.toml        # Add prompt-toolkit>=3.0 to dependencies;
 
 ### Phase 1 -- Foundation (Models + Config + Package Skeleton)
 
-**Goal**: Establish the `src/kosax/cli/` sub-package with configuration, data models, and a minimal `__main__.py` that prints a welcome banner and exits.
+**Goal**: Establish the `src/ummaya/cli/` sub-package with configuration, data models, and a minimal `__main__.py` that prints a welcome banner and exits.
 
 **Files**:
-- `src/kosax/cli/__init__.py` -- export `CLIConfig`, `create_app`
-- `src/kosax/cli/config.py` -- `CLIConfig` via pydantic-settings (`KOSAX_CLI_*` env vars)
-- `src/kosax/cli/models.py` -- `SlashCommand` frozen Pydantic model
-- `src/kosax/cli/__main__.py` -- minimal entry point: import and call `main()`
-- `src/kosax/cli/app.py` -- `typer.Typer()` app with `main()` command (prints banner, exits)
+- `src/ummaya/cli/__init__.py` -- export `CLIConfig`, `create_app`
+- `src/ummaya/cli/config.py` -- `CLIConfig` via pydantic-settings (`UMMAYA_CLI_*` env vars)
+- `src/ummaya/cli/models.py` -- `SlashCommand` frozen Pydantic model
+- `src/ummaya/cli/__main__.py` -- minimal entry point: import and call `main()`
+- `src/ummaya/cli/app.py` -- `typer.Typer()` app with `main()` command (prints banner, exits)
 - `pyproject.toml` -- add `prompt-toolkit>=3.0` to dependencies; add `[project.scripts]` entry
 
 **Tests**:
@@ -257,14 +257,14 @@ pyproject.toml        # Add prompt-toolkit>=3.0 to dependencies;
 - `tests/cli/test_config.py` -- validate defaults, env var override, frozen config
 - `tests/cli/test_models.py` -- validate SlashCommand construction, frozen constraint
 
-**Completion gate**: `python -m kosax.cli --help` works. `uv run pytest tests/cli/test_config.py tests/cli/test_models.py` passes.
+**Completion gate**: `python -m ummaya.cli --help` works. `uv run pytest tests/cli/test_config.py tests/cli/test_models.py` passes.
 
 ### Phase 2 -- Event Renderer
 
 **Goal**: Implement the Rich-based event rendering pipeline that converts `QueryEvent` instances into terminal output. This is the core display module.
 
 **Files**:
-- `src/kosax/cli/renderer.py` -- `EventRenderer` class with dispatch method:
+- `src/ummaya/cli/renderer.py` -- `EventRenderer` class with dispatch method:
   - `text_delta` -- append text to a `rich.live.Live` display buffer; render raw text during streaming
   - `tool_use` -- display `rich.status.Status` spinner with tool's Korean name (`name_ko` from `ToolRegistry.lookup()`)
   - `tool_result` -- replace spinner with `rich.panel.Panel` showing success/error summary
@@ -287,7 +287,7 @@ pyproject.toml        # Add prompt-toolkit>=3.0 to dependencies;
 **Goal**: Implement the consent prompt scaffold for citizen approval of tool execution. Wired to mock escalation in v1.
 
 **Files**:
-- `src/kosax/cli/permissions.py` -- `ConsentPromptHandler`:
+- `src/ummaya/cli/permissions.py` -- `ConsentPromptHandler`:
   - `prompt(tool_name: str, provider: str, description: str) -> bool` -- Rich-formatted consent display with `[Y/n]` prompt
   - Displays: tool name (Korean), provider, what data will be accessed
   - Default: approve (Enter = yes)
@@ -306,7 +306,7 @@ pyproject.toml        # Add prompt-toolkit>=3.0 to dependencies;
 **Goal**: Implement the main interactive REPL loop that ties together prompt input, engine execution, event rendering, and interrupt handling.
 
 **Files**:
-- `src/kosax/cli/repl.py` -- `REPLLoop` class:
+- `src/ummaya/cli/repl.py` -- `REPLLoop` class:
   - Constructor: accepts `QueryEngine`, `ToolRegistry` (for display names), `Console`, `CLIConfig`
   - `async run()` -- main loop:
     1. Display welcome banner with session ID and version
@@ -325,7 +325,7 @@ pyproject.toml        # Add prompt-toolkit>=3.0 to dependencies;
     - `/help` -- display available commands with descriptions
     - `/usage` -- display current `SessionBudget` snapshot
 
-- `src/kosax/cli/app.py` -- update `main()` to:
+- `src/ummaya/cli/app.py` -- update `main()` to:
   1. Load `CLIConfig`
   2. Initialize `LLMClient`, `ToolRegistry`, `ToolExecutor`, `ContextBuilder`
   3. Register tool adapters (KOROAD, KMA)
@@ -341,7 +341,7 @@ pyproject.toml        # Add prompt-toolkit>=3.0 to dependencies;
   - Test `/new` creates fresh engine instance
   - Test `/usage` displays budget snapshot
 
-**Completion gate**: All REPL tests pass. `python -m kosax.cli` starts and accepts input (manual verification with mock engine).
+**Completion gate**: All REPL tests pass. `python -m ummaya.cli` starts and accepts input (manual verification with mock engine).
 
 ### Phase 5 -- Integration
 
@@ -355,9 +355,9 @@ pyproject.toml        # Add prompt-toolkit>=3.0 to dependencies;
   - Verify: error stop reasons display citizen-friendly messages
   - Verify: budget exhaustion displays appropriate message
 
-- `src/kosax/cli/app.py` -- finalize factory function:
+- `src/ummaya/cli/app.py` -- finalize factory function:
   - `create_session()` -> constructs all dependencies and returns `REPLLoop`
-  - Handle `ConfigurationError` from `LLMClient` with user-friendly message (e.g., "Set KOSAX_FRIENDLI_TOKEN")
+  - Handle `ConfigurationError` from `LLMClient` with user-friendly message (e.g., "Set UMMAYA_FRIENDLI_TOKEN")
 
 **Completion gate**: Integration test passes. Manual test of Scenario 1 with mock backend completes successfully.
 
@@ -366,10 +366,10 @@ pyproject.toml        # Add prompt-toolkit>=3.0 to dependencies;
 **Goal**: Ensure type safety, lint compliance, and test coverage meet project standards.
 
 **Checks**:
-- `uv run mypy src/kosax/cli/` -- strict mode, no errors
-- `uv run ruff check src/kosax/cli/` -- no violations (note: T20 suppressed for CLI layer per `pyproject.toml`)
-- `uv run ruff format --check src/kosax/cli/` -- formatting compliant
-- `uv run pytest tests/cli/ --cov=src/kosax/cli --cov-report=term-missing` -- coverage >= 80%
+- `uv run mypy src/ummaya/cli/` -- strict mode, no errors
+- `uv run ruff check src/ummaya/cli/` -- no violations (note: T20 suppressed for CLI layer per `pyproject.toml`)
+- `uv run ruff format --check src/ummaya/cli/` -- formatting compliant
+- `uv run pytest tests/cli/ --cov=src/ummaya/cli --cov-report=term-missing` -- coverage >= 80%
 - `uv run pytest` -- full test suite green (no regressions in engine, llm, tools, context, permissions)
 
 **Completion gate**: All quality checks pass. No regressions in existing test suites.
@@ -387,7 +387,7 @@ Every design decision traces to a concrete source in `docs/vision.md` Reference 
 | Rich-based terminal rendering (spinners, panels, markdown, live display) | `vadimdemedes/ink` (adapted to Python via Rich); `google-gemini/gemini-cli` (component hierarchy) | Rich provides Python equivalents of Ink's rendering primitives: `Live` = streaming, `Status` = spinner, `Panel` = bordered result display, `Markdown` = markdown rendering |
 | Consent prompt scaffold for permission escalation | Claude Agent SDK (permission types); `openedclaude/claude-reviews-claude` (permission model) | Y/n prompt gates tool execution. V1 treats `escalate` as `deny`; scaffold validates the UX for Phase 2 human-in-the-loop |
 | Single Ctrl+C cancels turn, double Ctrl+C exits | `ultraworkers/claw-code` (runtime behavior); `google-gemini/gemini-cli` (interrupt handling) | Standard CLI interrupt pattern. `asyncio.CancelledError` propagation cancels the async generator cleanly. |
-| CLI config via `pydantic-settings` with `KOSAX_CLI_*` prefix | Existing `kosax.llm.config.LLMClientConfig` pattern | Same pattern as LLM config; consistent across all KOSAX configuration |
+| CLI config via `pydantic-settings` with `UMMAYA_CLI_*` prefix | Existing `ummaya.llm.config.LLMClientConfig` pattern | Same pattern as LLM config; consistent across all UMMAYA configuration |
 | Frozen Pydantic v2 models for CLI data types | Constitution Principle III; `pydantic/pydantic-ai` schema-driven pattern | `SlashCommand` uses `ConfigDict(frozen=True)`. No `Any` in I/O schemas. |
 | `prompt-toolkit` for input with Korean IME support | `google-gemini/gemini-cli` (readline fallback for Korean input) | Phase A uses `prompt-toolkit` (Python's readline alternative) which handles CJK IME natively, avoiding the IME issues that plague Ink's `<TextInput>` |
 | Tool display names from `ToolRegistry.lookup().name_ko` | `docs/vision.md` Layer 2 (tool registry, bilingual search hints) | Korean display name (`name_ko`) on each `GovAPITool` is the citizen-facing label used in spinner text |
@@ -401,7 +401,7 @@ Every design decision traces to a concrete source in `docs/vision.md` Reference 
 | Rich `Live` display + `prompt-toolkit` input conflict on stdout | Medium | High | `Live` display is used only during engine turns (streaming). Prompt input is collected only when engine is idle. The two never overlap. If conflicts arise, fall back to simple `console.print()` without `Live`. |
 | `prompt-toolkit` Korean IME issues on specific terminals | Low | Medium | `prompt-toolkit` handles IME composition natively on macOS and Linux. If issues arise, fall back to `input()` with `readline`. Test on iTerm2, Terminal.app, and standard Linux terminal. |
 | `asyncio.CancelledError` not propagated cleanly through `QueryEngine.run()` | Medium | Medium | `QueryEngine.run()` wraps the `query()` generator in try/except; `CancelledError` is re-raised by default in Python 3.12+. Test with explicit cancellation in integration tests. If needed, add explicit `CancelledError` handling in `QueryEngine.run()` to yield `StopReason.cancelled`. |
-| Cold start time exceeds 3 seconds (SC-A6) | Low | Low | Backend imports are lazy where possible. `LLMClient` does not make network calls until `complete()` / `stream()` is called. Tool adapter registration is in-memory. Profile with `time python -m kosax.cli --help` in Phase 6. |
+| Cold start time exceeds 3 seconds (SC-A6) | Low | Low | Backend imports are lazy where possible. `LLMClient` does not make network calls until `complete()` / `stream()` is called. Tool adapter registration is in-memory. Profile with `time python -m ummaya.cli --help` in Phase 6. |
 | Phase B (Ink TUI) requires rewriting rendering logic | Expected | Low | Phase A rendering is intentionally in a single `renderer.py` file. The rendering logic maps 1:1 to Ink components (spinner -> `<Spinner>`, panel -> `<Box>`, markdown -> `<Markdown>`). The mapping is documented but no code is shared between Phase A and Phase B. |
 | `typer` version conflict: `pyproject.toml` lists `typer>=0.24.1` but spec says `>=0.12` | Low | Low | Both version constraints are satisfied by typer 0.24.1+. The `pyproject.toml` constraint is stricter and takes precedence. No change needed. |
 
@@ -432,7 +432,7 @@ These are explicitly out of scope. See spec.md Non-Goals section for full list.
 | SC-A3: Ctrl+C cancels mid-turn within 1 second | Phase 4 | REPL test: mock engine running, signal delivered, generator cancelled |
 | SC-A4: Error stop reasons display citizen-friendly messages | Phase 2 | Renderer test: each `StopReason` variant -> human-readable output |
 | SC-A5: Korean text renders without alignment corruption | Phase 2 | Renderer test: Hangul content renders without exceptions; manual verification on 80-column terminal |
-| SC-A6: CLI starts within 3 seconds | Phase 6 | Profiling in quality phase; `time python -m kosax.cli --help` |
+| SC-A6: CLI starts within 3 seconds | Phase 6 | Profiling in quality phase; `time python -m ummaya.cli --help` |
 
 ---
 
@@ -450,7 +450,7 @@ specs/011-cli-tui-interface/
 ### Source code layout
 
 ```
-src/kosax/cli/
+src/ummaya/cli/
 +-- __init__.py
 +-- __main__.py
 +-- app.py

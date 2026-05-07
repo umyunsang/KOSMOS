@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://kosax.dev/schemas/consent-ledger-record.v1.json",
-  "title": "KOSAX Permission v2 — Consent Ledger Record",
-  "description": "Single append-only record in ~/.kosax/consent_ledger.jsonl. Combines Kantara Consent Receipt v1.1.0 surface + ISO/IEC 29184:2020 notice binding + KOSAX hash-chain + HMAC-SHA-256 seal. Canonical JSON = RFC 8785 JCS.",
+  "$id": "https://ummaya.dev/schemas/consent-ledger-record.v1.json",
+  "title": "UMMAYA Permission v2 — Consent Ledger Record",
+  "description": "Single append-only record in ~/.ummaya/consent_ledger.jsonl. Combines Kantara Consent Receipt v1.1.0 surface + ISO/IEC 29184:2020 notice binding + UMMAYA hash-chain + HMAC-SHA-256 seal. Canonical JSON = RFC 8785 JCS.",
   "type": "object",
   "additionalProperties": false,
   "required": [

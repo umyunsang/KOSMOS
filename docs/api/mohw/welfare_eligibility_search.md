@@ -18,11 +18,11 @@ As of Spec 2522 US4, the adapter has a **real handle() implementation** (XML par
 | Classification | Live · Permission tier 1 (read-only public catalog) |
 | Source | Ministry of Health and Welfare (MOHW) via Korea Social Security Information Service (SSIS) / data.go.kr |
 | Primitive | `lookup` |
-| Module | `src/kosax/tools/mohw/welfare_eligibility_search.py` |
+| Module | `src/ummaya/tools/mohw/welfare_eligibility_search.py` |
 
 ## Envelope
 
-**Input model**: `MohwWelfareEligibilitySearchInput` defined at `src/kosax/tools/mohw/welfare_eligibility_search.py`.
+**Input model**: `MohwWelfareEligibilitySearchInput` defined at `src/ummaya/tools/mohw/welfare_eligibility_search.py`.
 
 | Field | Type | Required | Description |
 |---|---|---|---|
@@ -101,7 +101,7 @@ Each `SsisWelfareServiceItem` carries:
 
 - **data.go.kr endpoint**: `B554287/NationalWelfareInformationsV001/NationalWelfarelistV001`
 - **Source URL**: `https://apis.data.go.kr/B554287/NationalWelfareInformationsV001/NationalWelfarelistV001`
-- **Authentication**: API key via `KOSAX_DATA_GO_KR_API_KEY` (per Constitution IV)
+- **Authentication**: API key via `UMMAYA_DATA_GO_KR_API_KEY` (per Constitution IV)
 - **Response format**: UTF-8 XML only (no JSON option)
 
 ## Implementation notes (Spec 2522 US4)
@@ -184,7 +184,7 @@ Live response evidence: HTTP 200, `resultCode=0`, `resultMessage=SUCCESS`, `tota
 
 ```text
 Citizen: 임산부 복지 혜택이 뭐가 있나요?
-KOSAX: 임신·출산 관련 복지 서비스를 조회했습니다. 총 21개 서비스 중 온라인 신청 가능한 서비스를 안내드립니다.
+UMMAYA: 임신·출산 관련 복지 서비스를 조회했습니다. 총 21개 서비스 중 온라인 신청 가능한 서비스를 안내드립니다.
   1. 의료급여(요양비) — 저소득 임산부 대상, 보건복지부 기초의료보장과
      상세: bokjiro.go.kr/.../WLF00000056
 더 많은 서비스 목록을 보시겠습니까?

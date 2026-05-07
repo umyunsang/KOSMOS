@@ -33,7 +33,7 @@ For now, the pytest baseline is treated as the count emitted by `c6747dd`'s prev
 
 ## Provenance
 
-Captured by background bash task `b4pq4nuj2`, raw log preserved at `/tmp/kosax-2294-baseline.txt`. Used as the SC-005 reference for T025.
+Captured by background bash task `b4pq4nuj2`, raw log preserved at `/tmp/ummaya-2294-baseline.txt`. Used as the SC-005 reference for T025.
 
 ---
 

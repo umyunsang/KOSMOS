@@ -2,10 +2,10 @@
 
 **Feature**: Epic H #1302
 **Phase**: 1
-**Owner of authoritative source**: `src/kosax/memdir/ministry_scope.py` + `src/kosax/tools/main_router.py`
-**Storage root**: `~/.kosax/memdir/user/ministry-scope/`
+**Owner of authoritative source**: `src/ummaya/memdir/ministry_scope.py` + `src/ummaya/tools/main_router.py`
+**Storage root**: `~/.ummaya/memdir/user/ministry-scope/`
 **Main-tool reference**: `specs/022-mvp-main-tool/`
-**PIPA role reference**: project memory `project_pipa_role.md` — KOSAX = PIPA § 26 수탁자 (processor) by default
+**PIPA role reference**: project memory `project_pipa_role.md` — UMMAYA = PIPA § 26 수탁자 (processor) by default
 
 This contract specifies the ministry-scope acknowledgment schema AND the router-level guard that enforces opt-out at the pre-network boundary.
 
@@ -16,7 +16,7 @@ This contract specifies the ministry-scope acknowledgment schema AND the router-
 ```json
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "kosax.memdir.user.ministry-scope/1",
+  "$id": "ummaya.memdir.user.ministry-scope/1",
   "title": "MinistryScopeAcknowledgment",
   "type": "object",
   "additionalProperties": false,
@@ -65,7 +65,7 @@ This contract specifies the ministry-scope acknowledgment schema AND the router-
 ## § 2 · Pydantic v2 stub
 
 ```python
-# src/kosax/memdir/ministry_scope.py
+# src/ummaya/memdir/ministry_scope.py
 from __future__ import annotations
 
 from datetime import datetime
@@ -137,7 +137,7 @@ export type MinistryScopeAcknowledgment = z.infer<typeof MinistryScopeAcknowledg
 ## § 4 · Storage layout
 
 ```
-~/.kosax/memdir/user/ministry-scope/
+~/.ummaya/memdir/user/ministry-scope/
 ├── 2026-04-20T14-33-17Z-018f8a72-d4c9-7a1e-9c8b-0b2c3d4e5f60.json
 └── ...
 ```
@@ -151,8 +151,8 @@ Same append-only + atomic-write semantics as `contracts/memdir-consent-schema.md
 `specs/022-mvp-main-tool/` defines `MainToolRouter.resolve(tool_id, params)`. Epic H extends it with the ministry-scope guard:
 
 ```python
-# src/kosax/tools/main_router.py  (extension)
-from kosax.memdir.ministry_scope import latest_scope
+# src/ummaya/tools/main_router.py  (extension)
+from ummaya.memdir.ministry_scope import latest_scope
 
 MINISTRY_TOOL_PREFIX: dict[str, MinistryCode] = {
     "koroad_": "KOROAD",
@@ -190,7 +190,7 @@ def resolve_with_scope_guard(tool_id: str, params: dict, memdir_root: Path):
 - The exception is raised **before** any network call (SC-009 < 100 ms requirement).
 - The TUI catches `MinistryOptOutRefusal` and renders the Korean message in an error-styled message row; the session remains open (the citizen may issue other queries).
 
-**Ministry-to-prefix mapping**: derived from Spec 022's tool-registration convention — every adapter in `src/kosax/tools/adapters/` declares its ministry at registration time. The `MINISTRY_TOOL_PREFIX` constant here is the static derivation of those declarations; a CI check ensures the constant stays in sync.
+**Ministry-to-prefix mapping**: derived from Spec 022's tool-registration convention — every adapter in `src/ummaya/tools/adapters/` declares its ministry at registration time. The `MINISTRY_TOOL_PREFIX` constant here is the static derivation of those declarations; a CI check ensures the constant stays in sync.
 
 ---
 

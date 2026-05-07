@@ -1,8 +1,8 @@
 # Tasks: Safety Rails — PII Redaction, Guardrails, Indirect Injection Defense
 
-**Input**: Design documents from `/Users/um-yunsang/KOSAX-466/specs/026-safety-rails/`
+**Input**: Design documents from `/Users/um-yunsang/UMMAYA-466/specs/026-safety-rails/`
 **Prerequisites**: `spec.md` (PASS), `plan.md` (PASS), `checklists/requirements.md` (PASS)
-**Epic**: [#466 — Safety Rails](https://github.com/umyunsang/KOSAX/issues/466)
+**Epic**: [#466 — Safety Rails](https://github.com/umyunsang/UMMAYA/issues/466)
 **Branch**: `feat/466-safety-rails`
 
 **Tests**: Tests are REQUIRED by this feature (the spec's Validation Scenarios name 30 concrete fixtures: 10 PII + 10 injection + 5 block + 5 pass). Every user story below ships with its test set.
@@ -24,8 +24,8 @@
 
 ## Path Conventions
 
-- Single project layout. `src/kosax/` and `tests/` at repository root.
-- New subpackage: `src/kosax/safety/`.
+- Single project layout. `src/ummaya/` and `tests/` at repository root.
+- New subpackage: `src/ummaya/safety/`.
 
 ---
 
@@ -33,7 +33,7 @@
 
 **Purpose**: Project-level scaffolding that must exist before the foundational work or any user story can begin.
 
-- [X] **T001** Create `src/kosax/safety/__init__.py` exporting only the public re-exports (`RedactionResult`, `SafetyEvent`, `run_redactor`, `run_detector`, `SafetySettings`). Empty placeholder is fine at this stage — content grows as each Layer task lands.
+- [X] **T001** Create `src/ummaya/safety/__init__.py` exporting only the public re-exports (`RedactionResult`, `SafetyEvent`, `run_redactor`, `run_detector`, `SafetySettings`). Empty placeholder is fine at this stage — content grows as each Layer task lands.
 - [X] **T002** Create `tests/safety/__init__.py` (empty) to anchor the new test package.
 - [X] **T003** [P] Create `tests/fixtures/safety/` directory and stub five JSON files (empty arrays for now, populated per story): `pii_samples.json`, `injection_samples.json`, `moderation_block_samples.json`, `moderation_pass_samples.json`, and `recorded_tool_outputs/README.md` (explains the 500-turn corpus for SC-004).
 
@@ -47,22 +47,22 @@
 
 ### PR-A — LookupErrorReason extension (ship first)
 
-- [X] **T004** [P] Extend `LookupErrorReason` enum in `src/kosax/tools/errors.py` with two new members: `content_blocked = "content_blocked"` and `injection_detected = "injection_detected"`. Keep existing member ordering intact; add the two at the end. Update the class docstring to enumerate all 10 reasons.
+- [X] **T004** [P] Extend `LookupErrorReason` enum in `src/ummaya/tools/errors.py` with two new members: `content_blocked = "content_blocked"` and `injection_detected = "injection_detected"`. Keep existing member ordering intact; add the two at the end. Update the class docstring to enumerate all 10 reasons.
 - [X] **T005** [P] Add envelope round-trip tests in `tests/tools/test_errors.py` (new or appended) — one test per new member asserting the enum value serializes, deserializes through `make_error_envelope`, and surfaces in `LookupError` envelopes with `reason` preserved byte-equal. Existing LookupErrorReason tests must remain byte-unchanged.
-- [X] **T006** Update any docstring in `src/kosax/tools/errors.py` or adjacent modules that enumerates `LookupErrorReason` members (grep `LookupErrorReason` under `src/` and `docs/` to find call-sites; text edits only, no code change).
+- [X] **T006** Update any docstring in `src/ummaya/tools/errors.py` or adjacent modules that enumerates `LookupErrorReason` members (grep `LookupErrorReason` under `src/` and `docs/` to find call-sites; text edits only, no code change).
 
 **Checkpoint (PR-A)**: Run `uv run pytest tests/tools/test_errors.py tests/tools/ -q`; green → open PR-A with body `Refs #507` (historical owner, CLOSED) and `Unblocks #466 PR-B`. Wait for merge before continuing.
 
 ### PR-B Foundational — Safety subpackage scaffolding
 
-- [X] **T007** [P] Create `src/kosax/safety/_models.py` implementing the five Pydantic v2 strict models from plan.md § Data Model: `RedactionMatch`, `RedactionResult`, `InjectionSignalSet`, `SafetyDecision`, and the discriminated union `SafetyEvent = Annotated[RedactedEvent | InjectionBlockedEvent | ModerationBlockedEvent | ModerationWarnedEvent, Field(discriminator="kind")]`. All models use `ConfigDict(frozen=True, strict=True)`. No `Any`. No raw-value fields (store `start`/`end` offsets only).
-- [X] **T008** [P] Create `src/kosax/safety/_settings.py` implementing `SafetySettings(BaseSettings)` with `SettingsConfigDict(env_prefix="KOSAX_SAFETY_", frozen=True)` and fields: `redact_tool_output: bool = True`, `injection_detector_enabled: bool = True`, `moderation_enabled: bool = False`, plus `openai_moderation_api_key: SecretStr | None = Field(default=None, alias="KOSAX_OPENAI_MODERATION_API_KEY")`. Add validator: when `moderation_enabled=True` and `openai_moderation_api_key is None`, raise `ConfigurationError("KOSAX_OPENAI_MODERATION_API_KEY")` at model creation (fail-closed per FR-022).
-- [X] **T009** [P] Create `src/kosax/safety/_patterns.py` and **move** (not copy) `_PII_PATTERNS` and `PII_ACCEPTING_PARAMS` from `src/kosax/permissions/steps/step3_params.py`. Upgrade the `credit_card` entry: keep the 16-digit regex but expose a `luhn_valid(value: str) -> bool` helper alongside; the redactor (T016) uses the helper to reject non-Luhn matches; Step 3 (T010) keeps regex-only behavior byte-unchanged.
-- [X] **T010** Refactor `src/kosax/permissions/steps/step3_params.py` to `from kosax.safety._patterns import _PII_PATTERNS, PII_ACCEPTING_PARAMS` and remove the local definitions. The local module no longer defines either symbol. Step 3 behavior (regex-only match, deny on PII) is byte-unchanged.
-- [X] **T011** [P] Add SoT regression test `tests/safety/test_patterns.py` asserting that `grep -rn "^_PII_PATTERNS\\s*:" src/` returns exactly one match (`src/kosax/safety/_patterns.py`) and that `step3_params._PII_PATTERNS is kosax.safety._patterns._PII_PATTERNS` (same object, not a copy). Also assert that `PII_ACCEPTING_PARAMS` is imported, not redeclared.
+- [X] **T007** [P] Create `src/ummaya/safety/_models.py` implementing the five Pydantic v2 strict models from plan.md § Data Model: `RedactionMatch`, `RedactionResult`, `InjectionSignalSet`, `SafetyDecision`, and the discriminated union `SafetyEvent = Annotated[RedactedEvent | InjectionBlockedEvent | ModerationBlockedEvent | ModerationWarnedEvent, Field(discriminator="kind")]`. All models use `ConfigDict(frozen=True, strict=True)`. No `Any`. No raw-value fields (store `start`/`end` offsets only).
+- [X] **T008** [P] Create `src/ummaya/safety/_settings.py` implementing `SafetySettings(BaseSettings)` with `SettingsConfigDict(env_prefix="UMMAYA_SAFETY_", frozen=True)` and fields: `redact_tool_output: bool = True`, `injection_detector_enabled: bool = True`, `moderation_enabled: bool = False`, plus `openai_moderation_api_key: SecretStr | None = Field(default=None, alias="UMMAYA_OPENAI_MODERATION_API_KEY")`. Add validator: when `moderation_enabled=True` and `openai_moderation_api_key is None`, raise `ConfigurationError("UMMAYA_OPENAI_MODERATION_API_KEY")` at model creation (fail-closed per FR-022).
+- [X] **T009** [P] Create `src/ummaya/safety/_patterns.py` and **move** (not copy) `_PII_PATTERNS` and `PII_ACCEPTING_PARAMS` from `src/ummaya/permissions/steps/step3_params.py`. Upgrade the `credit_card` entry: keep the 16-digit regex but expose a `luhn_valid(value: str) -> bool` helper alongside; the redactor (T016) uses the helper to reject non-Luhn matches; Step 3 (T010) keeps regex-only behavior byte-unchanged.
+- [X] **T010** Refactor `src/ummaya/permissions/steps/step3_params.py` to `from ummaya.safety._patterns import _PII_PATTERNS, PII_ACCEPTING_PARAMS` and remove the local definitions. The local module no longer defines either symbol. Step 3 behavior (regex-only match, deny on PII) is byte-unchanged.
+- [X] **T011** [P] Add SoT regression test `tests/safety/test_patterns.py` asserting that `grep -rn "^_PII_PATTERNS\\s*:" src/` returns exactly one match (`src/ummaya/safety/_patterns.py`) and that `step3_params._PII_PATTERNS is ummaya.safety._patterns._PII_PATTERNS` (same object, not a copy). Also assert that `PII_ACCEPTING_PARAMS` is imported, not redeclared.
 - [X] **T012** Verify `tests/permissions/test_step3_params.py` passes byte-unchanged after T010. If any test fails, root-cause the refactor — do **not** edit the existing test file (FR-002 regression gate).
-- [X] **T013** [P] Extend top-level `src/kosax/settings.py` `Settings` aggregate to include `safety: SafetySettings = Field(default_factory=SafetySettings)`. Add test in `tests/safety/test_settings.py` stub covering the default-instantiation path (full fail-closed coverage lands in T029).
-- [X] **T014** [P] Create `src/kosax/safety/_span.py` exporting `emit_safety_event(event: SafetyEvent, span: Span | None = None) -> None`. The helper MUST only set the bounded enum attribute `gen_ai.safety.event` on the span with one of `{"redacted", "injection_blocked", "moderation_blocked", "moderation_warned"}`. It MUST NOT attach any PII, any raw tool output bytes, match counts with raw content, or moderation vendor response bodies.
+- [X] **T013** [P] Extend top-level `src/ummaya/settings.py` `Settings` aggregate to include `safety: SafetySettings = Field(default_factory=SafetySettings)`. Add test in `tests/safety/test_settings.py` stub covering the default-instantiation path (full fail-closed coverage lands in T029).
+- [X] **T014** [P] Create `src/ummaya/safety/_span.py` exporting `emit_safety_event(event: SafetyEvent, span: Span | None = None) -> None`. The helper MUST only set the bounded enum attribute `gen_ai.safety.event` on the span with one of `{"redacted", "injection_blocked", "moderation_blocked", "moderation_warned"}`. It MUST NOT attach any PII, any raw tool output bytes, match counts with raw content, or moderation vendor response bodies.
 - [X] **T015** [P] Write `tests/safety/test_span.py` asserting `emit_safety_event` writes only the allowed key with one of the four allowed values, and that attempting to pass a PII-carrying payload is impossible by type (`SafetyEvent` union has no raw-value variant — this is a type-level guarantee; one smoke test suffices).
 
 **Checkpoint (Phase 2)**: All foundational modules exist, step 3 regression is green, enum PR is merged, SoT single-file invariant holds. `uv run pytest tests/safety/ tests/permissions/ tests/tools/ -q` green. User-story phases may now begin **in parallel**.
@@ -82,7 +82,7 @@
 
 ### Implementation for User Story 1
 
-- [X] **T018** [US1] Create `src/kosax/safety/_redactor.py` implementing `run_redactor(text: str) -> RedactionResult`. Internals: build a Presidio `AnalyzerEngine` with an **empty** `NlpEngineProvider` (`NlpEngineProvider(nlp_configuration={"nlp_engine_name":"","models":[]})`-style bypass or a custom subclass returning no recognizers — verify the exact shape against Presidio's own docs during implementation), register one `PatternRecognizer` per category from `_patterns.py`, and post-filter the `credit_card` category through `luhn_valid()`. Replace matches with `<RRN>`, `<PHONE_KR>`, `<EMAIL>`, `<PASSPORT_KR>`, `<CREDIT_CARD>` placeholders; return a `RedactionResult` with `matches` offsets only.
+- [X] **T018** [US1] Create `src/ummaya/safety/_redactor.py` implementing `run_redactor(text: str) -> RedactionResult`. Internals: build a Presidio `AnalyzerEngine` with an **empty** `NlpEngineProvider` (`NlpEngineProvider(nlp_configuration={"nlp_engine_name":"","models":[]})`-style bypass or a custom subclass returning no recognizers — verify the exact shape against Presidio's own docs during implementation), register one `PatternRecognizer` per category from `_patterns.py`, and post-filter the `credit_card` category through `luhn_valid()`. Replace matches with `<RRN>`, `<PHONE_KR>`, `<EMAIL>`, `<PASSPORT_KR>`, `<CREDIT_CARD>` placeholders; return a `RedactionResult` with `matches` offsets only.
 - [X] **T019** [US1] Run `tests/safety/test_redactor.py` — all 10 fixtures must pass.
 - [X] **T020** [US1] Add latency check to the test file as a `@pytest.mark.parametrize` case over a 100 KB synthetic payload, asserting p95 ≤ 50 ms over 20 iterations (SC-003). If flaky on CI, gate behind `@pytest.mark.perf` with a comment documenting the SC link.
 
@@ -103,7 +103,7 @@
 
 ### Implementation for User Story 2
 
-- [X] **T023** [US2] Create `src/kosax/safety/_injection.py` implementing `run_detector(text: str) -> InjectionSignalSet`. Three signals:
+- [X] **T023** [US2] Create `src/ummaya/safety/_injection.py` implementing `run_detector(text: str) -> InjectionSignalSet`. Three signals:
   1. **Structural score**: regex-family for role-assumption / system-tag / "ignore previous" patterns; compiled lazily from `_patterns.py` extensions (add a new `_INJECTION_PATTERNS` dict there — also single-source). Score = max hit.
   2. **Entropy score**: Shannon entropy on base64/hex-like substrings ≥ 32 chars long. Score = normalized entropy.
   3. **Length deviation**: `abs(log(len(text) / EXPECTED_LEN))`; `EXPECTED_LEN` is a conservative heuristic constant exposed from `_patterns.py`. Score = normalized deviation.
@@ -130,7 +130,7 @@
 
 ### Implementation for User Story 3
 
-- [X] **T030** [US3] Create `src/kosax/safety/_litellm_callbacks.py` implementing `pre_call(kwargs: dict) -> dict` and `post_call(kwargs: dict, response: ModelResponse) -> ModelResponse` following LiteLLM's callback contract. Internals: call OpenAI Moderation API via the `openai` SDK client constructed from `SafetySettings.openai_moderation_api_key`; map the `categories` dict to a `SafetyDecision`; on `decision="block"` for self-harm, substitute the refusal body with the Korean crisis-hotline message including **both** 1393 (중앙자살예방센터) and 1366 (여성긴급전화); on outage, return allow and emit `ModerationWarnedEvent(detail="outage")` (fail-open per FR-011 — this is a deliberate deviation from the general fail-closed posture justified in spec § Edge Cases).
+- [X] **T030** [US3] Create `src/ummaya/safety/_litellm_callbacks.py` implementing `pre_call(kwargs: dict) -> dict` and `post_call(kwargs: dict, response: ModelResponse) -> ModelResponse` following LiteLLM's callback contract. Internals: call OpenAI Moderation API via the `openai` SDK client constructed from `SafetySettings.openai_moderation_api_key`; map the `categories` dict to a `SafetyDecision`; on `decision="block"` for self-harm, substitute the refusal body with the Korean crisis-hotline message including **both** 1393 (중앙자살예방센터) and 1366 (여성긴급전화); on outage, return allow and emit `ModerationWarnedEvent(detail="outage")` (fail-open per FR-011 — this is a deliberate deviation from the general fail-closed posture justified in spec § Edge Cases).
 - [X] **T031** [US3] Run `tests/safety/test_litellm_callbacks.py` and `tests/safety/test_settings.py` — 10 moderation fixtures + settings cases must pass.
 - [X] **T032** [US3] Emit `emit_safety_event` calls inside both callbacks — on every decision, regardless of `allow`/`block`/`warn`. Unit-test this in `test_litellm_callbacks.py` (assert the span attribute was set exactly once per call with the expected enum value).
 
@@ -142,11 +142,11 @@
 
 **Purpose**: Weave Layers A, B, C into the tool loop and system prompt. Cannot start until all three user-story phases are green.
 
-- [X] **T033** [P] Modify `src/kosax/context/system_prompt.py` to add a new `_trust_hierarchy_section()` function and insert its output between the existing `_tool_use_policy_section()` (Section 3) and `_personal_data_reminder_section()` (Section 4). Section 5 (`_session_guidance_section()`) MUST remain the last section — this is the NFR-003 FriendliAI cache prefix constraint. Section body text is normative: spec.md § Layer D quotes the exact required wording.
+- [X] **T033** [P] Modify `src/ummaya/context/system_prompt.py` to add a new `_trust_hierarchy_section()` function and insert its output between the existing `_tool_use_policy_section()` (Section 3) and `_personal_data_reminder_section()` (Section 4). Section 5 (`_session_guidance_section()`) MUST remain the last section — this is the NFR-003 FriendliAI cache prefix constraint. Section body text is normative: spec.md § Layer D quotes the exact required wording.
 - [X] **T034** [P] Write `tests/safety/test_system_prompt_trust_hierarchy.py` asserting: (a) trust-hierarchy text appears exactly once in the assembled prompt, (b) it appears between sections 3 and 4, (c) section 5 is strictly last, (d) cache-prefix stability — the byte prefix up to Section 5 is deterministic across two assembly calls (SC-006).
-- [X] **T035** Wire detector → redactor in `src/kosax/tools/executor.py` `invoke()` method (approx. L222; the exact line is immediately after the adapter `await` and immediately before the `normalize()` call — locate by reading the current file, not by line number). Apply the same wiring to `dispatch()` (approx. L394). Ordering: (1) if detector blocks, raise `LookupError(reason=LookupErrorReason.injection_detected)` via `make_error_envelope`; (2) else, if `settings.safety.redact_tool_output` is true, pass the adapter output through `run_redactor()` and substitute the redacted text before calling `normalize()`.
+- [X] **T035** Wire detector → redactor in `src/ummaya/tools/executor.py` `invoke()` method (approx. L222; the exact line is immediately after the adapter `await` and immediately before the `normalize()` call — locate by reading the current file, not by line number). Apply the same wiring to `dispatch()` (approx. L394). Ordering: (1) if detector blocks, raise `LookupError(reason=LookupErrorReason.injection_detected)` via `make_error_envelope`; (2) else, if `settings.safety.redact_tool_output` is true, pass the adapter output through `run_redactor()` and substitute the redacted text before calling `normalize()`.
 - [X] **T036** Write `tests/safety/test_executor_wiring.py` — end-to-end through a minimal recorded-fixture adapter: (a) injection-flagged output produces a `LookupError` envelope with `reason=injection_detected`; (b) PII-laden clean output is redacted before reaching `normalize()`; (c) clean output passes through unchanged; (d) `gen_ai.safety.event` span attribute is emitted exactly once per ingress call.
-- [X] **T037** Defense-in-depth preservation: verify commit 50e2c17's per-file redactions in `src/kosax/llm/client.py` and `src/kosax/tools/executor.py` are **untouched** by the changes in T035 (they remain as a belt-and-suspenders layer below the new `_redactor.py`). Add a comment in `_redactor.py` linking to commit 50e2c17 explaining the two-layer intentional redundancy.
+- [X] **T037** Defense-in-depth preservation: verify commit 50e2c17's per-file redactions in `src/ummaya/llm/client.py` and `src/ummaya/tools/executor.py` are **untouched** by the changes in T035 (they remain as a belt-and-suspenders layer below the new `_redactor.py`). Add a comment in `_redactor.py` linking to commit 50e2c17 explaining the two-layer intentional redundancy.
 - [X] **T038** Full-suite regression: `uv run pytest -q`. Zero regressions. Step 3 permissions tests still byte-unchanged.
 
 **Checkpoint**: Four-layer pipeline fully wired. SC-001..SC-007 should all be satisfied end-to-end.
@@ -161,8 +161,8 @@
 - [X] **T040** [P] Create `docs/security/safety-rails-v1.md` — non-normative overview (normative source is `spec.md`). Structure: What it does / Why it matters (OWASP LLM01+LLM02 mapping) / Layers A–D summary / License posture (Option A accepted, Option B deferred) / Links to spec.md and constitution. One page, Korean-readable.
 - [X] **T041** [P] Run SC-004 false-positive measurement one final time against the full 500-turn corpus; record the result in PR-B body. Required: 0 false positives on the recorded corpus.
 - [X] **T042** [P] Run SC-006 cache-prefix stability check — diff two freshly-assembled system prompts and assert byte-identical prefix up to (but not including) Section 5.
-- [X] **T043** File follow-up comment on **#465** describing the LiteLLM callback entrypoint: module path `src/kosax/safety/_litellm_callbacks.py`, function names `pre_call` / `post_call`, registration snippet for `infra/litellm/config.yaml` (snippet in the comment body; do NOT edit `config.yaml` in this PR).
-- [X] **T044** File follow-up comment on **#468** listing the five env keys introduced by this epic: `KOSAX_SAFETY_REDACT_TOOL_OUTPUT`, `KOSAX_SAFETY_INJECTION_DETECTOR_ENABLED`, `KOSAX_SAFETY_MODERATION_ENABLED`, `KOSAX_OPENAI_MODERATION_API_KEY`, plus default values and fail-closed semantics. Do NOT hand-edit `docs/configuration.md`.
+- [X] **T043** File follow-up comment on **#465** describing the LiteLLM callback entrypoint: module path `src/ummaya/safety/_litellm_callbacks.py`, function names `pre_call` / `post_call`, registration snippet for `infra/litellm/config.yaml` (snippet in the comment body; do NOT edit `config.yaml` in this PR).
+- [X] **T044** File follow-up comment on **#468** listing the five env keys introduced by this epic: `UMMAYA_SAFETY_REDACT_TOOL_OUTPUT`, `UMMAYA_SAFETY_INJECTION_DETECTOR_ENABLED`, `UMMAYA_SAFETY_MODERATION_ENABLED`, `UMMAYA_OPENAI_MODERATION_API_KEY`, plus default values and fail-closed semantics. Do NOT hand-edit `docs/configuration.md`.
 - [X] **T045** File follow-up comment on **#501** listing the single span attribute `gen_ai.safety.event` with its bounded enum `{redacted, injection_blocked, moderation_blocked, moderation_warned}`, explicitly noting no raw PII / raw tool output / vendor response bodies ever leave the process via span export.
 - [X] **T046** Open **PR-B** with body `Closes #466`, listing PR-A merge SHA as a prerequisite reference, and linking to all three follow-up comments from T043–T045. Body must enumerate which SC each test file validates (SC-001 → test_redactor.py, etc.).
 

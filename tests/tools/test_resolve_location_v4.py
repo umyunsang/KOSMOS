@@ -2,13 +2,13 @@
 """Live integration tests for resolve_location_v4 — Spec 2522 US7 T040.
 
 Tests the 4 canonical scenarios documented in
-/tmp/kosax-evidence/geocoding-evidence.md using the Kakao Local API only.
+/tmp/ummaya-evidence/geocoding-evidence.md using the Kakao Local API only.
 JUSO / SGIS are NOT exercised (keys may not be set).
 
 All tests are decorated with ``@pytest.mark.live`` and are skipped by default.
 Run with ``uv run pytest -m live`` to execute against the real API.
 
-Prerequisite: ``KOSAX_KAKAO_API_KEY`` must be set in the environment.
+Prerequisite: ``UMMAYA_KAKAO_API_KEY`` must be set in the environment.
 """
 
 from __future__ import annotations
@@ -17,16 +17,16 @@ import os
 
 import pytest
 
-from kosax.tools.models import ResolveError, ResolveLocationOutput
-from kosax.tools.resolve_location import resolve_location_v4
+from ummaya.tools.models import ResolveError, ResolveLocationOutput
+from ummaya.tools.resolve_location import resolve_location_v4
 
-_KAKAO_KEY_PRESENT = bool(os.getenv("KOSAX_KAKAO_API_KEY"))
+_KAKAO_KEY_PRESENT = bool(os.getenv("UMMAYA_KAKAO_API_KEY"))
 
 
 def _require_kakao() -> None:
-    """Skip test if KOSAX_KAKAO_API_KEY is not configured."""
+    """Skip test if UMMAYA_KAKAO_API_KEY is not configured."""
     if not _KAKAO_KEY_PRESENT:
-        pytest.skip("KOSAX_KAKAO_API_KEY not set — skipping live Kakao test")
+        pytest.skip("UMMAYA_KAKAO_API_KEY not set — skipping live Kakao test")
 
 
 # ---------------------------------------------------------------------------

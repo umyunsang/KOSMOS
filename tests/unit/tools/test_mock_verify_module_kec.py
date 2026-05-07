@@ -19,7 +19,7 @@ from pathlib import Path
 
 def test_kec_invoke_returns_transparency_fields(tmp_path: Path) -> None:
     """invoke() returns a dict with all six transparency fields non-empty."""
-    from kosax.tools.mock.verify_module_kec import invoke
+    from ummaya.tools.mock.verify_module_kec import invoke
 
     result = invoke(
         {
@@ -46,7 +46,7 @@ def test_kec_invoke_returns_transparency_fields(tmp_path: Path) -> None:
 
 def test_kec_international_reference(tmp_path: Path) -> None:
     """_international_reference must be 'Singapore APEX'."""
-    from kosax.tools.mock.verify_module_kec import invoke
+    from ummaya.tools.mock.verify_module_kec import invoke
 
     result = invoke(
         {
@@ -60,7 +60,7 @@ def test_kec_international_reference(tmp_path: Path) -> None:
 
 def test_kec_security_wrapping_pattern(tmp_path: Path) -> None:
     """_security_wrapping_pattern must contain OAuth2.1 and mTLS."""
-    from kosax.tools.mock.verify_module_kec import invoke
+    from ummaya.tools.mock.verify_module_kec import invoke
 
     result = invoke(
         {
@@ -78,7 +78,7 @@ def test_kec_issuer_did_in_vp_jwt(tmp_path: Path) -> None:
     import base64
     import json as json_module
 
-    from kosax.tools.mock.verify_module_kec import invoke
+    from ummaya.tools.mock.verify_module_kec import invoke
 
     result = invoke(
         {
@@ -97,7 +97,7 @@ def test_kec_issuer_did_in_vp_jwt(tmp_path: Path) -> None:
 
 def test_kec_ledger_append(tmp_path: Path) -> None:
     """delegation_issued event written after invoke."""
-    from kosax.tools.mock.verify_module_kec import invoke
+    from ummaya.tools.mock.verify_module_kec import invoke
 
     ledger_dir = tmp_path / "ledger"
     invoke(
@@ -118,7 +118,7 @@ def test_kec_ledger_append(tmp_path: Path) -> None:
 
 def test_kec_is_registered() -> None:
     """Importing the module registers 'kec' in _VERIFY_ADAPTERS."""
-    import kosax.tools.mock.verify_module_kec  # noqa: F401
-    from kosax.primitives.verify import _VERIFY_ADAPTERS
+    import ummaya.tools.mock.verify_module_kec  # noqa: F401
+    from ummaya.primitives.verify import _VERIFY_ADAPTERS
 
     assert "kec" in _VERIFY_ADAPTERS

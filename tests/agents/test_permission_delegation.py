@@ -19,16 +19,16 @@ from uuid import UUID, uuid4
 
 import pytest
 
-from kosax.agents.consent import AlwaysGrantConsentGateway, ConsentGateway
-from kosax.agents.context import AgentContext
-from kosax.agents.coordinator import Coordinator
-from kosax.agents.mailbox.messages import (
+from ummaya.agents.consent import AlwaysGrantConsentGateway, ConsentGateway
+from ummaya.agents.context import AgentContext
+from ummaya.agents.coordinator import Coordinator
+from ummaya.agents.mailbox.messages import (
     AgentMessage,
     MessageType,
     PermissionRequestPayload,
     PermissionResponsePayload,
 )
-from kosax.agents.worker import Worker
+from ummaya.agents.worker import Worker
 from tests.agents.conftest import StubLLMClient, build_test_registry
 
 # ---------------------------------------------------------------------------

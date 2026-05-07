@@ -10,9 +10,9 @@ from __future__ import annotations
 import pytest
 from pydantic import SecretStr
 
-from kosax.safety._settings import SafetySettings
-from kosax.settings import KosaxSettings
-from kosax.tools.errors import ConfigurationError
+from ummaya.safety._settings import SafetySettings
+from ummaya.settings import UmmayaSettings
+from ummaya.tools.errors import ConfigurationError
 
 
 def test_safety_settings_defaults() -> None:
@@ -23,8 +23,8 @@ def test_safety_settings_defaults() -> None:
     assert s.openai_moderation_api_key is None
 
 
-def test_kosax_settings_nests_safety() -> None:
-    top = KosaxSettings()
+def test_ummaya_settings_nests_safety() -> None:
+    top = UmmayaSettings()
     assert isinstance(top.safety, SafetySettings)
     assert top.safety.redact_tool_output is True
 
@@ -39,14 +39,14 @@ def test_moderation_enabled_without_key_raises_configuration_error() -> None:
     with pytest.raises(ConfigurationError) as exc_info:
         SafetySettings(moderation_enabled=True)  # type: ignore[call-arg]
     err = exc_info.value
-    assert err.var_name == "KOSAX_OPENAI_MODERATION_API_KEY"
+    assert err.var_name == "UMMAYA_OPENAI_MODERATION_API_KEY"
 
 
 def test_moderation_enabled_with_key_constructs() -> None:
     """SafetySettings(moderation_enabled=True, key=...) succeeds; key round-trips."""
     s = SafetySettings(  # type: ignore[call-arg]
         moderation_enabled=True,
-        **{"KOSAX_OPENAI_MODERATION_API_KEY": "sk-test"},
+        **{"UMMAYA_OPENAI_MODERATION_API_KEY": "sk-test"},
     )
     assert s.moderation_enabled is True
     assert s.openai_moderation_api_key is not None
@@ -60,7 +60,7 @@ def test_api_key_type_is_secretstr() -> None:
 
     s_with_key = SafetySettings(  # type: ignore[call-arg]
         moderation_enabled=True,
-        **{"KOSAX_OPENAI_MODERATION_API_KEY": "sk-test"},
+        **{"UMMAYA_OPENAI_MODERATION_API_KEY": "sk-test"},
     )
     assert isinstance(s_with_key.openai_moderation_api_key, SecretStr)
     # Must never be a bare str

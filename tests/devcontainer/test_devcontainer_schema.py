@@ -57,7 +57,7 @@ def test_python_interpreter_path():
     """FR-B04: defaultInterpreterPath must point to .venv in workspaces mount."""
     data = _load()
     settings = data.get("customizations", {}).get("vscode", {}).get("settings", {})
-    assert settings.get("python.defaultInterpreterPath") == "/workspaces/KOSAX/.venv/bin/python"
+    assert settings.get("python.defaultInterpreterPath") == "/workspaces/UMMAYA/.venv/bin/python"
 
 
 def test_remote_user():

@@ -15,10 +15,10 @@ Any drift is a constitution violation (AGENTS.md § Conflict resolution).
 
 | Contract | Owner Epic / Module | Upstream Status | This Spec's Responsibility |
 |---|---|---|---|
-| `LookupErrorReason` enum extension — add `content_blocked`, `injection_detected` | Code-owned (`src/kosax/tools/errors.py`). Historical origin: #507. | **#507 CLOSED**. Enum is now code-owned; no coordination Epic blocks us. | **PR-A** (enum-only) with `Refs #507` attribution. **PR-B** (main impl) depends on PR-A merge to ground the refusal path. |
+| `LookupErrorReason` enum extension — add `content_blocked`, `injection_detected` | Code-owned (`src/ummaya/tools/errors.py`). Historical origin: #507. | **#507 CLOSED**. Enum is now code-owned; no coordination Epic blocks us. | **PR-A** (enum-only) with `Refs #507` attribution. **PR-B** (main impl) depends on PR-A merge to ground the refusal path. |
 | OpenTelemetry span attribute `gen_ai.safety.event` | **#501** (Production OTLP Collector, OPEN). | #501 accepts new attribute *keys* by policy; it does not block on schema. | Emit `gen_ai.safety.event` ∈ {`redacted`, `injection_blocked`, `moderation_blocked`, `moderation_warned`} on relevant spans. **MUST NOT** emit raw PII, raw tool output, raw user prompt, or raw moderation categories — attribute value is a bounded enum only. |
-| Env keys `KOSAX_SAFETY_*` and `KOSAX_OPENAI_MODERATION_API_KEY` | **#468** (Infisical OIDC + env registry, OPEN). Authoritative file: `docs/configuration.md`. | #468 owns the registry; hand-editing `docs/configuration.md` is forbidden. | Propose the four keys listed under FR-022 by filing a follow-up comment on #468. **MUST NOT** modify `docs/configuration.md` in PR-A or PR-B. Defaults live in pydantic-settings `SafetySettings` class. |
-| LiteLLM pre/post-call callback registration | **#465** (LiteLLM Proxy + Budget, OPEN). Authoritative file: `infra/litellm/config.yaml`. | #465 owns the proxy config; our hook is the code the config would reference. | Ship hook registration as code only (`src/kosax/safety/_litellm_callbacks.py`). Post a follow-up note on #465 describing the callback entrypoint. **MUST NOT** modify `infra/litellm/config.yaml` in PR-A or PR-B. |
+| Env keys `UMMAYA_SAFETY_*` and `UMMAYA_OPENAI_MODERATION_API_KEY` | **#468** (Infisical OIDC + env registry, OPEN). Authoritative file: `docs/configuration.md`. | #468 owns the registry; hand-editing `docs/configuration.md` is forbidden. | Propose the four keys listed under FR-022 by filing a follow-up comment on #468. **MUST NOT** modify `docs/configuration.md` in PR-A or PR-B. Defaults live in pydantic-settings `SafetySettings` class. |
+| LiteLLM pre/post-call callback registration | **#465** (LiteLLM Proxy + Budget, OPEN). Authoritative file: `infra/litellm/config.yaml`. | #465 owns the proxy config; our hook is the code the config would reference. | Ship hook registration as code only (`src/ummaya/safety/_litellm_callbacks.py`). Post a follow-up note on #465 describing the callback entrypoint. **MUST NOT** modify `infra/litellm/config.yaml` in PR-A or PR-B. |
 | Permission gauntlet / authz refactor | **#16, #20** (Permission layer). | Separate concern. | **Out of scope.** This spec strengthens Step 3's PII detection (by pointing it at a shared pattern module) but **MUST NOT** alter the allow/deny flow of the six-step gauntlet. No changes to step 1, 2, 4, 5, 6 behavior. |
 
 ---
@@ -35,9 +35,9 @@ evaluated:
   is supported (spaCy NLP backend can be bypassed via a custom `NlpEngineProvider` that
   returns an empty recognizer set, leaving only `PatternRecognizer` instances active).
 - **OpenAI Moderation API** — network service. No local model weights; no license
-  attribution obligation on this codebase. API key flows via `KOSAX_OPENAI_MODERATION_API_KEY`.
+  attribution obligation on this codebase. API key flows via `UMMAYA_OPENAI_MODERATION_API_KEY`.
 - **No new Python dependency** for moderation itself — the existing `openai` SDK (already
-  present via the FriendliAI OpenAI-compatible path in `src/kosax/llm/client.py`) carries
+  present via the FriendliAI OpenAI-compatible path in `src/ummaya/llm/client.py`) carries
   the moderation endpoint client.
   *Verification task (Plan Phase 0)*: confirm `openai` is pinned in `pyproject.toml`; if not,
   add it under PR-B as a new runtime dependency following AGENTS.md § Hard rules.
@@ -80,7 +80,7 @@ value to a bounded placeholder token (e.g., `[REDACTED_RRN]`, `[REDACTED_PHONE_K
 The LLM then composes its answer from the redacted text without ever seeing the raw
 PII. An audit span carries `gen_ai.safety.event=redacted` with a count but no payload.
 
-**Why this priority**: Direct PIPA §23 / §26(4) obligation. KOSAX operates as a
+**Why this priority**: Direct PIPA §23 / §26(4) obligation. UMMAYA operates as a
 processor (수탁자) for the citizen-facing controller; any leak of 개인정보 into LLM
 parametric memory is a reportable incident. This is also the lowest-hanging and most
 common failure mode for a Korean public-API harness — addresses, phones, and emails
@@ -113,7 +113,7 @@ user-facing message acknowledging the anomaly.
 
 **Why this priority**: OWASP LLM01 Prompt Injection is the top-ranked LLM risk
 (2025 list; 2026 list not yet published). Simon Willison's "lethal trifecta"
-applies verbatim here: KOSAX has (a) untrusted input via government-API responses,
+applies verbatim here: UMMAYA has (a) untrusted input via government-API responses,
 (b) sensitive data access via other registered tools, (c) an exfiltration channel
 via any tool that writes or emails. Blocking the first leg neutralizes the trifecta.
 
@@ -177,31 +177,31 @@ Assert the callback returns the refusal payload and sets
 
 #### Layer A — Ingress PII Redactor
 
-- **FR-001**: The project MUST expose a shared pattern module at `src/kosax/safety/_patterns.py` that enumerates the five PII categories currently defined in `src/kosax/permissions/steps/step3_params.py`: `rrn`, `phone_kr`, `email`, `passport_kr`, `credit_card`. The module is the single source of truth; no other file in the repository may define its own copy of these patterns.
+- **FR-001**: The project MUST expose a shared pattern module at `src/ummaya/safety/_patterns.py` that enumerates the five PII categories currently defined in `src/ummaya/permissions/steps/step3_params.py`: `rrn`, `phone_kr`, `email`, `passport_kr`, `credit_card`. The module is the single source of truth; no other file in the repository may define its own copy of these patterns.
 - **FR-002**: `step3_params.py` MUST be refactored to import `_PII_PATTERNS` and `PII_ACCEPTING_PARAMS` from `_patterns.py`. Its external behavior (deny on PII hit in non-PII-accepting params) MUST remain byte-identical to today's behavior, verified by the existing Step 3 test suite continuing to pass without modification.
-- **FR-003**: The project MUST ship a redactor module at `src/kosax/safety/_redactor.py` that accepts a string and returns a redacted string plus a structured report of matches, built on top of Microsoft Presidio's `PatternRecognizer`.
+- **FR-003**: The project MUST ship a redactor module at `src/ummaya/safety/_redactor.py` that accepts a string and returns a redacted string plus a structured report of matches, built on top of Microsoft Presidio's `PatternRecognizer`.
 - **FR-004**: The redactor MUST replace each match with a bounded placeholder token that indicates the category but no content: `[REDACTED_RRN]`, `[REDACTED_PHONE_KR]`, `[REDACTED_EMAIL]`, `[REDACTED_PASSPORT_KR]`, `[REDACTED_CARD]`.
 - **FR-005**: The credit-card recognizer MUST validate matches with the Luhn checksum (ISO/IEC 7812) and suppress matches that fail. This upgrade eliminates false-positive redaction of 16-digit sequences that are not actually payment card numbers (the current `step3_params.py` regex performs no such validation).
-- **FR-006**: The redactor MUST be invoked on the LLM-ingress path — specifically, in the `invoke()` and `dispatch()` routines of `src/kosax/tools/executor.py`, before the raw adapter output is normalized into a `LookupOutput` envelope.
+- **FR-006**: The redactor MUST be invoked on the LLM-ingress path — specifically, in the `invoke()` and `dispatch()` routines of `src/ummaya/tools/executor.py`, before the raw adapter output is normalized into a `LookupOutput` envelope.
 - **FR-007**: The redactor MUST operate on fully-assembled text, not on streamed tokens. Envelope assembly is the natural boundary and is where the redactor runs.
 
 #### Layer B — Moderation Guardrail
 
-- **FR-008**: The project MUST ship a LiteLLM callback module at `src/kosax/safety/_litellm_callbacks.py` exposing pre-call and post-call functions compatible with LiteLLM's callback contract.
+- **FR-008**: The project MUST ship a LiteLLM callback module at `src/ummaya/safety/_litellm_callbacks.py` exposing pre-call and post-call functions compatible with LiteLLM's callback contract.
 - **FR-009**: The pre-call callback MUST submit the user-turn payload to the OpenAI Moderation API and refuse the completion on a positive flag, returning a bounded refusal message that names relevant Korean assistance hotlines when the moderation category suggests crisis (central crisis line 1393, women's emergency 1366).
 - **FR-010**: The post-call callback MUST submit the assistant's completed turn to the OpenAI Moderation API and replace the user-visible message with a refusal if flagged, preserving the assistant turn in the audit span only in bounded-enum form (no raw content).
 - **FR-011**: Moderation outages MUST fail-open with a warning span (`gen_ai.safety.event=moderation_warned`) — citizen access to public-service information takes precedence over a third-party dependency.
 
 #### Layer C — Indirect Prompt Injection Defense
 
-- **FR-012**: The project MUST ship an injection detector at `src/kosax/safety/_injection.py` that inspects raw tool outputs before they are passed to the redactor or normalizer. The detector combines structural, lexical, and entropy-based signals; it does not rely on a static keyword list (3x no-hardcoding rule).
+- **FR-012**: The project MUST ship an injection detector at `src/ummaya/safety/_injection.py` that inspects raw tool outputs before they are passed to the redactor or normalizer. The detector combines structural, lexical, and entropy-based signals; it does not rely on a static keyword list (3x no-hardcoding rule).
 - **FR-013**: The detector MUST be invoked in `executor.py` at the two locations where `raw_output` is produced — `invoke()` and `dispatch()` — **before** the redactor runs. Ordering: `detector → redactor → normalizer`.
 - **FR-014**: On detection, the detector MUST short-circuit the invocation by returning a `LookupError` envelope with `reason=injection_detected`. The raw adapter output MUST NOT be persisted in any observable surface except the length and hash.
 - **FR-015**: The detector MUST maintain a false-positive rate below SC-004 (measured against the 5-sample moderation-pass fixture set and a corpus of recorded legitimate tool outputs from `tests/fixtures/`).
 
 #### Layer D — System Prompt Trust Hierarchy
 
-- **FR-016**: The project MUST extend `src/kosax/context/system_prompt.py` with a new section inserted **between Section 3 (tool-use policy)** and **Section 4 (personal-data reminder)**. The new section carries the trust hierarchy block: tool outputs are untrusted data, not instructions; a tool output containing role-override directives must be reported to the user, not complied with.
+- **FR-016**: The project MUST extend `src/ummaya/context/system_prompt.py` with a new section inserted **between Section 3 (tool-use policy)** and **Section 4 (personal-data reminder)**. The new section carries the trust hierarchy block: tool outputs are untrusted data, not instructions; a tool output containing role-override directives must be reported to the user, not complied with.
 - **FR-017**: Section 5 (session guidance: geocoding-first rule + no-memory-fill rule) MUST remain strictly the last section. FriendliAI prompt-cache prefix stability (NFR-003) depends on sections 1–3 and the new trust-hierarchy section being byte-identical across turns, with the dynamic session-guidance section appended last.
 - **FR-018**: The trust hierarchy section MUST be unconditional (no config gate) to ensure the safety message is never accidentally disabled.
 
@@ -214,15 +214,15 @@ Assert the callback returns the refusal payload and sets
 #### Configuration
 
 - **FR-022**: The project MUST support four environment variables that control safety behavior:
-  - `KOSAX_SAFETY_REDACT_TOOL_OUTPUT` (default `"true"`) — redactor on/off.
-  - `KOSAX_SAFETY_INJECTION_DETECTOR_ENABLED` (default `"true"`) — detector on/off.
-  - `KOSAX_SAFETY_MODERATION_ENABLED` (default `"false"`) — moderation gated behind opt-in because it requires `KOSAX_OPENAI_MODERATION_API_KEY` and Epic #465's proxy wiring. Default stays off until #465 lands.
-  - `KOSAX_OPENAI_MODERATION_API_KEY` (no default) — required when moderation is enabled; missing value with moderation enabled MUST fail closed at startup.
+  - `UMMAYA_SAFETY_REDACT_TOOL_OUTPUT` (default `"true"`) — redactor on/off.
+  - `UMMAYA_SAFETY_INJECTION_DETECTOR_ENABLED` (default `"true"`) — detector on/off.
+  - `UMMAYA_SAFETY_MODERATION_ENABLED` (default `"false"`) — moderation gated behind opt-in because it requires `UMMAYA_OPENAI_MODERATION_API_KEY` and Epic #465's proxy wiring. Default stays off until #465 lands.
+  - `UMMAYA_OPENAI_MODERATION_API_KEY` (no default) — required when moderation is enabled; missing value with moderation enabled MUST fail closed at startup.
 - **FR-023**: Defaults MUST live in a pydantic-settings `SafetySettings` class colocated with the safety module. `docs/configuration.md` MUST NOT be edited in this PR; the registry update is a follow-up comment on Epic #468.
 
 #### LookupError Enum Extension
 
-- **FR-024**: The existing `LookupErrorReason` StrEnum in `src/kosax/tools/errors.py` MUST be extended with two new members: `content_blocked` (for moderation refusals surfaced as tool errors) and `injection_detected` (for Layer C blocks). The extension ships as a dedicated small PR (PR-A) with `Refs #507` attribution so the main PR-B diff stays focused on safety logic.
+- **FR-024**: The existing `LookupErrorReason` StrEnum in `src/ummaya/tools/errors.py` MUST be extended with two new members: `content_blocked` (for moderation refusals surfaced as tool errors) and `injection_detected` (for Layer C blocks). The extension ships as a dedicated small PR (PR-A) with `Refs #507` attribution so the main PR-B diff stays focused on safety logic.
 
 ### Key Entities
 
@@ -230,7 +230,7 @@ Assert the callback returns the refusal payload and sets
 - **SafetyEvent**: pydantic v2 discriminated union on a `kind` field with variants `RedactedEvent`, `InjectionBlockedEvent`, `ModerationBlockedEvent`, `ModerationWarnedEvent`. Each variant carries bounded, PII-free fields only. Used to materialize the `gen_ai.safety.event` span attribute deterministically.
 - **SafetyDecision**: immutable pydantic v2 model capturing a single pre-call or post-call moderation decision. Fields: flagged (bool), categories (list of OpenAI Moderation category labels, already bounded by the provider's taxonomy), decision ∈ {allow, block, warn}.
 - **InjectionSignalSet**: immutable pydantic v2 model capturing the detector's signal aggregation for a single invocation: structural score, entropy score, length deviation, decision ∈ {allow, block}. Used in logs and tests; not exposed in user-visible surfaces.
-- **SafetySettings** (pydantic-settings): the four `KOSAX_SAFETY_*` variables with defaults and validators.
+- **SafetySettings** (pydantic-settings): the four `UMMAYA_SAFETY_*` variables with defaults and validators.
 
 ---
 
@@ -322,13 +322,13 @@ These five are the regression set. SC-003 and SC-004 are measured against them.
 - **SC-004** (false-positive ceiling on detector): Across a 500-turn corpus of recorded legitimate public-API tool outputs (from `tests/fixtures/`), the injection detector's false-positive rate MUST be below 1% (i.e., at most 5 flagged turns out of 500).
 - **SC-005** (audit completeness): 100% of safety decisions produce exactly one `gen_ai.safety.event` span attribute with a value from the bounded enum. No safety decision leaves the system unobserved.
 - **SC-006** (FriendliAI cache stability): System prompt byte sequence for sections 1–4 is identical across three consecutive turns of the same session after the trust-hierarchy section is introduced. Cache-hit telemetry (from Epic #021's OTel integration) shows no regression in prefix-cache hit rate versus the pre-spec baseline.
-- **SC-007** (Single source of truth enforcement): After the refactor, searching the source tree for `_PII_PATTERNS` returns exactly one definition site (`src/kosax/safety/_patterns.py`). `step3_params.py` contains only an `import` statement and no pattern literals.
+- **SC-007** (Single source of truth enforcement): After the refactor, searching the source tree for `_PII_PATTERNS` returns exactly one definition site (`src/ummaya/safety/_patterns.py`). `step3_params.py` contains only an `import` statement and no pattern literals.
 
 ---
 
 ## Assumptions
 
-- **FriendliAI OpenAI-compatible path already imports `openai`**: the existing LLM client in `src/kosax/llm/client.py` already depends on the `openai` SDK (or an equivalent HTTP client). If the Plan Phase 0 verification finds the SDK absent, adding `openai` becomes an explicit PR-B dependency addition per AGENTS.md § Hard rules (spec-driven PR required for new deps).
+- **FriendliAI OpenAI-compatible path already imports `openai`**: the existing LLM client in `src/ummaya/llm/client.py` already depends on the `openai` SDK (or an equivalent HTTP client). If the Plan Phase 0 verification finds the SDK absent, adding `openai` becomes an explicit PR-B dependency addition per AGENTS.md § Hard rules (spec-driven PR required for new deps).
 - **Presidio Analyzer pattern-only deployment is viable**: Presidio's public documentation confirms `PatternRecognizer` works standalone. We do not ship the spaCy NLP backend — we configure the Analyzer with an empty NLP engine so only pattern recognizers run. Verified during Plan Phase 0.
 - **OpenAI Moderation is accessible from the deployment environment**: the service is a public HTTPS endpoint; corporate/residential proxies are not a concern for the MVP. If it becomes a concern post-MVP, the warn-and-pass fail-open path (FR-011) is the fallback.
 - **Commit 50e2c17's redactions are preserved**: the per-file raw-payload redactions in `llm/client.py` and `tools/executor.py` introduced by commit 50e2c17 remain in place as defense-in-depth. This spec's `_redactor.py` is a layer on top of them, not a replacement; removing the existing redactions is not in scope.
@@ -341,8 +341,8 @@ These five are the regression set. SC-003 and SC-004 are measured against them.
 
 ### Out of Scope (Permanent)
 
-- **Non-Korean PII patterns**: foreign passport formats, non-Korean phone number schemes, and non-Korean national-ID schemes are permanently excluded. KOSAX is a Korean public-service platform; international coverage would require a separate product decision, not a safety-rails iteration.
-- **Custom ML-based detection models**: training or fine-tuning a detection model in-house is not within the KOSAX product definition. Vendor moderation (OpenAI) or future opt-in guardrail models (post-MVP ADR) fill this slot.
+- **Non-Korean PII patterns**: foreign passport formats, non-Korean phone number schemes, and non-Korean national-ID schemes are permanently excluded. UMMAYA is a Korean public-service platform; international coverage would require a separate product decision, not a safety-rails iteration.
+- **Custom ML-based detection models**: training or fine-tuning a detection model in-house is not within the UMMAYA product definition. Vendor moderation (OpenAI) or future opt-in guardrail models (post-MVP ADR) fill this slot.
 - **Permission gauntlet redesign**: the six-step pipeline's allow/deny structure is owned by Epics #16 and #20. This spec deliberately avoids the gauntlet.
 - **Span exporter / OTLP collector implementation**: span transport is owned by Epic #501. This spec emits attributes the collector consumes; it does not implement the transport.
 - **LiteLLM proxy configuration**: config wiring (`infra/litellm/config.yaml`) is owned by Epic #465. This spec ships the callback code only.
@@ -352,7 +352,7 @@ These five are the regression set. SC-003 and SC-004 are measured against them.
 | Item | Reason for Deferral | Target Epic/Phase | Tracking Issue |
 |------|---------------------|-------------------|----------------|
 | Llama Guard 3 (or equivalent local guardrail model) behind a feature flag | Apache-2.0 license incompatibility requires an ADR defining mixed-license posture, attribution file, and feature-flag gate. Not a safety blocker for MVP because OpenAI Moderation covers the same categories via API. | Post-MVP ADR under Initiative #462 | #792 |
-| `docs/configuration.md` registry update for `KOSAX_SAFETY_*` keys | Registry file is owned by Epic #468 and cannot be hand-edited in this PR. | #468 | Follow-up comment on #468 (posted by task T044 at PR-B time) |
+| `docs/configuration.md` registry update for `UMMAYA_SAFETY_*` keys | Registry file is owned by Epic #468 and cannot be hand-edited in this PR. | #468 | Follow-up comment on #468 (posted by task T044 at PR-B time) |
 | `infra/litellm/config.yaml` wiring to our callback entrypoint | Proxy config is owned by Epic #465. | #465 | Follow-up comment on #465 (posted by task T043 at PR-B time) |
 | Formal span-schema registration of `gen_ai.safety.event` in the collector's accept list | #501 accepts attribute *keys* by policy, but explicit schema registration is good hygiene. | #501 | Follow-up comment on #501 (posted by task T045 at PR-B time) |
 | Korean-language-aware injection classifier (beyond regex + entropy) | Would likely require an ML model and a training-data collection process. Not feasible within MVP timeline; MVP uses heuristic detector shown to meet SC-002 against the 10-sample fixture. | Post-MVP "Safety v2" Epic under Initiative #462 | #793 |
@@ -362,7 +362,7 @@ These five are the regression set. SC-003 and SC-004 are measured against them.
 
 ## References
 
-- **KOSAX docs**: `docs/vision.md` (six-layer architecture), `docs/security/tool-template-security-spec-v1.md` v1.1 (prior security spec, tool-field extensions).
+- **UMMAYA docs**: `docs/vision.md` (six-layer architecture), `docs/security/tool-template-security-spec-v1.md` v1.1 (prior security spec, tool-field extensions).
 - **Prior specs**: `specs/024-tool-security-v1/`, `specs/025-tool-security-v6/` (adjacent security posture).
 - **External**: OWASP LLM Top 10 (2025), Microsoft Presidio Analyzer docs (MIT), OpenAI Moderation API docs, arXiv 2504.11168 (Hackett et al., 2025-04-15), Simon Willison "lethal trifecta" essay.
 - **Korean legal**: 주민등록법 시행령 제2조 별표 1; 전기통신번호관리세칙; 여권법 시행령 제7조; ISO/IEC 7812; 개인정보 보호법 §23, §26.

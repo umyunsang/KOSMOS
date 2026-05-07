@@ -2,7 +2,7 @@
 # Spec 2642 / Epic F · S7 — Layer 4 vhs visual smoke.
 #
 # Captures three canonical PNG keyframes proving that:
-#   1-boot      — KOSAX branding renders post-boot (verifies remote/ DROP
+#   1-boot      — UMMAYA branding renders post-boot (verifies remote/ DROP
 #                 from TG-A did not break TUI compile / boot path).
 #   2-help      — /help slash command surface paints (verifies REPL.tsx
 #                 edit did not break activeRemote selector / SSH fallback).
@@ -21,7 +21,7 @@ Set TypingSpeed 60ms
 
 Type "cd tui && bun run tui"
 Enter
-# Boot needs ~10s for Ink to negotiate raw-mode + paint the KOSAX REPL.
+# Boot needs ~10s for Ink to negotiate raw-mode + paint the UMMAYA REPL.
 Sleep 12s
 Screenshot specs/2642-s7-ipc-bridge/smoke-2642-keyframe-1-boot.png
 

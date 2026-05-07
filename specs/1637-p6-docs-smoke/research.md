@@ -2,7 +2,7 @@
 
 **Spec**: [spec.md](./spec.md) | **Plan**: [plan.md](./plan.md) | **Date**: 2026-04-26
 
-This document resolves all NEEDS CLARIFICATION markers (none in spec — research validates assumptions instead) and grounds each design choice in either `docs/vision.md § Reference materials` or a prior KOSAX spec.
+This document resolves all NEEDS CLARIFICATION markers (none in spec — research validates assumptions instead) and grounds each design choice in either `docs/vision.md § Reference materials` or a prior UMMAYA spec.
 
 ## Reference materials consulted
 
@@ -15,14 +15,14 @@ Per Constitution Principle I and `AGENTS.md § Spec-driven workflow`, every plan
 | Visual-evidence ANSI capture | TUI | Spec 1636 `specs/1636-plugin-dx-5tier/visual-evidence/` convention | macOS BSD `script(1)` (stdlib only) |
 | useVirtualScroll fix scope | TUI | Claude Code reconstructed (`tui/` is the port surface) | Ink + Gemini CLI (React for terminals) |
 | docs/tools → docs/api migration | Tool System | Spec 1634 (P3 tool-system wiring) registered tool_ids list | Spec 1636 docs/plugins/ Korean-primary precedent |
-| CHANGELOG / vision post-merge prose | (cross-cutting) | `docs/requirements/kosax-migration-tree.md § P6` | Prior P0–P5 entries in `CLAUDE.md § Recent Changes` |
+| CHANGELOG / vision post-merge prose | (cross-cutting) | `docs/requirements/ummaya-migration-tree.md § P6` | Prior P0–P5 entries in `CLAUDE.md § Recent Changes` |
 
 Cross-spec inheritance applied:
 
 - **Spec 1632** (P0 baseline) — supplies the prior `bun test` baseline figure (576 pass) used as a floor reference in spec FR-010.
-- **Spec 1633** (P1 + P2) — confirms session JSONL paths (`~/.kosax/memdir/user/sessions/`) referenced by adapter specs.
+- **Spec 1633** (P1 + P2) — confirms session JSONL paths (`~/.ummaya/memdir/user/sessions/`) referenced by adapter specs.
 - **Spec 1634** (P3 tool wiring) — canonical 14-tool registry (`register_all.py`) is the iteration source for `scripts/build_schemas.py`. Composite removal (`road_risk_score`) sourced from this Epic's `register_all.py:116` comment.
-- **Spec 1635** (P4 UI L2) — supplies the onboarding state file path (`~/.kosax/memdir/user/onboarding/state.json`) referenced in the smoke checklist.
+- **Spec 1635** (P4 UI L2) — supplies the onboarding state file path (`~/.ummaya/memdir/user/onboarding/state.json`) referenced in the smoke checklist.
 - **Spec 1636** (P5 plugin DX) — supplies the visual-evidence convention (file naming `<slug>.ansi.txt` + `<slug>.txt` pair), the contracts/ directory pattern, and the bilingual-search-hint approach.
 
 ## Deferred items validation (Constitution Principle VI)
@@ -80,10 +80,10 @@ The "Scope Boundaries & Deferred Items" section in spec.md was scanned per the g
 
 1. **Overview** — one sentence purpose; classification (Live or Mock + permission tier 1/2/3) shown as a key-value table.
 2. **Envelope** — Pydantic v2 input and output models cited by file path + line range; render the schema fields as a Markdown table, not as a raw code dump.
-3. **Search hints** — bilingual list (Korean primary, English secondary), exactly as registered in `kosax.tools.<adapter>.search_hint`.
+3. **Search hints** — bilingual list (Korean primary, English secondary), exactly as registered in `ummaya.tools.<adapter>.search_hint`.
 4. **Endpoint** — data.go.kr endpoint identifier + ministry source URL for Live; "fixture-replay only" + public-spec citation for Mock.
 5. **Permission tier rationale** — Spec 033 reference + per-adapter explanation (e.g., why `nmc_emergency_search` is L3-gated).
-6. **Worked example** — at least one `lookup(mode="fetch")` invocation (or `submit` / `verify` for the corresponding primitive families) showing input envelope JSON, output envelope JSON, and a KOSAX conversation snippet.
+6. **Worked example** — at least one `lookup(mode="fetch")` invocation (or `submit` / `verify` for the corresponding primitive families) showing input envelope JSON, output envelope JSON, and a UMMAYA conversation snippet.
 7. **Constraints** — rate limits, freshness windows, fixture coverage gaps, error envelope examples.
 
 The template also includes a YAML front matter block with `tool_id`, `primitive`, `tier`, and `permission_tier` — these are machine-readable so a future linter can automate the SC-001 structural check.
@@ -96,12 +96,12 @@ The template also includes a YAML front matter block with `tool_id`, `primitive`
 
 **Question**: how does `scripts/build_schemas.py` produce a Draft 2020-12 JSON Schema from each Pydantic v2 envelope, deterministically, with no new dependencies?
 
-**Decision**: walk the registry by importing `kosax.tools.register_all` and iterating `ToolRegistry._tools` (already populated at import time per Spec 1634). For each adapter, extract `input_schema` and `output_schema` Pydantic v2 model classes. Call `Model.model_json_schema(mode='validation', ref_template='#/$defs/{model}')`. Wrap the result with explicit `$schema` and `$id` keys:
+**Decision**: walk the registry by importing `ummaya.tools.register_all` and iterating `ToolRegistry._tools` (already populated at import time per Spec 1634). For each adapter, extract `input_schema` and `output_schema` Pydantic v2 model classes. Call `Model.model_json_schema(mode='validation', ref_template='#/$defs/{model}')`. Wrap the result with explicit `$schema` and `$id` keys:
 
 ```json
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://kosax.example/api/schemas/<tool_id>.json",
+  "$id": "https://ummaya.example/api/schemas/<tool_id>.json",
   "title": "<tool_id>",
   "type": "object",
   "properties": { ... },
@@ -140,7 +140,7 @@ Sort keys at every level using `json.dumps(..., sort_keys=True, indent=2, ensure
 | `road-risk-score.md` | (deleted) | Composite removed per Spec 1634. |
 | `ssis.md` | `mohw/welfare_eligibility_search.md` | tool_id = `mohw_welfare_eligibility_search`; renamed source folder from `ssis` to ministry name `mohw` for consistency. |
 
-In addition, **net-new specs** (no source in `docs/tools/`): `kma/forecast_fetch.md`, `hira/hospital_search.md`, `nmc/emergency_search.md`, plus active Mock adapters under `verify/` and `submit/`. Subscribe specs are deferred until KOSAX has an app/push-notification runtime. These are authored from scratch using the R3 template.
+In addition, **net-new specs** (no source in `docs/tools/`): `kma/forecast_fetch.md`, `hira/hospital_search.md`, `nmc/emergency_search.md`, plus active Mock adapters under `verify/` and `submit/`. Subscribe specs are deferred until UMMAYA has an app/push-notification runtime. These are authored from scratch using the R3 template.
 
 After migration, `docs/tools/` does not exist (FR-008 / SC-006).
 
@@ -196,6 +196,6 @@ The implementation phase will:
 
 - All R-items resolved; zero NEEDS CLARIFICATION markers.
 - Constitution Check (plan.md) passes; Deferred Items conform to Principle VI.
-- Reference mapping table grounds every plan section in either `docs/vision.md § Reference materials` or a prior KOSAX spec.
+- Reference mapping table grounds every plan section in either `docs/vision.md § Reference materials` or a prior UMMAYA spec.
 
 Ready for Phase 1.

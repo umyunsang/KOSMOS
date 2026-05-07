@@ -10,14 +10,14 @@ This quickstart proves all three citizen scenarios from spec.md (Story 1, 2, 3) 
 
 - macOS or Linux. Windows out of scope.
 - `bun ≥ 1.2`, `uv ≥ 0.5`, `python ≥ 3.12` on PATH.
-- `KOSAX_FRIENDLI_TOKEN` exported (FriendliAI serverless token).
-- `KOSAX_DATA_GO_KR_API_KEY` exported (for tool turn — adapter live-mode).
+- `UMMAYA_FRIENDLI_TOKEN` exported (FriendliAI serverless token).
+- `UMMAYA_DATA_GO_KR_API_KEY` exported (for tool turn — adapter live-mode).
 - **Crucially**: `unset ANTHROPIC_API_KEY` and `unset ANTHROPIC_AUTH_TOKEN` to verify FR-004 (no Anthropic dependency).
 
 ## One-time setup
 
 ```bash
-cd /Users/um-yunsang/KOSAX-wiring          # the worktree where this Epic ships
+cd /Users/um-yunsang/UMMAYA-wiring          # the worktree where this Epic ships
 uv sync
 cd tui && bun install && cd ..
 ```
@@ -26,25 +26,25 @@ cd tui && bun install && cd ..
 
 ```bash
 unset ANTHROPIC_API_KEY ANTHROPIC_AUTH_TOKEN
-python scripts/pty-scenario.py greeting --capture-out /tmp/kosax-s1.log
+python scripts/pty-scenario.py greeting --capture-out /tmp/ummaya-s1.log
 ```
 
 **Expected**:
-- TUI banner shows `KOSAX v… · K-EXAONE 236B (LG AI · FriendliAI)`.
+- TUI banner shows `UMMAYA v… · K-EXAONE 236B (LG AI · FriendliAI)`.
 - The script types `안녕하세요` and presses Enter.
 - Within **2 s**, the first `assistant_chunk` delta appears on screen.
 - Within **10 s**, the full reply has streamed in and a fresh prompt is back.
 - Exit code: 0.
-- `/tmp/kosax-s1.log` contains exactly zero matches for `anthropic.com`, `INVALID_API_KEY`, `verifyApiKey`.
+- `/tmp/ummaya-s1.log` contains exactly zero matches for `anthropic.com`, `INVALID_API_KEY`, `verifyApiKey`.
 
 **On failure**:
-- Inspect `/tmp/kosax-s1.stderr.log` (script captures `KOSAX_TUI_LOG_LEVEL=DEBUG` separately). Look for last `chat_request` send vs `assistant_chunk` receive — the gap names the broken layer.
+- Inspect `/tmp/ummaya-s1.stderr.log` (script captures `UMMAYA_TUI_LOG_LEVEL=DEBUG` separately). Look for last `chat_request` send vs `assistant_chunk` receive — the gap names the broken layer.
 - Run `python scripts/probe-bridge.py greeting` to check whether the backend emits `assistant_chunk` when given a hand-rolled `ChatRequestFrame` directly. If it does, the regression is on the TUI side.
 
 ## Scenario 2 — Tool turn (User Story 2, P1)
 
 ```bash
-python scripts/pty-scenario.py tool-emergency-room --capture-out /tmp/kosax-s2.log
+python scripts/pty-scenario.py tool-emergency-room --capture-out /tmp/ummaya-s2.log
 ```
 
 **Expected**:
@@ -53,7 +53,7 @@ python scripts/pty-scenario.py tool-emergency-room --capture-out /tmp/kosax-s2.l
 - A visible tool-invocation event (the existing `Tool.ts` UI line) names the tool that ran (e.g., `nmc_emergency_search` or `lookup{mode:"search", query:"응급실"}`).
 - Within **25 s**, a follow-up assistant message renders with at least one source attribution (e.g., `(국립중앙의료원 NMC)`).
 - Exit code: 0.
-- `/tmp/kosax-s2.log` contains: ≥1 `tool_call` frame, ≥1 `tool_result` frame paired by `call_id`, terminal `assistant_chunk{done=True}`.
+- `/tmp/ummaya-s2.log` contains: ≥1 `tool_call` frame, ≥1 `tool_result` frame paired by `call_id`, terminal `assistant_chunk{done=True}`.
 
 **On failure**:
 - If `tool_call` frame is in the log but no `tool_result`: TUI tool dispatch is broken. Trace `mcp.ts` connection to `mcp_server.py` (Phase G).
@@ -63,7 +63,7 @@ python scripts/pty-scenario.py tool-emergency-room --capture-out /tmp/kosax-s2.l
 ## Scenario 3 — Permission gauntlet (User Story 3, P2)
 
 ```bash
-python scripts/pty-scenario.py permission-medical --capture-out /tmp/kosax-s3.log
+python scripts/pty-scenario.py permission-medical --capture-out /tmp/ummaya-s3.log
 ```
 
 **Expected**:
@@ -74,13 +74,13 @@ python scripts/pty-scenario.py permission-medical --capture-out /tmp/kosax-s3.lo
   - A `transaction_id` displayed
 - Script automatically taps `Y` ("allow once").
 - Tool runs; result renders.
-- A consent receipt file appears at `~/.kosax/memdir/user/consent/<receipt_id>.json` with `decision: "allow_once"`.
+- A consent receipt file appears at `~/.ummaya/memdir/user/consent/<receipt_id>.json` with `decision: "allow_once"`.
 - Exit code: 0.
 
 Then re-run with `--auto-deny`:
 
 ```bash
-python scripts/pty-scenario.py permission-medical --auto-deny --capture-out /tmp/kosax-s3-deny.log
+python scripts/pty-scenario.py permission-medical --auto-deny --capture-out /tmp/ummaya-s3-deny.log
 ```
 
 **Expected**:
@@ -88,7 +88,7 @@ python scripts/pty-scenario.py permission-medical --auto-deny --capture-out /tmp
 - Backend records denial; tool does NOT execute.
 - Model receives a synthetic tool result with `error_type="permission_denied"` and replies politely without the data.
 - Exit code: 0.
-- `/tmp/kosax-s3-deny.log` shows `permission_response{decision:"deny"}` and a follow-up `assistant_chunk` stream that does NOT contain real adapter data.
+- `/tmp/ummaya-s3-deny.log` shows `permission_response{decision:"deny"}` and a follow-up `assistant_chunk` stream that does NOT contain real adapter data.
 
 ## Regression battery
 
@@ -115,16 +115,16 @@ docker compose -f docker-compose.dev.yml up -d langfuse otel-collector
 open http://localhost:3000/traces  # Langfuse local UI
 ```
 
-You should see one `kosax.session` root span per scenario, each containing `kosax.turn` children, each containing `kosax.frame.*` children matching the captured frame log. If any frame from the captured log is missing in Langfuse, the OTEL collector wiring (Spec 028) regressed.
+You should see one `ummaya.session` root span per scenario, each containing `ummaya.turn` children, each containing `ummaya.frame.*` children matching the captured frame log. If any frame from the captured log is missing in Langfuse, the OTEL collector wiring (Spec 028) regressed.
 
 ## Demo rehearsal checklist (KSC 2026)
 
 - [ ] Run all three scenarios fresh on the demo laptop, verify all `Expected` blocks pass.
 - [ ] Record Scenario 2 with `asciinema rec` for backup.
-- [ ] Verify `~/.kosax/memdir/user/consent/` is empty after `rm -rf` to start clean.
+- [ ] Verify `~/.ummaya/memdir/user/consent/` is empty after `rm -rf` to start clean.
 - [ ] Verify `unset ANTHROPIC_API_KEY` is in the demo shell rc.
-- [ ] Have `/tmp/kosax-s2.log` open in a second pane to show frame trace live.
-- [ ] Backup plan: if FriendliAI is down, switch to `KOSAX_IPC_HANDLER=echo` for the greeting demo and skip tool turn — disclosed honestly to audience.
+- [ ] Have `/tmp/ummaya-s2.log` open in a second pane to show frame trace live.
+- [ ] Backup plan: if FriendliAI is down, switch to `UMMAYA_IPC_HANDLER=echo` for the greeting demo and skip tool turn — disclosed honestly to audience.
 
 ## Reviewer sign-off
 

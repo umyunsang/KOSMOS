@@ -10,10 +10,10 @@ set timeout 200
 set log_path [file normalize "[file dirname [info script]]/../smoke-2519-stub-hide-pty.txt"]
 log_file -noappend $log_path
 
-spawn bash -c "cd [file normalize [file join $env(HOME) KOSAX tui]] && bun run tui"
+spawn bash -c "cd [file normalize [file join $env(HOME) UMMAYA tui]] && bun run tui"
 
 expect {
-    "KOSAX" { }
+    "UMMAYA" { }
     timeout { puts stderr "\[SMOKE ERROR\] Timed out waiting for branding"; exit 1 }
     eof { puts stderr "\[SMOKE ERROR\] TUI exited before branding"; exit 1 }
 }

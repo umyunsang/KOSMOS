@@ -1,6 +1,6 @@
 # Quickstart: P0 · Baseline Runnable 로컬 검증
 
-**Audience**: KOSAX 기여자 (본 Epic 의 작업자 + 리뷰어 + 후속 Epic 의 신규
+**Audience**: UMMAYA 기여자 (본 Epic 의 작업자 + 리뷰어 + 후속 Epic 의 신규
 기여자).
 **시간 예산**: 5 분 (SC-005 목표).
 **전제**: macOS (ARM64) + Bun v1.2.x 설치됨.

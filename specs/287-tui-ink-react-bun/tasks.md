@@ -20,7 +20,7 @@ description: "Task list for Spec 287 TUI (Ink + React + Bun)"
 ## Path Conventions
 
 - **TUI workspace**: `tui/` at repo root (TypeScript + Ink + Bun; **only** TypeScript directory allowed per AGENTS.md hard rule)
-- **Python backend IPC adapter**: `src/kosax/ipc/` (new subpackage)
+- **Python backend IPC adapter**: `src/ummaya/ipc/` (new subpackage)
 - **Python backend tests**: `tests/ipc/`
 - **ADRs**: `docs/adr/`
 - **Upstream lifts**: Every file in `tui/src/ink/`, `tui/src/commands/`, `tui/src/theme/`, `tui/src/components/coordinator/`, `tui/src/components/conversation/VirtualizedList.tsx`, `tui/src/hooks/` (selected) MUST carry the attribution header `// Source: .references/claude-code-sourcemap/restored-src/<original-path> (Claude Code 2.1.88, research-use)` per FR-011.
@@ -40,7 +40,7 @@ description: "Task list for Spec 287 TUI (Ink + React + Bun)"
 - [X] T007 Create `tui/NOTICE` declaring research-use reconstruction and attributing Anthropic (FR-012)
 - [X] T008 [P] Create `tui/docs/cjk-width-known-issues.md` documenting ink#688 / ink#759 CJK width edge cases (spec Edge Cases, Assumption #3)
 - [X] T009 [P] Create `tui/docs/accessibility-checklist.md` skeleton covering keyboard-only navigation + screen-reader manual smoke (FR-055, FR-056)
-- [X] T010 [P] Register `KOSAX_TUI_THEME`, `KOSAX_TUI_LOG_LEVEL`, `KOSAX_TUI_SUBSCRIBE_TIMEOUT_S`, `KOSAX_TUI_IME_STRATEGY`, `KOSAX_TUI_SOAK_EVENTS_PER_SEC` in `src/kosax/config/env_registry.py` per #468 registry pattern (FR-041)
+- [X] T010 [P] Register `UMMAYA_TUI_THEME`, `UMMAYA_TUI_LOG_LEVEL`, `UMMAYA_TUI_SUBSCRIBE_TIMEOUT_S`, `UMMAYA_TUI_IME_STRATEGY`, `UMMAYA_TUI_SOAK_EVENTS_PER_SEC` in `src/ummaya/config/env_registry.py` per #468 registry pattern (FR-041)
 - [X] T011 [P] Add `bun run tui`, `bun run gen:ipc`, `bun run diff:upstream`, `bun run tui:fixture`, `bun test:soak` scripts to `tui/package.json`
 - [X] T012 Run `bun install` from `tui/` to generate `tui/bun.lockb`; verify Ink + React + @inkjs/ui resolve under the ADR-pinned strategy
 
@@ -52,16 +52,16 @@ description: "Task list for Spec 287 TUI (Ink + React + Bun)"
 
 **Purpose**: IPC contract source of truth + code-gen pipeline + base Ink reconciler lift + theme tokens + attribution enforcement. These tasks MUST complete before any user story phase starts — every user story depends on the IPC bridge contract + Ink reconciler.
 
-- [X] T013 Create `src/kosax/ipc/__init__.py` exposing `IPCFrame` union (Pydantic v2 models matching `specs/287-tui-ink-react-bun/contracts/ipc-frames.schema.json`) in `src/kosax/ipc/frame_schema.py`
+- [X] T013 Create `src/ummaya/ipc/__init__.py` exposing `IPCFrame` union (Pydantic v2 models matching `specs/287-tui-ink-react-bun/contracts/ipc-frames.schema.json`) in `src/ummaya/ipc/frame_schema.py`
 - [X] T014 Add Python contract test in `tests/ipc/test_frame_schema.py` verifying every JSON Schema in `specs/287-tui-ink-react-bun/contracts/*.schema.json` round-trips through `IPCFrame.model_validate_json` + `model_dump_json` for all 10 arms
-- [X] T015 Create `tui/scripts/gen-ipc-types.ts` that spawns Python and runs `kosax.ipc.frame_schema.IPCFrame.model_json_schema()` → writes `tui/src/ipc/frames.generated.ts` via `datamodel-code-generator` or `json-schema-to-typescript`; support `--check` flag for CI drift gate (FR-003)
+- [X] T015 Create `tui/scripts/gen-ipc-types.ts` that spawns Python and runs `ummaya.ipc.frame_schema.IPCFrame.model_json_schema()` → writes `tui/src/ipc/frames.generated.ts` via `datamodel-code-generator` or `json-schema-to-typescript`; support `--check` flag for CI drift gate (FR-003)
 - [X] T016 Run `bun run gen:ipc` once to produce `tui/src/ipc/frames.generated.ts` and commit it with a do-not-edit banner
 - [X] T017 [P] Add CI gate that runs `bun run gen:ipc -- --check` and fails if the committed generated file drifts from the live Pydantic schema (contracts/README.md § Authority)
 - [X] T018 Lift Ink reconciler files from `.references/claude-code-sourcemap/restored-src/src/ink/` into `tui/src/ink/` (reconciler.ts, renderer.ts, root.ts, dom.ts, layout/, events/, node-cache.ts, measure-text.ts, render-*.ts, parse-keypress.ts) — every file prepended with the FR-011 attribution header (~29 files)
 - [X] T019 [P] Create `tui/scripts/diff-upstream.sh` that walks every file in `tui/src/ink/` / `tui/src/commands/` / `tui/src/theme/` / `tui/src/components/coordinator/` / `tui/src/components/conversation/` with the FR-011 header and diffs them against their `.references/claude-code-sourcemap/restored-src/` source; exit non-zero on divergence (FR-013)
 - [X] T020 [P] Add CI check that runs `tui/scripts/diff-upstream.sh` and asserts every lifted file retains its attribution header via grep (FR-011, SC-9)
 - [X] T021 Lift theme tokens + 3 built-in themes from `restored-src/src/components/design-system/` into `tui/src/theme/tokens.ts`, `tui/src/theme/default.ts`, `tui/src/theme/dark.ts`, `tui/src/theme/light.ts` with attribution headers (FR-039, FR-040)
-- [X] T022 Create `tui/src/theme/provider.tsx` (KOSAX-original) that reads `KOSAX_TUI_THEME` env var and provides `ThemeToken` context to all children; default to `default` theme on unset (FR-039, FR-041)
+- [X] T022 Create `tui/src/theme/provider.tsx` (UMMAYA-original) that reads `UMMAYA_TUI_THEME` env var and provides `ThemeToken` context to all children; default to `default` theme on unset (FR-039, FR-041)
 - [X] T023 Create `tui/src/store/session-store.ts` implementing `useSyncExternalStore` reducer store per data-model.md § 3; lift the ≈35-line store pattern from `restored-src/src/store/` with attribution header (FR-050)
 - [X] T024 [P] Create `tui/src/i18n/en.ts` + `tui/src/i18n/ko.ts` with bilingual user-visible strings (FR-037); English is source, Korean is co-located translation
 
@@ -79,23 +79,23 @@ description: "Task list for Spec 287 TUI (Ink + React + Bun)"
 
 - [X] T025 [P] [US1] Contract test `tui/tests/ipc/codec.test.ts`: zod-parse every JSON file under `tui/tests/fixtures/ipc/` against `frames.generated.ts` discriminated union; one pass case + one malformed-json case per arm
 - [X] T026 [P] [US1] Integration test `tui/tests/ipc/bridge.test.ts`: spawn a stub Python backend (fixture echo) via `Bun.spawn`, assert process-up within 2 s, stream 10 `assistant_chunk` frames, assert FIFO order + p99 ≤ 50 ms per chunk (US1 scenarios 1, 2, 5; FR-001, FR-005, FR-006)
-- [X] T027 [P] [US1] Integration test `tui/tests/ipc/crash.test.ts`: kill stub backend mid-stream, assert `<CrashNotice />` renders within 5 s and no `KOSAX_*` env var values appear in the rendered output (US1 scenario 4; FR-004, SC-5)
+- [X] T027 [P] [US1] Integration test `tui/tests/ipc/crash.test.ts`: kill stub backend mid-stream, assert `<CrashNotice />` renders within 5 s and no `UMMAYA_*` env var values appear in the rendered output (US1 scenario 4; FR-004, SC-5)
 - [X] T028 [P] [US1] Soak test `tui/tests/ipc/soak.test.ts` (marked `@slow`; 10-min runtime): replay a fixture stream at 100 ev/s via `tui/scripts/soak.ts`; assert zero dropped frames, p99 chunk latency ≤ 50 ms, RSS growth ≤ 50 MB, clean exit (US1 scenario 3; FR-007, SC-2)
-- [X] T029 [P] [US1] Python round-trip test `tests/ipc/test_stdio_roundtrip.py`: pytest-asyncio spawns `uv run kosax-backend --ipc stdio`, writes 10 frames of each arm, reads responses, asserts byte-for-byte union validity
+- [X] T029 [P] [US1] Python round-trip test `tests/ipc/test_stdio_roundtrip.py`: pytest-asyncio spawns `uv run ummaya-backend --ipc stdio`, writes 10 frames of each arm, reads responses, asserts byte-for-byte union validity
 
 ### Implementation for User Story 1
 
-- [X] T030 [P] [US1] Implement Python IPC reader/writer loop in `src/kosax/ipc/stdio.py`: `asyncio.StreamReader` on `sys.stdin.buffer`, `sys.stdout.buffer.write` + `flush` for output; uses stdlib only (no new runtime deps)
-- [X] T031 [P] [US1] Add `--ipc stdio` CLI flag to `src/kosax/cli/__main__.py` that dispatches to `kosax.ipc.stdio:run()` instead of the existing REPL
-- [X] T032 [P] [US1] Create `tui/src/ipc/codec.ts` (KOSAX-original) providing `encodeFrame(frame: IPCFrame): string` and `decodeFrame(line: string): IPCFrame | { error }` with zod validation (belt-and-braces against generated types)
-- [X] T033 [US1] Create `tui/src/ipc/bridge.ts` wrapping `Bun.spawn(["uv", "run", "kosax-backend", "--ipc", "stdio"], { stdio: ["pipe","pipe","pipe"] })`; line-split stdout on `\n`; push each decoded frame into a FIFO async queue consumed by the store reducer (FR-001, FR-002, FR-005, FR-009)
-- [X] T034 [US1] Create `tui/src/ipc/crash-detector.ts`: subscribe to `child.exited`, watch stderr flush, detect non-zero exit or fatal stderr within ≤ 5 s; emit a synthetic `error` frame whose `message` + `details` are run through a KOSAX_*-env-var redactor (reuse #468 guard pattern) (FR-004)
+- [X] T030 [P] [US1] Implement Python IPC reader/writer loop in `src/ummaya/ipc/stdio.py`: `asyncio.StreamReader` on `sys.stdin.buffer`, `sys.stdout.buffer.write` + `flush` for output; uses stdlib only (no new runtime deps)
+- [X] T031 [P] [US1] Add `--ipc stdio` CLI flag to `src/ummaya/cli/__main__.py` that dispatches to `ummaya.ipc.stdio:run()` instead of the existing REPL
+- [X] T032 [P] [US1] Create `tui/src/ipc/codec.ts` (UMMAYA-original) providing `encodeFrame(frame: IPCFrame): string` and `decodeFrame(line: string): IPCFrame | { error }` with zod validation (belt-and-braces against generated types)
+- [X] T033 [US1] Create `tui/src/ipc/bridge.ts` wrapping `Bun.spawn(["uv", "run", "ummaya-backend", "--ipc", "stdio"], { stdio: ["pipe","pipe","pipe"] })`; line-split stdout on `\n`; push each decoded frame into a FIFO async queue consumed by the store reducer (FR-001, FR-002, FR-005, FR-009)
+- [X] T034 [US1] Create `tui/src/ipc/crash-detector.ts`: subscribe to `child.exited`, watch stderr flush, detect non-zero exit or fatal stderr within ≤ 5 s; emit a synthetic `error` frame whose `message` + `details` are run through a UMMAYA_*-env-var redactor (reuse #468 guard pattern) (FR-004)
 - [X] T035 [US1] Create `tui/src/components/conversation/CrashNotice.tsx` rendering the redacted crash payload with a restart hint (US1 scenario 4)
 - [X] T036 [US1] Create `tui/src/components/conversation/StreamingMessage.tsx` (lift from `restored-src/src/components/` streaming-message pattern with attribution header) that reads from `session-store` via `useSyncExternalStore` and only re-renders its own message slot on new chunks (FR-050, US1 scenario 2)
 - [X] T037 [US1] Create `tui/src/main.tsx` / `tui/src/entrypoints/tui.tsx` wiring `bridge → store → ThemeProvider → <App />`; SIGTERM child on Ctrl-C or `session_event.exit` with ≤ 3 s timeout before SIGKILL (FR-009)
 - [X] T038 [US1] Create `tui/scripts/soak.ts` replay helper that drives `tui/tests/fixtures/soak/` at configurable events/sec; used by T028
 - [X] T039 [US1] Create `tui/tests/fixtures/smoke/route-safety.jsonl` (hand-curated from #507 recorded responses) showing 3-turn route-safety dialog used by quickstart step 2 (FR-035)
-- [X] T040 [US1] Add DEBUG-level frame logging controlled by `KOSAX_TUI_LOG_LEVEL` in `tui/src/ipc/bridge.ts`; default WARN (FR-010)
+- [X] T040 [US1] Add DEBUG-level frame logging controlled by `UMMAYA_TUI_LOG_LEVEL` in `tui/src/ipc/bridge.ts`; default WARN (FR-010)
 
 **Checkpoint**: `bun run tui` against the real Python backend shows streaming output in Korean; `bun test:soak` passes.
 
@@ -103,14 +103,14 @@ description: "Task list for Spec 287 TUI (Ink + React + Bun)"
 
 ## Phase 4: User Story 2 — Command Dispatcher + Theme Engine + Session Commands (Priority: P1)
 
-**Goal**: `/save`, `/sessions`, `/resume`, `/new` work via IPC. Theme engine applies `default` / `dark` / `light` via `KOSAX_TUI_THEME`. Command registry shape preserves upstream structure for diff tracking.
+**Goal**: `/save`, `/sessions`, `/resume`, `/new` work via IPC. Theme engine applies `default` / `dark` / `light` via `UMMAYA_TUI_THEME`. Command registry shape preserves upstream structure for diff tracking.
 
-**Independent Test**: `ink-testing-library` injects `/save` into the input stream and asserts a `session_event` IPC frame is emitted; swap `KOSAX_TUI_THEME=dark` and assert Box/Text tokens flip.
+**Independent Test**: `ink-testing-library` injects `/save` into the input stream and asserts a `session_event` IPC frame is emitted; swap `UMMAYA_TUI_THEME=dark` and assert Box/Text tokens flip.
 
 ### Tests for User Story 2
 
 - [X] T041 [P] [US2] Component test `tui/tests/commands/dispatcher.test.ts`: inject `/save`, `/sessions`, `/resume <id>`, `/new`, and an unknown `/foo`; assert (a) each valid command emits the matching `session_event` frame, (b) `/foo` renders a help snippet (no crash) (US2 scenarios 1, 2, 4; FR-038, FR-042)
-- [X] T042 [P] [US2] Component test `tui/tests/theme/provider.test.tsx`: set `KOSAX_TUI_THEME=light|dark|default` and assert `<ThemeProvider />` exposes the matching token set; unset → default token set (US2 scenario 3; FR-039)
+- [X] T042 [P] [US2] Component test `tui/tests/theme/provider.test.tsx`: set `UMMAYA_TUI_THEME=light|dark|default` and assert `<ThemeProvider />` exposes the matching token set; unset → default token set (US2 scenario 3; FR-039)
 - [X] T043 [P] [US2] Registry-shape test `tui/tests/commands/registry.test.ts`: load `tui/src/commands/registry.ts` and assert its shape (keys, per-entry interface) is structurally identical to `restored-src/src/commands/` registry per FR-036 / US2 scenario 5
 - [X] T044 [P] [US2] i18n test `tui/tests/i18n/strings.test.ts`: assert `en.ts` and `ko.ts` export the same key set; no English string in `ko.ts` except technical identifiers (FR-037)
 
@@ -124,7 +124,7 @@ description: "Task list for Spec 287 TUI (Ink + React + Bun)"
 - [X] T050 [US2] Wire dispatcher into `tui/src/entrypoints/tui.tsx` — slash-prefixed input intercepted before `user_input` frame emission
 - [X] T051 [US2] Add help renderer for unknown commands in `tui/src/commands/dispatcher.ts` reading registered names (FR-042, US2 scenario 4)
 - [X] T052 [US2] Wire `ThemeProvider` into `tui/src/main.tsx` at root; all Box/Text components consume `useTheme()` hook — no inline hex colors permitted (FR-040)
-- [X] T053 [P] [US2] Document `KOSAX_TUI_THEME` in `docs/configuration.md` with the 3 values (FR-039)
+- [X] T053 [P] [US2] Document `UMMAYA_TUI_THEME` in `docs/configuration.md` with the 3 values (FR-039)
 
 **Checkpoint**: Slash commands round-trip through IPC; theme switch works; upstream registry diff applies cleanly.
 
@@ -222,8 +222,8 @@ description: "Task list for Spec 287 TUI (Ink + React + Bun)"
 
 ### Implementation for User Story 5
 
-- [X] T103 [US5] Based on ADR T004 outcome: if option (a) fork, update `tui/package.json` pin `"ink": "npm:@jrichman/ink@6.6.9"` + rerun `bun install` + regenerate lockfile; if option (b) readline, implement the stdlib readline hybrid in `tui/src/ipc/readline-bridge.ts` (KOSAX-original) and keep Ink pin at `@^7`
-- [X] T104 [US5] Create `tui/src/hooks/useKoreanIME.ts` strategy-selector hook reading `KOSAX_TUI_IME_STRATEGY` env var; dispatch to fork-based `useInput` OR readline hybrid per ADR (FR-014)
+- [X] T103 [US5] Based on ADR T004 outcome: if option (a) fork, update `tui/package.json` pin `"ink": "npm:@jrichman/ink@6.6.9"` + rerun `bun install` + regenerate lockfile; if option (b) readline, implement the stdlib readline hybrid in `tui/src/ipc/readline-bridge.ts` (UMMAYA-original) and keep Ink pin at `@^7`
+- [X] T104 [US5] Create `tui/src/hooks/useKoreanIME.ts` strategy-selector hook reading `UMMAYA_TUI_IME_STRATEGY` env var; dispatch to fork-based `useInput` OR readline hybrid per ADR (FR-014)
 - [X] T105 [US5] Create `tui/src/components/input/InputBar.tsx` consuming `useKoreanIME` hook; renders composition-state buffer + emits `user_input` frame on Enter (FR-015)
 - [X] T106 [US5] Wire `InputBar` into `tui/src/entrypoints/tui.tsx` replacing any placeholder text input
 - [X] T107 [P] [US5] Document chosen IME strategy in `tui/docs/korean-ime.md` with fallback instructions if the strategy fails on an uncommon terminal
@@ -246,7 +246,7 @@ description: "Task list for Spec 287 TUI (Ink + React + Bun)"
 
 ### Implementation for User Story 6
 
-- [X] T111 [P] [US6] Extend `src/kosax/ipc/stdio.py` to route `session_event` frames to existing Phase 1 session store (`src/kosax/session/`) without duplication
+- [X] T111 [P] [US6] Extend `src/ummaya/ipc/stdio.py` to route `session_event` frames to existing Phase 1 session store (`src/ummaya/session/`) without duplication
 - [X] T112 [US6] Confirm store reducer handles `session_event.load` / `resume` by replaying historical messages into the message list WITHOUT triggering `assistant_chunk` re-render animation (US6 scenario 3)
 - [X] T113 [P] [US6] Add `session_event.exit` handler in TUI triggering SIGTERM chain per FR-009
 
@@ -269,7 +269,7 @@ description: "Task list for Spec 287 TUI (Ink + React + Bun)"
 ### Implementation for User Story 7
 
 - [X] T117 [US7] Lift `tui/src/components/conversation/VirtualizedList.tsx` from `restored-src/src/components/` virtualization implementation with attribution header (FR-048)
-- [X] T118 [US7] Add Gemini CLI's `overflowToBackbuffer` pattern on top of VirtualizedList, referencing `.references/gemini-cli/packages/cli/` for structure (FR-052) — KOSAX-original integration; no attribution header to restored-src, but add a comment referencing Gemini CLI Apache-2.0 licensing
+- [X] T118 [US7] Add Gemini CLI's `overflowToBackbuffer` pattern on top of VirtualizedList, referencing `.references/gemini-cli/packages/cli/` for structure (FR-052) — UMMAYA-original integration; no attribution header to restored-src, but add a comment referencing Gemini CLI Apache-2.0 licensing
 - [X] T119 [US7] Implement double-buffered redraw pattern in `tui/src/ink/renderer.ts` lift (already from T018); verify via component test that redraw-batch coalescing matches Claude Code behavior (FR-049)
 - [X] T120 [US7] Wire `VirtualizedList` into `MessageList.tsx` replacing any naive list rendering
 
@@ -281,12 +281,12 @@ description: "Task list for Spec 287 TUI (Ink + React + Bun)"
 
 **Purpose**: Observability, final attribution compliance, documentation updates, release polish.
 
-- [X] T121 [P] Add `kosax.ipc.frame` OTEL span emission in `src/kosax/ipc/stdio.py` (child of session span from Spec 021) with attrs `kosax.session.id`, `kosax.frame.kind`, `kosax.frame.direction`, `kosax.ipc.latency_ms` (FR-053)
+- [X] T121 [P] Add `ummaya.ipc.frame` OTEL span emission in `src/ummaya/ipc/stdio.py` (child of session span from Spec 021) with attrs `ummaya.session.id`, `ummaya.frame.kind`, `ummaya.frame.direction`, `ummaya.ipc.latency_ms` (FR-053)
 - [X] T122 [P] Ensure OTEL span emission is fire-and-forget async (not on render thread) in `tui/src/ipc/bridge.ts` (FR-054)
 - [X] T123 [P] Keyboard-only navigation pass across all interactive components — `PermissionGauntletModal`, session list `<Select />`, CollectionList "Load more" — documented in `tui/docs/accessibility-checklist.md` (FR-055)
 - [X] T124 [P] Manual screen-reader smoke on macOS VoiceOver + Linux Orca documented in `tui/docs/accessibility-checklist.md` (FR-056)
 - [X] T125 [P] Final attribution audit — run `tui/scripts/diff-upstream.sh` + grep for missing `// Source:` headers across every file lifted to `tui/src/ink/`, `tui/src/commands/`, `tui/src/theme/`, `tui/src/components/coordinator/`, `tui/src/components/conversation/VirtualizedList.tsx`, `tui/src/hooks/` (FR-011, SC-9)
-- [X] T126 [P] Bun single-binary build via `bun build --compile --outfile dist/kosax-tui src/main.tsx`; verify on macOS arm64 + Linux x64 per spec § Assumption "bun build --compile"
+- [X] T126 [P] Bun single-binary build via `bun build --compile --outfile dist/ummaya-tui src/main.tsx`; verify on macOS arm64 + Linux x64 per spec § Assumption "bun build --compile"
 - [X] T127 [P] Run `quickstart.md` end-to-end on macOS + Linux and document any deltas in `tui/docs/README.md`
 - [X] T128 [P] Smoke test SC-8 Scenario 1 (route safety) via the real Python backend + TUI; archive a screencast under `tui/docs/demos/` if available
 - [X] T129 [P] Smoke test a Phase 2 multi-ministry scenario end-to-end via TUI (SC-8) — fixture OK if live APIs unavailable

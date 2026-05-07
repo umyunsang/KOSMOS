@@ -7,7 +7,7 @@ name: TUI IPC Frame Schema Drift Gate
 on:
   pull_request:
     paths:
-      - "src/kosax/ipc/**"
+      - "src/ummaya/ipc/**"
       - "specs/287-tui-ink-react-bun/contracts/**"
       - "tui/src/ipc/frames.generated.ts"
       - "tui/src/ipc/codec.ts"
@@ -20,7 +20,7 @@ on:
     branches:
       - main
     paths:
-      - "src/kosax/ipc/**"
+      - "src/ummaya/ipc/**"
       - "specs/287-tui-ink-react-bun/contracts/**"
       - "tui/src/ipc/frames.generated.ts"
       - "tui/src/ipc/codec.ts"
@@ -69,7 +69,7 @@ jobs:
         working-directory: tui
         run: bun run scripts/gen-ipc-types.ts --check
         env:
-          # Ensure Python can import kosax.ipc
+          # Ensure Python can import ummaya.ipc
           PYTHONPATH: ${{ github.workspace }}/src
 
       # Spec 2642 / Epic F · S7 / US3 — codec.ts ↔ Pydantic envelope drift gate.

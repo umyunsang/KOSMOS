@@ -1,4 +1,4 @@
-// KOSAX-original — Epic #2077 T018
+// UMMAYA-original — Epic #2077 T018
 // Promise-based pending permission slot + FIFO queue.
 //
 // Spec refs:
@@ -51,7 +51,7 @@ interface QueuedRequest extends PendingPermissionRequest {
 function getPermissionTimeoutMs(): number {
   // Bun / browser both expose process.env; fall back to 300 s per Spec 033.
   const raw = typeof process !== 'undefined'
-    ? process.env['KOSAX_PERMISSION_TIMEOUT_SEC']
+    ? process.env['UMMAYA_PERMISSION_TIMEOUT_SEC']
     : undefined
   const secs = raw !== undefined && raw !== '' ? Number(raw) : 300
   return (Number.isFinite(secs) && secs > 0 ? secs : 300) * 1000
@@ -120,7 +120,7 @@ export function subscribeToPermissionSlot(listener: SlotListener): () => void {
  * Returns a Promise that resolves to the citizen's decision (or 'timeout').
  *
  * Idempotent on duplicate request_id: immediately resolves to 'denied' and
- * emits a console.warn with tag [kosax.permission.duplicate].
+ * emits a console.warn with tag [ummaya.permission.duplicate].
  */
 export function setPendingPermission(
   request: PendingPermissionRequest,
@@ -128,7 +128,7 @@ export function setPendingPermission(
   // Idempotency guard — same request_id arriving twice.
   if (isDuplicate(request.request_id)) {
     console.warn(
-      `[kosax.permission.duplicate] request_id already tracked: ${request.request_id}. Resolving second call to 'denied'.`,
+      `[ummaya.permission.duplicate] request_id already tracked: ${request.request_id}. Resolving second call to 'denied'.`,
     )
     return Promise.resolve('denied' as PermissionDecision)
   }
@@ -214,7 +214,7 @@ export function getActivePermission(): PendingPermissionRequest | null {
 
 /**
  * Returns the current FIFO queue depth (active slot not counted).
- * Used for OTEL attribute kosax.permission.queue_depth.
+ * Used for OTEL attribute ummaya.permission.queue_depth.
  */
 export function getPermissionQueueDepth(): number {
   return pendingQueue.length

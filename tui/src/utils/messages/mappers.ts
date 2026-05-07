@@ -11,7 +11,7 @@ import type {
   SDKMessage,
   SDKRateLimitInfo,
 } from 'src/entrypoints/agentSdkTypes.js'
-// KOSAX-1633 P1+P2 / KOSAX-1978 T011 — services/claudeAiLimits deleted;
+// UMMAYA-1633 P1+P2 / UMMAYA-1978 T011 — services/claudeAiLimits deleted;
 // FriendliAI K-EXAONE has no Anthropic Claude.ai usage envelope. Local type
 // alias preserves the historic shape so message-mapping code links cleanly.
 type ClaudeAILimits = null

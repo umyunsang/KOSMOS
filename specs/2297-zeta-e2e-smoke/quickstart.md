@@ -3,20 +3,20 @@
 **Audience**: Lead Opus + Sonnet teammates executing `/speckit-implement` for this Epic.
 **Date**: 2026-04-30
 **Branch**: `2297-zeta-e2e-smoke`
-**Worktree**: `/Users/um-yunsang/KOSAX-w-2297`
+**Worktree**: `/Users/um-yunsang/UMMAYA-w-2297`
 
 ## Pre-flight checks
 
 ```bash
-cd /Users/um-yunsang/KOSAX-w-2297
+cd /Users/um-yunsang/UMMAYA-w-2297
 
 # 1. Confirm η is on main
 git log --oneline | grep 1321f77    # MUST show "feat(2298): system prompt rewrite + 5-tool LLM surface"
 
 # 2. Confirm the registry has 5 core tools
 uv run python -c "
-from kosax.tools.mvp_surface import register_mvp_surface
-from kosax.tools.registry import ToolRegistry
+from ummaya.tools.mvp_surface import register_mvp_surface
+from ummaya.tools.registry import ToolRegistry
 register_mvp_surface(ToolRegistry())
 print(ToolRegistry().count())  # MUST show 19 (16 + 3 new from η)
 "
@@ -33,11 +33,11 @@ git status --short
 **Goal**: `_VerifyInputForLLM` accepts `{tool_id, params}` shape from LLM and translates to `{family_hint, session_context}`.
 
 **Files to create**:
-- `src/kosax/tools/verify_canonical_map.py` (new) — see `data-model.md § 2`
+- `src/ummaya/tools/verify_canonical_map.py` (new) — see `data-model.md § 2`
 - `tests/unit/test_verify_canonical_map_parser.py` (new) — assert ≥10 entries + canonical names
 
 **Files to modify**:
-- `src/kosax/tools/mvp_surface.py:243` — extend `_VerifyInputForLLM` per `contracts/verify-input-shape.md` I-V1 through I-V8
+- `src/ummaya/tools/mvp_surface.py:243` — extend `_VerifyInputForLLM` per `contracts/verify-input-shape.md` I-V1 through I-V8
 
 **Files to add**:
 - `tests/integration/test_tool_id_to_family_hint_translation.py` (new) — 10 parametrised cases per canonical family + 1 unknown-tool_id case (per User Story 3 acceptance scenarios)
@@ -45,9 +45,9 @@ git status --short
 **Verification command**:
 ```bash
 uv run pytest tests/unit/test_verify_canonical_map_parser.py tests/integration/test_tool_id_to_family_hint_translation.py -v
-uv run ruff format --check src/kosax/tools/
-uv run ruff check src/kosax/tools/
-uv run mypy src/kosax/tools/mvp_surface.py src/kosax/tools/verify_canonical_map.py
+uv run ruff format --check src/ummaya/tools/
+uv run ruff check src/ummaya/tools/
+uv run mypy src/ummaya/tools/mvp_surface.py src/ummaya/tools/verify_canonical_map.py
 ```
 
 All MUST pass.
@@ -74,7 +74,7 @@ cd tui
 bun typecheck                           # MUST pass with 0 errors
 bun test src/tools/_shared/dispatchPrimitive.test.ts -v
 bun test                                # full TUI test suite — no regressions vs main
-bun run tui                             # interactive boot smoke — confirm KOSAX banner renders
+bun run tui                             # interactive boot smoke — confirm UMMAYA banner renders
 ```
 
 ## Phase 1a — Smoke harness + integration tests + fixtures (sonnet-smoke, ≤14 files)
@@ -151,7 +151,7 @@ cd ..
 # 3. Lint+type
 uv run ruff format --check
 uv run ruff check
-uv run mypy src/kosax
+uv run mypy src/ummaya
 
 # 4. Smoke artefacts present (FR-012 + SC-012)
 ls specs/2297-zeta-e2e-smoke/scripts/smoke-citizen-taxreturn.expect \

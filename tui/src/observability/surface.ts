@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Spec 1635 P4 UI L2 — kosax.ui.surface OTEL attribute emitter (FR-037).
+// Spec 1635 P4 UI L2 — ummaya.ui.surface OTEL attribute emitter (FR-037).
 //
 // Wraps the existing Spec 021 GenAI emit path with no new collector route
 // (FR-038 + SC-008: zero new external network egress). The emitted span
@@ -8,7 +8,6 @@
 import { trace } from '@opentelemetry/api';
 
 export type UiSurface =
-  | 'onboarding'
   | 'repl'
   | 'permission_gauntlet'
   | 'agents'
@@ -19,7 +18,6 @@ export type UiSurface =
   | 'history';
 
 export const UI_SURFACES: readonly UiSurface[] = [
-  'onboarding',
   'repl',
   'permission_gauntlet',
   'agents',
@@ -30,11 +28,11 @@ export const UI_SURFACES: readonly UiSurface[] = [
   'history',
 ] as const;
 
-const SURFACE_ATTRIBUTE_KEY = 'kosax.ui.surface';
-const TRACER_NAME = 'kosax/ui-l2';
+const SURFACE_ATTRIBUTE_KEY = 'ummaya.ui.surface';
+const TRACER_NAME = 'ummaya/ui-l2';
 
 /**
- * Emit `kosax.ui.surface=<surface>` on the active span if any. When no span
+ * Emit `ummaya.ui.surface=<surface>` on the active span if any. When no span
  * is active (e.g., outside a tracing context), open and immediately close a
  * one-shot span so the surface activation is recorded.
  *

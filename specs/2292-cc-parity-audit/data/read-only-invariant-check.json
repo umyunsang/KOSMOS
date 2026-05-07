@@ -25,7 +25,7 @@
   "untracked_rationale": "Both directories were already in git status before Epic α began (verified against the session-start gitStatus snapshot). Not produced by this Epic.",
   "source_code_changes": {
     "tui/src/": 0,
-    "src/kosax/": 0,
+    "src/ummaya/": 0,
     "tests/": 0,
     "verdict": "0 lines changed — read-only invariant strictly satisfied for source code (spec.md FR-007 strict reading)."
   },

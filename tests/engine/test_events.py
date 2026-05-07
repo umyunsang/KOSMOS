@@ -1,14 +1,14 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Unit tests for kosax.engine.events — StopReason and QueryEvent."""
+"""Unit tests for ummaya.engine.events — StopReason and QueryEvent."""
 
 from __future__ import annotations
 
 import pytest
 from pydantic import ValidationError
 
-from kosax.engine.events import QueryEvent, StopReason
-from kosax.llm.models import TokenUsage
-from kosax.tools.models import ToolResult
+from ummaya.engine.events import QueryEvent, StopReason
+from ummaya.llm.models import TokenUsage
+from ummaya.tools.models import ToolResult
 
 # ---------------------------------------------------------------------------
 # Helpers

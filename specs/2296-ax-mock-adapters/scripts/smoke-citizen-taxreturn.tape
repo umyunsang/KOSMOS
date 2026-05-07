@@ -14,7 +14,7 @@
 #
 # Outputs:
 #   specs/2296-ax-mock-adapters/smoke-citizen-taxreturn.gif       (animated, full chain)
-#   specs/2296-ax-mock-adapters/smoke-keyframe-1-boot.png         (boot + KOSAX branding)
+#   specs/2296-ax-mock-adapters/smoke-keyframe-1-boot.png         (boot + UMMAYA branding)
 #   specs/2296-ax-mock-adapters/smoke-keyframe-2-input.png        (citizen query typed in)
 #   specs/2296-ax-mock-adapters/smoke-keyframe-3-action.png       (post-approval state / 접수번호)
 #
@@ -27,19 +27,19 @@ Set FontSize 14
 Set FontFamily "JetBrains Mono"
 Set Theme "TokyoNightStorm"
 
-# Use the real Mock backend (registered at KOSAX_BACKEND_CMD by the TUI IPC bridge).
-Env KOSAX_BACKEND_CMD "uv run python -m kosax.ipc.demo.mock_backend"
+# Use the real Mock backend (registered at UMMAYA_BACKEND_CMD by the TUI IPC bridge).
+Env UMMAYA_BACKEND_CMD "uv run python -m ummaya.ipc.demo.mock_backend"
 
-# KOSAX_FORCE_INTERACTIVE=1: required under vhs PTY because Bun's
+# UMMAYA_FORCE_INTERACTIVE=1: required under vhs PTY because Bun's
 # process.stdout.isTTY is undefined in vhs-driven PTY sessions.
-# See KOSAX-1978 T003b and main.tsx:398.
-Env KOSAX_FORCE_INTERACTIVE "1"
+# See UMMAYA-1978 T003b and main.tsx:398.
+Env UMMAYA_FORCE_INTERACTIVE "1"
 
-Type "cd /Users/um-yunsang/KOSAX-w-2296/tui && bun run tui"
+Type "cd /Users/um-yunsang/UMMAYA-w-2296/tui && bun run tui"
 Enter
 Sleep 8s
 
-# Keyframe 1: boot + KOSAX branding visible
+# Keyframe 1: boot + UMMAYA branding visible
 Screenshot specs/2296-ax-mock-adapters/smoke-keyframe-1-boot.png
 
 # Citizen Korean query — exercises the agentic loop / verify → lookup → submit

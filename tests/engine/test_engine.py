@@ -18,21 +18,21 @@ from collections.abc import AsyncIterator
 
 import pytest
 
-from kosax.context.builder import ContextBuilder
-from kosax.context.models import SystemPromptConfig
-from kosax.engine.config import QueryEngineConfig
-from kosax.engine.engine import QueryEngine
-from kosax.engine.events import QueryEvent, StopReason
-from kosax.engine.models import QueryContext, SessionBudget
+from ummaya.context.builder import ContextBuilder
+from ummaya.context.models import SystemPromptConfig
+from ummaya.engine.config import QueryEngineConfig
+from ummaya.engine.engine import QueryEngine
+from ummaya.engine.events import QueryEvent, StopReason
+from ummaya.engine.models import QueryContext, SessionBudget
 
 # LLMClient must be imported (not just under TYPE_CHECKING) so that
 # QueryContext.model_rebuild() can resolve the forward reference and accept
 # mock objects for the llm_client field.
-from kosax.llm.client import LLMClient  # noqa: F401
-from kosax.llm.models import ChatMessage
-from kosax.llm.usage import UsageTracker
-from kosax.tools.executor import ToolExecutor
-from kosax.tools.registry import ToolRegistry
+from ummaya.llm.client import LLMClient  # noqa: F401
+from ummaya.llm.models import ChatMessage
+from ummaya.llm.usage import UsageTracker
+from ummaya.tools.executor import ToolExecutor
+from ummaya.tools.registry import ToolRegistry
 
 QueryContext.model_rebuild()
 
@@ -364,7 +364,7 @@ def test_default_system_prompt_is_first_message(
     # Content must be non-empty (default ContextBuilder uses SystemPromptConfig defaults)
     assert first_message.content
     # The default persona must be present
-    assert "KOSAX" in (first_message.content or "")
+    assert "UMMAYA" in (first_message.content or "")
 
 
 def test_custom_system_prompt(

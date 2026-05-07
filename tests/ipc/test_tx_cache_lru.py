@@ -15,7 +15,7 @@ from datetime import UTC, datetime
 
 import pytest
 
-from kosax.ipc.tx_cache import (
+from ummaya.ipc.tx_cache import (
     ToolCallResponse,
     TransactionLRU,
     TxEntry,

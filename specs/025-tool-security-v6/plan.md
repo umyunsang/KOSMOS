@@ -13,8 +13,8 @@ Close the defense-in-depth gap identified by Codex P1 review on PR #653: a futur
 **Primary Dependencies**: `pydantic >= 2.13` (existing — V1–V5 use `@model_validator(mode="after")`), `pytest` + `pytest-asyncio` (existing). **No new runtime dependencies** (AGENTS.md hard rule).
 **Storage**: N/A — this is a validator + backstop spec; no persistent state. The canonical mapping lives as code (validator module-level constant) and as documentation (`docs/security/tool-template-security-spec-v1.md` v1.1 matrix).
 **Testing**: `pytest` unit tests in `tests/tools/test_gov_api_tool_extensions.py` (positive + negative per `(auth_type, auth_level)` pair) and `tests/tools/test_registry_invariant.py` (registry backstop + pydantic-bypass scenarios + registry-wide scan test). No `@pytest.mark.live` tests. All tests deterministic and run in the default CI suite.
-**Target Platform**: Linux/macOS server (existing KOSAX backend).
-**Project Type**: Single project (Python package under `src/kosax/`).
+**Target Platform**: Linux/macOS server (existing UMMAYA backend).
+**Project Type**: Single project (Python package under `src/ummaya/`).
 **Performance Goals**: Validator + backstop MUST NOT regress `GovAPITool` construction or `ToolRegistry.register()` beyond sub-millisecond per tool (pure dict/set lookup; no I/O). The registry-wide scan test MUST complete in <1 second for the current 6-adapter registry.
 **Constraints**:
 - Fail-closed on unknown `auth_type` or `auth_level` (FR-048, Constitution §II).
@@ -22,7 +22,7 @@ Close the defense-in-depth gap identified by Codex P1 review on PR #653: a futur
 - Backstop error MUST be distinguishable from pydantic error (FR-043).
 - V1–V5 MUST continue to run unchanged (FR-047, SC-005).
 - Every existing adapter MUST pass V6 with no configuration change (FR-044, SC-001).
-**Scale/Scope**: 6 existing tool adapters (KOROAD accident-hazard-search, KMA forecast-fetch, HIRA hospital-search, NMC emergency-search, `resolve_location`, `lookup`). Scope bounded to `src/kosax/tools/models.py`, `src/kosax/tools/registry.py`, two test modules, and one documentation file.
+**Scale/Scope**: 6 existing tool adapters (KOROAD accident-hazard-search, KMA forecast-fetch, HIRA hospital-search, NMC emergency-search, `resolve_location`, `lookup`). Scope bounded to `src/ummaya/tools/models.py`, `src/ummaya/tools/registry.py`, two test modules, and one documentation file.
 
 ## Constitution Check
 
@@ -32,7 +32,7 @@ Evaluated against `.specify/memory/constitution.md` v1.1.0:
 
 | Principle | Status | Notes |
 |---|---|---|
-| I. Reference-Driven Development | PASS | Every V6 design decision maps to a concrete reference in `docs/vision.md § Reference materials`: (a) Pydantic v2 `@model_validator(mode="after")` pattern for FR-039 (already used by V1–V5 in `src/kosax/tools/models.py:166-238`); (b) V3 FR-038 registry-backstop pattern for FR-042 (existing code in `src/kosax/tools/registry.py:39-79`); (c) V1 spec document structure for FR-046 (existing `docs/security/tool-template-security-spec-v1.md`). See `research.md` for the per-decision mapping. |
+| I. Reference-Driven Development | PASS | Every V6 design decision maps to a concrete reference in `docs/vision.md § Reference materials`: (a) Pydantic v2 `@model_validator(mode="after")` pattern for FR-039 (already used by V1–V5 in `src/ummaya/tools/models.py:166-238`); (b) V3 FR-038 registry-backstop pattern for FR-042 (existing code in `src/ummaya/tools/registry.py:39-79`); (c) V1 spec document structure for FR-046 (existing `docs/security/tool-template-security-spec-v1.md`). See `research.md` for the per-decision mapping. |
 | II. Fail-Closed Security (NON-NEGOTIABLE) | PASS | FR-048 mandates fail-closed on unknown `auth_type` or `auth_level` values. FR-042 registry backstop ensures pydantic-bypass cannot land an unsafe tool. No mode or shortcut can relax V6 (validator runs unconditionally in `model_validator(mode="after")`). |
 | III. Pydantic v2 Strict Typing (NON-NEGOTIABLE) | PASS | V6 uses an existing `@model_validator(mode="after")` chain. No new `Any` types introduced. `auth_type: Literal["public", "api_key", "oauth"]` and `auth_level: AALLevel` remain the strict-typed fields; V6 checks their relation. |
 | IV. Government API Compliance | PASS | No live API calls. All tests use constructed `GovAPITool` instances; no `@pytest.mark.live`. |
@@ -62,7 +62,7 @@ specs/025-tool-security-v6/
 ### Source Code (repository root)
 
 ```text
-src/kosax/
+src/ummaya/
 ├── tools/
 │   ├── models.py        # EDIT: extend _validate_security_invariants with V6 block
 │   ├── registry.py      # EDIT: add V6 backstop in ToolRegistry.register() mirroring FR-038 pattern
@@ -80,7 +80,7 @@ docs/
     └── tool-template-security-spec-v1.md  # EDIT: append "V6: auth_type ↔ auth_level consistency" section, bump to v1.1
 ```
 
-**Structure Decision**: Single-project layout. V6 is a targeted extension of the existing `src/kosax/tools/` module. No new packages, no new submodules, no new configuration surface. The changes live in exactly 5 files (2 source, 2 test, 1 doc).
+**Structure Decision**: Single-project layout. V6 is a targeted extension of the existing `src/ummaya/tools/` module. No new packages, no new submodules, no new configuration surface. The changes live in exactly 5 files (2 source, 2 test, 1 doc).
 
 ## Complexity Tracking
 

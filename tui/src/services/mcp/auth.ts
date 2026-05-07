@@ -31,7 +31,7 @@ import { createServer, type Server } from 'http'
 import { join } from 'path'
 import { parse } from 'url'
 import xss from 'xss'
-// KOSAX: constants/oauth.js deleted by Spec 1633 P1+P2. MCP_CLIENT_METADATA_URL → empty string.
+// UMMAYA: constants/oauth.js deleted by Spec 1633 P1+P2. MCP_CLIENT_METADATA_URL → empty string.
 const MCP_CLIENT_METADATA_URL = ''
 import { openBrowser } from '../../utils/browser.js'
 import { getClaudeConfigHomeDir } from '../../utils/envUtils.js'
@@ -39,8 +39,8 @@ import { errorMessage, getErrnoCode } from '../../utils/errors.js'
 import * as lockfile from '../../utils/lockfile.js'
 import { logMCPDebug } from '../../utils/log.js'
 import { getPlatform } from '../../utils/platform.js'
-// KOSAX: secureStorage deleted by Spec 1633 P1. KOSAX uses .env-backed secrets, not OS keychain.
-// Provide minimal stubs so the file compiles; all OAuth/MCP auth is no-op in KOSAX.
+// UMMAYA: secureStorage deleted by Spec 1633 P1. UMMAYA uses .env-backed secrets, not OS keychain.
+// Provide minimal stubs so the file compiles; all OAuth/MCP auth is no-op in UMMAYA.
 type SecureStorageData = {
   mcpOAuth?: Record<string, unknown>
   mcpOAuthClientConfig?: Record<string, unknown>

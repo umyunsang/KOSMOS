@@ -15,15 +15,15 @@ Scope:
 
 ## Executive Findings
 
-1. KOSAX should not use long-lived npm tokens for normal final release. npm and
-   OpenSSF guidance now converge on OIDC-based Trusted Publishing. KOSAX
+1. UMMAYA should not use long-lived npm tokens for normal final release. npm and
+   OpenSSF guidance now converge on OIDC-based Trusted Publishing. UMMAYA
    already uses Infisical OIDC federation as a CI secret broker, so Infisical
    should be reused for Homebrew tap credentials and break-glass fallback only.
 2. The npm package must be a deliberate CLI package, not an accidental publish
-   of `tui/`. A root package with `bin/kosax`, `files`, package-content gates,
+   of `tui/`. A root package with `bin/ummaya`, `files`, package-content gates,
    provenance, and clean global install smoke matches current agentic CLI
    practice better than publishing a private workspace package.
-3. KOSAX currently needs a source-distributed Bun package because bundling the
+3. UMMAYA currently needs a source-distributed Bun package because bundling the
    TUI still exposes stale dead imports from the reconstructed Claude Code tree.
    The npm package therefore includes the TUI source, backend source,
    `pyproject.toml`, and `uv.lock`, and the wrapper launches the backend with
@@ -33,7 +33,7 @@ Scope:
    The formula should install from a stable npm registry tarball and pass
    formula syntax, audit, install, and `test do` checks after the tap update.
 5. LLMOps packaging evidence should be release metadata, not another runtime
-   framework. KOSAX already has prompt hashes, eval scenarios, OpenTelemetry,
+   framework. UMMAYA already has prompt hashes, eval scenarios, OpenTelemetry,
    optional Langfuse integration, and release manifests. Packaging should bind
    these into release notes and artifact evidence.
 
@@ -43,14 +43,14 @@ Name and registry checks as of 2026-05-07:
 
 | Surface | Result |
 |---|---|
-| npm `kosax` | `npm view kosax version` returned 404. |
-| Homebrew core formula/cask `kosax` | API checks returned 404. |
-| GitHub tap | `umyunsang/homebrew-kosax` exists. This secures the tap path, not Homebrew core. |
+| npm `ummaya` | `npm view ummaya version` returned 404. |
+| Homebrew core formula/cask `ummaya` | API checks returned 404. |
+| GitHub tap | `umyunsang/homebrew-ummaya` exists. This secures the tap path, not Homebrew core. |
 
 npm package state after implementation:
 
-- Root `package.json` is named `kosax`, version `0.1.0`.
-- `bin/kosax` is executable and requires Bun `>=1.3.0`.
+- Root `package.json` is named `ummaya`, version `0.1.0`.
+- `bin/ummaya` is executable and requires Bun `>=1.3.0`.
 - `files` allowlist includes only the npm wrapper, TUI runtime source, Python
   backend source, prompts, and canonical plugin-validation runtime files.
 - `scripts/check-npm-package.mjs` enforces content, size, and entry-count gates.
@@ -58,13 +58,13 @@ npm package state after implementation:
   - compressed size: 9,938,016 bytes
   - unpacked size: 34,545,264 bytes
   - entry count: 2,331
-- Clean global install smoke passed for `kosax --version`.
+- Clean global install smoke passed for `ummaya --version`.
 
 Homebrew state after implementation:
 
-- `scripts/render-homebrew-formula.mjs` renders `Formula/kosax.rb` from version
+- `scripts/render-homebrew-formula.mjs` renders `Formula/ummaya.rb` from version
   and npm tarball SHA-256.
-- `ruby -c Formula/kosax.rb` passed locally.
+- `ruby -c Formula/ummaya.rb` passed locally.
 - Local Homebrew 5.1.9 disallows path-based `brew audit [path]`; full audit/test
   must run after the formula is committed to the tap.
 - Bun is not available as a Homebrew core formula on this machine, so the
@@ -93,11 +93,11 @@ Agentic npm CLI packages checked on 2026-05-07:
 | `@anthropic-ai/claude-code` | `2.1.132` | `claude -> bin/claude.exe` | 131,959 bytes |
 | `@google/gemini-cli` | `0.41.2` | `gemini -> bundle/gemini.js` | 112,783,793 bytes |
 | `opencode-ai` | `1.14.40` | `opencode -> bin/opencode` | 8,961 bytes |
-| local KOSAX npm tarball | `0.1.0` | `kosax -> bin/kosax` | 34,545,264 bytes |
+| local UMMAYA npm tarball | `0.1.0` | `ummaya -> bin/ummaya` | 34,545,264 bytes |
 
 Insight: agentic CLIs split into two patterns. Some packages publish tiny
 launcher shims that fetch or execute a platform binary. Others publish a large,
-bundled JavaScript CLI. KOSAX is currently between those patterns: source
+bundled JavaScript CLI. UMMAYA is currently between those patterns: source
 distributed for v0.1.0, with a future bundled/native TUI artifact as the likely
 next packaging hardening step.
 
@@ -136,14 +136,14 @@ Supply chain:
 LLMOps:
 
 - OpenTelemetry GenAI semantic conventions are still marked Development, so
-  KOSAX should record the exact convention version or opt-in mode it emits.
+  UMMAYA should record the exact convention version or opt-in mode it emits.
 - Langfuse, MLflow GenAI, W&B Weave, and Arize Phoenix all converge on release
   evidence needs: traces, prompt management, evaluations, datasets,
   experiments, and OpenTelemetry interoperability.
-- For KOSAX, release evidence should include prompt manifest hashes, scenario
+- For UMMAYA, release evidence should include prompt manifest hashes, scenario
   dataset checksums, eval scorecard paths, and trace correlation keys.
 
-## KOSAX Packaging Direction
+## UMMAYA Packaging Direction
 
 Recommended order:
 
@@ -156,8 +156,8 @@ Recommended install story:
 
 | User need | Preferred install |
 |---|---|
-| General CLI | `npm install -g kosax` |
-| macOS one-command install | `brew tap oven-sh/bun && brew tap umyunsang/kosax && brew install kosax` |
+| General CLI | `npm install -g ummaya` |
+| macOS one-command install | `brew tap oven-sh/bun && brew tap umyunsang/ummaya && brew install ummaya` |
 | Source checkout | `uv sync --frozen --all-extras --dev`, then `cd tui && bun install --frozen-lockfile` |
 
 Recommended release gates:

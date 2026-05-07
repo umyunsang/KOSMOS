@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
-// KOSAX-1633 P1+P2 / KOSAX-1978 T011 — useRemoteSession stubbed.
+// UMMAYA-1633 P1+P2 / UMMAYA-1978 T011 — useRemoteSession stubbed.
 //
 // Original CC module: `tui/src/hooks/useRemoteSession.ts` (CC 2.1.88) drives
-// the Anthropic CCR (Claude Code Remote) WebSocket session. KOSAX citizen
+// the Anthropic CCR (Claude Code Remote) WebSocket session. UMMAYA citizen
 // TUI is local-only — there is no Anthropic-hosted session to attach to.
 // Stub returns `isRemoteMode: false` so REPL.tsx skips the entire remote
 // branch and behaves as a local interactive session.

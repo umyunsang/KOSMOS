@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSAX-1633 — Assistant install wizard minimal port.
+// UMMAYA-1633 — Assistant install wizard minimal port.
 //
 // CC's Assistant subsystem provided an interactive ink wizard for installing
-// a sandboxed Claude assistant alongside the developer environment. KOSAX
+// a sandboxed Claude assistant alongside the developer environment. UMMAYA
 // does not ship that subsystem (the citizen REPL is the only assistant
 // surface); we expose a minimum dialog that explains the deprecation and
 // resolves with `null` so any caller that races for an install path receives
@@ -30,11 +30,11 @@ export function NewInstallWizard({ onCancel }: NewInstallWizardProps): React.Rea
   return (
     <Box flexDirection="column" paddingX={1} paddingY={1} borderStyle="round">
       <Text bold color="yellow">
-        KOSAX — Assistant install wizard removed
+        UMMAYA — Assistant install wizard removed
       </Text>
       <Box marginTop={1}>
         <Text>
-          KOSAX does not ship the standalone Assistant install path that CC
+          UMMAYA does not ship the standalone Assistant install path that CC
           used. Press <Text bold>Enter</Text> or <Text bold>Esc</Text> to
           dismiss this dialog and continue with the citizen REPL.
         </Text>
@@ -44,7 +44,7 @@ export function NewInstallWizard({ onCancel }: NewInstallWizardProps): React.Rea
 }
 
 /**
- * KOSAX-1633 — Assistant install dir is deterministically empty since the
+ * UMMAYA-1633 — Assistant install dir is deterministically empty since the
  * subsystem is removed. Callers should treat the empty string as "not
  * configured" and skip any auto-attach behavior.
  */

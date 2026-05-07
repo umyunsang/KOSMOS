@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import time
 
-from kosax.tools.rate_limiter import RateLimiter
+from ummaya.tools.rate_limiter import RateLimiter
 
 
 def test_check_within_limit() -> None:

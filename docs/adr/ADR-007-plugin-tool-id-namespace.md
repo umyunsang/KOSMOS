@@ -3,11 +3,11 @@
 **Status**: Accepted
 **Date**: 2026-04-25
 **Epic**: #1636 (P5 Plugin DX 5-tier)
-**Affected**: `src/kosax/tools/registry.py:AdapterRegistration` · `src/kosax/tools/models.py:LookupFetchInput` · `src/kosax/tools/models.py:GovAPITool._validate_id` (extended in T014; the runtime registry holds GovAPITool instances, so the same alternation must apply there for plugin tools to round-trip through `ToolRegistry.register`)
+**Affected**: `src/ummaya/tools/registry.py:AdapterRegistration` · `src/ummaya/tools/models.py:LookupFetchInput` · `src/ummaya/tools/models.py:GovAPITool._validate_id` (extended in T014; the runtime registry holds GovAPITool instances, so the same alternation must apply there for plugin tools to round-trip through `ToolRegistry.register`)
 
 ## Context
 
-Migration tree § L1-C C7 mandates that plugin-contributed tools live under the namespace `plugin.<plugin_id>.<verb>` where `<verb>` is one of the active plugin primitives (`lookup` / `submit` / `verify`). This prevents adapter-id collisions across third-party plugins and makes the plugin origin visible in the LLM's `lookup` discovery surface. `subscribe` is intentionally excluded until KOSAX has an app/push-notification runtime.
+Migration tree § L1-C C7 mandates that plugin-contributed tools live under the namespace `plugin.<plugin_id>.<verb>` where `<verb>` is one of the active plugin primitives (`lookup` / `submit` / `verify`). This prevents adapter-id collisions across third-party plugins and makes the plugin origin visible in the LLM's `lookup` discovery surface. `subscribe` is intentionally excluded until UMMAYA has an app/push-notification runtime.
 
 The existing `AdapterRegistration.tool_id` and `LookupFetchInput.tool_id` fields enforce a snake-case pattern `^[a-z][a-z0-9_]*$` (Spec 022/031). Dots are rejected, so the canonical plugin-namespaced form would fail validation at registration and at `lookup(mode="fetch")` time.
 
@@ -44,11 +44,11 @@ The combined pattern is a backward-compatible alternation:
 - `AdapterRegistration` and `LookupFetchInput` accept the new dotted form starting on `feat/1636-plugin-dx-5tier`.
 - `PluginManifest._v_namespace` validator (Spec 1636 T006) refines the constraint further: when `tool_id` matches the dotted form, it must additionally satisfy `tool_id == f"plugin.{plugin_id}.<verb>"` and `<verb> ∈ {lookup, submit, verify}` (note: `resolve_location` is allowed by the registry regex for built-in parity, but plugin manifests restrict it because plugins cannot override `resolve_location`).
 - Spec 022/024/025/031 invariant chain is preserved — the regex is the only field that changed.
-- No ToolRegistry test needs editing; new tests in `kosax.plugins.tests` cover the plugin form.
+- No ToolRegistry test needs editing; new tests in `ummaya.plugins.tests` cover the plugin form.
 
 ## References
 
-- `docs/requirements/kosax-migration-tree.md § L1-C C7`
+- `docs/requirements/ummaya-migration-tree.md § L1-C C7`
 - `specs/1636-plugin-dx-5tier/spec.md § FR-022`
 - `specs/1636-plugin-dx-5tier/data-model.md § 1`
 - `specs/1636-plugin-dx-5tier/contracts/manifest.schema.json`

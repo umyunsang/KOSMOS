@@ -25,13 +25,13 @@ import pathlib
 
 from pydantic import BaseModel, ConfigDict
 
-from kosax.context.builder import ContextBuilder
-from kosax.context.models import SystemPromptConfig
-from kosax.engine.config import QueryEngineConfig
-from kosax.engine.models import QueryState
-from kosax.llm.usage import UsageTracker
-from kosax.tools.models import GovAPITool
-from kosax.tools.registry import ToolRegistry
+from ummaya.context.builder import ContextBuilder
+from ummaya.context.models import SystemPromptConfig
+from ummaya.engine.config import QueryEngineConfig
+from ummaya.engine.models import QueryState
+from ummaya.llm.usage import UsageTracker
+from ummaya.tools.models import GovAPITool
+from ummaya.tools.registry import ToolRegistry
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -89,7 +89,7 @@ class TestContextBuilderSystemMessage:
 
     def test_returns_chat_message(self) -> None:
         """Returns a ChatMessage with role='system' and non-empty content."""
-        from kosax.llm.models import ChatMessage
+        from ummaya.llm.models import ChatMessage
 
         builder = ContextBuilder()
         msg = builder.build_system_message()
@@ -130,7 +130,7 @@ class TestContextBuilderAttachment:
 
     def test_with_resolved_tasks(self) -> None:
         """State with resolved tasks → returns a ContextLayer."""
-        from kosax.context.models import ContextLayer
+        from ummaya.context.models import ContextLayer
 
         builder = ContextBuilder()
         state = _make_state(turn_count=0, resolved_tasks=["Task completed"])
@@ -207,7 +207,7 @@ class TestContextBuilderAssembledContext:
 
     def test_returns_assembled_context(self) -> None:
         """build_assembled_context() returns an AssembledContext instance."""
-        from kosax.context.models import AssembledContext
+        from ummaya.context.models import AssembledContext
 
         builder = ContextBuilder()
         state = _make_state()
@@ -375,7 +375,7 @@ def test_all_tools_situational_warning(caplog) -> None:  # type: ignore[no-untyp
         active_situational_tools={"situational_only"},
     )
 
-    with caplog.at_level(logging.WARNING, logger="kosax.context.builder"):
+    with caplog.at_level(logging.WARNING, logger="ummaya.context.builder"):
         builder.build_assembled_context(state)
 
     assert any("No core tools registered" in r.message for r in caplog.records), (

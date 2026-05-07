@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Unit tests for kosax.engine.query — the per-turn query loop.
+"""Unit tests for ummaya.engine.query — the per-turn query loop.
 
 All tests use mocks only; no live API calls are made.
 asyncio_mode = "auto" is configured in pyproject.toml, so no explicit
@@ -10,19 +10,19 @@ from __future__ import annotations
 
 import pytest
 
-from kosax.engine.config import QueryEngineConfig
-from kosax.engine.events import QueryEvent, StopReason
-from kosax.engine.models import QueryContext, QueryState
-from kosax.engine.query import query
+from ummaya.engine.config import QueryEngineConfig
+from ummaya.engine.events import QueryEvent, StopReason
+from ummaya.engine.models import QueryContext, QueryState
+from ummaya.engine.query import query
 
 # LLMClient must be imported (not just under TYPE_CHECKING) so that
 # QueryContext.model_rebuild() can resolve the forward reference and accept
 # mock objects for the llm_client field.
-from kosax.llm.client import LLMClient  # noqa: F401
-from kosax.llm.models import ChatMessage
-from kosax.llm.usage import UsageTracker
-from kosax.tools.executor import ToolExecutor
-from kosax.tools.registry import ToolRegistry
+from ummaya.llm.client import LLMClient  # noqa: F401
+from ummaya.llm.models import ChatMessage
+from ummaya.llm.usage import UsageTracker
+from ummaya.tools.executor import ToolExecutor
+from ummaya.tools.registry import ToolRegistry
 
 QueryContext.model_rebuild()
 
@@ -56,7 +56,7 @@ def _make_ctx(
     """Construct a QueryContext with sensible defaults for testing."""
     if messages is None:
         messages = [
-            ChatMessage(role="system", content="You are KOSAX."),
+            ChatMessage(role="system", content="You are UMMAYA."),
             ChatMessage(role="user", content="서울 강남구 교통사고 현황"),
         ]
     state = QueryState(
@@ -365,7 +365,7 @@ class _ErrorLLMClient:
 
     @property
     def usage(self):  # noqa: ANN201
-        from kosax.llm.usage import UsageTracker
+        from ummaya.llm.usage import UsageTracker
 
         return UsageTracker(budget=100_000)
 
@@ -411,7 +411,7 @@ async def test_tool_result_message_appended_to_history(
 ):
     """After a successful tool dispatch, a role='tool' message must appear in state.messages."""
     initial_messages = [
-        ChatMessage(role="system", content="You are KOSAX."),
+        ChatMessage(role="system", content="You are UMMAYA."),
         ChatMessage(role="user", content="서울 강남구 교통사고 현황"),
     ]
     ctx = _make_ctx(

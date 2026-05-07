@@ -159,11 +159,11 @@ print(LookupOutput.model_json_schema())
 
 ```bash
 # 외부 plugin repo 의 .github/workflows/plugin-validation.yml 가
-# umyunsang/KOSAX/.github/workflows/plugin-validation.yml@main 을 호출.
+# umyunsang/UMMAYA/.github/workflows/plugin-validation.yml@main 을 호출.
 # 로컬에서도 직접 실행 가능:
 uv run python -c "
 from pathlib import Path
-from kosax.plugins.checks.framework import run_all_checks
+from ummaya.plugins.checks.framework import run_all_checks
 results = run_all_checks(
     plugin_root=Path('.'),
     yaml_path=Path('tests/fixtures/plugin_validation/checklist_manifest.yaml'),

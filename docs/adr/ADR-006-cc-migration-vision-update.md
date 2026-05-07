@@ -1,4 +1,4 @@
-# ADR-006: CC→KOSAX Phase 2 Migration — Vision Amendments, Onboarding Brand, and Shortcut Migration
+# ADR-006: CC→UMMAYA Phase 2 Migration — Vision Amendments, Onboarding Brand, and Shortcut Migration
 
 **Status**: Proposed
 **Date**: 2026-04-19
@@ -12,11 +12,11 @@
 
 ## Context
 
-PR #1295 merged Spec 287 (TUI port of `claude-code-sourcemap` 2.1.88 into `tui/src/`) on 2026-04-19. With the rendering spine (Ink + React + Bun) and the 5-primitive backend surface (Spec 031, ratified PR #1149) both on `main`, KOSAX Phase 2 needs:
+PR #1295 merged Spec 287 (TUI port of `claude-code-sourcemap` 2.1.88 into `tui/src/`) on 2026-04-19. With the rendering spine (Ink + React + Bun) and the 5-primitive backend surface (Spec 031, ratified PR #1149) both on `main`, UMMAYA Phase 2 needs:
 
 1. A **vision document that matches what was actually built** — several `docs/vision.md` lines now describe a future state that has already shipped, or describe retired alternatives.
-2. An **evidence-grounded plan for the remaining CC migration surface** — six architectural layers with concrete files in `.references/claude-code-sourcemap/restored-src/`, mapped against KOSAX coverage.
-3. A **citizen-facing onboarding and shortcut plan** — currently KOSAX TUI has 5 keybindings vs. CC's 65, no onboarding screen, and the SVG logo + brand palette in `assets/` has never been ported into a TUI component.
+2. An **evidence-grounded plan for the remaining CC migration surface** — six architectural layers with concrete files in `.references/claude-code-sourcemap/restored-src/`, mapped against UMMAYA coverage.
+3. A **citizen-facing onboarding and shortcut plan** — currently UMMAYA TUI has 5 keybindings vs. CC's 65, no onboarding screen, and the SVG logo + brand palette in `assets/` has never been ported into a TUI component.
 4. A **data-integrity fix** — Initiative #2's Sub-Issues API v2 `subIssues` connection was empty despite the body claiming 7 Epics (sub-issue links never created via the `addSubIssue` mutation; the earlier AGENTS.md reference to `trackedIssues`/`trackedInIssues` pointed at the legacy body-mention connection, not the canonical Sub-Issues API v2 edge — see the AGENTS.md edit in the same PR as this ADR).
 
 This ADR records the consolidated decision so the nine Epics under Initiative #2 can be cut with traceable scope.
@@ -30,10 +30,10 @@ This ADR records the consolidated decision so the nine Epics under Initiative #2
 - `.references/claude-code-sourcemap/restored-src/src/services/compact/compact.ts` (+ `microCompact.ts`, `autoCompact.ts`) + `src/memdir/memdir.ts`
 - `.references/claude-code-sourcemap/restored-src/src/services/api/withRetry.ts` (+ `errors.ts`, `errorUtils.ts`)
 - `.references/claude-code-sourcemap/restored-src/src/components/Onboarding.tsx` (CC onboarding step registry)
-- `assets/kosax-{logo,logo-dark,banner-dark,icon}.{svg,png}` (8 brand assets)
+- `assets/ummaya-{logo,logo-dark,banner-dark,icon}.{svg,png}` (8 brand assets)
 - `specs/031-five-primitive-harness/research.md § 1` (CC primitive-mapping table)
 - `specs/027-agent-swarm-core/` (file-based mailbox IPC, shipped)
-- `tui/src/hooks/useKoreanIME.ts`, `tui/src/theme/dark.ts`, `tui/src/commands/index.ts`, `tui/src/components/input/InputBar.tsx`, `tui/src/components/coordinator/PermissionGauntletModal.tsx` (current KOSAX TUI coverage)
+- `tui/src/hooks/useKoreanIME.ts`, `tui/src/theme/dark.ts`, `tui/src/commands/index.ts`, `tui/src/components/input/InputBar.tsx`, `tui/src/components/coordinator/PermissionGauntletModal.tsx` (current UMMAYA TUI coverage)
 
 ---
 
@@ -79,15 +79,15 @@ The following ten amendments bring `docs/vision.md` back in sync with shipped st
 > | 4 | **Agent Swarms** | Ministry-specialist agents coordinated by an orchestrator | Mailbox IPC + coordinator synthesis |
 
 **Amended**:
-> | 4 | **Agent Swarms** | Ministry-specialist agents coordinated by an orchestrator | AsyncLocalStorage in-process coordinator (CC parity) + file-based mailbox IPC for crash resilience (KOSAX Spec 027 extension) |
+> | 4 | **Agent Swarms** | Ministry-specialist agents coordinated by an orchestrator | AsyncLocalStorage in-process coordinator (CC parity) + file-based mailbox IPC for crash resilience (UMMAYA Spec 027 extension) |
 
-**Evidence**: `.references/claude-code-sourcemap/restored-src/src/coordinator/coordinatorMode.ts` uses AsyncLocalStorage + `src/tasks/InProcessTeammateTask/`; there is no mailbox-IPC path in CC. KOSAX Spec 027 adds the file-based mailbox as a KOSAX-original crash-resilience path (regulated domain, long-running sessions). Both paths coexist — the current phrasing hides the CC parity layer.
+**Evidence**: `.references/claude-code-sourcemap/restored-src/src/coordinator/coordinatorMode.ts` uses AsyncLocalStorage + `src/tasks/InProcessTeammateTask/`; there is no mailbox-IPC path in CC. UMMAYA Spec 027 adds the file-based mailbox as a UMMAYA-original crash-resilience path (regulated domain, long-running sessions). Both paths coexist — the current phrasing hides the CC parity layer.
 
 #### A-5 · L3 Permission Pipeline — make PermissionMode spectrum explicit
 
 **Add after L115 Layer 3 row** (as a sub-bullet or an inline note inside the Layer 3 prose at L113):
 
-> **PermissionMode spectrum.** Layer 3 inherits CC's four-mode PermissionMode (`default`, `plan`, `acceptEdits`, `bypassPermissions`) as a first-class concept. KOSAX tightens `bypassPermissions` under a PIPA-specific killswitch (`bypassPermissionsKillswitch` parity) and adds a `citizen-ident-verified` precondition for tools with `auth_level ∈ {AAL2, AAL3}`.
+> **PermissionMode spectrum.** Layer 3 inherits CC's four-mode PermissionMode (`default`, `plan`, `acceptEdits`, `bypassPermissions`) as a first-class concept. UMMAYA tightens `bypassPermissions` under a PIPA-specific killswitch (`bypassPermissionsKillswitch` parity) and adds a `citizen-ident-verified` precondition for tools with `auth_level ∈ {AAL2, AAL3}`.
 
 **Evidence**: `.references/claude-code-sourcemap/restored-src/src/utils/permissions/PermissionMode.ts` + `bypassPermissionsKillswitch.ts`. Current vision L179–245 describes the permission gauntlet mechanics but never names the four modes or the killswitch. Every TUI permission dialog MUST honour the active mode; without naming it in vision, the TUI port has no architectural anchor for the mode toggle in `chat:cycleMode` (CC shift+tab).
 
@@ -95,17 +95,17 @@ The following ten amendments bring `docs/vision.md` back in sync with shipped st
 
 **Add to the Layer 5 section** (after the existing three-tier description, ~L276):
 
-> **Phase-1 delivered scope.** Of the three context tiers described above, Phase 1 (on `main` as of 2026-04-19) delivers **System prompt assembly** (Spec 026 Prompt Registry) and **Session turn compaction** (`microCompact` + `autoCompact` parity). The **User** and **Project** memory tiers (CC `src/memdir/`) are deferred to Phase 2+; no KOSAX component currently reads or writes memdir-style files.
+> **Phase-1 delivered scope.** Of the three context tiers described above, Phase 1 (on `main` as of 2026-04-19) delivers **System prompt assembly** (Spec 026 Prompt Registry) and **Session turn compaction** (`microCompact` + `autoCompact` parity). The **User** and **Project** memory tiers (CC `src/memdir/`) are deferred to Phase 2+; no UMMAYA component currently reads or writes memdir-style files.
 
-**Evidence**: `src/kosax/prompts/` + `src/kosax/compact/` exist; no `~/.kosax/memory/` writer exists. CC `src/memdir/memdir.ts` + `src/memdir/paths.ts` have no KOSAX counterpart. Declaring this keeps the vision honest about the gap.
+**Evidence**: `src/ummaya/prompts/` + `src/ummaya/compact/` exist; no `~/.ummaya/memory/` writer exists. CC `src/memdir/memdir.ts` + `src/memdir/paths.ts` have no UMMAYA counterpart. Declaring this keeps the vision honest about the gap.
 
 #### A-7 · L1 QueryDeps injection boundary
 
 **Add to Layer 1 section** (after L148, the "Query state" block):
 
-> **QueryDeps injection boundary.** The query loop receives its LLM client, tool registry, permission policy, and telemetry emitter via an explicit `QueryDeps` dataclass at loop construction time — never imported from module scope inside the loop. This boundary is how CC keeps the engine test-isolatable (parity with `src/query/deps.ts`) and how KOSAX keeps Phase-1 `Scenario1` E2E runnable without side effects on live APIs.
+> **QueryDeps injection boundary.** The query loop receives its LLM client, tool registry, permission policy, and telemetry emitter via an explicit `QueryDeps` dataclass at loop construction time — never imported from module scope inside the loop. This boundary is how CC keeps the engine test-isolatable (parity with `src/query/deps.ts`) and how UMMAYA keeps Phase-1 `Scenario1` E2E runnable without side effects on live APIs.
 
-**Evidence**: `.references/claude-code-sourcemap/restored-src/src/query/deps.ts` defines `QueryDeps`. KOSAX Spec 013 (`013-scenario1-e2e-route-safety`) effectively relies on this pattern but it is nowhere in vision.
+**Evidence**: `.references/claude-code-sourcemap/restored-src/src/query/deps.ts` defines `QueryDeps`. UMMAYA Spec 013 (`013-scenario1-e2e-route-safety`) effectively relies on this pattern but it is nowhere in vision.
 
 #### A-8 · L361 Roadmap Phase 2 — partial-complete marker
 
@@ -118,32 +118,32 @@ The following ten amendments bring `docs/vision.md` back in sync with shipped st
 
 **Evidence**: `gh api graphql` confirms Spec 027 closed; Initiative #2 remains `OPEN`.
 
-#### A-9 · Onboarding screen — KOSAX brand + PIPA consent
+#### A-9 · Runtime identity — UMMAYA brand without a custom gate
 
-**Add a new sub-section under Layer 5** (Context Assembly) **or** a new Appendix "Onboarding and brand":
+**Add a new sub-section under Layer 5** (Context Assembly) **or** a new Appendix "Runtime identity and brand":
 
-> **Citizen onboarding.** First-launch presents a dedicated onboarding sequence derived from CC's step registry (`src/components/Onboarding.tsx`) with the developer-domain steps (API key, OAuth, terminal fonts) replaced by citizen-domain equivalents:
+> **Runtime identity.** UMMAYA keeps the CC runtime setup path and removes the project-only preflight/onboarding gate. The brand layer appears in the normal welcome/header surfaces:
 >
-> 1. **KOSAX brand splash** — render the orbital-ring logo (`assets/kosax-logo-dark.svg` / icon component equivalent) with the wordmark `KOSAX` and subtitle `KOREAN OPEN SERVICE AGENTIC EXECUTION`. Palette: background `#0a0e27` → `#1a1040`; ring/core gradient `#60a5fa`/`#a78bfa`/`#818cf8`/`#6366f1`; wordmark `#e0e7ff`; subtitle `#94a3b8`; satellite nodes `#34d399` / `#f472b6` / `#93c5fd` / `#c4b5fd`.
-> 2. **PIPA consent** — KOSAX-original step (no CC analog). Mandatory under PIPA §15 before any tool call can execute; records consent version, timestamp, and AAL gate.
-> 3. **Public-API scope acknowledgment** — enumerate the `data.go.kr` ministries the session will query (KOROAD, KMA, HIRA, NMC, …) and their data categories; citizen must acknowledge before Layer-2 adapters go live.
-> 4. **Theme picker** — deferred until a light/high-contrast theme ships; the Phase 1 TUI runs the `dark` theme only.
+> 1. **UMMAYA home-call mascot** — render the 5-row house character with CC-style eye poses and raised-roof arms.
+> 2. **Operational credentials** — platform/operator keys are deployment secrets; citizen sessions only enter a FriendliAI key through login.
+> 3. **Permission UX** — consent and agency scope are handled by CC's permission pipeline plus adapter policy citations, not by a custom first-run wizard.
+> 4. **Theme surface** — Phase 1 keeps the dark theme and applies UMMAYA warm service accents.
 
-**Evidence**: `assets/` contains 8 brand files; color palette extracted directly from `kosax-banner-dark.svg` and `kosax-logo.svg`. The current `tui/src/theme/dark.ts` uses `rgb(0,204,204)` for `background` which has **no basis in the SVG palette** — this is a placeholder inherited from CC that must be replaced with the KOSAX navy (`#0a0e27`) in the same PR that ports the onboarding splash. Current TUI has no onboarding component; the gap is explicit.
+**Evidence**: `assets/` contains UMMAYA logo, banner, and org-avatar variants; the current runtime mascot is the terminal home-call mark rendered by `tui/src/components/LogoV2/Clawd.tsx` and `WelcomeV2.tsx`.
 
 #### A-10 · CC keyboard-shortcut migration — Tier 1/2/3 reference
 
 **Add a new sub-section under Layer 5 (TUI)** or cross-reference into the new Appendix above:
 
-> **Keyboard-shortcut migration.** CC defines 65 bindings across 20 contexts (`src/keybindings/defaultBindings.ts`). KOSAX currently implements 5 (Enter, y/Y, n/N/Esc, Backspace/Delete, IME passthrough for modifiers). The Tier plan below is the authoritative migration scope for Phase 2:
+> **Keyboard-shortcut migration.** CC defines 65 bindings across 20 contexts (`src/keybindings/defaultBindings.ts`). UMMAYA currently implements 5 (Enter, y/Y, n/N/Esc, Backspace/Delete, IME passthrough for modifiers). The Tier plan below is the authoritative migration scope for Phase 2:
 >
 > - **Tier 1 (pre-citizen-launch blocker)**: `ctrl+c` (interrupt active agent), `ctrl+d` (clean exit), `escape` in InputBar (cancel draft, gated on `!ime.isComposing`), `ctrl+r` (history search), `up`/`down` in InputBar (history prev/next, gated on empty buffer).
 > - **Tier 2 (post-launch hardening)**: `pageup`/`pagedown`, `ctrl+l` (redraw), `shift+tab` (cycle PermissionMode — binds A-5), `ctrl+_` (undo), `ctrl+shift+c` (copy selection).
-> - **Tier 3 (deferred until dependent specs)**: `ctrl+x ctrl+k` (killAll — needs multi-worker), `ctrl+e` (external editor), `meta+p` (modelPicker — KOSAX uses K-EXAONE only), `ctrl+s` (stash), `ctrl+v` (image paste).
+> - **Tier 3 (deferred until dependent specs)**: `ctrl+x ctrl+k` (killAll — needs multi-worker), `ctrl+e` (external editor), `meta+p` (modelPicker — UMMAYA uses K-EXAONE only), `ctrl+s` (stash), `ctrl+v` (image paste).
 >
 > IME safety rule: every binding that mutates the input buffer MUST check `!useKoreanIME().isComposing` before acting (Hangul composition must not be interrupted by a shortcut).
 
-**Evidence**: Full 65-binding catalog in R2 research output (see References). Current KOSAX 5-binding surface inventoried across `tui/src/components/input/InputBar.tsx`, `tui/src/components/coordinator/PermissionGauntletModal.tsx`, `tui/src/hooks/useKoreanIME.ts`.
+**Evidence**: Full 65-binding catalog in R2 research output (see References). Current UMMAYA 5-binding surface inventoried across `tui/src/components/input/InputBar.tsx`, `tui/src/components/coordinator/PermissionGauntletModal.tsx`, `tui/src/hooks/useKoreanIME.ts`.
 
 ##### A-10 implementation landed in Spec 288
 
@@ -163,19 +163,19 @@ Cross-reference: `specs/288-shortcut-tier1-port/tasks.md` § Phase 10 T040.
 
 ### Part B — Nine Epics under Initiative #2 (labelled sub-Epics A–I for ADR cross-reference)
 
-The CC→KOSAX Phase 2 migration surface is scoped as **nine Epics**, linked directly as sub-issues of Initiative #2 (issue numbers #1297–#1305). The A–I labels below are ADR-local identifiers only — they are NOT an issue-hierarchy tier. Each Epic maps to a concrete CC source region and a concrete KOSAX gap. The recommended execution order (critical path first) is **G → B → A → H → I → D → C → E → F**.
+The CC→UMMAYA Phase 2 migration surface is scoped as **nine Epics**, linked directly as sub-issues of Initiative #2 (issue numbers #1297–#1305). The A–I labels below are ADR-local identifiers only — they are NOT an issue-hierarchy tier. Each Epic maps to a concrete CC source region and a concrete UMMAYA gap. The recommended execution order (critical path first) is **G → B → A → H → I → D → C → E → F**.
 
-| ID | Issue | Title | CC source | KOSAX gap | Priority |
+| ID | Issue | Title | CC source | UMMAYA gap | Priority |
 |---|---|---|---|---|---|
 | **G** | #1305 | **Initiative #2 sub-issue re-link** (data-integrity fix) | — | `subIssues` edge empty; 7 Epics listed in body but never linked via Sub-Issues API v2 | **P0 — blocker (completed 2026-04-19 during ADR execution; scope narrowed to documentation fix in AGENTS.md)** |
 | **B** | #1297 | Permission v2 — PermissionMode spectrum + persistent rule store | `src/utils/permissions/{permissions,PermissionMode,bypassPermissionsKillswitch,dangerousPatterns,filesystem}.ts` | No mode concept; TUI `PermissionGauntletModal` is per-call only | **P0 — Tier 1 shortcut (shift+tab) + TUI parity + PIPA audit trail** |
-| **A** | #1298 | IPC stdio hardening — structured frames, backpressure, reconnect | `src/services/api/` (REST) vs. KOSAX `src/kosax/ipc/stdio.py` | JSONL-over-stdio shipped in 287; no framing spec, no reconnect, no replay | P1 |
+| **A** | #1298 | IPC stdio hardening — structured frames, backpressure, reconnect | `src/services/api/` (REST) vs. UMMAYA `src/ummaya/ipc/stdio.py` | JSONL-over-stdio shipped in 287; no framing spec, no reconnect, no replay | P1 |
 | **H** | #1302 | Onboarding + brand port (binds A-9) | `src/components/Onboarding.tsx` step registry | No onboarding screen; `dark.ts` background token placeholder; logo never rendered in TUI | P1 |
 | **I** | #1303 | Shortcut Tier 1 port (binds A-10) | `src/keybindings/defaultBindings.ts` + `src/hooks/useGlobalKeybindings.tsx` | 5/65 bindings implemented | P1 |
-| **D** | #1299 | Context Assembly v2 — memdir User + Project tiers (binds A-6) | `src/memdir/memdir.ts` + `src/memdir/paths.ts` | System + Session tiers only; no `~/.kosax/memory/` | P2 |
+| **D** | #1299 | Context Assembly v2 — memdir User + Project tiers (binds A-6) | `src/memdir/memdir.ts` + `src/memdir/paths.ts` | System + Session tiers only; no `~/.ummaya/memory/` | P2 |
 | **C** | #1301 | Ministry Specialists — 출산 보조금 / 건강보험 / 교통 workers | `src/coordinator/coordinatorMode.ts` + `src/tasks/InProcessTeammateTask/` | Spec 027 mailbox shipped; no ministry-specific workers yet | P2 |
 | **E** | #1300 | Korean IME — composition-aware shortcut gating, Hangul width | `src/hooks/useKeybindings.ts` (no IME notion in CC) | `useKoreanIME.ts` exists; not integrated with Tier 1 keybindings | P2 |
-| **F** | #1304 | Scenario 2+3 E2E — multi-ministry coordination walk-throughs | — (KOSAX original; uses `pytest @pytest.mark.live`) | Scenario 1 done (Spec 013); Scenarios 2+3 not specced | P3 |
+| **F** | #1304 | Scenario 2+3 E2E — multi-ministry coordination walk-throughs | — (UMMAYA original; uses `pytest @pytest.mark.live`) | Scenario 1 done (Spec 013); Scenarios 2+3 not specced | P3 |
 
 **Why G is P0 (now completed)**: without a repaired sub-issue graph, `/speckit-taskstoissues` output for the nine Epics cannot be traced; GraphQL-only issue-tracking (AGENTS.md hard rule) fails at the Initiative level. G's scope was narrowed during execution from "data repair" to "documentation fix: AGENTS.md field name correction (`trackedIssues` → `subIssues`) + this ADR's hierarchy-correction note" after a GraphQL query on 2026-04-19 revealed that `issue.subIssues.totalCount` for Initiative #2 was already 21 (well-populated) while `issue.trackedIssues.totalCount` was 0 — confirming the bug was in AGENTS.md's field reference, not in the sub-issue graph.
 
@@ -194,37 +194,37 @@ The CC→KOSAX Phase 2 migration surface is scoped as **nine Epics**, linked dir
 
 ### Part D — Coverage boundary (codebase-verified 2026-04-19)
 
-Part B's nine-Epic table covers the **majority** of the CC→KOSAX Phase 2 migration surface, but it is not exhaustive. A full codebase audit on 2026-04-19 (walking `.references/claude-code-sourcemap/restored-src/src/` against the actual `src/kosax/` and `tui/src/` trees under commit `693d4b6`) identified three residual CC parity gaps that the nine Epics do not address, a set of CC surfaces intentionally excluded from migration, and a set of KOSAX-original surfaces that have no CC analog. This Part makes each boundary explicit so future reviewers do not re-discover them.
+Part B's nine-Epic table covers the **majority** of the CC→UMMAYA Phase 2 migration surface, but it is not exhaustive. A full codebase audit on 2026-04-19 (walking `.references/claude-code-sourcemap/restored-src/src/` against the actual `src/ummaya/` and `tui/src/` trees under commit `693d4b6`) identified three residual CC parity gaps that the nine Epics do not address, a set of CC surfaces intentionally excluded from migration, and a set of UMMAYA-original surfaces that have no CC analog. This Part makes each boundary explicit so future reviewers do not re-discover them.
 
 **D-1. Intentionally not migrated (design exclusion)**
 
-These CC surfaces exist in the sourcemap but are out-of-scope for the KOSAX citizen domain:
+These CC surfaces exist in the sourcemap but are out-of-scope for the UMMAYA citizen domain:
 
-- **Dev-only slash commands** — `/commit`, `/pr_comments`, `/review`, `/issue`, `/install-github-app`, `/doctor`, `/heapdump`, `/vim`, `/model`, `/config` under `src/commands/`. Rationale: citizens do not ship PRs. Retained only in the sourcemap for parity reference; the KOSAX `tui/src/commands/` set (`new`, `resume`, `save`, `sessions`, `help`) is the domain-correct subset.
-- **Anthropic-platform surfaces** — `src/services/claudeAiLimits*`, `src/services/oauth/`, `src/services/autoDream/`, `src/services/PromptSuggestion/`, `src/services/MagicDocs/`, `src/upstreamproxy/`, `src/bridge/`, `src/buddy/`. Rationale: these plumb CC into Anthropic's platform (OAuth, billing, Anthropic-operated prompt hubs); KOSAX delegates the equivalent surface to FriendliAI + `data.go.kr`, which expose different contracts.
-- **Migration helpers** — 11 files under `src/migrations/` (e.g., `migrate-to-claude-agents.ts`). Rationale: CC-specific settings migrations that have no KOSAX analog.
+- **Dev-only slash commands** — `/commit`, `/pr_comments`, `/review`, `/issue`, `/install-github-app`, `/doctor`, `/heapdump`, `/vim`, `/model`, `/config` under `src/commands/`. Rationale: citizens do not ship PRs. Retained only in the sourcemap for parity reference; the UMMAYA `tui/src/commands/` set (`new`, `resume`, `save`, `sessions`, `help`) is the domain-correct subset.
+- **Anthropic-platform surfaces** — `src/services/claudeAiLimits*`, `src/services/oauth/`, `src/services/autoDream/`, `src/services/PromptSuggestion/`, `src/services/MagicDocs/`, `src/upstreamproxy/`, `src/bridge/`, `src/buddy/`. Rationale: these plumb CC into Anthropic's platform (OAuth, billing, Anthropic-operated prompt hubs); UMMAYA delegates the equivalent surface to FriendliAI + `data.go.kr`, which expose different contracts.
+- **Migration helpers** — 11 files under `src/migrations/` (e.g., `migrate-to-claude-agents.ts`). Rationale: CC-specific settings migrations that have no UMMAYA analog.
 - **Domain-mismatch modules** — `src/voice/`, `src/vim/`, `src/plugins/`. Rationale: no citizen-domain use case; voice + vim are developer ergonomics and plugins are Anthropic-CLI-specific.
 
 **D-2. CC parity gaps — candidate Epics (to be created)**
 
 These are CC surfaces that **do** have a citizen-domain use case but are absent from both the code and the nine-Epic table. Each will be opened as a direct sub-Epic of Initiative #2 alongside A–I:
 
-- **Epic J — Cost/Token HUD** (candidate). CC source: `src/cost-tracker.ts` + `src/costHook.ts` + the `<StatusLine>` cost renderer. KOSAX gap: no `tokens` / `cost` / `quota` HUD component under `tui/src/components/`; `src/kosax/llm/usage.py` records usage server-side but never surfaces it to the citizen. Citizen justification: FriendliAI + `data.go.kr` both meter quota, and the citizen has a legitimate interest in knowing how much of their session budget has been consumed.
-- **Epic K — Settings TUI dialog** (candidate). CC source: `src/screens/Settings*.tsx` + `src/commands/config.ts`. KOSAX gap: no `<Settings>` modal; `src/kosax/cli/config.py` exposes a Python-CLI path only. Citizen justification: language toggle (ko/en i18n is already shipped under `tui/src/i18n/`), permission mode selector (depends on Epic B landing), and theme override (three themes exist under `tui/src/theme/` but no picker) all want a single TUI surface.
-- **Epic L — Notifications surface** (candidate). CC source: CC's `<StatusLine>` + the `services/notifications` pipeline that drives long-running-tool indicators and background-task completion toasts. KOSAX gap: `tui/src/components/coordinator/PhaseIndicator.tsx` + `WorkerStatusRow.tsx` cover swarm-phase ticking but there is no general notification surface for out-of-band events (consent-required prompt, background CBS SSE drop, KOSAX_RATE_LIMIT_EXHAUSTED, NMC stale-data warning). Citizen justification: the coordinator already raises `auth_required` and `stale_data` signals that currently surface only in log lines.
+- **Epic J — Cost/Token HUD** (candidate). CC source: `src/cost-tracker.ts` + `src/costHook.ts` + the `<StatusLine>` cost renderer. UMMAYA gap: no `tokens` / `cost` / `quota` HUD component under `tui/src/components/`; `src/ummaya/llm/usage.py` records usage server-side but never surfaces it to the citizen. Citizen justification: FriendliAI + `data.go.kr` both meter quota, and the citizen has a legitimate interest in knowing how much of their session budget has been consumed.
+- **Epic K — Settings TUI dialog** (candidate). CC source: `src/screens/Settings*.tsx` + `src/commands/config.ts`. UMMAYA gap: no `<Settings>` modal; `src/ummaya/cli/config.py` exposes a Python-CLI path only. Citizen justification: language toggle (ko/en i18n is already shipped under `tui/src/i18n/`), permission mode selector (depends on Epic B landing), and theme override (three themes exist under `tui/src/theme/` but no picker) all want a single TUI surface.
+- **Epic L — Notifications surface** (candidate). CC source: CC's `<StatusLine>` + the `services/notifications` pipeline that drives long-running-tool indicators and background-task completion toasts. UMMAYA gap: `tui/src/components/coordinator/PhaseIndicator.tsx` + `WorkerStatusRow.tsx` cover swarm-phase ticking but there is no general notification surface for out-of-band events (consent-required prompt, background CBS SSE drop, UMMAYA_RATE_LIMIT_EXHAUSTED, NMC stale-data warning). Citizen justification: the coordinator already raises `auth_required` and `stale_data` signals that currently surface only in log lines.
 
-**Additionally, ConsentGateway production implementation** is explicitly scoped under existing **Epic B #1297**: `src/kosax/agents/consent.py` ships only `AlwaysGrantConsentGateway` (a 50-line stub whose docstring states "real TUI integration is #287"). Epic B must replace this stub with a real `TuiConsentGateway` that renders the `PermissionGauntletModal` as the consent-request surface.
+**Additionally, ConsentGateway production implementation** is explicitly scoped under existing **Epic B #1297**: `src/ummaya/agents/consent.py` ships only `AlwaysGrantConsentGateway` (a 50-line stub whose docstring states "real TUI integration is #287"). Epic B must replace this stub with a real `TuiConsentGateway` that renders the `PermissionGauntletModal` as the consent-request surface.
 
-**D-3. KOSAX-original surfaces (no CC analog — accept as extension)**
+**D-3. UMMAYA-original surfaces (no CC analog — accept as extension)**
 
-These are KOSAX-native surfaces that have no counterpart in CC. They are not migration gaps; they are legitimate extensions driven by the Korean public-service domain:
+These are UMMAYA-native surfaces that have no counterpart in CC. They are not migration gaps; they are legitimate extensions driven by the Korean public-service domain:
 
-- `src/kosax/safety/` — 8 files (`_ingress.py`, `_injection.py`, `_litellm_callbacks.py`, `_patterns.py`, `_redactor.py`, `_span.py`, `_models.py`, `_settings.py`). PIPA-driven prompt-injection defence and PII redactor; no CC analog because CC operates on developer-trusted inputs.
-- `src/kosax/security/` — Specs 024/025 audit + V1–V6 dual-axis validator. Tool Template Security Spec v1.1 is a KOSAX-original compliance surface for Ministry PR readiness.
-- `src/kosax/primitives/` — Spec 031 `submit` / `subscribe` / `verify`. The five-primitive harness redesign is a KOSAX invention; CC has only `AgentTool` + `BashTool` + file tools as top-level verbs.
-- `src/kosax/tools/{geocoding,hira,kma,koroad,nfa119,nmc}/` — adapter tree for `data.go.kr` ministries. No CC analog because CC has no ministry-tool layer.
+- `src/ummaya/safety/` — 8 files (`_ingress.py`, `_injection.py`, `_litellm_callbacks.py`, `_patterns.py`, `_redactor.py`, `_span.py`, `_models.py`, `_settings.py`). PIPA-driven prompt-injection defence and PII redactor; no CC analog because CC operates on developer-trusted inputs.
+- `src/ummaya/security/` — Specs 024/025 audit + V1–V6 dual-axis validator. Tool Template Security Spec v1.1 is a UMMAYA-original compliance surface for Ministry PR readiness.
+- `src/ummaya/primitives/` — Spec 031 `submit` / `subscribe` / `verify`. The five-primitive harness redesign is a UMMAYA invention; CC has only `AgentTool` + `BashTool` + file tools as top-level verbs.
+- `src/ummaya/tools/{geocoding,hira,kma,koroad,nfa119,nmc}/` — adapter tree for `data.go.kr` ministries. No CC analog because CC has no ministry-tool layer.
 
-Reviewers evaluating future Epic proposals must check Part D before claiming "CC has X — KOSAX must port it": if X is in D-1 or D-3 it is correctly absent; if X is in D-2 it is already a candidate Epic under Initiative #2; if X is in A–I it is already in the nine-Epic plan; only a surface absent from all three boxes qualifies as a new gap.
+Reviewers evaluating future Epic proposals must check Part D before claiming "CC has X — UMMAYA must port it": if X is in D-1 or D-3 it is correctly absent; if X is in D-2 it is already a candidate Epic under Initiative #2; if X is in A–I it is already in the nine-Epic plan; only a surface absent from all three boxes qualifies as a new gap.
 
 ---
 
@@ -234,7 +234,7 @@ Reviewers evaluating future Epic proposals must check Part D before claiming "CC
 
 - `docs/vision.md` becomes re-readable without contradicting shipped reality: L37/L57/L85/L114/L361 all line up with `main`.
 - Initiative #2 has nine direct-child Epics (#1297–#1305) with concrete CC source citations; any reviewer can verify "where does X come from in CC" with a single `grep` under `.references/claude-code-sourcemap/restored-src/`.
-- Onboarding brand decisions are ADR-locked: no future PR can change the KOSAX palette or add a step without citing A-9.
+- Onboarding brand decisions are ADR-locked: no future PR can change the UMMAYA palette or add a step without citing A-9.
 - The 65-binding CC catalog is triaged into Tier 1/2/3 with IME safety rules; no more ad-hoc keybindings.
 - The AGENTS.md field-name bug (`trackedIssues` vs. the canonical Sub-Issues API v2 `subIssues`) is fixed; future `gh api graphql` walks will query the correct connection.
 - The `Initiative → Epic → Task` hierarchy is enforced: a brief "meta-Epic" mistake (#1296) was closed and the ADR restructured so that the term never appears in normative text again — the nine items are peer Epics under Initiative #2, not children of an intermediate parent.
@@ -244,7 +244,7 @@ Reviewers evaluating future Epic proposals must check Part D before claiming "CC
 - Vision.md mutates in the same PR as this ADR. AGENTS.md requires vision changes to sit behind an ADR; this PR satisfies that but also means the PR size is larger than a pure vision edit would be.
 - Ten amendments in one PR is a heavy review load. Mitigation: every amendment cites its exact evidence path; reviewer workflow is `grep` + `git show` per amendment, not re-reading vision.md whole.
 - The shortcut Tier 1 list depends on the Permission v2 (sub-Epic B) landing before `shift+tab` binds correctly. This ordering is explicit in Part C but adds a cross-Epic dependency.
-- The brand palette change in sub-Epic H requires replacing the `dark.ts` `background` token (currently `rgb(0,204,204)`) which is a visible regression for anyone who had memorised the CC-cyan background. Mitigation: the `#0a0e27` navy matches every KOSAX brand asset and no user has requested the CC-cyan look.
+- The brand palette change in sub-Epic H requires replacing the `dark.ts` `background` token (currently `rgb(0,204,204)`) which is a visible regression for anyone who had memorised the CC-cyan background. Mitigation: the `#0a0e27` navy matches every UMMAYA brand asset and no user has requested the CC-cyan look.
 
 ---
 
@@ -254,7 +254,7 @@ Reviewers evaluating future Epic proposals must check Part D before claiming "CC
 - **Fold the shortcut plan into sub-Epic I's spec only (no ADR entry)**: Rejected. Shortcut migration crosses Layer 3 (Permission mode toggle) and Layer 5 (TUI); without an ADR cross-reference, the Tier plan drifts once sub-Epic I starts writing specs.
 - **Drop sub-Epic G (treat the Initiative #2 empty-edge as a documentation bug, not an issue-graph bug)**: Partially accepted, scope narrowed. Initial draft assumed the sub-issue graph itself was empty; a 2026-04-19 GraphQL query revealed Initiative #2's `subIssues.totalCount` was already 21 while `trackedIssues.totalCount` was 0, proving the bug was in AGENTS.md's field reference (wrong GraphQL connection) rather than in the data. G now delivers the documentation fix (AGENTS.md edit + ADR hierarchy note) as part of this PR rather than a follow-up branch.
 - **Retire Mastra from the reference table entirely (not just the "Phase 2 TUI layer reference" phrasing)**: Rejected. Mastra remains useful as a typed tool-graph reference; only the "Phase 2 TUI" role is obsolete.
-- **Use a "meta-Epic" layer between Initiative and Epic to group CC→KOSAX migration work**: Rejected (was briefly attempted as issue #1296 and reversed the same day). AGENTS.md § Issue hierarchy mandates `Initiative → Epic → Task` — Epic sub-issues MUST be Tasks. Introducing a meta-Epic layer violates the hierarchy and breaks `/speckit-taskstoissues` assumptions (it expects a single-Epic parent for every Task issue).
+- **Use a "meta-Epic" layer between Initiative and Epic to group CC→UMMAYA migration work**: Rejected (was briefly attempted as issue #1296 and reversed the same day). AGENTS.md § Issue hierarchy mandates `Initiative → Epic → Task` — Epic sub-issues MUST be Tasks. Introducing a meta-Epic layer violates the hierarchy and breaks `/speckit-taskstoissues` assumptions (it expects a single-Epic parent for every Task issue).
 
 ---
 
@@ -269,11 +269,11 @@ Reviewers evaluating future Epic proposals must check Part D before claiming "CC
 - `specs/031-five-primitive-harness/research.md § 1` — CC primitive-mapping table
 - `specs/027-agent-swarm-core/` — file-based mailbox IPC
 - `specs/287-tui-ink-react-bun/` — TUI port (PR #1295 merged)
-- `assets/kosax-{logo,logo-dark,banner-dark,icon}.{svg,png}` — brand assets
+- `assets/ummaya-{logo,logo-dark,banner-dark,icon}.{svg,png}` — brand assets
 - `docs/vision.md` — target of amendments A-1..A-10
 - ADR-003 — Bun + Ink + React TUI stack
 - ADR-004 — Claude Code sourcemap port policy
 - AGENTS.md — Agent Teams, GraphQL-only issue tracking (now corrected to `subIssues`/`parent`), vision-change PR rules
 - Initiative #2 (Phase 2 — Multi-Agent Swarm) — direct parent of the nine Epics #1297–#1305
 - Sub-Epic issues — #1297 (B), #1298 (A), #1299 (D), #1300 (E), #1301 (C), #1302 (H), #1303 (I), #1304 (F), #1305 (G)
-- Part D candidate Epics (to be created) — J (Cost/Token HUD), K (Settings TUI dialog), L (Notifications surface); D-1 exclusions; D-3 KOSAX-original surfaces
+- Part D candidate Epics (to be created) — J (Cost/Token HUD), K (Settings TUI dialog), L (Notifications surface); D-1 exclusions; D-3 UMMAYA-original surfaces

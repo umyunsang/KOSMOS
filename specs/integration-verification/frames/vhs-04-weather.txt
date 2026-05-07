@@ -354,12 +354,12 @@
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSAX/tui && KOSAX_ONBOARDING_AUTO_COMPLETE=1 bun run tui
+> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_ONBOARDING_AUTO_COMPLETE=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 14 entries verified (4 primitives) in 0ms
-    ▛███▜      KOSAX v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSAX/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ❯
@@ -406,12 +406,12 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSAX/tui && KOSAX_ONBOARDING_AUTO_COMPLETE=1 bun run tui
+> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_ONBOARDING_AUTO_COMPLETE=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 14 entries verified (4 primitives) in 0ms
-    ▛███▜      KOSAX v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSAX/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ❯
@@ -458,12 +458,12 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSAX/tui && KOSAX_ONBOARDING_AUTO_COMPLETE=1 bun run tui
+> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_ONBOARDING_AUTO_COMPLETE=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 14 entries verified (4 primitives) in 0ms
-    ▛███▜      KOSAX v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSAX/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ❯
@@ -510,12 +510,12 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSAX/tui && KOSAX_ONBOARDING_AUTO_COMPLETE=1 bun run tui
+> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_ONBOARDING_AUTO_COMPLETE=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 14 entries verified (4 primitives) in 0ms
-    ▛███▜      KOSAX v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSAX/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ❯ 서울 날씨 알려줘
@@ -562,12 +562,12 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSAX/tui && KOSAX_ONBOARDING_AUTO_COMPLETE=1 bun run tui
+> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_ONBOARDING_AUTO_COMPLETE=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 14 entries verified (4 primitives) in 0ms
-    ▛███▜      KOSAX v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSAX/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ❯ 서울 날씨 알려줘
@@ -614,12 +614,12 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSAX/tui && KOSAX_ONBOARDING_AUTO_COMPLETE=1 bun run tui
+> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_ONBOARDING_AUTO_COMPLETE=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 14 entries verified (4 primitives) in 0ms
-    ▛███▜      KOSAX v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSAX/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ❯ 서울 날씨 알려줘
 
@@ -666,12 +666,12 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSAX/tui && KOSAX_ONBOARDING_AUTO_COMPLETE=1 bun run tui
+> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_ONBOARDING_AUTO_COMPLETE=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 14 entries verified (4 primitives) in 0ms
-    ▛███▜      KOSAX v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSAX/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ❯ 서울 날씨 알려줘
 
@@ -718,12 +718,12 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSAX/tui && KOSAX_ONBOARDING_AUTO_COMPLETE=1 bun run tui
+> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_ONBOARDING_AUTO_COMPLETE=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 14 entries verified (4 primitives) in 0ms
-    ▛███▜      KOSAX v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSAX/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ❯ 서울 날씨 알려줘
 
@@ -770,9 +770,9 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-    ▛███▜      KOSAX v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSAX/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ❯ 서울 날씨 알려줘
 
@@ -822,9 +822,9 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
      2,"vvv":-0.8,"wsd":2.1,"reh":81,"pty":0,"vec":294},"meta":{"source":"kma_current_observation","fetched_at":"202
      6-05-03T21:48:29.723
 ────────────────────────────────────────────────────────────────────────────────
-    ▛███▜      KOSAX v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSAX/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ❯ 서울 날씨 알려줘
 
@@ -874,9 +874,9 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
      2,"vvv":-0.8,"wsd":2.1,"reh":81,"pty":0,"vec":294},"meta":{"source":"kma_current_observation","fetched_at":"202
      6-05-03T21:48:29.723
 ────────────────────────────────────────────────────────────────────────────────
-    ▛███▜      KOSAX v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSAX/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ❯ 서울 날씨 알려줘
 
@@ -926,9 +926,9 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
      2,"vvv":-0.8,"wsd":2.1,"reh":81,"pty":0,"vec":294},"meta":{"source":"kma_current_observation","fetched_at":"202
      6-05-03T21:48:29.723
 ────────────────────────────────────────────────────────────────────────────────
-    ▛███▜      KOSAX v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSAX/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ❯ 서울 날씨 알려줘
 
@@ -978,9 +978,9 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
      2,"vvv":-0.8,"wsd":2.1,"reh":81,"pty":0,"vec":294},"meta":{"source":"kma_current_observation","fetched_at":"202
      6-05-03T21:48:29.723
 ────────────────────────────────────────────────────────────────────────────────
-    ▛███▜      KOSAX v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSAX/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ❯ 서울 날씨 알려줘
 
@@ -1030,9 +1030,9 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
      2,"vvv":-0.8,"wsd":2.1,"reh":81,"pty":0,"vec":294},"meta":{"source":"kma_current_observation","fetched_at":"202
      6-05-03T21:48:29.723
 ────────────────────────────────────────────────────────────────────────────────
-    ▛███▜      KOSAX v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSAX/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ❯ 서울 날씨 알려줘
 
@@ -1082,9 +1082,9 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
      2,"vvv":-0.8,"wsd":2.1,"reh":81,"pty":0,"vec":294},"meta":{"source":"kma_current_observation","fetched_at":"202
      6-05-03T21:48:29.723
 ────────────────────────────────────────────────────────────────────────────────
-    ▛███▜      KOSAX v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSAX/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ❯ 서울 날씨 알려줘
 
@@ -1134,9 +1134,9 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
      2,"vvv":-0.8,"wsd":2.1,"reh":81,"pty":0,"vec":294},"meta":{"source":"kma_current_observation","fetched_at":"202
      6-05-03T21:48:29.723
 ────────────────────────────────────────────────────────────────────────────────
-    ▛███▜      KOSAX v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSAX/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ❯ 서울 날씨 알려줘
 
@@ -1186,9 +1186,9 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
      2,"vvv":-0.8,"wsd":2.1,"reh":81,"pty":0,"vec":294},"meta":{"source":"kma_current_observation","fetched_at":"202
      6-05-03T21:48:29.723
 ────────────────────────────────────────────────────────────────────────────────
-    ▛███▜      KOSAX v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSAX/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ❯ 서울 날씨 알려줘
 

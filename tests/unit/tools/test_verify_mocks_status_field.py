@@ -22,22 +22,22 @@ import importlib
 
 import pytest
 
-from kosax.primitives.verify import VerifyMismatchError
+from ummaya.primitives.verify import VerifyMismatchError
 
 # All 10 verify mock adapter modules.
 _ALL_VERIFY_MOCKS = [
     # 5 retrofitted existing (Spec 2296 T022).
-    "kosax.tools.mock.verify_mobile_id",
-    "kosax.tools.mock.verify_mydata",
-    "kosax.tools.mock.verify_gongdong_injeungseo",
-    "kosax.tools.mock.verify_geumyung_injeungseo",
-    "kosax.tools.mock.verify_ganpyeon_injeung",
+    "ummaya.tools.mock.verify_mobile_id",
+    "ummaya.tools.mock.verify_mydata",
+    "ummaya.tools.mock.verify_gongdong_injeungseo",
+    "ummaya.tools.mock.verify_geumyung_injeungseo",
+    "ummaya.tools.mock.verify_ganpyeon_injeung",
     # 5 new AX-channel mocks (Spec 2296 FR-001).
-    "kosax.tools.mock.verify_module_simple_auth",
-    "kosax.tools.mock.verify_module_modid",
-    "kosax.tools.mock.verify_module_kec",
-    "kosax.tools.mock.verify_module_geumyung",
-    "kosax.tools.mock.verify_module_any_id_sso",
+    "ummaya.tools.mock.verify_module_simple_auth",
+    "ummaya.tools.mock.verify_module_modid",
+    "ummaya.tools.mock.verify_module_kec",
+    "ummaya.tools.mock.verify_module_geumyung",
+    "ummaya.tools.mock.verify_module_any_id_sso",
 ]
 
 

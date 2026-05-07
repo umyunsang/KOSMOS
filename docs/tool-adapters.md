@@ -1,6 +1,6 @@
 # Tool Adapter Guide
 
-How to add a new `data.go.kr` API adapter to KOSAX. Read `docs/vision.md` §Layer 2 first for the conceptual model.
+How to add a new `data.go.kr` API adapter to UMMAYA. Read `docs/vision.md` §Layer 2 first for the conceptual model.
 
 ## Spec cycle protocol for tool adapters
 
@@ -11,7 +11,7 @@ Tool adapter Epics follow the standard spec-driven workflow, with mandatory tech
 1. **Read all technical documents** under `research/data/<provider>/` for the target provider(s)
 2. **Inventory every endpoint** found in each document — name, URL path, HTTP method, description
 3. **Classify each endpoint**:
-   - `include` — becomes a KOSAX tool (directly serves a citizen scenario)
+   - `include` — becomes a UMMAYA tool (directly serves a citizen scenario)
    - `exclude` — not useful for conversational AI (e.g., admin-only, batch export, WMS map tiles)
    - `defer` — useful but not needed in this Phase
 4. **Justify** each classification in the spec (one sentence per endpoint)
@@ -63,13 +63,13 @@ Verify:
 
 | Provider | Directory | Documents | Key/Secret |
 |---|---|---|---|
-| KOROAD (한국도로교통공단) | `research/data/koroad/` | API spec (.hwp), codelist (.xlsx) | `KOSAX_KOROAD_API_KEY` |
-| KMA (기상청) | `research/data/kma/` | API guides (.docx), zone codes (.xlsx), grid coords (.xlsx) | `KOSAX_DATA_GO_KR_KEY` |
-| NMC (국립중앙의료원) | `research/data/nmc/` | Emergency medical API guide V4 (.hwp) | `KOSAX_DATA_GO_KR_KEY` |
-| HIRA (건강보험심사평가원) | `research/data/hira/` | Hospital info guide (.docx), detail info guide (.docx) | `KOSAX_DATA_GO_KR_KEY` |
-| SSIS (한국사회보장정보원) | `research/data/ssis/` | Central welfare guide (.doc), local welfare codelist (.doc) | `KOSAX_DATA_GO_KR_KEY` |
-| Gov24 (행정안전부) | `research/data/gov24/` | Swagger-extracted API spec (.md) | `KOSAX_DATA_GO_KR_KEY` |
-| safetydata (재난안전) | — | Pending approval | `KOSAX_SAFETYDATA_KEY` |
+| KOROAD (한국도로교통공단) | `research/data/koroad/` | API spec (.hwp), codelist (.xlsx) | `UMMAYA_KOROAD_API_KEY` |
+| KMA (기상청) | `research/data/kma/` | API guides (.docx), zone codes (.xlsx), grid coords (.xlsx) | `UMMAYA_DATA_GO_KR_KEY` |
+| NMC (국립중앙의료원) | `research/data/nmc/` | Emergency medical API guide V4 (.hwp) | `UMMAYA_DATA_GO_KR_KEY` |
+| HIRA (건강보험심사평가원) | `research/data/hira/` | Hospital info guide (.docx), detail info guide (.docx) | `UMMAYA_DATA_GO_KR_KEY` |
+| SSIS (한국사회보장정보원) | `research/data/ssis/` | Central welfare guide (.doc), local welfare codelist (.doc) | `UMMAYA_DATA_GO_KR_KEY` |
+| Gov24 (행정안전부) | `research/data/gov24/` | Swagger-extracted API spec (.md) | `UMMAYA_DATA_GO_KR_KEY` |
+| safetydata (재난안전) | — | Pending approval | `UMMAYA_SAFETYDATA_KEY` |
 
 ## Adapter shape
 
@@ -108,13 +108,13 @@ Every new adapter PR must include:
 - [ ] One happy-path unit test with a recorded fixture
 - [ ] One error-path unit test (4xx or 5xx from the API)
 - [ ] Fixture recorded under `tests/fixtures/<provider>/<tool_id>.json`
-- [ ] No hardcoded credentials — read from `KOSAX_*` environment variables
+- [ ] No hardcoded credentials — read from `UMMAYA_*` environment variables
 - [ ] No `Any` types in the schemas
 - [ ] Entry in `docs/tools/<provider>.md` with endpoint, rate limit, known quirks
 
 ## Recording fixtures
 
-1. Export a scratch API key to your shell: `export KOSAX_DATA_GO_KR_KEY=...`
+1. Export a scratch API key to your shell: `export UMMAYA_DATA_GO_KR_KEY=...`
 2. Call the live endpoint once with `scripts/record_fixture.py <tool_id>` (script provided by the foundation spec)
 3. Review the recorded JSON — redact any personal identifiers, IP addresses, or session tokens
 4. Commit under `tests/fixtures/<provider>/`
@@ -124,7 +124,7 @@ Never commit a fixture that contains real citizen data. Use synthetic values (`�
 ## Naming
 
 - Tool `id`: `<provider>_<noun>_<verb>` → `koroad_accident_search`, `kma_weather_forecast`
-- Module path: `src/kosax/tools/<provider>/<tool_id>.py`
+- Module path: `src/ummaya/tools/<provider>/<tool_id>.py`
 - Test path: `tests/tools/<provider>/test_<tool_id>.py`
 
 ## Search hints
@@ -159,7 +159,7 @@ Include: Korean noun, English gloss, ministry name in both languages, synonyms a
 **Rule**: Any tool registered with `is_personal_data=True` must also set `requires_auth=True`. Registering a PII-flagged tool without auth enabled is a hard error enforced in `ToolRegistry.register()` at startup:
 
 ```python
-# src/kosax/tools/registry.py — enforced at registration time
+# src/ummaya/tools/registry.py — enforced at registration time
 if tool.is_personal_data and not tool.requires_auth:
     raise RegistrationError(
         "is_personal_data=True requires requires_auth=True (Constitution §II / FR-038)"
@@ -190,7 +190,7 @@ This means:
 
 ### Interface-only adapter pattern (NMC reference implementation)
 
-`src/kosax/tools/nmc/emergency_search.py` is the canonical example. The handler raises `Layer3GateViolation` unconditionally:
+`src/ummaya/tools/nmc/emergency_search.py` is the canonical example. The handler raises `Layer3GateViolation` unconditionally:
 
 ```python
 async def handle(inp: NmcEmergencySearchInput) -> dict[str, Any]:
@@ -213,7 +213,7 @@ Use this pattern when:
 
 ## Security PR checklist (spec v1)
 
-This checklist is normative for every adapter PR opened against the KOSAX repository. It unifies the six research lanes surveyed in specs/024-tool-security-v1: Korean legal compliance (PIPA, 전자정부법, 전자서명법), international identity standards (NIST SP 800-63-4, OWASP ASVS), LLM-tool security (OWASP Top 10 for LLMs), identity and delegation (OAuth 2.1, RFC 7662, RFC 9068), public-sector security precedents (K-ISMS-P, eGovFramework, Singapore IMDA MGF), and supply-chain provenance (SLSA v1.0, NIST SP 800-218). Applying this checklist once gives a reviewer confidence across all six domains without requiring lane-specific expertise. It supersedes any ad-hoc lane-specific notes that may appear in earlier sections of this document.
+This checklist is normative for every adapter PR opened against the UMMAYA repository. It unifies the six research lanes surveyed in specs/024-tool-security-v1: Korean legal compliance (PIPA, 전자정부법, 전자서명법), international identity standards (NIST SP 800-63-4, OWASP ASVS), LLM-tool security (OWASP Top 10 for LLMs), identity and delegation (OAuth 2.1, RFC 7662, RFC 9068), public-sector security precedents (K-ISMS-P, eGovFramework, Singapore IMDA MGF), and supply-chain provenance (SLSA v1.0, NIST SP 800-218). Applying this checklist once gives a reviewer confidence across all six domains without requiring lane-specific expertise. It supersedes any ad-hoc lane-specific notes that may appear in earlier sections of this document.
 
 - [ ] **AAL alignment**: The adapter's `auth_level` field exactly matches the tool's row in `TOOL_MIN_AAL` (validator V3 enforces this at load time). `pipa_class` is one of `non_personal | personal | sensitive | identifier` per PIPA §24 / PIPA §23 / PIPA §2.1. `is_irreversible` and `dpa_reference` are populated per the rules in quickstart.md §1. Cross-link: [FR-001, FR-005](./security/tool-template-security-spec-v1.md#govapitool-field-contract).
 - [ ] **Audit shape parity**: The happy-path test emits a `ToolCallAuditRecord` that validates against `docs/security/tool-call-audit-record.schema.json`. The error-path (insufficient AAL) test emits a record with `permission_decision="deny_aal"` that also validates. Mock and live adapter modes MUST produce records that differ only in the `adapter_mode` field — all other fields must carry identical shapes. Cross-link: [FR-012](./security/tool-template-security-spec-v1.md#audit-trail).

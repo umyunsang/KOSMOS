@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Spec 288 · T015 — KOSAX-original accessibility announcer.
+// Spec 288 · T015 — UMMAYA-original accessibility announcer.
 //
 // Implements `AccessibilityAnnouncer` from `./types`. Buffered text channel
 // reaching screen readers (NVDA / VoiceOver / 센스리더) through the standard

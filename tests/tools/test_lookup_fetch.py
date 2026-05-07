@@ -14,15 +14,15 @@ from unittest.mock import AsyncMock, MagicMock
 import httpx
 import pytest
 
-from kosax.tools.executor import ToolExecutor
-from kosax.tools.lookup import lookup
-from kosax.tools.models import (
+from ummaya.tools.executor import ToolExecutor
+from ummaya.tools.lookup import lookup
+from ummaya.tools.models import (
     LookupCollection,
     LookupError,  # noqa: A004
     LookupFetchInput,
 )
-from kosax.tools.register_all import register_all_tools
-from kosax.tools.registry import ToolRegistry
+from ummaya.tools.register_all import register_all_tools
+from ummaya.tools.registry import ToolRegistry
 
 _FIXTURE_DIR = Path(__file__).parent.parent / "fixtures" / "koroad"
 
@@ -72,7 +72,7 @@ class TestLookupFetchHappy:
         mock_client = _make_mock_client(fixture)
 
         # Patch httpx.AsyncClient inside the handler
-        monkeypatch.setenv("KOSAX_DATA_GO_KR_API_KEY", "test-key-12345")
+        monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", "test-key-12345")
 
         from unittest.mock import patch
 
@@ -80,7 +80,7 @@ class TestLookupFetchHappy:
             patch("httpx.AsyncClient", return_value=mock_client),
             pytest.MonkeyPatch.context() as mp2,
         ):
-            mp2.setenv("KOSAX_DATA_GO_KR_API_KEY", "test-key-12345")
+            mp2.setenv("UMMAYA_DATA_GO_KR_API_KEY", "test-key-12345")
             inp = LookupFetchInput(
                 mode="fetch",
                 tool_id="koroad_accident_hazard_search",
@@ -109,7 +109,7 @@ class TestLookupFetchHappy:
             patch("httpx.AsyncClient", return_value=mock_client),
             pytest.MonkeyPatch.context() as mp,
         ):
-            mp.setenv("KOSAX_DATA_GO_KR_API_KEY", "test-key-12345")
+            mp.setenv("UMMAYA_DATA_GO_KR_API_KEY", "test-key-12345")
             inp = LookupFetchInput(
                 mode="fetch",
                 tool_id="koroad_accident_hazard_search",
@@ -207,7 +207,7 @@ class TestLookupFetchInvalidParams:
         """adm_cd not matching ^[0-9]{10}$ → LookupError(reason='invalid_params')."""
         registry, executor = registry_and_executor
 
-        monkeypatch.setenv("KOSAX_DATA_GO_KR_API_KEY", "test-key-12345")
+        monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", "test-key-12345")
         inp = LookupFetchInput(
             mode="fetch",
             tool_id="koroad_accident_hazard_search",

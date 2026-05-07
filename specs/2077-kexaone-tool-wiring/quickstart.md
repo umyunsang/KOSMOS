@@ -1,18 +1,18 @@
 # Quickstart — Citizen-Perspective Verification Recipe
 
-> Epic [#2077](https://github.com/umyunsang/KOSAX/issues/2077) · 2026-04-27
+> Epic [#2077](https://github.com/umyunsang/UMMAYA/issues/2077) · 2026-04-27
 > How to verify each migration step end-to-end as a real citizen would experience it. Based on `feedback_runtime_verification` and `feedback_cc_source_migration_pattern` memories — every claim of "step done" requires a PTY trace and a VHS GIF capture.
 
 ## Pre-flight
 
 ```bash
-cd ~/KOSAX
+cd ~/UMMAYA
 
 # Verify branch
 git branch --show-current  # → 2077-kexaone-tool-wiring
 
 # Verify .env has FriendliAI token
-grep KOSAX_FRIENDLI_TOKEN .env  # → KOSAX_FRIENDLI_TOKEN=fri_...
+grep UMMAYA_FRIENDLI_TOKEN .env  # → UMMAYA_FRIENDLI_TOKEN=fri_...
 
 # Static checks (these gate every step boundary)
 cd tui && bun run typecheck && bun test \
@@ -42,13 +42,13 @@ Each step in `handoff-prompt.md § 5` requires both static gates AND the citizen
 
 **Static**:
 ```bash
-ls src/kosax/llm/_cc_reference/
+ls src/ummaya/llm/_cc_reference/
 # expected:
 #   api.ts client.ts claude.ts emptyUsage.ts errors.ts
 #   messages.ts permissions.ts prompts.ts query.ts
 #   README.md tools.ts toolExecution.ts toolOrchestration.ts
 #   toolResultStorage.ts
-wc -l src/kosax/llm/_cc_reference/*.ts
+wc -l src/ummaya/llm/_cc_reference/*.ts
 # expected total: ~13,720 lines (handoff §4 sum)
 ```
 
@@ -69,18 +69,18 @@ cd tui && bun run typecheck && bun test tests/tools/serialization.test.ts
 **Citizen-perspective (PTY)**:
 ```bash
 # trace frame.tools field on outbound chat_request
-KOSAX_IPC_TRACE=1 bun run tui 2>&1 | tee /tmp/kosax-step2.log &
+UMMAYA_IPC_TRACE=1 bun run tui 2>&1 | tee /tmp/ummaya-step2.log &
 TUI_PID=$!
 sleep 8
 # inject one prompt
-echo "강남구 24시간 응급실 알려주세요" | nc -U /tmp/kosax-tui.sock 2>/dev/null || true
+echo "강남구 24시간 응급실 알려주세요" | nc -U /tmp/ummaya-tui.sock 2>/dev/null || true
 sleep 3
 kill $TUI_PID 2>/dev/null
 
 # verify
-grep -c '"tools":\[' /tmp/kosax-step2.log
+grep -c '"tools":\[' /tmp/ummaya-step2.log
 # expected: ≥ 1 (frame includes non-empty tools list)
-grep -o '"name":"lookup"' /tmp/kosax-step2.log | wc -l
+grep -o '"name":"lookup"' /tmp/ummaya-step2.log | wc -l
 # expected: ≥ 1
 ```
 
@@ -103,7 +103,7 @@ python3 /tmp/run_pty_step3.py "강남구 24시간 응급실 알려주세요" > /
 grep -c '<tool_call>{"name":"\(Read\|Glob\|Bash\|NotebookEdit\)"' /tmp/step3-output.txt
 # expected: 0 (no CC-tool hallucinations)
 grep -c '<tool_call>{"name":"\(lookup\|resolve_location\|submit\|subscribe\|verify\)"' /tmp/step3-output.txt
-# expected: ≥ 1 (model invokes a KOSAX primitive)
+# expected: ≥ 1 (model invokes a UMMAYA primitive)
 ```
 
 ### Step 4 — backend registry fallback
@@ -118,7 +118,7 @@ uv run pytest tests/ipc/test_stdio.py::test_chat_request_with_empty_tools_uses_r
 Patch the TUI to send `frame.tools = []` (skip Step 2 emission), then verify backend still functions:
 
 ```bash
-KOSAX_TUI_FORCE_EMPTY_TOOLS=1 python3 /tmp/run_pty_step3.py "강남구 응급실"
+UMMAYA_TUI_FORCE_EMPTY_TOOLS=1 python3 /tmp/run_pty_step3.py "강남구 응급실"
 # verify: same SC-001 hallucination check passes (because backend fallback inject ran)
 ```
 
@@ -141,9 +141,9 @@ Set Width 1100
 Set Height 700
 Set Padding 16
 Hide
-Type "cd ~/KOSAX/tui"; Enter; Sleep 200ms
+Type "cd ~/UMMAYA/tui"; Enter; Sleep 200ms
 Type "set -a; source ../.env; set +a"; Enter; Sleep 200ms
-Type "export KOSAX_FORCE_INTERACTIVE=1 OTEL_SDK_DISABLED=true"; Enter; Sleep 200ms
+Type "export UMMAYA_FORCE_INTERACTIVE=1 OTEL_SDK_DISABLED=true"; Enter; Sleep 200ms
 Type "clear"; Enter; Sleep 200ms
 Show
 Type "bun run tui"; Enter; Sleep 12s
@@ -204,9 +204,9 @@ Set Width 1100
 Set Height 700
 Set Padding 16
 Hide
-Type "cd ~/KOSAX/tui"; Enter; Sleep 200ms
+Type "cd ~/UMMAYA/tui"; Enter; Sleep 200ms
 Type "set -a; source ../.env; set +a"; Enter; Sleep 200ms
-Type "export KOSAX_FORCE_INTERACTIVE=1 OTEL_SDK_DISABLED=true"; Enter; Sleep 200ms
+Type "export UMMAYA_FORCE_INTERACTIVE=1 OTEL_SDK_DISABLED=true"; Enter; Sleep 200ms
 Type "clear"; Enter; Sleep 200ms
 Show
 Type "bun run tui"; Enter; Sleep 12s

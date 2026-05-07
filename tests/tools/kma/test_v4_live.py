@@ -23,12 +23,12 @@ import pytest
 
 pytestmark = pytest.mark.live
 
-_KEY_PRESENT = bool(os.environ.get("KOSAX_DATA_GO_KR_API_KEY"))
+_KEY_PRESENT = bool(os.environ.get("UMMAYA_DATA_GO_KR_API_KEY"))
 
 
 def _skip_if_no_key() -> None:
     if not _KEY_PRESENT:
-        pytest.skip("KOSAX_DATA_GO_KR_API_KEY not set — skipping live test")
+        pytest.skip("UMMAYA_DATA_GO_KR_API_KEY not set — skipping live test")
 
 
 # ---------------------------------------------------------------------------
@@ -104,7 +104,7 @@ class TestKmaCurrentObservationLive:
         """Seoul (nx=61, ny=126) current observation returns valid temperature."""
         _skip_if_no_key()
 
-        from kosax.tools.kma.kma_current_observation import KmaCurrentObservationInput, _call
+        from ummaya.tools.kma.kma_current_observation import KmaCurrentObservationInput, _call
 
         inp = KmaCurrentObservationInput(
             base_date=_now_base_date(),
@@ -129,7 +129,7 @@ class TestKmaCurrentObservationLive:
         """
         _skip_if_no_key()
 
-        from kosax.tools.kma.kma_current_observation import KmaCurrentObservationInput, _call
+        from ummaya.tools.kma.kma_current_observation import KmaCurrentObservationInput, _call
 
         # Busan KMA grid: nx=98, ny=76
         inp = KmaCurrentObservationInput(
@@ -162,7 +162,7 @@ class TestKmaShortTermForecastLive:
         """Seoul (nx=61, ny=126) short-term forecast returns ≥1 item."""
         _skip_if_no_key()
 
-        from kosax.tools.kma.kma_short_term_forecast import KmaShortTermForecastInput, _call
+        from ummaya.tools.kma.kma_short_term_forecast import KmaShortTermForecastInput, _call
 
         inp = KmaShortTermForecastInput(
             base_date=_now_base_date(),
@@ -198,7 +198,7 @@ class TestKmaUltraShortTermForecastLive:
         """Seoul (nx=61, ny=126) ultra-short-term forecast returns ≥1 item."""
         _skip_if_no_key()
 
-        from kosax.tools.kma.kma_ultra_short_term_forecast import (
+        from ummaya.tools.kma.kma_ultra_short_term_forecast import (
             KmaUltraShortTermForecastInput,
             _call,
         )
@@ -231,7 +231,7 @@ class TestKmaForecastFetchLive:
         """Busan by lat/lon — adapter internally converts to nx/ny."""
         _skip_if_no_key()
 
-        from kosax.tools.kma.forecast_fetch import KmaForecastFetchInput, _call
+        from ummaya.tools.kma.forecast_fetch import KmaForecastFetchInput, _call
 
         inp = KmaForecastFetchInput(
             lat=35.1796,
@@ -260,7 +260,7 @@ class TestKmaPreWarningLive:
         """Nationwide pre-warning list (no stn_id) returns valid output."""
         _skip_if_no_key()
 
-        from kosax.tools.kma.kma_pre_warning import KmaPreWarningInput, _call
+        from ummaya.tools.kma.kma_pre_warning import KmaPreWarningInput, _call
 
         inp = KmaPreWarningInput(num_of_rows=10)
         result = await _call(inp)
@@ -277,7 +277,7 @@ class TestKmaPreWarningLive:
         """Seoul (stn_id=108) pre-warning filtered list is valid."""
         _skip_if_no_key()
 
-        from kosax.tools.kma.kma_pre_warning import KmaPreWarningInput, _call
+        from ummaya.tools.kma.kma_pre_warning import KmaPreWarningInput, _call
 
         inp = KmaPreWarningInput(stn_id="108", num_of_rows=10)
         result = await _call(inp)
@@ -304,7 +304,7 @@ class TestKmaWeatherAlertStatusLive:
         """Seoul (stn_id=108) alert status by stn_id returns valid output."""
         _skip_if_no_key()
 
-        from kosax.tools.kma.kma_weather_alert_status import (
+        from ummaya.tools.kma.kma_weather_alert_status import (
             KmaWeatherAlertStatusInput,
             _call,
         )
@@ -323,7 +323,7 @@ class TestKmaWeatherAlertStatusLive:
         """Jeju (stn_id=184) alert status returns valid output (active marine area)."""
         _skip_if_no_key()
 
-        from kosax.tools.kma.kma_weather_alert_status import (
+        from ummaya.tools.kma.kma_weather_alert_status import (
             KmaWeatherAlertStatusInput,
             _call,
         )
@@ -340,7 +340,7 @@ class TestKmaWeatherAlertStatusLive:
         """Both stn_id=None and tmFc=None must raise ValidationError before API call."""
         from pydantic import ValidationError
 
-        from kosax.tools.kma.kma_weather_alert_status import KmaWeatherAlertStatusInput
+        from ummaya.tools.kma.kma_weather_alert_status import KmaWeatherAlertStatusInput
 
         with pytest.raises(ValidationError) as exc_info:
             KmaWeatherAlertStatusInput()  # no stn_id, no tmFc

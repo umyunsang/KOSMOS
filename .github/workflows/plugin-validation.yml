@@ -1,17 +1,17 @@
 name: plugin-validation
 
-# Reusable workflow that external `kosax-plugin-<name>` repos call as:
-#   uses: umyunsang/KOSAX/.github/workflows/plugin-validation.yml@main
+# Reusable workflow that external `ummaya-plugin-<name>` repos call as:
+#   uses: umyunsang/UMMAYA/.github/workflows/plugin-validation.yml@main
 #
 # Runs the 50-item review checklist (research § R-1) against the calling
 # repo's plugin tree. The 50 rows are sourced from
 # `tests/fixtures/plugin_validation/checklist_manifest.yaml` in this repo;
-# every row resolves to a function under `kosax.plugins.checks.q*`.
+# every row resolves to a function under `ummaya.plugins.checks.q*`.
 #
 # Workflow steps:
-#   1. Check out KOSAX at the pinned ref (so the validator code is current).
+#   1. Check out UMMAYA at the pinned ref (so the validator code is current).
 #   2. Check out the calling plugin repo into ./plugin/.
-#   3. uv sync KOSAX so kosax.plugins.checks is importable.
+#   3. uv sync UMMAYA so ummaya.plugins.checks is importable.
 #   4. Meta-CI integrity: assert YAML row count == 50 + every dotted
 #      `check_implementation` resolves.
 #   5. Run the validator against ./plugin/ and emit a Korean+English
@@ -27,8 +27,8 @@ on:
         required: false
         type: string
         default: "."
-      kosax_ref:
-        description: "KOSAX repo ref to pin the validator at."
+      ummaya_ref:
+        description: "UMMAYA repo ref to pin the validator at."
         required: false
         type: string
         default: "main"
@@ -44,12 +44,12 @@ jobs:
     timeout-minutes: 5
 
     steps:
-      - name: Check out KOSAX validator
+      - name: Check out UMMAYA validator
         uses: actions/checkout@v6
         with:
-          repository: umyunsang/KOSAX
-          ref: ${{ inputs.kosax_ref }}
-          path: kosax
+          repository: umyunsang/UMMAYA
+          ref: ${{ inputs.ummaya_ref }}
+          path: ummaya
 
       - name: Check out plugin repo
         uses: actions/checkout@v6
@@ -60,18 +60,18 @@ jobs:
         uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
-          cache-dependency-glob: "kosax/uv.lock"
+          cache-dependency-glob: "ummaya/uv.lock"
 
-      - name: Install KOSAX validator
-        working-directory: kosax
+      - name: Install UMMAYA validator
+        working-directory: ummaya
         run: uv sync --frozen --all-extras --dev
 
       - name: Meta-CI integrity (T051)
-        working-directory: kosax
+        working-directory: ummaya
         run: |
           uv run python <<'PY'
           from pathlib import Path
-          from kosax.plugins.checks.framework import (
+          from ummaya.plugins.checks.framework import (
               load_checklist_rows,
               resolve_check,
           )
@@ -87,7 +87,7 @@ jobs:
 
       - name: Run 50-item checklist against plugin
         id: run_checks
-        working-directory: kosax
+        working-directory: ummaya
         env:
           PLUGIN_ROOT: ${{ github.workspace }}/plugin/${{ inputs.plugin_path }}
         run: |
@@ -95,7 +95,7 @@ jobs:
           import json
           import os
           from pathlib import Path
-          from kosax.plugins.checks.framework import run_all_checks
+          from ummaya.plugins.checks.framework import run_all_checks
 
           plugin_root = Path(os.environ["PLUGIN_ROOT"]).resolve()
           yaml_path = Path("tests/fixtures/plugin_validation/checklist_manifest.yaml")
@@ -125,7 +125,7 @@ jobs:
 
           step_summary = Path(os.environ["GITHUB_STEP_SUMMARY"])
           lines: list[str] = [
-              "# 🧪 KOSAX Plugin Validation",
+              "# 🧪 UMMAYA Plugin Validation",
               "",
               f"**{summary['passed']} / {summary['total']} 통과** "
               f"({summary['failed']} 실패)",
@@ -163,7 +163,7 @@ jobs:
             })
             const existing = comments.find(c =>
               c.user && c.user.type === 'Bot' &&
-              c.body && c.body.includes('🧪 KOSAX Plugin Validation')
+              c.body && c.body.includes('🧪 UMMAYA Plugin Validation')
             )
             if (existing) {
               await github.rest.issues.updateComment({

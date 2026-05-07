@@ -16,11 +16,11 @@ Retrieves the list of weather pre-warning (기상예비특보) announcements fro
 | Classification | Live · Permission tier 1 |
 | Source | Korea Meteorological Administration (KMA) / data.go.kr |
 | Primitive | `lookup` |
-| Module | `src/kosax/tools/kma/kma_pre_warning.py` |
+| Module | `src/ummaya/tools/kma/kma_pre_warning.py` |
 
 ## Envelope
 
-**Input model**: `KmaPreWarningInput` defined at `src/kosax/tools/kma/kma_pre_warning.py:39–59`.
+**Input model**: `KmaPreWarningInput` defined at `src/ummaya/tools/kma/kma_pre_warning.py:39–59`.
 
 | Field | Type | Required | Description |
 |---|---|---|---|
@@ -29,7 +29,7 @@ Retrieves the list of weather pre-warning (기상예비특보) announcements fro
 | `stn_id` | `str \| None` | no | Station/region ID filter. If omitted, results from all stations are returned. Example: `108` for Seoul, `159` for Busan. |
 | `data_type` | `Literal["JSON", "XML"]` (default "JSON") | no | Response format (`dataType` wire parameter). Always leave as "JSON". |
 
-**Output model**: `KmaPreWarningOutput` defined at `src/kosax/tools/kma/kma_pre_warning.py:80–89`.
+**Output model**: `KmaPreWarningOutput` defined at `src/ummaya/tools/kma/kma_pre_warning.py:80–89`.
 
 | Field | Type | Required | Description |
 |---|---|---|---|
@@ -54,7 +54,7 @@ Each `PreWarningItem` (defined at lines 62–77) carries:
 
 - **data.go.kr endpoint**: `1360000/WthrWrnInfoService/getWthrPwnList`
 - **Source URL**: https://apis.data.go.kr/1360000/WthrWrnInfoService/getWthrPwnList
-- **Authentication**: API key via `KOSAX_DATA_GO_KR_API_KEY` (per Constitution IV)
+- **Authentication**: API key via `UMMAYA_DATA_GO_KR_API_KEY` (per Constitution IV)
 
 ## Permission tier rationale
 
@@ -105,7 +105,7 @@ This adapter is classified as Permission tier 1 because it returns entirely non-
 
 ```text
 Citizen: 서울에 곧 기상경보가 발령될 예정인가요?
-KOSAX: 서울(108) 기상예비특보 목록에서 최근 공지를 확인했습니다. 가장 최근 예비특보는 '2026년 4월 26일 09:00' 기준 '[예비] 제26-5호'입니다. 예비특보는 정식 기상특보 발령 전 사전 안내이므로, 이후 기상경보로 격상될 수 있습니다. 기상청 발표를 지속적으로 확인하시기 바랍니다.
+UMMAYA: 서울(108) 기상예비특보 목록에서 최근 공지를 확인했습니다. 가장 최근 예비특보는 '2026년 4월 26일 09:00' 기준 '[예비] 제26-5호'입니다. 예비특보는 정식 기상특보 발령 전 사전 안내이므로, 이후 기상경보로 격상될 수 있습니다. 기상청 발표를 지속적으로 확인하시기 바랍니다.
 ```
 
 ## Constraints

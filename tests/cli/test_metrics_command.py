@@ -15,7 +15,7 @@ from io import StringIO
 
 from rich.console import Console
 
-from kosax.observability.metrics import MetricsCollector
+from ummaya.observability.metrics import MetricsCollector
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -26,9 +26,9 @@ def _make_repl_with_metrics(mc: MetricsCollector | None = None):  # type: ignore
     """Create a REPLLoop with a mock engine and the given MetricsCollector."""
     from unittest.mock import MagicMock  # noqa: PLC0415
 
-    from kosax.cli.config import CLIConfig  # noqa: PLC0415
-    from kosax.cli.renderer import EventRenderer  # noqa: PLC0415
-    from kosax.cli.repl import REPLLoop  # noqa: PLC0415
+    from ummaya.cli.config import CLIConfig  # noqa: PLC0415
+    from ummaya.cli.renderer import EventRenderer  # noqa: PLC0415
+    from ummaya.cli.repl import REPLLoop  # noqa: PLC0415
 
     console_output = StringIO()
     console = Console(file=console_output, highlight=False, markup=True)
@@ -164,7 +164,7 @@ def test_metrics_gauges_rendered() -> None:
 
 def test_metrics_command_registered() -> None:
     """The 'metrics' slash command is registered in the COMMANDS dict."""
-    from kosax.cli.models import COMMANDS  # noqa: PLC0415
+    from ummaya.cli.models import COMMANDS  # noqa: PLC0415
 
     assert "metrics" in COMMANDS
     assert COMMANDS["metrics"].name == "metrics"

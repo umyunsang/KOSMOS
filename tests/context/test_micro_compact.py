@@ -15,13 +15,13 @@ Covers:
 
 from __future__ import annotations
 
-from kosax.context.compact_models import CompactionConfig
-from kosax.context.micro_compact import (
+from ummaya.context.compact_models import CompactionConfig
+from ummaya.context.micro_compact import (
     _TOOL_RESULT_CLEARED,
     _protected_slice_start,
     micro_compact,
 )
-from kosax.llm.models import ChatMessage, FunctionCall, ToolCall
+from ummaya.llm.models import ChatMessage, FunctionCall, ToolCall
 
 # ---------------------------------------------------------------------------
 # Fixtures / helpers

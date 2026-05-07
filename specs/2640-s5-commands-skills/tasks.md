@@ -14,7 +14,7 @@ description: "Task list for Epic #2640 — S5 Commands/Skills 정리"
 
 - **[P]**: Can run in parallel (different files, no dependencies)
 - **[Story]**: User Story (US1 = Skills, US2 = P0 stubs, US3 = gap-3 박제)
-- Paths absolute relative to worktree root `/Users/um-yunsang/KOSAX-w-2640`.
+- Paths absolute relative to worktree root `/Users/um-yunsang/UMMAYA-w-2640`.
 
 ---
 
@@ -39,9 +39,9 @@ description: "Task list for Epic #2640 — S5 Commands/Skills 정리"
 - [ ] **T010** [P] [US1] `git rm -r tui/src/skills/bundled/claude-api/` (51 파일 일괄 삭제 — 26 .md.ts + 22 .md + nested subdirs).
 - [ ] **T011** [P] [US1] `git rm -r tui/src/skills/bundled/verify/` (3 파일: SKILL.md.ts + examples/cli.md.ts + examples/server.md.ts).
 - [ ] **T012** [P] [US1] `git rm tui/src/skills/bundled/claudeApi.ts tui/src/skills/bundled/claudeApiContent.ts tui/src/skills/bundled/verify.ts tui/src/skills/bundled/verifyContent.ts` (4 dispatcher 파일).
-- [ ] **T013** [US1] `tui/src/skills/bundled/index.ts` 정리: (a) `import { registerVerifySkill } from './verify.js'` 라인 제거, (b) `registerVerifySkill()` 호출 라인 제거, (c) `if (feature('BUILDING_CLAUDE_APPS')) { ... registerClaudeApiSkill() ... }` 블록 제거, (d) 박제 헤더 추가: `// KOSAX-2640: claude-api + verify bundled skills removed — Anthropic SDK docs out of scope (Initiative #2636 / Epic #2640).`
+- [ ] **T013** [US1] `tui/src/skills/bundled/index.ts` 정리: (a) `import { registerVerifySkill } from './verify.js'` 라인 제거, (b) `registerVerifySkill()` 호출 라인 제거, (c) `if (feature('BUILDING_CLAUDE_APPS')) { ... registerClaudeApiSkill() ... }` 블록 제거, (d) 박제 헤더 추가: `// UMMAYA-2640: claude-api + verify bundled skills removed — Anthropic SDK docs out of scope (Initiative #2636 / Epic #2640).`
 - [ ] **T014** [US1] `bun typecheck` 통과 검증 (T010-T013 후). 회귀 시 import resolution 에러 fix.
-- [ ] **T015** [US1] grep 검증: `grep -rE "from.*['\"].*claude-api[/'\"]|from.*['\"].*claudeApiContent|from.*['\"].*verifyContent|registerClaudeApiSkill|registerVerifySkill" tui/src/` 0 hit (KOSAX-2640 박제 코멘트 라인 제외).
+- [ ] **T015** [US1] grep 검증: `grep -rE "from.*['\"].*claude-api[/'\"]|from.*['\"].*claudeApiContent|from.*['\"].*verifyContent|registerClaudeApiSkill|registerVerifySkill" tui/src/` 0 hit (UMMAYA-2640 박제 코멘트 라인 제외).
 
 **Checkpoint US1**: Skills bundle cleanup 완료. `bun typecheck` PASS, grep clean.
 
@@ -83,7 +83,7 @@ description: "Task list for Epic #2640 — S5 Commands/Skills 정리"
   - 정확히는: `autofixPr`, `backfillSessions`, `goodClaude`, `issue`, `breakCache`, `commit?` (확인 필요), `bughunter`, `mockLimits`, `bridgeKick?` (보존), `summary`, `resetLimits`, `resetLimitsNonInteractive`, `share`, `teleport`, `antTrace`, `perfIssue`, `env`, `oauthRefresh`, `debugToolCall`, `ctx_viz` import + array entry 정리.
   - `INTERNAL_ONLY_COMMANDS` array 의 11+ 항목 제거 (`backfillSessions`, `breakCache`, `bughunter`, `ctx_viz`, `goodClaude`, `issue`, `mockLimits`, `bridgeKick?` 보존, `resetLimits`, `resetLimitsNonInteractive`, `summary`, `share`, `teleport`, `antTrace`, `perfIssue`, `env`, `oauthRefresh`, `debugToolCall`, `autofixPr`).
   - COMMANDS array 에는 stub-only 항목이 INTERNAL_ONLY_COMMANDS spread 로만 포함되므로 별도 정리 0.
-  - 박제 헤더 추가 (top-of-file comment): `// KOSAX-2640: 20 P0 auto-stub commands removed — Stage-1 sourcemap reconstruction gap (Initiative #2636 / Epic #2640). Tracked KOSAX-only stubs from Epic #1633 dead-code elimination.`
+  - 박제 헤더 추가 (top-of-file comment): `// UMMAYA-2640: 20 P0 auto-stub commands removed — Stage-1 sourcemap reconstruction gap (Initiative #2636 / Epic #2640). Tracked UMMAYA-only stubs from Epic #1633 dead-code elimination.`
   - 예외 보존: `commands/onboarding/index.ts` import (line 33) 는 Spec 1635 의 별도 처리 대상 — **건드리지 않는다**. 같은 패턴으로 `commands/install-github-app/types.ts`, `commands/plugin/types.ts`, `commands/plugin/unifiedTypes.ts` 도 본 epic scope 외.
 
 ### T022 — Verification
@@ -97,7 +97,7 @@ description: "Task list for Epic #2640 — S5 Commands/Skills 정리"
 
 ## Phase 5: User Story 3 — Gap-3 caller-graph 박제 + decisions.md 갱신 (Priority: P2)
 
-**Goal**: `extra-usage-core.ts` / `generateSessionName.ts` / `reviewRemote.ts` 의 KOSAX caller-graph 가 Spec 1633 / Epic #2293 박제 상태임을 검증 후 `decisions.md` 갱신.
+**Goal**: `extra-usage-core.ts` / `generateSessionName.ts` / `reviewRemote.ts` 의 UMMAYA caller-graph 가 Spec 1633 / Epic #2293 박제 상태임을 검증 후 `decisions.md` 갱신.
 
 **Independent Test**: `grep -rn "extra-usage-core\|generateSessionName\|reviewRemote" tui/src/` 가 박제 코멘트 또는 inline stub 만 hit (실제 import 0). `decisions.md` 의 § S5 마지막 row 가 "DROP 확정" 으로 갱신.
 
@@ -116,7 +116,7 @@ description: "Task list for Epic #2640 — S5 Commands/Skills 정리"
 - [ ] **T041** [Polish] `bun test` 최종 PASS (pre-merge baseline ± 0 신규 fail).
 - [ ] **T042** [Polish] Layer 5 tmux capture 시나리오 작성 + 실행: `specs/2640-s5-commands-skills/scripts/smoke-slash-autocomplete.sh`. 시나리오:
   1. `bun run tui` boot
-  2. `wait_for_pane "KOSAX" 30` (branding + tool registry verify)
+  2. `wait_for_pane "UMMAYA" 30` (branding + tool registry verify)
   3. `tmux send-keys "/" ` (slash autocomplete trigger)
   4. wait + capture `snap-001-slash-dropdown.txt` + screenshot
   5. `tmux send-keys "ant"` (filter prefix matching deleted commands)

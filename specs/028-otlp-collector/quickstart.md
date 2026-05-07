@@ -1,6 +1,6 @@
 # Quickstart: OTLP Collector + Local Langfuse Stack
 
-**Spec**: 028-otlp-collector | **Audience**: KSC 2026 demo operator, KOSAX developer
+**Spec**: 028-otlp-collector | **Audience**: KSC 2026 demo operator, UMMAYA developer
 
 This quickstart walks one operator from a fresh clone to "agent trace visible in Langfuse UI" in under 10 minutes.
 
@@ -9,7 +9,7 @@ This quickstart walks one operator from a fresh clone to "agent trace visible in
 ## Prerequisites
 
 - Docker Desktop 4.30+ (Compose v2 built-in). Confirm: `docker compose version` prints `v2.x`.
-- A KOSAX checkout at the branch containing spec 028 changes.
+- A UMMAYA checkout at the branch containing spec 028 changes.
 - No prior `docker compose -f docker-compose.dev.yml` stack running (`docker compose -f docker-compose.dev.yml down -v` to reset).
 - At least 8 GB free RAM (Langfuse stack ~4 GB + collector ~256 MB + headroom).
 
@@ -18,7 +18,7 @@ This quickstart walks one operator from a fresh clone to "agent trace visible in
 ## 1. One-command bring-up (~5 min first run, ~30 s subsequent)
 
 ```bash
-cd <kosax-checkout>
+cd <ummaya-checkout>
 docker compose -f docker-compose.dev.yml up -d
 ```
 
@@ -46,8 +46,8 @@ Langfuse v3 does **not** support env-var-based project or API key seeding (confi
 
 1. Open `http://localhost:3000` in a browser.
 2. Sign up as the first user (any email; stored locally in Postgres).
-3. Click "New organization" → enter a name (e.g., `kosax-local`).
-4. Click "New project" → enter a name (e.g., `kosax-dev`).
+3. Click "New organization" → enter a name (e.g., `ummaya-local`).
+4. Click "New project" → enter a name (e.g., `ummaya-dev`).
 5. Go to **Settings → API Keys** → click "Create new API keys".
 6. Copy the **public key** (`pk-lf-...`) and **secret key** (`sk-lf-...`).
 
@@ -55,7 +55,7 @@ Construct the Basic auth header and add to `.env`:
 
 ```bash
 AUTH=$(printf '%s' "pk-lf-xxxx:sk-lf-xxxx" | base64)
-echo "KOSAX_LANGFUSE_OTLP_AUTH_HEADER=Basic $AUTH" >> .env
+echo "UMMAYA_LANGFUSE_OTLP_AUTH_HEADER=Basic $AUTH" >> .env
 ```
 
 Restart the collector to pick up the new header:
@@ -66,20 +66,20 @@ docker compose -f docker-compose.dev.yml restart otelcol
 
 ---
 
-## 3. Point the KOSAX app at the collector
+## 3. Point the UMMAYA app at the collector
 
-In your KOSAX app shell (not inside a compose container):
+In your UMMAYA app shell (not inside a compose container):
 
 ```bash
 export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
 # Optionally also:
-# export KOSAX_OTEL_SERVICE_NAME=kosax
+# export UMMAYA_OTEL_SERVICE_NAME=ummaya
 ```
 
-Start a KOSAX CLI session and make a single agent call:
+Start a UMMAYA CLI session and make a single agent call:
 
 ```bash
-uv run kosax chat "서울 강남역 근처 소아과 찾아줘"
+uv run ummaya chat "서울 강남역 근처 소아과 찾아줘"
 ```
 
 ---
@@ -92,10 +92,10 @@ Within 10 seconds of the CLI call completing, open the Langfuse UI:
 http://localhost:3000  →  Traces
 ```
 
-You should see one new trace whose root span is `invoke_agent kosax-query`. Expanding it reveals at minimum:
+You should see one new trace whose root span is `invoke_agent ummaya-query`. Expanding it reveals at minimum:
 
 ```
-invoke_agent kosax-query
+invoke_agent ummaya-query
 ├── chat (gen_ai.request.model=EXAONE-...)
 └── execute_tool <tool_id>
 ```
@@ -112,10 +112,10 @@ Run the redaction smoke test (marker-gated, skipped in CI per AGENTS.md):
 uv run pytest -m live tests/live/test_collector_pii_redaction.py
 ```
 
-This test (delivered by `/speckit-implement`) emits a fixture span carrying `patient.name="TEST_OPERATOR"` and `kosax.location.query="서울역"`, then queries the Langfuse public API for the resulting trace. Assertions:
+This test (delivered by `/speckit-implement`) emits a fixture span carrying `patient.name="TEST_OPERATOR"` and `ummaya.location.query="서울역"`, then queries the Langfuse public API for the resulting trace. Assertions:
 
 - `patient.name` attribute MUST NOT be present on the stored span.
-- `kosax.location.query` value MUST be the 64-char SHA-256 hex hash of `"서울역"`, not the raw string.
+- `ummaya.location.query` value MUST be the 64-char SHA-256 hex hash of `"서울역"`, not the raw string.
 
 ---
 
@@ -130,7 +130,7 @@ unset OTEL_EXPORTER_OTLP_ENDPOINT
 uv run pytest
 ```
 
-All tests must pass, and the KOSAX process must produce zero OTLP network attempts (spec 021 FR-014 inheritance).
+All tests must pass, and the UMMAYA process must produce zero OTLP network attempts (spec 021 FR-014 inheritance).
 
 ---
 
@@ -143,7 +143,7 @@ Symptom: `docker compose up` logs `bind: address already in use` on the `otelcol
 Fix: Set a different host port:
 
 ```bash
-echo "KOSAX_OTEL_COLLECTOR_PORT=14318" >> .env
+echo "UMMAYA_OTEL_COLLECTOR_PORT=14318" >> .env
 docker compose -f docker-compose.dev.yml up -d otelcol
 export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:14318
 ```
@@ -157,9 +157,9 @@ docker compose -f docker-compose.dev.yml logs otelcol --tail=50
 ```
 
 Most common causes:
-- `401 Unauthorized` → `KOSAX_LANGFUSE_OTLP_AUTH_HEADER` missing or malformed. Re-run step 2.
+- `401 Unauthorized` → `UMMAYA_LANGFUSE_OTLP_AUTH_HEADER` missing or malformed. Re-run step 2.
 - `connection refused` → `langfuse-web` not healthy yet. `docker compose ps` to confirm.
-- KOSAX app `OTEL_EXPORTER_OTLP_ENDPOINT` still points at Langfuse directly (legacy spec 021 config). Update to `http://localhost:4318`.
+- UMMAYA app `OTEL_EXPORTER_OTLP_ENDPOINT` still points at Langfuse directly (legacy spec 021 config). Update to `http://localhost:4318`.
 
 ### C. ClickHouse slow cold-start drops early spans
 

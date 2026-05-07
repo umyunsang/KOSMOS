@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-# Langfuse v3 local development stack for KOSAX observability.
+# Langfuse v3 local development stack for UMMAYA observability.
 #
 # Usage:
 #   docker compose -f docker-compose.dev.yml up -d
@@ -8,27 +8,27 @@
 # Reference: https://langfuse.com/self-hosting/docker-compose
 #
 # Secrets: all sensitive values come from environment variables with safe
-# dev-only defaults. Override by exporting KOSAX_LANGFUSE_* vars or via .env.
+# dev-only defaults. Override by exporting UMMAYA_LANGFUSE_* vars or via .env.
 
 x-langfuse-env: &langfuse-env
-  DATABASE_URL: postgresql://${KOSAX_LANGFUSE_DB_USER:-langfuse}:${KOSAX_LANGFUSE_DB_PASSWORD:-langfuse}@postgres:5432/${KOSAX_LANGFUSE_DB_NAME:-langfuse}
-  SALT: ${KOSAX_LANGFUSE_SALT:-langfuse-salt-dev-only}
-  ENCRYPTION_KEY: ${KOSAX_LANGFUSE_ENCRYPTION_KEY:-0000000000000000000000000000000000000000000000000000000000000000}
+  DATABASE_URL: postgresql://${UMMAYA_LANGFUSE_DB_USER:-langfuse}:${UMMAYA_LANGFUSE_DB_PASSWORD:-langfuse}@postgres:5432/${UMMAYA_LANGFUSE_DB_NAME:-langfuse}
+  SALT: ${UMMAYA_LANGFUSE_SALT:-langfuse-salt-dev-only}
+  ENCRYPTION_KEY: ${UMMAYA_LANGFUSE_ENCRYPTION_KEY:-0000000000000000000000000000000000000000000000000000000000000000}
   NEXTAUTH_URL: http://localhost:3000
-  NEXTAUTH_SECRET: ${KOSAX_LANGFUSE_NEXTAUTH_SECRET:-mysecret}
+  NEXTAUTH_SECRET: ${UMMAYA_LANGFUSE_NEXTAUTH_SECRET:-mysecret}
   TELEMETRY_ENABLED: "false"
   LANGFUSE_ENABLE_EXPERIMENTAL_FEATURES: "false"
   REDIS_HOST: redis
   REDIS_PORT: "6379"
-  REDIS_AUTH: ${KOSAX_LANGFUSE_REDIS_AUTH:-}
+  REDIS_AUTH: ${UMMAYA_LANGFUSE_REDIS_AUTH:-}
   CLICKHOUSE_URL: http://clickhouse:8123
-  CLICKHOUSE_USER: ${KOSAX_LANGFUSE_CLICKHOUSE_USER:-default}
-  CLICKHOUSE_PASSWORD: ${KOSAX_LANGFUSE_CLICKHOUSE_PASSWORD:-langfuse}
+  CLICKHOUSE_USER: ${UMMAYA_LANGFUSE_CLICKHOUSE_USER:-default}
+  CLICKHOUSE_PASSWORD: ${UMMAYA_LANGFUSE_CLICKHOUSE_PASSWORD:-langfuse}
   LANGFUSE_S3_MEDIA_UPLOAD_ENABLED: "true"
-  LANGFUSE_S3_MEDIA_UPLOAD_BUCKET: ${KOSAX_LANGFUSE_S3_BUCKET:-langfuse}
+  LANGFUSE_S3_MEDIA_UPLOAD_BUCKET: ${UMMAYA_LANGFUSE_S3_BUCKET:-langfuse}
   LANGFUSE_S3_MEDIA_UPLOAD_ENDPOINT: http://minio:9000
-  LANGFUSE_S3_MEDIA_UPLOAD_ACCESS_KEY_ID: ${KOSAX_LANGFUSE_MINIO_ACCESS_KEY:-minio}
-  LANGFUSE_S3_MEDIA_UPLOAD_SECRET_ACCESS_KEY: ${KOSAX_LANGFUSE_MINIO_SECRET_KEY:-miniosecret}
+  LANGFUSE_S3_MEDIA_UPLOAD_ACCESS_KEY_ID: ${UMMAYA_LANGFUSE_MINIO_ACCESS_KEY:-minio}
+  LANGFUSE_S3_MEDIA_UPLOAD_SECRET_ACCESS_KEY: ${UMMAYA_LANGFUSE_MINIO_SECRET_KEY:-miniosecret}
   LANGFUSE_S3_MEDIA_UPLOAD_FORCE_PATH_STYLE: "true"
   LANGFUSE_S3_MEDIA_UPLOAD_REGION: us-east-1
 
@@ -94,12 +94,12 @@ services:
     volumes:
       - ./infra/otel-collector/config.yaml:/etc/otelcol-contrib/config.yaml:ro
     ports:
-      - "${KOSAX_OTEL_COLLECTOR_PORT:-4318}:4318"
+      - "${UMMAYA_OTEL_COLLECTOR_PORT:-4318}:4318"
     environment:
       # Base URL only — otlphttp exporter appends /v1/traces automatically
-      KOSAX_LANGFUSE_OTLP_ENDPOINT: "${KOSAX_LANGFUSE_OTLP_ENDPOINT:-http://langfuse-web:3000/api/public/otel}"
-      KOSAX_LANGFUSE_OTLP_AUTH_HEADER: "${KOSAX_LANGFUSE_OTLP_AUTH_HEADER:-}"
-      KOSAX_OTEL_COLLECTOR_PORT: "${KOSAX_OTEL_COLLECTOR_PORT:-4318}"
+      UMMAYA_LANGFUSE_OTLP_ENDPOINT: "${UMMAYA_LANGFUSE_OTLP_ENDPOINT:-http://langfuse-web:3000/api/public/otel}"
+      UMMAYA_LANGFUSE_OTLP_AUTH_HEADER: "${UMMAYA_LANGFUSE_OTLP_AUTH_HEADER:-}"
+      UMMAYA_OTEL_COLLECTOR_PORT: "${UMMAYA_OTEL_COLLECTOR_PORT:-4318}"
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:13133/"]
       interval: 5s
@@ -114,13 +114,13 @@ services:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${KOSAX_LANGFUSE_DB_USER:-langfuse}
-      POSTGRES_PASSWORD: ${KOSAX_LANGFUSE_DB_PASSWORD:-langfuse}
-      POSTGRES_DB: ${KOSAX_LANGFUSE_DB_NAME:-langfuse}
+      POSTGRES_USER: ${UMMAYA_LANGFUSE_DB_USER:-langfuse}
+      POSTGRES_PASSWORD: ${UMMAYA_LANGFUSE_DB_PASSWORD:-langfuse}
+      POSTGRES_DB: ${UMMAYA_LANGFUSE_DB_NAME:-langfuse}
     volumes:
       - langfuse-postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${KOSAX_LANGFUSE_DB_USER:-langfuse} -d ${KOSAX_LANGFUSE_DB_NAME:-langfuse}"]
+      test: ["CMD-SHELL", "pg_isready -U ${UMMAYA_LANGFUSE_DB_USER:-langfuse} -d ${UMMAYA_LANGFUSE_DB_NAME:-langfuse}"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -145,8 +145,8 @@ services:
     image: clickhouse/clickhouse-server:24.8-alpine
     restart: unless-stopped
     environment:
-      CLICKHOUSE_USER: ${KOSAX_LANGFUSE_CLICKHOUSE_USER:-default}
-      CLICKHOUSE_PASSWORD: ${KOSAX_LANGFUSE_CLICKHOUSE_PASSWORD:-langfuse}
+      CLICKHOUSE_USER: ${UMMAYA_LANGFUSE_CLICKHOUSE_USER:-default}
+      CLICKHOUSE_PASSWORD: ${UMMAYA_LANGFUSE_CLICKHOUSE_PASSWORD:-langfuse}
       CLICKHOUSE_DB: langfuse
     volumes:
       - langfuse-clickhouse-data:/var/lib/clickhouse
@@ -169,8 +169,8 @@ services:
     restart: unless-stopped
     command: server /data --console-address ":9001"
     environment:
-      MINIO_ROOT_USER: ${KOSAX_LANGFUSE_MINIO_ACCESS_KEY:-minio}
-      MINIO_ROOT_PASSWORD: ${KOSAX_LANGFUSE_MINIO_SECRET_KEY:-miniosecret}
+      MINIO_ROOT_USER: ${UMMAYA_LANGFUSE_MINIO_ACCESS_KEY:-minio}
+      MINIO_ROOT_PASSWORD: ${UMMAYA_LANGFUSE_MINIO_SECRET_KEY:-miniosecret}
     volumes:
       - langfuse-minio-data:/data
     healthcheck:
@@ -189,8 +189,8 @@ services:
         condition: service_healthy
     entrypoint: >
       /bin/sh -c "
-        mc alias set local http://minio:9000 ${KOSAX_LANGFUSE_MINIO_ACCESS_KEY:-minio} ${KOSAX_LANGFUSE_MINIO_SECRET_KEY:-miniosecret};
-        mc mb --ignore-existing local/${KOSAX_LANGFUSE_S3_BUCKET:-langfuse};
+        mc alias set local http://minio:9000 ${UMMAYA_LANGFUSE_MINIO_ACCESS_KEY:-minio} ${UMMAYA_LANGFUSE_MINIO_SECRET_KEY:-miniosecret};
+        mc mb --ignore-existing local/${UMMAYA_LANGFUSE_S3_BUCKET:-langfuse};
         exit 0
       "
 

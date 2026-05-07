@@ -6,7 +6,7 @@
 set -uo pipefail
 
 # Stage 0a — wait for the consent modal (or branding) to appear
-wait_for_pane "Allow external CLAUDE.md|KOSAX v" 60 || true
+wait_for_pane "Allow external CLAUDE.md|UMMAYA v" 60 || true
 sleep 2
 snapshot_pane 0a-boot-or-modal
 
@@ -17,7 +17,7 @@ if tmux capture-pane -t "$TMUX_SESSION" -p | grep -q "Allow external CLAUDE.md";
   snapshot_pane 0b-after-consent-enter
 fi
 
-wait_for_pane "KOSAX v|❯" 30 || true
+wait_for_pane "UMMAYA v|❯" 30 || true
 sleep 2
 snapshot_pane 0c-prompt-ready
 

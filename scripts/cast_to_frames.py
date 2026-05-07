@@ -21,7 +21,7 @@ Output : output-dir/frame_NNNN_t<seconds>.txt — one file per *distinct*
 
 The script intentionally has zero deps beyond stdlib + pyte (already a
 dev dep per pyproject.toml § project.optional-dependencies). It is
-test-only — never imported by KOSAX production code.
+test-only — never imported by UMMAYA production code.
 """
 
 from __future__ import annotations

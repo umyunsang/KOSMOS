@@ -7,7 +7,7 @@
 #
 # Verification targets:
 #   1. Boot: "tool_registry: N entries verified"
-#   2. Branding: "KOSAX"
+#   2. Branding: "UMMAYA"
 #   3. Input "서울 응급실" accepted
 #   4. Turn 1 (autonomous): resolve_location tool_call (lat/lon for Seoul)
 #   5. Turn 2 (autonomous): nmc_emergency_search tool_call
@@ -42,7 +42,7 @@ wait_for_pane "tool_registry: [0-9]+ entries verified" 45
 snapshot_pane "boot"
 
 # ── Stage B: Branding ─────────────────────────────────────────────────────────
-wait_for_pane "KOSAX" 20
+wait_for_pane "UMMAYA" 20
 snapshot_pane "branding"
 
 # ── Stage C: Submit query ─────────────────────────────────────────────────────

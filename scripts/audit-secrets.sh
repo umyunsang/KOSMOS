@@ -63,8 +63,8 @@ PATTERN_TOKEN='\$\{\{ *secrets[.[][^}]*_TOKEN[^}]*\}\}'
 PATTERN_API_KEY='\$\{\{ *secrets[.[][^}]*_API_KEY[^}]*\}\}'
 # 3. Any *_SECRET secret reference
 PATTERN_SECRET='\$\{\{ *secrets[.[][^}]*_SECRET[^}]*\}\}'
-# 4. Any KOSAX_* secret reference (long-lived by definition)
-PATTERN_KOSAX='\$\{\{ *secrets[.[][^}]*KOSAX_[^}]*\}\}'
+# 4. Any UMMAYA_* secret reference (long-lived by definition)
+PATTERN_UMMAYA='\$\{\{ *secrets[.[][^}]*UMMAYA_[^}]*\}\}'
 # 5. Legacy FRIENDLI_* token references
 PATTERN_FRIENDLI='\$\{\{ *secrets[.[][^}]*FRIENDLI[^}]*\}\}'
 # 6. Langfuse secrets (must come via Infisical, not GH Secrets)
@@ -161,7 +161,7 @@ for _file in "${_SCANNED_FILES[@]}"; do
     _check_pattern "${_file}" "DENY-TOKEN"    "${PATTERN_TOKEN}"
     _check_pattern "${_file}" "DENY-API_KEY"  "${PATTERN_API_KEY}"
     _check_pattern "${_file}" "DENY-SECRET"   "${PATTERN_SECRET}"
-    _check_pattern "${_file}" "DENY-KOSAX"   "${PATTERN_KOSAX}"
+    _check_pattern "${_file}" "DENY-UMMAYA"   "${PATTERN_UMMAYA}"
     _check_pattern "${_file}" "DENY-FRIENDLI" "${PATTERN_FRIENDLI}"
     _check_pattern "${_file}" "DENY-LANGFUSE" "${PATTERN_LANGFUSE}"
 done

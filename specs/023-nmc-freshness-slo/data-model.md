@@ -5,7 +5,7 @@
 
 ## Entity Changes
 
-### Modified: LookupMeta (src/kosax/tools/models.py)
+### Modified: LookupMeta (src/ummaya/tools/models.py)
 
 Add `freshness_status` optional field to the existing metadata model.
 
@@ -22,7 +22,7 @@ Add `freshness_status` optional field to the existing metadata model.
 
 **Backward compatibility**: Default is `None`, so existing adapters and tests are unaffected. JSON serialization with `exclude_none=True` omits the field entirely for non-NMC responses.
 
-### New: FreshnessResult (src/kosax/tools/nmc/freshness.py)
+### New: FreshnessResult (src/ummaya/tools/nmc/freshness.py)
 
 Internal utility type representing the result of a freshness check.
 
@@ -35,7 +35,7 @@ Internal utility type representing the result of a freshness check.
 
 This is an internal dataclass, not part of the LookupOutput contract. It is consumed only by the NMC adapter handler.
 
-### Existing (no changes): LookupErrorReason (src/kosax/tools/errors.py)
+### Existing (no changes): LookupErrorReason (src/ummaya/tools/errors.py)
 
 `stale_data` variant already present in the enum:
 
@@ -44,7 +44,7 @@ class LookupErrorReason(StrEnum):
     stale_data = "stale_data"   # Already exists
 ```
 
-### Existing (no changes): KosaxSettings (src/kosax/settings.py)
+### Existing (no changes): UmmayaSettings (src/ummaya/settings.py)
 
 `nmc_freshness_minutes` already defined:
 
@@ -67,7 +67,7 @@ NMC Response Received
 ## Relationships
 
 ```
-KosaxSettings.nmc_freshness_minutes
+UmmayaSettings.nmc_freshness_minutes
     ↓ (read at check time)
 check_freshness(hvidate_str, threshold_minutes)
     ↓ (returns FreshnessResult)

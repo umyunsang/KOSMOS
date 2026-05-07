@@ -15,7 +15,7 @@
 #   send_keys_pane <key...>
 #
 # Original scenario:
-#   Sanity check: boot TUI → wait KOSAX branding → send "/help" → wait 8s
+#   Sanity check: boot TUI → wait UMMAYA branding → send "/help" → wait 8s
 #   → Ctrl-C exit.
 #
 # Migration notes:
@@ -34,7 +34,7 @@
 
 # ── 1. Boot ──────────────────────────────────────────────────────────────────
 wait_for_pane "tool_registry: [0-9]+ entries verified" 60
-wait_for_pane "KOSAX" 15
+wait_for_pane "UMMAYA" 15
 snapshot_pane boot
 
 # ── 2. Send /help ────────────────────────────────────────────────────────────

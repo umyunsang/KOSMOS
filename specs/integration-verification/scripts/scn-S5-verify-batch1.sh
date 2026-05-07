@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # S5: 인증서 4종 — gongdong + geumyung_injeungseo + ganpyeon + module_kec verify + /consent revoke
 set -euo pipefail
-wait_for_pane "KOSAX|❯" 30
+wait_for_pane "UMMAYA|❯" 30
 snapshot_pane 00-boot
 
 send_text_pane "공동인증서로 본인확인"; sleep 1; send_enter_pane; sleep 60

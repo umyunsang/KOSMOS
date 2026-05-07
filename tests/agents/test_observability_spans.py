@@ -22,13 +22,13 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import SimpleSpanProcessor
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
 
-from kosax.agents.mailbox.messages import (
+from ummaya.agents.mailbox.messages import (
     AgentMessage,
     MessageType,
     ResultPayload,
     TaskPayload,
 )
-from kosax.tools.models import LookupMeta, LookupRecord
+from ummaya.tools.models import LookupMeta, LookupRecord
 from tests.agents.conftest import StubLLMClient, build_test_registry
 
 # ---------------------------------------------------------------------------
@@ -56,9 +56,9 @@ def span_exporter(monkeypatch: pytest.MonkeyPatch) -> InMemorySpanExporter:
     OTEL_SDK_DISABLED is cleared for the duration of this fixture so that
     TracerProvider.get_tracer() returns a real SDK tracer rather than a NoOp.
     """
-    import kosax.agents.coordinator as _coord_mod
-    import kosax.agents.mailbox.file_mailbox as _fm_mod
-    import kosax.agents.worker as _worker_mod
+    import ummaya.agents.coordinator as _coord_mod
+    import ummaya.agents.mailbox.file_mailbox as _fm_mod
+    import ummaya.agents.worker as _worker_mod
 
     # OTEL_SDK_DISABLED=true (set by CI) causes TracerProvider.get_tracer()
     # to return a NoOpTracer. Clear it so the in-memory exporter works.
@@ -66,9 +66,9 @@ def span_exporter(monkeypatch: pytest.MonkeyPatch) -> InMemorySpanExporter:
 
     provider, exporter = _make_provider_and_exporter()
 
-    coord_tracer = provider.get_tracer("kosax.agents.coordinator")
-    worker_tracer = provider.get_tracer("kosax.agents.worker")
-    fm_tracer = provider.get_tracer("kosax.agents.mailbox.file_mailbox")
+    coord_tracer = provider.get_tracer("ummaya.agents.coordinator")
+    worker_tracer = provider.get_tracer("ummaya.agents.worker")
+    fm_tracer = provider.get_tracer("ummaya.agents.mailbox.file_mailbox")
 
     monkeypatch.setattr(_coord_mod, "_tracer", coord_tracer)
     monkeypatch.setattr(_worker_mod, "_tracer", worker_tracer)
@@ -87,8 +87,8 @@ async def test_coordinator_emits_four_phase_spans(
     tmp_path: Any, span_exporter: InMemorySpanExporter
 ) -> None:
     """FR-028: exactly 4 gen_ai.agent.coordinator.phase spans are emitted."""
-    from kosax.agents.coordinator import Coordinator
-    from kosax.agents.mailbox.file_mailbox import FileMailbox
+    from ummaya.agents.coordinator import Coordinator
+    from ummaya.agents.mailbox.file_mailbox import FileMailbox
 
     session_id = uuid4()
     llm = StubLLMClient(responses=["", "", "", ""])
@@ -109,7 +109,7 @@ async def test_coordinator_emits_four_phase_spans(
     )
 
     phase_values = {
-        s.attributes.get("kosax.agent.coordinator.phase")
+        s.attributes.get("ummaya.agent.coordinator.phase")
         for s in phase_spans  # type: ignore[union-attr]
     }
     expected_phases = {"research", "synthesis", "implementation", "verification"}
@@ -122,9 +122,9 @@ async def test_coordinator_emits_four_phase_spans(
 async def test_coordinator_phase_span_attributes(
     tmp_path: Any, span_exporter: InMemorySpanExporter
 ) -> None:
-    """FR-028: each phase span carries kosax.agent.coordinator.phase attribute."""
-    from kosax.agents.coordinator import Coordinator
-    from kosax.agents.mailbox.file_mailbox import FileMailbox
+    """FR-028: each phase span carries ummaya.agent.coordinator.phase attribute."""
+    from ummaya.agents.coordinator import Coordinator
+    from ummaya.agents.mailbox.file_mailbox import FileMailbox
 
     session_id = uuid4()
     llm = StubLLMClient(responses=["", "", "", ""])
@@ -139,8 +139,8 @@ async def test_coordinator_phase_span_attributes(
     await coordinator.run("Test query")
 
     for span in _spans_named(span_exporter, "gen_ai.agent.coordinator.phase"):
-        phase_attr = span.attributes.get("kosax.agent.coordinator.phase")  # type: ignore[union-attr]
-        assert phase_attr is not None, "Phase span must have kosax.agent.coordinator.phase"
+        phase_attr = span.attributes.get("ummaya.agent.coordinator.phase")  # type: ignore[union-attr]
+        assert phase_attr is not None, "Phase span must have ummaya.agent.coordinator.phase"
         assert phase_attr in ("research", "synthesis", "implementation", "verification"), (
             f"Phase attribute has unexpected value: {phase_attr!r}"
         )
@@ -149,7 +149,7 @@ async def test_coordinator_phase_span_attributes(
 @pytest.mark.asyncio
 async def test_mailbox_send_emits_span(tmp_path: Any, span_exporter: InMemorySpanExporter) -> None:
     """FR-030: each FileMailbox.send() emits one gen_ai.agent.mailbox.message span."""
-    from kosax.agents.mailbox.file_mailbox import FileMailbox
+    from ummaya.agents.mailbox.file_mailbox import FileMailbox
 
     session_id = uuid4()
     mailbox = FileMailbox(session_id=session_id, root=tmp_path, max_messages=100)
@@ -170,9 +170,9 @@ async def test_mailbox_send_emits_span(tmp_path: Any, span_exporter: InMemorySpa
     span = mailbox_spans[0]
     attrs = span.attributes or {}
 
-    assert attrs.get("kosax.agent.mailbox.msg_type") == msg.msg_type.value
-    assert attrs.get("kosax.agent.mailbox.sender") == msg.sender
-    assert attrs.get("kosax.agent.mailbox.recipient") == msg.recipient
+    assert attrs.get("ummaya.agent.mailbox.msg_type") == msg.msg_type.value
+    assert attrs.get("ummaya.agent.mailbox.sender") == msg.sender
+    assert attrs.get("ummaya.agent.mailbox.recipient") == msg.recipient
 
 
 @pytest.mark.asyncio
@@ -180,7 +180,7 @@ async def test_mailbox_send_multiple_spans(
     tmp_path: Any, span_exporter: InMemorySpanExporter
 ) -> None:
     """FR-030: N sends emit N gen_ai.agent.mailbox.message spans."""
-    from kosax.agents.mailbox.file_mailbox import FileMailbox
+    from ummaya.agents.mailbox.file_mailbox import FileMailbox
 
     session_id = uuid4()
     mailbox = FileMailbox(session_id=session_id, root=tmp_path, max_messages=100)
@@ -204,8 +204,8 @@ async def test_span_attributes_never_contain_message_body(
     tmp_path: Any, span_exporter: InMemorySpanExporter
 ) -> None:
     """FR-031 (PIPA): message body must never appear in any span attribute."""
-    from kosax.agents.coordinator import Coordinator
-    from kosax.agents.mailbox.file_mailbox import FileMailbox
+    from ummaya.agents.coordinator import Coordinator
+    from ummaya.agents.mailbox.file_mailbox import FileMailbox
 
     session_id = uuid4()
     llm = StubLLMClient(responses=["", "", "", ""])
@@ -233,10 +233,10 @@ async def test_span_attributes_never_contain_message_body(
 async def test_mailbox_span_correlation_id_attribute(
     tmp_path: Any, span_exporter: InMemorySpanExporter
 ) -> None:
-    """FR-030: mailbox.message span has kosax.agent.mailbox.correlation_id attribute."""
+    """FR-030: mailbox.message span has ummaya.agent.mailbox.correlation_id attribute."""
     import datetime as _dt
 
-    from kosax.agents.mailbox.file_mailbox import FileMailbox
+    from ummaya.agents.mailbox.file_mailbox import FileMailbox
 
     session_id = uuid4()
     mailbox = FileMailbox(session_id=session_id, root=tmp_path, max_messages=100)
@@ -262,5 +262,5 @@ async def test_mailbox_span_correlation_id_attribute(
     mailbox_spans = _spans_named(span_exporter, "gen_ai.agent.mailbox.message")
     assert len(mailbox_spans) == 1
     span = mailbox_spans[0]
-    cid_attr = (span.attributes or {}).get("kosax.agent.mailbox.correlation_id")
+    cid_attr = (span.attributes or {}).get("ummaya.agent.mailbox.correlation_id")
     assert cid_attr == str(cid), f"FR-030: expected correlation_id={cid}, got {cid_attr!r}"

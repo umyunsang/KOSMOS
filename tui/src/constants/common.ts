@@ -32,11 +32,11 @@ export function getLocalMonthYear(): string {
   return date.toLocaleString('en-US', { month: 'long', year: 'numeric' })
 }
 
-// KOSAX hotfix (2026-05-04, KMA base_time hallucination 차단):
+// UMMAYA hotfix (2026-05-04, KMA base_time hallucination 차단):
 // LLM 이 KMA `base_time` (KST HHMM) 을 추측하지 않도록 KST 현재 시각을
 // 동적 user-context 에 inject. 백엔드 stdio.py 가 system-prompt 동적
 // suffix 에도 같은 정보를 emit — 양쪽 모두 inject 해야 sub-agent path
-// (runAgent / btw / compact 등) 도 KST 시각을 본다. KOSAX_OVERRIDE_KST_TIME
+// (runAgent / btw / compact 등) 도 KST 시각을 본다. UMMAYA_OVERRIDE_KST_TIME
 // env 는 테스트용 (HH:MM 또는 HHMM 또는 ISO-8601).
 export interface KstTimeParts {
   iso: string // YYYY-MM-DD (KST date)
@@ -44,7 +44,7 @@ export interface KstTimeParts {
   hhmm: string // HHMM
 }
 export function getKstTimeParts(now?: Date): KstTimeParts {
-  const override = process.env.KOSAX_OVERRIDE_KST_TIME
+  const override = process.env.UMMAYA_OVERRIDE_KST_TIME
   let instant: Date
   if (override) {
     // Accept full ISO-8601 (with offset) verbatim; bare HH:MM falls back to a

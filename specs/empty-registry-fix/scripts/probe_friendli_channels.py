@@ -11,13 +11,13 @@ Question being answered:
       (b) ``delta.reasoning_content`` — separated CoT channel (PROPER)
       (c) ``delta.tool_calls``        — function calling channel (EXPECTED)
 
-    Two passes:  KOSAX_K_EXAONE_THINKING=false (KOSAX default)
-                 KOSAX_K_EXAONE_THINKING=true  (model card default)
+    Two passes:  UMMAYA_K_EXAONE_THINKING=false (UMMAYA default)
+                 UMMAYA_K_EXAONE_THINKING=true  (model card default)
 
 Output: per-pass tally of bytes routed to each channel + first 800 chars of
 each channel's accumulated text + tool_call summary.
 
-Runtime: ~30-90s per pass (real LLM call). Requires KOSAX_FRIENDLI_TOKEN.
+Runtime: ~30-90s per pass (real LLM call). Requires UMMAYA_FRIENDLI_TOKEN.
 """
 
 from __future__ import annotations
@@ -33,8 +33,8 @@ import httpx
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
-from kosax._dotenv import load_repo_dotenv
-from kosax.llm.config import LLMClientConfig
+from ummaya._dotenv import load_repo_dotenv
+from ummaya.llm.config import LLMClientConfig
 
 load_repo_dotenv()
 

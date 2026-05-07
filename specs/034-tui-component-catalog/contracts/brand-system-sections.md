@@ -10,7 +10,7 @@
 ## 1 · File structure (FR-012, FR-013, FR-014)
 
 ```markdown
-# KOSAX Brand System
+# UMMAYA Brand System
 
 ## §1 Brand metaphor
 <authored by Epic M #1310; ≥ 500 words>
@@ -55,11 +55,11 @@
 
 Authored in this Epic. MUST cover (non-exhaustive — word count target ≥ 500):
 
-1. **The KOSAX (은하계) integration metaphor** — why fragmented ministry interfaces (DX infrastructure) resolve into a single citizen conversation (AX harness). Ties to `docs/vision.md § What is original to KOSAX` and Korea AI Action Plan Principle 8 (single conversational window).
+1. **The UMMAYA (은하계) integration metaphor** — why fragmented ministry interfaces (DX infrastructure) resolve into a single citizen conversation (AX harness). Ties to `docs/vision.md § What is original to UMMAYA` and Korea AI Action Plan Principle 8 (single conversational window).
 2. **Visual element vocabulary** — ring + core + satellites + wordmark + subtitle, mapped to ADR-006 A-9 onboarding splash. Each visual has a semantic role the TUI renders.
 3. **Ministry satellite roster** — current ministries (KOROAD, KMA, HIRA, NMC, 119, Geocoding). Extensions require appending to this roster before a new `agentSatellite{MINISTRY}` token can ship (FR-009 cross-reference).
 4. **Why metaphor matters for a text UI** — text-grid rendering does not show the ring or satellites literally, but color tokens carry the metaphor into every visible element. A reader of `orbitalRingShimmer` inherits the orchestration story even without a literal ring on screen.
-5. **Permanent cross-references**: ADR-006 A-9, `assets/kosax-{logo,banner-dark}.svg`, Korea AI Action Plan 공공AX Principle 8/9.
+5. **Permanent cross-references**: ADR-006 A-9, `assets/ummaya-{logo,banner-dark}.svg`, Korea AI Action Plan 공공AX Principle 8/9.
 
 ## 3 · §2 Token naming doctrine — required content outline (FR-016)
 
@@ -99,9 +99,9 @@ Variations:
 | BSS-04 | §3–§9 body word count ≤ 50 each | FR-014, SC-003 |
 | BSS-05 | §10 body word count ≤ 50 | FR-014, SC-003 |
 | BSS-06 | §3–§10 body each contains literal `Owner:` line | FR-014 |
-| BSS-07 | §1 contains the literal strings `KOSAX`, `은하계`, and a ministry roster header | FR-015 |
+| BSS-07 | §1 contains the literal strings `UMMAYA`, `은하계`, and a ministry roster header | FR-015 |
 | BSS-08 | §2 contains the literal strings `BAN-01`..`BAN-07` | FR-016 |
-| BSS-09 | No text between `# KOSAX Brand System` and `## §1` (no untracked preamble) | FR-012 cleanliness |
+| BSS-09 | No text between `# UMMAYA Brand System` and `## §1` (no untracked preamble) | FR-012 cleanliness |
 
 ## 6 · Scope-violation trap
 

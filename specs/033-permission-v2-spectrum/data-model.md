@@ -38,7 +38,7 @@ class PermissionRule(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid", strict=True)
     tool_id: constr(pattern=r"^[a-z0-9_.]+$", min_length=1, max_length=128)
     decision: Literal["allow", "ask", "deny"]
-    scope: Literal["session", "project", "user"]  # user = ~/.kosax/permissions.json
+    scope: Literal["session", "project", "user"]  # user = ~/.ummaya/permissions.json
     created_at: datetime  # UTC, tz-aware
     created_by_mode: PermissionMode  # which mode produced this rule
     expires_at: datetime | None = None  # None = never expires (user scope default)
@@ -69,7 +69,7 @@ class ToolPermissionContext(BaseModel):
 
 ### 1.4 `AdapterPermissionMetadata` (Spec 024 coupling)
 
-Extends `GovAPITool` declaration from Spec 024 §3.2. **This is a read-only projection** — KOSAX Permission v2 does not re-author these; it reads them from `GovAPITool`.
+Extends `GovAPITool` declaration from Spec 024 §3.2. **This is a read-only projection** — UMMAYA Permission v2 does not re-author these; it reads them from `GovAPITool`.
 
 ```python
 class AdapterPermissionMetadata(BaseModel):
@@ -154,7 +154,7 @@ Not persisted — constructed at verify-time by reading the JSONL.
 ```python
 class ConsentLedger(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid", strict=True)
-    path: Path                              # ~/.kosax/consent_ledger.jsonl
+    path: Path                              # ~/.ummaya/consent_ledger.jsonl
     records: tuple[ConsentLedgerRecord, ...]
     genesis_hash: Literal["0000000000000000000000000000000000000000000000000000000000000000"]
 
@@ -185,15 +185,15 @@ class LedgerVerifyReport(BaseModel):
 
 ### 1.9 `HMACKey` (file-backed secret)
 
-Not a BaseModel — filesystem contract only. Stored at `~/.kosax/keys/ledger.key`.
+Not a BaseModel — filesystem contract only. Stored at `~/.ummaya/keys/ledger.key`.
 
 | Property | Requirement |
 |----------|-------------|
 | File mode | `0400` (owner-read only). Loader REFUSES to load if any other bit set. |
 | Content | 32-byte cryptographically random value, base64-encoded (44 chars + `\n`). |
 | Generation | `secrets.token_bytes(32)` on first boot if missing. |
-| Rotation | `kosax permissions rotate-key` CLI archives old key as `keys/ledger.key.k0001` and writes new `keys/ledger.key` with incremented `hmac_key_id`. |
-| Loss | If deleted, ledger becomes HMAC-unverifiable for records sealed with the lost key. Hash chain still verifies. Recovery: `kosax permissions verify --hash-only --acknowledge-key-loss`. |
+| Rotation | `ummaya permissions rotate-key` CLI archives old key as `keys/ledger.key.k0001` and writes new `keys/ledger.key` with incremented `hmac_key_id`. |
+| Loss | If deleted, ledger becomes HMAC-unverifiable for records sealed with the lost key. Hash chain still verifies. Recovery: `ummaya permissions verify --hash-only --acknowledge-key-loss`. |
 
 ---
 

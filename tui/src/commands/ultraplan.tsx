@@ -14,9 +14,9 @@ import { logError } from '../utils/log.js';
 import { enqueuePendingNotification } from '../utils/messageQueueManager.js';
 import { ALL_MODEL_CONFIGS } from '../utils/model/configs.js';
 import { updateTaskState } from '../utils/task/framework.js';
-// KOSAX-1633 P1+P2 / KOSAX-1978 T011 — utils/teleport deleted.
+// UMMAYA-1633 P1+P2 / UMMAYA-1978 T011 — utils/teleport deleted.
 const archiveRemoteSession = async (..._args: unknown[]): Promise<void> => undefined;
-const teleportToRemote = async (..._args: unknown[]): Promise<{ success: boolean; sessionId?: string; error?: string }> => ({ success: false, error: 'KOSAX: teleport disabled' });
+const teleportToRemote = async (..._args: unknown[]): Promise<{ success: boolean; sessionId?: string; error?: string }> => ({ success: false, error: 'UMMAYA: teleport disabled' });
 import { pollForApprovedExitPlanMode, UltraplanPollError } from '../utils/ultraplan/ccrSession.js';
 
 // TODO(prod-hardening): OAuth token may go stale over the 30min poll;

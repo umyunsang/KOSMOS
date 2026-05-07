@@ -2,7 +2,7 @@
 """T033 — NFA EmergencyInformationService v4 tests.
 
 Covers all 6 sub-operations (happy + error path) against fixture-mocked HTTP.
-Live tests (``@pytest.mark.live``) gate on KOSAX_DATA_GO_KR_API_KEY.
+Live tests (``@pytest.mark.live``) gate on UMMAYA_DATA_GO_KR_API_KEY.
 
 Wire param contract (research-nfa-wire.md):
   - URL = {_BASE_URL}/{operation}   (operation suffix REQUIRED)
@@ -19,8 +19,8 @@ from unittest.mock import AsyncMock, MagicMock
 import httpx
 import pytest
 
-from kosax.tools.errors import ConfigurationError, ToolExecutionError
-from kosax.tools.nfa119.emergency_info_service import (
+from ummaya.tools.errors import ConfigurationError, ToolExecutionError
+from ummaya.tools.nfa119.emergency_info_service import (
     NFA_EMERGENCY_INFO_SERVICE_TOOL,
     NfaActivityItem,
     NfaConditionItem,
@@ -327,7 +327,7 @@ class TestHandleHappy:
     @pytest.mark.asyncio
     async def test_handle_activity(self, monkeypatch) -> None:
         """handle() with activity operation returns NfaActivityItem fields."""
-        monkeypatch.setenv("KOSAX_DATA_GO_KR_API_KEY", "testkey123")
+        monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", "testkey123")
         data = _load_fixture("nfa_emergency_info_service.json")
         client = _mock_client(data)
 
@@ -359,7 +359,7 @@ class TestHandleHappy:
     @pytest.mark.asyncio
     async def test_handle_transfer(self, monkeypatch) -> None:
         """handle() with transfer operation returns NfaTransferItem fields."""
-        monkeypatch.setenv("KOSAX_DATA_GO_KR_API_KEY", "testkey123")
+        monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", "testkey123")
         data = _load_fixture("nfa_transfer.json")
         client = _mock_client(data)
 
@@ -384,7 +384,7 @@ class TestHandleHappy:
     @pytest.mark.asyncio
     async def test_handle_condition(self, monkeypatch) -> None:
         """handle() with condition operation returns NfaConditionItem fields."""
-        monkeypatch.setenv("KOSAX_DATA_GO_KR_API_KEY", "testkey123")
+        monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", "testkey123")
         data = _load_fixture("nfa_condition.json")
         client = _mock_client(data)
 
@@ -402,7 +402,7 @@ class TestHandleHappy:
     @pytest.mark.asyncio
     async def test_handle_firstaid(self, monkeypatch) -> None:
         """handle() with firstaid operation returns NfaFirstaidItem fields."""
-        monkeypatch.setenv("KOSAX_DATA_GO_KR_API_KEY", "testkey123")
+        monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", "testkey123")
         data = _load_fixture("nfa_firstaid.json")
         client = _mock_client(data)
 
@@ -420,7 +420,7 @@ class TestHandleHappy:
     @pytest.mark.asyncio
     async def test_handle_vehicle_dispatch(self, monkeypatch) -> None:
         """handle() with vehicle_dispatch operation returns NfaVehicleDispatchItem fields."""
-        monkeypatch.setenv("KOSAX_DATA_GO_KR_API_KEY", "testkey123")
+        monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", "testkey123")
         data = _load_fixture("nfa_vehicle_dispatch.json")
         client = _mock_client(data)
 
@@ -438,7 +438,7 @@ class TestHandleHappy:
     @pytest.mark.asyncio
     async def test_handle_vehicle_info(self, monkeypatch) -> None:
         """handle() with vehicle_info operation returns NfaVehicleInfoItem fields."""
-        monkeypatch.setenv("KOSAX_DATA_GO_KR_API_KEY", "testkey123")
+        monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", "testkey123")
         data = _load_fixture("nfa_vehicle_info.json")
         client = _mock_client(data)
 
@@ -469,8 +469,8 @@ class TestHandleErrors:
 
     @pytest.mark.asyncio
     async def test_missing_api_key_raises_config_error(self, monkeypatch) -> None:
-        """handle() raises ConfigurationError if KOSAX_DATA_GO_KR_API_KEY is not set."""
-        monkeypatch.delenv("KOSAX_DATA_GO_KR_API_KEY", raising=False)
+        """handle() raises ConfigurationError if UMMAYA_DATA_GO_KR_API_KEY is not set."""
+        monkeypatch.delenv("UMMAYA_DATA_GO_KR_API_KEY", raising=False)
 
         inp = NfaEmergencyInfoServiceInput(
             rsac_gut_fstt_ogid_nm="천안동남소방서",
@@ -482,7 +482,7 @@ class TestHandleErrors:
     @pytest.mark.asyncio
     async def test_xml_content_type_raises_tool_error(self, monkeypatch) -> None:
         """handle() raises ToolExecutionError when NFA returns XML content-type."""
-        monkeypatch.setenv("KOSAX_DATA_GO_KR_API_KEY", "testkey123")
+        monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", "testkey123")
 
         mock_response = MagicMock(spec=httpx.Response)
         mock_response.status_code = 200
@@ -503,7 +503,7 @@ class TestHandleErrors:
     @pytest.mark.asyncio
     async def test_result_code_10_raises_tool_error(self, monkeypatch) -> None:
         """handle() raises ToolExecutionError on resultCode='10' (invalid params)."""
-        monkeypatch.setenv("KOSAX_DATA_GO_KR_API_KEY", "testkey123")
+        monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", "testkey123")
         payload = {
             "response": {
                 "header": {"resultCode": "10", "resultMsg": "INVALID REQUEST PARAMETER ERROR"},
@@ -528,7 +528,7 @@ class TestHandleErrors:
     @pytest.mark.asyncio
     async def test_http_status_error_raises_tool_error(self, monkeypatch) -> None:
         """handle() raises ToolExecutionError on HTTP 500."""
-        monkeypatch.setenv("KOSAX_DATA_GO_KR_API_KEY", "testkey123")
+        monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", "testkey123")
 
         mock_response = MagicMock(spec=httpx.Response)
         mock_response.status_code = 500
@@ -552,7 +552,7 @@ class TestHandleErrors:
     @pytest.mark.asyncio
     async def test_network_error_raises_tool_error(self, monkeypatch) -> None:
         """handle() raises ToolExecutionError on network timeout."""
-        monkeypatch.setenv("KOSAX_DATA_GO_KR_API_KEY", "testkey123")
+        monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", "testkey123")
 
         client = AsyncMock(spec=httpx.AsyncClient)
         client.get.side_effect = httpx.ConnectTimeout("connection timed out")
@@ -587,7 +587,7 @@ class TestToolMetadata:
         envelope-ready ``{"kind": "collection", ...}`` dict flow into
         envelope.normalize() — see module docstring for context.
         """
-        from kosax.tools.nfa119.emergency_info_service import _PlaceholderOutput
+        from ummaya.tools.nfa119.emergency_info_service import _PlaceholderOutput
 
         assert NFA_EMERGENCY_INFO_SERVICE_TOOL.output_schema is _PlaceholderOutput
         # Documentation contract preserved
@@ -626,7 +626,7 @@ class TestToolMetadata:
 
 @pytest.mark.live
 class TestHandleLive:
-    """Live integration — skipped unless '-m live' + KOSAX_DATA_GO_KR_API_KEY set.
+    """Live integration — skipped unless '-m live' + UMMAYA_DATA_GO_KR_API_KEY set.
 
     AGENTS.md hard rule: Never call live data.go.kr APIs from CI tests.
     """
@@ -636,8 +636,8 @@ class TestHandleLive:
         """Live: getEmgencyActivityInfo against real NFA API."""
         import os
 
-        if not os.environ.get("KOSAX_DATA_GO_KR_API_KEY"):
-            pytest.skip("KOSAX_DATA_GO_KR_API_KEY not set — skipping live NFA test")
+        if not os.environ.get("UMMAYA_DATA_GO_KR_API_KEY"):
+            pytest.skip("UMMAYA_DATA_GO_KR_API_KEY not set — skipping live NFA test")
 
         inp = NfaEmergencyInfoServiceInput(
             operation=NfaEmgOperation.activity,
@@ -654,8 +654,8 @@ class TestHandleLive:
         """Live: getEmgVehicleInfo (no ym param) against real NFA API."""
         import os
 
-        if not os.environ.get("KOSAX_DATA_GO_KR_API_KEY"):
-            pytest.skip("KOSAX_DATA_GO_KR_API_KEY not set — skipping live NFA test")
+        if not os.environ.get("UMMAYA_DATA_GO_KR_API_KEY"):
+            pytest.skip("UMMAYA_DATA_GO_KR_API_KEY not set — skipping live NFA test")
 
         inp = NfaEmergencyInfoServiceInput(
             operation=NfaEmgOperation.vehicle_info,

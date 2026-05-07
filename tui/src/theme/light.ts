@@ -1,27 +1,27 @@
 // Source: .references/claude-code-sourcemap/restored-src/src/utils/theme.ts (Claude Code 2.1.88, research-use)
-// KOSAX 브랜드 토큰으로 리네이밍됨 (ADR-006 A-9)
+// UMMAYA 브랜드 토큰으로 리네이밍됨 (ADR-006 A-9)
 import type { ThemeToken } from './tokens'
 
 /**
  * Light theme using explicit RGB values to avoid inconsistencies
  * from users' custom terminal ANSI color definitions. ADR-006 A-9 specifies
- * the KOSAX dark palette authoritatively; the light variant reuses the same
- * ten KOSAX metaphor tokens unchanged (this keeps the ThemeToken contract
+ * the UMMAYA dark palette authoritatively; the light variant reuses the same
+ * ten UMMAYA metaphor tokens unchanged (this keeps the ThemeToken contract
  * uniform — actual light-mode hex tuning lives in a future Epic).
  */
 const lightTheme: ThemeToken = {
   autoAccept: 'rgb(135,0,255)', // Electric violet
   bashBorder: 'rgb(255,0,135)', // Vibrant pink
-  // KOSAX metaphor — orbital core
-  kosaxCore: 'rgb(99,102,241)', // #6366f1
-  kosaxCoreShimmer: 'rgb(165,180,252)', // #a5b4fc
-  // KOSAX metaphor — orbital ring
+  // UMMAYA metaphor — orbital core
+  ummayaCore: 'rgb(99,102,241)', // #6366f1
+  ummayaCoreShimmer: 'rgb(165,180,252)', // #a5b4fc
+  // UMMAYA metaphor — orbital ring
   orbitalRing: 'rgb(96,165,250)', // #60a5fa
   orbitalRingShimmer: 'rgb(199,210,254)', // #c7d2fe
-  // KOSAX wordmark + subtitle
+  // UMMAYA wordmark + subtitle
   wordmark: 'rgb(224,231,255)', // #e0e7ff
   subtitle: 'rgb(148,163,184)', // #94a3b8
-  // KOSAX ministry satellites
+  // UMMAYA ministry satellites
   agentSatelliteKoroad: 'rgb(244,114,182)', // #f472b6
   agentSatelliteKma: 'rgb(52,211,153)', // #34d399
   agentSatelliteHira: 'rgb(147,197,253)', // #93c5fd

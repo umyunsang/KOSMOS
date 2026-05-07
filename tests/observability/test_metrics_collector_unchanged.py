@@ -17,7 +17,7 @@ from typing import Any
 
 import pytest
 
-from kosax.observability.metrics import MetricsCollector
+from ummaya.observability.metrics import MetricsCollector
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -87,7 +87,7 @@ class TestMetricsCollectorUnchanged:
 
         # Call setup_tracing with SDK disabled (no network, no background thread)
         monkeypatch.setenv("OTEL_SDK_DISABLED", "true")
-        from kosax.observability.tracing import TracingSettings, setup_tracing
+        from ummaya.observability.tracing import TracingSettings, setup_tracing
 
         setup_tracing(TracingSettings(disabled=True))
 
@@ -105,7 +105,7 @@ class TestMetricsCollectorUnchanged:
         snapshot_before = _snapshot_api(MetricsCollector)
 
         monkeypatch.setenv("OTEL_SDK_DISABLED", "true")
-        from kosax.observability.tracing import TracingSettings, setup_tracing
+        from ummaya.observability.tracing import TracingSettings, setup_tracing
 
         setup_tracing(TracingSettings(disabled=True))
 
@@ -121,7 +121,7 @@ class TestMetricsCollectorUnchanged:
         snapshot_before = _snapshot_api(MetricsCollector)
 
         monkeypatch.setenv("OTEL_SDK_DISABLED", "true")
-        from kosax.observability.tracing import TracingSettings, setup_tracing
+        from ummaya.observability.tracing import TracingSettings, setup_tracing
 
         setup_tracing(TracingSettings(disabled=True))
 
@@ -155,7 +155,7 @@ class TestMetricsCollectorBehaviorUnchanged:
     def test_instance_behavior_after_setup_tracing(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """MetricsCollector works identically after OTel has been initialized (no-op mode)."""
         monkeypatch.setenv("OTEL_SDK_DISABLED", "true")
-        from kosax.observability.tracing import TracingSettings, setup_tracing
+        from ummaya.observability.tracing import TracingSettings, setup_tracing
 
         setup_tracing(TracingSettings(disabled=True))
 
@@ -173,7 +173,7 @@ class TestMetricsCollectorBehaviorUnchanged:
         behavior_before = _snapshot_instance_behavior(mc_before)
 
         monkeypatch.setenv("OTEL_SDK_DISABLED", "true")
-        from kosax.observability.tracing import TracingSettings, setup_tracing
+        from ummaya.observability.tracing import TracingSettings, setup_tracing
 
         setup_tracing(TracingSettings(disabled=True))
 
@@ -190,7 +190,7 @@ class TestMetricsCollectorBehaviorUnchanged:
     ) -> None:
         """reset() must clear all state identically before and after OTel init."""
         monkeypatch.setenv("OTEL_SDK_DISABLED", "true")
-        from kosax.observability.tracing import TracingSettings, setup_tracing
+        from ummaya.observability.tracing import TracingSettings, setup_tracing
 
         setup_tracing(TracingSettings(disabled=True))
 

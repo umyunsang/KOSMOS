@@ -2,14 +2,14 @@
 
 **Spec**: [spec.md](../spec.md) · **Plan**: [plan.md](../plan.md) · **Data model**: [data-model.md](../data-model.md)
 
-This document is the binding contract for the `FileMailbox` on-disk format. It is referenced by FR-014..FR-022 and exists so that (a) a future Redis backend (#21, Phase 3) can preserve the same semantics and (b) operators debugging a crash can read the mailbox without invoking KOSAX code.
+This document is the binding contract for the `FileMailbox` on-disk format. It is referenced by FR-014..FR-022 and exists so that (a) a future Redis backend (#21, Phase 3) can preserve the same semantics and (b) operators debugging a crash can read the mailbox without invoking UMMAYA code.
 
 ---
 
 ## 1. Directory layout
 
 ```
-$KOSAX_AGENT_MAILBOX_ROOT/                # default: ~/.kosax/mailbox, mode 0o700
+$UMMAYA_AGENT_MAILBOX_ROOT/                # default: ~/.ummaya/mailbox, mode 0o700
 └── <session_id>/                          # UUID4, mode 0o700
     ├── coordinator/                       # mode 0o700; sender directory
     │   ├── <message_id>.json              # mode 0o600; payload file
@@ -35,7 +35,7 @@ $KOSAX_AGENT_MAILBOX_ROOT/                # default: ~/.kosax/mailbox, mode 0o70
 The sequence for `Mailbox.send(message)`:
 
 ```python
-# Pseudocode — real impl in src/kosax/agents/mailbox/file_mailbox.py
+# Pseudocode — real impl in src/ummaya/agents/mailbox/file_mailbox.py
 tmp = sender_dir / f"{message.id}.json.tmp"
 final = sender_dir / f"{message.id}.json"
 
@@ -129,7 +129,7 @@ for sender_dir in sorted(session_dir.iterdir()):         # cross-sender order = 
 
 ## 5. Overflow handling (FR-021)
 
-Per-session message cap = `KOSAX_AGENT_MAILBOX_MAX_MESSAGES` (default 1000, clamped `[100, 10000]`).
+Per-session message cap = `UMMAYA_AGENT_MAILBOX_MAX_MESSAGES` (default 1000, clamped `[100, 10000]`).
 
 On every `send`:
 
@@ -146,9 +146,9 @@ No silent drop. No retry. No prune. The caller (Coordinator or Worker) decides w
 
 ## 6. Security
 
-- Permissions `0o700` / `0o600` — readable only by the user running KOSAX.
-- Message bodies may contain citizen-identifying data (PIPA concern). Operators MUST NOT copy `$KOSAX_AGENT_MAILBOX_ROOT` to shared storage. The directory is NEVER backed up by KOSAX itself.
-- `KOSAX_AGENT_MAILBOX_ROOT` MUST be an absolute path under a writable user-owned directory; relative paths are rejected by `KosaxSettings` validation.
+- Permissions `0o700` / `0o600` — readable only by the user running UMMAYA.
+- Message bodies may contain citizen-identifying data (PIPA concern). Operators MUST NOT copy `$UMMAYA_AGENT_MAILBOX_ROOT` to shared storage. The directory is NEVER backed up by UMMAYA itself.
+- `UMMAYA_AGENT_MAILBOX_ROOT` MUST be an absolute path under a writable user-owned directory; relative paths are rejected by `UmmayaSettings` validation.
 
 ---
 
@@ -158,10 +158,10 @@ Every `send` emits one `gen_ai.agent.mailbox.message` span with:
 
 | Attribute | Value |
 |---|---|
-| `kosax.agent.mailbox.msg_type` | one of `task`/`result`/`error`/`permission_request`/`permission_response`/`cancel` |
-| `kosax.agent.mailbox.correlation_id` | `AgentMessage.correlation_id` (or empty) |
-| `kosax.agent.mailbox.sender` | `AgentMessage.sender` |
-| `kosax.agent.mailbox.recipient` | `AgentMessage.recipient` |
+| `ummaya.agent.mailbox.msg_type` | one of `task`/`result`/`error`/`permission_request`/`permission_response`/`cancel` |
+| `ummaya.agent.mailbox.correlation_id` | `AgentMessage.correlation_id` (or empty) |
+| `ummaya.agent.mailbox.sender` | `AgentMessage.sender` |
+| `ummaya.agent.mailbox.recipient` | `AgentMessage.recipient` |
 
 The message body itself is NEVER included as a span attribute (PIPA — no PII in telemetry).
 

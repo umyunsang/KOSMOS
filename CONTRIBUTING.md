@@ -1,6 +1,6 @@
-# Contributing to KOSAX
+# Contributing to UMMAYA
 
-First, thank you for considering a contribution. KOSAX is an early-stage academic R&D project exploring how Claude Code-style agent architectures can be transferred into the public-service domain, powered by K-EXAONE. Every issue, design discussion, and pull request helps shape the direction.
+First, thank you for considering a contribution. UMMAYA is an early-stage academic R&D project exploring how Claude Code-style agent architectures can be transferred into the public-service domain, powered by K-EXAONE. Every issue, design discussion, and pull request helps shape the direction.
 
 This guide covers how to get involved, the standards we hold, and the workflow we expect. Read it once before your first contribution — it will save both of us time.
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Live K-EXAONE + HIRA hospital search
 set -euo pipefail
-wait_for_pane "KOSAX v0\\.[0-9]" 30
+wait_for_pane "UMMAYA v0\\.[0-9]" 30
 snapshot_pane "boot-ready"
 send_text_pane "강남역 근처 내과 병원 알려줘"
 sleep 1

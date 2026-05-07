@@ -1,4 +1,4 @@
-==== KOSAX Epic #2152 P5 stdio smoke ====
+==== UMMAYA Epic #2152 P5 stdio smoke ====
 date:    2026-04-28T03:00:50.000Z
 branch:  feat/2152-system-prompt-redesign
 commit:  c79e2c9

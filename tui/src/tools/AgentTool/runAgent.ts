@@ -15,7 +15,7 @@ import type { CanUseToolFn } from '../../hooks/useCanUseTool.js'
 import { query } from '../../query.js'
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '../../services/analytics/growthbook.js'
 import { getDumpPromptsPath } from '../../services/api/dumpPrompts.js'
-// KOSAX: services/api/promptCacheBreakDetection deleted. No-op stub.
+// UMMAYA: services/api/promptCacheBreakDetection deleted. No-op stub.
 const cleanupAgentTracking = (_agentId: unknown): void => {}
 import {
   connectToServer,
@@ -73,7 +73,7 @@ import {
   asSystemPrompt,
   type SystemPrompt,
 } from '../../utils/systemPromptType.js'
-// KOSAX: utils/telemetry/perfettoTracing.js deleted by Spec 1633 P1. Stubs provided.
+// UMMAYA: utils/telemetry/perfettoTracing.js deleted by Spec 1633 P1. Stubs provided.
 const isPerfettoTracingEnabled = (): false => false
 const registerPerfettoAgent = (_agentId: unknown, _agentType: unknown, _parentId: unknown): void => {}
 const unregisterPerfettoAgent = (_agentId: unknown): void => {}

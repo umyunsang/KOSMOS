@@ -77,7 +77,7 @@ All 6 were inspected via the Read tool (multimodal vision):
 
 | File | Content |
 |------|---------|
-| `smoke-scenario-0-launch.png` | TUI boot screen — KOSAX v0.1.0-alpha+1978 branding, UFO mascot, empty REPL prompt waiting for input. Status bar shows `high · /effort`. |
+| `smoke-scenario-0-launch.png` | TUI boot screen — UMMAYA v0.1.0-alpha+1978 branding, UFO mascot, empty REPL prompt waiting for input. Status bar shows `high · /effort`. |
 | `smoke-scenario-1-greeting.png` | LLM greeting response rendered in REPL — Korean-language intro listing current branch, active tasks, offer to help. Multi-turn context box with `⎿` prefix visible. |
 | `smoke-scenario-2-slash-autocomplete.png` | Slash-command autocomplete dropdown with `/speckit-*` family listed, input bar at top, `/` typed. Greeting text above. |
 | `smoke-scenario-3-help.png` | `/help` overlay — 4-group layout (세션 / 권한 / 도구 / 저장) with Korean descriptions. `Esc · 닫기` footer visible. |
@@ -95,7 +95,7 @@ Reasoning:
   (`tui/src/`), neither of which this Epic modifies (FR-019: zero `tui/src/**` changes).
 - Keyframes 0–1 confirm the boot+branding and greeting flow are stable post-Spec-2112.
   The rewritten prompt does not alter the TUI boot path or the greeting instruction set.
-- Keyframes 3–5 confirm the `/help` overlay renders the KOSAX slash-command catalog
+- Keyframes 3–5 confirm the `/help` overlay renders the UMMAYA slash-command catalog
   correctly. This is TUI-layer state, unaffected by prompt content changes.
 - No lookup-result frame is captured in these keyframes (frames 4–5 show the help overlay
   rather than a lookup response). Visual continuity of the lookup-result rendering will be

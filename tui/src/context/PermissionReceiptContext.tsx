@@ -3,7 +3,7 @@
 // PermissionReceiptContext — in-session receipt registry + revoke surface (FR-018/019).
 //
 // CC reference: .references/claude-code-sourcemap/restored-src/src/context/notifications.tsx (Claude Code 2.1.88, research-use)
-// KOSAX adaptation: manages append-only in-session PermissionReceipt array;
+// UMMAYA adaptation: manages append-only in-session PermissionReceipt array;
 //   exposes addReceipt / revokeReceipt / listReceipts for /consent list + revoke.
 //   The TUI NEVER writes the audit ledger directly — all writes go through the
 //   existing IPC envelope to the Python permission service (Spec 033).

@@ -54,11 +54,11 @@ to confirm correct format versions.
 ### 2.1 Generate SPDX 2.3 JSON
 
 ```bash
-cd /path/to/KOSAX  # substitute the actual clone path
+cd /path/to/UMMAYA  # substitute the actual clone path
 
 syft . \
   --output spdx-json=sbom-spdx-smoke.json \
-  --source-name kosax
+  --source-name ummaya
 ```
 
 Verify SPDX 2.3 schema markers:
@@ -85,7 +85,7 @@ wc -c sbom-spdx-smoke.json
 ```bash
 syft . \
   --output cyclonedx-json=sbom-cdx-smoke.json \
-  --source-name kosax
+  --source-name ummaya
 ```
 
 Verify CycloneDX 1.6 schema markers:
@@ -122,7 +122,7 @@ SBOM document metadata:
 ```bash
 syft . \
   --output spdx-json=sbom-spdx-injected.json \
-  --source-name kosax-MODIFIED
+  --source-name ummaya-MODIFIED
 ```
 
 Now simulate the gate normalization and diff:
@@ -158,14 +158,14 @@ Add a temporary Python file to force a new package entry in the SBOM, then
 re-run syft:
 
 ```bash
-echo "# divergence-probe" > src/kosax/_divergence_probe_tmp.py
+echo "# divergence-probe" > src/ummaya/_divergence_probe_tmp.py
 
 syft . \
   --output spdx-json=sbom-spdx-injected.json \
-  --source-name kosax
+  --source-name ummaya
 
 # Clean up immediately
-rm src/kosax/_divergence_probe_tmp.py
+rm src/ummaya/_divergence_probe_tmp.py
 ```
 
 Run the normalized diff as shown in Method A. The new file path will appear in
@@ -174,12 +174,12 @@ exit.
 
 ### 3.1 CycloneDX divergence injection
 
-Apply the same `--source-name kosax-MODIFIED` approach for CycloneDX:
+Apply the same `--source-name ummaya-MODIFIED` approach for CycloneDX:
 
 ```bash
 syft . \
   --output cyclonedx-json=sbom-cdx-injected.json \
-  --source-name kosax-MODIFIED
+  --source-name ummaya-MODIFIED
 
 strip_cdx() {
   jq 'del(
@@ -221,22 +221,22 @@ a reviewer note in the PR body citing the reason for the SBOM change.
 ### 5.1 Trigger the workflow manually after the PR lands on main
 
 ```bash
-gh workflow run sbom.yml --repo umyunsang/KOSAX
+gh workflow run sbom.yml --repo umyunsang/UMMAYA
 ```
 
 Or target a specific ref:
 
 ```bash
-gh workflow run sbom.yml --repo umyunsang/KOSAX --ref main
+gh workflow run sbom.yml --repo umyunsang/UMMAYA --ref main
 ```
 
 ### 5.2 Watch the run live
 
 ```bash
-gh run list --workflow=sbom.yml --repo umyunsang/KOSAX --limit 5
+gh run list --workflow=sbom.yml --repo umyunsang/UMMAYA --limit 5
 
 # Get the run ID from the list, then:
-gh run watch <RUN_ID> --repo umyunsang/KOSAX
+gh run watch <RUN_ID> --repo umyunsang/UMMAYA
 ```
 
 ### 5.3 Expected green run shape
@@ -268,8 +268,8 @@ bottom of the summary page, two artifacts appear:
 Download via UI or CLI:
 
 ```bash
-gh run download <RUN_ID> --repo umyunsang/KOSAX --name sbom-spdx.json
-gh run download <RUN_ID> --repo umyunsang/KOSAX --name sbom-cyclonedx.json
+gh run download <RUN_ID> --repo umyunsang/UMMAYA --name sbom-spdx.json
+gh run download <RUN_ID> --repo umyunsang/UMMAYA --name sbom-cyclonedx.json
 ```
 
 ### 5.5 Pull-request path filter

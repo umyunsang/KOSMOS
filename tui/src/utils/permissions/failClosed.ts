@@ -1,25 +1,25 @@
 // SPDX-License-Identifier: Apache-2.0
-// Epic 1 finish — FR-012: KOSAX bypass detection backstop.
+// Epic 1 finish — FR-012: UMMAYA bypass detection backstop.
 //
-// The CC `bypassPermissions` flag gates the dangerous-mode UX.  In KOSAX
+// The CC `bypassPermissions` flag gates the dangerous-mode UX.  In UMMAYA
 // the gauntlet must NEVER be silently skipped for credentialed or side-
 // effecting primitives (verify / submit) regardless of bypassPermissions or
 // auto-mode state.
 //
 // This module exposes two guards:
-//   - isKosaxBypassAllowed(primitive, toolPermissionContext)
+//   - isUmmayaBypassAllowed(primitive, toolPermissionContext)
 //     Returns true only when bypass is safe (lookup).
 //     Returns false for verify / submit.
 //
-//   - assertKosaxGauntletRequired(primitive, toolPermissionContext)
+//   - assertUmmayaGauntletRequired(primitive, toolPermissionContext)
 //     Throws if a blocked primitive is called in bypass mode (test helper).
 //
 // CC reference: utils/permissions/bypassPermissionsKillswitch.ts (CC 2.1.88)
-// KOSAX adaptation: stateless pure-function guard, no React hooks, no module
+// UMMAYA adaptation: stateless pure-function guard, no React hooks, no module
 // singleton. Safe to call from any context (hooks, test fixtures, tool call).
 
 import type { ToolPermissionContext } from '../../Tool.js'
-import type { KosaxPrimitive } from './aalToLayer.js'
+import type { UmmayaPrimitive } from './aalToLayer.js'
 
 // ---------------------------------------------------------------------------
 // Primitives that MUST always go through the gauntlet (fail-closed).
@@ -34,13 +34,13 @@ import type { KosaxPrimitive } from './aalToLayer.js'
  *   - submit: side-effecting, potentially irreversible (Layer 2/3).
  *   - lookup: read-only; intentionally excluded — bypass is safe here.
  */
-export const BYPASS_BLOCKED_PRIMITIVES: ReadonlySet<KosaxPrimitive> = new Set<KosaxPrimitive>([
+export const BYPASS_BLOCKED_PRIMITIVES: ReadonlySet<UmmayaPrimitive> = new Set<UmmayaPrimitive>([
   'verify',
   'submit',
 ])
 
 // ---------------------------------------------------------------------------
-// isKosaxBypassAllowed — fail-closed predicate
+// isUmmayaBypassAllowed — fail-closed predicate
 // ---------------------------------------------------------------------------
 
 /**
@@ -52,8 +52,8 @@ export const BYPASS_BLOCKED_PRIMITIVES: ReadonlySet<KosaxPrimitive> = new Set<Ko
  *
  * Always returns `true` for `lookup` — it is read-only and side-effect-free.
  */
-export function isKosaxBypassAllowed(
-  primitive: KosaxPrimitive,
+export function isUmmayaBypassAllowed(
+  primitive: UmmayaPrimitive,
   _toolPermissionContext?: Pick<ToolPermissionContext, 'bypassPermissions'>,
 ): boolean {
   if (primitive === 'lookup') {
@@ -69,7 +69,7 @@ export function isKosaxBypassAllowed(
 }
 
 // ---------------------------------------------------------------------------
-// assertKosaxGauntletRequired — defensive check for tests / call-sites
+// assertUmmayaGauntletRequired — defensive check for tests / call-sites
 // ---------------------------------------------------------------------------
 
 /**
@@ -79,14 +79,14 @@ export function isKosaxBypassAllowed(
  * Intended usage: call from `checkPermissions` implementations in each
  * primitive tool BEFORE delegating to the CC `{ behavior: 'ask' }` path.
  * In production, the CC pipeline never bypasses `{ behavior: 'ask' }` for
- * blocked primitives because KOSAX does not wire `bypassPermissions: true`
+ * blocked primitives because UMMAYA does not wire `bypassPermissions: true`
  * for citizen sessions.  This assert is a belt-and-suspenders guard for
  * future configuration drift.
  *
  * @throws Error if bypass is attempted on a blocked primitive.
  */
-export function assertKosaxGauntletRequired(
-  primitive: KosaxPrimitive,
+export function assertUmmayaGauntletRequired(
+  primitive: UmmayaPrimitive,
   toolPermissionContext?: Pick<ToolPermissionContext, 'bypassPermissions'>,
 ): void {
   if (
@@ -94,7 +94,7 @@ export function assertKosaxGauntletRequired(
     toolPermissionContext?.bypassPermissions === true
   ) {
     throw new Error(
-      `[KOSAX FR-012] Bypass attempted on gauntlet-required primitive '${primitive}'. ` +
+      `[UMMAYA FR-012] Bypass attempted on gauntlet-required primitive '${primitive}'. ` +
         `bypassPermissions must not be set for citizen-facing primitives.`,
     )
   }

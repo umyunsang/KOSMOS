@@ -300,7 +300,7 @@
       "type": "integer"
     }
   },
-  "$id": "https://kosax.example/api/schemas/koroad_accident_search.json",
+  "$id": "https://ummaya.example/api/schemas/koroad_accident_search.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Input parameters for the koroad_accident_search tool.\n\nCross-validates legacy sido codes against modern search year codes.",
   "properties": {

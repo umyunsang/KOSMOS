@@ -21,8 +21,8 @@ def kakao_api_key() -> str: ...
 |---|---|
 | **Return type** | `str` — the Kakao REST API key, non-empty after `.strip()`. |
 | **Scope** | `session` — resolved once per test session, cached across tests. |
-| **Source** | `os.environ["KOSAX_KAKAO_API_KEY"]`. |
-| **Missing env var behavior** | `pytest.fail("set KOSAX_KAKAO_API_KEY to run live geocoding tests")`. **Exact string** — no formatting, no trailing period. |
+| **Source** | `os.environ["UMMAYA_KAKAO_API_KEY"]`. |
+| **Missing env var behavior** | `pytest.fail("set UMMAYA_KAKAO_API_KEY to run live geocoding tests")`. **Exact string** — no formatting, no trailing period. |
 | **Whitespace policy** | Empty-string (including whitespace-only) is treated as missing. |
 | **No fallback** | Never `pytest.skip`, never `xfail`. |
 

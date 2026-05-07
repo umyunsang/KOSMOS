@@ -10,7 +10,7 @@ import json
 from pathlib import Path
 from uuid import uuid4
 
-from kosax.agents.plan import (
+from ummaya.agents.plan import (
     CoordinatorPlan,
     ExecutionMode,
     PlanStatus,

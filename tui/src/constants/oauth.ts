@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSAX Epic #2637 — byte-copy from CC 2.1.88 (constants/oauth.ts, R-4).
+// UMMAYA Epic #2637 — byte-copy from CC 2.1.88 (constants/oauth.ts, R-4).
 // SWAP/anti-anthropic-1p(2637): Anthropic OAuth client_id + endpoints replaced
 // with null/placeholder (FriendliAI K-EXAONE = API-key only, no OAuth flow).
-// process.env.USER_TYPE === 'ant' guards preserved per CC source (auto-dead in KOSAX).
-// MCP_CLIENT_METADATA_URL replaced with null (no Anthropic MCP proxy in KOSAX).
+// process.env.USER_TYPE === 'ant' guards preserved per CC source (auto-dead in UMMAYA).
+// MCP_CLIENT_METADATA_URL replaced with null (no Anthropic MCP proxy in UMMAYA).
 // See: specs/2637-p0-regression/data-model.md § Swap1IdentifierWhitelist
 
 import { isEnvTruthy } from 'src/utils/envUtils.js'
@@ -104,7 +104,7 @@ const PROD_OAUTH_CONFIG = {
   CLAUDEAI_SUCCESS_URL:
     'https://platform.claude.com/oauth/code/success?app=claude-code',
   MANUAL_REDIRECT_URL: 'https://platform.claude.com/oauth/code/callback',
-  CLIENT_ID: null as unknown as string, // SWAP/anti-anthropic-1p(2637): Anthropic OAuth client_id. KOSAX has no OAuth flow (FriendliAI API-key only).
+  CLIENT_ID: null as unknown as string, // SWAP/anti-anthropic-1p(2637): Anthropic OAuth client_id. UMMAYA has no OAuth flow (FriendliAI API-key only).
   // No suffix for production config
   OAUTH_FILE_SUFFIX: '',
   MCP_PROXY_URL: 'https://mcp-proxy.anthropic.com',
@@ -119,7 +119,7 @@ const PROD_OAUTH_CONFIG = {
  * See: https://datatracker.ietf.org/doc/html/draft-ietf-oauth-client-id-metadata-document-00
  */
 export const MCP_CLIENT_METADATA_URL =
-  null as unknown as string // SWAP/anti-anthropic-1p(2637): Anthropic MCP proxy metadata URL. KOSAX has no Anthropic MCP proxy.
+  null as unknown as string // SWAP/anti-anthropic-1p(2637): Anthropic MCP proxy metadata URL. UMMAYA has no Anthropic MCP proxy.
 
 // Staging OAuth configuration - only included in ant builds with staging flag
 // Uses literal check for dead code elimination

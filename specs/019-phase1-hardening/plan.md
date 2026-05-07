@@ -18,8 +18,8 @@ Validated by the live suite (`-m live`) going 30/30 green with no fixed cooldown
 **Primary Dependencies**: `httpx >=0.27` (async HTTP + streaming 429 detection), `pydantic >=2.0` (tool I/O schemas with `Field(description=...)` exposed as JSON schema to the LLM), `pytest` + `pytest-asyncio` (unit + `@pytest.mark.live` gated E2E). No new runtime dependencies introduced.
 **Storage**: N/A (no persistent state; rate-limit retry counters and semaphore live in `LLMClient` instance memory for the session's lifetime).
 **Testing**: `uv run pytest` (mocked) + `uv run pytest -m live` (maintainer-local, off-CI). Unit tests cover Retry-After parsing, exponential-backoff timing, semaphore serialization, and new default-parameter payload assertions. Live tests cover the "강남역" admin-code assertion and the multi-turn scenario without fixed cooldown.
-**Target Platform**: Local CLI (`kosax` REPL) on macOS/Linux maintainer machines. CI runs only the non-live subset.
-**Project Type**: Single project — existing `src/kosax/` (Python library + CLI). No frontend/backend split; TUI is out of scope (Phase 2).
+**Target Platform**: Local CLI (`ummaya` REPL) on macOS/Linux maintainer machines. CI runs only the non-live subset.
+**Project Type**: Single project — existing `src/ummaya/` (Python library + CLI). No frontend/backend split; TUI is out of scope (Phase 2).
 **Performance Goals**:
 - Live multi-turn scenario wall-clock ≤ current baseline (which includes the 60s blind cooldown) — SC-004.
 - Within bounded retry budget (5 attempts, 60s cap) the LLM client recovers from ≥95% of observed 429 occurrences — SC-003.
@@ -29,7 +29,7 @@ Validated by the live suite (`-m live`) going 30/30 green with no fixed cooldown
 - Backwards-compatible signature — any new parameter must be overridable by explicit caller argument (FR-010).
 **Scale/Scope**:
 - ~30 live-marked tests across 6 live test modules.
-- Touched files (estimated): `src/kosax/llm/client.py`, `src/kosax/tools/koroad/koroad_accident_search.py`, `src/kosax/context/builder.py` (or session bootstrap), plus `tests/llm/`, `tests/live/test_live_e2e.py`.
+- Touched files (estimated): `src/ummaya/llm/client.py`, `src/ummaya/tools/koroad/koroad_accident_search.py`, `src/ummaya/context/builder.py` (or session bootstrap), plus `tests/llm/`, `tests/live/test_live_e2e.py`.
 
 ## Constitution Check
 
@@ -80,7 +80,7 @@ specs/019-phase1-hardening/
 Single Python project; no new top-level directories.
 
 ```text
-src/kosax/
+src/ummaya/
 ├── llm/
 │   └── client.py                       # FR-001..FR-003, FR-005..FR-010 — retry, semaphore, HF default params
 ├── tools/
@@ -100,7 +100,7 @@ tests/
     └── test_live_e2e.py                # FR-006, FR-011, FR-012 — drop asyncio.sleep(60); assert first KOROAD call admin codes
 ```
 
-**Structure Decision**: Reuse the existing single-project layout rooted at `src/kosax/`. No package relocations, no new sub-packages. Spec changes are in-place edits to three source files plus targeted test additions in `tests/llm/` and `tests/live/test_live_e2e.py`. Task parallelization (Agent Teams) will fan out across the three source files (`llm/client.py`, `tools/koroad/koroad_accident_search.py`, `context/builder.py`) because they have no cross-file import dependency for the changes required here.
+**Structure Decision**: Reuse the existing single-project layout rooted at `src/ummaya/`. No package relocations, no new sub-packages. Spec changes are in-place edits to three source files plus targeted test additions in `tests/llm/` and `tests/live/test_live_e2e.py`. Task parallelization (Agent Teams) will fan out across the three source files (`llm/client.py`, `tools/koroad/koroad_accident_search.py`, `context/builder.py`) because they have no cross-file import dependency for the changes required here.
 
 ## Complexity Tracking
 

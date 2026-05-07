@@ -7,7 +7,7 @@
   "epic_delta_2295": [],
   "uncategorized": [],
   "cleanup_needed_transfer_summary": {
-    "destination_epic": "#2293 — Epic β · KOSAX-original UI residue cleanup",
+    "destination_epic": "#2293 — Epic β · UMMAYA-original UI residue cleanup",
     "count": 30,
     "category_breakdown": {
       "tui/src/services/api/*": 15,
@@ -19,5 +19,5 @@
     },
     "input_for_epic_beta": "data/modified-218-classification.json — `jq '[.[] | select(.classification == \"Cleanup-needed\")]'` 으로 30 entry 추출 가능. paste-ready (FR-005 / SC-004 충족)."
   },
-  "verdict": "Suspicious 0 = audit 결과 모든 modified 파일 분류 명확. Epic β 진입 가능 (Cleanup-needed 30 transfer); Epic δ 는 본 audit 산출이 직접 transfer 항목 없음 (백엔드 src/kosax/permissions/ 정리는 별도 audit 필요 — Out of Scope Permanent)."
+  "verdict": "Suspicious 0 = audit 결과 모든 modified 파일 분류 명확. Epic β 진입 가능 (Cleanup-needed 30 transfer); Epic δ 는 본 audit 산출이 직접 transfer 항목 없음 (백엔드 src/ummaya/permissions/ 정리는 별도 audit 필요 — Out of Scope Permanent)."
 }

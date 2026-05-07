@@ -33,5 +33,5 @@
 
 - Validation iteration 1 — all 16 items pass.
 - 3 deferred items: (1) 실 정책 URL 검증 (NEEDS TRACKING 조건부), (2) citizen_facing_gate 카테고리 확장 (#2296), (3) receipt ledger TUI 통합 (#2297). 모두 spec 본문 표에 추적.
-- "users" = KOSAX Lead + Epic ε/ζ 후속 팀.
-- spec 본문에서 "Pydantic v2" 같은 기술 명을 명시한 부분은 Constitution III (NON-NEGOTIABLE) 의 직접 강제이며 KOSAX 의 architectural invariant 의 cite 으로 정당.
+- "users" = UMMAYA Lead + Epic ε/ζ 후속 팀.
+- spec 본문에서 "Pydantic v2" 같은 기술 명을 명시한 부분은 Constitution III (NON-NEGOTIABLE) 의 직접 강제이며 UMMAYA 의 architectural invariant 의 cite 으로 정당.

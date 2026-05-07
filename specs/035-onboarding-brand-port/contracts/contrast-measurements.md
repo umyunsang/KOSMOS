@@ -50,8 +50,8 @@ This contract defines the pair matrix and the reporting format for contrast meas
 
 | # | Foreground token | Foreground hex | Background hex | Measured ratio | Pass? |
 |---|---|---|---|---|---|
-| 12 | `kosaxCore` | `#6366f1` | `#0a0e27` | — | — |
-| 13 | `kosaxCoreShimmer` | `#a5b4fc` | `#0a0e27` | — | — |
+| 12 | `ummayaCore` | `#6366f1` | `#0a0e27` | — | — |
+| 13 | `ummayaCoreShimmer` | `#a5b4fc` | `#0a0e27` | — | — |
 | 14 | `orbitalRing` | `#60a5fa` | `#0a0e27` | — | — |
 | 15 | `orbitalRingShimmer` | `#c7d2fe` | `#0a0e27` | — | — |
 
@@ -69,7 +69,7 @@ This contract defines the pair matrix and the reporting format for contrast meas
 If any row above fails its threshold:
 
 1. The failing token's value is raised (never lowered) in `dark.ts` per spec FR-011.
-2. The new value MUST be drawn from the `assets/kosax-logo.svg` 16-hex palette when the raise affects a brand token; for semantic tokens, the raise may use any hex that meets the threshold.
+2. The new value MUST be drawn from the `assets/ummaya-logo.svg` 16-hex palette when the raise affects a brand token; for semantic tokens, the raise may use any hex that meets the threshold.
 3. The raise is re-measured; CI passes only when every row meets its threshold.
 4. The final measured values are recorded in `docs/design/contrast-measurements.md` (populated at implementation time from this template).
 

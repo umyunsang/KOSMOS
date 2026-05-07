@@ -7,7 +7,7 @@ import time
 
 import pytest
 
-from kosax.recovery.circuit_breaker import (
+from ummaya.recovery.circuit_breaker import (
     CircuitBreaker,
     CircuitBreakerConfig,
     CircuitBreakerRegistry,

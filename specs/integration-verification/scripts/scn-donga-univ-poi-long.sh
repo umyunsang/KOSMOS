@@ -4,7 +4,7 @@
 # → synthesis can run 90+s).
 set -euo pipefail
 
-wait_for_pane "KOSAX|❯" 25
+wait_for_pane "UMMAYA|❯" 25
 snapshot_pane 01-boot
 
 send_text_pane "동아대학교 근처 병원 알려줘"

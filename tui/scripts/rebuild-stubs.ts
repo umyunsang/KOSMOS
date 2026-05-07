@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 // P0 stub rebuilder — parses every `.ts/.tsx` under `src/`, resolves each
 // import to an absolute repo path, and aggregates the set of named symbols
-// demanded from each module. Then for every KOSAX minimal-stub file (auto-
+// demanded from each module. Then for every UMMAYA minimal-stub file (auto-
 // generated Pass 4 marker or Proxy pattern), writes a stub with the union of
 // destructured symbols so downstream consumers load cleanly.
 

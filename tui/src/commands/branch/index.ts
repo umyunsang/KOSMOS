@@ -1,9 +1,9 @@
 import type { Command } from '../../commands.js'
 
-// KOSAX: in CC the `['fork']` alias was conditional on
+// UMMAYA: in CC the `['fork']` alias was conditional on
 // `feature('FORK_SUBAGENT')` (alias only when subagent fork is OFF, so the
 // noun 'fork' wouldn't collide with the experimental subagent variant).
-// KOSAX hard-codes that flag to `false` (tui/src/stubs/bun-bundle.ts) AND
+// UMMAYA hard-codes that flag to `false` (tui/src/stubs/bun-bundle.ts) AND
 // promotes /fork to a first-class command (tui/src/commands/fork/index.ts,
 // per docs/decisions/fork-command-decision.md). The standalone /fork takes
 // precedence in the registry — this `aliases: ['fork']` array is preserved

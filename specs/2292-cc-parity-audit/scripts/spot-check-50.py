@@ -62,23 +62,23 @@ def main() -> int:
 
     entries = []
     mismatches = []
-    for idx, kosax_path in enumerate(sample):
-        if not kosax_path.startswith("tui/src/"):
+    for idx, ummaya_path in enumerate(sample):
+        if not ummaya_path.startswith("tui/src/"):
             return 2
-        cc_path_rel = f"{CC_SRC_REL}/{kosax_path[len('tui/src/'):]}"
-        kosax_abs = REPO_ROOT / kosax_path
+        cc_path_rel = f"{CC_SRC_REL}/{ummaya_path[len('tui/src/'):]}"
+        ummaya_abs = REPO_ROOT / ummaya_path
         cc_abs = REPO_ROOT / cc_path_rel
-        if not kosax_abs.exists():
+        if not ummaya_abs.exists():
             return 2
         if not cc_abs.exists():
             return 2
-        kosax_sha = sha256_file(kosax_abs)
+        ummaya_sha = sha256_file(ummaya_abs)
         cc_sha = sha256_file(cc_abs)
-        match = kosax_sha == cc_sha
+        match = ummaya_sha == cc_sha
         entry = {
-            "kosax_path": kosax_path,
+            "ummaya_path": ummaya_path,
             "cc_source_path": cc_path_rel,
-            "kosax_sha256": kosax_sha,
+            "ummaya_sha256": ummaya_sha,
             "cc_sha256": cc_sha,
             "hash_match": match,
             "sampling_seed": SEED,

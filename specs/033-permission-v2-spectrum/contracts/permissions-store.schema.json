@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://kosax.dev/schemas/permissions-store.v1.json",
-  "title": "KOSAX Permission v2 — Persistent Rule Store",
-  "description": "Tri-state rule store at ~/.kosax/permissions.json. Written by KOSAX permission pipeline; externally editable with fail-closed validation on load (Continue.dev-inspired; stored as strict JSON — not YAML — to avoid PyYAML dependency).",
+  "$id": "https://ummaya.dev/schemas/permissions-store.v1.json",
+  "title": "UMMAYA Permission v2 — Persistent Rule Store",
+  "description": "Tri-state rule store at ~/.ummaya/permissions.json. Written by UMMAYA permission pipeline; externally editable with fail-closed validation on load (Continue.dev-inspired; stored as strict JSON — not YAML — to avoid PyYAML dependency).",
   "type": "object",
   "additionalProperties": false,
   "required": ["schema_version", "rules"],

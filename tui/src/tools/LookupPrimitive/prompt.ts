@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSAX-original — Epic #1634 P3 · LookupPrimitive prompt strings.
+// UMMAYA-original — Epic #1634 P3 · LookupPrimitive prompt strings.
 // Spec 2521 (2026-05-01) — fetch-only surface; BM25 adapter discovery is a
 // backend-internal mechanism (auto-injected into the system prompt's
 // <available_adapters> dynamic suffix), not an LLM-callable mode. Older
@@ -14,7 +14,7 @@ export const DESCRIPTION =
   '한국 공공서비스 어댑터를 호출합니다. 시스템 프롬프트의 <available_adapters> 블록에 백엔드가 사용자 발화에 맞는 후보 어댑터를 자동으로 inject합니다 — 그 목록의 tool_id를 골라 lookup({tool_id, params})로 호출하세요.'
 
 /** Extended prompt included in the system-prompt tool-use section. */
-export const LOOKUP_TOOL_PROMPT = `Invoke Korean public-service adapters registered in the KOSAX tool registry.
+export const LOOKUP_TOOL_PROMPT = `Invoke Korean public-service adapters registered in the UMMAYA tool registry.
 
 Single mode (Spec 2521 fetch-only):
 

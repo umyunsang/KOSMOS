@@ -1,5 +1,5 @@
 [project]
-name = "kosax"
+name = "ummaya"
 version = "0.1.0"
 description = "Conversational multi-agent platform for Korean public APIs"
 readme = "README.md"
@@ -55,21 +55,21 @@ dependencies = [
 ]
 
 [project.scripts]
-kosax = "kosax.cli.app:main"
-# kosax-permissions = "kosax.permissions.cli:main" — removed Epic δ #2295 (Codex P1).
-# The KOSAX-invented Spec 033 permission CLI (mode/rules/killswitch ops) is
+ummaya = "ummaya.cli.app:main"
+# ummaya-permissions = "ummaya.permissions.cli:main" — removed Epic δ #2295 (Codex P1).
+# The UMMAYA-invented Spec 033 permission CLI (mode/rules/killswitch ops) is
 # deleted alongside its module. Spec 035 receipt-ledger verification has its
-# own console-script-free workflow via `python -m kosax.permissions.ledger_verify`
-# or programmatic `kosax.permissions.ledger_verify.verify_ledger(...)` callers.
-kosax-plugin-init = "kosax.plugins.cli_init:main"
-kosax-plugin-validate = "kosax.plugins.checks.framework:_cli_main"
+# own console-script-free workflow via `python -m ummaya.permissions.ledger_verify`
+# or programmatic `ummaya.permissions.ledger_verify.verify_ledger(...)` callers.
+ummaya-plugin-init = "ummaya.plugins.cli_init:main"
+ummaya-plugin-validate = "ummaya.plugins.checks.framework:_cli_main"
 
 [project.urls]
-Homepage = "https://github.com/umyunsang/KOSAX"
-Documentation = "https://github.com/umyunsang/KOSAX#readme"
-Repository = "https://github.com/umyunsang/KOSAX.git"
-Issues = "https://github.com/umyunsang/KOSAX/issues"
-Changelog = "https://github.com/umyunsang/KOSAX/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/umyunsang/UMMAYA"
+Documentation = "https://github.com/umyunsang/UMMAYA#readme"
+Repository = "https://github.com/umyunsang/UMMAYA.git"
+Issues = "https://github.com/umyunsang/UMMAYA/issues"
+Changelog = "https://github.com/umyunsang/UMMAYA/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 dev = [
@@ -109,39 +109,39 @@ include = [
     "/pyproject.toml",
     "/README.md",
     "/LICENSE",
-    "/src/kosax",
+    "/src/ummaya",
     "/prompts",
     "/docs/plugins/security-review.md",
     "/tests/fixtures/plugin_validation/checklist_manifest.yaml",
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/kosax"]
+packages = ["src/ummaya"]
 
 # spec 026 — bundle the repo-root prompts/ directory into the wheel as
-# `kosax/prompts/` so that PromptLoader can resolve manifest.yaml via
-# importlib.resources when KOSAX is installed as a wheel (the default
-# packages= only ships src/kosax; without this include the Docker
+# `ummaya/prompts/` so that PromptLoader can resolve manifest.yaml via
+# importlib.resources when UMMAYA is installed as a wheel (the default
+# packages= only ships src/ummaya; without this include the Docker
 # runtime stage cannot find prompts/manifest.yaml at startup).
 [tool.hatch.build.targets.wheel.force-include]
-"prompts" = "kosax/prompts"
+"prompts" = "ummaya/prompts"
 # Spec 1636 P5 / Sec H-1 (review re-eval): bundle the canonical PIPA
 # §26 acknowledgment markdown so canonical_acknowledgment.py can read
-# it via importlib.resources when KOSAX is installed as a wheel
-# (default packages= only ships src/kosax; without this include the
-# kosax.plugins import fails at module load).
-"docs/plugins/security-review.md" = "kosax/_canonical/security-review.md"
-# Bundle the 50-item validation checklist YAML so kosax-plugin-validate
+# it via importlib.resources when UMMAYA is installed as a wheel
+# (default packages= only ships src/ummaya; without this include the
+# ummaya.plugins import fails at module load).
+"docs/plugins/security-review.md" = "ummaya/_canonical/security-review.md"
+# Bundle the 50-item validation checklist YAML so ummaya-plugin-validate
 # CLI can find it without depending on the source-tree layout.
-"tests/fixtures/plugin_validation/checklist_manifest.yaml" = "kosax/_canonical/checklist_manifest.yaml"
+"tests/fixtures/plugin_validation/checklist_manifest.yaml" = "ummaya/_canonical/checklist_manifest.yaml"
 
 [tool.pytest.ini_options]
 # Spec 1636 P5 — plugin in-tree tests live alongside the plugin module
-# at src/kosax/plugins/tests/ so they ship with the wheel and exercise
+# at src/ummaya/plugins/tests/ so they ship with the wheel and exercise
 # package-private helpers. Both roots must be in testpaths so CI's
-# `pytest -n auto --cov=src/kosax` sees plugin tests AND records
+# `pytest -n auto --cov=src/ummaya` sees plugin tests AND records
 # coverage on the plugin sources they exercise.
-testpaths = ["tests", "src/kosax/plugins/tests"]
+testpaths = ["tests", "src/ummaya/plugins/tests"]
 asyncio_mode = "auto"
 # -p no:unraisableexception disables pytest's unraisable-exception plugin
 # which in 8.4+ wraps late-gc ResourceWarnings (unclosed sockets, event
@@ -154,7 +154,7 @@ asyncio_mode = "auto"
 addopts = "--strict-markers -q --tb=short -p no:unraisableexception"
 markers = [
     "live: hits real data.go.kr APIs — skipped in CI (deselect with -m 'not live')",
-    "performance: timing assertions against perf budgets — opt-out via KOSAX_SKIP_PERF=1",
+    "performance: timing assertions against perf budgets — opt-out via UMMAYA_SKIP_PERF=1",
     "live_embedder: downloads HF model weights — skipped in CI (run locally with -m live_embedder)",
     "integration: cross-spec integration tests (no live APIs; mocked WS dependencies)",
 ]
@@ -172,7 +172,7 @@ filterwarnings = [
 ]
 
 [tool.coverage.run]
-source = ["src/kosax"]
+source = ["src/ummaya"]
 parallel = true
 omit = ["tests/*"]
 
@@ -214,30 +214,30 @@ ignore = [
 "tests/**" = ["S101", "S105", "S106"]  # allow assert and hardcoded test passwords/tokens in tests
 # S603/S607 (subprocess security) suppressed only in the file that invokes docker CLI
 "tests/infra/test_docker_compose_dev.py" = ["S101", "S106", "S603", "S607"]
-"src/kosax/cli/**" = ["T20"]  # allow print() in CLI layer only
-# Spec 1636 P5 — these modules ship CLI entry-points (kosax-plugin-init,
-# kosax-plugin-validate) declared in [project.scripts]. They print to
+"src/ummaya/cli/**" = ["T20"]  # allow print() in CLI layer only
+# Spec 1636 P5 — these modules ship CLI entry-points (ummaya-plugin-init,
+# ummaya-plugin-validate) declared in [project.scripts]. They print to
 # stdout/stderr by design; T20 is correctly enforced everywhere else.
-"src/kosax/plugins/cli_init.py" = ["T20"]
-"src/kosax/plugins/checks/framework.py" = ["T20"]
+"src/ummaya/plugins/cli_init.py" = ["T20"]
+"src/ummaya/plugins/checks/framework.py" = ["T20"]
 # Plugin test suite mirrors `tests/**` permissions — assert + subprocess
 # (multi-process flock race tests) are intentional.
-"src/kosax/plugins/tests/**" = ["S101", "S105", "S106", "S603", "S607"]
+"src/ummaya/plugins/tests/**" = ["S101", "S105", "S106", "S603", "S607"]
 # Spec 2522 — agency wire param 명명 (KMA tmFc / MOHW callTp / KOROAD 등) 은
 # data.go.kr 공식 spec 의 camelCase 그대로 (입력/필드/함수 모두). naming 룰
 # (N802/N806/N815) 적용 시 wire 호환성 깨짐 — agency contract 보존 (FR-001).
-"src/kosax/tools/kma/kma_weather_alert_status.py" = ["N802", "N815"]
-"src/kosax/tools/kma/grid_coords.py" = ["N806"]
+"src/ummaya/tools/kma/kma_weather_alert_status.py" = ["N802", "N815"]
+"src/ummaya/tools/kma/grid_coords.py" = ["N806"]
 "tests/tools/kma/test_kma_weather_alert_status.py" = ["N802"]
 "tests/tools/kma/test_v4_live.py" = ["N806", "SIM108"]
 "tests/tools/mohw/test_v4.py" = ["N802"]
 # C901 (complexity) — domain branching (NFA 6 sub-operation / resolve_location
 # 6 want variants) 에 의해 fan-out 큰 함수. 분할 시 가독성 ↓ 라 ignore.
 # E501 line-too-long — Korean error message + URL 인용 라 분할 어려움.
-"src/kosax/tools/nfa119/emergency_info_service.py" = ["C901", "E501"]
-"src/kosax/tools/resolve_location.py" = ["C901"]
-"src/kosax/tools/nmc/emergency_search.py" = ["E501"]
-"src/kosax/tools/register_all.py" = ["E501"]
+"src/ummaya/tools/nfa119/emergency_info_service.py" = ["C901", "E501"]
+"src/ummaya/tools/resolve_location.py" = ["C901"]
+"src/ummaya/tools/nmc/emergency_search.py" = ["E501"]
+"src/ummaya/tools/register_all.py" = ["E501"]
 "tests/tools/ssis/test_mohw_welfare_eligibility_search.py" = ["E501"]
 # S110 (try/except/pass) — test 의 expected exception swallow 패턴 의도적
 "tests/tools/nmc/test_v4.py" = ["S110"]
@@ -246,7 +246,7 @@ ignore = [
 max-complexity = 10
 
 [tool.ruff.lint.isort]
-known-first-party = ["kosax"]
+known-first-party = ["ummaya"]
 
 [tool.ruff.format]
 quote-style = "double"
@@ -262,14 +262,14 @@ plugins = ["pydantic.mypy"]
 module = "tests.*"
 disallow_untyped_defs = false
 
-# Spec 1636: in-tree plugin tests live under src/kosax/plugins/tests/
+# Spec 1636: in-tree plugin tests live under src/ummaya/plugins/tests/
 # (so they ship with the library and exercise package-private helpers).
 # They use **dict[str, object] kwargs against typed PluginManifest /
 # CatalogEntry constructors — a common test fixture pattern that strict
 # mypy flags. Disable strict checks for test modules; CI's pytest run
 # is the actual gate for behaviour.
 [[tool.mypy.overrides]]
-module = "kosax.plugins.tests.*"
+module = "ummaya.plugins.tests.*"
 disallow_untyped_defs = false
 disable_error_code = [
     "arg-type",
@@ -314,7 +314,7 @@ tag_format = "v$version"
 
 # PyTorch CPU-only wheel for Docker image size discipline (SC-1: ≤ 2 GB).
 # sentence-transformers pulls torch; GPU wheels are ~2.5 GB + CUDA runtime layers
-# push the final image above the 2 GB SC-1 hard cap. KOSAX has no GPU workload
+# push the final image above the 2 GB SC-1 hard cap. UMMAYA has no GPU workload
 # at runtime (embedding inference is CPU-bound, batch-size 1), so CPU wheel is
 # functionally identical for our workload.
 [[tool.uv.index]]

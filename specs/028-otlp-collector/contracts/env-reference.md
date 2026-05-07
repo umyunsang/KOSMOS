@@ -2,13 +2,13 @@
 
 **Spec**: 028-otlp-collector | **Date**: 2026-04-18
 
-This contract is the authoritative list of environment variables introduced or consumed by spec 028. All new variables follow the `KOSAX_` prefix rule (AGENTS.md hard rule). Values documented here are the **contract**; implementers MUST NOT silently diverge.
+This contract is the authoritative list of environment variables introduced or consumed by spec 028. All new variables follow the `UMMAYA_` prefix rule (AGENTS.md hard rule). Values documented here are the **contract**; implementers MUST NOT silently diverge.
 
 ---
 
 ## New variables (three — added by FR-010)
 
-### `KOSAX_OTEL_COLLECTOR_PORT`
+### `UMMAYA_OTEL_COLLECTOR_PORT`
 
 | Attribute | Value |
 |---|---|
@@ -18,9 +18,9 @@ This contract is the authoritative list of environment variables introduced or c
 | Consumer | `docker-compose.dev.yml` — host port of `otelcol.ports[0]` |
 | Scope | Host ↔ collector container |
 | Sensitive | No |
-| Change semantics | Operator override only. Changing requires restarting the `otelcol` service and updating the KOSAX app's `OTEL_EXPORTER_OTLP_ENDPOINT` accordingly. |
+| Change semantics | Operator override only. Changing requires restarting the `otelcol` service and updating the UMMAYA app's `OTEL_EXPORTER_OTLP_ENDPOINT` accordingly. |
 
-### `KOSAX_LANGFUSE_OTLP_ENDPOINT`
+### `UMMAYA_LANGFUSE_OTLP_ENDPOINT`
 
 | Attribute | Value |
 |---|---|
@@ -32,7 +32,7 @@ This contract is the authoritative list of environment variables introduced or c
 | Sensitive | No |
 | Change semantics | Used when the operator points the collector at a different Langfuse instance (e.g., a pre-prod staging host). Compose does not validate URL format; malformed values surface as exporter errors at first span. |
 
-### `KOSAX_LANGFUSE_OTLP_AUTH_HEADER`
+### `UMMAYA_LANGFUSE_OTLP_AUTH_HEADER`
 
 | Attribute | Value |
 |---|---|
@@ -53,7 +53,7 @@ This contract is the authoritative list of environment variables introduced or c
 
 | Attribute | Value |
 |---|---|
-| Role in 028 | KOSAX Python app points here; for this spec's local-dev setup operators set `http://localhost:4318` |
+| Role in 028 | UMMAYA Python app points here; for this spec's local-dev setup operators set `http://localhost:4318` |
 | Default | unset (SDK warn-and-skip per spec 021 FR-010) |
 | Sensitive | No |
 
@@ -61,7 +61,7 @@ This contract is the authoritative list of environment variables introduced or c
 
 | Attribute | Value |
 |---|---|
-| Role in 028 | SC-004 — must remain effective. When `true`, the KOSAX app performs zero OTLP export attempts even if the collector is running. |
+| Role in 028 | SC-004 — must remain effective. When `true`, the UMMAYA app performs zero OTLP export attempts even if the collector is running. |
 | Default | unset (= enabled when endpoint is set) |
 | Sensitive | No |
 
@@ -70,6 +70,6 @@ This contract is the authoritative list of environment variables introduced or c
 ## Contract invariants
 
 1. All three new variables MUST appear in `.env.example` with inline comments describing the consumer (format matches existing `.env.example` convention — "consumed by ..." preamble).
-2. `KOSAX_LANGFUSE_OTLP_AUTH_HEADER` MUST NOT appear in any committed file with a real value. `.env.example` value MUST be empty.
-3. `docker-compose.dev.yml` MUST use `${KOSAX_*:-default}` substitution syntax for all three variables — no hardcoded values.
+2. `UMMAYA_LANGFUSE_OTLP_AUTH_HEADER` MUST NOT appear in any committed file with a real value. `.env.example` value MUST be empty.
+3. `docker-compose.dev.yml` MUST use `${UMMAYA_*:-default}` substitution syntax for all three variables — no hardcoded values.
 4. The collector config MUST reference these variables via `${env:NAME}` (OTel Collector env-expansion syntax), not via Compose-level `environment:` injection — this keeps the config self-documenting.

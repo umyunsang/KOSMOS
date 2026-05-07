@@ -8,9 +8,9 @@ Successful resume RESETS the failure count.
 
 from __future__ import annotations
 
-from kosax.ipc.frame_schema import ResumeRejectedFrame, ResumeResponseFrame
-from kosax.ipc.resume_manager import RejectionReason, ResumeManager
-from kosax.ipc.ring_buffer import SessionRingBuffer
+from ummaya.ipc.frame_schema import ResumeRejectedFrame, ResumeResponseFrame
+from ummaya.ipc.resume_manager import RejectionReason, ResumeManager
+from ummaya.ipc.ring_buffer import SessionRingBuffer
 from tests.ipc.conftest import FakeClock, UUIDv7Factory
 
 # ---------------------------------------------------------------------------
@@ -19,7 +19,7 @@ from tests.ipc.conftest import FakeClock, UUIDv7Factory
 
 
 def _make_ring(session_id: str, count: int = 5) -> SessionRingBuffer:
-    from kosax.ipc.frame_schema import AssistantChunkFrame
+    from ummaya.ipc.frame_schema import AssistantChunkFrame
 
     ring = SessionRingBuffer(session_id=session_id, ring_size=16)
     for i in range(count):
@@ -46,7 +46,7 @@ def _resume(
     make_uuid7: UUIDv7Factory,
     fake_clock: FakeClock,
 ) -> ResumeRejectedFrame | ResumeResponseFrame:
-    from kosax.ipc.frame_schema import ResumeRequestFrame
+    from ummaya.ipc.frame_schema import ResumeRequestFrame
 
     request = ResumeRequestFrame(
         session_id=session_id,

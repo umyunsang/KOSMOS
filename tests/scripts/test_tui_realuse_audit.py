@@ -49,8 +49,8 @@ def status_by_name(result: dict[str, object]) -> dict[str, str]:
 
 
 def test_passes_visible_resolve_lookup_trace(tmp_path: Path) -> None:
-    write_capture(tmp_path, "final.txt", "KOSAX final answer\noutbound_traces status_code url")
-    write_capture(tmp_path, "frames/frame_0000_boot.txt", "KOSAX boot")
+    write_capture(tmp_path, "final.txt", "UMMAYA final answer\noutbound_traces status_code url")
+    write_capture(tmp_path, "frames/frame_0000_boot.txt", "UMMAYA boot")
     write_capture(tmp_path, "frames/frame_0001_resolve.txt", "⏺ find(resolve_location)")
     write_capture(tmp_path, "frames/frame_0002_lookup.txt", "⏺ find(kma_forecast_fetch)")
 
@@ -67,8 +67,8 @@ def test_passes_visible_resolve_lookup_trace(tmp_path: Path) -> None:
 
 
 def test_fails_utf8_replacement_character(tmp_path: Path) -> None:
-    write_capture(tmp_path, "final.txt", "KOSAX 마이�레이션")
-    write_capture(tmp_path, "frames/frame_0000_final.txt", "KOSAX 마이�레이션")
+    write_capture(tmp_path, "final.txt", "UMMAYA 마이�레이션")
+    write_capture(tmp_path, "frames/frame_0000_final.txt", "UMMAYA 마이�레이션")
 
     result = run_audit(tmp_path)
 
@@ -124,8 +124,8 @@ def test_passes_error_rendering_with_red_ansi(tmp_path: Path) -> None:
 
 
 def test_fails_required_expanded_trace_when_absent(tmp_path: Path) -> None:
-    write_capture(tmp_path, "final.txt", "KOSAX final answer")
-    write_capture(tmp_path, "frames/frame_0000_final.txt", "KOSAX final answer")
+    write_capture(tmp_path, "final.txt", "UMMAYA final answer")
+    write_capture(tmp_path, "frames/frame_0000_final.txt", "UMMAYA final answer")
 
     result = run_audit(tmp_path, require_expanded_trace=True)
 

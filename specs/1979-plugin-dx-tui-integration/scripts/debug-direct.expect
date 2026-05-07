@@ -6,7 +6,7 @@ log_file -a "$spec_dir/debug-direct.txt"
 
 spawn bash -c "cd tui && bun run tui"
 
-expect { -re ".*KOSAX.*" { puts "✓ KOSAX observed" } timeout { exit 1 } }
+expect { -re ".*UMMAYA.*" { puts "✓ UMMAYA observed" } timeout { exit 1 } }
 sleep 3
 
 puts "STAGE-1: send /plugin install seoul-subway"

@@ -65,7 +65,7 @@
       "type": "object"
     }
   },
-  "$id": "https://kosax.example/api/schemas/mohw_welfare_eligibility_search.json",
+  "$id": "https://ummaya.example/api/schemas/mohw_welfare_eligibility_search.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
   "properties": {

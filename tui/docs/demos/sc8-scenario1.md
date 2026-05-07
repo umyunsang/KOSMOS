@@ -59,7 +59,7 @@ fixture.
 ## Live API Status
 
 No live data.go.kr calls. All HTTP intercepted by AsyncMock.
-`KOSAX_DATA_GO_KR_API_KEY`, `KOSAX_KAKAO_API_KEY`, `KOSAX_FRIENDLI_TOKEN`
+`UMMAYA_DATA_GO_KR_API_KEY`, `UMMAYA_KAKAO_API_KEY`, `UMMAYA_FRIENDLI_TOKEN`
 set to dummy values for env guard bypass.
 
 ## IPC Frame Sequence Observed
@@ -86,7 +86,7 @@ All 14+ frames passed JSON round-trip validation.
 ## Notes
 
 - No real TUI process spawned (Bun/Ink not required for this test tier).
-- The IPC frame construction mirrors what `kosax/ipc/stdio.py` would
+- The IPC frame construction mirrors what `ummaya/ipc/stdio.py` would
   produce when wired to the real QueryEngine.
 - Subprocess-based IPC soak test (FR-010 / SC-2 100+ ev/s) is out of scope
   for this smoke task.

@@ -19,10 +19,10 @@ description: "Task list for Spec 032 — IPC stdio hardening"
 
 ## Path Conventions
 
-- **Backend**: `src/kosax/ipc/*.py`, `tests/ipc/*.py`
+- **Backend**: `src/ummaya/ipc/*.py`, `tests/ipc/*.py`
 - **TUI**: `tui/src/ipc/*.ts[x]`, `tui/tests/ipc/*.test.ts`
 - **Schema**: `tui/src/ipc/schema/frame.schema.json` (normative JSON Schema 2020-12)
-- **Demo harnesses**: `src/kosax/ipc/demo/`, `tui/src/ipc/demo/`
+- **Demo harnesses**: `src/ummaya/ipc/demo/`, `tui/src/ipc/demo/`
 
 ---
 
@@ -30,8 +30,8 @@ description: "Task list for Spec 032 — IPC stdio hardening"
 
 **Purpose**: Establish lint guards, OTEL attribute constants, and test scaffolding shared by all four workstreams.
 
-- [X] T001 [P] Create `tests/ipc/conftest.py` with shared fixtures (fake clock, UUIDv7 factory, NDJSON capture buffer) — **no production code changes**. Load env overrides for `KOSAX_IPC_RING_SIZE`, `KOSAX_IPC_TX_CACHE_CAPACITY`, `KOSAX_IPC_HEARTBEAT_INTERVAL_MS`, `KOSAX_IPC_HEARTBEAT_DEAD_MS`.
-- [X] T002 [P] Add OTEL attribute-key constants to `src/kosax/ipc/otel_constants.py`: `KOSAX_IPC_CORRELATION_ID`, `KOSAX_IPC_TRANSACTION_ID`, `KOSAX_IPC_TX_CACHE_STATE`, `KOSAX_IPC_BACKPRESSURE_KIND`, `KOSAX_IPC_BACKPRESSURE_SEVERITY`, `KOSAX_IPC_BACKPRESSURE_SOURCE`, `KOSAX_IPC_SCHEMA_HASH`, `KOSAX_IPC_REPLAYED`.
+- [X] T001 [P] Create `tests/ipc/conftest.py` with shared fixtures (fake clock, UUIDv7 factory, NDJSON capture buffer) — **no production code changes**. Load env overrides for `UMMAYA_IPC_RING_SIZE`, `UMMAYA_IPC_TX_CACHE_CAPACITY`, `UMMAYA_IPC_HEARTBEAT_INTERVAL_MS`, `UMMAYA_IPC_HEARTBEAT_DEAD_MS`.
+- [X] T002 [P] Add OTEL attribute-key constants to `src/ummaya/ipc/otel_constants.py`: `UMMAYA_IPC_CORRELATION_ID`, `UMMAYA_IPC_TRANSACTION_ID`, `UMMAYA_IPC_TX_CACHE_STATE`, `UMMAYA_IPC_BACKPRESSURE_KIND`, `UMMAYA_IPC_BACKPRESSURE_SEVERITY`, `UMMAYA_IPC_BACKPRESSURE_SOURCE`, `UMMAYA_IPC_SCHEMA_HASH`, `UMMAYA_IPC_REPLAYED`.
 - [X] T003 [P] Create `tui/tests/ipc/fixtures/` and seed it with frozen sample NDJSON fixtures (`envelope.v1.happy.ndjson`, `backpressure.throttle.ndjson`, `resume.response.ndjson`) for TUI unit tests.
 
 **Checkpoint**: Setup complete — all four workstreams can now author code against shared fixtures and constants.
@@ -44,19 +44,19 @@ description: "Task list for Spec 032 — IPC stdio hardening"
 
 **⚠️ CRITICAL**: No user-story phase may start until T020 green.
 
-- [X] T004 Extend `_BaseFrame` in `src/kosax/ipc/frame_schema.py` with 5 new fields (`version: Literal["1.0"]`, `role: Literal["tui","backend","tool","llm","notification"]`, `frame_seq: NonNegativeInt`, `transaction_id: str | None`, `trailer: FrameTrailer | None`) + `FrameTrailer` model (`final: bool`, `transaction_id?`, `checksum_sha256?`). Preserve `ConfigDict(frozen=True, extra="forbid", populate_by_name=True)`.
-- [X] T005 [P] Add `PayloadStartFrame`, `PayloadDeltaFrame`, `PayloadEndFrame` arms in `src/kosax/ipc/frame_schema.py` (content_type, delta_seq, delta_count, status fields per data-model.md § 4).
-- [X] T006 [P] Add `BackpressureSignalFrame` arm in `src/kosax/ipc/frame_schema.py` (signal/source enums, queue_depth, hwm, retry_after_ms, hud_copy_ko/en with `min_length=1`).
-- [X] T007 [P] Add `ResumeRequestFrame` + `ResumeResponseFrame` + `ResumeRejectedFrame` arms in `src/kosax/ipc/frame_schema.py` (last_seen_correlation_id, last_seen_frame_seq, tui_session_token, resumed_from_frame_seq, replay_count, heartbeat_interval_ms, 5-value `reason` enum).
-- [X] T008 [P] Add `HeartbeatFrame` arm in `src/kosax/ipc/frame_schema.py` (direction=ping|pong, peer_frame_seq).
-- [X] T009 [P] Add `NotificationPushFrame` arm in `src/kosax/ipc/frame_schema.py` (subscription_id, adapter_id, event_guid, payload_content_type, payload).
-- [X] T010 Update `IPCFrame = Annotated[Union[...], Field(discriminator="kind")]` in `src/kosax/ipc/frame_schema.py` to include all 19 kinds; enforce role↔kind allow-list invariant (E3) in a shared `@model_validator(mode="after")` on `_BaseFrame`.
-- [X] T011 Enforce cross-field invariants E1–E6 in `src/kosax/ipc/frame_schema.py`: version hard-fail (E1), frame_seq non-negative (E2), role↔kind allow-list (E3), `transaction_id` presence ⇔ `{tool_call, permission_response, payload_end}` AND irreversible (E4), correlation_id min_length=1 (E5), `trailer.final=true` only on terminal kinds (E6).
-- [X] T012 Implement `src/kosax/ipc/envelope.py` emit/parse helpers: `emit_ndjson(frame) -> str`, `parse_ndjson_line(line) -> IPCFrame`, `escape_newlines_in_payload(obj) -> obj`; fail-closed on malformed lines (FR-035).
-- [X] T013 [P] Implement `SessionRingBuffer` in `src/kosax/ipc/ring_buffer.py` using `collections.deque(maxlen=256)` + `.consumed` marker set per data-model.md § 5.1 (`append`, `replay_since`, `mark_consumed`, `ring_evicted` ops). **WS4 consumes; staged in Foundational to unblock downstream workstreams.**
-- [X] T014 [P] Implement `TransactionLRU` in `src/kosax/ipc/tx_cache.py` using `collections.OrderedDict` (capacity 512) + `pinned_keys: set` for `is_irreversible=true`; `get`, `record`, `is_duplicate`, `pin`, `unpin`, `evict_oldest_non_pinned` ops (T1–T5 invariants).
-- [X] T015 [P] Implement `HeartbeatState` in `src/kosax/ipc/heartbeat.py` with `record_ping`, `record_pong`, `tick(now) -> DeadlineState`; 30s interval / 45s dead / 120s resume-grace-window defaults via `pydantic-settings`.
-- [X] T016 Emit JSON Schema Draft 2020-12 from Python: add `ipc_frame_json_schema()` function in `src/kosax/ipc/frame_schema.py` that dumps the 19-kind discriminated-union schema + `allOf` role↔kind constraints; commit output to `tui/src/ipc/schema/frame.schema.json`.
+- [X] T004 Extend `_BaseFrame` in `src/ummaya/ipc/frame_schema.py` with 5 new fields (`version: Literal["1.0"]`, `role: Literal["tui","backend","tool","llm","notification"]`, `frame_seq: NonNegativeInt`, `transaction_id: str | None`, `trailer: FrameTrailer | None`) + `FrameTrailer` model (`final: bool`, `transaction_id?`, `checksum_sha256?`). Preserve `ConfigDict(frozen=True, extra="forbid", populate_by_name=True)`.
+- [X] T005 [P] Add `PayloadStartFrame`, `PayloadDeltaFrame`, `PayloadEndFrame` arms in `src/ummaya/ipc/frame_schema.py` (content_type, delta_seq, delta_count, status fields per data-model.md § 4).
+- [X] T006 [P] Add `BackpressureSignalFrame` arm in `src/ummaya/ipc/frame_schema.py` (signal/source enums, queue_depth, hwm, retry_after_ms, hud_copy_ko/en with `min_length=1`).
+- [X] T007 [P] Add `ResumeRequestFrame` + `ResumeResponseFrame` + `ResumeRejectedFrame` arms in `src/ummaya/ipc/frame_schema.py` (last_seen_correlation_id, last_seen_frame_seq, tui_session_token, resumed_from_frame_seq, replay_count, heartbeat_interval_ms, 5-value `reason` enum).
+- [X] T008 [P] Add `HeartbeatFrame` arm in `src/ummaya/ipc/frame_schema.py` (direction=ping|pong, peer_frame_seq).
+- [X] T009 [P] Add `NotificationPushFrame` arm in `src/ummaya/ipc/frame_schema.py` (subscription_id, adapter_id, event_guid, payload_content_type, payload).
+- [X] T010 Update `IPCFrame = Annotated[Union[...], Field(discriminator="kind")]` in `src/ummaya/ipc/frame_schema.py` to include all 19 kinds; enforce role↔kind allow-list invariant (E3) in a shared `@model_validator(mode="after")` on `_BaseFrame`.
+- [X] T011 Enforce cross-field invariants E1–E6 in `src/ummaya/ipc/frame_schema.py`: version hard-fail (E1), frame_seq non-negative (E2), role↔kind allow-list (E3), `transaction_id` presence ⇔ `{tool_call, permission_response, payload_end}` AND irreversible (E4), correlation_id min_length=1 (E5), `trailer.final=true` only on terminal kinds (E6).
+- [X] T012 Implement `src/ummaya/ipc/envelope.py` emit/parse helpers: `emit_ndjson(frame) -> str`, `parse_ndjson_line(line) -> IPCFrame`, `escape_newlines_in_payload(obj) -> obj`; fail-closed on malformed lines (FR-035).
+- [X] T013 [P] Implement `SessionRingBuffer` in `src/ummaya/ipc/ring_buffer.py` using `collections.deque(maxlen=256)` + `.consumed` marker set per data-model.md § 5.1 (`append`, `replay_since`, `mark_consumed`, `ring_evicted` ops). **WS4 consumes; staged in Foundational to unblock downstream workstreams.**
+- [X] T014 [P] Implement `TransactionLRU` in `src/ummaya/ipc/tx_cache.py` using `collections.OrderedDict` (capacity 512) + `pinned_keys: set` for `is_irreversible=true`; `get`, `record`, `is_duplicate`, `pin`, `unpin`, `evict_oldest_non_pinned` ops (T1–T5 invariants).
+- [X] T015 [P] Implement `HeartbeatState` in `src/ummaya/ipc/heartbeat.py` with `record_ping`, `record_pong`, `tick(now) -> DeadlineState`; 30s interval / 45s dead / 120s resume-grace-window defaults via `pydantic-settings`.
+- [X] T016 Emit JSON Schema Draft 2020-12 from Python: add `ipc_frame_json_schema()` function in `src/ummaya/ipc/frame_schema.py` that dumps the 19-kind discriminated-union schema + `allOf` role↔kind constraints; commit output to `tui/src/ipc/schema/frame.schema.json`.
 - [X] T017 Regenerate TypeScript types at `tui/src/ipc/frames.generated.ts` from `tui/src/ipc/schema/frame.schema.json` (use existing `bun run codegen` pipeline from Spec 287; extend enum export for 9 new kinds).
 - [X] T018 Extend `tui/src/ipc/envelope.ts` and `tui/src/ipc/codec.ts` with NDJSON encode/decode that parses all 19 kinds, kind-narrowed type guards, and newline-escape invariant.
 - [X] T019 [P] Author `tests/ipc/test_envelope_roundtrip.py` covering all 19 kinds — serialize via Pydantic, parse via envelope helpers, assert byte-equal round-trip + invariants E1–E6.
@@ -72,10 +72,10 @@ description: "Task list for Spec 032 — IPC stdio hardening"
 
 **Independent Test**: `kill -9 <backend-pid>` mid-stream → TUI reconnects → `ResumeResponseFrame(replay_count=N)` + N replayed frames with original `frame_seq` preserved → user continues without re-issuing query. Validated by `resume.integration.test.ts` (bun) + `test_resume_handshake.py` (pytest) 9-scenario matrix from `contracts/resume-handshake.contract.md` § 7.
 
-- [X] T021 [US1] Implement `ResumeManager.handle_resume_request()` in `src/kosax/ipc/resume_manager.py` — validates session existence, token match, `last_seen_frame_seq >= oldest_in_ring`; emits `ResumeResponseFrame` with `resumed_from_frame_seq = last_seen + 1`.
-- [X] T022 [US1] Implement 5-value rejection enum + `ResumeRejectedFrame` emission in `src/kosax/ipc/resume_manager.py`: `ring_evicted`, `session_unknown`, `token_mismatch`, `protocol_incompatible`, `session_expired` (FR-021/022/023 + contract § 3).
-- [X] T023 [US1] Implement 3-strike blacklist in `src/kosax/ipc/resume_manager.py` (FR-025) — same `session_id` failing resume 3× consecutively enters blacklist; subsequent resume_request returns `session_unknown` without touching ring buffer.
-- [X] T024 [US1] Wire heartbeat ↔ resume coupling in `src/kosax/ipc/heartbeat.py`: 45s silence → `ErrorFrame(code="peer_dead")` + keep ring buffer for 120s grace window; grace-window expiry → GC ring buffer (contract § 5).
+- [X] T021 [US1] Implement `ResumeManager.handle_resume_request()` in `src/ummaya/ipc/resume_manager.py` — validates session existence, token match, `last_seen_frame_seq >= oldest_in_ring`; emits `ResumeResponseFrame` with `resumed_from_frame_seq = last_seen + 1`.
+- [X] T022 [US1] Implement 5-value rejection enum + `ResumeRejectedFrame` emission in `src/ummaya/ipc/resume_manager.py`: `ring_evicted`, `session_unknown`, `token_mismatch`, `protocol_incompatible`, `session_expired` (FR-021/022/023 + contract § 3).
+- [X] T023 [US1] Implement 3-strike blacklist in `src/ummaya/ipc/resume_manager.py` (FR-025) — same `session_id` failing resume 3× consecutively enters blacklist; subsequent resume_request returns `session_unknown` without touching ring buffer.
+- [X] T024 [US1] Wire heartbeat ↔ resume coupling in `src/ummaya/ipc/heartbeat.py`: 45s silence → `ErrorFrame(code="peer_dead")` + keep ring buffer for 120s grace window; grace-window expiry → GC ring buffer (contract § 5).
 - [X] T025 [US1] Implement TUI reconnect loop in `tui/src/ipc/bridge.ts` — EOF detection → exponential backoff reconnect → emit `ResumeRequestFrame` as first frame (fresh outbound `frame_seq=0`) → track `applied_frame_seqs: Set<number>` for replay dedup.
 - [X] T026 [US1] Implement `tui/src/ipc/crash-detector.ts` — listen for stdin EOF / `EPIPE` errors → signal bridge.ts to enter reconnect state without prompting user.
 - [X] T027 [US1] Author `tests/ipc/test_resume_handshake.py` — all 9 scenarios from `contracts/resume-handshake.contract.md` § 7 (happy path, fresh-TUI, ring_evicted, token_mismatch, session_unknown, double resume, during backpressure, heartbeat grace recover, heartbeat grace expire).
@@ -94,10 +94,10 @@ description: "Task list for Spec 032 — IPC stdio hardening"
 
 **Independent Test**: Synthetic `BackpressureSignalFrame(signal="throttle", source="upstream_429", retry_after_ms=15000)` → TUI HUD renders "부처 API가 혼잡합니다. 15초 후 자동 재시도합니다." within 16 ms p95 (SC-003). Validated by `test_backpressure_signal.py` + `backpressure.hud.test.ts`.
 
-- [X] T032 [US2] Implement `BackpressureController.tick()` in `src/kosax/ipc/backpressure.py` — hysteresis logic (HWM=64 pause, HWM/2=32 resume, no-op in hysteresis band per `contracts/tx-dedup.contract.md` § 1.1).
-- [X] T033 [US2] Implement 3-source emission paths in `src/kosax/ipc/backpressure.py` — `tui_reader` (TUI congested), `backend_writer` (ring overflow risk), `upstream_429` (external adapter rate-limit pass-through).
-- [X] T034 [US2] Wire `upstream_429` adapter path in `src/kosax/ipc/backpressure.py` — parse `Retry-After` header (seconds or HTTP-date), clamp `retry_after_ms` to `[1000, 900000]`, emit `throttle` with Korean + English HUD copy templates (contract § 1.3).
-- [X] T035 [US2] Enforce pause/resume pairing invariant in `src/kosax/ipc/backpressure.py` — every `pause` must have a later `resume`; on session teardown with outstanding `pause`, emit synthetic `resume` before terminal error (contract § 1.4).
+- [X] T032 [US2] Implement `BackpressureController.tick()` in `src/ummaya/ipc/backpressure.py` — hysteresis logic (HWM=64 pause, HWM/2=32 resume, no-op in hysteresis band per `contracts/tx-dedup.contract.md` § 1.1).
+- [X] T033 [US2] Implement 3-source emission paths in `src/ummaya/ipc/backpressure.py` — `tui_reader` (TUI congested), `backend_writer` (ring overflow risk), `upstream_429` (external adapter rate-limit pass-through).
+- [X] T034 [US2] Wire `upstream_429` adapter path in `src/ummaya/ipc/backpressure.py` — parse `Retry-After` header (seconds or HTTP-date), clamp `retry_after_ms` to `[1000, 900000]`, emit `throttle` with Korean + English HUD copy templates (contract § 1.3).
+- [X] T035 [US2] Enforce pause/resume pairing invariant in `src/ummaya/ipc/backpressure.py` — every `pause` must have a later `resume`; on session teardown with outstanding `pause`, emit synthetic `resume` before terminal error (contract § 1.4).
 - [X] T036 [US2] Implement `tui/src/ipc/backpressure-hud.tsx` — renders Korean HUD banner with live countdown from `retry_after_ms`; non-blocking (does not pause input queue); consumes `hud_copy_ko` directly from frame.
 - [X] T037 [US2] Author `tests/ipc/test_backpressure_signal.py` — hysteresis matrix (60↔64 oscillation → at most 1 pause), upstream_429 clamp, dual-locale min_length enforcement, teardown synthetic resume (contract § 5.1 test matrix).
 - [X] T038 [US2] Author `tui/tests/ipc/backpressure.hud.test.ts` — ingest fixture frame → assert HUD text exact match "부처 API가 혼잡합니다. 15초 후 자동 재시도합니다." + countdown ticks.
@@ -113,14 +113,14 @@ description: "Task list for Spec 032 — IPC stdio hardening"
 
 **Independent Test**: Same `transaction_id` submitted twice → first call executes + writes `ToolCallAuditRecord(status="ok")`, second call cache-hits + writes `ToolCallAuditRecord(status="dedup_hit")`, response byte-equal. Validated by `test_tx_dedup.py::test_double_submit_hits_cache`.
 
-- [X] T040 [US3] Integrate `TransactionLRU` into `ToolExecutor` dispatch in `src/kosax/ipc/tx_cache.py` + executor call-site — Stripe 3-step (lookup → execute on miss → record with pin for irreversible) per `contracts/tx-dedup.contract.md` § 2.2.
-- [X] T041 [US3] Enforce LRU pin on `AdapterRegistration.is_irreversible=true` in `src/kosax/ipc/tx_cache.py` — pinned entries never evicted; non-pinned overflow evicts FIFO oldest.
-- [X] T042 [US3] Implement cached-response round-trip in `src/kosax/ipc/tx_cache.py` — `entry.cached_response = response.model_dump(mode="json")` on record, `ToolCallResponse.model_validate(...)` on replay (contract § 2.5).
-- [X] T043 [US3] Wire Spec 024 audit coupling in `src/kosax/ipc/tx_cache.py` — write `ToolCallAuditRecord(status="ok"|"error")` on miss, `status="dedup_hit"` with reference to original `correlation_id` on hit (contract § 2.7).
+- [X] T040 [US3] Integrate `TransactionLRU` into `ToolExecutor` dispatch in `src/ummaya/ipc/tx_cache.py` + executor call-site — Stripe 3-step (lookup → execute on miss → record with pin for irreversible) per `contracts/tx-dedup.contract.md` § 2.2.
+- [X] T041 [US3] Enforce LRU pin on `AdapterRegistration.is_irreversible=true` in `src/ummaya/ipc/tx_cache.py` — pinned entries never evicted; non-pinned overflow evicts FIFO oldest.
+- [X] T042 [US3] Implement cached-response round-trip in `src/ummaya/ipc/tx_cache.py` — `entry.cached_response = response.model_dump(mode="json")` on record, `ToolCallResponse.model_validate(...)` on replay (contract § 2.5).
+- [X] T043 [US3] Wire Spec 024 audit coupling in `src/ummaya/ipc/tx_cache.py` — write `ToolCallAuditRecord(status="ok"|"error")` on miss, `status="dedup_hit"` with reference to original `correlation_id` on hit (contract § 2.7).
 - [X] T044 [US3] Implement `tui/src/ipc/tx-registry.ts` — client-side UUIDv7 minting on user submit, persistence for retry idempotency until response received (no re-mint on duplicate click).
 - [X] T045 [US3] Author `tests/ipc/test_tx_cache_lru.py` — capacity 512, FIFO eviction of non-pinned, pinned never evicted, 513-pinned operational-limit scenario documented.
 - [X] T046 [US3] Author `tests/ipc/test_tx_irreversible_pin.py` — `is_irreversible=true` auto-pins on record, pin survives resume replay (cache survives session-drop).
-- [X] T047 [US3] Author `tests/ipc/test_tx_dedup.py` — `test_double_submit_hits_cache`, `test_cache_state_span_attribute` (asserts `kosax.ipc.tx.cache_state="hit"`), `test_distinct_tx_id_no_dedup`, `test_reversible_tool_bypasses_cache`.
+- [X] T047 [US3] Author `tests/ipc/test_tx_dedup.py` — `test_double_submit_hits_cache`, `test_cache_state_span_attribute` (asserts `ummaya.ipc.tx.cache_state="hit"`), `test_distinct_tx_id_no_dedup`, `test_reversible_tool_bypasses_cache`.
 
 **Checkpoint**: US3 complete — PIPA §26 duplicate-submission safeguard operational.
 
@@ -130,13 +130,13 @@ description: "Task list for Spec 032 — IPC stdio hardening"
 
 **Goal**: Single `correlation_id` threads `user_input → tool_call → tool_result → assistant_chunk → payload_end` spans; OTEL span attributes promote `transaction_id` + `tx.cache_state` for audit triage.
 
-**Independent Test**: Full-turn probe emits 5+ frames → `jq -s '[.[] | .correlation_id] | unique | length' == 1`; every span in the turn has `kosax.ipc.correlation_id` attribute set to same UUIDv7 value. Validated by `test_otel_correlation.py`.
+**Independent Test**: Full-turn probe emits 5+ frames → `jq -s '[.[] | .correlation_id] | unique | length' == 1`; every span in the turn has `ummaya.ipc.correlation_id` attribute set to same UUIDv7 value. Validated by `test_otel_correlation.py`.
 
-- [X] T048 [US4] Promote envelope `correlation_id` / `transaction_id` / `tx.cache_state` to OTEL span attributes in `src/kosax/ipc/envelope.py` emit path — use constants from T002; attach to current span via `opentelemetry.trace.get_current_span()`.
+- [X] T048 [US4] Promote envelope `correlation_id` / `transaction_id` / `tx.cache_state` to OTEL span attributes in `src/ummaya/ipc/envelope.py` emit path — use constants from T002; attach to current span via `opentelemetry.trace.get_current_span()`.
 - [X] T049 [US4] Thread `correlation_id` through `RunContext` in existing tool-loop bootstrap (minimal touch — add `correlation_id` field if absent; propagate through `emit()` calls).
-- [X] T050 [US4] Emit `kosax.ipc.schema.hash` as OTEL resource attribute on backend startup in `src/kosax/ipc/envelope.py` (FR-037) — SHA-256 of `frame.schema.json` committed bytes.
+- [X] T050 [US4] Emit `ummaya.ipc.schema.hash` as OTEL resource attribute on backend startup in `src/ummaya/ipc/envelope.py` (FR-037) — SHA-256 of `frame.schema.json` committed bytes.
 - [X] T051 [US4] Author `tests/ipc/test_otel_correlation.py` — drive synthetic full turn → assert all spans in turn share one `correlation_id` + irreversible tool-call span has `tx.cache_state="miss"` then `"hit"` on replay.
-- [X] T052 [US4] Author `src/kosax/ipc/demo/full_turn_probe.py` + `tests/ipc/test_correlation_stability.py` — run probe → NDJSON to stdout → `jq -s '... | unique | length' == 1` (quickstart § 5.2).
+- [X] T052 [US4] Author `src/ummaya/ipc/demo/full_turn_probe.py` + `tests/ipc/test_correlation_stability.py` — run probe → NDJSON to stdout → `jq -s '... | unique | length' == 1` (quickstart § 5.2).
 
 **Checkpoint**: US4 audit trail complete — investigators can join OTEL / Langfuse / `ToolCallAuditRecord` by single correlation_id.
 
@@ -146,15 +146,15 @@ description: "Task list for Spec 032 — IPC stdio hardening"
 
 **Purpose**: Quickstart validation, no-new-deps lint guard, documentation touch-ups, deferred-item tracking.
 
-- [X] T053 [P] Implement `src/kosax/ipc/demo/session_backend.py` + `tui/src/ipc/demo/resume_probe.ts` (quickstart scenario B harness per `quickstart.md` § 2).
-- [X] T054 [P] Implement `src/kosax/ipc/demo/upstream_429_probe.py` + `tui/src/ipc/demo/hud_probe.ts` (quickstart scenario C harness per `quickstart.md` § 3).
-- [X] T055 [P] Implement `src/kosax/ipc/demo/register_irreversible_fixture.py` (quickstart scenario D seed — `AdapterRegistration(is_irreversible=true)` fixture for `test_tx_dedup.py`).
+- [X] T053 [P] Implement `src/ummaya/ipc/demo/session_backend.py` + `tui/src/ipc/demo/resume_probe.ts` (quickstart scenario B harness per `quickstart.md` § 2).
+- [X] T054 [P] Implement `src/ummaya/ipc/demo/upstream_429_probe.py` + `tui/src/ipc/demo/hud_probe.ts` (quickstart scenario C harness per `quickstart.md` § 3).
+- [X] T055 [P] Implement `src/ummaya/ipc/demo/register_irreversible_fixture.py` (quickstart scenario D seed — `AdapterRegistration(is_irreversible=true)` fixture for `test_tx_dedup.py`).
 - [X] T056 [P] Extend lint trio with `tests/ipc/test_no_new_runtime_deps.py` — diff `pyproject.toml` + `tui/package.json` against Spec 031 baseline; fail on any new runtime dep (SC-008 enforcement, reuses Spec 031 pattern).
 - [X] T057 [P] Author `tests/ipc/test_ndjson_integrity.py` — 1000-frame stream with 5% malformed JSON injection → 0 session aborts, only malformed frames dropped with OTEL error span (SC-007).
 - [X] T058 [P] Refresh `.specify/memory/agent-context/*.md` via `.specify/scripts/bash/update-agent-context.sh claude` — adds Spec 032 entries to Active Technologies + Recent Changes.
 - [X] T059 Touch up `docs/vision.md` § L1 Transport reference pointers + § L5 TUI IPC section to cite Spec 032 deliverables + schema path.
 - [X] T060 Track 5 `[Deferred]` items from spec.md § "Deferred to Future Work" in `docs/deferred/032-ipc-stdio-hardening.md` — remote TUI, frame signing, multi-backend shard, WebMCP capability advertisement, Windows named pipes (5 × `NEEDS TRACKING` → resolved to GitHub issues by `/speckit-taskstoissues`).
-- [X] T061 [US2] Implement critical-lane bypass in `src/kosax/ipc/backpressure.py` — `severity=critical` frames (e.g., CBS 재난문자 `notification_push`) skip pause gate regardless of ring/queue state (FR-017). Verify via `tests/ipc/test_critical_lane_priority.py`: inject `pause`-signaled state + 10 × `severity=critical` frames; assert p95 emit latency < 16 ms per SC-009; assert ordering preserved ahead of queued non-critical frames.
+- [X] T061 [US2] Implement critical-lane bypass in `src/ummaya/ipc/backpressure.py` — `severity=critical` frames (e.g., CBS 재난문자 `notification_push`) skip pause gate regardless of ring/queue state (FR-017). Verify via `tests/ipc/test_critical_lane_priority.py`: inject `pause`-signaled state + 10 × `severity=critical` frames; assert p95 emit latency < 16 ms per SC-009; assert ordering preserved ahead of queued non-critical frames.
 
 **Checkpoint**: Quickstart scenarios A–E (§ 6 full regression) exit zero on `uv run pytest tests/ipc/ -q` + `cd tui && bun test ipc && cd ..`. Spec 032 landable.
 

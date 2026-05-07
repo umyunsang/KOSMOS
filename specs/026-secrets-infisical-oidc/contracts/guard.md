@@ -1,7 +1,7 @@
-# Contract — `kosax.config.guard.verify_startup`
+# Contract — `ummaya.config.guard.verify_startup`
 
-**File**: `src/kosax/config/guard.py`
-**Wire-in site**: `src/kosax/cli/app.py:main()` between `load_repo_dotenv()` and `setup_tracing()`.
+**File**: `src/ummaya/config/guard.py`
+**Wire-in site**: `src/ummaya/cli/app.py:main()` between `load_repo_dotenv()` and `setup_tracing()`.
 **Related FR**: FR-001..FR-008, FR-041, FR-042 · **NFR**: NFR-001 (100 ms budget)
 
 ---
@@ -9,7 +9,7 @@
 ## Public surface
 
 ```python
-# src/kosax/config/guard.py
+# src/ummaya/config/guard.py
 
 from __future__ import annotations
 from dataclasses import dataclass, field
@@ -35,7 +35,7 @@ class GuardDiagnostic:
 
 
 def current_env() -> Env:
-    """Read KOSAX_ENV from os.environ; unknown values fall through to 'dev'."""
+    """Read UMMAYA_ENV from os.environ; unknown values fall through to 'dev'."""
 
 
 def check_required(env: Env | None = None) -> GuardDiagnostic | None:
@@ -61,7 +61,7 @@ def verify_startup() -> None:
 ## Inputs
 
 - `os.environ` snapshot at call time (after `load_repo_dotenv()` merged `.env`).
-- `KOSAX_ENV` meta-flag (optional; default `dev`).
+- `UMMAYA_ENV` meta-flag (optional; default `dev`).
 - Module-level `_REQUIRED_VARS: Final[tuple[RequiredVar, ...]]` — in-code source of truth (see `data-model.md §1`).
 
 ## Outputs
@@ -74,25 +74,25 @@ def verify_startup() -> None:
 | Code | Meaning |
 |------|---------|
 | `0` | Implicit success (function returns without exiting). |
-| `78` | `EX_CONFIG` per `sysexits.h` — "configuration error" — one or more required env vars missing for the current `KOSAX_ENV`. |
+| `78` | `EX_CONFIG` per `sysexits.h` — "configuration error" — one or more required env vars missing for the current `UMMAYA_ENV`. |
 
 No other exit codes are emitted by the guard itself. (Any other non-zero code originates elsewhere.)
 
 ## stderr grammar (single line)
 
 ```
-KOSAX config error [env=<env>]: missing required variables: <VAR_1>, <VAR_2>, ..., <VAR_N>. See <doc_url>
+UMMAYA config error [env=<env>]: missing required variables: <VAR_1>, <VAR_2>, ..., <VAR_N>. See <doc_url>
 ```
 
 Where:
 - `<env>` is `dev` | `ci` | `prod` (lowercase, exact).
 - `<VAR_i>` are the missing env-var names, **alphabetically sorted**, comma+space separated. Deterministic ordering (same env state → same message) is required so the output is testable and diff-able across runs.
-- `<doc_url>` is `https://github.com/umyunsang/KOSAX/blob/main/docs/configuration.md` (hard-coded in guard module). FR-005 accepts either a full URL or a repo-relative `docs/configuration.md` pointer; hard-coded full URL chosen for copy-paste usability.
+- `<doc_url>` is `https://github.com/umyunsang/UMMAYA/blob/main/docs/configuration.md` (hard-coded in guard module). FR-005 accepts either a full URL or a repo-relative `docs/configuration.md` pointer; hard-coded full URL chosen for copy-paste usability.
 
 **Example**:
 
 ```
-KOSAX config error [env=prod]: missing required variables: KOSAX_FRIENDLI_TOKEN, KOSAX_KAKAO_API_KEY. See https://github.com/umyunsang/KOSAX/blob/main/docs/configuration.md
+UMMAYA config error [env=prod]: missing required variables: UMMAYA_FRIENDLI_TOKEN, UMMAYA_KAKAO_API_KEY. See https://github.com/umyunsang/UMMAYA/blob/main/docs/configuration.md
 ```
 
 **Rules**:
@@ -107,7 +107,7 @@ A variable is "missing" iff `os.environ.get(var.name, "").strip() == ""`. An emp
 
 ## Semantics: environment classification
 
-1. If `os.environ.get("KOSAX_ENV")` is exactly one of `{"dev", "ci", "prod"}` → use as `env`.
+1. If `os.environ.get("UMMAYA_ENV")` is exactly one of `{"dev", "ci", "prod"}` → use as `env`.
 2. Otherwise (unset, empty, or any other string) → `env = "dev"`.
 
 No logging of the fallthrough; invisible by design.
@@ -137,12 +137,12 @@ No logging of the fallthrough; invisible by design.
 
 | Test ID | Scenario | Expected |
 |---------|----------|----------|
-| T-G01 | Empty env, `KOSAX_ENV` unset | exit 78; message lists all `required_in ⊇ {dev}` vars; env tag `dev` |
+| T-G01 | Empty env, `UMMAYA_ENV` unset | exit 78; message lists all `required_in ⊇ {dev}` vars; env tag `dev` |
 | T-G02 | All required vars set | return `None`; no stderr output |
-| T-G03 | `KOSAX_ENV=prod`, `LANGFUSE_PUBLIC_KEY` missing | exit 78; `LANGFUSE_PUBLIC_KEY` in missing list |
-| T-G04 | `KOSAX_ENV=prod`, `LANGFUSE_PUBLIC_KEY` missing but `KOSAX_ENV=dev` reruns | T-G03 fails, then flipping env passes |
-| T-G05 | Whitespace-only value for `KOSAX_KAKAO_API_KEY` | treated as missing |
-| T-G06 | Unknown `KOSAX_ENV=staging` | treated as `dev`; no error about `prod`-only vars |
+| T-G03 | `UMMAYA_ENV=prod`, `LANGFUSE_PUBLIC_KEY` missing | exit 78; `LANGFUSE_PUBLIC_KEY` in missing list |
+| T-G04 | `UMMAYA_ENV=prod`, `LANGFUSE_PUBLIC_KEY` missing but `UMMAYA_ENV=dev` reruns | T-G03 fails, then flipping env passes |
+| T-G05 | Whitespace-only value for `UMMAYA_KAKAO_API_KEY` | treated as missing |
+| T-G06 | Unknown `UMMAYA_ENV=staging` | treated as `dev`; no error about `prod`-only vars |
 | T-G07 | 100 ms budget | `time.monotonic()` delta `< 0.1` on worst-case (all-missing) path |
 | T-G08 | Missing-list ordering determinism | same input twice → identical message |
 | T-G09 | Guard does not write `.env` | post-call `.env` mtime unchanged (if present) |

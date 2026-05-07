@@ -13,7 +13,7 @@ import { errorMessage } from '../../utils/errors.js';
 import { getUnconfiguredChannels, type UnconfiguredChannel } from '../../utils/plugins/mcpPluginIntegration.js';
 import { loadAllPlugins } from '../../utils/plugins/pluginLoader.js';
 import { getUnconfiguredOptions, loadPluginOptions, type PluginOptionSchema, type PluginOptionValues, savePluginOptions } from '../../utils/plugins/pluginOptionsStorage.js';
-// KOSAX Spec 1633 / Epic #2293 — utils/plugins/mcpbHandler deleted (Anthropic
+// UMMAYA Spec 1633 / Epic #2293 — utils/plugins/mcpbHandler deleted (Anthropic
 // .mcpb bundle format). Per-channel user-config now persists through the same
 // pluginOptionsStorage path as top-level options, with a `${pluginId}::channel::${server}`
 // composite key so channel values survive across runs and `${user_config.*}`

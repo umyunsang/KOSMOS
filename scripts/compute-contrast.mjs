@@ -1,5 +1,5 @@
 #!/usr/bin/env bun
-// Source: KOSAX Epic H #1302 (035-onboarding-brand-port), tasks T003 + T045
+// Source: UMMAYA Epic H #1302 (035-onboarding-brand-port), tasks T003 + T045
 // Reference: specs/035-onboarding-brand-port/contracts/contrast-measurements.md § 1–§ 2
 // Dependency policy: Bun + stdlib only (AGENTS.md hard rule, research R-3).
 //
@@ -37,8 +37,8 @@ export const PAIR_MATRIX = Object.freeze([
   { foregroundToken: 'agentSatelliteHira', backgroundToken: 'background', kind: 'body' },
   { foregroundToken: 'agentSatelliteNmc', backgroundToken: 'background', kind: 'body' },
   // Non-text pairs (threshold >= 3.0)
-  { foregroundToken: 'kosaxCore', backgroundToken: 'background', kind: 'nontext' },
-  { foregroundToken: 'kosaxCoreShimmer', backgroundToken: 'background', kind: 'nontext' },
+  { foregroundToken: 'ummayaCore', backgroundToken: 'background', kind: 'nontext' },
+  { foregroundToken: 'ummayaCoreShimmer', backgroundToken: 'background', kind: 'nontext' },
   { foregroundToken: 'orbitalRing', backgroundToken: 'background', kind: 'nontext' },
   { foregroundToken: 'orbitalRingShimmer', backgroundToken: 'background', kind: 'nontext' },
   // Diff pairs (threshold >= 3.0 — non-text UI chrome)
@@ -154,7 +154,7 @@ function renderMarkdown(results) {
     nontext: results.filter((r) => r.pair.kind === 'nontext'),
   }
   const lines = [
-    '# Contrast Measurements — KOSAX dark theme',
+    '# Contrast Measurements — UMMAYA dark theme',
     '',
     `**Generated**: ${now}`,
     '**Source**: `tui/src/theme/dark.ts`',

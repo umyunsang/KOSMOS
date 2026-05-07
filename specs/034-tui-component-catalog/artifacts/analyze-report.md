@@ -56,7 +56,7 @@
 | BSS-04 | brand-system-sections §5 / SC-003 | §3–§9 each ≤ 50 words | ✅ PASS — max 46 (§8) |
 | BSS-05 | brand-system-sections §5 / SC-003 | §10 ≤ 50 words | ✅ PASS — 43 |
 | BSS-06 | brand-system-sections §5 / FR-014 | §3–§10 each contain literal `Owner:` line | ✅ PASS — 8/8 |
-| BSS-07 | brand-system-sections §5 / FR-015 | §1 contains `KOSAX`, `은하계`, ministry roster header | ✅ PASS — 14 / 4 / 2 hits respectively |
+| BSS-07 | brand-system-sections §5 / FR-015 | §1 contains `UMMAYA`, `은하계`, ministry roster header | ✅ PASS — 14 / 4 / 2 hits respectively |
 | BSS-08 | brand-system-sections §5 / FR-016 | §2 contains `BAN-01`..`BAN-07` literal strings | ✅ PASS — 7/7 |
 | BSS-09 | brand-system-sections §5 / FR-012 | No text between title and §1 | ✅ PASS — empty/whitespace only |
 | AG-01 | accessibility-gate-rows §6 / FR-018, SC-009 | 1:1 pairing — every PORT/REWRITE catalog row has exactly one matching gate row | ✅ PASS — 184/184 exact `CC source path` join |
@@ -88,7 +88,7 @@ Placeholder scan (`TODO`, `TKTK`, `???`, `<placeholder>`, `NEEDS CLARIFICATION`)
 | II — Fail-Closed Security (NON-NEGOTIABLE) | ✅ N/A | No new tool adapters / permission rules; brand + catalog + accessibility gate are documentation surfaces. |
 | III — Pydantic v2 Strict Typing (NON-NEGOTIABLE) | ✅ N/A | No new Python tool schemas; `data-model.md` describes logical row shapes consumed as lint rules. |
 | IV — Government API Compliance | ✅ N/A | No `data.go.kr` touch-points. |
-| V — Policy Alignment (PIPA / 공공AX) | ✅ PASS | §1 brand metaphor grounds KOSAX in 공공AX Principle 8 (single conversational window); FR-021 IME flag + FR-022 contrast constraint propagate PIPA-adjacent safety forward. KWCAG text for citizen-facing rows cites "개인정보(PIPA) 표시 시 재고지". |
+| V — Policy Alignment (PIPA / 공공AX) | ✅ PASS | §1 brand metaphor grounds UMMAYA in 공공AX Principle 8 (single conversational window); FR-021 IME flag + FR-022 contrast constraint propagate PIPA-adjacent safety forward. KWCAG text for citizen-facing rows cites "개인정보(PIPA) 표시 시 재고지". |
 | VI — Deferred Work Accountability | ✅ PASS | 16 Deferred items; 10 tracked to existing issues (#1302, #1308, #25); 6 backfilled at `/speckit-taskstoissues` as #1479–#1484 (all `[Deferred]`-prefixed). Regex scan for ghost-work patterns (`separate epic`, `future phase`, `v2`, `later release`) — 0 unregistered matches (research §3.3). |
 
 ---
@@ -148,9 +148,9 @@ Downstream-Epic consumers (B/C/D/E/H/I/J/K/L) MUST use the Appendix A checklist 
 
 ## 7 · T036 readability spot-check (SC-008)
 
-**Protocol**: 5 CC files selected (one from each classifier group + one aggregated constituent), find verdict + owning Epic + KOSAX target + rationale using only `docs/tui/component-catalog.md` + ADR-006 + sourcemap. Target: < 30 min total.
+**Protocol**: 5 CC files selected (one from each classifier group + one aggregated constituent), find verdict + owning Epic + UMMAYA target + rationale using only `docs/tui/component-catalog.md` + ADR-006 + sourcemap. Target: < 30 min total.
 
-| # | CC file | Row # | Verdict | Owning Epic | KOSAX target | Retrieval time |
+| # | CC file | Row # | Verdict | Owning Epic | UMMAYA target | Retrieval time |
 |---|---|---:|---|---|---|---:|
 | 1 | `messages/HookProgressMessage.tsx` | 73 | PORT | M #1310 | `tui/src/components/conversation/HookProgressMessage.tsx` | < 5 s |
 | 2 | `LogoV2/Clawd.tsx` | 34 | DISCARD | — | — | < 5 s |

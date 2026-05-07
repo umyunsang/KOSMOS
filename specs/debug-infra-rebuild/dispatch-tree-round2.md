@@ -40,15 +40,15 @@ Migration patterns same as round 1 (commit 444b056). Reference scenario:
 `send_text_pane` / `send_enter_pane` / `send_keys_pane` / `send_ctrlc_pane`.
 
 Hard rules: do NOT delete legacy `.expect` (kept for offline pyte replay).
-Do NOT touch tui/src/** or src/kosax/**. Do NOT commit.
+Do NOT touch tui/src/** or src/ummaya/**. Do NOT commit.
 
 ### sonnet-phase4-snapshot (≤5 task / ≤10 file)
 
-Implement RFC § 5 Phase 4 — per-render Ink snapshot stream + `kosax.tui.frame_commit` OTEL event. The visual safety net AGENTS.md anti-pattern #1 needs to be permanently retired by.
+Implement RFC § 5 Phase 4 — per-render Ink snapshot stream + `ummaya.tui.frame_commit` OTEL event. The visual safety net AGENTS.md anti-pattern #1 needs to be permanently retired by.
 
 Deliverables:
 1. `tui/src/test-utils/frameStreamSnapshot.ts` — helper that wraps ink-testing-library's `render()` and exposes the `frames` array as a hash-of-state sequence.
-2. `tui/src/utils/frameCommitOtel.ts` — small module that emits `kosax.tui.frame_commit` OTEL span events on every Ink reconcile. Use `@opentelemetry/api` (already on the dep tree from Spec 021). Attributes: `kosax.correlation_id` + `kosax.tui.frame_hash` + `kosax.tui.frame_seq`.
+2. `tui/src/utils/frameCommitOtel.ts` — small module that emits `ummaya.tui.frame_commit` OTEL span events on every Ink reconcile. Use `@opentelemetry/api` (already on the dep tree from Spec 021). Attributes: `ummaya.correlation_id` + `ummaya.tui.frame_hash` + `ummaya.tui.frame_seq`.
 3. Wire it into the TUI render path in `tui/src/components/Messages.tsx` or the central reconcile callback (whichever is least invasive — stay byte-copy-compatible with CC).
 4. ≥3 unit tests in `tui/tests/test-utils/frameStreamSnapshot.test.tsx` covering:
    - `assertFrameSequence(result, [hash1, hash2, hash3])` — passes for matched sequence
@@ -64,13 +64,13 @@ Live-validate Phase 2 (commit 65b3041) by actually spinning up aimock and runnin
 
 Deliverables:
 1. Run `docker compose -f docker-compose.aimock.yml up -d`. Verify container healthy on port 4010.
-2. With `KOSAX_FRIENDLI_BASE_URL=http://localhost:4010/v1` + `KOSAX_FRIENDLI_TOKEN=aimock-test`, run:
+2. With `UMMAYA_FRIENDLI_BASE_URL=http://localhost:4010/v1` + `UMMAYA_FRIENDLI_TOKEN=aimock-test`, run:
    `scripts/tui-tmux-capture.sh /tmp/tdb-aimock specs/debug-infra-rebuild/scenarios/busan-weather.sh`
 3. Capture proof outputs at `specs/debug-infra-rebuild/proof-runs/aimock-busan-weather/`. Verify timeline: total run time should be < 15s (aimock ttft=200ms + tps=50 fixture; vs 60-90s with real FriendliAI).
 4. If aimock's actual fixture format differs from what the teammate authored in commit 65b3041 (likely — RFC was speculative on the JSON shape), iterate the fixture until it works. Document the actual observed format in `tests/fixtures/llm/README.md`.
 5. Tear down: `docker compose -f docker-compose.aimock.yml down`. Update `specs/debug-infra-rebuild/aimock-quickstart.md` with any corrections.
 
-Hard rules: do NOT modify src/** or tui/src/**. The aimock service should be transparent to KOSAX code (just env switch). If aimock's JSON shape is different, ONLY edit the fixture files + the quickstart doc. Do NOT commit.
+Hard rules: do NOT modify src/** or tui/src/**. The aimock service should be transparent to UMMAYA code (just env switch). If aimock's JSON shape is different, ONLY edit the fixture files + the quickstart doc. Do NOT commit.
 
 If the aimock image is broken or the RFC's speculative format is wildly off, write up the gap honestly in `specs/debug-infra-rebuild/aimock-quickstart.md` with a "known issues" section + a fallback (e.g., switch to a different mock server). Do NOT pretend success.
 

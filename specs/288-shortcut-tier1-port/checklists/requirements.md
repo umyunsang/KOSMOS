@@ -7,7 +7,7 @@
 ## Content Quality
 
 - [x] No implementation details (languages, frameworks, APIs)
-  - Spec references `useKoreanIME`, `ModeCycle.tsx`, and `Ink useInput/setRawMode` by name, but these are cited as **existing KOSAX contract surfaces** (part of the feature's interface boundary with already-shipped specs 033, 287), not as implementation prescriptions. The harness-migration mission (see `docs/vision.md`) makes the CC sourcemap and Spec 287 stack a known, fixed substrate — the spec describes *what citizen-visible behaviour must hold against that substrate*, not how to write the code. Plan.md will translate this into implementation.
+  - Spec references `useKoreanIME`, `ModeCycle.tsx`, and `Ink useInput/setRawMode` by name, but these are cited as **existing UMMAYA contract surfaces** (part of the feature's interface boundary with already-shipped specs 033, 287), not as implementation prescriptions. The harness-migration mission (see `docs/vision.md`) makes the CC sourcemap and Spec 287 stack a known, fixed substrate — the spec describes *what citizen-visible behaviour must hold against that substrate*, not how to write the code. Plan.md will translate this into implementation.
 - [x] Focused on user value and business needs — every User Story leads with the citizen pain point from ministry portal flows and the AX replacement.
 - [x] Written for non-technical stakeholders — IME/permission-mode mechanics are explained in citizen-readable terms; jargon (jamo, chord, IME) is defined inline the first time it appears.
 - [x] All mandatory sections completed — User Scenarios, Requirements, Success Criteria, Scope Boundaries all present.

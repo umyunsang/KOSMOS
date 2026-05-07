@@ -1,6 +1,6 @@
 # Phase 0 Research — Spec 031 Five-Primitive Harness Redesign
 
-**Branch**: `031-five-primitive-harness` | **Date**: 2026-04-19 | **Spec**: [spec.md](./spec.md) | **Discussion**: [#1051](https://github.com/umyunsang/KOSAX/discussions/1051)
+**Branch**: `031-five-primitive-harness` | **Date**: 2026-04-19 | **Spec**: [spec.md](./spec.md) | **Discussion**: [#1051](https://github.com/umyunsang/UMMAYA/discussions/1051)
 
 > Per Constitution v1.1.1 §I and AGENTS.md, every design decision below maps first to the **restored-src primary reference** (`.references/claude-code-sourcemap/restored-src/src/`, Claude Code 2.1.88) and escalates to a secondary reference only when restored-src does not cover the need.
 
@@ -8,7 +8,7 @@
 
 ## 1. Reference Map — Primitive ↔ Claude Code analogue
 
-| KOSAX primitive | Claude Code analogue (primary, restored-src) | Shape carried over | Escalation reason (if any) |
+| UMMAYA primitive | Claude Code analogue (primary, restored-src) | Shape carried over | Escalation reason (if any) |
 |---|---|---|---|
 | `lookup` (mode=`search`) | `src/tools/GrepTool/` (content search) + `src/tools/ToolSearchTool/` (registry self-search) | BM25 over `search_hint`, no side effects, idempotent | Spec 022 already shipped; re-cite for continuity |
 | `lookup` (mode=`fetch`) | `src/tools/FileReadTool/` + `src/tools/WebFetchTool/` (read-only byte retrieval) | Deterministic output, cache-friendly, idempotent | — |
@@ -17,7 +17,7 @@
 | `subscribe` | No byte-for-byte analog in CC tools; closest is `src/services/SessionMemory/` (long-lived state observation) + `src/tools/shared/` (async generator streaming) | `AsyncIterator[Event]` with `lifetime`; back-pressure native | Escalate to **AutoGen AgentRuntime mailbox** (streaming delivery semantics) + **stamina/aiobreaker** (back-pressure + circuit breaker); **3GPP TS 23.041** for CBS Message ID 4370–4385; **RSS 2.0** spec for `guid` de-duplication |
 | `verify` | `src/services/oauth/` + `src/tools/McpAuthTool/` (credential delegation — CC never mints tokens, always delegates) | Discriminated union over external credential families, delegation-only | Escalate to **OpenAI Agents SDK guardrail pipeline** for family-family mismatch detection; **Pydantic v2 discriminated union** for family variants. Korean tier enum is domain extension — no CC analog |
 
-**Verdict**: Three of five primitives (`lookup`, `resolve_location`, `submit`) are structural ports of CC tools. Two (`subscribe`, `verify`) are KOSAX-net-new that use CC's **architecture** (async generator streaming, delegation-not-minting) but carry Korean-domain **data shape** that CC has no concept of.
+**Verdict**: Three of five primitives (`lookup`, `resolve_location`, `submit`) are structural ports of CC tools. Two (`subscribe`, `verify`) are UMMAYA-net-new that use CC's **architecture** (async generator streaming, delegation-not-minting) but carry Korean-domain **data shape** that CC has no concept of.
 
 ---
 
@@ -27,7 +27,7 @@
 
 **Rationale**:
 - Mirrors `BashTool`'s single `{command, description, timeout}` surface where `command` is an opaque string dispatched to the shell — `params` is the same shape, opaque to the main surface, typed by the adapter's own Pydantic model.
-- Pydantic AI's tool registry pattern lets each adapter own `input_schema: type[BaseModel]` while the harness only sees the shared envelope — this is exactly what `src/kosax/tools/registry.py` already does for Spec 022's 4 adapters.
+- Pydantic AI's tool registry pattern lets each adapter own `input_schema: type[BaseModel]` while the harness only sees the shared envelope — this is exactly what `src/ummaya/tools/registry.py` already does for Spec 022's 4 adapters.
 - Per Constitution §III, the adapter's `params` is typed by its Pydantic model even though the main surface sees `dict`. This is enforced by the `ToolRegistry.register()` backstop — adapter parses its own params at invocation time, registers its model at boot.
 
 **Alternatives considered**:
@@ -64,7 +64,7 @@ The spec defers the exact label strings to this plan (Assumption: *"The 18 `publ
 
 **Rationale**:
 - **Dual-axis over single-axis NIST AAL**: The rejected 8-verb design used AAL-only and lost distinctions like `공동인증서` vs `금융인증서` (both AAL3 but governed by different bodies — 금융결제원 vs 전자서명법). Dual-axis preserves the Korean-public-infrastructure fidelity while giving international interop an advisory hint.
-- **Harness-not-reimplementation**: Each variant delegates to the relevant external operator (금융결제원, PASS providers, 행정안전부, 모바일 운전면허 발급기관, 마이데이터 사업자). KOSAX holds no signing keys, runs no CA, issues no VCs.
+- **Harness-not-reimplementation**: Each variant delegates to the relevant external operator (금융결제원, PASS providers, 행정안전부, 모바일 운전면허 발급기관, 마이데이터 사업자). UMMAYA holds no signing keys, runs no CA, issues no VCs.
 
 **Alternatives considered**:
 - **NIST AAL primary, Korean tier optional**: Rejected (original 8-verb pattern).
@@ -86,7 +86,7 @@ The spec defers the exact label strings to this plan (Assumption: *"The 18 `publ
 **Rationale**:
 - **Async-generator streaming over callback**: Matches CC's loop-level async generator idiom (`services/shared/*`) — back-pressure comes free from Python/TS async iteration, cancellation propagates on `lifetime` expiry.
 - **3 modalities unified under one iterator**: Each adapter internally handles its own protocol (CBS radio bearer, REST `httpx.AsyncClient` polling, RSS feed tail via stored `guid`). The harness only sees `Event`s on the iterator.
-- **Webhook forbidden**: KOSAX is a client-side harness — adding a webhook receiver means running an HTTP server, which contradicts the harness principle and expands blast radius (public endpoint = new attack surface).
+- **Webhook forbidden**: UMMAYA is a client-side harness — adding a webhook receiver means running an HTTP server, which contradicts the harness principle and expands blast radius (public endpoint = new attack surface).
 
 **Modality specifics**:
 - **3GPP CBS broadcast**: Message ID range `4370–4385` (ATIS-0700007 CMAS categories, adopted by KCS CBS profile). Adapter consumes CBS messages from a mock radio-layer fixture (real-device CBS requires UE access, out of v1 scope).
@@ -124,7 +124,7 @@ The spec defers the exact label strings to this plan (Assumption: *"The 18 `publ
 
 ### 5.2 `docs/scenarios/` — 3 OPAQUE journeys (no mock adapter)
 
-| Journey | Why OPAQUE | KOSAX ↔ real-system handoff point |
+| Journey | Why OPAQUE | UMMAYA ↔ real-system handoff point |
 |---|---|---|
 | 정부24 민원 제출 | Submission API withheld from public disclosure | Harness hands user to `gov24.go.kr` browser flow |
 | KEC 전자세금계산서 XML 서명부 | XSD + public signing key not disclosed | Harness renders draft XML, user signs in NETS-KEC portal |
@@ -150,10 +150,10 @@ The spec defers the exact label strings to this plan (Assumption: *"The 18 `publ
 **Enforcement shape at v1.2 GA**:
 - `AdapterRegistration` gains `published_tier_minimum: <one of the 18 labels> | None` and `nist_aal_hint: AAL1|AAL2|AAL3 | None`.
 - `ToolRegistry.register()` backstop enforces **both** fields must be set on or after v1.2 GA (FR-030).
-- Pre-v1.2 registrations (Spec 022's 4 adapters, 8 legacy tool IDs in `src/kosax/security/audit.py`) retain their current shape via a one-release compatibility window; compatibility window closes at v1.2 GA.
+- Pre-v1.2 registrations (Spec 022's 4 adapters, 8 legacy tool IDs in `src/ummaya/security/audit.py`) retain their current shape via a one-release compatibility window; compatibility window closes at v1.2 GA.
 
 **Current legacy state** (discovered during research):
-- `src/kosax/security/audit.py::TOOL_MIN_AAL` currently lists 8 legacy tool IDs + 2 Phase-2 API adapters — confirms that the legacy 8-verb AAL-only shape is still encoded. v1.2 migration MUST delete the legacy 8-verb entries and migrate the 4 existing Spec 022 adapters + 2 Phase-2 adapters to the dual-axis shape.
+- `src/ummaya/security/audit.py::TOOL_MIN_AAL` currently lists 8 legacy tool IDs + 2 Phase-2 API adapters — confirms that the legacy 8-verb AAL-only shape is still encoded. v1.2 migration MUST delete the legacy 8-verb entries and migrate the 4 existing Spec 022 adapters + 2 Phase-2 adapters to the dual-axis shape.
 - `ToolCallAuditRecord` v1 I1–I5 invariants (Spec 024) and V1–V6 invariants (Spec 025) are enforced via Pydantic `@model_validator(mode="after")` + `ToolRegistry.register()` backstop. This pattern is preserved verbatim.
 
 **Reference citations**:

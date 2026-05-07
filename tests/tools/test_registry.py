@@ -5,8 +5,8 @@ from __future__ import annotations
 
 import pytest
 
-from kosax.tools.errors import DuplicateToolError, ToolNotFoundError
-from kosax.tools.registry import ToolRegistry
+from ummaya.tools.errors import DuplicateToolError, ToolNotFoundError
+from ummaya.tools.registry import ToolRegistry
 
 # ---------------------------------------------------------------------------
 # Registration
@@ -226,7 +226,7 @@ def test_empty_core_tools(sample_tool_factory):
 
 def test_get_rate_limiter_registered(sample_tool_factory):
     """get_rate_limiter() must return a RateLimiter with the correct limit for a registered tool."""
-    from kosax.tools.rate_limiter import RateLimiter
+    from ummaya.tools.rate_limiter import RateLimiter
 
     registry = ToolRegistry()
     tool = sample_tool_factory(id="rl_tool", rate_limit_per_minute=30)

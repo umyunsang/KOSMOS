@@ -10,7 +10,7 @@
 
 ### User Story 1 - Tool Registration with Fail-Closed Defaults (Priority: P1)
 
-A developer adds a new government API adapter to KOSAX by declaring a tool definition with only the fields that deviate from the conservative defaults. The system ensures that any omitted fields default to the most restrictive settings (requires_auth=True, is_personal_data=True, is_concurrency_safe=False, cache_ttl=0).
+A developer adds a new government API adapter to UMMAYA by declaring a tool definition with only the fields that deviate from the conservative defaults. The system ensures that any omitted fields default to the most restrictive settings (requires_auth=True, is_personal_data=True, is_concurrency_safe=False, cache_ttl=0).
 
 **Why this priority**: This is the foundation of the entire tool system. Without fail-closed registration, a contributor could accidentally expose personal data APIs as public.
 

@@ -49,10 +49,10 @@ jobs:
 
       - name: Clean global CLI smoke
         run: |
-          prefix="${RUNNER_TEMP}/kosax-prefix"
+          prefix="${RUNNER_TEMP}/ummaya-prefix"
           tarball="$(node -e "const report = require('./package-evidence/npm-pack.json'); const pack = Array.isArray(report) ? report[0] : report; console.log(pack.filename)")"
           npm install --global --prefix "${prefix}" "./${tarball}"
-          "${prefix}/bin/kosax" --version
+          "${prefix}/bin/ummaya" --version
 
       - name: Record distribution hashes
         run: |

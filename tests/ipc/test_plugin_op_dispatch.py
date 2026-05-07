@@ -2,11 +2,11 @@
 """Unit tests for the plugin_op IPC dispatcher (Spec 1979 / T014).
 
 Covers the install / uninstall / list routing logic in
-:mod:`kosax.ipc.plugin_op_dispatcher`. Each test injects mock writers
+:mod:`ummaya.ipc.plugin_op_dispatcher`. Each test injects mock writers
 + stub registry objects so the dispatch path can be exercised in
 isolation from the live backend.
 
-Includes analysis.md C1 (FR-010 OTEL kosax.plugin.id) + C2 (SC-009
+Includes analysis.md C1 (FR-010 OTEL ummaya.plugin.id) + C2 (SC-009
 concurrent install ledger) sub-tests per the spec quality audit.
 """
 
@@ -16,7 +16,7 @@ from typing import Any
 
 import pytest
 
-from kosax.ipc.frame_schema import IPCFrame, PluginOpFrame
+from ummaya.ipc.frame_schema import IPCFrame, PluginOpFrame
 
 # ---------------------------------------------------------------------------
 # Test seams
@@ -64,7 +64,7 @@ class TestDispatchRouting:
     async def test_install_request_dispatches_to_handle_install(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        from kosax.ipc import plugin_op_dispatcher
+        from ummaya.ipc import plugin_op_dispatcher
 
         called: list[str] = []
 
@@ -87,7 +87,7 @@ class TestDispatchRouting:
     async def test_uninstall_request_dispatches_to_handle_uninstall(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        from kosax.ipc import plugin_op_dispatcher
+        from ummaya.ipc import plugin_op_dispatcher
 
         called: list[str] = []
 
@@ -110,7 +110,7 @@ class TestDispatchRouting:
     async def test_list_request_dispatches_to_handle_list(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        from kosax.ipc import plugin_op_dispatcher
+        from ummaya.ipc import plugin_op_dispatcher
 
         called: list[str] = []
 
@@ -131,7 +131,7 @@ class TestDispatchRouting:
 
     @pytest.mark.asyncio
     async def test_non_request_op_raises(self) -> None:
-        from kosax.ipc.plugin_op_dispatcher import handle_plugin_op_request
+        from ummaya.ipc.plugin_op_dispatcher import handle_plugin_op_request
 
         progress_frame = PluginOpFrame(
             session_id="test-sess",
@@ -166,7 +166,7 @@ class TestHandleList:
 
     @pytest.mark.asyncio
     async def test_list_emits_payload_only_no_progress(self) -> None:
-        from kosax.ipc.plugin_op_dispatcher import handle_list
+        from ummaya.ipc.plugin_op_dispatcher import handle_list
 
         # Stub registry with empty _tools so the payload list is empty
         class _StubRegistry:
@@ -201,8 +201,8 @@ class TestHandleList:
         """Audit-6 P1: payload delta must carry parseable JSON with 'entries' key."""
         import json
 
-        from kosax.ipc.frame_schema import PayloadDeltaFrame
-        from kosax.ipc.plugin_op_dispatcher import handle_list
+        from ummaya.ipc.frame_schema import PayloadDeltaFrame
+        from ummaya.ipc.plugin_op_dispatcher import handle_list
 
         class _StubRegistry:
             _tools: dict[str, Any] = {}
@@ -234,7 +234,7 @@ class TestErrorPropagation:
 
     def test_build_complete_frame_failure_carries_error_kind(self) -> None:
         """error_kind + error_message are set on failure complete frames."""
-        from kosax.ipc.plugin_op_dispatcher import _build_complete_frame
+        from ummaya.ipc.plugin_op_dispatcher import _build_complete_frame
 
         frame = _build_complete_frame(
             session_id="sess-1",
@@ -250,7 +250,7 @@ class TestErrorPropagation:
 
     def test_build_complete_frame_success_clears_error_kind(self) -> None:
         """error_kind is stripped (set to None) on success complete frames."""
-        from kosax.ipc.plugin_op_dispatcher import _build_complete_frame
+        from ummaya.ipc.plugin_op_dispatcher import _build_complete_frame
 
         frame = _build_complete_frame(
             session_id="sess-1",
@@ -265,7 +265,7 @@ class TestErrorPropagation:
 
     def test_build_complete_frame_idempotent_noop(self) -> None:
         """was_idempotent_noop=True is propagated on success."""
-        from kosax.ipc.plugin_op_dispatcher import _build_complete_frame
+        from ummaya.ipc.plugin_op_dispatcher import _build_complete_frame
 
         frame = _build_complete_frame(
             session_id="sess-1",
@@ -282,8 +282,8 @@ class TestErrorPropagation:
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         """Audit-6 P1: handle_uninstall propagates was_idempotent_noop to complete frame."""
-        from kosax.ipc import plugin_op_dispatcher
-        from kosax.plugins.uninstall import UninstallResult
+        from ummaya.ipc import plugin_op_dispatcher
+        from ummaya.plugins.uninstall import UninstallResult
 
         # Stub uninstall_plugin to return an idempotent-noop result.
         def _stub_uninstall(*_args: Any, **_kwargs: Any) -> UninstallResult:
@@ -297,7 +297,7 @@ class TestErrorPropagation:
             )
 
         monkeypatch.setattr(
-            "kosax.ipc.plugin_op_dispatcher.uninstall_plugin",
+            "ummaya.ipc.plugin_op_dispatcher.uninstall_plugin",
             _stub_uninstall,
             raising=False,
         )
@@ -306,9 +306,9 @@ class TestErrorPropagation:
         import sys
         import types
 
-        fake_uninstall_mod = types.ModuleType("kosax.plugins.uninstall")
+        fake_uninstall_mod = types.ModuleType("ummaya.plugins.uninstall")
         fake_uninstall_mod.uninstall_plugin = _stub_uninstall  # type: ignore[attr-defined]
-        monkeypatch.setitem(sys.modules, "kosax.plugins.uninstall", fake_uninstall_mod)
+        monkeypatch.setitem(sys.modules, "ummaya.plugins.uninstall", fake_uninstall_mod)
 
         frame = _build_request("uninstall", name="never_installed")
         sink = _FrameSink()
@@ -331,7 +331,7 @@ class TestUninstallResultIdempotentField:
     """Audit-6 P1 — UninstallResult.was_idempotent_noop field correctness."""
 
     def test_idempotent_noop_defaults_false(self) -> None:
-        from kosax.plugins.uninstall import UninstallResult
+        from ummaya.plugins.uninstall import UninstallResult
 
         result = UninstallResult(
             exit_code=0,
@@ -343,7 +343,7 @@ class TestUninstallResultIdempotentField:
         assert result.was_idempotent_noop is False
 
     def test_idempotent_noop_true_when_set(self) -> None:
-        from kosax.plugins.uninstall import UninstallResult
+        from ummaya.plugins.uninstall import UninstallResult
 
         result = UninstallResult(
             exit_code=0,
@@ -447,7 +447,7 @@ class TestConcurrentInstallLedger:
     """SC-009 — concurrent _allocate_consent_position assigns monotonic values."""
 
     def test_concurrent_position_allocation_is_monotonic(self, tmp_path: Any) -> None:
-        from kosax.plugins.installer import _allocate_consent_position
+        from ummaya.plugins.installer import _allocate_consent_position
 
         consent_root = tmp_path / "consent"
         # Pre-create some receipts so first call returns > 0
@@ -466,17 +466,17 @@ class TestConcurrentInstallLedger:
 
 
 # ---------------------------------------------------------------------------
-# OTEL kosax.plugin.id attribute (analysis.md C1 / FR-010)
+# OTEL ummaya.plugin.id attribute (analysis.md C1 / FR-010)
 # ---------------------------------------------------------------------------
 
 
 class TestOTELPluginIdSpan:
-    """FR-010 — plugin install emits an OTEL span carrying kosax.plugin.id."""
+    """FR-010 — plugin install emits an OTEL span carrying ummaya.plugin.id."""
 
-    def test_register_plugin_adapter_emits_kosax_plugin_id_span(self, tmp_path: Any) -> None:
-        # Verify register_plugin_adapter sets the kosax.plugin.id attribute.
+    def test_register_plugin_adapter_emits_ummaya_plugin_id_span(self, tmp_path: Any) -> None:
+        # Verify register_plugin_adapter sets the ummaya.plugin.id attribute.
         # This relies on the existing Spec 1636 register_plugin_adapter
-        # implementation which already opens the kosax.plugin.install span.
+        # implementation which already opens the ummaya.plugin.install span.
         # A complete OTEL exporter capture is overkill for this unit test;
         # we use opentelemetry's in-memory test exporter pattern.
         from opentelemetry.sdk.trace import TracerProvider
@@ -489,15 +489,15 @@ class TestOTELPluginIdSpan:
         # were attached. Because the global OTEL tracer is already initialised
         # by Spec 021 at module load, we assert at the source-code level
         # that the attribute is wired. Direct grep-equivalent.
-        import kosax.plugins.registry as registry_module
+        import ummaya.plugins.registry as registry_module
 
         source = registry_module.__file__
         with open(source, encoding="utf-8") as fh:
             text = fh.read()
         # The attribute is set inside the start_as_current_span block
         # — verify the literal string is present (defense against drift).
-        assert "kosax.plugin.id" in text, (
-            "register_plugin_adapter must emit kosax.plugin.id OTEL "
+        assert "ummaya.plugin.id" in text, (
+            "register_plugin_adapter must emit ummaya.plugin.id OTEL "
             "attribute per FR-010 / Spec 1636 SC-007"
         )
 

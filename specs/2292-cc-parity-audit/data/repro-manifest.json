@@ -14,7 +14,7 @@
         "specs/2292-cc-parity-audit/data/enumerated-keep-byte-identical.txt",
         "specs/2292-cc-parity-audit/data/enumerated-import-candidate.txt",
         "specs/2292-cc-parity-audit/data/enumerated-modified.txt",
-        "specs/2292-cc-parity-audit/data/enumerated-kosax-only.txt",
+        "specs/2292-cc-parity-audit/data/enumerated-ummaya-only.txt",
         "specs/2292-cc-parity-audit/data/enumerated-cc-only.txt"
       ],
       "seed": null,

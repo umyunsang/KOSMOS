@@ -5,21 +5,21 @@
 
 ## Summary
 
-Build the Layer 4 substrate that turns the Phase 1 single-agent `QueryEngine` into a coordinator-and-workers swarm: a `Coordinator` that owns the `Research → Synthesis → Implementation → Verification` phase machine, `Worker` instances that each wrap one `QueryEngine` restricted to the 2-tool facade (`lookup` + `resolve_location`) from Epic #507, an abstract `Mailbox` with a `FileMailbox` implementation backed by fsync'd JSON files under `~/.kosax/mailbox/<session_id>/<sender_id>/`, a strictly vertical permission delegation chain via a `ConsentGateway` stub (real TUI prompt deferred to #287), cooperative cancellation propagating `asyncio.CancelledError` to all workers within 500 ms, and three new `kosax.agent.*` OTel spans whose attribute names are declared in `src/kosax/observability/semconv.py` for future consumption by Epic #501.
+Build the Layer 4 substrate that turns the Phase 1 single-agent `QueryEngine` into a coordinator-and-workers swarm: a `Coordinator` that owns the `Research → Synthesis → Implementation → Verification` phase machine, `Worker` instances that each wrap one `QueryEngine` restricted to the 2-tool facade (`lookup` + `resolve_location`) from Epic #507, an abstract `Mailbox` with a `FileMailbox` implementation backed by fsync'd JSON files under `~/.ummaya/mailbox/<session_id>/<sender_id>/`, a strictly vertical permission delegation chain via a `ConsentGateway` stub (real TUI prompt deferred to #287), cooperative cancellation propagating `asyncio.CancelledError` to all workers within 500 ms, and three new `ummaya.agent.*` OTel spans whose attribute names are declared in `src/ummaya/observability/semconv.py` for future consumption by Epic #501.
 
-Technical approach: reuse `src/kosax/engine/query.py::_query_inner` verbatim inside `Worker` (no tool-loop reimplementation — per FR-009 and Constitution Principle I's "Claude Code is the first reference" rule); model every mailbox message as a closed Pydantic v2 discriminated union on `msg_type` (no `Any`, per Constitution III); route messages strictly by declared `recipient` so that Constitution Principle II ("permissions never flow laterally") is enforced by the mailbox, not by worker discipline; keep the `Mailbox` class abstract so the future Redis Streams backend (Phase 3) drops in without coordinator/worker changes. All four `KOSAX_AGENT_*` environment variables join the pydantic-settings catalog owned by Epic #468. **Zero new runtime dependencies** — everything is stdlib (`asyncio`, `uuid`, `pathlib`, `json`, `hashlib`, `datetime`) on top of `pydantic`, `httpx`, `opentelemetry-*` already in `pyproject.toml`.
+Technical approach: reuse `src/ummaya/engine/query.py::_query_inner` verbatim inside `Worker` (no tool-loop reimplementation — per FR-009 and Constitution Principle I's "Claude Code is the first reference" rule); model every mailbox message as a closed Pydantic v2 discriminated union on `msg_type` (no `Any`, per Constitution III); route messages strictly by declared `recipient` so that Constitution Principle II ("permissions never flow laterally") is enforced by the mailbox, not by worker discipline; keep the `Mailbox` class abstract so the future Redis Streams backend (Phase 3) drops in without coordinator/worker changes. All four `UMMAYA_AGENT_*` environment variables join the pydantic-settings catalog owned by Epic #468. **Zero new runtime dependencies** — everything is stdlib (`asyncio`, `uuid`, `pathlib`, `json`, `hashlib`, `datetime`) on top of `pydantic`, `httpx`, `opentelemetry-*` already in `pyproject.toml`.
 
 ## Technical Context
 
 **Language/Version**: Python 3.12+ (existing project baseline; no version bump).
 **Primary Dependencies**: `pydantic >= 2.13` (frozen models + discriminated unions, existing), `pydantic-settings >= 2.0` (env-var catalog, existing), `opentelemetry-sdk` / `opentelemetry-semantic-conventions` (span emission, existing from Spec 021), stdlib `asyncio` / `uuid` / `pathlib` / `json` / `hashlib` / `datetime`. **No new runtime dependencies** — AGENTS.md hard rule. All imports already in `pyproject.toml` courtesy of Specs 004 / 005 / 021 / 022.
-**Storage**: POSIX filesystem only — `KOSAX_AGENT_MAILBOX_ROOT` (default `~/.kosax/mailbox`) holds one directory per `session_id`, one sub-directory per `sender_id`, one JSON file per message (`<message_id>.json`). fsync on write guarantees at-least-once delivery. No database, no external queue. `replay_unread` state is tracked via a sibling `<message_id>.json.consumed` marker file written after the coordinator or worker has processed a message; crash-replay reads only messages without a `.consumed` marker.
+**Storage**: POSIX filesystem only — `UMMAYA_AGENT_MAILBOX_ROOT` (default `~/.ummaya/mailbox`) holds one directory per `session_id`, one sub-directory per `sender_id`, one JSON file per message (`<message_id>.json`). fsync on write guarantees at-least-once delivery. No database, no external queue. `replay_unread` state is tracked via a sibling `<message_id>.json.consumed` marker file written after the coordinator or worker has processed a message; crash-replay reads only messages without a `.consumed` marker.
 **Testing**: `pytest` + `pytest-asyncio` (existing). New test packages: `tests/agents/test_coordinator_phases.py`, `tests/agents/test_worker_lifecycle.py`, `tests/agents/test_mailbox_file.py`, `tests/agents/test_mailbox_crash_replay.py`, `tests/agents/test_permission_delegation.py`, `tests/agents/test_cooperative_cancellation.py`, `tests/agents/test_synthesis_tool_gate.py`, `tests/agents/test_observability_spans.py`. All integration tests use recorded fixtures from the #507 seed adapters — no live `data.go.kr` traffic (FR-037, Constitution IV).
 **Target Platform**: Linux + macOS CI (POSIX fsync required). Windows not a Phase 1 target.
 **Project Type**: Python backend library (single project; no frontend in this Epic — TUI is #287).
 **Performance Goals**: Cooperative cancellation end-to-end wall-clock ≤ 500 ms on loopback (FR-006, SC-003); mailbox `send` with fsync ≤ 10 ms on local SSD (informational, not contractual); coordinator synthesis phase ≤ 3 s for 3 parallel workers with ≤ 10 result messages each (informational).
 **Constraints**: No live `data.go.kr` (Constitution IV, hard); no new runtime deps (AGENTS.md hard); no lateral permission flow (Constitution II, non-negotiable); no `typing.Any` in message schemas (Constitution III); no nested tool calls — coordinator never calls tools, workers never spawn sub-workers (spec Out-of-Scope, references NESTful arXiv:2409.03797); source text English-only.
-**Scale/Scope**: Up to `KOSAX_AGENT_MAX_WORKERS=4` concurrent workers per coordinator session (clamped to `[1, 16]`), up to `KOSAX_AGENT_MAILBOX_MAX_MESSAGES=1000` messages per session (clamped to `[100, 10000]`); ~1200 LOC across `src/kosax/agents/` + ~800 LOC of tests. Per `docs/vision.md § Appendix A` Layer 4 budget is ~8000 lines — this Epic ships the infra skeleton, ministry specialist prompts (#14) fill the remaining budget.
+**Scale/Scope**: Up to `UMMAYA_AGENT_MAX_WORKERS=4` concurrent workers per coordinator session (clamped to `[1, 16]`), up to `UMMAYA_AGENT_MAILBOX_MAX_MESSAGES=1000` messages per session (clamped to `[100, 10000]`); ~1200 LOC across `src/ummaya/agents/` + ~800 LOC of tests. Per `docs/vision.md § Appendix A` Layer 4 budget is ~8000 lines — this Epic ships the infra skeleton, ministry specialist prompts (#14) fill the remaining budget.
 
 ## Constitution Check
 
@@ -62,7 +62,7 @@ specs/027-agent-swarm-core/
 
 ```text
 # New package — Layer 4 home
-src/kosax/agents/
+src/ummaya/agents/
 ├── __init__.py                          # Public re-exports: Coordinator, Worker, AgentContext,
 │                                        #                    AgentMessage, CoordinatorPlan,
 │                                        #                    FileMailbox, ConsentGateway
@@ -80,8 +80,8 @@ src/kosax/agents/
     └── file_mailbox.py                  # FileMailbox impl — fsync + FIFO + replay (FR-014..FR-021)
 
 # Modified files (additive)
-src/kosax/observability/semconv.py      # Add kosax.agent.* attribute-name constants (FR-031)
-src/kosax/settings.py                   # Add 4 KOSAX_AGENT_* env fields (FR-032..FR-035)
+src/ummaya/observability/semconv.py      # Add ummaya.agent.* attribute-name constants (FR-031)
+src/ummaya/settings.py                   # Add 4 UMMAYA_AGENT_* env fields (FR-032..FR-035)
 docs/configuration.md                    # Document 4 new env vars (FR-036)
 
 # New tests
@@ -102,7 +102,7 @@ tests/agents/
     └── multi_ministry_query.json        # Scripted LLM response for 3-worker dispatch
 ```
 
-**Structure Decision**: Single Python package layout (Option 1 from the template). All agent code lives under `src/kosax/agents/`, colocated with `src/kosax/engine/`, `src/kosax/tools/`, `src/kosax/permissions/`, `src/kosax/observability/` (the Layer 1/2/3/5/6 siblings). The `mailbox/` sub-package exists because the ABC + concrete impl + message union form a coherent IPC module that will grow a Redis backend in Phase 3 (#21) — splitting it now avoids a future breaking refactor. No frontend layer is introduced (TUI = #287).
+**Structure Decision**: Single Python package layout (Option 1 from the template). All agent code lives under `src/ummaya/agents/`, colocated with `src/ummaya/engine/`, `src/ummaya/tools/`, `src/ummaya/permissions/`, `src/ummaya/observability/` (the Layer 1/2/3/5/6 siblings). The `mailbox/` sub-package exists because the ABC + concrete impl + message union form a coherent IPC module that will grow a Redis backend in Phase 3 (#21) — splitting it now avoids a future breaking refactor. No frontend layer is introduced (TUI = #287).
 
 ## Complexity Tracking
 

@@ -18,11 +18,11 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from kosax.tools.models import (
+from ummaya.tools.models import (
     AdmCodeResult,
     ResolveLocationInput,
 )
-from kosax.tools.resolve_location import resolve_location
+from ummaya.tools.resolve_location import resolve_location
 
 _REPO_ROOT = Path(__file__).parent.parent.parent
 _BASELINE_FILE = _REPO_ROOT / "tests" / "fixtures" / "legacy" / "address_to_region_baseline.json"
@@ -64,15 +64,15 @@ class TestResolveAdmCdParity:
         # We mock juso to return the expected result immediately.
         with (
             patch(
-                "kosax.tools.resolve_location._juso_adm_cd",
+                "ummaya.tools.resolve_location._juso_adm_cd",
                 new=AsyncMock(return_value=adm_result),
             ),
             patch(
-                "kosax.tools.resolve_location._kakao_coords",
+                "ummaya.tools.resolve_location._kakao_coords",
                 new=AsyncMock(return_value=None),
             ),
             patch(
-                "kosax.tools.resolve_location._sgis_adm_cd",
+                "ummaya.tools.resolve_location._sgis_adm_cd",
                 new=AsyncMock(return_value=None),
             ),
         ):
@@ -100,7 +100,7 @@ class TestResolveAdmCdParity:
         )
         inp = ResolveLocationInput(query=entry["query"], want="adm_cd")
 
-        from kosax.tools.models import CoordResult
+        from ummaya.tools.models import CoordResult
 
         mock_coords = CoordResult(
             kind="coords",
@@ -112,25 +112,25 @@ class TestResolveAdmCdParity:
 
         with (
             patch(
-                "kosax.tools.resolve_location._juso_adm_cd",
+                "ummaya.tools.resolve_location._juso_adm_cd",
                 new=AsyncMock(return_value=None),
             ),
             # Spec 2522 T047 — chain 재정렬 (juso → kakao_b_code → sgis).
             # SGIS 까지 fallback 도달하려면 _kakao_adm_cd 도 None 으로 mock.
             patch(
-                "kosax.tools.resolve_location._kakao_adm_cd",
+                "ummaya.tools.resolve_location._kakao_adm_cd",
                 new=AsyncMock(return_value=None),
             ),
             patch(
-                "kosax.tools.resolve_location._kakao_coords",
+                "ummaya.tools.resolve_location._kakao_coords",
                 new=AsyncMock(return_value=mock_coords),
             ),
             patch(
-                "kosax.tools.resolve_location._kakao_adm_cd_from_coords",
+                "ummaya.tools.resolve_location._kakao_adm_cd_from_coords",
                 new=AsyncMock(return_value=None),
             ),
             patch(
-                "kosax.tools.resolve_location._sgis_adm_cd",
+                "ummaya.tools.resolve_location._sgis_adm_cd",
                 new=AsyncMock(return_value=adm_result),
             ),
         ):

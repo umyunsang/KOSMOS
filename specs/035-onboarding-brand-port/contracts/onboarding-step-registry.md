@@ -118,14 +118,14 @@ async function resolveStartStep(memdir: MemdirUserState): Promise<StepId> {
 Triggered by `pipa-consent.advanceCondition()` returning `true`. Sequence:
 
 1. Construct `PIPAConsentRecord` (per `contracts/memdir-consent-schema.md`) with current `CURRENT_CONSENT_VERSION`, `datetime.now(UTC)`, active session UUIDv7, `aal_gate = AAL1` default.
-2. Write synchronously to `~/.kosax/memdir/user/consent/<timestamp>-<session_id>.json.tmp`.
+2. Write synchronously to `~/.ummaya/memdir/user/consent/<timestamp>-<session_id>.json.tmp`.
 3. `fsync` the tmp file.
 4. `os.rename` to the final path.
 5. Advance only after step 4 completes; on any error, render a citizen-visible Korean error message and do NOT advance.
 
 ### `write-scope-record`
 
-Triggered by `ministry-scope-ack.advanceCondition()` returning `true`. Same sequence, with `MinistryScopeAcknowledgment` (per `contracts/memdir-ministry-scope-schema.md`) to `~/.kosax/memdir/user/ministry-scope/<timestamp>-<session_id>.json`.
+Triggered by `ministry-scope-ack.advanceCondition()` returning `true`. Same sequence, with `MinistryScopeAcknowledgment` (per `contracts/memdir-ministry-scope-schema.md`) to `~/.ummaya/memdir/user/ministry-scope/<timestamp>-<session_id>.json`.
 
 ---
 
@@ -136,8 +136,8 @@ Triggered by `ministry-scope-ack.advanceCondition()` returning `true`. Same sequ
 - WCAG 1.4.3 contrast — every foreground token renders against the `background` token at ≥ 4.5 : 1 (text) or ≥ 3.0 : 1 (non-text).
 - WCAG 2.1.1 keyboard — Enter advances, Escape exits; no mouse dependency.
 - WCAG 2.4.7 focus visible — first interactive affordance is the splash itself; focus indicator is inverse-video on the "Press Enter to continue" hint line.
-- WCAG 4.1.2 role — the splash is announced as "KOSAX onboarding — splash screen" on first render via the text stream.
-- KWCAG — 은하계 스플래시 대체 텍스트 ("KOSAX 은하계 스플래시 — 한국도로공사 · 기상청 · 건강보험심사평가원 · 국립중앙의료원"); screen-reader narration enumerates all 4 ministries.
+- WCAG 4.1.2 role — the splash is announced as "UMMAYA onboarding — splash screen" on first render via the text stream.
+- KWCAG — 은하계 스플래시 대체 텍스트 ("UMMAYA 은하계 스플래시 — 한국도로공사 · 기상청 · 건강보험심사평가원 · 국립중앙의료원"); screen-reader narration enumerates all 4 ministries.
 
 **PIPA consent step** (no existing catalog row — new component):
 

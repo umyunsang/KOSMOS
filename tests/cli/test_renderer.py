@@ -9,10 +9,10 @@ from unittest.mock import MagicMock
 
 from rich.console import Console
 
-from kosax.cli.renderer import EventRenderer
-from kosax.engine.events import QueryEvent, StopReason
-from kosax.llm.models import TokenUsage
-from kosax.tools.models import ToolResult
+from ummaya.cli.renderer import EventRenderer
+from ummaya.engine.events import QueryEvent, StopReason
+from ummaya.llm.models import TokenUsage
+from ummaya.tools.models import ToolResult
 
 
 def _make_console() -> Console:

@@ -11,7 +11,7 @@ Configuration for the LLM client, loaded from environment variables.
 
 | Field | Type | Required | Default | Description |
 |-------|------|----------|---------|-------------|
-| `token` | `SecretStr` | Yes | — | FriendliAI API token (`KOSAX_FRIENDLI_TOKEN`) |
+| `token` | `SecretStr` | Yes | — | FriendliAI API token (`UMMAYA_FRIENDLI_TOKEN`) |
 | `base_url` | `HttpUrl` | No | `https://api.friendli.ai/v1` | API base URL |
 | `model` | `str` | No | `dep89a2fde0e09` | Model identifier |
 | `session_budget` | `int` | No | `100000` | Max tokens per session |

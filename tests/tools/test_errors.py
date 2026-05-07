@@ -15,9 +15,9 @@ import uuid
 
 import pytest
 
-from kosax.tools.envelope import make_error_envelope
-from kosax.tools.errors import LookupErrorReason
-from kosax.tools.models import LookupError  # noqa: A004
+from ummaya.tools.envelope import make_error_envelope
+from ummaya.tools.errors import LookupErrorReason
+from ummaya.tools.models import LookupError  # noqa: A004
 
 _REQUEST_ID = str(uuid.uuid4())
 

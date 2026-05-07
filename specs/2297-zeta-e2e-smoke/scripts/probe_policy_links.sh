@@ -58,7 +58,7 @@ while IFS= read -r url; do
   # Trust curl's %{http_code} — it writes "000" on connection failure
   # naturally; appending an OR-fallback would concatenate codes when curl
   # exits non-zero (e.g. exit 47 on redirect-loop) but %{http_code} is set.
-  code=$(curl -s -L --max-time 7 --max-redirs 10 -A "KOSAX-link-probe/1.0" \
+  code=$(curl -s -L --max-time 7 --max-redirs 10 -A "UMMAYA-link-probe/1.0" \
     -o /dev/null -w "%{http_code}" "$url" 2>/dev/null)
   [[ -z "$code" ]] && code="000"
   if [[ "$code" =~ ^[23][0-9]{2}$ ]]; then

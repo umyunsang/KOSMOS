@@ -7,8 +7,8 @@ import json
 
 import pytest
 
-from kosax.llm.config import LLMClientConfig
-from kosax.llm.models import ChatMessage
+from ummaya.llm.config import LLMClientConfig
+from ummaya.llm.models import ChatMessage
 
 
 @pytest.fixture
@@ -129,5 +129,5 @@ def mock_tool_call_response() -> dict:
 @pytest.fixture
 def llm_config(monkeypatch: pytest.MonkeyPatch) -> LLMClientConfig:
     """An LLMClientConfig instance backed by test environment variables."""
-    monkeypatch.setenv("KOSAX_FRIENDLI_TOKEN", "test-token-12345")
+    monkeypatch.setenv("UMMAYA_FRIENDLI_TOKEN", "test-token-12345")
     return LLMClientConfig()

@@ -4,7 +4,7 @@
 **Audience**: Codex automated reviewer · human reviewer · future maintainer
 **Time budget**: ≤ 5 minutes (static audits) + ≤ 5 minutes (test baseline) + ≤ 2 minutes (manual smoke)
 
-This quickstart walks a reviewer through verifying that the deletion of the Anthropic model dispatch matrix from KOSAX's TUI layer was successful and that all preserved invariants (Python `LLMClient` truth values) still hold.
+This quickstart walks a reviewer through verifying that the deletion of the Anthropic model dispatch matrix from UMMAYA's TUI layer was successful and that all preserved invariants (Python `LLMClient` truth values) still hold.
 
 ---
 
@@ -14,7 +14,7 @@ This quickstart walks a reviewer through verifying that the deletion of the Anth
 - Bun ≥ 1.2.x installed (`bun --version`).
 - `uv` ≥ 0.5 installed (`uv --version`).
 - Repo clone with branch `2112-dead-anthropic-models` checked out (or the merged commit).
-- For C9 smoke: `KOSAX_FRIENDLI_TOKEN` set in `.env` or environment.
+- For C9 smoke: `UMMAYA_FRIENDLI_TOKEN` set in `.env` or environment.
 
 ---
 
@@ -52,17 +52,17 @@ Expect: empty stdout. (After deletion, the two services files are not found; `rg
 rg -n 'K-EXAONE-236B-A23B' --type ts --type py | sort -u
 ```
 
-Expect: ≤ 3 lines, only at `src/kosax/llm/config.py:37`, `tui/src/utils/model/model.ts:179`, `tui/src/utils/model/model.ts:187`.
+Expect: ≤ 3 lines, only at `src/ummaya/llm/config.py:37`, `tui/src/utils/model/model.ts:179`, `tui/src/utils/model/model.ts:187`.
 
 ### 1.4 Python preservation audits (C4 / C5 / C6)
 
 ```bash
 echo "--- C4: sampling defaults ---"
-rg -n 'temperature: float = 1\.0|top_p: float = 0\.95|presence_penalty: float = 0\.0|max_tokens: int = 1024' src/kosax/llm/client.py
+rg -n 'temperature: float = 1\.0|top_p: float = 0\.95|presence_penalty: float = 0\.0|max_tokens: int = 1024' src/ummaya/llm/client.py
 echo "--- C5: rate-limit retry ---"
-rg -n 'class RetryPolicy|_compute_rate_limit_delay|_is_rate_limit_envelope|_complete_with_retry|_stream_with_retry' src/kosax/llm/client.py
+rg -n 'class RetryPolicy|_compute_rate_limit_delay|_is_rate_limit_envelope|_complete_with_retry|_stream_with_retry' src/ummaya/llm/client.py
 echo "--- C6: enable_thinking ---"
-rg -n 'KOSAX_K_EXAONE_THINKING|chat_template_kwargs' src/kosax/llm/client.py
+rg -n 'UMMAYA_K_EXAONE_THINKING|chat_template_kwargs' src/ummaya/llm/client.py
 ```
 
 Expect: C4 ≥ 8 matches, C5 ≥ 5 matches, C6 ≥ 2 matches.
@@ -160,12 +160,12 @@ Then run the same C9.1–C9.4 grep commands. Note "manual fallback (no expect)" 
 | C1 reports a match | An Anthropic ID survived the deletion | grep the matching line, delete or replace with K-EXAONE constant |
 | C2 reports either file still exists | The file was not deleted from git | `git rm <file>` and amend the commit |
 | C3 reports more than 3 lines | A new K-EXAONE literal was introduced | Use `getDefaultMainLoopModel()` instead of inlining the string |
-| C4–C6 report fewer matches than expected | Python `LLMClient` truth values were inadvertently changed | revert `src/kosax/llm/{config.py,client.py}` to `main` |
+| C4–C6 report fewer matches than expected | Python `LLMClient` truth values were inadvertently changed | revert `src/ummaya/llm/{config.py,client.py}` to `main` |
 | C7 reports added dependency lines | A new package was added | revert `tui/package.json` / `pyproject.toml` dep change; AGENTS.md hard-rule violation |
 | C10 reports LOC > 1 211 | Pruning was insufficient | review surviving Anthropic dispatch in `model.ts` / `modelOptions.ts` |
 | C11 reports missing annotations | The FR-006 caller-reach rule was not honoured | add `// [Deferred to P2 — issue #NNN]` to each preserved alias |
 | C8 bun test count drops | A test was broken or removed | restore the test or document the removal in the PR body |
-| C8 pytest count drops | Python regression | revert any unintended changes under `src/kosax/` |
+| C8 pytest count drops | Python regression | revert any unintended changes under `src/ummaya/` |
 | C9 Korean reply does not paint | TUI runtime regression | run `bun run tui --debug`, attach log to PR |
 
 ---

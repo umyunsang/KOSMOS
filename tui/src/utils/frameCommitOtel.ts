@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSAX-original — observability/spec(debug-infra-rebuild RFC § P4 2026-05-02)
+// UMMAYA-original — observability/spec(debug-infra-rebuild RFC § P4 2026-05-02)
 //
-// frameCommitOtel — emit `kosax.tui.frame_commit` OTEL span events on every
+// frameCommitOtel — emit `ummaya.tui.frame_commit` OTEL span events on every
 // Ink reconcile (React re-render of the component that mounts this hook).
 //
 // Why:
 //   RFC § P4 explains that the OTLP → Langfuse pipeline (Spec 028) is already
 //   in place. Adding one span event per Ink reconcile enables cross-correlation
-//   of "when did the LLM stream arrive" (kosax.llm.chunk — Phase 5) with
-//   "when did the TUI paint" (kosax.tui.frame_commit — this module).
+//   of "when did the LLM stream arrive" (ummaya.llm.chunk — Phase 5) with
+//   "when did the TUI paint" (ummaya.tui.frame_commit — this module).
 //   Bug reports become "Langfuse trace + frame_commit sequence" instead of
 //   grep-based guesswork (AGENTS.md anti-pattern #2).
 //
@@ -36,7 +36,7 @@ let _tracer: Tracer | null = null
 
 function getTracer(): Tracer {
   if (!_tracer) {
-    _tracer = trace.getTracer('kosax.tui.frame_commit', '0.1.0')
+    _tracer = trace.getTracer('ummaya.tui.frame_commit', '0.1.0')
   }
   return _tracer
 }
@@ -73,15 +73,15 @@ function nextSeq(correlationId: string): number {
 // ---------------------------------------------------------------------------
 
 /**
- * React hook: emits a `kosax.tui.frame_commit` OTEL span event on every
+ * React hook: emits a `ummaya.tui.frame_commit` OTEL span event on every
  * render of the component that calls it.
  *
  * Attributes emitted:
- *   kosax.correlation_id  — provided `correlationId` or `'unbound'`
- *   kosax.tui.frame_hash  — FNV-1a hash of the component's rendered subtree
+ *   ummaya.correlation_id  — provided `correlationId` or `'unbound'`
+ *   ummaya.tui.frame_hash  — FNV-1a hash of the component's rendered subtree
  *                            (approximated by hashing a per-render fingerprint
  *                            composed of correlationId + seq + Date.now())
- *   kosax.tui.frame_seq   — monotonically increasing counter per correlationId
+ *   ummaya.tui.frame_seq   — monotonically increasing counter per correlationId
  *
  * When OTEL is not initialised (test envs) the hook is a no-op — it never
  * throws and has zero overhead beyond a ref read.
@@ -106,11 +106,11 @@ export function useFrameCommitTracker(correlationId?: string): void {
     const hash = fnv1a(`${cid}:${seq}:${renderCountRef.current}`)
 
     const tracer = getTracer()
-    const span = tracer.startSpan('kosax.tui.frame_commit')
+    const span = tracer.startSpan('ummaya.tui.frame_commit')
     span.setAttributes({
-      'kosax.correlation_id': cid,
-      'kosax.tui.frame_hash': hash,
-      'kosax.tui.frame_seq': seq,
+      'ummaya.correlation_id': cid,
+      'ummaya.tui.frame_hash': hash,
+      'ummaya.tui.frame_seq': seq,
     })
     span.end()
   } catch {

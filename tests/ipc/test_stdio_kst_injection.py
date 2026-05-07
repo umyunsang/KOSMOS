@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """Tests for KST date/time injection into the chat-request system prompt.
 
-KOSAX hotfix (2026-05-04, KMA base_time hallucination 차단):
+UMMAYA hotfix (2026-05-04, KMA base_time hallucination 차단):
 The previous dynamic-suffix block emitted only ``오늘 날짜 (UTC)`` — which
 let K-EXAONE guess KMA ``base_time`` (KST HHMM publication slots:
 0200/0500/0800/1100/1400/1700/2000/2300). A wrong base_time produces a
@@ -176,7 +176,7 @@ def test_prompt_loader_still_loads_system_v1_after_kst_injection() -> None:
     """
     # Re-import to force a fresh PromptLoader construction; the import will
     # raise PromptRegistryError on any R1/R2/R3 violation.
-    from kosax.context.prompt_loader import PromptLoader, default_manifest_path
+    from ummaya.context.prompt_loader import PromptLoader, default_manifest_path
 
     loader = PromptLoader(manifest_path=default_manifest_path())
     text = loader.load("system_v1")
@@ -198,8 +198,8 @@ def test_kst_injection_does_not_mutate_static_prefix() -> None:
     ``_DYNAMIC_BOUNDARY_MARKER`` — the static cache prefix served by
     SystemPromptAssembler must remain byte-identical (NFR-003 / SC-001).
     """
-    from kosax.context.models import SystemPromptConfig
-    from kosax.context.system_prompt import SystemPromptAssembler
+    from ummaya.context.models import SystemPromptConfig
+    from ummaya.context.system_prompt import SystemPromptAssembler
 
     cfg = SystemPromptConfig()
     a = SystemPromptAssembler().assemble(cfg)
@@ -223,10 +223,10 @@ def test_kst_injection_does_not_mutate_static_prefix() -> None:
 @pytest.mark.parametrize(
     "module_path",
     [
-        "kosax.tools.kma.kma_short_term_forecast",
-        "kosax.tools.kma.kma_ultra_short_term_forecast",
-        "kosax.tools.kma.kma_current_observation",
-        "kosax.tools.kma.forecast_fetch",
+        "ummaya.tools.kma.kma_short_term_forecast",
+        "ummaya.tools.kma.kma_ultra_short_term_forecast",
+        "ummaya.tools.kma.kma_current_observation",
+        "ummaya.tools.kma.forecast_fetch",
     ],
 )
 def test_kma_adapter_cites_kst_time_rule(module_path: str) -> None:

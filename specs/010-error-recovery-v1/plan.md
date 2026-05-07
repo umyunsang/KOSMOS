@@ -7,7 +7,7 @@
 
 ## Summary
 
-Layer 6, Error Recovery, owns the resilience strategy for all outbound `data.go.kr` API calls. V1 introduces a new `src/kosax/recovery/` package that provides: a `data.go.kr` error classifier (including XML gateway response detection), an exponential-backoff retry loop with foreground/background distinction, a per-endpoint circuit breaker, an in-memory LRU response cache for fallback, a `RecoveryExecutor` that orchestrates all four strategies, and Korean-language graceful degradation messages when all recovery paths are exhausted.
+Layer 6, Error Recovery, owns the resilience strategy for all outbound `data.go.kr` API calls. V1 introduces a new `src/ummaya/recovery/` package that provides: a `data.go.kr` error classifier (including XML gateway response detection), an exponential-backoff retry loop with foreground/background distinction, a per-endpoint circuit breaker, an in-memory LRU response cache for fallback, a `RecoveryExecutor` that orchestrates all four strategies, and Korean-language graceful degradation messages when all recovery paths are exhausted.
 
 The core design invariant is **never raise, always return**: `RecoveryExecutor.execute()` absorbs all exceptions and returns a `RecoveryResult` containing either a successful `ToolResult` or a classified failure `ToolResult` with structured `ErrorContext`. The executor integrates additively into the existing `ToolExecutor` dispatch pipeline (step 5) via an optional constructor parameter, preserving full backward compatibility.
 
@@ -25,7 +25,7 @@ No external dependencies are added. The retry loop and circuit breaker are imple
 **Storage**: N/A -- in-memory only. `ResponseCache` uses `collections.OrderedDict` for LRU. `CircuitBreaker` state is per-process in-memory.
 **Testing**: `uv run pytest` -- unit tests per module, integration tests for full recovery flow. No live API calls (`@pytest.mark.live` absent). All adapters mocked.
 **Target Platform**: Linux server (CI) + developer macOS
-**Project Type**: Library module (`src/kosax/recovery/`) consumed by `ToolExecutor`
+**Project Type**: Library module (`src/ummaya/recovery/`) consumed by `ToolExecutor`
 **Performance Goals**: Circuit breaker state check must be O(1). Happy-path overhead (first-attempt success) must be limited to one circuit breaker lookup and one cache store operation.
 **Scale/Scope**: Single-process scope. All state is in-memory, non-persistent, non-distributed.
 
@@ -44,7 +44,7 @@ No external dependencies are added. The retry loop and circuit breaker are imple
 | V -- Policy Alignment | PASS | Graceful degradation messages guide citizens to alternative contact channels (Principle 8: single conversational window). Error classification handles all known `data.go.kr` error codes. |
 | Dev Standards | PASS | `stdlib logging` only, `uv + pyproject.toml`, English source text (Korean only in `messages.py` for citizen-facing degradation text). |
 
-**Complexity Justification**: No constitution violations. The `src/kosax/recovery/` sub-package is the sixth Python package under `src/kosax/`, joining `engine/`, `llm/`, `tools/`, `context/`, and `permissions/`. This follows the layer separation principle from `docs/vision.md` -- Layer 6 gets its own package.
+**Complexity Justification**: No constitution violations. The `src/ummaya/recovery/` sub-package is the sixth Python package under `src/ummaya/`, joining `engine/`, `llm/`, `tools/`, `context/`, and `permissions/`. This follows the layer separation principle from `docs/vision.md` -- Layer 6 gets its own package.
 
 ---
 
@@ -54,30 +54,30 @@ No external dependencies are added. The retry loop and circuit breaker are imple
 
 | Decision Area | Source | Finding Applied |
 |---|---|---|
-| Retry with enforced jitter | stamina (`hynek/stamina`) | Exponential backoff formula: `delay = random.uniform(0, min(max_delay, base_delay * multiplier^attempt))`. Full jitter prevents thundering herd. Matches the existing `_compute_delay()` in `src/kosax/llm/retry.py`. |
+| Retry with enforced jitter | stamina (`hynek/stamina`) | Exponential backoff formula: `delay = random.uniform(0, min(max_delay, base_delay * multiplier^attempt))`. Full jitter prevents thundering herd. Matches the existing `_compute_delay()` in `src/ummaya/llm/retry.py`. |
 | Circuit breaker three-state machine | aiobreaker (`arlyon/aiobreaker`) | Standard CLOSED -> OPEN -> HALF_OPEN cycle. Failure threshold triggers OPEN; recovery timeout triggers HALF_OPEN; probe success triggers CLOSED. Per-endpoint isolation via registry keyed by tool ID. |
 | Error matrix routing | `docs/vision.md Section Layer 6 -- Error Recovery` | 429/503 -> retry, 401/403 -> auth failure, timeout -> retry, hard failure -> graceful degradation. Maps directly to `ErrorClass` enum. |
 | `data.go.kr` wire format errors | PublicDataReader (`WooilJeong/PublicDataReader`) | XML gateway responses with `<OpenAPI_ServiceResponse>` prefix. `returnReasonCode` values: 1 (APP_ERROR), 4 (HTTP_ERROR), 12 (NO_SERVICE), 20 (ACCESS_DENIED), 22 (RATE_LIMIT), 30 (KEY_NOT_REGISTERED), 31 (DEADLINE_EXPIRED), 32 (UNREGISTERED_IP). |
 | Foreground vs background retry | `docs/vision.md Section Layer 6` | Foreground (citizen-facing): full retry budget. Background (batch work): capped at `min(1, max_retries)` to fail fast. |
 | Cached fallback using `cache_ttl_seconds` | `docs/vision.md Section Layer 2` | `GovAPITool.cache_ttl_seconds` field exists but is unused. V1 activates it for fallback on failure. |
 | Graceful degradation terminal path | `docs/vision.md Section Layer 6` | Hard failure produces Korean-language message with tool's `name_ko` and in-person service guidance. |
-| Executor never raises convention | Existing `ToolExecutor` pattern (`src/kosax/tools/executor.py`) | `RecoveryExecutor.execute()` follows the same convention: all error paths produce a classified `ToolResult(success=False)`. Never raises. |
+| Executor never raises convention | Existing `ToolExecutor` pattern (`src/ummaya/tools/executor.py`) | `RecoveryExecutor.execute()` follows the same convention: all error paths produce a classified `ToolResult(success=False)`. Never raises. |
 | Retry matrix pattern for `StreamInterruptedError` | OpenAI Agents SDK (retry matrix); Claude Agent SDK (error handling) | Single transparent retry on stream interruption before falling to `error_unrecoverable`. |
-| Frozen Pydantic v2 models | Constitution Section III; `RetryPolicy` in `src/kosax/llm/retry.py` | All recovery models use `ConfigDict(frozen=True)`. `ToolRetryPolicy` mirrors the structural pattern of the existing LLM `RetryPolicy`. |
+| Frozen Pydantic v2 models | Constitution Section III; `RetryPolicy` in `src/ummaya/llm/retry.py` | All recovery models use `ConfigDict(frozen=True)`. `ToolRetryPolicy` mirrors the structural pattern of the existing LLM `RetryPolicy`. |
 | Fail-closed for unknown errors | Constitution Section II | `ErrorClass.UNKNOWN` with `is_retryable=False`. Unknown `resultCode` values are never retried. |
-| Layer separation | `docs/vision.md` six-layer architecture; `AGENTS.md` | New sub-package `src/kosax/recovery/` keeps error recovery isolated from `tools/` and `engine/`. |
+| Layer separation | `docs/vision.md` six-layer architecture; `AGENTS.md` | New sub-package `src/ummaya/recovery/` keeps error recovery isolated from `tools/` and `engine/`. |
 
 ### Existing code to reuse or extend
 
 | Module | What to reuse | How |
 |---|---|---|
-| `src/kosax/llm/retry.py` | Backoff formula pattern (`_compute_delay`) | Reference only. `ToolRetryPolicy` implements its own `_compute_delay()` with the same formula. No code sharing -- the LLM retry is tightly coupled to `httpx.HTTPStatusError` and `AuthenticationError`. |
-| `src/kosax/tools/models.py` | `ToolResult` model, `error_type` literal | Extend `error_type` with four new values: `"timeout"`, `"circuit_open"`, `"api_error"`, `"auth_expired"`. |
-| `src/kosax/tools/models.py` | `GovAPITool.cache_ttl_seconds` field | Read by `ResponseCache` to determine TTL for each tool's cached results. |
-| `src/kosax/tools/models.py` | `GovAPITool.name_ko` field | Used by `messages.py` to construct Korean degradation messages. |
-| `src/kosax/tools/executor.py` | `ToolExecutor.__init__`, `dispatch()` step 5 | Additive change: optional `recovery_executor` parameter. Step 5 delegates to `RecoveryExecutor.execute()` when present. |
-| `src/kosax/engine/query.py` | `try/except` block around `ctx.llm_client.stream()` (lines 235-277) | Add `except StreamInterruptedError` clause before the catch-all `except Exception`. |
-| `src/kosax/llm/errors.py` | `StreamInterruptedError` class | Caught in `query.py` for streaming retry. |
+| `src/ummaya/llm/retry.py` | Backoff formula pattern (`_compute_delay`) | Reference only. `ToolRetryPolicy` implements its own `_compute_delay()` with the same formula. No code sharing -- the LLM retry is tightly coupled to `httpx.HTTPStatusError` and `AuthenticationError`. |
+| `src/ummaya/tools/models.py` | `ToolResult` model, `error_type` literal | Extend `error_type` with four new values: `"timeout"`, `"circuit_open"`, `"api_error"`, `"auth_expired"`. |
+| `src/ummaya/tools/models.py` | `GovAPITool.cache_ttl_seconds` field | Read by `ResponseCache` to determine TTL for each tool's cached results. |
+| `src/ummaya/tools/models.py` | `GovAPITool.name_ko` field | Used by `messages.py` to construct Korean degradation messages. |
+| `src/ummaya/tools/executor.py` | `ToolExecutor.__init__`, `dispatch()` step 5 | Additive change: optional `recovery_executor` parameter. Step 5 delegates to `RecoveryExecutor.execute()` when present. |
+| `src/ummaya/engine/query.py` | `try/except` block around `ctx.llm_client.stream()` (lines 235-277) | Add `except StreamInterruptedError` clause before the catch-all `except Exception`. |
+| `src/ummaya/llm/errors.py` | `StreamInterruptedError` class | Caught in `query.py` for streaming retry. |
 
 ### Technical unknowns resolved
 
@@ -97,10 +97,10 @@ No external dependencies are added. The retry loop and circuit breaker are imple
 
 ## Architecture
 
-### Module structure: `src/kosax/recovery/`
+### Module structure: `src/ummaya/recovery/`
 
 ```
-src/kosax/recovery/
+src/ummaya/recovery/
     __init__.py           # Public exports: RecoveryExecutor, RecoveryResult,
                           #   ErrorContext, ToolRetryPolicy, CircuitBreaker,
                           #   CircuitBreakerConfig, DataGoKrErrorClassifier,
@@ -183,7 +183,7 @@ circuit_breaker.py     (depends on: classifier)
 
 ### Integration with `ToolExecutor`
 
-One additive change to `src/kosax/tools/executor.py`:
+One additive change to `src/ummaya/tools/executor.py`:
 
 - `ToolExecutor.__init__` gains an optional `recovery_executor: RecoveryExecutor | None = None` parameter. When present, step 5 of the dispatch pipeline delegates to `RecoveryExecutor.execute()` instead of directly calling the adapter. When absent, behavior is unchanged.
 
@@ -240,7 +240,7 @@ The `_stream_retry_count` variable is initialized to 0 before the while loop and
 
 ### `ToolResult.error_type` extension
 
-The `error_type` literal in `src/kosax/tools/models.py` gains four new values:
+The `error_type` literal in `src/ummaya/tools/models.py` gains four new values:
 
 ```python
 error_type: (
@@ -377,7 +377,7 @@ specs/010-error-recovery-v1/
 ### Source code
 
 ```
-src/kosax/recovery/
+src/ummaya/recovery/
     __init__.py
     classifier.py
     retry.py
@@ -386,11 +386,11 @@ src/kosax/recovery/
     executor.py
     messages.py
 
-src/kosax/tools/
+src/ummaya/tools/
     models.py         # Modified: error_type literal extended with 4 new values
     executor.py       # Modified: optional recovery_executor parameter
 
-src/kosax/engine/
+src/ummaya/engine/
     query.py          # Modified: StreamInterruptedError retry clause
 
 tests/recovery/
@@ -414,9 +414,9 @@ tests/recovery/
 **Goal**: Lay down the complete data model layer, the error classifier, and the `ToolResult.error_type` extension. The classifier is the foundation of every other module -- retry, circuit breaker, and executor all depend on `ClassifiedError`.
 
 **Files**:
-- `src/kosax/recovery/__init__.py` -- package init with public exports
-- `src/kosax/recovery/classifier.py` -- `ErrorClass` (StrEnum), `DataGoKrErrorCode` (IntEnum), `ClassifiedError` (frozen model), `DataGoKrErrorClassifier` class with `classify_response()` and `classify_exception()` methods
-- `src/kosax/tools/models.py` -- extend `ToolResult.error_type` literal with `"timeout"`, `"circuit_open"`, `"api_error"`, `"auth_expired"`
+- `src/ummaya/recovery/__init__.py` -- package init with public exports
+- `src/ummaya/recovery/classifier.py` -- `ErrorClass` (StrEnum), `DataGoKrErrorCode` (IntEnum), `ClassifiedError` (frozen model), `DataGoKrErrorClassifier` class with `classify_response()` and `classify_exception()` methods
+- `src/ummaya/tools/models.py` -- extend `ToolResult.error_type` literal with `"timeout"`, `"circuit_open"`, `"api_error"`, `"auth_expired"`
 - `tests/recovery/__init__.py`
 - `tests/recovery/test_classifier.py` -- tests for all 9 `data.go.kr` error codes, XML gateway detection, HTTP-level classification (429, 401/403, 502/503/504), transport exceptions (`ConnectTimeout`, `ReadTimeout`), empty response body, unknown `resultCode`, non-httpx exceptions
 
@@ -433,8 +433,8 @@ tests/recovery/
 **Goal**: Implement the retry loop and circuit breaker. These are independent modules that share only `ClassifiedError` as input.
 
 **Files**:
-- `src/kosax/recovery/retry.py` -- `ToolRetryPolicy` (frozen model), `retry_tool_call()` async function
-- `src/kosax/recovery/circuit_breaker.py` -- `CircuitState` (StrEnum), `CircuitBreakerConfig` (frozen model), `CircuitBreaker` class, `CircuitBreakerRegistry` class
+- `src/ummaya/recovery/retry.py` -- `ToolRetryPolicy` (frozen model), `retry_tool_call()` async function
+- `src/ummaya/recovery/circuit_breaker.py` -- `CircuitState` (StrEnum), `CircuitBreakerConfig` (frozen model), `CircuitBreaker` class, `CircuitBreakerRegistry` class
 - `tests/recovery/test_retry.py` -- US1 acceptance scenarios: retry on 429, retry on timeout, no retry on 400, `max_retries=0`, foreground full budget, background `min(1, max_retries)` cap
 - `tests/recovery/test_circuit_breaker.py` -- US2 acceptance scenarios: CLOSED -> OPEN transition at threshold, OPEN -> HALF_OPEN after recovery timeout, HALF_OPEN -> CLOSED on probe success, HALF_OPEN -> OPEN on probe failure, failure counter reset on success, lazy creation in CLOSED state, concurrent HALF_OPEN probe limiting
 
@@ -469,8 +469,8 @@ tests/recovery/
 **Goal**: Implement the response cache and graceful degradation messages. These are the fallback layer when retries and circuit breaker are exhausted.
 
 **Files**:
-- `src/kosax/recovery/cache.py` -- `CacheEntry` (frozen model), `ResponseCache` class
-- `src/kosax/recovery/messages.py` -- `build_degradation_message()` function with Korean templates
+- `src/ummaya/recovery/cache.py` -- `CacheEntry` (frozen model), `ResponseCache` class
+- `src/ummaya/recovery/messages.py` -- `build_degradation_message()` function with Korean templates
 - `tests/recovery/test_cache.py` -- US5 acceptance scenarios: cache hit within TTL, cache miss after TTL expiry, no cache for `cache_ttl_seconds=0`, LRU eviction at `max_entries`, cache store on success, cache key is `(tool_id, SHA-256(args))`
 - `tests/recovery/test_messages.py` -- US6 acceptance scenarios: message contains `name_ko`, circuit open message mentions maintenance, deprecated API message mentions retirement, message is in Korean
 
@@ -497,8 +497,8 @@ tests/recovery/
 **Goal**: Implement the `RecoveryExecutor` orchestrator and wire it into `ToolExecutor`. This is the integration phase that brings classifier, retry, circuit breaker, cache, and messages together.
 
 **Files**:
-- `src/kosax/recovery/executor.py` -- `ErrorContext` (frozen model), `RecoveryResult` (frozen model), `RecoveryExecutor` class
-- `src/kosax/tools/executor.py` -- additive change: optional `recovery_executor` parameter, step 5 delegation
+- `src/ummaya/recovery/executor.py` -- `ErrorContext` (frozen model), `RecoveryResult` (frozen model), `RecoveryExecutor` class
+- `src/ummaya/tools/executor.py` -- additive change: optional `recovery_executor` parameter, step 5 delegation
 - `tests/recovery/test_executor.py` -- full orchestration tests: retry -> success, retry -> exhaustion -> cache hit, retry -> exhaustion -> cache miss -> degradation, circuit breaker open -> cache hit, circuit breaker open -> no cache -> reject, foreground vs background, first-attempt success (ErrorContext is None)
 - `tests/recovery/test_integration.py` -- end-to-end through `ToolExecutor.dispatch()` with `RecoveryExecutor` wired in: mock adapter that fails twice then succeeds, verify `ToolResult.success=True` returned; mock adapter always failing with circuit breaker, verify `error_type="circuit_open"`; backward compatibility test with `recovery_executor=None`
 
@@ -561,7 +561,7 @@ tests/recovery/
 **Goal**: Add `StreamInterruptedError` retry to `query.py` and test all edge cases from the spec.
 
 **Files**:
-- `src/kosax/engine/query.py` -- additive change: `except StreamInterruptedError` clause, `_stream_retry_count` variable
+- `src/ummaya/engine/query.py` -- additive change: `except StreamInterruptedError` clause, `_stream_retry_count` variable
 - `tests/recovery/test_streaming_retry.py` -- US7 acceptance scenarios: single interruption retried successfully, double interruption falls to `error_unrecoverable`, partial content from failed attempt discarded on retry
 - `tests/recovery/test_integration.py` (extended) -- edge case tests:
   - XML body with HTTP 200 and `Content-Type: application/json`
@@ -604,14 +604,14 @@ tests/recovery/
 **Goal**: Pass all quality checks: type checking, linting, and coverage.
 
 **Activities**:
-- `uv run mypy src/kosax/recovery/ --strict` -- fix any type errors
-- `uv run ruff check src/kosax/recovery/ tests/recovery/` -- fix any lint violations
-- `uv run ruff format src/kosax/recovery/ tests/recovery/` -- format all files
-- `uv run pytest tests/recovery/ --cov=src/kosax/recovery --cov-report=term-missing` -- verify >= 80% coverage
+- `uv run mypy src/ummaya/recovery/ --strict` -- fix any type errors
+- `uv run ruff check src/ummaya/recovery/ tests/recovery/` -- fix any lint violations
+- `uv run ruff format src/ummaya/recovery/ tests/recovery/` -- format all files
+- `uv run pytest tests/recovery/ --cov=src/ummaya/recovery --cov-report=term-missing` -- verify >= 80% coverage
 - `uv run pytest tests/tools/ tests/engine/` -- verify no regressions in existing test suites
 - Verify all 8 success criteria (SC-001 through SC-008) pass
 
-**Completion gate**: All quality checks pass. Coverage >= 80% on `src/kosax/recovery/`. No regressions in `tests/tools/` or `tests/engine/`.
+**Completion gate**: All quality checks pass. Coverage >= 80% on `src/ummaya/recovery/`. No regressions in `tests/tools/` or `tests/engine/`.
 
 ---
 
@@ -633,7 +633,7 @@ Every design decision traces to a concrete source in `docs/vision.md Section Ref
 | Fail-closed for unknown error codes (`is_retryable=False`) | Constitution Section II | Unknown `resultCode` values are never retried. Fail-closed principle. |
 | `RecoveryExecutor` never raises, returns `ToolResult` | Existing `ToolExecutor` convention | Executor pattern: all error paths produce classified results, never propagate exceptions. |
 | Retry matrix pattern for `StreamInterruptedError` | OpenAI Agents SDK (retry matrix); Claude Agent SDK (error handling) | Single transparent retry on stream interruption. Matches composable retry policy pattern. |
-| `src/kosax/recovery/` as separate sub-package | `docs/vision.md` six-layer architecture; `AGENTS.md` layer separation | Layer 6 gets its own package, isolated from `tools/` and `engine/`. |
+| `src/ummaya/recovery/` as separate sub-package | `docs/vision.md` six-layer architecture; `AGENTS.md` layer separation | Layer 6 gets its own package, isolated from `tools/` and `engine/`. |
 | No external dependencies for retry/circuit breaker | Constitution -- minimal dependencies; AGENTS.md -- never add dependency outside spec-driven PR | Internal implementation (~200 LOC each) avoids dependency bloat. Patterns adapted from stamina and aiobreaker, not code-copied. |
 
 ---
@@ -667,7 +667,7 @@ specs/010-error-recovery-v1/
 ### Source code layout
 
 ```
-src/kosax/recovery/
+src/ummaya/recovery/
     __init__.py
     classifier.py
     retry.py
@@ -676,11 +676,11 @@ src/kosax/recovery/
     executor.py
     messages.py
 
-src/kosax/tools/
+src/ummaya/tools/
     models.py         # Modified: error_type literal extended with 4 new values
     executor.py       # Modified: optional recovery_executor parameter, step 5 delegation
 
-src/kosax/engine/
+src/ummaya/engine/
     query.py          # Modified: StreamInterruptedError retry clause
 
 tests/recovery/

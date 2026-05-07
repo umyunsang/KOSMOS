@@ -7,7 +7,7 @@ mapped to a concrete reference.
 
 ### Canonical sources consulted
 - `docs/vision.md § Reference materials` — Claude Code is first reference for
-  any unclear UX decision; KOSAX = CC + 2 swaps.
+  any unclear UX decision; UMMAYA = CC + 2 swaps.
 - `.references/claude-code-sourcemap/restored-src/` — CC 2.1.88 byte baseline
   for StreamGate / ChordInterceptor / `app:toggleTranscript`.
 - `AGENTS.md § TUI verification methodology` — 5-layer chain + 7 anti-patterns,
@@ -26,7 +26,7 @@ mapped to a concrete reference.
 |---|---|---|---|
 | A KST | Multiple `datetime.now(tz=UTC)` callsites; envelope merger filters adapter `fetched_at` (good) but adapter still constructs UTC value | Apply KST patch (already in working-dir for 8 files) + extend to KMA forecast_fetch.py for consistency | `envelope.py` `_SYSTEM_META` filter logic |
 | B order | StreamGate emits prose chunks before `<tool_call>` is detected because Hermes `<text>...<tool_call>...</tool_call>` arrives in sequence | Modify StreamGate to suppress ALL emission until end-of-turn when a `<tool_call>` appears OR until a fence (newline+timeout) confirms no tool_call follows | CC `StreamGate` reconstruction; memory anti-pattern `Final-state fallacy` |
-| C HIRA | K-EXAONE thinking + HIRA HTTPS fetch can each take 30-90 s; current per-tool timeout may be too aggressive OR LLM stop reason swallows result | Add per-adapter timeout config + diagnostic span attribute `kosax.tool.stage` (`{thinking,fetch,parse,emit}`); bump HIRA budget to 90 s; add 1 transient-retry on `httpx.ReadTimeout` | OTEL semantic conventions; memory `feedback_debug_infra_rebuild` |
+| C HIRA | K-EXAONE thinking + HIRA HTTPS fetch can each take 30-90 s; current per-tool timeout may be too aggressive OR LLM stop reason swallows result | Add per-adapter timeout config + diagnostic span attribute `ummaya.tool.stage` (`{thinking,fetch,parse,emit}`); bump HIRA budget to 90 s; add 1 transient-retry on `httpx.ReadTimeout` | OTEL semantic conventions; memory `feedback_debug_infra_rebuild` |
 | D Ctrl+O | `useKeybinding('app:toggleTranscript', handler, {context:'Global'})` already mounted; `defaultBindings.ts:125` has `'ctrl+o': 'app:toggleTranscript'`. Most likely chord-resolver returns `none` because Ink's Key.ctrl + input='o' shape mismatches resolver expectation | Verify with frame trace; if confirmed, add `useInput` fallback that triggers `dispatchAction('Global', 'app:toggleTranscript')` when chord registry misses | PR #2754 Insight #4 (`setToolJSX isLocalJSXCommand:false` was the prior chord-fallback pattern) |
 
 ### Stack
@@ -41,19 +41,19 @@ mapped to a concrete reference.
 
 ### Issue A — KST consolidation
 - **Touch list (8 files in working-dir + 1 new)**:
-  - `src/kosax/tools/envelope.py` (already patched)
-  - `src/kosax/tools/lookup.py` (already patched)
-  - `src/kosax/agents/worker.py` (already patched)
-  - `src/kosax/tools/mock/lookup_module_gov24_certificate.py`
-  - `src/kosax/tools/mock/lookup_module_hometax_simplified.py`
-  - `src/kosax/tools/mock/submit_module_gov24_minwon.py`
-  - `src/kosax/tools/mock/submit_module_hometax_taxreturn.py`
-  - `src/kosax/tools/mock/submit_module_public_mydata_action.py`
-  - **NEW**: `src/kosax/tools/kma/forecast_fetch.py` — `t_start = datetime.now(tz=_SEOUL_TZ)` (or keep UTC for elapsed math, but stamp KST in meta).
+  - `src/ummaya/tools/envelope.py` (already patched)
+  - `src/ummaya/tools/lookup.py` (already patched)
+  - `src/ummaya/agents/worker.py` (already patched)
+  - `src/ummaya/tools/mock/lookup_module_gov24_certificate.py`
+  - `src/ummaya/tools/mock/lookup_module_hometax_simplified.py`
+  - `src/ummaya/tools/mock/submit_module_gov24_minwon.py`
+  - `src/ummaya/tools/mock/submit_module_hometax_taxreturn.py`
+  - `src/ummaya/tools/mock/submit_module_public_mydata_action.py`
+  - **NEW**: `src/ummaya/tools/kma/forecast_fetch.py` — `t_start = datetime.now(tz=_SEOUL_TZ)` (or keep UTC for elapsed math, but stamp KST in meta).
 - **Test**: extend existing envelope test to assert tz `+09:00`.
 
 ### Issue B — StreamGate render-order
-- **Touch**: `src/kosax/llm/tool_call_parser.py` (`StreamGate.feed` + `flush`)
+- **Touch**: `src/ummaya/llm/tool_call_parser.py` (`StreamGate.feed` + `flush`)
 - Approach: track `_seen_open` flag. When `<tool_call>` appears, retroactively
   buffer the prose emitted earlier in the same chunk. Concretely: defer
   emission until either (a) a `<tool_call>` is seen → buffer + drop earlier
@@ -66,10 +66,10 @@ mapped to a concrete reference.
   hypothesis BEFORE patching.
 
 ### Issue C — HIRA timeout
-- **Touch**: `src/kosax/tools/executor.py` (per-tool timeout) +
-  `src/kosax/tools/hira/hospital_search.py` (`httpx.AsyncClient(timeout=...)`
+- **Touch**: `src/ummaya/tools/executor.py` (per-tool timeout) +
+  `src/ummaya/tools/hira/hospital_search.py` (`httpx.AsyncClient(timeout=...)`
   override) + `tui/src/services/llm/timeoutConfig.ts` (spinner label).
-- **Diagnostic**: add `kosax.tool.stage` span attribute via
+- **Diagnostic**: add `ummaya.tool.stage` span attribute via
   `trace.get_current_span().set_attribute(...)` at fetch / parse boundaries.
 
 ### Issue D — Ctrl+O
@@ -109,7 +109,7 @@ mapped to a concrete reference.
 - **Risk R4** (MOST LIKELY per `feedback_partial_fix_revealed_by_better_infra`):
   Issue B has a deeper backend cause (engine emits assistant message before
   tool_use_block in conversation history). Mitigation: capture full IPC trace
-  via `KOSAX_LOG_LEVEL=debug` and log every `assistant_chunk` ↔ `tool_call`
+  via `UMMAYA_LOG_LEVEL=debug` and log every `assistant_chunk` ↔ `tool_call`
   envelope timestamp.
 
 ## Phase 4 — Rollout

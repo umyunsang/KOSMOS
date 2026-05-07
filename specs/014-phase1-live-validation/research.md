@@ -30,10 +30,10 @@
 **Question**: What env var naming inconsistencies exist between .env.example and source code?
 
 **Finding**:
-1. `.env.example` line 18: `KOSAX_DATA_GO_KR_KEY=` — but all source code reads `KOSAX_DATA_GO_KR_API_KEY` (kma_current_observation.py:278, kma_weather_alert_status.py:233, permissions/models.py:27). A developer copying `.env.example` to `.env` and filling in keys will get a `ConfigurationError` when running KMA adapters.
+1. `.env.example` line 18: `UMMAYA_DATA_GO_KR_KEY=` — but all source code reads `UMMAYA_DATA_GO_KR_API_KEY` (kma_current_observation.py:278, kma_weather_alert_status.py:233, permissions/models.py:27). A developer copying `.env.example` to `.env` and filling in keys will get a `ConfigurationError` when running KMA adapters.
 2. `.env.example` line 41 comments: `Base URL: https://api.friendli.ai/serverless/v1` — but `LLMClientConfig.base_url` defaults to `https://api.friendli.ai/v1`. The `/serverless/v1` path is the correct endpoint for FriendliAI Serverless tier. The code's default `/v1` may work if FriendliAI redirects, but the documented endpoint should match.
 
-**Decision**: Fix `.env.example` to use `KOSAX_DATA_GO_KR_API_KEY`. Add comment documenting the base URL discrepancy and verifying correct endpoint during live testing.
+**Decision**: Fix `.env.example` to use `UMMAYA_DATA_GO_KR_API_KEY`. Add comment documenting the base URL discrepancy and verifying correct endpoint during live testing.
 **Rationale**: `.env.example` is the developer onboarding entry point — it must match the code exactly.
 
 ### RQ-4: Test Fixture State

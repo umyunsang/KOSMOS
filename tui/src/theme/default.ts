@@ -1,25 +1,25 @@
 // Source: .references/claude-code-sourcemap/restored-src/src/utils/theme.ts (Claude Code 2.1.88, research-use)
-// KOSAX 브랜드 토큰으로 리네이밍됨 (ADR-006 A-9)
+// UMMAYA 브랜드 토큰으로 리네이밍됨 (ADR-006 A-9)
 import type { ThemeToken } from './tokens'
 
 /**
- * Default KOSAX theme — maps to the KOSAX dark palette (ADR-006 A-9).
+ * Default UMMAYA theme — maps to the UMMAYA dark palette (ADR-006 A-9).
  * Uses explicit RGB values to avoid inconsistencies from users'
  * custom terminal ANSI color definitions.
  */
 const defaultTheme: ThemeToken = {
   autoAccept: 'rgb(175,135,255)', // Electric violet
   bashBorder: 'rgb(253,93,177)', // Bright pink
-  // KOSAX metaphor — orbital core
-  kosaxCore: 'rgb(99,102,241)', // #6366f1
-  kosaxCoreShimmer: 'rgb(165,180,252)', // #a5b4fc
-  // KOSAX metaphor — orbital ring
+  // UMMAYA metaphor — orbital core
+  ummayaCore: 'rgb(99,102,241)', // #6366f1
+  ummayaCoreShimmer: 'rgb(165,180,252)', // #a5b4fc
+  // UMMAYA metaphor — orbital ring
   orbitalRing: 'rgb(96,165,250)', // #60a5fa
   orbitalRingShimmer: 'rgb(199,210,254)', // #c7d2fe
-  // KOSAX wordmark + subtitle
+  // UMMAYA wordmark + subtitle
   wordmark: 'rgb(224,231,255)', // #e0e7ff
   subtitle: 'rgb(148,163,184)', // #94a3b8
-  // KOSAX ministry satellites
+  // UMMAYA ministry satellites
   agentSatelliteKoroad: 'rgb(244,114,182)', // #f472b6 (한국도로공사)
   agentSatelliteKma: 'rgb(52,211,153)', // #34d399 (기상청)
   agentSatelliteHira: 'rgb(147,197,253)', // #93c5fd (건강보험심사평가원)
@@ -37,7 +37,7 @@ const defaultTheme: ThemeToken = {
   subtle: 'rgb(148,148,148)', // Medium gray — synced with dark.ts FR-011 bump
   suggestion: 'rgb(177,185,249)', // Light blue-purple
   remember: 'rgb(177,185,249)', // Light blue-purple
-  background: 'rgb(10,14,39)', // #0a0e27 — KOSAX navy
+  background: 'rgb(10,14,39)', // #0a0e27 — UMMAYA navy
   success: 'rgb(78,186,101)', // Bright green
   error: 'rgb(255,107,128)', // Bright red
   warning: 'rgb(255,193,7)', // Bright amber

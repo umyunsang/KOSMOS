@@ -1,7 +1,7 @@
 # Quickstart — Observability (OTel GenAI + Langfuse)
 
 **Feature**: `021-observability-otel-genai`
-**Audience**: developer running KOSAX locally who wants to see LLM/tool traces in Langfuse.
+**Audience**: developer running UMMAYA locally who wants to see LLM/tool traces in Langfuse.
 
 Three environments are supported:
 
@@ -30,7 +30,7 @@ curl -sf http://localhost:3000/api/public/health | jq
 
 1. Open <http://localhost:3000>
 2. Sign up (first user becomes admin)
-3. Create a project (e.g., `kosax-dev`)
+3. Create a project (e.g., `ummaya-dev`)
 4. Settings → **API Keys** → Create → copy `Public Key` (`pk-lf-...`) and `Secret Key` (`sk-lf-...`)
 
 ### A.3. Wire `.env`
@@ -54,20 +54,20 @@ echo -n "pk-lf-xxxx:sk-lf-xxxx" | base64
 
 URL-encode the space after `Basic` as `%20` (`OTEL_EXPORTER_OTLP_HEADERS` is a URL-encoded string).
 
-### A.4. Run any KOSAX query
+### A.4. Run any UMMAYA query
 
 ```bash
-uv run python -m kosax.cli "서울 강남구 교통사고 현황 알려줘"
+uv run python -m ummaya.cli "서울 강남구 교통사고 현황 알려줘"
 ```
 
 ### A.5. Verify in Langfuse UI
 
-1. Open <http://localhost:3000/project/kosax-dev/traces>
+1. Open <http://localhost:3000/project/ummaya-dev/traces>
 2. You should see **one trace** with three levels:
-   - Root span: `invoke_agent kosax-query` with `gen_ai.conversation.id = <session uuid>`
+   - Root span: `invoke_agent ummaya-query` with `gen_ai.conversation.id = <session uuid>`
    - Child span(s): `chat` with `gen_ai.provider.name=friendliai`, `gen_ai.usage.input_tokens`, `gen_ai.usage.output_tokens`
    - Child span(s): `execute_tool koroad_accident_search` (or similar tool name)
-3. Metrics view: `kosax_llm_rate_limit_retries_total` (0 if no 429s occurred)
+3. Metrics view: `ummaya_llm_rate_limit_retries_total` (0 if no 429s occurred)
 
 If traces are missing, see **Troubleshooting** below.
 
@@ -77,7 +77,7 @@ If Langfuse isn't running, or you want no overhead:
 
 ```bash
 export OTEL_SDK_DISABLED=true
-uv run python -m kosax.cli "..."
+uv run python -m ummaya.cli "..."
 ```
 
 Expected behavior: **identical to pre-OTel baseline**. No network calls, no background threads, no log output from the tracing layer.

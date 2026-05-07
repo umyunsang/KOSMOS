@@ -1,6 +1,6 @@
 # Quickstart: Phase 1 Live Validation Extension
 
-**Audience**: KOSAX maintainer about to merge changes touching geocoding, observability, tool executor, or LLM client.
+**Audience**: UMMAYA maintainer about to merge changes touching geocoding, observability, tool executor, or LLM client.
 
 ## Prerequisites
 
@@ -14,9 +14,9 @@ Add the Kakao key to your local `.env` (gitignored):
 
 ```bash
 # .env (LOCAL ONLY)
-KOSAX_KAKAO_API_KEY=<your Kakao REST API key>
-KOSAX_DATA_GO_KR_API_KEY=<your data.go.kr key>
-KOSAX_FRIENDLI_TOKEN=<your FriendliAI token>
+UMMAYA_KAKAO_API_KEY=<your Kakao REST API key>
+UMMAYA_DATA_GO_KR_API_KEY=<your data.go.kr key>
+UMMAYA_FRIENDLI_TOKEN=<your FriendliAI token>
 ```
 
 Load into your shell before running tests:
@@ -68,9 +68,9 @@ uv run pytest -m live -v
 Intentionally unset the Kakao key and run the geocoding suite — it must hard-fail, not skip:
 
 ```bash
-unset KOSAX_KAKAO_API_KEY
+unset UMMAYA_KAKAO_API_KEY
 uv run pytest -m live -v tests/live/test_live_geocoding.py 2>&1 | \
-  grep "set KOSAX_KAKAO_API_KEY to run live geocoding tests"
+  grep "set UMMAYA_KAKAO_API_KEY to run live geocoding tests"
 ```
 
 Expect: the exact string is printed in the failure output. If the suite reports `SKIPPED` or `XFAIL`, FR-011 is violated.
@@ -103,7 +103,7 @@ KOROAD calls in the observability suite are governed by the existing `_live_rate
 
 | Symptom | Likely cause | Fix |
 |---|---|---|
-| `pytest.fail: set KOSAX_KAKAO_API_KEY ...` | env var unset | `source .env && set +a` |
+| `pytest.fail: set UMMAYA_KAKAO_API_KEY ...` | env var unset | `source .env && set +a` |
 | `403 Forbidden` from Kakao | Local API not activated on the Kakao app | Console → 제품 설정 → 카카오맵 → 상태 ON |
 | `429 Too Many Requests` from Kakao | Rate-limit fixture bypassed or quota exhausted | Verify `kakao_rate_limit_delay` is invoked between calls; check daily quota |
 | `test_live_address_to_region_unmapped_region` raises instead of returning | Adapter regression — no longer fail-closed | Investigate `address_to_region.py` unmapped branch |

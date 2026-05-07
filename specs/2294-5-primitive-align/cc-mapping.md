@@ -2,15 +2,15 @@
 
 **Created**: 2026-04-29 | **For**: every Sonnet teammate working on T006-T020
 
-This document is the **single starting reference** for the 4 primitive migrations. It inlines the exact CC `Tool<>` signature so teammates do not need to read the upstream files (which are research-use-only and live outside the worktree at `/Users/um-yunsang/KOSAX/.references/claude-code-sourcemap/restored-src/`). Per `feedback_cc_source_migration_pattern`, teammates copy from CC and adapt to KOSAX — never write from scratch.
+This document is the **single starting reference** for the 4 primitive migrations. It inlines the exact CC `Tool<>` signature so teammates do not need to read the upstream files (which are research-use-only and live outside the worktree at `/Users/um-yunsang/UMMAYA/.references/claude-code-sourcemap/restored-src/`). Per `feedback_cc_source_migration_pattern`, teammates copy from CC and adapt to UMMAYA — never write from scratch.
 
 ## Source-of-truth mapping (1:1)
 
-| KOSAX file | CC reference (research-use only) | Status |
+| UMMAYA file | CC reference (research-use only) | Status |
 |---|---|---|
 | `tui/src/Tool.ts` :362–720 | `.references/claude-code-sourcemap/restored-src/src/Tool.ts` :362–720 | byte-identical port (792 LOC). DO NOT edit. |
 | `tui/src/components/permissions/FallbackPermissionRequest.tsx` | `.references/claude-code-sourcemap/restored-src/src/components/permissions/FallbackPermissionRequest.tsx` | byte-identical port. DO NOT edit. |
-| `tui/src/tools/AgentTool/AgentTool.tsx` (KOSAX port) | `.references/claude-code-sourcemap/restored-src/src/tools/AgentTool/AgentTool.tsx` (1397 LOC) | reference implementation pattern of all 9 members |
+| `tui/src/tools/AgentTool/AgentTool.tsx` (UMMAYA port) | `.references/claude-code-sourcemap/restored-src/src/tools/AgentTool/AgentTool.tsx` (1397 LOC) | reference implementation pattern of all 9 members |
 
 ## CC `Tool<Input, Output, P>` signature (inlined verbatim from `Tool.ts` :362–600)
 
@@ -79,11 +79,11 @@ export type ValidationResult =
   | {
       result: false
       message: string         // Korean diagnostic for the user-facing surface
-      errorCode: number       // numeric — see below for KOSAX allocation
+      errorCode: number       // numeric — see below for UMMAYA allocation
     }
 ```
 
-## KOSAX `PrimitiveErrorCode` allocation (T003 introduces this in `tui/src/tools/shared/primitiveCitation.ts`)
+## UMMAYA `PrimitiveErrorCode` allocation (T003 introduces this in `tui/src/tools/shared/primitiveCitation.ts`)
 
 ```ts
 export const PrimitiveErrorCode = {

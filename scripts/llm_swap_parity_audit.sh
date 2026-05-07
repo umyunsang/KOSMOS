@@ -27,8 +27,8 @@ PROC_A_FILES=(
 # Procedure-B files that require CC reference citations
 PROC_B_FILES=(
   "tui/src/ipc/llmClient.ts"
-  "src/kosax/llm/client.py"
-  "src/kosax/ipc/stdio.py"
+  "src/ummaya/llm/client.py"
+  "src/ummaya/ipc/stdio.py"
 )
 
 # Allowed swap commit subject prefixes
@@ -218,26 +218,26 @@ json_escape() {
 # T026 — Procedure-A SHA verification
 # ---------------------------------------------------------------------------
 check_procedure_a() {
-  local kosax_path="$1"
+  local ummaya_path="$1"
   local file_idx="$2"
 
   # Find the byte-copy commit for this file in git log
   local byte_copy_commit=""
-  byte_copy_commit="$(git log --oneline --all --grep="^byte-copy(2521):" -- "$kosax_path" 2>/dev/null | head -1 | awk '{print $1}')"
+  byte_copy_commit="$(git log --oneline --all --grep="^byte-copy(2521):" -- "$ummaya_path" 2>/dev/null | head -1 | awk '{print $1}')"
 
   if [[ -z "$byte_copy_commit" ]]; then
-    vlog "Procedure-A: no byte-copy(2521) commit found for $kosax_path"
-    ERRORS+=("No byte-copy(2521) commit found for $kosax_path")
+    vlog "Procedure-A: no byte-copy(2521) commit found for $ummaya_path"
+    ERRORS+=("No byte-copy(2521) commit found for $ummaya_path")
     FILE_BYTE_MATCH[$file_idx]="false"
     mark_drift
     return
   fi
 
-  vlog "Procedure-A: found byte-copy commit $byte_copy_commit for $kosax_path"
+  vlog "Procedure-A: found byte-copy commit $byte_copy_commit for $ummaya_path"
 
   # SHA of the file at the byte-copy commit
   local sha_at_commit
-  sha_at_commit="$(sha256_at_commit "$byte_copy_commit" "$kosax_path")"
+  sha_at_commit="$(sha256_at_commit "$byte_copy_commit" "$ummaya_path")"
 
   vlog "  SHA at byte-copy commit: $sha_at_commit"
   vlog "  Expected CC SHA:         $CC_CLAUDE_SHA"
@@ -248,7 +248,7 @@ check_procedure_a() {
   else
     vlog "  byte_copy_sha_match=false — DRIFT"
     FILE_BYTE_MATCH[$file_idx]="false"
-    ERRORS+=("Byte-copy SHA mismatch for $kosax_path: got $sha_at_commit, expected $CC_CLAUDE_SHA")
+    ERRORS+=("Byte-copy SHA mismatch for $ummaya_path: got $sha_at_commit, expected $CC_CLAUDE_SHA")
     mark_drift
   fi
 }
@@ -257,7 +257,7 @@ check_procedure_a() {
 # T027 — Swap commit category verification
 # ---------------------------------------------------------------------------
 check_swap_commits() {
-  local kosax_path="$1"
+  local ummaya_path="$1"
   local file_idx="$2"
   local swap_count=0
 
@@ -305,32 +305,32 @@ check_swap_commits() {
     if [[ $matched -eq 0 ]]; then
       # Not a swap commit in the 2521 range — warn
       local touches_file
-      touches_file="$(git show --name-only --format="" "$commit_hash" 2>/dev/null | grep -c "^${kosax_path}$" 2>/dev/null || echo 0)"
+      touches_file="$(git show --name-only --format="" "$commit_hash" 2>/dev/null | grep -c "^${ummaya_path}$" 2>/dev/null || echo 0)"
       [[ "$touches_file" =~ ^[0-9]+$ ]] || touches_file=0
       if [[ "$touches_file" -gt 0 ]]; then
-        warn "Commit $commit_hash ('$subject') touches $kosax_path after byte-copy but has no swap category prefix"
+        warn "Commit $commit_hash ('$subject') touches $ummaya_path after byte-copy but has no swap category prefix"
       fi
     fi
-  done < <(git log --oneline "$log_range" -- "$kosax_path" 2>/dev/null)
+  done < <(git log --oneline "$log_range" -- "$ummaya_path" 2>/dev/null)
 
   FILE_SWAP_COUNT[$file_idx]="$swap_count"
-  vlog "Procedure-A/B: $swap_count swap commits for $kosax_path (range: $log_range)"
+  vlog "Procedure-A/B: $swap_count swap commits for $ummaya_path (range: $log_range)"
 }
 
 # ---------------------------------------------------------------------------
 # T028 — Unjustified hunk detection
 # ---------------------------------------------------------------------------
 check_unjustified_hunks() {
-  local kosax_path="$1"
+  local ummaya_path="$1"
   local file_idx="$2"
   local unjust_count=0
 
   # Find the byte-copy commit
   local byte_copy_commit
-  byte_copy_commit="$(git log --oneline --all --grep="^byte-copy(2521):" -- "$kosax_path" 2>/dev/null | head -1 | awk '{print $1}')"
+  byte_copy_commit="$(git log --oneline --all --grep="^byte-copy(2521):" -- "$ummaya_path" 2>/dev/null | head -1 | awk '{print $1}')"
 
   if [[ -z "$byte_copy_commit" ]]; then
-    vlog "Unjustified-hunk check: no byte-copy commit found for $kosax_path — skipping"
+    vlog "Unjustified-hunk check: no byte-copy commit found for $ummaya_path — skipping"
     FILE_UNJUSTIFIED[$file_idx]=0
     return
   fi
@@ -362,7 +362,7 @@ check_unjustified_hunks() {
         [[ "$parent_ct" =~ ^[0-9]+$ ]] || parent_ct=0
         if [[ "$is_swap" -eq 0 && "$parent_ct" -le 1 ]]; then
           unjust_count=$((unjust_count + commit_hunk_count))
-          local hunk_desc="$commit_hunk_count unjustified hunk(s) in $kosax_path from commit $current_commit ('$current_subject')"
+          local hunk_desc="$commit_hunk_count unjustified hunk(s) in $ummaya_path from commit $current_commit ('$current_subject')"
           UNJUSTIFIED_HUNKS+=("$hunk_desc")
           ERRORS+=("$hunk_desc")
           mark_drift
@@ -383,7 +383,7 @@ check_unjustified_hunks() {
     elif [[ $in_diff -eq 1 && "$line" =~ ^@@ ]]; then
       commit_hunk_count=$((commit_hunk_count + 1))
     fi
-  done < <(git log -p --reverse "${byte_copy_commit}..HEAD" -- "$kosax_path" 2>/dev/null)
+  done < <(git log -p --reverse "${byte_copy_commit}..HEAD" -- "$ummaya_path" 2>/dev/null)
 
   # Flush last commit
   if [[ -n "$current_commit" && "$commit_hunk_count" -gt 0 ]]; then
@@ -399,7 +399,7 @@ check_unjustified_hunks() {
     [[ "$parent_ct" =~ ^[0-9]+$ ]] || parent_ct=0
     if [[ "$is_swap" -eq 0 && "$parent_ct" -le 1 ]]; then
       unjust_count=$((unjust_count + commit_hunk_count))
-      local hunk_desc="$commit_hunk_count unjustified hunk(s) in $kosax_path from commit $current_commit ('$current_subject')"
+      local hunk_desc="$commit_hunk_count unjustified hunk(s) in $ummaya_path from commit $current_commit ('$current_subject')"
       UNJUSTIFIED_HUNKS+=("$hunk_desc")
       ERRORS+=("$hunk_desc")
       mark_drift
@@ -409,7 +409,7 @@ check_unjustified_hunks() {
     fi
   fi
 
-  vlog "Procedure-A unjustified hunk check: $unjust_count total unjustified hunk(s) in $kosax_path"
+  vlog "Procedure-A unjustified hunk check: $unjust_count total unjustified hunk(s) in $ummaya_path"
   FILE_UNJUSTIFIED[$file_idx]="$unjust_count"
 }
 
@@ -417,17 +417,17 @@ check_unjustified_hunks() {
 # T029 — Procedure-B citation verification (per-function CC reference check)
 # ---------------------------------------------------------------------------
 check_procedure_b_citations() {
-  local kosax_path="$1"
+  local ummaya_path="$1"
   local file_idx="$2"
   local missing_count=0
 
-  if [[ ! -f "$kosax_path" ]]; then
-    warn "Procedure-B file not found: $kosax_path"
+  if [[ ! -f "$ummaya_path" ]]; then
+    warn "Procedure-B file not found: $ummaya_path"
     FILE_MISSING_CITE[$file_idx]=0
     return
   fi
 
-  local ext="${kosax_path##*.}"
+  local ext="${ummaya_path##*.}"
 
   # Extract function/handler names based on file type
   local func_names=()
@@ -436,38 +436,38 @@ check_procedure_b_citations() {
     while IFS= read -r fn; do
       fn="$(echo "$fn" | awk '{print $NF}' | tr -d '(')"
       [[ -n "$fn" ]] && func_names+=("$fn")
-    done < <(grep -n "^\s*\(async \)\?function\s\+\|^\s*\(export \)\?\(async \)\?\(const\|let\)\s\+[a-zA-Z_]\+\s*=" "$kosax_path" 2>/dev/null | head -50)
+    done < <(grep -n "^\s*\(async \)\?function\s\+\|^\s*\(export \)\?\(async \)\?\(const\|let\)\s\+[a-zA-Z_]\+\s*=" "$ummaya_path" 2>/dev/null | head -50)
   elif [[ "$ext" == "py" ]]; then
     # Python: match def / async def
     while IFS= read -r fn; do
       fn="$(echo "$fn" | sed 's/.*def \([a-zA-Z_][a-zA-Z0-9_]*\).*/\1/')"
       [[ -n "$fn" && "$fn" != *"def"* ]] && func_names+=("$fn")
-    done < <(grep -n "^\s*\(async \)\?def " "$kosax_path" 2>/dev/null | head -60)
+    done < <(grep -n "^\s*\(async \)\?def " "$ummaya_path" 2>/dev/null | head -60)
   fi
 
-  vlog "Procedure-B: checking ${#func_names[@]} functions in $kosax_path for CC references"
+  vlog "Procedure-B: checking ${#func_names[@]} functions in $ummaya_path for CC references"
 
   # Check whether the file as a whole has at least some CC reference comments
   # (Fine-grained per-function checking is impractical without a full parser;
   #  we verify that the file contains at least one CC reference per 10 functions.)
   local ref_count
-  ref_count="$(grep -c "CC reference:" "$kosax_path" 2>/dev/null || true)"
+  ref_count="$(grep -c "CC reference:" "$ummaya_path" 2>/dev/null || true)"
   ref_count="${ref_count:-0}"
   # ensure numeric
   [[ "$ref_count" =~ ^[0-9]+$ ]] || ref_count=0
   local skip_count
-  skip_count="$(grep -c "KOSAX-N/A:\|KOSAX-only IPC adaptation" "$kosax_path" 2>/dev/null || true)"
+  skip_count="$(grep -c "UMMAYA-N/A:\|UMMAYA-only IPC adaptation" "$ummaya_path" 2>/dev/null || true)"
   skip_count="${skip_count:-0}"
   [[ "$skip_count" =~ ^[0-9]+$ ]] || skip_count=0
   local total_coverage=$(( ref_count + skip_count ))
   local func_count="${#func_names[@]}"
 
-  vlog "  CC reference comments: $ref_count, SKIPPED/KOSAX-only: $skip_count, functions: $func_count"
+  vlog "  CC reference comments: $ref_count, SKIPPED/UMMAYA-only: $skip_count, functions: $func_count"
 
   # Minimum coverage rule: at least 1 CC reference or skip annotation per file
   if [[ "$total_coverage" -eq 0 ]]; then
     missing_count=1
-    local msg="No CC reference or SKIPPED-KOSAX-N/A comments found in $kosax_path"
+    local msg="No CC reference or SKIPPED-UMMAYA-N/A comments found in $ummaya_path"
     MISSING_CITATIONS+=("$msg")
     warn "$msg"
   else
@@ -499,7 +499,7 @@ check_stream_channels() {
 
   vlog "CC stream events extracted: ${CC_TOP_EVENTS[*]:-none}"
 
-  # For each event, check KOSAX files for handler OR SKIPPED comment
+  # For each event, check UMMAYA files for handler OR SKIPPED comment
   local total_channels=0
   local covered_channels=0
 
@@ -521,8 +521,8 @@ check_stream_channels() {
     "message_stop:n/a:2295"
   )
 
-  local kosax_claude_ts="tui/src/services/api/claude.ts"
-  local kosax_llm_client="tui/src/ipc/llmClient.ts"
+  local ummaya_claude_ts="tui/src/services/api/claude.ts"
+  local ummaya_llm_client="tui/src/ipc/llmClient.ts"
 
   for channel_entry in "${CANONICAL_CHANNELS[@]}"; do
     local kind subtype cc_line
@@ -533,15 +533,15 @@ check_stream_channels() {
 
     local handler_found=0
     local skip_reason=""
-    local kosax_handler_path="n/a"
+    local ummaya_handler_path="n/a"
 
     # Check for SKIPPED annotation in Procedure-B files
     for pb_file in "${PROC_B_FILES[@]}"; do
       if [[ -f "$pb_file" ]]; then
-        if grep -q "SKIPPED.*KOSAX-N/A.*${kind}\|SKIPPED.*KOSAX-N/A.*${subtype}" "$pb_file" 2>/dev/null; then
+        if grep -q "SKIPPED.*UMMAYA-N/A.*${kind}\|SKIPPED.*UMMAYA-N/A.*${subtype}" "$pb_file" 2>/dev/null; then
           handler_found=1
-          skip_reason="$(grep "SKIPPED.*KOSAX-N/A.*${kind}\|SKIPPED.*KOSAX-N/A.*${subtype}" "$pb_file" 2>/dev/null | head -1 | sed 's/.*KOSAX-N\/A: *//' | cut -c1-80)"
-          kosax_handler_path="(skipped)"
+          skip_reason="$(grep "SKIPPED.*UMMAYA-N/A.*${kind}\|SKIPPED.*UMMAYA-N/A.*${subtype}" "$pb_file" 2>/dev/null | head -1 | sed 's/.*UMMAYA-N\/A: *//' | cut -c1-80)"
+          ummaya_handler_path="(skipped)"
           vlog "  Channel $kind/$subtype: SKIPPED in $pb_file"
           break
         fi
@@ -549,28 +549,28 @@ check_stream_channels() {
     done
 
     # Check for handler in claude.ts (Procedure-A byte-copy)
-    if [[ $handler_found -eq 0 && -f "$kosax_claude_ts" ]]; then
-      if grep -q "case '${kind}'\|case '${subtype}'" "$kosax_claude_ts" 2>/dev/null; then
+    if [[ $handler_found -eq 0 && -f "$ummaya_claude_ts" ]]; then
+      if grep -q "case '${kind}'\|case '${subtype}'" "$ummaya_claude_ts" 2>/dev/null; then
         handler_found=1
-        kosax_handler_path="${kosax_claude_ts}:${cc_line}"
-        vlog "  Channel $kind/$subtype: handler found in $kosax_claude_ts"
+        ummaya_handler_path="${ummaya_claude_ts}:${cc_line}"
+        vlog "  Channel $kind/$subtype: handler found in $ummaya_claude_ts"
       fi
     fi
 
     # Check for handler in llmClient.ts
-    if [[ $handler_found -eq 0 && -f "$kosax_llm_client" ]]; then
-      if grep -q "${kind}\|${subtype}" "$kosax_llm_client" 2>/dev/null; then
+    if [[ $handler_found -eq 0 && -f "$ummaya_llm_client" ]]; then
+      if grep -q "${kind}\|${subtype}" "$ummaya_llm_client" 2>/dev/null; then
         handler_found=1
-        kosax_handler_path="${kosax_llm_client}:${cc_line}"
-        vlog "  Channel $kind/$subtype: handler found in $kosax_llm_client"
+        ummaya_handler_path="${ummaya_llm_client}:${cc_line}"
+        vlog "  Channel $kind/$subtype: handler found in $ummaya_llm_client"
       fi
     fi
 
     if [[ $handler_found -eq 1 ]]; then
       covered_channels=$((covered_channels + 1))
     else
-      warn "CC stream channel $kind/$subtype (CC line $cc_line) has no KOSAX handler or SKIPPED comment"
-      kosax_handler_path="MISSING"
+      warn "CC stream channel $kind/$subtype (CC line $cc_line) has no UMMAYA handler or SKIPPED comment"
+      ummaya_handler_path="MISSING"
     fi
 
     # Build JSON fragment for this channel
@@ -579,11 +579,11 @@ check_stream_channels() {
     if [[ -n "$skip_reason" ]]; then
       byte_copied="false"
       skip_json="\"$(json_escape "$skip_reason")\""
-    elif [[ "$kosax_handler_path" != "MISSING" && "$kosax_handler_path" != "n/a" ]]; then
+    elif [[ "$ummaya_handler_path" != "MISSING" && "$ummaya_handler_path" != "n/a" ]]; then
       byte_copied="true"
     fi
 
-    STREAM_CHANNEL_JSON+=("{\"cc_event_path\":\"services/api/claude.ts:${cc_line}:${subtype}\",\"cc_event_kind\":\"$(json_escape "$kind")\",\"cc_event_subtype\":\"$(json_escape "$subtype")\",\"kosax_handler_path\":\"$(json_escape "$kosax_handler_path")\",\"kosax_skip_reason\":${skip_json},\"byte_copied\":${byte_copied}}")
+    STREAM_CHANNEL_JSON+=("{\"cc_event_path\":\"services/api/claude.ts:${cc_line}:${subtype}\",\"cc_event_kind\":\"$(json_escape "$kind")\",\"cc_event_subtype\":\"$(json_escape "$subtype")\",\"ummaya_handler_path\":\"$(json_escape "$ummaya_handler_path")\",\"ummaya_skip_reason\":${skip_json},\"byte_copied\":${byte_copied}}")
   done
 
   vlog "Stream-event channel coverage: $covered_channels / $total_channels"
@@ -689,7 +689,7 @@ if [[ $JSON_OUTPUT -eq 1 ]]; then
     fi
 
     [[ -n "$per_file_arr" ]] && per_file_arr+=","
-    per_file_arr+="{\"kosax_path\":\"$(json_escape "$f")\",\"procedure\":\"$proc\",\"byte_copy_sha_match\":${bm_json},\"swap_commit_count\":${sc},\"unjustified_hunk_count\":${uh},\"missing_cc_citation_count\":${mc}}"
+    per_file_arr+="{\"ummaya_path\":\"$(json_escape "$f")\",\"procedure\":\"$proc\",\"byte_copy_sha_match\":${bm_json},\"swap_commit_count\":${sc},\"unjustified_hunk_count\":${uh},\"missing_cc_citation_count\":${mc}}"
   done
 
   # Build unjustified_hunks JSON array
@@ -753,7 +753,7 @@ else
   # Human-readable Markdown output
   echo "### Per-file outcomes"
   echo ""
-  echo "| KOSAX file | Procedure | Byte-copy SHA match | Swap commits | Unjustified hunks | Missing citations |"
+  echo "| UMMAYA file | Procedure | Byte-copy SHA match | Swap commits | Unjustified hunks | Missing citations |"
   echo "|---|---|---|---|---|---|"
 
   all_files=("${PROC_A_FILES[@]}" "${PROC_B_FILES[@]}")
@@ -786,7 +786,7 @@ else
   echo ""
   echo "### Stream-event channel coverage (CC services/api/claude.ts:${CC_STREAM_RANGE_START}-${CC_STREAM_RANGE_END})"
   echo ""
-  echo "| CC event kind | CC subtype | CC line | KOSAX handler | Status |"
+  echo "| CC event kind | CC subtype | CC line | UMMAYA handler | Status |"
   echo "|---|---|---|---|---|"
 
   # Re-emit channels in markdown from the same canonical list
@@ -818,8 +818,8 @@ else
     # Check skip status
     for pb_file in "${PROC_B_FILES[@]}"; do
       if [[ -f "$pb_file" ]]; then
-        if grep -q "SKIPPED.*KOSAX-N/A.*${md_kind}\|SKIPPED.*KOSAX-N/A.*${md_subtype}" "$pb_file" 2>/dev/null; then
-          md_status="SKIPPED (KOSAX-N/A)"
+        if grep -q "SKIPPED.*UMMAYA-N/A.*${md_kind}\|SKIPPED.*UMMAYA-N/A.*${md_subtype}" "$pb_file" 2>/dev/null; then
+          md_status="SKIPPED (UMMAYA-N/A)"
           md_handler="(skipped)"
           break
         fi

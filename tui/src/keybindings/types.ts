@@ -85,7 +85,7 @@ export const KEYBINDING_CONTEXT_DESCRIPTIONS: Record<
 
 // Tier 1 = the actions whose chords are loaded into the runtime
 // `KeybindingProvider`. Spec 288 originally limited Tier 1 to seven
-// Korean-named actions; KOSAX code paths (CtrlOToExpand, REPL, Messages, …)
+// Korean-named actions; UMMAYA code paths (CtrlOToExpand, REPL, Messages, …)
 // however call `useKeybinding(...)` and `getDisplayText(...)` with the
 // CC-namespaced action ids that are byte-identical with the restored CC
 // reference. Without those ids in Tier 1, the chord-aware path fails for
@@ -102,7 +102,7 @@ export const KEYBINDING_CONTEXT_DESCRIPTIONS: Record<
 // here; the remainder will follow when their callsites are ported (Epic
 // pending: full CC keybinding parity).
 export const TIER_ONE_ACTIONS = [
-  // KOSAX-coined Tier 1 actions
+  // UMMAYA-coined Tier 1 actions
   'agent-interrupt',
   'session-exit',
   'draft-cancel',

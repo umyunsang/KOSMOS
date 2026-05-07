@@ -3,7 +3,7 @@
 **Purpose**: Validate specification completeness and quality before proceeding to planning
 **Created**: 2026-04-24
 **Feature**: [spec.md](../spec.md)
-**Epic**: [#1633](https://github.com/umyunsang/KOSAX/issues/1633)
+**Epic**: [#1633](https://github.com/umyunsang/UMMAYA/issues/1633)
 
 ## Content Quality
 

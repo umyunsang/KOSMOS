@@ -1,19 +1,19 @@
 # CC Migration Audit — 사용자 결정 사항 자체 판단
 
-> 2026-05-03 Lead Opus 자체 판단. CORE THESIS (KOSAX = CC + 2 swap만, byte-identical default) 기준.
+> 2026-05-03 Lead Opus 자체 판단. CORE THESIS (UMMAYA = CC + 2 swap만, byte-identical default) 기준.
 
 ## S2 Tool System
 - **R4 AgentTool 11파일 정밀 byte 비교** → **Epic B 에 포함** (별도 추적)
 
 ## S3 Components
-- **D1 TeleportResumeWrapper** → **양쪽 DROP**. claude.ai cloud teleport feature, swap-1 종속이라 KOSAX 에서 제거 정당. CC 측은 NEVER-PORT 명단에 박제. **CLOSED 2026-05-03 (Epic #2639)** — `tui/src/dialogLaunchers.tsx` 의 `launchTeleportResumeWrapper` export + 관련 type-only import 제거; `tui/src/components/.never-port.md` 신규 + `scope-S3-components-screens.md` § 4/§ 9/§ 10 갱신.
+- **D1 TeleportResumeWrapper** → **양쪽 DROP**. claude.ai cloud teleport feature, swap-1 종속이라 UMMAYA 에서 제거 정당. CC 측은 NEVER-PORT 명단에 박제. **CLOSED 2026-05-03 (Epic #2639)** — `tui/src/dialogLaunchers.tsx` 의 `launchTeleportResumeWrapper` export + 관련 type-only import 제거; `tui/src/components/.never-port.md` 신규 + `scope-S3-components-screens.md` § 4/§ 9/§ 10 갱신.
 - **D2 SHA-256 fail-build CI invariant** → **수용**. 브랜드 화이트리스트(W1~W12) 외 발산을 CI 단계에서 차단해 회귀 방지. **CLOSED 2026-05-03 (Epic #2639)** — `.github/workflows/cc-byte-identical-guard.yml` + `scripts/cc_byte_identical_guard.py` + `tui/src/.cc-byte-identical-whitelist.yaml` (60 entries) + vendored CC baseline (`specs/2639-s3-ui-guard/fixtures/cc-baseline-shas.txt`, 397 entries). W13 (dead-code-cleanup) 신규 enum 도입.
 - **D3 5파일 SWAP 주석 백필** → **수용**. AssistantTextMessage / ExitPlanMode / replLauncher / interactiveHelpers / REPL 에 in-file `// SWAP:` 주석 추가. **CLOSED 2026-05-03 (Epic #2639)** — 5파일 모두 head 에 5-line 표준 `// SWAP:` 블록 박제 (cause + CC reference + LOC + spec citation + justification).
 
 ## S5 Commands/Skills
 - **claude-api/ 29파일 SDK docs** → **제거 완료** (Epic #2640). 51 doc 파일 + 3 verify 파일 + 4 dispatcher 파일 삭제, `bundled/index.ts` 등록 정리.
 - **P0 auto-stub 20 commands** → **삭제 완료** (Epic #2640). 19 디렉토리 git rm + `commands.ts` import / INTERNAL_ONLY_COMMANDS array 정리. `commands/onboarding/index.ts` (Spec 1635 후속) + `commands/install-github-app/types.ts` / `commands/plugin/types.ts` / `commands/plugin/unifiedTypes.ts` (type dependency, Epic B 후속) 는 scope-out 박제.
-- **CC sourcemap gap 3파일** (extra-usage-core / generateSessionName / reviewRemote) → **DROP 확정** (Epic #2640). caller-graph 박제 검증 완료 — `specs/2640-s5-commands-skills/spec.md § Gap-3 Caller-Graph 박제`. 모든 KOSAX caller (5개) 가 Spec 1633 / Epic #2293 시점의 KOSAX-2293 박제 헤더 + inline no-op stub 으로 처리됨.
+- **CC sourcemap gap 3파일** (extra-usage-core / generateSessionName / reviewRemote) → **DROP 확정** (Epic #2640). caller-graph 박제 검증 완료 — `specs/2640-s5-commands-skills/spec.md § Gap-3 Caller-Graph 박제`. 모든 UMMAYA caller (5개) 가 Spec 1633 / Epic #2293 시점의 UMMAYA-2293 박제 헤더 + inline no-op stub 으로 처리됨.
 
 ## S6 Services
 - **api/client.ts 중복 `getAnthropicClient` 정의** → **즉시 fix** (Epic E P1).
@@ -23,10 +23,10 @@
 - **remote/ 4파일** → **DROP + directConnectManager dead type-stub 정리** (claude.ai sync 종속).
 - **notification_push arm CC 대응 검증** → **Epic F 에서 처리** (CC restored-src/src/ipc/ 정밀 비교).
 - **TS↔Python frame schema codegen drift CI gate** → **신설** (회귀 위험 차단).
-- **mcpb-compat.ts ADR 등록** → **수용** (KOSAX-original 혁신 박제).
+- **mcpb-compat.ts ADR 등록** → **수용** (UMMAYA-original 혁신 박제).
 
 ## S8 State/Boot/Misc
-- **events_mono types byte-copy 전체 복원** → **즉시 P0** (CC 865 LOC vs KOSAX 21 LOC 회귀).
+- **events_mono types byte-copy 전체 복원** → **즉시 P0** (CC 865 LOC vs UMMAYA 21 LOC 회귀).
 - **Proxy stub 5파일 byte-copy** (constants/{messages,xml,figures}.ts + types/logs.ts + constants/oauth.ts) → **즉시 P0**.
 - **cli/print.ts PORT** → **수용** (--print headless mode 핵심).
 - **sdk re-declaration drift sprint** → **Epic A 에 포함** (P0 회귀 복구 일부).
@@ -37,7 +37,7 @@
 - **utils/sessionTitle.ts PORT** → **수용** (K-EXAONE 으로 마이그레이션, 자동 제목 기능).
 - **utils/mcp/dateTimeParser.ts PORT** → **수용** (MCP 한국어 시각 파싱 필수).
 - **utils/permissions/permissions.ts inline-stub** → **Path B (모듈 분리)**. CC 구조 보존 원칙.
-- **Stage-1 NO-OP stub** (protectedNamespace.ts / systemThemeWatcher.ts / ultraplan/prompt.txt) → **CC source 부재 확정** — CC restored-src 에 동일 파일명 없음. KOSAX-only stub 박제 처리 (Epic A #2637 완료). TUI Fidelity Meta-Epic deferred (#TBD-protectedNamespace, #TBD-systemThemeWatcher, #TBD-ultraplan). SWAP/no-cc-source(2637) 헤더 각 파일에 박제.
+- **Stage-1 NO-OP stub** (protectedNamespace.ts / systemThemeWatcher.ts / ultraplan/prompt.txt) → **CC source 부재 확정** — CC restored-src 에 동일 파일명 없음. UMMAYA-only stub 박제 처리 (Epic A #2637 완료). TUI Fidelity Meta-Epic deferred (#TBD-protectedNamespace, #TBD-systemThemeWatcher, #TBD-ultraplan). SWAP/no-cc-source(2637) 헤더 각 파일에 박제.
 
 ---
 

@@ -1,8 +1,8 @@
-# Citizen Quickstart — 5분 만에 KOSAX 플러그인 설치 및 사용
+# Citizen Quickstart — 5분 만에 UMMAYA 플러그인 설치 및 사용
 
-**Audience**: KOSAX 시민 사용자 (한국어 primary, English fallback).
-**Time budget**: 5 minutes from `kosax` launch to citizen receiving plugin-augmented response.
-**Prerequisites**: KOSAX 시민 환경 부팅 완료 (Spec 287 + Spec 1635 baseline). `seoul-subway` 예시 플러그인이 `kosax-plugin-store` 카탈로그에 게시되어 있거나, 로컬 fixture 카탈로그가 사용 가능.
+**Audience**: UMMAYA 시민 사용자 (한국어 primary, English fallback).
+**Time budget**: 5 minutes from `ummaya` launch to citizen receiving plugin-augmented response.
+**Prerequisites**: UMMAYA 시민 환경 부팅 완료 (Spec 287 + Spec 1635 baseline). `seoul-subway` 예시 플러그인이 `ummaya-plugin-store` 카탈로그에 게시되어 있거나, 로컬 fixture 카탈로그가 사용 가능.
 
 ---
 
@@ -11,13 +11,13 @@
 ### 1단계 — TUI 실행 (10초)
 
 ```bash
-$ kosax
+$ ummaya
 ```
 
 REPL 화면이 나타나면 시민 컨텍스트 확인:
 
 ```
-✻ KOSAX — 시민 헬스 챗봇
+✻ UMMAYA — 시민 헬스 챗봇
 
   세션: s-2026-04-28-12-00-00
   Layer: 1 (basic) · 한국어 primary
@@ -89,7 +89,7 @@ REPL 화면이 나타나면 시민 컨텍스트 확인:
 > 강남역 다음 열차 언제?
 ```
 
-시민이 enter 누르자, KOSAX 가:
+시민이 enter 누르자, UMMAYA 가:
 1. BM25 검색에서 새 플러그인의 `search_hint_ko` ("지하철 도착 시간 강남역") 매칭
 2. `lookup(mode="fetch", tool_id="plugin.seoul_subway.lookup", params={station: "강남"})` 호출
 3. 권한 모달 (이미 한번만 승인된 것으로 간주, 또는 세션 자동 시 묵묵히 통과)
@@ -129,7 +129,7 @@ REPL 화면이 나타나면 시민 컨텍스트 확인:
 플러그인 브라우저 surface 가 열립니다:
 
 ```
-✻ KOSAX 플러그인 (1 installed)
+✻ UMMAYA 플러그인 (1 installed)
 
   ⏺  ›  seoul-subway     v1.0  [Live]  ⓵  서울 지하철 도착 정보 조회
                                             (지금 활성)
@@ -177,7 +177,7 @@ REPL 화면이 나타나면 시민 컨텍스트 확인:
 >
 ```
 
-플러그인 등록 안됨; 다음 turn 에서 호출 불가; `~/.kosax/memdir/user/plugins/` 변화 없음.
+플러그인 등록 안됨; 다음 turn 에서 호출 불가; `~/.ummaya/memdir/user/plugins/` 변화 없음.
 
 ---
 
@@ -211,8 +211,8 @@ selected row 에서 `r`:
 ⚠  플러그인 제거 확인
 
   seoul-subway v1.0 을 제거하시겠습니까?
-  ⏺  설치 디렉터리: ~/.kosax/memdir/user/plugins/seoul_subway/
-  ⏺  영수증 (uninstall) 이 ~/.kosax/memdir/user/consent/ 에 추가됩니다.
+  ⏺  설치 디렉터리: ~/.ummaya/memdir/user/plugins/seoul_subway/
+  ⏺  영수증 (uninstall) 이 ~/.ummaya/memdir/user/consent/ 에 추가됩니다.
 
   [Y 제거 / N 취소]
 
@@ -262,8 +262,8 @@ $ bash specs/1979-plugin-dx-tui-integration/scripts/run-e2e.sh
 - 본 워크스루는 `seoul-subway` 예시 플러그인 기준. 실제 catalog 게시 전이라면 fixture catalog (`scripts/fixtures/catalog.json`) 사용.
 - 플러그인 작성 가이드: `docs/plugins/quickstart.ko.md` (Spec 1636).
 - 권한 정책: `docs/plugins/security-review.md` (PIPA §26 수탁자 책임).
-- 설치된 플러그인 목록: `~/.kosax/memdir/user/plugins/`.
-- 동의 영수증 ledger: `~/.kosax/memdir/user/consent/`.
+- 설치된 플러그인 목록: `~/.ummaya/memdir/user/plugins/`.
+- 동의 영수증 ledger: `~/.ummaya/memdir/user/consent/`.
 
 ---
 

@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSAX ReplHeader — CC-fidelity launch surface for an empty conversation.
+// UMMAYA ReplHeader — CC-fidelity launch surface for an empty conversation.
 //
 // Visual source of truth:
 //   .references/claude-code-sourcemap/restored-src/src/components/LogoV2/WelcomeV2.tsx
 //   + CondensedLogo.tsx + the REPL "first-run" stack (Claude Code 2.1.88)
 //
 // Stack (top-to-bottom) mirrors CC's launch screen:
-//   1. WelcomeV2 ASCII banner (orbital-satellite motif)
+//   1. WelcomeV2 ASCII banner (UMMAYA mascot mark)
 //   2. Tips section — slash-command prompt + discovery hints
 //   3. Status band — cwd · session · ministry coverage · model
 //   4. Trailing blank for breathing room above the prompt input
