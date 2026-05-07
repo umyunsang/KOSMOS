@@ -11,7 +11,6 @@ description.  Fix by updating the doc to say "default ``true``".
 References:
 - Spec 2521 FR-010: ``UMMAYA_K_EXAONE_THINKING`` env default MUST remain ``true``
 - src/ummaya/llm/client.py:973 — canonical implementation source of truth
-- AGENTS.md § L1-A (patched 2026-05-04)
 - README.md § L1-A (patched 2026-05-04)
 - docs/configuration.md (already correct)
 """
@@ -32,9 +31,9 @@ _REPO_ROOT = Path(__file__).parent.parent.parent
 
 # Documents that must state "default `true`" (not "default `false`") for
 # UMMAYA_K_EXAONE_THINKING.  Only include canonical policy/L1-A docs, not
-# historical research/audit specs.
+# historical research/audit specs.  Local agent instruction files such as
+# AGENTS.md and CLAUDE.md are intentionally untracked and ignored.
 _CANONICAL_DOCS = [
-    _REPO_ROOT / "AGENTS.md",
     _REPO_ROOT / "README.md",
     _REPO_ROOT / "docs" / "configuration.md",
 ]
@@ -97,11 +96,9 @@ def test_doc_does_not_contain_stale_false_default(doc_path: Path) -> None:
     )
 
 
-@pytest.mark.parametrize(
-    "doc_path", [_REPO_ROOT / "AGENTS.md", _REPO_ROOT / "README.md"], ids=lambda p: p.name
-)
+@pytest.mark.parametrize("doc_path", [_REPO_ROOT / "README.md"], ids=lambda p: p.name)
 def test_canonical_l1a_docs_state_true_default(doc_path: Path) -> None:
-    """AGENTS.md and README.md must explicitly state 'default true' for the env var."""
+    """Tracked L1-A docs must explicitly state 'default true' for the env var."""
     assert doc_path.exists(), f"Expected {doc_path} to exist"
 
     content = doc_path.read_text(encoding="utf-8")
