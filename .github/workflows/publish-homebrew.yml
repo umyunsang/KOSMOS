@@ -64,7 +64,7 @@ jobs:
           identity-id: ${{ vars.INFISICAL_CLIENT_ID }}
           project-slug: ummaya-3f-zs
           env-slug: prod
-          secret-path: "/release"
+          secret-path: "/"
           export-type: env
 
       - name: Checkout tap
