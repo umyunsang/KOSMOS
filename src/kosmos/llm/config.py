@@ -25,7 +25,7 @@ class LLMClientConfig(BaseSettings):
         extra="ignore",
     )
 
-    token: SecretStr = Field(
+    token: SecretStr = Field(  # type: ignore[pydantic-alias]
         ...,
         validation_alias=AliasChoices("KOSMOS_FRIENDLI_TOKEN", "FRIENDLI_API_KEY"),
         description="FriendliAI API token.",
